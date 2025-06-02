@@ -8,15 +8,8 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
-  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, group: group, registry: registry) }
-  let_it_be(:cache_entries) do
-    [
-      create(:virtual_registries_packages_maven_cache_entry, group: group, upstream: upstream,
-        relative_path: '/com/example/artifact-1.jar'),
-      create(:virtual_registries_packages_maven_cache_entry, group: group, upstream: upstream,
-        relative_path: '/com/example/artifact-2.jar')
-    ]
-  end
+  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
+  let_it_be(:cache_entries) { create_list(:virtual_registries_packages_maven_cache_entry, 2, upstream:) }
 
   before do
     stub_config(dependency_proxy: { enabled: true })

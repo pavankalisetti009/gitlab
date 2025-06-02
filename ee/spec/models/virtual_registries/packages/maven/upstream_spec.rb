@@ -18,16 +18,16 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         .inverse_of(:upstream)
     end
 
-    it 'has one registry upstream' do
-      is_expected.to have_one(:registry_upstream)
+    it 'has many registry upstreams' do
+      is_expected.to have_many(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Maven::RegistryUpstream')
         .inverse_of(:upstream)
         .autosave(true)
     end
 
-    it 'has one registry' do
-      is_expected.to have_one(:registry)
-        .through(:registry_upstream)
+    it 'has many registries' do
+      is_expected.to have_many(:registries)
+        .through(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Maven::Registry')
     end
   end
@@ -185,7 +185,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       it { is_expected.not_to include(other_registry.upstreams) }
 
       it 'eager loads the registry_upstream association' do
-        recorder = ActiveRecord::QueryRecorder.new { upstreams.each(&:registry_upstream) }
+        recorder = ActiveRecord::QueryRecorder.new { upstreams.each(&:registry_upstreams) }
 
         expect(recorder.count).to eq(1)
       end
@@ -267,20 +267,20 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     it { is_expected.to contain_exactly(default_cache_entry) }
   end
 
-  describe '#object_storage_key_for' do
+  describe '#object_storage_key' do
     let_it_be(:upstream) { build_stubbed(:virtual_registries_packages_maven_upstream) }
 
-    let(:registry_id) { '555' }
-
-    subject { upstream.object_storage_key_for(registry_id: registry_id) }
+    subject { upstream.object_storage_key }
 
     it 'contains the expected terms' do
-      is_expected.to include("virtual_registries/packages/maven/#{registry_id}/upstream/#{upstream.id}/cache/entry")
+      is_expected.to include(
+        "virtual_registries/packages/maven/#{upstream.group_id}/upstream/#{upstream.id}/cache/entry"
+      )
     end
 
     it 'does not return the same value when called twice' do
-      first_value = upstream.object_storage_key_for(registry_id: registry_id)
-      second_value = upstream.object_storage_key_for(registry_id: registry_id)
+      first_value = upstream.object_storage_key
+      second_value = upstream.object_storage_key
 
       expect(first_value).not_to eq(second_value)
     end

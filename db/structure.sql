@@ -33261,6 +33261,8 @@ CREATE UNIQUE INDEX i_duo_workflows_events_on_correlation_id ON duo_workflows_ev
 
 CREATE INDEX i_gitlab_subscription_histories_on_namespace_change_type_plan ON gitlab_subscription_histories USING btree (namespace_id, change_type, hosted_plan_id);
 
+CREATE UNIQUE INDEX i_maven_reg_upstreams_on_upstream_and_registry_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (upstream_id, registry_id);
+
 CREATE INDEX i_namespace_cluster_agent_mappings_on_cluster_agent_id ON namespace_cluster_agent_mappings USING btree (cluster_agent_id);
 
 CREATE INDEX i_namespace_cluster_agent_mappings_on_creator_id ON namespace_cluster_agent_mappings USING btree (creator_id);
@@ -39016,8 +39018,6 @@ CREATE INDEX user_uploads_store_idx ON user_uploads USING btree (store);
 CREATE INDEX user_uploads_uploaded_by_user_id_idx ON user_uploads USING btree (uploaded_by_user_id);
 
 CREATE INDEX user_uploads_uploader_path_idx ON user_uploads USING btree (uploader, path);
-
-CREATE UNIQUE INDEX virtual_reg_packages_maven_reg_upstreams_on_unique_upstream_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (upstream_id);
 
 CREATE UNIQUE INDEX virtual_reg_pkgs_mvn_registries_on_unique_group_id_and_name ON virtual_registries_packages_maven_registries USING btree (group_id, name);
 

@@ -46,8 +46,7 @@ module VirtualRegistries
 
           mount_file_store_uploader ::VirtualRegistries::Cache::EntryUploader
 
-          before_validation :set_object_storage_key,
-            if: -> { object_storage_key.blank? && upstream && upstream.registry }
+          before_validation :set_object_storage_key, if: -> { object_storage_key.blank? && upstream }
           attr_readonly :object_storage_key
 
           scope :search_by_relative_path, ->(query) do
@@ -105,7 +104,7 @@ module VirtualRegistries
           private
 
           def set_object_storage_key
-            self.object_storage_key = upstream.object_storage_key_for(registry_id: upstream.registry.id)
+            self.object_storage_key = upstream.object_storage_key
           end
         end
       end

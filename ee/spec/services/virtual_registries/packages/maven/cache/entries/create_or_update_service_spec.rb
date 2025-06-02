@@ -7,7 +7,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
   let_it_be(:project) { create(:project, namespace: registry.group) }
   let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
-  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registry: registry) }
+  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
 
   let(:etag) { 'test' }
   let(:content_type) { 'text/xml' }

@@ -12,9 +12,9 @@ module VirtualRegistries
           inverse_of: :registry_upstreams
         belongs_to :upstream,
           class_name: 'VirtualRegistries::Packages::Maven::Upstream',
-          inverse_of: :registry_upstream
+          inverse_of: :registry_upstreams
 
-        validates :upstream_id, uniqueness: true, if: :upstream_id?
+        validates :upstream_id, uniqueness: { scope: :registry_id }, if: :upstream_id?
         validates :registry_id, uniqueness: { scope: [:position] }
 
         validates :group, top_level_group: true, presence: true
@@ -22,7 +22,15 @@ module VirtualRegistries
           numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: MAX_UPSTREAMS_COUNT },
           presence: true
 
-        before_validation :set_position, on: :create
+        before_validation :set_group, :set_position, on: :create
+
+        def self.sync_higher_positions(registry_upstreams)
+          subquery = registry_upstreams.select(:registry_id, :position)
+
+          joins("INNER JOIN (#{subquery.to_sql}) AS subquery ON #{table_name}.registry_id = subquery.registry_id")
+            .where("#{table_name}.position > subquery.position")
+            .update_all(position: Arel.sql('position - 1'))
+        end
 
         def update_position(new_position)
           return if position == new_position
@@ -47,15 +55,11 @@ module VirtualRegistries
           relation.update_all(position: case_clause)
         end
 
-        def sync_higher_positions
-          return if position == MAX_UPSTREAMS_COUNT
-
-          self.class
-            .where(registry_id: registry_id, position: (position + 1)..)
-            .update_all(position: Arel.sql('position - 1'))
-        end
-
         private
+
+        def set_group
+          self.group ||= (registry || upstream).group
+        end
 
         def set_position
           self.position = self.class.where(registry:, group:).maximum(:position).to_i + 1

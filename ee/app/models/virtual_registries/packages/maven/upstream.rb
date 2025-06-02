@@ -5,11 +5,11 @@ module VirtualRegistries
     module Maven
       class Upstream < ApplicationRecord
         belongs_to :group
-        has_one :registry_upstream,
+        has_many :registry_upstreams,
           class_name: 'VirtualRegistries::Packages::Maven::RegistryUpstream',
           inverse_of: :upstream,
           autosave: true
-        has_one :registry, class_name: 'VirtualRegistries::Packages::Maven::Registry', through: :registry_upstream
+        has_many :registries, class_name: 'VirtualRegistries::Packages::Maven::Registry', through: :registry_upstreams
         has_many :cache_entries,
           class_name: 'VirtualRegistries::Packages::Maven::Cache::Entry',
           inverse_of: :upstream
@@ -39,9 +39,9 @@ module VirtualRegistries
         prevent_from_serialization(:password) if respond_to?(:prevent_from_serialization)
 
         scope :eager_load_registry_upstream, ->(registry:) {
-          eager_load(:registry_upstream)
-            .where(registry_upstream: { registry: })
-            .order('registry_upstream.position ASC')
+          eager_load(:registry_upstreams)
+            .where(registry_upstreams: { registry: })
+            .order('registry_upstreams.position ASC')
         }
 
         def url_for(path)
@@ -61,21 +61,21 @@ module VirtualRegistries
           cache_entries.default
         end
 
-        def object_storage_key_for(registry_id:)
+        def object_storage_key
           hash = Digest::SHA2.hexdigest(SecureRandom.uuid)
           Gitlab::HashedPath.new(
             'virtual_registries',
             'packages',
             'maven',
-            registry_id.to_s,
+            group_id,
             'upstream',
-            id.to_s,
+            id,
             'cache',
             'entry',
             hash[0..1],
             hash[2..3],
             hash[4..],
-            root_hash: registry_id
+            root_hash: group_id
           ).to_s
         end
 

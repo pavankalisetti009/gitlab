@@ -43,15 +43,15 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
     let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
 
     let_it_be(:upstream1) do
-      create(:virtual_registries_packages_maven_upstream, group: registry.group, registry: registry)
+      create(:virtual_registries_packages_maven_upstream, group: registry.group, registries: [registry])
     end
 
     let_it_be(:upstream2) do
-      create(:virtual_registries_packages_maven_upstream, group: registry.group, registry: registry)
+      create(:virtual_registries_packages_maven_upstream, group: registry.group, registries: [registry])
     end
 
     let_it_be(:upstream3) do
-      create(:virtual_registries_packages_maven_upstream, group: registry.group, registry: registry)
+      create(:virtual_registries_packages_maven_upstream, group: registry.group, registries: [registry])
     end
 
     subject { registry.reload.upstreams.to_a }
@@ -60,9 +60,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
   end
 
   describe 'registry destruction' do
-    let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
+    let_it_be_with_reload(:upstream) { create(:virtual_registries_packages_maven_upstream) }
 
-    let(:registry) { upstream.registry }
+    let(:registry) { upstream.registries.first }
 
     subject(:destroy_registry) { registry.destroy! }
 
@@ -70,6 +70,20 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
       expect { destroy_registry }.to change { described_class.count }.by(-1)
         .and change { VirtualRegistries::Packages::Maven::Upstream.count }.by(-1)
         .and change { VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
+    end
+
+    context 'when the upstream is shared with another registry' do
+      before_all do
+        create(:virtual_registries_packages_maven_registry, group: upstream.group, name: 'other').tap do |registry|
+          create(:virtual_registries_packages_maven_registry_upstream, registry:, upstream:)
+        end
+      end
+
+      it 'does not delete the upstream' do
+        expect { destroy_registry }.to change { described_class.count }.by(-1)
+          .and change { VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
+          .and not_change { VirtualRegistries::Packages::Maven::Upstream.count }
+      end
     end
   end
 

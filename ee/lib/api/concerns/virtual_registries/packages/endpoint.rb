@@ -101,7 +101,7 @@ module API
                   maximum_size: MAX_FILE_SIZE,
                   use_final_store_path: true,
                   final_store_path_config: {
-                    override_path: upstream.object_storage_key_for(registry_id: registry.id)
+                    override_path: upstream.object_storage_key
                   }
                 )
               end
