@@ -67,6 +67,10 @@ module EE
           params.delete(:insight_attributes) unless group_projects.exists?(insight_project_id) # rubocop:disable CodeReuse/ActiveRecord
         end
 
+        unless ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) && ::Feature.enabled?(:use_web_based_commit_signing_enabled, group)
+          params.delete(:web_based_commit_signing_enabled)
+        end
+
         super
       end
 
@@ -153,10 +157,14 @@ module EE
       end
 
       def update_cascading_settings
-        settings = group.namespace_settings
+        previous_changes = group.namespace_settings.previous_changes
 
-        if settings.previous_changes.include?(:duo_features_enabled)
+        if previous_changes.include?(:duo_features_enabled)
           ::Namespaces::CascadeDuoFeaturesEnabledWorker.perform_async(group.id)
+        end
+
+        if previous_changes.include?(:web_based_commit_signing_enabled)
+          ::Namespaces::CascadeWebBasedCommitSigningEnabledWorker.perform_async(group.id)
         end
       end
 
