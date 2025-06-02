@@ -67638,6 +67638,9 @@ msgstr ""
 msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
 msgstr ""
 
+msgid "VirtualRegistry|Failed to search cache entries."
+msgstr ""
+
 msgid "VirtualRegistry|Get started with virtual registries"
 msgstr ""
 
