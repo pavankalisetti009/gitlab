@@ -3,13 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe 'Admin updates EE-only settings', :with_current_organization, feature_category: :shared do
-  include StubENV
   include Spec::Support::Helpers::ModalHelpers
   include ListboxHelpers
 
+  let_it_be(:admin) { create(:admin) }
+
   before do
     stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
-    admin = create(:admin)
     sign_in(admin)
     enable_admin_mode!(admin)
     allow(License).to receive(:feature_available?).and_return(true)
@@ -58,40 +58,20 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
   describe 'Search settings', :elastic_delete_by_query, feature_category: :global_search do
     let(:elastic_search_license) { true }
-    let(:admin) { create(:admin) }
 
     let(:task) do
-      create(:elastic_reindexing_task).tap do |t|
-        allow(t).to receive_messages(
-          in_progress?: false,
-          error_message: nil,
-          state: :in_progress
-        )
+      create(:elastic_reindexing_task).tap do |task|
+        allow(task).to receive_messages(in_progress?: false, error_message: nil, state: :in_progress)
       end
     end
 
     let(:subtask) do
-      create(:elastic_reindexing_subtask,
-        documents_count: 0,
-        documents_count_target: 0,
-        reindexing_task: task
-      )
+      create(:elastic_reindexing_subtask, documents_count: 0, documents_count_target: 0, reindexing_task: task)
     end
 
     before do
       stub_licensed_features(elastic_search: elastic_search_license)
-
-      allow(::Search::Elastic::ReindexingTask)
-        .to receive(:last)
-        .and_return(task)
-
-      sign_in(admin)
-      enable_admin_mode!(admin)
-
-      allow(task).to receive_messages(
-        human_state_name: "Reindexing",
-        human_state_color: "gl-text-blue-400"
-      )
+      allow(::Search::Elastic::ReindexingTask).to receive(:last).and_return(task)
     end
 
     it 'changes elasticsearch settings' do
@@ -300,7 +280,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
       expect(page).to have_content _('Application settings saved successfully')
       expect(find('#application_setting_disable_personal_access_tokens')).not_to be_checked
-      expect(current_settings.disable_personal_access_tokens).to eq(false)
+      expect(current_settings.disable_personal_access_tokens).to be(false)
     end
   end
 
@@ -322,7 +302,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
       end
 
       expect(page).to have_content _('Application settings saved successfully')
-      expect(current_settings.disable_personal_access_tokens).to eq(false)
+      expect(current_settings.disable_personal_access_tokens).to be(false)
     end
   end
 
@@ -386,7 +366,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
     end
   end
 
-  context 'virtual registries settings', feature_category: :virtual_registry do
+  context 'with virtual registries settings', feature_category: :virtual_registry do
     let(:dependency_proxy_feature_enabled) { true }
 
     before do
@@ -473,36 +453,40 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
       end
     end
 
-    context 'form submit button confirmation modal for side-effect of possibly adding unwanted new users' do
-      [
-        [:unchanged_true, :unchanged, false, :submits_form],
-        [:unchanged_false, :unchanged, false, :submits_form],
-        [:toggled_off, :unchanged, true, :shows_confirmation_modal],
-        [:toggled_off, :unchanged, false, :submits_form],
-        [:toggled_on, :unchanged, false, :submits_form],
-        [:unchanged_false, :increased, true, :shows_confirmation_modal],
-        [:unchanged_true, :increased, false, :submits_form],
-        [:toggled_off, :increased, true, :shows_confirmation_modal],
-        [:toggled_off, :increased, false, :submits_form],
-        [:toggled_on, :increased, true, :shows_confirmation_modal],
-        [:toggled_on, :increased, false, :submits_form],
-        [:toggled_on, :decreased, false, :submits_form],
-        [:toggled_on, :decreased, true, :submits_form],
-        [:unchanged_false, :changed_from_limited_to_unlimited, true, :shows_confirmation_modal],
-        [:unchanged_false, :changed_from_limited_to_unlimited, false, :submits_form],
-        [:unchanged_false, :changed_from_unlimited_to_limited, false, :submits_form],
-        [:unchanged_false, :unchanged_unlimited, false, :submits_form]
-      ].each do |(require_admin_approval_action, user_cap_action, add_pending_user, button_effect)|
-        it "#{button_effect} if 'require admin approval for new sign-ups' is #{require_admin_approval_action} and the user cap is #{user_cap_action} and #{add_pending_user ? 'has' : "doesn't have"} pending user count" do
+    context 'for form submit button confirmation modal for side-effect of possibly adding unwanted new users' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:require_admin_approval_action, :user_cap_action, :add_pending_user, :button_effect) do
+        :unchanged_true  | :unchanged                         | false | :submits_form
+        :unchanged_false | :unchanged                         | false | :submits_form
+        :toggled_off     | :unchanged                         | true  | :shows_confirmation_modal
+        :toggled_off     | :unchanged                         | false | :submits_form
+        :toggled_on      | :unchanged                         | false | :submits_form
+        :unchanged_false | :increased                         | true  | :shows_confirmation_modal
+        :unchanged_true  | :increased                         | false | :submits_form
+        :toggled_off     | :increased                         | true  | :shows_confirmation_modal
+        :toggled_off     | :increased                         | false | :submits_form
+        :toggled_on      | :increased                         | true  | :shows_confirmation_modal
+        :toggled_on      | :increased                         | false | :submits_form
+        :toggled_on      | :decreased                         | false | :submits_form
+        :toggled_on      | :decreased                         | true  | :submits_form
+        :unchanged_false | :changed_from_limited_to_unlimited | true  | :shows_confirmation_modal
+        :unchanged_false | :changed_from_limited_to_unlimited | false | :submits_form
+        :unchanged_false | :changed_from_unlimited_to_limited | false | :submits_form
+        :unchanged_false | :unchanged_unlimited               | false | :submits_form
+      end
+
+      with_them do
+        it "handles form submission appropriately based on settings configuration" do
           user_cap_default = 5
           seat_control_user_cap = 1
           require_admin_approval_value = [:unchanged_true, :toggled_off].include?(require_admin_approval_action)
 
           current_settings.update_attribute(:require_admin_approval_after_user_signup, require_admin_approval_value)
 
+          # rubocop:disable RSpec/AvoidConditionalStatements -- keeping the logic for readability
           unless [:changed_from_unlimited_to_limited, :unchanged_unlimited].include?(user_cap_action)
             current_settings.update!(new_user_signups_cap: user_cap_default, seat_control: seat_control_user_cap)
-
             page.refresh
           end
 
@@ -510,6 +494,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
             create(:user, :blocked_pending_approval)
             visit general_admin_application_settings_path
           end
+          # rubocop:enable RSpec/AvoidConditionalStatements
 
           page.within('#js-signup-settings') do
             case require_admin_approval_action
@@ -538,7 +523,8 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
           case button_effect
           when :shows_confirmation_modal
             expect(page).to have_selector('.modal')
-            expect(page).to have_css('.modal .modal-body', text: 'By changing this setting, you can also automatically approve 1 user who is pending approval.')
+            expect(page).to have_css('.modal .modal-body',
+              text: 'By changing this setting, you can also automatically approve 1 user who is pending approval.')
           when :submits_form
             expect(page).to have_content 'Application settings saved successfully'
           end
@@ -549,7 +535,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
   describe 'git abuse rate limit settings', :js, feature_category: :instance_resiliency do
     let(:license_allows) { true }
-    let(:user) { create(:user, name: 'John Doe') }
+    let_it_be(:user) { create(:user) }
 
     before do
       stub_licensed_features(git_abuse_rate_limit: license_allows)
@@ -625,13 +611,13 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         end
 
         expect(page).to have_content(
-          s_('GitAbuse|Number of repositories should be between %{minNumRepos}-%{maxNumRepos}.') %
-            { minNumRepos: 0, maxNumRepos: 10000 }
+          format(s_('GitAbuse|Number of repositories should be between %{minNumRepos}-%{maxNumRepos}.'),
+            minNumRepos: 0, maxNumRepos: 10000)
         )
 
         expect(page).to have_content(
-          s_('GitAbuse|Reporting time period should be between %{minTimePeriod}-%{maxTimePeriod} seconds.') %
-            { minTimePeriod: 0, maxTimePeriod: 864000 }
+          format(s_('GitAbuse|Reporting time period should be between %{minTimePeriod}-%{maxTimePeriod} seconds.'),
+            minTimePeriod: 0, maxTimePeriod: 864000)
         )
         expect(page).to have_button _('Save changes'), disabled: true
       end
