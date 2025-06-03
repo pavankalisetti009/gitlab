@@ -1,25 +1,16 @@
 <script>
-import { GlLink, GlButton, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlButton } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapGetters } from 'vuex';
-import { GEO_REPLICATION_SUPPORTED_TYPES_URL } from 'ee/geo_sites/constants';
-import { s__ } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
 import GeoSiteReplicationDetailsResponsive from './geo_site_replication_details_responsive.vue';
 import GeoSiteReplicationStatusMobile from './geo_site_replication_status_mobile.vue';
 
 export default {
   name: 'GeoSiteReplicationDetails',
-  i18n: {
-    replicationDetails: s__('Geo|Replication Details'),
-    naVerificationHelpText: s__(
-      'Geo|%{boldStart}Not applicable%{boldEnd}: Geo does not verify this component yet. See the %{linkStart}data types we plan to support%{linkEnd}.',
-    ),
-  },
   components: {
     GlLink,
     GlButton,
-    GlSprintf,
     GeoSiteReplicationDetailsResponsive,
     GeoSiteReplicationStatusMobile,
   },
@@ -40,28 +31,27 @@ export default {
       const syncInfoData = this.syncInfo(this.site.id);
       const verificationInfoData = this.verificationInfo(this.site.id);
 
-      return this.sortedReplicableTypes.map(({ namePlural, titlePlural, dataTypeTitle }) => {
-        const replicableSyncInfo = syncInfoData.find((r) => r.namePlural === namePlural);
+      return this.sortedReplicableTypes.map(
+        ({ namePlural, titlePlural, dataTypeTitle, replicationEnabled }) => {
+          const replicableSyncInfo = syncInfoData.find((r) => r.namePlural === namePlural);
 
-        const replicableVerificationInfo = verificationInfoData.find(
-          (r) => r.namePlural === namePlural,
-        );
+          const replicableVerificationInfo = verificationInfoData.find(
+            (r) => r.namePlural === namePlural,
+          );
 
-        return {
-          namePlural,
-          dataTypeTitle,
-          titlePlural,
-          syncValues: replicableSyncInfo ? replicableSyncInfo.values : null,
-          verificationValues: replicableVerificationInfo ? replicableVerificationInfo.values : null,
-          replicationView: this.getReplicationView(namePlural),
-        };
-      });
+          return {
+            namePlural,
+            dataTypeTitle,
+            titlePlural,
+            syncValues: replicableSyncInfo?.values,
+            verificationValues: replicableVerificationInfo?.values,
+            replicationView: replicationEnabled ? this.getReplicationView(namePlural) : null,
+          };
+        },
+      );
     },
     chevronIcon() {
       return this.collapsed ? 'chevron-right' : 'chevron-down';
-    },
-    hasNAVerificationType() {
-      return this.replicationItems.some((item) => !item.verificationValues);
     },
   },
   methods: {
@@ -75,7 +65,6 @@ export default {
       );
     },
   },
-  GEO_REPLICATION_SUPPORTED_TYPES_URL,
 };
 </script>
 
@@ -89,7 +78,7 @@ export default {
         :icon="chevronIcon"
         @click="collapseSection"
       >
-        {{ $options.i18n.replicationDetails }}
+        {{ s__('Geo|Replication Details') }}
       </gl-button>
     </div>
     <div v-if="!collapsed">
@@ -119,21 +108,6 @@ export default {
           <geo-site-replication-status-mobile :item="item" :translations="translations" />
         </template>
       </geo-site-replication-details-responsive>
-      <div v-if="hasNAVerificationType" class="gl-mt-4">
-        <gl-sprintf :message="$options.i18n.naVerificationHelpText">
-          <template #bold="{ content }">
-            <span class="gl-font-bold">{{ content }} </span>
-          </template>
-          <template #link="{ content }">
-            <gl-link
-              data-testid="naVerificationHelpLink"
-              :href="$options.GEO_REPLICATION_SUPPORTED_TYPES_URL"
-              target="_blank"
-              >{{ content }}
-            </gl-link>
-          </template>
-        </gl-sprintf>
-      </div>
     </div>
   </div>
 </template>

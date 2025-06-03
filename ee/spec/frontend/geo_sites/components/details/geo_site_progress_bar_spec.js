@@ -2,14 +2,14 @@ import { GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteProgressBar from 'ee/geo_sites/components/details/geo_site_progress_bar.vue';
 import StackedProgressBar from 'ee/geo_sites/components/details/stacked_progress_bar.vue';
-import { MOCK_PRIMARY_VERIFICATION_INFO } from 'ee_jest/geo_sites/mock_data';
+import { MOCK_VERIFICATION_INFO } from 'ee_jest/geo_sites/mock_data';
 
 describe('GeoSiteProgressBar', () => {
   let wrapper;
 
   const defaultProps = {
-    title: MOCK_PRIMARY_VERIFICATION_INFO[0].title,
-    values: MOCK_PRIMARY_VERIFICATION_INFO[0].values,
+    title: MOCK_VERIFICATION_INFO[1].title,
+    values: MOCK_VERIFICATION_INFO[1].values,
   };
 
   const createComponent = (props) => {
@@ -24,9 +24,10 @@ describe('GeoSiteProgressBar', () => {
   const findStackedProgressBar = () => wrapper.findComponent(StackedProgressBar);
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findCounts = () => wrapper.findAllByTestId('geo-progress-count');
+  const findDisabledText = () => wrapper.findByText('Disabled');
 
   describe('template', () => {
-    describe('always', () => {
+    describe('when values are provided', () => {
       beforeEach(() => {
         createComponent();
       });
@@ -41,6 +42,24 @@ describe('GeoSiteProgressBar', () => {
 
       it('renders a popover count for total, successful, queued, and failed', () => {
         expect(findCounts()).toHaveLength(4);
+      });
+
+      it('does not render disabled text', () => {
+        expect(findDisabledText().exists()).toBe(false);
+      });
+    });
+
+    describe('when values are not provided', () => {
+      beforeEach(() => {
+        createComponent({ values: null });
+      });
+
+      it('does not render the stacked progress bar', () => {
+        expect(findStackedProgressBar().exists()).toBe(false);
+      });
+
+      it('does render disabled text', () => {
+        expect(findDisabledText().exists()).toBe(true);
       });
     });
 
@@ -86,12 +105,12 @@ describe('GeoSiteProgressBar', () => {
           createComponent();
         });
 
-        it(`sets the popoverTarget to syncProgress-${MOCK_PRIMARY_VERIFICATION_INFO[0].title}`, () => {
+        it(`sets the popoverTarget to syncProgress-${MOCK_VERIFICATION_INFO[1].title}`, () => {
           expect(findStackedProgressBar().attributes('id')).toBe(
-            `syncProgress-${MOCK_PRIMARY_VERIFICATION_INFO[0].title}`,
+            `syncProgress-${MOCK_VERIFICATION_INFO[1].title}`,
           );
           expect(findGlPopover().attributes('target')).toBe(
-            `syncProgress-${MOCK_PRIMARY_VERIFICATION_INFO[0].title}`,
+            `syncProgress-${MOCK_VERIFICATION_INFO[1].title}`,
           );
         });
       });

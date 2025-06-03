@@ -28,42 +28,50 @@ export const verificationInfo = (state, getters) => (id) => {
     variables.failed = 'VerificationFailedCount';
   }
 
-  return getters.sortedReplicableTypes
-    .filter(({ verificationEnabled }) => verificationEnabled)
-    .map(({ namePlural, dataType, dataTypeTitle, titlePlural }) => {
+  return getters.sortedReplicableTypes.map(
+    ({ namePlural, dataType, dataTypeTitle, titlePlural, verificationEnabled }) => {
       const camelCaseName = convertToCamelCase(namePlural);
+      const values = verificationEnabled
+        ? {
+            total: site[`${camelCaseName}${variables.total}`],
+            success: site[`${camelCaseName}${variables.success}`],
+            failed: site[`${camelCaseName}${variables.failed}`],
+          }
+        : null;
 
       return {
         dataType,
         dataTypeTitle,
         namePlural,
         titlePlural,
-        values: {
-          total: site[`${camelCaseName}${variables.total}`],
-          success: site[`${camelCaseName}${variables.success}`],
-          failed: site[`${camelCaseName}${variables.failed}`],
-        },
+        verificationEnabled,
+        values,
       };
-    });
+    },
+  );
 };
 
 export const syncInfo = (state, getters) => (id) => {
   const site = state.sites.find((n) => n.id === id);
 
   return getters.sortedReplicableTypes.map(
-    ({ namePlural, dataType, dataTypeTitle, titlePlural }) => {
+    ({ namePlural, dataType, dataTypeTitle, titlePlural, replicationEnabled }) => {
       const camelCaseName = convertToCamelCase(namePlural);
+      const values = replicationEnabled
+        ? {
+            total: site[`${camelCaseName}Count`],
+            success: site[`${camelCaseName}SyncedCount`],
+            failed: site[`${camelCaseName}FailedCount`],
+          }
+        : null;
 
       return {
         dataType,
         dataTypeTitle,
         namePlural,
         titlePlural,
-        values: {
-          total: site[`${camelCaseName}Count`],
-          success: site[`${camelCaseName}SyncedCount`],
-          failed: site[`${camelCaseName}FailedCount`],
-        },
+        replicationEnabled,
+        values,
       };
     },
   );
