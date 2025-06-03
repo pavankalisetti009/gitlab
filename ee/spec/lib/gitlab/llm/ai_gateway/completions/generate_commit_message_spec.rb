@@ -46,6 +46,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
     let(:expected_prompt_version) { "1.1.0" }
 
     before do
+      stub_feature_flags(ai_model_switching: false)
       allow(Gitlab::Llm::AiGateway::Client).to receive(:new).and_return(ai_client)
     end
 
@@ -97,6 +98,131 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
       end
 
       it_behaves_like 'successful completion request'
+    end
+  end
+
+  describe 'namespace feature setting integration' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:target_project) { create(:project, :repository, namespace: group) }
+    let_it_be(:merge_request) { create(:merge_request, target_project: target_project, source_project: target_project) }
+
+    before do
+      allow(Gitlab::Llm::AiGateway::Client).to receive(:new).and_return(ai_client)
+    end
+
+    context 'when namespace has specific feature settings' do
+      let!(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: group,
+          feature: 'generate_commit_message',
+          offered_model_ref: 'claude_sonnet_3_7_20250219',
+          offered_model_name: 'Claude Sonnet 3.7 20250219')
+      end
+
+      it 'uses namespace-specific model settings' do
+        expected_diff = merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(described_class::WORDS_LIMIT)
+
+        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+          expect(client)
+            .to receive(:complete_prompt)
+            .with(
+              base_url: Gitlab::AiGateway.url,
+              prompt_name: :generate_commit_message,
+              inputs: { diff: expected_diff },
+              model_metadata: hash_including(
+                feature_setting: 'generate_commit_message',
+                identifier: 'claude_sonnet_3_7_20250219',
+                provider: 'gitlab'
+              ),
+              prompt_version: '1.1.0'
+            )
+            .and_return(ai_response)
+        end
+
+        generate_commit_message
+      end
+    end
+
+    context 'when namespace has no specific feature settings' do
+      it 'falls back to default feature settings' do
+        expected_diff = merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(described_class::WORDS_LIMIT)
+
+        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+          expect(client)
+            .to receive(:complete_prompt)
+            .with(
+              base_url: Gitlab::AiGateway.url,
+              prompt_name: :generate_commit_message,
+              inputs: { diff: expected_diff },
+              model_metadata: hash_including(
+                feature_setting: 'generate_commit_message',
+                identifier: nil,
+                provider: 'gitlab'
+              ),
+              prompt_version: '1.1.0'
+            )
+            .and_return(ai_response)
+        end
+
+        generate_commit_message
+      end
+    end
+  end
+
+  describe '#root_namespace' do
+    let(:completion_instance) { described_class.new(prompt_message, template_class, ai_options) }
+
+    context 'when target project has a root ancestor' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:target_project) { create(:project, :repository, namespace: subgroup) }
+
+      let(:merge_request) { instance_double(MergeRequest, target_project: target_project) }
+      let(:prompt_message) do
+        build(:ai_message, :generate_commit_message, user: user, resource: merge_request, request_id: uuid)
+      end
+
+      it 'returns the root ancestor of the target project' do
+        expect(completion_instance.root_namespace).to eq(group)
+      end
+    end
+
+    context 'when target project is at root level' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:target_project) { create(:project, :repository, namespace: group) }
+
+      let(:merge_request) { instance_double(MergeRequest, target_project: target_project) }
+      let(:prompt_message) do
+        build(:ai_message, :generate_commit_message, user: user, resource: merge_request, request_id: uuid)
+      end
+
+      it 'returns the group itself' do
+        expect(completion_instance.root_namespace).to eq(group)
+      end
+    end
+
+    context 'when target project belongs to a user namespace' do
+      let_it_be(:target_project) { create(:project, :repository) }
+
+      let(:merge_request) { instance_double(MergeRequest, target_project: target_project) }
+      let(:prompt_message) do
+        build(:ai_message, :generate_commit_message, user: user, resource: merge_request, request_id: uuid)
+      end
+
+      it 'returns the user namespace as root ancestor' do
+        expect(completion_instance.root_namespace).to eq(target_project.root_namespace)
+      end
+    end
+
+    context 'when target project is nil' do
+      let(:merge_request) { instance_double(MergeRequest, target_project: nil) }
+      let(:prompt_message) do
+        build(:ai_message, :generate_commit_message, user: user, resource: merge_request, request_id: uuid)
+      end
+
+      it 'returns nil' do
+        expect(completion_instance.root_namespace).to be_nil
+      end
     end
   end
 end
