@@ -598,6 +598,7 @@ module EE
 
       ::Security::PolicySetting.instance.csp_namespace_id == id
     end
+    strong_memoize_attr :designated_as_csp?
 
     def self_and_ancestor_ids_with_csp
       return self_and_ancestor_ids unless csp_enabled?(self)

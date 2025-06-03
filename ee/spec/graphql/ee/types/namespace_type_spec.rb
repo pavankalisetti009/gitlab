@@ -56,4 +56,68 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
       expect(namespace['actualRepositorySizeLimit']).to eq(10_240)
     end
   end
+
+  describe 'Security Policies', feature_category: :security_policy_management do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:security_policy_management_project) { create(:project) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:policy_configuration) do
+      create(:security_orchestration_policy_configuration, :namespace, namespace: group,
+        security_policy_management_project: security_policy_management_project)
+    end
+
+    let(:policy_yaml) do
+      Gitlab::Config::Loader::Yaml.new(fixture_file('security_orchestration.yml', dir: 'ee')).load!
+    end
+
+    let(:response) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    before_all do
+      policy_configuration.security_policy_management_project.add_maintainer(user)
+    end
+
+    before do
+      allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |policy|
+        allow(policy).to receive_messages(
+          policy_configuration_valid?: true, policy_hash: policy_yaml, policy_last_updated_at: Time.now
+        )
+      end
+
+      stub_licensed_features(security_orchestration_policies: true)
+    end
+
+    describe 'designatedAsCsp' do
+      include Security::PolicyCspHelpers
+
+      let(:query) do
+        %(
+        query {
+          namespace(fullPath: "#{group.full_path}") {
+            designatedAsCsp
+          }
+        }
+      )
+      end
+
+      subject(:csp) { response.dig('data', 'namespace', 'designatedAsCsp') }
+
+      it { is_expected.to be(false) }
+
+      context 'when the group is designated as a CSP' do
+        before do
+          stub_csp_group(group)
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'when feature flag "security_policies_csp" is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+    end
+  end
 end

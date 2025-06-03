@@ -176,6 +176,13 @@ module EE
           experiment: { milestone: '18.1' },
           resolver: ::Resolvers::WorkItems::LifecyclesResolver
 
+        field :designated_as_csp,
+          GraphQL::Types::Boolean,
+          null: false,
+          description: 'Indicates whether the namespace is designated to centrally manage security policies.',
+          method: :designated_as_csp?,
+          experiment: { milestone: '18.1' }
+
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end
