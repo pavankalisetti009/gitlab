@@ -73,9 +73,13 @@ module Gitlab
         each_sub_batch do |batch|
           vulnerability_reads = scoped_vulnerability_reads(batch)
 
+          puts "Vulnerability Reads: #{vulnerability_reads.pluck(:id)}"
+
           next if vulnerability_reads.blank?
 
           data = affected_vulnerability_data(vulnerability_reads)
+
+          puts "Is data blank?: #{data.blank?}"
 
           next if data.blank?
 
