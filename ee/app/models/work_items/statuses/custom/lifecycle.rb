@@ -12,6 +12,8 @@ module WorkItems
         MAX_LIFECYCLES_PER_NAMESPACE = 50
 
         belongs_to :namespace
+        belongs_to :created_by, class_name: 'User', optional: true
+        belongs_to :updated_by, class_name: 'User', optional: true
         belongs_to :default_open_status, class_name: 'WorkItems::Statuses::Custom::Status'
         belongs_to :default_closed_status, class_name: 'WorkItems::Statuses::Custom::Status'
         belongs_to :default_duplicate_status, class_name: 'WorkItems::Statuses::Custom::Status'

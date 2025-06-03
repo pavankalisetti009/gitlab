@@ -14,6 +14,8 @@ module WorkItems
         enum :category, CATEGORIES
 
         belongs_to :namespace
+        belongs_to :created_by, class_name: 'User', optional: true
+        belongs_to :updated_by, class_name: 'User', optional: true
 
         has_many :lifecycle_statuses,
           class_name: 'WorkItems::Statuses::Custom::LifecycleStatus',
