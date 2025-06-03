@@ -145,7 +145,8 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
             passthrough_count: 4,
             custom_exclude_path_count: 5,
             time_s: 100,
-            file_count: 1000
+            file_count: 1000,
+            language_feature_usage: '{".cpp":{"modules":6}}'
           }
         )
       end
