@@ -13,9 +13,11 @@ module QA
             element 'throughput-chart'
           end
 
-          view "ee/app/assets/javascripts/analytics/merge_request_analytics/components/throughput_table.vue" do
+          # rubocop:disable Layout/LineLength -- Single line is more readable
+          view "ee/app/assets/javascripts/analytics/analytics_dashboards/components/visualizations/merge_requests/throughput_table.vue" do
             element 'mr-table'
           end
+          # rubocop:enable Layout/LineLength
 
           # Throughput chart
           #

@@ -7,7 +7,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { DEFAULT_NUMBER_OF_DAYS } from '../constants';
 import FilterBar from './filter_bar.vue';
 import ThroughputChart from './throughput_chart.vue';
-import ThroughputTable from './throughput_table.vue';
+import ThroughputTableProvider from './throughput_table_provider.vue';
 
 export default {
   name: 'MergeRequestAnalyticsApp',
@@ -16,7 +16,7 @@ export default {
     DateRange,
     FilterBar,
     ThroughputChart,
-    ThroughputTable,
+    ThroughputTableProvider,
     UrlSync,
   },
   props: {
@@ -64,7 +64,7 @@ export default {
       />
     </div>
     <throughput-chart :start-date="startDate" :end-date="endDate" />
-    <throughput-table :start-date="startDate" :end-date="endDate" class="gl-mt-6" />
+    <throughput-table-provider :start-date="startDate" :end-date="endDate" class="gl-mt-6" />
     <url-sync :query="query" />
   </div>
 </template>
