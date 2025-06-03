@@ -6,6 +6,7 @@ module AuditEvents
     include ExternallyCommonDestinationable
     include GroupStreamDestinationMappable
     include Gitlab::EncryptedAttribute
+    include Activatable
 
     self.limit_name = 'audit_events_amazon_s3_configurations'
     self.limit_scope = :group

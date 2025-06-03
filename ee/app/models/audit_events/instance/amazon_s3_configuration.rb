@@ -7,6 +7,7 @@ module AuditEvents
       include ExternallyCommonDestinationable
       include InstanceStreamDestinationMappable
       include Gitlab::EncryptedAttribute
+      include Activatable
 
       self.limit_name = 'audit_events_amazon_s3_configurations'
       self.limit_scope = Limitable::GLOBAL_SCOPE

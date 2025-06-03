@@ -10,5 +10,10 @@ FactoryBot.define do
     aws_region { 'ap-south-2' }
     secret_access_key { SecureRandom.hex(8) }
     stream_destination_id { nil }
+    active { true }
+
+    trait :inactive do
+      active { false }
+    end
   end
 end

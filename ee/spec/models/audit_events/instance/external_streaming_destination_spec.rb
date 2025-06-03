@@ -60,6 +60,10 @@ RSpec.describe AuditEvents::Instance::ExternalStreamingDestination, feature_cate
     :audit_events_instance_external_streaming_destination,
     described_class
 
+  it_behaves_like 'includes Activatable concern' do
+    let(:model_factory_name) { :audit_events_instance_external_streaming_destination }
+  end
+
   describe ".configs_of_parent" do
     let!(:http_destinations) { create_list(:audit_events_instance_external_streaming_destination, 3) }
     let!(:non_http_destination) { create(:audit_events_instance_external_streaming_destination, :aws) }

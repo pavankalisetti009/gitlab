@@ -7,6 +7,7 @@ module AuditEvents
     include Limitable
     include InstanceStreamDestinationMappable
     include Gitlab::EncryptedAttribute
+    include Activatable
 
     self.limit_name = 'external_audit_event_destinations'
     self.limit_scope = Limitable::GLOBAL_SCOPE

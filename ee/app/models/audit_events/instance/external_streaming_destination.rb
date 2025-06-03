@@ -6,6 +6,7 @@ module AuditEvents
       include Limitable
       include ExternallyStreamable
       include LegacyDestinationMappable
+      include Activatable
 
       self.limit_name = 'external_audit_event_destinations'
       self.limit_scope = Limitable::GLOBAL_SCOPE

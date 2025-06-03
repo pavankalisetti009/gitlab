@@ -6,6 +6,7 @@ module AuditEvents
       include Limitable
       include ExternallyStreamable
       include LegacyDestinationMappable
+      include Activatable
 
       MAXIMUM_NAMESPACE_FILTER_COUNT = 5
 
