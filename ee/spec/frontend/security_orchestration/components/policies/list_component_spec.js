@@ -1,4 +1,12 @@
-import { GlDisclosureDropdown, GlDrawer, GlLink, GlPopover, GlTable, GlTooltip } from '@gitlab/ui';
+import {
+  GlDisclosureDropdown,
+  GlDrawer,
+  GlLink,
+  GlPopover,
+  GlTable,
+  GlTooltip,
+  GlKeysetPagination,
+} from '@gitlab/ui';
 import { nextTick } from 'vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
@@ -98,6 +106,7 @@ describe('List component', () => {
   const findNonInheritedPolicyCell = (findMethod) => findMethod().at(0);
   const findDeleteAction = (root) => root.findAll('button').at(1);
   const findOverloadWarningModal = () => wrapper.findComponent(OverloadWarningModal);
+  const findPagination = () => wrapper.findComponent(GlKeysetPagination);
 
   describe('initial state while loading', () => {
     it('renders closed editor drawer', () => {
@@ -106,6 +115,7 @@ describe('List component', () => {
       const editorDrawer = findDrawer();
       expect(editorDrawer.exists()).toBe(true);
       expect(editorDrawer.props('open')).toBe(false);
+      expect(findPagination().exists()).toBe(false);
     });
 
     it("sets table's loading state", () => {
@@ -711,6 +721,43 @@ describe('List component', () => {
           [POLICY_SOURCE_OPTIONS.INHERITED.value],
         ]);
       });
+    });
+  });
+
+  describe('pagination', () => {
+    it.each(['hasNextPage', 'hasPreviousPage'])(
+      'renders pagination when pagination has next or previous page',
+      (pageKey) => {
+        mountShallowWrapper({
+          props: { pageInfo: { [pageKey]: true } },
+          provide: {
+            glFeatures: {
+              securityPoliciesCombinedList: true,
+            },
+          },
+        });
+
+        expect(findPagination().exists()).toBe(true);
+      },
+    );
+
+    it('emits next and previous page events', async () => {
+      mountWrapper({
+        props: { pageInfo: { hasNextPage: true, startCursor: 'start', endCursor: 'end' } },
+        provide: {
+          glFeatures: {
+            securityPoliciesCombinedList: true,
+          },
+        },
+      });
+
+      await findPagination().vm.$emit('next');
+
+      expect(wrapper.emitted('next-page')).toHaveLength(1);
+
+      await findPagination().vm.$emit('prev');
+
+      expect(wrapper.emitted('prev-page')).toHaveLength(1);
     });
   });
 });

@@ -93,4 +93,5 @@ export const BREAKING_CHANGES_POPOVER_CONTENTS = {
   },
 };
 
+export const POLICIES_PER_PAGE = 50;
 export const ACTION_LIMIT = 10;
