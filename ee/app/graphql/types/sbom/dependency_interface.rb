@@ -33,6 +33,13 @@ module Types
 
       field :vulnerability_count, GraphQL::Types::Int,
         null: false, description: 'Number of vulnerabilities within the dependency.'
+
+      # Returns nil when the value is not in the predefined PACKAGE_MANAGERS list
+      # This will prevent GraphQL type errors for projects with unknown package managers
+      def packager
+        packager = object.packager
+        ::Sbom::DependenciesFinder::FILTER_PACKAGE_MANAGERS_VALUES.include?(packager) ? packager : nil
+      end
     end
   end
 end
