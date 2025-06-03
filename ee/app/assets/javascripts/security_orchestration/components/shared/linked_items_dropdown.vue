@@ -12,9 +12,9 @@ import BaseItemsDropdown from './base_items_dropdown.vue';
 
 export default {
   ERROR_KEY: 'linked-items-query-error',
-  SECURITY_POLICY_PROJECT_PATH: helpPagePath('user/application_security/policies/_index.md', {
-    anchor: 'security-policy-project',
-  }),
+  SECURITY_POLICY_PROJECT_PATH: helpPagePath(
+    'user/application_security/policies/security_policy_projects.md',
+  ),
   i18n: {
     groupDropdownHeader: __('Select groups'),
     popoverTitle: s__('SecurityOrchestration|No linked groups'),
