@@ -36,6 +36,7 @@ describe('GeoReplicableItemApp', () => {
     };
 
     const query = buildReplicableItemQuery(
+      propsData.replicableClass.graphqlRegistryIdType,
       propsData.replicableClass.graphqlFieldName,
       propsData.replicableClass.verificationEnabled,
     );

@@ -42,6 +42,7 @@ export default {
     replicableItem: {
       query() {
         return buildReplicableItemQuery(
+          this.replicableClass.graphqlRegistryIdType,
           this.replicableClass.graphqlFieldName,
           this.replicableClass.verificationEnabled,
         );

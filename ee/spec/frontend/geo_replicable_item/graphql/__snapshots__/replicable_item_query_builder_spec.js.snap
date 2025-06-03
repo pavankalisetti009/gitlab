@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`buildReplicableItemQuery query fields shows correct fields when verification=false 1`] = `
-"query ($ids: [ID!]) {
+"query ($ids: [GeoMockRegistryID!]) {
   geoNode {
     testGraphqlFieldName(ids: $ids) {
       nodes {
@@ -30,7 +30,7 @@ exports[`buildReplicableItemQuery query fields shows correct fields when verific
 `;
 
 exports[`buildReplicableItemQuery query fields shows correct fields when verification=true 1`] = `
-"query ($ids: [ID!]) {
+"query ($ids: [GeoMockRegistryID!]) {
   geoNode {
     testGraphqlFieldName(ids: $ids) {
       nodes {

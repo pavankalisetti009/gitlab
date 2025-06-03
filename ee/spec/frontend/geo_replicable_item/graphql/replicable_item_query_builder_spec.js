@@ -6,6 +6,7 @@ describe('buildReplicableItemQuery', () => {
   describe('query fields', () => {
     it.each([true, false])('shows correct fields when verification=%s', (verificationEnabled) => {
       const query = buildReplicableItemQuery(
+        MOCK_REPLICABLE_CLASS.graphqlRegistryIdType,
         MOCK_REPLICABLE_CLASS.graphqlFieldName,
         verificationEnabled,
       );

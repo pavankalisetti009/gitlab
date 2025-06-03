@@ -134,6 +134,18 @@ RSpec.describe Gitlab::Geo::Replicator, feature_category: :geo_replication do
     end
   end
 
+  describe '.graphql_registry_id_type' do
+    before do
+      stub_const('Geo::DummyRegistry', Class.new)
+
+      allow(Geo::DummyReplicator).to receive(:registry_class).and_return(Geo::DummyRegistry)
+    end
+
+    it 'returns the GobalID GraphQL Type matching this replicator' do
+      expect(Geo::DummyReplicator.graphql_registry_id_type.inspect).to eq("GeoDummyRegistryID")
+    end
+  end
+
   describe '.bulk_create_events' do
     let(:event) do
       {
