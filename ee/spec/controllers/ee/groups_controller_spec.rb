@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe GroupsController, :with_current_organization, feature_category: :groups_and_projects do
   include ExternalAuthorizationServiceHelpers
   using RSpec::Parameterized::TableSyntax
-  include NamespacesHelper
 
   let_it_be(:user) { create(:user, organizations: [current_organization]) }
   let_it_be(:group) { create(:group, :public, organization: current_organization) }

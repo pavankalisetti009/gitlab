@@ -739,6 +739,11 @@ msgid_plural "%{count} Participants"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{count} active project"
+msgid_plural "%{count} active projects"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{count} approval required from %{name}"
 msgid_plural "%{count} approvals required from %{name}"
 msgstr[0] ""
@@ -746,6 +751,11 @@ msgstr[1] ""
 
 msgid "%{count} approvals from %{name}"
 msgstr ""
+
+msgid "%{count} archived project"
+msgid_plural "%{count} archived projects"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "%{count} contact"
 msgid_plural "%{count} contacts"
@@ -829,6 +839,11 @@ msgstr ""
 
 msgid "%{count} selected"
 msgstr ""
+
+msgid "%{count} subgroup"
+msgid_plural "%{count} subgroups"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "%{count} tags"
 msgstr ""
@@ -51835,10 +51850,13 @@ msgstr ""
 msgid "Restore"
 msgstr ""
 
-msgid "Restore %{context}"
+msgid "Restore deployment"
 msgstr ""
 
-msgid "Restore deployment"
+msgid "Restore group"
+msgstr ""
+
+msgid "Restore project"
 msgstr ""
 
 msgid "Restoring projects"
@@ -62455,9 +62473,6 @@ msgstr ""
 msgid "Third Party Advisory Link"
 msgstr ""
 
-msgid "This %{context} has been scheduled for deletion on %{date}. To cancel the scheduled deletion, you can restore this %{context}, including all its resources."
-msgstr ""
-
 msgid "This %{issuableType} is confidential and should only be visible to team members with at least the Planner role."
 msgstr ""
 
@@ -62711,6 +62726,9 @@ msgid "This group does not have any group runners yet."
 msgstr ""
 
 msgid "This group has been scheduled for deletion and cannot be commented on."
+msgstr ""
+
+msgid "This group has been scheduled for deletion on %{date}. To cancel the scheduled deletion, you can restore this group, including all its resources."
 msgstr ""
 
 msgid "This group has no active access tokens."
@@ -63025,6 +63043,9 @@ msgid "This project does not have a wiki homepage yet"
 msgstr ""
 
 msgid "This project does not include diff previews in email notifications."
+msgstr ""
+
+msgid "This project has been scheduled for deletion on %{date}. To cancel the scheduled deletion, you can restore this project, including all its resources."
 msgstr ""
 
 msgid "This project has no active access tokens."
@@ -72032,9 +72053,6 @@ msgid_plural "actions"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "active project"
-msgstr ""
-
 msgid "activity"
 msgstr ""
 
@@ -72105,9 +72123,6 @@ msgid "approval"
 msgid_plural "approvals"
 msgstr[0] ""
 msgstr[1] ""
-
-msgid "archived project"
-msgstr ""
 
 msgid "archived:"
 msgstr ""
@@ -74308,9 +74323,6 @@ msgid "structure is too large. Maximum size is %{max_size} characters"
 msgstr ""
 
 msgid "stuck"
-msgstr ""
-
-msgid "subgroup"
 msgstr ""
 
 msgid "success"
