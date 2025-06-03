@@ -181,6 +181,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
       it 'migrates all affected vulnerabilities' do
         puts "Sec Connection: #{SecApplicationRecord.connection.object_id}"
         puts "Table Connection: #{vulnerability_reads.connection.object_id}"
+        puts "Vulnerability Reads count: #{vulnerability_reads.count}"
 
         expect { perform_migration }.to(
           change { affected_vulnerability_inside_group.reload.state }.from(states[:resolved]).to(states[:dismissed])
