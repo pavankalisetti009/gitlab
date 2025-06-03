@@ -27,7 +27,6 @@ describe('CompanyForm', () => {
     });
   };
 
-  const findDescription = () => wrapper.findByTestId('description');
   const findSubmitButton = () => wrapper.findComponent(GlButton);
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormInput = (testId) => wrapper.findByTestId(testId);
@@ -55,12 +54,6 @@ describe('CompanyForm', () => {
       wrapper = createComponent({ formType: 'trial' });
     });
 
-    it('displays correct description text', () => {
-      expect(findDescription().text()).toBe(
-        'We need a few more details from you to activate your trial.',
-      );
-    });
-
     it('displays correct text on submit button', () => {
       expect(findSubmitButton().text()).toBe('Continue');
     });
@@ -73,12 +66,6 @@ describe('CompanyForm', () => {
   describe('when formType is registration', () => {
     beforeEach(() => {
       wrapper = createComponent();
-    });
-
-    it('displays correct description text', () => {
-      expect(findDescription().text()).toBe(
-        'We need a few more details from you to activate your trial.',
-      );
     });
 
     it('displays correct text on submit button', () => {

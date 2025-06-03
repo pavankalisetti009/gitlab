@@ -73,11 +73,13 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
 
   def expect_to_see_trial_form
     expect(rendered).to have_content(_('Tell us about your company'))
+    expect(rendered).to have_content(s_('Trial|We need a few more details from you to activate your trial.'))
     expect(rendered).not_to have_selector('[data-testid="trial-reassurances-column"]')
   end
 
   def expect_to_see_registration_form
     expect(rendered).to have_content(_('Tell us about your company'))
+    expect(rendered).to have_content(s_('Trial|We need a few more details from you to activate your trial.'))
     expect(rendered).to have_selector('[data-testid="trial-reassurances-column"]')
   end
 end

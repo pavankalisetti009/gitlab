@@ -9,9 +9,6 @@ export const ULTIMATE_TRIAL_FOOTER_DESCRIPTION = s__(
 export const TRIAL_PHONE_DESCRIPTION = s__('Trial|Allowed characters: +, 0-9, -, and spaces.');
 export const TRIAL_STATE_LABEL = s__('Trial|State or province');
 export const TRIAL_STATE_PROMPT = s__('Trial|Select state or province');
-export const TRIAL_DESCRIPTION = s__(
-  'Trial|We need a few more details from you to activate your trial.',
-);
 export const TRIAL_TERMS_TEXT = s__(
   'Trial|By clicking "%{buttonText}" you accept the %{gitlabSubscriptionAgreement} and acknowledge the %{privacyStatement} and %{cookiePolicy}',
 );
