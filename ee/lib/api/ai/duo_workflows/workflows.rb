@@ -40,7 +40,8 @@ module API
               workflow_definition: params[:workflow_definition],
               workflow_id: workflow_id,
               workflow_oauth_token: gitlab_oauth_token.plaintext_token,
-              workflow_service_token: duo_workflow_token[:token]
+              workflow_service_token: duo_workflow_token[:token],
+              use_service_account: params[:use_service_account]
             }
           end
 
@@ -69,7 +70,7 @@ module API
           end
 
           def create_workflow_params
-            declared_params(include_missing: false).except(:start_workflow)
+            declared_params(include_missing: false).except(:start_workflow, :use_service_account)
           end
 
           params :workflow_params do
@@ -92,6 +93,9 @@ module API
               desc: 'When this is enabled Duo Workflow may stop to ask the user questions before proceeding. ' \
                 'When it is disabled Duo Workflow will always just run through the workflow without ever asking ' \
                 'for user input. Defaults to true.',
+              documentation: { example: true }
+            optional :use_service_account, type: Boolean,
+              desc: 'Optional parameter to start the workflow CI pipeline using a service account.',
               documentation: { example: true }
           end
         end
