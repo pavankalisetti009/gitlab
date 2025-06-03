@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe API::MergeRequests, feature_category: :source_code_management do
+RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
   include ProjectForksHelper
 
   let_it_be(:user)       { create(:user) }
