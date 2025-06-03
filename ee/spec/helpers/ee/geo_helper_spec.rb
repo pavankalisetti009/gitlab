@@ -22,17 +22,10 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
   end
 
   describe '#replicable_types' do
-    let(:replicators) { Gitlab::Geo.replication_enabled_replicator_classes }
-    let(:enabled_replicator_classes) { [replicators[0], replicators[1]] }
-
-    before do
-      allow(helper).to receive(:enabled_replicator_classes).and_return(enabled_replicator_classes)
-    end
-
     subject(:replicable_types) { helper.replicable_types }
 
     it 'includes all replicator_class_data' do
-      expected_replicable_types = enabled_replicator_classes.map { |c| replicable_class_data(c) }
+      expected_replicable_types = Gitlab::Geo::REPLICATOR_CLASSES.map { |c| replicable_class_data(c) }
 
       expect(replicable_types).to include(*expected_replicable_types)
     end
@@ -55,6 +48,7 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
         graphql_field_name: replicator.graphql_field_name,
         graphql_registry_class: replicator.registry_class,
         graphql_mutation_registry_class: replicator.graphql_mutation_registry_class,
+        replication_enabled: replicator.replication_enabled?,
         verification_enabled: replicator.verification_enabled?,
         graphql_registry_id_type: Types::GlobalIDType[replicator.registry_class].to_s
       })

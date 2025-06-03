@@ -6,13 +6,28 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteReplicationDetails from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_details.vue';
 import GeoSiteReplicationDetailsResponsive from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_details_responsive.vue';
 import GeoSiteReplicationStatusMobile from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_status_mobile.vue';
-import { GEO_REPLICATION_SUPPORTED_TYPES_URL } from 'ee/geo_sites/constants';
 import { MOCK_SECONDARY_SITE, MOCK_SORTED_REPLICABLE_TYPES } from 'ee_jest/geo_sites/mock_data';
 
 Vue.use(Vuex);
 
 describe('GeoSiteReplicationDetails', () => {
   let wrapper;
+
+  const mockSync = {
+    dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
+    namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+    titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+    replicationEnabled: true,
+    values: { total: 100, success: 0 },
+  };
+
+  const mockVerif = {
+    dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
+    namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+    titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+    verificationEnabled: true,
+    values: { total: 50, success: 50 },
+  };
 
   const defaultProps = {
     site: MOCK_SECONDARY_SITE,
@@ -45,7 +60,6 @@ describe('GeoSiteReplicationDetails', () => {
   const findGeoDesktopReplicationDetails = () =>
     wrapper.findByTestId('geo-replication-details-desktop');
   const findCollapseButton = () => wrapper.findComponent(GlButton);
-  const findNAVerificationHelpLink = () => wrapper.findByTestId('naVerificationHelpLink');
   const findReplicableComponent = () => wrapper.findByTestId('replicable-component');
   const findReplicableComponentLink = () => findReplicableComponent().findComponent(GlLink);
 
@@ -76,12 +90,6 @@ describe('GeoSiteReplicationDetails', () => {
           'md:gl-block',
         ]);
       });
-
-      it('renders Not applicable Verification Help Text with correct link', () => {
-        expect(findNAVerificationHelpLink().attributes('href')).toBe(
-          GEO_REPLICATION_SUPPORTED_TYPES_URL,
-        );
-      });
     });
 
     describe('when collapsed', () => {
@@ -106,27 +114,13 @@ describe('GeoSiteReplicationDetails', () => {
 
     const replicationUrl = `/admin/geo/sites/${MOCK_SECONDARY_SITE.id}/replication/${MOCK_SORTED_REPLICABLE_TYPES[1].namePlural}`;
 
-    const mockSync = {
-      dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
-      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
-      values: { total: 100, success: 0 },
-    };
-
-    const mockVerif = {
-      dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
-      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
-      values: { total: 50, success: 50 },
-    };
-
     const mockExpectedNoValues = {
       dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
       namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
       titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       replicationView: replicationUrl,
-      syncValues: null,
-      verificationValues: null,
+      syncValues: undefined,
+      verificationValues: undefined,
     };
 
     const mockExpectedOnlySync = {
@@ -135,7 +129,7 @@ describe('GeoSiteReplicationDetails', () => {
       titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       replicationView: replicationUrl,
       syncValues: { total: 100, success: 0 },
-      verificationValues: null,
+      verificationValues: undefined,
     };
 
     const mockExpectedOnlyVerif = {
@@ -143,7 +137,7 @@ describe('GeoSiteReplicationDetails', () => {
       namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
       titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       replicationView: replicationUrl,
-      syncValues: null,
+      syncValues: undefined,
       verificationValues: { total: 50, success: 50 },
     };
 
@@ -157,58 +151,79 @@ describe('GeoSiteReplicationDetails', () => {
     };
 
     describe.each`
-      description                    | mockSyncData  | mockVerificationData | expectedProps              | hasNAVerificationHelpText
-      ${'with no data'}              | ${[]}         | ${[]}                | ${[mockExpectedNoValues]}  | ${true}
-      ${'with no verification data'} | ${[mockSync]} | ${[]}                | ${[mockExpectedOnlySync]}  | ${true}
-      ${'with no sync data'}         | ${[]}         | ${[mockVerif]}       | ${[mockExpectedOnlyVerif]} | ${false}
-      ${'with all data'}             | ${[mockSync]} | ${[mockVerif]}       | ${[mockExpectedBothTypes]} | ${false}
-    `(
-      '$description',
-      ({ mockSyncData, mockVerificationData, expectedProps, hasNAVerificationHelpText }) => {
+      description                    | mockSyncData  | mockVerificationData | expectedProps
+      ${'with no data'}              | ${[]}         | ${[]}                | ${[mockExpectedNoValues]}
+      ${'with no verification data'} | ${[mockSync]} | ${[]}                | ${[mockExpectedOnlySync]}
+      ${'with no sync data'}         | ${[]}         | ${[mockVerif]}       | ${[mockExpectedOnlyVerif]}
+      ${'with all data'}             | ${[mockSync]} | ${[mockVerif]}       | ${[mockExpectedBothTypes]}
+    `('$description', ({ mockSyncData, mockVerificationData, expectedProps }) => {
+      beforeEach(() => {
+        createComponent(null, {
+          syncInfo: () => () => mockSyncData,
+          verificationInfo: () => () => mockVerificationData,
+          sortedReplicableTypes: () => [MOCK_SORTED_REPLICABLE_TYPES[1]],
+        });
+      });
+
+      it('passes the correct props to the mobile replication details', () => {
+        expect(findGeoMobileReplicationDetails().props()).toStrictEqual({
+          replicationItems: expectedProps,
+          siteId: MOCK_SECONDARY_SITE.id,
+        });
+      });
+
+      it('passes the correct props to the desktop replication details', () => {
+        expect(findGeoDesktopReplicationDetails().props()).toStrictEqual({
+          replicationItems: expectedProps,
+          siteId: MOCK_SECONDARY_SITE.id,
+        });
+      });
+    });
+
+    describe('component links', () => {
+      describe('when replication is disabled', () => {
         beforeEach(() => {
           createComponent(null, {
-            syncInfo: () => () => mockSyncData,
-            verificationInfo: () => () => mockVerificationData,
-            sortedReplicableTypes: () => [MOCK_SORTED_REPLICABLE_TYPES[1]],
+            sortedReplicableTypes: () => [
+              { ...MOCK_SORTED_REPLICABLE_TYPES[2], replicationEnabled: false },
+            ],
           });
         });
 
-        it('passes the correct props to the mobile replication details', () => {
-          expect(findGeoMobileReplicationDetails().props()).toStrictEqual({
-            replicationItems: expectedProps,
-            siteId: MOCK_SECONDARY_SITE.id,
-          });
+        it('renders replicable component title', () => {
+          expect(findReplicableComponent().text()).toBe(
+            MOCK_SORTED_REPLICABLE_TYPES[2].titlePlural,
+          );
         });
 
-        it('passes the correct props to the desktop replication details', () => {
-          expect(findGeoDesktopReplicationDetails().props()).toStrictEqual({
-            replicationItems: expectedProps,
-            siteId: MOCK_SECONDARY_SITE.id,
-          });
+        it(`does not render GlLink to secondary replication view`, () => {
+          expect(findReplicableComponentLink().exists()).toBe(false);
         });
-
-        it(`does ${
-          hasNAVerificationHelpText ? '' : 'not '
-        }show Not applicable verification help text`, () => {
-          expect(findNAVerificationHelpLink().exists()).toBe(hasNAVerificationHelpText);
-        });
-      },
-    );
+      });
+    });
 
     describe.each`
       description              | relativeUrl  | expectedUrl
       ${'with relativeUrl'}    | ${'/gitlab'} | ${`/gitlab${replicationUrl}`}
       ${'without relativeUrl'} | ${''}        | ${replicationUrl}
-    `('component links $description', ({ relativeUrl, expectedUrl }) => {
-      beforeEach(() => {
-        gon.relative_url_root = relativeUrl;
-        createComponent(null, { sortedReplicableTypes: () => [MOCK_SORTED_REPLICABLE_TYPES[1]] });
-      });
+    `(
+      'component links $description when replication is enabled',
+      ({ relativeUrl, expectedUrl }) => {
+        beforeEach(() => {
+          gon.relative_url_root = relativeUrl;
+          createComponent(null, {
+            syncInfo: () => () => [mockSync],
+            sortedReplicableTypes: () => [
+              { ...MOCK_SORTED_REPLICABLE_TYPES[1], replicationEnabled: true },
+            ],
+          });
+        });
 
-      it(`renders GlLink to secondary replication view`, () => {
-        expect(findReplicableComponentLink().exists()).toBe(true);
-        expect(findReplicableComponentLink().attributes('href')).toBe(expectedUrl);
-      });
-    });
+        it(`renders GlLink to secondary replication view`, () => {
+          expect(findReplicableComponentLink().exists()).toBe(true);
+          expect(findReplicableComponentLink().attributes('href')).toBe(expectedUrl);
+        });
+      },
+    );
   });
 });

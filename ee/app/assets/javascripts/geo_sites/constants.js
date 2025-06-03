@@ -21,11 +21,6 @@ export const REPLICATION_PAUSE_URL = helpPagePath('administration/geo/_index.htm
   anchor: 'pausing-and-resuming-replication',
 });
 
-export const GEO_REPLICATION_SUPPORTED_TYPES_URL = helpPagePath(
-  'administration/geo/replication/datatypes.html',
-  { anchor: 'data-types' },
-);
-
 export const HEALTH_STATUS_UI = {
   healthy: {
     icon: 'status_success',

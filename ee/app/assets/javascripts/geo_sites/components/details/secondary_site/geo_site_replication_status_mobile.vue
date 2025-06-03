@@ -24,7 +24,6 @@ export default {
     <div class="gl-mb-5 gl-flex gl-flex-col" data-testid="sync-status">
       <span class="gl-mb-3 gl-text-sm">{{ translations.syncStatus }}</span>
       <geo-site-progress-bar
-        v-if="item.syncValues"
         :title="
           /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */
           sprintf(translations.progressBarSyncTitle, {
@@ -34,12 +33,10 @@ export default {
         :target="`mobile-sync-progress-${item.namePlural}`"
         :values="item.syncValues"
       />
-      <span v-else class="gl-text-sm gl-text-subtle">{{ translations.nA }}</span>
     </div>
     <div class="gl-flex gl-flex-col" data-testid="verification-status">
       <span class="gl-mb-3 gl-text-sm">{{ translations.verifStatus }}</span>
       <geo-site-progress-bar
-        v-if="item.verificationValues"
         :title="
           /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */
           sprintf(translations.progressBarVerifTitle, {
@@ -51,7 +48,6 @@ export default {
         :success-label="translations.verified"
         :unavailable-label="translations.nothingToVerify"
       />
-      <span v-else class="gl-text-sm gl-text-subtle">{{ translations.nA }}</span>
     </div>
   </div>
 </template>
