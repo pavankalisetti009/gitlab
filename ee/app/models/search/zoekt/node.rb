@@ -28,6 +28,8 @@ module Search
         through: :indices, source: :zoekt_enabled_namespace, class_name: '::Search::Zoekt::EnabledNamespace'
       has_many :tasks,
         foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Search::Zoekt::Task'
+      has_many :knowledge_graph_tasks,
+        foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Ai::KnowledgeGraph::Task'
       has_many :zoekt_repositories,
         through: :indices, source: :zoekt_repositories, class_name: '::Search::Zoekt::Repository'
 

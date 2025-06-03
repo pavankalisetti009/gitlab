@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_category: :code_review_workflow do
   let_it_be(:user) { create(:user) }
-  let_it_be(:merge_request) { create(:merge_request) }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
   let_it_be(:draft_note_by_random_user) { create(:draft_note, merge_request: merge_request) }
 
   let(:prompt_class) { Gitlab::Llm::Templates::SummarizeReview }
@@ -14,18 +15,50 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
     build(:ai_message, :summarize_review, user: user, resource: merge_request, request_id: 'uuid')
   end
 
-  subject(:summarize_review) { described_class.new(prompt_message, prompt_class, options).execute }
+  let(:model_metadata) { nil }
+
+  subject(:resolve) { described_class.new(prompt_message, prompt_class, options) }
+
+  describe '#root_namespace' do
+    context 'when the target project is in a subgroup' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:project) { create(:project, :repository, group: subgroup) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+      it 'returns the root namespace' do
+        expect(resolve.root_namespace).to eq(group)
+      end
+    end
+
+    context 'when the target project is in a group at the root level' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, :repository, group: group) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+      it 'returns the root namespace' do
+        expect(resolve.root_namespace).to eq(group)
+      end
+    end
+
+    context 'when the target project is in a user namespace' do
+      it 'returns the root namespace' do
+        expect(resolve.root_namespace).to eq(project.root_namespace)
+      end
+    end
+  end
 
   describe '#execute' do
     before do
       stub_feature_flags(summarize_code_review_claude_3_7_sonnet: false)
+      stub_feature_flags(ai_model_switching: false)
     end
 
     context 'when there are no draft notes authored by user' do
       it 'does not make AI request' do
         expect(Gitlab::Llm::AiGateway::Client).not_to receive(:new)
 
-        summarize_review
+        resolve.execute
       end
     end
 
@@ -51,14 +84,14 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
                 base_url: Gitlab::AiGateway.url,
                 prompt_name: :summarize_review,
                 inputs: { draft_notes_content: draft_notes_content },
-                model_metadata: nil,
+                model_metadata: model_metadata,
                 prompt_version: "^2.0.0"
               )
               .and_return(example_response)
           end
 
           expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
-          expect(summarize_review[:ai_message].content).to eq(example_answer)
+          expect(resolve.execute[:ai_message].content).to eq(example_answer)
         end
       end
 
@@ -85,21 +118,62 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
           stub_feature_flags(summarize_code_review_claude_3_7_sonnet: true)
         end
 
-        it 'includes prompt_version in the request' do
-          expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
-            expect(client)
-              .to receive(:complete_prompt)
-              .with(
-                base_url: Gitlab::AiGateway.url,
-                prompt_name: :summarize_review,
-                inputs: { draft_notes_content: draft_notes_content },
-                model_metadata: nil,
-                prompt_version: "2.0.0"
-              )
-              .and_return(example_response)
+        shared_examples_for 'summarize review with prompt version' do
+          it 'includes prompt_version in the request' do
+            expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+              expect(client)
+                .to receive(:complete_prompt)
+                .with(
+                  base_url: Gitlab::AiGateway.url,
+                  prompt_name: :summarize_review,
+                  inputs: { draft_notes_content: draft_notes_content },
+                  model_metadata: model_metadata,
+                  prompt_version: "2.0.0"
+                )
+                .and_return(example_response)
+            end
+
+            resolve.execute
+          end
+        end
+
+        it_behaves_like 'summarize review with prompt version'
+
+        context 'when namespace model switching is enabled' do
+          let_it_be(:group) { create(:group) }
+          let_it_be(:project) { create(:project, :repository, group: group) }
+          let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+          let_it_be(:draft_note_by_current_user) do
+            create(
+              :draft_note,
+              merge_request: merge_request,
+              author: user,
+              note: 'This is a draft note'
+            )
           end
 
-          summarize_review
+          before do
+            stub_feature_flags(ai_model_switching: true)
+          end
+
+          context 'when the model is pinned to a specific model' do
+            before do
+              create(:ai_namespace_feature_setting,
+                namespace: group,
+                feature: 'summarize_review'
+              )
+            end
+
+            it_behaves_like 'summarize review with prompt version' do
+              let(:model_metadata) do
+                {
+                  feature_setting: 'summarize_review',
+                  identifier: 'claude_sonnet_3_7',
+                  provider: 'gitlab'
+                }
+              end
+            end
+          end
         end
       end
     end

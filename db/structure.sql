@@ -153,6 +153,19 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION assign_p_knowledge_graph_tasks_id_value() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."id" IS NOT NULL THEN
+  RAISE WARNING 'Manually assigning ids is not allowed, the value will be ignored';
+END IF;
+NEW."id" := nextval('p_knowledge_graph_tasks_id_seq'::regclass);
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION assign_zoekt_tasks_id_value() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -4901,6 +4914,22 @@ CREATE TABLE p_knowledge_graph_replicas (
     CONSTRAINT c_p_knowledge_graph_replicas_retries_status CHECK (((retries_left > 0) OR ((retries_left = 0) AND (state >= 200))))
 )
 PARTITION BY RANGE (namespace_id);
+
+CREATE TABLE p_knowledge_graph_tasks (
+    id bigint NOT NULL,
+    partition_id bigint DEFAULT 1 NOT NULL,
+    zoekt_node_id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    knowledge_graph_replica_id bigint NOT NULL,
+    perform_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    state smallint DEFAULT 0 NOT NULL,
+    task_type smallint NOT NULL,
+    retries_left smallint NOT NULL,
+    CONSTRAINT c_p_knowledge_graph_tasks_on_retries_left CHECK (((retries_left > 0) OR ((retries_left = 0) AND (state = 255))))
+)
+PARTITION BY LIST (partition_id);
 
 CREATE TABLE project_audit_events (
     id bigint DEFAULT nextval('shared_audit_event_id_seq'::regclass) NOT NULL,
@@ -18969,6 +18998,15 @@ CREATE SEQUENCE p_knowledge_graph_replicas_id_seq
 
 ALTER SEQUENCE p_knowledge_graph_replicas_id_seq OWNED BY p_knowledge_graph_replicas.id;
 
+CREATE SEQUENCE p_knowledge_graph_tasks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE p_knowledge_graph_tasks_id_seq OWNED BY p_knowledge_graph_tasks.id;
+
 CREATE TABLE packages_build_infos (
     id bigint NOT NULL,
     package_id bigint NOT NULL,
@@ -24985,7 +25023,8 @@ CREATE TABLE vulnerability_exports (
     group_id bigint,
     organization_id bigint NOT NULL,
     expires_at timestamp with time zone,
-    send_email boolean DEFAULT false NOT NULL
+    send_email boolean DEFAULT false NOT NULL,
+    report_data jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 CREATE SEQUENCE vulnerability_exports_id_seq
@@ -30569,6 +30608,9 @@ ALTER TABLE ONLY p_knowledge_graph_enabled_namespaces
 
 ALTER TABLE ONLY p_knowledge_graph_replicas
     ADD CONSTRAINT p_knowledge_graph_replicas_pkey PRIMARY KEY (id, namespace_id);
+
+ALTER TABLE ONLY p_knowledge_graph_tasks
+    ADD CONSTRAINT p_knowledge_graph_tasks_pkey PRIMARY KEY (id, partition_id);
 
 ALTER TABLE ONLY packages_build_infos
     ADD CONSTRAINT packages_build_infos_pkey PRIMARY KEY (id);
@@ -36629,6 +36671,12 @@ CREATE INDEX index_p_knowledge_graph_replicas_on_state ON ONLY p_knowledge_graph
 
 CREATE INDEX index_p_knowledge_graph_replicas_on_zoekt_node_id ON ONLY p_knowledge_graph_replicas USING btree (zoekt_node_id);
 
+CREATE INDEX index_p_knowledge_graph_tasks_on_knowledge_graph_replica_id ON ONLY p_knowledge_graph_tasks USING btree (knowledge_graph_replica_id);
+
+CREATE INDEX index_p_knowledge_graph_tasks_on_node_state_and_perform_at ON ONLY p_knowledge_graph_tasks USING btree (zoekt_node_id, state, perform_at);
+
+CREATE INDEX index_p_knowledge_graph_tasks_on_state ON ONLY p_knowledge_graph_tasks USING btree (state);
+
 CREATE INDEX index_packages_build_infos_on_pipeline_id ON packages_build_infos USING btree (pipeline_id);
 
 CREATE INDEX index_packages_build_infos_on_project_id ON packages_build_infos USING btree (project_id);
@@ -41446,6 +41494,8 @@ CREATE TRIGGER assign_p_ci_pipeline_variables_id_trigger BEFORE INSERT ON p_ci_p
 CREATE TRIGGER assign_p_ci_pipelines_id_trigger BEFORE INSERT ON p_ci_pipelines FOR EACH ROW EXECUTE FUNCTION assign_p_ci_pipelines_id_value();
 
 CREATE TRIGGER assign_p_ci_stages_id_trigger BEFORE INSERT ON p_ci_stages FOR EACH ROW EXECUTE FUNCTION assign_p_ci_stages_id_value();
+
+CREATE TRIGGER assign_p_knowledge_graph_tasks_id_trigger BEFORE INSERT ON p_knowledge_graph_tasks FOR EACH ROW EXECUTE FUNCTION assign_p_knowledge_graph_tasks_id_value();
 
 CREATE TRIGGER assign_zoekt_tasks_id_trigger BEFORE INSERT ON zoekt_tasks FOR EACH ROW EXECUTE FUNCTION assign_zoekt_tasks_id_value();
 
