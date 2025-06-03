@@ -49,6 +49,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:lock_duo_features_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:duo_availability).to(:namespace_settings) }
   it { is_expected.to delegate_method(:security_policy_management_project).to(:security_orchestration_policy_configuration) }
+  it { is_expected.to delegate_method(:duo_workflow_mcp_enabled).to(:ai_settings).allow_nil }
+  it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
 
   shared_examples 'plan helper' do |namespace_plan|
     let(:namespace) { create(:namespace_with_plan, plan: "#{plan_name}_plan") }

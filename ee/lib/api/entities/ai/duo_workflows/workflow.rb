@@ -30,6 +30,10 @@ module API
           expose :workload do |_, opts|
             opts[:workload]
           end
+
+          expose :mcp_enabled do |workflow|
+            workflow.project.root_ancestor.duo_workflow_mcp_enabled
+          end
         end
       end
     end
