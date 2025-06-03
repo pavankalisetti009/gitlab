@@ -12151,6 +12151,9 @@ msgstr ""
 msgid "Can't update snippet: %{err}"
 msgstr ""
 
+msgid "Canada"
+msgstr ""
+
 msgid "Canary"
 msgstr ""
 
@@ -27185,6 +27188,9 @@ msgstr ""
 msgid "Frameworks"
 msgstr ""
 
+msgid "France"
+msgstr ""
+
 msgid "Free Ultimate Trial with GitLab Duo Enterprise"
 msgstr ""
 
@@ -28053,6 +28059,9 @@ msgid "Geo|primary"
 msgstr ""
 
 msgid "Geo|secondary"
+msgstr ""
+
+msgid "Germany"
 msgstr ""
 
 msgid "Get a support subscription"
@@ -65329,6 +65338,12 @@ msgid "Unique identifier for the target message thread (topic in a forum supergr
 msgstr ""
 
 msgid "Unique identifier for the target room (in the format `!qPKKM111FFKKsfoCVy:matrix.org`)."
+msgstr ""
+
+msgid "United Kingdom"
+msgstr ""
+
+msgid "United States of America"
 msgstr ""
 
 msgid "Units|d"
