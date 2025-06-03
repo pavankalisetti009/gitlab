@@ -861,6 +861,13 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
               name: 'my-secret'
             }
           }
+        },
+        aws_secrets_manager: {
+          PASSWORD_4: {
+            aws_secrets_manager: {
+              secret_id: 'my-secret'
+            }
+          }
         }
       }
     end

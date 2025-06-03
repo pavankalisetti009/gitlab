@@ -304,6 +304,31 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
       end
     end
 
+    context 'on aws_secrets_manager' do
+      let(:secrets) do
+        {
+          DATABASE_PASSWORD: {
+            aws_secrets_manager: 'production/db/password#password'
+          }
+        }
+      end
+
+      let(:config) { { deploy_to_production: { stage: 'deploy', script: ['echo'], secrets: secrets } } }
+
+      it "returns secrets info" do
+        secrets = result.builds.first.fetch(:secrets)
+
+        expect(secrets).to eq({
+          DATABASE_PASSWORD: {
+            aws_secrets_manager: {
+              secret_id: 'production/db/password',
+              field: 'password'
+            }
+          }
+        })
+      end
+    end
+
     context 'on gitlab_secrets_manager' do
       let(:secrets) do
         {
