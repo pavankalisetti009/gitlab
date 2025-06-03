@@ -18,9 +18,20 @@ module Ai
             reason: :feature_unavailable)
         end
 
+        workload_user = @current_user
+
+        use_service_account = @params.fetch(:use_service_account, false)
+        if use_service_account
+          response = add_service_account_to_project
+          return ServiceResponse.error(message: response.message, reason: :service_account_error) if response.error?
+
+          link_composite_identity
+          workload_user = duo_workflow_service_account
+        end
+
         service = ::Ci::Workloads::RunWorkloadService.new(
           project: @project,
-          current_user: @current_user,
+          current_user: workload_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
           create_branch: true
@@ -77,6 +88,19 @@ module Ai
           %(chmod +x /tmp/duo-workflow-executor),
           %(/tmp/duo-workflow-executor)
         ]
+      end
+
+      def duo_workflow_service_account
+        ::Ai::Setting.instance.duo_workflow_service_account_user
+      end
+
+      def add_service_account_to_project
+        ::Ai::DuoWorkflows::ServiceAccountMemberAddService.new(@project).execute
+      end
+
+      def link_composite_identity
+        identity = ::Gitlab::Auth::Identity.fabricate(duo_workflow_service_account)
+        identity.link!(@current_user) if identity&.composite?
       end
     end
   end

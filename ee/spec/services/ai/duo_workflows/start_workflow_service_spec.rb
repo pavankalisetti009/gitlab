@@ -83,4 +83,37 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       expect(execute.message).to eq('Error in creating workload: full error messages')
     end
   end
+
+  context 'when use_service_account param is set' do
+    let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
+
+    before do
+      params[:use_service_account] = true
+      settings_double = instance_double(::Ai::Setting, duo_workflow_service_account_user: service_account)
+      allow(::Ai::Setting).to receive(:instance).and_return(settings_double)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true)
+
+      mock_workload = instance_double(Ci::Workloads::Workload, id: 123)
+
+      allow_next_instance_of(Ci::Workloads::RunWorkloadService,
+        hash_including(current_user: service_account)
+      ) do |service|
+        allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: mock_workload))
+      end
+    end
+
+    after do
+      params[:use_service_account] = false
+    end
+
+    it 'creates developer authorization for service account' do
+      execute
+      expect(project.member(service_account).access_level).to eq(Gitlab::Access::DEVELOPER)
+    end
+
+    it 'calls workload service with the service account' do
+      expect(execute).to be_success
+    end
+  end
 end
