@@ -16,6 +16,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     it { is_expected.to have_many(:saml_group_links) }
     it { is_expected.to have_many(:group_group_links) }
     it { is_expected.to have_many(:user_member_roles) }
+    it { is_expected.to have_many(:ldap_admin_role_links) }
   end
 
   describe 'validation' do
@@ -327,7 +328,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         expect(destroy_member_role).to be_truthy
       end
 
-      it 'prevent deletion when member is associated' do
+      it 'prevents deletion when member is associated' do
         create(:group_member, { group: member_role.namespace,
                                 access_level: Gitlab::Access::DEVELOPER,
                                 member_role: member_role })
@@ -353,7 +354,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         expect(destroy_admin_member_role).to be_truthy
       end
 
-      it 'prevent deletion when admin is associated' do
+      it 'prevents deletion when admin is associated' do
         create(:user_member_role, member_role: member_role)
 
         member_role.user_member_roles.reload
@@ -361,6 +362,27 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         expect(destroy_admin_member_role).to be_falsey
         expect(member_role.errors.messages[:base]).to(include(
           s_('MemberRole|Admin role is assigned to one or more users. Remove role from all users, then delete role.')
+        ))
+      end
+    end
+
+    context 'for preventing deletion after ldap role link is associated' do
+      let_it_be_with_reload(:member_role) { create(:member_role, :read_admin_users) }
+
+      subject(:destroy_admin_member_role) { member_role.destroy } # rubocop: disable Rails/SaveBang
+
+      it 'allows deletion without any ldap role links associated' do
+        expect(destroy_admin_member_role).to be_truthy
+      end
+
+      it 'prevents deletion when ldap role link is associated' do
+        create(:ldap_admin_role_link, member_role: member_role)
+
+        member_role.user_member_roles.reload
+
+        expect(destroy_admin_member_role).to be_falsey
+        expect(member_role.errors.messages[:base]).to(include(
+          s_('MemberRole|Admin role is used by one or more LDAP synchronizations. Remove LDAP syncs, then delete role.')
         ))
       end
     end
@@ -462,6 +484,21 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           [group_2_member_role.id, 0],
           [admin_member_role.id, 0]
         ])
+      end
+    end
+
+    describe '.with_ldap_admin_role_links' do
+      let_it_be(:ldap_link_1) do
+        create(:ldap_admin_role_link, member_role: admin_member_role, cn: 'group1', filter: nil)
+      end
+
+      let_it_be(:ldap_link_2) do
+        create(:ldap_admin_role_link, member_role: admin_member_role, cn: nil, filter: 'uid=john')
+      end
+
+      it 'returns ldap admin role links' do
+        expect(described_class.with_ldap_admin_role_links.map(&:ldap_admin_role_links)).to match_array([[], [], [],
+          [ldap_link_1, ldap_link_2]])
       end
     end
   end

@@ -11,6 +11,7 @@ module Types
       include MemberRolesHelper
 
       implements Types::Members::RoleInterface
+      implements Types::Members::MemberRoleInterface
 
       field :access_level,
         GraphQL::Types::Int,

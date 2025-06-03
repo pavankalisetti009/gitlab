@@ -21197,9 +21197,9 @@ Represents an admin member role.
 | <a id="adminmemberroleeditpath"></a>`editPath` {{< icon name="warning-solid" >}} | [`String!`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Web UI path to edit the custom role. |
 | <a id="adminmemberroleenabledpermissions"></a>`enabledPermissions` {{< icon name="warning-solid" >}} | [`CustomizableAdminPermissionConnection!`](#customizableadminpermissionconnection) | **Introduced** in GitLab 17.7. **Status**: Experiment. Array of all permissions enabled for the custom role. |
 | <a id="adminmemberroleid"></a>`id` | [`ID!`](#id) | Role ID. |
-| <a id="adminmemberrolememberscount"></a>`membersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Number of times the role has been directly assigned to a group or project member. |
+| <a id="adminmemberroleldapadminrolelinks"></a>`ldapAdminRoleLinks` {{< icon name="warning-solid" >}} | [`LdapAdminRoleLinkConnection`](#ldapadminrolelinkconnection) | **Introduced** in GitLab 18.1. **Status**: Experiment. LDAP admin role sync configurations that will assign the admin member role. |
 | <a id="adminmemberrolename"></a>`name` | [`String`](#string) | Role name. |
-| <a id="adminmemberroleuserscount"></a>`usersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.5. **Status**: Experiment. Number of users who have been directly assigned the role in at least one group or project. |
+| <a id="adminmemberroleuserscount"></a>`usersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.5. **Status**: Experiment. Number of users who have been directly assigned the admin member role. |
 
 ### `AgentConfiguration`
 
@@ -48870,6 +48870,20 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="currentusertodoscurrentusertodosstate"></a>`state` | [`TodoStateEnum`](#todostateenum) | State of the to-do items. |
 
+#### `CustomRoleInterface`
+
+Implementations:
+
+- [`AdminMemberRole`](#adminmemberrole)
+- [`MemberRole`](#memberrole)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customroleinterfacecreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the member role was created. |
+| <a id="customroleinterfaceeditpath"></a>`editPath` {{< icon name="warning-solid" >}} | [`String!`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Web UI path to edit the custom role. |
+
 #### `DependencyInterface`
 
 Implementations:
@@ -49110,6 +49124,20 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | ---- | ---- | ----------- |
 | <a id="memberinterfacemergerequestinteractionid"></a>`id` | [`MergeRequestID!`](#mergerequestid) | Global ID of the merge request. |
 
+#### `MemberRoleInterface`
+
+Implementations:
+
+- [`MemberRole`](#memberrole)
+- [`StandardRole`](#standardrole)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="memberroleinterfacememberscount"></a>`membersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Number of times the role has been directly assigned to a group or project member. |
+| <a id="memberroleinterfaceuserscount"></a>`usersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.5. **Status**: Experiment. Number of users who have been directly assigned the role in at least one group or project. |
+
 #### `NamespacesLinkPaths`
 
 Implementations:
@@ -49323,9 +49351,7 @@ Implementations:
 | <a id="roleinterfacedescription"></a>`description` | [`String`](#string) | Role description. |
 | <a id="roleinterfacedetailspath"></a>`detailsPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.4. **Status**: Experiment. URL path to the role details webpage. |
 | <a id="roleinterfaceid"></a>`id` | [`ID!`](#id) | Role ID. |
-| <a id="roleinterfacememberscount"></a>`membersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Number of times the role has been directly assigned to a group or project member. |
 | <a id="roleinterfacename"></a>`name` | [`String`](#string) | Role name. |
-| <a id="roleinterfaceuserscount"></a>`usersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.5. **Status**: Experiment. Number of users who have been directly assigned the role in at least one group or project. |
 
 #### `Service`
 

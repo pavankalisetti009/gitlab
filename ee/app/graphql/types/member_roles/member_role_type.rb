@@ -6,9 +6,13 @@ module Types
     # But it is too complex to be included on a simple MemberRole type
     #
     # rubocop: disable Graphql/AuthorizeTypes -- authorization too complex
-    class MemberRoleType < Types::Members::AdminMemberRoleType
+    class MemberRoleType < BaseObject
       graphql_name 'MemberRole'
       description 'Represents a member role'
+
+      implements Types::Members::RoleInterface
+      implements Types::Members::CustomRoleInterface
+      implements Types::Members::MemberRoleInterface
 
       field :base_access_level,
         Types::AccessLevelType,
@@ -32,10 +36,8 @@ module Types
         object.enabled_permissions(current_user).keys
       end
 
-      def users_count
-        object.users_count if object.respond_to?(:users_count)
-
-        object.users.count
+      def details_path
+        member_role_details_path(object)
       end
     end
     # rubocop: enable Graphql/AuthorizeTypes
