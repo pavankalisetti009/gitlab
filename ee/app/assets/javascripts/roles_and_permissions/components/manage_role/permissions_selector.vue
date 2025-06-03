@@ -149,7 +149,9 @@ export default {
     },
   },
   methods: {
-    updatePermissions({ value }) {
+    updatePermissions({ value, disabled }) {
+      if (disabled) return;
+
       const selected = [...this.permissions];
 
       if (selected.includes(value)) {

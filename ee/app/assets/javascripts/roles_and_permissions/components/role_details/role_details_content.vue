@@ -96,28 +96,25 @@ export default {
 <template>
   <div>
     <settings-section :heading="__('General')">
-      <dl>
+      <dl class="gl-mb-0">
         <dt data-testid="id-header">{{ idLabel }}</dt>
-        <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="id-value">{{ roleId }}</dd>
+        <dd class="gl-text-subtle" data-testid="id-value">{{ roleId }}</dd>
         <dt data-testid="type-header">{{ s__('MemberRole|Role type') }}</dt>
-        <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="type-value">{{ roleType }}</dd>
+        <dd class="gl-text-subtle" data-testid="type-value">{{ roleType }}</dd>
 
         <dt data-testid="description-header">{{ __('Description') }}</dt>
-        <dd class="gl-mt-2 gl-leading-20 gl-text-subtle" data-testid="description-value">
+        <dd class="gl-mb-0 gl-leading-20 gl-text-subtle" data-testid="description-value">
           {{ role.description }}
         </dd>
       </dl>
     </settings-section>
 
     <settings-section :heading="__('Permissions')">
-      <dl>
+      <dl class="gl-mb-0">
         <dt v-if="isCustomRole" data-testid="base-role-header">
           {{ s__('MemberRole|Base role') }}
         </dt>
-        <dd
-          v-if="isCustomRole || isDefaultRole"
-          class="gl-mb-6 gl-mt-3 gl-flex gl-gap-x-5 gl-text-subtle"
-        >
+        <dd v-if="isCustomRole || isDefaultRole" class="gl-flex gl-gap-x-5 gl-text-subtle">
           <span v-if="isCustomRole" data-testid="base-role-value">
             {{ role.baseAccessLevel.humanAccess }}
           </span>
@@ -133,12 +130,12 @@ export default {
         </dd>
 
         <template v-if="isCustomRole || isAdminRole">
-          <dt data-testid="custom-permissions-header" class="gl-mt-5">
+          <dt data-testid="custom-permissions-header">
             {{ s__('MemberRole|Custom permissions') }}
           </dt>
           <dd
             v-if="allPermissions.length"
-            class="gl-mb-6 gl-mt-3 gl-text-subtle"
+            class="gl-text-subtle"
             data-testid="custom-permissions-value"
           >
             <gl-sprintf :message="s__('MemberRole|%{count} of %{total} permissions added')">
@@ -147,7 +144,7 @@ export default {
             </gl-sprintf>
           </dd>
 
-          <div class="gl-flex gl-flex-col gl-gap-y-4" data-testid="custom-permissions-list">
+          <div class="gl-mt-5 gl-flex gl-flex-col gl-gap-y-3" data-testid="custom-permissions-list">
             <gl-skeleton-loader v-if="$apollo.queries.allPermissions.loading" />
             <div
               v-for="permission in allPermissions"

@@ -12,7 +12,7 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
   let(:name) { 'My custom role' }
   let(:description) { 'My role description' }
   let(:access_level) { 'Developer' }
-  let(:permissions) { ['Read vulnerability'] }
+  let(:permissions) { ['Manage vulnerabilities'] }
 
   before do
     stub_licensed_features(custom_roles: true)
