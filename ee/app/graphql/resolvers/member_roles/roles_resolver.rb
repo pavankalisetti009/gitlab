@@ -35,13 +35,19 @@ module Resolvers
         params[:sort] = sort.present? ? sort.to_sym : :asc
 
         member_roles = roles_finder.new(current_user, params).execute
-        member_roles = member_roles.with_members_count if selects_field?(:members_count)
-        member_roles = member_roles.with_users_count if selects_field?(:users_count)
+        member_roles = apply_selected_field_scopes(member_roles)
 
         offset_pagination(member_roles)
       end
 
       private
+
+      def apply_selected_field_scopes(member_roles)
+        member_roles = member_roles.with_members_count if selects_field?(:members_count)
+        member_roles = member_roles.with_users_count if selects_field?(:users_count)
+
+        member_roles
+      end
 
       def roles_finder
         ::MemberRoles::RolesFinder

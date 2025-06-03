@@ -14,6 +14,7 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
   has_many :saml_group_links
   has_many :group_group_links
   has_many :project_group_links
+  has_many :ldap_admin_role_links, class_name: 'Authz::LdapAdminRoleLink'
   has_many :users, -> { distinct }, through: :members
   has_many :user_member_roles, class_name: 'Users::UserMemberRole'
   belongs_to :namespace
@@ -70,6 +71,10 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
       .group(:id)
       .select(MemberRole.default_select_columns)
       .select('COUNT(DISTINCT members.user_id) AS users_count')
+  end
+
+  scope :with_ldap_admin_role_links, -> do
+    includes(:ldap_admin_role_links)
   end
 
   jsonb_accessor :permissions, Gitlab::CustomRoles::Definition.all.keys.index_with(:boolean)

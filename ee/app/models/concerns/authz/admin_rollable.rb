@@ -5,7 +5,7 @@ module Authz
     extend ActiveSupport::Concern
 
     included do
-      before_destroy :prevent_delete_if_admin_user_associated, if: :admin_related_role?
+      before_destroy :prevent_delete_if_associated, if: :admin_related_role?
     end
 
     class_methods do
@@ -33,20 +33,22 @@ module Authz
       end
     end
 
-    def prevent_delete_if_admin_user_associated
-      return unless user_member_roles.present?
+    # Stop the process of deletion in this callback. Otherwise,
+    # deletion would proceed even if we make the object invalid.
+    def prevent_delete_if_associated
+      if user_member_roles.present?
+        errors.add(:base,
+          s_("MemberRole|Admin role is assigned to one or more users. " \
+            "Remove role from all users, then delete role."))
 
-      errors.add(
-        :base,
-        s_(
-          "MemberRole|Admin role is assigned to one or more users. " \
-            "Remove role from all users, then delete role."
-        )
-      )
+        throw :abort # rubocop:disable Cop/BanCatchThrow -- See above.
+      elsif respond_to?(:ldap_admin_role_links) && ldap_admin_role_links.present?
+        errors.add(:base,
+          s_("MemberRole|Admin role is used by one or more LDAP synchronizations. " \
+            "Remove LDAP syncs, then delete role."))
 
-      # Stop the process of deletion in this callback. Otherwise,
-      # deletion would proceed even if we make the object invalid.
-      throw :abort # rubocop:disable Cop/BanCatchThrow -- See above.
+        throw :abort # rubocop:disable Cop/BanCatchThrow -- See above.
+      end
     end
   end
 end
