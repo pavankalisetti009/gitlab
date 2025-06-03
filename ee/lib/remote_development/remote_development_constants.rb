@@ -9,6 +9,7 @@ module RemoteDevelopment
   #       See documentation at ../../README.md#constant-declarations for more information.
   module RemoteDevelopmentConstants
     # Please keep alphabetized
-    REQUIRED_DEVFILE_SCHEMA_VERSION = '2.2.0'
+    MAIN_COMPONENT_INDICATOR_ATTRIBUTE = "gl/inject-editor"
+    REQUIRED_DEVFILE_SCHEMA_VERSION = "2.2.0"
   end
 end

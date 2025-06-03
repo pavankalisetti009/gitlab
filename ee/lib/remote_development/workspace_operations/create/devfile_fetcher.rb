@@ -12,11 +12,12 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.fetch(context)
-          Gitlab::Fp::Result.ok(context)
-                            .and_then(method(:validate_agent_config_exists))
-                            .map(method(:use_default_devfile_yaml_if_devfile_path_is_not_provided))
-                            .and_then(method(:read_devfile_yaml_from_repo_if_devfile_path_is_provided))
-                            .and_then(method(:parse_devfile_yaml))
+          initial_result = Gitlab::Fp::Result.ok(context)
+
+          initial_result
+            .and_then(method(:validate_agent_config_exists))
+            .map(method(:use_default_devfile_yaml_if_devfile_path_is_not_provided))
+            .and_then(method(:read_devfile_yaml_from_repo_if_devfile_path_is_provided))
         end
 
         # @param [Hash] context
@@ -88,39 +89,15 @@ module RemoteDevelopment
             )
           end
 
+          # NOTE: The devfile_yaml should only be used for storing it in the database and not in any other
+          #       later step in the chain.
           context[:devfile_yaml] = devfile_blob.data
 
           Gitlab::Fp::Result.ok(context)
         end
 
-        # @param [Hash] context
-        # @return [Gitlab::Fp::Result]
-        def self.parse_devfile_yaml(context)
-          context => {
-            devfile_yaml: String => devfile_yaml
-          }
-
-          begin
-            # load YAML, convert YAML to JSON and load it again to remove YAML vulnerabilities
-            devfile_to_json_and_back_to_yaml = YAML.safe_load(YAML.safe_load(devfile_yaml).to_json)
-            # symbolize keys for domain logic processing of devfile (to_h is to avoid nil dereference error in RubyMine)
-            devfile = devfile_to_json_and_back_to_yaml.to_h.deep_symbolize_keys
-          rescue RuntimeError, JSON::GeneratorError => e
-            return Gitlab::Fp::Result.err(WorkspaceCreateDevfileYamlParseFailed.new(
-              details: "Devfile YAML could not be parsed: #{e.message}",
-              context: context
-            ))
-          end
-
-          Gitlab::Fp::Result.ok(context.merge({
-            # NOTE: The devfile_yaml should only be used for storing it in the database and not in any other
-            #       later step in the chain.
-            devfile: devfile
-          }))
-        end
-
         private_class_method :validate_agent_config_exists, :use_default_devfile_yaml_if_devfile_path_is_not_provided,
-          :read_devfile_yaml_from_repo_if_devfile_path_is_provided, :parse_devfile_yaml
+          :read_devfile_yaml_from_repo_if_devfile_path_is_provided
       end
     end
   end

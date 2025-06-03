@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::DevfileOperations::Flattener, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:devfile_yaml) { example_devfile_yaml }
@@ -51,8 +51,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
         "error parsing devfile because of non-compliant data due to invalid devfile schema. errors :\n" \
           "- (root): Additional property random is not allowed\n"
       message = result.unwrap_err
-      expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileFlattenFailed)
-      expect(message.content).to eq({ details: expected_error_message, context: context })
+      expect(message).to be_a(RemoteDevelopment::Messages::DevfileFlattenFailed)
+      expect(message.content).to eq(details: expected_error_message, context: context)
     end
   end
 end
