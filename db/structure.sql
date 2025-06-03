@@ -24985,7 +24985,8 @@ CREATE TABLE vulnerability_exports (
     group_id bigint,
     organization_id bigint NOT NULL,
     expires_at timestamp with time zone,
-    send_email boolean DEFAULT false NOT NULL
+    send_email boolean DEFAULT false NOT NULL,
+    report_data jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 CREATE SEQUENCE vulnerability_exports_id_seq
