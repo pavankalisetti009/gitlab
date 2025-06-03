@@ -805,6 +805,17 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
   end
 
   describe '#get_cloud_connector_access_data' do
+    before do
+      allow(CloudConnector).to receive(:headers).with(nil).and_return(
+        {
+          'X-Gitlab-Host-Name' => "localhost",
+          'X-Gitlab-Instance-Id' => "cloud_connector_test_uuid",
+          'X-Gitlab-Realm' => "self-managed",
+          'X-Gitlab-Version' => "15.0.1"
+        }
+      )
+    end
+
     let_it_be(:license_key) { build(:gitlab_license, :cloud).export }
     let_it_be(:token) { 'stored-token' }
     let_it_be(:expires_at) { Date.current.iso8601 }
@@ -813,7 +824,11 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
       {
         "Accept" => "application/json",
         "Content-Type" => "application/json",
-        "User-Agent" => "GitLab/#{Gitlab::VERSION}"
+        "User-Agent" => "GitLab/#{Gitlab::VERSION}",
+        "X-Gitlab-Realm" => "self-managed",
+        "X-Gitlab-Host-Name" => "localhost",
+        "X-Gitlab-Instance-Id" => "cloud_connector_test_uuid",
+        "X-Gitlab-Version" => "15.0.1"
       }
     end
 

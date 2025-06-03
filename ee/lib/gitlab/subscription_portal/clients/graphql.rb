@@ -302,7 +302,7 @@ module Gitlab
             GQL
 
             response = http_post('graphql',
-              json_headers,
+              json_headers.merge(::CloudConnector.headers(nil)),
               {
                 query: query,
                 variables: {
