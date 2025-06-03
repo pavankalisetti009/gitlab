@@ -8,9 +8,21 @@ RSpec.describe Todo, feature_category: :notifications do
   describe '#action_name' do
     let(:todo) { build(:todo) }
 
-    it 'includes a duo act ion' do
-      todo.action = described_class::DUO_PRO_ACCESS_GRANTED
-      expect(todo.action_name).to eq(:duo_pro_access_granted)
+    where(:action_constant, :expected_action_name) do
+      [
+        [described_class::DUO_PRO_ACCESS_GRANTED, :duo_pro_access_granted],
+        [described_class::ADDED_APPROVER, :added_approver],
+        [described_class::OKR_CHECKIN_REQUESTED, :okr_checkin_requested],
+        [described_class::MERGE_TRAIN_REMOVED, :merge_train_removed]
+      ]
+    end
+
+    with_them do
+      it "maps #{params[:action_constant]} to :#{params[:expected_action_name]}" do
+        todo.action = action_constant
+
+        expect(todo.action_name).to eq(expected_action_name)
+      end
     end
   end
 

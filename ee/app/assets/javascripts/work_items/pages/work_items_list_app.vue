@@ -30,6 +30,10 @@ export default {
       required: false,
       default: () => [],
     },
+    rootPageFullPath: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -59,6 +63,7 @@ export default {
     :ee-work-item-update-count="workItemUpdateCount"
     :ee-epic-list-full-query="$options.epicListFullQuery"
     :ee-epic-list-slim-query="$options.epicListSlimQuery"
+    :root-page-full-path="rootPageFullPath"
     :with-tabs="withTabs"
     :new-comment-template-paths="newCommentTemplatePaths"
   >
@@ -71,6 +76,7 @@ export default {
         <template v-if="showNewWorkItem" #new-issue-button>
           <create-work-item-modal
             class="gl-grow"
+            :full-path="rootPageFullPath"
             :is-group="isGroup"
             :preselected-work-item-type="preselectedWorkItemType"
             @workItemCreated="incrementUpdateCount"
@@ -93,6 +99,7 @@ export default {
         <template v-if="showNewWorkItem" #actions>
           <create-work-item-modal
             class="gl-grow"
+            :full-path="rootPageFullPath"
             :is-group="isGroup"
             :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_EPIC"
             @workItemCreated="incrementUpdateCount"

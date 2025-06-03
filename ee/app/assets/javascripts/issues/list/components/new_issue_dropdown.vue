@@ -23,6 +23,12 @@ export default {
     CreateWorkItemModal: () => import('~/work_items/components/create_work_item_modal.vue'),
   },
   inject: ['newIssuePath'],
+  props: {
+    fullPath: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       newIssueItem: {
@@ -49,6 +55,7 @@ export default {
     >
       <gl-disclosure-dropdown-item :item="newIssueItem" />
       <create-work-item-modal
+        :full-path="fullPath"
         :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_OBJECTIVE"
         as-dropdown-item
         @workItemCreated="$emit('workItemCreated')"

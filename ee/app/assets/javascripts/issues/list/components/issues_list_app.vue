@@ -250,7 +250,7 @@ export default {
     @updateFilterParams="filterParams = $event"
   >
     <template v-if="isOkrsEnabled" #new-issuable-button>
-      <new-issue-dropdown @workItemCreated="refetchIssuables" />
+      <new-issue-dropdown :full-path="fullPath" @workItemCreated="refetchIssuables" />
     </template>
     <template #title-icons="{ issuable, apiFilterParams }">
       <child-epic-issue-indicator

@@ -30,7 +30,6 @@ describeSkipVue3(skipReason, () => {
 
   const baseProvide = {
     groupIssuesPath: 'groups/gitlab-org/-/issues',
-    fullPath: 'gitlab-org',
   };
 
   const mountComponent = ({
@@ -54,6 +53,7 @@ describeSkipVue3(skipReason, () => {
         },
       },
       propsData: {
+        rootPageFullPath: 'gitlab-org',
         ...props,
       },
     });
