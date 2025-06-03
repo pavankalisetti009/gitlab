@@ -8,6 +8,7 @@ module Types
       include MemberRolesHelper
 
       implements Types::Members::RoleInterface
+      implements Types::Members::CustomRoleInterface
 
       authorize :read_member_role
 
@@ -17,29 +18,18 @@ module Types
         experiment: { milestone: '17.7' },
         description: 'Array of all permissions enabled for the custom role.'
 
-      field :edit_path,
-        GraphQL::Types::String,
-        null: false,
-        experiment: { milestone: '16.11' },
-        description: 'Web UI path to edit the custom role.'
+      field :ldap_admin_role_links,
+        Types::Authz::LdapAdminRoleLinkType.connection_type,
+        experiment: { milestone: '18.1' },
+        description: 'LDAP admin role sync configurations that will assign the admin member role.'
 
-      field :created_at,
-        Types::TimeType,
-        null: false,
-        description: 'Timestamp of when the member role was created.'
-
-      def members_count
-        return object.members_count if object.respond_to?(:members_count)
-
-        object.members.count
-      end
+      field :users_count,
+        GraphQL::Types::Int,
+        experiment: { milestone: '17.5' },
+        description: 'Number of users who have been directly assigned the admin member role.'
 
       def users_count
         object.user_member_roles.count
-      end
-
-      def edit_path
-        member_role_edit_path(object)
       end
 
       def details_path

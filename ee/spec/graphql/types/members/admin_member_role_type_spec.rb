@@ -6,7 +6,7 @@ RSpec.describe GitlabSchema.types['AdminMemberRole'], feature_category: :system_
   include GraphqlHelpers
 
   let(:fields) do
-    %w[description id name enabledPermissions membersCount usersCount editPath detailsPath createdAt]
+    %w[description id name enabledPermissions usersCount editPath detailsPath createdAt ldapAdminRoleLinks]
   end
 
   let_it_be(:role) { create(:member_role, :admin) }
