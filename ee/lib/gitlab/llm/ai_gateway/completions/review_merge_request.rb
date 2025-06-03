@@ -10,6 +10,7 @@ module Gitlab
 
           DRAFT_NOTES_COUNT_LIMIT = 50
           PRIORITY_THRESHOLD = 3
+          UNIT_PRIMITIVE = 'review_merge_request'
 
           class << self
             def resource_not_found_msg
@@ -37,7 +38,8 @@ module Gitlab
 
             unless progress_note.present?
               Gitlab::ErrorTracking.track_exception(
-                StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found")
+                StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found"),
+                unit_primitive: UNIT_PRIMITIVE
               )
               return # Cannot proceed without both progress note and resource
             end
@@ -56,7 +58,7 @@ module Gitlab
             end
 
           rescue StandardError => error
-            Gitlab::ErrorTracking.track_exception(error)
+            Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
 
             update_progress_note(self.class.error_msg, with_todo: true) if progress_note.present?
 
@@ -156,6 +158,7 @@ module Gitlab
                 Gitlab::AppLogger.info(
                   message: "Review request failed with files content, retrying without file content",
                   event: "review_merge_request_retry_without_content",
+                  unit_primitive: UNIT_PRIMITIVE,
                   merge_request_id: merge_request&.id,
                   error: response.errors
                 )
@@ -217,7 +220,7 @@ module Gitlab
           def ai_client
             @ai_client ||= ::Gitlab::Llm::Anthropic::Client.new(
               user,
-              unit_primitive: "review_merge_request",
+              unit_primitive: UNIT_PRIMITIVE,
               tracking_context: tracking_context
             )
           end

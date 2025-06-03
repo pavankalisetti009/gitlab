@@ -15,8 +15,6 @@ module Epics
     attr_reader :epic_board_id
 
     def execute(epic)
-      reposition_on_board(epic)
-
       # start_date and end_date columns are no longer writable by users because those
       # are composite fields managed by the system.
       params.extract!(:start_date, :end_date)
@@ -174,44 +172,10 @@ module Epics
       end
     end
 
-    def reposition_on_board(epic)
-      @epic_board_id = params.delete(:board_id)
-
-      return unless params[:move_between_ids]
-      return unless epic_board_id
-
-      fill_missing_positions_before
-
-      # we want to create missing only for the epic being moved
-      # other records are handled by PositionCreateService
-      epic_board_position = Boards::EpicBoardPosition.find_or_create_by!(epic_board_id: epic_board_id, epic_id: epic.id) # rubocop: disable CodeReuse/ActiveRecord
-      handle_move_between_ids(epic_board_position)
-
-      epic_board_position.save!
-    end
-
     def issuable_for_positioning(id, positioning_scope)
       return unless id
 
       positioning_scope.find_by_epic_id(id)
-    end
-
-    def fill_missing_positions_before
-      before_id = params[:move_between_ids].compact.max
-      list_id = params.delete(:list_id)
-      board_group = params.delete(:board_group)
-
-      return unless before_id
-      # if position for the epic above exists we don't need to create positioning records
-      return if Boards::EpicBoardPosition.exists?(epic_board_id: epic_board_id, epic_id: before_id) # rubocop: disable CodeReuse/ActiveRecord
-
-      service_params = {
-        board_id: epic_board_id,
-        list_id: list_id, # we need to have positions only for the current list
-        from_id: before_id # we need to have positions only for the epics above
-      }
-
-      Boards::Epics::PositionCreateService.new(board_group, current_user, service_params).execute
     end
 
     def saved_change_to_epic_dates?(epic)

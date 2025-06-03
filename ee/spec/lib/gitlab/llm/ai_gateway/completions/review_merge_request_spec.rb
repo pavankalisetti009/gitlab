@@ -513,7 +513,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
           it 'does not execute review and raise exception' do
             expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-              StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found")
+              StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found"),
+              unit_primitive: 'review_merge_request'
             )
 
             expect do
@@ -806,6 +807,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             hash_including(
               message: "Review request failed with files content, retrying without file content",
               event: "review_merge_request_retry_without_content",
+              unit_primitive: 'review_merge_request',
               merge_request_id: merge_request&.id,
               error: ["An unexpected error has occurred."]
             )
