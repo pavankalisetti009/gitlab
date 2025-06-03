@@ -6,9 +6,13 @@ module CodeSuggestions
       extend ::Gitlab::Utils::Override
       include Gitlab::Utils::StrongMemoize
 
-      override :endpoint_name
-      def endpoint_name
-        'generations'
+      delegate :supports_sse_streaming?, to: :client
+
+      override :endpoint
+      def endpoint
+        return "#{base_url}/v4/code/suggestions" if supports_sse_streaming?
+
+        "#{base_url}/v3/code/completions"
       end
 
       private

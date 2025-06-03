@@ -61,7 +61,7 @@ export default {
       };
     },
     docsPath() {
-      return helpPagePath('user/application_security/dast/on-demand_scan', {
+      return helpPagePath('user/application_security/dast/profiles', {
         anchor: 'revoke-a-site-profiles-validation-status',
       });
     },

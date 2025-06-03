@@ -7,7 +7,6 @@ module CodeSuggestions
 
       delegate :base_url, :self_hosted?, :feature_setting, :feature_name, :feature_disabled?, :licensed_feature,
         to: :model_details
-      delegate :supports_sse_streaming?, to: :client
 
       def initialize(current_user:, params: {}, unsafe_passthrough_params: {}, client: nil)
         @params = params
@@ -16,23 +15,16 @@ module CodeSuggestions
         @current_user = current_user
       end
 
-      def endpoint
-        # TODO: After their migration to AIGW, both generations and completions will
-        # use the same v3 `/completions` endpoint or v4 `/suggestions` endpoint.
-        # See https://gitlab.com/gitlab-org/gitlab/-/issues/477891.
-        return "#{base_url}/v2/code/#{endpoint_name}" unless task_name == 'code_generation'
-
-        return "#{base_url}/v4/code/suggestions" if supports_sse_streaming?
-
-        "#{base_url}/v3/code/completions"
-      end
-
       def body
         body_params = unsafe_passthrough_params.merge(prompt.request_params)
 
         trim_content_params(body_params)
 
         body_params.to_json
+      end
+
+      def endpoint
+        raise NotImplementedError
       end
 
       private
@@ -45,10 +37,6 @@ module CodeSuggestions
 
       def model_details
         raise NotImplementedError
-      end
-
-      def task_name
-        self.class.name.demodulize.underscore
       end
 
       def trim_content_params(body_params)

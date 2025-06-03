@@ -56,6 +56,13 @@ FactoryBot.define do
             "unit_primitives" => ["summarize_new_merge_request"]
           },
           {
+            "feature_setting" => "generate_commit_message",
+            "default_model" => "claude_sonnet_3_7_20250219",
+            "selectable_models" => %w[claude_sonnet_3_7_20250219 claude_3_5_sonnet_20240620],
+            "beta_models" => [],
+            "unit_primitives" => ["generate_commit_message"]
+          },
+          {
             "feature_setting" => "resolve_vulnerability",
             "default_model" => "claude_sonnet_3_7",
             "selectable_models" => %w[claude_sonnet_3_7 claude-3-5-sonnet-20240620],

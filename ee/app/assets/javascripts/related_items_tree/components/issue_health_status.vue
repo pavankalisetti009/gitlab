@@ -64,22 +64,23 @@ export default {
 </script>
 
 <template>
-  <span
-    v-if="displayAsText"
+  <button
     v-gl-tooltip="{ disabled: disableTooltip }"
-    data-testid="status-text"
     :title="__('Health status')"
-    class="gl-inline-flex gl-items-center"
-    :class="[statusColor, textSizeClass, !disableTooltip ? 'gl-cursor-help' : undefined]"
-    ><gl-icon class="gl-mr-2" :size="16" :name="statusIcon" />{{ statusText }}</span
+    :class="[
+      '!gl-cursor-default gl-border-none gl-bg-transparent gl-p-0',
+      displayAsText ? '' : 'gl-rounded-pill',
+    ]"
   >
-  <gl-badge
-    v-else
-    v-gl-tooltip
-    class="gl-font-bold"
-    :title="__('Health status')"
-    :variant="statusClass"
-  >
-    {{ statusText }}
-  </gl-badge>
+    <span
+      v-if="displayAsText"
+      data-testid="status-text"
+      class="gl-inline-flex gl-items-center"
+      :class="[statusColor, textSizeClass, !disableTooltip ? 'gl-cursor-help' : undefined]"
+      ><gl-icon class="gl-mr-2" :size="16" :name="statusIcon" />{{ statusText }}</span
+    >
+    <gl-badge v-else class="gl-font-bold" :variant="statusClass">
+      {{ statusText }}
+    </gl-badge>
+  </button>
 </template>

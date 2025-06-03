@@ -8,12 +8,17 @@ module CodeSuggestions
 
       delegate :saas_primary_model_class, to: :model_details
 
+      override :endpoint
+      def endpoint
+        "#{base_url}/v2/code/#{endpoint_name}"
+      end
+
+      private
+
       override :endpoint_name
       def endpoint_name
         'completions'
       end
-
-      private
 
       def model_details
         @model_details ||= CodeSuggestions::ModelDetails::CodeCompletion.new(current_user: current_user)
