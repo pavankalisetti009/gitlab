@@ -4,6 +4,7 @@ module Search
   module Zoekt
     class SchedulingService
       include Gitlab::Loggable
+      include Gitlab::Scheduling::TaskExecutor
 
       CONFIG = {
         force_update_overprovisioned_index: {
@@ -126,11 +127,6 @@ module Search
         end
       end
 
-      def cache_key
-        period = cache_period.presence || "-"
-        [self.class.name.underscore, :execute_every, period, task].flatten.join(':')
-      end
-
       def cache_period
         return unless CONFIG.key?(task)
 
@@ -141,37 +137,7 @@ module Search
 
       def execute_config_task(task_name)
         config = CONFIG[task_name]
-
-        execute_every(config[:period]) do
-          unless config[:execute] || config[:dispatch]
-            raise NotImplementedError, "No execute block or dispatch defined for task #{task_name}"
-          end
-
-          # Check `if` condition, default to true if not provided
-          if config[:if]&.call == false
-            logger.info(build_structured_payload(task: task_name, message: "Condition not met"))
-            break false
-          end
-
-          # Call the execute block if provided, using self as the caller
-          instance_exec(&config[:execute]) if config[:execute]
-
-          dispatch(config[:dispatch][:event], &config[:dispatch][:data]) if config[:dispatch]
-        end
-      end
-
-      def execute_every(period)
-        # We don't want any delay interval in development environments,
-        # so lets disable the cache unless we are in production.
-        return yield if Rails.env.development?
-        return yield unless period
-
-        Gitlab::Redis::SharedState.with do |redis|
-          key_set = redis.set(cache_key, 1, ex: period, nx: true)
-          break false unless key_set
-
-          yield
-        end
+        super(task_name, config)
       end
 
       def logger

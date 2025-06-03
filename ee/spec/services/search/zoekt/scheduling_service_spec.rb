@@ -304,8 +304,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
 
       it 'does not publish any event' do
-        expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
-                                                'message' => 'Condition not met' })
         expect { execute_task }.not_to publish_event(Search::Zoekt::IndexMarkedAsReadyEvent)
       end
     end
@@ -471,8 +469,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
 
       it 'does not publish any event' do
-        expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
-                                                'message' => 'Condition not met' })
         expect { execute_task }.not_to publish_event(Search::Zoekt::OrphanedIndexEvent)
       end
     end

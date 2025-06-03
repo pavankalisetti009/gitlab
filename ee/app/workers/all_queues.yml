@@ -43,6 +43,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:ai_active_context_code_scheduling
+  :worker_name: Ai::ActiveContext::Code::SchedulingWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:ai_active_context_migration
   :worker_name: Ai::ActiveContext::MigrationWorker
   :feature_category: :global_search
