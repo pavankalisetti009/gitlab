@@ -172,7 +172,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
       allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise)
         .to receive(:any_add_on_purchase)
-        .with(nil)
         .and_return(duo_pro_or_duo_enterprise_add_on_purchase)
     end
 
@@ -202,7 +201,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
       allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise)
         .to receive(:any_add_on_purchased_or_trial?)
-        .with(nil)
         .and_return(duo_pro_or_duo_enterprise_add_on_purchase.active?)
     end
 
