@@ -70,6 +70,10 @@ module Gitlab
       end
 
       def perform
+        puts "Vulnerability Reads count in migration #{connection.execute('SELECT COUNT(*) FROM vulnerability_reads').to_a}"
+        puts "Vulnerability Reads Base Relation count #{base_relation.count}"
+        puts "Vulnerability Reads sub-batch count #{sub_batch_relation.count}"
+
         each_sub_batch do |batch|
           vulnerability_reads = scoped_vulnerability_reads(batch)
 
