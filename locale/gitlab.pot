@@ -31243,6 +31243,9 @@ msgstr ""
 msgid "How do I rename an environment?"
 msgstr ""
 
+msgid "How do I renew my subscription?"
+msgstr ""
+
 msgid "How do I set up a Google Chat webhook?"
 msgstr ""
 
