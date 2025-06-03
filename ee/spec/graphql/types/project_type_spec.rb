@@ -944,4 +944,71 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
 
     it { is_expected.to include_graphql_arguments(:component_name) }
   end
+
+  describe 'container_protection_tag_rules' do
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            containerProtectionTagRules {
+              nodes {
+                id
+                tagNamePattern
+                minimumAccessLevelForPush
+                minimumAccessLevelForDelete
+              }
+            }
+          }
+        }
+      )
+    end
+
+    before_all do
+      create(:container_registry_protection_tag_rule, :immutable,
+        project: project,
+        tag_name_pattern: 'immutable-1'
+      )
+
+      create(:container_registry_protection_tag_rule,
+        project: project,
+        minimum_access_level_for_push: Gitlab::Access::MAINTAINER,
+        minimum_access_level_for_delete: Gitlab::Access::OWNER,
+        tag_name_pattern: 'mutable'
+      )
+
+      create(:container_registry_protection_tag_rule, :immutable,
+        project: project,
+        tag_name_pattern: 'immutable-2'
+      )
+    end
+
+    before do
+      project.add_maintainer(user)
+    end
+
+    subject do
+      GitlabSchema.execute(query, context: { current_user: user }).as_json
+        .dig('data', 'project', 'containerProtectionTagRules', 'nodes')
+    end
+
+    context 'when license for container_registry_immutable_tag_rules is disabled' do
+      it { is_expected.to have_attributes(size: 1).and satisfy { |nodes| nodes.first['tagNamePattern'] == 'mutable' } }
+    end
+
+    context 'when license for container_registry_immutable_tag_rules is enabled' do
+      before do
+        stub_licensed_features(container_registry_immutable_tag_rules: true)
+      end
+
+      it { is_expected.to have_attributes(size: 3).and satisfy { |nodes| nodes.first['tagNamePattern'] == 'mutable' } }
+    end
+
+    context 'when the feature container_registry_immutable_tags is disabled' do
+      before do
+        stub_feature_flags(container_registry_immutable_tags: false)
+      end
+
+      it { is_expected.to have_attributes(size: 1).and satisfy { |nodes| nodes.first['tagNamePattern'] == 'mutable' } }
+    end
+  end
 end

@@ -4,6 +4,7 @@ module EE
   module Types
     module ProjectType
       extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
 
       prepended do
         field :security_scanners, ::Types::SecurityScanners,
@@ -720,6 +721,15 @@ module EE
             loader.call(project, project.analyzer_statuses)
           end
         end
+      end
+
+      override :container_protection_tag_rules
+      def container_protection_tag_rules
+        return super if ::Feature.disabled?(:container_registry_immutable_tags, object)
+        return super unless object.licensed_feature_available?(:container_registry_immutable_tag_rules)
+
+        # mutable tag rules come first before immutable
+        super + object.container_registry_protection_tag_rules.immutable
       end
     end
   end
