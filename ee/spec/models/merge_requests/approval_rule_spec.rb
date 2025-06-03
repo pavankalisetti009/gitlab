@@ -74,11 +74,11 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
   describe 'associations' do
     # Multiple groups associations
     it { is_expected.to have_many(:approval_rules_groups) }
-    it { is_expected.to have_many(:groups).through(:approval_rules_groups) }
+    it { is_expected.to have_many(:source_groups).through(:approval_rules_groups) }
 
     # Single group associations
     it { is_expected.to have_one(:approval_rules_group).inverse_of(:approval_rule) }
-    it { is_expected.to have_one(:group).through(:approval_rules_group) }
+    it { is_expected.to have_one(:source_group).through(:approval_rules_group) }
 
     # Multiple projects associations
     it { is_expected.to have_many(:approval_rules_projects) }
@@ -323,6 +323,12 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
   describe '#users' do
     it 'returns the same result as approver_users' do
       expect(rule.users).to eq(rule.approver_users)
+    end
+  end
+
+  describe '#groups' do
+    it 'returns the same result as approver_groups' do
+      expect(rule.groups).to eq(rule.approver_groups)
     end
   end
 
