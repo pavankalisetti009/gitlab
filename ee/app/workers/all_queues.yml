@@ -2633,6 +2633,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: namespaces_cascade_web_based_commit_signing_enabled
+  :worker_name: Namespaces::CascadeWebBasedCommitSigningEnabledWorker
+  :feature_category: :source_code_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: namespaces_free_user_cap_group_over_limit_notification
   :worker_name: Namespaces::FreeUserCap::GroupOverLimitNotificationWorker
   :feature_category: :user_management
