@@ -8,16 +8,26 @@ module Ai
       self.table_name = 'p_knowledge_graph_replicas'
 
       PARTITION_SIZE = 2_000_000
+      INDEXABLE_STATES = %i[pending initializing ready].freeze
 
       partitioned_by :namespace_id, strategy: :int_range, partition_size: PARTITION_SIZE
 
       enum :state, {
-        pending: 0
+        pending: 0,
+        initializing: 1,
+        ready: 10,
+        orphaned: 230,
+        pending_deletion: 240,
+        deleted: 250,
+        failed: 255
       }
 
       belongs_to :zoekt_node, inverse_of: :knowledge_graph_replicas, class_name: '::Search::Zoekt::Node'
       belongs_to :knowledge_graph_enabled_namespace, inverse_of: :replicas,
         class_name: 'Ai::KnowledgeGraph::EnabledNamespace'
+      has_many :tasks,
+        foreign_key: :knowledge_graph_replica_id, inverse_of: :knowledge_graph_replica,
+        class_name: '::Ai::KnowledgeGraph::Task'
 
       before_validation :set_namespace_id
 
