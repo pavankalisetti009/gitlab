@@ -7,6 +7,7 @@ import {
   GlCollapse,
   GlExperimentBadge,
   GlTooltipDirective,
+  GlAnimatedChevronRightDownIcon,
 } from '@gitlab/ui';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
 import { fetchPolicies } from '~/lib/graphql';
@@ -25,6 +26,7 @@ export default {
     HealthCheckListLoader,
     GlCollapse,
     GlExperimentBadge,
+    GlAnimatedChevronRightDownIcon,
     HealthCheckListCategory,
   },
   directives: {
@@ -70,9 +72,6 @@ export default {
       return this.healthStatus
         ? this.$options.i18n.healthCheckSucceeded
         : this.$options.i18n.healthCheckFailed;
-    },
-    expandIcon() {
-      return this.expanded ? 'chevron-down' : 'chevron-right';
     },
     expandLabel() {
       return this.expanded ? this.$options.i18n.hideResults : this.$options.i18n.showResults;
@@ -184,15 +183,16 @@ export default {
     </template>
 
     <template #default>
-      <div class="gl-flex gl-items-center gl-py-3 gl-pl-4 gl-pr-5">
+      <div class="gl-flex gl-items-center gl-gap-3 gl-py-3 gl-pl-4 gl-pr-5">
         <gl-button
-          :icon="expandIcon"
           :aria-label="expandLabel"
           size="small"
-          class="gl-mr-3"
+          class="btn-icon"
           data-testid="health-check-expand-button"
           @click="toggleExpanded"
-        />
+        >
+          <gl-animated-chevron-right-down-icon :is-on="expanded" />
+        </gl-button>
         <p class="gl-mb-0" data-testid="health-check-expand-text">{{ expandText }}</p>
         <gl-experiment-badge type="beta" class="gl-ml-auto gl-mr-0" />
       </div>

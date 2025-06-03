@@ -1,4 +1,4 @@
-import { GlCollapse, GlLoadingIcon } from '@gitlab/ui';
+import { GlCollapse, GlLoadingIcon, GlAnimatedChevronRightDownIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 
@@ -10,6 +10,7 @@ import HealthCheckListCategory from 'ee/usage_quotas/code_suggestions/components
 import HealthCheckListLoader from 'ee/usage_quotas/code_suggestions/components/health_check_list_loader.vue';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
 import { probesByCategory } from 'ee/usage_quotas/code_suggestions/utils';
+import { parseBoolean } from '~/lib/utils/common_utils';
 
 import {
   MOCK_NETWORK_PROBES,
@@ -68,6 +69,7 @@ describe('HealthCheckList', () => {
   const findHealthCheckTitle = () => wrapper.findByTestId('health-check-title');
   const findRunHealthCheckButton = () => wrapper.findByTestId('run-health-check-button');
   const findHealthCheckExpandButton = () => wrapper.findByTestId('health-check-expand-button');
+  const findHealthCheckExpandIcon = () => wrapper.findComponent(GlAnimatedChevronRightDownIcon);
   const findHealthCheckExpandText = () => wrapper.findByTestId('health-check-expand-text');
   const findHealthCheckFooterLoader = () => wrapper.findComponent(GlLoadingIcon);
   const findHealthCheckFooterText = () => wrapper.findByTestId('health-check-footer-text');
@@ -101,7 +103,11 @@ describe('HealthCheckList', () => {
       });
 
       it('renders expand button as collapsed', () => {
-        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-right');
+        // Vue compat doesn't know about component props if it extends other component
+        expect(
+          findHealthCheckExpandIcon().props('isOn') ??
+            parseBoolean(findHealthCheckExpandIcon().attributes('is-on')),
+        ).toBe(false);
         expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Show results');
       });
     });
@@ -171,7 +177,11 @@ describe('HealthCheckList', () => {
       });
 
       it('renders expand button as expanded', () => {
-        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-down');
+        // Vue compat doesn't know about component props if it extends other component
+        expect(
+          findHealthCheckExpandIcon().props('isOn') ??
+            parseBoolean(findHealthCheckExpandIcon().attributes('is-on')),
+        ).toBe(true);
         expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Hide results');
       });
     });
@@ -290,14 +300,21 @@ describe('HealthCheckList', () => {
 
       it('properly expands collapse after click', async () => {
         expect(findGlCollapse().props('visible')).toBe(false);
-        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-right');
+        // Vue compat doesn't know about component props if it extends other component
+        expect(
+          findHealthCheckExpandIcon().props('isOn') ??
+            parseBoolean(findHealthCheckExpandIcon().attributes('is-on')),
+        ).toBe(false);
         expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Show results');
 
         findHealthCheckExpandButton().vm.$emit('click');
         await nextTick();
 
         expect(findGlCollapse().props('visible')).toBe(true);
-        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-down');
+        expect(
+          findHealthCheckExpandIcon().props('isOn') ??
+            parseBoolean(findHealthCheckExpandIcon().attributes('is-on')),
+        ).toBe(true);
         expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Hide results');
       });
     });
@@ -310,14 +327,21 @@ describe('HealthCheckList', () => {
 
       it('properly collapses collapse after click', async () => {
         expect(findGlCollapse().props('visible')).toBe(true);
-        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-down');
+        // Vue compat doesn't know about component props if it extends other component
+        expect(
+          findHealthCheckExpandIcon().props('isOn') ??
+            parseBoolean(findHealthCheckExpandIcon().attributes('is-on')),
+        ).toBe(true);
         expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Hide results');
 
         findHealthCheckExpandButton().vm.$emit('click');
         await nextTick();
 
         expect(findGlCollapse().props('visible')).toBe(false);
-        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-right');
+        expect(
+          findHealthCheckExpandIcon().props('isOn') ??
+            parseBoolean(findHealthCheckExpandIcon().attributes('is-on')),
+        ).toBe(false);
         expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Show results');
       });
     });
