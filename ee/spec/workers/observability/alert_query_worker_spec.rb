@@ -69,7 +69,7 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
 
     it 'does not create duplicate alerts for the same event' do
       expect { worker.perform }.to change { ::AlertManagement::Alert.count }.by(1)
-      expect { worker.perform }.to change { ::AlertManagement::Alert.count }.by(0)
+      expect { worker.perform }.not_to change { ::AlertManagement::Alert.count }
     end
   end
 

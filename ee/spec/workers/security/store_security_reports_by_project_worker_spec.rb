@@ -172,9 +172,9 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
             # After running the worker again, we do not create
             # additional vulnerabiities (since they would be duplicates)
-            expect { worker.perform(project.id) }.to change {
-              Vulnerabilities::Finding.count
-            }.by(0).and change { Vulnerability.count }.by(0)
+            expect { worker.perform(project.id) }
+              .to not_change { Vulnerabilities::Finding.count }
+              .and not_change { Vulnerability.count }
           end
         end
 
@@ -226,9 +226,9 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
             # After running the worker again, we do not create
             # additional vulnerabiities (since they would be duplicates)
-            expect { worker.perform(project.id) }.to change {
-              Vulnerabilities::Finding.count
-            }.by(0).and change { Vulnerability.count }.by(0)
+            expect { worker.perform(project.id) }
+              .to not_change { Vulnerabilities::Finding.count }
+              .and not_change { Vulnerability.count }
           end
         end
       end
@@ -287,8 +287,8 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
         expect do
           worker.perform(project.id)
-        end.to change { Vulnerabilities::Finding.count }.by(0)
-           .and change { Vulnerability.count }.by(0)
+        end.to not_change { Vulnerabilities::Finding.count }
+           .and not_change { Vulnerability.count }
            .and change { project.vulnerabilities.with_resolution(true).count }.by(1)
            .and change { project.vulnerabilities.with_states(%w[detected]).count }.by(-1)
            .and change { project.vulnerabilities.with_states(%w[resolved]).count }.by(1)
