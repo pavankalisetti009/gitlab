@@ -6,6 +6,9 @@ module EE
     extend ::Gitlab::Utils::Override
 
     EE_ACTION_NAMES = {
+      ::Todo::MERGE_TRAIN_REMOVED => :merge_train_removed,
+      ::Todo::OKR_CHECKIN_REQUESTED => :okr_checkin_requested,
+      ::Todo::ADDED_APPROVER => :added_approver,
       ::Todo::DUO_PRO_ACCESS_GRANTED => :duo_pro_access_granted,
       ::Todo::DUO_ENTERPRISE_ACCESS_GRANTED => :duo_enterprise_access_granted,
       ::Todo::DUO_CORE_ACCESS_GRANTED => :duo_core_access_granted
