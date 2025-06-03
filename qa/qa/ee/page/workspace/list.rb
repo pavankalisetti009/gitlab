@@ -26,11 +26,12 @@ module QA
           end
 
           def create_workspace(agent, project)
-            existing_workspaces = get_workspaces_list(tab: :active)
+            existing_workspaces = []
 
             if has_empty_workspace?
               click_element('new-workspace-button', skip_finished_loading_check: true)
             else
+              existing_workspaces = get_workspaces_list(tab: :active)
               click_element('list-new-workspace-button', skip_finished_loading_check: true)
             end
 
