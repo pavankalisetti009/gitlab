@@ -16,7 +16,6 @@ module RemoteDevelopment
         GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME = "gl_git_credential_store.sh"
         GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH =
           "#{VARIABLES_VOLUME_PATH}/#{GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME}".freeze
-        MAIN_COMPONENT_INDICATOR_ATTRIBUTE = "gl/inject-editor"
         NAMESPACE_PREFIX = "gl-rd-ns"
         PROJECT_CLONING_SUCCESSFUL_FILE_NAME = ".gl_project_cloning_successful"
         TOKEN_FILE_NAME = "gl_token"

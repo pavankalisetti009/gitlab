@@ -6,6 +6,7 @@ module RemoteDevelopment
       class MainComponentUpdater
         include CreateConstants
         include Files
+        include RemoteDevelopmentConstants
 
         # @param [Hash] context
         # @return [Hash]
@@ -19,7 +20,7 @@ module RemoteDevelopment
           }
 
           # NOTE: We will always have exactly one main_component found, because we have already
-          #       validated this in devfile_validator.rb
+          #       validated this in devfile processing
           main_component = components.find do |component|
             # NOTE: We can't use pattern matching here, because constants can't be used in pattern matching.
             #       Otherwise, we could do this all in a single pattern match.

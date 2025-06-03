@@ -56,7 +56,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
           Gitlab::Fp::Result.ok({
             params: params,
             devfile_yaml: devfile_yaml,
-            devfile: devfile,
             settings: {
               default_devfile_yaml: default_devfile_yaml
             }
@@ -74,7 +73,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
           Gitlab::Fp::Result.ok({
             params: params,
             devfile_yaml: devfile_yaml,
-            devfile: devfile,
             settings: {
               default_devfile_yaml: default_devfile_yaml
             }
@@ -152,32 +150,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
           expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileLoadFailed)
           message.content => { details: String => error_details }
           expect(error_details).to eq("Devfile could not be loaded from project")
-        end
-      end
-    end
-
-    context 'when devfile YAML cannot be loaded' do
-      let(:devfile_path) { '.devfile.yaml' }
-      let(:devfile_yaml) { "invalid: yaml: boom" }
-
-      it 'returns an err Result containing error details' do
-        expect(result).to be_err_result do |message|
-          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileYamlParseFailed)
-          message.content => { details: String => error_details }
-          expect(error_details).to match(/Devfile YAML could not be parsed: .*mapping values are not allowed/i)
-        end
-      end
-    end
-
-    context 'when devfile YAML is valid but is invalid JSON' do
-      let(:devfile_path) { '.devfile.yaml' }
-      let(:devfile_yaml) { "!binary key: value" }
-
-      it 'returns an err Result containing error details' do
-        expect(result).to be_err_result do |message|
-          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileYamlParseFailed)
-          message.content => { details: String => error_details }
-          expect(error_details).to match(/Devfile YAML could not be parsed: Invalid Unicode \[91 ec\] at 0/i)
         end
       end
     end

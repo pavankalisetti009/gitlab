@@ -2,27 +2,21 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::DevfileOperations::Main, feature_category: :workspaces do
   let(:context_passed_along_steps) { {} }
+  let(:processed_devfile) { { test: "value" } }
+
   let(:rop_steps) do
     [
-      [RemoteDevelopment::WorkspaceOperations::Create::AgentValidator, :and_then],
-      [RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher, :and_then],
       [RemoteDevelopment::DevfileOperations::ValidationProcessor, :and_then],
-      [RemoteDevelopment::WorkspaceOperations::Create::VolumeDefiner, :map],
-      [RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComponentInserter, :map],
-      [RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpdater, :map],
-      [RemoteDevelopment::WorkspaceOperations::Create::InternalPoststartCommandsInserter, :map],
-      [RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInserter, :map],
-      [RemoteDevelopment::WorkspaceOperations::Create::Creator, :and_then],
       [observer_class, observer_method],
-      [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceSuccessfulResponseBuilder, :and_then]
+      [RemoteDevelopment::DevfileOperations::ResponseBuilder, :and_then]
     ]
   end
 
   describe "happy path" do
     let(:ok_message_content) { { ok_details: "Everything is OK!" } }
-    let(:observer_class) { RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver }
+    let(:observer_class) { RemoteDevelopment::DevfileOperations::Observer }
     let(:observer_method) { :inspect_ok }
 
     let(:expected_response) do
@@ -42,8 +36,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
               .with_context_passed_along_steps(context_passed_along_steps)
               .with_ok_result_for_step(
                 {
-                  step_class: RemoteDevelopment::WorkspaceOperations::Create::WorkspaceSuccessfulResponseBuilder,
-                  returned_message: RemoteDevelopment::Messages::WorkspaceCreateSuccessful.new(ok_message_content)
+                  step_class: RemoteDevelopment::DevfileOperations::ResponseBuilder,
+                  returned_message: RemoteDevelopment::Messages::DevfileValidateSuccessful.new(ok_message_content)
                 }
               )
               .and_return_expected_value(expected_response)
@@ -51,10 +45,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
   end
 
   describe "error cases" do
+    let(:observer_class) { RemoteDevelopment::DevfileOperations::ErrorsObserver }
+    let(:observer_method) { :inspect_err }
     let(:error_details) { "some error details" }
     let(:err_message_content) { { details: error_details } }
-    let(:observer_class) { RemoteDevelopment::WorkspaceOperations::Create::WorkspaceErrorsObserver }
-    let(:observer_method) { :inspect_err }
 
     shared_examples "rop invocation with error response" do
       it "returns expected response" do
@@ -71,47 +65,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
     end
 
     # rubocop:disable Style/TrailingCommaInArrayLiteral -- let the last element have a comma for simpler diffs
-    # rubocop:disable Layout/LineLength -- we want to avoid excessive wrapping for RSpec::Parameterized Nested Array Style so we can have formatting consistency between entries
     where(:case_name, :err_result_for_step, :expected_response) do
       [
-        [
-          "when AgentValidator returns WorkspaceCreateParamsValidationFailed",
-          {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::AgentValidator,
-            returned_message:
-              lazy { RemoteDevelopment::Messages::WorkspaceCreateParamsValidationFailed.new(err_message_content) }
-          },
-          {
-            status: :error,
-            message: lazy { "Workspace create params validation failed: #{error_details}" },
-            reason: :bad_request
-          },
-        ],
-        [
-          "when DevfileFetcher returns WorkspaceCreateParamsValidationFailed",
-          {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
-            returned_message:
-              lazy { RemoteDevelopment::Messages::WorkspaceCreateParamsValidationFailed.new(err_message_content) }
-          },
-          {
-            status: :error,
-            message: lazy { "Workspace create params validation failed: #{error_details}" },
-            reason: :bad_request
-          },
-        ],
-        [
-          "when DevfileFetcher returns WorkspaceCreateDevfileLoadFailed",
-          {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
-            returned_message: lazy { RemoteDevelopment::Messages::WorkspaceCreateDevfileLoadFailed.new(err_message_content) }
-          },
-          {
-            status: :error,
-            message: lazy { "Workspace create devfile load failed: #{error_details}" },
-            reason: :bad_request
-          },
-        ],
         [
           "when ValidationProcessor returns DevfileYamlParseFailed",
           {
@@ -149,21 +104,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
           },
         ],
         [
-          "when Creator returns WorkspaceCreateFailed",
-          {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::Creator,
-            returned_message: lazy { RemoteDevelopment::Messages::WorkspaceCreateFailed.new(err_message_content) }
-          },
-          {
-            status: :error,
-            message: lazy { "Workspace create failed: #{error_details}" },
-            reason: :bad_request
-          },
-        ],
-        [
           "when an unmatched error is returned, an exception is raised",
           {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::Creator,
+            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
             returned_message: lazy { Class.new(Gitlab::Fp::Message).new(err_message_content) }
           },
           Gitlab::Fp::UnmatchedResultError
@@ -171,7 +114,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
       ]
     end
     # rubocop:enable Style/TrailingCommaInArrayLiteral
-    # rubocop:enable Layout/LineLength
 
     with_them do
       it_behaves_like "rop invocation with error response"

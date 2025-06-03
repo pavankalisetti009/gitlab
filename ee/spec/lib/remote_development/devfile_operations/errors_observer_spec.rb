@@ -3,26 +3,22 @@
 require "fast_spec_helper"
 
 # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::WorkspaceErrorsObserver, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::DevfileOperations::ErrorsObserver, feature_category: :workspaces do
   let(:user) { instance_double("User") }
-  let(:project) { instance_double("Project") }
   let(:internal_events_class) { class_double("Gitlab::InternalEvents") }
-  let(:event_name) { "create_workspace_result" }
+  let(:event_name) { "devfile_validate_result" }
   let(:label) { "failed" }
   let(:category) { described_class.to_s }
   let(:context) do
     {
       user: user,
-      internal_events_class: internal_events_class,
-      params: {
-        project: project
-      }
+      internal_events_class: internal_events_class
     }
   end
 
   let(:message) do
-    RemoteDevelopment::Messages::WorkspaceCreateDevfileLoadFailed.new(
-      details: "Devfile could not be loaded from project",
+    RemoteDevelopment::Messages::DevfileYamlParseFailed.new(
+      details: "Devfile yaml parsing failed",
       context: context
     )
   end
@@ -37,7 +33,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::WorkspaceErrorsOb
     it "tracks a failed event" do
       expect(internal_events_class)
         .to receive(:track_event)
-              .with(event_name, category: category, user: user, project: project,
+              .with(event_name, category: category, user: user,
                 additional_properties: { label: label, property: err_message })
 
       expect(returned_value).to be_nil

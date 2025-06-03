@@ -12,6 +12,7 @@ RSpec.shared_examples 'tracks successful workspace creation event' do
         project: project,
         additional_properties: { label: 'succeed' }
       )
+      .and increment_usage_metrics("counts.count_total_succeed_workspaces_created")
   end
 end
 
@@ -28,6 +29,7 @@ RSpec.shared_examples 'tracks failed workspace creation event' do |error_message
           property: error_message
         }
       )
+      .and increment_usage_metrics("counts.count_total_failed_workspaces_created")
   end
 end
 
@@ -238,12 +240,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
         expect(response).to eq({
           status: :error,
-          message: "Workspace create devfile validation failed: No components present in devfile",
+          message: "Devfile restrictions failed: No components present in devfile",
           reason: :bad_request
         })
       end
 
-      it_behaves_like 'tracks failed workspace creation event', 'WorkspaceCreateDevfileValidationFailed'
+      it_behaves_like 'tracks failed workspace creation event', 'DevfileRestrictionsFailed'
     end
   end
 
