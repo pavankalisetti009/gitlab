@@ -3,11 +3,11 @@
 module Elastic
   module Latest
     class NoteInstanceProxy < ApplicationInstanceProxy
-      SCHEMA_VERSION = 23_08
+      SCHEMA_VERSION = 25_22
 
       delegate :noteable, to: :target
 
-      def as_indexed_json(options = {})
+      def as_indexed_json(_options = {})
         # `noteable` can be sometimes be nil (eg. when a commit has been
         # deleted) or somehow it was left orphaned in the database. In such
         # cases we want to delete it from the index since there is no value in
@@ -39,7 +39,11 @@ module Elastic
         data['visibility_level'] = target.project&.visibility_level || Gitlab::VisibilityLevel::PRIVATE
         merge_project_feature_access_level(data)
         data['archived'] = target.project.archived if target.project
-        data['schema_version'] = SCHEMA_VERSION
+        data['schema_version'] = schema_version
+        if target.project && ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_notes)
+          data['traversal_ids'] = target.project.elastic_namespace_ancestry
+        end
+
         data.merge(generic_attributes)
       end
 
@@ -50,6 +54,9 @@ module Elastic
       private
 
       def merge_project_feature_access_level(data)
+        # do nothing for other note types (DesignManagement::Design, AlertManagement::Alert, Epic, Vulnerability )
+        # are indexed but not currently searchable so we will not add permission
+        # data for them until the search capability is implemented
         case noteable
         when Snippet
           data['snippets_access_level'] = safely_read_project_feature_for_elasticsearch(:snippets)
@@ -58,11 +65,13 @@ module Elastic
         when Issue, MergeRequest
           access_level_attribute = ProjectFeature.access_level_attribute(noteable)
           data[access_level_attribute.to_s] = safely_read_project_feature_for_elasticsearch(noteable)
-        else
-          # do nothing for other note types (DesignManagement::Design, AlertManagement::Alert, Epic, Vulnerability )
-          # are indexed but not currently searchable so we will not add permission
-          # data for them until the search capability is implemented
         end
+      end
+
+      def schema_version
+        return 23_08 unless ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_notes)
+
+        SCHEMA_VERSION
       end
     end
   end
