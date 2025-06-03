@@ -55,6 +55,7 @@ describe('TimeAgo utils', () => {
         });
 
         it.each([
+          [new Date().getTime() + 60e3 * 60 * 24 * 365],
           [new Date().getTime() + 60e3 * 60 * 24 * 366],
           [new Date().getTime() + 60e3 * 60 * 24 * 366 * 2],
           [new Date().getTime() - 60e3 * 60 * 24 * 366],

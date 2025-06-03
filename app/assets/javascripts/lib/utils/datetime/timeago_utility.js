@@ -165,7 +165,7 @@ const timeagoWithDateFallback = {
   format: (date, locale, opts) => {
     const diffInSeconds = diffSec(date, opts && opts.relativeDate);
 
-    if (Math.abs(diffInSeconds) > ONE_YEAR_IN_SECONDS) {
+    if (Math.abs(diffInSeconds) >= ONE_YEAR_IN_SECONDS) {
       return localeDateFormat[DATE_ONLY_FORMAT].format(date);
     }
 
