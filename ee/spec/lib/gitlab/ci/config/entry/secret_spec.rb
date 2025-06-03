@@ -90,6 +90,122 @@ RSpec.describe Gitlab::Ci::Config::Entry::Secret, feature_category: :secrets_man
         end
       end
 
+      context 'for AWS Secrets Manager' do
+        context 'when `token` is defined' do
+          let(:config) do
+            {
+              aws_secrets_manager: {
+                secret_id: 'name'
+              },
+              token: '$TEST_ID_TOKEN'
+            }
+          end
+
+          describe '#value' do
+            it 'returns secret configuration with token' do
+              expect(entry.value).to eq(
+                {
+                  aws_secrets_manager: {
+                    secret_id: 'name',
+                    version_id: nil,
+                    version_stage: nil,
+                    region: nil,
+                    role_arn: nil,
+                    field: nil,
+                    role_session_name: nil
+                  },
+                  token: '$TEST_ID_TOKEN'
+                }
+              )
+            end
+          end
+
+          describe '#valid?' do
+            it 'is valid' do
+              expect(entry).to be_valid
+            end
+          end
+        end
+
+        context 'with optional fields' do
+          let(:config) do
+            {
+              aws_secrets_manager: {
+                secret_id: 'db-password',
+                region: 'us-east-1',
+                version_id: 'abcdef1234567890',
+                version_stage: 'AWSCURRENT',
+                role_arn: 'arn:aws:iam::123456789012:role/role-name',
+                field: 'password',
+                role_session_name: 'session-name'
+              }
+            }
+          end
+
+          it 'is valid' do
+            expect(entry).to be_valid
+          end
+        end
+
+        context 'with invalid configuration' do
+          context 'when secret_id is missing' do
+            let(:config) do
+              {
+                aws_secrets_manager: {}
+              }
+            end
+
+            it 'is not valid' do
+              expect(entry).not_to be_valid
+              expect(entry.errors).to include(/aws_secrets_manager secret can't be blank/)
+            end
+          end
+        end
+
+        context 'when config is not a hash' do
+          let(:config) { 123 }
+
+          it 'is not valid' do
+            expect(entry).not_to be_valid
+          end
+        end
+
+        context 'when `token` is not defined' do
+          let(:config) do
+            {
+              aws_secrets_manager: {
+                secret_id: 'name',
+                region: 'eu-central-1'
+              }
+            }
+          end
+
+          describe '#value' do
+            it 'returns secret configuration' do
+              expect(entry.value).to eq(
+                {
+                  aws_secrets_manager: {
+                    secret_id: 'name',
+                    region: 'eu-central-1',
+                    version_id: nil,
+                    version_stage: nil,
+                    role_arn: nil,
+                    field: nil,
+                    role_session_name: nil
+                  }
+                }
+              )
+            end
+          end
+
+          describe '#valid?' do
+            it 'is valid' do
+              expect(entry).to be_valid
+            end
+          end
+        end
+      end
+
       context 'for Azure Key Vault' do
         context 'when `token` is defined' do
           let(:config) do
@@ -349,7 +465,7 @@ RSpec.describe Gitlab::Ci::Config::Entry::Secret, feature_category: :secrets_man
         it 'reports error' do
           expect(entry.errors)
             .to include 'secret config must use exactly one of these keys: ' \
-            'vault, azure_key_vault, gcp_secret_manager, akeyless, gitlab_secrets_manager'
+              'vault, azure_key_vault, gcp_secret_manager, akeyless, gitlab_secrets_manager, aws_secrets_manager'
         end
       end
 
@@ -360,7 +476,7 @@ RSpec.describe Gitlab::Ci::Config::Entry::Secret, feature_category: :secrets_man
           it 'reports error' do
             expect(entry.errors)
               .to include "secret config must use exactly one of these keys: " \
-                          "#{Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.join(', ')}"
+                "#{Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.join(', ')}"
           end
         end
       end

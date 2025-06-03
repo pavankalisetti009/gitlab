@@ -8,7 +8,8 @@ module Ci
         "akeyless" => :akeyless,
         "gcp_secret_manager" => :gcp_secret_manager,
         "vault" => :hashicorp_vault,
-        "gitlab_secrets_manager" => :gitlab_secrets_manager
+        "gitlab_secrets_manager" => :gitlab_secrets_manager,
+        "aws_secrets_manager" => :aws
       }.freeze
 
       def initialize(variables:, project:)
@@ -58,6 +59,10 @@ module Ci
 
       def akeyless?
         variables['AKEYLESS_ACCESS_ID']&.value.present?
+      end
+
+      def aws?
+        variables['AWS_REGION']&.value.present?
       end
 
       def gitlab_secrets_manager?

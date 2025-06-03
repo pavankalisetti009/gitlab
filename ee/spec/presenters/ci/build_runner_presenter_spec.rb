@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management do
@@ -46,10 +47,12 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
 
         context 'Vault auth role' do
-          let(:vault_auth_data) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server', 'auth', 'data') }
+          let(:vault_auth_data) do
+            presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server', 'auth', 'data')
+          end
 
           context 'VAULT_AUTH_ROLE CI variable is present' do
-            it 'contains the  auth role' do
+            it 'contains the auth role' do
               create(:ci_variable, project: ci_build.project, key: 'VAULT_AUTH_ROLE', value: 'production')
 
               expect(vault_auth_data.fetch('role')).to eq('production')
@@ -160,7 +163,9 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           }
         end
 
-        let(:azure_key_vault_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'azure_key_vault', 'server') }
+        let(:azure_key_vault_server) do
+          presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'azure_key_vault', 'server')
+        end
 
         context 'Vault azure key vault server url' do
           context 'AZURE_KEY_VAULT_SERVER_URL CI variable is present' do
@@ -223,7 +228,6 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
 
           it 'adds the first ID token to the Vault server payload' do
             jwt = presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'azure_key_vault', 'server', 'jwt')
-
             expect(jwt).to eq('$VAULT_ID_TOKEN_1')
           end
 
@@ -257,6 +261,153 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
       end
 
+      context 'with AWS Secrets Manager' do
+        let(:secrets) do
+          {
+            DATABASE_PASSWORD: {
+              aws_secrets_manager: {
+                secret_id: 'key',
+                version_id: 'version'
+              }
+            }
+          }
+        end
+
+        let(:aws_secrets_manager_server) do
+          presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'aws_secrets_manager', 'server')
+        end
+
+        context 'when feature flag aws_secret_manager is disabled' do
+          before do
+            stub_feature_flags(ci_aws_secrets_manager: false)
+          end
+
+          it 'does not include the server configuration' do
+            expect(aws_secrets_manager_server).to be_nil
+          end
+        end
+
+        context 'Secrets Manager Region' do
+          context 'AWS_REGION CI variable is present' do
+            it 'returns the Region' do
+              create(:ci_variable, project: ci_build.project, key: 'AWS_REGION', value: 'test')
+
+              expect(aws_secrets_manager_server.fetch('region')).to eq('test')
+            end
+          end
+
+          context 'AWS_REGION CI variable is not present' do
+            it 'returns the nil' do
+              expect(aws_secrets_manager_server.fetch('region')).to eq(nil)
+            end
+          end
+        end
+
+        context 'AWS Role ARN' do
+          context 'AWS_ROLE_ARN CI variable is present' do
+            it 'returns the Arn' do
+              create(:ci_variable, project: ci_build.project, key: 'AWS_ROLE_ARN', value: 'test')
+
+              expect(aws_secrets_manager_server.fetch('role_arn')).to eq('test')
+            end
+          end
+
+          context 'AWS_ROLE_ARN CI variable is not present' do
+            it 'returns the nil' do
+              expect(aws_secrets_manager_server.fetch('role_arn')).to eq(nil)
+            end
+          end
+        end
+
+        context 'AWS Role Session Name' do
+          context 'AWS_ROLE_SESSION_NAME CI variable is present' do
+            it 'returns the Role Session Name' do
+              create(:ci_variable, project: ci_build.project, key: 'AWS_ROLE_SESSION_NAME', value: 'test')
+
+              expect(aws_secrets_manager_server.fetch('role_session_name')).to eq('test')
+            end
+          end
+
+          context 'AWS_ROLE_SESSION_NAME CI variable is not present' do
+            it 'returns the nil' do
+              expect(aws_secrets_manager_server.fetch('role_session_name')).to eq(nil)
+            end
+          end
+        end
+
+        context 'when there are ID tokens available' do
+          before do
+            rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
+            stub_application_setting(ci_jwt_signing_key: rsa_key)
+            ci_build.id_tokens = {
+              'VAULT_ID_TOKEN_2' => { id_token: { aud: 'https://gitlab.link' } },
+              'AWS_ID_TOKEN' => { id_token: { aud: 'https://gitlab.test' } }
+            }
+            ci_build.runner = build_stubbed(:ci_runner)
+          end
+
+          it 'adds the AWS_ID_TOKEN to the Vault server payload' do
+            jwt = presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'aws_secrets_manager', 'server', 'jwt')
+
+            expect(jwt).to eq('$AWS_ID_TOKEN')
+          end
+
+          context 'when the token variable is specified for the vault secret' do
+            let(:secrets) do
+              {
+                DATABASE_PASSWORD: {
+                  token: '$VAULT_ID_TOKEN_2',
+                  aws_secrets_manager: {
+                    secret_id: 'key',
+                    version_id: 'version'
+                  }
+                }
+              }
+            end
+
+            it 'uses the specified token variable' do
+              jwt = presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'aws_secrets_manager', 'server', 'jwt')
+
+              expect(jwt).to eq('$VAULT_ID_TOKEN_2')
+            end
+          end
+        end
+
+        context 'when there are no ID tokens available' do
+          it 'returns AWS_ID_TOKEN so runner handles the empty variable' do
+            jwt = presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'aws_secrets_manager', 'server', 'jwt')
+
+            expect(jwt).to eq('$AWS_ID_TOKEN')
+          end
+        end
+
+        context 'with all AWS configuration variables present' do
+          before do
+            create(:ci_variable, project: ci_build.project, key: 'AWS_REGION', value: 'us-west-2')
+            create(:ci_variable, project: ci_build.project, key: 'AWS_ROLE_ARN',
+              value: 'arn:aws:iam::123456789012:role/test-role')
+            create(:ci_variable, project: ci_build.project, key: 'AWS_ROLE_SESSION_NAME', value: 'gitlab-ci-session')
+
+            # Add ID token
+            rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
+            stub_application_setting(ci_jwt_signing_key: rsa_key)
+            ci_build.id_tokens = {
+              'AWS_ID_TOKEN' => { id_token: { aud: 'https://aws.example.com' } }
+            }
+            ci_build.runner = build_stubbed(:ci_runner)
+          end
+
+          it 'returns a complete server configuration' do
+            expect(aws_secrets_manager_server).to eq({
+              'region' => 'us-west-2',
+              'role_arn' => 'arn:aws:iam::123456789012:role/test-role',
+              'role_session_name' => 'gitlab-ci-session',
+              'jwt' => '$AWS_ID_TOKEN'
+            })
+          end
+        end
+      end
+
       context 'with GCP Secret Manager' do
         let(:secrets) do
           {
@@ -270,7 +421,9 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           }
         end
 
-        let(:gcp_secret_manager_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'gcp_secret_manager', 'server') }
+        let(:gcp_secret_manager_server) do
+          presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'gcp_secret_manager', 'server')
+        end
 
         context 'GCP project number' do
           context 'GCP_PROJECT_NUMBER CI variable is present' do
@@ -291,7 +444,8 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         context 'GCP workload federation pool id' do
           context 'GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID CI variable is present' do
             it 'returns the pool id' do
-              create(:ci_variable, project: ci_build.project, key: 'GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID', value: 'pool')
+              create(:ci_variable, project: ci_build.project, key: 'GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID',
+                value: 'pool')
 
               expect(gcp_secret_manager_server.fetch('workload_identity_federation_pool_id')).to eq('pool')
             end
@@ -307,7 +461,8 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         context 'GCP workload federation provider id' do
           context 'GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID CI variable is present' do
             it 'returns the provider id' do
-              create(:ci_variable, project: ci_build.project, key: 'GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID', value: 'provider')
+              create(:ci_variable, project: ci_build.project, key: 'GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID',
+                value: 'provider')
 
               expect(gcp_secret_manager_server.fetch('workload_identity_federation_provider_id')).to eq('provider')
             end
@@ -349,7 +504,9 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
             allow_any_instance_of(SecretsManagement::ProjectSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
           end
 
-          let(:gitlab_secrets_manager_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server') }
+          let(:gitlab_secrets_manager_server) do
+            presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server')
+          end
 
           it 'uses the specified token variable' do
             expect(gitlab_secrets_manager_server.fetch('auth')['data']['jwt']).to eq(jwt_token)
@@ -362,7 +519,9 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
             stub_application_setting(ci_jwt_signing_key: rsa_key)
           end
 
-          let(:gitlab_secrets_manager_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server') }
+          let(:gitlab_secrets_manager_server) do
+            presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server')
+          end
 
           it 'uses the specified token variable' do
             expect(gitlab_secrets_manager_server.fetch('auth')['name']).to eq("jwt")
