@@ -49,12 +49,12 @@ describe('DrawerAccordion', () => {
     expect(findCollapses().at(0).props('visible')).toBe(true);
   });
 
-  it('closes previously opened item when another item is clicked', async () => {
+  it('does not close previously opened item when another item is clicked', async () => {
     const items = wrapper.findAll('.gl-flex.gl-cursor-pointer');
     await items.at(0).trigger('click');
     await items.at(1).trigger('click');
 
-    expect(findCollapses().at(0).props('visible')).toBe(false);
+    expect(findCollapses().at(0).props('visible')).toBe(true);
     expect(findCollapses().at(1).props('visible')).toBe(true);
   });
 
