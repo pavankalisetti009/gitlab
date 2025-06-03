@@ -64,7 +64,7 @@ export default {
       tokenId: null,
       validationMethod: DAST_SITE_VALIDATION_METHOD_TEXT_FILE,
       validationPath: '',
-      helpUrl: helpPagePath('user/application_security/dast/on-demand_scan', {
+      helpUrl: helpPagePath('user/application_security/dast/profiles', {
         anchor: 'site-profile-validation',
       }),
     };

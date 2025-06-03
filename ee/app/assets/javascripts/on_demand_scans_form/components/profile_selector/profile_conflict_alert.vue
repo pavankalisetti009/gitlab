@@ -9,7 +9,7 @@ export default {
     GlSprintf,
     GlLink,
   },
-  dastSiteValidationDocsPath: helpPagePath('user/application_security/dast/on-demand_scan', {
+  dastSiteValidationDocsPath: helpPagePath('user/application_security/dast/profiles', {
     anchor: 'site-profile-validation',
   }),
   i18n: {
