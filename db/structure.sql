@@ -4965,15 +4965,13 @@ CREATE TABLE security_findings (
     scan_id bigint NOT NULL,
     scanner_id bigint NOT NULL,
     severity smallint NOT NULL,
-    project_fingerprint text,
     deduplicated boolean DEFAULT false NOT NULL,
     uuid uuid,
     overridden_uuid uuid,
     partition_number integer DEFAULT 1 NOT NULL,
     finding_data jsonb DEFAULT '{}'::jsonb NOT NULL,
     project_id bigint,
-    CONSTRAINT check_6c2851a8c9 CHECK ((uuid IS NOT NULL)),
-    CONSTRAINT check_b9508c6df8 CHECK ((char_length(project_fingerprint) <= 40))
+    CONSTRAINT check_6c2851a8c9 CHECK ((uuid IS NOT NULL))
 )
 PARTITION BY LIST (partition_number);
 
@@ -38705,8 +38703,6 @@ CREATE INDEX scan_finding_approval_mr_rule_index_mr_id_and_created_at ON approva
 CREATE INDEX scan_finding_approval_project_rule_index_created_at_project_id ON approval_project_rules USING btree (created_at, project_id) WHERE (report_type = 4);
 
 CREATE INDEX scan_finding_approval_project_rule_index_project_id ON approval_project_rules USING btree (project_id) WHERE (report_type = 4);
-
-CREATE INDEX security_findings_project_fingerprint_idx ON ONLY security_findings USING btree (project_fingerprint);
 
 CREATE INDEX security_findings_scan_id_deduplicated_idx ON ONLY security_findings USING btree (scan_id, deduplicated);
 
