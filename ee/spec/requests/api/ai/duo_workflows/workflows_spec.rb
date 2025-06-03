@@ -282,6 +282,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   describe 'POST /ai/duo_workflows/direct_access' do
     let(:path) { '/ai/duo_workflows/direct_access' }
 
+    let(:post_without_params) { post api(path, user) }
+    let(:post_with_definition) { post api(path, user), params: { workflow_definition: workflow_definition } }
+
     before do
       allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
       stub_config(duo_workflow: {
@@ -296,6 +299,66 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       })
     end
 
+    context 'when the duo_workflows is disabled for the user' do
+      before do
+        stub_feature_flags(duo_workflow: false)
+      end
+
+      context 'when workflow_definition is software_developer' do
+        let(:workflow_definition) { 'software_developer' }
+
+        it 'returns not found' do
+          post_with_definition
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when workflow_definition is chat' do
+        let(:workflow_definition) { 'chat' }
+
+        it 'process request further' do
+          post_with_definition
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      context 'when workflow_definition is omitted' do
+        it 'process request further' do
+          post_without_params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+    end
+
+    context 'when agentic_chat feature flag is disabled for the user' do
+      before do
+        stub_feature_flags(duo_agentic_chat: false)
+      end
+
+      context 'when workflow_definition is chat' do
+        let(:workflow_definition) { 'chat' }
+
+        it 'returns not found' do
+          post_with_definition
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when workflow_definition is software_developer' do
+        let(:workflow_definition) { 'software_developer' }
+
+        it 'process request further' do
+          post_with_definition
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+    end
+
     context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
       before do
         stub_feature_flags(duo_workflow: false)
@@ -303,7 +366,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       end
 
       it 'returns not found' do
-        post api(path, user)
+        post_without_params
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -313,7 +376,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       it 'returns api error' do
         allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
 
-        post api(path, user)
+        post_without_params
 
         expect(response).to have_gitlab_http_status(:too_many_requests)
       end
@@ -326,7 +389,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 message: 'Duo workflow is not enabled for user' })
         end
 
-        post api(path, user)
+        post_without_params
 
         expect(response).to have_gitlab_http_status(:forbidden)
       end
@@ -339,7 +402,7 @@ message: 'Duo workflow is not enabled for user' })
 message: "could not generate token" })
         end
 
-        post api(path, user)
+        post_without_params
 
         expect(response).to have_gitlab_http_status(:bad_request)
       end
@@ -367,7 +430,7 @@ expires_at: duo_workflow_service_token_expires_at })
       end
 
       it 'returns access payload' do
-        post api(path, user)
+        post_without_params
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['gitlab_rails']['base_url']).to eq(Gitlab.config.gitlab.url)
@@ -394,7 +457,7 @@ expires_at: duo_workflow_service_token_expires_at })
         end
 
         it 'returns workflow_metadata.extended_logging: false' do
-          post api(path, user)
+          post_without_params
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['workflow_metadata']['extended_logging']).to eq(false)

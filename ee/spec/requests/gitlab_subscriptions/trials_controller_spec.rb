@@ -58,6 +58,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         it_behaves_like 'internal event tracking' do
           let(:event) { 'render_lead_page' }
 
+          before do
+            stub_feature_flags(ultimate_trial_single_form: false)
+          end
+
           subject(:track_event) do
             get new_trial_path, params: base_params
           end
