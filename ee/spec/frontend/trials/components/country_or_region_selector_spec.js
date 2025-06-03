@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
 import {
@@ -15,7 +15,7 @@ Vue.use(VueApollo);
 describe('CountryOrRegionSelector', () => {
   let wrapper;
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, mountFn = shallowMountExtended) => {
     const mockResolvers = {
       Query: {
         countries() {
@@ -27,7 +27,7 @@ describe('CountryOrRegionSelector', () => {
       },
     };
 
-    return shallowMountExtended(CountryOrRegionSelector, {
+    return mountFn(CountryOrRegionSelector, {
       apolloProvider: createMockApollo([], mockResolvers),
       propsData: {
         country: COUNTRY_WITH_STATES,
@@ -60,6 +60,46 @@ describe('CountryOrRegionSelector', () => {
       it('adds an error tracking class to the country and state selectors', () => {
         expect(findFormInput('country-dropdown').props('selectClass')).toContain('js-track-error');
         expect(findFormInput('state-dropdown').props('selectClass')).toContain('js-track-error');
+      });
+    });
+
+    describe('with 5 default countries at the top', () => {
+      beforeEach(() => {
+        wrapper = createComponent({}, mountExtended);
+      });
+
+      it('renders the top 5 countries at the beginning of the dropdown', () => {
+        const options = findFormInput('country-dropdown').props('options');
+
+        expect(options[0].name).toBe('Select a country or region');
+        expect(options[0].id).toBe('');
+
+        expect(options[1].id).toBe('US');
+        expect(options[1].name).toBe('United States of America');
+
+        expect(options[2].id).toBe('GB');
+        expect(options[2].name).toBe('United Kingdom');
+
+        expect(options[3].id).toBe('CA');
+        expect(options[3].name).toBe('Canada');
+
+        expect(options[4].id).toBe('DE');
+        expect(options[4].name).toBe('Germany');
+
+        expect(options[5].id).toBe('FR');
+        expect(options[5].name).toBe('France');
+
+        expect(options[6].id).toBe('separator');
+        expect(options[6].disabled).toBe(true);
+      });
+
+      it('does not repeat countries', () => {
+        const countryDropdown = findFormInput('country-dropdown');
+        const options = countryDropdown.props('options');
+        const countryIds = options.map((option) => option.id);
+        const uniqueIds = new Set(countryIds);
+
+        expect(uniqueIds.size).toBe(countryIds.length);
       });
     });
   });
