@@ -25,32 +25,6 @@ module API
                 end
               end
               route_param :uuid, type: String, desc: 'Indexer node identifier' do
-                desc 'Get tasks for a zoekt indexer node' do
-                  detail 'This feature was introduced in GitLab 16.5'
-                end
-                params do
-                  requires "node.url", type: String, desc: 'Location where indexer can be reached'
-                  requires "disk.all", type: Integer, desc: 'Total disk space'
-                  requires "disk.used", type: Integer, desc: 'Total disk space utilized'
-                  requires "disk.free", type: Integer, desc: 'Total disk space available'
-                  requires "node.name", type: String, desc: 'Name of indexer node'
-                  optional "disk.indexed", type: Integer, desc: 'Total indexed space'
-                end
-                get 'tasks' do
-                  node = ::Search::Zoekt::Node.find_or_initialize_by_task_request(params)
-                  new_node = node.new_record?
-
-                  if node.save_debounce
-                    { id: node.id, truncate: new_node }.tap do |resp|
-                      resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
-                      resp[:pull_frequency] = node.task_pull_frequency
-                      resp[:stop_indexing] = node.watermark_exceeded_critical?
-                    end
-                  else
-                    unprocessable_entity!
-                  end
-                end
-
                 desc 'Zoekt indexer sends callback logging to Gitlab' do
                   detail 'This feature was introduced in GitLab 16.6'
                 end

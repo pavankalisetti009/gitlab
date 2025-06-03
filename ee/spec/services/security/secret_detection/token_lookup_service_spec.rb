@@ -105,4 +105,14 @@ RSpec.describe Security::SecretDetection::TokenLookupService, feature_category: 
       end
     end
   end
+
+  describe '.supported_token_type?' do
+    it 'returns true for supported token type' do
+      expect(described_class.supported_token_type?('gitlab_personal_access_token')).to be true
+    end
+
+    it 'returns false for unsupported token type' do
+      expect(described_class.supported_token_type?('unknown_token_type')).to be false
+    end
+  end
 end

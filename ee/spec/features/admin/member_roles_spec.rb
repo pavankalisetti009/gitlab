@@ -10,7 +10,7 @@ RSpec.describe 'Instance-level Member Roles', feature_category: :permissions do
 
   let(:name) { 'My custom role' }
   let(:description) { 'My role description' }
-  let(:permissions) { ['Read vulnerability'] }
+  let(:permissions) { ['Manage vulnerabilities'] }
   let(:access_level) { 'Developer' }
 
   before do
