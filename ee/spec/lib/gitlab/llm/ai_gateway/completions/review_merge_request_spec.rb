@@ -138,14 +138,22 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           instance_double(Gitlab::Diff::File,
             new_path: 'UPDATED.md',
             new_file?: false,
+            deleted_file?: false,
             old_path: 'UPDATED.md',
             old_blob: updated_blob,
             raw_diff: '@@ -1,2 +1,2 @@ existing line'),
           instance_double(Gitlab::Diff::File,
             new_path: 'NEW.md',
             new_file?: true,
+            deleted_file?: false,
             old_path: 'NEW.md',
-            raw_diff: '@@ -0,0 +1,2 @@ new line')
+            raw_diff: '@@ -0,0 +1,2 @@ new line'),
+          instance_double(Gitlab::Diff::File,
+            new_path: 'DELETED.md',
+            new_file?: false,
+            deleted_file?: true,
+            old_path: 'DELETED.md',
+            raw_diff: '@@ -1,2 +0,0 @@ old line')
         ]
       end
 
@@ -179,7 +187,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         end
       end
 
-      it 'only includes original content of modified files (not new files)' do
+      it 'only includes original content of modified files (not new or deleted files)' do
         expect(review_prompt_class).to receive(:new).with(
           hash_including(
             mr_title: merge_request.title,

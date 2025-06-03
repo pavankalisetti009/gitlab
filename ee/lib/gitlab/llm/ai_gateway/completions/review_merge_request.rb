@@ -119,8 +119,8 @@ module Gitlab
 
             diff_files.each do |diff_file|
               diffs_and_paths[diff_file.new_path] = diff_file.raw_diff
-              # Skip newly added files since their content is already in the diff
-              next if diff_file.new_file?
+              # Skip newly added files and deleted files since their full content is already in the diff
+              next if diff_file.new_file? || diff_file.deleted_file?
               next unless include_file_content?
 
               content = diff_file.old_blob&.data
