@@ -34,6 +34,11 @@ module Gitlab
             { draft_notes_content: draft_notes_content }
           end
 
+          override :root_namespace
+          def root_namespace
+            resource.target_project.try(:root_ancestor)
+          end
+
           private
 
           def draft_notes
