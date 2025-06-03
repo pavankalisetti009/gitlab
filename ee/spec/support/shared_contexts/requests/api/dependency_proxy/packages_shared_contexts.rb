@@ -6,8 +6,7 @@ RSpec.shared_context 'for a dependency proxy for packages' do
 
   # all tokens that we're going to use
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
-  let_it_be(:deploy_token) { create(:deploy_token, write_package_registry: true) }
-  let_it_be(:project_deploy_token) { create(:project_deploy_token, deploy_token: deploy_token, project: project) }
+  let_it_be(:deploy_token) { create(:deploy_token, write_package_registry: true, projects: [project]) }
   let_it_be(:job) { create(:ci_build, user: user, status: :running, project: project) }
 
   before do
