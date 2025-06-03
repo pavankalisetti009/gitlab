@@ -34,6 +34,20 @@ module API
             forbidden!
           end
 
+          def authorize_feature_flag!
+            disabled =
+              case params[:workflow_definition]
+              when 'chat'
+                Feature.disabled?(:duo_agentic_chat, current_user)
+              when nil
+                Feature.disabled?(:duo_workflow, current_user) && Feature.disabled?(:duo_agentic_chat, current_user)
+              else
+                Feature.disabled?(:duo_workflow, current_user)
+              end
+
+            not_found! if disabled
+          end
+
           def start_workflow_params(workflow_id)
             {
               goal: params[:goal],
@@ -113,9 +127,13 @@ module API
                 ]
               end
 
+              params do
+                optional :workflow_definition, type: String, desc: 'workflow type based on its capability',
+                  documentation: { example: 'software_developer' }
+              end
+
               post do
-                not_found! unless Feature.enabled?(:duo_workflow, current_user) ||
-                  Feature.enabled?(:duo_agentic_chat, current_user)
+                authorize_feature_flag!
 
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user) do
                   render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)
