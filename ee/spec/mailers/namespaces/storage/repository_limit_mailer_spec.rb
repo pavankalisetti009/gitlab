@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Namespaces::Storage::RepositoryLimitMailer, feature_category: :consumables_cost_management do
-  include NamespacesHelper
   include EmailSpec::Matchers
 
   let(:recipients) { %w[bob@example.com john@example.com] }

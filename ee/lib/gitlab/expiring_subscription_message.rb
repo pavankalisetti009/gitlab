@@ -119,12 +119,16 @@ module Gitlab
     def expiring_message
       return namespace_expiring_message if namespace
 
+      docs_link = ActionController::Base.helpers.link_to(
+        _('How do I renew my subscription?'),
+        help_page_url('subscriptions/manage_subscription.md', anchor: 'renew-subscription'), target: '_blank', rel: 'noopener noreferrer'
+      )
+
       _("If you don't renew by %{strong}%{downgrades_on}%{strong_close} your instance will become read-only, and you won't be able to create issues or merge requests. You will also lose access to your paid features and support entitlement. %{learn_more_link}") %
         {
           expires_on: subscribable.expires_at.iso8601,
           downgrades_on: subscribable.block_changes_at.iso8601,
-          learn_more_url: help_page_path('subscriptions/self_managed/_index.md', anchor: 'renew-your-subscription'), target: '_blank', rel: 'noopener noreferrer',
-          learn_more_link: '<a href="%{learn_more_url}">How do I renew my subscription?</a>',
+          learn_more_link: docs_link,
           plan_name: plan_name,
           strong: strong,
           strong_close: strong_close

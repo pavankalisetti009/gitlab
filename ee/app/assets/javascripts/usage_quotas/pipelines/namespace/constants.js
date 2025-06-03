@@ -15,8 +15,10 @@ export const X_AXIS_CATEGORY = 'category';
 export const formatWithUtc = true;
 
 export const SHARED_RUNNER_POPOVER_OPTIONS = {
-  triggers: 'hover',
+  /* eslint-disable @gitlab/require-i18n-strings */
+  triggers: 'hover focus',
   placement: 'top',
+  /* eslint-enable @gitlab/require-i18n-strings */
   content: s__(
     'CICDAnalytics|Instance runner duration is the total runtime of all jobs that ran on instance runners',
   ),
