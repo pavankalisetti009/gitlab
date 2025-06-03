@@ -79,13 +79,7 @@ module GitlabSubscriptions
 
     def new_billable_user_count
       @new_billable_user_count ||= begin
-        unless saas_billable_role_change?(
-          target_namespace: target_namespace,
-          role: ::Gitlab::Access.sym_options[role],
-          member_role_id: member_role_id
-        )
-          return target_namespace.billable_members_count
-        end
+        return target_namespace.billable_members_count unless increase_billable_members_count?
 
         unmatched_added_emails_count = filtered_add_user_emails.count - user_ids_from_added_emails.count
 
@@ -99,6 +93,16 @@ module GitlabSubscriptions
 
     def current_max_billable_users
       [target_namespace.billable_members_count, seats_in_subscription].max
+    end
+
+    def increase_billable_members_count?
+      saas_billable_role_change?(
+        target_namespace: target_namespace,
+        role: ::Gitlab::Access.sym_options[role],
+        member_role_id: member_role_id
+      )
+    rescue ::GitlabSubscriptions::BillableUsersUtils::InvalidMemberRoleError
+      false
     end
 
     def reconciliation_enabled?
