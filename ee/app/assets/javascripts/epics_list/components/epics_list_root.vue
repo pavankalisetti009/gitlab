@@ -350,6 +350,7 @@ export default {
         <create-work-item-modal
           v-if="canCreateEpic"
           class="gl-grow"
+          :full-path="groupFullPath"
           is-group
           :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_EPIC"
           @workItemCreated="handleWorkItemCreated"
