@@ -52610,6 +52610,12 @@ msgstr ""
 msgid "Runners|Group runners"
 msgstr ""
 
+msgid "Runners|Group runners are turned off"
+msgstr ""
+
+msgid "Runners|Group runners are turned off for this project. Turn them on to use them."
+msgstr ""
+
 msgid "Runners|How is this calculated?"
 msgstr ""
 
@@ -52754,7 +52760,7 @@ msgstr ""
 msgid "Runners|No description"
 msgstr ""
 
-msgid "Runners|No group runners found."
+msgid "Runners|No group runners found"
 msgstr ""
 
 msgid "Runners|No instance runners found."
@@ -53221,7 +53227,7 @@ msgstr ""
 msgid "Runners|To register new runners, contact your administrator."
 msgstr ""
 
-msgid "Runners|To register them, go to the %{link_start}group's Runners page%{link_end}."
+msgid "Runners|To register them, go to the %{linkStart}group's Runners page%{linkEnd}."
 msgstr ""
 
 msgid "Runners|To set up an autoscaling fleet of runners on Google Cloud, you can use the following recommended setup or %{linkStart}customize the Terraform configuration%{linkEnd}."
@@ -53246,6 +53252,9 @@ msgid "Runners|Top projects consuming group runners"
 msgstr ""
 
 msgid "Runners|Top projects consuming runners"
+msgstr ""
+
+msgid "Runners|Turn on group runners for this project"
 msgstr ""
 
 msgid "Runners|UTC Time"
