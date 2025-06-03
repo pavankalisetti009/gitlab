@@ -236,6 +236,7 @@ RSpec.describe 'Database schema',
       zoekt_indices: %w[namespace_id], # needed for cells sharding key
       zoekt_repositories: %w[namespace_id project_identifier], # needed for cells sharding key
       zoekt_tasks: %w[project_identifier partition_id zoekt_repository_id zoekt_node_id], # needed for: cells sharding key, partitioning, and performance reasons
+      p_knowledge_graph_tasks: %w[partition_id knowledge_graph_replica_id zoekt_node_id namespace_id], # needed for: partitioning, and performance reasons
       # TODO: To remove with https://gitlab.com/gitlab-org/gitlab/-/merge_requests/155256
       approval_group_rules: %w[approval_policy_rule_id],
       approval_project_rules: %w[approval_policy_rule_id],
