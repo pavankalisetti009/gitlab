@@ -14,6 +14,10 @@ module Security
           model: PersonalAccessToken,
           lookup_method: :token_digest_lookup
         },
+        'gitlab_personal_access_token_routable' => {
+          model: PersonalAccessToken,
+          lookup_method: :token_digest_lookup
+        },
         'gitlab_deploy_token' => {
           model: DeployToken,
           lookup_method: :deploy_token_lookup
@@ -21,6 +25,10 @@ module Security
         'gitlab_runner_auth_token' => RUNNER_TOKEN_CONFIG,
         'gitlab_runner_auth_token_routable' => RUNNER_TOKEN_CONFIG
       }.freeze
+
+      def self.supported_token_type?(token_type)
+        TOKEN_TYPE_CONFIG.key?(token_type)
+      end
 
       # Find tokens in database based on token type and values
       # @param token_type [String] The token type ID
