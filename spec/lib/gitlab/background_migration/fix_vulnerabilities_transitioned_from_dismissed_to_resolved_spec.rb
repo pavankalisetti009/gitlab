@@ -163,8 +163,8 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
 
   subject(:perform_migration) do
     described_class.new(
-      start_id: vulnerability_reads.first.id,
-      end_id: vulnerability_reads.last.id,
+      start_id: vulnerability_reads.order(vulnerability_id: :asc).pick(:vulnerability_id),
+      end_id: vulnerability_reads.order(vulnerability_id: :desc).pick(:vulnerability_id),
       batch_table: :vulnerability_reads,
       batch_column: :vulnerability_id,
       sub_batch_size: vulnerability_reads.count,
