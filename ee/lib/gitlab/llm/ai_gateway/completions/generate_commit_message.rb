@@ -18,6 +18,11 @@ module Gitlab
           def prompt_version
             '1.1.0'
           end
+
+          override :root_namespace
+          def root_namespace
+            resource.target_project.try(:root_ancestor)
+          end
         end
       end
     end
