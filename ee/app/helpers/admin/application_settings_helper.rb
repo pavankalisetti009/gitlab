@@ -98,18 +98,18 @@ module Admin
         duo_chat_expiration_days: current_application_settings.duo_chat_expiration_days.to_s,
         duo_core_features_enabled: ::Ai::Setting.instance.duo_core_features_enabled?.to_s,
         duo_pro_or_duo_enterprise_tier: active_self_managed_duo_pro_or_duo_enterprise_tier,
-        should_show_duo_availability: should_show_duo_availability_application_settings?.to_s
+        should_show_duo_availability: show_duo_availability_application_settings?.to_s
       }
     end
 
     private
 
-    def should_show_duo_availability_application_settings?
-      GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchased_or_trial?(nil)
+    def show_duo_availability_application_settings?
+      GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchased_or_trial?
     end
 
     def active_self_managed_duo_pro_or_duo_enterprise_tier
-      add_on_purchase = GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchase(nil)
+      add_on_purchase = GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchase
       return unless add_on_purchase
 
       add_on_purchase.add_on.name.upcase

@@ -55,6 +55,26 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
     context 'when namespace does not have an add-on' do
       it { is_expected.to be_nil }
     end
+
+    context 'without parameter' do
+      subject { described_class.any_add_on_purchase }
+
+      context 'with namespace add-on purchase' do
+        it 'returns nothing' do
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
+
+          is_expected.to be_nil
+        end
+      end
+
+      context 'with Self-Managed add-on purchase' do
+        it 'returns Self-Managed add-on purchase' do
+          add_on_purchase = create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed)
+
+          is_expected.to eq add_on_purchase
+        end
+      end
+    end
   end
 
   describe '.any_add_on_purchased_or_trial?' do
@@ -68,7 +88,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when active add_on' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
         end
 
@@ -76,7 +96,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on trial' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: namespace)
         end
 
@@ -84,7 +104,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on expired trial' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired_trial, namespace: namespace)
         end
 
@@ -92,7 +112,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on trial expired 11 days ago' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial,
             namespace: namespace,
             expires_on: 11.days.ago
@@ -109,7 +129,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when active add_on' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
         end
 
@@ -117,7 +137,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on trial' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: namespace)
         end
 
@@ -125,7 +145,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on expired trial' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired_trial, namespace: namespace)
         end
 
@@ -133,7 +153,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on trial expired 11 days ago' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial,
             namespace: namespace,
             expires_on: 11.days.ago
@@ -150,7 +170,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when active add_on' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed)
         end
 
@@ -158,7 +178,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on trial' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :trial)
         end
 
@@ -166,7 +186,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on expired trial' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :expired_trial)
         end
 
@@ -174,7 +194,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
       end
 
       context 'when on trial expired 11 days ago' do
-        let_it_be(:add_on_purchase_on) do
+        before do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :trial,
             expires_on: 11.days.ago
           )
@@ -186,6 +206,26 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
 
     context 'when namespace does not have an add_on' do
       it { is_expected.to be(false) }
+    end
+
+    context 'without parameter' do
+      subject { described_class.any_add_on_purchased_or_trial? }
+
+      context 'with namespace add-on purchase' do
+        it 'returns false' do
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
+
+          is_expected.to be_falsy
+        end
+      end
+
+      context 'with Self-Managed add-on purchase' do
+        it 'returns true' do
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed)
+
+          is_expected.to be_truthy
+        end
+      end
     end
   end
 end
