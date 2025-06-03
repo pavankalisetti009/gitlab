@@ -389,6 +389,7 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
               allow_failure: true,
               artifacts: {
                 access: 'developer',
+                paths: ['gl-secret-detection-report.json'],
                 reports: {
                   secret_detection: 'gl-secret-detection-report.json'
                 }
@@ -411,7 +412,13 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
           let(:expected_jobs) { ending_with('-sast-0') }
           let(:expected_configuration) do
             hash_including(
-              artifacts: { access: 'developer', reports: { sast: 'gl-sast-report.json' } },
+              artifacts: {
+                access: 'developer',
+                paths: ['gl-sast-report.json'],
+                reports: {
+                  sast: 'gl-sast-report.json'
+                }
+              },
               script: ['/analyzer run'],
               image: { name: '$SAST_ANALYZER_IMAGE' }
             )

@@ -130,6 +130,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             allow_failure: true,
             artifacts: {
               access: 'developer',
+              paths: ["gl-secret-detection-report.json"],
               reports: {
                 secret_detection: 'gl-secret-detection-report.json'
               }
