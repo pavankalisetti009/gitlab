@@ -65,7 +65,8 @@ module EE::SecurityOrchestrationHelper
       max_vulnerability_management_policies_allowed: Security::VulnerabilityManagementPolicy::POLICY_LIMIT,
       max_scan_execution_policy_actions: max_scan_execution_policy_actions,
       max_scan_execution_policy_schedules: max_scan_execution_policy_schedules,
-      enabled_experiments: enabled_policy_experiments(container)
+      enabled_experiments: enabled_policy_experiments(container),
+      designated_as_csp: container.designated_as_csp?.to_s
     }
 
     if container.is_a?(::Project)
