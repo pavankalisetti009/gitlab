@@ -2,20 +2,20 @@
 
 require "fast_spec_helper"
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileValidator, feature_category: :workspaces do
+RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, feature_category: :workspaces do
   include ResultMatchers
 
   include_context "with remote development shared fixtures"
 
   let(:main_component_indicator_attribute) do
-    create_constants_module::MAIN_COMPONENT_INDICATOR_ATTRIBUTE
+    RemoteDevelopment::RemoteDevelopmentConstants::MAIN_COMPONENT_INDICATOR_ATTRIBUTE
   end
 
   let(:input_devfile) { read_devfile(input_devfile_name) }
   let(:context) { { devfile: input_devfile } }
 
   subject(:result) do
-    described_class.validate(context)
+    described_class.enforce(context)
   end
 
   context "for devfiles containing no violations" do
@@ -52,9 +52,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileValidato
     shared_examples "an err result" do
       it "returns an err Result containing error details" do
         is_expected.to be_err_result do |message|
-          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileValidationFailed)
-          message.content => { details: String => error_details }
+          expect(message).to be_a(RemoteDevelopment::Messages::DevfileRestrictionsFailed)
+          message.content => { details: String => error_details, context: Hash => actual_context }
           expect(error_details).to eq(error_str)
+          expect(actual_context).to eq(context)
         end
       end
     end

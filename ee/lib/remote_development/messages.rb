@@ -15,9 +15,6 @@ module RemoteDevelopment
     # Workspace create errors
     WorkspaceCreateParamsValidationFailed = Class.new(Gitlab::Fp::Message)
     WorkspaceCreateDevfileLoadFailed = Class.new(Gitlab::Fp::Message)
-    WorkspaceCreateDevfileYamlParseFailed = Class.new(Gitlab::Fp::Message)
-    WorkspaceCreateDevfileValidationFailed = Class.new(Gitlab::Fp::Message)
-    WorkspaceCreateDevfileFlattenFailed = Class.new(Gitlab::Fp::Message)
     PersonalAccessTokenModelCreateFailed = Class.new(Gitlab::Fp::Message)
     WorkspaceModelCreateFailed = Class.new(Gitlab::Fp::Message)
     WorkspaceVariablesModelCreateFailed = Class.new(Gitlab::Fp::Message)
@@ -45,6 +42,11 @@ module RemoteDevelopment
     # Organization Cluster Agent Mapping delete errors
     OrganizationClusterAgentMappingNotFound = Class.new(Gitlab::Fp::Message)
 
+    # Devfile errors
+    DevfileYamlParseFailed = Class.new(Gitlab::Fp::Message)
+    DevfileRestrictionsFailed = Class.new(Gitlab::Fp::Message)
+    DevfileFlattenFailed = Class.new(Gitlab::Fp::Message)
+
     #---------------------------------------------------------
     # Domain Events - message name should describe the outcome
     #---------------------------------------------------------
@@ -68,5 +70,8 @@ module RemoteDevelopment
     # Organization Cluster Agent Mapping domain events
     OrganizationClusterAgentMappingCreateSuccessful = Class.new(Gitlab::Fp::Message)
     OrganizationClusterAgentMappingDeleteSuccessful = Class.new(Gitlab::Fp::Message)
+
+    # Devfile domain events
+    DevfileValidateSuccessful = Class.new(Gitlab::Fp::Message)
   end
 end

@@ -3,6 +3,7 @@ import { GlFormGroup, GlFormSelect } from '@gitlab/ui';
 import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
 import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
 import autofocusonshow from '~/vue_shared/directives/autofocusonshow';
+import { __ } from '~/locale';
 import {
   COUNTRIES_WITH_STATES_ALLOWED,
   LEADS_COUNTRY_LABEL,
@@ -53,13 +54,31 @@ export default {
       return this.trackActionForErrors ? 'js-track-error' : '';
     },
     countryOptionsWithDefault() {
-      return [
-        {
-          name: this.$options.i18n.countrySelectPrompt,
-          id: '',
-        },
-        ...this.countries,
+      const topCountries = [
+        { id: 'US', name: __('United States of America') },
+        { id: 'GB', name: __('United Kingdom') },
+        { id: 'CA', name: __('Canada') },
+        { id: 'DE', name: __('Germany') },
+        { id: 'FR', name: __('France') },
       ];
+
+      const separator = {
+        id: 'separator',
+        name: '──────────',
+        disabled: true,
+      };
+
+      const initialOption = {
+        name: this.$options.i18n.countrySelectPrompt,
+        id: '',
+      };
+
+      const topCountryIds = topCountries.map((country) => country.id);
+      const remainingCountries = this.countries.filter(
+        (country) => !topCountryIds.includes(country.id),
+      );
+
+      return [initialOption, ...topCountries, separator, ...remainingCountries];
     },
     stateRequired() {
       return COUNTRIES_WITH_STATES_ALLOWED.includes(this.selectedCountry);

@@ -1,22 +1,18 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require "fast_spec_helper"
 
 # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::DevfileOperations::Observer, feature_category: :workspaces do
   let(:user) { instance_double("User") }
-  let(:project) { instance_double("Project") }
   let(:internal_events_class) { class_double("Gitlab::InternalEvents") }
-  let(:event_name) { "create_workspace_result" }
+  let(:event_name) { "devfile_validate_result" }
   let(:label) { "succeed" }
   let(:category) { described_class.to_s }
   let(:context) do
     {
       user: user,
-      internal_events_class: internal_events_class,
-      params: {
-        project: project
-      }
+      internal_events_class: internal_events_class
     }
   end
 
@@ -28,8 +24,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver
     it "tracks a succeeded event" do
       expect(internal_events_class)
         .to receive(:track_event)
-              .with(event_name, category: category, user: user, project: project,
-                additional_properties: { label: label })
+              .with(event_name, category: category, user: user, additional_properties: { label: label })
 
       expect(returned_value).to be_nil
     end
