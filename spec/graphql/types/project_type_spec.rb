@@ -49,7 +49,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_proj
       allows_multiple_merge_request_assignees allows_multiple_merge_request_reviewers is_forked
       protectable_branches available_deploy_keys explore_catalog_path
       container_protection_tag_rules pages_force_https pages_use_unique_domain ci_pipeline_creation_request
-      ci_pipeline_creation_inputs marked_for_deletion_on is_adjourned_deletion_enabled permanent_deletion_date
+      ci_pipeline_creation_inputs marked_for_deletion_on permanent_deletion_date
       merge_request_title_regex
     ]
 
@@ -1487,7 +1487,6 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_proj
         query {
           project(fullPath: "#{project_full_path}") {
             markedForDeletionOn
-            isAdjournedDeletionEnabled
             permanentDeletionDate
           }
         }
@@ -1503,7 +1502,6 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_proj
       result = GitlabSchema.execute(query, context: { current_user: user }).as_json
       {
         marked_for_deletion_on: result.dig('data', 'project', 'markedForDeletionOn'),
-        is_adjourned_deletion_enabled: result.dig('data', 'project', 'isAdjournedDeletionEnabled'),
         permanent_deletion_date: result.dig('data', 'project', 'permanentDeletionDate')
       }
     end
@@ -1512,10 +1510,6 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_proj
       marked_for_deletion_on_time = Time.zone.parse(project_data[:marked_for_deletion_on])
 
       expect(marked_for_deletion_on_time).to eq(pending_delete_project.marked_for_deletion_at.iso8601)
-    end
-
-    it 'is_adjourned_deletion_enabled returns true' do
-      expect(project_data[:is_adjourned_deletion_enabled]).to be true
     end
 
     context 'when project is scheduled for deletion' do
