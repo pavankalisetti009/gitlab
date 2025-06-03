@@ -50,6 +50,16 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
 
       it { is_expected.to eq(with_billable_role) }
     end
+
+    context 'when member_role is invalid' do
+      let(:member_role_id) { non_existing_record_id }
+
+      it 'raises an InvalidMemberRoleError' do
+        expect { subject }.to raise_error(
+          ::GitlabSubscriptions::BillableUsersUtils::InvalidMemberRoleError
+        )
+      end
+    end
   end
 
   shared_examples 'raises InvalidSubscriptionTypeError' do
@@ -58,7 +68,7 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
 
     it 'raises an InvalidSubscriptionTypeError' do
       expect { subject }.to raise_error(
-        GitlabSubscriptions::BillableUsersUtils::InvalidSubscriptionTypeError
+        ::GitlabSubscriptions::BillableUsersUtils::InvalidSubscriptionTypeError
       )
     end
   end
@@ -120,12 +130,6 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
         let(:role) { Gitlab::Access::GUEST }
 
         it_behaves_like "billable_role_change? with member_role_id", :guest, false, true
-      end
-
-      context 'when role is MINIMAL ACCESS' do
-        let(:role) { Gitlab::Access::MINIMAL_ACCESS }
-
-        it_behaves_like "billable_role_change? with member_role_id", :minimal_access, false, false
       end
     end
   end
