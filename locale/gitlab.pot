@@ -31845,6 +31845,9 @@ msgstr ""
 msgid "Images with incorrect dimensions are not resized automatically, and may result in unexpected behavior."
 msgstr ""
 
+msgid "Immutable tag rules require an Ultimate license"
+msgstr ""
+
 msgid "Impact detected"
 msgstr ""
 
