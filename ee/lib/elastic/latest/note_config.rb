@@ -23,6 +23,7 @@ module Elastic
 
         indexes :note, type: :text, index_options: 'positions', analyzer: :code_analyzer
         indexes :project_id, type: :long
+        indexes :traversal_ids, type: :keyword
 
         indexes :noteable_type, type: :keyword
         indexes :noteable_id, type: :long
