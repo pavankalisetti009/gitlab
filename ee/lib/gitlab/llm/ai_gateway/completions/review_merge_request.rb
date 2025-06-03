@@ -334,12 +334,15 @@ module Gitlab
 
           # rubocop: disable CodeReuse/ActiveRecord -- NOT a ActiveRecord object
           def trimmed_draft_note_params
-            # Filter out lower priority comments (< 3) and take only a limited
-            # number of reviews to minimize the review volume
-            @draft_notes_by_priority
-              .select { |note| note.first >= PRIORITY_THRESHOLD }
-              .take(DRAFT_NOTES_COUNT_LIMIT)
-              .map(&:last)
+            notes = @draft_notes_by_priority
+
+            unless Feature.enabled?(:duo_code_review_show_all_comments, user)
+              # Filter out lower priority comments (< 3) and take only a limited
+              # number of reviews to minimize the review volume
+              notes = notes.select { |note| note.first >= PRIORITY_THRESHOLD }
+            end
+
+            notes.take(DRAFT_NOTES_COUNT_LIMIT).map(&:last)
           end
           # rubocop: enable CodeReuse/ActiveRecord
 
