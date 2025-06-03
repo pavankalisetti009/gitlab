@@ -30,6 +30,7 @@ export default {
     WorkItemSidebarDropdownWidget,
   },
   mixins: [InternalEvents.mixin()],
+  inject: ['hasStatusFeature'],
   props: {
     fullPath: {
       type: String,
@@ -244,6 +245,7 @@ export default {
 
 <template>
   <work-item-sidebar-dropdown-widget
+    v-if="hasStatusFeature"
     :dropdown-label="$options.i18n.status"
     :can-update="canUpdate"
     dropdown-name="status"
