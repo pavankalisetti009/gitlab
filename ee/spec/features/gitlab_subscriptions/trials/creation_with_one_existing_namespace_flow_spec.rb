@@ -19,7 +19,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       fill_in_company_information
 
-      submit_single_namespace_trial_company_form(with_trial: true)
+      submit_single_namespace_trial_form
 
       expect_to_be_on_gitlab_duo_page
     end
@@ -33,11 +33,11 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
         stub_cdot_namespace_eligible_trials
         visit new_trial_path
 
-        expect_to_be_on_lead_form_with_name_fields
+        expect_to_be_on_trial_form_with_name_fields
 
         fill_in_company_information_with_last_name('Smith')
 
-        submit_single_namespace_trial_company_form(with_trial: true, last_name: 'Smith')
+        submit_single_namespace_trial_form(last_name: 'Smith')
 
         expect_to_be_on_gitlab_duo_page
       end
@@ -54,7 +54,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_single_namespace_trial_company_form(with_trial: true)
+        submit_single_namespace_trial_form
 
         expect_to_be_on_gitlab_duo_page(path: group.name)
       end
@@ -75,7 +75,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_single_namespace_trial_company_form(with_trial: true)
+        submit_single_namespace_trial_form
 
         expect_to_be_on_gitlab_duo_page(path: group.name)
       end
@@ -97,7 +97,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_single_namespace_trial_company_form(with_trial: true)
+        submit_single_namespace_trial_form
 
         expect_to_be_on_gitlab_duo_page(path: group.name)
       end
@@ -112,90 +112,63 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_single_namespace_trial_company_form(
-          with_trial: true,
-          extra_params: { glm_content: 'discover-group-security' }
-        )
+        submit_single_namespace_trial_form(glm: { glm_content: 'discover-group-security' })
 
         expect_to_be_on_group_security_dashboard
       end
     end
   end
 
-  context 'when applying lead fails' do
-    it 'fills out form, submits and sent back to information form with errors and is then resolved' do
-      # setup
-      sign_in(user)
+  def submit_single_namespace_trial_form(
+    lead_result: ServiceResponse.success,
+    trial_result: ServiceResponse.success,
+    glm: {},
+    extra_params: {},
+    last_name: user.last_name
+  )
+    # lead
+    expect_lead_submission(lead_result, last_name: last_name, glm: glm)
 
-      stub_cdot_namespace_eligible_trials
-      visit new_trial_path
+    # trial
+    if lead_result.success? # rubocop:disable RSpec/AvoidConditionalStatements -- Not applicable in helper method
+      stub_apply_trial(
+        namespace_id: group.id,
+        result: trial_result,
+        extra_params: extra_params.merge(existing_group_attrs).merge(glm)
+      )
+      stub_duo_landing_page_data
+    end
 
-      fill_in_company_information
+    click_button 'Activate my trial'
 
-      # lead failure
-      submit_single_namespace_trial_company_form(lead_result: lead_failure)
+    wait_for_requests
+  end
 
-      expect_to_be_on_lead_form_with_errors
+  def expect_lead_submission(lead_result, last_name:, glm:)
+    trial_user_params = {
+      company_name: form_data[:company_name],
+      first_name: user.first_name,
+      last_name: last_name,
+      phone_number: form_data[:phone_number],
+      country: form_data.dig(:country, :id),
+      work_email: user.email,
+      uid: user.id,
+      setup_for_company: user.onboarding_status_setup_for_company,
+      skip_email_confirmation: true,
+      gitlab_com_trial: true,
+      provider: 'gitlab',
+      state: form_data.dig(:state, :id)
+    }.merge(glm)
 
-      # success
-      submit_single_namespace_trial_company_form(with_trial: true)
-
-      expect_to_be_on_gitlab_duo_page
+    expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+      expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
     end
   end
 
-  context 'when applying trial fails' do
-    it 'fills out form, submits and is sent to select namespace with errors and is then resolved' do
-      # setup
-      sign_in(user)
-
-      stub_cdot_namespace_eligible_trials
-      visit new_trial_path
-
-      fill_in_company_information
-
-      # trial failure
-      submit_single_namespace_trial_company_form(with_trial: true, trial_result: trial_failure)
-
-      expect_to_be_on_namespace_selection_with_errors
-
-      # success
-      fill_in_trial_selection_form(group_select: false)
-
-      submit_trial_selection_form
-
-      expect_to_be_on_gitlab_duo_page
+  def expect_to_be_on_trial_form_with_name_fields
+    within_testid('trial-form') do
+      expect(find_by_testid('first-name-field').value).to have_content(user.first_name)
+      expect(find_by_testid('last-name-field').value).to have_content(user.last_name)
     end
-
-    it 'fails submitting trial and then chooses to create a namespace and apply trial to it' do
-      # setup
-      sign_in(user)
-
-      stub_cdot_namespace_eligible_trials
-      visit new_trial_path
-
-      fill_in_company_information
-
-      # trial failure
-      submit_single_namespace_trial_company_form(with_trial: true, trial_result: trial_failure)
-
-      expect_to_be_on_namespace_selection_with_errors
-
-      # user pivots and decides to create a new group instead of using existing
-      select_from_listbox 'Create group', from: 'gitlab'
-      wait_for_requests
-
-      fill_in_trial_form_for_new_group
-
-      # success
-      group_name = 'gitlab1'
-      submit_new_group_trial_selection_form(extra_params: new_group_attrs(path: group_name))
-
-      expect_to_be_on_gitlab_duo_page(path: group_name)
-    end
-  end
-
-  def submit_single_namespace_trial_company_form(**kwargs)
-    submit_company_information_form(**kwargs, button_text: 'Activate my trial')
   end
 end

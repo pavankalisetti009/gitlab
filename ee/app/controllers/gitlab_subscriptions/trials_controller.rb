@@ -18,6 +18,16 @@ module GitlabSubscriptions
 
         render GitlabSubscriptions::Trials::TrialFormComponent
                  .new(eligible_namespaces: @eligible_namespaces, params: trial_form_params)
+      elsif ::Feature.enabled?(:ultimate_trial_single_form, current_user)
+        track_event('render_trial_page')
+
+        render GitlabSubscriptions::Trials::Ultimate::TrialFormComponent
+                 .new(
+                   user: current_user,
+                   namespace_id: general_params[:namespace_id],
+                   eligible_namespaces: @eligible_namespaces,
+                   params: form_params
+                 )
       else
         track_event('render_lead_page')
 
@@ -102,6 +112,10 @@ module GitlabSubscriptions
 
     def trial_form_params
       ::Onboarding::StatusPresenter.glm_tracking_params(params).merge(params.permit(:new_group_name, :namespace_id)) # rubocop:disable Rails/StrongParams -- method performs strong params
+    end
+
+    def form_params
+      lead_form_params.merge(trial_form_params).with_indifferent_access
     end
 
     def trial_success_path(namespace)

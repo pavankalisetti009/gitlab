@@ -14,7 +14,6 @@ import {
   TRIAL_PHONE_DESCRIPTION,
   GENERIC_TRIAL_FORM_SUBMIT_TEXT,
   ULTIMATE_TRIAL_FOOTER_DESCRIPTION,
-  TRIAL_DESCRIPTION,
   ULTIMATE_TRIAL_FORM_SUBMIT_TEXT,
 } from 'ee/trials/constants';
 import { trackCompanyForm } from 'ee/google_tag_manager';
@@ -68,7 +67,6 @@ export default {
     phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
     phoneNumberDescription: TRIAL_PHONE_DESCRIPTION,
     optional: __('(optional)'),
-    description: TRIAL_DESCRIPTION,
     formSubmitText: {
       trial: GENERIC_TRIAL_FORM_SUBMIT_TEXT,
       registration: ULTIMATE_TRIAL_FORM_SUBMIT_TEXT,
@@ -89,7 +87,6 @@ export default {
     @submit="trackCompanyForm"
   >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-    <p data-testid="description" class="gl-mb-6 gl-text-center">{{ $options.i18n.description }}</p>
     <div class="gl-border-1 gl-border-solid gl-border-gray-100 gl-p-6">
       <div v-show="showNameFields" class="gl-flex gl-flex-col sm:gl-flex-row">
         <gl-form-group

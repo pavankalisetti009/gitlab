@@ -15220,6 +15220,9 @@ msgstr ""
 msgid "Company name"
 msgstr ""
 
+msgid "Company name is required."
+msgstr ""
+
 msgid "Compare"
 msgstr ""
 
@@ -18529,6 +18532,9 @@ msgid "Counter exceeded max value"
 msgstr ""
 
 msgid "Country or region"
+msgstr ""
+
+msgid "Country or region is required."
 msgstr ""
 
 msgid "Counts"
@@ -26862,6 +26868,9 @@ msgid "First day of the week"
 msgstr ""
 
 msgid "First name"
+msgstr ""
+
+msgid "First name is required."
 msgstr ""
 
 msgid "First seen"
@@ -35907,6 +35916,9 @@ msgid "Last month"
 msgstr ""
 
 msgid "Last name"
+msgstr ""
+
+msgid "Last name is required."
 msgstr ""
 
 msgid "Last repository check (%{last_check_timestamp}) failed. See the 'repocheck.log' file for error messages."
@@ -59661,6 +59673,9 @@ msgid "Starts: %{startsAt}"
 msgstr ""
 
 msgid "State"
+msgstr ""
+
+msgid "State or province is required."
 msgstr ""
 
 msgid "State your message to activate"

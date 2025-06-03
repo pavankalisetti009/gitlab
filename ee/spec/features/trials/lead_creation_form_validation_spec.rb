@@ -34,6 +34,7 @@ RSpec.describe 'Trial lead form submission and validation', :with_current_organi
     end
 
     it 'proceeds to the next step' do
+      stub_feature_flags(ultimate_trial_single_form: false)
       sign_in(user)
 
       visit new_trial_path

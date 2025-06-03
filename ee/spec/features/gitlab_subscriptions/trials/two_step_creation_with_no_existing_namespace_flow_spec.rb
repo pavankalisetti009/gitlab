@@ -3,10 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe 'Trial lead submission, group and trial creation', :with_current_organization, :saas_trial, :js, :use_clean_rails_memory_store_caching, feature_category: :acquisition do
-  let_it_be(:user) { create(:user, organizations: [current_organization]) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- We need to ensure user is member of current organization
+  let_it_be(:user) { create(:user, organizations: [current_organization]) }
 
   before_all do
     create(:gitlab_subscription_add_on, :duo_enterprise)
+  end
+
+  before do
+    stub_feature_flags(ultimate_trial_single_form: false)
   end
 
   context 'when creating lead, group and applying trial is successful' do
