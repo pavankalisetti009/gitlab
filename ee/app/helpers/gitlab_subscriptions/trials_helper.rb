@@ -2,13 +2,6 @@
 
 module GitlabSubscriptions
   module TrialsHelper
-    def duo_trial_namespace_selector_data(namespaces, namespace_create_errors)
-      namespace_selector_data(namespace_create_errors).merge(
-        any_trial_eligible_namespaces: namespaces.any?.to_s,
-        items: GitlabSubscriptions::Trials::TrialFormDisplayUtilities.format_namespaces_for_selector(namespaces).to_json
-      )
-    end
-
     def glm_source
       ::Gitlab.config.gitlab.host
     end
@@ -19,17 +12,6 @@ module GitlabSubscriptions
         namespace.private? &&
         namespace.never_had_trial? &&
         can?(user, :read_billing, namespace)
-    end
-
-    def trial_form_errors_message(result)
-      unless result.reason == GitlabSubscriptions::Trials::BaseApplyTrialService::GENERIC_TRIAL_ERROR
-        return result.errors.to_sentence
-      end
-
-      safe_format(
-        errors_message(result.errors),
-        tag_pair(support_link, :support_link_start, :support_link_end)
-      )
     end
 
     private
