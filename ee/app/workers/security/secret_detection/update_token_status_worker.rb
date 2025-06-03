@@ -20,14 +20,6 @@ module Security
 
       DEFAULT_BATCH_SIZE = 100
 
-      SECRET_TYPE_MAPPING = {
-        'gitlab_personal_access_token' => 'gitlab_personal_access_token',
-        'gitlab_personal_access_token_routable' => 'gitlab_personal_access_token',
-        'gitlab_deploy_token' => 'gitlab_deploy_token',
-        'gitlab_runner_auth_token' => 'gitlab_runner_auth_token',
-        'gitlab_runner_auth_token_routable' => 'gitlab_runner_auth_token_routable'
-      }.freeze
-
       # Creates or updates FindingTokenStatus records for secret detection findings in a pipeline.
       #
       # @param [Integer] pipeline_id ID of the pipeline containing security scan results
@@ -108,7 +100,6 @@ module Security
         # organise detected tokens by type
         raw_token_values_by_token_type = findings.each_with_object({}) do |finding, result|
           finding_type = finding.token_type
-          finding_type = SECRET_TYPE_MAPPING[finding_type]
           result[finding_type] = [] unless result[finding_type]
           result[finding_type] << finding.metadata['raw_source_code_extract']
 
@@ -141,7 +132,7 @@ module Security
         findings.each_with_object({}) do |finding, attr_by_raw_token|
           token_value = finding.metadata['raw_source_code_extract']
 
-          next unless SECRET_TYPE_MAPPING.key?(finding.token_type)
+          next unless Security::SecretDetection::TokenLookupService.supported_token_type?(finding.token_type)
 
           attr_by_raw_token[token_value] ||= []
           attr_by_raw_token[token_value] << build_finding_token_status_attributes(finding, now)
