@@ -205,7 +205,6 @@ module EE
         field :self_managed_users_queued_for_role_promotion,
           EE::Types::GitlabSubscriptions::MemberManagement::UsersQueuedForRolePromotionType.connection_type,
           null: true,
-          experiment: { milestone: '17.1' },
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::SelfManaged::
               UsersQueuedForRolePromotionResolver,
           description: 'Fields related to users within a self-managed instance that are pending role ' \
