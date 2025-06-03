@@ -4,7 +4,7 @@ import {
   GlTableLite,
   GlIcon,
   GlAvatarsInline,
-  GlPagination,
+  GlKeysetPagination,
 } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
@@ -14,7 +14,7 @@ import Vuex from 'vuex';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import throughputTableQuery from 'ee/analytics/merge_request_analytics/graphql/queries/throughput_table.query.graphql';
-import ThroughputTable from 'ee/analytics/merge_request_analytics/components/throughput_table.vue';
+import ThroughputTableProvider from 'ee/analytics/merge_request_analytics/components/throughput_table_provider.vue';
 import {
   THROUGHPUT_TABLE_STRINGS,
   THROUGHPUT_TABLE_TEST_IDS as TEST_IDS,
@@ -31,7 +31,7 @@ import {
 
 Vue.use(Vuex);
 
-describe('ThroughputTable', () => {
+describe('ThroughputTableProvider', () => {
   let wrapper;
 
   const defaultHandlers = (nodes = [], extraPageInfo = {}) => {
@@ -63,7 +63,7 @@ describe('ThroughputTable', () => {
 
   function createComponent(options = {}) {
     const { func = shallowMount, handlers = defaultHandlers() } = options;
-    wrapper = func(ThroughputTable, {
+    wrapper = func(ThroughputTableProvider, {
       apolloProvider: createMockApolloProvider(handlers),
       store: createStore(),
       provide: {
@@ -99,11 +99,11 @@ describe('ThroughputTable', () => {
   const findColSubComponent = (colTestId, childComponent) =>
     findCol(colTestId).findComponent(childComponent);
 
-  const findPagination = () => wrapper.findComponent(GlPagination);
+  const findPagination = () => wrapper.findComponent(GlKeysetPagination);
 
-  const findPrevious = () => findPagination().findAll('[data-testid="gl-pagination-li"]').at(0);
+  const findPrevious = () => findPagination().findComponent('[data-testid="prevButton"]');
 
-  const findNext = () => findPagination().findAll('[data-testid="gl-pagination-li"]').at(1);
+  const findNext = () => findPagination().findComponent('[data-testid="nextButton"]');
 
   describe('default state', () => {
     beforeEach(async () => {
@@ -125,7 +125,7 @@ describe('ThroughputTable', () => {
     });
 
     it('does not display the pagination', () => {
-      displaysComponent(GlPagination, false);
+      displaysComponent(GlKeysetPagination, false);
     });
   });
 
@@ -166,7 +166,7 @@ describe('ThroughputTable', () => {
     });
 
     it('displays the pagination', () => {
-      displaysComponent(GlPagination, true);
+      displaysComponent(GlKeysetPagination, true);
     });
 
     describe('table fields', () => {

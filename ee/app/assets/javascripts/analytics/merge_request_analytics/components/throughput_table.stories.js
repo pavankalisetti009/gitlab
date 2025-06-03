@@ -1,6 +1,6 @@
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { withVuexStore } from 'storybook_addons/vuex_store';
-import ThroughputTable from 'ee/analytics/merge_request_analytics/components/throughput_table.vue';
+import ThroughputTableProvider from 'ee/analytics/merge_request_analytics/components/throughput_table_provider.vue';
 import filters from '~/vue_shared/components/filtered_search_bar/store/modules/filters';
 import throughputTableQuery from '../graphql/queries/throughput_table.query.graphql';
 import {
@@ -14,8 +14,8 @@ import {
 const defaultQueryResolver = { data: throughputTableData };
 
 export default {
-  component: ThroughputTable,
-  title: 'ee/analytics/merge_request_analytics/components/throughput_table',
+  component: ThroughputTableProvider,
+  title: 'ee/analytics/merge_request_analytics/components/throughput_table_provider',
   decorators: [withVuexStore],
 };
 
@@ -25,7 +25,7 @@ const createStory = ({ mockApollo, requestHandler = defaultQueryResolver } = {})
   ]);
 
   return (args, { argTypes, createVuexStore }) => ({
-    components: { ThroughputTable },
+    components: { ThroughputTableProvider },
     apolloProvider: mockApollo || defaultApolloProvider,
     store: createVuexStore({
       modules: { filters },
@@ -34,7 +34,7 @@ const createStory = ({ mockApollo, requestHandler = defaultQueryResolver } = {})
       fullPath,
     },
     props: Object.keys(argTypes),
-    template: '<throughput-table v-bind="$props"/>',
+    template: '<throughput-table-provider v-bind="$props"/>',
   });
 };
 
