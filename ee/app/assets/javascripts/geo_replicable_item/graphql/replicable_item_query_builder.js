@@ -1,9 +1,9 @@
 import { gql } from '@apollo/client/core';
 
 // Query.geoNode to be renamed to Query.geoSite => https://gitlab.com/gitlab-org/gitlab/-/issues/396739
-export default (graphQlFieldName, verificationEnabled) => {
+export default (graphQlClassID, graphQlFieldName, verificationEnabled) => {
   return gql`
-    query($ids: [ID!]) {
+    query($ids: [${graphQlClassID}!]) {
       geoNode {
         ${graphQlFieldName}(ids: $ids) {
           nodes {

@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_policy_management do
   let_it_be_with_reload(:project) { create(:project, group: create(:group)) }
-  let_it_be_with_reload(:namespace) { create(:group, :public) }
+  let_it_be_with_refind(:namespace) { create(:group, :public) }
   let_it_be(:timezones) { [{ identifier: "Europe/Paris" }] }
 
   describe '#can_update_security_orchestration_policy_project?' do
@@ -158,6 +158,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           create_agent_help_path: kind_of(String),
           namespace_id: project.id,
           namespace_path: kind_of(String),
+          designated_as_csp: 'false',
           policy_editor_empty_state_svg_path: kind_of(String),
           policies_path: kind_of(String),
           policy: policy&.to_json,
@@ -254,6 +255,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           scan_policy_documentation_path: kind_of(String),
           namespace_path: namespace.full_path,
           namespace_id: namespace.id,
+          designated_as_csp: 'false',
           software_licenses: kind_of(Array),
           global_group_approvers_enabled:
             Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
@@ -334,6 +336,16 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       end
 
       it_behaves_like 'loads software_licenses names'
+
+      context 'when the namespace is designated as CSP' do
+        include Security::PolicyCspHelpers
+
+        before do
+          stub_csp_group(namespace)
+        end
+
+        it { is_expected.to match(base_data.merge(designated_as_csp: 'true')) }
+      end
     end
   end
 

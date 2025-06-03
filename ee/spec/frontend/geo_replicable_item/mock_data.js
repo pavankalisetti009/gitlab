@@ -1,6 +1,7 @@
 export const MOCK_REPLICABLE_CLASS = {
   graphqlRegistryClass: 'Geo::MockRegistry',
   graphqlFieldName: 'testGraphqlFieldName',
+  graphqlRegistryIdType: 'GeoMockRegistryID',
   verificationEnabled: true,
 };
 
