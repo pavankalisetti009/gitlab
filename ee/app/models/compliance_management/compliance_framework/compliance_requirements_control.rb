@@ -52,7 +52,7 @@ module ComplianceManagement
       validates :external_control_name, length: { maximum: 255 }
       validates :external_control_name,
         uniqueness: { scope: :compliance_requirement_id },
-        allow_nil: true,
+        allow_blank: true,
         if: -> { external_control_name.present? }
 
       scope :for_framework, ->(framework_id) {
