@@ -159,6 +159,17 @@ describe('Permissions Selector component', () => {
       });
     });
 
+    describe('when disabled permissions is clicked', () => {
+      beforeEach(async () => {
+        await createComponent();
+        findTable().vm.$emit('row-clicked', { disabled: true });
+      });
+
+      it('does not toggle permission', () => {
+        expect(wrapper.emitted('change')).toBeUndefined();
+      });
+    });
+
     describe('on query error', () => {
       beforeEach(() => {
         const availablePermissionsHandler = jest.fn().mockRejectedValue();
