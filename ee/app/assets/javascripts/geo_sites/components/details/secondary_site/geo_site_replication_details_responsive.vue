@@ -15,7 +15,6 @@ export default {
       'Geo|Replicated data is verified with the secondary site(s) using checksums',
     ),
     learnMore: __('Learn more'),
-    nA: __('Not applicable.'),
     progressBarSyncTitle: s__('Geo|%{titlePlural} synced'),
     progressBarVerifTitle: s__('Geo|%{titlePlural} verified'),
     verified: s__('Geo|Verified'),
@@ -69,7 +68,6 @@ export default {
         </div>
         <div class="gl-mr-5" data-testid="sync-status">
           <geo-site-progress-bar
-            v-if="item.syncValues"
             :title="
               /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ sprintf(
                 $options.i18n.progressBarSyncTitle,
@@ -79,11 +77,9 @@ export default {
             :target="`sync-progress-${siteId}-${item.namePlural}`"
             :values="item.syncValues"
           />
-          <span v-else class="gl-text-sm gl-text-subtle">{{ $options.i18n.nA }}</span>
         </div>
         <div data-testid="verification-status">
           <geo-site-progress-bar
-            v-if="item.verificationValues"
             :title="
               /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ sprintf(
                 $options.i18n.progressBarVerifTitle,
@@ -95,7 +91,6 @@ export default {
             :success-label="$options.i18n.verified"
             :unavailable-label="$options.i18n.nothingToVerify"
           />
-          <span v-else class="gl-text-sm gl-text-subtle">{{ $options.i18n.nA }}</span>
         </div>
       </slot>
     </div>

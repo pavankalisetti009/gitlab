@@ -1,4 +1,4 @@
-import { shallowMountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteProgressBar from 'ee/geo_sites/components/details/geo_site_progress_bar.vue';
 import GeoSiteReplicationStatusMobile from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_status_mobile.vue';
 
@@ -12,7 +12,6 @@ describe('GeoSiteReplicationStatusMobile', () => {
       verificationValues: null,
     },
     translations: {
-      nA: 'Not applicable.',
       progressBarSyncTitle: '%{component} synced',
       progressBarVerifTitle: '%{component} verified',
     },
@@ -32,32 +31,26 @@ describe('GeoSiteReplicationStatusMobile', () => {
 
   describe('template', () => {
     describe.each`
-      description                    | item                                                                                                                                                        | renderSyncProgress | renderVerifProgress
-      ${'with no data'}              | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: null }}                                             | ${false}           | ${false}
-      ${'with no verification data'} | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }}                       | ${true}            | ${false}
-      ${'with no sync data'}         | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }}                       | ${false}           | ${true}
-      ${'with all data'}             | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }} | ${true}            | ${true}
-    `('$description', ({ item, renderSyncProgress, renderVerifProgress }) => {
+      description                    | item
+      ${'with no data'}              | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: null }}
+      ${'with no verification data'} | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }}
+      ${'with no sync data'}         | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }}
+      ${'with all data'}             | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }}
+    `('$description', ({ item }) => {
       beforeEach(() => {
         createComponent({ item });
       });
 
-      it('renders sync progress correctly', () => {
-        expect(findItemSyncStatus().findComponent(GeoSiteProgressBar).exists()).toBe(
-          renderSyncProgress,
-        );
-        expect(extendedWrapper(findItemSyncStatus()).findByText('Not applicable.').exists()).toBe(
-          !renderSyncProgress,
+      it('always renders sync progress bar component with correct target', () => {
+        expect(findItemSyncStatus().findComponent(GeoSiteProgressBar).props('target')).toBe(
+          'mobile-sync-progress-test_components',
         );
       });
 
-      it('renders verification progress correctly', () => {
-        expect(findItemVerificationStatus().findComponent(GeoSiteProgressBar).exists()).toBe(
-          renderVerifProgress,
+      it('always renders verification progress bar component with correct target', () => {
+        expect(findItemVerificationStatus().findComponent(GeoSiteProgressBar).props('target')).toBe(
+          'mobile-verification-progress-test_components',
         );
-        expect(
-          extendedWrapper(findItemVerificationStatus()).findByText('Not applicable.').exists(),
-        ).toBe(!renderVerifProgress);
       });
     });
   });

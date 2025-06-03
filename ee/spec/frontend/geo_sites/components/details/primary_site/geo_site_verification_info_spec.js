@@ -7,7 +7,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteProgressBar from 'ee/geo_sites/components/details/geo_site_progress_bar.vue';
 import GeoSiteVerificationInfo from 'ee/geo_sites/components/details/primary_site/geo_site_verification_info.vue';
 import { HELP_INFO_URL } from 'ee/geo_sites/constants';
-import { MOCK_PRIMARY_SITE, MOCK_PRIMARY_VERIFICATION_INFO } from 'ee_jest/geo_sites/mock_data';
+import { MOCK_PRIMARY_SITE, MOCK_VERIFICATION_INFO } from 'ee_jest/geo_sites/mock_data';
 
 Vue.use(Vuex);
 
@@ -21,7 +21,7 @@ describe('GeoSiteVerificationInfo', () => {
   const createComponent = (props) => {
     const store = new Vuex.Store({
       getters: {
-        verificationInfo: () => () => MOCK_PRIMARY_VERIFICATION_INFO,
+        verificationInfo: () => () => MOCK_VERIFICATION_INFO,
       },
     });
 
@@ -67,12 +67,12 @@ describe('GeoSiteVerificationInfo', () => {
       });
 
       it('renders a progress bar for each verification replicable', () => {
-        expect(findGeoSiteProgressBars()).toHaveLength(MOCK_PRIMARY_VERIFICATION_INFO.length);
+        expect(findGeoSiteProgressBars()).toHaveLength(MOCK_VERIFICATION_INFO.length);
       });
 
       it('renders progress bar titles correctly', () => {
         expect(findGeoSiteProgressBarTitles().wrappers.map((w) => w.text())).toStrictEqual(
-          MOCK_PRIMARY_VERIFICATION_INFO.map((vI) => `${vI.titlePlural} checksum progress`),
+          MOCK_VERIFICATION_INFO.map((vI) => `${vI.titlePlural} checksum progress`),
         );
       });
     });

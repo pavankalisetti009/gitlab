@@ -63,60 +63,39 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
       });
 
       describe.each`
-        description                    | replicationItems                                                                                                                                                                           | renderSyncProgress | renderVerifProgress
-        ${'with no data'}              | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: null }]}                                             | ${false}           | ${false}
-        ${'with no verification data'} | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }]}                       | ${true}            | ${false}
-        ${'with no sync data'}         | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }]}                       | ${false}           | ${true}
-        ${'with all data'}             | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }]} | ${true}            | ${true}
-      `('$description', ({ replicationItems, renderSyncProgress, renderVerifProgress }) => {
+        description                    | replicationItems
+        ${'with no data'}              | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: null }]}
+        ${'with no verification data'} | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }]}
+        ${'with no sync data'}         | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }]}
+        ${'with all data'}             | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }]}
+      `('$description', ({ replicationItems }) => {
         beforeEach(() => {
           createComponent({ replicationItems, siteId: 42 });
         });
 
-        it('renders sync progress correctly', () => {
+        it('always renders sync progress bar component with correct target', () => {
           expect(
-            findFirstReplicationDetailsItemSyncStatus().findComponent(GeoSiteProgressBar).exists(),
-          ).toBe(renderSyncProgress);
-          expect(
-            extendedWrapper(findFirstReplicationDetailsItemSyncStatus())
-              .findByText('Not applicable.')
-              .exists(),
-          ).toBe(!renderSyncProgress);
-
-          if (renderSyncProgress) {
-            expect(
-              findFirstReplicationDetailsItemSyncStatus()
-                .findComponent(GeoSiteProgressBar)
-                .props('target'),
-            ).toBe('sync-progress-42-test_components');
-          }
+            findFirstReplicationDetailsItemSyncStatus()
+              .findComponent(GeoSiteProgressBar)
+              .props('target'),
+          ).toBe('sync-progress-42-test_components');
         });
 
-        it('renders verification progress correctly', () => {
+        it('always renders verification progress bar component with correct target', () => {
           expect(
-            findFirstReplicationDetailsItemVerifStatus().findComponent(GeoSiteProgressBar).exists(),
-          ).toBe(renderVerifProgress);
-          expect(
-            extendedWrapper(findFirstReplicationDetailsItemVerifStatus())
-              .findByText('Not applicable.')
-              .exists(),
-          ).toBe(!renderVerifProgress);
-
-          if (renderVerifProgress) {
-            expect(
-              findFirstReplicationDetailsItemVerifStatus()
-                .findComponent(GeoSiteProgressBar)
-                .props('target'),
-            ).toBe('verification-progress-42-test_components');
-          }
+            findFirstReplicationDetailsItemVerifStatus()
+              .findComponent(GeoSiteProgressBar)
+              .props('target'),
+          ).toBe('verification-progress-42-test_components');
         });
       });
 
       describe('component links', () => {
-        describe('with replicationView', () => {
+        describe('with replicationView and syncValues', () => {
           const MOCK_REPLICATION_ITEM = {
             titlePlural: 'Test Component',
             replicationView: 'https://test.domain/path',
+            syncValues: { total: 100, success: 100 },
           };
 
           beforeEach(() => {

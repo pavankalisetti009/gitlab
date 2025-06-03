@@ -11,6 +11,7 @@ export const MOCK_UNSORTED_REPLICABLE_TYPES = [
     titlePlural: 'Repositories',
     name: 'repository',
     namePlural: 'repositories',
+    replicationEnabled: true,
     verificationEnabled: true,
   },
   {
@@ -21,6 +22,8 @@ export const MOCK_UNSORTED_REPLICABLE_TYPES = [
     titlePlural: 'Designs',
     name: 'design',
     namePlural: 'designs',
+    replicationEnabled: false,
+    verificationEnabled: false,
   },
   {
     dataType: 'container_repository',
@@ -30,6 +33,8 @@ export const MOCK_UNSORTED_REPLICABLE_TYPES = [
     titlePlural: 'Container repositories',
     name: 'container_repository',
     namePlural: 'container_repositories',
+    replicationEnabled: true,
+    verificationEnabled: false,
   },
   {
     dataType: 'repository',
@@ -39,6 +44,8 @@ export const MOCK_UNSORTED_REPLICABLE_TYPES = [
     titlePlural: 'Wikis',
     name: 'wiki',
     namePlural: 'wikis',
+    replicationEnabled: true,
+    verificationEnabled: false,
   },
   {
     dataType: 'blob',
@@ -48,6 +55,8 @@ export const MOCK_UNSORTED_REPLICABLE_TYPES = [
     titlePlural: 'Package Files',
     name: 'package_file',
     namePlural: 'package_files',
+    replicationEnabled: true,
+    verificationEnabled: false,
   },
 ];
 
@@ -60,6 +69,8 @@ export const MOCK_SORTED_REPLICABLE_TYPES = [
     titlePlural: 'Designs',
     name: 'design',
     namePlural: 'designs',
+    replicationEnabled: false,
+    verificationEnabled: false,
   },
   {
     dataType: 'repository',
@@ -69,6 +80,7 @@ export const MOCK_SORTED_REPLICABLE_TYPES = [
     titlePlural: 'Repositories',
     name: 'repository',
     namePlural: 'repositories',
+    replicationEnabled: true,
     verificationEnabled: true,
   },
   {
@@ -79,6 +91,8 @@ export const MOCK_SORTED_REPLICABLE_TYPES = [
     titlePlural: 'Wikis',
     name: 'wiki',
     namePlural: 'wikis',
+    replicationEnabled: true,
+    verificationEnabled: false,
   },
   {
     dataType: 'blob',
@@ -88,6 +102,8 @@ export const MOCK_SORTED_REPLICABLE_TYPES = [
     titlePlural: 'Package Files',
     name: 'package_file',
     namePlural: 'package_files',
+    replicationEnabled: true,
+    verificationEnabled: false,
   },
   {
     dataType: 'container_repository',
@@ -97,6 +113,8 @@ export const MOCK_SORTED_REPLICABLE_TYPES = [
     titlePlural: 'Container repositories',
     name: 'container_repository',
     namePlural: 'container_repositories',
+    replicationEnabled: true,
+    verificationEnabled: false,
   },
 ];
 
@@ -117,55 +135,21 @@ export const MOCK_DATA_TYPES = [
 
 // This const is very specific, it is a hard coded filtered information from MOCK_SITES
 // Be sure if updating you follow the pattern else getters_spec.js will fail.
-export const MOCK_PRIMARY_VERIFICATION_INFO = [
-  {
-    dataType: 'repository',
-    dataTypeTitle: 'Git',
-    namePlural: 'repositories',
-    titlePlural: 'Repositories',
-    values: {
-      total: 12,
-      success: 12,
-      failed: 0,
-    },
-  },
-];
-
-// This const is very specific, it is a hard coded filtered information from MOCK_SITES
-// Be sure if updating you follow the pattern else getters_spec.js will fail.
-export const MOCK_SECONDARY_VERIFICATION_INFO = [
-  {
-    dataType: 'repository',
-    dataTypeTitle: 'Git',
-    namePlural: 'repositories',
-    titlePlural: 'Repositories',
-    values: {
-      total: 12,
-      success: 0,
-      failed: 12,
-    },
-  },
-];
-
-// This const is very specific, it is a hard coded filtered information from MOCK_SITES
-// Be sure if updating you follow the pattern else getters_spec.js will fail.
-export const MOCK_SECONDARY_SYNC_INFO = [
+export const MOCK_VERIFICATION_INFO = [
   {
     dataType: 'repository',
     dataTypeTitle: 'Git',
     namePlural: 'designs',
     titlePlural: 'Designs',
-    values: {
-      total: 12,
-      success: 0,
-      failed: 0,
-    },
+    verificationEnabled: false,
+    values: null,
   },
   {
     dataType: 'repository',
     dataTypeTitle: 'Git',
     namePlural: 'repositories',
     titlePlural: 'Repositories',
+    verificationEnabled: true,
     values: {
       total: 12,
       success: 12,
@@ -177,6 +161,56 @@ export const MOCK_SECONDARY_SYNC_INFO = [
     dataTypeTitle: 'Git',
     namePlural: 'wikis',
     titlePlural: 'Wikis',
+    verificationEnabled: false,
+    values: null,
+  },
+  {
+    dataType: 'blob',
+    dataTypeTitle: 'File',
+    namePlural: 'package_files',
+    titlePlural: 'Package Files',
+    verificationEnabled: false,
+    values: null,
+  },
+  {
+    dataType: 'container_repository',
+    dataTypeTitle: 'Container repository',
+    namePlural: 'container_repositories',
+    titlePlural: 'Container repositories',
+    verificationEnabled: false,
+    values: null,
+  },
+];
+
+// This const is very specific, it is a hard coded filtered information from MOCK_SITES
+// Be sure if updating you follow the pattern else getters_spec.js will fail.
+export const MOCK_SECONDARY_SYNC_INFO = [
+  {
+    dataType: 'repository',
+    dataTypeTitle: 'Git',
+    namePlural: 'designs',
+    titlePlural: 'Designs',
+    replicationEnabled: false,
+    values: null,
+  },
+  {
+    dataType: 'repository',
+    dataTypeTitle: 'Git',
+    namePlural: 'repositories',
+    titlePlural: 'Repositories',
+    replicationEnabled: true,
+    values: {
+      total: 12,
+      success: 12,
+      failed: 0,
+    },
+  },
+  {
+    dataType: 'repository',
+    dataTypeTitle: 'Git',
+    namePlural: 'wikis',
+    titlePlural: 'Wikis',
+    replicationEnabled: true,
     values: {
       total: 12,
       success: 6,
@@ -188,6 +222,7 @@ export const MOCK_SECONDARY_SYNC_INFO = [
     dataTypeTitle: 'File',
     namePlural: 'package_files',
     titlePlural: 'Package Files',
+    replicationEnabled: true,
     values: {
       total: 25,
       success: 25,
@@ -199,6 +234,7 @@ export const MOCK_SECONDARY_SYNC_INFO = [
     dataTypeTitle: 'Container repository',
     namePlural: 'container_repositories',
     titlePlural: 'Container repositories',
+    replicationEnabled: true,
     values: {
       total: 15,
       success: 10,
@@ -245,8 +281,8 @@ export const MOCK_SECONDARY_SITE = {
   repositoriesFailedCount: 0,
   repositoriesSyncedCount: 12,
   repositoriesVerificationTotalCount: 12,
-  repositoriesVerifiedCount: 0,
-  repositoriesVerificationFailedCount: 12,
+  repositoriesVerifiedCount: 12,
+  repositoriesVerificationFailedCount: 0,
   wikisCount: 12,
   wikisFailedCount: 6,
   wikisSyncedCount: 6,
@@ -314,8 +350,8 @@ export const MOCK_SECONDARY_SITE_STATUSES_RES = {
   repositories_failed_count: 0,
   repositories_synced_count: 12,
   repositories_verification_total_count: 12,
-  repositories_verified_count: 0,
-  repositories_verification_failed_count: 12,
+  repositories_verified_count: 12,
+  repositories_verification_failed_count: 0,
   wikis_count: 12,
   wikis_failed_count: 6,
   wikis_synced_count: 6,

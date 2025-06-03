@@ -44,7 +44,7 @@ module EE
     end
 
     def replicable_types
-      enabled_replicator_classes.map do |replicator_class|
+      ::Gitlab::Geo::REPLICATOR_CLASSES.map do |replicator_class|
         replicable_class_data(replicator_class)
       end
     end
@@ -61,6 +61,7 @@ module EE
         graphql_field_name: replicator_class.graphql_field_name,
         graphql_registry_class: replicator_class.registry_class,
         graphql_mutation_registry_class: replicator_class.graphql_mutation_registry_class,
+        replication_enabled: replicator_class.replication_enabled?,
         verification_enabled: replicator_class.verification_enabled?,
         graphql_registry_id_type: replicator_class.graphql_registry_id_type.to_s
       }

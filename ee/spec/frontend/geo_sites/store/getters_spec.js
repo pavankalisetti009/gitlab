@@ -4,8 +4,7 @@ import {
   MOCK_UNSORTED_REPLICABLE_TYPES,
   MOCK_SORTED_REPLICABLE_TYPES,
   MOCK_SITES,
-  MOCK_PRIMARY_VERIFICATION_INFO,
-  MOCK_SECONDARY_VERIFICATION_INFO,
+  MOCK_VERIFICATION_INFO,
   MOCK_SECONDARY_SYNC_INFO,
   MOCK_FILTER_SITES,
   MOCK_PRIMARY_SITE,
@@ -38,17 +37,17 @@ describe('GeoSites Store Getters', () => {
     });
 
     describe('on primary site', () => {
-      it('returns only replicable types that have checksum data', () => {
+      it('returns values based on whether verification is enabled', () => {
         expect(getters.verificationInfo(state, mockGetters)(MOCK_PRIMARY_SITE.id)).toStrictEqual(
-          MOCK_PRIMARY_VERIFICATION_INFO,
+          MOCK_VERIFICATION_INFO,
         );
       });
     });
 
     describe('on secondary site', () => {
-      it('returns only replicable types that have verification data', () => {
+      it('returns values based on whether verification is enabled', () => {
         expect(getters.verificationInfo(state, mockGetters)(MOCK_SECONDARY_SITE.id)).toStrictEqual(
-          MOCK_SECONDARY_VERIFICATION_INFO,
+          MOCK_VERIFICATION_INFO,
         );
       });
     });
@@ -63,7 +62,7 @@ describe('GeoSites Store Getters', () => {
       state.sites = MOCK_SITES;
     });
 
-    it('returns the sites sync information', () => {
+    it('returns values based on whether replication is enabled', () => {
       expect(getters.syncInfo(state, mockGetters)(MOCK_SECONDARY_SITE.id)).toStrictEqual(
         MOCK_SECONDARY_SYNC_INFO,
       );

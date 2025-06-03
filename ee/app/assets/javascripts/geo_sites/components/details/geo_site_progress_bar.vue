@@ -20,7 +20,8 @@ export default {
     },
     values: {
       type: Object,
-      required: true,
+      required: false,
+      default: null,
     },
     target: {
       type: String,
@@ -53,13 +54,13 @@ export default {
       return this.totalCount - this.successCount - this.failureCount;
     },
     totalCount() {
-      return toNumber(this.values.total) || 0;
+      return toNumber(this.values?.total) || 0;
     },
     failureCount() {
-      return toNumber(this.values.failed) || 0;
+      return toNumber(this.values?.failed) || 0;
     },
     successCount() {
-      return toNumber(this.values.success) || 0;
+      return toNumber(this.values?.success) || 0;
     },
     popoverTarget() {
       return this.target ? this.target : `syncProgress-${this.title}`;
@@ -69,7 +70,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div v-if="values">
     <stacked-progress-bar
       :id="popoverTarget"
       tabindex="0"
@@ -110,4 +111,5 @@ export default {
       </section>
     </gl-popover>
   </div>
+  <div v-else class="gl-text-sm gl-text-subtle">{{ __('Disabled') }}</div>
 </template>
