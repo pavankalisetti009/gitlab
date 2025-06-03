@@ -57,6 +57,7 @@ import {
   groupSecurityPolicies,
   projectSecurityPolicies,
   groupByType,
+  defaultPageInfo,
 } from '../../mocks/mock_apollo';
 import {
   mockGroupScanExecutionPolicyCombinedList,
@@ -239,6 +240,10 @@ describe('App', () => {
 
     it('fetches linked SPP items', () => {
       expect(linkedSppItemsResponseSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not fetch combined policy list when ff is false', () => {
+      expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(0);
     });
 
     it('updates the policy list when a the security policy project is changed', async () => {
@@ -529,6 +534,63 @@ describe('App', () => {
           flattenedProjectSecurityPolicies[
             POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter
           ],
+      });
+    });
+  });
+
+  describe('pagination', () => {
+    it('fetches next page when policy list is changed to a next page', async () => {
+      createWrapper({
+        provide: {
+          glFeatures: {
+            securityPoliciesCombinedList: true,
+          },
+        },
+        handlers: {
+          projectSecurityPolicies: projectSecurityPolicies(combinedProjectPolicyList, {
+            ...defaultPageInfo,
+            endCursor: 'next',
+          }),
+        },
+      });
+      await waitForPromises();
+
+      await findPoliciesList().vm.$emit('next-page');
+
+      expect(requestHandlers.projectSecurityPolicies).toHaveBeenNthCalledWith(2, {
+        fullPath: namespacePath,
+        relationship: POLICY_SOURCE_OPTIONS.ALL.value,
+        after: 'next',
+        before: '',
+        first: 50,
+      });
+    });
+
+    it('fetches previous page when policy list is changed to a previous page', async () => {
+      createWrapper({
+        provide: {
+          glFeatures: {
+            securityPoliciesCombinedList: true,
+          },
+        },
+        handlers: {
+          projectSecurityPolicies: projectSecurityPolicies(combinedProjectPolicyList, {
+            ...defaultPageInfo,
+            startCursor: 'previous',
+          }),
+        },
+      });
+      await waitForPromises();
+
+      await findPoliciesList().vm.$emit('prev-page');
+
+      expect(requestHandlers.projectSecurityPolicies).toHaveBeenNthCalledWith(2, {
+        fullPath: namespacePath,
+        relationship: POLICY_SOURCE_OPTIONS.ALL.value,
+        after: '',
+        before: 'previous',
+        first: null,
+        last: 50,
       });
     });
   });

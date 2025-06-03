@@ -7,6 +7,7 @@ import {
   GlSprintf,
   GlTable,
   GlTooltip,
+  GlKeysetPagination,
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
@@ -71,6 +72,7 @@ export default {
     GlDisclosureDropdown,
     GlLink,
     GlLoadingIcon,
+    GlKeysetPagination,
     GlSprintf,
     GlTable,
     GlTooltip,
@@ -127,6 +129,11 @@ export default {
       required: false,
       default: false,
     },
+    pageInfo: {
+      type: Object,
+      required: false,
+      default: null,
+    },
   },
   data() {
     return {
@@ -142,6 +149,21 @@ export default {
   computed: {
     hasCombinedList() {
       return this.glFeatures.securityPoliciesCombinedList;
+    },
+    hasNextPage() {
+      return this.pageInfo?.hasNextPage;
+    },
+    hasPreviousPage() {
+      return this.pageInfo?.hasPreviousPage;
+    },
+    startCursor() {
+      return this.pageInfo?.startCursor;
+    },
+    endCursor() {
+      return this.pageInfo?.endCursor;
+    },
+    showPagination() {
+      return (this.pageInfo?.hasNextPage || this.pageInfo?.hasPreviousPage) && this.hasCombinedList;
     },
     isBusy() {
       return this.isLoadingPolicies || this.isProcessingAction;
@@ -384,6 +406,16 @@ export default {
         maxScanExecutionPolicySchedules: this.maxScanExecutionPolicySchedules,
       });
     },
+    handlePageChange(eventName) {
+      this.deselectPolicy();
+      this.$emit(eventName);
+    },
+    handleNextPage() {
+      this.handlePageChange('next-page');
+    },
+    handlePrevPage() {
+      this.handlePageChange('prev-page');
+    },
   },
   dateTimeFormat: DATE_ONLY_FORMAT,
   i18n: {
@@ -526,6 +558,17 @@ export default {
         />
       </template>
     </gl-table>
+
+    <gl-keyset-pagination
+      v-if="showPagination"
+      class="gl-mt-3 gl-text-center"
+      :has-previous-page="hasPreviousPage"
+      :has-next-page="hasNextPage"
+      :start-cursor="startCursor"
+      :end-cursor="endCursor"
+      @prev="handlePrevPage"
+      @next="handleNextPage"
+    />
 
     <overload-warning-modal
       :visible="showPerformanceWarningModal"

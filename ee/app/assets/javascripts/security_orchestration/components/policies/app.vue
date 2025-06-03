@@ -32,6 +32,7 @@ import {
   DEPRECATED_CUSTOM_SCAN_PROPERTY,
   POLICY_TYPE_FILTER_OPTIONS,
   ACTION_LIMIT,
+  POLICIES_PER_PAGE,
 } from './constants';
 
 const NAMESPACE_QUERY_DICT = {
@@ -112,10 +113,7 @@ export default {
         return NAMESPACE_QUERY_DICT_COMBINED_LIST[this.namespaceType];
       },
       variables() {
-        return {
-          fullPath: this.namespacePath,
-          relationship: this.selectedPolicySource,
-        };
+        return this.queryVariables;
       },
       result({ data }) {
         this.pageInfo = data?.namespace?.securityPolicies?.pageInfo ?? {};
@@ -133,10 +131,7 @@ export default {
         return NAMESPACE_QUERY_DICT.scanExecution[this.namespaceType];
       },
       variables() {
-        return {
-          fullPath: this.namespacePath,
-          relationship: this.selectedPolicySource,
-        };
+        return this.queryVariables;
       },
       update(data) {
         return data?.namespace?.scanExecutionPolicies?.nodes ?? [];
@@ -154,10 +149,7 @@ export default {
         return NAMESPACE_QUERY_DICT.scanResult[this.namespaceType];
       },
       variables() {
-        return {
-          fullPath: this.namespacePath,
-          relationship: this.selectedPolicySource,
-        };
+        return this.queryVariables;
       },
       update(data) {
         return data?.namespace?.scanResultPolicies?.nodes ?? [];
@@ -175,10 +167,7 @@ export default {
         return NAMESPACE_QUERY_DICT.pipelineExecution[this.namespaceType];
       },
       variables() {
-        return {
-          fullPath: this.namespacePath,
-          relationship: this.selectedPolicySource,
-        };
+        return this.queryVariables;
       },
       update(data) {
         return data?.namespace?.pipelineExecutionPolicies?.nodes ?? [];
@@ -193,10 +182,7 @@ export default {
         return NAMESPACE_QUERY_DICT.pipelineExecutionSchedule[this.namespaceType];
       },
       variables() {
-        return {
-          fullPath: this.namespacePath,
-          relationship: this.selectedPolicySource,
-        };
+        return this.queryVariables;
       },
       update(data) {
         return data?.namespace?.pipelineExecutionSchedulePolicies?.nodes ?? [];
@@ -211,10 +197,7 @@ export default {
         return NAMESPACE_QUERY_DICT.vulnerabilityManagement[this.namespaceType];
       },
       variables() {
-        return {
-          fullPath: this.namespacePath,
-          relationship: this.selectedPolicySource,
-        };
+        return this.queryVariables;
       },
       update(data) {
         return data?.namespace?.vulnerabilityManagementPolicies?.nodes ?? [];
@@ -245,6 +228,12 @@ export default {
     };
   },
   computed: {
+    queryVariables() {
+      return {
+        fullPath: this.namespacePath,
+        relationship: this.selectedPolicySource,
+      };
+    },
     hasExceedingScheduledLimitPolicies() {
       return this.policiesByType[POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]?.some(
         ({ yaml }) =>
@@ -358,6 +347,11 @@ export default {
 
       this.shouldUpdatePolicyList = shouldUpdatePolicyList;
 
+      if (this.hasCombinedList) {
+        this.$apollo.queries.securityPolicies.refetch();
+        return;
+      }
+
       this.$apollo.queries.scanExecutionPolicies.refetch();
       this.$apollo.queries.scanResultPolicies.refetch();
       this.$apollo.queries.pipelineExecutionPolicies.refetch();
@@ -369,6 +363,26 @@ export default {
     },
     handleUpdatePolicyType(value) {
       this.selectedPolicyType = value;
+    },
+    async handlePageChange(isNext = false) {
+      const pageVariables = isNext
+        ? { after: this.pageInfo.endCursor }
+        : { before: this.pageInfo.startCursor, first: null, last: POLICIES_PER_PAGE };
+
+      try {
+        const { data } = await this.$apollo.queries.securityPolicies.fetchMore({
+          variables: {
+            ...this.queryVariables,
+            ...pageVariables,
+          },
+        });
+
+        const { pageInfo = {}, nodes = [] } = data?.namespace?.securityPolicies ?? {};
+        this.pageInfo = pageInfo;
+        this.securityPolicies = nodes;
+      } catch (e) {
+        createPolicyFetchError(e);
+      }
     },
   },
 };
@@ -389,8 +403,11 @@ export default {
       :selected-policy-source="selectedPolicySource"
       :selected-policy-type="selectedPolicyType"
       :linked-spp-items="linkedSppItems"
+      :page-info="pageInfo"
       :policies-by-type="policiesByType"
       @cleared-selected="handleClearedSelected"
+      @next-page="handlePageChange(true)"
+      @prev-page="handlePageChange(false)"
       @update-policy-source="handleUpdatePolicySource"
       @update-policy-type="handleUpdatePolicyType"
     />

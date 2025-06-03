@@ -5,10 +5,20 @@
 query projectSecurityPolicies(
   $fullPath: ID!
   $relationship: SecurityPolicyRelationType = INHERITED
+  $last: Int
+  $after: String = ""
+  $before: String = ""
+  $first: Int = 50
 ) {
   namespace: project(fullPath: $fullPath) {
     id
-    securityPolicies(relationship: $relationship) {
+    securityPolicies(
+      relationship: $relationship
+      last: $last
+      first: $first
+      after: $after
+      before: $before
+    ) {
       nodes {
         name
         yaml

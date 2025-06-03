@@ -15,6 +15,10 @@ module EE
             secret['akeyless']['server'] = akeyless_server(secret)
           end
 
+          if ::Feature.enabled?(:ci_aws_secrets_manager, project) && (secret['aws_secrets_manager'])
+            secret['aws_secrets_manager']['server'] = aws_secrets_manager_server(secret)
+          end
+
           # For compatibility with the existing Vault integration in Runner,
           # template gitlab_secrets_manager data into the vault field.
           if secret.has_key?('gitlab_secrets_manager')
@@ -56,6 +60,15 @@ module EE
         }
       end
 
+      def aws_secrets_manager_server(secret)
+        @aws_secrets_manager_server ||= {
+          'region' => variables['AWS_REGION']&.value,
+          'jwt' => aws_token(secret),
+          'role_arn' => variables['AWS_ROLE_ARN']&.value,
+          'role_session_name' => variables['AWS_ROLE_SESSION_NAME']&.value
+        }
+      end
+
       def gitlab_secrets_manager_server(psm)
         @gitlab_secrets_manager_server ||= {
           'url' => SecretsManagement::ProjectSecretsManager.server_url,
@@ -80,6 +93,10 @@ module EE
 
       def id_token_var(secret)
         secret['token'] || "$#{id_tokens.each_key.first}"
+      end
+
+      def aws_token(secret)
+        secret['token'] || '$AWS_ID_TOKEN'
       end
 
       def gcp_secret_manager_server(secret)

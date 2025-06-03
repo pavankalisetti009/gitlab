@@ -51,10 +51,10 @@ export const projectPipelineResultPolicies = (nodes) =>
 export const groupPipelineResultPolicies = (nodes) =>
   mockPolicyResponse({ nodes, namespaceType: 'Group', policyType: 'pipelineExecutionPolicies' });
 
-export const projectSecurityPolicies = (nodes, pageIfo = defaultPageInfo) =>
-  mockPoliciesResponse({ nodes, pageIfo });
-export const groupSecurityPolicies = (nodes, pageIfo = defaultPageInfo) =>
-  mockPoliciesResponse({ nodes, pageIfo });
+export const projectSecurityPolicies = (nodes, pageInfo = defaultPageInfo) =>
+  mockPoliciesResponse({ nodes, pageInfo });
+export const groupSecurityPolicies = (nodes, pageInfo = defaultPageInfo) =>
+  mockPoliciesResponse({ nodes, pageInfo });
 
 export const projectPipelineExecutionSchedulePolicies = (nodes) =>
   mockPolicyResponse({

@@ -5,7 +5,7 @@ module GitlabSubscriptions
     module DuoProOrDuoEnterprise
       extend ::GitlabSubscriptions::SubscriptionHelper
 
-      def self.any_add_on_purchase(namespace)
+      def self.any_add_on_purchase(namespace = nil)
         if gitlab_com_subscription?
           GitlabSubscriptions::Duo.any_add_on_purchase_for_namespace(namespace)
         else
@@ -15,7 +15,7 @@ module GitlabSubscriptions
         end
       end
 
-      def self.any_add_on_purchased_or_trial?(namespace)
+      def self.any_add_on_purchased_or_trial?(namespace = nil)
         add_on_purchase = any_add_on_purchase(namespace)
         return false unless add_on_purchase
 

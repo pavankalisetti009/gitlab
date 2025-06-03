@@ -135,6 +135,10 @@ RSpec.describe AuditEvents::ExternalAuditEventDestination, feature_category: :au
   it_behaves_like 'includes GroupStreamDestinationMappable concern',
     let(:model_factory_name) { :external_audit_event_destination }
 
+  it_behaves_like 'includes Activatable concern' do
+    let(:model_factory_name) { :external_audit_event_destination }
+  end
+
   describe '#allowed_to_stream?' do
     context 'with namespace filter' do
       using RSpec::Parameterized::TableSyntax

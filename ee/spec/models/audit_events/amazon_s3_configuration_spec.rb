@@ -4,9 +4,10 @@ require 'spec_helper'
 
 RSpec.describe AuditEvents::AmazonS3Configuration, feature_category: :audit_events do
   let_it_be(:group) { create(:group) }
-  let_it_be(:s3_configuration) { create(:amazon_s3_configuration, group: group) }
 
   describe 'validations' do
+    let_it_be(:s3_configuration) { create(:amazon_s3_configuration, group: group) }
+
     it { is_expected.to validate_uniqueness_of(:name).scoped_to([:namespace_id]) }
     it { is_expected.to validate_uniqueness_of(:bucket_name).scoped_to([:namespace_id]) }
     it { is_expected.to validate_presence_of(:group) }
@@ -58,7 +59,13 @@ RSpec.describe AuditEvents::AmazonS3Configuration, feature_category: :audit_even
   it_behaves_like 'includes GroupStreamDestinationMappable concern',
     let(:model_factory_name) { :amazon_s3_configuration }
 
+  it_behaves_like 'includes Activatable concern' do
+    let(:model_factory_name) { :amazon_s3_configuration }
+  end
+
   describe '#allowed_to_stream?' do
+    let(:s3_configuration) { create(:amazon_s3_configuration, group: group) }
+
     it 'always returns true' do
       expect(s3_configuration.allowed_to_stream?).to eq(true)
     end
