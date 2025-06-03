@@ -54,6 +54,20 @@ FactoryBot.define do
             "selectable_models" => %w[claude_sonnet_3_7_20250219 claude-3-5-sonnet-20240620],
             "beta_models" => [],
             "unit_primitives" => ["summarize_new_merge_request"]
+          },
+          {
+            "feature_setting" => "resolve_vulnerability",
+            "default_model" => "claude_sonnet_3_7",
+            "selectable_models" => %w[claude_sonnet_3_7 claude-3-5-sonnet-20240620],
+            "beta_models" => [],
+            "unit_primitives" => ["resolve_vulnerability"]
+          },
+          {
+            "feature_setting" => "summarize_review",
+            "default_model" => "claude_sonnet_3_7",
+            "selectable_models" => %w[claude_sonnet_3_7 claude-3-5-sonnet-20240620],
+            "beta_models" => [],
+            "unit_primitives" => ["summarize_review"]
           }
         ]
       }
