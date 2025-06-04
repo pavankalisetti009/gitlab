@@ -17,6 +17,8 @@ module RemoteDevelopment
     #       See documentation at ../README.md#constant-declarations for more information.
     module WorkspaceOperationsConstants
       # Please keep alphabetized
+      INTERNAL_COMMAND_LABEL = "gl-internal"
+      INTERNAL_BLOCKING_COMMAND_LABEL = "#{INTERNAL_COMMAND_LABEL}-blocking".freeze
       VARIABLES_VOLUME_DEFAULT_MODE = 0o774
       VARIABLES_VOLUME_NAME = "gl-workspace-variables"
       VARIABLES_VOLUME_PATH = "/.workspace-data/variables/file"

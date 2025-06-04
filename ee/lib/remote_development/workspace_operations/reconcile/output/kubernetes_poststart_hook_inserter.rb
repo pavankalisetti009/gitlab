@@ -16,6 +16,10 @@ module RemoteDevelopment
           # @param [Hash] devfile_events
           # @return [void]
           def self.insert(containers:, devfile_commands:, devfile_events:)
+            internal_blocking_command_label_present = devfile_commands.any? do |command|
+              command.dig(:exec, :label) == INTERNAL_BLOCKING_COMMAND_LABEL
+            end
+
             devfile_events => { postStart: Array => poststart_command_ids }
 
             containers_with_devfile_poststart_commands =
@@ -34,12 +38,23 @@ module RemoteDevelopment
 
               next unless containers_with_devfile_poststart_commands.include?(container_name)
 
-              kubernetes_poststart_hook_script =
-                format(
-                  KUBERNETES_POSTSTART_HOOK_COMMAND,
-                  run_poststart_commands_script_file_path:
-                    "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{RUN_POSTSTART_COMMANDS_SCRIPT_NAME}"
-                )
+              if internal_blocking_command_label_present
+                kubernetes_poststart_hook_script =
+                  format(
+                    KUBERNETES_POSTSTART_HOOK_COMMAND,
+                    run_internal_blocking_poststart_commands_script_file_path:
+                      "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}",
+                    run_non_blocking_poststart_commands_script_file_path:
+                      "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}"
+                  )
+              else
+                kubernetes_poststart_hook_script =
+                  format(
+                    KUBERNETES_LEGACY_POSTSTART_HOOK_COMMAND,
+                    run_internal_blocking_poststart_commands_script_file_path:
+                      "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME}"
+                  )
+              end
 
               container[:lifecycle] = {
                 postStart: {

@@ -6,6 +6,7 @@ module RemoteDevelopment
       module Output
         class ScriptsConfigmapAppender
           include ReconcileConstants
+          include WorkspaceOperationsConstants
 
           # @param [Array] desired_config
           # @param [String] name
@@ -39,6 +40,7 @@ module RemoteDevelopment
 
             add_run_poststart_commands_script_to_configmap_data(
               configmap_data: configmap_data,
+              devfile_commands: devfile_commands,
               devfile_events: devfile_events
             )
 
@@ -75,33 +77,68 @@ module RemoteDevelopment
           # @param [Array<Hash>] devfile_commands
           # @param [Hash] devfile_events
           # @return [void]
-          def self.add_run_poststart_commands_script_to_configmap_data(configmap_data:, devfile_events:)
+          def self.add_run_poststart_commands_script_to_configmap_data(
+            configmap_data:,
+            devfile_commands:,
+            devfile_events:
+          )
             devfile_events => { postStart: Array => poststart_command_ids }
 
-            script_command_lines =
-              poststart_command_ids.map do |poststart_command_id|
-                # NOTE: We force all the poststart scripts to exit successfully with `|| true`, to
-                #       prevent the Kubernetes poststart hook from failing, and thus prevent the
-                #       container from exitin. Then users can view logs to debug failures.
-                #       See https://github.com/eclipse-che/che/issues/23404#issuecomment-2787779571
-                #       for more context.
-                <<~CMD
-                  echo "$(date -Iseconds): Running #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id}..."
-                  #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id} || true
-                CMD
-              end.join
+            internal_blocking_command_label_present = devfile_commands.find do |command|
+              command.dig(:exec, :label) == INTERNAL_BLOCKING_COMMAND_LABEL
+            end
 
-            configmap_data[RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
+            unless internal_blocking_command_label_present
+              configmap_data[LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
+                <<~SH.chomp
+                  #!/bin/sh
+                  #{get_poststart_command_script_content(poststart_command_ids: poststart_command_ids)}
+                SH
+              return
+            end
+
+            # Segregate internal commands and user provided commands.
+            # Before any non-blocking post start command is executed, we wait for the workspace to be marked ready.
+            # TODO: User provided commands should be added to the non-blocking poststart script with https://gitlab.com/gitlab-org/gitlab/-/issues/505988
+            internal_blocking_poststart_command_ids, non_blocking_poststart_command_ids =
+              poststart_command_ids.partition do |id|
+                command = devfile_commands.find { |cmd| cmd[:id] == id }
+                command && command.dig(:exec, :label) == INTERNAL_BLOCKING_COMMAND_LABEL
+              end
+
+            configmap_data[RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
               <<~SH.chomp
                 #!/bin/sh
-                #{script_command_lines}
+                #{get_poststart_command_script_content(poststart_command_ids: internal_blocking_poststart_command_ids)}
+              SH
+
+            configmap_data[RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
+              <<~SH.chomp
+                #!/bin/sh
+                #{get_poststart_command_script_content(poststart_command_ids: non_blocking_poststart_command_ids)}
               SH
 
             nil
           end
 
+          # @param [Array] poststart_command_ids
+          # @return [String]
+          def self.get_poststart_command_script_content(poststart_command_ids:)
+            poststart_command_ids.map do |poststart_command_id|
+              # NOTE: We force all the poststart scripts to exit successfully with `|| true`, to
+              #       prevent the Kubernetes poststart hook from failing, and thus prevent the
+              #       container from exiting. Then users can view logs to debug failures.
+              #       See https://github.com/eclipse-che/che/issues/23404#issuecomment-2787779571
+              #       for more context.
+              <<~SH
+                echo "$(date -Iseconds): Running #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id}..."
+                #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id} || true
+              SH
+            end.join
+          end
+
           private_class_method :add_devfile_command_scripts_to_configmap_data,
-            :add_run_poststart_commands_script_to_configmap_data
+            :add_run_poststart_commands_script_to_configmap_data, :get_poststart_command_script_content
         end
       end
     end

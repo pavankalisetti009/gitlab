@@ -96,6 +96,4 @@ echo "$(date -Iseconds): - Workspace trust disabled: yes"
 	--port "${GL_VSCODE_PORT}" \
 	--log "${GL_VSCODE_LOG_LEVEL}" \
 	--without-connection-token \
-	--disable-workspace-trust
-
-echo "$(date -Iseconds): VS Code: Remote Extension Host process exited with code $?"
+	--disable-workspace-trust &
