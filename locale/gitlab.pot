@@ -13254,6 +13254,9 @@ msgstr ""
 msgid "CiVariable|All environments"
 msgstr ""
 
+msgid "CiVariable|Create environment scope: %{searchTerm}"
+msgstr ""
+
 msgid "CiVariable|Create wildcard"
 msgstr ""
 
