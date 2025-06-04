@@ -152,10 +152,15 @@ RSpec.describe 'Query.issue(id)', feature_category: :team_planning do
     end
 
     context 'when issue has no status' do
-      it 'returns nil' do
+      it 'returns default status' do
         post_graphql(query, current_user: current_user)
 
-        expect(issue_data['status']).to be_nil
+        expect(issue_data['status']).to include(
+          'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+          'name' => 'To do',
+          'iconName' => 'status-waiting',
+          'color' => '#737278'
+        )
       end
     end
 

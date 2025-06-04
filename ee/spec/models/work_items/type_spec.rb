@@ -455,11 +455,31 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     end
 
     context 'when custom lifecycle exists for the type and namespace' do
-      it 'returns the lifecycle' do
-        type_custom_lifecycle = create(:work_item_type_custom_lifecycle, work_item_type: work_item_type,
-          namespace: namespace)
+      let_it_be(:lifecycle) do
+        create(:work_item_custom_lifecycle, namespace: namespace)
+      end
 
-        expect(custom_lifecycle_result).to eq(type_custom_lifecycle.lifecycle)
+      before do
+        create(:work_item_type_custom_lifecycle, namespace: namespace, work_item_type: work_item_type,
+          lifecycle: lifecycle)
+      end
+
+      it 'returns the lifecycle' do
+        expect(custom_lifecycle_result).to eq(lifecycle)
+      end
+
+      context 'with RequestStore enabled', :request_store do
+        it 'returns the cached lifecycle' do
+          work_item_type.custom_lifecycle_for(namespace.id)
+
+          result = nil
+          queries = ActiveRecord::QueryRecorder.new do
+            result = work_item_type.custom_lifecycle_for(namespace.id)
+          end
+
+          expect(queries.count).to eq(0)
+          expect(result).to eq(lifecycle)
+        end
       end
     end
 

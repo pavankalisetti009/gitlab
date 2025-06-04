@@ -21,7 +21,15 @@ module WorkItems
       validate :validate_custom_status_allowed_for_lifecycle
 
       def status
-        custom_status || system_defined_status
+        return custom_status if custom_status.present?
+
+        custom_lifecycle = work_item_type.custom_lifecycle_for(top_level_namespace_id)
+
+        return system_defined_status if custom_lifecycle.nil?
+
+        custom_lifecycle.statuses.find do |s|
+          s.converted_from_system_defined_status_identifier == system_defined_status.id
+        end
       end
 
       def status=(new_status)

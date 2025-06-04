@@ -9,7 +9,7 @@ module Resolvers
         def resolve
           return unless work_item_status_feature_available?
 
-          work_item.current_status&.status
+          work_item.status_with_fallback
         end
 
         private
