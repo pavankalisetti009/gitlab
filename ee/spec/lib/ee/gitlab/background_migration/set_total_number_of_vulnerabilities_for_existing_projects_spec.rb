@@ -4,15 +4,15 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::SetTotalNumberOfVulnerabilitiesForExistingProjects, feature_category: :vulnerability_management do
   let(:users) { table(:users) }
-  let(:scanners) { table(:vulnerability_scanners) }
   let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
-  let(:security_statistics) { table(:project_security_statistics) }
-  let(:vulnerabilities) { table(:vulnerabilities) }
-  let(:vulnerability_reads) { table(:vulnerability_reads) }
-  let(:vulnerability_occurrences) { table(:vulnerability_occurrences) }
-  let(:vulnerability_identifiers) { table(:vulnerability_identifiers) }
+  let(:security_statistics) { table(:project_security_statistics, database: :sec) }
+  let(:scanners) { table(:vulnerability_scanners, database: :sec) }
+  let(:vulnerabilities) { table(:vulnerabilities, database: :sec) }
+  let(:vulnerability_reads) { table(:vulnerability_reads, database: :sec) }
+  let(:vulnerability_occurrences) { table(:vulnerability_occurrences, database: :sec) }
+  let(:vulnerability_identifiers) { table(:vulnerability_identifiers, database: :sec) }
 
   let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
   let(:user) { users.create!(email: 'john@doe', username: 'john_doe', projects_limit: 10) }
@@ -67,13 +67,6 @@ RSpec.describe Gitlab::BackgroundMigration::SetTotalNumberOfVulnerabilitiesForEx
     )
   end
 
-  before(:all) do
-    # There is a bug in some background migration spec where the helpers attempt to create data using the wrong
-    # database connection. As this migration has already run we should be safe to skip the spec.
-    # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-    skip_if_multiple_databases_are_setup(:sec)
-  end
-
   before do
     create_vulnerability_read(project_1.id)
     create_vulnerability_read(project_2.id)
@@ -107,7 +100,6 @@ RSpec.describe Gitlab::BackgroundMigration::SetTotalNumberOfVulnerabilitiesForEx
       report_type: 1,
       scanner_id: scanner.id,
       primary_identifier_id: identifier.id,
-      project_fingerprint: '',
       location_fingerprint: '',
       name: 'name',
       metadata_version: '15.0',

@@ -16,7 +16,7 @@ module EE
           scope_to ->(relation) { relation.where(status: SUCCEDED_STATUS) }
         end
 
-        class SecurityFinding < ApplicationRecord
+        class SecurityFinding < SecApplicationRecord
           self.table_name = 'security_findings'
 
           # Returns only the first findings for each scan
@@ -38,7 +38,7 @@ module EE
           end
         end
 
-        class SecurityScan < ApplicationRecord
+        class SecurityScan < SecApplicationRecord
           self.table_name = 'security_scans'
 
           scope :by_ids, ->(ids) { where(id: ids) }

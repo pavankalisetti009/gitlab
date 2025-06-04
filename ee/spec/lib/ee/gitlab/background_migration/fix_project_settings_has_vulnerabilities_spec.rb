@@ -4,16 +4,16 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::FixProjectSettingsHasVulnerabilities, feature_category: :vulnerability_management do
   let(:users) { table(:users) }
-  let(:scanners) { table(:vulnerability_scanners) }
+  let(:scanners) { table(:vulnerability_scanners, database: :sec) }
   let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:project_settings) { table(:project_settings) }
 
-  let(:vulnerabilities) { table(:vulnerabilities) }
-  let(:vulnerability_reads) { table(:vulnerability_reads) }
-  let(:vulnerability_occurrences) { table(:vulnerability_occurrences) }
-  let(:vulnerability_identifiers) { table(:vulnerability_identifiers) }
+  let(:vulnerabilities) { table(:vulnerabilities, database: :sec) }
+  let(:vulnerability_reads) { table(:vulnerability_reads, database: :sec) }
+  let(:vulnerability_occurrences) { table(:vulnerability_occurrences, database: :sec) }
+  let(:vulnerability_identifiers) { table(:vulnerability_identifiers, database: :sec) }
 
   let(:user) { users.create!(email: 'john@doe', username: 'john_doe', projects_limit: 10) }
   let(:organization) { organizations.create!(name: 'Organization', path: 'organization') }
@@ -69,11 +69,6 @@ RSpec.describe Gitlab::BackgroundMigration::FixProjectSettingsHasVulnerabilities
   end
 
   before do
-    # There is a bug in some background migration spec where the helpers attempt to create data using the wrong
-    # database connection. As this migration has already run we should be safe to skip the spec.
-    # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-    skip_if_multiple_databases_are_setup(:sec)
-
     create_vulnerability_read(project_1.id)
     create_vulnerability_read(project_2.id)
   end
@@ -105,7 +100,6 @@ RSpec.describe Gitlab::BackgroundMigration::FixProjectSettingsHasVulnerabilities
       report_type: 1,
       scanner_id: scanner.id,
       primary_identifier_id: identifier.id,
-      project_fingerprint: '',
       location_fingerprint: '',
       name: 'name',
       metadata_version: '15.0',
