@@ -109,7 +109,8 @@ RSpec.describe SecretsManagement::SecretsManagerJwt, feature_category: :secrets_
     context 'when project is not present' do
       let(:current_project) { nil }
 
-      it 'raises an error due to the delegation to namespace' do
+      it 'raises an error due to the delegation to namespace',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/547364' do
         expect { payload }.to raise_error(NoMethodError)
       end
     end
