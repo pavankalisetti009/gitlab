@@ -6,7 +6,7 @@ RSpec.describe 'Dashboard merge requests', feature_category: :code_review_workfl
   let_it_be(:user) { create(:user) }
   let_it_be(:page_path) { merge_requests_dashboard_path(assignee_username: [user.username]) }
 
-  it_behaves_like 'dashboard ultimate trial callout'
+  it_behaves_like 'dashboard ultimate trial callout', quarantine: "https://gitlab.com/gitlab-org/gitlab/-/issues/512586"
 
   it_behaves_like 'dashboard SAML reauthentication banner' do
     let_it_be(:match_filter_params) { true }
