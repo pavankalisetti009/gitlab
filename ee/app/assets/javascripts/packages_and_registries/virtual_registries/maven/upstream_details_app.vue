@@ -1,5 +1,5 @@
 <script>
-import { GlFilteredSearch, GlLoadingIcon } from '@gitlab/ui';
+import { GlFilteredSearch, GlLoadingIcon, GlPagination } from '@gitlab/ui';
 import {
   getMavenUpstreamCacheEntries,
   deleteMavenUpstreamCacheEntry,
@@ -10,12 +10,17 @@ import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries
 import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/cache_entries_table.vue';
 import { s__ } from '~/locale';
 
+const PAGE_SIZE = 20;
+const INITIAL_PAGE = 1;
+
 export default {
   name: 'MavenUpstreamDetailsApp',
+  perPage: PAGE_SIZE,
   components: {
     CacheEntriesTable,
     GlFilteredSearch,
     GlLoadingIcon,
+    GlPagination,
     UpstreamDetailsHeader,
   },
   inject: {
@@ -28,6 +33,7 @@ export default {
       cacheEntries: [],
       loading: true,
       urlParams: {},
+      page: INITIAL_PAGE,
     };
   },
   computed: {
@@ -39,26 +45,35 @@ export default {
         },
       ];
     },
+    cacheEntriesCount() {
+      return this.upstream.cacheEntriesCount;
+    },
+    showPagination() {
+      return this.cacheEntriesCount > this.$options.perPage;
+    },
   },
   mounted() {
     const queryStringObject = queryToObject(window.location.search);
 
-    if (queryStringObject.search) {
-      this.urlParams = queryStringObject;
-    }
+    // Extract both search and page from URL
+    this.urlParams = queryStringObject.search ? { search: queryStringObject.search } : {};
+    this.page = parseInt(queryStringObject.page, 10) || INITIAL_PAGE;
 
-    this.fetchCacheEntries();
+    this.fetchCacheEntries(this.page);
   },
   methods: {
-    async fetchCacheEntries() {
+    async fetchCacheEntries(page) {
       this.loading = true;
 
       try {
         const response = await getMavenUpstreamCacheEntries({
           id: this.upstream.id,
-          params: { ...this.urlParams },
+          params: { ...this.urlParams, page, per_page: PAGE_SIZE },
         });
+
         this.cacheEntries = response.data;
+
+        this.updateUrl();
       } catch (error) {
         createAlert({
           message: s__('VirtualRegistry|Failed to fetch cache entries.'),
@@ -76,7 +91,7 @@ export default {
         await deleteMavenUpstreamCacheEntry({
           id,
         });
-        this.fetchCacheEntries();
+        this.fetchCacheEntries(this.page);
       } catch (error) {
         createAlert({
           message: s__('VirtualRegistry|Failed to delete cache entry.'),
@@ -89,21 +104,21 @@ export default {
     },
     async searchCacheEntries(filters) {
       this.loading = true;
+      this.page = INITIAL_PAGE;
 
       try {
         const searchTerm = filters[0];
 
+        this.urlParams = { search: searchTerm };
+
         const response = await getMavenUpstreamCacheEntries({
           id: this.upstream.id,
-          params: { search: searchTerm },
+          params: { search: searchTerm, page: INITIAL_PAGE, per_page: PAGE_SIZE },
         });
 
         this.cacheEntries = response.data;
 
-        this.urlParams = { search: searchTerm };
-        updateHistory({
-          url: setUrlParams({ search: searchTerm }, window.location.href, true),
-        });
+        this.updateUrl();
       } catch (error) {
         createAlert({
           message: s__('VirtualRegistry|Failed to search cache entries.'),
@@ -112,6 +127,26 @@ export default {
         });
       } finally {
         this.loading = false;
+      }
+    },
+    handlePageChange(page) {
+      this.page = page;
+      this.fetchCacheEntries(page);
+    },
+    updateUrl() {
+      const params = {};
+
+      // Add search parameter if it exists
+      if (this.urlParams.search) {
+        params.search = this.urlParams.search;
+      }
+
+      params.page = this.page;
+
+      if (Object.keys(params).length > 0) {
+        updateHistory({
+          url: setUrlParams(params, window.location.href, true),
+        });
       }
     },
   },
@@ -136,5 +171,15 @@ export default {
     </div>
 
     <cache-entries-table :cache-entries="cacheEntries" @delete="handleDeleteCacheEntry" />
+
+    <gl-pagination
+      v-if="showPagination"
+      :value="page"
+      :per-page="$options.perPage"
+      :total-items="cacheEntriesCount"
+      align="center"
+      class="gl-mt-5"
+      @input="handlePageChange"
+    />
   </div>
 </template>

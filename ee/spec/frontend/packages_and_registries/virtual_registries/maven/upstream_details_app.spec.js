@@ -1,4 +1,4 @@
-import { GlFilteredSearch, GlLoadingIcon } from '@gitlab/ui';
+import { GlFilteredSearch, GlLoadingIcon, GlPagination } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -12,7 +12,7 @@ import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/com
 import { createAlert } from '~/alert';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
-import { mockCacheEntries } from '../mock_data';
+import { mockCacheEntries, mockUpstreamPagination } from '../mock_data';
 
 jest.mock('~/alert');
 jest.mock('ee/api/virtual_registries_api', () => ({
@@ -37,6 +37,7 @@ describe('UpstreamDetailsApp', () => {
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findTable = () => wrapper.findComponent(CacheEntriesTable);
   const findHeader = () => wrapper.findComponent(UpstreamDetailsHeader);
+  const findPagination = () => wrapper.findComponent(GlPagination);
 
   const createComponent = (provide = {}) => {
     wrapper = shallowMountExtended(UpstreamDetailsApp, {
@@ -101,6 +102,10 @@ describe('UpstreamDetailsApp', () => {
         },
       ]);
     });
+
+    it('does not display pagination', () => {
+      expect(findPagination().exists()).toBe(false);
+    });
   });
 
   describe('filtered search', () => {
@@ -130,10 +135,41 @@ describe('UpstreamDetailsApp', () => {
       expect(findLoadingIcon().exists()).toBe(false);
       expect(getMavenUpstreamCacheEntries).toHaveBeenCalledWith({
         id: 5,
-        params: { search: 'foo' },
+        params: { search: 'foo', page: 1, per_page: 20 },
       });
       expect(urlUtils.updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/?search=foo`,
+        url: `${TEST_HOST}/?search=foo&page=1`,
+      });
+    });
+  });
+
+  describe('pagination', () => {
+    beforeEach(async () => {
+      getMavenUpstreamCacheEntries.mockResolvedValue({ data: mockCacheEntries });
+
+      createComponent({ upstream: mockUpstreamPagination });
+
+      await waitForPromises();
+    });
+
+    it('displays pagination', () => {
+      expect(findPagination().exists()).toBe(true);
+      expect(findPagination().props()).toMatchObject({ value: 1, perPage: 20, totalItems: 22 });
+    });
+
+    it('paginates for page based data', async () => {
+      jest.spyOn(urlUtils, 'updateHistory');
+
+      findPagination().vm.$emit('input', 2);
+
+      await waitForPromises();
+
+      expect(getMavenUpstreamCacheEntries).toHaveBeenCalledWith({
+        id: 5,
+        params: { page: 2, per_page: 20 },
+      });
+      expect(urlUtils.updateHistory).toHaveBeenCalledWith({
+        url: `${TEST_HOST}/?page=2`,
       });
     });
   });
