@@ -40,9 +40,8 @@ export default {
   },
   props: {
     staticBreadcrumbs: {
-      type: Object,
-      default: () => ({ items: [] }),
-      required: false,
+      type: Array,
+      required: true,
     },
   },
   data() {
@@ -76,9 +75,7 @@ export default {
         }
       });
 
-      const staticBreadcrumbs = this.staticBreadcrumbs.items;
-
-      return [...staticBreadcrumbs, ...breadcrumbs];
+      return [...this.staticBreadcrumbs, ...breadcrumbs];
     },
   },
   methods: {

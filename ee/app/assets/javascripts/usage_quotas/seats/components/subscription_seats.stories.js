@@ -3,7 +3,11 @@ import SubscriptionSeatsApp from 'ee/usage_quotas/seats/components/subscription_
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
-import { getMockSubscriptionData, mockTableItems } from 'ee_jest/usage_quotas/seats/mock_data';
+import {
+  getMockSubscriptionData,
+  mockTableItems,
+  createMockSubscriptionPermissionsResponse,
+} from 'ee_jest/usage_quotas/seats/mock_data';
 
 export default {
   component: SubscriptionSeatsApp,
@@ -41,17 +45,13 @@ const defaultMockBillableMembersResponse = Promise.resolve({
     avatar_url: '/assets/images/logo.svg',
   })),
 });
-const defaultMockSubscriptionPermissionResponse = Promise.resolve({
-  data: {
-    subscription: {
-      canAddSeats: true,
-      canRenew: true,
-      communityPlan: false,
-      canAddDuoProSeats: true,
-    },
-    userActionAccess: { limitedAccessReason: 'INVALID_REASON' },
-  },
-});
+const defaultMockSubscriptionPermissionResponse = Promise.resolve(
+  createMockSubscriptionPermissionsResponse({
+    canAddSeats: true,
+    canRenew: true,
+    canAddDuoProSeats: true,
+  }),
+);
 const defaultMockBillableMembersCountResponse = Promise.resolve({
   data: {
     group: {
@@ -69,22 +69,21 @@ const createTemplate = ({
   mockSubscriptionPermissionResponse = defaultMockSubscriptionPermissionResponse,
   mockBillableMembersCountResponse = defaultMockBillableMembersCountResponse,
 } = {}) => {
-  const resolvers = {
-    Query: {
-      subscription: () => mockSubscriptionResponse,
-      billableMembers: () => mockBillableMembersResponse,
+  const defaultClient = createMockClient(
+    [[getBillableMembersCountQuery, () => mockBillableMembersCountResponse]],
+    {
+      Query: {
+        subscription: () => mockSubscriptionResponse,
+        billableMembers: () => mockBillableMembersResponse,
+      },
     },
-  };
-  const mockCustomersDotClient = createMockClient([
+  );
+  const customersDotClient = createMockClient([
     [getSubscriptionPermissionsData, () => mockSubscriptionPermissionResponse],
   ]);
-  const mockGitlabClient = createMockClient(
-    [[getBillableMembersCountQuery, () => mockBillableMembersCountResponse]],
-    resolvers,
-  );
   const apolloProvider = new VueApollo({
-    defaultClient: mockGitlabClient,
-    clients: { customersDotClient: mockCustomersDotClient, gitlabClient: mockGitlabClient },
+    defaultClient,
+    clients: { customersDotClient, gitlabClient: defaultClient },
   });
 
   return () => ({
@@ -140,17 +139,14 @@ export const SaasWithTrialPlan = createTemplate({
 });
 
 export const SaasWithCommunityPlan = createTemplate({
-  mockSubscriptionPermissionResponse: Promise.resolve({
-    data: {
-      subscription: {
-        canAddSeats: true,
-        canRenew: true,
-        communityPlan: true,
-        canAddDuoProSeats: true,
-      },
-      userActionAccess: { limitedAccessReason: 'INVALID_REASON' },
-    },
-  }),
+  mockSubscriptionPermissionResponse: Promise.resolve(
+    createMockSubscriptionPermissionsResponse({
+      canAddSeats: true,
+      canRenew: true,
+      communityPlan: true,
+      canAddDuoProSeats: true,
+    }),
+  ),
 });
 
 export const Loading = createTemplate({

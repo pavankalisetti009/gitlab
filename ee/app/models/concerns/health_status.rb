@@ -5,6 +5,11 @@ module HealthStatus
   extend ::Gitlab::Utils::Override
 
   included do
+    # IMPORTANT: These enum values are indexed in Elasticsearch
+    # - Changing existing values requires all ES documents
+    #   to be migrated from old to new values
+    # - Please coordinate enum changes with the Global Search team
+    # - Adding new values is safe
     enum :health_status, {
       on_track: 1,
       needs_attention: 2,

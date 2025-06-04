@@ -47,12 +47,6 @@ describe('ee/workspaces/init_user_workspaces_app', () => {
       expect(injectVueAppBreadcrumbs).toHaveBeenCalledWith(
         expect.any(Object),
         WorkspacesBreadcrumbs,
-        null,
-        {},
-        {
-          // cf. https://gitlab.com/gitlab-org/gitlab/-/merge_requests/186906
-          singleNavOptIn: true,
-        },
       );
     });
   });

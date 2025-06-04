@@ -16,15 +16,7 @@ export const ACCOUNTS = 'accounts';
 export const TOKENS = 'tokens';
 export const SOURCE_BRANCH_PATTERNS = 'source_branch_patterns';
 
-export const EXCEPTION_OPTIONS_MAP = {
-  [ROLES]: s__('ScanResultPolicy|Roles'),
-  [GROUPS]: s__('Roles|Groups'),
-  [ACCOUNTS]: s__('AccountTokens|Service Account'),
-  [TOKENS]: s__('AccountTokens|Personal Access Token'),
-  [SOURCE_BRANCH_PATTERNS]: s__('SourceBranchPattern|Source Branch Patterns'),
-};
-
-export const EXCEPTIONS_FUL_OPTIONS_MAP = {
+export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   [ROLES]: {
     header: s__('ScanResultPolicy|Roles'),
     description: s__(
@@ -72,12 +64,7 @@ export const EXCEPTIONS_FUL_OPTIONS_MAP = {
   },
 };
 
-export const EXCEPTION_OPTIONS = Object.entries(EXCEPTION_OPTIONS_MAP).map(([key, value]) => ({
-  key,
-  value,
-}));
-
-export const EXCEPTION_FULL_OPTIONS = Object.entries(EXCEPTIONS_FUL_OPTIONS_MAP).map(
+export const EXCEPTION_FULL_OPTIONS = Object.entries(EXCEPTIONS_FULL_OPTIONS_MAP).map(
   ([key, { header, description, example }]) => ({
     key,
     header,

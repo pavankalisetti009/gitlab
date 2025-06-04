@@ -25,8 +25,6 @@ describe('PolicyExceptionsModal', () => {
 
       expect(modal.exists()).toBe(true);
       expect(modal.props('title')).toBe(PolicyExceptionsModal.i18n.modalTitle);
-      expect(modal.props('actionCancel').text).toBe('Cancel');
-      expect(modal.props('actionPrimary').text).toBe('Add exception(s)');
       expect(modal.props('size')).toBe('md');
       expect(modal.props('modalId')).toBe('deny-allow-list-modal');
 

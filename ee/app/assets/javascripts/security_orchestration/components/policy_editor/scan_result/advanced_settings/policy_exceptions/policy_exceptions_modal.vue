@@ -2,11 +2,12 @@
 import { GlButton, GlModal } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import {
-  EXCEPTION_OPTIONS,
   ROLES,
   GROUPS,
   ACCOUNTS,
+  TOKENS,
   SOURCE_BRANCH_PATTERNS,
+  EXCEPTIONS_FULL_OPTIONS_MAP,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import RolesSelector from './roles_selector.vue';
 import GroupsSelector from './groups_selector.vue';
@@ -19,16 +20,13 @@ export default {
   GROUPS,
   ACCOUNTS,
   SOURCE_BRANCH_PATTERNS,
-  EXCEPTION_OPTIONS,
+  EXCEPTIONS_FULL_OPTIONS_MAP,
+  TOKENS,
   i18n: {
     modalTitle: s__('ScanResultPolicy|Add policy exception'),
-  },
-  ACTION_CANCEL: { text: __('Cancel') },
-  PRIMARY_ACTION: {
-    text: s__('ScanResultPolicy|Add exception(s)'),
-    attributes: {
-      variant: 'confirm',
-    },
+    cancelAction: __('Cancel'),
+    backAction: __('Back'),
+    primaryAction: __('Add exception(s)'),
   },
   name: 'PolicyExceptionsModal',
   components: {
@@ -42,9 +40,13 @@ export default {
   },
   data() {
     return {
-      selectedTab: ROLES,
-      selectedException: null,
+      selectedTab: null,
     };
+  },
+  computed: {
+    modalTitle() {
+      return EXCEPTIONS_FULL_OPTIONS_MAP[this.selectedTab]?.header || this.$options.i18n.modalTitle;
+    },
   },
   methods: {
     tabSelected(tab) {
@@ -72,7 +74,7 @@ export default {
     ref="modal"
     :action-cancel="$options.ACTION_CANCEL"
     :action-primary="$options.PRIMARY_ACTION"
-    :title="$options.i18n.modalTitle"
+    :title="modalTitle"
     scrollable
     size="md"
     content-class="security-policies-variables-modal-min-height"
@@ -80,33 +82,31 @@ export default {
     @canceled="hideModalWindow"
   >
     <div
-      v-if="selectedException"
+      v-if="selectedTab"
       class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col md:gl-flex-row"
     >
-      <div class="gl-flex gl-w-full gl-flex-col gl-items-start gl-pt-3 md:gl-border-r md:gl-w-2/6">
-        <gl-button
-          v-for="link in $options.EXCEPTION_OPTIONS"
-          :key="link.key"
-          class="gl-my-3 gl-block gl-font-bold"
-          :class="{ '!gl-text-current': link.key !== selectedTab }"
-          category="tertiary"
-          variant="link"
-          @click="selectTab(link.key)"
-        >
-          {{ link.value }}
-        </gl-button>
-      </div>
-      <div class="gl-w-full gl-p-3 md:gl-w-4/6">
-        <roles-selector v-if="tabSelected($options.ROLES)" />
-        <groups-selector v-if="tabSelected($options.GROUPS)" />
-        <tokens-selector v-if="tabSelected($options.ACCOUNTS)" />
-        <branch-pattern-selector v-if="tabSelected($options.SOURCE_BRANCH_PATTERNS)" />
-      </div>
+      <roles-selector v-if="tabSelected($options.ROLES)" />
+      <groups-selector v-if="tabSelected($options.GROUPS)" />
+      <tokens-selector v-if="tabSelected($options.TOKENS)" />
+      <branch-pattern-selector v-if="tabSelected($options.SOURCE_BRANCH_PATTERNS)" />
     </div>
-    <policy-exceptions-selector v-else />
+    <policy-exceptions-selector v-else @select="selectTab" />
 
     <template #modal-footer>
-      <div v-if="!selectedException"></div>
+      <div v-if="!selectedTab"></div>
+      <div v-else class="gl-flex gl-w-full">
+        <gl-button category="secondary" variant="confirm" @click="selectTab(null)">{{
+          $options.i18n.backAction
+        }}</gl-button>
+        <div class="gl-ml-auto">
+          <gl-button category="secondary" variant="confirm" @click="hideModalWindow">{{
+            $options.i18n.cancelAction
+          }}</gl-button>
+          <gl-button category="primary" variant="confirm">{{
+            $options.i18n.primaryAction
+          }}</gl-button>
+        </div>
+      </div>
     </template>
   </gl-modal>
 </template>

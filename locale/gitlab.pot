@@ -3381,9 +3381,6 @@ msgstr ""
 msgid "Account: %{account}"
 msgstr ""
 
-msgid "AccountTokens|Personal Access Token"
-msgstr ""
-
 msgid "AccountTokens|Service Account"
 msgstr ""
 
@@ -3700,6 +3697,9 @@ msgid "Add entries"
 msgstr ""
 
 msgid "Add environment"
+msgstr ""
+
+msgid "Add exception(s)"
 msgstr ""
 
 msgid "Add exclusions"
@@ -13252,6 +13252,9 @@ msgid "CiVariables|You have reached the maximum number of variables available. T
 msgstr ""
 
 msgid "CiVariable|All environments"
+msgstr ""
+
+msgid "CiVariable|Create environment scope: %{searchTerm}"
 msgstr ""
 
 msgid "CiVariable|Create wildcard"
@@ -52128,9 +52131,6 @@ msgstr ""
 msgid "Roles and permissions"
 msgstr ""
 
-msgid "Roles|Groups"
-msgstr ""
-
 msgid "Roll up totals may reflect child items you don’t have access to."
 msgstr ""
 
@@ -53847,9 +53847,6 @@ msgstr ""
 msgid "ScanResultPolicy|Add exception"
 msgstr ""
 
-msgid "ScanResultPolicy|Add exception(s)"
-msgstr ""
-
 msgid "ScanResultPolicy|Add new criteria"
 msgstr ""
 
@@ -53911,6 +53908,9 @@ msgid "ScanResultPolicy|Clear all"
 msgstr ""
 
 msgid "ScanResultPolicy|Customized CI Variables"
+msgstr ""
+
+msgid "ScanResultPolicy|Define branch patterns that can bypass policy requirements using wildcards and regex patterns. Use * for simple wildcards or regex patterns for advanced matching. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
 msgid "ScanResultPolicy|Denied"
@@ -54144,9 +54144,6 @@ msgstr ""
 msgid "ScanResultPolicy|Severity is:"
 msgstr ""
 
-msgid "ScanResultPolicy|Source branch pattern"
-msgstr ""
-
 msgid "ScanResultPolicy|Specify the packages where this license requires approval before use"
 msgstr ""
 
@@ -54220,6 +54217,12 @@ msgid "ScanResultPolicy|any unsigned commits"
 msgstr ""
 
 msgid "ScanResultPolicy|denylist (%{licenseCount} %{licenses})"
+msgstr ""
+
+msgid "ScanResultPolicy|input source branch"
+msgstr ""
+
+msgid "ScanResultPolicy|input target branch"
 msgstr ""
 
 msgid "ScanResultPolicy|license status"
@@ -74497,6 +74500,9 @@ msgid "then"
 msgstr ""
 
 msgid "this document"
+msgstr ""
+
+msgid "to"
 msgstr ""
 
 msgid "today"

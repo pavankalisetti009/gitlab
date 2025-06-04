@@ -28,7 +28,7 @@ describe('SecretsBreadcrumbs', () => {
 
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createWrapper = (props = {}) => {
+  const createWrapper = (props = { staticBreadcrumbs: [] }) => {
     router = createRouter('/-/secrets', defaultProps);
 
     wrapper = shallowMount(SecretsBreadcrumbs, {
@@ -87,18 +87,13 @@ describe('SecretsBreadcrumbs', () => {
   });
 
   it('should include static breadcrumbs before dynamic breadcrumbs', () => {
-    const staticBreadcrumbs = {
-      items: [
-        { text: 'Static 1', href: '/static1' },
-        { text: 'Static 2', href: '/static2' },
-      ],
-    };
+    const staticBreadcrumbs = [
+      { text: 'Static 1', href: '/static1' },
+      { text: 'Static 2', href: '/static2' },
+    ];
 
     createWrapper({ staticBreadcrumbs });
 
-    expect(findBreadcrumbs().props('items')).toStrictEqual([
-      ...staticBreadcrumbs.items,
-      rootBreadcrumb,
-    ]);
+    expect(findBreadcrumbs().props('items')).toStrictEqual([...staticBreadcrumbs, rootBreadcrumb]);
   });
 });

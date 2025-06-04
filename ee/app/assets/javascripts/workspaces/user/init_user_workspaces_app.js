@@ -31,16 +31,7 @@ const initUserWorkspacesApp = () => {
   const router = createRouter({
     base: workspacesListPath,
   });
-  injectVueAppBreadcrumbs(
-    router,
-    WorkspacesBreadcrumbs,
-    null,
-    {},
-    {
-      // cf. https://gitlab.com/gitlab-org/gitlab/-/merge_requests/186906
-      singleNavOptIn: true,
-    },
-  );
+  injectVueAppBreadcrumbs(router, WorkspacesBreadcrumbs);
   return new Vue({
     el,
     name: 'WorkspacesRoot',

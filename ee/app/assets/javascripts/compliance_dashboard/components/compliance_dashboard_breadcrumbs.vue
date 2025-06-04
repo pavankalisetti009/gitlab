@@ -19,9 +19,8 @@ export default {
   },
   props: {
     staticBreadcrumbs: {
-      type: Object,
-      default: () => ({ items: [] }),
-      required: false,
+      type: Array,
+      required: true,
     },
   },
   computed: {
@@ -84,7 +83,7 @@ export default {
       }
     },
     breadcrumbs() {
-      const breadCrumbs = [...this.staticBreadcrumbs.items, this.rootRoute];
+      const breadCrumbs = [...this.staticBreadcrumbs, this.rootRoute];
 
       if (this.activeTabRoute) breadCrumbs.push(this.activeTabRoute);
       if (this.actionRoute) breadCrumbs.push(this.actionRoute);

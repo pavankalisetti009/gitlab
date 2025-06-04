@@ -20,16 +20,7 @@ const initSecretsApp = (el, app, props, basePath) => {
   const router = createRouter(basePath, props);
 
   if (window.location.href.includes(basePath)) {
-    injectVueAppBreadcrumbs(
-      router,
-      SecretsBreadcrumbs,
-      null,
-      {},
-      {
-        // cf. https://gitlab.com/gitlab-org/gitlab/-/merge_requests/186906
-        singleNavOptIn: true,
-      },
-    );
+    injectVueAppBreadcrumbs(router, SecretsBreadcrumbs);
   }
 
   return new Vue({

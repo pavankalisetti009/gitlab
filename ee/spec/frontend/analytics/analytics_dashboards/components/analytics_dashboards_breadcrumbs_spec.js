@@ -29,7 +29,7 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
 
     wrapper = shallowMount(AnalyticsDashboardsBreadcrumbs, {
       router,
-      propsData: props,
+      propsData: { staticBreadcrumbs: [], ...props },
     });
   };
 
@@ -103,22 +103,20 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
     });
   });
 
-  describe('when static breadcrumbs are provided', () => {
-    it('should render the static breadcrumbs', async () => {
-      const staticBreadcrumb = { text: 'Static breadcrumb', href: '/static' };
-      createWrapper({
-        staticBreadcrumbs: { items: [staticBreadcrumb] },
-      });
-      await router.push('/data-explorer');
-
-      expect(findBreadcrumbs().props('items')).toStrictEqual([
-        staticBreadcrumb,
-        rootBreadcrumb,
-        {
-          text: 'Data explorer',
-          to: undefined,
-        },
-      ]);
+  it('should render the static breadcrumbs', async () => {
+    const staticBreadcrumb = { text: 'Static breadcrumb', href: '/static' };
+    createWrapper({
+      staticBreadcrumbs: [staticBreadcrumb],
     });
+    await router.push('/data-explorer');
+
+    expect(findBreadcrumbs().props('items')).toStrictEqual([
+      staticBreadcrumb,
+      rootBreadcrumb,
+      {
+        text: 'Data explorer',
+        to: undefined,
+      },
+    ]);
   });
 });
