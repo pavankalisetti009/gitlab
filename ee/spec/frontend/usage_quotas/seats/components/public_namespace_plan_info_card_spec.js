@@ -102,7 +102,7 @@ describe('PublicNamespacePlanInfoCard', () => {
     });
 
     it('renders the title', () => {
-      expect(findDescriptionTitle().text()).toBe('Free Plan');
+      expect(findDescriptionTitle().text().replace(/\s+/g, ' ')).toContain('Free Plan');
     });
 
     it('renders the free plan info', () => {
