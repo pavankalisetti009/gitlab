@@ -131,6 +131,10 @@ module Gitlab
 
           return execute_with_slash_command_tool(stream_response_handler) if slash_command
 
+          # This is added after the `execute_with_slash_command_tool`
+          # since we are not applying it to slash commands yet
+          perform_codebase_search_tool if has_codebase_additional_context?
+
           Gitlab::Duo::Chat::ReactExecutor.new(
             user_input: prompt_message.content,
             thread: prompt_message.thread,
@@ -139,6 +143,17 @@ module Gitlab
             response_handler: response_handler,
             stream_response_handler: stream_response_handler
           ).execute
+        end
+
+        def perform_codebase_search_tool
+          ::Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor.new(
+            context: context,
+            options: { input: options[:content] }
+          ).execute
+        end
+
+        def has_codebase_additional_context?
+          context.additional_context.any? { |ctx| ctx[:category] == 'repository' }
         end
 
         def execute_with_slash_command_tool(stream_response_handler)

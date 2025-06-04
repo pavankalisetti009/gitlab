@@ -88,7 +88,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
     ]
   end
 
-  subject { described_class.new(prompt_message, nil, **options).execute }
+  subject(:execute) { described_class.new(prompt_message, nil, **options).execute }
 
   shared_examples 'success' do
     it 'calls the SingleAction Agent with the right parameters', :snowplow do
@@ -458,6 +458,59 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         expect(categorize_service).not_to receive(:execute)
 
         subject
+      end
+    end
+
+    describe 'codebase search tool usage' do
+      before do
+        allow(context).to receive(:tools_used).and_call_original
+
+        allow(::Gitlab::Duo::Chat::ReactExecutor).to receive(:new).and_return(react_executor)
+        allow(codebase_search_tool_class).to receive(:new).and_return(codebase_search_tool)
+      end
+
+      let(:react_executor) { instance_double(::Gitlab::Duo::Chat::ReactExecutor, execute: answer) }
+
+      let(:codebase_search_tool_class) { ::Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor }
+      let(:codebase_search_tool) { instance_double(codebase_search_tool_class, execute: cst_answer) }
+      let(:cst_answer) do
+        ::Gitlab::Llm::Chain::Answer.new(status: :ok, context: context, content: 'content', tool: nil)
+      end
+
+      context 'when there is no repository additional context' do
+        let(:additional_context) do
+          [
+            { category: 'file', id: 'file://somefile.text', content: 'file content', metadata: {} }
+          ]
+        end
+
+        it 'does not call the codebase search tool' do
+          expect(codebase_search_tool_class).not_to receive(:new)
+
+          expect(react_executor).to receive(:execute)
+
+          execute
+        end
+      end
+
+      context 'when there is a repository additional context' do
+        let(:additional_context) do
+          [
+            {
+              category: 'repository',
+              id: "gid://gitlab/Project/1",
+              content: ''
+            }
+          ]
+        end
+
+        it 'executes the codebase search tool then the react executor' do
+          expect(codebase_search_tool).to receive(:execute)
+
+          expect(react_executor).to receive(:execute)
+
+          execute
+        end
       end
     end
 
