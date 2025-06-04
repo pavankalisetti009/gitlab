@@ -25541,27 +25541,6 @@ msgstr ""
 msgid "Everyone can contribute"
 msgstr ""
 
-msgid "Everything you need to create a GitLab Pages site using Astro"
-msgstr ""
-
-msgid "Everything you need to create a GitLab Pages site using Docusaurus"
-msgstr ""
-
-msgid "Everything you need to create a GitLab Pages site using Hugo"
-msgstr ""
-
-msgid "Everything you need to create a GitLab Pages site using Jekyll"
-msgstr ""
-
-msgid "Everything you need to create a GitLab Pages site using Next.js"
-msgstr ""
-
-msgid "Everything you need to create a GitLab Pages site using Nuxt"
-msgstr ""
-
-msgid "Everything you need to create a GitLab Pages site using plain HTML"
-msgstr ""
-
 msgid "Evidence collection"
 msgstr ""
 
@@ -61095,6 +61074,27 @@ msgid "Tell us what you think"
 msgstr ""
 
 msgid "Template"
+msgstr ""
+
+msgid "Template for GitLab Pages and Astro. Astro is a static site generator written in JavaScript."
+msgstr ""
+
+msgid "Template for GitLab Pages and Docusaurus. Docusaurus is a static site generator written in React."
+msgstr ""
+
+msgid "Template for GitLab Pages and Hugo. Hugo is a static site generator written in Go."
+msgstr ""
+
+msgid "Template for GitLab Pages and Jekyll. Jekyll is a static site generator written in Ruby."
+msgstr ""
+
+msgid "Template for GitLab Pages and Next.js. Next.js is a React framework for building web applications."
+msgstr ""
+
+msgid "Template for GitLab Pages and Nuxt. Nuxt is a Vue framework for building web applications."
+msgstr ""
+
+msgid "Template for GitLab Pages using plain HTML, CSS, and JavaScript."
 msgstr ""
 
 msgid "Template to append to all Service Desk issues"
