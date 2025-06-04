@@ -34,12 +34,4 @@ RSpec.shared_examples 'enables DuoCore automatically only if customer has not ch
       end
     end
   end
-
-  context 'when feature flag auto_enable_duo_core_settings is disabled' do
-    before do
-      stub_feature_flags(auto_enable_duo_core_settings: false)
-    end
-
-    it_behaves_like 'does not change namespace Duo Core features setting'
-  end
 end
