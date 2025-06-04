@@ -566,4 +566,38 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
       end
     end
   end
+
+  describe '#policy_options' do
+    subject(:policy_options) { presenter.policy_options }
+
+    let(:ci_build) { build(:ee_ci_build) }
+
+    context 'when not an execution policy job' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'when an execution policy job' do
+      let(:ci_build) { build(:ee_ci_build, :execution_policy_job) }
+
+      it 'includes policy-specific options' do
+        expect(policy_options).to eq(
+          execution_policy_job: true,
+          policy_name: 'My policy'
+        )
+      end
+    end
+
+    context 'when an execution policy job with variables override' do
+      let(:ci_build) { build(:ee_ci_build, :execution_policy_job_with_variables_override) }
+
+      it 'includes policy-specific options' do
+        expect(policy_options).to eq(
+          execution_policy_job: true,
+          policy_name: 'My policy',
+          policy_variables_override_allowed: false,
+          policy_variables_override_exceptions: ['TEST_VAR']
+        )
+      end
+    end
+  end
 end

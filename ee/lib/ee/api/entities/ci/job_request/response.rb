@@ -10,6 +10,9 @@ module EE
 
             prepended do
               expose :secrets_configuration, as: :secrets, if: ->(build, _) { build.ci_secrets_management_available? }
+              expose :policy_options, if: ->(build, _) do
+                build&.project&.licensed_feature_available?(:security_orchestration_policies)
+              end
             end
           end
         end
