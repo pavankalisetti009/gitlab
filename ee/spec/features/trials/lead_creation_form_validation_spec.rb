@@ -16,21 +16,21 @@ RSpec.describe 'Trial lead form submission and validation', :with_current_organi
 
     let(:lead_params) do
       trial_user_params = {
-        "company_name" => form_data[:company_name],
-        "first_name" => user.first_name,
-        "last_name" => user.last_name,
-        "phone_number" => form_data[:phone_number],
-        "country" => form_data.dig(:country, :id),
-        "work_email" => user.email,
-        "uid" => user.id,
-        "setup_for_company" => user.onboarding_status_setup_for_company,
-        "skip_email_confirmation" => true,
-        "state" => "",
-        "gitlab_com_trial" => true,
-        "provider" => "gitlab"
+        company_name: form_data[:company_name],
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone_number: form_data[:phone_number],
+        country: form_data.dig(:country, :id),
+        work_email: user.email,
+        uid: user.id,
+        setup_for_company: user.onboarding_status_setup_for_company,
+        skip_email_confirmation: true,
+        state: "",
+        gitlab_com_trial: true,
+        provider: "gitlab"
       }
 
-      { trial_user: ActionController::Parameters.new(trial_user_params).permit! }
+      { trial_user: trial_user_params }
     end
 
     it 'proceeds to the next step' do

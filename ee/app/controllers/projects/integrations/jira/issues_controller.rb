@@ -86,7 +86,7 @@ module Projects
           # Used by view to highlight active option
           @sort = options[:sort]
 
-          params.permit(::Projects::Integrations::Jira::IssuesFinder.valid_params).merge(options)
+          params.permit(::Projects::Integrations::Jira::IssuesFinder.valid_params).merge(options).to_h
         end
 
         def default_state
