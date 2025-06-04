@@ -44,6 +44,8 @@ module QA
             EE::Page::Project::ValueStreamAnalytics.perform do |vsa_page|
               vsa_page.create_new_value_stream_from_default_template(vsa_name)
             end
+
+            QA::Support::WaitForRequests.wait_for_requests
           end
 
           it_behaves_like "value stream analytics"
