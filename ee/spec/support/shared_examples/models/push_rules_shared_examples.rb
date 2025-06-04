@@ -23,7 +23,12 @@ RSpec.shared_examples 'a push ruleable model' do
       end
     end
 
-    it { is_expected.to validate_numericality_of(:max_file_size).is_greater_than_or_equal_to(0).only_integer }
+    it 'validates max_file_size' do
+      is_expected.to validate_numericality_of(:max_file_size)
+        .is_greater_than_or_equal_to(0)
+        .is_less_than_or_equal_to(Gitlab::Database::MAX_INT_VALUE)
+        .only_integer
+    end
   end
 
   describe '#available?' do

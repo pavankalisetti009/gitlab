@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Ai::Llm::GitCommand, :saas, feature_category: :source_code_management do
+RSpec.describe API::Ai::Llm::GitCommand, :saas, feature_category: :code_review_workflow do
   let_it_be(:current_user) { create :user }
 
   let(:url) { '/ai/llm/git_command' }

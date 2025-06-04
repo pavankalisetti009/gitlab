@@ -33,9 +33,12 @@ module PushRuleable
     file_name_regex: 'prohibited file name regex',
     max_file_size: 'maximum file size (MiB)'
   }.freeze
-
   included do
-    validates :max_file_size, numericality: { greater_than_or_equal_to: 0, only_integer: true }
+    validates :max_file_size, numericality: {
+      greater_than_or_equal_to: 0,
+      less_than_or_equal_to: Gitlab::Database::MAX_INT_VALUE,
+      only_integer: true
+    }
     validates(*REGEX_COLUMNS, untrusted_regexp: true)
     validates(*SHORT_REGEX_COLUMNS, length: { maximum: 511 })
     validates(*LONG_REGEX_COLUMNS, length: { maximum: 2047 })

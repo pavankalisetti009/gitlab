@@ -60,7 +60,7 @@
 
 .form-group
   = f.label :max_file_size, s_("PushRules|Maximum file size (MB)"), class: "label-bold"
-  = f.number_field :max_file_size, class: "form-control gl-max-w-26", min: 0, data: { testid: 'file-size-field' }
+  = f.number_field :max_file_size, class: "form-control gl-max-w-26", min: 0, max: Gitlab::Database::MAX_INT_VALUE, data: { testid: 'file-size-field' }
   .form-text.gl-text-subtle
     = s_('PushRules|Reject file sizes equal to or greater than this size. If set to 0, files of any size are allowed. This rule does not apply to files tracked by Git LFS.')
 

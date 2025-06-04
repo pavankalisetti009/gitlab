@@ -4,7 +4,7 @@ module API
   module Ai
     module Llm
       class GitCommand < ::API::Base
-        feature_category :source_code_management
+        feature_category :code_review_workflow
         urgency :low
 
         before do
