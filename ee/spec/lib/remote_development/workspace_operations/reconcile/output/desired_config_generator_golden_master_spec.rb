@@ -110,6 +110,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
   shared_examples "generated desired_config golden master checks" do
     it "exactly matches the generated desired_config", :unlimited_max_formatted_output_length do
+      desired_config_object = RemoteDevelopment::WorkspaceOperations::DesiredConfig.new(
+        desired_config_array: desired_config)
+      expect(desired_config_object).to be_valid
+
       desired_config_sorted = desired_config.map(&:deep_symbolize_keys)
 
       golden_master_desired_config_sorted = golden_master_desired_config.map(&:deep_symbolize_keys)
@@ -124,7 +128,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       desired_config_sorted.each_with_index do |resource, index|
         # NOTE: The order of the diff is expected value first, actual value second. This matches the
         #       "expected ..., got ..." order which RSpec uses by default.
-        resource_differences = Hashdiff.diff(golden_master_desired_config_sorted[index], resource)
+        resource_differences = Hashdiff.diff(golden_master_desired_config_sorted[index], resource, use_lcs: false)
 
         next unless resource_differences.present?
 
@@ -3069,5 +3073,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       }
     ]
   end
+
   # rubocop:enable Layout/LineLength, Style/WordArray
 end
