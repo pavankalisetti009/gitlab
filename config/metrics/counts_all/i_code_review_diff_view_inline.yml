@@ -1,7 +1,7 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.code_review.i_code_review_diff_multiple_files_monthly
-description: Count of users with single mode disabled
+key_path: redis_hll_counters.code_review.i_code_review_diff_view_inline
+description: Count of users with merge request view type as inline
 product_group: code_review
 product_categories:
 - code_review_workflow
@@ -9,12 +9,14 @@ value_type: number
 status: active
 milestone: '13.12'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/59979
-time_frame: 28d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
   events:
-    - i_code_review_diff_multiple_files
+    - i_code_review_diff_view_inline
 tiers:
   - free
   - premium
