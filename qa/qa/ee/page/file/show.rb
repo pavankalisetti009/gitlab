@@ -19,11 +19,6 @@ module QA
                 element 'disabled-lock-button'
               end
 
-              view 'app/assets/javascripts/repository/components/blob_button_group.vue' do
-                element 'lock-button'
-                element 'disabled-lock-button'
-              end
-
               view 'ee/app/assets/javascripts/vue_shared/components/code_owners/code_owners.vue' do
                 element 'collapse-toggle'
               end
