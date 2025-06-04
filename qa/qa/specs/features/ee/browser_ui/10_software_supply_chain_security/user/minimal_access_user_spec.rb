@@ -5,8 +5,7 @@ module QA
     describe(
       'User with minimal access to group',
       :requires_admin,
-      product_group: :authentication,
-      feature_flag: { name: :blob_overflow_menu }
+      product_group: :authentication
     ) do
       let(:admin_api_client) { Runtime::API::Client.as_admin }
 
@@ -24,10 +23,6 @@ module QA
           name: 'project-for-minimal-access',
           group: group,
           api_client: admin_api_client)
-      end
-
-      before do
-        Runtime::Feature.enable(:blob_overflow_menu)
       end
 
       after do
