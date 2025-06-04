@@ -67,6 +67,7 @@ describe('Project Pipeline Status Component', () => {
         time: defaultPipeline.createdAt,
         cssClass: '',
         enableTruncation: false,
+        showDateWhenOverAYear: true,
         dateTimeFormat: DEFAULT_DATE_TIME_FORMAT,
         tooltipPlacement: 'top',
       });
@@ -133,6 +134,7 @@ describe('Project Pipeline Status Component', () => {
         time: sbomPipeline.createdAt,
         cssClass: '',
         enableTruncation: false,
+        showDateWhenOverAYear: true,
         dateTimeFormat: DEFAULT_DATE_TIME_FORMAT,
         tooltipPlacement: 'top',
       });

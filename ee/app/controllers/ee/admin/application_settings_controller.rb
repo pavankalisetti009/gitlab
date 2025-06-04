@@ -50,12 +50,11 @@ module EE
         end
 
         def elasticsearch_reindexing_state
-          human_states = ::Search::Elastic::ReindexingTask::HUMAN_STATES
-          human_state_colors = ::Search::Elastic::ReindexingTask::HUMAN_STATE_COLORS
           normalized_status = @last_elasticsearch_reindexing_task&.state || 'initial'
+          state_data = ::Search::Elastic::ReindexingTask::HUMAN_STATES[normalized_status]
 
-          @elasticsearch_reindexing_human_state = human_states[normalized_status]
-          @elasticsearch_reindexing_human_state_color = human_state_colors[normalized_status]
+          @elasticsearch_reindexing_human_state = state_data[:message]
+          @elasticsearch_reindexing_human_state_color = state_data[:color]
         end
 
         def elasticsearch_warn_if_not_using_aliases
