@@ -19224,6 +19224,9 @@ msgstr ""
 msgid "Current password"
 msgstr ""
 
+msgid "Current project"
+msgstr ""
+
 msgid "Current sign-in IP:"
 msgstr ""
 
@@ -72370,9 +72373,6 @@ msgid "can't be specified if a merge request was already provided"
 msgstr ""
 
 msgid "can't be specified if a project was already provided"
-msgstr ""
-
-msgid "can't be the same as the source project"
 msgstr ""
 
 msgid "can't include: %{invalid_storages}"
