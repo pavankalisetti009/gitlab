@@ -1,12 +1,14 @@
 ---
-key_path: redis_hll_counters.ci_templates.p_ci_templates_implicit_security_api_fuzzing_weekly
+key_path: redis_hll_counters.ci_templates.p_ci_templates_implicit_security_dast_latest
 description: ''
 product_group: dynamic_analysis
 value_type: number
 status: removed
 milestone: '14.3'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/69204
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 data_category: optional
 instrumentation_class: RedisHLLMetric
@@ -16,6 +18,6 @@ tiers:
 - ultimate
 options:
   events:
-  - p_ci_templates_implicit_security_api_fuzzing
+  - p_ci_templates_implicit_security_dast_latest
 removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/90163
 milestone_removed: '15.5'
