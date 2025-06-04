@@ -91,7 +91,7 @@ module Security
           traversal_ids: traversal_ids,
           analyzer_type: type,
           status: BUILD_TO_ANALYZER_STATUS[build.status] || :not_configured,
-          last_call: build.started_at,
+          last_call: build.started_at || build.created_at,
           archived: project.archived,
           build_id: build.id
         }

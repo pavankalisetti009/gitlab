@@ -611,9 +611,9 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect { execute_task }.to publish_event(Search::Zoekt::RepoToIndexEvent).with({})
     end
 
-    context 'when there are no pending repos' do
+    context 'when there are no repositories needed to be indexed' do
       before do
-        allow(Search::Zoekt::Repository).to receive_message_chain(:pending, :exists?).and_return(false)
+        allow(Search::Zoekt::Repository).to receive(:should_be_indexed).and_return(Search::Zoekt::Repository.none)
       end
 
       it 'does not publish an RepoToIndexEvent' do

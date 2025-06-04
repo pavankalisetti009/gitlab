@@ -51,6 +51,11 @@ module Search
         where(state: [:orphaned, :pending_deletion])
       end
 
+      scope :should_be_indexed, -> do
+        indexable.joins(zoekt_index: :node).where("#{table_name}.schema_version != #{Node.table_name}.schema_version")
+          .or(pending)
+      end
+
       scope :for_zoekt_indices, ->(indices) { where(zoekt_index: indices) }
 
       scope :indexable, -> { where(state: INDEXABLE_STATES) }

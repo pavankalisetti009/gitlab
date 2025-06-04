@@ -75,7 +75,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
     context 'when post_pipeline_analyzer_status_updates feature flag is enabled' do
       context 'when pipeline and project are present' do
         context 'with various security jobs' do
-          let!(:sast_build) { create(:ci_build, :sast, :success, pipeline: pipeline) }
+          let!(:sast_build) { create(:ci_build, :sast, :success, pipeline: pipeline, started_at: nil) }
           let!(:dependency_scanning_build) { create(:ci_build, :dependency_scanning, :canceled, pipeline: pipeline) }
           let!(:container_scanning_build) { create(:ci_build, :container_scanning, :skipped, pipeline: pipeline) }
           let!(:secret_detection_build) { create(:ci_build, :secret_detection, :success, pipeline: pipeline) }
@@ -136,6 +136,17 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
               status: :success, archived: true)
 
             expect { execute }.to change { archived_status.reload.archived }.from(true).to(false)
+          end
+
+          it 'updates the last_call column' do
+            sast_status = create(:analyzer_project_status, project: project, analyzer_type: :sast,
+              status: :not_configured)
+            ds_status = create(:analyzer_project_status, project: project, analyzer_type: :dependency_scanning,
+              status: :success)
+
+            # prefer started_at with fallback to created_at
+            expect { execute }.to change { sast_status.reload.last_call }.to(sast_build.created_at)
+              .and change { ds_status.reload.last_call }.to(dependency_scanning_build.started_at)
           end
 
           it 'updates the updated_at column' do

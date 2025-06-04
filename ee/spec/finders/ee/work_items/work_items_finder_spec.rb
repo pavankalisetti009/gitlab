@@ -8,6 +8,10 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
+    before do
+      stub_licensed_features(epics: true)
+    end
+
     subject do
       described_class.new(user, params).execute
     end
@@ -17,12 +21,11 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
 
       include_context '{Issues|WorkItems}Finder#execute context', :work_item
 
-      it_behaves_like 'work items finder group parameter'
+      it_behaves_like 'work items finder group parameter', expect_group_items: true
 
-      context 'when epics are enabled and namespace_level_work_items is disabled' do
+      context 'when epics are disabled' do
         before do
-          stub_licensed_features(epics: true)
-          stub_feature_flags(namespace_level_work_items: false)
+          stub_licensed_features(epics: false)
         end
 
         let(:scope) { 'all' }
@@ -30,7 +33,7 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
         let_it_be(:group_work_item) { create(:work_item, :group_level, namespace: group, author: user) }
 
         it 'returns group level work items' do
-          expect(items).to contain_exactly(group_work_item)
+          expect(items).not_to include(group_work_item)
         end
       end
     end

@@ -64,7 +64,7 @@ module Search
           dispatch: { event: OrphanedRepoEvent }
         },
         repo_to_index_check: {
-          if: -> { Search::Zoekt::Repository.pending.exists? },
+          if: -> { Repository.should_be_indexed.exists? },
           dispatch: { event: RepoToIndexEvent }
         },
         repo_to_delete_check: {

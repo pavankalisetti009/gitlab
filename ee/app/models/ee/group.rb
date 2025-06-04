@@ -302,6 +302,12 @@ module EE
       super || work_item_epics_enabled?
     end
 
+    override :supports_group_work_items?
+    def supports_group_work_items?
+      # For now we only support epics as group work items. We therefore can re-use `epics` as a licensed feature check.
+      licensed_feature_available?(:epics)
+    end
+
     def work_item_epics_enabled?
       ::Feature.enabled?(:work_item_epics, root_ancestor) &&
         licensed_feature_available?(:epics)
