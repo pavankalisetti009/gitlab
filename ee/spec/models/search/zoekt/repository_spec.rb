@@ -105,6 +105,26 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         expect(records).not_to include pending, initializing, orphaned, pending_deletion, failed
       end
     end
+
+    describe '.should_be_indexed' do
+      let_it_be(:ready) { create(:zoekt_repository, state: :ready) }
+      let_it_be(:ready_mismatch_schema_version) { create(:zoekt_repository, state: :ready, schema_version: 2510) }
+      let_it_be(:pending) { create(:zoekt_repository, state: :pending) }
+      let_it_be(:orphaned) { create(:zoekt_repository, state: :orphaned) }
+      let_it_be(:pending_deletion) { create(:zoekt_repository, state: :pending_deletion) }
+      let_it_be(:failed) { create(:zoekt_repository, state: :failed) }
+      let_it_be(:initializing) { create(:zoekt_repository, state: :initializing) }
+      let_it_be(:initializing_mismatch_schema_version) do
+        create(:zoekt_repository, state: :initializing, schema_version: 2510)
+      end
+
+      subject(:records) { described_class.should_be_indexed }
+
+      it 'returns all repositories with pending states and indexable states with mismatched schema_version' do
+        expect(records).to include ready_mismatch_schema_version, pending, initializing_mismatch_schema_version
+        expect(records).not_to include ready, initializing, orphaned, pending_deletion, failed
+      end
+    end
   end
 
   describe '.create_bulk_tasks', :freeze_time do

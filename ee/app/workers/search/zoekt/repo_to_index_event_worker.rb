@@ -16,19 +16,16 @@ module Search
       def handle_event(_event)
         return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
-        Repository.pending.limit(BATCH_SIZE).create_bulk_tasks
-
+        Repository.should_be_indexed.limit(BATCH_SIZE).create_bulk_tasks
         reemit_event
       end
 
       private
 
       def reemit_event
-        return unless Repository.pending.exists?
+        return unless Repository.should_be_indexed.exists?
 
-        Gitlab::EventStore.publish(
-          Search::Zoekt::RepoToIndexEvent.new(data: {})
-        )
+        Gitlab::EventStore.publish(Search::Zoekt::RepoToIndexEvent.new(data: {}))
       end
     end
   end
