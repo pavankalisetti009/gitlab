@@ -52,11 +52,48 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
     expect(data).to eq(
       "gl-clone-project-command": clone_project_script,
       "gl-init-tools-command": files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
-      reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
-        postart_commands_script,
+      reconcile_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+        internal_blocking_poststart_commands_script,
+      reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+        non_blocking_poststart_commands_script,
       "gl-sleep-until-container-is-running-command":
         sleep_until_container_is_running_script,
       "gl-start-sshd-command": files::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
     )
+  end
+
+  context "when legacy poststart scripts are used" do
+    let(:processed_devfile) do
+      yaml_safe_load_symbolized(
+        read_devfile_yaml("example.legacy-poststart-in-container-command-processed-devfile.yaml.erb")
+      )
+    end
+
+    it "appends ConfigMap to desired_config" do
+      expect(updated_desired_config.length).to eq(2)
+
+      updated_desired_config => [
+        {}, # existing fake element
+        {
+          apiVersion: api_version,
+          metadata: {
+            name: configmap_name
+          },
+          data: data
+        },
+      ]
+
+      expect(api_version).to eq("v1")
+      expect(configmap_name).to eq(name)
+      expect(data).to eq(
+        "gl-clone-project-command": clone_project_script,
+        "gl-init-tools-command": files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
+        reconcile_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+          legacy_poststart_commands_script,
+        "gl-sleep-until-container-is-running-command":
+          sleep_until_container_is_running_script,
+        "gl-start-sshd-command": files::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
+      )
+    end
   end
 end

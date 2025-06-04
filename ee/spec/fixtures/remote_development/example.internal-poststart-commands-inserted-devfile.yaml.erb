@@ -66,16 +66,19 @@ commands:
           indent_yaml_literal(script, 8)
         %>
       component: tooling-container
+      label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
   - id: gl-start-sshd-command
     exec:
       commandLine: |
         <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT, 8) %>
       component: tooling-container
+      label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
   - id: gl-init-tools-command
     exec:
       commandLine: |
         <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT, 8) %>
       component: tooling-container
+      label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
   - id: gl-sleep-until-container-is-running-command
     exec:
       commandLine: |
@@ -87,6 +90,7 @@ commands:
           indent_yaml_literal(script, 8)
         %>
       component: tooling-container
+      label: <%= INTERNAL_COMMAND_LABEL %>
 events:
   preStart:
     - gl-tools-injector-command

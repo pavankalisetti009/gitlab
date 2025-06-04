@@ -38,6 +38,8 @@ module RemoteDevelopment
       read_file("workspace_operations/create/internal_poststart_command_sleep_until_workspace_is_running.sh")
     INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT =
       read_file("workspace_operations/create/internal_poststart_command_start_sshd.sh")
+    KUBERNETES_LEGACY_POSTSTART_HOOK_COMMAND =
+      read_file("workspace_operations/reconcile/output/kubernetes_legacy_poststart_hook_command.sh")
     KUBERNETES_POSTSTART_HOOK_COMMAND =
       read_file("workspace_operations/reconcile/output/kubernetes_poststart_hook_command.sh")
     MAIN_COMPONENT_UPDATER_CONTAINER_ARGS =

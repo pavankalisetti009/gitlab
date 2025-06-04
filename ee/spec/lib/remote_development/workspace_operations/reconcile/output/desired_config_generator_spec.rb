@@ -16,7 +16,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:desired_state_is_terminated) { false }
     let(:include_all_resources) { false }
     let(:include_scripts_resources) { true }
-    let(:legacy_scripts_in_container_command) { false }
+    let(:legacy_no_poststart_container_command) { false }
+    let(:legacy_poststart_container_command) { false }
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
     let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
@@ -59,7 +60,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         include_network_policy: workspace.workspaces_agent_config.network_policy_enabled,
         include_all_resources: include_all_resources,
         include_scripts_resources: include_scripts_resources,
-        legacy_scripts_in_container_command: legacy_scripts_in_container_command,
+        legacy_no_poststart_container_command: legacy_no_poststart_container_command,
+        legacy_poststart_container_command: legacy_poststart_container_command,
         egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress.map(&:deep_symbolize_keys),
         max_resources_per_workspace: max_resources_per_workspace,
         default_resources_per_workspace_container: default_resources_per_workspace_container,
@@ -245,11 +247,22 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         end
       end
 
+      context "when legacy postStart events are present in devfile" do
+        let(:legacy_poststart_container_command) { true }
+        let(:processed_devfile_yaml) do
+          read_devfile_yaml("example.legacy-poststart-in-container-command-processed-devfile.yaml.erb")
+        end
+
+        it 'returns expected config without script resources' do
+          expect(workspace_resources).to eq(expected_config)
+        end
+      end
+
       context "when postStart events are not present in devfile" do
         let(:include_scripts_resources) { false }
-        let(:legacy_scripts_in_container_command) { true }
+        let(:legacy_no_poststart_container_command) { true }
         let(:processed_devfile_yaml) do
-          read_devfile_yaml("example.legacy-scripts-in-container-command-processed-devfile.yaml.erb")
+          read_devfile_yaml("example.legacy-no-poststart-in-container-command-processed-devfile.yaml.erb")
         end
 
         it 'returns expected config without script resources' do

@@ -82,6 +82,8 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
         "example.invalid-restricted-prefix-component-name-devfile.yaml.erb" | "Component name 'gl-example' must not start with 'gl-'"
         "example.invalid-restricted-prefix-event-type-prestart-name-devfile.yaml.erb" | "Event 'gl-example' of type 'preStart' must not start with 'gl-'"
         "example.invalid-restricted-prefix-variable-name-devfile.yaml.erb" | "Variable name 'gl-example' must not start with 'gl-'"
+        "example.invalid-restricted-prefix-command-apply-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'"
+        "example.invalid-restricted-prefix-command-exec-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'"
         "example.invalid-restricted-prefix-variable-name-with-underscore-devfile.yaml.erb" | "Variable name 'gl_example' must not start with 'gl_'"
         "example.invalid-root-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported"
         "example.invalid-unsupported-component-container-dedicated-pod-devfile.yaml.erb" | "Property 'dedicatedPod' of component 'example' is not yet supported"

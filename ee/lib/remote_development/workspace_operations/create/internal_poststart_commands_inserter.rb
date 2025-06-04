@@ -5,6 +5,7 @@ module RemoteDevelopment
     module Create
       class InternalPoststartCommandsInserter
         include CreateConstants
+        include WorkspaceOperationsConstants
         include Files
         include RemoteDevelopmentConstants
 
@@ -61,7 +62,8 @@ module RemoteDevelopment
             id: clone_project_command_id,
             exec: {
               commandLine: clone_project_script,
-              component: main_component_name
+              component: main_component_name,
+              label: INTERNAL_BLOCKING_COMMAND_LABEL
             }
           }
           poststart_events << clone_project_command_id
@@ -72,7 +74,8 @@ module RemoteDevelopment
             id: start_sshd_command_id,
             exec: {
               commandLine: INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT,
-              component: main_component_name
+              component: main_component_name,
+              label: INTERNAL_BLOCKING_COMMAND_LABEL
             }
           }
           poststart_events << start_sshd_command_id
@@ -83,7 +86,8 @@ module RemoteDevelopment
             id: start_vscode_command_id,
             exec: {
               commandLine: INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
-              component: main_component_name
+              component: main_component_name,
+              label: INTERNAL_BLOCKING_COMMAND_LABEL
             }
           }
           poststart_events << start_vscode_command_id
@@ -100,7 +104,8 @@ module RemoteDevelopment
             id: sleep_until_container_is_running_command_id,
             exec: {
               commandLine: sleep_until_container_is_running_script,
-              component: main_component_name
+              component: main_component_name,
+              label: INTERNAL_COMMAND_LABEL
             }
           }
           poststart_events << sleep_until_container_is_running_command_id
