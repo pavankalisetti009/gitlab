@@ -28,7 +28,7 @@ describe('DuoWorkflowAction component', () => {
     hoverMessage: 'Convert Jenkins to GitLab CI/CD using Duo',
     goal: 'Jenkinsfile',
     workflowDefinition: 'convert_to_gitlab_ci',
-    agentPrivileges: [1, 2, 3, 4, 5],
+    agentPrivileges: [1, 2, 5],
     duoWorkflowInvokePath,
   };
 

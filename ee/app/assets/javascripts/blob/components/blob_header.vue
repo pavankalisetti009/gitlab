@@ -126,7 +126,7 @@ export default {
       return getIdFromGraphQLId(this.projectId);
     },
     agentPrivileges() {
-      return [1, 2, 3, 4, 5];
+      return [1, 2, 5];
     },
     showDuoWorkflowAction() {
       return this.duoWorkflowData?.showDuoWorkflowAction;
