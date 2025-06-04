@@ -3,7 +3,7 @@ import { GlButton } from '@gitlab/ui';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { s__, sprintf } from '~/locale';
 import Tracking from '~/tracking';
-import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
+import getGitlabSubscriptionQuery from 'ee/usage_quotas/seats/graphql/get_gitlab_subscription.query.graphql';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import { EXPLORE_PAID_PLANS_CLICKED } from 'ee/usage_quotas/seats/constants';
 

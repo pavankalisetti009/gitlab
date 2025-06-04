@@ -1,10 +1,10 @@
 <script>
 import { GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
+import getGitlabSubscriptionQuery from 'ee/usage_quotas/seats/graphql/get_gitlab_subscription.query.graphql';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import SubscriptionSeatsStatisticsCard from 'ee/usage_quotas/seats/components/subscription_seats_statistics_card.vue';
 import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_seats_card.vue';
 import PublicNamespacePlanInfoCard from 'ee/usage_quotas/seats/components/public_namespace_plan_info_card.vue';
-import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { PLAN_CODE_FREE } from 'ee/usage_quotas/seats/constants';
 import { createAlert } from '~/alert';
