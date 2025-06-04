@@ -19,8 +19,6 @@ module UpdateOrchestrationPolicyConfiguration
       return
     end
 
-    Security::PersistSecurityPoliciesWorker.perform_async(configuration.id, { force_resync: force_resync })
-
     configuration.delete_all_schedules
     configuration.active_scan_execution_policies.each_with_index do |policy, policy_index|
       Security::SecurityOrchestrationPolicies::ProcessRuleService
@@ -29,6 +27,8 @@ module UpdateOrchestrationPolicyConfiguration
     end
 
     update_configuration_timestamp!(configuration)
+
+    Security::PersistSecurityPoliciesWorker.perform_async(configuration.id, { force_resync: force_resync })
   end
 
   private

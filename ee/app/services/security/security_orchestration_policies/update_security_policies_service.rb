@@ -8,13 +8,15 @@ module Security
       end
 
       def execute
-        policies_changes.each do |policy_changes|
+        policies_changes.each_with_object([]) do |policy_changes, updated_policies|
           # diff should be computed before updating policy attributes
           diff = policy_changes.diff
           policy = update_policy_attributes!(policy_changes.db_policy, policy_changes.yaml_policy)
 
           update_policy_rules(policy, diff.rules_diff)
           policy.update_pipeline_execution_policy_config_link! if policy_changes.diff.content_project_changed?
+
+          updated_policies << policy
         end
       end
 

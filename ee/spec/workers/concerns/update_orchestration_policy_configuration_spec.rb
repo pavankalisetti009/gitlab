@@ -84,6 +84,24 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
         expect { execute }.to change { configuration.reload.configured_at }.from(nil).to(Time.current)
       end
 
+      # This spec ensures that `configured_at` is updated before enqueuing the `PersistSecurityPoliciesWorker`
+      # as we fetch the `latest_commit_before_configured_at` inside `CollectPoliciesAuditEvents`.
+      it 'updates the configuration.configured_at before enqueuing PersistSecurityPoliciesWorker', :freeze_time do
+        expect(configuration).to receive(:update!).with(experiments: anything).ordered.and_call_original
+
+        expect(configuration).to receive(:update!)
+          .with(configured_at: Time.current)
+          .ordered
+          .and_call_original
+
+        expect(Security::PersistSecurityPoliciesWorker).to receive(:perform_async)
+          .with(configuration.id, { force_resync: false })
+          .ordered
+          .and_call_original
+
+        execute
+      end
+
       it 'executes ProcessRuleService for each policy' do
         active_policies[:scan_execution_policy].each_with_index do |policy, policy_index|
           expect_next_instance_of(
