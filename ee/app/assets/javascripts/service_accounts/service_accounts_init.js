@@ -29,7 +29,7 @@ export default (el) => {
 
   const router = createRouter(basePath);
 
-  injectVueAppBreadcrumbs(router, ServiceAccountsBreadcrumb, null, {}, { singleNavOptIn: true });
+  injectVueAppBreadcrumbs(router, ServiceAccountsBreadcrumb);
 
   return new Vue({
     el,

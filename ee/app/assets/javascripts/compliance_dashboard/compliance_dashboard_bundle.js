@@ -80,13 +80,7 @@ export default () => {
     defaultClient: createDefaultClient(),
   });
 
-  injectVueAppBreadcrumbs(
-    router,
-    ComplianceDashboardBreadcrumbs,
-    null,
-    {},
-    { singleNavOptIn: true },
-  );
+  injectVueAppBreadcrumbs(router, ComplianceDashboardBreadcrumbs);
 
   return new Vue({
     el,

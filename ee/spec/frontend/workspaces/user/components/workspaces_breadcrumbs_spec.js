@@ -21,7 +21,7 @@ describe('workspaces/user/components/workspaces_breadcrumbs', () => {
 
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createWrapper = (props = {}) => {
+  const createWrapper = (props = { staticBreadcrumbs: [] }) => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     router = createRouter(base);
 
@@ -84,8 +84,9 @@ describe('workspaces/user/components/workspaces_breadcrumbs', () => {
       const staticBreadcrumb = { text: 'Static', href: '/static' };
 
       createWrapper({
-        staticBreadcrumbs: { items: [staticBreadcrumb] },
+        staticBreadcrumbs: [staticBreadcrumb],
       });
+
       expect(findBreadcrumbs().props('items')).toStrictEqual([staticBreadcrumb, rootBreadcrumb]);
     });
   });

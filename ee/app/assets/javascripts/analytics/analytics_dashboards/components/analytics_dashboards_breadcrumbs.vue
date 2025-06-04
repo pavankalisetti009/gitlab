@@ -7,9 +7,8 @@ export default {
   },
   props: {
     staticBreadcrumbs: {
-      type: Object,
-      default: () => ({ items: [] }),
-      required: false,
+      type: Array,
+      required: true,
     },
   },
   computed: {
@@ -45,8 +44,7 @@ export default {
         });
       }
 
-      const staticCrumbs = this.staticBreadcrumbs.items;
-      return [...staticCrumbs, ...crumbs];
+      return [...this.staticBreadcrumbs, ...crumbs];
     },
   },
 };
