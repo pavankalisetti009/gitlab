@@ -88,6 +88,14 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
 
     include_examples 'authentication and authorization requirements'
 
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'use_get_group_enterprise_users_api' }
+      let(:user) { current_user }
+      let(:namespace) { enterprise_group }
+
+      subject(:track_event) { get_group_enterprise_users }
+    end
+
     it 'returns enterprise users of the group in descending order by id' do
       get_group_enterprise_users
 
