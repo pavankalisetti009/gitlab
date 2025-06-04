@@ -108,6 +108,20 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
 
         it_behaves_like 'work_item_type returning only licensed widgets'
       end
+
+      context 'when parent is a project in user_namespace' do
+        let(:parent) { create(:project) }
+        let(:feature) { feature_widget.first }
+        let(:widget_classes) { WorkItems::Type::EXCLUDED_USER_NAMESPACE_LICENSED_WIDGETS }
+
+        subject(:returned_widgets) { work_item_type.widgets(parent) }
+
+        it 'does not return the widgets excluded in user namespace' do
+          widget_classes.each do |widget|
+            expect(returned_widgets.map(&:widget_class)).not_to include(widget)
+          end
+        end
+      end
     end
   end
 

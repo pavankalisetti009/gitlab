@@ -162,7 +162,10 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
     context 'for iteration widget' do
       context 'when iterations is licensed' do
-        subject { build(:work_item, *work_item_type).widgets }
+        let(:group) { create(:group) }
+        let(:project) { create(:project, group: group) }
+
+        subject { build(:work_item, *work_item_type, project: project).widgets }
 
         before do
           stub_licensed_features(iterations: true)
