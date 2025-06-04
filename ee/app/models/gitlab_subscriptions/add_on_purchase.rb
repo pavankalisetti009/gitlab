@@ -42,6 +42,7 @@ module GitlabSubscriptions
     scope :for_product_analytics, -> { where(subscription_add_on_id: AddOn.product_analytics.pick(:id)) }
     scope :for_duo_enterprise, -> { where(subscription_add_on_id: AddOn.duo_enterprise.pick(:id)) }
     scope :for_duo_amazon_q, -> { where(subscription_add_on_id: AddOn.duo_amazon_q.pick(:id)) }
+    scope :for_duo_self_hosted, -> { where(subscription_add_on_id: AddOn.duo_self_hosted.pick(:id)) }
     scope :for_duo_core, -> { where(subscription_add_on_id: AddOn.duo_core.select(:id)) }
     # this executes 2 queries to the `AddOn` table, 1 for `code_suggestions` (duo pro), and 1 for `duo_enterprise`
     scope :for_duo_pro_or_duo_enterprise, -> { for_gitlab_duo_pro.or(for_duo_enterprise) }

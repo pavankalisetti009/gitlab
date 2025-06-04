@@ -22,6 +22,7 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
     let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let_it_be(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
+    let_it_be(:duo_self_hosted_add_on) { create(:gitlab_subscription_add_on, :duo_self_hosted) }
     let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
 
     describe '.duo_add_ons' do
@@ -29,7 +30,13 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
 
       it 'only queries the duo add-ons' do
         expect(duo_add_ons)
-          .to contain_exactly(duo_core_add_on, duo_pro_add_on, duo_enterprise_add_on, duo_amazon_q_add_on)
+          .to contain_exactly(
+            duo_core_add_on,
+            duo_pro_add_on,
+            duo_enterprise_add_on,
+            duo_amazon_q_add_on,
+            duo_self_hosted_add_on
+          )
       end
     end
 
@@ -193,6 +200,7 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
       'duo_enterprise'    | true
       'duo_amazon_q'      | false
       'duo_core'          | false
+      'duo_self_hosted'   | false
     end
 
     with_them do
