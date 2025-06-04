@@ -1,6 +1,13 @@
 import { pathSegments } from '~/lib/utils/url_utility';
 import { TOKEN_TYPES } from './constants';
 
+export const formatListboxItems = (items) => {
+  return items.map((type) => ({
+    text: type.titlePlural,
+    value: type.namePlural,
+  }));
+};
+
 export const isValidFilter = (data, array) => {
   return data && array?.some(({ value }) => value === data);
 };

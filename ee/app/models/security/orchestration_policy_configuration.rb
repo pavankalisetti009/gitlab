@@ -113,6 +113,19 @@ module Security
       end
     end
 
+    def latest_commit_before_configured_at
+      return if configured_at.nil?
+
+      capture_git_error(:commits) do
+        policy_repo.commits(
+          default_branch_or_main,
+          before: configured_at,
+          limit: 1
+        ).first
+      end
+    end
+    strong_memoize_attr :latest_commit_before_configured_at
+
     def policy_by_type(type_or_types)
       return [] if policy_hash.blank?
 
@@ -242,6 +255,12 @@ module Security
       return {} if experiments.blank?
 
       experiments.dig(experimental_feature_name.to_s, 'configuration') || {}
+    end
+
+    def first_configuration_for_the_management_project?
+      self.class.for_management_project(security_policy_management_project_id)
+      .where(self.class.arel_table[:created_at].lt(created_at))
+      .none?
     end
 
     private

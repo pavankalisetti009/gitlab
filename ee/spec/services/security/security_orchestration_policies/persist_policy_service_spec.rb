@@ -3,7 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#execute', feature_category: :security_policy_management do
-  let_it_be_with_reload(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+  let_it_be(:policy_project) { create(:project, :repository) }
+  let_it_be_with_reload(:policy_configuration) do
+    create(:security_orchestration_policy_configuration, security_policy_management_project: policy_project)
+  end
 
   def persist!(policies)
     described_class
@@ -85,6 +88,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
       it 'creates policies' do
         expect { persist }.to change { policy_configuration.security_policies.reload.type_approval_policy.count }.by(3)
+      end
+
+      it 'calls CollectPoliciesAuditService with created policies' do
+        expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).to receive(:new).with(
+          policy_configuration: policy_configuration.reload,
+          created_policies: policy_configuration.security_policies.reload.type_approval_policy,
+          updated_policies: [],
+          deleted_policies: []
+        ).and_call_original
+
+        persist
       end
 
       it 'calls EventPublisher with created policies' do
@@ -306,6 +320,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           persist
         end
 
+        it 'calls CollectPoliciesAuditService with deleted policies' do
+          expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).to receive(:new).with({
+            policy_configuration: policy_configuration,
+            created_policies: [],
+            updated_policies: [],
+            deleted_policies: [Security::Policy.first]
+          }).and_call_original
+
+          persist
+        end
+
         it 'calls EventPublisher with deleted policies' do
           expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
             db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
@@ -319,6 +344,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         end
 
         context 'with force_resync' do
+          it 'calls CollectPoliciesAuditService with deleted policies' do
+            expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).to receive(:new).with({
+              policy_configuration: policy_configuration,
+              created_policies: [],
+              updated_policies: [],
+              deleted_policies: [Security::Policy.first]
+            }).and_call_original
+
+            persist_with_force_resync!
+          end
+
           it 'calls EventPublisher with force_resync set to true' do
             expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
               db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
@@ -404,6 +440,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           }.from(contain_exactly(0, 1)).to(contain_exactly(0, -1))
         end
 
+        it 'calls CollectPoliciesAuditService with updated policies' do
+          expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).to receive(:new).with({
+            policy_configuration: policy_configuration,
+            created_policies: [],
+            updated_policies: [Security::Policy.first],
+            deleted_policies: []
+          }).and_call_original
+
+          persist
+        end
+
         it 'calls EventPublisher with deleted policies' do
           expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
             db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
@@ -417,6 +464,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         end
 
         context 'with force_resync' do
+          it 'calls CollectPoliciesAuditService with updated policies' do
+            expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).to receive(:new).with({
+              policy_configuration: policy_configuration,
+              created_policies: [],
+              updated_policies: [Security::Policy.first],
+              deleted_policies: []
+            }).and_call_original
+
+            persist_with_force_resync!
+          end
+
           it 'calls EventPublisher with force_resync set to true' do
             expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
               db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
@@ -730,6 +788,64 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
     specify do
       expect { execute }.to change { policy_configuration.security_policies.count }.by(2)
+    end
+  end
+
+  describe "collect policy audit events" do
+    context "when feature is disabled" do
+      let(:policies) { [build(:approval_policy)] }
+      let(:policy_type) { :approval_policy }
+
+      before do
+        stub_feature_flags(collect_security_policy_manage_audit_events: false)
+      end
+
+      it 'does not call CollectPoliciesAuditService' do
+        expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).not_to receive(:new)
+
+        persist!(policies)
+      end
+    end
+
+    context "when policy project is linked to multiple projects" do
+      let_it_be(:another_policy_configuration) do
+        create(:security_orchestration_policy_configuration, security_policy_management_project: policy_project)
+      end
+
+      let(:approval_policy) { build(:approval_policy) }
+      let(:scan_execution_policy) { build(:scan_execution_policy) }
+
+      subject(:execute) do
+        described_class
+          .new(policy_configuration: policy_configuration,
+            policies: [approval_policy],
+            policy_type: :approval_policy)
+          .execute
+
+        described_class
+          .new(policy_configuration: another_policy_configuration,
+            policies: [scan_execution_policy],
+            policy_type: :scan_execution_policy)
+          .execute
+      end
+
+      it 'calls CollectPoliciesAuditService for the first policy configuration only' do
+        expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).to receive(:new).with(
+          anything).and_call_original.once
+
+        execute
+      end
+
+      it 'calls CollectPoliciesAuditService with correct attributes' do
+        expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).to receive(:new).with({
+          policy_configuration: policy_configuration,
+          created_policies: policy_configuration.security_policies.reload.type_approval_policy,
+          updated_policies: [],
+          deleted_policies: []
+        }).and_call_original
+
+        execute
+      end
     end
   end
 

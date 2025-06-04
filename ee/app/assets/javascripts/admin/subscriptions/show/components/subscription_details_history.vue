@@ -1,5 +1,5 @@
 <script>
-import { GlTooltip, GlTooltipDirective, GlIcon, GlBadge, GlTableLite } from '@gitlab/ui';
+import { GlBadge, GlTableLite } from '@gitlab/ui';
 import { kebabCase } from 'lodash';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { detailsLabels, subscriptionTable } from '../constants';
@@ -23,12 +23,7 @@ export default {
   name: 'SubscriptionDetailsHistory',
   components: {
     GlBadge,
-    GlIcon,
-    GlTooltip,
     GlTableLite,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
   },
   props: {
     currentSubscriptionId: {
@@ -111,9 +106,6 @@ export default {
         'data-testid': 'subscription-history-row',
       };
     },
-    rowClass(item) {
-      return this.isCurrentSubscription(item) ? 'gl-font-bold gl-text-blue-500' : '';
-    },
   },
 };
 </script>
@@ -130,22 +122,15 @@ export default {
       :fields="fields"
       :items="subscriptionList"
       :tbody-tr-attr="rowAttr"
-      :tbody-tr-class="rowClass"
       responsive
       stacked="sm"
       data-testid="subscription-history"
     >
       <template #cell(name)="{ item }">
-        <span>
-          <gl-icon :id="`tooltip-name-${item.id}`" v-gl-tooltip name="information-o" tabindex="0" />
-          <gl-tooltip :target="`tooltip-name-${item.id}`">
-            {{ item.email }}<br />({{ item.company }})
-          </gl-tooltip>
-          {{ item.name }}
-          <span class="sr-only" data-testid="subscription-history-sr-only">
-            {{ $options.i18n.detailsLabels.email }}: {{ item.email }}<br />({{
-              $options.i18n.detailsLabels.company
-            }}: {{ item.company }})
+        <span class="gl-break-words gl-font-normal">
+          <span>{{ item.name }}</span>
+          <span class="gl-block gl-text-sm gl-text-subtle">
+            {{ item.email }} ({{ item.company }})
           </span>
         </span>
       </template>

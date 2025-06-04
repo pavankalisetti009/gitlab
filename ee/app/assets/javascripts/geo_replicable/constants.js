@@ -95,7 +95,7 @@ export const TOKEN_TYPES = {
   REPLICATION_STATUS: 'replication_status',
 };
 
-export const FILTERED_SEARCH_TOKEN_DEFINITIONS = [
+export const FILTERED_SEARCH_TOKENS = [
   {
     title: s__('Geo|Replication status'),
     type: TOKEN_TYPES.REPLICATION_STATUS,
@@ -103,6 +103,7 @@ export const FILTERED_SEARCH_TOKEN_DEFINITIONS = [
     token: GlFilteredSearchToken,
     operators: OPERATORS_IS,
     unique: true,
+    options: REPLICATION_STATUS_STATES_ARRAY,
   },
 ];
 

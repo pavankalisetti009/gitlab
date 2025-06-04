@@ -44,7 +44,8 @@ module Security
         config: config,
         project: config.project,
         namespace: config.namespace,
-        inherited: false
+        inherited: false,
+        csp: config.source.designated_as_csp?
       }
 
       policies.map { |policy| policy.merge(policy_config) }

@@ -26,7 +26,8 @@ RSpec.describe Security::ScanExecutionPoliciesFinder, feature_category: :securit
             config: policy_configuration,
             project: object,
             namespace: nil,
-            inherited: false
+            inherited: false,
+            csp: false
           })])
       end
     end
@@ -49,7 +50,8 @@ RSpec.describe Security::ScanExecutionPoliciesFinder, feature_category: :securit
             config: policy_configuration,
             project: nil,
             namespace: group,
-            inherited: true
+            inherited: true,
+            csp: false
           })])
       end
 
@@ -94,7 +96,8 @@ RSpec.describe Security::ScanExecutionPoliciesFinder, feature_category: :securit
             config: policy_configuration,
             project: object,
             namespace: nil,
-            inherited: false
+            inherited: false,
+            csp: false
           })])
       end
     end
