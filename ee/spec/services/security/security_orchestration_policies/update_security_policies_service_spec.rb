@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesService, feature_category: :security_policy_management do
   let(:service) { described_class.new(policies_changes: policies_changes) }
 
-  let_it_be(:db_policy) do
+  let_it_be_with_reload(:db_policy) do
     create(:security_policy, name: 'Policy', description: 'description')
   end
 
@@ -41,7 +41,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
     }
   end
 
-  let_it_be(:yaml_policy) do
+  let(:yaml_policy) do
     {
       name: 'Policy',
       description: 'description',
@@ -66,7 +66,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
   end
 
   describe '#execute' do
+    shared_examples 'returning the policies array' do
+      it 'returns the policies array' do
+        expect(service.execute).to eq([db_policy])
+      end
+    end
+
     context 'when there are no policy changes' do
+      it_behaves_like 'returning the policies array'
+
       it 'does not update any policies' do
         expect { service.execute }.to not_change { db_policy.name }
           .and not_change { db_policy.description }
@@ -82,6 +90,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
           rules: [rule_content_1, rule_content_2, rule_content_3]
         }
       end
+
+      it_behaves_like 'returning the policies array'
 
       it 'updates policy attributes and rules' do
         expect { service.execute }.to change { db_policy.name }.to('Updated Policy')
@@ -108,6 +118,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
         }
       end
 
+      it_behaves_like 'returning the policies array'
+
       it 'sets the deleted rules to be deleted' do
         expect { service.execute }.to change { Security::ApprovalPolicyRule.last.rule_index }.from(2).to(-2)
           .and change {
@@ -124,6 +136,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
           rules: []
         }
       end
+
+      it_behaves_like 'returning the policies array'
 
       it 'sets the rule_index to negative values' do
         service.execute
@@ -142,6 +156,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
         }
       end
 
+      it_behaves_like 'returning the policies array'
+
       it 'updates the existing rules' do
         expect { service.execute }.to change {
                                         Security::ApprovalPolicyRule.last.typed_content.deep_symbolize_keys
@@ -157,6 +173,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
           rules: [rule_content_1, rule_content_3, rule_content_2]
         }
       end
+
+      it_behaves_like 'returning the policies array'
 
       it 'updates the existing rule and creates a new rule' do
         service.execute
@@ -190,6 +208,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
         db_policy.update_pipeline_execution_policy_config_link!
       end
 
+      it_behaves_like 'returning the policies array'
+
       context 'when project in the content gets updated' do
         it 'updates the policy config links' do
           expect { service.execute }.to change { db_policy.reload.security_pipeline_execution_policy_config_link }
@@ -205,6 +225,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
           }
         end
 
+        it_behaves_like 'returning the policies array'
+
         it 'does not update the policy config links' do
           expect { service.execute }.not_to change { db_policy.reload.security_pipeline_execution_policy_config_link }
         end
@@ -217,6 +239,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
             content: { include: [{ project: old_config_project.full_path, file: 'file.yml', ref: 'develop' }] }
           }
         end
+
+        it_behaves_like 'returning the policies array'
 
         it 'does not update the policy config links' do
           expect { service.execute }.not_to change { db_policy.reload.security_pipeline_execution_policy_config_link }

@@ -2662,6 +2662,67 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     it_behaves_like 'captures git errors', :last_commit_for_path
   end
 
+  describe '#latest_commit_before_configured_at' do
+    let_it_be(:repository) { security_policy_management_project.repository }
+    let_it_be(:default_branch) { security_policy_management_project.default_branch_or_main }
+    let_it_be(:commit_before) { create(:commit, committed_date: 20.seconds.ago) }
+    let_it_be(:commit_after) { create(:commit, committed_date: 10.seconds.from_now) }
+    let_it_be(:configured_at) { Time.current }
+
+    subject(:latest_commit) { security_orchestration_policy_configuration.latest_commit_before_configured_at }
+
+    context 'when configured_at is set' do
+      before do
+        security_orchestration_policy_configuration.update!(configured_at: configured_at)
+      end
+
+      context 'when a commit exists before configured_at' do
+        before do
+          allow(repository).to receive(:commits)
+            .with(default_branch, before: configured_at, limit: 1)
+            .and_return([commit_before])
+        end
+
+        it 'returns the latest commit before configured_at' do
+          expect(latest_commit).to eq(commit_before)
+        end
+
+        it 'memoizes the result' do
+          expect(repository).to receive(:commits).once.and_return([commit_before])
+
+          security_orchestration_policy_configuration.latest_commit_before_configured_at
+          security_orchestration_policy_configuration.latest_commit_before_configured_at
+        end
+      end
+
+      context 'when no commit exists before configured_at' do
+        before do
+          allow(repository).to receive(:commits)
+            .with(default_branch, before: configured_at, limit: 1)
+            .and_return([])
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
+
+    context 'when configured_at is nil' do
+      before do
+        security_orchestration_policy_configuration.update!(configured_at: nil)
+      end
+
+      it 'returns nil' do
+        expect(latest_commit).to be_nil
+      end
+    end
+
+    it_behaves_like 'captures git errors', :commits do
+      before do
+        security_orchestration_policy_configuration.update!(configured_at: configured_at)
+      end
+    end
+  end
+
   describe '#delete_all_schedules' do
     let(:rule_schedule) { create(:security_orchestration_policy_rule_schedule, security_orchestration_policy_configuration: security_orchestration_policy_configuration) }
 
@@ -3524,6 +3585,40 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       let(:experiments) { { 'test_feature' => { 'enabled' => true, 'configuration' => configuration } } }
 
       it { expect(security_orchestration_policy_configuration.experiment_configuration(name_of_the_feature)).to eq(configuration) }
+    end
+  end
+
+  describe '#first_configuration_for_the_management_project?' do
+    let_it_be(:management_project_1) { create(:project) }
+    let_it_be(:management_project_2) { create(:project) }
+
+    let!(:first_config_for_project_1) do
+      create(:security_orchestration_policy_configuration,
+        security_policy_management_project: management_project_1,
+        created_at: 1.day.ago)
+    end
+
+    let!(:second_config_for_project_1) do
+      create(:security_orchestration_policy_configuration,
+        security_policy_management_project: management_project_1,
+        created_at: Time.current)
+    end
+
+    let!(:config_other_project) do
+      create(:security_orchestration_policy_configuration,
+        security_policy_management_project: management_project_2)
+    end
+
+    it 'returns true if it is the first configuration for the project' do
+      expect(first_config_for_project_1.first_configuration_for_the_management_project?).to be true
+    end
+
+    it 'returns false if there is an older configuration for the same project' do
+      expect(second_config_for_project_1.first_configuration_for_the_management_project?).to be false
+    end
+
+    it 'returns true for a configuration that is the only configuration for its own project' do
+      expect(config_other_project.first_configuration_for_the_management_project?).to be true
     end
   end
 

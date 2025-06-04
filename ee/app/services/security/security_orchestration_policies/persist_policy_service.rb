@@ -32,12 +32,13 @@ module Security
           db_policies, policies
         )
         created_policies = []
+        updated_policies = []
 
         ApplicationRecord.transaction do
           mark_policies_for_deletion(deleted_policies)
           update_rearranged_policies(rearranged_policies)
           created_policies = create_policies(new_policies)
-          update_policies(policies_changes)
+          updated_policies = update_policies(policies_changes)
         end
 
         Gitlab::AppJsonLogger.debug(
@@ -51,6 +52,15 @@ module Security
             message: 'security policy persisted'
           )
         )
+
+        if collect_audit_events_feature_enabled? && collect_audit_events_for_the_config?
+          CollectPoliciesAuditEvents.new(
+            policy_configuration: policy_configuration,
+            created_policies: created_policies,
+            updated_policies: updated_policies,
+            deleted_policies: deleted_policies
+          ).execute
+        end
 
         Security::SecurityOrchestrationPolicies::EventPublisher.new(
           db_policies: db_policies.undeleted,
@@ -79,7 +89,7 @@ module Security
       end
 
       def update_policies(policies_changes)
-        return if policies_changes.empty?
+        return [] if policies_changes.empty?
 
         Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesService.new(
           policies_changes: policies_changes
@@ -115,6 +125,15 @@ module Security
         when :vulnerability_management_policy then Security::Policy.type_vulnerability_management_policy
         when :pipeline_execution_schedule_policy then Security::Policy.type_pipeline_execution_schedule_policy
         end
+      end
+
+      def collect_audit_events_feature_enabled?
+        Feature.enabled?(:collect_security_policy_manage_audit_events,
+          policy_configuration.security_policy_management_project)
+      end
+
+      def collect_audit_events_for_the_config?
+        policy_configuration.first_configuration_for_the_management_project?
       end
     end
   end
