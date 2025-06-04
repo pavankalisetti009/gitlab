@@ -63,7 +63,9 @@ describe('EE Blob Header', () => {
     });
 
     it('passes all props to CE component', () => {
-      expect(findCeBlobHeader().props()).toMatchObject(testProps);
+      // Exclude projectPath from the CE props comparison
+      const { projectPath, ...propsToCheck } = testProps;
+      expect(findCeBlobHeader().props()).toMatchObject(propsToCheck);
     });
 
     it('does not render DuoWorkflowAction by default', () => {

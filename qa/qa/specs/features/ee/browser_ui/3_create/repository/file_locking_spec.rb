@@ -5,15 +5,13 @@ module QA
     describe(
       'File Locking',
       :requires_admin,
-      product_group: :source_code,
-      feature_flag: { name: :blob_overflow_menu }
+      product_group: :source_code
     ) do
       let(:user_one) { create(:user) }
       let(:user_two) { create(:user) }
       let(:project) { create(:project, :with_readme, name: 'file_locking') }
 
       before do
-        Runtime::Feature.enable(:blob_overflow_menu)
         Flow::Login.sign_in
 
         Resource::Repository::ProjectPush.fabricate! do |push|

@@ -77,7 +77,7 @@ export default {
       return Boolean(this.pathLock);
     },
     canCreatePathLock() {
-      return this.userPermissions.createPathLock;
+      return Boolean(this.userPermissions.createPathLock);
     },
     canDestroyPathLock() {
       return Boolean(this.pathLock?.userPermissions.destroyPathLock);
