@@ -50,7 +50,7 @@ RSpec.describe 'User with manage_merge_request_settings custom role', feature_ca
           expect(response).to have_gitlab_http_status(:redirect)
           expect(response).to redirect_to(edit_group_path(group, anchor: 'js-merge-requests-settings'))
 
-          expect(group.reload.namespace_settings.allow_merge_on_skipped_pipeline).to eq(true)
+          expect(group.reload.namespace_settings.allow_merge_on_skipped_pipeline).to be(true)
         end
       end
     end
@@ -78,8 +78,8 @@ RSpec.describe 'User with manage_merge_request_settings custom role', feature_ca
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to match_response_schema('public_api/v4/group_merge_request_approval_settings', dir: 'ee')
 
-          expect(group.group_merge_request_approval_setting.allow_author_approval).to eq(true)
-          expect(group.group_merge_request_approval_setting.allow_committer_approval).to eq(true)
+          expect(group.group_merge_request_approval_setting.allow_author_approval).to be(true)
+          expect(group.group_merge_request_approval_setting.allow_committer_approval).to be(true)
         end
       end
     end
@@ -103,7 +103,7 @@ RSpec.describe 'User with manage_merge_request_settings custom role', feature_ca
           expect(response).to have_gitlab_http_status(:redirect)
           expect(response).to redirect_to(project_settings_merge_requests_path(project))
 
-          expect(project.reload.allow_merge_on_skipped_pipeline).to eq(true)
+          expect(project.reload.allow_merge_on_skipped_pipeline).to be(true)
         end
       end
     end
@@ -257,8 +257,8 @@ RSpec.describe 'User with manage_merge_request_settings custom role', feature_ca
 
           project.reload
 
-          expect(project.merge_requests_author_approval).to eq(true)
-          expect(project.merge_requests_disable_committers_approval).to eq(false)
+          expect(project.merge_requests_author_approval).to be(true)
+          expect(project.merge_requests_disable_committers_approval).to be(false)
         end
       end
     end

@@ -206,7 +206,8 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
         expect(json_response).to include(a_hash_including('description' => 'Group runner'))
       end
 
-      pending "returns eligible project runners" do
+      it "returns eligible project runners",
+        pending: 'Related to: https://gitlab.com/gitlab-org/gitlab/-/issues/477585' do
         get api("/runners", user)
 
         expect(response).to have_gitlab_http_status(:ok)
