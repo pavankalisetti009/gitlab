@@ -4802,7 +4802,8 @@ CREATE TABLE incident_management_pending_issue_escalations (
     process_at timestamp with time zone NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_dff22b638a CHECK ((namespace_id IS NOT NULL))
 )
 PARTITION BY RANGE (process_at);
 
