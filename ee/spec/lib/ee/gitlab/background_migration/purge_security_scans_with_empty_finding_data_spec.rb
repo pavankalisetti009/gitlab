@@ -9,19 +9,19 @@ RSpec.describe Gitlab::BackgroundMigration::PurgeSecurityScansWithEmptyFindingDa
   let(:errored_scan_status) { 3 }
   let(:purged_scan_status) { 6 }
 
-  let(:security_findings) { table(:security_findings) }
-  let(:security_scans) { table(:security_scans) }
-  let(:vulnerability_scanners) { table(:vulnerability_scanners) }
+  let(:security_findings) { table(:security_findings, database: :sec) }
+  let(:security_scans) { table(:security_scans, database: :sec) }
+  let(:vulnerability_scanners) { table(:vulnerability_scanners, database: :sec) }
   let(:ci_pipelines) { table(:ci_pipelines, primary_key: :id, database: :ci) }
-  let(:organizations) { table(:organizations) }
-  let(:projects) { table(:projects) }
-  let(:namespaces) { table(:namespaces) }
+  let(:organizations) { table(:organizations, database: :main) }
+  let(:projects) { table(:projects, database: :main) }
+  let(:namespaces) { table(:namespaces, database: :main) }
   let(:ci_builds) { partitioned_table(:p_ci_builds, database: :ci) }
 
   let(:scanner) { vulnerability_scanners.create!(project_id: project.id, name: 'Foo', external_id: 'foo') }
-  let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
-  let(:namespace) { namespaces.create!(name: 'test', path: 'test', type: 'Group', organization_id: organization.id) }
-  let(:project) do
+  let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+  let!(:namespace) { namespaces.create!(name: 'test', path: 'test', type: 'Group', organization_id: organization.id) }
+  let!(:project) do
     projects.create!(
       organization_id: organization.id,
       namespace_id: namespace.id,
@@ -86,18 +86,11 @@ RSpec.describe Gitlab::BackgroundMigration::PurgeSecurityScansWithEmptyFindingDa
       batch_column: :id,
       sub_batch_size: 100,
       pause_ms: 0,
-      connection: ApplicationRecord.connection
+      connection: SecApplicationRecord.connection
     }
   end
 
   subject(:perform_migration) { described_class.new(**migration_attrs).perform }
-
-  before(:all) do
-    # There is a bug in some background migration spec where the helpers attempt to create data using the wrong
-    # database connection. As this migration has already run we should be safe to skip the spec.
-    # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-    skip_if_multiple_databases_are_setup(:sec)
-  end
 
   before do
     security_findings.create!(

@@ -9,11 +9,11 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
   let(:projects) { table(:projects) }
   let(:project_settings) { table(:project_settings) }
   let(:users) { table(:users) }
-  let(:scanners) { table(:vulnerability_scanners) }
-  let(:vulnerability_external_issue_links) { table(:vulnerability_external_issue_links) }
-  let(:vulnerabilities) { table(:vulnerabilities) }
-  let(:vulnerability_findings) { table(:vulnerability_occurrences) }
-  let(:vulnerability_identifiers) { table(:vulnerability_identifiers) }
+  let(:scanners) { table(:vulnerability_scanners, database: :sec) }
+  let(:vulnerability_external_issue_links) { table(:vulnerability_external_issue_links, database: :sec) }
+  let(:vulnerabilities) { table(:vulnerabilities, database: :sec) }
+  let(:vulnerability_findings) { table(:vulnerability_occurrences, database: :sec) }
+  let(:vulnerability_identifiers) { table(:vulnerability_identifiers, database: :sec) }
   let(:integrations) { table(:integrations) }
   let(:jira_tracker_data_table) { table(:jira_tracker_data) }
 
@@ -23,7 +23,7 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
   end
 
   let!(:project_setting) { project_settings.create!(project_id: project.id, has_vulnerabilities: true) }
-  let(:scanner) { scanners.create!(project_id: project.id, external_id: 'external_id', name: 'Test Scanner') }
+  let!(:scanner) { scanners.create!(project_id: project.id, external_id: 'external_id', name: 'Test Scanner') }
 
   let(:vulnerability_1) { create_vulnerability(title: 'vulnerability 1', finding_id: create_finding.id) }
   let(:vulnerability_2) { create_vulnerability(title: 'vulnerability 2', finding_id: create_finding.id) }
@@ -59,13 +59,6 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
 
   let(:server_info_results) { { 'deploymentType' => 'Cloud' } }
   let(:client_info_results) { { 'accountType' => 'atlassian' } }
-
-  before(:all) do
-    # There is a bug in some background migration spec where the helpers attempt to create data using the wrong
-    # database connection. As this migration has already run we should be safe to skip the spec.
-    # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-    skip_if_multiple_databases_are_setup(:sec)
-  end
 
   before do
     jira_tracker_data = Class.new(ApplicationRecord) do
