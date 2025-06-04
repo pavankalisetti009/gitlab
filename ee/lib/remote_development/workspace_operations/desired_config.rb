@@ -16,6 +16,27 @@ module RemoteDevelopment
         filename: 'workspaces_kubernetes',
         detail_errors: true
       }
+
+      # @param [DesiredConfig] other
+      # @return [Boolean]
+      def ==(other)
+        return false unless other.is_a?(self.class)
+        return true if equal?(other)
+
+        desired_config_array == other.desired_config_array
+      end
+
+      # @param [DesiredConfig] other
+      # @return [Array]
+      def diff(other)
+        raise ArgumentError, "Expected #{self.class}, got #{other.class}" unless other.is_a?(self.class)
+
+        # we do not want to calculate diff using the longest common subsequence
+        # because we want to catch changes at the index of self rather than find
+        # the common elements between the two arrays. This example should help explain
+        # the difference https://github.com/liufengyun/hashdiff/issues/43#issuecomment-485497196
+        Hashdiff.diff(desired_config_array, other.desired_config_array, use_lcs: false)
+      end
     end
   end
 end
