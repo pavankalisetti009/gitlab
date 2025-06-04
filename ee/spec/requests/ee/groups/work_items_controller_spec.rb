@@ -63,9 +63,9 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
       end
     end
 
-    context 'when work_item_epics disabled' do
+    context 'when epic feature is disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+        stub_licensed_features(epics: false)
       end
 
       context 'when work item type is epic' do

@@ -616,19 +616,15 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
     end
   end
 
-  context 'when work_item_epics feature flag is disabled' do
+  context 'for epic license checks' do
     let_it_be(:group_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
 
-    before do
-      stub_licensed_features(epics: true)
-    end
-
-    context 'when namespace_level_work_items feature flag is enabled' do
+    context 'when epic license is enabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
+        stub_licensed_features(epics: true)
       end
 
-      it 'returns namespace level work items' do
+      it 'returns grou work items' do
         post_graphql(query, current_user: current_user)
 
         work_items = graphql_data_at(:group, :workItems, :nodes)
@@ -638,15 +634,15 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
       end
     end
 
-    context 'when namespace_level_work_items feature flag is disabled' do
+    context 'when epic feature is disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+        stub_licensed_features(epics: false)
       end
 
-      it 'does not return namespace level work items' do
+      it 'does not return group work items' do
         post_graphql(query, current_user: current_user)
 
-        expect(graphql_data_at(:group, :workItems)).to be_nil
+        expect(graphql_data_at(:group, :workItems, :nodes)).to eq([])
       end
     end
   end

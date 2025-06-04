@@ -27,6 +27,10 @@ RSpec.describe 'getting Work Item counts by state', feature_category: :portfolio
 
   subject(:query_counts) { post_graphql(query, current_user: current_user) }
 
+  before do
+    stub_licensed_features(epics: true)
+  end
+
   context 'with work items count data' do
     let(:work_item_counts) { graphql_data.dig('group', 'workItemStateCounts') }
 
@@ -196,19 +200,6 @@ RSpec.describe 'getting Work Item counts by state', feature_category: :portfolio
               'closed' => 1
             )
           end
-        end
-      end
-
-      context 'when the namespace_level_work_items feature flag is disabled' do
-        before do
-          stub_feature_flags(namespace_level_work_items: false)
-        end
-
-        it 'does not return work item counts' do
-          query_counts
-
-          expect_graphql_errors_to_be_empty
-          expect(work_item_counts).to be_nil
         end
       end
     end

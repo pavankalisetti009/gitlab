@@ -24,6 +24,10 @@ RSpec.describe Milestoneish, feature_category: :groups_and_projects do
     parent_group.add_developer(user)
   end
 
+  before do
+    stub_licensed_features(epics: true)
+  end
+
   describe '#sorted_issues' do
     context 'when work_item_epic_milestones feature flag is disabled' do
       before do
