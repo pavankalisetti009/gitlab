@@ -360,7 +360,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] namespace_path
   # @param [Array<Hash>] image_pull_secrets
   # @param [Boolean] include_scripts_resources
-  # @param [Boolean] legacy_scripts_in_container_command
+  # @param [Boolean] legacy_no_poststart_container_command
   # @param [String] shared_namespace
   # @param [Boolean] core_resources_only
   # @return [Array<Hash>]
@@ -390,7 +390,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     namespace_path: "test-group",
     image_pull_secrets: [],
     include_scripts_resources: true,
-    legacy_scripts_in_container_command: false,
+    legacy_no_poststart_container_command: false,
+    legacy_poststart_container_command: false,
     shared_namespace: "",
     core_resources_only: false
   )
@@ -442,7 +443,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
       default_runtime_class: default_runtime_class,
       include_scripts_resources: include_scripts_resources,
-      legacy_scripts_in_container_command: legacy_scripts_in_container_command
+      legacy_no_poststart_container_command: legacy_no_poststart_container_command,
+      legacy_poststart_container_command: legacy_poststart_container_command
     )
 
     workspace_service = workspace_service(
@@ -479,7 +481,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_inventory_annotations
+      annotations: workspace_inventory_annotations,
+      legacy_poststart_container_command: legacy_poststart_container_command
     )
 
     secrets_inventory_config_map = secrets_inventory_config_map(
@@ -586,7 +589,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] default_resources_per_workspace_container
   # @param [String] default_runtime_class
   # @param [Boolean] include_scripts_resources
-  # @param [Boolean] legacy_scripts_in_container_command
+  # @param [Boolean] legacy_no_poststart_container_command
+  # @param [Boolean] legacy_poststart_container_command
   # @param [Hash] labels
   # @param [Integer] spec_replicas
   # @param [Boolean] use_kubernetes_user_namespaces
@@ -599,7 +603,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     default_resources_per_workspace_container: {},
     default_runtime_class: "",
     include_scripts_resources: true,
-    legacy_scripts_in_container_command: false,
+    legacy_no_poststart_container_command: false,
+    legacy_poststart_container_command: false,
     labels: {},
     spec_replicas: 1,
     use_kubernetes_user_namespaces: false
@@ -721,9 +726,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
                         "-c",
                         format(
                           files_module::KUBERNETES_POSTSTART_HOOK_COMMAND,
-                          run_poststart_commands_script_file_path:
+                          run_internal_blocking_poststart_commands_script_file_path:
                             "#{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
-                              "#{reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME}" # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMien formatting
+                              "#{reconcile_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+                          run_non_blocking_poststart_commands_script_file_path:
+                            "#{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+                              "#{reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}" # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
                         )
                       ]
                     }
@@ -882,7 +890,26 @@ RSpec.shared_context 'with remote development shared fixtures' do
       deployment[:spec][:template][:spec][:containers][0].delete(:lifecycle)
     end
 
-    if legacy_scripts_in_container_command
+    if legacy_poststart_container_command
+      deployment[:spec][:template][:spec][:containers][0][:lifecycle] = {
+        postStart: {
+          exec: {
+            command: [
+              "/bin/sh",
+              "-c",
+              format(
+                files_module::KUBERNETES_LEGACY_POSTSTART_HOOK_COMMAND,
+                run_internal_blocking_poststart_commands_script_file_path:
+                  "#{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+                    "#{reconcile_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME}" # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+              )
+            ]
+          }
+        }
+      }
+    end
+
+    if legacy_no_poststart_container_command
       # Add the container args for the container where tools are injected
       deployment[:spec][:template][:spec][:containers][0][:args][0] =
         <<~YAML.chomp
@@ -1136,7 +1163,28 @@ RSpec.shared_context 'with remote development shared fixtures' do
   end
 
   # @return [String]
-  def postart_commands_script
+  def internal_blocking_poststart_commands_script
+    <<~SCRIPT
+      #!/bin/sh
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command || true
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
+    SCRIPT
+  end
+
+  # @return [String]
+  def non_blocking_poststart_commands_script
+    <<~SCRIPT
+      #!/bin/sh
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
+    SCRIPT
+  end
+
+  def legacy_poststart_commands_script
     <<~SCRIPT
       #!/bin/sh
       echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command..."
@@ -1179,8 +1227,33 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] workspace_namespace
   # @param [Hash] labels
   # @param [Hash] annotations
+  # @param [Boolean] legacy_poststart_container_command
   # @return [Hash]
-  def scripts_configmap(workspace_name:, workspace_namespace:, labels:, annotations:)
+  def scripts_configmap(
+    workspace_name:,
+    workspace_namespace:,
+    labels:,
+    annotations:,
+    legacy_poststart_container_command:
+  )
+    data = {
+      "gl-clone-project-command": clone_project_script,
+      "gl-init-tools-command": files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
+      reconcile_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+        internal_blocking_poststart_commands_script,
+      reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+        non_blocking_poststart_commands_script,
+      "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
+      "gl-start-sshd-command": files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
+    }
+
+    if legacy_poststart_container_command
+      data.delete(reconcile_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym)
+      data.delete(reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym)
+      data[reconcile_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
+        legacy_poststart_commands_script
+    end
+
     {
       apiVersion: "v1",
       kind: "ConfigMap",
@@ -1190,13 +1263,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         name: "#{workspace_name}-scripts-configmap",
         namespace: workspace_namespace
       },
-      data: {
-        "gl-clone-project-command": clone_project_script,
-        "gl-init-tools-command": files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
-        reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym => postart_commands_script,
-        "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
-        "gl-start-sshd-command": files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
-      }
+      data: data
     }
   end
 

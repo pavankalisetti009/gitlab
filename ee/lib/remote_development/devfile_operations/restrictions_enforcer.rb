@@ -262,12 +262,26 @@ module RemoteDevelopment
             next unless command_type
 
             component_name = command_type.fetch(:component)
-            next unless component_name.downcase.start_with?(RESTRICTED_PREFIX)
+
+            if component_name.downcase.start_with?(RESTRICTED_PREFIX)
+              return err(
+                format(
+                  _("Component name '%{component}' for command id '%{command}' must not start with '%{prefix}'"),
+                  component: component_name,
+                  command: command_id,
+                  prefix: RESTRICTED_PREFIX
+                ),
+                context
+              )
+            end
+
+            command_label = command_type.fetch(:label, "")
+            next unless command_label.downcase.start_with?(RESTRICTED_PREFIX)
 
             return err(
               format(
-                _("Component name '%{component}' for command id '%{command}' must not start with '%{prefix}'"),
-                component: component_name,
+                _("Label '%{command_label}' for command id '%{command}' must not start with '%{prefix}'"),
+                command_label: command_label,
                 command: command_id,
                 prefix: RESTRICTED_PREFIX
               ),

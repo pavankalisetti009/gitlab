@@ -60,6 +60,16 @@
               "latest"
             ],
             "type": "string"
+          },
+          "scan_settings": {
+            "description": "The customizable options for enforced scan.",
+            "type": "object",
+            "properties": {
+              "ignore_default_before_after_script": {
+                "description": "Specifies whether to preserve default before_script and after_script values.",
+                "type": "boolean"
+              }
+            }
           }
         },
         "allOf": [

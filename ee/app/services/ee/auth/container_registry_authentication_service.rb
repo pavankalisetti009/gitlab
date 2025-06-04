@@ -3,6 +3,7 @@
 module EE
   module Auth
     module ContainerRegistryAuthenticationService
+      extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
 
       StorageError = Class.new(StandardError)
@@ -21,6 +22,26 @@ module EE
             doc_url: Rails.application.routes.url_helpers.help_page_url('user/storage_usage_quotas.md')
           )
         )
+      end
+
+      class_methods do
+        extend ::Gitlab::Utils::Override
+
+        private
+
+        override :patterns_metadata
+        def patterns_metadata(project, _user, actions)
+          super.merge(tag_immutable_patterns: tag_immutable_patterns(project, actions))
+        end
+
+        def tag_immutable_patterns(project, actions)
+          return unless project
+          return unless ::Feature.enabled?(:container_registry_immutable_tags, project)
+          return unless project.licensed_feature_available?(:container_registry_immutable_tag_rules)
+          return unless (actions & %w[push delete *]).any?
+
+          project.container_registry_protection_tag_rules.immutable.pluck_tag_name_patterns.presence
+        end
       end
 
       private

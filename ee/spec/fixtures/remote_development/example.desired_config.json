@@ -149,7 +149,7 @@
                     "command": [
                       "/bin/sh",
                       "-c",
-                      "mkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
+                      "#!/bin/sh\n\nmkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running poststart commands for workspace...\"\n\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running internal blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-internal-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\"\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running non-blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-non-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
                     ]
                   }
                 }

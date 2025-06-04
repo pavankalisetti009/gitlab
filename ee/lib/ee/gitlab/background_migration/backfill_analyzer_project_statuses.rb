@@ -17,7 +17,7 @@ module EE
         end
 
         class Pipeline < ::Ci::ApplicationRecord
-          self.table_name = 'ci_pipelines'
+          self.table_name = 'p_ci_pipelines'
           self.primary_key = :id
           belongs_to :project
           has_many :builds, ->(pipeline) { in_partition(pipeline) }, foreign_key: :commit_id,

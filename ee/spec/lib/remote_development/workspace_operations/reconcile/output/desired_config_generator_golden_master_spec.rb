@@ -169,6 +169,15 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
     it_behaves_like "generated desired_config golden master checks"
 
+    context "with legacy devfile that includes postStart event" do
+      let(:input_processed_devfile_yaml) { input_processed_devfile_yaml_with_legacy_poststart_event }
+      let(:golden_master_desired_config) do
+        golden_master_desired_config_from_legacy_devfile_with_poststart_and_with_include_all_resources_true
+      end
+
+      it_behaves_like "generated desired_config golden master checks"
+    end
+
     context "with legacy devfile that does not include postStart event" do
       let(:input_processed_devfile_yaml) { input_processed_devfile_yaml_without_poststart_event }
       let(:golden_master_desired_config) do
@@ -261,9 +270,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           volume:
             size: 50Gi
       commands:
-        - id: example-poststart-exec-command
+        - id: gl-internal-example-command-1
           exec:
-            commandLine: "echo 'example poststart exec command'"
+            commandLine: "echo 'gl-internal-example-command-1'"
+            component: tooling-container
+            label: gl-internal-blocking
+        - id: gl-internal-example-command-2
+          exec:
+            commandLine: "echo 'gl-internal-example-command-2'"
             component: tooling-container
         - id: example-prestart-apply-command
           apply:
@@ -272,7 +286,82 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         preStart:
           - example-prestart-apply-command
         postStart:
-          - example-poststart-exec-command
+          - gl-internal-example-command-1
+          - gl-internal-example-command-2
+      variables: {}
+    YAML
+  end
+
+  # @return [String]
+  def input_processed_devfile_yaml_with_legacy_poststart_event
+    <<~YAML
+      ---
+      schemaVersion: 2.2.0
+      metadata: {}
+      components:
+        - name: tooling-container
+          attributes:
+            gl/inject-editor: true
+          container:
+            image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
+            args:
+              - "echo 'tooling container args'"
+            command:
+              - "/bin/sh"
+              - "-c"
+            volumeMounts:
+              - name: gl-workspace-data
+                path: /projects
+            env:
+              - name: GL_ENV_NAME
+                value: "gl-env-value"
+            endpoints:
+              - name: server
+                targetPort: 60001
+                exposure: public
+                secure: true
+                protocol: https
+            dedicatedPod: false
+            mountSources: true
+        - name: sidecar-container
+          container:
+            image: "sidecar-container:latest"
+            volumeMounts:
+              - name: gl-workspace-data
+                path: "/projects"
+            env:
+              - name: GL_ENV2_NAME
+                value: "gl-env2-value"
+            args:
+              - "echo 'sidecar container args'"
+            command:
+              - "/bin/sh"
+              - "-c"
+            memoryLimit: 1000Mi
+            memoryRequest: 500Mi
+            cpuLimit: 500m
+            cpuRequest: 100m
+        - name: gl-workspace-data
+          volume:
+            size: 50Gi
+      commands:
+        - id: gl-internal-example-command-1
+          exec:
+            commandLine: "echo 'gl-internal-example-command-1'"
+            component: tooling-container
+        - id: gl-internal-example-command-2
+          exec:
+            commandLine: "echo 'gl-internal-example-command-2'"
+            component: tooling-container
+        - id: example-prestart-apply-command
+          apply:
+            component: sidecar-container
+      events:
+        preStart:
+          - example-prestart-apply-command
+        postStart:
+          - gl-internal-example-command-1
+          - gl-internal-example-command-2
       variables: {}
     YAML
   end
@@ -541,7 +630,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                           command: [
                             "/bin/sh",
                             "-c",
-                            "mkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
+                            "#!/bin/sh\n\nmkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running poststart commands for workspace...\"\n\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running internal blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-internal-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\"\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running non-blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-non-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
                           ]
                         }
                       }
@@ -859,8 +948,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "gl-rd-ns-991-990-fedcba"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
-          "example-poststart-exec-command": "echo 'example poststart exec command'"
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\n",
+          "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
+          "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }
       },
       {
@@ -1119,7 +1210,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                           command: [
                             "/bin/sh",
                             "-c",
-                            "mkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
+                            "#!/bin/sh\n\nmkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running poststart commands for workspace...\"\n\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running internal blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-internal-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\"\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running non-blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-non-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
                           ]
                         }
                       }
@@ -1437,8 +1528,589 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "gl-rd-ns-991-990-fedcba"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
-          "example-poststart-exec-command": "echo 'example poststart exec command'"
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\n",
+          "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
+          "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
+        }
+      }
+    ]
+  end
+
+  # @return [Array]
+  def golden_master_desired_config_from_legacy_devfile_with_poststart_and_with_include_all_resources_true
+    [
+      {
+        apiVersion: "v1",
+        kind: "ConfigMap",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991",
+            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-workspace-inventory"
+          },
+          name: "workspace-991-990-fedcba-workspace-inventory",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        }
+      },
+      {
+        apiVersion: "apps/v1",
+        kind: "Deployment",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          creationTimestamp: nil,
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          replicas: 1,
+          selector: {
+            matchLabels: {
+              app: "workspace",
+              tier: "development",
+              "agent.gitlab.com/id": "991"
+            }
+          },
+          strategy: {
+            type: "Recreate"
+          },
+          template: {
+            metadata: {
+              annotations: {
+                environment: "production",
+                team: "engineering",
+                "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+                "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+                "workspaces.gitlab.com/id": "993",
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+              },
+              creationTimestamp: nil,
+              labels: {
+                app: "workspace",
+                tier: "development",
+                "agent.gitlab.com/id": "991"
+              },
+              name: "workspace-991-990-fedcba",
+              namespace: "gl-rd-ns-991-990-fedcba"
+            },
+            spec:
+              {
+                containers: [
+                  {
+                    args: [
+                      "echo 'tooling container args'"
+                    ],
+                    command: [
+                      "/bin/sh",
+                      "-c"
+                    ],
+                    env: [
+                      {
+                        name: "GL_ENV_NAME",
+                        value: "gl-env-value"
+                      },
+                      {
+                        name: "PROJECTS_ROOT",
+                        value: "/projects"
+                      },
+                      {
+                        name: "PROJECT_SOURCE",
+                        value: "/projects"
+                      }
+                    ],
+                    envFrom: [
+                      {
+                        secretRef: {
+                          name: "workspace-991-990-fedcba-env-var"
+                        }
+                      }
+                    ],
+                    image: "quay.io/mloriedo/universal-developer-image:ubi8-dw-demo",
+                    imagePullPolicy: "Always",
+                    name: "tooling-container",
+                    ports: [
+                      {
+                        containerPort: 60001,
+                        name: "server",
+                        protocol: "TCP"
+                      }
+                    ],
+                    resources: {
+                      limits: {
+                        cpu: "1",
+                        memory: "1Gi"
+                      },
+                      requests: {
+                        cpu: "0.5",
+                        memory: "512Mi"
+                      }
+                    },
+                    securityContext: {
+                      allowPrivilegeEscalation: false,
+                      privileged: false,
+                      runAsNonRoot: true,
+                      runAsUser: 5001
+                    },
+                    volumeMounts: [
+                      {
+                        mountPath: "/projects",
+                        name: "gl-workspace-data"
+                      },
+                      {
+                        mountPath: "/.workspace-data/variables/file",
+                        name: "gl-workspace-variables"
+                      },
+                      {
+                        name: "gl-workspace-scripts",
+                        mountPath: "/workspace-scripts"
+                      }
+                    ],
+                    lifecycle: {
+                      postStart: {
+                        exec: {
+                          command: [
+                            "/bin/sh",
+                            "-c",
+                            "#!/bin/sh\n\nmkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\"\n"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                initContainers: [
+                  {
+                    args: [
+                      "echo 'sidecar container args'"
+                    ],
+                    command: [
+                      "/bin/sh",
+                      "-c"
+                    ],
+                    env: [
+                      {
+                        name: "GL_ENV2_NAME",
+                        value: "gl-env2-value"
+                      },
+                      {
+                        name: "PROJECTS_ROOT",
+                        value: "/projects"
+                      },
+                      {
+                        name: "PROJECT_SOURCE",
+                        value: "/projects"
+                      }
+                    ],
+                    envFrom: [
+                      {
+                        secretRef: {
+                          name: "workspace-991-990-fedcba-env-var"
+                        }
+                      }
+                    ],
+                    image: "sidecar-container:latest",
+                    imagePullPolicy: "Always",
+                    name: "sidecar-container-example-prestart-apply-command-1",
+                    resources: {
+                      limits: {
+                        cpu: "500m",
+                        memory: "1000Mi"
+                      },
+                      requests: {
+                        cpu: "100m",
+                        memory: "500Mi"
+                      }
+                    },
+                    securityContext: {
+                      allowPrivilegeEscalation: false,
+                      privileged: false,
+                      runAsNonRoot: true,
+                      runAsUser: 5001
+                    },
+                    volumeMounts: [
+                      {
+                        mountPath: "/projects",
+                        name: "gl-workspace-data"
+                      },
+                      {
+                        mountPath: "/.workspace-data/variables/file",
+                        name: "gl-workspace-variables"
+                      }
+                    ]
+                  }
+                ],
+                runtimeClassName: "standard",
+                securityContext: {
+                  fsGroup: 0,
+                  fsGroupChangePolicy: "OnRootMismatch",
+                  runAsNonRoot: true,
+                  runAsUser: 5001
+                },
+                serviceAccountName: "workspace-991-990-fedcba",
+                volumes: [
+                  {
+                    name: "gl-workspace-data",
+                    persistentVolumeClaim: {
+                      claimName: "workspace-991-990-fedcba-gl-workspace-data"
+                    }
+                  },
+                  {
+                    name: "gl-workspace-variables",
+                    projected: {
+                      defaultMode: 0o774,
+                      sources: [
+                        {
+                          secret: {
+                            name: "workspace-991-990-fedcba-file"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    name: "gl-workspace-scripts",
+                    projected: {
+                      defaultMode: 0o555,
+                      sources: [
+                        {
+                          configMap: {
+                            name: "workspace-991-990-fedcba-scripts-configmap"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+          }
+        },
+        status: {}
+      },
+      {
+        apiVersion: "v1",
+        kind: "Service",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          creationTimestamp: nil,
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          ports: [
+            {
+              name: "server",
+              port: 60001,
+              targetPort: 60001
+            }
+          ],
+          selector: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          }
+        },
+        status: {
+          loadBalancer: {}
+        }
+      },
+      {
+        apiVersion: "v1",
+        kind: "PersistentVolumeClaim",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          creationTimestamp: nil,
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-gl-workspace-data",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          accessModes: [
+            "ReadWriteOnce"
+          ],
+          resources: {
+            requests: {
+              storage: "50Gi"
+            }
+          }
+        },
+        status: {}
+      },
+      {
+        apiVersion: "v1",
+        automountServiceAccountToken: false,
+        imagePullSecrets: [
+          {
+            name: "registry-secret"
+          }
+        ],
+        kind: "ServiceAccount",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        }
+      },
+      {
+        apiVersion: "networking.k8s.io/v1",
+        kind: "NetworkPolicy",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          egress: [
+            {
+              ports: [
+                {
+                  port: 53,
+                  protocol: "TCP"
+                },
+                {
+                  port: 53,
+                  protocol: "UDP"
+                }
+              ],
+              to: [
+                {
+                  namespaceSelector: {
+                    matchLabels: {
+                      "kubernetes.io/metadata.name": "kube-system"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              to: [
+                {
+                  ipBlock: {
+                    cidr: "0.0.0.0/0",
+                    except: [
+                      "10.0.0.0/8",
+                      "172.16.0.0/12",
+                      "192.168.0.0/16"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          ingress: [
+            {
+              from: [
+                {
+                  namespaceSelector: {
+                    matchLabels: {
+                      "kubernetes.io/metadata.name": "gitlab-workspaces"
+                    }
+                  },
+                  podSelector: {
+                    matchLabels: {
+                      "app.kubernetes.io/name": "gitlab-workspaces-proxy"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          podSelector: {},
+          policyTypes: [
+            "Ingress",
+            "Egress"
+          ]
+        }
+      },
+      {
+        apiVersion: "v1",
+        kind: "ConfigMap",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-scripts-configmap",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        data: {
+          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\n",
+          "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
+          "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
+        }
+      },
+      {
+        apiVersion: "v1",
+        kind: "ConfigMap",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991",
+            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-secrets-inventory"
+          },
+          name: "workspace-991-990-fedcba-secrets-inventory",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        }
+      },
+      {
+        apiVersion: "v1",
+        kind: "ResourceQuota",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          hard: {
+            "limits.cpu": "2",
+            "limits.memory": "4Gi",
+            "requests.cpu": "1",
+            "requests.memory": "1Gi"
+          }
+        }
+      },
+      {
+        apiVersion: "v1",
+        data: {
+          ENV_VAR1: "ZW52LXZhci12YWx1ZTE="
+        },
+        kind: "Secret",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-secrets-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-env-var",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        }
+      },
+      {
+        apiVersion: "v1",
+        data: {
+          FILE_VAR1: "ZmlsZS12YXItdmFsdWUx",
+          "gl_workspace_reconciled_actual_state.txt": "UnVubmluZw=="
+        },
+        kind: "Secret",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-secrets-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-file",
+          namespace: "gl-rd-ns-991-990-fedcba"
         }
       }
     ]
@@ -2173,7 +2845,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                           command: [
                             "/bin/sh",
                             "-c",
-                            "mkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
+                            "#!/bin/sh\n\nmkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running poststart commands for workspace...\"\n\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running internal blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-internal-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\"\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running non-blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-non-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
                           ]
                         }
                       }
@@ -2501,8 +3173,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "default"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
-          "example-poststart-exec-command": "echo 'example poststart exec command'"
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\n",
+          "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
+          "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }
       },
       {
@@ -2739,7 +3413,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                           command: [
                             "/bin/sh",
                             "-c",
-                            "mkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
+                            "#!/bin/sh\n\nmkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running poststart commands for workspace...\"\n\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running internal blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-internal-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\"\n\n{\n    echo \"$(date -Iseconds): ----------------------------------------\"\n    echo \"$(date -Iseconds): Running non-blocking poststart commands script...\"\n} >> \"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\"\n\n\"/workspace-scripts/gl-run-non-blocking-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
                           ]
                         }
                       }
@@ -3067,8 +3741,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "default"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
-          "example-poststart-exec-command": "echo 'example poststart exec command'"
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\n",
+          "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
+          "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }
       }
     ]
