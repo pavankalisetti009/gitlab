@@ -230,5 +230,24 @@ FactoryBot.define do
         build.job_artifacts << build(:ee_ci_job_artifact, :corrupted_cyclonedx, job: build)
       end
     end
+
+    trait :execution_policy_job do
+      options do
+        {
+          execution_policy_job: true,
+          execution_policy_name: 'My policy'
+        }
+      end
+    end
+
+    trait :execution_policy_job_with_variables_override do
+      execution_policy_job
+
+      after(:build) do |build|
+        build.options.merge!(
+          execution_policy_variables_override: { allowed: false, exceptions: ['TEST_VAR'] }
+        )
+      end
+    end
   end
 end

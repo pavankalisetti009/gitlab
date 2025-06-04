@@ -116,6 +116,57 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         end
       end
 
+      describe '#policy_options', feature_category: :security_policy_management do
+        let!(:ci_build) { create(:ee_ci_build, :pending, :queued, *job_traits, pipeline: pipeline) }
+        let(:job_traits) { [] }
+
+        it 'does not include policy_options' do
+          request_job
+
+          expect(json_response).not_to include('policy_options')
+        end
+
+        context 'when feature is licensed' do
+          before do
+            stub_licensed_features(security_orchestration_policies: true)
+          end
+
+          it 'includes nil policy_options' do
+            request_job
+
+            expect(json_response).to match(a_hash_including('policy_options' => nil))
+          end
+
+          context 'with execution policy job' do
+            let(:job_traits) { %i[execution_policy_job] }
+
+            it 'includes correct policy_options' do
+              request_job
+
+              expect(json_response).to match(a_hash_including('policy_options' => {
+                'execution_policy_job' => true,
+                'policy_name' => 'My policy'
+              }))
+            end
+
+            context 'with variables_override' do
+              let(:job_traits) { %i[execution_policy_job_with_variables_override] }
+
+              it 'includes correct policy_options' do
+                request_job
+
+                expect(json_response).to match(a_hash_including('policy_options' => {
+                  'execution_policy_job' => true,
+                  'policy_name' => 'My policy',
+                  'policy_variables_override_allowed' => false,
+                  'policy_variables_override_exceptions' => %w[TEST_VAR]
+                }))
+              end
+            end
+          end
+        end
+      end
+
       def request_job_with_secrets_supported
         request_job info: { features: { vault_secrets: true } }
       end

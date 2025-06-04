@@ -618,21 +618,27 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
   end
 
   describe '#job_options' do
-    subject { context.job_options }
+    subject(:job_options) { context.job_options }
 
     include_context 'with mocked current_policy'
 
     context 'when building policy pipeline' do
-      let(:current_policy) { build(:pipeline_execution_policy_config, :variables_override_disallowed) }
+      let(:current_policy) do
+        build(:pipeline_execution_policy_config,
+          policy: build(:pipeline_execution_policy, :variables_override_disallowed, name: 'My policy'))
+      end
 
-      it { is_expected.to eq({ execution_policy_job: true, execution_policy_variables_override: { allowed: false } }) }
+      it 'includes policy-specific options' do
+        expect(job_options).to eq(execution_policy_job: true, execution_policy_name: 'My policy',
+          execution_policy_variables_override: { allowed: false })
+      end
 
       context 'when the feature flag "security_policies_optional_variables_control" is disabled' do
         before do
           stub_feature_flags(security_policies_optional_variables_control: false)
         end
 
-        it { is_expected.to eq({ execution_policy_job: true }) }
+        it { is_expected.to eq({ execution_policy_job: true, execution_policy_name: 'My policy' }) }
       end
     end
 
