@@ -1,8 +1,11 @@
+import VueApollo from 'vue-apollo';
 import {
   mockGetNamespaceCiMinutesUsage,
   mockGetProjectsCiMinutesUsage,
 } from 'ee_jest/usage_quotas/pipelines/namespace/mock_data';
-import createMockApollo from 'helpers/mock_apollo_helper';
+import { createMockClient } from 'helpers/mock_apollo_helper';
+import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
+import { createMockSubscriptionPermissionsResponse } from 'ee_jest/usage_quotas/seats/mock_data';
 import getNamespaceCiMinutesUsage from '../graphql/queries/namespace_ci_minutes_usage.query.graphql';
 import getProjectsCiMinutesUsage from '../graphql/queries/projects_ci_minutes_usage.query.graphql';
 import PipelineUsageApp from './app.vue';
@@ -18,13 +21,9 @@ const ciMinutesLastResetDate =
   mockGetProjectsCiMinutesUsage.data.ciMinutesUsage.nodes[0].monthIso8601;
 
 const createTemplate = (config = {}) => {
-  let { provide, apolloProvider } = config;
-
-  if (provide == null) {
-    provide = {};
-  }
-
-  if (apolloProvider == null) {
+  // Apollo
+  let defaultClient = config.apollo?.defaultClient;
+  if (!defaultClient) {
     const requestHandlers = [
       [getNamespaceCiMinutesUsage, () => Promise.resolve(mockGetNamespaceCiMinutesUsage)],
       [
@@ -47,9 +46,20 @@ const createTemplate = (config = {}) => {
         },
       ],
     ];
-    apolloProvider = createMockApollo(requestHandlers);
+    defaultClient = createMockClient(requestHandlers);
   }
+  const customersDotClient = createMockClient([
+    [
+      getSubscriptionPermissionsData,
+      () => Promise.resolve(createMockSubscriptionPermissionsResponse()),
+    ],
+  ]);
+  const apolloProvider = new VueApollo({
+    defaultClient,
+    clients: { customersDotClient, gitlabClient: defaultClient },
+  });
 
+  const { provide = {} } = config;
   return (args, { argTypes }) => ({
     components: { PipelineUsageApp },
     apolloProvider,
@@ -139,13 +149,15 @@ export const WithPurchasedMinutesUnused = {
 
 export const Loading = {
   render: (...args) => {
-    const apolloProvider = createMockApollo([
-      [getNamespaceCiMinutesUsage, () => new Promise(() => {})],
-      [getProjectsCiMinutesUsage, () => new Promise(() => {})],
-    ]);
+    const apollo = {
+      defaultClient: createMockClient([
+        [getNamespaceCiMinutesUsage, () => new Promise(() => {})],
+        [getProjectsCiMinutesUsage, () => new Promise(() => {})],
+      ]),
+    };
 
     return createTemplate({
-      apolloProvider,
+      apollo,
     })(...args);
   },
 };
@@ -153,13 +165,15 @@ export const Loading = {
 export const LoadingError = {
   render: (...args) => {
     const handlerWithAnError = () => Promise.reject(new Error('500 Internal Server Error'));
-    const apolloProvider = createMockApollo([
-      [getNamespaceCiMinutesUsage, handlerWithAnError],
-      [getProjectsCiMinutesUsage, handlerWithAnError],
-    ]);
+    const apollo = {
+      defaultClient: createMockClient([
+        [getNamespaceCiMinutesUsage, handlerWithAnError],
+        [getProjectsCiMinutesUsage, handlerWithAnError],
+      ]),
+    };
 
     return createTemplate({
-      apolloProvider,
+      apollo,
     })(...args);
   },
 };

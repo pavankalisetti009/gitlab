@@ -1,12 +1,15 @@
+import VueApollo from 'vue-apollo';
 import { defaultNamespaceProvideValues } from 'ee_jest/usage_quotas/storage/mock_data';
 import {
   mockGetNamespaceStorageGraphQLResponse,
   mockGetProjectListStorageGraphQLResponse,
 } from 'jest/usage_quotas/storage/mock_data';
-import createMockApollo from 'helpers/mock_apollo_helper';
+import { createMockClient } from 'helpers/mock_apollo_helper';
 import getNamespaceStorageQuery from 'ee/usage_quotas/storage/namespace/queries/namespace_storage.query.graphql';
 import getProjectListStorageQuery from 'ee/usage_quotas/storage/namespace/queries/project_list_storage.query.graphql';
 import NamespaceStorageApp from '~/usage_quotas/storage/namespace/components/namespace_storage_app.vue';
+import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
+import { createMockSubscriptionPermissionsResponse } from 'ee_jest/usage_quotas/seats/mock_data';
 
 const meta = {
   title: 'ee/usage_quotas/storage/namespace/namespace_storage_app',
@@ -18,20 +21,27 @@ export default meta;
 const GIBIBYTE = 1024 * 1024 * 1024; // bytes in a gibibyte
 
 const createTemplate = (config = {}) => {
-  let { provide, apolloProvider } = config;
-
-  if (provide == null) {
-    provide = {};
-  }
-
-  if (apolloProvider == null) {
+  // Apollo
+  let defaultClient = config.apollo?.defaultClient;
+  if (!defaultClient) {
     const requestHandlers = [
       [getNamespaceStorageQuery, () => Promise.resolve(mockGetNamespaceStorageGraphQLResponse)],
       [getProjectListStorageQuery, () => Promise.resolve(mockGetProjectListStorageGraphQLResponse)],
     ];
-    apolloProvider = createMockApollo(requestHandlers);
+    defaultClient = createMockClient(requestHandlers);
   }
+  const customersDotClient = createMockClient([
+    [
+      getSubscriptionPermissionsData,
+      () => Promise.resolve(createMockSubscriptionPermissionsResponse()),
+    ],
+  ]);
+  const apolloProvider = new VueApollo({
+    defaultClient,
+    clients: { customersDotClient, gitlabClient: defaultClient },
+  });
 
+  const { provide = {} } = config;
   return (args, { argTypes }) => ({
     components: { NamespaceStorageApp },
     apolloProvider,
@@ -50,13 +60,15 @@ export const SaasWithNamespaceLimits = {
 
 export const SaasWithNamespaceLimitsLoading = {
   render: (...args) => {
-    const apolloProvider = createMockApollo([
-      [getNamespaceStorageQuery, () => new Promise(() => {})],
-      [getProjectListStorageQuery, () => new Promise(() => {})],
-    ]);
+    const apollo = {
+      defaultClient: createMockClient([
+        [getNamespaceStorageQuery, () => new Promise(() => {})],
+        [getProjectListStorageQuery, () => new Promise(() => {})],
+      ]),
+    };
 
     return createTemplate({
-      apolloProvider,
+      apollo,
     })(...args);
   },
 };
@@ -114,13 +126,15 @@ export const SaasWithNoLimitsInPreEnforcement = {
 
 export const SaasWithProjectLimitsLoading = {
   render: (...args) => {
-    const apolloProvider = createMockApollo([
-      [getNamespaceStorageQuery, () => new Promise(() => {})],
-      [getProjectListStorageQuery, () => new Promise(() => {})],
-    ]);
+    const apollo = {
+      defaultClient: createMockClient([
+        [getNamespaceStorageQuery, () => new Promise(() => {})],
+        [getProjectListStorageQuery, () => new Promise(() => {})],
+      ]),
+    };
 
     return createTemplate({
-      apolloProvider,
+      apollo,
       provide: {
         isUsingNamespaceEnforcement: false,
         isUsingProjectEnforcementWithLimits: true,
@@ -134,13 +148,15 @@ export const SaasWithProjectLimitsLoading = {
 
 export const SaasLoadingError = {
   render: (...args) => {
-    const apolloProvider = createMockApollo([
-      [getNamespaceStorageQuery, () => Promise.reject()],
-      [getProjectListStorageQuery, () => Promise.reject()],
-    ]);
+    const apollo = {
+      defaultClient: createMockClient([
+        [getNamespaceStorageQuery, () => Promise.reject()],
+        [getProjectListStorageQuery, () => Promise.reject()],
+      ]),
+    };
 
     return createTemplate({
-      apolloProvider,
+      apollo,
     })(...args);
   },
 };
@@ -177,13 +193,15 @@ export const SelfManagedWithProjectLimits = {
 
 export const SelfManagedLoading = {
   render: (...args) => {
-    const apolloProvider = createMockApollo([
-      [getNamespaceStorageQuery, () => new Promise(() => {})],
-      [getProjectListStorageQuery, () => new Promise(() => {})],
-    ]);
+    const apollo = {
+      defaultClient: createMockClient([
+        [getNamespaceStorageQuery, () => new Promise(() => {})],
+        [getProjectListStorageQuery, () => new Promise(() => {})],
+      ]),
+    };
 
     return createTemplate({
-      apolloProvider,
+      apollo,
       provide: {
         ...selfManagedDefaultProvide,
       },

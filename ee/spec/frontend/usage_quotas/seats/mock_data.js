@@ -139,3 +139,21 @@ export const getMockSubscriptionData = ({
     },
   },
 });
+
+// Mock for CDot ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql
+export const createMockSubscriptionPermissionsResponse = ({
+  canAddSeats = false,
+  canRenew = false,
+  communityPlan = false,
+  canAddDuoProSeats = false,
+} = {}) => ({
+  data: {
+    subscription: {
+      canAddSeats,
+      canRenew,
+      communityPlan,
+      canAddDuoProSeats,
+    },
+    userActionAccess: { limitedAccessReason: 'INVALID_REASON' },
+  },
+});
