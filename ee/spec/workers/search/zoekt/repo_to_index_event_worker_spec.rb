@@ -47,15 +47,11 @@ RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_
 
         it 'processes batch size and schedules another event' do
           expect(Gitlab::EventStore).to receive(:publish).with(
-            an_object_having_attributes(
-              class: Search::Zoekt::RepoToIndexEvent,
-              data: {}
-            )
+            an_object_having_attributes(class: Search::Zoekt::RepoToIndexEvent, data: {})
           )
 
-          expect do
-            consume_event(subscriber: described_class, event: event)
-          end.to change { Search::Zoekt::Task.count }.by(2)
+          expect { consume_event(subscriber: described_class, event: event) }
+            .to change { Search::Zoekt::Task.count }.by(2)
         end
       end
     end
