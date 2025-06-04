@@ -22,3 +22,11 @@ export const mockUpstream = {
   description: 'Upstream registry description',
   cacheEntriesCount: 1,
 };
+
+export const mockUpstreamPagination = {
+  id: 5,
+  name: 'Upstream Registry',
+  url: 'https://gitlab.com/groups/gitlab-org/maven',
+  description: 'Upstream registry description',
+  cacheEntriesCount: 22,
+};
