@@ -9,7 +9,6 @@ let wrapper;
 
 const createWrapper = () => {
   wrapper = shallowMountExtended(ListAgents, {
-    provide: { projectPath: 'path/to/project' },
     stubs: {
       RouterLink,
     },

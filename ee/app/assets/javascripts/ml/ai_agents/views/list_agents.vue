@@ -11,17 +11,6 @@ export default {
     AgentList,
     GlExperimentBadge,
   },
-  provide() {
-    return {
-      projectPath: this.projectPath,
-    };
-  },
-  inject: ['projectPath'],
-  data() {
-    return {
-      errorMessage: undefined,
-    };
-  },
   ROUTE_NEW_AGENT,
 };
 </script>

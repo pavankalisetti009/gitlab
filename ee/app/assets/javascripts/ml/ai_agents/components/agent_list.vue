@@ -55,9 +55,6 @@ export default {
     isLoading() {
       return this.$apollo.queries.agents.loading;
     },
-    pageInfo() {
-      return this.agents?.pageInfo ?? {};
-    },
     queryVariables() {
       return {
         fullPath: this.projectPath,
@@ -74,21 +71,6 @@ export default {
     });
   },
   ROUTE_SHOW_AGENT,
-  methods: {
-    fetchPage(pageInfo) {
-      const variables = {
-        ...this.queryVariables,
-        ...pageInfo,
-      };
-
-      this.$apollo.queries.agents.fetchMore({
-        variables,
-        updateQuery: (previousResult, { fetchMoreResult }) => {
-          return fetchMoreResult;
-        },
-      });
-    },
-  },
 };
 </script>
 
