@@ -9,15 +9,14 @@ export default {
   },
   props: {
     staticBreadcrumbs: {
-      type: Object,
-      default: () => ({ items: [] }),
-      required: false,
+      type: Array,
+      required: true,
     },
   },
   computed: {
     breadcrumbs() {
       const breadcrumbs = [
-        ...this.staticBreadcrumbs.items,
+        ...this.staticBreadcrumbs,
         {
           text: s__('ServiceAccounts|Service accounts'),
           to: '/',

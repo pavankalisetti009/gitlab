@@ -54,7 +54,7 @@ describe('ComplianceDashboardBreadcrumbs', () => {
       mocks: {
         $route,
       },
-      propsData: props,
+      propsData: { staticBreadcrumbs: [], ...props },
     });
   };
 
@@ -66,7 +66,7 @@ describe('ComplianceDashboardBreadcrumbs', () => {
       createComponent(
         { name, fullPath },
         {
-          staticBreadcrumbs: { items: [staticBreadcrumb] },
+          staticBreadcrumbs: [staticBreadcrumb],
         },
       );
 

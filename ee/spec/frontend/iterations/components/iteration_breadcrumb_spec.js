@@ -71,7 +71,7 @@ describe('Iteration Breadcrumb', () => {
         router,
         provide: { groupPath: '' },
         apolloProvider: mockApollo,
-        propsData: props,
+        propsData: { staticBreadcrumbs: [], ...props },
       }),
     );
   };
@@ -132,9 +132,7 @@ describe('Iteration Breadcrumb', () => {
       mountComponent({
         readCadenceSpy: jest.fn().mockResolvedValue(cadenceResponse),
         props: {
-          staticBreadcrumbs: {
-            items: [{ text: 'Static breadcrumb', href: '/static' }],
-          },
+          staticBreadcrumbs: [{ text: 'Static breadcrumb', href: '/static' }],
         },
       });
       await waitForApollo();
