@@ -115,7 +115,13 @@ module Search
               work_item_type_id: { type: 'integer' },
               schema_version: { type: 'short' },
               milestone_title: { type: 'keyword' },
-              milestone_id: { type: 'long' }
+              milestone_id: { type: 'long' },
+              milestone_start_date: { type: 'date' },
+              milestone_due_date: { type: 'date' },
+              closed_at: { type: 'date' },
+              weight: { type: 'integer' },
+              health_status: { type: 'short' },
+              label_names: { type: 'keyword' }
             }
           end
 
