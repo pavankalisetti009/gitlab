@@ -49,7 +49,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
     allow(Project).to receive(:find_by_full_path).with(project_full_path).and_return(ref_project)
   end
 
-  subject(:resolve_scan_policies) { resolve(described_class, obj: project, ctx: { current_user: user }) }
+  subject(:resolve_policies) { resolve(described_class, obj: project, ctx: { current_user: user }) }
 
   it_behaves_like 'as an orchestration policy' do
     describe 'policy_blob_file_path' do
@@ -62,13 +62,13 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
         let(:content) { { project: ref_project.full_path, file: 'pipeline_execution.yml', ref: 'v1.0.0' } }
 
         it 'returns a file path' do
-          expect(resolve_scan_policies[0][:policy_blob_file_path]).to eq(
+          expect(resolve_policies[0][:policy_blob_file_path]).to eq(
             "/#{content[:project]}/-/blob/#{content[:ref]}/#{content[:file]}"
           )
         end
 
         it 'does not include warning message' do
-          expect(resolve_scan_policies[0][:warnings]).to be_empty
+          expect(resolve_policies[0][:warnings]).to be_empty
         end
       end
 
@@ -80,11 +80,11 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
         let(:content) { { project: 'not_existing_project', file: 'not-existing.yml', ref: 'v1.0.0' } }
 
         it 'returns an empty string' do
-          expect(resolve_scan_policies[0][:policy_blob_file_path]).to eq("")
+          expect(resolve_policies[0][:policy_blob_file_path]).to eq("")
         end
 
         it 'includes warning message' do
-          expect(resolve_scan_policies[0][:warnings]).to include(
+          expect(resolve_policies[0][:warnings]).to include(
             'The policy is associated with a non-existing Pipeline configuration file.')
         end
       end
@@ -93,7 +93,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
         let(:project_full_path) { ref_project.full_path }
         let(:args) { { relationship: :inherited } }
 
-        subject(:resolve_scan_policies) do
+        subject(:resolve_policies) do
           resolve(described_class, obj: project, ctx: { current_user: user }, args: args,
             arg_style: :internal)
         end
@@ -102,11 +102,11 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
           let(:content) { nil }
 
           it 'returns an empty string' do
-            expect(resolve_scan_policies[0][:policy_blob_file_path]).to eq("")
+            expect(resolve_policies[0][:policy_blob_file_path]).to eq("")
           end
 
           it 'includes warning message' do
-            expect(resolve_scan_policies[0][:warnings]).to include(
+            expect(resolve_policies[0][:warnings]).to include(
               'The policy is associated with a non-existing Pipeline configuration file.')
           end
         end

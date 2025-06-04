@@ -57,22 +57,26 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
             config: policy_configuration,
             project: project,
             namespace: nil,
-            inherited: false
+            inherited: false,
+            csp: false
           })], scan_execution_policies: [scan_execution_policy.merge({
             config: group_policy_configuration,
             project: nil,
             namespace: group,
-            inherited: false
+            inherited: false,
+            csp: false
           })], pipeline_execution_policies: [pipeline_execution_policy.merge({
             config: group_policy_configuration,
             project: nil,
             namespace: group,
-            inherited: false
+            inherited: false,
+            csp: false
           })], vulnerability_management_policies: [vulnerability_management_policy.merge({
             config: policy_configuration,
             project: project,
             namespace: nil,
-            inherited: false
+            inherited: false,
+            csp: false
           })] })
         end
       end

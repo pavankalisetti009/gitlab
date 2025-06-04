@@ -82,7 +82,8 @@ module ConstructSecurityPolicies
       enabled: policy[:enabled],
       policy_scope: policy_scope(policy[:policy_scope]),
       yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES).deep_stringify_keys),
-      updated_at: policy[:config].policy_last_updated_at
+      updated_at: policy[:config].policy_last_updated_at,
+      csp: policy[:csp]
     }
 
     policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
@@ -105,7 +106,8 @@ module ConstructSecurityPolicies
       enabled: policy[:enabled],
       policy_scope: policy_scope(policy[:policy_scope]),
       yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES, :skip_ci).deep_stringify_keys),
-      updated_at: policy[:config].policy_last_updated_at
+      updated_at: policy[:config].policy_last_updated_at,
+      csp: policy[:csp]
     }
 
     policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
@@ -141,7 +143,8 @@ module ConstructSecurityPolicies
           :metadata
         ).deep_stringify_keys
       ),
-      updated_at: policy[:config].policy_last_updated_at
+      updated_at: policy[:config].policy_last_updated_at,
+      csp: policy[:csp]
     }
 
     policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
@@ -170,7 +173,8 @@ module ConstructSecurityPolicies
         policy.slice(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
           :suffix, :skip_ci, :variables_override).deep_stringify_keys
       ),
-      updated_at: policy[:config].policy_last_updated_at
+      updated_at: policy[:config].policy_last_updated_at,
+      csp: policy[:csp]
     }
 
     policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
@@ -194,7 +198,8 @@ module ConstructSecurityPolicies
       yaml: YAML.dump(
         policy.slice(:name, :description, :enabled, :rules, :actions, :policy_scope).deep_stringify_keys
       ),
-      updated_at: policy[:config].policy_last_updated_at
+      updated_at: policy[:config].policy_last_updated_at,
+      csp: policy[:csp]
     }
 
     policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))

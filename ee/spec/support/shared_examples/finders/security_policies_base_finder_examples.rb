@@ -48,6 +48,7 @@ RSpec.shared_examples 'security policies finder' do
                 project: object,
                 namespace: nil,
                 inherited: false,
+                csp: false,
                 **expected_extra_attrs
               })])
           end
@@ -62,6 +63,7 @@ RSpec.shared_examples 'security policies finder' do
                   project: object,
                   namespace: nil,
                   inherited: false,
+                  csp: false,
                   **expected_extra_attrs
                 })])
             end
@@ -108,6 +110,7 @@ RSpec.shared_examples 'security policies finder' do
                     project: object,
                     namespace: nil,
                     inherited: false,
+                    csp: false,
                     **expected_extra_attrs
                   })])
               end
@@ -153,8 +156,47 @@ RSpec.shared_examples 'security policies finder' do
                   project: nil,
                   namespace: group,
                   inherited: true,
+                  csp: false,
                   **expected_extra_attrs
                 })])
+            end
+
+            context 'when group is designated as CSP' do
+              include Security::PolicyCspHelpers
+
+              before do
+                stub_csp_group(group)
+              end
+
+              it 'returns scan policies for groups only' do
+                is_expected.to match_array([policy.merge(
+                  {
+                    config: group_policy_configuration,
+                    project: nil,
+                    namespace: group,
+                    inherited: true,
+                    csp: true,
+                    **expected_extra_attrs
+                  })])
+              end
+
+              context 'when feature flag "security_policies_csp" is disabled' do
+                before do
+                  stub_feature_flags(security_policies_csp: false)
+                end
+
+                it 'returns policies with csp as false' do
+                  is_expected.to match_array([policy.merge(
+                    {
+                      config: group_policy_configuration,
+                      project: nil,
+                      namespace: group,
+                      inherited: true,
+                      csp: false,
+                      **expected_extra_attrs
+                    })])
+                end
+              end
             end
           end
 
@@ -182,6 +224,7 @@ RSpec.shared_examples 'security policies finder' do
                       project: nil,
                       namespace: object,
                       inherited: false,
+                      csp: false,
                       **expected_extra_attrs
                     }),
                   policy.merge(
@@ -190,6 +233,7 @@ RSpec.shared_examples 'security policies finder' do
                       project: nil,
                       namespace: sub_group,
                       inherited: true,
+                      csp: false,
                       **expected_extra_attrs
                     })
                 ])
@@ -223,6 +267,7 @@ RSpec.shared_examples 'security policies finder' do
                   project: object,
                   namespace: nil,
                   inherited: false,
+                  csp: false,
                   **expected_extra_attrs
                 })])
             end
@@ -240,6 +285,7 @@ RSpec.shared_examples 'security policies finder' do
                       project: object,
                       namespace: nil,
                       inherited: false,
+                      csp: false,
                       **expected_extra_attrs
                     }),
                   policy.merge(
@@ -248,6 +294,7 @@ RSpec.shared_examples 'security policies finder' do
                       project: nil,
                       namespace: group,
                       inherited: true,
+                      csp: false,
                       **expected_extra_attrs
                     })
                 ])
@@ -264,6 +311,7 @@ RSpec.shared_examples 'security policies finder' do
                   project: nil,
                   namespace: group,
                   inherited: true,
+                  csp: false,
                   **expected_extra_attrs
                 })])
             end
@@ -281,6 +329,7 @@ RSpec.shared_examples 'security policies finder' do
                       project: object,
                       namespace: nil,
                       inherited: false,
+                      csp: false,
                       **expected_extra_attrs
                     })
                 ])

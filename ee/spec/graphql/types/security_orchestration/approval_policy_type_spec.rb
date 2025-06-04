@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['ApprovalPolicy'], feature_category: :security_policy_management do
   let(:fields) do
-    %i[name description edit_path enabled policy_scope updated_at yaml]
+    %i[name description edit_path enabled policy_scope updated_at yaml csp]
   end
 
   include_context 'with approval policy specific fields'
