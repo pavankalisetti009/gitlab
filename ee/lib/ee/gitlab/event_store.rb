@@ -73,7 +73,6 @@ module EE
           register_security_policy_subscribers(store)
           register_autoflow_subscribers(store)
 
-          subscribe_to_epic_events(store)
           subscribe_to_external_issue_links_events(store)
           subscribe_to_work_item_events(store)
           subscribe_to_milestone_events(store)
@@ -135,14 +134,6 @@ module EE
           store.subscribe ::Security::AnalyzersStatus::ProcessDeletedEventsWorker, to: ::Projects::ProjectDeletedEvent
         end
 
-        def subscribe_to_epic_events(store)
-          store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
-            to: ::Epics::EpicUpdatedEvent,
-            if: ->(event) {
-              ::Feature.enabled?(:validate_epic_work_item_sync, ::Group.actor_from_id(event.data[:group_id]))
-            }
-        end
-
         def subscribe_to_external_issue_links_events(store)
           store.subscribe ::VulnerabilityExternalIssueLinks::UpdateVulnerabilityRead,
             to: ::Vulnerabilities::LinkToExternalIssueTrackerCreated
@@ -167,22 +158,6 @@ module EE
             if: ->(event) {
               ::WorkItems::RolledupDates::BulkUpdateHandler.can_handle?(event)
             }
-
-          store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
-            to: ::WorkItems::WorkItemCreatedEvent,
-            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
-
-          store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
-            to: ::WorkItems::WorkItemUpdatedEvent,
-            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
-
-          store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
-            to: ::WorkItems::WorkItemClosedEvent,
-            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
-
-          store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
-            to: ::WorkItems::WorkItemReopenedEvent,
-            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
         end
 
         def subscribe_to_milestone_events(store)
