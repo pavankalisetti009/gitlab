@@ -3,6 +3,8 @@ import Translate from '~/vue_shared/translate';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import GeoReplicableApp from './components/app.vue';
 import createStore from './store';
+import { formatListboxItems } from './filters';
+import { FILTERED_SEARCH_TOKENS } from './constants';
 
 Vue.use(Translate);
 
@@ -38,6 +40,8 @@ export default () => {
       replicableTypes,
       graphqlRegistryClass,
       itemTitle: titlePlural,
+      listboxItems: formatListboxItems(replicableTypes),
+      filteredSearchTokens: FILTERED_SEARCH_TOKENS,
     },
 
     render(createElement) {
