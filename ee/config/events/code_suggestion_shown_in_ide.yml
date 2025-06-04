@@ -24,3 +24,8 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153881
 tiers:
   - premium
   - ultimate
+extra_trackers:
+  - tracking_class: Gitlab::Tracking::AiTracking
+    protected_properties:
+      branch_name:
+        description: The name of the git branch for the event

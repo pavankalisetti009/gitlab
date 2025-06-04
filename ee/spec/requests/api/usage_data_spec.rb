@@ -11,25 +11,25 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
     let(:project) { nil }
     let(:namespace) { nil }
 
-    let(:base_properties) do
+    let(:additional_properties) do
       {
         language: 'ruby',
         timestamp: '2024-01-01',
-        unrelated_info: 'bar',
+        suggestion_size: '100',
         branch_name: 'foo'
       }
     end
 
-    let(:additional_properties) do
-      base_properties.merge(
+    let(:identifiers) do
+      {
         user: user,
         project_id: project&.id,
         namespace_id: namespace&.id
-      )
+      }
     end
 
-    let(:allowed_fields_for_internal_event) do
-      base_properties.except(:branch_name).symbolize_keys
+    let(:allowed_fields_for_snowplow) do
+      identifiers.merge(additional_properties).except(:branch_name).symbolize_keys
     end
 
     before do
@@ -40,15 +40,26 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
       expect(Gitlab::InternalEvents).to receive(:track_event)
         .with(
           event_name,
-          additional_properties: allowed_fields_for_internal_event,
+          additional_properties: additional_properties,
           project: project,
           namespace: namespace,
-          send_snowplow_event: false,
-          user: user
-        )
+          user: user,
+          send_snowplow_event: false
+        ).and_call_original
+
+      # rubocop:disable RSpec/ExpectGitlabTracking -- Need to verify Snowplow params directly here
+      expect(Gitlab::Tracking).not_to receive(:event).with(anything, event_name, anything)
+      # rubocop:enable RSpec/ExpectGitlabTracking
 
       expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
-        .with(event_name, additional_properties)
+        .with(
+          event_name,
+          additional_properties.merge({
+            project: project,
+            namespace: namespace,
+            user: user
+          })
+        )
         .and_call_original
     end
 
@@ -57,7 +68,7 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
         event: event_name,
         project_id: project&.id,
         namespace_id: namespace&.id,
-        additional_properties: base_properties
+        additional_properties: additional_properties
       }
     end
 
