@@ -12,6 +12,10 @@ module Types
       field :updated_at, Types::TimeType, null: false, description: 'Timestamp of when the policy YAML was last updated.'
       field :yaml, GraphQL::Types::String, null: false, description: 'YAML definition of the policy.'
       field :policy_scope, ::Types::SecurityOrchestration::PolicyScopeType, null: true, description: 'Scope of the policy.'
+      field :csp, ::GraphQL::Types::Boolean,
+        null: false,
+        description: 'Indicates whether the policy comes from a centralized security policy group.',
+        experiment: { milestone: '18.1' }
     end
   end
 end

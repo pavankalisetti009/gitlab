@@ -31,15 +31,6 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
     end
 
     context 'when user is authorized' do
-      let(:merged_policy) do
-        policy.merge({
-          config: policy_configuration,
-          project: project,
-          namespace: nil,
-          inherited: false
-        })
-      end
-
       let(:expected_response) do
         [
           {
@@ -68,7 +59,8 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
               inherited: false,
               namespace: nil,
               project: project
-            }
+            },
+            csp: false
           }
         ]
       end

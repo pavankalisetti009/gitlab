@@ -44,7 +44,8 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
           inherited: false,
           namespace: nil,
           project: project
-        }
+        },
+        csp: false
       }
     ]
   end
@@ -76,7 +77,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
     let!(:group) { create(:group) }
     let(:all_group_approvers) { [group] }
     let(:role_approvers) { ['maintainer'] }
-    let!(:user) { create(:user) }
+    let_it_be(:user) { create(:user) }
     let(:user_approvers) { [user] }
 
     let(:action_approvers) do

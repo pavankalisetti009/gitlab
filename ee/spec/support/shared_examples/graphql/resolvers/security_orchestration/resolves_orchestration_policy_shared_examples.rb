@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.shared_examples 'as an orchestration policy' do
+  include Security::PolicyCspHelpers
+
   let!(:policy_configuration) { create(:security_orchestration_policy_configuration, security_policy_management_project: policy_management_project, project: project) }
   let(:repository) { instance_double(Repository, root_ref: 'master', empty?: false) }
 
@@ -36,8 +38,27 @@ RSpec.shared_examples 'as an orchestration policy' do
           project.add_developer(user)
         end
 
-        it 'returns scan execution policies' do
-          is_expected.to eq(expected_resolved)
+        it 'returns the policies' do
+          is_expected.to eq(expected_resolved.map { |obj| obj.merge(csp: false) })
+        end
+
+        context 'when the configuration belongs to a CSP group' do
+          subject(:resolve_policies) { resolve(described_class, obj: group, ctx: { current_user: user }) }
+
+          let_it_be(:group) { create(:group, developers: [user]) }
+          let!(:policy_configuration) do
+            create(:security_orchestration_policy_configuration, :namespace,
+              namespace: group,
+              security_policy_management_project: policy_management_project)
+          end
+
+          before do
+            stub_csp_group(group)
+          end
+
+          it 'returns the policies with csp: true' do
+            expect(resolve_policies).to match array_including(hash_including(csp: true))
+          end
         end
       end
 

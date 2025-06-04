@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, feature_category: :security_policy_management do
   include GraphqlHelpers
+  include Security::PolicyCspHelpers
 
   let_it_be(:group) { create(:group) }
   let!(:policy_configuration) do
@@ -52,12 +53,13 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
           project: project,
           namespace: nil,
           inherited: false
-        }
+        },
+        csp: false
       }
     ]
   end
 
-  subject(:resolve_scan_policies) do
+  subject(:resolve_policies) do
     resolve(
       described_class,
       obj: project,
@@ -74,7 +76,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
       end
 
       it 'returns empty collection' do
-        expect(resolve_scan_policies).to be_empty
+        expect(resolve_policies).to be_empty
       end
     end
 
@@ -92,7 +94,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
         end
 
         it 'returns scan execution policies' do
-          expect(resolve_scan_policies).to eq(expected_resolved)
+          expect(resolve_policies).to eq(expected_resolved)
         end
       end
 
@@ -116,7 +118,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
 
         context 'when relationship argument is not provided' do
           it 'returns no scan execution policies' do
-            expect(resolve_scan_policies).to be_empty
+            expect(resolve_policies).to be_empty
           end
         end
 
@@ -124,7 +126,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
           let(:args) { { relationship: :direct } }
 
           it 'returns no scan execution policies' do
-            expect(resolve_scan_policies).to be_empty
+            expect(resolve_policies).to be_empty
           end
         end
 
@@ -132,7 +134,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
           let(:args) { { relationship: :inherited } }
 
           it 'returns scan execution policies for groups only' do
-            expect(resolve_scan_policies).to eq(
+            expect(resolve_policies).to eq(
               [
                 {
                   name: 'Run DAST in every pipeline',
@@ -153,7 +155,8 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
                     project: nil,
                     namespace: group,
                     inherited: true
-                  }
+                  },
+                  csp: false
                 }
               ])
           end
@@ -179,7 +182,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
 
         context 'when relationship argument is not provided' do
           it 'returns scan execution policies for project only' do
-            expect(resolve_scan_policies).to eq(expected_resolved)
+            expect(resolve_policies).to eq(expected_resolved)
           end
         end
 
@@ -187,66 +190,65 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
           let(:args) { { relationship: :direct } }
 
           it 'returns scan execution policies for project only' do
-            expect(resolve_scan_policies).to eq(expected_resolved)
+            expect(resolve_policies).to eq(expected_resolved)
           end
         end
 
         context 'when relationship argument is provided as INHERITED' do
           let(:args) { { relationship: :inherited } }
+          let(:expected_resolved_group_policy) do
+            {
+              name: 'Run DAST in every pipeline',
+              description: 'This policy enforces to run DAST for every pipeline within the project',
+              edit_path: edit_group_policy_path(group, policy),
+              enabled: true,
+              policy_scope: {
+                compliance_frameworks: [],
+                including_projects: [],
+                excluding_projects: [],
+                including_groups: [],
+                excluding_groups: []
+              },
+              yaml: YAML.dump(policy.deep_stringify_keys),
+              updated_at: group_policy_configuration.policy_last_updated_at,
+              deprecated_properties: deprecated_properties,
+              source: {
+                project: nil,
+                namespace: group,
+                inherited: true
+              },
+              csp: false
+            }
+          end
 
           it 'returns scan execution policies defined for both project and namespace' do
-            expect(resolve_scan_policies).to match_array(
+            expect(resolve_policies).to match_array(
               [
-                {
-                  name: 'Run DAST in every pipeline',
-                  description: 'This policy enforces to run DAST for every pipeline within the project',
-                  edit_path: edit_project_policy_path(project, policy),
-                  enabled: true,
-                  policy_scope: {
-                    compliance_frameworks: [],
-                    including_projects: [],
-                    excluding_projects: [],
-                    including_groups: [],
-                    excluding_groups: []
-                  },
-                  yaml: YAML.dump(policy.deep_stringify_keys),
-                  updated_at: policy_configuration.policy_last_updated_at,
-                  deprecated_properties: deprecated_properties,
-                  source: {
-                    project: project,
-                    namespace: nil,
-                    inherited: false
-                  }
-                },
-                {
-                  name: 'Run DAST in every pipeline',
-                  description: 'This policy enforces to run DAST for every pipeline within the project',
-                  edit_path: edit_group_policy_path(group, policy),
-                  enabled: true,
-                  policy_scope: {
-                    compliance_frameworks: [],
-                    including_projects: [],
-                    excluding_projects: [],
-                    including_groups: [],
-                    excluding_groups: []
-                  },
-                  yaml: YAML.dump(policy.deep_stringify_keys),
-                  updated_at: group_policy_configuration.policy_last_updated_at,
-                  deprecated_properties: deprecated_properties,
-                  source: {
-                    project: nil,
-                    namespace: group,
-                    inherited: true
-                  }
-                }
+                *expected_resolved,
+                expected_resolved_group_policy
               ])
+          end
+
+          context 'when the group is a CSP group' do
+            before do
+              stub_csp_group(group)
+            end
+
+            it 'returns the group policy with csp: true' do
+              expect(resolve_policies).to match_array(
+                [
+                  *expected_resolved,
+                  expected_resolved_group_policy.merge(csp: true)
+                ]
+              )
+            end
           end
         end
       end
 
       context 'when user is unauthorized' do
         it 'returns empty collection' do
-          expect(resolve_scan_policies).to be_empty
+          expect(resolve_policies).to be_empty
         end
       end
     end
@@ -271,7 +273,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
       let(:args) { { action_scan_types: [::Types::Security::ReportTypeEnum.values['DAST'].value] } }
 
       it 'returns policy matching the given scan type' do
-        expect(resolve_scan_policies).to eq(expected_resolved)
+        expect(resolve_policies).to eq(expected_resolved)
       end
     end
 
@@ -279,7 +281,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
       let(:args) { { action_scan_types: [::Types::Security::ReportTypeEnum.values['CONTAINER_SCANNING'].value] } }
 
       it 'returns empty response' do
-        expect(resolve_scan_policies).to be_empty
+        expect(resolve_policies).to be_empty
       end
     end
   end
