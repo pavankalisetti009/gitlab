@@ -6,7 +6,12 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 25_22
+        # Latest schema version - format is Date.today.strftime('%y_%w')
+        # Update this when changing the document schema.
+        # Only applies after migration completes to prevent indexing documents
+        # with new schema before data migration finishes, which would result in
+        # documents not being indexed properly and missing data.
+        SCHEMA_VERSION = 25_23
         DEFAULT_INDEX_ATTRIBUTES = %i[
           id
           iid
@@ -59,6 +64,14 @@ module Search
           @routing = routing
         end
 
+        def schema_version
+          if ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
+            SCHEMA_VERSION
+          else
+            25_22 # Previous stable version until migration completes
+          end
+        end
+
         override :serialize
         def serialize
           self.class.join_delimited([klass, identifier, routing].compact)
@@ -101,7 +114,7 @@ module Search
         end
 
         def build_extra_data(target)
-          {
+          extra_data = {
             label_ids: target.label_ids.map(&:to_s),
             hidden: target.hidden?,
             root_namespace_id: target.namespace.root_ancestor.id,
@@ -110,12 +123,21 @@ module Search
             work_item_type_id: target.work_item_type_id,
             assignee_id: safely_read_attribute_for_elasticsearch(target, :issue_assignee_user_ids),
             upvotes: target.upvotes_count,
-            # Schema version. The format is Date.today.strftime('%y_%w')
-            # Please update if you're changing the schema of the document
-            schema_version: SCHEMA_VERSION,
+            schema_version: schema_version,
             routing: routing,
             type: model_klass.es_type
           }
+
+          unless ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
+            return extra_data
+          end
+
+          extra_data['closed_at'] = target.closed_at if target.closed_at.present?
+          extra_data['weight'] = target.weight if target.weight.present?
+          extra_data['health_status'] = target.health_status_for_database if target.health_status.present?
+          extra_data['label_names'] = target.label_names if target.labels.present?
+
+          extra_data
         end
 
         def build_namespace_data(target)
@@ -138,13 +160,25 @@ module Search
         end
 
         def build_milestone_data(target)
-          return {} unless target.milestone.present? &&
-            ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_milestone_data)
+          milestone_data = {}
 
-          {
-            milestone_title: target.milestone&.title,
-            milestone_id: target.milestone_id
-          }
+          return milestone_data unless target.milestone.present?
+
+          if ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_milestone_data)
+            milestone_data.merge!({
+              milestone_title: target.milestone&.title,
+              milestone_id: target.milestone_id
+            })
+          end
+
+          unless ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
+            return milestone_data
+          end
+
+          milestone_data['milestone_start_date'] = target.milestone.start_date if target.milestone.start_date.present?
+          milestone_data['milestone_due_date'] = target.milestone.due_date if target.milestone.due_date.present?
+
+          milestone_data
         end
       end
     end

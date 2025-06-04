@@ -9,17 +9,22 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user_project) { create(:project, namespace: create(:namespace)) }
   let_it_be(:work_item) do
-    create(:work_item, :opened, labels: [label], namespace: group, milestone: create(:milestone, group: group))
+    group_milestone = create(:milestone, group: group, start_date: Date.tomorrow, due_date: 1.week.from_now)
+    create(:work_item, :opened, labels: [label], namespace: group, milestone: group_milestone,
+      health_status: :on_track, weight: 3)
   end
 
   let_it_be_with_reload(:user_work_item) do
-    milestone = create(:milestone, project: user_project)
-    create(:work_item, :opened, labels: [label], milestone: milestone,
-      project: user_project)
+    user_project_milestone = create(:milestone, project: user_project, start_date: Date.tomorrow,
+      due_date: 1.week.from_now)
+    create(:work_item, :opened, labels: [label], milestone: user_project_milestone,
+      project: user_project, health_status: :on_track, weight: 3)
   end
 
   let_it_be(:project_work_item) do
-    create(:work_item, :opened, labels: [label], project: project, milestone: create(:milestone, project: project))
+    project_milestone = create(:milestone, project: project, start_date: Date.tomorrow, due_date: 1.week.from_now)
+    create(:work_item, :opened, labels: [label], project: project, milestone: project_milestone,
+      health_status: :on_track, weight: 3)
   end
 
   before do
@@ -48,15 +53,23 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         assignee_id: object.issue_assignee_user_ids,
         due_date: object.due_date,
         traversal_ids: "#{object.namespace.id}-",
-        schema_version: described_class::SCHEMA_VERSION,
+        schema_version: schema_version,
         routing: object.es_parent,
         type: 'work_item',
         milestone_title: object.milestone&.title,
-        milestone_id: object.milestone_id
+        milestone_id: object.milestone_id,
+        health_status: object.health_status_for_database,
+        weight: object.weight,
+        milestone_start_date: object.milestone&.start_date,
+        milestone_due_date: object.milestone&.due_date,
+        label_names: object.label_names
       }
     end
 
-    subject(:indexed_json) { described_class.new(object.id, object.es_parent).as_indexed_json.with_indifferent_access }
+    let(:work_item_reference) { described_class.new(object.id, object.es_parent) }
+    let(:schema_version) { work_item_reference.schema_version }
+
+    subject(:indexed_json) { work_item_reference.as_indexed_json.with_indifferent_access }
 
     describe 'user namespace work item' do
       let(:object) { user_work_item }
@@ -85,33 +98,58 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         )
       end
 
-      context 'when add_work_item_milestone_data migration has finished' do
-        context 'when milestone is present' do
-          it 'serializes work_item as a hash' do
-            expect(indexed_json).to match(expected_hash)
+      context 'with running migrations' do
+        context 'when add_work_item_milestone_data migration has finished' do
+          context 'when add_extra_fields_to_work_items migration has finished' do
+            context 'when milestone is present' do
+              it 'serializes work_item as a hash' do
+                expect(indexed_json).to match(expected_hash)
+              end
+            end
+
+            context 'when milestone is missing' do
+              let_it_be(:work_item_without_milestone) do
+                create(:work_item, :opened, labels: [label], namespace: group, health_status: :on_track,
+                  weight: 3)
+              end
+
+              let(:object) { work_item_without_milestone }
+
+              it 'serializes work_item as a hash without milestone references' do
+                expect(indexed_json).to match(expected_hash.except(
+                  :milestone_title, :milestone_id, :milestone_due_date, :milestone_start_date
+                ))
+              end
+            end
+
+            context 'when work_item is closed' do
+              let_it_be(:closed_work_item) do
+                create(:work_item, :closed, labels: [label], namespace: group, milestone: work_item.milestone,
+                  health_status: :on_track, weight: 3)
+              end
+
+              let(:object) { closed_work_item }
+
+              it 'serializes work_item as a hash with closed_at field' do
+                expect(indexed_json).to match(expected_hash.merge!(closed_at: closed_work_item.closed_at))
+              end
+            end
           end
         end
 
-        context 'when milestone is missing' do
-          let_it_be(:work_item_without_milestone) do
-            create(:work_item, :opened, labels: [label], namespace: group)
+        context 'when add_work_item_milestone_data migration has NOT finished' do
+          before do
+            set_elasticsearch_migration_to(:add_work_item_milestone_data, including: false)
           end
 
-          let(:object) { work_item_without_milestone }
-
-          it 'serializes work_item as a hash without milestone references' do
-            expect(indexed_json).to match(expected_hash.except(:milestone_title, :milestone_id))
+          context 'when add_extra_fields_to_work_items migration has NOT finished' do
+            it 'serializes work_item as a hash without all new fields' do
+              expect(indexed_json).to match(expected_hash.except(
+                :milestone_id, :milestone_title, :milestone_due_date, :milestone_start_date,
+                :closed_at, :weight, :health_status, :label_names
+              ))
+            end
           end
-        end
-      end
-
-      context 'when add_work_item_milestone_data migration has not finished' do
-        before do
-          set_elasticsearch_migration_to(:add_work_item_milestone_data, including: false)
-        end
-
-        it 'serializes work_item as a hash without milestone references' do
-          expect(indexed_json).to match(expected_hash.except(:milestone_title, :milestone_id))
         end
       end
     end
@@ -168,6 +206,26 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
     it 'returns correct environment based index name from instance method' do
       expect(described_class.new(work_item.id, work_item.es_parent).index_name).to eq('gitlab-test-work_items')
+    end
+  end
+
+  describe '#schema_version' do
+    subject(:work_item_reference) { described_class.new(work_item.id, work_item.es_parent) }
+
+    context 'when there are no finished migrations' do
+      before do
+        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: false)
+      end
+
+      it 'returns the current schema version' do
+        expect(work_item_reference.schema_version).to eq(2522)
+      end
+    end
+
+    context 'when there are finished migrations' do
+      it 'returns the new schema version for that migration' do
+        expect(work_item_reference.schema_version).to eq(described_class::SCHEMA_VERSION)
+      end
     end
   end
 end

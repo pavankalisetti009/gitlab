@@ -58,63 +58,89 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
             association_name: :issues,
             on_change: :title,
             depends_on_finished_migration: :add_work_item_milestone_data
+          },
+          {
+            association_name: :issues,
+            on_change: :due_date,
+            depends_on_finished_migration: :add_extra_fields_to_work_items
+          },
+          {
+            association_name: :issues,
+            on_change: :start_date,
+            depends_on_finished_migration: :add_extra_fields_to_work_items
           }
         )
       end
 
-      context 'when the migration has finished' do
-        before do
-          set_elasticsearch_migration_to(:add_work_item_milestone_data, including: true)
-        end
+      shared_examples 'tracks ES changes' do |attribute, value|
+        it "tracks changes to #{attribute} in ES" do
+          expect(ElasticAssociationIndexerWorker)
+            .to receive(:perform_async)
+            .with('Milestone', milestone.id, ['issues'])
 
-        context 'when ES is enabled' do
-          before do
-            allow(milestone).to receive(:use_elasticsearch?).and_return(true)
-            allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(true)
-          end
-
-          context 'when the title attribute changes' do
-            it 'tracks the changes in ES' do
-              expect(ElasticAssociationIndexerWorker)
-                .to receive(:perform_async)
-                .with('Milestone', milestone.id, ['issues'])
-
-              milestone.reload.update!(title: 'new title')
-            end
-          end
-
-          context 'when other than title attribute changes' do
-            it 'does not track the changes in ES' do
-              expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
-
-              milestone.reload.update!(description: 'new description')
-            end
-          end
-        end
-
-        context 'when ES is not enabled' do
-          before do
-            allow(milestone).to receive(:use_elasticsearch?).and_return(false)
-          end
-
-          it 'does not track the changes in ES' do
-            expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
-
-            milestone.reload.update!(title: 'new title')
-          end
+          milestone.reload.update!(attribute => value)
         end
       end
 
-      context 'when the migration has not finished' do
+      shared_examples 'does not track ES changes' do |attribute, value|
+        it "does not track changes to #{attribute} in ES" do
+          expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
+
+          milestone.reload.update!(attribute => value)
+        end
+      end
+
+      context 'when ES is enabled' do
+        before do
+          allow(milestone).to receive(:use_elasticsearch?).and_return(true)
+          allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(true)
+        end
+
+        context 'when add_work_item_milestone_data migration finished' do
+          before do
+            set_elasticsearch_migration_to(:add_work_item_milestone_data, including: true)
+          end
+
+          include_examples 'tracks ES changes', :title, 'new title'
+          include_examples 'does not track ES changes', :description, 'new description'
+        end
+
+        context 'when add_extra_fields_to_work_items migration finished' do
+          before do
+            set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
+          end
+
+          include_examples 'tracks ES changes', :start_date, Date.tomorrow
+          include_examples 'tracks ES changes', :due_date, 1.week.from_now
+          include_examples 'does not track ES changes', :description, 'new description'
+        end
+      end
+
+      context 'when ES is not enabled' do
+        before do
+          allow(milestone).to receive(:use_elasticsearch?).and_return(false)
+        end
+
+        include_examples 'does not track ES changes', :title, 'new title'
+        include_examples 'does not track ES changes', :start_date, Date.tomorrow
+        include_examples 'does not track ES changes', :due_date, 1.week.from_now
+      end
+
+      context 'when add_work_item_milestone_data migration has not finished' do
         before do
           set_elasticsearch_migration_to(:add_work_item_milestone_data, including: false)
         end
 
-        it 'does not track the changes in ES' do
-          expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
+        include_examples 'does not track ES changes', :title, 'new title'
+      end
 
-          milestone.reload.update!(title: 'new title')
+      context 'when add_extra_fields_to_work_items migration has not finished' do
+        before do
+          set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: false)
         end
+
+        include_examples 'does not track ES changes', :start_date, Date.tomorrow
+        include_examples 'does not track ES changes', :due_date, 1.week.from_now
       end
     end
   end
