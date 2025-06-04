@@ -6,6 +6,18 @@ module API
 
     feature_category :user_management
 
+    helpers Gitlab::InternalEventsTracking
+
+    helpers do
+      def track_get_group_enterprise_users_api
+        track_internal_event(
+          'use_get_group_enterprise_users_api',
+          user: current_user,
+          namespace: user_group
+        )
+      end
+    end
+
     before do
       authenticate!
       bad_request!('Must be a top-level group') unless user_group.root?
@@ -43,6 +55,8 @@ module API
           declared_params.merge(enterprise_group: user_group))
 
         users = finder.execute.preload(:identities, :group_scim_identities, :instance_scim_identities) # rubocop: disable CodeReuse/ActiveRecord -- preload
+
+        track_get_group_enterprise_users_api
 
         present paginate(users), with: ::API::Entities::UserPublic
       end
