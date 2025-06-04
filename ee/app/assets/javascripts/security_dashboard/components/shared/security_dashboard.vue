@@ -1,10 +1,18 @@
 <script>
-import { s__ } from '~/locale';
-import VulnerabilitiesOverTimeChart from './vulnerabilities_over_time_chart.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
 import VulnerabilitySeverities from './project_security_status_chart.vue';
+import VulnerabilitiesOverTimeChart from './vulnerabilities_over_time_chart.vue';
 
 export default {
-  components: { VulnerabilitiesOverTimeChart, VulnerabilitySeverities },
+  components: {
+    VulnerabilitiesOverTimeChart,
+    VulnerabilitySeverities,
+    PageHeading,
+    PdfExportButton,
+  },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     historyQuery: {
       type: Object,
@@ -14,16 +22,27 @@ export default {
       type: Object,
       required: true,
     },
+    showExport: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
-  i18n: {
-    title: s__('SecurityReports|Security dashboard'),
+  computed: {
+    showExportButton() {
+      return this.showExport && this.glFeatures.vulnerabilitiesPdfExport;
+    },
   },
 };
 </script>
 
 <template>
   <div>
-    <h2 class="gl-mb-6">{{ $options.i18n.title }}</h2>
+    <page-heading :heading="s__('SecurityReports|Security dashboard')">
+      <template #actions>
+        <pdf-export-button v-if="showExportButton" />
+      </template>
+    </page-heading>
 
     <div class="security-charts gl-grid">
       <vulnerabilities-over-time-chart :query="historyQuery" />

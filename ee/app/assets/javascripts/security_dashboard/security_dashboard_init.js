@@ -72,6 +72,7 @@ export default (el, dashboardType) => {
     props = {
       historyQuery: groupVulnerabilityHistoryQuery,
       gradesQuery: groupVulnerabilityGradesQuery,
+      showExport: true,
     };
   } else if (dashboardType === DASHBOARD_TYPE_INSTANCE) {
     component = hasProjects ? SecurityDashboard : ReportNotConfiguredInstance;

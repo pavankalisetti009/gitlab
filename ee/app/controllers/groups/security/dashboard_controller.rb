@@ -12,6 +12,7 @@ class Groups::Security::DashboardController < Groups::ApplicationController
 
   before_action only: :show do
     push_frontend_feature_flag(:group_security_dashboard_new, group)
+    push_frontend_feature_flag(:vulnerabilities_pdf_export, group)
   end
 
   def show
