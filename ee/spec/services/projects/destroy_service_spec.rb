@@ -416,4 +416,72 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
       .and change(Project.where(id: project.id), :count).by(-1)
     end
   end
+
+  describe 'tag protection rules handling' do
+    let_it_be(:user) { create(:user) }
+    let_it_be_with_refind(:project) { create(:project, :repository, namespace: user.namespace) }
+
+    subject { project_destroy_service.execute }
+
+    context 'when there are immutable tag protection rules' do
+      before_all do
+        create(:container_registry_protection_tag_rule,
+          :immutable,
+          project: project,
+          tag_name_pattern: 'immutable'
+        )
+
+        project.add_owner(user)
+        project.container_repositories << create(:container_repository)
+      end
+
+      context 'when there are registry tags' do
+        before do
+          stub_container_registry_tags(repository: project.full_path, tags: ['tag'])
+          allow_any_instance_of(described_class)
+            .to receive(:remove_legacy_registry_tags).and_return(true)
+        end
+
+        context 'when the licensed feature is enabled' do
+          before do
+            stub_licensed_features(container_registry_immutable_tag_rules: true)
+          end
+
+          it { is_expected.to be false }
+
+          context 'when the current user is an admin', :enable_admin_mode do
+            let(:user) { build_stubbed(:admin) }
+
+            it { is_expected.to be false }
+          end
+        end
+
+        context 'when the licensed feature is disabled' do
+          before do
+            stub_licensed_features(container_registry_immutable_tag_rules: false)
+          end
+
+          it { is_expected.to be true }
+
+          context 'when the current user is an admin', :enable_admin_mode do
+            let(:user) { build_stubbed(:admin) }
+
+            it { is_expected.to be true }
+          end
+        end
+
+        context 'when the feature `container_registry_immutable_tags` is disabled' do
+          before do
+            stub_feature_flags(container_registry_immutable_tags: false)
+          end
+
+          it { is_expected.to be true }
+        end
+      end
+
+      context 'when there are no registry tags' do
+        it { is_expected.to be true }
+      end
+    end
+  end
 end
