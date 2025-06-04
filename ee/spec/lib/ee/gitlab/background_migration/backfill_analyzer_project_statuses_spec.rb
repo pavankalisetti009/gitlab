@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::BackfillAnalyzerProjectStatuses, :suppress_partitioning_routing_analyzer,
+RSpec.describe Gitlab::BackgroundMigration::BackfillAnalyzerProjectStatuses,
   feature_category: :security_asset_inventories do
   let(:migration_instance) do
     described_class.new(
@@ -19,7 +19,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillAnalyzerProjectStatuses, :su
   let(:organizations_table) { table(:organizations) }
   let(:namespaces_table) { table(:namespaces) }
   let(:projects_table) { table(:projects) }
-  let(:pipelines_table) { partitioned_table(:ci_pipelines, database: :ci) }
+  let(:pipelines_table) { partitioned_table(:p_ci_pipelines, database: :ci) }
   let(:builds_table) { partitioned_table(:p_ci_builds, database: :ci) }
   let(:builds_metadata_table) { table(:p_ci_builds_metadata, database: :ci) }
   let(:analyzer_project_statuses_table) { table(:analyzer_project_statuses, database: :sec) }
