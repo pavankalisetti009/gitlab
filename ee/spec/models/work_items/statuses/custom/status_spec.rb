@@ -9,6 +9,8 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
 
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
+    it { is_expected.to belong_to(:created_by) }
+    it { is_expected.to belong_to(:updated_by) }
     it { is_expected.to have_many(:lifecycle_statuses) }
     it { is_expected.to have_many(:lifecycles).through(:lifecycle_statuses) }
   end

@@ -25786,6 +25786,8 @@ CREATE TABLE work_item_custom_lifecycles (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     name text NOT NULL,
+    created_by_id bigint,
+    updated_by_id bigint,
     CONSTRAINT check_1feff2de99 CHECK ((char_length(name) <= 255))
 );
 
@@ -25807,6 +25809,8 @@ CREATE TABLE work_item_custom_statuses (
     name text NOT NULL,
     description text,
     color text NOT NULL,
+    created_by_id bigint,
+    updated_by_id bigint,
     CONSTRAINT check_4789467800 CHECK ((char_length(color) <= 7)),
     CONSTRAINT check_720a7c4d24 CHECK ((char_length(name) <= 255)),
     CONSTRAINT check_8ea8b3c991 CHECK ((char_length(description) <= 255)),
@@ -38200,9 +38204,17 @@ CREATE INDEX index_work_item_current_statuses_on_namespace_id ON work_item_curre
 
 CREATE UNIQUE INDEX index_work_item_current_statuses_on_work_item_id ON work_item_current_statuses USING btree (work_item_id);
 
+CREATE INDEX index_work_item_custom_lifecycles_on_created_by_id ON work_item_custom_lifecycles USING btree (created_by_id);
+
 CREATE UNIQUE INDEX index_work_item_custom_lifecycles_on_namespace_id_and_name ON work_item_custom_lifecycles USING btree (namespace_id, name);
 
+CREATE INDEX index_work_item_custom_lifecycles_on_updated_by_id ON work_item_custom_lifecycles USING btree (updated_by_id);
+
+CREATE INDEX index_work_item_custom_statuses_on_created_by_id ON work_item_custom_statuses USING btree (created_by_id);
+
 CREATE UNIQUE INDEX index_work_item_custom_statuses_on_namespace_id_and_lower_name ON work_item_custom_statuses USING btree (namespace_id, TRIM(BOTH FROM lower(name)));
+
+CREATE INDEX index_work_item_custom_statuses_on_updated_by_id ON work_item_custom_statuses USING btree (updated_by_id);
 
 CREATE INDEX index_work_item_hierarchy_restrictions_on_child_type_id ON work_item_hierarchy_restrictions USING btree (child_type_id);
 
@@ -42333,6 +42345,9 @@ ALTER TABLE ONLY deployment_approvals
 ALTER TABLE ONLY bulk_import_trackers
     ADD CONSTRAINT fk_2d0e051bc3 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY work_item_custom_lifecycles
+    ADD CONSTRAINT fk_2d0f7ebf48 FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY audit_events_instance_external_audit_event_destinations
     ADD CONSTRAINT fk_2d3ebd0fbc FOREIGN KEY (stream_destination_id) REFERENCES audit_events_instance_external_streaming_destinations(id) ON DELETE SET NULL;
 
@@ -42702,6 +42717,9 @@ ALTER TABLE ONLY deploy_keys_projects
 ALTER TABLE ONLY merge_requests_approval_rules_groups
     ADD CONSTRAINT fk_59068f09e5 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY work_item_custom_statuses
+    ADD CONSTRAINT fk_590e87b7c7 FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY oauth_access_grants
     ADD CONSTRAINT fk_59cdb2323c FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
@@ -42770,6 +42788,9 @@ ALTER TABLE ONLY user_achievements
 
 ALTER TABLE ONLY merge_requests
     ADD CONSTRAINT fk_6149611a04 FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY work_item_custom_lifecycles
+    ADD CONSTRAINT fk_614a3cdb95 FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY member_approvals
     ADD CONSTRAINT fk_619f381144 FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE SET NULL;
@@ -44132,6 +44153,9 @@ ALTER TABLE ONLY merge_requests_approval_rules
 
 ALTER TABLE ONLY clusters_managed_resources
     ADD CONSTRAINT fk_fad3c3b2e2 FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY work_item_custom_statuses
+    ADD CONSTRAINT fk_fb28a15e7b FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY agent_group_authorizations
     ADD CONSTRAINT fk_fb70782616 FOREIGN KEY (agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
