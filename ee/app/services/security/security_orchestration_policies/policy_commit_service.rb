@@ -63,8 +63,7 @@ module Security
       end
 
       def policy_yaml_annotation_enabled?(policy_hash)
-        Feature.enabled?(:annotate_security_orchestration_policy_yaml, container) &&
-          policy_hash.dig(:experiments, :annotate_ids, :enabled)
+        policy_hash.dig(:experiments, :annotate_ids, :enabled) || false
       end
 
       def create_commit(service, policy_yaml)

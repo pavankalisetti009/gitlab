@@ -236,42 +236,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
               updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
               expect(updated_policy_blob).to eq(annotated_updated_policy_yaml)
             end
-
-            context 'when the feature flag is disabled' do
-              before do
-                stub_feature_flags(annotate_security_orchestration_policy_yaml: false)
-              end
-
-              let(:updated_policy_yaml) do
-                <<~YAML
-                  ---
-                  scan_execution_policy:
-                  - name: Updated Policy
-                    description: #{policy_hash[:description]}
-                    enabled: true
-                    actions:
-                    - scan: dast
-                      site_profile: Site Profile
-                      scanner_profile: Scanner Profile
-                    rules:
-                    - type: pipeline
-                      branches:
-                      - master
-                    policy_scope: {}
-                    metadata: {}
-                    skip_ci:
-                      allowed: false
-                      allowlist:
-                        users:
-                        - id: #{current_user.id}
-                  experiments:
-                    annotate_ids:
-                      enabled: true
-                YAML
-              end
-
-              it_behaves_like 'committing the updated policy yaml without annotations'
-            end
           end
 
           context 'when the experiment option is disabled' do
@@ -306,14 +270,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
             end
 
             it_behaves_like 'committing the updated policy yaml without annotations'
-
-            context 'when the feature flag is disabled' do
-              before do
-                stub_feature_flags(annotate_security_orchestration_policy_yaml: false)
-              end
-
-              it_behaves_like 'committing the updated policy yaml without annotations'
-            end
           end
 
           context 'when the experiment option is not defined' do
