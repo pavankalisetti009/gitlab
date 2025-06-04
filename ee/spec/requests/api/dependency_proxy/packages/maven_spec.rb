@@ -126,6 +126,10 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
         }
 
         shared_examples 'tracking an internal event' do |from_cache: false|
+          before do
+            allow(::Gitlab::InternalEvents).to receive(:track_event)
+          end
+
           it 'tracks an internal event' do
             event_name = if from_cache
                            'dependency_proxy_packages_maven_file_pulled_from_cache'
