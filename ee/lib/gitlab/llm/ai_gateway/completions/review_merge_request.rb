@@ -11,6 +11,15 @@ module Gitlab
           DRAFT_NOTES_COUNT_LIMIT = 50
           PRIORITY_THRESHOLD = 3
           UNIT_PRIMITIVE = 'review_merge_request'
+          COMMENT_METRICS = %i[
+            total_comments
+            p1_comments
+            p2_comments
+            p3_comments
+            comments_with_valid_path
+            comments_with_valid_line
+            created_draft_notes
+          ].freeze
 
           class << self
             def resource_not_found_msg
@@ -95,6 +104,7 @@ module Gitlab
           def perform_review
             # Initialize ivar that will be populated as AI review diff hunks
             @draft_notes_by_priority = []
+            @comment_metrics = COMMENT_METRICS.index_with(0)
 
             diff_files = merge_request.ai_reviewable_diff_files
 
@@ -113,6 +123,8 @@ module Gitlab
             else
               publish_draft_notes
             end
+
+            log_comment_metrics
           end
 
           def process_files(diff_files, mr_diff_refs)
@@ -135,12 +147,20 @@ module Gitlab
             # TODO: move the file to ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser
             parsed_body = ::Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::ResponseBodyParser
               .new(response.response_body)
-            comments_by_file = parsed_body.comments.group_by(&:file)
+            comments = parsed_body.comments
             @review_description = parsed_body.review_description
 
+            @comment_metrics[:total_comments] = comments.count
+            comments.each do |comment|
+              @comment_metrics[:"p#{comment.priority}_comments"] += 1 if comment.priority.in?(1..3)
+            end
+
+            comments_by_file = comments.group_by(&:file)
             diff_files.each do |diff_file|
               file_comments = comments_by_file[diff_file.new_path]
               next if file_comments.blank?
+
+              @comment_metrics[:comments_with_valid_path] += file_comments.count
 
               process_comments(file_comments, diff_file, mr_diff_refs)
             end
@@ -185,6 +205,8 @@ module Gitlab
               line = match_comment_to_diff_line(comment, diff_file.diff_lines)
 
               next unless line.present?
+
+              @comment_metrics[:comments_with_valid_line] += 1
 
               draft_note_params = build_draft_note_params(comment.content, diff_file, line, diff_refs)
               next unless draft_note_params.present?
@@ -262,6 +284,24 @@ module Gitlab
             response = ai_client.messages_complete(**summary_prompt)
 
             ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
+          end
+
+          def log_comment_metrics
+            return unless duo_code_review_logging_enabled?
+
+            Gitlab::AppLogger.info(
+              message: "LLM response comments metrics",
+              event: "review_merge_request_llm_response_comments",
+              unit_primitive: UNIT_PRIMITIVE,
+              merge_request_id: merge_request&.id,
+              total_comments: @comment_metrics[:total_comments],
+              p1_comments: @comment_metrics[:p1_comments],
+              p2_comments: @comment_metrics[:p2_comments],
+              p3_comments: @comment_metrics[:p3_comments],
+              comments_with_valid_path: @comment_metrics[:comments_with_valid_path],
+              comments_with_valid_line: @comment_metrics[:comments_with_valid_line],
+              created_draft_notes: @comment_metrics[:created_draft_notes]
+            )
           end
 
           def note_not_required?(response_modifier)
@@ -367,6 +407,8 @@ module Gitlab
             end
 
             DraftNote.bulk_insert!(draft_notes, batch_size: 20)
+
+            @comment_metrics[:created_draft_notes] = draft_notes.count
 
             update_progress_note(summary_note(draft_notes))
 

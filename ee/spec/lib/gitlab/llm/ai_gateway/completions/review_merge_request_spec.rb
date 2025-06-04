@@ -818,6 +818,94 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
     end
 
+    context 'when logging LLM response comments metrics' do
+      let(:expected_hash) do
+        {
+          message: "LLM response comments metrics",
+          event: "review_merge_request_llm_response_comments",
+          unit_primitive: 'review_merge_request',
+          merge_request_id: merge_request.id,
+          total_comments: 0,
+          p1_comments: 0,
+          p2_comments: 0,
+          p3_comments: 0,
+          comments_with_valid_path: 0,
+          comments_with_valid_line: 0,
+          created_draft_notes: 0
+        }
+      end
+
+      before do
+        # Ignore other logs
+        allow(Gitlab::AppLogger).to receive(:info)
+      end
+
+      context 'with a successful response containing comments' do
+        let(:summary_response) { nil }
+        let(:combined_review_response) do
+          <<~RESPONSE
+            <review>
+            <comment file="UPDATED.md" priority="3" old_line="1" new_line="1">first comment</comment>
+            <comment file="UPDATED.md" priority="2" old_line="" new_line="2">second comment</comment>
+            <comment file="NEW.md" priority="1" old_line="" new_line="1">third comment</comment>
+            <comment file="NEW.md" priority="4" old_line="" new_line="2">comment with unknown priority</comment>
+            <comment file="NEW.md" priority="2" old_line="" new_line="3">comment with unknown line</comment>
+            <comment file="SOMETHINGRANDOM" priority="3" old_line="" new_line="3">comment with unknown filename</comment>
+            </review>
+          RESPONSE
+        end
+
+        it 'logs expected comment metrics' do
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            hash_including(
+              expected_hash.merge(
+                total_comments: 6,
+                p1_comments: 1,
+                p2_comments: 2,
+                p3_comments: 2,
+                comments_with_valid_path: 5,
+                comments_with_valid_line: 4,
+                created_draft_notes: 4
+              )
+            )
+          )
+
+          completion.execute
+        end
+
+        context 'when duo_code_review_response_logging feature flag is disabled' do
+          before do
+            stub_feature_flags(duo_code_review_response_logging: false)
+          end
+
+          it 'does not log comment metrics' do
+            expect(Gitlab::AppLogger).not_to receive(:info).with(
+              hash_including(
+                message: "LLM response comments metrics",
+                event: "review_merge_request_llm_response_comments"
+              )
+            )
+
+            completion.execute
+          end
+        end
+      end
+
+      context 'with a successful response containing no comments' do
+        let(:combined_review_answer) do
+          <<~RESPONSE
+            <review></review>
+          RESPONSE
+        end
+
+        it 'log comment metrics' do
+          expect(Gitlab::AppLogger).to receive(:info).with(hash_including(expected_hash))
+
+          completion.execute
+        end
+      end
+    end
+
     context 'when the AI response is <review></review>' do
       let(:combined_review_response) { ' <review></review> ' }
       let(:summary_response) { nil }
