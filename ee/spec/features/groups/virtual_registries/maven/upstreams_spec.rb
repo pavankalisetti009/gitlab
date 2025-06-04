@@ -105,7 +105,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
           fill_in 'Password (optional)', with: 'mypassword1234'
           click_button 'Save changes'
 
-          expect(page).to have_current_path(group_virtual_registries_maven_upstream_path(group, upstream))
+          expect(page).to have_current_path("#{group_virtual_registries_maven_upstream_path(group, upstream)}?page=1")
           expect(page).to have_title('test maven upstream')
           expect(page).to have_content('Maven upstream has been updated.')
         end

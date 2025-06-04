@@ -433,7 +433,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             end
 
             context 'without current status' do
-              it 'does not return status data' do
+              it 'returns default status data' do
                 post_graphql(query, current_user: current_user)
 
                 expect(work_item_data).to include(
@@ -441,7 +441,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   'widgets' => include(
                     hash_including(
                       'type' => 'STATUS',
-                      'status' => nil
+                      'status' => {
+                        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                        'name' => 'To do',
+                        'iconName' => 'status-waiting',
+                        'color' => "#737278",
+                        'position' => 0
+                      }
                     )
                   )
                 )

@@ -183,7 +183,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         let_it_be(:work_item_1) { create(:work_item, :task, namespace: group) }
         let_it_be(:work_item_2) { create(:work_item, :task, namespace: group) }
         let_it_be(:work_item_type) { create(:work_item_type, :task) }
-        let_it_be(:custom_status) { create(:work_item_custom_status) }
+
         let(:work_items) { graphql_data_at(:group, :workItems, :nodes) }
 
         RSpec.shared_examples 'checks for N+1 queries' do
@@ -207,8 +207,10 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         context 'when feature is licensed' do
           context 'with current statuses' do
             let_it_be(:lifecycle) do
-              create(:work_item_custom_lifecycle, namespace: group, default_open_status: custom_status)
+              create(:work_item_custom_lifecycle, namespace: group)
             end
+
+            let_it_be(:custom_status) { lifecycle.default_open_status }
 
             context 'with system-defined status' do
               it 'returns system-defined status data' do
@@ -264,7 +266,11 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
               it 'returns correct status data for each work item' do
                 create(:work_item, :task, namespace: group)
 
-                create(:work_item_current_status, :system_defined, work_item: work_item_1)
+                create(:work_item_current_status,
+                  work_item: work_item_1,
+                  system_defined_status_id:
+                    lifecycle.default_closed_status.converted_from_system_defined_status_identifier
+                )
 
                 create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
                   namespace: group)
@@ -280,7 +286,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
                   hash_including(
                     'type' => 'STATUS',
                     'status' => hash_including(
-                      'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1'
+                      'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{lifecycle.default_closed_status_id}"
                     )
                   ),
                   hash_including(
@@ -291,7 +297,9 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
                   ),
                   hash_including(
                     'type' => 'STATUS',
-                    'status' => nil
+                    'status' => hash_including(
+                      'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{lifecycle.default_open_status_id}"
+                    )
                   )
                 )
               end
@@ -325,14 +333,20 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
           end
 
           context 'without current statuses' do
-            it 'does not return status data' do
+            it 'returns default status data' do
               post_graphql(query, current_user: current_user)
 
               expect(work_items).to include(
                 'widgets' => include(
                   hash_including(
                     'type' => 'STATUS',
-                    'status' => nil
+                    'status' => {
+                      'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                      'name' => 'To do',
+                      'iconName' => 'status-waiting',
+                      'color' => "#737278",
+                      'position' => 0
+                    }
                   )
                 )
               )
