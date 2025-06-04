@@ -27887,9 +27887,6 @@ msgstr ""
 msgid "Geo|Select shards to replicate"
 msgstr ""
 
-msgid "Geo|Selected replicable type"
-msgstr ""
-
 msgid "Geo|Selective (%{syncLabel})"
 msgstr ""
 
