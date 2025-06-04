@@ -7,6 +7,14 @@ module EE
       extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
 
+      # These widgets require some configuration at the group level
+      # so we need to hide these for personal namespaces
+      EXCLUDED_USER_NAMESPACE_LICENSED_WIDGETS = [
+        ::WorkItems::Widgets::Iteration,
+        ::WorkItems::Widgets::CustomFields,
+        ::WorkItems::Widgets::Status
+      ].freeze
+
       LICENSED_WIDGETS = {
         iterations: ::WorkItems::Widgets::Iteration,
         issue_weights: ::WorkItems::Widgets::Weight,
@@ -47,6 +55,8 @@ module EE
       def widgets(resource_parent)
         strong_memoize_with(:widgets, resource_parent) do
           unavailable_widgets = unlicensed_widget_classes(resource_parent)
+          namespace = resource_parent.respond_to?(:namespace) ? resource_parent.namespace : resource_parent
+          unavailable_widgets += EXCLUDED_USER_NAMESPACE_LICENSED_WIDGETS if namespace.user_namespace?
 
           if epic? && !resource_parent.try(:work_items_beta_feature_flag_enabled?)
             unavailable_widgets << ::WorkItems::Widgets::Assignees
