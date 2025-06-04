@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Llm::GitCommandService, feature_category: :source_code_management do
+RSpec.describe Llm::GitCommandService, feature_category: :code_review_workflow do
   subject { described_class.new(current_user, user, options) }
 
   describe '#perform', :saas do
