@@ -226,7 +226,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         seat_usage_export_path: group_seat_usage_path(group, format: :csv),
         add_seats_href: subscription_portal_add_extra_seats_url(group.id),
         subscription_history_href: subscription_history_group_usage_quotas_path(group),
-        has_no_subscription: group.has_free_or_no_subscription?.to_s,
         max_free_namespace_seats: 10,
         explore_plans_path: group_billings_path(group),
         enforcement_free_user_cap_enabled: 'false'

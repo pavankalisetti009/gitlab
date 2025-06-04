@@ -60,7 +60,6 @@ module EE
         seat_usage_export_path: group_seat_usage_path(group, format: :csv),
         subscription_history_href: subscription_history_group_usage_quotas_path(group),
         add_seats_href: add_seats_url(group),
-        has_no_subscription: group.has_free_or_no_subscription?.to_s,
         max_free_namespace_seats: ::Namespaces::FreeUserCap.dashboard_limit,
         explore_plans_path: group_billings_path(group),
         enforcement_free_user_cap_enabled: ::Namespaces::FreeUserCap::Enforcement.new(group).enforce_cap?.to_s

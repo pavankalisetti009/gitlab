@@ -22,7 +22,6 @@ Vue.use(VueApollo);
 
 const providedFields = {
   explorePlansPath: '/groups/test_group/-/billings',
-  hasNoSubscription: false,
   activeTrial: false,
   addSeatsHref: '/groups/test_group/-/seat_usage.csv',
 };
@@ -73,7 +72,6 @@ describe('SubscriptionSeats', () => {
           explorePlansPath,
           addSeatsHref,
           namespaceId: 1,
-          hasNoSubscription: null,
           hasLimitedFreePlan: false,
           ...provide,
         },
@@ -144,7 +142,6 @@ describe('SubscriptionSeats', () => {
       beforeEach(() => {
         return createComponent({
           provide: {
-            hasNoSubscription: true,
             hasLimitedFreePlan: true,
           },
         });
@@ -166,7 +163,6 @@ describe('SubscriptionSeats', () => {
         subscriptionQueryResolver.mockResolvedValue(freeSubscriptionPlanData);
         return createComponent({
           provide: {
-            hasNoSubscription: true,
             isPublicNamespace: true,
           },
         });
