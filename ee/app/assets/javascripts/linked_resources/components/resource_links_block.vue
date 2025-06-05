@@ -27,11 +27,6 @@ export default {
       type: Number,
       required: true,
     },
-    helpPath: {
-      type: String,
-      required: false,
-      default: '',
-    },
     canAddResourceLinks: {
       type: Boolean,
       required: false,
