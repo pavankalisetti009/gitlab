@@ -38,6 +38,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
 
   before do
     provision_project_secrets_manager(secrets_manager, current_user)
+    stub_last_activity_update
 
     create_project_secret(
       **project_secret_attributes.merge(user: current_user, project: project)
@@ -59,6 +60,14 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
   context 'when current user is the project owner' do
     before_all do
       project.add_owner(current_user)
+    end
+
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'update_ci_secret' }
+      let(:user) { current_user }
+      let(:namespace) { project.namespace }
+      let(:additional_properties) { { label: 'graphql' } }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecretUpdate' }
     end
 
     it 'updates the project secret', :aggregate_failures do
@@ -151,6 +160,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
         expect(graphql_errors.count).to eq(1)
         expect(graphql_errors.first['message']).to eq('Project secret does not exist.')
       end
+
+      it_behaves_like 'internal event not tracked'
     end
 
     context 'and service results to a failure' do
