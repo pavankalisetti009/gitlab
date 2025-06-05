@@ -4871,7 +4871,8 @@ CREATE TABLE incident_management_pending_alert_escalations (
     process_at timestamp with time zone NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_0012942e48 CHECK ((project_id IS NOT NULL))
 )
 PARTITION BY RANGE (process_at);
 
