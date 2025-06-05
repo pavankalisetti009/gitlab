@@ -7,6 +7,7 @@ mutation createBoardListEE(
   $milestoneId: MilestoneID
   $iterationId: IterationID
   $assigneeId: UserID
+  $statusId: WorkItemsStatusesStatusID
   $position: Int
 ) {
   boardListCreate(
@@ -17,6 +18,7 @@ mutation createBoardListEE(
       milestoneId: $milestoneId
       iterationId: $iterationId
       assigneeId: $assigneeId
+      statusId: $statusId
       position: $position
     }
   ) {

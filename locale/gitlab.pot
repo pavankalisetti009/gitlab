@@ -10556,6 +10556,9 @@ msgstr ""
 msgid "Boards|An error occurred while fetching recent boards. Please try again."
 msgstr ""
 
+msgid "Boards|An error occurred while fetching statuses. Please try again."
+msgstr ""
+
 msgid "Boards|An error occurred while fetching the board lists. Please reload the page."
 msgstr ""
 
@@ -70130,10 +70133,16 @@ msgstr ""
 msgid "WorkItem|Search or paste URL"
 msgstr ""
 
+msgid "WorkItem|Search status"
+msgstr ""
+
 msgid "WorkItem|Select a group"
 msgstr ""
 
 msgid "WorkItem|Select a project"
+msgstr ""
+
+msgid "WorkItem|Select a status"
 msgstr ""
 
 msgid "WorkItem|Select parent"
