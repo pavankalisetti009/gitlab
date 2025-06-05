@@ -20,6 +20,26 @@ module Analytics
         SELECT %{fields}
       SQL
 
+      NEW_QUERY = <<~SQL
+        -- cte to load contributors
+        WITH code_contributors AS (
+          SELECT DISTINCT author_id
+          FROM (
+            SELECT
+              argMax(author_id, "contributions_new".version) AS author_id,
+              argMax(deleted, "contributions_new".version) AS deleted
+            FROM contributions_new
+            WHERE startsWith(path, {traversal_path:String})
+            AND "contributions_new"."created_at" >= {from:Date}
+            AND "contributions_new"."created_at" <= {to:Date}
+            AND "contributions_new"."action" = 5
+            GROUP BY id
+          ) contributions_new
+          WHERE deleted = false
+        )
+        SELECT %{fields}
+      SQL
+
       CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM code_contributors"
       private_constant :CODE_CONTRIBUTORS_COUNT_QUERY
 

@@ -12,6 +12,8 @@ module Analytics
         AND timestamp <= {to:Date}
       SQL
 
+      NEW_QUERY = QUERY
+
       FIELDS_SUBQUERIES = {
         root_cause_analysis_users_count: QUERY
       }.freeze

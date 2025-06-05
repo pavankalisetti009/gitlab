@@ -30,20 +30,34 @@ module Analytics
       strong_memoize_attr :fetch_data_from_new_table
 
       def contributions_query
-        contributions_table =
-          fetch_data_from_new_table ? 'contributions_new' : 'contributions'
-
         <<~SQL
           SELECT count(distinct "contributions"."author_id") AS contributor_count
           FROM (
             SELECT
-              argMax(author_id, #{contributions_table}.updated_at) AS author_id
-            FROM #{contributions_table}
-              WHERE startsWith("#{contributions_table}"."path", {namespace_path:String})
-              AND "#{contributions_table}"."created_at" >= {from:Date}
-              AND "#{contributions_table}"."created_at" <= {to:Date}
+              argMax(author_id, "contributions".updated_at) AS author_id
+            FROM "contributions"
+              WHERE startsWith("contributions"."path", {namespace_path:String})
+              AND "contributions"."created_at" >= {from:Date}
+              AND "contributions"."created_at" <= {to:Date}
             GROUP BY id
           ) contributions
+        SQL
+      end
+
+      def new_contributions_query
+        <<~SQL
+          SELECT count(distinct "contributions"."author_id") AS contributor_count
+          FROM (
+            SELECT
+              argMax(author_id, "contributions_new".version) AS author_id,
+              argMax(deleted, "contributions_new".version) AS deleted
+            FROM "contributions_new"
+              WHERE startsWith("contributions_new"."path", {namespace_path:String})
+              AND "contributions_new"."created_at" >= {from:Date}
+              AND "contributions_new"."created_at" <= {to:Date}
+            GROUP BY id
+          ) contributions
+          WHERE deleted = false
         SQL
       end
 
@@ -69,7 +83,8 @@ module Analytics
       end
 
       def contributor_count
-        query = ClickHouse::Client::Query.new(raw_query: contributions_query, placeholders: placeholders)
+        q = fetch_data_from_new_table ? new_contributions_query : contributions_query
+        query = ClickHouse::Client::Query.new(raw_query: q, placeholders: placeholders)
         ClickHouse::Client.select(query, :main).first['contributor_count']
       end
 

@@ -143,6 +143,17 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
   end
 
   context 'when the feature is available', :click_house do
+    let(:events_for_user1)  do
+      [
+        # push event
+        { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
+          created_at: from + 5.days, updated_at: from + 5.days },
+        # push event same user
+        { id: 2, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
+          created_at: from + 8.days, updated_at: from + 8.days }
+      ]
+    end
+
     before do
       allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
       stub_licensed_features(group_level_analytics_dashboard: true)
@@ -160,12 +171,7 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
 
       before do
         clickhouse_fixture(:events_new, [
-          # push event
-          { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
-            created_at: from + 5.days, updated_at: from + 5.days },
-          # push event same user
-          { id: 2, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
-            created_at: from + 8.days, updated_at: from + 8.days },
+          *events_for_user1,
           # issue creation event, different user
           { id: 3, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
             created_at: from + 9.days, updated_at: from + 9.days },
@@ -181,6 +187,18 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
       it 'returns distinct contributor count from ClickHouse' do
         expect(service_response).to be_success
         expect(service_response.payload[:count]).to eq(2)
+      end
+
+      context 'when event is marked as deleted' do
+        it 'clears out user-related events' do
+          # mark all events deleted
+          clickhouse_fixture(:events_new, events_for_user1.map do |e|
+            e.merge(deleted: true, version: Time.zone.now + 5.seconds)
+          end)
+
+          expect(service_response).to be_success
+          expect(service_response.payload[:count]).to eq(1)
+        end
       end
     end
 
@@ -191,12 +209,7 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
         stub_feature_flags(fetch_contributions_data_from_new_tables: false)
 
         clickhouse_fixture(:events, [
-          # push event
-          { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
-            created_at: from + 5.days, updated_at: from + 5.days },
-          # push event same user
-          { id: 2, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
-            created_at: from + 8.days, updated_at: from + 8.days },
+          *events_for_user1,
           # issue creation event, different user
           { id: 3, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
             created_at: from + 9.days, updated_at: from + 9.days },
@@ -212,6 +225,16 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
       it 'returns distinct contributor count from ClickHouse' do
         expect(service_response).to be_success
         expect(service_response.payload[:count]).to eq(2)
+      end
+
+      context 'when event is marked as deleted' do
+        it 'does not clear out user-related events' do
+          # mark all events deleted
+          clickhouse_fixture(:events_new, events_for_user1.map { |e| e.merge!(deleted: true) })
+
+          expect(service_response).to be_success
+          expect(service_response.payload[:count]).to eq(2)
+        end
       end
     end
   end

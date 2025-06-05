@@ -58,7 +58,7 @@ module Analytics
 
       def base_query
         if fetch_contributions_from_new_table?
-          self.class::QUERY.gsub('"contributions"', '"contributions_new"')
+          self.class::NEW_QUERY
         else
           self.class::QUERY
         end
