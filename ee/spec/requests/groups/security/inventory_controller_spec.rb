@@ -14,11 +14,65 @@ RSpec.describe Groups::Security::InventoryController, feature_category: :securit
   end
 
   describe '#show', :aggregate_failures do
+    subject(:request) { get group_security_inventory_path(group) }
+
     it_behaves_like 'internal event tracking' do
       let(:event) { 'view_group_security_inventory' }
       let(:namespace) { group }
+    end
 
-      subject(:request) { get group_security_inventory_path(group) }
+    context 'with authorized users' do
+      let_it_be(:user) { create(:user) }
+
+      before_all do
+        group.add_developer(user)
+        sign_in(user)
+      end
+
+      it 'returns 200 response' do
+        request
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'with unauthorized users' do
+      let_it_be(:user) { create(:user) }
+
+      before_all do
+        group.add_reporter(user)
+        sign_in(user)
+      end
+
+      it 'returns 403 response' do
+        request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when security inventory feature is disabled' do
+      before do
+        stub_licensed_features(security_inventory: false)
+      end
+
+      it 'returns 403 response' do
+        request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when security inventory feature flag is disabled' do
+      before do
+        stub_feature_flags(security_inventory_dashboard: false)
+      end
+
+      it 'returns 403 response' do
+        request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
     end
   end
 end

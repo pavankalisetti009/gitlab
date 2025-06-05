@@ -88,6 +88,11 @@ module EE
         @subject.feature_available?(:security_dashboard)
       end
 
+      condition(:security_inventory_available, scope: :subject) do
+        @subject.licensed_feature_available?(:security_inventory) &&
+          ::Feature.enabled?(:security_inventory_dashboard, @subject.root_ancestor, type: :wip)
+      end
+
       condition(:prevent_group_forking_available, scope: :subject) do
         @subject.feature_available?(:group_forking_protection)
       end
@@ -573,6 +578,7 @@ module EE
         enable :admin_merge_request
         enable :read_group_audit_events
         enable :read_vulnerability_statistics
+        enable :read_security_inventory
       end
 
       rule { security_orchestration_policies_enabled & can?(:developer_access) }.policy do
@@ -610,6 +616,8 @@ module EE
         enable :admin_vulnerability
       end
 
+      rule { ~security_inventory_available }.prevent :read_security_inventory
+
       rule { custom_role_enables_read_dependency }.policy do
         enable :read_dependency
       end
@@ -620,6 +628,7 @@ module EE
 
       rule { custom_role_enables_admin_vulnerability }.policy do
         enable :admin_vulnerability
+        enable :read_security_inventory
       end
 
       rule { custom_role_enables_admin_security_testing }.policy do

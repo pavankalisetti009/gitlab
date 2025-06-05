@@ -3990,7 +3990,10 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'for a member role with admin_vulnerability true' do
       let(:member_role_abilities) { { read_vulnerability: true, admin_vulnerability: true } }
-      let(:allowed_abilities) { [:read_group_security_dashboard, :read_vulnerability, :admin_vulnerability] }
+      let(:licensed_features) { { security_inventory: true } }
+      let(:allowed_abilities) do
+        [:read_group_security_dashboard, :read_security_inventory, :read_vulnerability, :admin_vulnerability]
+      end
 
       it_behaves_like 'custom roles abilities'
     end
@@ -4813,6 +4816,46 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       with_them do
         it { is_expected.to enabled_for_user }
+      end
+    end
+  end
+
+  describe 'security inventory' do
+    context 'when security inventory is available' do
+      before do
+        stub_licensed_features(security_inventory: true)
+      end
+
+      context 'when user is developer' do
+        let(:current_user) { developer }
+
+        it { is_expected.to be_allowed(:read_security_inventory) }
+
+        context 'when the security_inventory_dashboard feature flag is disabled' do
+          before do
+            stub_feature_flags(security_inventory_dashboard: false)
+          end
+
+          it { is_expected.to be_disallowed(:read_security_inventory) }
+        end
+      end
+
+      context 'when user is reporter' do
+        let(:current_user) { reporter }
+
+        it { is_expected.to be_disallowed(:read_security_inventory) }
+      end
+    end
+
+    context 'when security inventory is not available' do
+      before do
+        stub_licensed_features(security_inventory: false)
+      end
+
+      context 'when user is developer' do
+        let(:current_user) { developer }
+
+        it { is_expected.to be_disallowed(:read_security_inventory) }
       end
     end
   end

@@ -195,8 +195,7 @@ module Sidebars
         end
 
         def can_access_security_inventory_dashboard?
-          context.group.licensed_feature_available?(:security_inventory) &&
-            ::Feature.enabled?(:security_inventory_dashboard, context.group&.root_ancestor, type: :wip)
+          can?(context.current_user, :read_security_inventory, context.group)
         end
       end
     end
