@@ -4,6 +4,8 @@ module VirtualRegistries
   module Packages
     module Maven
       class HandleFileRequestService < ::VirtualRegistries::BaseService
+        include Gitlab::InternalEventsTracking
+
         DIGEST_EXTENSIONS = %w[.sha1 .md5].freeze
         PERMISSIONS_CACHE_TTL = 5.minutes
 
@@ -98,6 +100,8 @@ module VirtualRegistries
           digest_format = File.extname(path)[1..] # file extension without the leading dot
           return ERRORS[:fips_unsupported_md5] if digest_format == 'md5' && Gitlab::FIPS.enabled?
 
+          create_event(from_upstream: false)
+
           ServiceResponse.success(
             payload: {
               action: :download_digest,
@@ -143,6 +147,8 @@ module VirtualRegistries
         end
 
         def download_cache_entry
+          create_event(from_upstream: false)
+
           ServiceResponse.success(
             payload: {
               action: :download_file,
@@ -157,12 +163,23 @@ module VirtualRegistries
         end
 
         def workhorse_upload_url_response(upstream:)
+          create_event(from_upstream: true)
+
           ServiceResponse.success(
             payload: {
               action: :workhorse_upload_url,
               action_params: { url: upstream.url_for(path), upstream: upstream }
             }
           )
+        end
+
+        def create_event(from_upstream:)
+          args = {
+            namespace: registry.group,
+            additional_properties: { label: from_upstream ? 'from_upstream' : 'from_cache' }
+          }
+          args[:user] = current_user if current_user.is_a?(User)
+          track_internal_event('pull_maven_package_file_through_virtual_registry', **args)
         end
       end
     end
