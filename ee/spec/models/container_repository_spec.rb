@@ -137,4 +137,68 @@ RSpec.describe ContainerRepository, feature_category: :geo_replication do
       gitlab_container_repository.push_blob('a123cd', ['body'], 32456)
     end
   end
+
+  describe '#protected_from_delete_by_tag_rules?' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:project) { create(:project, path: 'test') }
+    let_it_be_with_refind(:repository) do
+      create(:container_repository, name: 'my_image', project: project)
+    end
+
+    subject { repository.protected_from_delete_by_tag_rules?(current_user) }
+
+    context 'when the user is nil' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when immutable tag rules are present' do
+      before_all do
+        create(
+          :container_registry_protection_tag_rule,
+          :immutable,
+          tag_name_pattern: 'tag',
+          project: project
+        )
+      end
+
+      context 'when the licensed feature is enabled' do
+        before do
+          allow(repository).to receive(:has_tags?).and_return(has_tags)
+          stub_licensed_features(container_registry_immutable_tag_rules: true)
+        end
+
+        let(:has_tags) { true }
+
+        it { is_expected.to be(true) }
+
+        context 'when no tags' do
+          let(:has_tags) { false }
+
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'when the licensed feature is not enabled' do
+        before do
+          stub_licensed_features(container_registry_immutable_tag_rules: false)
+        end
+
+        it_behaves_like 'checking mutable tag rules on a container repository'
+      end
+
+      context 'when the feature flag `container_registry_immutable_tags` is disabled' do
+        before do
+          stub_feature_flags(container_registry_immutable_tags: false)
+        end
+
+        it_behaves_like 'checking mutable tag rules on a container repository'
+      end
+    end
+
+    context 'when there are no immutable tag rules' do
+      it_behaves_like 'checking mutable tag rules on a container repository'
+    end
+  end
 end

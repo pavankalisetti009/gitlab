@@ -3,6 +3,7 @@
 module EE
   module ContainerRepository
     extend ActiveSupport::Concern
+    extend ::Gitlab::Utils::Override
     include ::Gitlab::Utils::StrongMemoize
 
     GITLAB_ORG_NAMESPACE = 'gitlab-org'
@@ -97,5 +98,23 @@ module EE
       ::Digest::SHA256.hexdigest(tag_list_str)
     end
     strong_memoize_attr :tag_list_digest
+
+    override :protected_from_delete_by_tag_rules?
+    def protected_from_delete_by_tag_rules?(user)
+      return true unless user
+      return true if immutable_tag_rules_apply?
+
+      super
+    end
+
+    private
+
+    def immutable_tag_rules_apply?
+      return false unless ::Feature.enabled?(:container_registry_immutable_tags, project)
+      return false unless project.licensed_feature_available?(:container_registry_immutable_tag_rules)
+      return false unless project.has_container_registry_immutable_tag_rules?
+
+      has_tags?
+    end
   end
 end
