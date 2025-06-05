@@ -22,10 +22,17 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
       end
 
       it 'returns a success service response' do
+        event_data = event_data_from(action)
         expect(service).to receive(:can?).and_call_original
-        expect(execute).to be_success
 
+        expect { execute }
+          .to trigger_internal_events('pull_maven_package_file_through_virtual_registry')
+          .with(**event_data[:args])
+          .and increment_usage_metrics(event_data[:metric_key])
+
+        expect(execute).to be_success
         expect(execute.payload[:action]).to eq(action)
+
         case action
         when :workhorse_upload_url
           expect(execute.payload[:action_params]).to eq(url: upstream_resource_url, upstream: upstream)
@@ -37,9 +44,22 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
           expect(action_params[:file_md5]).to be_instance_of(String)
         when :download_digest
           expect(execute.payload[:action_params]).to eq(digest: expected_digest)
-        else
-          {}
         end
+      end
+
+      def event_data_from(action)
+        if action == :workhorse_upload_url
+          event_label = 'from_upstream'
+          metric_key = 'counts.count_total_pull_maven_package_file_through_virtual_registry_from_upstream'
+        else
+          event_label = 'from_cache'
+          metric_key = 'counts.count_total_pull_maven_package_file_through_virtual_registry_from_cache'
+        end
+
+        args = { namespace: registry.group, additional_properties: { label: event_label } }
+        args[:user] = user if user.is_a?(User)
+
+        { args:, metric_key: }
       end
     end
 
