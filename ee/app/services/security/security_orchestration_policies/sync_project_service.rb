@@ -32,7 +32,7 @@ module Security
       def sync_policy_changes
         return unlink_policy if should_unlink_policy?
         return link_policy if should_link_policy?
-        return unless scope_applicable?
+        return if policy_disabled_or_scope_inapplicable?
 
         if security_policy.type_approval_policy?
           sync_project_approval_policy_rules_service.sync_policy_diff(policy_diff)
@@ -42,26 +42,26 @@ module Security
       end
 
       def should_unlink_policy?
-        policy_disabled? || policy_unscoped?
+        policy_status_changed_and_disabled? || policy_scope_changed_and_unscoped?
       end
 
       def should_link_policy?
-        policy_enabled? || policy_scoped?
+        policy_status_changed_and_enabled? || policy_scope_changed_and_scoped?
       end
 
-      def policy_enabled?
+      def policy_status_changed_and_enabled?
         policy_diff.status_changed? && security_policy.enabled?
       end
 
-      def policy_disabled?
+      def policy_status_changed_and_disabled?
         policy_diff.status_changed? && !security_policy.enabled?
       end
 
-      def policy_scoped?
+      def policy_scope_changed_and_scoped?
         policy_diff.scope_changed? && scope_applicable?
       end
 
-      def policy_unscoped?
+      def policy_scope_changed_and_unscoped?
         policy_diff.scope_changed? && !scope_applicable?
       end
     end
