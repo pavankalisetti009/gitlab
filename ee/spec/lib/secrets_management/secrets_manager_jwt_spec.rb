@@ -24,12 +24,11 @@ RSpec.describe SecretsManagement::SecretsManagerJwt, feature_category: :secrets_
     end
   end
 
-  describe '#payload' do
+  describe '#payload', :freeze_time do
     let(:payload) { jwt.payload }
     let(:now) { Time.now.to_i }
 
     before do
-      allow(Time).to receive(:now).and_return(now)
       allow(SecureRandom).to receive(:uuid).and_return('test-uuid')
       allow(Labkit::Correlation::CorrelationId).to receive(:current_id).and_return('test-correlation-id')
     end
@@ -109,8 +108,7 @@ RSpec.describe SecretsManagement::SecretsManagerJwt, feature_category: :secrets_
     context 'when project is not present' do
       let(:current_project) { nil }
 
-      it 'raises an error due to the delegation to namespace',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/547364' do
+      it 'raises an error due to the delegation to namespace' do
         expect { payload }.to raise_error(NoMethodError)
       end
     end

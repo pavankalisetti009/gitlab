@@ -14,6 +14,20 @@ module Ai
       WHERE startsWith(path, {traversal_path:String})
       AND "contributions"."action" = 5
     SQL
+
+    CONTRIBUTORS_IDS_NEW_QUERY = <<~SQL
+      SELECT DISTINCT author_id
+      FROM (
+        SELECT
+          argMax(author_id, "contributions_new".version) AS author_id,
+          argMax(deleted, "contributions_new".version) AS deleted
+        FROM contributions_new
+        WHERE startsWith(path, {traversal_path:String})
+        AND "contributions_new"."action" = 5
+        GROUP BY id
+      ) contributions_new
+      WHERE deleted = false
+    SQL
     private_constant :CONTRIBUTORS_IDS_QUERY
 
     def initialize(current_user, resource:)
@@ -80,7 +94,7 @@ module Ai
 
     def ch_contributors_ids_query
       if fetch_contributions_from_new_table?
-        CONTRIBUTORS_IDS_QUERY.gsub('contributions', 'contributions_new')
+        CONTRIBUTORS_IDS_NEW_QUERY
       else
         CONTRIBUTORS_IDS_QUERY
       end
