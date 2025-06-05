@@ -35,14 +35,14 @@ module Vulnerabilities
       def archive_data
         {
           report_type: vulnerability.report_type,
-          scanner: finding.scanner.name,
+          scanner: finding&.scanner&.name.to_s,
           state: vulnerability.state,
           severity: vulnerability.severity,
           title: vulnerability.title,
-          description: finding.description,
+          description: finding&.description.to_s,
           cve_value: vulnerability.cve_value,
           cwe_value: vulnerability.cwe_value,
-          other_identifiers: vulnerability.other_identifier_values,
+          other_identifiers: vulnerability.other_identifier_values.to_a,
           created_at: vulnerability.created_at.to_s,
           location: vulnerability.location,
           resolved_on_default_branch: vulnerability.resolved_on_default_branch,
