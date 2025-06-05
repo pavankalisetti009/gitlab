@@ -7,8 +7,7 @@ module EE
     prepended do
       condition(:is_enterprise_user_manager) { user && subject.user.managed_by_user?(user) }
       condition(:group_credentials_inventory_available) do
-        ::Gitlab::Saas.feature_available?(:group_credentials_inventory) &&
-          subject.user.enterprise_group&.licensed_feature_available?(:credentials_inventory)
+        ::Gitlab::Saas.feature_available?(:group_credentials_inventory)
       end
 
       rule { is_enterprise_user_manager & group_credentials_inventory_available }.policy do
