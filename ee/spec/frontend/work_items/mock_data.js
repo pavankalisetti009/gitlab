@@ -127,7 +127,8 @@ export const workItemTaskEE = {
     iconName: 'issue-type-task',
     __typename: 'WorkItemType',
   },
-  title: 'bar',
+  title: '_bar_',
+  titleHtml: '<em>bar</em>',
   state: 'OPEN',
   confidential: false,
   reference: 'test-project-path#4',
@@ -152,7 +153,8 @@ export const workItemTaskEE = {
 export const workItemColorWidget = {
   id: 'gid://gitlab/WorkItem/1',
   iid: '1',
-  title: 'Work item epic 5',
+  title: 'Work _item_ epic 5',
+  titleHtml: 'Work <em>item</em> epic 5',
   namespace: {
     id: 'gid://gitlab/Group/1',
     fullPath: 'gitlab-org',
