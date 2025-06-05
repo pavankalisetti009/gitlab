@@ -36,6 +36,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessT
       expect(result).to be_ok_result do |message|
         message => { personal_access_token: PersonalAccessToken => personal_access_token }
         expect(personal_access_token).to eq(user.personal_access_tokens.reload.last)
+        expect(personal_access_token.description).to eq(
+          'Generated automatically for this workspace. ' \
+            'Revoking this token will make your workspace completely unusable.'
+        )
       end
     end
   end

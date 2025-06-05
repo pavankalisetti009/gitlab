@@ -24,7 +24,9 @@ module RemoteDevelopment
             impersonation: false,
             scopes: [:write_repository, :api],
             organization: project.organization,
-            expires_at: max_allowed_personal_access_token_expires_at
+            expires_at: max_allowed_personal_access_token_expires_at,
+            description: "Generated automatically for this workspace. " \
+              "Revoking this token will make your workspace completely unusable."
           )
           personal_access_token.save
 
