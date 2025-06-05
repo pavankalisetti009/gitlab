@@ -9,11 +9,12 @@ import {
   GlFormInput,
   GlFormTextarea,
   GlLink,
+  GlModal,
   GlSprintf,
 } from '@gitlab/ui';
 import { isDate } from 'lodash';
 import { createAlert } from '~/alert';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import {
@@ -23,7 +24,8 @@ import {
   SECRET_DESCRIPTION_MAX_LENGTH,
 } from '../../constants';
 import { convertRotationPeriod } from '../../utils';
-import CreateSecretMutation from '../../graphql/mutations/create_secret.mutation.graphql';
+import createSecretMutation from '../../graphql/mutations/create_secret.mutation.graphql';
+import updateSecretMutation from '../../graphql/mutations/update_secret.mutation.graphql';
 import SecretBranchesField from './secret_branches_field.vue';
 
 export default {
@@ -39,6 +41,7 @@ export default {
     GlFormInput,
     GlFormTextarea,
     GlLink,
+    GlModal,
     GlSprintf,
     SecretBranchesField,
   },
@@ -60,36 +63,39 @@ export default {
       type: Boolean,
       required: true,
     },
+    secretData: {
+      type: Object,
+      required: false,
+      default: () => {},
+    },
   },
   data() {
     return {
       customRotationPeriod: '',
+      isEditingValue: false,
       isSubmitting: false,
       secret: {
         branch: '',
-        createdAt: undefined,
         description: undefined,
         environment: '',
         expiration: undefined,
         name: undefined,
         rotationPeriod: '',
         value: undefined,
+        ...this.secretData,
       },
+      showConfirmEditModal: false,
     };
   },
   computed: {
     canSubmit() {
       return (
         this.isBranchValid &&
-        this.isExpirationValid &&
         this.isNameValid &&
         this.isValueValid &&
         this.isDescriptionValid &&
         this.isEnvironmentScopeValid
       );
-    },
-    createdAt() {
-      return this.secret.createdAt || Date.now();
     },
     isBranchValid() {
       return this.secret.branch.length > 0;
@@ -107,9 +113,20 @@ export default {
       return isDate(this.secret.expiration);
     },
     isNameValid() {
-      return this.secret.name.length > 0;
+      return this.secret.name?.length > 0;
+    },
+    isValueFieldDisabled() {
+      if (this.isEditing) {
+        return !this.isEditingValue;
+      }
+
+      return false;
     },
     isValueValid() {
+      if (this.isEditing) {
+        return true; // value is optional when editing
+      }
+
       return this.secret.value.length > 0;
     },
     minExpirationDate() {
@@ -127,6 +144,16 @@ export default {
 
       return s__('Secrets|Select a reminder interval');
     },
+    submitButtonText() {
+      return this.isEditing ? __('Save changes') : s__('Secrets|Add secret');
+    },
+    valueFieldPlaceholder() {
+      if (this.isEditing) {
+        return '* * * * * * *';
+      }
+
+      return s__('Secrets|Enter a value for the secret');
+    },
   },
   methods: {
     async createSecret() {
@@ -134,11 +161,10 @@ export default {
 
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: CreateSecretMutation,
+          mutation: createSecretMutation,
           variables: {
             projectPath: this.fullPath,
             ...this.secret,
-            name: this.secret.name,
           },
         });
 
@@ -155,8 +181,44 @@ export default {
         this.isSubmitting = false;
       }
     },
-    editSecret() {
-      // TODO
+    disableValueEditing() {
+      this.isEditingValue = false;
+    },
+    editValue() {
+      this.isEditingValue = true;
+      this.$nextTick(() => {
+        this.$refs.editValueField.$el.focus();
+      });
+    },
+    async editSecret() {
+      this.hideModal();
+      this.isSubmitting = true;
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: updateSecretMutation,
+          variables: {
+            projectPath: this.fullPath,
+            ...this.secret,
+          },
+        });
+
+        const error = data.projectSecretUpdate.errors[0];
+        if (error) {
+          createAlert({ message: error });
+          return;
+        }
+
+        this.showUpdateToastMessage();
+        this.$router.push({ name: DETAILS_ROUTE_NAME, params: { secretName: this.secret.name } });
+      } catch (e) {
+        createAlert({ message: __('Something went wrong on our end. Please try again.') });
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    hideModal() {
+      this.showConfirmEditModal = false;
     },
     setBranch(branch) {
       this.secret.branch = branch;
@@ -167,18 +229,33 @@ export default {
     setEnvironment(environment) {
       this.secret.environment = environment;
     },
+    showUpdateToastMessage() {
+      const toastMessage = sprintf(s__('Secrets|Secret %{secretName} was successfully updated.'), {
+        secretName: this.secret.name,
+      });
+
+      this.$emit('show-secrets-toast', toastMessage);
+    },
     async submitSecret() {
       if (this.isEditing) {
-        await this.editSecret();
+        this.showConfirmEditModal = true;
       } else {
         await this.createSecret();
       }
     },
   },
-  datePlaceholder: 'YYYY-MM-DD',
   cronPlaceholder: '0 6 * * *',
+  datePlaceholder: 'YYYY-MM-DD',
   i18n: {
     fieldRequired: __('This field is required.'),
+  },
+  modalOptions: {
+    actionPrimary: {
+      text: __('Save changes'),
+    },
+    actionSecondary: {
+      text: __('Cancel'),
+    },
   },
   rotationPeriodOptions: ROTATION_PERIOD_OPTIONS,
   secretsIndexRoute: INDEX_ROUTE_NAME,
@@ -188,6 +265,7 @@ export default {
   <div>
     <gl-form @submit.prevent="submitSecret">
       <gl-form-group
+        v-if="!isEditing"
         data-testid="secret-name-field-group"
         label-for="secret-name"
         :label="__('Name')"
@@ -205,18 +283,34 @@ export default {
       <gl-form-group
         data-testid="secret-value-field-group"
         label-for="secret-value"
-        :label="__('Value')"
         :invalid-feedback="$options.i18n.fieldRequired"
       >
+        <template #label>
+          {{ __('Value') }}
+          <gl-button
+            v-if="isEditing"
+            class="gl-mb-2 gl-ml-3"
+            icon="pencil"
+            variant="link"
+            data-testid="edit-value-button"
+            :aria-label="__('Edit value')"
+            @click="editValue"
+          >
+            {{ __('Edit value') }}
+          </gl-button>
+        </template>
         <gl-form-textarea
           id="secret-value"
+          ref="editValueField"
           v-model="secret.value"
           rows="5"
           max-rows="15"
           no-resize
-          :placeholder="s__('Secrets|Enter a value for the secret')"
+          :disabled="isValueFieldDisabled"
+          :placeholder="valueFieldPlaceholder"
           :spellcheck="false"
           :state="secret.value === undefined || isValueValid"
+          @blur="disableValueEditing"
         />
       </gl-form-group>
       <gl-form-group
@@ -326,12 +420,12 @@ export default {
         <gl-button
           variant="confirm"
           data-testid="submit-form-button"
-          :aria-label="s__('Secrets|Add secret')"
+          :aria-label="submitButtonText"
           :disabled="!canSubmit || isSubmitting"
           :loading="isSubmitting"
           @click="submitSecret"
         >
-          {{ s__('Secrets|Add secret') }}
+          {{ submitButtonText }}
         </gl-button>
         <gl-button
           :to="{ name: $options.secretsIndexRoute }"
@@ -343,6 +437,29 @@ export default {
           {{ __('Cancel') }}
         </gl-button>
       </div>
+      <gl-modal
+        modal-id="secret-confirm-edit"
+        :visible="showConfirmEditModal"
+        :title="__('Save changes')"
+        :action-primary="$options.modalOptions.actionPrimary"
+        :action-secondary="$options.modalOptions.actionSecondary"
+        @primary.prevent="editSecret"
+        @secondary="hideModal"
+        @canceled="hideModal"
+        @hidden="hideModal"
+      >
+        <gl-sprintf
+          :message="
+            s__(
+              `Secrets|Are you sure you want to update secret %{secretName}? Saving these changes can cause disruptions, such as loss of access to connected services or failed deployments.`,
+            )
+          "
+        >
+          <template #secretName>
+            <b>{{ secret.name }}</b>
+          </template>
+        </gl-sprintf>
+      </gl-modal>
     </gl-form>
   </div>
 </template>

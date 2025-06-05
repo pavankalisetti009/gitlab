@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlLoadingIcon } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
@@ -12,12 +12,14 @@ import CiEnvironmentsDropdown, {
 } from '~/ci/common/private/ci_environments_dropdown';
 import { ENTITY_GROUP, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
 import {
   mockGroupEnvironments,
   mockProjectEnvironments,
   mockProjectBranches,
+  mockProjectSecretQueryResponse,
 } from '../../mock_data';
 
 jest.mock('~/alert');
@@ -29,6 +31,7 @@ describe('SecretFormWrapper component', () => {
   let mockGroupEnvQuery;
   let mockProjectEnvQuery;
   let mockProjectBranchesResponse;
+  let mockSecretQuery;
 
   const defaultProps = {
     entity: ENTITY_GROUP,
@@ -38,6 +41,7 @@ describe('SecretFormWrapper component', () => {
 
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
   const findEnvironmentsLoadingIcon = () => findEnvironmentsDropdown().findComponent(GlLoadingIcon);
+  const findSecretLoadingIcon = () => wrapper.findByTestId('secret-loading-icon');
   const findPageTitle = () => wrapper.find('h1').text();
   const findSecretForm = () => wrapper.findComponent(SecretForm);
 
@@ -51,6 +55,7 @@ describe('SecretFormWrapper component', () => {
       [getGroupEnvironments, mockGroupEnvQuery],
       [getProjectEnvironments, mockProjectEnvQuery],
       [getProjectBranches, mockProjectBranchesResponse],
+      [getSecretDetailsQuery, mockSecretQuery],
     ];
 
     mockApollo = createMockApollo(handlers);
@@ -73,19 +78,55 @@ describe('SecretFormWrapper component', () => {
     mockGroupEnvQuery = jest.fn().mockResolvedValue(mockGroupEnvironments);
     mockProjectEnvQuery = jest.fn().mockResolvedValue(mockProjectEnvironments);
     mockProjectBranchesResponse = jest.fn().mockResolvedValue(mockProjectBranches);
+    mockSecretQuery = jest.fn().mockResolvedValue(mockProjectSecretQueryResponse());
   });
 
-  describe('template', () => {
-    it('shows new secret form when creating', () => {
+  describe('create form', () => {
+    beforeEach(() => {
       createComponent({ props: { isEditing: false } });
+    });
 
+    it('shows create form', () => {
       expect(findPageTitle()).toBe('New secret');
     });
 
-    it('shows edit form when editing', () => {
+    it('passes correct props to secret form', () => {
+      expect(findSecretForm().props()).toMatchObject({
+        isEditing: false,
+        secretData: null,
+      });
+    });
+  });
+
+  describe('edit form', () => {
+    beforeEach(async () => {
       createComponent({ props: { isEditing: true, secretName: 'SECRET_KEY' } });
 
+      await nextTick();
+    });
+
+    it('shows edit secret form', () => {
       expect(findPageTitle()).toBe('Edit SECRET_KEY');
+    });
+
+    it('shows loading icon while secret is being fetched', async () => {
+      createComponent({ isLoading: true, props: { isEditing: true, secretName: 'SECRET_KEY' } });
+
+      await nextTick();
+
+      expect(findSecretLoadingIcon().exists()).toBe(true);
+    });
+
+    it('passes correct props to secret form', () => {
+      expect(findSecretForm().props()).toMatchObject({
+        isEditing: true,
+        secretData: {
+          branch: 'main',
+          description: 'This is a secret',
+          environment: 'staging',
+          name: 'APP_PWD',
+        },
+      });
     });
   });
 

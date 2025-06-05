@@ -23871,6 +23871,9 @@ msgstr ""
 msgid "Edit user: %{user_name}"
 msgstr ""
 
+msgid "Edit value"
+msgstr ""
+
 msgid "Edit video description"
 msgstr ""
 
@@ -54704,6 +54707,9 @@ msgstr ""
 msgid "Secrets|Are you sure you want to delete secret %{secretName}? This action cannot be undone, and the secret cannot be recovered."
 msgstr ""
 
+msgid "Secrets|Are you sure you want to update secret %{secretName}? Saving these changes can cause disruptions, such as loss of access to connected services or failed deployments."
+msgstr ""
+
 msgid "Secrets|Created"
 msgstr ""
 
@@ -54713,7 +54719,7 @@ msgstr ""
 msgid "Secrets|Delete secret"
 msgstr ""
 
-msgid "Secrets|Edit %{id}"
+msgid "Secrets|Edit %{name}"
 msgstr ""
 
 msgid "Secrets|Enable the Secrets Manager to securely store and manage sensitive information for this project."
@@ -54756,6 +54762,9 @@ msgid "Secrets|Rotation reminder"
 msgstr ""
 
 msgid "Secrets|Secret %{secretName} has been deleted."
+msgstr ""
+
+msgid "Secrets|Secret %{secretName} was successfully updated."
 msgstr ""
 
 msgid "Secrets|Secret manager user permissions"
@@ -74348,6 +74357,9 @@ msgstr[1] ""
 msgid "repository:"
 msgstr ""
 
+msgid "requirement"
+msgstr ""
+
 msgid "rule"
 msgid_plural "rules"
 msgstr[0] ""
@@ -74560,6 +74572,9 @@ msgid "then"
 msgstr ""
 
 msgid "this document"
+msgstr ""
+
+msgid "ticket"
 msgstr ""
 
 msgid "to"

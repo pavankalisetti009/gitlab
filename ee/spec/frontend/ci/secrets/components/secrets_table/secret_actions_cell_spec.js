@@ -1,7 +1,7 @@
 import { GlDisclosureDropdownItem } from '@gitlab/ui';
 import { RouterLinkStub } from '@vue/test-utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
+import { EDIT_ROUTE_NAME } from 'ee/ci/secrets/constants';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
 
 describe('SecretActionsCell component', () => {
@@ -12,7 +12,7 @@ describe('SecretActionsCell component', () => {
   const createComponent = () => {
     wrapper = mountExtended(SecretActionsCell, {
       propsData: {
-        detailsRoute: { name: DETAILS_ROUTE_NAME, params: { key: 'secret_key' } },
+        editRoute: { name: EDIT_ROUTE_NAME, params: { secretName: 'SECRET_KEY' } },
         secretName: 'SECRET_KEY',
       },
       stubs: {
@@ -34,8 +34,8 @@ describe('SecretActionsCell component', () => {
 
     expect(action.text()).toBe('Edit');
     expect(action.findComponent(RouterLinkStub).props('to')).toMatchObject({
-      name: DETAILS_ROUTE_NAME,
-      params: { key: 'secret_key' },
+      name: EDIT_ROUTE_NAME,
+      params: { secretName: 'SECRET_KEY' },
     });
   });
 

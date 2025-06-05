@@ -130,10 +130,6 @@ describe('SecretsTable component', () => {
     it('passes correct props to actions cell', () => {
       expect(findSecretActionsCell().props()).toMatchObject({
         secretName: secret.name,
-        detailsRoute: {
-          name: 'edit',
-          params: { name: secret.name },
-        },
       });
     });
 
