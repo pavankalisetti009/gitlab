@@ -3,6 +3,7 @@ import { GlBanner, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
+import { InternalEvents } from '~/tracking';
 
 export default {
   name: 'ExploreDuoCoreBanner',
@@ -17,6 +18,7 @@ export default {
     GlSprintf,
     UserCalloutDismisser,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     calloutFeatureName: {
       type: String,
@@ -27,6 +29,25 @@ export default {
   installExtensionLink: `${DOCS_URL_IN_EE_DIR}/user/get_started/getting_started_gitlab_duo/#step-4-prepare-to-use-gitlab-duo-in-your-ide`,
   exploreGitLabDuoLink: `${DOCS_URL_IN_EE_DIR}/user/gitlab_duo/#summary-of-gitlab-duo-features`,
   ctaLink: `${DOCS_URL_IN_EE_DIR}/user/get_started/getting_started_gitlab_duo/`,
+  mounted() {
+    this.trackEvent('render_duo_core_banner');
+  },
+  methods: {
+    onInstallExtensionClick() {
+      this.trackEvent('click_install_extension_link_on_duo_core_banner');
+    },
+    onExploreGitLabDuoClick() {
+      this.trackEvent('click_explore_link_on_duo_core_banner');
+    },
+    handlePrimaryAction(dismiss) {
+      this.trackEvent('click_cta_link_on_duo_core_banner');
+      dismiss();
+    },
+    handleClose(dismiss) {
+      this.trackEvent('click_dismiss_button_on_duo_core_banner');
+      dismiss();
+    },
+  },
 };
 </script>
 
@@ -40,18 +61,26 @@ export default {
           class="explore-duo-core-banner gl-mb-5 gl-mt-5 gl-bg-white"
           :button-text="s__('AiPowered|Explore GitLab Duo Core')"
           :button-link="$options.ctaLink"
-          @primary="dismiss"
-          @close="dismiss"
+          @primary="handlePrimaryAction(dismiss)"
+          @close="handleClose(dismiss)"
         >
           <p>
             <gl-sprintf :message="$options.i18n.bannerBody">
               <template #link1="{ content }">
-                <gl-link :href="$options.installExtensionLink" target="_blank">
+                <gl-link
+                  :href="$options.installExtensionLink"
+                  target="_blank"
+                  @click="onInstallExtensionClick"
+                >
                   {{ content }}
                 </gl-link>
               </template>
               <template #link2="{ content }">
-                <gl-link :href="$options.exploreGitLabDuoLink" target="_blank">
+                <gl-link
+                  :href="$options.exploreGitLabDuoLink"
+                  target="_blank"
+                  @click="onExploreGitLabDuoClick"
+                >
                   {{ content }}
                 </gl-link>
               </template>
