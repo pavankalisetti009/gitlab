@@ -15,10 +15,8 @@ module EE
     override :extensions_marketplace_view
 
     def extensions_marketplace_view
-      return unless ::WebIde::ExtensionMarketplace.feature_enabled_from_application_settings?(user: current_user)
-
       if License.feature_available?(:remote_development) &&
-          ::WebIde::ExtensionMarketplace.feature_enabled?(user: current_user)
+          ::WebIde::ExtensionMarketplace.feature_enabled_from_application_settings?
         build_extensions_marketplace_view(
           title: s_("Preferences|Web IDE and Workspaces"),
           message: s_("PreferencesIntegrations|Uses %{extensions_marketplace_home} as the extension marketplace " \

@@ -117,8 +117,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     allow(WebIde::Settings)
       .to receive(:get).with(
         [:vscode_extension_marketplace_metadata, :vscode_extension_marketplace],
-        user: current_user,
-        vscode_extension_marketplace_feature_flag_enabled: true
+        user: current_user
       ).and_return(
         {
           vscode_extension_marketplace_metadata: { enabled: true },

@@ -126,8 +126,7 @@ module Mutations
 
           WebIde::Settings.get(
             [:vscode_extension_marketplace_metadata, :vscode_extension_marketplace],
-            user: current_user,
-            vscode_extension_marketplace_feature_flag_enabled: true
+            user: current_user
           ) =>
             {
               vscode_extension_marketplace_metadata: Hash => vscode_extension_marketplace_metadata,

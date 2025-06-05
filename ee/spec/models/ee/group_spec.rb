@@ -4228,7 +4228,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     subject(:can_manage_extensions_marketplace_for_enterprise_users?) { group.can_manage_extensions_marketplace_for_enterprise_users? }
 
-    where(:group, :licensed_feature_available, :feature_flags_enabled, :expected) do
+    where(:group, :licensed_feature_available, :settings_enabled, :expected) do
       ref(:root_group)  | true  | true  | true
       ref(:child_group) | true  | true  | false
       ref(:root_group)  | false | true  | false
@@ -4237,7 +4237,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     with_them do
       before do
-        allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_for_any_user?).and_return(feature_flags_enabled)
+        allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_from_application_settings?).and_return(settings_enabled)
         stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: licensed_feature_available)
       end
 
@@ -4304,7 +4304,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     with_them do
       before do
         group.update!(enterprise_users_extensions_marketplace_enabled: value)
-        allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_for_any_user?).and_return(true)
+        allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_from_application_settings?).and_return(true)
         stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: licensed_feature_available)
       end
 
