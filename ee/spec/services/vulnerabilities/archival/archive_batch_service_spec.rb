@@ -55,5 +55,23 @@ RSpec.describe Vulnerabilities::Archival::ArchiveBatchService, feature_category:
 
       expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with([project.id])
     end
+
+    context 'when the archived record data contains unicode null character' do
+      let(:archived_record) do
+        build(:vulnerability_archived_record,
+          :with_unicode_null_character,
+          archive: archive,
+          project: project,
+          vulnerability_identifier: vulnerability.id,
+          created_at: Time.zone.now,
+          updated_at: Time.zone.now)
+      end
+
+      it 'archives the vulnerabilities' do
+        expect { archive_vulnerabilities }.to change { Vulnerability.find_by_id(vulnerability.id) }.to(nil)
+                                          .and change { archive.archived_records.count }.by(1)
+                                          .and change { archive.reload.archived_records_count }.by(1)
+      end
+    end
   end
 end
