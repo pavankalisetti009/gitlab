@@ -33,6 +33,9 @@
     .col-lg-3.gl-mb-3
       %h4.page-title
         = s_('Microsoft|Microsoft Azure Integration')
+      %p
+        = s_('Microsoft|Sync group memberships from Microsoft Azure when SAML response includes an overage claim.')
+        = link_to _('Learn more.'), help_page_path('user/group/saml_sso/group_sync.md'), target: '_blank', rel: 'noopener noreferrer'
     .col-lg-9
       = render 'microsoft_application'
 %section.row.border-top.mt-4
