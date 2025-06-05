@@ -13,7 +13,8 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
   let_it_be(:guest) { create(:user, guest_of: workflow.project) }
   let_it_be(:developer) { create(:user, developer_of: workflow.project) }
   let_it_be(:maintainer) { create(:user, maintainer_of: workflow.project) }
-  let(:current_user) { guest }
+
+  let(:current_user) { developer }
 
   describe "read_duo_workflow and update_duo_workflow" do
     where(:duo_features_enabled, :current_user, :stage_check_available, :allowed) do
@@ -43,10 +44,20 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         project.project_setting.update!(duo_features_enabled: true)
+        workflow.update!(user: maintainer)
       end
 
       it { is_expected.to be_disallowed(:read_duo_workflow) }
       it { is_expected.to be_disallowed(:update_duo_workflow) }
+
+      context "when current user is a service account" do
+        let(:current_user) do
+          create(:user, :service_account, developer_of: workflow.project, composite_identity_enforced: true)
+        end
+
+        it { is_expected.to be_allowed(:read_duo_workflow) }
+        it { is_expected.to be_allowed(:update_duo_workflow) }
+      end
     end
 
     context "when feature flag is disabled" do

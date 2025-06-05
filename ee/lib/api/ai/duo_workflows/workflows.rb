@@ -35,11 +35,12 @@ module API
           end
 
           def start_workflow_params(workflow_id)
+            oauth_token = params[:use_service_account] ? composite_identity_token : gitlab_oauth_token
             {
               goal: params[:goal],
               workflow_definition: params[:workflow_definition],
               workflow_id: workflow_id,
-              workflow_oauth_token: gitlab_oauth_token.plaintext_token,
+              workflow_oauth_token: oauth_token.plaintext_token,
               workflow_service_token: duo_workflow_token[:token],
               use_service_account: params[:use_service_account]
             }
@@ -56,6 +57,15 @@ module API
             end
 
             gitlab_oauth_token_result[:oauth_access_token]
+          end
+
+          def composite_identity_token
+            composite_oauth_token_result = ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService.new(
+              current_user: current_user,
+              organization: ::Current.organization
+            ).execute
+
+            composite_oauth_token_result[:oauth_access_token]
           end
 
           def duo_workflow_token
