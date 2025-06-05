@@ -84,6 +84,7 @@ describe('EE Create work item component', () => {
     namespaceHandler = namespaceWorkItemTypesHandler,
     preselectedWorkItemType = WORK_ITEM_TYPE_NAME_EPIC,
     workItemStatusFeatureFlag = false,
+    workItemPlanningViewEnabled = false,
   } = {}) => {
     mockApollo = createMockApollo(
       [
@@ -107,6 +108,7 @@ describe('EE Create work item component', () => {
         hasIterationsFeature: true,
         hasIssueWeightsFeature: true,
         hasStatusFeature: true,
+        workItemPlanningViewEnabled,
         glFeatures: {
           workItemStatusFeatureFlag,
         },

@@ -15,10 +15,6 @@ export default {
       type: String,
       required: true,
     },
-    metricsIndexUrl: {
-      required: true,
-      type: String,
-    },
     createIssueUrl: {
       required: true,
       type: String,
@@ -52,7 +48,6 @@ export default {
   <metrics-details
     :metric-id="metricId"
     :metric-type="metricType"
-    :metrics-index-url="metricsIndexUrl"
     :observability-client="observabilityClient"
     :create-issue-url="createIssueUrl"
     :project-full-path="projectFullPath"

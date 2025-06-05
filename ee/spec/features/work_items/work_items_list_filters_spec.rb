@@ -55,7 +55,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
 
     describe 'type' do
       it 'filters', :aggregate_failures do
-        select_tokens 'Type', 'Issue', submit: true
+        select_tokens('Type', '=', 'Issue', submit: true)
 
         expect(page).to have_css('.issue', count: 2)
         expect(page).to have_link(issue.title)
@@ -63,21 +63,21 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
 
         click_button 'Clear'
 
-        select_tokens 'Type', 'Incident', submit: true
+        select_tokens('Type', '=', 'Inciden', submit: true)
 
         expect(page).to have_css('.issue', count: 1)
         expect(page).to have_link(incident.title)
 
         click_button 'Clear'
 
-        select_tokens 'Type', 'Test case', submit: true
+        select_tokens('Type', '=', 'Test case', submit: true)
 
         expect(page).to have_css('.issue', count: 1)
         expect(page).to have_link(test_case.title)
 
         click_button 'Clear'
 
-        select_tokens 'Type', 'Task', submit: true
+        select_tokens('Type', '=', 'Task', submit: true)
 
         expect(page).to have_css('.issue', count: 1)
         expect(page).to have_link(task.title)

@@ -14,7 +14,6 @@ module Namespaces
       request_access_enabled: 'group_request_access_enabled_updated',
       membership_lock: 'group_membership_lock_updated',
       share_with_group_lock: 'group_shared_with_group_lock_updated',
-      description: 'group_description_updated',
       lfs_enabled: 'group_lfs_enabled_updated',
       shared_runners_minutes_limit: 'group_shared_runners_minutes_limit_updated',
       require_two_factor_authentication: 'group_require_two_factor_authentication_updated',
@@ -29,6 +28,7 @@ module Namespaces
           event_type: event_name)
       end
 
+      audit_namespace_detail_changes
       audit_namespace_setting_changes
     end
 
@@ -59,6 +59,10 @@ module Namespaces
 
     def column_human_name(column)
       COLUMN_HUMAN_NAME.fetch(column, column.to_s)
+    end
+
+    def audit_namespace_detail_changes
+      Namespaces::NamespaceDetailChangesAuditor.new(@current_user, model.namespace_details, model).execute
     end
 
     def audit_namespace_setting_changes

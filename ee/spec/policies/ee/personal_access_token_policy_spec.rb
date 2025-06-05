@@ -14,40 +14,24 @@ RSpec.describe PersonalAccessTokenPolicy, feature_category: :permissions do
     let_it_be(:user) { create(:user) }
     let_it_be(:enterprise_user) { create(:enterprise_user, enterprise_group: group) }
 
-    where(:group_member, :group_owner?, :saas?, :domain_verification?, :credentials_inventory?, :allowed) do
-      ref(:user)      | false  | false  | false  | false  | false
-      ref(:user)      | false  | false  | false  | true   | false
-      ref(:user)      | false  | false  | true   | false  | false
-      ref(:user)      | false  | false  | true   | true   | false
-      ref(:user)      | false  | true   | false  | false  | false
-      ref(:user)      | false  | true   | false  | true   | false
-      ref(:user)      | false  | true   | true   | false  | false
-      ref(:user)      | false  | true   | true   | true   | false
-      ref(:user)      | true   | false  | false  | false  | false
-      ref(:user)      | true   | false  | false  | true   | false
-      ref(:user)      | true   | false  | true   | false  | false
-      ref(:user)      | true   | false  | true   | true   | false
-      ref(:user)      | true   | true   | false  | false  | false
-      ref(:user)      | true   | true   | false  | true   | false
-      ref(:user)      | true   | true   | true   | false  | false
-      ref(:user)      | true   | true   | true   | true   | false
+    where(:group_member, :group_owner?, :saas?, :domain_verification?, :allowed) do
+      ref(:user)      | false  | false  | false  | false
+      ref(:user)      | false  | false  | true   | false
+      ref(:user)      | false  | true   | false  | false
+      ref(:user)      | false  | true   | true   | false
+      ref(:user)      | true   | false  | false  | false
+      ref(:user)      | true   | false  | true   | false
+      ref(:user)      | true   | true   | false  | false
+      ref(:user)      | true   | true   | true   | false
 
-      ref(:enterprise_user)      | false  | false  | false  | false  | false
-      ref(:enterprise_user)      | false  | false  | false  | true   | false
-      ref(:enterprise_user)      | false  | false  | true   | false  | false
-      ref(:enterprise_user)      | false  | false  | true   | true   | false
-      ref(:enterprise_user)      | false  | true   | false  | false  | false
-      ref(:enterprise_user)      | false  | true   | false  | true   | false
-      ref(:enterprise_user)      | false  | true   | true   | false  | false
-      ref(:enterprise_user)      | false  | true   | true   | true   | false
-      ref(:enterprise_user)      | true   | false  | false  | false  | false
-      ref(:enterprise_user)      | true   | false  | false  | true   | false
-      ref(:enterprise_user)      | true   | false  | true   | false  | false
-      ref(:enterprise_user)      | true   | false  | true   | true   | false
-      ref(:enterprise_user)      | true   | true   | false  | false  | false
-      ref(:enterprise_user)      | true   | true   | false  | true   | false
-      ref(:enterprise_user)      | true   | true   | true   | false  | false
-      ref(:enterprise_user)      | true   | true   | true   | true   | true
+      ref(:enterprise_user)      | false  | false  | false  | false
+      ref(:enterprise_user)      | false  | false  | true   | false
+      ref(:enterprise_user)      | false  | true   | false  | false
+      ref(:enterprise_user)      | false  | true   | true   | false
+      ref(:enterprise_user)      | true   | false  | false  | false
+      ref(:enterprise_user)      | true   | false  | true   | false
+      ref(:enterprise_user)      | true   | true   | false  | false
+      ref(:enterprise_user)      | true   | true   | true   | true
     end
 
     with_them do
@@ -56,8 +40,7 @@ RSpec.describe PersonalAccessTokenPolicy, feature_category: :permissions do
       context "for token revoke policy", saas: params[:saas?] do
         before do
           stub_licensed_features(
-            domain_verification: domain_verification?,
-            credentials_inventory: credentials_inventory?
+            domain_verification: domain_verification?
           )
 
           access_level = group_owner? ? :owner : :maintainer

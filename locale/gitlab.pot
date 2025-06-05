@@ -29937,6 +29937,9 @@ msgstr ""
 msgid "Group-level wiki is disabled."
 msgstr ""
 
+msgid "Group/project"
+msgstr ""
+
 msgid "Group: %{group_name}"
 msgstr ""
 
@@ -37114,6 +37117,9 @@ msgid "Markdown is supported"
 msgstr ""
 
 msgid "Markdown supported."
+msgstr ""
+
+msgid "MarkdownEditor|%{currentHighlight} of %{totalHighlights}"
 msgstr ""
 
 msgid "MarkdownEditor|Add a link (%{modifierKey}K)"
@@ -47786,6 +47792,9 @@ msgid "Project feature"
 msgstr ""
 
 msgid "Project groups"
+msgstr ""
+
+msgid "Project has not been marked for deletion"
 msgstr ""
 
 msgid "Project has too many %{label_for_message} to search"
@@ -70143,6 +70152,9 @@ msgid "WorkItem|Search or paste URL"
 msgstr ""
 
 msgid "WorkItem|Select a group"
+msgstr ""
+
+msgid "WorkItem|Select a namespace"
 msgstr ""
 
 msgid "WorkItem|Select a project"
