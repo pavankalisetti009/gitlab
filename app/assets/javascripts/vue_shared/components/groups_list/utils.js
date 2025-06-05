@@ -9,7 +9,7 @@ import {
 
 export const availableGraphQLGroupActions = ({
   userPermissions,
-  markedForDeletionOn,
+  markedForDeletion,
   isSelfDeletionInProgress,
 }) => {
   const baseActions = [];
@@ -18,7 +18,7 @@ export const availableGraphQLGroupActions = ({
     baseActions.push(ACTION_EDIT);
   }
 
-  if (userPermissions.removeGroup && markedForDeletionOn && !isSelfDeletionInProgress) {
+  if (userPermissions.removeGroup && markedForDeletion && !isSelfDeletionInProgress) {
     baseActions.push(ACTION_RESTORE);
   }
 
@@ -35,7 +35,7 @@ export const availableGraphQLGroupActions = ({
 
 export const renderDeleteSuccessToast = (item) => {
   // If the project/group is already marked for deletion
-  if (item.markedForDeletionOn) {
+  if (item.markedForDeletion) {
     toast(
       sprintf(__("Group '%{group_name}' is being deleted."), {
         group_name: item.fullName,
@@ -71,7 +71,7 @@ export const renderRestoreSuccessToast = (group) => {
 
 export const deleteParams = (item) => {
   // If the project/group is not yet marked for deletion
-  if (!item.markedForDeletionOn) {
+  if (!item.markedForDeletion) {
     return {};
   }
 

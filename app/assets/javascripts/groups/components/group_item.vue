@@ -249,7 +249,7 @@ export default {
         <div v-if="group.isSelfDeletionInProgress">
           <gl-badge variant="warning">{{ __('Deletion in progress') }}</gl-badge>
         </div>
-        <div v-else-if="group.pendingRemoval">
+        <div v-else-if="group.markedForDeletion">
           <gl-badge variant="warning">{{ __('Pending deletion') }}</gl-badge>
         </div>
         <div v-else-if="group.archived">

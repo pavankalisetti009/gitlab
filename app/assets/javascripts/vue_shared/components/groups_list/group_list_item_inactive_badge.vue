@@ -22,7 +22,7 @@ export default {
       return Boolean(this.group.isSelfDeletionInProgress);
     },
     isPendingDeletion() {
-      return Boolean(this.group.markedForDeletionOn);
+      return Boolean(this.group.markedForDeletion);
     },
     inactiveBadge() {
       if (this.isSelfDeletionInProgress) {
