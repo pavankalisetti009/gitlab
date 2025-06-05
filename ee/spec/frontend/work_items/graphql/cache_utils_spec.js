@@ -20,13 +20,13 @@ describe('work items graphql cache utils', () => {
         return item.type === WIDGET_TYPE_STATUS;
       });
 
-      await setNewWorkItemCache(
-        'gitlab-org/gitlab',
-        taskWidgetDefinitions,
-        'TASK',
-        'gid://gitlab/WorkItems::Type/5',
-        'issue-type-task',
-      );
+      await setNewWorkItemCache({
+        fullPath: 'gitlab-org/gitlab',
+        widgetDefinitions: taskWidgetDefinitions,
+        workItemType: 'TASK',
+        workItemTypeId: 'gid://gitlab/WorkItems::Type/5',
+        workItemTypeIconName: 'issue-type-task',
+      });
 
       await waitForPromises();
 
