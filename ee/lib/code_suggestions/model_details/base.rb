@@ -5,18 +5,25 @@ module CodeSuggestions
     class Base
       include Gitlab::Utils::StrongMemoize
 
-      def initialize(current_user:, feature_setting_name:)
+      def initialize(current_user:, feature_setting_name:, root_namespace: nil)
         @current_user = current_user
         @feature_setting_name = feature_setting_name
+        @root_namespace = root_namespace
       end
 
       def feature_setting
-        ::Ai::FeatureSetting.find_by_feature(feature_setting_name)
+        ::Ai::FeatureSetting.find_by_feature(feature_setting_name) ||
+          ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(root_namespace,
+            feature_setting_name)
       end
       strong_memoize_attr :feature_setting
 
       def base_url
-        feature_setting&.base_url || Gitlab::AiGateway.url
+        if namespace_feature_setting?
+          Gitlab::AiGateway.url
+        else
+          feature_setting&.base_url || Gitlab::AiGateway.url
+        end
       end
 
       def feature_name
@@ -33,6 +40,8 @@ module CodeSuggestions
       end
 
       def feature_disabled?
+        return false if namespace_feature_setting?
+
         # In case the code suggestions feature is being used via self-hosted models,
         # it can also be disabled completely. In such cases, this check
         # can be used to prevent exposing the feature via UI/API.
@@ -40,12 +49,18 @@ module CodeSuggestions
       end
 
       def self_hosted?
+        return false if namespace_feature_setting?
+
         !!feature_setting&.self_hosted?
       end
 
       private
 
-      attr_reader :current_user, :feature_setting_name
+      attr_reader :current_user, :feature_setting_name, :root_namespace
+
+      def namespace_feature_setting?
+        feature_setting.is_a?(::Ai::ModelSelection::NamespaceFeatureSetting)
+      end
     end
   end
 end

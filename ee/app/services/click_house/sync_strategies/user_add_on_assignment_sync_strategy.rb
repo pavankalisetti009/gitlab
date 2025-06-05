@@ -1,5 +1,12 @@
 # frozen_string_literal: true
 
+# Deprecation: This class is going to be removed as
+# `ee/app/services/click_house/sync_strategies/user_addon_assignment_versions_sync_strategy.rb`
+# will take precedence.
+# This change is added in %18.1, this class shall be removed in the next 1-3 milestones
+# See the following issues for more context:
+# - https://gitlab.com/gitlab-org/gitlab/-/issues/545321
+# - https://gitlab.com/gitlab-org/gitlab/-/issues/540267
 module ClickHouse # rubocop:disable Gitlab/BoundedContexts -- Context already present in other files
   module SyncStrategies
     class UserAddOnAssignmentSyncStrategy < BaseSyncStrategy
