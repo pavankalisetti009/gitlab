@@ -7,6 +7,7 @@ module Gitlab
         class ReviewMergeRequest < Base
           extend ::Gitlab::Utils::Override
           include Gitlab::Utils::StrongMemoize
+          include Gitlab::InternalEventsTracking
 
           DRAFT_NOTES_COUNT_LIMIT = 50
           PRIORITY_THRESHOLD = 3
@@ -61,6 +62,8 @@ module Gitlab
             update_review_state('review_started')
 
             if merge_request.ai_reviewable_diff_files.blank?
+              log_duo_code_review_internal_event('find_nothing_to_review_duo_code_review_on_mr')
+
               update_progress_note(self.class.nothing_to_review_msg)
             else
               perform_review
@@ -68,6 +71,8 @@ module Gitlab
 
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
+
+            log_duo_code_review_internal_event('encounter_duo_code_review_error_during_review')
 
             update_progress_note(self.class.error_msg, with_todo: true) if progress_note.present?
 
@@ -109,6 +114,8 @@ module Gitlab
             diff_files = merge_request.ai_reviewable_diff_files
 
             if diff_files.blank?
+              log_duo_code_review_internal_event('find_nothing_to_review_duo_code_review_on_mr')
+
               update_progress_note(self.class.nothing_to_review_msg)
 
               return
@@ -120,6 +127,8 @@ module Gitlab
 
             if @draft_notes_by_priority.empty?
               update_progress_note(review_summary, with_todo: true)
+
+              log_duo_code_review_internal_event('find_no_issues_duo_code_review_after_review')
             else
               publish_draft_notes
             end
@@ -403,6 +412,8 @@ module Gitlab
             if draft_notes.empty?
               update_progress_note(review_summary, with_todo: true)
 
+              log_duo_code_review_internal_event('find_no_issues_duo_code_review_after_review')
+
               return
             end
 
@@ -411,6 +422,11 @@ module Gitlab
             @comment_metrics[:created_draft_notes] = draft_notes.count
 
             update_progress_note(summary_note(draft_notes))
+
+            log_duo_code_review_internal_event(
+              'post_comment_duo_code_review_on_diff',
+              additional_properties: { value: draft_notes.size }
+            )
 
             # We set `executing_user` as the user who executed the duo code
             # review action as we only want to publish duo code review bot's review
@@ -430,6 +446,15 @@ module Gitlab
 
           def update_review_state(state)
             update_review_state_service.execute(merge_request, state)
+          end
+
+          def log_duo_code_review_internal_event(event_name, **additional_properties)
+            track_internal_event(
+              event_name,
+              user: user,
+              project: merge_request.project,
+              **additional_properties
+            )
           end
 
           def todo_service
