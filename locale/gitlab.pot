@@ -37116,6 +37116,9 @@ msgstr ""
 msgid "Markdown supported."
 msgstr ""
 
+msgid "MarkdownEditor|%{currentHighlight} of %{totalHighlights}"
+msgstr ""
+
 msgid "MarkdownEditor|Add a link (%{modifierKey}K)"
 msgstr ""
 
