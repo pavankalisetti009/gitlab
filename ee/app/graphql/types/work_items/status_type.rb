@@ -32,6 +32,16 @@ module Types
         null: true,
         experiment: { milestone: '17.11' },
         description: 'Position of the status within its category.'
+
+      field :description, GraphQL::Types::String,
+        null: true,
+        experiment: { milestone: '18.1' },
+        description: 'Description of the status.'
+
+      field :category, Types::WorkItems::StatusCategoryEnum,
+        null: true,
+        experiment: { milestone: '18.1' },
+        description: 'Category of the status.'
     end
     # rubocop:enable Graphql/AuthorizeTypes
   end

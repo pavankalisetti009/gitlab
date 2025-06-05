@@ -79,6 +79,12 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     end
   end
 
+  describe '#description' do
+    it 'returns nil' do
+      expect(status.description).to be_nil
+    end
+  end
+
   describe '#icon_name' do
     it 'returns the correct icon name for the status category' do
       expect(status.icon_name).to eq('status-waiting')

@@ -322,9 +322,7 @@ describe('PoliciesSection component', () => {
     });
 
     it('correctly displays description', () => {
-      const description = wrapper.findByText(
-        'Select policies to enforce on all projects scoped to this framework.',
-      );
+      const description = wrapper.findByText('Create policies and attach them to this framework.');
       expect(description.exists()).toBe(true);
     });
 
