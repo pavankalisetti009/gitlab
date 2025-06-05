@@ -170,14 +170,14 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
           context 'when work_item_epics is disabled' do
             before do
-              stub_feature_flags(work_item_epics: false)
+              stub_feature_flags(work_item_epics: false, work_item_epics_list: false)
             end
 
             it 'renders template' do
               show_epic
 
               expect(response.media_type).to eq 'text/html'
-              expect(response).to render_template 'groups/epics/show'
+              expect(response).to render_template 'groups/work_items/show'
             end
           end
 
@@ -198,19 +198,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
                 expect(response.media_type).to eq 'text/html'
                 expect(response).to render_template expected_template
               end
-            end
-          end
-
-          context 'when work_item_epics is false' do
-            before do
-              stub_feature_flags(work_item_epics: false, work_item_epics_list: false)
-            end
-
-            it 'renders work item template' do
-              show_epic
-
-              expect(response.media_type).to eq 'text/html'
-              expect(response).to render_template 'groups/epics/show'
             end
           end
 

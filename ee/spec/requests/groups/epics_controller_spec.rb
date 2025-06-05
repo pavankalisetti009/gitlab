@@ -122,6 +122,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
           get group_epic_path(group, epic)
 
           expect(response).to render_template(:show)
+          expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
         end
 
         it 'renders json when requesting json response' do

@@ -15,7 +15,7 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false, work_item_epics_list: false)
+    stub_feature_flags(work_item_epics_list: false)
 
     sign_in(user)
   end
@@ -196,17 +196,13 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
         it_behaves_like 'epic list'
       end
 
-      context 'when work_item_epics is enabled' do
+      context 'when work_item_epics_list is disabled' do
         let_it_be(:epic_work_item_1) do
           create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 1")
         end
 
         let_it_be(:epic_work_item_2) do
           create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 2")
-        end
-
-        before do
-          stub_feature_flags(work_item_epics: true)
         end
 
         it 'renders work item epics' do
