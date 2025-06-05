@@ -17,6 +17,9 @@ module WorkItems
       def status_with_fallback
         if current_status.nil?
           lifecycle = work_item_type.system_defined_lifecycle
+
+          return unless lifecycle
+
           default_status = if open?
                              lifecycle.default_open_status
                            elsif duplicated?

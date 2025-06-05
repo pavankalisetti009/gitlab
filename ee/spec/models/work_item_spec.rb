@@ -854,6 +854,16 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
             end
           end
         end
+
+        context 'when work item type does not have a lifecycle' do
+          before do
+            work_item.work_item_type = create(:work_item_type, :incident)
+          end
+
+          it 'returns nil' do
+            expect(status_with_fallback).to be_nil
+          end
+        end
       end
     end
 
