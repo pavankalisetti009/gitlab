@@ -1,5 +1,5 @@
 ---
-key_path: redis_hll_counters.code_review.i_code_review_widget_nothing_merge_click_new_file_weekly
+key_path: redis_hll_counters.code_review.i_code_review_widget_nothing_merge_click_new_file
 description: Count of users who click the create file button in the nothing to merge widget state
 product_group: code_review
 product_categories:
@@ -8,7 +8,9 @@ value_type: number
 status: active
 milestone: '14.5'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/73762
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
