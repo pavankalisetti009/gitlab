@@ -145,4 +145,18 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
       end
     end
   end
+
+  describe 'destroy_duo_workflow' do
+    context 'when user owns the thread' do
+      let(:current_user) { workflow.user }
+
+      it { is_expected.to be_allowed(:destroy_duo_workflow) }
+    end
+
+    context 'when user does not own the thread' do
+      let(:current_user) { create(:user) }
+
+      it { is_expected.to be_disallowed(:destroy_duo_workflow) }
+    end
+  end
 end

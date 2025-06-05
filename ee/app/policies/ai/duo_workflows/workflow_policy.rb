@@ -44,6 +44,8 @@ module Ai
       rule { duo_workflow_in_ci_available & can_update_workflow }.policy do
         enable :execute_duo_workflow_in_ci
       end
+
+      rule { is_workflow_owner }.enable :destroy_duo_workflow
     end
   end
 end
