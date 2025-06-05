@@ -1,6 +1,6 @@
 <script>
 import produce from 'immer';
-import { debounce } from 'lodash';
+import { debounce, unionBy } from 'lodash';
 import {
   GlAvatar,
   GlAvatarLabeled,
@@ -13,10 +13,12 @@ import {
   GlTooltipDirective as GlTooltip,
 } from '@gitlab/ui';
 import BoardAddNewColumnForm from '~/boards/components/board_add_new_column_form.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { ListType, createListMutations, listsQuery, BoardType } from 'ee_else_ce/boards/constants';
 import { isScopedLabel } from '~/lib/utils/common_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { __, s__ } from '~/locale';
+import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
 import {
   groupOptionsByIterationCadences,
   groupByIterationCadences,
@@ -26,6 +28,7 @@ import IterationTitle from 'ee/iterations/components/iteration_title.vue';
 import boardLabelsQuery from '~/boards/graphql/board_labels.query.graphql';
 import groupBoardMilestonesQuery from '~/boards/graphql/group_board_milestones.query.graphql';
 import projectBoardMilestonesQuery from '~/boards/graphql/project_board_milestones.query.graphql';
+import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import { setError } from '~/boards/graphql/cache_updates';
 import { getListByTypeId } from '~/boards/boards_util';
 import usersAutocompleteQuery from '~/graphql_shared/queries/users_autocomplete.query.graphql';
@@ -56,6 +59,12 @@ export const listTypeInfo = {
     noneSelected: __('Select an iteration'),
     searchPlaceholder: __('Search iterations'),
   },
+  [ListType.status]: {
+    listPropertyName: 'statuses',
+    loadingPropertyName: 'isStatusesLoading',
+    noneSelected: s__('WorkItem|Select a status'),
+    searchPlaceholder: s__('WorkItem|Search status'),
+  },
 };
 
 export default {
@@ -78,6 +87,7 @@ export default {
   directives: {
     GlTooltip,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: [
     'scopedLabelsAvailable',
     'milestoneListsAvailable',
@@ -87,6 +97,7 @@ export default {
     'issuableType',
     'fullPath',
     'isEpicBoard',
+    'statusListsAvailable',
   ],
   props: {
     boardId: {
@@ -118,6 +129,7 @@ export default {
       assignees: [],
       iterations: [],
       searchTerm: '',
+      statuses: [],
     };
   },
   apollo: {
@@ -212,6 +224,35 @@ export default {
         });
       },
     },
+    statuses: {
+      query: namespaceWorkItemTypesQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        const allowedStatus = [];
+        data.workspace?.workItemTypes?.nodes?.forEach((type) => {
+          const statusWidget = type.widgetDefinitions.find(
+            (widget) => widget.type === WIDGET_TYPE_STATUS,
+          );
+          if (statusWidget) {
+            allowedStatus.push(...statusWidget.allowedStatuses);
+          }
+        });
+        return unionBy(allowedStatus, 'id');
+      },
+      skip() {
+        return this.columnType !== ListType.status;
+      },
+      error(error) {
+        setError({
+          error,
+          message: s__('Boards|An error occurred while fetching statuses. Please try again.'),
+        });
+      },
+    },
   },
   computed: {
     isLabelsLoading() {
@@ -225,6 +266,9 @@ export default {
     },
     isIterationsLoading() {
       return this.$apollo.queries.iterations.loading;
+    },
+    isStatusesLoading() {
+      return this.$apollo.queries.statuses.loading;
     },
     baseVariables() {
       return {
@@ -243,7 +287,7 @@ export default {
     items() {
       return (this[this.info.listPropertyName] || []).map((i) => ({
         ...i,
-        text: i.title,
+        text: i.title || i.name,
         value: i.id,
       }));
     },
@@ -264,7 +308,9 @@ export default {
     iterationTypeSelected() {
       return this.columnType === ListType.iteration;
     },
-
+    statusTypeSelected() {
+      return this.columnType === ListType.status;
+    },
     hasLabelSelection() {
       return this.labelTypeSelected && this.selectedItem;
     },
@@ -277,7 +323,9 @@ export default {
     hasAssigneeSelection() {
       return this.assigneeTypeSelected && this.selectedItem;
     },
-
+    hasStatusSelection() {
+      return this.statusTypeSelected && this.selectedItem;
+    },
     columnForSelected() {
       if (!this.columnType || !this.selectedId) {
         return false;
@@ -304,6 +352,10 @@ export default {
         types.push({ value: ListType.iteration, text: __('Iteration') });
       }
 
+      if (this.statusListsAvailable && this.glFeatures.workItemStatusFeatureFlag) {
+        types.push({ value: ListType.status, text: __('Status') });
+      }
+
       return types;
     },
 
@@ -323,7 +375,15 @@ export default {
     },
   },
   methods: {
-    async createList({ backlog, labelId, milestoneId, assigneeId, iterationId, position }) {
+    async createList({
+      backlog,
+      labelId,
+      milestoneId,
+      assigneeId,
+      iterationId,
+      statusId,
+      position,
+    }) {
       try {
         await this.$apollo.mutate({
           mutation: createListMutations[this.issuableType].mutation,
@@ -333,6 +393,7 @@ export default {
             milestoneId,
             assigneeId,
             iterationId,
+            statusId,
             boardId: this.boardId,
             position,
           },
@@ -507,6 +568,16 @@ export default {
               </div>
             </template>
 
+            <template v-else-if="hasStatusSelection">
+              <gl-icon
+                :size="12"
+                :name="selectedItem.iconName"
+                class="gl-mr-1 gl-mt-1 gl-shrink-0"
+                :style="{ color: selectedItem.color }"
+              />
+              <span class="gl-truncate">{{ selectedItem.name }}</span>
+            </template>
+
             <template v-else>{{ info.noneSelected }}</template>
             <gl-icon class="dropdown-chevron gl-ml-2" name="chevron-down" />
           </gl-button>
@@ -541,6 +612,19 @@ export default {
             >
               {{ item.text }}
               <iteration-title v-if="item.title" :title="item.title" />
+            </div>
+            <div
+              v-else-if="statusTypeSelected"
+              class="gl-flex gl-gap-3"
+              data-testid="status-list-item"
+            >
+              <gl-icon
+                :name="item.iconName"
+                :size="12"
+                class="gl-mt-1 gl-shrink-0"
+                :style="{ color: item.color }"
+              />
+              <span>{{ item.text }}</span>
             </div>
             <div v-else class="gl-inline-block">
               {{ item.text }}
