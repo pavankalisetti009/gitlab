@@ -71,7 +71,7 @@ RSpec.describe Mutations::Issues::Update do
 
         context 'when nil epic is given' do
           before do
-            issue.update!(epic: epic)
+            create(:epic_issue, epic: epic, issue: issue)
           end
 
           let(:epic_params) { { epic: nil } }

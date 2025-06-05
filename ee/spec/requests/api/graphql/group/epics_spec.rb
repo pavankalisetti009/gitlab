@@ -514,7 +514,8 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
 
   context 'when requesting epic issues and respective labels' do
     let_it_be(:issue) { create(:issue, project: project, labels: [label]) }
-    let_it_be(:epic_a) { create(:epic, group: group, issues: [issue]) }
+    let_it_be(:epic_a) { create(:epic, group: group) }
+    let_it_be(:epic_issue) { create(:epic_issue, epic: epic_a, issue: issue) }
     let_it_be(:child_epic) { create(:epic, group: group, parent: epic_a, labels: [label]) }
 
     let(:requested_fields) { ['children { nodes { labels { nodes { id } } } } issues { nodes { id labels { nodes { id } } } }'] }

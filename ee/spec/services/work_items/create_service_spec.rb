@@ -275,11 +275,8 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
     end
 
     let_it_be(:parent_link_issue) do
-      create(:parent_link, work_item_parent: parent, work_item: other_child_issue, relative_position: 600)
-    end
-
-    let_it_be(:epic_issue) do
-      create(:epic_issue, epic: parent.synced_epic, issue: other_child_issue, relative_position: 600)
+      create(:parent_link, :with_epic_issue, work_item_parent: parent, work_item: other_child_issue,
+        relative_position: 600)
     end
 
     let(:epic) { Epic.last }

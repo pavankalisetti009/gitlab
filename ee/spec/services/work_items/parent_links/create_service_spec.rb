@@ -199,12 +199,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
           let_it_be(:other_issue_work_item) { create(:work_item, :issue, namespace: group) }
           let_it_be(:other_issue_work_item_link) do
-            create(:parent_link, work_item: other_issue_work_item, work_item_parent: parent_work_item,
-              relative_position: 600)
-          end
-
-          let_it_be(:other_issue_epic_issue) do
-            create(:epic_issue, issue: other_issue_work_item, epic: parent_work_item.synced_epic,
+            create(:parent_link, :with_epic_issue, work_item: other_issue_work_item, work_item_parent: parent_work_item,
               relative_position: 600)
           end
 
@@ -223,6 +218,8 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
             expect(child_issue.epic_issue.relative_position).to eq(child_work_item.parent_link.relative_position)
             expect(child_issue.epic_issue.work_item_parent_link_id).to eq(child_work_item.parent_link.id)
+            expect(child_issue.epic_issue.work_item_parent_link.work_item_id).to eq(child_issue.id)
+            expect(child_issue.epic_issue.work_item_parent_link.work_item_parent.synced_epic).to eq(child_issue.epic)
 
             expect(parent_work_item.reload.notes.last.note)
               .to eq("added #{child_work_item.to_reference(full: true)} as child issue")

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :epic_issue do
+  factory :epic_issue, traits: [:with_parent_link] do
     transient do
       epic { nil }
       issue { nil }
@@ -10,18 +10,12 @@ FactoryBot.define do
     relative_position { RelativePositioning::START_POSITION }
 
     trait :with_parent_link do
-      before(:create) do |epic_issue|
-        work_item_epic = epic_issue.epic&.work_item
-
-        unless work_item_epic
-          raise 'Failed to create epic_issue with parent_link. The epic needs to have an associated work item'
-        end
-
-        epic_issue.work_item_parent_link = create(
+      work_item_parent_link do
+        association(
           :parent_link,
-          work_item_id: epic_issue.issue_id,
-          relative_position: epic_issue.relative_position,
-          work_item_parent: work_item_epic
+          work_item_id: issue&.id || issue_id,
+          relative_position: relative_position,
+          work_item_parent: epic&.work_item
         )
       end
     end

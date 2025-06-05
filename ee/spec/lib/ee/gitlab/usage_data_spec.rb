@@ -60,8 +60,11 @@ RSpec.describe Gitlab::UsageData, feature_category: :service_ping do
       issue_2 = create(:issue, :published, project: projects[0])
       create(:issue, :published, project: projects[1])
 
-      create(:epic_issue, issue: issue_2)
-      create(:epic_issue, issue: issue_1)
+      epic_1 = create(:epic, group: group)
+      epic_2 = create(:epic, group: group)
+
+      create(:epic_issue, issue: issue_2, epic: epic_1)
+      create(:epic_issue, issue: issue_1, epic: epic_2)
     end
 
     subject { described_class.data }

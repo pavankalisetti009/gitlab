@@ -159,8 +159,10 @@ RSpec.describe Issue, feature_category: :team_planning do
     context 'epics' do
       let_it_be(:epic1) { create(:epic) }
       let_it_be(:epic2) { create(:epic) }
-      let_it_be(:epic_issue1) { create(:epic_issue, epic: epic1, relative_position: 2) }
-      let_it_be(:epic_issue2) { create(:epic_issue, epic: epic2, relative_position: 1) }
+      let_it_be(:issue1) { create(:issue) }
+      let_it_be(:issue2) { create(:issue) }
+      let_it_be(:epic_issue1) { create(:epic_issue, epic: epic1, issue: issue1, relative_position: 2) }
+      let_it_be(:epic_issue2) { create(:epic_issue, epic: epic2, issue: issue2, relative_position: 1) }
       let_it_be(:issue_no_epic) { create(:issue) }
 
       before do
@@ -1476,8 +1478,7 @@ RSpec.describe Issue, feature_category: :team_planning do
       let_it_be(:legacy_epic) { create(:epic, :with_synced_work_item) }
 
       before do
-        create(:parent_link, work_item: work_item_issue, work_item_parent: legacy_epic.work_item)
-        create(:epic_issue, epic: legacy_epic, issue: issue)
+        create(:epic_issue, :with_parent_link, epic: legacy_epic, issue: issue)
       end
 
       it { is_expected.to eq false }

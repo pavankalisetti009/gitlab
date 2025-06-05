@@ -3,16 +3,14 @@
 require "spec_helper"
 
 RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
-  let(:group) { create :group }
-  let(:project) { create :project, group: group }
-  let(:issue) { create :issue, project: project }
+  let_it_be(:group) { create :group }
+  let_it_be(:project) { create :project, group: group }
+  let_it_be(:issue) { create :issue, project: project }
 
   describe '#issue_in_subepic?' do
     let_it_be(:epic) { create(:epic) }
-    let_it_be(:epic_issue) { create(:epic_issue, epic: epic) }
-
-    let(:issue) { build_stubbed(:issue, epic_issue: epic_issue) }
-    let(:new_issue) { build_stubbed(:issue) }
+    let_it_be(:epic_issue) { create(:epic_issue, epic: epic, issue: issue) }
+    let_it_be(:new_issue) { create(:issue, project: project) }
 
     it 'returns false if epic_id parameter is not set or is wildcard' do
       ['', nil, 'none', 'any'].each do |epic_id|
