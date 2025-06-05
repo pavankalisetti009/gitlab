@@ -36,7 +36,7 @@ export const i18n = {
 
   policies: s__('ComplianceFrameworks|Policies'),
   policiesDescription: s__(
-    'ComplianceFrameworks|Select policies to enforce on all projects scoped to this framework.',
+    'ComplianceFrameworks|Create policies and attach them to this framework.',
   ),
   policiesInfoText: s__(
     'ComplianceFrameworks|Go to the %{linkStart}policy management page%{linkEnd} to scope policies for this framework.',
