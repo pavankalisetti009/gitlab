@@ -98,6 +98,7 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:user_member_roles) }
     it { is_expected.to have_many(:group_scim_identities).class_name('GroupScimIdentity') }
     it { is_expected.to have_many(:instance_scim_identities).class_name('ScimIdentity') }
+    it { is_expected.to have_many(:scim_group_memberships).class_name('Authn::ScimGroupMembership') }
     it { is_expected.to have_many(:user_group_member_roles).class_name('Authz::UserGroupMemberRole') }
     it { is_expected.to have_many(:subscription_seat_assignments).class_name('GitlabSubscriptions::SeatAssignment') }
     it { is_expected.to have_many(:compromised_password_detections).class_name('Users::CompromisedPasswordDetection').inverse_of(:user) }
