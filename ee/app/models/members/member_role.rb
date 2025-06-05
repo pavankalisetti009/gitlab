@@ -120,7 +120,6 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
     # This always returns true for self-managed instances.
     # This is only used on SaaS to optimize preloading of custom roles.
     def should_query_custom_roles?(namespace)
-      return true unless Feature.enabled?(:skip_custom_roles_queries, namespace)
       return true unless GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
 
       Rails.cache.fetch(member_role_exists_cache_key(namespace)) do
@@ -129,7 +128,6 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
     end
 
     def expire_member_role_exists_cache!(namespace)
-      return unless Feature.enabled?(:skip_custom_roles_queries, namespace)
       return unless GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
 
       Rails.cache.delete(member_role_exists_cache_key(namespace))

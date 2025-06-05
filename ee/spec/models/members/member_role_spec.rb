@@ -600,14 +600,6 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           end
         end
       end
-
-      context 'when skip_custom_roles_queries is disabled' do
-        before do
-          stub_feature_flags(skip_custom_roles_queries: false)
-        end
-
-        it { is_expected.to be true }
-      end
     end
   end
 
