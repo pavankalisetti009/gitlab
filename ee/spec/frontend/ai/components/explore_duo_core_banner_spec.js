@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import Vue from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import ExploreDuoCoreBanner from 'ee/ai/components/explore_duo_core_banner.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
 import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
 
@@ -16,6 +17,9 @@ describe('ExploreDuoCoreBanner', () => {
     userCalloutDismissSpy = jest.fn();
 
     wrapper = mountExtended(ExploreDuoCoreBanner, {
+      propsData: {
+        calloutFeatureName: 'explore_duo_core_banner',
+      },
       stubs: {
         UserCalloutDismisser: makeMockUserCalloutDismisser({
           dismiss: userCalloutDismissSpy,
@@ -79,6 +83,74 @@ describe('ExploreDuoCoreBanner', () => {
       findBanner().vm.$emit('primary');
 
       expect(userCalloutDismissSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('tracks render_duo_core_banner on mount', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledWith('render_duo_core_banner', {}, undefined);
+    });
+
+    it('tracks click_cta_link_on_duo_core_banner when clicking CTA button', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      trackEventSpy.mockClear();
+
+      findBanner().vm.$emit('primary');
+      await Vue.nextTick();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_cta_link_on_duo_core_banner',
+        {},
+        undefined,
+      );
+    });
+
+    it('tracks click_dismiss_button_on_duo_core_banner when closing the banner', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      trackEventSpy.mockClear();
+
+      findBanner().vm.$emit('close');
+      await Vue.nextTick();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_dismiss_button_on_duo_core_banner',
+        {},
+        undefined,
+      );
+    });
+
+    it('tracks click_install_extension_link_on_duo_core_banner when clicking the install extension link', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      trackEventSpy.mockClear();
+
+      await findInstallationLink().trigger('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_install_extension_link_on_duo_core_banner',
+        {},
+        undefined,
+      );
+    });
+
+    it('tracks click_explore_link_on_duo_core_banner when clicking the explore duo link', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      trackEventSpy.mockClear();
+
+      await findExploreLink().trigger('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_explore_link_on_duo_core_banner',
+        {},
+        undefined,
+      );
     });
   });
 });
