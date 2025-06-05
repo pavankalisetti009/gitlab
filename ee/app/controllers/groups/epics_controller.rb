@@ -14,16 +14,12 @@ class Groups::EpicsController < Groups::ApplicationController
   before_action :authorize_create_epic!, only: [:create, :new]
   before_action :verify_group_bulk_edit_enabled!, only: [:bulk_update]
   before_action :set_summarize_notes_feature_flag, only: :show
-  before_action :enforce_work_item_epics_feature_flags, only: [:new]
+  before_action :enforce_work_item_epics_feature_flags, only: [:new, :show]
   after_action :log_epic_show, only: :show
 
   before_action do
     push_frontend_feature_flag(:preserve_markdown, @group)
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
-
-    # The new page enables work_item_epics by default when epics are licensed. Not based on the feature flag state.
-
-    push_force_frontend_feature_flag(:work_item_epics, epic_work_items_enabled?) unless params[:action] == "new"
 
     push_force_frontend_feature_flag(:glql_integration, !!@group&.glql_integration_feature_flag_enabled?)
     push_force_frontend_feature_flag(:glql_load_on_click, !!@group&.glql_load_on_click_feature_flag_enabled?)
@@ -43,7 +39,7 @@ class Groups::EpicsController < Groups::ApplicationController
   def show
     respond_to do |format|
       format.html do
-        next render_as_work_item if epic_work_items_enabled?
+        render_as_work_item
       end
       format.json do
         render json: serializer.represent(epic)
@@ -79,10 +75,6 @@ class Groups::EpicsController < Groups::ApplicationController
 
   private
 
-  def epic_work_items_enabled?
-    !!@group&.work_item_epics_enabled?
-  end
-
   # rubocop: disable CodeReuse/ActiveRecord
   def epic
     @issuable = @epic ||= @group.epics.find_by(iid: params[:epic_id] || params[:id])
@@ -107,7 +99,7 @@ class Groups::EpicsController < Groups::ApplicationController
       .with_work_item_type
       .find_by_iid(epic.iid)
 
-    if @group.work_item_epics_list_enabled? && epic_work_items_enabled?
+    if @group.work_item_epics_list_enabled?
       render 'work_items_index'
     else
       render 'groups/work_items/show'
@@ -174,8 +166,8 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def enforce_work_item_epics_feature_flags
-    epic_license_available = !!@group.licensed_feature_available?(:epics)
-    push_force_frontend_feature_flag(:work_item_epics, epic_license_available)
+    # We enforce the feature flag, in case that the frontend still relies on it.
+    push_force_frontend_feature_flag(:work_item_epics, !!@group.licensed_feature_available?(:epics))
   end
 
   def set_summarize_notes_feature_flag

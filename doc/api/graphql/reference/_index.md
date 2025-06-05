@@ -46012,7 +46012,7 @@ Values for the archived argument.
 | Value | Description |
 | ----- | ----------- |
 | <a id="projectarchivedexclude"></a>`EXCLUDE` | Exclude archived projects. |
-| <a id="projectarchivedinclude"></a>`INCLUDE` | Include archvied projects. |
+| <a id="projectarchivedinclude"></a>`INCLUDE` | Include archived projects. |
 | <a id="projectarchivedonly"></a>`ONLY` | Only archived projects. |
 
 ### `ProjectComplianceControlStatus`

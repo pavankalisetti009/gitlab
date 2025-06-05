@@ -101,7 +101,6 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
       let(:note_text) { "Check #{epic.to_reference(full: true)}" }
 
       before do
-        stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
         visit project_issue_path(project, issue)
 
         fill_in 'note[note]', with: note_text
@@ -118,7 +117,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
 
         find('div#notes li.note div.note-text a').click
 
-        page.within('div#notes li.system-note .system-note-message') do
+        within_testid('system-note-content') do
           expect(page).to have_content('mentioned in issue')
           expect(page.find('a')).to have_content(issue.to_reference(full: true))
         end
@@ -130,23 +129,22 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
         before do
           visit group_epic_path(group, epic)
 
-          fill_in 'note[note]', with: note_text
+          find_by_testid('markdown-editor-form-field').native.send_keys(note_text)
           click_button 'Comment'
 
           wait_for_requests
         end
 
         it 'creates a note with reference and cross references the issue', :sidekiq_might_not_need_inline do
-          page.within('div#notes li.note div.note-text') do
+          within_testid('note-wrapper') do
             expect(page).to have_content(note_text)
-            expect(page.find('a')).to have_content(issue.to_reference(full: true))
           end
 
-          find('div#notes li.note div.note-text a').click
+          visit project_issue_path(project, issue)
 
           page.within('div#notes li.system-note .system-note-message') do
             expect(page).to have_content('mentioned in epic')
-            expect(page.find('a')).to have_content(epic.to_reference(full: true))
+            expect(page.find('a')).to have_content(epic.work_item.to_reference(full: true))
           end
         end
       end

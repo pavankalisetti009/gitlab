@@ -1,6 +1,8 @@
 import { GlAvatarLabeled, GlFormRadio, GlFormRadioGroup, GlCollapsibleListbox } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
+import { unionBy } from 'lodash';
 import VueApollo from 'vue-apollo';
+import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import BoardAddNewColumn, { listTypeInfo } from 'ee/boards/components/board_add_new_column.vue';
@@ -9,13 +11,16 @@ import searchIterationQuery from 'ee/issues/list/queries/search_iterations.query
 import createBoardListMutation from 'ee_else_ce/boards/graphql/board_list_create.mutation.graphql';
 import boardLabelsQuery from '~/boards/graphql/board_labels.query.graphql';
 import usersAutocompleteQuery from '~/graphql_shared/queries/users_autocomplete.query.graphql';
+import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BoardAddNewColumnForm from '~/boards/components/board_add_new_column_form.vue';
 import IterationTitle from 'ee/iterations/components/iteration_title.vue';
 import { ListType } from '~/boards/constants';
+import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
 import { getIterationPeriod } from 'ee/iterations/utils';
 import { createBoardListResponse, labelsQueryResponse } from 'jest/boards/mock_data';
+import { mockWorkItemStatus } from 'ee_else_ce_jest/work_items/mock_data';
 import {
   mockAssignees,
   mockIterations,
@@ -35,6 +40,7 @@ describe('BoardAddNewColumn', () => {
   const milestonesQueryHandler = jest.fn().mockResolvedValue(milestonesQueryResponse);
   const assigneesQueryHandler = jest.fn().mockResolvedValue(assigneesQueryResponse);
   const iterationQueryHandler = jest.fn().mockResolvedValue(iterationsQueryResponse);
+  const namespaceQueryHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse);
   const errorMessageMilestones = 'Failed to fetch milestones';
   const milestonesQueryHandlerFailure = jest
     .fn()
@@ -47,11 +53,23 @@ describe('BoardAddNewColumn', () => {
   const iterationsQueryHandlerFailure = jest
     .fn()
     .mockRejectedValue(new Error(errorMessageIterations));
+  const namespaceQueryHandlerFailure = jest.fn().mockRejectedValue(new Error('Oops, error'));
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const selectItem = (id) => {
     findDropdown().vm.$emit('select', id);
   };
+
+  let allowedStatus = [];
+
+  namespaceWorkItemTypesQueryResponse.data.workspace?.workItemTypes?.nodes?.forEach((type) => {
+    const statusWidget = type.widgetDefinitions.find(
+      (widget) => widget.type === WIDGET_TYPE_STATUS,
+    );
+    if (statusWidget) {
+      allowedStatus = unionBy(allowedStatus, statusWidget.allowedStatuses, 'id');
+    }
+  });
 
   const mountComponent = ({
     selectedId,
@@ -60,12 +78,14 @@ describe('BoardAddNewColumn', () => {
     milestonesHandler = milestonesQueryHandler,
     assigneesHandler = assigneesQueryHandler,
     iterationHandler = iterationQueryHandler,
+    namespaceHandler = namespaceQueryHandler,
   } = {}) => {
     mockApollo = createMockApollo([
       [boardLabelsQuery, labelsHandler],
       [usersAutocompleteQuery, assigneesHandler],
       [projectBoardMilestonesQuery, milestonesHandler],
       [searchIterationQuery, iterationHandler],
+      [namespaceWorkItemTypesQuery, namespaceHandler],
       [createBoardListMutation, createBoardListQueryHandler],
     ]);
 
@@ -93,6 +113,7 @@ describe('BoardAddNewColumn', () => {
         milestoneListsAvailable: true,
         assigneeListsAvailable: true,
         iterationListsAvailable: true,
+        statusListsAvailable: true,
         isEpicBoard: false,
         issuableType: 'issue',
         fullPath: 'gitlab-org/gitlab',
@@ -114,6 +135,7 @@ describe('BoardAddNewColumn', () => {
   const cancelButton = () => wrapper.findByTestId('cancelAddNewColumn');
   const submitButton = () => wrapper.findByTestId('addNewColumnButton');
   const findIterationItemAt = (i) => wrapper.findAllByTestId('new-column-iteration-item').at(i);
+  const findAllListTypes = () => wrapper.findAllComponents(GlFormRadio);
   const listTypeSelect = (type) => {
     const radio = wrapper
       .findAllComponents(GlFormRadio)
@@ -216,6 +238,72 @@ describe('BoardAddNewColumn', () => {
       });
     });
 
+    describe('status list', () => {
+      describe('when feature flag is true', () => {
+        beforeEach(async () => {
+          mountComponent({
+            provide: {
+              glFeatures: {
+                workItemStatusFeatureFlag: true,
+              },
+            },
+          });
+          listTypeSelect(ListType.status);
+
+          await nextTick();
+        });
+
+        it('shows the `status` as one of the radio buttons', () => {
+          expect(findAllListTypes()).toHaveLength(5);
+
+          expect(findAllListTypes().at(4).text()).toBe('Status');
+        });
+
+        it('sets status placeholder text in form', () => {
+          expect(findForm().props('searchLabel')).toBe(BoardAddNewColumn.i18n.value);
+          expect(findDropdown().props('searchPlaceholder')).toBe('Search status');
+        });
+
+        it('shows list of status', () => {
+          const statusList = wrapper.findAllByTestId('status-list-item');
+
+          expect(statusList.length).toBe(allowedStatus.length);
+          expect(statusList.at(0).text()).toContain(allowedStatus[0].name);
+        });
+
+        it('adds status list', async () => {
+          await waitForPromises();
+
+          selectItem(mockWorkItemStatus.id);
+
+          findForm().vm.$emit('add-list');
+
+          await nextTick();
+
+          expect(wrapper.emitted('highlight-list')).toBeUndefined();
+          expect(createBoardListQueryHandler).toHaveBeenCalledWith({
+            statusId: mockWorkItemStatus.id,
+            position: null,
+            boardId: 'gid://gitlab/Board/1',
+          });
+        });
+      });
+
+      describe('when the feature flag is false', () => {
+        it('does not have the ability to add list by status', () => {
+          mountComponent({
+            provide: {
+              glFeatures: {
+                workItemStatusFeatureFlag: false,
+              },
+            },
+          });
+
+          expect(findAllListTypes()).toHaveLength(4);
+        });
+      });
+    });
+
     describe('when fetch milestones query fails', () => {
       beforeEach(async () => {
         mountComponent({
@@ -258,6 +346,29 @@ describe('BoardAddNewColumn', () => {
           iterationHandler: iterationsQueryHandlerFailure,
         });
         await selectIteration();
+      });
+
+      it('sets error', async () => {
+        findDropdown().vm.$emit('show');
+
+        await waitForPromises();
+        expect(cacheUpdates.setError).toHaveBeenCalled();
+      });
+    });
+
+    describe('when fetch namespaceQuery query fails', () => {
+      beforeEach(async () => {
+        mountComponent({
+          namespaceHandler: namespaceQueryHandlerFailure,
+          provide: {
+            glFeatures: {
+              workItemStatusFeatureFlag: true,
+            },
+          },
+        });
+        listTypeSelect(ListType.status);
+
+        await nextTick();
       });
 
       it('sets error', async () => {
