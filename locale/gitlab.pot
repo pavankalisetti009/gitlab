@@ -47785,6 +47785,9 @@ msgstr ""
 msgid "Project groups"
 msgstr ""
 
+msgid "Project has not been marked for deletion"
+msgstr ""
+
 msgid "Project has too many %{label_for_message} to search"
 msgstr ""
 

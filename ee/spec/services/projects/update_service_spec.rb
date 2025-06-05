@@ -206,7 +206,7 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
       include_examples 'audit event logging' do
         let!(:old_name) { project.full_name }
         let(:fail_condition!) do
-          allow_any_instance_of(Project).to receive(:update).and_return(false)
+          allow_any_instance_of(Project).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
         end
 
         def operation
@@ -230,7 +230,7 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
     describe '#path' do
       include_examples 'audit event logging' do
         let(:fail_condition!) do
-          allow_any_instance_of(Project).to receive(:update).and_return(false)
+          allow_any_instance_of(Project).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
         end
 
         def operation
@@ -281,7 +281,7 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
     describe '#visibility' do
       include_examples 'audit event logging' do
         let(:fail_condition!) do
-          allow_any_instance_of(Project).to receive(:update).and_return(false)
+          allow_any_instance_of(Project).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
         end
 
         def operation
