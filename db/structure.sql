@@ -22713,6 +22713,23 @@ CREATE TABLE schema_migrations (
     finished_at timestamp with time zone DEFAULT now()
 );
 
+CREATE TABLE scim_group_memberships (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    user_id bigint NOT NULL,
+    scim_group_uid uuid NOT NULL
+);
+
+CREATE SEQUENCE scim_group_memberships_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE scim_group_memberships_id_seq OWNED BY scim_group_memberships.id;
+
 CREATE TABLE scim_identities (
     id bigint NOT NULL,
     group_id bigint,
@@ -28038,6 +28055,8 @@ ALTER TABLE ONLY scan_result_policies ALTER COLUMN id SET DEFAULT nextval('scan_
 
 ALTER TABLE ONLY scan_result_policy_violations ALTER COLUMN id SET DEFAULT nextval('scan_result_policy_violations_id_seq'::regclass);
 
+ALTER TABLE ONLY scim_group_memberships ALTER COLUMN id SET DEFAULT nextval('scim_group_memberships_id_seq'::regclass);
+
 ALTER TABLE ONLY scim_identities ALTER COLUMN id SET DEFAULT nextval('scim_identities_id_seq'::regclass);
 
 ALTER TABLE ONLY scim_oauth_access_tokens ALTER COLUMN id SET DEFAULT nextval('scim_oauth_access_tokens_id_seq'::regclass);
@@ -31050,6 +31069,9 @@ ALTER TABLE ONLY scan_result_policy_violations
 
 ALTER TABLE ONLY schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+ALTER TABLE ONLY scim_group_memberships
+    ADD CONSTRAINT scim_group_memberships_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY scim_identities
     ADD CONSTRAINT scim_identities_pkey PRIMARY KEY (id);
@@ -37362,6 +37384,8 @@ CREATE INDEX index_scan_result_policy_violations_on_merge_request_id ON scan_res
 
 CREATE UNIQUE INDEX index_scan_result_policy_violations_on_policy_and_merge_request ON scan_result_policy_violations USING btree (scan_result_policy_id, merge_request_id);
 
+CREATE INDEX index_scim_group_memberships_on_scim_group_uid ON scim_group_memberships USING btree (scim_group_uid);
+
 CREATE INDEX index_scim_identities_on_group_id ON scim_identities USING btree (group_id);
 
 CREATE UNIQUE INDEX index_scim_identities_on_lower_extern_uid_and_group_id ON scim_identities USING btree (lower((extern_uid)::text), group_id);
@@ -38919,6 +38943,8 @@ CREATE UNIQUE INDEX unique_postgres_async_fk_validations_name_and_table_name ON 
 CREATE UNIQUE INDEX unique_projects_on_name_namespace_id ON projects USING btree (name, namespace_id);
 
 CREATE UNIQUE INDEX unique_protection_tag_rules_project_id_and_tag_name_pattern ON container_registry_protection_tag_rules USING btree (project_id, tag_name_pattern);
+
+CREATE UNIQUE INDEX unique_scim_group_memberships_user_id_and_scim_group_uid ON scim_group_memberships USING btree (user_id, scim_group_uid);
 
 CREATE UNIQUE INDEX unique_streaming_event_type_filters_destination_id ON audit_events_streaming_event_type_filters USING btree (external_audit_event_destination_id, audit_event_type);
 
@@ -45596,6 +45622,9 @@ ALTER TABLE ONLY resource_label_events
 
 ALTER TABLE ONLY webauthn_registrations
     ADD CONSTRAINT fk_rails_b15c016782 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY scim_group_memberships
+    ADD CONSTRAINT fk_rails_b16ccc85e2 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY packages_build_infos
     ADD CONSTRAINT fk_rails_b18868292d FOREIGN KEY (package_id) REFERENCES packages_packages(id) ON DELETE CASCADE;

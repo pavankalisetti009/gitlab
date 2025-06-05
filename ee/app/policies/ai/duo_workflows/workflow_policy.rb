@@ -12,7 +12,7 @@ module Ai
       end
 
       condition(:is_workflow_owner) do
-        @subject.user == @user
+        @subject.user == @user || @user.service_account?
       end
 
       condition(:can_update_workflow) do
