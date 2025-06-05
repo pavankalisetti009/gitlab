@@ -25,7 +25,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     it { is_expected.to have_one :root_storage_statistics }
     it { is_expected.to have_one :aggregation_schedule }
     it { is_expected.to have_one :namespace_settings }
-    it { is_expected.to have_one :namespace_details }
+    it { is_expected.to have_one(:namespace_details).autosave(false) }
     it { is_expected.to have_one(:namespace_statistics) }
     it { is_expected.to have_one(:catalog_verified_namespace) }
     it { is_expected.to have_many :custom_emoji }
@@ -95,7 +95,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
-    it { is_expected.to validate_length_of(:description).is_at_most(500) }
     it { is_expected.to validate_presence_of(:path) }
     it { is_expected.to validate_length_of(:path).is_at_most(255) }
     it { is_expected.to validate_presence_of(:owner) }
@@ -292,6 +291,38 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     it { is_expected.to match("@group1/group2/group3") }
     it { is_expected.to match("@1234/1234/1234") }
     it { is_expected.to match("@.q-w_e") }
+  end
+
+  describe 'save_namespace_details_changes' do
+    let(:namespace) { create(:namespace) }
+    let(:description) { 'my-namespace-description' }
+
+    it 'saves the namespace_details changes' do
+      namespace_details = namespace.namespace_details
+      namespace_details.description = description
+
+      namespace.save!
+
+      namespace_details.reload
+      expect(namespace_details.description).to eq(description)
+    end
+
+    context 'when associated namespace_details does not exist' do
+      before do
+        namespace.namespace_details.delete
+        namespace.reload
+      end
+
+      it 'create namespace_details and saves the changes' do
+        namespace_details = namespace.namespace_details
+        namespace_details.description = description
+
+        namespace.save!
+
+        namespace_details.reload
+        expect(namespace_details.description).to eq(description)
+      end
+    end
   end
 
   describe '#to_reference_base' do
@@ -736,6 +767,9 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     it { is_expected.to delegate_method(:archived).to(:namespace_settings).allow_nil }
     it { is_expected.to delegate_method(:add_creator).to(:namespace_details) }
     it { is_expected.to delegate_method(:deleted_at).to(:namespace_details) }
+    it { is_expected.to delegate_method(:description).to(:namespace_details) }
+    it { is_expected.to delegate_method(:description=).to(:namespace_details).with_arguments(:args) }
+    it { is_expected.to delegate_method(:description_html).to(:namespace_details) }
     it { is_expected.to delegate_method(:deleted_at=).to(:namespace_details).with_arguments(:args) }
     it { is_expected.to delegate_method(:resource_access_token_notify_inherited?).to(:namespace_settings) }
     it { is_expected.to delegate_method(:resource_access_token_notify_inherited_locked?).to(:namespace_settings) }
