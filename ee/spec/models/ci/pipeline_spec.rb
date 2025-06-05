@@ -643,7 +643,7 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
 
     context 'Security::PipelineAnalyzersStatusUpdateWorker' do
-      let(:pipeline) { create(:ci_empty_pipeline, status: from_status) }
+      let(:pipeline) { create(:ci_empty_pipeline, project: project, status: from_status, ref: branch) }
 
       shared_examples 'schedules security status update worker' do
         Ci::HasStatus::ACTIVE_STATUSES.each do |status|
@@ -659,16 +659,41 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         end
       end
 
-      context 'on pipeline success' do
-        subject(:transition_pipeline) { pipeline.succeed }
+      context 'on default branch' do
+        let(:branch) { 'master' }
 
-        it_behaves_like 'schedules security status update worker'
+        context 'on pipeline success' do
+          subject(:transition_pipeline) { pipeline.succeed }
+
+          it_behaves_like 'schedules security status update worker'
+        end
+
+        context 'on pipeline failed' do
+          subject(:transition_pipeline) { pipeline.drop }
+
+          it_behaves_like 'schedules security status update worker'
+        end
       end
 
-      context 'on pipeline failed' do
-        subject(:transition_pipeline) { pipeline.drop }
+      context 'on non-default branch' do
+        let(:from_status) { Ci::HasStatus::ACTIVE_STATUSES[-1] }
+        let(:branch) { 'feature' }
 
-        it_behaves_like 'schedules security status update worker'
+        context 'on pipeline success' do
+          subject(:transition_pipeline) { pipeline.succeed }
+
+          it 'does not schedule security status update worker' do
+            expect(Security::PipelineAnalyzersStatusUpdateWorker).not_to receive(:perform_async).with(pipeline.id)
+          end
+        end
+
+        context 'on pipeline failed' do
+          subject(:transition_pipeline) { pipeline.drop }
+
+          it 'does not schedule security status update worker' do
+            expect(Security::PipelineAnalyzersStatusUpdateWorker).not_to receive(:perform_async).with(pipeline.id)
+          end
+        end
       end
     end
   end
