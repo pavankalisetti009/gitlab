@@ -10,11 +10,15 @@ module MergeRequests
 
     # If we allow overriding in subgroups there can be multiple groups
     has_many :approval_rules_groups
-    has_many :groups, through: :approval_rules_groups
+    # TODO https://gitlab.com/gitlab-org/gitlab/-/issues/547609
+    # In v1 approval rules, 'groups' refers to groups that can approve.
+    # We have renamed this association to source_groups until we can
+    # update callers to use approver_groups.
+    has_many :source_groups, through: :approval_rules_groups, source: :group
 
     # When this originated from group there is only one group
     has_one :approval_rules_group, inverse_of: :approval_rule
-    has_one :group, through: :approval_rules_group
+    has_one :source_group, through: :approval_rules_group, source: :group
 
     # When this originated from group there are multiple projects
     has_many :approval_rules_projects
@@ -57,11 +61,16 @@ module MergeRequests
 
     def security_orchestration_policy_configuration_id; end
 
-    # Eventually we will update callers to use approver_users, but for now
-    # this is simpler than introducing feature flag logic in all the caller
-    # locations.
+    # TODO https://gitlab.com/gitlab-org/gitlab/-/issues/547609
+    # Eventually we will update callers to use approver_users
+    # and approver_groups, but for now this is simpler than introducing
+    # feature flag logic in all the caller locations.
     def users
       approver_users
+    end
+
+    def groups
+      approver_groups
     end
 
     def source_rule; end
