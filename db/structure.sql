@@ -25936,7 +25936,8 @@ CREATE TABLE work_item_progresses (
     rollup_progress boolean DEFAULT true NOT NULL,
     reminder_frequency smallint DEFAULT 0 NOT NULL,
     last_reminder_sent_at timestamp with time zone,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_60f0b9e790 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE TABLE work_item_related_link_restrictions (
