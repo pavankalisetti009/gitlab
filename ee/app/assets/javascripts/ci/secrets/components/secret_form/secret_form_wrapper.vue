@@ -1,4 +1,5 @@
 <script>
+import { GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { sprintf, s__ } from '~/locale';
 import {
@@ -9,6 +10,7 @@ import {
   mapEnvironmentNames,
 } from '~/ci/common/private/ci_environments_dropdown';
 import { ENTITY_PROJECT } from '../../constants';
+import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretForm from './secret_form.vue';
 
 const i18n = {
@@ -24,6 +26,7 @@ const i18n = {
 export default {
   name: 'SecretFormWrapper',
   components: {
+    GlLoadingIcon,
     SecretForm,
   },
   props: {
@@ -50,6 +53,7 @@ export default {
   data() {
     return {
       environments: [],
+      secretData: null,
     };
   },
   apollo: {
@@ -75,10 +79,31 @@ export default {
         createAlert({ message: ENVIRONMENT_FETCH_ERROR });
       },
     },
+    secretData: {
+      skip() {
+        return !this.isEditing;
+      },
+      query: getSecretDetailsQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+          name: this.secretName,
+        };
+      },
+      update(data) {
+        return data.projectSecret || null;
+      },
+      error() {
+        createAlert({ message: s__('Secrets|Failed to load secret. Please try again later.') });
+      },
+    },
   },
   computed: {
     areEnvironmentsLoading() {
       return this.$apollo.queries.environments.loading;
+    },
+    isSecretLoading() {
+      return this.isEditing && this.$apollo.queries.secretData.loading;
     },
     pageDescription() {
       if (this.entity === ENTITY_PROJECT) {
@@ -89,9 +114,7 @@ export default {
     },
     pageTitle() {
       if (this.isEditing) {
-        // TODO: This will be changed to `secret.key` when we develop the Edit form
-        // https://gitlab.com/gitlab-org/gitlab/-/issues/432384#note_1924027555
-        return sprintf(s__('Secrets|Edit %{id}'), { id: this.secretName });
+        return sprintf(s__('Secrets|Edit %{name}'), { name: this.secretName });
       }
 
       return this.$options.i18n.titleNew;
@@ -109,12 +132,21 @@ export default {
   <div>
     <h1 class="page-title gl-text-size-h-display">{{ pageTitle }}</h1>
     <p v-if="!isEditing">{{ pageDescription }}</p>
+    <gl-loading-icon
+      v-if="isSecretLoading"
+      data-testid="secret-loading-icon"
+      size="lg"
+      class="gl-mt-6"
+    />
     <secret-form
+      v-else
       :are-environments-loading="areEnvironmentsLoading"
       :environments="environments"
       :full-path="fullPath"
       :is-editing="isEditing"
+      :secret-data="secretData"
       @search-environment="searchEnvironment"
+      v-on="$listeners"
     />
   </div>
 </template>

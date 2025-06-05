@@ -1,18 +1,26 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox, GlDatepicker, GlFormInput, GlFormTextarea } from '@gitlab/ui';
+import {
+  GlCollapsibleListbox,
+  GlDatepicker,
+  GlFormInput,
+  GlFormTextarea,
+  GlModal,
+  GlSprintf,
+} from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
 import SecretBranchesField from 'ee/ci/secrets/components/secret_form/secret_branches_field.vue';
-import CreateSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
-import GetProjectBranches from 'ee/ci/secrets/graphql/queries/get_project_branches.query.graphql';
+import createSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
+import updateSecretMutation from 'ee/ci/secrets/graphql/mutations/update_secret.mutation.graphql';
+import getProjectBranches from 'ee/ci/secrets/graphql/queries/get_project_branches.query.graphql';
 import { DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
-import { mockProjectBranches, mockProjectSecret } from '../../mock_data';
+import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
+import { mockProjectBranches, mockProjectSecret, mockProjectUpdateSecret } from '../../mock_data';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
@@ -21,6 +29,7 @@ describe('SecretForm component', () => {
   let wrapper;
   let mockApollo;
   let mockCreateSecretResponse;
+  let mockUpdateSecretResponse;
   let mockProjectBranchesResponse;
   const mockRouter = {
     push: jest.fn(),
@@ -37,9 +46,11 @@ describe('SecretForm component', () => {
 
   const findAddCronButton = () => wrapper.findByTestId('add-custom-rotation-button');
   const findCronField = () => wrapper.findByTestId('secret-cron');
+  const findConfirmEditModal = () => wrapper.findComponent(GlModal);
   const findBranchField = () => wrapper.findComponent(SecretBranchesField);
   const findDescriptionField = () => wrapper.findByTestId('secret-description');
   const findDescriptionFieldGroup = () => wrapper.findByTestId('secret-description-field-group');
+  const findEditValueButton = () => wrapper.findByTestId('edit-value-button');
   const findExpirationField = () => wrapper.findComponent(GlDatepicker);
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
   const findNameFieldGroup = () => wrapper.findByTestId('secret-name-field-group');
@@ -51,8 +62,9 @@ describe('SecretForm component', () => {
 
   const createComponent = ({ props, mountFn = shallowMountExtended, stubs } = {}) => {
     const handlers = [
-      [CreateSecretMutation, mockCreateSecretResponse],
-      [GetProjectBranches, mockProjectBranchesResponse],
+      [createSecretMutation, mockCreateSecretResponse],
+      [updateSecretMutation, mockUpdateSecretResponse],
+      [getProjectBranches, mockProjectBranchesResponse],
     ];
 
     mockApollo = createMockApollo(handlers);
@@ -66,17 +78,17 @@ describe('SecretForm component', () => {
         ...defaultProps,
         ...props,
       },
-      stubs,
+      stubs: {
+        GlSprintf,
+        GlModal: stubComponent(GlModal, {
+          template: RENDER_ALL_SLOTS_TEMPLATE,
+        }),
+        ...stubs,
+      },
     });
   };
 
   const today = new Date();
-  const expirationDate = getDateInFuture(today, 1);
-
-  const inputExpiration = () => {
-    findExpirationField().vm.$emit('input', { endDate: '' });
-    findExpirationField().vm.$emit('input', expirationDate);
-  };
 
   const inputRequiredFields = async () => {
     findNameField().vm.$emit('input', 'SECRET_KEY');
@@ -86,18 +98,11 @@ describe('SecretForm component', () => {
     findEnvironmentsDropdown().vm.$emit('select-environment', '*');
 
     await nextTick();
-
-    inputExpiration();
-  };
-
-  const submitSecret = async () => {
-    await inputRequiredFields();
-
-    findSubmitButton().vm.$emit('click');
   };
 
   beforeEach(() => {
     mockCreateSecretResponse = jest.fn();
+    mockUpdateSecretResponse = jest.fn();
     mockProjectBranchesResponse = jest.fn().mockResolvedValue(mockProjectBranches);
   });
 
@@ -117,12 +122,19 @@ describe('SecretForm component', () => {
       expect(findEnvironmentsDropdown().exists()).toBe(true);
       expect(findNameField().exists()).toBe(true);
       expect(findRotationPeriodField().exists()).toBe(true);
+
       expect(findValueField().exists()).toBe(true);
+      expect(findValueField().attributes('placeholder')).toBe('Enter a value for the secret');
+      expect(findValueField().attributes('disabled')).toBeUndefined();
     });
 
     it('sets expiration date in the future', () => {
       const expirationMinDate = findExpirationField().props('minDate').getTime();
       expect(expirationMinDate).toBeGreaterThan(today.getTime());
+    });
+
+    it('does not show the confirmation modal', () => {
+      expect(findConfirmEditModal().props('visible')).toBe(false);
     });
   });
 
@@ -264,15 +276,25 @@ describe('SecretForm component', () => {
     });
   });
 
-  describe('form submission', () => {
+  describe('creating a new secret', () => {
+    const createSecret = async () => {
+      await inputRequiredFields();
+
+      findSubmitButton().vm.$emit('click');
+    };
+
     beforeEach(() => {
       createComponent({ mountFn: mountExtended });
     });
 
-    it('while submitting', async () => {
+    it('renders the correct text for submit button', () => {
+      expect(findSubmitButton().text()).toBe('Add secret');
+    });
+
+    it('renders loading icon while submitting', async () => {
       expect(findSubmitButton().props('loading')).toBe(false);
 
-      await submitSecret();
+      await createSecret();
       await nextTick();
 
       expect(findSubmitButton().props('loading')).toBe(true);
@@ -284,8 +306,24 @@ describe('SecretForm component', () => {
         createComponent({ mountFn: mountExtended });
       });
 
+      it('calls the create mutation with the correct variables', async () => {
+        await createSecret();
+        await waitForPromises();
+
+        expect(mockCreateSecretResponse).toHaveBeenCalledTimes(1);
+        expect(mockCreateSecretResponse).toHaveBeenCalledWith({
+          branch: 'main',
+          description: 'This is a secret',
+          environment: '*',
+          name: 'SECRET_KEY',
+          projectPath: 'path/to/project',
+          rotationPeriod: '',
+          value: 'SECRET_VALUE',
+        });
+      });
+
       it('redirects to the secret details page', async () => {
-        await submitSecret();
+        await createSecret();
         await waitForPromises();
 
         expect(mockRouter.push).toHaveBeenCalledWith({
@@ -304,7 +342,7 @@ describe('SecretForm component', () => {
       });
 
       it('renders error message from API', async () => {
-        await submitSecret();
+        await createSecret();
         await waitForPromises();
 
         expect(findSubmitButton().props('loading')).toBe(false);
@@ -319,8 +357,238 @@ describe('SecretForm component', () => {
       });
 
       it('renders error message from API', async () => {
-        await submitSecret();
+        await createSecret();
         await waitForPromises();
+
+        expect(findSubmitButton().props('loading')).toBe(false);
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Something went wrong on our end. Please try again.',
+        });
+      });
+    });
+  });
+
+  describe('editing a secret', () => {
+    beforeEach(async () => {
+      createComponent({
+        mountFn: mountExtended,
+        props: {
+          isEditing: true,
+          secretData: {
+            branch: 'feat-1',
+            description: 'This is a secret',
+            environment: 'production',
+            name: 'PROD_PWD',
+          },
+        },
+      });
+
+      await nextTick();
+    });
+
+    it('does not render name field', () => {
+      expect(findNameFieldGroup().exists()).toBe(false);
+    });
+
+    it('loads fetched secret data', () => {
+      expect(findBranchField().props('selectedBranch')).toBe('feat-1');
+      expect(findDescriptionField().props('value')).toBe('This is a secret');
+      expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('production');
+    });
+
+    it('disables value field', () => {
+      expect(findValueField().attributes('placeholder')).toBe('* * * * * * *');
+      expect(findValueField().attributes('disabled')).toBeDefined();
+    });
+
+    it('enables and focuses on value field when "Edit value" button is clicked', async () => {
+      const focusSpy = jest.spyOn(findValueField().element, 'focus');
+
+      expect(findValueField().attributes('disabled')).toBeDefined();
+
+      findEditValueButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findValueField().attributes('disabled')).toBeUndefined();
+      expect(focusSpy).toHaveBeenCalled();
+    });
+
+    it('disables value field again when it is out of focus', async () => {
+      findEditValueButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findValueField().attributes('disabled')).toBeUndefined();
+
+      findValueField().vm.$emit('blur');
+      await nextTick();
+
+      expect(findValueField().attributes('disabled')).toBeDefined();
+    });
+
+    it('allows value field to be empty', async () => {
+      expect(findValueFieldGroup().attributes('state')).toBeUndefined();
+
+      findEditValueButton().vm.$emit('click');
+      findValueField().vm.$emit('input', 'EDITED_SECRET_VALUE');
+      await nextTick();
+
+      expect(findValueFieldGroup().attributes('state')).toBeUndefined();
+
+      findValueField().vm.$emit('input', '');
+      await nextTick();
+
+      expect(findValueFieldGroup().attributes('state')).toBeUndefined();
+    });
+
+    it('renders the correct text for submit button', () => {
+      expect(findSubmitButton().text()).toBe('Save changes');
+    });
+
+    it('submit button is already enabled', () => {
+      expect(findSubmitButton().props('disabled')).toBe(false);
+    });
+
+    it('opens confirmation modal when submitting', async () => {
+      findSubmitButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findConfirmEditModal().text()).toContain(
+        'Are you sure you want to update secret PROD_PWD?',
+      );
+      expect(findConfirmEditModal().props('visible')).toBe(true);
+    });
+
+    it.each`
+      modalEvent
+      ${'canceled'}
+      ${'hidden'}
+      ${'secondary'}
+    `('hides modal when $modalEvent event is triggered', async ({ modalEvent }) => {
+      findSubmitButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findConfirmEditModal().props('visible')).toBe(true);
+
+      findConfirmEditModal().vm.$emit(modalEvent);
+      await nextTick();
+
+      expect(findConfirmEditModal().props('visible')).toBe(false);
+    });
+
+    const editSecret = async ({ finishRequest = true, editValue = true } = {}) => {
+      if (editValue) {
+        findEditValueButton().vm.$emit('click');
+        findValueField().vm.$emit('input', 'EDITED_SECRET_VALUE');
+      }
+
+      findDescriptionField().vm.$emit('input', 'This is an edited secret');
+      findBranchField().vm.$emit('select-branch', 'edit-branch');
+      findEnvironmentsDropdown().vm.$emit('select-environment', 'edit-env');
+      await nextTick();
+
+      findSubmitButton().vm.$emit('click');
+      await nextTick();
+
+      findConfirmEditModal().vm.$emit('primary', { preventDefault: jest.fn() });
+
+      if (finishRequest) {
+        await waitForPromises();
+      }
+      await nextTick();
+    };
+
+    describe('when submitting form', () => {
+      it('hides confirmation modal', async () => {
+        await editSecret();
+
+        expect(findConfirmEditModal().props('visible')).toBe(false);
+      });
+
+      it('renders loading icon while submitting', async () => {
+        await editSecret({ finishRequest: false });
+
+        expect(findSubmitButton().props('loading')).toBe(true);
+      });
+    });
+
+    describe('when update is successful', () => {
+      beforeEach(() => {
+        mockUpdateSecretResponse.mockResolvedValue(
+          mockProjectUpdateSecret({
+            branch: 'edit-branch',
+            description: 'This is an edited secret',
+            environment: 'edit-env',
+            name: 'PROD_PWD',
+            value: 'EDITED_SECRET_VALUE',
+          }),
+        );
+      });
+
+      it('calls the create mutation with the correct variables', async () => {
+        await editSecret();
+
+        expect(mockUpdateSecretResponse).toHaveBeenCalledTimes(1);
+        expect(mockUpdateSecretResponse).toHaveBeenCalledWith({
+          branch: 'edit-branch',
+          description: 'This is an edited secret',
+          environment: 'edit-env',
+          expiration: undefined,
+          name: 'PROD_PWD',
+          projectPath: 'path/to/project',
+          rotationPeriod: '',
+          value: 'EDITED_SECRET_VALUE',
+        });
+      });
+
+      it('leaves value blank when it is not edited', async () => {
+        await editSecret({ editValue: false });
+
+        expect(mockUpdateSecretResponse).toHaveBeenCalledTimes(1);
+        expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
+          expect.objectContaining({ value: undefined }),
+        );
+      });
+
+      it('triggers toast message', async () => {
+        await editSecret();
+
+        expect(wrapper.emitted('show-secrets-toast')).toEqual([
+          ['Secret PROD_PWD was successfully updated.'],
+        ]);
+      });
+
+      it('redirects to the secret details page', async () => {
+        await editSecret();
+
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: DETAILS_ROUTE_NAME,
+          params: { secretName: 'PROD_PWD' },
+        });
+      });
+    });
+
+    describe('when update returns errors', () => {
+      beforeEach(() => {
+        mockUpdateSecretResponse.mockResolvedValue(
+          mockProjectUpdateSecret({ errors: ['Cannot update secret.'] }),
+        );
+      });
+
+      it('renders error message from API', async () => {
+        await editSecret();
+
+        expect(findSubmitButton().props('loading')).toBe(false);
+        expect(createAlert).toHaveBeenCalledWith({ message: 'Cannot update secret.' });
+      });
+    });
+
+    describe('when update fails', () => {
+      beforeEach(() => {
+        mockUpdateSecretResponse.mockRejectedValue(new Error());
+      });
+
+      it('renders error message', async () => {
+        await editSecret();
 
         expect(findSubmitButton().props('loading')).toBe(false);
         expect(createAlert).toHaveBeenCalledWith({
