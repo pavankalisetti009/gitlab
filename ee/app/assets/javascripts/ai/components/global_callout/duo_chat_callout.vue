@@ -43,7 +43,6 @@ export default {
   },
   mounted() {
     this.popoverTarget?.addEventListener('click', this.handleButtonClick);
-    this.trackEvent('render_duo_chat_callout');
   },
   beforeDestroy() {
     this.stopListeningToPopover();
@@ -95,6 +94,7 @@ export default {
         triggers="manual"
         data-testid="duo-chat-promo-callout-popover"
         @close-button-clicked="dismissCallout(dismiss)"
+        @shown="trackEvent('render_duo_chat_callout')"
       >
         <img
           :src="$options.DUO_CHAT_ILLUSTRATION"

@@ -156,10 +156,18 @@ describe('DuoChatCallout', () => {
   });
 
   describe('tracking', () => {
-    it('should track render', () => {
+    it('should track render', async () => {
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
+      await findPopoverWithinDismisser().vm.$emit('shown');
+
       expect(trackEventSpy).toHaveBeenCalledWith('render_duo_chat_callout', {}, undefined);
+    });
+
+    it('does not track render when callout is not shown', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).not.toHaveBeenCalled();
     });
 
     it('should track click learn how link', async () => {

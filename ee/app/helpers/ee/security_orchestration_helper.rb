@@ -47,7 +47,7 @@ module EE::SecurityOrchestrationHelper
       policy_type: policy_type,
       role_approver_types: Security::ScanResultPolicy::ALLOWED_ROLES,
       scan_policy_documentation_path: help_page_path('user/application_security/policies/_index.md'),
-      software_licenses: software_licenses(container),
+      software_licenses: software_licenses,
       global_group_approvers_enabled: Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
       root_namespace_path: container.root_ancestor&.full_path,
       timezones: timezone_data(format: :full).to_json,
@@ -185,12 +185,7 @@ module EE::SecurityOrchestrationHelper
 
   private
 
-  def software_licenses(container)
-    if (container.is_a?(::Project) && Feature.enabled?(:static_licenses,
-      container.namespace)) || Feature.enabled?(:static_licenses, container)
-      ::Gitlab::SPDX::Catalogue.latest_active_license_names
-    else
-      SoftwareLicense.all_license_names
-    end
+  def software_licenses
+    ::Gitlab::SPDX::Catalogue.latest_active_license_names
   end
 end

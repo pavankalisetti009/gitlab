@@ -555,18 +555,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           build_violation_details(policy1, violations: { license_scanning: { 'MIT License' => %w[B C D] } })
         end
 
-        context 'when the feature flag static_licenses is disabled' do
-          before do
-            stub_feature_flags(static_licenses: false)
-            create(:software_license, name: 'MIT License', spdx_identifier: 'MIT')
-          end
-
-          it 'includes license URL' do
-            violation = violations.first
-            expect(violation.url).to eq 'https://spdx.org/licenses/MIT.html'
-          end
-        end
-
         it 'includes license URL' do
           violation = violations.first
           expect(violation.url).to eq 'https://spdx.org/licenses/MIT.html'

@@ -584,23 +584,6 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
           ]
         end
 
-        context 'when the feature flag static_licenses is disabled' do
-          before do
-            stub_feature_flags(static_licenses: false)
-            create(:software_license, :user_entered)
-          end
-
-          it 'returns spdx identifier instead of license name' do
-            expect(fetch).to contain_exactly(
-              have_attributes(name: 'beego_custom', purl_type: 'golang', version: 'v1.10.0', licenses: [{
-                "name" => "CUSTOM-0.1",
-                "spdx_identifier" => "CUSTOM-0.1",
-                "url" => "https://spdx.org/licenses/CUSTOM-0.1.html"
-              }])
-            )
-          end
-        end
-
         it 'returns spdx identifier instead of license name' do
           expect(fetch).to contain_exactly(
             have_attributes(name: 'beego_custom', purl_type: 'golang', version: 'v1.10.0', licenses: [{

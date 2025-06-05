@@ -71,68 +71,36 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
   end
 
   shared_examples_for 'search license by name' do
-    context 'when the feature flag static_licenses is disabled' do
-      before do
-        stub_feature_flags(static_licenses: false)
-      end
+    let_it_be(:project) { create(:project) }
+    let(:mit_license_name) { 'MIT License' }
+    let(:mit_license_spdx_identifier) { 'MIT' }
+    let!(:mit_policy) { create(:software_license_policy, project: project, software_license_spdx_identifier: mit_license_spdx_identifier) }
 
-      let_it_be(:project) { create(:project) }
-      let!(:mit_policy) { create(:software_license_policy, project: project, software_license: mit) }
-      let!(:mit) { create(:software_license, :mit) }
-      let!(:apache_policy) { create(:software_license_policy, project: project, software_license: apache) }
-      let!(:apache) { create(:software_license, :apache_2_0) }
+    let(:apache_license_name) { 'Apache License 2.0' }
+    let(:apache_license_spdx_identifier) { 'Apache-2.0' }
+    let!(:apache_policy) { create(:software_license_policy, project: project, software_license_spdx_identifier: apache_license_spdx_identifier) }
 
-      context 'with an exact match' do
-        let(:name) { mit.name }
+    context 'with an exact match' do
+      let(:name) { mit_license_name }
 
-        it { is_expected.to match_array([mit_policy]) }
-      end
-
-      context 'with a case insensitive match' do
-        let(:name) { 'mIt lICENSE' }
-
-        it { is_expected.to match_array([mit_policy]) }
-      end
-
-      context 'with multiple names' do
-        let(:name) { [mit.name, apache.name] }
-
-        it { is_expected.to match_array([mit_policy, apache_policy]) }
-      end
+      it { is_expected.to match_array([mit_policy]) }
     end
 
-    context 'when the feature flag static_licenses is enabled' do
-      let_it_be(:project) { create(:project) }
-      let(:mit_license_name) { 'MIT License' }
-      let(:mit_license_spdx_identifier) { 'MIT' }
-      let!(:mit_policy) { create(:software_license_policy, project: project, software_license_spdx_identifier: mit_license_spdx_identifier) }
+    context 'with a case insensitive match' do
+      let(:name) { 'mIt lICENSE' }
 
-      let(:apache_license_name) { 'Apache License 2.0' }
-      let(:apache_license_spdx_identifier) { 'Apache-2.0' }
-      let!(:apache_policy) { create(:software_license_policy, project: project, software_license_spdx_identifier: apache_license_spdx_identifier) }
+      it { is_expected.to match_array([mit_policy]) }
+    end
 
-      context 'with an exact match' do
-        let(:name) { mit_license_name }
+    context 'with multiple names' do
+      let(:name) { [mit_license_name, apache_license_name] }
 
-        it { is_expected.to match_array([mit_policy]) }
-      end
-
-      context 'with a case insensitive match' do
-        let(:name) { 'mIt lICENSE' }
-
-        it { is_expected.to match_array([mit_policy]) }
-      end
-
-      context 'with multiple names' do
-        let(:name) { [mit_license_name, apache_license_name] }
-
-        it { is_expected.to match_array([mit_policy, apache_policy]) }
-      end
+      it { is_expected.to match_array([mit_policy, apache_policy]) }
     end
   end
 
   describe ".with_license_by_name" do
-    subject { described_class.with_license_by_name(name, project) }
+    subject { described_class.with_license_by_name(name) }
 
     it_behaves_like 'search license by name'
   end
@@ -177,48 +145,22 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
 
     context 'when related to a software license' do
-      subject { described_class.with_license_or_custom_license_by_name(name, project) }
+      subject { described_class.with_license_or_custom_license_by_name(name) }
 
       it_behaves_like 'search license by name'
     end
   end
 
   describe ".by_spdx" do
-    context 'when the feature flag static_licenses is disabled' do
-      before do
-        stub_feature_flags(static_licenses: false)
-      end
+    let_it_be(:mit_license_spdx_identifier) { 'MIT' }
+    let_it_be(:mit_policy) { create(:software_license_policy, software_license_spdx_identifier: mit_license_spdx_identifier) }
 
-      let_it_be(:mit) { create(:software_license, :mit) }
-      let_it_be(:mit_policy) { create(:software_license_policy, software_license: mit) }
-      let_it_be(:apache) { create(:software_license, :apache_2_0) }
-      let_it_be(:apache_policy) { create(:software_license_policy, software_license: apache) }
+    let_it_be(:apache_license_spdx_identifier) { 'Apache-2.0' }
+    let_it_be(:apache_policy) { create(:software_license_policy, software_license_spdx_identifier: apache_license_spdx_identifier) }
 
-      it { expect(described_class.by_spdx(mit.spdx_identifier)).to match_array([mit_policy]) }
-      it { expect(described_class.by_spdx([mit.spdx_identifier, apache.spdx_identifier])).to match_array([mit_policy, apache_policy]) }
-      it { expect(described_class.by_spdx(SecureRandom.uuid)).to be_empty }
-    end
-
-    context 'when the feature flag static_licenses is enabled' do
-      let_it_be(:project) { create(:project) }
-      let_it_be(:mit_license_spdx_identifier) { 'MIT' }
-      let_it_be(:mit_policy) { create(:software_license_policy, software_license_spdx_identifier: mit_license_spdx_identifier) }
-
-      let_it_be(:apache_license_spdx_identifier) { 'Apache-2.0' }
-      let_it_be(:apache_policy) { create(:software_license_policy, software_license_spdx_identifier: apache_license_spdx_identifier) }
-
-      context 'when a project is provided' do
-        it { expect(described_class.by_spdx(mit_license_spdx_identifier, project)).to match_array([mit_policy]) }
-        it { expect(described_class.by_spdx([mit_license_spdx_identifier, apache_license_spdx_identifier], project)).to match_array([mit_policy, apache_policy]) }
-        it { expect(described_class.by_spdx(SecureRandom.uuid, project)).to be_empty }
-      end
-
-      context 'when a project is not provided' do
-        it { expect(described_class.by_spdx(mit_license_spdx_identifier)).to be_empty }
-        it { expect(described_class.by_spdx([mit_license_spdx_identifier, apache_license_spdx_identifier])).to be_empty }
-        it { expect(described_class.by_spdx(SecureRandom.uuid)).to be_empty }
-      end
-    end
+    it { expect(described_class.by_spdx(mit_license_spdx_identifier)).to match_array([mit_policy]) }
+    it { expect(described_class.by_spdx([mit_license_spdx_identifier, apache_license_spdx_identifier])).to match_array([mit_policy, apache_policy]) }
+    it { expect(described_class.by_spdx(SecureRandom.uuid)).to be_empty }
   end
 
   describe '.exclusion_allowed' do
@@ -269,41 +211,19 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
 
     context 'when associated with a software_license' do
-      context 'when the feature flag static_licenses is disabled' do
-        before do
-          stub_feature_flags(static_licenses: false)
-        end
+      let(:software_license_policy) { build(:software_license_policy, software_license_spdx_identifier: software_license_spdx_identifier, custom_software_license: nil) }
 
-        let(:software_license_policy) { build(:software_license_policy, software_license: software_license, custom_software_license: nil) }
+      context 'when software_license does not have an spdx_identifier' do
+        let(:software_license_spdx_identifier) { nil }
 
-        context 'when software_license does not have an spdx_identifier' do
-          let(:software_license) { create(:software_license, spdx_identifier: nil) }
-
-          it { is_expected.to be_nil }
-        end
-
-        context 'when software_license has an spdx_identifier' do
-          let(:software_license) { create(:software_license, :mit) }
-
-          it { is_expected.to eq(software_license.spdx_identifier) }
-        end
+        it { is_expected.to be_nil }
       end
 
-      context 'when the feature flag static_licenses is enabled' do
-        let(:software_license_policy) { build(:software_license_policy, software_license_spdx_identifier: software_license_spdx_identifier, custom_software_license: nil) }
+      context 'when software_license has an spdx_identifier' do
+        let(:mit_license_spdx_identifier) { 'MIT' }
+        let(:software_license_spdx_identifier) { 'MIT' }
 
-        context 'when software_license does not have an spdx_identifier' do
-          let(:software_license_spdx_identifier) { nil }
-
-          it { is_expected.to be_nil }
-        end
-
-        context 'when software_license has an spdx_identifier' do
-          let(:mit_license_spdx_identifier) { 'MIT' }
-          let(:software_license_spdx_identifier) { 'MIT' }
-
-          it { is_expected.to eq(mit_license_spdx_identifier) }
-        end
+        it { is_expected.to eq(mit_license_spdx_identifier) }
       end
     end
   end

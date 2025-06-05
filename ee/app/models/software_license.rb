@@ -22,12 +22,6 @@ class SoftwareLicense < ApplicationRecord
   scope :unreachable_limit, -> { limit(LICENSE_LIMIT) }
 
   class << self
-    def all_license_names
-      Rails.cache.fetch(ALL_LICENSE_NAMES_CACHE_KEY, expires_in: 7.days) do
-        spdx.ordered.unreachable_limit.pluck_names
-      end
-    end
-
     def pluck_names
       pluck(:name)
     end

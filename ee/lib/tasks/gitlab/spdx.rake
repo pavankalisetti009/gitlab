@@ -20,9 +20,8 @@ namespace :gitlab do
 
       puts "Local copy of SPDX catalogue is saved to #{path}"
 
-      if ::Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- we do not have access to an actor here
-        Rails.cache.delete(::Gitlab::SPDX::Catalogue::LATEST_ACTIVE_LICENSES_CACHE_KEY)
-      end
+      Rails.cache.delete(::Gitlab::SPDX::Catalogue::LATEST_ACTIVE_LICENSES_CACHE_KEY)
+
     rescue StandardError => e
       puts "Import of SPDX catalogue failed: #{e}"
     end

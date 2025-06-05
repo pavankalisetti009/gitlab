@@ -30,18 +30,6 @@ RSpec.describe 'gitlab:rake tasks', :silence_stdout, feature_category: :software
 
         spdx_import
       end
-
-      context 'when the feature flag static_licenses is disabled' do
-        before do
-          stub_feature_flags(static_licenses: false)
-        end
-
-        it 'does not deletes the software licenses from cache' do
-          expect(Rails.cache).not_to receive(:delete).with(::Gitlab::SPDX::Catalogue::LATEST_ACTIVE_LICENSES_CACHE_KEY)
-
-          spdx_import
-        end
-      end
     end
 
     context 'when downloaded catalogue is broken' do
