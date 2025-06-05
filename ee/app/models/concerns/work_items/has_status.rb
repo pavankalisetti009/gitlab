@@ -9,9 +9,13 @@ module WorkItems
         foreign_key: 'work_item_id', inverse_of: :work_item
 
       scope :with_status, ->(status) {
-        # TODO: add case when custom status is introduced
-        # See https://gitlab.com/gitlab-org/gitlab/-/issues/520311
-        joins(:current_status).where(work_item_current_statuses: { system_defined_status_id: status.id })
+        current_status_attrs = if status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
+                                 { system_defined_status_id: status.id }
+                               else
+                                 { custom_status_id: status.id }
+                               end
+
+        joins(:current_status).where(work_item_current_statuses: current_status_attrs)
       }
 
       def status_with_fallback

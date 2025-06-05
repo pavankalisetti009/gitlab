@@ -19,7 +19,9 @@ module WorkItems
     def find_status_by_name(name)
       return unless name.present?
 
-      ::WorkItems::Statuses::SystemDefined::Status.find_by_name(name)
+      ::WorkItems::Statuses::Custom::Status
+        .in_namespace(@parent.root_ancestor)
+        .find_by_name(name) || ::WorkItems::Statuses::SystemDefined::Status.find_by_name(name)
     end
   end
 end

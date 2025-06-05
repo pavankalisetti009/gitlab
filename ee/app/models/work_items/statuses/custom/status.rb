@@ -25,6 +25,7 @@ module WorkItems
           through: :lifecycle_statuses,
           class_name: 'WorkItems::Statuses::Custom::Lifecycle'
 
+        scope :in_namespace, ->(namespace) { where(namespace: namespace) }
         scope :ordered_for_lifecycle, ->(lifecycle_id) {
           joins(:lifecycle_statuses)
             .where(work_item_custom_lifecycle_statuses: { lifecycle_id: lifecycle_id })
