@@ -12,7 +12,7 @@ module GitlabSubscriptions
       build_product_interaction
 
       GitlabSubscriptions::CreateLeadService.new.execute(
-        @params.merge(product_interaction: @product_interaction)
+        @params.merge(product_interaction: @product_interaction).to_h
       )
     end
 

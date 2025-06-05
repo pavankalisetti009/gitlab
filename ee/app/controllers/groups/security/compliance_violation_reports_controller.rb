@@ -28,8 +28,8 @@ module Groups
         ComplianceManagement::Violations::ExportService.new(
           user: current_user,
           namespace: group,
-          filters: filter_params,
-          sort: sort_param
+          filters: filter_params.to_h,
+          sort: sort_param.to_h
         ).email_export
       end
 
