@@ -36014,6 +36014,9 @@ msgstr ""
 msgid "Latest pipeline for the most recent commit on this ref"
 msgstr ""
 
+msgid "Latest to-do items"
+msgstr ""
+
 msgid "Latest version"
 msgstr ""
 
@@ -64051,6 +64054,9 @@ msgid "To-Do List"
 msgstr ""
 
 msgid "Today"
+msgstr ""
+
+msgid "Today's highlights"
 msgstr ""
 
 msgid "Todos| What actions create to-do items?"
