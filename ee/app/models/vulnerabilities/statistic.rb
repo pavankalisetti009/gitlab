@@ -120,7 +120,7 @@ module Vulnerabilities
       end
 
       BULK_UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE = <<~SQL
-        INSERT INTO %<table_name>s AS target (project_id, latest_pipeline_id, letter_grade, created_at, updated_at)
+        INSERT INTO %<table_name>s AS target (project_id, archived, traversal_ids, latest_pipeline_id, letter_grade, created_at, updated_at)
           %<values>s
         ON CONFLICT (project_id)
           DO UPDATE SET
@@ -135,7 +135,15 @@ module Vulnerabilities
         now = Arel::Nodes::SqlLiteral.new('now()')
 
         values = pipelines.map do |pipeline|
-          [pipeline.project.id, pipeline.id, letter_grades[:a], now, now]
+          [
+            pipeline.project.id,
+            pipeline.project.archived,
+            Arel::Nodes::SqlLiteral.new("'{#{pipeline.project.namespace.traversal_ids_as_sql}}'"),
+            pipeline.id,
+            letter_grades[:a],
+            now,
+            now
+          ]
         end
 
         values_expression = Arel::Nodes::ValuesList.new(values).to_sql
