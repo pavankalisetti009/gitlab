@@ -4,6 +4,7 @@ module Resolvers
   module Members
     class ApprovalPolicyResolver < BaseResolver
       include ResolvesOrchestrationPolicy
+      include ConstructApprovalPolicies
 
       type Types::SecurityOrchestration::ApprovalPolicyType, null: true
 

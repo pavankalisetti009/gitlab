@@ -61,7 +61,15 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "scan_execution_policy",
         updated_at: policy_configuration.policy_last_updated_at,
-        yaml: YAML.dump(scan_execution_policy.deep_stringify_keys)
+        yaml: YAML.dump({
+          name: scan_execution_policy[:name],
+          description: scan_execution_policy[:description],
+          enabled: scan_execution_policy[:enabled],
+          policy_scope: scan_execution_policy[:policy_scope],
+          actions: scan_execution_policy[:actions],
+          rules: scan_execution_policy[:rules],
+          metadata: scan_execution_policy[:metadata]
+        }.compact.deep_stringify_keys)
       }]
     end
 
@@ -108,7 +116,18 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "approval_policy",
         updated_at: policy_configuration.policy_last_updated_at,
-        yaml: YAML.dump(approval_policy.deep_stringify_keys)
+        yaml: YAML.dump({
+          name: approval_policy[:name],
+          description: approval_policy[:description],
+          enabled: approval_policy[:enabled],
+          policy_scope: approval_policy[:policy_scope],
+          actions: approval_policy[:actions],
+          rules: approval_policy[:rules],
+          approval_settings: approval_policy[:approval_settings],
+          fallback_behavior: approval_policy[:fallback_behavior],
+          metadata: approval_policy[:metadata],
+          policy_tuning: approval_policy[:policy_tuning]
+        }.compact.deep_stringify_keys)
       }]
     end
 
@@ -142,7 +161,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
             project: project
           },
           type: "pipeline_execution_policy",
-          warnings: ["The policy is associated with a non-existing Pipeline configuration file."]
+          warnings: ["The policy is associated with a non-existing pipeline configuration file."]
         },
         policy_scope: {
           compliance_frameworks: [],
@@ -153,7 +172,17 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "pipeline_execution_policy",
         updated_at: policy_configuration.policy_last_updated_at,
-        yaml: YAML.dump(pipeline_execution_policy.deep_stringify_keys)
+        yaml: YAML.dump({
+          name: pipeline_execution_policy[:name],
+          description: pipeline_execution_policy[:description],
+          enabled: pipeline_execution_policy[:enabled],
+          policy_scope: pipeline_execution_policy[:policy_scope],
+          pipeline_config_strategy: pipeline_execution_policy[:pipeline_config_strategy],
+          content: pipeline_execution_policy[:content],
+          metadata: pipeline_execution_policy[:metadata],
+          suffix: pipeline_execution_policy[:suffix],
+          skip_ci: pipeline_execution_policy[:skip_ci]
+        }.deep_stringify_keys)
       }]
     end
 
@@ -190,7 +219,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
             project: project
           },
           type: "pipeline_execution_schedule_policy",
-          warnings: ["The policy is associated with a non-existing Pipeline configuration file."]
+          warnings: ["The policy is associated with a non-existing pipeline configuration file."]
         },
         policy_scope: {
           compliance_frameworks: [],
@@ -201,7 +230,15 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "pipeline_execution_schedule_policy",
         updated_at: policy_configuration.policy_last_updated_at,
-        yaml: YAML.dump(pipeline_execution_schedule_policy.deep_stringify_keys)
+        yaml: YAML.dump({
+          name: pipeline_execution_schedule_policy[:name],
+          description: pipeline_execution_schedule_policy[:description],
+          enabled: pipeline_execution_schedule_policy[:enabled],
+          policy_scope: {},
+          content: pipeline_execution_schedule_policy[:content],
+          schedules: pipeline_execution_schedule_policy[:schedules],
+          metadata: pipeline_execution_schedule_policy[:metadata]
+        }.compact.deep_stringify_keys)
       }]
     end
 
@@ -247,7 +284,14 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "vulnerability_management_policy",
         updated_at: policy_configuration.policy_last_updated_at,
-        yaml: YAML.dump(vulnerability_management_policy.deep_stringify_keys)
+        yaml: YAML.dump({
+          name: vulnerability_management_policy[:name],
+          description: vulnerability_management_policy[:description],
+          enabled: vulnerability_management_policy[:enabled],
+          policy_scope: vulnerability_management_policy[:policy_scope],
+          rules: vulnerability_management_policy[:rules],
+          actions: vulnerability_management_policy[:actions]
+        }.compact.deep_stringify_keys)
       }]
     end
 

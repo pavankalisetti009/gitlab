@@ -62038,7 +62038,7 @@ msgstr ""
 msgid "The pipeline has been deleted"
 msgstr ""
 
-msgid "The policy is associated with a non-existing Pipeline configuration file."
+msgid "The policy is associated with a non-existing pipeline configuration file."
 msgstr ""
 
 msgid "The policy is disabled"
@@ -70614,6 +70614,9 @@ msgid "Workspaces|Configure which Kubernetes agents are available for new worksp
 msgstr ""
 
 msgid "Workspaces|Connected"
+msgstr ""
+
+msgid "Workspaces|Could not load agents. Refresh the page to try again."
 msgstr ""
 
 msgid "Workspaces|Could not load available agents. Refresh the page to try again."

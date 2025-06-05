@@ -31,7 +31,15 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionSchedulePolicy
           including_groups: [],
           excluding_groups: []
         },
-        yaml: YAML.dump(policy.deep_stringify_keys),
+        yaml: YAML.dump({
+          name: policy[:name],
+          description: policy[:description],
+          enabled: policy[:enabled],
+          policy_scope: {},
+          content: policy[:content],
+          schedules: policy[:schedules],
+          metadata: policy[:metadata]
+        }.compact.deep_stringify_keys),
         updated_at: policy_last_updated_at,
         source: {
           inherited: false,
@@ -83,7 +91,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionSchedulePolicy
 
         it 'includes warning message' do
           expect(resolve_pipeline_schedule_policies[0][:warnings]).to include(
-            'The policy is associated with a non-existing Pipeline configuration file.')
+            'The policy is associated with a non-existing pipeline configuration file.')
         end
       end
     end

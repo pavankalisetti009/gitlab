@@ -33,7 +33,18 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
           including_groups: [],
           excluding_groups: []
         },
-        yaml: YAML.dump(policy.deep_stringify_keys),
+        yaml: YAML.dump({
+          name: policy[:name],
+          description: policy[:description],
+          enabled: policy[:enabled],
+          policy_scope: policy[:policy_scope],
+          pipeline_config_strategy: policy[:pipeline_config_strategy],
+          content: policy[:content],
+          metadata: policy[:metadata],
+          suffix: policy[:suffix],
+          skip_ci: policy[:skip_ci],
+          variables_override: policy[:variables_override]
+        }.deep_stringify_keys),
         updated_at: policy_last_updated_at,
         source: {
           inherited: false,
@@ -85,7 +96,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
 
         it 'includes warning message' do
           expect(resolve_policies[0][:warnings]).to include(
-            'The policy is associated with a non-existing Pipeline configuration file.')
+            'The policy is associated with a non-existing pipeline configuration file.')
         end
       end
 
@@ -107,7 +118,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
 
           it 'includes warning message' do
             expect(resolve_policies[0][:warnings]).to include(
-              'The policy is associated with a non-existing Pipeline configuration file.')
+              'The policy is associated with a non-existing pipeline configuration file.')
           end
         end
       end

@@ -4,6 +4,7 @@ module Resolvers
   module SecurityOrchestration
     class PipelineExecutionPolicyResolver < BaseResolver
       include ResolvesOrchestrationPolicy
+      include ConstructPipelineExecutionPolicies
 
       type Types::SecurityOrchestration::PipelineExecutionPolicyType, null: true
 

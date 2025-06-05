@@ -52,7 +52,18 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecut
               including_groups: [],
               excluding_groups: []
             },
-            yaml: YAML.dump(policy.deep_stringify_keys),
+            yaml: YAML.dump({
+              name: policy[:name],
+              description: policy[:description],
+              enabled: policy[:enabled],
+              policy_scope: policy[:policy_scope],
+              pipeline_config_strategy: policy[:pipeline_config_strategy],
+              content: policy[:content],
+              metadata: policy[:metadata],
+              suffix: policy[:suffix],
+              skip_ci: policy[:skip_ci],
+              variables_override: policy[:variables_override]
+            }.deep_stringify_keys),
             updated_at: policy_configuration.policy_last_updated_at,
             source: {
               project: project,

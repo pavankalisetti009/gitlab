@@ -4,6 +4,7 @@ module Resolvers
   module SecurityOrchestration
     class ScanResultPolicyResolver < BaseResolver
       include ResolvesOrchestrationPolicy
+      include ConstructApprovalPolicies
 
       type Types::SecurityOrchestration::ScanResultPolicyType, null: true
 

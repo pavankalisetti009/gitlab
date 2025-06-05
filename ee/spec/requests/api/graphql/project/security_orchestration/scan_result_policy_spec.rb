@@ -15,9 +15,24 @@ RSpec.describe 'Query.project(fullPath).scanResultPolicies', feature_category: :
         project: project)
     end
 
+    let(:yaml) do
+      YAML.dump({
+        name: policy[:name],
+        description: policy[:description],
+        enabled: policy[:enabled],
+        policy_scope: policy[:policy_scope],
+        actions: policy[:actions],
+        rules: policy[:rules],
+        approval_settings: policy[:approval_settings],
+        fallback_behavior: policy[:fallback_behavior],
+        metadata: policy[:metadata],
+        policy_tuning: policy[:policy_tuning]
+      }.compact.deep_stringify_keys)
+    end
+
     it 'returns the policy' do
       expect(query_result).to match_array([
-        expected_approval_policy_response(policy)
+        expected_approval_policy_response(policy, false, yaml)
           .merge(expected_project_source_response)
           .merge(expected_edit_path_response(project, 'approval_policy'))
       ])
@@ -28,7 +43,7 @@ RSpec.describe 'Query.project(fullPath).scanResultPolicies', feature_category: :
 
       it 'returns the policy' do
         expect(query_result).to match_array([
-          expected_approval_policy_response(policy)
+          expected_approval_policy_response(policy, false, yaml)
             .merge(expected_project_source_response)
             .merge(expected_policy_scope_response)
             .merge(expected_edit_path_response(project, 'approval_policy'))
@@ -51,9 +66,24 @@ RSpec.describe 'Query.project(fullPath).scanResultPolicies', feature_category: :
         project: nil, namespace: group)
     end
 
+    let(:yaml) do
+      YAML.dump({
+        name: policy[:name],
+        description: policy[:description],
+        enabled: policy[:enabled],
+        policy_scope: policy[:policy_scope],
+        actions: policy[:actions],
+        rules: policy[:rules],
+        approval_settings: policy[:approval_settings],
+        fallback_behavior: policy[:fallback_behavior],
+        metadata: policy[:metadata],
+        policy_tuning: policy[:policy_tuning]
+      }.compact.deep_stringify_keys)
+    end
+
     it 'returns the policy' do
       expect(query_result).to match_array([
-        expected_approval_policy_response(policy)
+        expected_approval_policy_response(policy, false, yaml)
           .merge(expected_group_source_response(true))
           .merge(expected_edit_path_response(group, 'approval_policy'))
       ])

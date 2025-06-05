@@ -8,6 +8,18 @@ RSpec.describe 'Query.project(fullPath).pipelineExecutionSchedulePolicies', feat
 
   subject(:query_result) { graphql_data_at(:project, :pipelineExecutionSchedulePolicies, :nodes) }
 
+  let_it_be(:yaml) do
+    YAML.dump({
+      name: policy[:name],
+      description: policy[:description],
+      enabled: policy[:enabled],
+      policy_scope: {},
+      content: policy[:content],
+      schedules: policy[:schedules],
+      metadata: policy[:metadata]
+    }.compact.deep_stringify_keys)
+  end
+
   context 'when policy_configuration is assigned to the project' do
     let_it_be(:policy_configuration) do
       create(:security_orchestration_policy_configuration,
@@ -17,7 +29,7 @@ RSpec.describe 'Query.project(fullPath).pipelineExecutionSchedulePolicies', feat
 
     it 'returns the policy' do
       expect(query_result).to match_array([
-        expected_policy_response(policy)
+        expected_policy_response(policy, false, yaml)
           .merge(expected_project_source_response)
           .merge(expected_edit_path_response(project, 'pipeline_execution_schedule_policy'))
       ])
@@ -40,7 +52,7 @@ RSpec.describe 'Query.project(fullPath).pipelineExecutionSchedulePolicies', feat
 
     it 'returns the policy' do
       expect(query_result).to match_array([
-        expected_policy_response(policy, true)
+        expected_policy_response(policy, true, yaml)
           .merge(expected_edit_path_response(group, 'pipeline_execution_schedule_policy'))
       ])
     end

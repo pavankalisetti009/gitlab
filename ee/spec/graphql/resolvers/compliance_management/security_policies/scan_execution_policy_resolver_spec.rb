@@ -43,7 +43,15 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanExecutionP
               including_groups: [],
               excluding_groups: []
             },
-            yaml: YAML.dump(policy.deep_stringify_keys),
+            yaml: YAML.dump({
+              name: policy[:name],
+              description: policy[:description],
+              enabled: policy[:enabled],
+              policy_scope: policy[:policy_scope],
+              actions: policy[:actions],
+              rules: policy[:rules],
+              metadata: policy[:metadata]
+            }.compact.deep_stringify_keys),
             updated_at: policy_configuration.policy_last_updated_at,
             deprecated_properties: [],
             source: {

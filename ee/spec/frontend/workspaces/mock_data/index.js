@@ -660,3 +660,250 @@ export const DELETE_CLUSTER_AGENT_MAPPING_MUTATION_WITH_ERROR_RESULT = {
 };
 
 export const NAMESPACE_ID = 'gid://gitlab/Group/81';
+
+// these values correspond to ORGANIZATION_WORKSPACES_CLUSTER_AGENTS_QUERY_RESULT
+export const ORGANIZATION_MAPPED_AGENTS_QUERY_RESULT = {
+  data: {
+    organization: {
+      id: 'gid://gitlab/Organizations::Organization/1',
+      mappedAgents: {
+        nodes: [
+          {
+            id: 'gid://gitlab/Clusters::Agent/14',
+          },
+          {
+            id: 'gid://gitlab/Clusters::Agent/12',
+          },
+          {
+            id: 'gid://gitlab/Clusters::Agent/10',
+          },
+          {
+            id: 'gid://gitlab/Clusters::Agent/17',
+          },
+        ],
+      },
+    },
+  },
+};
+
+export const ORGANIZATION_WORKSPACES_CLUSTER_AGENTS_QUERY_RESULT = {
+  data: {
+    organization: {
+      id: 'gid://gitlab/Organizations::Organization/1',
+      organizationWorkspacesClusterAgents: {
+        nodes: [
+          /**
+           * Connection status: Not connected
+           * Workspaces agent config: enabled
+           * Availability: available
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/14',
+            name: 'midnightowlgarden',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/midnightowlgarden',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: {
+              id: '',
+              enabled: true,
+            },
+            connections: {
+              nodes: [],
+            },
+          },
+          /**
+           * Connection status: Not connected
+           * Workspaces agent config: enabled
+           * Availability: blocked
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/13',
+            name: 'coastalechovalley',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/coastalechovalley',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: {
+              id: '',
+              enabled: true,
+            },
+            connections: {
+              nodes: [],
+            },
+          },
+          /**
+           * Connection status: Not connected
+           * Workspaces agent config: not enabled
+           * Availability: available
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/12',
+            name: 'wandingbreezetale',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/wandingbreezetale',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: null,
+            connections: {
+              nodes: [],
+            },
+          },
+          /**
+           * Connection status: Not connected
+           * Workspaces agent config: not enabled
+           * Availability: blocked
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/11',
+            name: 'crimsonmapleshadow',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/crimsonmapleshadow',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: null,
+            connections: {
+              nodes: [],
+            },
+          },
+          /**
+           * Connection status: Connected
+           * Workspaces agent config: enabled
+           * Availability: available
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/10',
+            name: 'meadowsageharbor',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/meadowsageharbor',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: {
+              id: '',
+              enabled: true,
+            },
+            connections: {
+              nodes: [
+                {
+                  connectedAt: '2023-04-29T18:24:34Z',
+                },
+              ],
+            },
+          },
+          /**
+           * Connection status: Connected
+           * Workspaces agent config: enabled
+           * Availability: blocked
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/16',
+            name: 'silvermoonharbor',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/silvermoonharbor',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: {
+              id: '',
+              enabled: true,
+            },
+            connections: {
+              nodes: [
+                {
+                  connectedAt: '2023-04-29T18:24:34Z',
+                },
+              ],
+            },
+          },
+          /**
+           * Connection status: Connected
+           * Workspaces agent config: not enabled
+           * Availability: available
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/17',
+            name: 'silvermoonharbor',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/silvermoonharbor',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: null,
+            connections: {
+              nodes: [
+                {
+                  connectedAt: '2023-04-29T18:24:34Z',
+                },
+              ],
+            },
+          },
+          /**
+           * Connection status: Connected
+           * Workspaces agent config: not enabled
+           * Availability: blocked
+           */
+          {
+            id: 'gid://gitlab/Clusters::Agent/18',
+            name: 'oceanbreezecliff',
+            webPath: '/gitlab-org/gitlab-agent-configurations/-/cluster_agents/oceanbreezecliff',
+            project: {
+              id: 'gid://gitlab/Project/19',
+              name: 'gitlab-agent-configurations',
+              group: {
+                id: 'gid://gitlab/Group/24',
+                name: 'Gitlab Org',
+              },
+            },
+            workspacesAgentConfig: null,
+            connections: {
+              nodes: [
+                {
+                  connectedAt: '2023-04-29T18:24:34Z',
+                },
+              ],
+            },
+          },
+        ],
+        pageInfo: {
+          hasNextPage: true,
+          hasPreviousPage: false,
+          startCursor: 'eyJpZCI6IjE0In0',
+          endCursor: 'eyJpZCI6IjEwIn0',
+        },
+      },
+    },
+  },
+};
