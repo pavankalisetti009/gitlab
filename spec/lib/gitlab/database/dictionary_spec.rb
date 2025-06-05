@@ -182,11 +182,11 @@ RSpec.describe Gitlab::Database::Dictionary, feature_category: :database do
       end
 
       describe '#desired_sharding_key_migration_job_name' do
-        let(:file_path) { 'db/docs/work_item_progresses.yml' }
+        let(:file_path) { 'db/docs/issue_assignees.yml' }
 
         it 'returns the name of the migration that backfills the desired sharding key' do
           expect(database_dictionary.desired_sharding_key_migration_job_name)
-            .to eq('BackfillWorkItemProgressesNamespaceId')
+            .to eq('BackfillIssueAssigneesNamespaceId')
         end
       end
 
