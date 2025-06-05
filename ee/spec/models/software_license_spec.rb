@@ -60,32 +60,4 @@ RSpec.describe SoftwareLicense, feature_category: :security_policy_management do
       it { expect(build(:software_license, name: 'MIT License', spdx_identifier: nil).canonical_id).to eq('mit license') }
     end
   end
-
-  describe '.all_license_names' do
-    subject { described_class.all_license_names }
-
-    let_it_be(:mit_license) { create(:software_license, :mit) }
-    let_it_be(:apache_license) { create(:software_license, :apache_2_0) }
-    let_it_be(:nonstandard_license) { create(:software_license, :user_entered) }
-
-    it 'returns ordered list of license names from the SPDX catalogue' do
-      expect(subject.to_a).to eql([apache_license.name, mit_license.name])
-    end
-
-    it 'caches the license names' do
-      expect(Rails.cache).to receive(:fetch).with(SoftwareLicense::ALL_LICENSE_NAMES_CACHE_KEY, expires_in: 7.days)
-
-      subject
-    end
-
-    context 'when the number of spdx licenses exceeds the limit' do
-      before do
-        stub_const("#{described_class}::LICENSE_LIMIT", 1)
-      end
-
-      it 'returns  ordered list of license names from the SPDX catalogue within the limit' do
-        expect(subject.to_a).to eql([apache_license.name])
-      end
-    end
-  end
 end

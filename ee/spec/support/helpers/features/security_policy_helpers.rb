@@ -12,7 +12,6 @@ module Features
 
     def create_policy_setup
       stub_feature_flags(custom_software_license: false)
-      stub_feature_flags(static_licenses: false)
       stub_licensed_features(security_dashboard: true,
         multiple_approval_rules: true,
         sast: true, report_approver_rules: true,

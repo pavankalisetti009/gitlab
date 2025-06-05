@@ -65,8 +65,8 @@ module Security
       def violates_db_licenses?(software_license_policies, ids, names)
         policies_with_matching_license_name = software_license_policies
                                                 .denied
-                                                .with_license_or_custom_license_by_name(names, project)
-        policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids, project)
+                                                .with_license_or_custom_license_by_name(names)
+        policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids)
 
         policies_with_matching_spdx_id.present? || policies_with_matching_license_name.present?
       end

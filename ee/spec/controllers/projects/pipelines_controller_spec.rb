@@ -120,57 +120,6 @@ RSpec.describe Projects::PipelinesController do
         context 'with json' do
           let(:scanner) { ::Gitlab::LicenseScanning.scanner_for_pipeline(project, pipeline) }
 
-          context 'when the feature flag `static_licenses` is disabled' do
-            before do
-              stub_feature_flags(static_licenses: false)
-            end
-
-            it 'returns license scanning report in json format' do
-              expect(payload.size).to eq(scanner.report.licenses.size)
-              expect(payload.first.keys).to match_array(%w[name classification dependencies count url])
-            end
-
-            it 'returns MIT license allowed status' do
-              payload_mit = payload.find { |l| l['name'] == 'MIT License' }
-              expect(payload_mit['count']).to eq(scanner.report.licenses.find { |x| x.name == 'MIT License' }.count)
-              expect(payload_mit['url']).to eq("https://spdx.org/licenses/MIT.html")
-              expect(payload_mit['classification']['approval_status']).to eq('allowed')
-            end
-
-            context 'approval_status' do
-              subject(:status) { payload.find { |l| l['name'] == 'MIT License' }.dig('classification', 'approval_status') }
-
-              it { is_expected.to eq('allowed') }
-            end
-
-            it 'returns the JSON license data sorted by license name' do
-              expect(payload.pluck('name')).to match_array([
-                'Apache License 2.0',
-                'BSD 2-Clause "Simplified" License',
-                'Open LDAP Public License v1.1',
-                'MIT License',
-                'unknown'
-              ])
-            end
-
-            it 'returns a JSON representation of the license data' do
-              expect(payload).to be_present
-
-              payload.each do |item|
-                expect(item['name']).to be_present
-                expect(item['classification']).to have_key('id')
-                expect(item.dig('classification', 'approval_status')).to be_present
-                expect(item.dig('classification', 'name')).to be_present
-                expect(item).to have_key('dependencies')
-                item['dependencies'].each do |dependency|
-                  expect(dependency['name']).to be_present
-                end
-                expect(item['count']).to be_present
-                expect(item).to have_key('url')
-              end
-            end
-          end
-
           it 'returns license scanning report in json format' do
             expect(payload.size).to eq(scanner.report.licenses.size)
             expect(payload.first.keys).to match_array(%w[name classification dependencies count url])
