@@ -22,10 +22,17 @@ module API
 
         helpers do
           def find_workflow!(id)
-            workflow = ::Ai::DuoWorkflows::Workflow.for_user_with_id!(current_user.id, id)
+            workflow = ::Ai::DuoWorkflows::Workflow.for_user_with_id!(human_user.id, id)
             return workflow if current_user.can?(:read_duo_workflow, workflow)
 
             forbidden!
+          end
+
+          def human_user
+            identity = ::Gitlab::Auth::Identity.fabricate(current_user)
+            return identity.scoped_user if identity&.composite? && identity.linked?
+
+            current_user
           end
 
           def find_event!(workflow, id)

@@ -370,6 +370,29 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       end
     end
 
+    context 'when authenticated with a composite identity token' do
+      let_it_be(:service_account) do
+        create(:user, :service_account, developer_of: workflow.project, composite_identity_enforced: true)
+      end
+
+      let_it_be(:composite_oauth_token) do
+        create(:oauth_access_token, user: service_account, scopes: ['ai_workflows', "user:#{user.id}"])
+      end
+
+      before do
+        allow(Gitlab::AiGateway).to receive(:public_headers)
+          .with(user: service_account, service_name: :duo_workflow)
+          .and_return({})
+      end
+
+      it 'returns the Ai::DuoWorkflows::Workflow' do
+        get api(path, oauth_access_token: composite_oauth_token)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to eq(workflow.id)
+      end
+    end
+
     context 'when duo_features_enabled settings is turned off' do
       before do
         workflow.project.project_setting.update!(duo_features_enabled: false)

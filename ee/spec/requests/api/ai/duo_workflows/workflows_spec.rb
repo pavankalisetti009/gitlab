@@ -218,6 +218,19 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     end
 
     context 'when start_workflow is true' do
+      shared_examples 'starts duo workflow execution in CI' do
+        it 'creates a pipeline to run the workflow' do
+          expect_next_instance_of(Ci::CreatePipelineService) do |pipeline_service|
+            expect(pipeline_service).to receive(:execute).and_call_original
+          end
+
+          post api(path, user), params: params
+          expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+          expect(json_response['workload']['id']).to eq(Ci::Workloads::Workload.last.id)
+          expect(::Ci::Pipeline.last.project_id).to eq(project.id)
+        end
+      end
+
       let(:params) do
         {
           project_id: project.id,
@@ -230,25 +243,20 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
           allow(client).to receive(:generate_token).and_return({ status: "success", token: "an-encrypted-token" })
         end
-      end
-
-      it 'creates a pipeline to run the workflow' do
-        expect_next_instance_of(Ci::CreatePipelineService) do |pipeline_service|
-          expect(pipeline_service).to receive(:execute).and_call_original
+        allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
+          allow(service).to receive(:execute).and_return({ status: :success,
+oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token') })
         end
-
-        post api(path, user), params: params
-        expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
-        expect(json_response['workload']['id']).to eq(Ci::Workloads::Workload.last.id)
-        expect(::Ci::Pipeline.last.project_id).to eq(project.id)
       end
+
+      it_behaves_like 'starts duo workflow execution in CI'
 
       context 'when Feature flag is disabled' do
         before do
           stub_feature_flags(duo_workflow_in_ci: false)
         end
 
-        it 'does not start a pipeline' do
+        it 'does not start a CI pipeline' do
           post api(path, user), params: params
 
           expect(json_response.dig('workload', 'id')).to eq(nil)
@@ -275,6 +283,34 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(json_response.dig('workload', 'id')).to eq(nil)
           expect(json_response.dig('workload', 'message')).to eq('Error in creating workload: full error messages')
         end
+      end
+
+      context 'when use_service_account is set to true' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'Print hello world',
+            use_service_account: true
+          }
+        end
+
+        let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
+
+        before do
+          allow_next_instance_of(::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService) do |service|
+            allow(service).to receive(:execute).and_return({
+              status: :success,
+              oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token')
+            })
+          end
+          ::Ai::Setting.instance.update!(
+            duo_workflow_service_account_user_id: service_account.id
+          )
+          project.update!(allow_composite_identities_to_run_pipelines: true)
+        end
+
+        it_behaves_like 'starts duo workflow execution in CI'
       end
     end
   end
