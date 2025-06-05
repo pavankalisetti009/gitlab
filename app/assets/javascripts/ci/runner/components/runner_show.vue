@@ -37,7 +37,7 @@ const routes = [
 ];
 
 export default {
-  name: 'RunnerDetailsTabs',
+  name: 'RunnerShow',
   components: {
     GlBadge,
     GlTabs,
