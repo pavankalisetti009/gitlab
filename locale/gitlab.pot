@@ -74276,6 +74276,9 @@ msgstr[1] ""
 msgid "repository:"
 msgstr ""
 
+msgid "requirement"
+msgstr ""
+
 msgid "rule"
 msgid_plural "rules"
 msgstr[0] ""
@@ -74488,6 +74491,9 @@ msgid "then"
 msgstr ""
 
 msgid "this document"
+msgstr ""
+
+msgid "ticket"
 msgstr ""
 
 msgid "to"
