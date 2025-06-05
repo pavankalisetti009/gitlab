@@ -5,7 +5,7 @@ module Groups
     class InventoryController < Groups::ApplicationController
       layout 'group'
 
-      before_action :ensure_feature_available!
+      before_action :authorize_read_security_inventory!
 
       before_action do
         push_frontend_feature_flag(:security_inventory_dashboard, @group.root_ancestor)
@@ -21,9 +21,8 @@ module Groups
 
       private
 
-      def ensure_feature_available!
-        render_404 unless License.feature_available?(:security_inventory) &&
-          ::Feature.enabled?(:security_inventory_dashboard, group.root_ancestor, type: :wip)
+      def authorize_read_security_inventory!
+        render_403 unless can?(current_user, :read_security_inventory, group)
       end
 
       def tracking_namespace_source
