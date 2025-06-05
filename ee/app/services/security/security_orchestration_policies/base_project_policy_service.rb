@@ -22,8 +22,7 @@ module Security
       strong_memoize_attr :sync_project_approval_policy_rules_service
 
       def link_policy
-        return unless security_policy.enabled
-        return unless scope_applicable?
+        return if policy_disabled_or_scope_inapplicable?
 
         security_policy.transaction do
           security_policy.link_project!(project)
@@ -53,6 +52,10 @@ module Security
 
       def scope_applicable?
         security_policy.scope_applicable?(project)
+      end
+
+      def policy_disabled_or_scope_inapplicable?
+        !security_policy.enabled || !scope_applicable?
       end
 
       def recreate_pipeline_execution_schedule_project_schedules(project, security_policy)
