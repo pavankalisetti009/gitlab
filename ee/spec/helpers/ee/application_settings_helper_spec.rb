@@ -188,6 +188,18 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         it { is_expected.to match(hash_including({ licensed_user_count: seats.to_s })) }
       end
     end
+
+    describe 'Seat control' do
+      it { is_expected.to match(hash_including({ seat_control: ApplicationSetting::SEAT_CONTROL_OFF.to_s })) }
+
+      context 'when the feature is not available' do
+        before do
+          stub_licensed_features(seat_control: false)
+        end
+
+        it { is_expected.to match(hash_including({ seat_control: '' })) }
+      end
+    end
   end
 
   describe '.git_abuse_rate_limit_data', feature_category: :insider_threat do
