@@ -8,7 +8,6 @@ describe('DetailsIndex', () => {
   const props = {
     metricId: 'test.metric',
     metricType: 'a-type',
-    metricsIndexUrl: 'https://example.com/metrics/index',
     createIssueUrl: 'https://example.com/new/issue',
     tracingIndexUrl: 'https://example.com/traces/index',
     apiConfig: { ...mockApiConfig },
@@ -36,7 +35,6 @@ describe('DetailsIndex', () => {
     const detailsCmp = wrapper.findComponent(MetricsDetails);
     expect(detailsCmp.exists()).toBe(true);
     expect(detailsCmp.props('metricId')).toBe(props.metricId);
-    expect(detailsCmp.props('metricsIndexUrl')).toBe(props.metricsIndexUrl);
     expect(detailsCmp.props('metricType')).toBe(props.metricType);
     expect(detailsCmp.props('createIssueUrl')).toBe(props.createIssueUrl);
     expect(detailsCmp.props('projectFullPath')).toBe(props.projectFullPath);

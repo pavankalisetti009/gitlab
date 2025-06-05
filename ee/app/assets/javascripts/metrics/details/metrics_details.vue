@@ -74,10 +74,6 @@ export default {
       required: true,
       type: String,
     },
-    metricsIndexUrl: {
-      required: true,
-      type: String,
-    },
     createIssueUrl: {
       required: true,
       type: String,
@@ -213,9 +209,6 @@ export default {
         this.apiAbortController = null;
         this.loading = false;
       }
-    },
-    goToMetricsIndex() {
-      visitUrl(this.metricsIndexUrl);
     },
     onSubmit({ attributes, dateRange, groupBy }) {
       this.filters = {
