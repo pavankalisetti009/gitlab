@@ -400,13 +400,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 end
 
                 let_it_be(:parent_link1) do
-                  create(:parent_link, work_item_parent: synced_epic.work_item,
-                    work_item: WorkItem.find_by_id(issue1.id), relative_position: 10)
+                  epic_issue1.work_item_parent_link
                 end
 
                 let_it_be(:parent_link2) do
-                  create(:parent_link, work_item_parent: synced_epic.work_item,
-                    work_item: WorkItem.find_by_id(issue2.id), relative_position: 20)
+                  epic_issue2.work_item_parent_link
                 end
 
                 let(:params) do

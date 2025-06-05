@@ -88,11 +88,7 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
 
         context 'with existing epic issue link' do
           let_it_be_with_refind(:parent_link) do
-            create(:parent_link, work_item: work_item_issue, work_item_parent: with_synced_epic1)
-          end
-
-          before do
-            create(:epic_issue, epic: synced_epic1, issue: issue)
+            create(:parent_link, :with_epic_issue, work_item: work_item_issue, work_item_parent: with_synced_epic1)
           end
 
           it 'removes parent link and epic issue link', :aggregate_failures do
@@ -123,6 +119,10 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
 
           context 'when destroying epic issue fails' do
             before do
+              # We still need to test when `epic_issues` has no `work_item_parent_link_id`.
+              # If set, FK constraint would the delete the epic_issue otherwise directly.
+              EpicIssue.where(work_item_parent_link_id: parent_link.id).update!(work_item_parent_link_id: nil)
+
               allow_next_instance_of(::EpicIssues::DestroyService) do |instance|
                 allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
               end

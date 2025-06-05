@@ -9,31 +9,28 @@ RSpec.describe EpicIssues::UpdateService, feature_category: :portfolio_managemen
     let_it_be(:project) { create(:project, group: create(:group)) }
     let_it_be(:epic) { create(:epic, group: group) }
     let_it_be(:issues) { create_list(:issue, 4, project: project) }
-    let_it_be(:epic_issue1, reload: true) { create(:epic_issue, epic: epic, issue: issues[0], relative_position: 3) }
-    let_it_be(:epic_issue2, reload: true) { create(:epic_issue, epic: epic, issue: issues[1], relative_position: 600) }
-    let_it_be(:epic_issue3, reload: true) { create(:epic_issue, epic: epic, issue: issues[2], relative_position: 1200) }
-    let_it_be(:epic_issue4, reload: true) { create(:epic_issue, epic: epic, issue: issues[3], relative_position: 2000) }
+    let_it_be_with_refind(:epic_issue1, reload: true) do
+      create(:epic_issue, epic: epic, issue: issues[0], relative_position: 3)
+    end
+
+    let_it_be_with_refind(:epic_issue2, reload: true) do
+      create(:epic_issue, epic: epic, issue: issues[1], relative_position: 600)
+    end
+
+    let_it_be_with_refind(:epic_issue3, reload: true) do
+      create(:epic_issue, epic: epic, issue: issues[2], relative_position: 1200)
+    end
+
+    let_it_be_with_refind(:epic_issue4, reload: true) do
+      create(:epic_issue, epic: epic, issue: issues[3], relative_position: 2000)
+    end
+
     let_it_be(:default_position_value) { Gitlab::Database::MAX_INT_VALUE / 2 }
 
-    let_it_be_with_refind(:parent_link1) do
-      create(:parent_link, work_item: WorkItem.find(epic_issue1.issue.id), work_item_parent: epic.work_item,
-        relative_position: epic_issue1.relative_position)
-    end
-
-    let_it_be_with_refind(:parent_link2) do
-      create(:parent_link, work_item: WorkItem.find(epic_issue2.issue.id), work_item_parent: epic.work_item,
-        relative_position: epic_issue2.relative_position)
-    end
-
-    let_it_be_with_refind(:parent_link3) do
-      create(:parent_link, work_item: WorkItem.find(epic_issue3.issue.id), work_item_parent: epic.work_item,
-        relative_position: epic_issue3.relative_position)
-    end
-
-    let_it_be_with_refind(:parent_link4) do
-      create(:parent_link, work_item: WorkItem.find(epic_issue4.issue.id), work_item_parent: epic.work_item,
-        relative_position: epic_issue4.relative_position)
-    end
+    let_it_be_with_refind(:parent_link1) { epic_issue1.work_item_parent_link }
+    let_it_be_with_refind(:parent_link2) { epic_issue2.work_item_parent_link }
+    let_it_be_with_refind(:parent_link3) { epic_issue3.work_item_parent_link }
+    let_it_be_with_refind(:parent_link4) { epic_issue4.work_item_parent_link }
 
     before do
       stub_licensed_features(epics: true)
@@ -55,7 +52,7 @@ RSpec.describe EpicIssues::UpdateService, feature_category: :portfolio_managemen
 
     context 'when moving issues between different epics' do
       before do
-        epic = build(:epic, group: group)
+        epic = create(:epic, group: group)
 
         epic_issue3.update_attribute(:epic, epic)
         parent_link3.update_attribute(:work_item_parent, epic.work_item)
@@ -220,6 +217,7 @@ RSpec.describe EpicIssues::UpdateService, feature_category: :portfolio_managemen
 
       context 'when the parent link after does not exist' do
         before do
+          epic_issue2.update_attribute(:work_item_parent_link_id, nil)
           parent_link2.destroy!
         end
 
@@ -228,6 +226,7 @@ RSpec.describe EpicIssues::UpdateService, feature_category: :portfolio_managemen
 
       context 'when the parent link before does not exist' do
         before do
+          epic_issue1.update_attribute(:work_item_parent_link_id, nil)
           parent_link1.destroy!
         end
 
@@ -236,6 +235,8 @@ RSpec.describe EpicIssues::UpdateService, feature_category: :portfolio_managemen
 
       context 'when the parent links before and after do not exit' do
         before do
+          epic_issue1.update_attribute(:work_item_parent_link_id, nil)
+          epic_issue2.update_attribute(:work_item_parent_link_id, nil)
           parent_link1.destroy!
           parent_link2.destroy!
         end
@@ -245,6 +246,7 @@ RSpec.describe EpicIssues::UpdateService, feature_category: :portfolio_managemen
 
       context 'when the synced parent link does not exist' do
         before do
+          epic_issue3.update_attribute(:work_item_parent_link_id, nil)
           parent_link3.destroy!
         end
 

@@ -192,8 +192,8 @@ RSpec.shared_examples 'graphql issue list request spec EE' do
       let_it_be(:epic_b) { create(:epic, group: group1) }
 
       before_all do
-        issue_a.epic = epic_a
-        issue_c.epic = epic_b
+        create(:epic_issue, epic: epic_a, issue: issue_a)
+        create(:epic_issue, epic: epic_b, issue: issue_c)
       end
 
       context 'when filtering for all issues with epics' do

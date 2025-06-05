@@ -688,7 +688,6 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
                 before do
                   child_issue = create(:issue, milestone: milestone, project: create(:project, group: group))
                   create(:epic_issue, epic: epic, issue: child_issue)
-                  create(:parent_link, work_item_parent: epic.work_item, work_item: WorkItem.find(child_issue.id))
                 end
 
                 context 'when updating only due date' do

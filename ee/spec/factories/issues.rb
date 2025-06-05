@@ -35,6 +35,24 @@ FactoryBot.modify do
         issue.synced_epic.update!(iid: issue.iid, created_at: issue.created_at)
       end
     end
+
+    transient do
+      epic { nil }
+    end
+
+    # rubocop:disable RSpec/FactoryBot/StrategyInCallback -- this is not a direct association of the factory created here
+    after(:build) do |issue, evaluator|
+      epic = evaluator.epic
+      if epic.present?
+        work_item_parent_link = build(:parent_link, work_item_id: issue.id, work_item_parent: epic.work_item)
+
+        issue.build_epic_issue(
+          epic: evaluator.epic,
+          work_item_parent_link: work_item_parent_link
+        )
+      end
+    end
+    # rubocop:enable RSpec/FactoryBot/StrategyInCallback
   end
 end
 

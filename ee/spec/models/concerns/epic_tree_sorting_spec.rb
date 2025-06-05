@@ -46,12 +46,13 @@ RSpec.describe EpicTreeSorting do
     context 'there is an ID collision' do
       let(:max_epic_issue_id) { EpicIssue.maximum(:id) }
       let(:max_epic_id) { Epic.maximum(:id) }
+      let_it_be(:colliding_issue) { create(:issue, project: project) }
 
       let(:collision_id) { [max_epic_id, max_epic_issue_id].max.succ }
 
       it 'includes the collision from either collision member' do
         colliding_epic = create(:epic, id: collision_id, parent: base_epic, group: group)
-        colliding_epic_issue = create(:epic_issue, id: collision_id, epic: base_epic)
+        colliding_epic_issue = create(:epic_issue, id: collision_id, epic: base_epic, issue: colliding_issue)
 
         expect(siblings(colliding_epic)).to include(polymorphic_ident(colliding_epic_issue))
 

@@ -113,12 +113,9 @@ RSpec.describe WorkItems::DataSync::Widgets::Hierarchy, feature_category: :team_
       end
 
       context 'when work item to be moved is an issue with epic_issue record' do
-        let_it_be(:epic_issue) do
-          create(:epic_issue, issue: work_item, epic: epic, work_item_parent_link: parent_link, relative_position: 20)
-        end
-
-        let_it_be(:parent_link) do
-          create(:parent_link, work_item: work_item, work_item_parent: epic.work_item, relative_position: 20)
+        let_it_be_with_reload(:parent_link) do
+          create(:parent_link, :with_epic_issue, work_item: work_item, work_item_parent: epic.work_item,
+            relative_position: 20)
         end
 
         it "copies the epic issue to the target_work_item" do

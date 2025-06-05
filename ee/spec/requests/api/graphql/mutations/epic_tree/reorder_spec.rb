@@ -17,7 +17,7 @@ RSpec.describe 'Updating an epic tree', feature_category: :portfolio_management 
   let_it_be(:issue2) { create(:issue, project: project) }
   let_it_be(:private_issue) { create(:issue, project: private_project) }
   let_it_be(:epic_issue1) { create(:epic_issue, epic: base_epic, issue: issue1, relative_position: 10) }
-  let_it_be(:epic_issue2) { create(:epic_issue, epic: base_epic, issue: issue2, relative_position: 20) }
+  let_it_be_with_refind(:epic_issue2) { create(:epic_issue, epic: base_epic, issue: issue2, relative_position: 20) }
   let_it_be(:epic_issue3) { create(:epic_issue, epic: base_epic, issue: private_issue, relative_position: 30) }
 
   let(:mutation) do
@@ -219,11 +219,14 @@ RSpec.describe 'Updating an epic tree', feature_category: :portfolio_management 
         end
 
         context 'when a new_parent_id is provided' do
-          let(:new_parent_id) { GitlabSchema.id_from_object(base_epic).to_s }
+          let_it_be(:new_parent_id) { GitlabSchema.id_from_object(base_epic).to_s }
+          let_it_be(:other_epic) { create(:epic, group: group) }
 
           before do
-            other_epic = create(:epic, group: group)
-            epic_issue2.update!(epic: other_epic)
+            epic_issue2.work_item_parent_link.update_attribute(:work_item_parent, other_epic.work_item)
+            epic_issue2.update_attribute(:epic, other_epic)
+            epic_issue2.work_item_parent_link.update!(relative_position: 20)
+            epic_issue2.update!(relative_position: 20)
           end
 
           it "updates the epic's relative positions and parent" do
@@ -242,12 +245,14 @@ RSpec.describe 'Updating an epic tree', feature_category: :portfolio_management 
       end
 
       context 'when moving an issue fails due to the parents of the relative position object and the moving object mismatching' do
-        let(:epic_issue2) { create(:epic_issue, relative_position: 20, issue: create(:issue, project: private_project)) }
+        let_it_be(:private_issue) { create(:issue, project: private_project) }
+        let_it_be(:private_epic) { create(:epic, group: private_group) }
+        let_it_be(:private_epic_issue) { create(:epic_issue, epic: private_epic, issue: private_issue, relative_position: 20) }
 
         before do
           group.add_guest(current_user)
           private_group.add_guest(current_user)
-          variables[:moved][:id] = GitlabSchema.id_from_object(epic_issue2).to_s
+          variables[:moved][:id] = GitlabSchema.id_from_object(private_epic_issue).to_s
           variables[:moved][:adjacent_reference_id] = GitlabSchema.id_from_object(epic_issue1).to_s
         end
 

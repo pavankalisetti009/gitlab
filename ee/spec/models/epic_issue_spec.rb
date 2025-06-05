@@ -8,10 +8,11 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:epic) { create(:epic, group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
+  let_it_be(:issue2) { create(:issue, project: project) }
 
   describe 'scopes' do
     let_it_be(:epic_issue1) { create(:epic_issue, epic: epic, issue: issue) }
-    let_it_be(:epic_issue2) { create(:epic_issue, epic: epic) }
+    let_it_be(:epic_issue2) { create(:epic_issue, epic: epic, issue: issue2) }
 
     describe '.for_issue' do
       it 'only returns epic issues for the given issues' do
@@ -24,8 +25,7 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
     it { is_expected.to belong_to(:work_item) }
 
     it do
-      is_expected.to belong_to(:work_item_parent_link).class_name('WorkItems::ParentLink')
-        .optional(true).inverse_of(:epic_issue)
+      is_expected.to belong_to(:work_item_parent_link).class_name('WorkItems::ParentLink').inverse_of(:epic_issue)
     end
   end
 
@@ -34,6 +34,20 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
     let(:confidential_epic) { build(:epic, :confidential, group: group) }
     let(:issue) { build(:issue, project: project) }
     let(:confidential_issue) { build(:issue, :confidential, project: project) }
+
+    context 'work_item_parent_link' do
+      it { is_expected.to validate_presence_of(:work_item_parent_link) }
+
+      context 'when importing' do
+        subject(:epic_issue) { build(:epic_issue) }
+
+        before do
+          epic_issue.importing = true
+        end
+
+        it { is_expected.not_to validate_presence_of(:work_item_parent_link) }
+      end
+    end
 
     it 'is valid to add non-confidential issue to non-confidential epic' do
       expect(build(:epic_issue, epic: epic, issue: issue)).to be_valid
@@ -53,8 +67,11 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
 
     context 'group hierarchy' do
       let(:issue) { build(:issue, project: project) }
+      let(:work_item_parent_link) do
+        build(:parent_link, work_item_id: issue.id, work_item_parent_id: epic.work_item.id)
+      end
 
-      subject { described_class.new(epic: epic, issue: issue) }
+      subject { described_class.new(epic: epic, issue: issue, work_item_parent_link: work_item_parent_link) }
 
       context 'when epic and issue are from different group hierarchies' do
         let_it_be(:issue) { create(:issue) }
@@ -86,16 +103,16 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
 
       subject { described_class.new(epic: epic, issue: issue) }
 
-      it 'is valid for an issue with no existing parent link epic' do
-        expect(subject).to be_valid
+      it 'is not valid without a work_item_parent_link' do
+        expect(subject).to be_invalid
       end
 
       it 'is valid for issue with work item parent synced to the epic' do
         legacy_epic = create(:epic, :with_synced_work_item, group: group)
         work_item_epic = legacy_epic.work_item
-        create(:parent_link, work_item_parent: work_item_epic, work_item: WorkItem.find(issue.id))
+        parent_link = create(:parent_link, work_item_parent: work_item_epic, work_item: WorkItem.find(issue.id))
 
-        expect(described_class.new(epic: legacy_epic, issue: issue)).to be_valid
+        expect(described_class.new(epic: legacy_epic, issue: issue, work_item_parent_link: parent_link)).to be_valid
       end
 
       it 'is not valid for an issue with a parent link epic', :aggregate_failures do
@@ -109,11 +126,12 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
       context 'when work_item_syncing is set' do
         it 'skips the validation' do
           work_item_epic = create(:work_item, :epic, project: project)
-          create(:parent_link, work_item_parent: work_item_epic, work_item: WorkItem.find(issue.id))
+          parent_link = create(:parent_link, work_item_parent: work_item_epic, work_item: WorkItem.find(issue.id))
 
-          subject.work_item_syncing = true
+          epic_issue = described_class.new(epic: epic, issue: issue, work_item_parent_link: parent_link)
+          epic_issue.work_item_syncing = true
 
-          expect(subject).to be_valid
+          expect(epic_issue).to be_valid
         end
       end
     end
@@ -132,28 +150,33 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
     context 'with a mixed tree level' do
       let_it_be_with_reload(:left) { create(:epic_issue, epic: epic, issue: issue, relative_position: 100) }
       let_it_be_with_reload(:middle) { create(:epic, group: group, parent: epic, relative_position: 101) }
-      let_it_be_with_reload(:right) { create(:epic_issue, epic: epic, relative_position: 102) }
+      let_it_be_with_reload(:right) { create(:epic_issue, epic: epic, issue: issue2, relative_position: 102) }
 
-      it 'can create space to the right' do
-        RelativePositioning.mover.context(left).create_space_right
-        [left, middle, right].each(&:reset)
+      context 'when relative position is set' do
+        it 'can create space to the right' do
+          RelativePositioning.mover.context(left).create_space_right
+          [left, middle, right].each(&:reset)
 
-        expect(middle.relative_position - left.relative_position).to be > 1
-        expect(left.relative_position).to be < middle.relative_position
-        expect(middle.relative_position).to be < right.relative_position
-      end
+          expect(middle.relative_position - left.relative_position).to be > 1
+          expect(left.relative_position).to be < middle.relative_position
+          expect(middle.relative_position).to be < right.relative_position
+        end
 
-      it 'can create space to the left' do
-        RelativePositioning.mover.context(right).create_space_left
-        [left, middle, right].each(&:reset)
+        it 'can create space to the left' do
+          RelativePositioning.mover.context(right).create_space_left
+          [left, middle, right].each(&:reset)
 
-        expect(right.relative_position - middle.relative_position).to be > 1
-        expect(left.relative_position).to be < middle.relative_position
-        expect(middle.relative_position).to be < right.relative_position
+          expect(right.relative_position - middle.relative_position).to be > 1
+          expect(left.relative_position).to be < middle.relative_position
+          expect(middle.relative_position).to be < right.relative_position
+        end
       end
 
       it 'moves nulls to the end' do
-        leaves = create_list(:epic_issue, 2, epic: epic, relative_position: nil)
+        leaves = Array.new(2).map do
+          create(:epic_issue, epic: epic, issue: create(:issue, project: project), relative_position: nil)
+        end
+
         nested = create(:epic, group: epic.group, parent: epic, relative_position: nil)
         moved = [*leaves, nested]
         level = [nested, *leaves, right]
@@ -172,11 +195,12 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
   describe '.find_or_initialize_from_parent_link' do
     let_it_be(:work_item) { create(:work_item, :issue, project: project) }
     let_it_be(:parent_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
-    let_it_be(:parent_link) { create(:parent_link, work_item_parent: parent_work_item, work_item: work_item) }
 
     subject(:epic_issue) { described_class.find_or_initialize_from_parent_link(parent_link) }
 
     context 'when epic issue does not exist' do
+      let_it_be(:parent_link) { create(:parent_link, work_item_parent: parent_work_item, work_item: work_item) }
+
       it 'initializes a new epic issue with correct attributes', :aggregate_failures do
         expect(epic_issue.issue_id).to eq(work_item.id)
         expect(epic_issue.epic).to eq(parent_work_item.synced_epic)
@@ -188,6 +212,8 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
       let_it_be(:existing_epic_issue) do
         create(:epic_issue, issue: Issue.find(work_item.id), epic: parent_work_item.synced_epic)
       end
+
+      let(:parent_link) { existing_epic_issue.work_item_parent_link }
 
       it 'finds the existing epic issue and updates its attributes', :aggregate_failures do
         expect(epic_issue.id).to eq(existing_epic_issue.id)
@@ -213,6 +239,8 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
 
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([epic.id]).once
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([new_epic.id]).once
+
+        epic_issue.work_item_syncing = true
 
         epic_issue.update!(epic: new_epic)
       end
