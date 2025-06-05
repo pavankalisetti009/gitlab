@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
-# require 'fast_spec_helper' -- this no longer runs under fast_spec_helper
 require 'spec_helper'
-require 'rspec-parameterized'
 
-RSpec.describe SystemCheck::App::SearchCheck do
+RSpec.describe SystemCheck::App::SearchCheck, feature_category: :global_search do
   before do
     # `info` is memoized, so we must clear it out to avoid test pollution
-    described_class.instance_variable_set(:@info, nil)
+    described_class.clear_memoization(:info)
   end
 
   describe '.info' do
@@ -70,11 +68,14 @@ RSpec.describe SystemCheck::App::SearchCheck do
       'elasticsearch' | '7.1.0' | true
       'elasticsearch' | '7.5.1' | true
       'elasticsearch' | '8.5.1' | true
-      'elasticsearch' | '9.0.1' | false
+      'elasticsearch' | '9.0.1' | true
+      'elasticsearch' | '10.1.1' | false
       'opensearch' | '0.1.0' | false
       'opensearch' | '1.0.0' | true
       'opensearch' | '1.2.4' | true
       'opensearch' | '2.3.0' | true
+      'opensearch' | '3.0.0' | true
+      'opensearch' | '4.1.0' | false
     end
 
     with_them do
