@@ -8,7 +8,7 @@ export default {
     GlDisclosureDropdownItem,
   },
   props: {
-    detailsRoute: {
+    editRoute: {
       type: Object,
       required: true,
     },
@@ -35,8 +35,8 @@ export default {
     <gl-disclosure-dropdown-item>
       <template #list-item>
         <router-link
-          data-testid="secret-details-link"
-          :to="detailsRoute"
+          data-testid="secret-edit-link"
+          :to="editRoute"
           class="gl-block gl-text-default hover:gl-text-default hover:gl-no-underline"
         >
           {{ __('Edit') }}

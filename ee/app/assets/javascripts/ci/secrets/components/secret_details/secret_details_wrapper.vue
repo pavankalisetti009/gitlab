@@ -1,6 +1,7 @@
 <script>
 import { GlAlert, GlButton, GlDisclosureDropdown, GlLoadingIcon } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
+import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
@@ -52,6 +53,7 @@ export default {
       error() {
         createAlert({ message: this.$options.i18n.queryError });
       },
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
     },
   },
   data() {

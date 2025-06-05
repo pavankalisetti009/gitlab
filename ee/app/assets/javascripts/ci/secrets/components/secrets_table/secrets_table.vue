@@ -10,6 +10,7 @@ import {
 } from '@gitlab/ui';
 import EmptySecretsSvg from '@gitlab/svgs/dist/illustrations/chat-sm.svg?url';
 import { __, s__ } from '~/locale';
+import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -84,6 +85,7 @@ export default {
           message: s__('Secrets|An error occurred while fetching secrets. Please try again.'),
         });
       },
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
     },
   },
   computed: {
@@ -109,7 +111,7 @@ export default {
       this.showDeleteModal = true;
     },
     getDetailsRoute: (secretName) => ({ name: DETAILS_ROUTE_NAME, params: { secretName } }),
-    getEditRoute: (name) => ({ name: EDIT_ROUTE_NAME, params: { name } }),
+    getEditRoute: (secretName) => ({ name: EDIT_ROUTE_NAME, params: { secretName } }),
     environmentLabelText(environment) {
       const environmentText = convertEnvironmentScope(environment);
       return `${__('env')}::${environmentText}`;
@@ -233,7 +235,7 @@ export default {
         </template>
         <template #cell(actions)="{ item: { name } }">
           <actions-cell
-            :details-route="getEditRoute(name)"
+            :edit-route="getEditRoute(name)"
             :secret-name="name"
             @delete-secret="deleteSecret"
           />
