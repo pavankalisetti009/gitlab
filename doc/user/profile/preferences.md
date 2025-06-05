@@ -14,35 +14,42 @@ title: Profile preferences
 
 You can update your preferences to change the look and feel of GitLab.
 
-## Change the appearance
+## Change the mode
 
 {{< history >}}
 
 - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/28252) in GitLab 13.1.
 - [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/524846) from experiment to beta in GitLab 17.11.
+- [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/470413) from **Appearance** to **Mode** in GitLab 18.1.
 
 {{< /history >}}
 
-You can change the visual appearance of the interface to be light, dark, or automatically update based on device preferences.
+You can change the color mode of the interface to be light, dark, or automatically update based on device preferences.
 
 To change the appearance:
 
 1. On the left sidebar, select your avatar.
 1. Select **Preferences**.
-1. In the **Appearance** section, select an option.
+1. In the **Mode** section, select an option.
 1. Select **Save changes**.
 
-## Change the color theme
+## Change the navigation theme
 
-You can change the color theme of the GitLab UI. These colors are displayed on the left sidebar.
-Using individual color themes might help you differentiate between your different
+{{< history >}}
+
+- [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/470413) from **Color theme** to **Navigation theme** in GitLab 18.1.
+
+{{< /history >}}
+
+You can change the navigation theme of the GitLab UI. These colors are displayed on the left sidebar.
+Using individual navigation themes might help you differentiate between your different
 GitLab instances.
 
-To change the color theme:
+To change the navigation theme:
 
 1. On the left sidebar, select your avatar.
 1. Select **Preferences**.
-1. In the **Color theme** section, select a theme.
+1. In the **Navigation** section, select a theme.
 
 ## Change the syntax highlighting theme
 
@@ -58,7 +65,7 @@ To change the syntax highlighting theme:
 
 1. On the left sidebar, select your avatar.
 1. Select **Preferences**.
-1. In the **Syntax highlighting theme** section, select a theme.
+1. In the **Syntax highlights** section, select a theme.
 1. Select **Save changes**.
 
 To view the updated syntax highlighting theme, refresh your project's page.
@@ -76,7 +83,7 @@ To change the diff colors:
 
 1. On the left sidebar, select your avatar.
 1. Select **Preferences**.
-1. Go to the **Diff colors** section.
+1. Go to the **Diffs** section.
 1. Select a color or enter a color code.
 1. Select **Save changes**.
 
