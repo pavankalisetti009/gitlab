@@ -10,11 +10,11 @@ module EE
       # We can't specify `override` here:
       # https://gitlab.com/gitlab-org/gitlab-foss/issues/50911
       def replyable_types
-        super + %w[Epic Vulnerability]
+        super + %w[Epic Vulnerability ComplianceManagement::Projects::ComplianceViolation]
       end
 
       def resolvable_types
-        super + %w[Epic]
+        super + %w[Epic ComplianceManagement::Projects::ComplianceViolation]
       end
     end
 
