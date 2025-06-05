@@ -32,6 +32,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_many(:audit_events_streaming_instance_namespace_filters).class_name('AuditEvents::Instance::NamespaceFilter') }
   it { is_expected.to have_many(:custom_lifecycles).class_name('WorkItems::Statuses::Custom::Lifecycle') }
   it { is_expected.to have_one(:ai_settings).class_name('Ai::NamespaceSetting') }
+  it { is_expected.to have_many(:custom_statuses).class_name('WorkItems::Statuses::Custom::Status') }
 
   it { is_expected.to delegate_method(:trial?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_ends_on).to(:gitlab_subscription) }
@@ -2796,6 +2797,27 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       it 'returns custom lifecycles' do
         expect(namespace.lifecycles).to contain_exactly(custom_lifecycle)
+      end
+    end
+  end
+
+  describe '#statuses' do
+    context 'with system-defined statuses' do
+      let_it_be(:system_defined_statuses_names) do
+        ::WorkItems::Statuses::SystemDefined::Status.all.map(&:name)
+      end
+
+      it 'returns system-defined statuses' do
+        expect(namespace.statuses.map(&:name)).to eq(system_defined_statuses_names)
+      end
+    end
+
+    context 'with custom statuses' do
+      let!(:custom_status_1) { create(:work_item_custom_status, namespace: namespace) }
+      let!(:custom_status_2) { create(:work_item_custom_status, :closed, namespace: namespace) }
+
+      it 'returns custom statuses' do
+        expect(namespace.statuses).to contain_exactly(custom_status_1, custom_status_2)
       end
     end
   end

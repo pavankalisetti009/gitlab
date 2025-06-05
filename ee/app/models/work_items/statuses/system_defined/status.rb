@@ -77,6 +77,10 @@ module WorkItems
           lifecycle.has_status_id?(id)
         end
 
+        def description
+          nil
+        end
+
         def icon_name
           CATEGORY_ICONS[category]
         end
