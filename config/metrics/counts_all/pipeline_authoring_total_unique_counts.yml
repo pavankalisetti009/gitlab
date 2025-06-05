@@ -1,6 +1,6 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.pipeline_authoring.pipeline_authoring_total_unique_counts_monthly
+key_path: redis_hll_counters.pipeline_authoring.pipeline_authoring_total_unique_counts
 description: Unique users doing commits or push MRs which contains CI cifig file
 product_group: pipeline_authoring
 product_categories:
@@ -9,7 +9,9 @@ value_type: number
 status: active
 milestone: "13.12"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/51201
-time_frame: 28d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 events:
