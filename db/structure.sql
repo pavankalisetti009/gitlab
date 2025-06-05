@@ -11772,6 +11772,7 @@ CREATE TABLE ci_runner_machines (
     ip_address text,
     version text,
     runtime_features jsonb DEFAULT '{}'::jsonb NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_3d8736b3af CHECK ((char_length(system_xid) <= 64)),
     CONSTRAINT check_5bad2a6944 CHECK ((char_length(revision) <= 255)),
     CONSTRAINT check_7dc4eee8a5 CHECK ((char_length(version) <= 2048)),
@@ -11829,7 +11830,8 @@ CREATE TABLE ci_runner_taggings (
     tag_id bigint NOT NULL,
     runner_id bigint NOT NULL,
     sharding_key_id bigint,
-    runner_type smallint NOT NULL
+    runner_type smallint NOT NULL,
+    organization_id bigint
 )
 PARTITION BY LIST (runner_type);
 
@@ -11839,6 +11841,7 @@ CREATE TABLE ci_runner_taggings_group_type (
     runner_id bigint NOT NULL,
     sharding_key_id bigint,
     runner_type smallint NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
 );
 
@@ -11857,6 +11860,7 @@ CREATE TABLE ci_runner_taggings_instance_type (
     runner_id bigint NOT NULL,
     sharding_key_id bigint,
     runner_type smallint NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NULL))
 );
 
@@ -11866,6 +11870,7 @@ CREATE TABLE ci_runner_taggings_project_type (
     runner_id bigint NOT NULL,
     sharding_key_id bigint,
     runner_type smallint NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
 );
 
@@ -11900,6 +11905,7 @@ CREATE TABLE ci_runners (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -15256,6 +15262,7 @@ CREATE TABLE group_type_ci_runner_machines (
     ip_address text,
     version text,
     runtime_features jsonb DEFAULT '{}'::jsonb NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_3d8736b3af CHECK ((char_length(system_xid) <= 64)),
     CONSTRAINT check_5bad2a6944 CHECK ((char_length(revision) <= 255)),
     CONSTRAINT check_7dc4eee8a5 CHECK ((char_length(version) <= 2048)),
@@ -15290,6 +15297,7 @@ CREATE TABLE group_type_ci_runners (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -15927,6 +15935,7 @@ CREATE TABLE instance_type_ci_runner_machines (
     ip_address text,
     version text,
     runtime_features jsonb DEFAULT '{}'::jsonb NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_3d8736b3af CHECK ((char_length(system_xid) <= 64)),
     CONSTRAINT check_5bad2a6944 CHECK ((char_length(revision) <= 255)),
     CONSTRAINT check_7dc4eee8a5 CHECK ((char_length(version) <= 2048)),
@@ -15961,6 +15970,7 @@ CREATE TABLE instance_type_ci_runners (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -21608,6 +21618,7 @@ CREATE TABLE project_type_ci_runner_machines (
     ip_address text,
     version text,
     runtime_features jsonb DEFAULT '{}'::jsonb NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_3d8736b3af CHECK ((char_length(system_xid) <= 64)),
     CONSTRAINT check_5bad2a6944 CHECK ((char_length(revision) <= 255)),
     CONSTRAINT check_7dc4eee8a5 CHECK ((char_length(version) <= 2048)),
@@ -21642,6 +21653,7 @@ CREATE TABLE project_type_ci_runners (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -33803,9 +33815,29 @@ CREATE INDEX index_ci_runner_machines_on_executor_type ON ONLY ci_runner_machine
 
 CREATE INDEX index_012094097c ON instance_type_ci_runner_machines USING btree (executor_type);
 
+CREATE INDEX index_ci_runner_taggings_on_organization_id ON ONLY ci_runner_taggings USING btree (organization_id);
+
+CREATE INDEX index_03bce7b65b ON ci_runner_taggings_group_type USING btree (organization_id);
+
 CREATE INDEX index_ci_runner_machines_on_ip_address ON ONLY ci_runner_machines USING btree (ip_address);
 
 CREATE INDEX index_053d12f7ee ON project_type_ci_runner_machines USING btree (ip_address);
+
+CREATE INDEX index_ci_runners_on_organization_id ON ONLY ci_runners USING btree (organization_id);
+
+CREATE INDEX index_11eb9d1747 ON project_type_ci_runners USING btree (organization_id);
+
+CREATE INDEX index_ci_runner_machines_on_organization_id ON ONLY ci_runner_machines USING btree (organization_id);
+
+CREATE INDEX index_8cc4cbb7d2 ON group_type_ci_runner_machines USING btree (organization_id);
+
+CREATE INDEX index_8f3cd552cd ON ci_runner_taggings_instance_type USING btree (organization_id);
+
+CREATE INDEX index_92f173730f ON instance_type_ci_runners USING btree (organization_id);
+
+CREATE INDEX index_934f0e59cf ON ci_runner_taggings_project_type USING btree (organization_id);
+
+CREATE INDEX index_a3343eff0d ON group_type_ci_runners USING btree (organization_id);
 
 CREATE INDEX index_aa3b4fe8c6 ON group_type_ci_runner_machines USING btree (executor_type);
 
@@ -35091,6 +35123,8 @@ CREATE INDEX index_duo_workflows_workloads_on_workflow_id ON duo_workflows_workl
 
 CREATE INDEX index_duo_workflows_workloads_on_workload_id ON duo_workflows_workloads USING btree (workload_id);
 
+CREATE INDEX index_e4459c2bb7 ON project_type_ci_runner_machines USING btree (organization_id);
+
 CREATE INDEX index_early_access_program_tracking_events_on_category ON early_access_program_tracking_events USING btree (category);
 
 CREATE INDEX index_early_access_program_tracking_events_on_event_label ON early_access_program_tracking_events USING btree (event_label);
@@ -35262,6 +35296,8 @@ CREATE UNIQUE INDEX index_external_audit_event_destinations_on_namespace_id ON a
 CREATE UNIQUE INDEX index_external_pull_requests_on_project_and_branches ON external_pull_requests USING btree (project_id, source_branch, target_branch);
 
 CREATE INDEX index_external_status_checks_protected_branches_on_project_id ON external_status_checks_protected_branches USING btree (project_id);
+
+CREATE INDEX index_f4903d2246 ON instance_type_ci_runner_machines USING btree (organization_id);
 
 CREATE UNIQUE INDEX index_feature_flag_scopes_on_flag_id_and_environment_scope ON operations_feature_flag_scopes USING btree (feature_flag_id, environment_scope);
 
@@ -40903,7 +40939,21 @@ ALTER INDEX index_uploads_9ba88c4165_on_uploader_and_path ATTACH PARTITION impor
 
 ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_012094097c;
 
+ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_03bce7b65b;
+
 ALTER INDEX index_ci_runner_machines_on_ip_address ATTACH PARTITION index_053d12f7ee;
+
+ALTER INDEX index_ci_runners_on_organization_id ATTACH PARTITION index_11eb9d1747;
+
+ALTER INDEX index_ci_runner_machines_on_organization_id ATTACH PARTITION index_8cc4cbb7d2;
+
+ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_8f3cd552cd;
+
+ALTER INDEX index_ci_runners_on_organization_id ATTACH PARTITION index_92f173730f;
+
+ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_934f0e59cf;
+
+ALTER INDEX index_ci_runners_on_organization_id ATTACH PARTITION index_a3343eff0d;
 
 ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_aa3b4fe8c6;
 
@@ -40955,7 +41005,11 @@ ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_d58
 
 ALTER INDEX p_ci_pipelines_trigger_id_id_desc_idx ATTACH PARTITION index_d8ae6ea3f3;
 
+ALTER INDEX index_ci_runner_machines_on_organization_id ATTACH PARTITION index_e4459c2bb7;
+
 ALTER INDEX index_ci_runner_machines_on_ip_address ATTACH PARTITION index_ee7c87e634;
+
+ALTER INDEX index_ci_runner_machines_on_organization_id ATTACH PARTITION index_f4903d2246;
 
 ALTER INDEX index_ci_runner_machines_on_runner_id_and_type_and_system_xid ATTACH PARTITION instance_type_ci_runner_machi_runner_id_runner_type_system__idx;
 
