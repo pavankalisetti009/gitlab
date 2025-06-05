@@ -98,42 +98,19 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
           report.add_license(id: 'unknown', name: 'unknown')
 
           allow(license_compliance).to receive(:license_scanning_report).and_return(report)
-        end
 
-        context "when the feature flag static_licenses is disabled" do
-          before do
-            stub_feature_flags(static_licenses: false)
-
-            input.each do |policy|
-              scan_result_policy_read = policy[:approval_policy] ? create(:scan_result_policy_read, match_on_inclusion_license: policy[:classification] == 'denied') : nil
-              create(:software_license_policy, policy[:classification],
-                project: project,
-                software_license: license_map[policy[:id]],
-                scan_result_policy_read: scan_result_policy_read
-              )
-            end
-          end
-
-          it 'sets classification based on policies' do
-            expect(policies.map(&:classification)).to eq(result)
+          input.each do |policy|
+            scan_result_policy_read = policy[:approval_policy] ? create(:scan_result_policy_read, match_on_inclusion_license: policy[:classification] == 'denied') : nil
+            create(:software_license_policy, policy[:classification],
+              project: project,
+              software_license_spdx_identifier: policy[:id],
+              scan_result_policy_read: scan_result_policy_read
+            )
           end
         end
 
-        context "when the feature flag static_licenses is enabled" do
-          before do
-            input.each do |policy|
-              scan_result_policy_read = policy[:approval_policy] ? create(:scan_result_policy_read, match_on_inclusion_license: policy[:classification] == 'denied') : nil
-              create(:software_license_policy, policy[:classification],
-                project: project,
-                software_license_spdx_identifier: policy[:id],
-                scan_result_policy_read: scan_result_policy_read
-              )
-            end
-          end
-
-          it 'sets classification based on policies' do
-            expect(policies.map(&:classification)).to eq(result)
-          end
+        it 'sets classification based on policies' do
+          expect(policies.map(&:classification)).to eq(result)
         end
       end
     end
@@ -156,23 +133,6 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
             expect(policies[0].url).to be_blank
             expect(policies[0].classification).to eq("denied")
             expect(policies[0].spdx_identifier).to eq(mit_spdx_identifier)
-          end
-
-          context "when the feature flag static_licenses is disabled" do
-            before do
-              stub_feature_flags(static_licenses: false)
-            end
-
-            let!(:mit_policy) { create(:software_license_policy, :denied, software_license: mit, project: project) }
-
-            it "includes an a policy for a classified license that was not detected in the scan report" do
-              expect(policies.count).to eq(1)
-              expect(policies[0].id).to eq(mit_policy.id)
-              expect(policies[0].name).to eq(mit.name)
-              expect(policies[0].url).to be_blank
-              expect(policies[0].classification).to eq("denied")
-              expect(policies[0].spdx_identifier).to eq(mit.spdx_identifier)
-            end
           end
         end
       end
@@ -229,51 +189,6 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
             expect(policies[3].classification).to eq('unclassified')
             expect(policies[3].spdx_identifier).to be_nil
           end
-
-          context "when the feature flag static_licenses is disabled" do
-            before do
-              stub_feature_flags(static_licenses: false)
-            end
-
-            let!(:mit_policy) { create(:software_license_policy, :denied, software_license: mit, project: project) }
-            let!(:other_license_policy) { create(:software_license_policy, :allowed, software_license: other_license, project: project) }
-
-            it "includes a policy for each detected license and classified license" do
-              expect(policies.count).to eq(4)
-            end
-
-            it 'includes a policy for a detected license that is unclassified' do
-              expect(policies[0].id).to be_nil
-              expect(policies[0].name).to eq("BSD-3-Clause")
-              expect(policies[0].url).to eq("https://spdx.org/licenses/BSD-3-Clause.html")
-              expect(policies[0].classification).to eq("unclassified")
-              expect(policies[0].spdx_identifier).to eq("BSD-3-Clause")
-            end
-
-            it 'includes a policy for a classified license that was also detected in the scan report' do
-              expect(policies[1].id).to eq(mit_policy.id)
-              expect(policies[1].name).to eq(mit.name)
-              expect(policies[1].url).to eq("https://spdx.org/licenses/MIT.html")
-              expect(policies[1].classification).to eq("denied")
-              expect(policies[1].spdx_identifier).to eq("MIT")
-            end
-
-            it 'includes a policy for a classified license that was not detected in the scan report' do
-              expect(policies[2].id).to eq(other_license_policy.id)
-              expect(policies[2].name).to eq(other_license.name)
-              expect(policies[2].url).to be_blank
-              expect(policies[2].classification).to eq("allowed")
-              expect(policies[2].spdx_identifier).to eq(other_license.spdx_identifier)
-            end
-
-            it 'includes a policy for an unclassified and unknown license that was detected in the scan report' do
-              expect(policies[3].id).to be_nil
-              expect(policies[3].name).to eq("unknown")
-              expect(policies[3].url).to be_blank
-              expect(policies[3].classification).to eq("unclassified")
-              expect(policies[3].spdx_identifier).to be_nil
-            end
-          end
         end
       end
     end
@@ -295,19 +210,6 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
 
       it 'does not process the report' do
         expect(results).to be_empty
-      end
-
-      context "when the feature flag static_licenses is disabled" do
-        before do
-          stub_feature_flags(static_licenses: false)
-        end
-
-        let!(:mit_policy) { create(:software_license_policy, :denied, software_license: mit, project: project) }
-        let!(:other_license_policy) { create(:software_license_policy, :allowed, software_license: other_license, project: project) }
-
-        it 'does not process the report' do
-          expect(results).to be_empty
-        end
       end
     end
 
@@ -497,193 +399,6 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
           it { expect(license_compliance.find_policies(sort: nil).map(&:name)).to eq(sorted_by_name_asc) }
         end
       end
-
-      context "when the feature flag static_licenses is disabled" do
-        let!(:mit_policy) { create(:software_license_policy, :denied, software_license: mit, project: project) }
-        let(:other_license) { bsd_3_license }
-        let!(:other_license_policy) { create(:software_license_policy, :allowed, software_license: other_license, project: project) }
-
-        before do
-          stub_feature_flags(static_licenses: false)
-        end
-
-        it 'records an onboarding progress action for license scanning' do
-          expect(::Onboarding::Progress).to receive(:register).with(pipeline.project.root_namespace, :license_scanning_run).and_call_original
-
-          license_compliance.find_policies
-        end
-
-        context 'when pipeline is not present' do
-          let!(:pipeline) { nil }
-
-          it 'records an onboarding progress action for license scanning' do
-            expect(::Onboarding::Progress).not_to receive(:register).with(anything)
-
-            license_compliance.find_policies
-          end
-        end
-
-        context 'when searching for policies for licenses that were detected in a scan report' do
-          let(:results) { license_compliance.find_policies(detected_only: true) }
-
-          it 'only includes licenses that appear in the latest license scan report' do
-            expect(results.count).to eq(4)
-          end
-
-          it 'includes a policy for an allowed known license that was detected in the scan report' do
-            assert_matches(
-              results[0],
-              id: other_license_policy.id,
-              name: other_license.name,
-              url: "https://spdx.org/licenses/BSD-3-Clause.html",
-              classification: "allowed",
-              spdx_identifier: "BSD-3-Clause"
-            )
-          end
-
-          it 'includes an entry for an unclassified custom license found in the scan report' do
-            assert_matches(
-              results[1],
-              id: nil,
-              name: "CUSTOM_DENIED_LICENSE",
-              url: "https://spdx.org/licenses/CUSTOM_DENIED_LICENSE.html",
-              classification: "unclassified",
-              spdx_identifier: "CUSTOM_DENIED_LICENSE"
-            )
-          end
-
-          it 'includes an entry for a denied license found in the scan report' do
-            assert_matches(
-              results[2],
-              id: mit_policy.id,
-              name: mit.name,
-              url: "https://spdx.org/licenses/MIT.html",
-              classification: "denied",
-              spdx_identifier: "MIT"
-            )
-          end
-
-          it 'includes an entry for an unclassified unknown license found in the scan report' do
-            assert_matches(
-              results[3],
-              id: nil,
-              name: 'unknown',
-              url: nil,
-              classification: 'unclassified',
-              spdx_identifier: nil
-            )
-          end
-
-          context "with denied license without spdx identifier" do
-            let!(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, project: project) }
-            let(:custom_license) { custom_denied_license }
-            let!(:custom_license_policy) { create(:software_license_policy, :denied, software_license: custom_license, project: project) }
-
-            let(:results) { license_compliance.find_policies(detected_only: true) }
-
-            it 'contains denied license' do
-              expect(results.count).to eq(4)
-            end
-          end
-        end
-
-        context "when searching for policies with a specific classification" do
-          let(:results) { license_compliance.find_policies(classification: ['allowed']) }
-
-          it 'includes an entry for each `allowed` licensed' do
-            expect(results.count).to eq(1)
-            assert_matches(
-              results[0],
-              id: other_license_policy.id,
-              name: other_license_policy.software_license.name,
-              url: "https://spdx.org/licenses/BSD-3-Clause.html",
-              classification: 'allowed',
-              spdx_identifier: other_license_policy.software_license.spdx_identifier
-            )
-          end
-        end
-
-        context "when searching for policies by multiple classifications" do
-          let(:results) { license_compliance.find_policies(classification: %w[allowed denied]) }
-
-          it 'includes an entry for each `allowed` and `denied` licensed' do
-            expect(results.count).to eq(2)
-            assert_matches(
-              results[0],
-              id: other_license_policy.id,
-              name: other_license_policy.software_license.name,
-              url: "https://spdx.org/licenses/BSD-3-Clause.html",
-              classification: "allowed",
-              spdx_identifier: other_license_policy.software_license.spdx_identifier
-            )
-            assert_matches(
-              results[1],
-              id: mit_policy.id,
-              name: mit_policy.software_license.name,
-              url: "https://spdx.org/licenses/MIT.html",
-              classification: "denied",
-              spdx_identifier: mit_policy.software_license.spdx_identifier
-            )
-          end
-        end
-
-        context "when searching for detected policies matching a classification" do
-          let(:results) { license_compliance.find_policies(detected_only: true, classification: %w[allowed denied]) }
-
-          it 'includes an entry for each entry that was detected in the report and matches a classification' do
-            expect(results.count).to eq(2)
-            assert_matches(
-              results[0],
-              id: other_license_policy.id,
-              name: other_license_policy.software_license.name,
-              url: "https://spdx.org/licenses/BSD-3-Clause.html",
-              classification: "allowed",
-              spdx_identifier: other_license_policy.software_license.spdx_identifier
-            )
-            assert_matches(
-              results[1],
-              id: mit_policy.id,
-              name: mit_policy.software_license.name,
-              url: "https://spdx.org/licenses/MIT.html",
-              classification: "denied",
-              spdx_identifier: mit_policy.software_license.spdx_identifier
-            )
-          end
-        end
-
-        context 'when sorting policies' do
-          let(:sorted_by_name_asc) { ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'MIT License', 'unknown'] }
-
-          where(:attribute, :direction, :expected) do
-            sorted_by_name_asc = ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'MIT License', 'unknown']
-            sorted_by_classification_asc = ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'unknown', 'MIT License']
-            [
-              [:classification, :asc, sorted_by_classification_asc],
-              [:classification, :desc, sorted_by_classification_asc.reverse],
-              [:name, :desc, sorted_by_name_asc.reverse],
-              [:invalid, :asc, sorted_by_name_asc],
-              [:name, :invalid, sorted_by_name_asc],
-              [:name, nil, sorted_by_name_asc],
-              [nil, :asc, sorted_by_name_asc],
-              [nil, nil, sorted_by_name_asc]
-            ]
-          end
-
-          with_them do
-            let(:results) { license_compliance.find_policies(sort: { by: attribute, direction: direction }) }
-
-            it { expect(results.map(&:name)).to eq(expected) }
-          end
-
-          context 'when using the default sort options' do
-            it { expect(license_compliance.find_policies.map(&:name)).to eq(sorted_by_name_asc) }
-          end
-
-          context 'when `nil` sort options are provided' do
-            it { expect(license_compliance.find_policies(sort: nil).map(&:name)).to eq(sorted_by_name_asc) }
-          end
-        end
-      end
     end
   end
 
@@ -739,111 +454,50 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
 
           allow(license_compliance).to receive(:license_scanning_report).and_return(report)
           allow(base_compliance).to receive(:license_scanning_report).and_return(base_report)
+
+          create(:software_license_policy, :allowed,
+            project: project,
+            software_license_spdx_identifier: mit_spdx_identifier,
+            scan_result_policy_read: scan_result_policy_read_without_inclusion
+          )
+          create(:software_license_policy, :denied,
+            project: project,
+            software_license_spdx_identifier: aml_spdx_identifier,
+            scan_result_policy_read: scan_result_policy_read_with_inclusion
+          )
         end
 
-        context "when the feature flag static_licenses is disabled" do
-          let(:aml) { create(:software_license, name: 'Apple MIT License', spdx_identifier: 'AML') }
-          let(:mspl) { create(:software_license, name: 'Microsoft Public License', spdx_identifier: 'MS-PL') }
-          let(:apache_2) { create(:software_license, name: 'Apache-2.0 License', spdx_identifier: 'Apache-2.0') }
+        it 'returns differences with denied status' do
+          added = diff[:added]
+
+          expect(added[0].spdx_identifier).to eq(aml_spdx_identifier)
+          expect(added[0].classification).to eq('denied')
+          expect(added[1].spdx_identifier).to eq(mspl_spdx_identifier)
+          expect(added[1].classification).to eq('denied')
+        end
+
+        context 'when base_report has new denied custom licenses' do
+          let(:custom_license) { create(:custom_software_license, name: 'Custom License') }
 
           before do
-            stub_feature_flags(static_licenses: false)
+            base_report.add_license(id: nil, name: 'Custom License')
 
-            create(:software_license_policy, :allowed,
-              project: project,
-              software_license: mit,
-              scan_result_policy_read: scan_result_policy_read_without_inclusion
-            )
             create(:software_license_policy, :denied,
               project: project,
-              software_license: aml,
-              scan_result_policy_read: scan_result_policy_read_with_inclusion
+              software_license: nil,
+              custom_software_license: custom_license,
+              scan_result_policy_read: create(:scan_result_policy_read, match_on_inclusion_license: true)
             )
           end
 
           it 'returns differences with denied status' do
             added = diff[:added]
-
-            expect(added[0].spdx_identifier).to eq('AML')
-            expect(added[0].classification).to eq('denied')
-            expect(added[1].spdx_identifier).to eq('MS-PL')
-            expect(added[1].classification).to eq('denied')
-          end
-
-          context 'when base_report has new denied custom licenses' do
-            let(:custom_license) { create(:custom_software_license, name: 'Custom License') }
-
-            before do
-              base_report.add_license(id: nil, name: 'Custom License')
-
-              create(:software_license_policy, :denied,
-                project: project,
-                software_license: nil,
-                custom_software_license: custom_license,
-                scan_result_policy_read: create(:scan_result_policy_read, match_on_inclusion_license: true)
-              )
-            end
-
-            it 'returns differences with denied status' do
-              added = diff[:added]
-              expect(added[0].spdx_identifier).to eq('AML')
-              expect(added[0].classification).to eq('denied')
-              expect(added[1].name).to eq('Custom License')
-              expect(added[1].classification).to eq('denied')
-              expect(added[2].spdx_identifier).to eq('MS-PL')
-              expect(added[2].classification).to eq('denied')
-            end
-          end
-        end
-
-        context "when the feature flag static_licenses is enabled" do
-          before do
-            stub_feature_flags(static_licenses: false)
-
-            create(:software_license_policy, :allowed,
-              project: project,
-              software_license_spdx_identifier: mit_spdx_identifier,
-              scan_result_policy_read: scan_result_policy_read_without_inclusion
-            )
-            create(:software_license_policy, :denied,
-              project: project,
-              software_license_spdx_identifier: aml_spdx_identifier,
-              scan_result_policy_read: scan_result_policy_read_with_inclusion
-            )
-          end
-
-          it 'returns differences with denied status' do
-            added = diff[:added]
-
             expect(added[0].spdx_identifier).to eq(aml_spdx_identifier)
             expect(added[0].classification).to eq('denied')
-            expect(added[1].spdx_identifier).to eq(mspl_spdx_identifier)
+            expect(added[1].name).to eq(custom_license.name)
             expect(added[1].classification).to eq('denied')
-          end
-
-          context 'when base_report has new denied custom licenses' do
-            let(:custom_license) { create(:custom_software_license, name: 'Custom License') }
-
-            before do
-              base_report.add_license(id: nil, name: 'Custom License')
-
-              create(:software_license_policy, :denied,
-                project: project,
-                software_license: nil,
-                custom_software_license: custom_license,
-                scan_result_policy_read: create(:scan_result_policy_read, match_on_inclusion_license: true)
-              )
-            end
-
-            it 'returns differences with denied status' do
-              added = diff[:added]
-              expect(added[0].spdx_identifier).to eq(aml_spdx_identifier)
-              expect(added[0].classification).to eq('denied')
-              expect(added[1].name).to eq(custom_license.name)
-              expect(added[1].classification).to eq('denied')
-              expect(added[2].spdx_identifier).to eq(mspl_spdx_identifier)
-              expect(added[2].classification).to eq('denied')
-            end
+            expect(added[2].spdx_identifier).to eq(mspl_spdx_identifier)
+            expect(added[2].classification).to eq('denied')
           end
         end
       end
@@ -855,42 +509,19 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
 
           allow(license_compliance).to receive(:license_scanning_report).and_return(report)
           allow(base_compliance).to receive(:license_scanning_report).and_return(base_report)
+
+          create(:software_license_policy, :denied,
+            project: project,
+            software_license_spdx_identifier: mit_spdx_identifier,
+            scan_result_policy_read: scan_result_policy_read_without_inclusion
+          )
         end
 
-        context 'when the feature flag static_licenses is enabled' do
-          before do
-            create(:software_license_policy, :denied,
-              project: project,
-              software_license_spdx_identifier: mit_spdx_identifier,
-              scan_result_policy_read: scan_result_policy_read_without_inclusion
-            )
-          end
+        it 'returns differences with denied status' do
+          added = diff[:added]
 
-          it 'returns differences with denied status' do
-            added = diff[:added]
-
-            expect(added[0].spdx_identifier).to eq('MIT')
-            expect(added[0].classification).to eq('denied')
-          end
-        end
-
-        context 'when the feature flag static_licenses is disabled' do
-          before do
-            stub_feature_flags(static_licenses: false)
-
-            create(:software_license_policy, :denied,
-              project: project,
-              software_license: mit,
-              scan_result_policy_read: scan_result_policy_read_without_inclusion
-            )
-          end
-
-          it 'returns differences with denied status' do
-            added = diff[:added]
-
-            expect(added[0].spdx_identifier).to eq('MIT')
-            expect(added[0].classification).to eq('denied')
-          end
+          expect(added[0].spdx_identifier).to eq('MIT')
+          expect(added[0].classification).to eq('denied')
         end
       end
 
@@ -913,30 +544,6 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
 
           expect(added[0].spdx_identifier).to eq(mit_spdx_identifier)
           expect(added[0].classification).to eq('allowed')
-        end
-
-        context "when the feature flag static_licenses is disabled" do
-          before do
-            stub_feature_flags(static_licenses: false)
-
-            base_report.add_license(id: 'MIT', name: 'MIT')
-
-            allow(license_compliance).to receive(:license_scanning_report).and_return(report)
-            allow(base_compliance).to receive(:license_scanning_report).and_return(base_report)
-
-            create(:software_license_policy, :allowed,
-              project: project,
-              software_license: mit,
-              scan_result_policy_read: scan_result_policy_read_without_inclusion
-            )
-          end
-
-          it 'returns differences with allowed status' do
-            added = diff[:added]
-
-            expect(added[0].spdx_identifier).to eq('MIT')
-            expect(added[0].classification).to eq('allowed')
-          end
         end
       end
     end
@@ -1015,31 +622,13 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
 
       context "when a software license record does not have an spdx identifier" do
         let(:license_name) { mit_name }
+        let!(:policy) { create(:software_license_policy, :allowed, project: project, software_license_spdx_identifier: mit_spdx_identifier) }
 
-        context "when the feature flag static_licenses is disabled" do
-          before do
-            stub_feature_flags(static_licenses: false)
-          end
+        it "falls back to matching detections based on name rather than spdx id" do
+          mit = diff[:added].find { |item| item.name == license_name }
 
-          let!(:policy) { create(:software_license_policy, :allowed, project: project, software_license: mit) }
-
-          it "falls back to matching detections based on name rather than spdx id" do
-            mit = diff[:added].find { |item| item.name == license_name }
-
-            expect(mit).to be_present
-            expect(mit.classification).to eql('allowed')
-          end
-        end
-
-        context "when the feature flag static_licenses is enabled" do
-          let!(:policy) { create(:software_license_policy, :allowed, project: project, software_license_spdx_identifier: mit_spdx_identifier) }
-
-          it "falls back to matching detections based on name rather than spdx id" do
-            mit = diff[:added].find { |item| item.name == license_name }
-
-            expect(mit).to be_present
-            expect(mit.classification).to eql('allowed')
-          end
+          expect(mit).to be_present
+          expect(mit.classification).to eql('allowed')
         end
       end
     end

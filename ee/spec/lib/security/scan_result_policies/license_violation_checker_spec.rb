@@ -63,18 +63,6 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
           )
         end
 
-        context 'when the feature flag `static_licenses` is disabled' do
-          before do
-            stub_feature_flags(static_licenses: false)
-          end
-
-          it 'syncs approvals_required' do
-            result = service.execute(scan_result_policy_read)
-
-            expect(result).to eq(violated_licenses)
-          end
-        end
-
         it 'syncs approvals_required' do
           result = service.execute(scan_result_policy_read)
 
@@ -170,18 +158,6 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
                 software_license: nil,
                 scan_result_policy_read: scan_result_policy_read
               )
-            end
-          end
-
-          context 'when the feature flag `static_licenses` is disabled' do
-            before do
-              stub_feature_flags(static_licenses: false)
-            end
-
-            it 'syncs approvals_required' do
-              result = service.execute(scan_result_policy_read)
-
-              expect(result).to eq(violated_licenses)
             end
           end
 

@@ -67,55 +67,6 @@ RSpec.describe ::Gitlab::LicenseScanning::SbomScanner, feature_category: :softwa
           end
         end
 
-        context 'when the feature flag `static_licenses` is disabled' do
-          before do
-            stub_feature_flags(static_licenses: false)
-          end
-
-          it 'returns the expected licenses' do
-            expect(report.licenses).to match_array([
-              have_attributes(id: "BSD-4-Clause", name: 'BSD 4-Clause "Original" or "Old" License'),
-              have_attributes(id: "OLDAP-1.1", name: "Open LDAP Public License v1.1"),
-              have_attributes(id: "OLDAP-2.1", name: "Open LDAP Public License v2.1"),
-              have_attributes(id: nil, name: "unknown")
-            ])
-          end
-
-          it 'returns the expected dependencies for known licenses' do
-            bsd_license = report.licenses.find { |license| license.name == 'BSD 4-Clause "Original" or "Old" License' }
-
-            expect(bsd_license.dependencies).to match_array([
-              have_attributes(name: "github.com/astaxie/beego",
-                version: "v1.10.0"),
-              have_attributes(name: "acorn", version: "5.7.3"),
-              have_attributes(name: "acorn", version: "6.4.0"),
-              have_attributes(name: "json-schema", version: "0.2.3"),
-              have_attributes(
-                name: "org.apache.logging.log4j/log4j-core", version: "2.6.1"),
-              have_attributes(name: "activesupport", version: "5.1.4"),
-              have_attributes(name: "yargs-parser", version: "9.0.2")
-            ])
-          end
-
-          it 'returns the expected dependencies for unknown licenses' do
-            unknown_license = report.licenses.find { |license| license.name == "unknown" }
-            expect(unknown_license.dependencies.length).to be(433)
-
-            expect(unknown_license.dependencies).to include(
-              have_attributes(name: "byebug", version: "10.0.0"),
-              have_attributes(name: "rspec-core", version: "3.7.1")
-            )
-          end
-
-          it 'returns the expected dependencies for the default license' do
-            default_license = report.licenses.find { |license| license.name == "Open LDAP Public License v1.1" }
-
-            expect(default_license.dependencies).to contain_exactly(
-              have_attributes(name: "yargs-parser", version: "8.1.0")
-            )
-          end
-        end
-
         it 'returns the expected licenses' do
           expect(report.licenses).to match_array([
             have_attributes(id: "BSD-4-Clause", name: 'BSD 4-Clause "Original" or "Old" License'),
@@ -367,43 +318,6 @@ RSpec.describe ::Gitlab::LicenseScanning::SbomScanner, feature_category: :softwa
         other_licenses: [{ license_names: ["BSD-4-Clause"], versions: ["2023.3"] }])
       create(:pm_package, name: "github.com/google/uuid", purl_type: "golang",
         other_licenses: [{ license_names: ["OLDAP-2.4"], versions: ["v1.3.0"] }])
-    end
-
-    context 'when the feature flag `static_licenses` is disabled' do
-      before do
-        stub_feature_flags(static_licenses: false)
-      end
-
-      it 'adds licenses to the dependencies' do
-        expect(dependencies_with_licenses).to match([
-          { name: "activesupport", package_manager: "bundler", version: "5.1.4", id: 1,
-            licenses: [{ name: "Open LDAP Public License v2.3", url: "https://spdx.org/licenses/OLDAP-2.3.html" }] },
-          { name: "non-matching-package", package_manager: "bundler", version: "1.2.3", id: 2,
-            licenses: [{ name: "unknown", url: nil }] },
-          { name: "acorn", package_manager: "yarn", version: "5.7.3", id: 3,
-            licenses: match_array([
-              {
-                name: "Open LDAP Public License v2.1", url: "https://spdx.org/licenses/OLDAP-2.1.html"
-              },
-              {
-                name: "Open LDAP Public License v2.2", url: "https://spdx.org/licenses/OLDAP-2.2.html"
-              }
-            ]) },
-          { name: "Django", package_manager: "pip", version: "1.11.4", id: 4,
-            licenses: [{ name: "MIT License", url: "https://spdx.org/licenses/MIT.html" }] },
-          { name: "activesupport", package_manager: "bundler", version: "5.1.4", id: 5,
-            licenses: [{ name: "Open LDAP Public License v2.3", url: "https://spdx.org/licenses/OLDAP-2.3.html" }] },
-          { name: "jquery-ui", package_manager: "", version: "1.10.2", id: 6,
-            licenses: [{ name: "unknown", url: nil }] },
-          { name: "pytz", package_manager: "Python (python-pkg)", version: "2023.3", id: 7,
-            licenses: [{ name: "BSD 4-Clause \"Original\" or \"Old\" License",
-                         url: "https://spdx.org/licenses/BSD-4-Clause.html" }] },
-          { name: "github.com/google/UUID", package_manager: "analyzer (gobinary)", version: "v1.3.0", id: 8,
-            licenses: [{ name: "Open LDAP Public License v2.4", url: "https://spdx.org/licenses/OLDAP-2.4.html" }] },
-          { name: "adduser", package_manager: "debian:12.1 (apt)", version: "3.134", id: 9,
-            licenses: [{ name: "unknown", url: nil }] }
-        ])
-      end
     end
 
     it 'adds licenses to the dependencies' do

@@ -118,19 +118,9 @@ RSpec.describe SCA::LicensePolicy, feature_category: :software_composition_analy
     context "when a reported license is NOT provided" do
       let(:license) { nil }
 
-      context 'when the feature flag static_licenses is disabled' do
-        before do
-          stub_feature_flags(static_licenses: false)
-        end
+      let(:policy) { build(:software_license_policy, software_license_spdx_identifier: 'MIT') }
 
-        it { expect(subject.spdx_identifier).to eq(policy.software_license.spdx_identifier) }
-      end
-
-      context 'when the feature flag static_licenses is enabled' do
-        let(:policy) { build(:software_license_policy, software_license_spdx_identifier: 'MIT') }
-
-        it { expect(subject.spdx_identifier).to eq(policy.software_license_spdx_identifier) }
-      end
+      it { expect(subject.spdx_identifier).to eq(policy.software_license_spdx_identifier) }
     end
   end
 end

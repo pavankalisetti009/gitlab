@@ -795,14 +795,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
                 )
               end
 
-              context 'when the feature flag `static_licenses` is disabled' do
-                before do
-                  stub_feature_flags(static_licenses: false)
-                end
-
-                it { is_expected.to be_truthy }
-              end
-
               it { is_expected.to be_truthy }
             end
 
@@ -1382,20 +1374,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           let!(:license_1) { create(:software_license_policy, project: project, software_license: apache_2_0, software_license_spdx_identifier: apache_2_0.spdx_identifier) }
           let(:mit) { build(:software_license, :mit) }
           let!(:license_2) { create(:software_license_policy, project: project, software_license: mit, software_license_spdx_identifier: mit.spdx_identifier) }
-
-          context 'when the feature flag `static_licenses` is disabled' do
-            before do
-              stub_feature_flags(static_licenses: false)
-            end
-
-            it 'returns key with license information' do
-              expect_any_instance_of(Ci::CompareLicenseScanningReportsService)
-                .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
-
-              expect(subject[:key].last).to include("software_license_policies/query-")
-              expect(subject[:data]['existing_licenses'].last.dig('classification', 'approval_status')).to eq('unclassified')
-            end
-          end
 
           it 'returns key with license information' do
             expect_any_instance_of(Ci::CompareLicenseScanningReportsService)

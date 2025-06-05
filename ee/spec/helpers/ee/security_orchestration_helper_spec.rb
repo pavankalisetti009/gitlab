@@ -125,24 +125,10 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
   describe '#orchestration_policy_data' do
     shared_examples_for 'loads software_licenses names' do
       context 'for software_licenses' do
-        context 'when static_licenses feature flag is disabled' do
-          before do
-            stub_feature_flags(static_licenses: false)
-          end
+        it 'gets the license names from ::Gitlab::SPDX::Catalogue' do
+          expect(::Gitlab::SPDX::Catalogue).to receive(:latest_active_license_names)
 
-          it 'gets the license names from SoftwareLicense' do
-            expect(SoftwareLicense).to receive(:all_license_names)
-
-            orchestration_policy_data
-          end
-        end
-
-        context 'when static_licenses feature flag is enabled' do
-          it 'gets the license names from ::Gitlab::SPDX::Catalogue' do
-            expect(::Gitlab::SPDX::Catalogue).to receive(:latest_active_license_names)
-
-            orchestration_policy_data
-          end
+          orchestration_policy_data
         end
       end
     end

@@ -80,13 +80,9 @@ module SCA
     def direct_license_policies
       strong_memoize(:direct_license_policies) do
         license_policies.sort_by(&:classification).to_h do |policy|
-          software_license = if Feature.enabled?(:static_licenses, project.namespace)
-                               Gitlab::SPDX::Catalogue.latest_active_licenses.find do |license|
-                                 license.id == policy.software_license_spdx_identifier
-                               end
-                             else
-                               policy.software_license
-                             end
+          software_license = Gitlab::SPDX::Catalogue.latest_active_licenses.find do |license|
+            license.id == policy.software_license_spdx_identifier
+          end
 
           license = policy.custom_software_license || software_license
           reported_license = reported_license_by_license_model(license)
