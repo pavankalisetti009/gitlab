@@ -159,6 +159,23 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
     end
   end
 
+  describe 'consistency between singular and bulk upsert' do
+    let_it_be(:pipeline) { create(:ci_pipeline) }
+    let(:dynamic_attributes) { [:id, :created_at, :updated_at] }
+
+    it 'sets the same fields with the same values in both methods' do
+      described_class.set_latest_pipeline_with(pipeline)
+      single_upsert_attributes = described_class.find_by(project_id: pipeline.project_id).attributes.except(dynamic_attributes)
+
+      described_class.delete_all
+
+      described_class.bulk_set_latest_pipelines_with([pipeline])
+      bulk_record_attributes = described_class.find_by(project_id: pipeline.project_id).attributes.except(dynamic_attributes)
+
+      expect(single_upsert_attributes.except('id')).to eq(bulk_record_attributes.except('id'))
+    end
+  end
+
   describe '.set_latest_pipeline_with' do
     let_it_be(:pipeline) { create(:ci_pipeline) }
     let_it_be(:project) { pipeline.project }
@@ -212,6 +229,11 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
           .and change { project_1.reload.vulnerability_statistic&.pipeline }.from(nil).to(pipelines.first)
           .and change { project_2.reload.vulnerability_statistic }.from(nil).to(an_instance_of(described_class))
           .and change { project_2.reload.vulnerability_statistic&.pipeline }.from(nil).to(pipelines.second)
+
+        expect(project_1.vulnerability_statistic.archived).to eq(project_1.archived)
+        expect(project_1.vulnerability_statistic.traversal_ids).to eq(project_1.namespace.traversal_ids)
+        expect(project_2.vulnerability_statistic.archived).to eq(project_2.archived)
+        expect(project_2.vulnerability_statistic.traversal_ids).to eq(project_2.namespace.traversal_ids)
       end
     end
   end
