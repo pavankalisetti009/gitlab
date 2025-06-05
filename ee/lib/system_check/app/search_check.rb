@@ -3,13 +3,20 @@
 module SystemCheck
   module App
     class SearchCheck < SystemCheck::BaseCheck
-      set_name 'Elasticsearch version 7.x-8.x or OpenSearch version 1.x'
-      set_skip_reason 'skipped (Advanced Search is disabled)'
-      set_check_pass -> { "yes (#{self.distribution} #{self.current_version})" }
-      set_check_fail -> { "no (#{self.distribution} #{self.current_version})" }
+      extend Gitlab::Utils::StrongMemoize
+
+      set_name 'Elasticsearch version 7.x-9.x or OpenSearch version 1.x-3.x'
+      set_skip_reason 'skipped (advanced search is disabled)'
+      set_check_pass -> { "yes (#{distribution} #{current_version})" }
+      set_check_fail -> { "no (#{distribution} #{current_version})" }
+
+      ELASTICSEARCH_MAJOR_VERSIONS = 7..9
+      OPENSEARCH_MAJOR_VERSIONS = 1..3
 
       def self.info
-        @info ||= Gitlab::Elastic::Helper.default.server_info
+        strong_memoize(:info) do
+          Gitlab::Elastic::Helper.default.server_info
+        end
       end
 
       def self.distribution
@@ -37,11 +44,11 @@ module SystemCheck
       private
 
       def valid_elasticsearch_version?
-        elasticsearch? && current_version.major.in?([7, 8])
+        elasticsearch? && current_version.major.in?(ELASTICSEARCH_MAJOR_VERSIONS)
       end
 
       def valid_opensearch_version?
-        opensearch? && current_version.major >= 1
+        opensearch? && current_version.major.in?(OPENSEARCH_MAJOR_VERSIONS)
       end
 
       def current_version
