@@ -21,7 +21,7 @@ import RunnerHeaderActions from '~/ci/runner/components/runner_header_actions.vu
 import RunnerDetails from '~/ci/runner/components/runner_details.vue';
 import RunnerJobs from '~/ci/runner/components/runner_jobs.vue';
 
-import RunnerDetailsTabs from '~/ci/runner/components/runner_details_tabs.vue';
+import RunnerShow from '~/ci/runner/components/runner_show.vue';
 
 import { runnerData } from '../mock_data';
 
@@ -38,7 +38,7 @@ const mockRunnersPath = '/runners';
 const mockEditPath = '/runners/1/edit';
 const mockRunner = runnerData.data.runner;
 
-describe('RunnerDetailsTabs', () => {
+describe('RunnerShow', () => {
   let wrapper;
   let mockApollo;
   let routerPush;
@@ -54,7 +54,7 @@ describe('RunnerDetailsTabs', () => {
   const createComponent = ({ props = {}, mountFn = shallowMountExtended } = {}) => {
     mockApollo = createMockApollo([[runnerQuery, runnerQueryHandler]]);
 
-    wrapper = mountFn(RunnerDetailsTabs, {
+    wrapper = mountFn(RunnerShow, {
       apolloProvider: mockApollo,
       propsData: {
         runnerId: mockRunnerId,
@@ -121,7 +121,7 @@ describe('RunnerDetailsTabs', () => {
     });
     expect(captureException).toHaveBeenCalledWith({
       error,
-      component: 'RunnerDetailsTabs',
+      component: 'RunnerShow',
     });
   });
 
