@@ -1,6 +1,6 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.testing.users_visiting_testing_license_compliance_full_report_weekly
+key_path: redis_hll_counters.testing.users_visiting_testing_license_compliance_full_report
 description: Count of visiting the license compliance full report
 product_group: composition_analysis
 value_type: number
@@ -9,7 +9,9 @@ removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/152166
 milestone_removed: '17.1'
 milestone: '14.6'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/75643
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
