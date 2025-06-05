@@ -54,13 +54,6 @@ export default {
     };
   },
   computed: {
-    bgColor() {
-      return this.$refs.chart
-        ? window
-            .getComputedStyle(this.$refs.chart)
-            .getPropertyValue('--gl-background-color-default')
-        : '#fff';
-    },
     chartData() {
       return this.metricData.map((metric) => {
         const data = metric.values.map((value) => [
