@@ -58,10 +58,6 @@ RSpec.describe Issues::ReopenService, feature_category: :team_planning do
         group.add_maintainer(current_user)
       end
 
-      before do
-        stub_feature_flags(work_item_epics: true)
-      end
-
       it_behaves_like 'syncs all data from an epic to a work item'
 
       it 'syncs the state to the epic' do

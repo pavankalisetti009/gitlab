@@ -55,7 +55,7 @@ RSpec.describe Banzai::Filter::IssuableReferenceExpansionFilter, feature_categor
 
     doc = filter(link, context)
 
-    expect(doc.css('a').last.text).to eq("#{epic.title} (#{epic.to_reference})")
+    expect(doc.css('a').last.text).to eq("#{epic.title} (#{epic.to_reference}) • Unassigned")
   end
 
   context 'when extended summary props are present' do
@@ -84,14 +84,13 @@ RSpec.describe Banzai::Filter::IssuableReferenceExpansionFilter, feature_categor
     end
   end
 
-  context 'when work_item_epics is enabled' do
+  context 'when epics are licensed' do
     let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, assignees: [user], health_status: :at_risk) }
     let_it_be(:epic) { work_item.synced_epic }
 
     let_it_be(:context) { { current_user: user, issuable_reference_expansion_enabled: true, group: epic.group } }
 
     before do
-      stub_feature_flags(work_item_epics: true)
       stub_licensed_features(issuable_health_status: true, epics: true)
     end
 

@@ -47,10 +47,6 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
     context 'issuables' do
       let(:project) { create(:project, :repository, namespace: group) }
 
-      before do
-        stub_feature_flags(work_item_epics: true)
-      end
-
       context 'issues' do
         it 'shows issues of group' do
           issue_1 = create(:issue, project: project)

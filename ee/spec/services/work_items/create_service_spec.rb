@@ -306,7 +306,6 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
 
     before do
       stub_licensed_features(epics: true, subepics: true, epic_colors: true)
-      stub_feature_flags(work_item_epics: true)
     end
 
     subject(:service_result) { service.execute }

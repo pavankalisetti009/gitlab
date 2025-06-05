@@ -121,10 +121,7 @@ module EE
 
         group = resource_parent.is_a?(Group) ? resource_parent : resource_parent.group
 
-        unless ::Feature.enabled?(:work_item_epics, resource_parent.root_ancestor,
-          type: :beta) && Ability.allowed?(user, :create_epic, group)
-          ee_base_types -= %w[epic]
-        end
+        ee_base_types -= %w[epic] unless Ability.allowed?(user, :create_epic, group)
 
         project = if resource_parent.is_a?(Project)
                     resource_parent

@@ -57,10 +57,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
   describe 'GET #new' do
     subject(:get_new) { get new_group_epic_path(group) }
 
-    before do
-      stub_feature_flags(work_item_epics: false)
-    end
-
     it 'with feature flag disabled it still sets the epic flags to true' do
       get_new
 
@@ -115,7 +111,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
       context 'when feature flag is false' do
         before do
-          stub_feature_flags(work_item_epics: false, work_item_epics_list: false)
+          stub_feature_flags(work_item_epics_list: false)
         end
 
         it 'exposes the workItemEpics flag' do

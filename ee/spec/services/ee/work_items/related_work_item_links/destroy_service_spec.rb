@@ -73,10 +73,6 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
       end
 
       context 'when synced_work_item: false' do
-        before do
-          stub_feature_flags(work_item_epics: true)
-        end
-
         it 'creates system notes' do
           expect(SystemNoteService).to receive(:unrelate_issuable).with(source, target, user)
           expect(SystemNoteService).to receive(:unrelate_issuable).with(target, source, user)

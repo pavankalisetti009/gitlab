@@ -23,7 +23,6 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
 
   context 'when work item drawer is disabled' do
     before do
-      stub_feature_flags(work_item_epics: false)
       stub_feature_flags(epics_list_drawer: false)
       sign_in(user)
 
@@ -111,50 +110,6 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
           click_button 'Mark as done'
           wait_for_requests
           expect(page).to have_content 'Add a to-do item'
-        end
-      end
-    end
-
-    context 'start date' do
-      it 'edits fixed start date' do
-        click_card(card)
-
-        wait_for_requests
-
-        within_testid('sidebar-start-date') do
-          edit_fixed_date
-        end
-      end
-
-      it 'removes fixed start date' do
-        click_card(card)
-
-        wait_for_requests
-
-        within_testid('sidebar-start-date') do
-          remove_fixed_date
-        end
-      end
-    end
-
-    context 'due date' do
-      it 'edits fixed due date' do
-        click_card(card)
-
-        wait_for_requests
-
-        within_testid('sidebar-due-date') do
-          edit_fixed_date
-        end
-      end
-
-      it 'removes fixed due date' do
-        click_card(card)
-
-        wait_for_requests
-
-        within_testid('sidebar-due-date') do
-          remove_fixed_date
         end
       end
     end

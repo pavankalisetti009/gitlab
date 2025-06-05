@@ -10,7 +10,6 @@ import { ListType } from '~/boards/constants';
 import BoardSidebarTitle from '~/boards/components/sidebar/board_sidebar_title.vue';
 import { setError, identifyAffectedLists } from '~/boards/graphql/cache_updates';
 import SidebarConfidentialityWidget from '~/sidebar/components/confidential/sidebar_confidentiality_widget.vue';
-import SidebarDateWidget from '~/sidebar/components/date/sidebar_date_widget.vue';
 import SidebarParticipantsWidget from '~/sidebar/components/participants/sidebar_participants_widget.vue';
 import SidebarSubscriptionsWidget from '~/sidebar/components/subscriptions/sidebar_subscriptions_widget.vue';
 import SidebarTodoWidget from '~/sidebar/components/todo_toggle/sidebar_todo_widget.vue';
@@ -25,7 +24,6 @@ export default {
     MountingPortal,
     SidebarAncestorsWidget,
     SidebarConfidentialityWidget,
-    SidebarDateWidget,
     SidebarLabelsWidget,
     SidebarParticipantsWidget,
     SidebarSubscriptionsWidget,
@@ -80,9 +78,6 @@ export default {
     },
     apolloClient() {
       return this.$apollo.provider.defaultClient;
-    },
-    showDatesWidgets() {
-      return !this.glFeatures.workItemEpics;
     },
   },
   methods: {
@@ -176,22 +171,6 @@ export default {
       </template>
       <template #default>
         <board-sidebar-title :active-item="activeBoardCard" data-testid="sidebar-title" />
-        <sidebar-date-widget
-          v-if="showDatesWidgets"
-          :iid="activeBoardCard.iid"
-          :full-path="fullPath"
-          date-type="startDate"
-          :issuable-type="issuableType"
-          :can-inherit="true"
-        />
-        <sidebar-date-widget
-          v-if="showDatesWidgets"
-          :iid="activeBoardCard.iid"
-          :full-path="fullPath"
-          date-type="dueDate"
-          :issuable-type="issuableType"
-          :can-inherit="true"
-        />
         <sidebar-labels-widget
           class="block labels"
           data-testid="sidebar-labels"

@@ -13,7 +13,6 @@ import { stubComponent } from 'helpers/stub_component';
 import BoardSidebarTitle from '~/boards/components/sidebar/board_sidebar_title.vue';
 import { TYPE_EPIC } from '~/issues/constants';
 import SidebarConfidentialityWidget from '~/sidebar/components/confidential/sidebar_confidentiality_widget.vue';
-import SidebarDateWidget from '~/sidebar/components/date/sidebar_date_widget.vue';
 import SidebarParticipantsWidget from '~/sidebar/components/participants/sidebar_participants_widget.vue';
 import SidebarSubscriptionsWidget from '~/sidebar/components/subscriptions/sidebar_subscriptions_widget.vue';
 import SidebarTodoWidget from '~/sidebar/components/todo_toggle/sidebar_todo_widget.vue';
@@ -111,10 +110,6 @@ describe('EpicBoardContentSidebar', () => {
     expect(wrapper.findComponent(SidebarConfidentialityWidget).exists()).toBe(true);
   });
 
-  it('renders 2 SidebarDateWidget', () => {
-    expect(wrapper.findAllComponents(SidebarDateWidget)).toHaveLength(2);
-  });
-
   it('renders SidebarParticipantsWidget', () => {
     expect(wrapper.findComponent(SidebarParticipantsWidget).exists()).toBe(true);
   });
@@ -133,14 +128,6 @@ describe('EpicBoardContentSidebar', () => {
     });
 
     expect(wrapper.findComponent(SidebarAncestorsWidget).exists()).toBe(true);
-  });
-
-  it('does not render dates widgets when work item epic FF is on', () => {
-    createComponent({
-      glFeatures: { workItemEpics: true },
-    });
-
-    expect(wrapper.findAllComponents(SidebarDateWidget)).toHaveLength(0);
   });
 
   describe('when we emit close', () => {

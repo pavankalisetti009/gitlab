@@ -134,18 +134,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
           expect(assigns(:page_title)).to eq(['New epic'])
         end
-
-        context 'when work_item_epics is disabled' do
-          before do
-            stub_feature_flags(work_item_epics: false)
-          end
-
-          it 'renders template' do
-            get :new, params: { group_id: group }
-
-            expect(response).to render_template 'groups/work_items/show'
-          end
-        end
       end
 
       context 'with unauthorized user' do
@@ -168,9 +156,9 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
             group.add_developer(user)
           end
 
-          context 'when work_item_epics is disabled' do
+          context 'when work_item_epics_list is disabled' do
             before do
-              stub_feature_flags(work_item_epics: false, work_item_epics_list: false)
+              stub_feature_flags(work_item_epics_list: false)
             end
 
             it 'renders template' do

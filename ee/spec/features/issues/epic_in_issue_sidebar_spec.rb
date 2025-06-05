@@ -32,8 +32,6 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
     before do
       group.add_owner(user)
 
-      stub_feature_flags(work_item_epics: false)
-
       sign_in user
     end
 
@@ -56,12 +54,12 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
           click_edit
 
           aggregate_failures do
-            expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 4)
+            expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 5)
             expect(page).to have_content 'No epic'
             expect(page).to have_content epic1.title
             expect(page).to have_content epic2.title
             expect(page).to have_content epic3.title
-            expect(page).not_to have_content work_item_epic.title
+            expect(page).to have_content work_item_epic.title
           end
         end
       end
@@ -106,12 +104,13 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
           click_edit
 
           aggregate_failures do
-            expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 5)
+            expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 6)
             expect(page).to have_content 'No epic'
             expect(page).to have_content epic1.title
             expect(page).to have_content epic2.title
             expect(page).to have_content epic3.title
             expect(page).to have_content subepic.title
+            expect(page).to have_content work_item_epic.title
           end
         end
       end
@@ -165,11 +164,10 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
     end
   end
 
-  context 'when work item epics available' do
+  context 'when epics are available' do
     before do
       group.add_owner(user)
       stub_licensed_features(epics: true)
-      stub_feature_flags(work_item_epics: true)
 
       sign_in(user)
 
