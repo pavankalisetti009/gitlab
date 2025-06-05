@@ -9,14 +9,27 @@ RSpec.describe 'search/show', feature_category: :global_search do
     instance_double(SearchServicePresenter,
       without_count?: false,
       advanced_search_enabled?: false,
-      zoekt_enabled?: false
+      zoekt_enabled?: false,
+      show_sort_dropdown?: false
     )
   end
 
   before do
     allow(view).to receive(:current_user) { user }
+    allow(view).to receive(:render_if_exists).and_call_original
+    allow(view).to receive(:page_description)
+    allow(view).to receive(:repository_ref)
+    allow(view).to receive(:nav)
+    allow(view).to receive(:page_title)
+    allow(view).to receive(:breadcrumb_title)
+    allow(view).to receive(:page_card_attributes)
 
     assign(:search_service_presenter, search_service_presenter)
+    assign(:scope, 'issues')
+    assign(:search_term, 'test')
+    assign(:group, nil)
+    assign(:project, nil)
+    assign(:hide_top_links, true)
   end
 
   describe 'SSO session expired' do
@@ -24,11 +37,22 @@ RSpec.describe 'search/show', feature_category: :global_search do
     let(:search_results) do
       instance_double(Gitlab::SearchResults).tap do |double|
         allow(double).to receive(:formatted_count).and_return(0)
+        allow(double).to receive(:respond_to?).with(:failed?).and_return(false)
+      end
+    end
+
+    let(:paginated_objects) do
+      Kaminari.paginate_array([]).page(1).tap do |objects|
+        allow(objects).to receive(:total_count).and_return(0)
       end
     end
 
     before do
       assign(:search_results, search_results)
+      assign(:search_objects, paginated_objects)
+
+      allow(search_results).to receive(:failed?).with(any_args).and_return(false)
+      allow(view).to receive(:render_if_exists).and_call_original
 
       allow(view).to receive_messages(search_navigation_json: {},
         params: {},
@@ -41,7 +65,8 @@ RSpec.describe 'search/show', feature_category: :global_search do
       let(:search_service) do
         instance_double(SearchService,
           level: 'global',
-          search_type: 'basic'
+          search_type: 'basic',
+          scope: 'issues'
         )
       end
 
@@ -65,7 +90,8 @@ RSpec.describe 'search/show', feature_category: :global_search do
       let(:search_service) do
         instance_double(SearchService,
           level: 'group',
-          search_type: 'basic'
+          search_type: 'basic',
+          scope: 'issues'
         )
       end
 
@@ -80,7 +106,8 @@ RSpec.describe 'search/show', feature_category: :global_search do
       let(:search_service) do
         instance_double(SearchService,
           level: 'project',
-          search_type: 'basic'
+          search_type: 'basic',
+          scope: 'issues'
         )
       end
 
