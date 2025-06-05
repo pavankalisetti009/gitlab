@@ -11,7 +11,6 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
     sign_in(user)
   end
 
@@ -57,7 +56,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
           issue_1 = create(:issue, project: project)
           issue_2 = create(:issue, project: project)
 
-          fill_in 'Comment', with: '#'
+          fill_in _('Add a reply'), with: '#'
 
           expect_resources(shown: [issue_1, issue_2, epic.work_item])
         end
@@ -68,7 +67,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
           mr_1 = create(:merge_request, source_project: project)
           mr_2 = create(:merge_request, source_project: project, source_branch: 'other-branch')
 
-          fill_in 'Comment', with: '!'
+          fill_in _('Add a reply'), with: '!'
 
           expect_resources(shown: [mr_1, mr_2])
         end
@@ -79,7 +78,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
       let!(:epic2) { create(:epic, group: group, title: 'make tea') }
 
       it 'shows epics' do
-        fill_in 'Comment', with: '&'
+        fill_in _('Add a reply'), with: '&'
 
         expect_resources(shown: [epic, epic2])
       end
@@ -92,7 +91,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         milestone_2 = create(:milestone, title: 'milestone_2', group: group)
         milestone_3 = create(:milestone, title: 'milestone_3', project: project)
 
-        fill_in 'Comment', with: '%'
+        fill_in _('Add a reply'), with: '%'
 
         expect_resources(shown: [milestone_1, milestone_2], not_shown: [milestone_3])
       end
@@ -105,7 +104,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
 
       context 'when no labels are assigned' do
         it 'shows all labels for ~' do
-          fill_in 'Comment', with: '~'
+          fill_in _('Add a reply'), with: '~'
 
           wait_for_requests
 
@@ -113,7 +112,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows all labels for /label ~' do
-          fill_in 'Comment', with: '/label ~'
+          fill_in _('Add a reply'), with: '/label ~'
 
           wait_for_requests
 
@@ -121,7 +120,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows all labels for /relabel ~' do
-          fill_in 'Comment', with: '/relabel ~'
+          fill_in _('Add a reply'), with: '/relabel ~'
 
           wait_for_requests
 
@@ -129,7 +128,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows no labels for /unlabel ~' do
-          fill_in 'Comment', with: '/unlabel ~'
+          fill_in _('Add a reply'), with: '/unlabel ~'
 
           wait_for_requests
 
@@ -143,7 +142,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows all labels for ~' do
-          fill_in 'Comment', with: '~'
+          fill_in _('Add a reply'), with: '~'
 
           wait_for_requests
 
@@ -151,7 +150,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows only unset labels for /label ~', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/449075' do
-          fill_in 'Comment', with: '/label ~'
+          fill_in _('Add a reply'), with: '/label ~'
 
           wait_for_requests
 
@@ -159,7 +158,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows all labels for /relabel ~' do
-          fill_in 'Comment', with: '/relabel ~'
+          fill_in _('Add a reply'), with: '/relabel ~'
 
           wait_for_requests
 
@@ -167,7 +166,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows only set labels for /unlabel ~', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444686' do
-          fill_in 'Comment', with: '/unlabel ~'
+          fill_in _('Add a reply'), with: '/unlabel ~'
 
           wait_for_requests
 
@@ -181,7 +180,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows all labels for ~' do
-          fill_in 'Comment', with: '~'
+          fill_in _('Add a reply'), with: '~'
 
           wait_for_requests
 
@@ -189,7 +188,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows no labels for /label ~', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/449075' do
-          fill_in 'Comment', with: '/label ~'
+          fill_in _('Add a reply'), with: '/label ~'
 
           wait_for_requests
 
@@ -197,7 +196,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows all labels for /relabel ~' do
-          fill_in 'Comment', with: '/relabel ~'
+          fill_in _('Add a reply'), with: '/relabel ~'
 
           wait_for_requests
 
@@ -205,7 +204,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
 
         it 'shows all labels for /unlabel ~', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/456464' do
-          fill_in 'Comment', with: '/unlabel ~'
+          fill_in _('Add a reply'), with: '/unlabel ~'
           wait_for_requests
 
           expect_resources(shown: [backend, bug, feature_proposal])
