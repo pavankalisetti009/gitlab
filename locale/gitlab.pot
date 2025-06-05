@@ -70610,6 +70610,9 @@ msgstr ""
 msgid "Workspaces|Connected"
 msgstr ""
 
+msgid "Workspaces|Could not load agents. Refresh the page to try again."
+msgstr ""
+
 msgid "Workspaces|Could not load available agents. Refresh the page to try again."
 msgstr ""
 
