@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class EpicIssue < ApplicationRecord
+  include Importable
   include EpicTreeSorting
   include EachBatch
   include AfterCommitQueue
@@ -8,11 +9,12 @@ class EpicIssue < ApplicationRecord
 
   validates :epic, :issue, presence: true
   validates :issue, uniqueness: true
+  validates :work_item_parent_link, presence: true, on: :create, unless: :importing?
 
   belongs_to :epic
   belongs_to :issue
   belongs_to :work_item, foreign_key: 'issue_id' # rubocop: disable Rails/InverseOf -- this relation is not present on WorkItem
-  belongs_to :work_item_parent_link, class_name: 'WorkItems::ParentLink', optional: true, inverse_of: :epic_issue
+  belongs_to :work_item_parent_link, class_name: 'WorkItems::ParentLink', inverse_of: :epic_issue
 
   alias_attribute :parent_ids, :epic_id
   alias_attribute :parent, :epic

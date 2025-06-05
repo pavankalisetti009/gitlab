@@ -119,7 +119,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
       let_it_be(:cadence) { create(:iterations_cadence, group: group) }
 
       before do
-        issue.update!(epic: epic)
+        create(:epic_issue, epic: epic, issue: issue)
       end
 
       context 'updating milestone' do
@@ -430,7 +430,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
         context 'when issue belongs to the epic already' do
           before do
-            issue.update!(epic: epic)
+            create(:epic_issue, epic: epic, issue: issue)
           end
 
           it 'does not error and keeps the same epic' do
@@ -442,7 +442,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
           let_it_be(:epic2) { create(:epic, group: group) }
 
           before do
-            issue.update!(epic: epic2)
+            create(:epic_issue, epic: epic2, issue: issue)
           end
 
           it 'assigns the issue passed to the provided epic' do
@@ -561,7 +561,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
         context 'when issue belongs to an epic' do
           before do
-            issue.update!(epic: epic)
+            create(:epic_issue, epic: epic, issue: issue)
           end
 
           it 'unassigns the epic' do
@@ -804,7 +804,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
       before do
         stub_licensed_features(epics: true)
         group.add_maintainer(user)
-        issue.update!(epic: epic)
+        create(:epic_issue, epic: epic, issue: issue)
       end
 
       let(:epic_issue) { issue.epic_issue }

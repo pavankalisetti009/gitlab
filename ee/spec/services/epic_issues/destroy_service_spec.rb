@@ -120,9 +120,6 @@ RSpec.describe EpicIssues::DestroyService, feature_category: :portfolio_manageme
 
           let_it_be(:issue) { create(:issue, project: project, milestone: milestone) }
           let_it_be(:epic_issue_link) { create(:epic_issue, epic: epic_with_dates, issue: issue) }
-          let_it_be(:parent_link) do
-            create(:parent_link, work_item_parent: epic_with_dates.work_item, work_item: WorkItem.find(issue.id))
-          end
 
           before do
             epic_with_dates.work_item.create_dates_source(
@@ -161,7 +158,6 @@ RSpec.describe EpicIssues::DestroyService, feature_category: :portfolio_manageme
           let_it_be(:work_item_issue) { WorkItem.find(child_issue.id) }
 
           before do
-            create(:parent_link, work_item_parent_id: epic.issue_id, work_item_id: child_issue.id)
             allow(GraphqlTriggers).to receive(:issuable_epic_updated).and_call_original
           end
 

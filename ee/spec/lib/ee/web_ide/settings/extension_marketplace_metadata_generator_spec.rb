@@ -24,8 +24,7 @@ RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_
     {
       requested_setting_names: [:vscode_extension_marketplace_metadata],
       options: {
-        user: user,
-        vscode_extension_marketplace_feature_flag_enabled: true
+        user: user
       },
       settings: {
         vscode_extension_marketplace_home_url: marketplace_home_url
@@ -59,7 +58,6 @@ RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_
       allow(group).to receive(:enterprise_users_extensions_marketplace_enabled?).and_return(enterprise_group_enabled)
 
       allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_from_application_settings?)
-        .with(user: user)
         .and_return(true)
     end
 

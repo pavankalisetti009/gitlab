@@ -973,7 +973,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
     end
 
     it 'has child issues' do
-      create(:epic_issue, epic: epic)
+      create(:epic_issue, epic: epic, issue: create(:issue, project: project))
 
       expect(epic.has_issues?).to be_truthy
     end

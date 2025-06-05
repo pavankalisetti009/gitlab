@@ -90,7 +90,7 @@ RSpec.describe 'Update of an existing issue', feature_category: :team_planning d
     before do
       stub_licensed_features(epics: true)
       group.add_guest(current_user)
-      issue.update!(epic: epic)
+      create(:epic_issue, epic: epic, issue: issue)
     end
 
     it 'removes the epic' do

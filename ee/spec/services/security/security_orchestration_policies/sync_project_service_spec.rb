@@ -196,6 +196,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
               expect(project_approval_rule.reload.scanners).to contain_exactly('dependency_scanning')
             end
 
+            context 'when policy is already disabled' do
+              before do
+                security_policy.update!(enabled: false)
+              end
+
+              it 'does not link the policy and rules' do
+                expect { service.execute }.to not_change { Security::PolicyProjectLink.count }
+                  .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
+              end
+            end
+
             context 'when use_approval_policy_rules_for_approval_rules is disabled' do
               before do
                 stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
@@ -263,7 +274,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
 
         context 'when policy is scoped' do
           before do
-            allow(service).to receive_messages(policy_unscoped?: false, policy_scoped?: true)
+            allow(service).to receive_messages(
+              policy_scope_changed_and_unscoped?: false,
+              policy_scope_changed_and_scoped?: true
+            )
           end
 
           context 'when policy is not linked to project' do
@@ -288,7 +302,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
 
         context 'when policy is unscoped' do
           before do
-            allow(service).to receive_messages(policy_unscoped?: true, policy_scoped?: false)
+            allow(service).to receive_messages(
+              policy_scope_changed_and_unscoped?: true,
+              policy_scope_changed_and_scoped?: false
+            )
           end
 
           context 'when policy is linked to the project' do

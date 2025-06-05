@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_workflow do
   include HttpBasicAuthHelpers
 
-  let_it_be(:group) { create(:group) }
+  let_it_be(:ai_settings) { create(:namespace_ai_settings, duo_workflow_mcp_enabled: true) }
+  let_it_be(:group) { create(:group, ai_settings: ai_settings) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
 
@@ -357,6 +358,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(json_response['pre_approved_agent_privileges']).to eq(workflow.pre_approved_agent_privileges)
       expect(json_response['pre_approved_agent_privileges_names']).to eq(["read_write_files"])
       expect(json_response['allow_agent_to_request_user']).to be(true)
+      expect(json_response['mcp_enabled']).to be(true)
       expect(json_response['status']).to eq("created")
       expect(response.headers['X-Gitlab-Enabled-Feature-Flags']).to include('test-feature')
     end

@@ -165,9 +165,9 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
   describe '/remove_epic' do
     let(:note_text) { "/remove_epic" }
     let(:note) { create(:note_on_issue, noteable: issue, project: project, note: note_text) }
+    let_it_be_with_refind(:epic_issue) { create(:epic_issue, epic: epic, issue: issue) }
 
     before do
-      issue.update!(epic: epic)
       group.add_guest(user)
     end
 
@@ -205,7 +205,8 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         let(:note_text) { "/epic #{private_epic.to_reference(full: true)}" }
 
         before do
-          issue.update!(epic: private_epic)
+          epic_issue.work_item_parent_link.update_attribute(:work_item_parent, private_epic.work_item)
+          epic_issue.update_attribute(:epic, private_epic)
         end
 
         it 'does not remove the epic' do

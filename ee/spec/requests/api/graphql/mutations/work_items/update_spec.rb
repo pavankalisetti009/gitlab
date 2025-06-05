@@ -1007,7 +1007,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when updating parent' do
       let_it_be(:work_item_epic, reload: true) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
-      let_it_be(:work_item_issue, reload: true) do
+      let_it_be_with_refind(:work_item_issue) do
         create(:work_item, :issue, project: project, due_date: 2.days.from_now, start_date: 2.days.ago)
       end
 
@@ -1066,13 +1066,13 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           create(:parent_link, work_item: work_item_epic, work_item_parent: existing_parent, relative_position: 10)
         end
 
-        let_it_be(:work_item_issue_link) do
-          create(:parent_link, work_item: work_item_issue, work_item_parent: existing_parent, relative_position: 20)
+        let_it_be_with_refind(:work_item_issue_link) do
+          create(:parent_link, :with_epic_issue, work_item: work_item_issue, work_item_parent: existing_parent,
+            relative_position: 20)
         end
 
         before do
           work_item_epic.synced_epic.update!(parent: existing_parent.synced_epic)
-          create(:epic_issue, epic: existing_parent.synced_epic, issue: work_item_issue)
         end
 
         it 'syncs with legacy epic if child is epic' do

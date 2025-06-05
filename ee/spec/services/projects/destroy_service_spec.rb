@@ -331,9 +331,12 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
     let!(:issue1) { create(:issue, project: project) }
     let!(:issue2) { create(:issue, project: project) }
     let!(:issue3) { create(:issue, project: project) }
-    let!(:epic_issue1) { create(:epic_issue, issue: issue1) }
-    let!(:epic_issue2) { create(:epic_issue, issue: issue2) }
-    let!(:epic_issue3) { create(:epic_issue, issue: issue3) }
+    let!(:epic1) { create(:epic, group: group) }
+    let!(:epic2) { create(:epic, group: group) }
+    let!(:epic3) { create(:epic, group: group) }
+    let!(:epic_issue1) { create(:epic_issue, issue: issue1, epic: epic1) }
+    let!(:epic_issue2) { create(:epic_issue, issue: issue2, epic: epic2) }
+    let!(:epic_issue3) { create(:epic_issue, issue: issue3, epic: epic3) }
 
     before do
       group.add_owner(user)
