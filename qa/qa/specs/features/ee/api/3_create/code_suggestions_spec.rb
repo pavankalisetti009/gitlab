@@ -176,19 +176,15 @@ module QA
                 it_behaves_like 'indirect code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462967'
               end
 
-              context 'when seat is not assigned', :ai_gateway_no_seat_assigned, quarantine: {
-                issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/546455',
-                type: :stale
-              } do
-                include_examples 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/451487'
+              context 'when seat is not assigned', :ai_gateway_no_seat_assigned do
+                # Code suggestions is included with Duo Core
+                include_examples 'indirect code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/451487'
               end
             end
 
-            context 'with no Duo Enterprise add-on', :ai_gateway_no_add_on, quarantine: {
-              issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/546454',
-              type: :stale
-            } do
-              include_examples 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452448'
+            context 'with no Duo Enterprise add-on', :ai_gateway_no_add_on do
+              # Code suggestions is included with Duo Core
+              include_examples 'indirect code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452448'
             end
           end
 
