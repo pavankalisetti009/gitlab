@@ -1,7 +1,6 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlSprintf } from '@gitlab/ui';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import { s__, sprintf } from '~/locale';
 import Tracking from '~/tracking';
 import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
@@ -11,6 +10,7 @@ export default {
   name: 'PublicNamespacePlanInfoCard',
   components: {
     GlButton,
+    GlSprintf,
     UsageStatistics,
   },
   mixins: [Tracking.mixin()],
@@ -41,22 +41,11 @@ export default {
     planName() {
       return this.plan.name || capitalizeFirstCharacter(this.plan.code);
     },
-    shouldShowExplorePaidPlansButton() {
-      return !this.isLoading;
-    },
-    title() {
-      return sprintf(this.$options.i18n.planText, { plan: this.planName });
-    },
   },
   methods: {
     handleExplorePlans() {
       this.track('click_button', { label: EXPLORE_PAID_PLANS_CLICKED });
     },
-  },
-  i18n: {
-    explorePlansText: s__('Billing|Explore paid plans'),
-    freePlanInfoText: s__('Billing|You can upgrade to a paid tier to get access to more features.'),
-    planText: s__('Billing|%{plan} Plan'),
   },
 };
 </script>
@@ -65,7 +54,7 @@ export default {
     <usage-statistics>
       <template #actions>
         <gl-button
-          v-if="shouldShowExplorePaidPlansButton"
+          v-if="!isLoading"
           :href="explorePlansPath"
           category="primary"
           target="_blank"
@@ -74,13 +63,19 @@ export default {
           data-testid="explore-plans"
           @click="handleExplorePlans"
         >
-          {{ $options.i18n.explorePlansText }}
+          {{ s__('Billing|Explore paid plans') }}
         </gl-button>
       </template>
       <template #description>
-        <p class="gl-text-size-h2 gl-font-bold" data-testid="title">{{ title }}</p>
+        <p class="gl-text-size-h2 gl-font-bold" data-testid="title">
+          <gl-sprintf :message="s__('Billing|%{plan} Plan')">
+            <template #plan>
+              {{ planName }}
+            </template>
+          </gl-sprintf>
+        </p>
         <p data-testid="free-plan-info">
-          {{ $options.i18n.freePlanInfoText }}
+          {{ s__('Billing|You can upgrade to a paid tier to get access to more features.') }}
         </p>
       </template>
     </usage-statistics>
