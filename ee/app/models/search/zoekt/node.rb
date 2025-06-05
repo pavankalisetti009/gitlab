@@ -98,6 +98,7 @@ module Search
           s.metadata['name'] = params.fetch('node.name')
           s.metadata['task_count'] = params['node.task_count'].to_i if params['node.task_count'].present?
           s.metadata['concurrency'] = params['node.concurrency'].to_i if params['node.concurrency'].present?
+          s.schema_version = params['node.schema_version'] if params['node.schema_version'].present?
           s.metadata['version'] = params['node.version'] if params['node.version'].present?
         end
       end

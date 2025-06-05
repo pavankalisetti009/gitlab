@@ -352,6 +352,14 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(tasked_node.metadata['version']).to eq('1.2.3')
       end
     end
+
+    context 'when node.schema_version is present' do
+      let(:params) { base_params.merge('node.schema_version' => 2525) }
+
+      it 'sets schema_version' do
+        expect(tasked_node.schema_version).to eq(2525)
+      end
+    end
   end
 
   describe '.marking_lost_enabled?', :zoekt_settings_enabled do
