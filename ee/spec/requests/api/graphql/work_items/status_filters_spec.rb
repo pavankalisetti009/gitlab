@@ -15,14 +15,35 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
   let_it_be(:work_item_1) { create(:work_item, :issue, project: project, labels: [group_label]) }
   let_it_be(:work_item_2) { create(:work_item, :task, project: project, labels: [group_label]) }
   let_it_be(:work_item_3) { create(:work_item, :task, project: project, labels: [group_label]) }
-
-  let_it_be(:current_status_1) { create(:work_item_current_status, work_item: work_item_1) }
-  let_it_be(:current_status_2) { create(:work_item_current_status, work_item: work_item_2) }
-
-  let_it_be(:status_id) { ::WorkItems::Statuses::SystemDefined::Status.find(1).to_global_id }
-  let_it_be(:status_name) { 'to do' }
+  let_it_be(:work_item_4) { create(:work_item, :task, project: project, labels: [group_label]) }
 
   let(:current_user) { create(:user, guest_of: group) }
+
+  let(:query) do
+    graphql_query_for(resource_parent.class.name.downcase, { full_path: resource_parent.full_path },
+      <<~BOARDS
+        boards(first: 1) {
+          nodes {
+            lists(id: "#{label_list.to_global_id}") {
+              nodes {
+                issues(#{attributes_to_graphql(filters: params)}) {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      BOARDS
+    )
+  end
+
+  let(:items) do
+    graphql_data.dig(resource_parent.class.name.downcase, 'boards', 'nodes')[0]
+      .dig('lists', 'nodes')[0]
+      .dig('issues', 'nodes')
+  end
 
   before do
     stub_licensed_features(work_item_status: true)
@@ -34,8 +55,8 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
       model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
 
-      expect(model_ids.size).to eq(2)
-      expect(model_ids).to contain_exactly(work_item_1.id, work_item_2.id)
+      expect(model_ids.size).to eq(3)
+      expect(model_ids).to contain_exactly(work_item_1.id, work_item_2.id, work_item_3.id)
     end
   end
 
@@ -45,13 +66,13 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
       model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
 
-      expect(model_ids.size).to eq(3)
-      expect(model_ids).to contain_exactly(work_item_1.id, work_item_2.id, work_item_3.id)
+      expect(model_ids.size).to eq(4)
+      expect(model_ids).to contain_exactly(work_item_1.id, work_item_2.id, work_item_3.id, work_item_4.id)
     end
   end
 
   shared_examples 'supports filtering by status ID' do
-    let(:params) { { status: { id: status_id } } }
+    let(:params) { { status: { id: status.to_global_id } } }
 
     context 'when filtering by valid ID' do
       it_behaves_like 'a filtered list'
@@ -79,7 +100,7 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
   end
 
   shared_examples 'supports filtering by status name' do
-    let(:params) { { status: { name: status_name } } }
+    let(:params) { { status: { name: status.name } } }
 
     context 'when filtering by valid name' do
       it_behaves_like 'a filtered list'
@@ -101,7 +122,7 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
   end
 
   shared_examples 'does not support filtering by both status ID and name' do
-    let(:params) { { status: { id: status_id, name: status_name } } }
+    let(:params) { { status: { id: status.to_global_id, name: status.name } } }
 
     it 'returns an error' do
       post_graphql(query, current_user: current_user)
@@ -112,71 +133,77 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
     end
   end
 
-  context 'when querying group.board.lists.issues' do
-    let_it_be(:resource_parent) { group }
-
-    let(:query) do
-      graphql_query_for(:group, { full_path: group.full_path },
-        <<~BOARDS
-          boards(first: 1) {
-            nodes {
-              lists(id: "#{label_list.to_global_id}") {
-                nodes {
-                  issues(#{attributes_to_graphql(filters: params)}) {
-                    nodes {
-                      id
-                    }
-                  }
-                }
-              }
-            }
-          }
-        BOARDS
-      )
+  context 'with system defined statuses' do
+    let_it_be(:current_status_1) { create(:work_item_current_status, work_item: work_item_1) }
+    let_it_be(:current_status_2) { create(:work_item_current_status, work_item: work_item_2) }
+    let_it_be(:current_status_4) do
+      create(:work_item_current_status, work_item: work_item_4, system_defined_status_id: 2)
     end
 
-    let(:items) do
-      graphql_data.dig('group', 'boards', 'nodes')[0]
-        .dig('lists', 'nodes')[0]
-        .dig('issues', 'nodes')
+    let_it_be(:status) { build(:work_item_system_defined_status, :to_do) }
+
+    context 'when querying group.board.lists.issues' do
+      let_it_be(:resource_parent) { group }
+
+      it_behaves_like 'supports filtering by status ID'
+      it_behaves_like 'supports filtering by status name'
+      it_behaves_like 'does not support filtering by both status ID and name'
     end
 
-    it_behaves_like 'supports filtering by status ID'
-    it_behaves_like 'supports filtering by status name'
-    it_behaves_like 'does not support filtering by both status ID and name'
+    context 'when querying project.board.lists.issues' do
+      let_it_be(:resource_parent) { project }
+
+      it_behaves_like 'supports filtering by status ID'
+      it_behaves_like 'supports filtering by status name'
+      it_behaves_like 'does not support filtering by both status ID and name'
+    end
   end
 
-  context 'when querying project.board.lists.issues' do
-    let_it_be(:resource_parent) { project }
+  context 'with custom statuses' do
+    let_it_be(:current_status_1) { create(:work_item_current_status, work_item: work_item_1) }
 
-    let(:query) do
-      graphql_query_for(:project, { full_path: project.full_path },
-        <<~BOARDS
-          boards(first: 1) {
-            nodes {
-              lists(id: "#{label_list.to_global_id}") {
-                nodes {
-                  issues(#{attributes_to_graphql(filters: params)}) {
-                    nodes {
-                      id
-                    }
-                  }
-                }
-              }
-            }
-          }
-        BOARDS
-      )
+    let_it_be(:lifecycle) do
+      create(:work_item_custom_lifecycle, namespace: group).tap do |lifecycle|
+        # Skip validations so that we can skip the license check.
+        # We can't stub licensed features for let_it_be blocks.
+        build(:work_item_type_custom_lifecycle,
+          namespace: group,
+          work_item_type: create(:work_item_type, :issue),
+          lifecycle: lifecycle
+        ).save!(validate: false)
+
+        build(:work_item_type_custom_lifecycle,
+          namespace: group,
+          work_item_type: create(:work_item_type, :task),
+          lifecycle: lifecycle
+        ).save!(validate: false)
+      end
     end
 
-    let(:items) do
-      graphql_data.dig('project', 'boards', 'nodes')[0]
-        .dig('lists', 'nodes')[0]
-        .dig('issues', 'nodes')
+    let_it_be(:status) { lifecycle.default_open_status }
+
+    let_it_be(:current_status_2) do
+      create(:work_item_current_status, :custom, work_item: work_item_2, custom_status: status)
     end
 
-    it_behaves_like 'supports filtering by status ID'
-    it_behaves_like 'supports filtering by status name'
-    it_behaves_like 'does not support filtering by both status ID and name'
+    let_it_be(:current_status_4) do
+      create(:work_item_current_status, :custom, work_item: work_item_4, custom_status: lifecycle.default_closed_status)
+    end
+
+    context 'when querying group.board.lists.issues' do
+      let_it_be(:resource_parent) { group }
+
+      it_behaves_like 'supports filtering by status ID'
+      it_behaves_like 'supports filtering by status name'
+      it_behaves_like 'does not support filtering by both status ID and name'
+    end
+
+    context 'when querying project.board.lists.issues' do
+      let_it_be(:resource_parent) { project }
+
+      it_behaves_like 'supports filtering by status ID'
+      it_behaves_like 'supports filtering by status name'
+      it_behaves_like 'does not support filtering by both status ID and name'
+    end
   end
 end

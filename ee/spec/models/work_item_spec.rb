@@ -510,17 +510,164 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     it { is_expected.to contain_exactly(work_item_without_progress, work_item_with_stale_reminder) }
   end
 
-  describe '.with_status' do
-    let_it_be(:to_do_work_item) { create(:work_item, :task, project: reusable_project, system_defined_status_id: 1) }
-    let_it_be(:in_progress_work_item) do
-      create(:work_item, :task, project: reusable_project, system_defined_status_id: 2)
+  describe 'status scopes' do
+    let_it_be(:project) { create(:project, group: reusable_group) }
+
+    let_it_be(:wi_default_open) { create(:work_item, project: project) }
+    let_it_be(:wi_default_closed) { create(:work_item, :closed, project: project) }
+    let_it_be(:wi_default_duplicated) do
+      create(:work_item, :closed, project: project, duplicated_to_id: wi_default_closed.id)
     end
 
-    let(:status) { build(:work_item_system_defined_status) }
+    let_it_be(:wi_system_defined_todo) do
+      create(:work_item, project: project,
+        system_defined_status_id: build(:work_item_system_defined_status, :to_do).id)
+    end
 
-    subject { described_class.with_status(status) }
+    let_it_be(:wi_system_defined_done) do
+      create(:work_item, :closed, project: project,
+        system_defined_status_id: build(:work_item_system_defined_status, :done).id)
+    end
 
-    it { is_expected.to contain_exactly(to_do_work_item) }
+    let_it_be(:wi_system_defined_duplicated) do
+      create(:work_item, :closed, project: project,
+        system_defined_status_id: build(:work_item_system_defined_status, :duplicate).id)
+    end
+
+    let_it_be(:wi_system_defined_wont_do) do
+      create(:work_item, :closed, project: project,
+        system_defined_status_id: build(:work_item_system_defined_status, :wont_do).id)
+    end
+
+    let_it_be(:lifecycle) do
+      create(:work_item_custom_lifecycle, namespace: reusable_group).tap do |lifecycle|
+        # Skip validations so that we can skip the license check.
+        # We can't stub licensed features for let_it_be blocks.
+        build(:work_item_type_custom_lifecycle,
+          namespace: reusable_group,
+          work_item_type: create(:work_item_type, :issue),
+          lifecycle: lifecycle
+        ).save!(validate: false)
+      end
+    end
+
+    let_it_be(:custom_status) do
+      create(:work_item_custom_status,
+        namespace: reusable_group,
+        lifecycles: [lifecycle],
+        converted_from_system_defined_status_identifier: nil
+      )
+    end
+
+    let_it_be(:wi_custom_todo) do
+      create(:work_item, project: project, custom_status_id: lifecycle.default_open_status_id)
+    end
+
+    let_it_be(:wi_custom_done) do
+      create(:work_item, project: project, custom_status_id: lifecycle.default_closed_status_id)
+    end
+
+    let_it_be(:wi_custom_duplicated) do
+      create(:work_item, project: project, custom_status_id: lifecycle.default_duplicate_status_id)
+    end
+
+    let_it_be(:wi_custom) { create(:work_item, project: project, custom_status_id: custom_status.id) }
+
+    describe '.with_status' do
+      subject { described_class.with_status(status) }
+
+      context 'with a system defined status' do
+        let(:status) { build(:work_item_system_defined_status, :to_do) }
+
+        it 'returns items with matching current_status or its equivalent fallback state' do
+          is_expected.to contain_exactly(wi_system_defined_todo, wi_default_open)
+        end
+      end
+
+      context 'with custom todo status' do
+        let(:status) { lifecycle.default_open_status }
+
+        it 'returns items with matching current_status or the system defined status it was converted from' do
+          is_expected.to contain_exactly(wi_custom_todo, wi_system_defined_todo, wi_default_open)
+        end
+      end
+
+      context 'with custom done status' do
+        let(:status) { lifecycle.default_closed_status }
+
+        it 'returns items with matching current_status or the system defined status it was converted from' do
+          is_expected.to contain_exactly(wi_custom_done, wi_system_defined_done, wi_default_closed)
+        end
+      end
+
+      context 'with custom duplicated status' do
+        let(:status) { lifecycle.default_duplicate_status }
+
+        it 'returns items with matching current_status or the system defined status it was converted from' do
+          is_expected.to contain_exactly(wi_custom_duplicated, wi_system_defined_duplicated, wi_default_duplicated)
+        end
+      end
+
+      context 'with a custom status' do
+        let(:status) { custom_status }
+
+        it 'returns items with matching current_status' do
+          is_expected.to contain_exactly(wi_custom)
+        end
+      end
+    end
+
+    describe '.with_system_defined_status' do
+      subject { described_class.with_system_defined_status(status) }
+
+      context 'with todo status' do
+        let(:status) { build(:work_item_system_defined_status, :to_do) }
+
+        it 'returns items with matching current_status or open items' do
+          is_expected.to contain_exactly(wi_system_defined_todo, wi_default_open)
+        end
+      end
+
+      context 'with done status' do
+        let(:status) { build(:work_item_system_defined_status, :done) }
+
+        it 'returns items with matching current_status or closed items' do
+          is_expected.to contain_exactly(wi_system_defined_done, wi_default_closed)
+        end
+      end
+
+      context 'with duplicate status' do
+        let(:status) { build(:work_item_system_defined_status, :duplicate) }
+
+        it 'returns items with matching current_status or duplicated items' do
+          is_expected.to contain_exactly(wi_system_defined_duplicated, wi_default_duplicated)
+        end
+      end
+
+      context 'with wont_do status' do
+        let(:status) { build(:work_item_system_defined_status, :wont_do) }
+
+        it 'returns items with matching current_status' do
+          is_expected.to contain_exactly(wi_system_defined_wont_do)
+        end
+      end
+
+      context 'with a custom status' do
+        let(:status) { custom_status }
+
+        it 'returns no items' do
+          is_expected.to be_empty
+        end
+      end
+    end
+
+    describe '.without_current_status' do
+      it 'returns items that do not have an associated current_status' do
+        expect(described_class.without_current_status).to contain_exactly(
+          wi_default_open, wi_default_closed, wi_default_duplicated
+        )
+      end
+    end
   end
 
   describe 'versioned descriptions' do

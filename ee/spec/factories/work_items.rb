@@ -4,6 +4,7 @@ FactoryBot.modify do
   factory :work_item do
     transient do
       system_defined_status_id { nil }
+      custom_status_id { nil }
     end
 
     trait :requirement do
@@ -83,9 +84,11 @@ FactoryBot.modify do
     end
 
     after(:build) do |work_item, evaluator|
-      next unless evaluator.system_defined_status_id.present?
-
-      work_item.build_current_status(system_defined_status_id: evaluator.system_defined_status_id)
+      if evaluator.system_defined_status_id.present?
+        work_item.build_current_status(system_defined_status_id: evaluator.system_defined_status_id)
+      elsif evaluator.custom_status_id.present?
+        work_item.build_current_status(custom_status_id: evaluator.custom_status_id)
+      end
     end
   end
 end
