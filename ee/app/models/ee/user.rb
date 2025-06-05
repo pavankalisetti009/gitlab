@@ -113,6 +113,7 @@ module EE
 
       has_many :group_scim_identities, class_name: 'GroupScimIdentity'
       has_many :instance_scim_identities, -> { where(group_id: nil) }, class_name: 'ScimIdentity'
+      has_many :scim_group_memberships, -> { where(group_id: nil) }, class_name: 'Authn::ScimGroupMembership'
 
       has_many :board_preferences, class_name: 'BoardUserPreference', inverse_of: :user
 
