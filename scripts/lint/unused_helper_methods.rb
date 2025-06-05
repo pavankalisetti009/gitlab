@@ -33,7 +33,7 @@ end
 #
 helpers = source_files.keys.grep(%r{app/helpers}).flat_map do |filename|
   source_files[filename].flat_map do |line|
-    line =~ /def ([^(\s]+)/ ? [{ method: Regexp.last_match(1).chomp, file: filename }] : []
+    line =~ /def ([^(;\s]+)/ ? [{ method: Regexp.last_match(1).chomp, file: filename }] : []
   end
 end
 
