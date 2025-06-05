@@ -63,12 +63,12 @@ RSpec.shared_context 'with base security policies graphql context' do
     { "editPath" => edid_path }
   end
 
-  def expected_policy_response(policy, inherited = false)
+  def expected_policy_response(policy, inherited = false, yaml = nil)
     {
       "description" => policy[:description],
       "enabled" => policy[:enabled],
       "name" => policy[:name],
-      "yaml" => YAML.dump(policy.deep_stringify_keys),
+      "yaml" => yaml.presence || YAML.dump(policy.deep_stringify_keys),
       "updatedAt" => committed_date.iso8601,
       "editPath" => edit_group_policy_path(group, policy_type, policy),
       "policyScope" => {
@@ -79,8 +79,8 @@ RSpec.shared_context 'with base security policies graphql context' do
     }.merge(expected_group_source_response(inherited))
   end
 
-  def expected_approval_policy_response(policy, inherited = false)
-    expected_policy_response(policy, inherited).merge({
+  def expected_approval_policy_response(policy, inherited = false, yaml = nil)
+    expected_policy_response(policy, inherited, yaml).merge({
       "userApprovers" => [
         {
           "id" => "gid://gitlab/User/#{user.id}",

@@ -4,6 +4,7 @@ module Resolvers
   module SecurityOrchestration
     class SecurityPolicyResolver < BaseResolver
       include ResolvesOrchestrationPolicy
+      include ConstructSecurityPolicies
 
       type Types::SecurityOrchestration::SecurityPolicyType, null: true
       calls_gitaly!

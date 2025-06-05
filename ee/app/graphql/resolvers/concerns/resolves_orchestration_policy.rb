@@ -2,7 +2,6 @@
 
 module ResolvesOrchestrationPolicy
   extend ActiveSupport::Concern
-  include ConstructSecurityPolicies
 
   included do
     include Gitlab::Graphql::Authorize::AuthorizeResource

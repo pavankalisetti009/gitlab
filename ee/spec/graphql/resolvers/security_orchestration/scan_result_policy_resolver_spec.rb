@@ -32,7 +32,18 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
           including_groups: [],
           excluding_groups: []
         },
-        yaml: YAML.dump(policy.deep_stringify_keys),
+        yaml: YAML.dump({
+          name: policy[:name],
+          description: policy[:description],
+          enabled: policy[:enabled],
+          policy_scope: policy[:policy_scope],
+          actions: policy[:actions],
+          rules: policy[:rules],
+          approval_settings: policy[:approval_settings],
+          fallback_behavior: policy[:fallback_behavior],
+          metadata: policy[:metadata],
+          policy_tuning: policy[:policy_tuning]
+        }.compact.deep_stringify_keys),
         updated_at: policy_last_updated_at,
         action_approvers: action_approvers,
         user_approvers: [],
