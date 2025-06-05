@@ -29937,6 +29937,9 @@ msgstr ""
 msgid "Group-level wiki is disabled."
 msgstr ""
 
+msgid "Group/project"
+msgstr ""
+
 msgid "Group: %{group_name}"
 msgstr ""
 
@@ -70143,6 +70146,9 @@ msgid "WorkItem|Search or paste URL"
 msgstr ""
 
 msgid "WorkItem|Select a group"
+msgstr ""
+
+msgid "WorkItem|Select a namespace"
 msgstr ""
 
 msgid "WorkItem|Select a project"
