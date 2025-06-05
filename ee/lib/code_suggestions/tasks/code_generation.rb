@@ -20,7 +20,8 @@ module CodeSuggestions
       def model_details
         @model_details ||= CodeSuggestions::ModelDetails::Base.new(
           current_user: current_user,
-          feature_setting_name: :code_generations
+          feature_setting_name: :code_generations,
+          root_namespace: params[:project]&.root_ancestor
         )
       end
 
