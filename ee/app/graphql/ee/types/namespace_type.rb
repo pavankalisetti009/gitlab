@@ -183,6 +183,12 @@ module EE
           method: :designated_as_csp?,
           experiment: { milestone: '18.1' }
 
+        field :statuses, ::Types::WorkItems::StatusType.connection_type,
+          null: true,
+          description: 'Statuses of work items available to the namespace.',
+          experiment: { milestone: '18.1' },
+          resolver: ::Resolvers::WorkItems::StatusesResolver
+
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end
