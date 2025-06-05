@@ -64,11 +64,11 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
           external_id: 'A01:2021',
           name: 'OWASP-A01:2021')
       ]
-
-      vulnerability.vulnerability_read.dismissal_reason = :false_positive
     end
 
     it 'builds a new instance of `Vulnerabilities::ArchivedRecord` with correct attributes' do
+      vulnerability.vulnerability_read.dismissal_reason = :false_positive
+
       expect(build_archived_record).to have_attributes(
         archive: archive,
         date: archive.date,
@@ -202,6 +202,56 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
               method: 'insecureCypher',
               start_line: 29
             },
+            resolved_on_default_branch: false,
+            notes_summary: 'Test notes summary',
+            full_path: 'Test full path',
+            cvss: [
+              {
+                vector: 'CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N',
+                vendor: 'GitLab'
+              }
+            ],
+            dismissal_reason: nil
+          }.deep_stringify_keys,
+          created_at: Time.zone.now,
+          updated_at: Time.zone.now
+        )
+      end
+    end
+
+    context 'when the vulnerability has no findings' do
+      let_it_be_with_refind(:vulnerability) do
+        create(:vulnerability,
+          :dismissed,
+          dismissed_by: user,
+          confirmed_at: Time.zone.now,
+          confirmed_by: user,
+          resolved_at: Time.zone.now,
+          resolved_by: user,
+          project: project,
+          title: 'Test Title')
+      end
+
+      it 'builds a new instance of `Vulnerabilities::ArchivedRecord` with correct attributes' do
+        expect(build_archived_record).to have_attributes(
+          archive: archive,
+          date: archive.date,
+          project: project,
+          vulnerability_identifier: vulnerability.id,
+          data: {
+            report_type: 'sast',
+            scanner: '',
+            state: 'dismissed',
+            severity: 'high',
+            title: 'Test Title',
+            description: '',
+            cve_value: nil,
+            cwe_value: nil,
+            other_identifiers: [],
+            dismissed_at: vulnerability.dismissed_at.to_s,
+            dismissed_by: 'john.doe',
+            created_at: vulnerability.created_at.to_s,
+            location: nil,
             resolved_on_default_branch: false,
             notes_summary: 'Test notes summary',
             full_path: 'Test full path',
