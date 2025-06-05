@@ -3,6 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe 'users/registrations_identity_verification/success.html.haml', feature_category: :onboarding do
+  let_it_be(:user) { create_default(:user) }
+
+  before do
+    allow(view).to receive(:current_user).and_return(user)
+  end
+
   context 'when tracking_label is set' do
     before do
       assign(:tracking_label, '_tracking_label_')
