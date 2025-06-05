@@ -9,11 +9,16 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
   let_it_be(:group) { create(:group) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: current_user, scopes: [:api]) }
 
-  subject(:get_request) do
-    get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
+  let(:get_request) do
+    get(api(path, personal_access_token: personal_access_token))
+  end
+
+  let(:delete_request) do
+    delete(api(path, personal_access_token: personal_access_token))
   end
 
   before_all do
+    group.update!(require_dpop_for_manage_api_endpoints: false)
     group.add_owner(current_user)
   end
 
@@ -39,6 +44,26 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
 
         expect(response).to have_gitlab_http_status(:forbidden)
       end
+    end
+  end
+
+  shared_examples 'feature is not available to non saas versions' do |request_type|
+    context 'when it is self-managed instance', saas: false do
+      it "returns not found error" do
+        send(request_type)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  shared_examples 'forbidden action for delete_request' do |delete_type|
+    it "returns forbidden" do
+      delete_request
+
+      expect(response).to have_gitlab_http_status(:forbidden)
+
+      expect(token.reload).not_to be_revoked if delete_type == :token
     end
   end
 
@@ -80,16 +105,262 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     # Token which should not be returned in any responses
     let_it_be(:non_enterprise_token) { create(:personal_access_token, user: non_enterprise_user, scopes: [:api]) }
 
-    it_behaves_like 'an access token GET API with access token params'
-    it_behaves_like 'a manage groups GET endpoint'
+    it_behaves_like 'feature is not available to non saas versions', "get_request"
 
-    it 'returns 404 for non-existing group' do
-      get(api(
-        "/groups/#{non_existing_record_id}/manage/personal_access_tokens",
-        personal_access_token: personal_access_token
-      ), headers: dpop_headers_for(current_user))
+    context 'when saas', :saas do
+      it_behaves_like 'an access token GET API with access token params'
 
-      expect(response).to have_gitlab_http_status(:not_found)
+      it_behaves_like 'a manage groups GET endpoint'
+
+      it 'returns 404 for non-existing group' do
+        get(api(
+          "/groups/#{non_existing_record_id}/manage/personal_access_tokens",
+          personal_access_token: personal_access_token
+        ))
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'DELETE /groups/:id/manage/personal_access_tokens/:id' do
+    let_it_be(:enterprise_user) { create(:enterprise_user, enterprise_group: group) }
+    let_it_be(:token) { create(:personal_access_token, user: enterprise_user) }
+    let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens/#{token.id}" }
+
+    before do
+      stub_licensed_features(domain_verification: true)
+    end
+
+    it_behaves_like 'feature is not available to non saas versions', "delete_request"
+
+    context 'when saas', :saas do
+      it 'returns 404 for non-existing group' do
+        get(api(
+          "/groups/#{non_existing_record_id}/manage/personal_access_tokens/#{token.id}",
+          personal_access_token: personal_access_token
+        ), headers: dpop_headers_for(current_user))
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      context 'when current user is a top level group owner' do
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: current_user) }
+        let_it_be(:owner_token) { create(:personal_access_token, user: current_user) }
+        let_it_be(:owner_token_path) { "/groups/#{group.id}/manage/personal_access_tokens/#{owner_token.id}" }
+        let_it_be(:admin_read_only_token) do
+          create(:personal_access_token, scopes: ['read_repository'], user: current_user)
+        end
+
+        it "revokes the personal access token for the other user" do
+          delete api(path, personal_access_token: personal_access_token)
+
+          expect(response).to have_gitlab_http_status(:no_content)
+          expect(token.reload).to be_revoked
+        end
+
+        it 'fails to revoke a different user token using a readonly scope' do
+          delete api(path, personal_access_token: admin_read_only_token)
+
+          expect(token.reload).not_to be_revoked
+        end
+
+        context 'when token belongs to non enterprise user' do
+          let_it_be(:regular_user) { create(:user) }
+          let_it_be(:regular_user_token) { create(:personal_access_token, user: regular_user) }
+          let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens/#{regular_user_token.id}" }
+
+          it_behaves_like "forbidden action for delete_request", "token"
+        end
+
+        context 'when token does not belong to the group' do
+          let_it_be(:other_group) { create(:group) }
+          let_it_be(:path) { "/groups/#{other_group.id}/manage/personal_access_tokens/#{token.id}" }
+
+          before_all do
+            other_group.update!(require_dpop_for_manage_api_endpoints: false)
+            other_group.add_owner(current_user)
+          end
+
+          it_behaves_like "forbidden action for delete_request", "token"
+        end
+      end
+
+      context 'when user is not a top level group owner' do
+        let_it_be(:regular_user) { create(:user) }
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: regular_user) }
+        let_it_be(:subgroup) { create(:group, parent: group) }
+
+        before_all do
+          group.add_maintainer(regular_user)
+          subgroup.add_owner(regular_user)
+        end
+
+        it_behaves_like "forbidden action for delete_request", "token"
+      end
+
+      context 'when current user is an administrator' do
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: create(:admin), scopes: [:api]) }
+
+        context 'when admin mode enabled', :enable_admin_mode do
+          it "revokes the personal access token for the other user" do
+            delete api(path, personal_access_token: personal_access_token)
+
+            expect(response).to have_gitlab_http_status(:no_content)
+            expect(token.reload.revoked?).to be true
+          end
+        end
+
+        context 'when admin mode not enabled' do
+          it_behaves_like "forbidden action for delete_request", "token"
+        end
+      end
+    end
+  end
+
+  describe "DELETE /groups/:id/manage/resource_access_tokens/:token_id" do
+    let_it_be(:project_bot) { create(:user, :project_bot, bot_namespace: group) }
+    let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+    let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}" }
+
+    before_all do
+      group.add_maintainer(project_bot)
+    end
+
+    it_behaves_like 'feature is not available to non saas versions', "delete_request"
+
+    context 'when saas', :saas do
+      context "when the user has valid permissions" do
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: current_user) }
+
+        it "revokes the resources access token" do
+          delete api(path, personal_access_token: personal_access_token)
+
+          expect(response).to have_gitlab_http_status(:no_content)
+          expect(token.reload).to be_revoked
+          expect(User.exists?(project_bot.id)).to be_truthy
+        end
+
+        context "when attempting to delete a token that does not belong to the specified group" do
+          let_it_be(:other_group) { create(:group) }
+          let_it_be(:path) { "/groups/#{other_group.id}/manage/resource_access_tokens/#{token.id}" }
+
+          before_all do
+            other_group.update!(require_dpop_for_manage_api_endpoints: false)
+            other_group.add_owner(current_user)
+          end
+
+          it "returns bad request and not able to find the bot user as member of group" do
+            delete api(path, personal_access_token: personal_access_token)
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to eq("400 Bad request - Failed to find bot user")
+          end
+        end
+
+        context 'when token belongs to non bot user' do
+          let_it_be(:regular_user) { create(:user) }
+          let_it_be(:regular_user_token) { create(:personal_access_token, user: regular_user) }
+          let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{regular_user_token.id}" }
+
+          it_behaves_like "forbidden action for delete_request", "token"
+        end
+      end
+
+      context "when the user does not have valid permissions" do
+        let_it_be(:regular_user) { create(:user) }
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: regular_user) }
+
+        before_all do
+          group.add_maintainer(regular_user)
+        end
+
+        it_behaves_like "forbidden action for delete_request", "token"
+      end
+    end
+  end
+
+  describe "DELETE /groups/:id/manage/ssh_keys/:key_id" do
+    let(:enterprise_user) { create(:enterprise_user, enterprise_group: group) }
+    let(:ssh_key) { create(:personal_key, user: enterprise_user) }
+    let(:path) { "/groups/#{group.id}/manage/ssh_keys/#{ssh_key.id}" }
+
+    it_behaves_like 'feature is not available to non saas versions', "delete_request"
+
+    context 'when saas', :saas do
+      it 'returns 404 for non-existing group' do
+        delete api("/group/#{non_existing_record_id}/manage/ssh_keys/#{ssh_key.id}")
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      context 'when authorized' do
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: current_user) }
+
+        it 'deletes existing key' do
+          enterprise_user.keys << ssh_key
+
+          expect do
+            delete api(path, personal_access_token: personal_access_token)
+
+            expect(response).to have_gitlab_http_status(:no_content)
+          end.to change { enterprise_user.keys.count }.by(-1)
+        end
+
+        it 'returns 404 error if key not found' do
+          delete api("/groups/#{group.id}/manage/ssh_keys/#{non_existing_record_id}",
+            personal_access_token: personal_access_token)
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['message']).to eq('404 Key Not Found')
+        end
+
+        context 'when key does not belong to enterprise user' do
+          let_it_be(:regular_user) { create(:user) }
+          let_it_be(:ssh_key) { create(:personal_key, user: regular_user) }
+
+          before_all do
+            create(:enterprise_user, enterprise_group: group)
+            group.add_developer(regular_user)
+            regular_user.keys << ssh_key
+          end
+
+          it "returns not found error" do
+            delete_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'when key belongs to a user from subgroup' do
+          let(:subgroup) { create(:group, parent: group) }
+          let(:enterprise_user) { create(:enterprise_user, enterprise_group: group) }
+          let(:ssh_key) { create(:personal_key, user: enterprise_user) }
+
+          before do
+            subgroup.add_maintainer(enterprise_user)
+          end
+
+          it "deletes the ssh key" do
+            enterprise_user.keys << ssh_key
+
+            expect do
+              delete api(path, personal_access_token: personal_access_token)
+
+              expect(response).to have_gitlab_http_status(:no_content)
+            end.to change { enterprise_user.keys.count }.by(-1)
+          end
+        end
+      end
+
+      context 'when unauthorized' do
+        let_it_be(:regular_user) { create(:user) }
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: regular_user) }
+
+        before_all do
+          group.add_maintainer(regular_user)
+        end
+
+        it_behaves_like "forbidden action for delete_request"
+      end
     end
   end
 
@@ -137,177 +408,183 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     let_it_be(:excluded_token2) { create(:personal_access_token, user: create(:user, :service_account)) }
     let_it_be(:excluded_token3) { create(:personal_access_token, user: other_group_bot) }
 
-    it_behaves_like 'an access token GET API with access token params'
-    it_behaves_like 'a manage groups GET endpoint'
+    it_behaves_like 'feature is not available to non saas versions', "get_request"
 
-    it 'returns 404 for non-existing group' do
-      get(api(
-        "/groups/#{non_existing_record_id}/manage/resource_access_tokens",
-        personal_access_token: personal_access_token
-      ), headers: dpop_headers_for(current_user))
+    context 'when saas', :saas do
+      it_behaves_like 'an access token GET API with access token params'
+      it_behaves_like 'a manage groups GET endpoint'
 
-      expect(response).to have_gitlab_http_status(:not_found)
-    end
+      it 'returns 404 for non-existing group' do
+        get(api(
+          "/groups/#{non_existing_record_id}/manage/resource_access_tokens",
+          personal_access_token: personal_access_token
+        ), headers: dpop_headers_for(current_user))
 
-    it 'returns the expected response for group tokens' do
-      get api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_desc' },
-        headers: dpop_headers_for(current_user)
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
-      expect(json_response[0]['id']).to eq(last_used_2_months_ago_token.id)
-      expect(json_response[0]['resource_type']).to eq('group')
-      expect(json_response[0]['resource_id']).to eq(group.id)
-    end
-
-    it 'returns the expected response for project tokens' do
-      get(api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_asc' },
-        headers: dpop_headers_for(current_user))
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
-      expect(json_response[0]['id']).to eq(created_2_days_ago_token.id)
-      expect(json_response[0]['resource_type']).to eq('project')
-      expect(json_response[0]['resource_id']).to eq(project.id)
-    end
-
-    it 'avoids N+1 queries' do
-      dpop_header_val = dpop_headers_for(current_user)
-
-      get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
-
-      control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-        get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
+        expect(response).to have_gitlab_http_status(:not_found)
       end
 
-      other_bot = create(:user, :project_bot, bot_namespace: group, developer_of: group)
-      create(:personal_access_token, user: other_bot)
-
-      expect do
-        get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
-      end.not_to exceed_all_query_limit(control)
-    end
-  end
-
-  describe 'GET /groups/:id/manage/ssh_keys' do
-    using RSpec::Parameterized::TableSyntax
-
-    let_it_be(:path) { "/groups/#{group.id}/manage/ssh_keys" }
-
-    it 'throws not found error for a non existent group' do
-      get(api("/groups/#{non_existing_record_id}/manage/ssh_keys"), headers: dpop_headers_for(current_user))
-
-      expect(response).to have_gitlab_http_status(:not_found)
-    end
-
-    it_behaves_like 'a manage groups GET endpoint'
-
-    context 'when group has no enterprise user associated' do
-      let_it_be(:user) { create(:user) }
-      let_it_be(:ssh_key) { create(:personal_key, user: user) }
-
-      it 'returns empty response for group which has no enterprise user associated' do
-        group.add_developer(user)
-
-        get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
+      it 'returns the expected response for group tokens' do
+        get api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_desc' },
+          headers: dpop_headers_for(current_user)
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response).to eq([])
+        expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
+        expect(json_response[0]['id']).to eq(last_used_2_months_ago_token.id)
+        expect(json_response[0]['resource_type']).to eq('group')
+        expect(json_response[0]['resource_id']).to eq(group.id)
       end
-    end
 
-    context 'when group has enterprise_user associated' do
-      let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
-
-      it "returns the ssh_keys for the group" do
-        ssh_key = create(:personal_key, user: user)
-
-        get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
+      it 'returns the expected response for project tokens' do
+        get(api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_asc' },
+          headers: dpop_headers_for(current_user))
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect_paginated_array_response_contain_exactly(ssh_key.id)
-        expect(json_response[0]['user_id']).to eq(user.id)
+        expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
+        expect(json_response[0]['id']).to eq(created_2_days_ago_token.id)
+        expect(json_response[0]['resource_type']).to eq('project')
+        expect(json_response[0]['resource_id']).to eq(project.id)
       end
 
       it 'avoids N+1 queries' do
         dpop_header_val = dpop_headers_for(current_user)
+
+        get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
+
         control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
           get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
         end
 
-        user2 = create(:enterprise_user, enterprise_group: group)
-        create(:personal_key, user: user2)
+        other_bot = create(:user, :project_bot, bot_namespace: group, developer_of: group)
+        create(:personal_access_token, user: other_bot)
 
         expect do
           get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
         end.not_to exceed_all_query_limit(control)
       end
+    end
+  end
 
-      context 'with filter params', :freeze_time do
-        subject(:get_request) do
-          get api(path, personal_access_token: personal_access_token), params: params,
-            headers: dpop_headers_for(current_user)
+  describe 'GET /groups/:id/manage/ssh_keys' do
+    let_it_be(:path) { "/groups/#{group.id}/manage/ssh_keys" }
+
+    it_behaves_like 'feature is not available to non saas versions', "get_request"
+
+    context 'when saas', :saas do
+      it 'throws not found error for a non existent group' do
+        get(api("/groups/#{non_existing_record_id}/manage/ssh_keys"), headers: dpop_headers_for(current_user))
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      it_behaves_like 'a manage groups GET endpoint'
+
+      context 'when group has no enterprise user associated' do
+        let_it_be(:user) { create(:user) }
+        let_it_be(:ssh_key) { create(:personal_key, user: user) }
+
+        it 'returns empty response for group which has no enterprise user associated' do
+          group.add_developer(user)
+
+          get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to eq([])
+        end
+      end
+
+      context 'when group has enterprise_user associated' do
+        let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
+
+        it "returns the ssh_keys for the group" do
+          ssh_key = create(:personal_key, user: user)
+
+          get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect_paginated_array_response_contain_exactly(ssh_key.id)
+          expect(json_response[0]['user_id']).to eq(user.id)
         end
 
-        let(:params) { {} }
-
-        context 'when created_at date filters' do
-          let_it_be(:ssh_key_created_1_day_ago) { create(:personal_key, user: user, created_at: 1.day.ago.to_date) }
-          let_it_be(:ssh_key_created_2_day_ago) { create(:personal_key, user: user, created_at: 2.days.ago.to_date) }
-          let_it_be(:ssh_key_created_3_day_ago) { create(:personal_key, user: user, created_at: 3.days.ago.to_date) }
-
-          it "returns keys filtered with created_before the params value" do
-            params[:created_before] = 2.days.ago.to_date
-
-            get_request
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect_paginated_array_response([ssh_key_created_2_day_ago.id, ssh_key_created_3_day_ago.id])
-            expect(json_response.count).to eq(2)
+        it 'avoids N+1 queries' do
+          dpop_header_val = dpop_headers_for(current_user)
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
           end
 
-          it "returns keys filtered with created_after the params value" do
-            params[:created_after] = 2.days.ago.to_date
+          user2 = create(:enterprise_user, enterprise_group: group)
+          create(:personal_key, user: user2)
 
-            get_request
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect_paginated_array_response([ssh_key_created_1_day_ago.id, ssh_key_created_2_day_ago.id])
-            expect(json_response.count).to eq(2)
-          end
+          expect do
+            get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
+          end.not_to exceed_all_query_limit(control)
         end
 
-        context 'when expires_at date filters' do
-          let_it_be(:ssh_key_expiring_in_1_day) do
-            create(:personal_key, user: user, expires_at: 1.day.from_now.to_date)
+        context 'with filter params', :freeze_time do
+          subject(:get_request) do
+            get api(path, personal_access_token: personal_access_token), params: params,
+              headers: dpop_headers_for(current_user)
           end
 
-          let_it_be(:ssh_key_expiring_in_2_day) do
-            create(:personal_key, user: user, expires_at: 2.days.from_now.to_date)
+          let(:params) { {} }
+
+          context 'when created_at date filters' do
+            let_it_be(:ssh_key_created_1_day_ago) { create(:personal_key, user: user, created_at: 1.day.ago.to_date) }
+            let_it_be(:ssh_key_created_2_day_ago) { create(:personal_key, user: user, created_at: 2.days.ago.to_date) }
+            let_it_be(:ssh_key_created_3_day_ago) { create(:personal_key, user: user, created_at: 3.days.ago.to_date) }
+
+            it "returns keys filtered with created_before the params value" do
+              params[:created_before] = 2.days.ago.to_date
+
+              get_request
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect_paginated_array_response([ssh_key_created_2_day_ago.id, ssh_key_created_3_day_ago.id])
+              expect(json_response.count).to eq(2)
+            end
+
+            it "returns keys filtered with created_after the params value" do
+              params[:created_after] = 2.days.ago.to_date
+
+              get_request
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect_paginated_array_response([ssh_key_created_1_day_ago.id, ssh_key_created_2_day_ago.id])
+              expect(json_response.count).to eq(2)
+            end
           end
 
-          let_it_be(:ssh_key_expiring_in_3_day) do
-            create(:personal_key, user: user, expires_at: 3.days.from_now.to_date)
-          end
+          context 'when expires_at date filters' do
+            let_it_be(:ssh_key_expiring_in_1_day) do
+              create(:personal_key, user: user, expires_at: 1.day.from_now.to_date)
+            end
 
-          it "returns keys filtered with expires_before the params value" do
-            params[:expires_before] = 2.days.from_now.to_date
+            let_it_be(:ssh_key_expiring_in_2_day) do
+              create(:personal_key, user: user, expires_at: 2.days.from_now.to_date)
+            end
 
-            get_request
+            let_it_be(:ssh_key_expiring_in_3_day) do
+              create(:personal_key, user: user, expires_at: 3.days.from_now.to_date)
+            end
 
-            expect(response).to have_gitlab_http_status(status)
-            expect_paginated_array_response([ssh_key_expiring_in_1_day.id, ssh_key_expiring_in_2_day.id])
-            expect(json_response.count).to eq(2)
-          end
+            it "returns keys filtered with expires_before the params value" do
+              params[:expires_before] = 2.days.from_now.to_date
 
-          it "returns keys filtered with expires_after the params value" do
-            params[:expires_after] = 2.days.from_now.to_date
+              get_request
 
-            get_request
+              expect(response).to have_gitlab_http_status(status)
+              expect_paginated_array_response([ssh_key_expiring_in_1_day.id, ssh_key_expiring_in_2_day.id])
+              expect(json_response.count).to eq(2)
+            end
 
-            expect(response).to have_gitlab_http_status(status)
-            expect_paginated_array_response([ssh_key_expiring_in_2_day.id, ssh_key_expiring_in_3_day.id])
-            expect(json_response.count).to eq(2)
+            it "returns keys filtered with expires_after the params value" do
+              params[:expires_after] = 2.days.from_now.to_date
+
+              get_request
+
+              expect(response).to have_gitlab_http_status(status)
+              expect_paginated_array_response([ssh_key_expiring_in_2_day.id, ssh_key_expiring_in_3_day.id])
+              expect(json_response.count).to eq(2)
+            end
           end
         end
       end

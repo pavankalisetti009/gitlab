@@ -61,7 +61,7 @@ RSpec.describe API::API, feature_category: :system_access do
       end
     end
 
-    shared_examples "valid manage endpoint request" do
+    shared_examples "valid manage endpoint request", :saas do
       it 'returns :success' do
         get api(request_path, personal_access_token: personal_access_token)
 
@@ -69,7 +69,7 @@ RSpec.describe API::API, feature_category: :system_access do
       end
     end
 
-    shared_examples "invalid `/manage` endpoint request" do
+    shared_examples "invalid `/manage` endpoint request", :saas do
       it 'returns 404 not found' do
         get api(request_path, personal_access_token: personal_access_token)
 
@@ -89,7 +89,7 @@ RSpec.describe API::API, feature_category: :system_access do
         stub_feature_flags(dpop_authentication: false)
       end
 
-      context "when the :manage_pat_by_group_owners_ready FF is disabled" do
+      context "when the :manage_pat_by_group_owners_ready FF is disabled", :saas do
         before do
           stub_feature_flags(manage_pat_by_group_owners_ready: false)
         end
@@ -99,7 +99,7 @@ RSpec.describe API::API, feature_category: :system_access do
         end
       end
 
-      context "when the :manage_pat_by_group_owners_ready FF is enabled" do
+      context "when the :manage_pat_by_group_owners_ready FF is enabled", :saas do
         before do
           stub_feature_flags(manage_pat_by_group_owners_ready: true)
         end
@@ -124,7 +124,7 @@ RSpec.describe API::API, feature_category: :system_access do
       end
     end
 
-    context 'when :dpop_authentication FF is enabled' do
+    context 'when :dpop_authentication FF is enabled', :saas do
       let(:user) { create(:user) }
       let(:personal_access_token) { create(:personal_access_token, user: user, scopes: [:api]) }
       let(:group) { create(:group) }
@@ -147,7 +147,7 @@ RSpec.describe API::API, feature_category: :system_access do
           end
         end
 
-        context "when the :manage_pat_by_group_owners_ready FF is enabled" do
+        context "when the :manage_pat_by_group_owners_ready FF is enabled", :saas do
           before do
             stub_feature_flags(manage_pat_by_group_owners_ready: true)
           end
