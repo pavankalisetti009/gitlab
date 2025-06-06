@@ -279,7 +279,7 @@ describe('EE MRWidget approvals list', () => {
     it('renders tooltip for security rule', async () => {
       createComponent(approvalRulesSecurityPoliciesResponse);
       await waitForPromises();
-      const row = findRows().at(5);
+      const row = findRows().at(4);
       const codeOwnerRow = findRowElement(row, 'name');
       expect(codeOwnerRow.find('[data-testid="approval-name"]').attributes('title')).toBe(
         'This policy needs 1 approval because a license scanner found license violations, a merge request has been opened against a protected branch and a security scanner found vulnerabilities matching the criteria',

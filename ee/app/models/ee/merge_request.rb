@@ -452,7 +452,7 @@ module EE
 
       project_rules.find_each do |project_rule|
         project_rule.apply_report_approver_rules_to(self) do |rule_attributes|
-          rule_attributes[:approvals_required] = 0 if feature_enabled
+          rule_attributes[:approvals_required] = 0 if feature_enabled && project_rule.from_scan_result_policy?
         end
       end
     end

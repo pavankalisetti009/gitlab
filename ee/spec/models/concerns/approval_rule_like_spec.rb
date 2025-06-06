@@ -213,22 +213,8 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       context 'when report_type is license_scanning' do
         let(:subject_traits) { %i[license_scanning] }
 
-        context 'when scan_result_policy_read is defined' do
-          let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read) }
-
-          before do
-            subject.update!(scan_result_policy_read: scan_result_policy_read)
-          end
-
-          it 'returns true' do
-            expect(subject.from_scan_result_policy?).to eq(true)
-          end
-        end
-
-        context 'when scan_result_policy_read is not defined' do
-          it 'returns false' do
-            expect(subject.from_scan_result_policy?).to eq(false)
-          end
+        it 'returns true' do
+          expect(subject.from_scan_result_policy?).to eq(true)
         end
       end
 
