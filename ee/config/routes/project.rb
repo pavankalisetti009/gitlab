@@ -66,6 +66,7 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           resources :dashboard, only: [:index], controller: :dashboard
           resources :vulnerability_report, only: [:index], controller: :vulnerability_report
           resource :compliance_dashboard, path: 'compliance_dashboard(/*vueroute)', only: [:show]
+          resources :compliance_violations, only: [:show], constraints: { id: /\d+/ }
           resources :policies, only: [:index, :new, :edit], constraints: { id: %r{[^/]+} } do
             collection do
               get :schema
