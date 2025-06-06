@@ -28365,6 +28365,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupcomplianceframeworksid"></a>`id` | [`ComplianceManagementFrameworkID`](#compliancemanagementframeworkid) | Global ID of a specific compliance framework to return. |
 | <a id="groupcomplianceframeworksids"></a>`ids` | [`[ComplianceManagementFrameworkID!]`](#compliancemanagementframeworkid) | List of Global IDs of compliance frameworks to return. |
 | <a id="groupcomplianceframeworkssearch"></a>`search` | [`String`](#string) | Search framework with most similar names. |
+| <a id="groupcomplianceframeworkssort"></a>`sort` | [`ComplianceFrameworkSort`](#complianceframeworksort) | Sort compliance frameworks by the criteria. |
 
 ##### `Group.componentVersions`
 
@@ -33798,6 +33799,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="namespacecomplianceframeworksid"></a>`id` | [`ComplianceManagementFrameworkID`](#compliancemanagementframeworkid) | Global ID of a specific compliance framework to return. |
 | <a id="namespacecomplianceframeworksids"></a>`ids` | [`[ComplianceManagementFrameworkID!]`](#compliancemanagementframeworkid) | List of Global IDs of compliance frameworks to return. |
 | <a id="namespacecomplianceframeworkssearch"></a>`search` | [`String`](#string) | Search framework with most similar names. |
+| <a id="namespacecomplianceframeworkssort"></a>`sort` | [`ComplianceFrameworkSort`](#complianceframeworksort) | Sort compliance frameworks by the criteria. |
 
 ##### `Namespace.customFields`
 
@@ -35689,7 +35691,6 @@ Project-level settings for product analytics provider.
 | <a id="projectcisubscriptionsprojects"></a>`ciSubscriptionsProjects` {{< icon name="warning-solid" >}} | [`CiSubscriptionsProjectConnection`](#cisubscriptionsprojectconnection) | **Deprecated** in GitLab 17.6. Use `ciUpstreamProjectSubscriptions`. |
 | <a id="projectciupstreamprojectsubscriptions"></a>`ciUpstreamProjectSubscriptions` {{< icon name="warning-solid" >}} | [`CiProjectSubscriptionConnection`](#ciprojectsubscriptionconnection) | **Introduced** in GitLab 17.6. **Status**: Experiment. Pipeline subscriptions where this project is the downstream project.When an upstream project's pipeline completes, a pipeline is triggered in the downstream project (this project). |
 | <a id="projectcodecoveragesummary"></a>`codeCoverageSummary` | [`CodeCoverageSummary`](#codecoveragesummary) | Code coverage summary associated with the project. |
-| <a id="projectcomplianceframeworks"></a>`complianceFrameworks` | [`ComplianceFrameworkConnection`](#complianceframeworkconnection) | Compliance frameworks associated with the project. (see [Connections](#connections)) |
 | <a id="projectcomponentusages"></a>`componentUsages` | [`CiCatalogResourceComponentUsageConnection`](#cicatalogresourcecomponentusageconnection) | Component(s) used by the project. (see [Connections](#connections)) |
 | <a id="projectcontainerexpirationpolicy"></a>`containerExpirationPolicy` {{< icon name="warning-solid" >}} | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | **Deprecated** in GitLab 17.5. Use `container_tags_expiration_policy`. |
 | <a id="projectcontainerprotectionrepositoryrules"></a>`containerProtectionRepositoryRules` {{< icon name="warning-solid" >}} | [`ContainerProtectionRepositoryRuleConnection`](#containerprotectionrepositoryruleconnection) | **Introduced** in GitLab 16.10. **Status**: Experiment. Container protection rules for the project. |
@@ -36209,6 +36210,22 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectcompliancecontrolstatusfilters"></a>`filters` | [`ProjectComplianceControlStatusInput`](#projectcompliancecontrolstatusinput) | Filters applied when retrieving compliance control statuses for the project. |
+
+##### `Project.complianceFrameworks`
+
+Compliance frameworks associated with the project.
+
+Returns [`ComplianceFrameworkConnection`](#complianceframeworkconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectcomplianceframeworkssort"></a>`sort` | [`ComplianceFrameworkSort`](#complianceframeworksort) | Sort compliance frameworks by the criteria. |
 
 ##### `Project.complianceRequirementStatuses`
 
@@ -44083,6 +44100,17 @@ ComplianceFramework of a project for filtering.
 | ----- | ----------- |
 | <a id="complianceframeworkpresencefilterany"></a>`ANY` | Any compliance framework is assigned. |
 | <a id="complianceframeworkpresencefilternone"></a>`NONE` | No compliance framework is assigned. |
+
+### `ComplianceFrameworkSort`
+
+Values for sorting compliance frameworks.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="complianceframeworksortname_asc"></a>`NAME_ASC` | Sort by compliance framework name, ascending order. |
+| <a id="complianceframeworksortname_desc"></a>`NAME_DESC` | Sort by compliance framework name, descending order. |
+| <a id="complianceframeworksortupdated_at_asc"></a>`UPDATED_AT_ASC` | Sort by compliance framework updated date, ascending order. |
+| <a id="complianceframeworksortupdated_at_desc"></a>`UPDATED_AT_DESC` | Sort by compliance framework updated date, descending order. |
 
 ### `ComplianceStandardsAdherenceCheckName`
 

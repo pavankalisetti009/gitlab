@@ -3,13 +3,19 @@
 require 'spec_helper'
 
 RSpec.describe 'getting a list of compliance frameworks for a namespace', feature_category: :compliance_management do
+  using RSpec::Parameterized::TableSyntax
   include GraphqlHelpers
 
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:namespace) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: namespace) }
-  let_it_be(:compliance_framework_1) { create(:compliance_framework, namespace: namespace, name: 'Test1') }
-  let_it_be(:compliance_framework_2) { create(:compliance_framework, namespace: namespace, name: 'Test2') }
-  let_it_be(:current_user) { create(:user) }
+  let_it_be(:compliance_framework_1) do
+    create(:compliance_framework, namespace: namespace, name: 'Test1', updated_at: 1.day.ago)
+  end
+
+  let_it_be(:compliance_framework_2) do
+    create(:compliance_framework, namespace: namespace, name: 'Test2', updated_at: 5.days.ago)
+  end
 
   let(:path) { %i[namespace compliance_frameworks nodes] }
 
@@ -24,7 +30,7 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
   end
 
   context 'when authenticated as the top-level namespace owner' do
-    before do
+    before_all do
       namespace.add_owner(current_user)
     end
 
@@ -98,6 +104,35 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
       end
     end
 
+    context 'when sorting' do
+      where(:sort_enum, :expected_order) do
+        :NAME_ASC        | %w[Test1 Test2]
+        :NAME_DESC       | %w[Test2 Test1]
+        :UPDATED_AT_ASC  | %w[Test2 Test1]
+        :UPDATED_AT_DESC | %w[Test1 Test2]
+      end
+
+      with_them do
+        let(:query) do
+          graphql_query_for(
+            :namespace, { full_path: namespace.full_path },
+            query_nodes(:compliance_frameworks, nil, args: {
+              sort: sort_enum
+            })
+          )
+        end
+
+        it "sorts frameworks by #{params[:sort_enum]}" do
+          post_graphql(query, current_user: current_user)
+
+          framework_names_list = graphql_data_at(:namespace, :complianceFrameworks, :nodes)
+            .pluck('name')
+
+          expect(framework_names_list).to eq(expected_order)
+        end
+      end
+    end
+
     context 'when querying frameworks with both id and ids arguments' do
       let(:query) do
         graphql_query_for(
@@ -133,7 +168,10 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
         let(:args) { { id: global_id_of(namespace) } }
 
         it 'returns an error message' do
-          expect(graphql_errors).to contain_exactly(include('message' => "\"#{global_id_of(namespace)}\" does not represent an instance of ComplianceManagement::Framework"))
+          expect(graphql_errors).to contain_exactly(include(
+            'message' => "\"#{global_id_of(namespace)}\" does not represent an instance of " \
+              "ComplianceManagement::Framework"
+          ))
         end
       end
 
@@ -141,9 +179,10 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
         let(:args) { { ids: [global_id_of(current_user), global_id_of(namespace)] } }
 
         it 'returns an error message for the first encountered error' do
-          expect(graphql_errors).to contain_exactly(
-            include('message' => "\"#{global_id_of(current_user)}\" does not represent an instance of ComplianceManagement::Framework")
-          )
+          expect(graphql_errors).to contain_exactly(include(
+            'message' => "\"#{global_id_of(current_user)}\" does not represent an instance of " \
+              "ComplianceManagement::Framework"
+          ))
         end
       end
     end
@@ -258,7 +297,9 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
 
     context 'when searching frameworks by name' do
       let_it_be(:compliance_framework_3) { create(:compliance_framework, namespace: namespace, name: 'RandomTest3') }
-      let_it_be(:framework_of_other_group) { create(:compliance_framework, namespace: create(:group), name: 'RandomTest4') }
+      let_it_be(:framework_of_other_group) do
+        create(:compliance_framework, namespace: create(:group), name: 'RandomTest4')
+      end
 
       before do
         create(:compliance_framework, namespace: namespace, name: 'RandomName5')
@@ -275,7 +316,8 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
         it 'returns the compliance frameworks' do
           post_graphql(query, current_user: current_user)
 
-          expect(graphql_data_at(:namespace, :complianceFrameworks, :nodes, :name)).to contain_exactly('Test1', 'Test2', 'RandomTest3')
+          expect(graphql_data_at(:namespace, :complianceFrameworks, :nodes, :name))
+            .to contain_exactly('Test1', 'Test2', 'RandomTest3')
         end
       end
 
@@ -305,7 +347,8 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
         it 'returns the compliance frameworks' do
           post_graphql(query, current_user: current_user)
 
-          expect(graphql_data_at(:namespace, :complianceFrameworks, :nodes, :name)).to contain_exactly('Test1', 'Test2', 'RandomTest3', 'RandomName5')
+          expect(graphql_data_at(:namespace, :complianceFrameworks, :nodes, :name))
+            .to contain_exactly('Test1', 'Test2', 'RandomTest3', 'RandomName5')
         end
       end
     end
@@ -330,7 +373,7 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
       end
 
       context('when user is an owner') do
-        before do
+        before_all do
           subgroup.add_owner(current_user)
         end
 

@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_projects do
+  let_it_be(:user) { create(:user) }
+
   it 'has specific fields' do
     expected_fields = %w[
       add_on_eligible_users
@@ -31,8 +33,7 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
     expect(described_class).to include_graphql_fields(*expected_fields)
   end
 
-  describe 'Customized fields' do
-    let_it_be(:user) { create(:user) }
+  describe 'Storage related fields' do
     let_it_be(:group) { create(:group, additional_purchased_storage_size: 100, repository_size_limit: 10_240) }
     let_it_be(:group_member) { create(:group_member, group: group, user: user) }
     let_it_be(:query) do
@@ -47,19 +48,18 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
       )
     end
 
-    subject { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+    subject(:storage_related_query) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
 
     it "returns the expected values for customized fields defined in NamespaceType" do
-      namespace = subject.dig('data', 'namespace')
+      namespace = storage_related_query.dig('data', 'namespace')
 
       expect(namespace['additionalPurchasedStorageSize']).to eq(100.megabytes)
-      expect(namespace['containsLockedProjects']).to eq(false)
+      expect(namespace['containsLockedProjects']).to be false
       expect(namespace['actualRepositorySizeLimit']).to eq(10_240)
     end
   end
 
   describe 'Security Policies', feature_category: :security_policy_management do
-    let_it_be(:user) { create(:user) }
     let_it_be(:security_policy_management_project) { create(:project) }
     let_it_be(:group) { create(:group) }
     let_it_be(:policy_configuration) do
