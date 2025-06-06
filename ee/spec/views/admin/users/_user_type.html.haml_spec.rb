@@ -37,7 +37,7 @@ RSpec.describe 'admin/users/_user_type.html.haml', feature_category: :user_manag
       let(:user_member_role) { build_stubbed(:user_member_role) }
 
       before do
-        allow(user).to receive(:user_member_roles).and_return([user_member_role])
+        allow(user).to receive(:user_member_role).and_return(user_member_role)
         allow(user_member_role).to receive_messages(member_role_id: 12, ldap: true)
 
         render
@@ -53,7 +53,7 @@ RSpec.describe 'admin/users/_user_type.html.haml', feature_category: :user_manag
 
     context 'when the user is not assigned an admin role' do
       before do
-        allow(user).to receive(:user_member_roles).and_return([])
+        allow(user).to receive(:user_member_role).and_return(nil)
 
         render
       end

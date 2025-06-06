@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe UsersHelper, feature_category: :user_profile do
-  let(:user) { build_stubbed(:user) }
+  let_it_be(:user) { build_stubbed(:user) }
 
   describe '#trials_allowed?' do
     context 'without cache concerns' do
@@ -101,6 +101,22 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
         end
       end
 
+      context 'when user is assigned an admin role' do
+        let_it_be(:member_role) { build_stubbed(:member_role, name: 'Admin role') }
+
+        before do
+          allow(user).to receive(:member_role).and_return(member_role)
+        end
+
+        it 'returns the admin role badge' do
+          expect(subject).to eq(
+            [
+              { text: 'Admin role', variant: 'info', icon: 'admin' }
+            ]
+          )
+        end
+      end
+
       it { expect(subject).not_to eq([text: 'Is using seat', variant: 'light']) }
     end
 
@@ -138,6 +154,23 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
             expect(subject).to eq(
               [
                 { text: 'Auditor', variant: 'neutral' },
+                { text: 'Is using seat', variant: 'neutral' }
+              ]
+            )
+          end
+        end
+
+        context 'when user is assigned an admin role' do
+          let_it_be(:member_role) { build_stubbed(:member_role, name: 'Admin role') }
+
+          before do
+            allow(user).to receive(:member_role).and_return(member_role)
+          end
+
+          it 'returns the admin role badge' do
+            expect(subject).to eq(
+              [
+                { text: 'Admin role', variant: 'info', icon: 'admin' },
                 { text: 'Is using seat', variant: 'neutral' }
               ]
             )

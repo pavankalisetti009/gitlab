@@ -148,10 +148,14 @@ module EE
       has_many :country_access_logs, class_name: 'Users::CountryAccessLog', inverse_of: :user
 
       has_one :pipl_user, class_name: 'ComplianceManagement::PiplUser'
+
       has_one :user_admin_role, class_name: 'Authz::UserAdminRole'
       has_one :admin_role, through: :user_admin_role
 
-      has_many :user_member_roles, class_name: 'Users::UserMemberRole'
+      # TODO: remove as part of https://gitlab.com/groups/gitlab-org/-/epics/17390
+      has_one :user_member_role, class_name: 'Users::UserMemberRole'
+      has_one :member_role, class_name: 'MemberRole', through: :user_member_role
+
       has_many :user_group_member_roles, inverse_of: :user, class_name: 'Authz::UserGroupMemberRole'
 
       has_many :ai_conversation_threads, class_name: 'Ai::Conversation::Thread', foreign_key: :user_id

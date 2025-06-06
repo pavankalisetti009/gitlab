@@ -69,7 +69,11 @@ RSpec.describe User, feature_category: :system_access do
   describe 'associations' do
     subject { build(:user) }
 
+    it { is_expected.to have_one(:user_admin_role).class_name('Authz::UserAdminRole') }
     it { is_expected.to have_one(:admin_role).class_name('Authz::AdminRole') }
+    it { is_expected.to have_one(:user_member_role).class_name('Users::UserMemberRole') }
+    it { is_expected.to have_one(:member_role).class_name('MemberRole') }
+
     it { is_expected.to have_many(:vulnerability_feedback) }
     it { is_expected.to have_many(:path_locks).dependent(:destroy) }
     it { is_expected.to have_many(:users_security_dashboard_projects) }
@@ -95,7 +99,6 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:requested_member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').with_foreign_key(:requested_by_id) }
     it { is_expected.to have_many(:reviewed_member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').with_foreign_key(:reviewed_by_id) }
     it { is_expected.to have_one(:pipl_user).class_name('ComplianceManagement::PiplUser') }
-    it { is_expected.to have_many(:user_member_roles) }
     it { is_expected.to have_many(:group_scim_identities).class_name('GroupScimIdentity') }
     it { is_expected.to have_many(:instance_scim_identities).class_name('ScimIdentity') }
     it { is_expected.to have_many(:user_group_member_roles).class_name('Authz::UserGroupMemberRole') }
