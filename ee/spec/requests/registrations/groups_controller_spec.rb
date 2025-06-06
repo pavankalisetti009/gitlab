@@ -69,14 +69,6 @@ RSpec.describe 'Project creation via Registrations::GroupsController',
           end
 
           it { is_expected.to redirect_to(project_get_started_path(Project.last)) }
-
-          context 'when learn_gitlab_redesign feature flag is disabled' do
-            before do
-              stub_feature_flags(learn_gitlab_redesign: false)
-            end
-
-            it { is_expected.to redirect_to(project_learn_gitlab_path(Project.last)) }
-          end
         end
 
         context 'for free' do
