@@ -27,6 +27,7 @@ module EE
     def user_badges_in_admin_section(user)
       super(user).tap do |badges|
         badges << { text: s_('AdminUsers|Auditor'), variant: 'neutral' } if user.auditor?
+        badges << { text: user.member_role.name, variant: 'info', icon: 'admin' } if user.member_role
 
         if !::Gitlab.com? && user.using_license_seat?
           it_s_you_index = badges.index { |badge| badge[:text] == "It's you!" } || -1

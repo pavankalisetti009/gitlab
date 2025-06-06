@@ -1,6 +1,6 @@
 - return unless Feature.enabled?(:custom_admin_roles, :instance)
 
-- role = @user.user_member_roles.first
+- role = @user.user_member_role
 
 #js-user-type{ data: {
   user_type: @user.access_level,

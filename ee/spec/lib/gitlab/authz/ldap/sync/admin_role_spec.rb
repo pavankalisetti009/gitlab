@@ -430,7 +430,7 @@ RSpec.describe Gitlab::Authz::Ldap::Sync::AdminRole, feature_category: :permissi
   end
 
   def assigned_admin_role(user)
-    user.reload.user_member_roles.first
+    user.reload.user_member_role
   end
 
   def unstub_ldap_filter
