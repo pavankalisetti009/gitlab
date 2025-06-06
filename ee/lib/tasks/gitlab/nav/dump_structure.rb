@@ -15,6 +15,7 @@ module Tasks
             # Turn features on that impact the list of items rendered
             can_view_pipeline_editor: true,
             learn_gitlab_enabled: true,
+            show_get_started_menu: true,
             show_discover_group_security: true,
             show_discover_project_security: true,
             show_security_dashboard: true,

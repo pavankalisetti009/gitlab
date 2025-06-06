@@ -53,16 +53,6 @@ RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
       it 'contains the menu' do
         expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
       end
-
-      context 'when learn_gitlab_redesign feature flag is disabled' do
-        before do
-          stub_feature_flags(learn_gitlab_redesign: false)
-        end
-
-        it 'contains the menu' do
-          expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
-        end
-      end
     end
 
     context 'when show_get_started_menu is true' do
@@ -72,16 +62,6 @@ RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
 
       it 'contains the getting started menu' do
         expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
-      end
-
-      context 'when learn_gitlab_redesign feature flag is disabled' do
-        before do
-          stub_feature_flags(learn_gitlab_redesign: false)
-        end
-
-        it 'contains the learn gitlab menu' do
-          expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
-        end
       end
     end
   end

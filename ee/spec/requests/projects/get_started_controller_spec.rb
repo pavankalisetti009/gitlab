@@ -41,14 +41,6 @@ RSpec.describe Projects::GetStartedController, :saas, feature_category: :onboard
 
           it { is_expected.to have_gitlab_http_status(:not_found) }
         end
-
-        context 'when learn_gitlab_redesign feature flag is disabled' do
-          before do
-            stub_feature_flags(learn_gitlab_redesign: false)
-          end
-
-          it { is_expected.to have_gitlab_http_status(:not_found) }
-        end
       end
 
       context 'when namespace is not onboarding' do
@@ -79,14 +71,6 @@ RSpec.describe Projects::GetStartedController, :saas, feature_category: :onboard
         context 'when onboarding is not available' do
           before do
             stub_saas_features(onboarding: false)
-          end
-
-          it { is_expected.to have_gitlab_http_status(:not_found) }
-        end
-
-        context 'when learn_gitlab_redesign feature flag is disabled' do
-          before do
-            stub_feature_flags(learn_gitlab_redesign: false)
           end
 
           it { is_expected.to have_gitlab_http_status(:not_found) }
