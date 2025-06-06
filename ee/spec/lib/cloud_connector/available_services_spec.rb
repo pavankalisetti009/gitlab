@@ -117,7 +117,8 @@ RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_conne
     let(:service_name) { :duo_chat }
 
     context 'with Self-Signed reader', :saas do
-      it 'returns the same object instance on subsequent calls' do
+      it 'returns the same object instance on subsequent calls',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/545272' do
         first  = described_class.find_by_name(service_name)
         second = described_class.find_by_name(service_name)
 
