@@ -68037,7 +68037,19 @@ msgstr ""
 msgid "Vulnerabilities|%{link_start}Download the export%{link_end}."
 msgstr ""
 
+msgid "Vulnerabilities|All records must be instances of Vulnerability"
+msgstr ""
+
 msgid "Vulnerabilities|Follow the link below to download the export."
+msgstr ""
+
+msgid "Vulnerabilities|Internal tracking failed: %{message}"
+msgstr ""
+
+msgid "Vulnerabilities|Missing required attributes: %{attributes}"
+msgstr ""
+
+msgid "Vulnerabilities|No valid vulnerabilities to track"
 msgstr ""
 
 msgid "Vulnerabilities|The vulnerabilities list was successfully exported for %{exportable}."
