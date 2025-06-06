@@ -8,7 +8,7 @@ RSpec.describe RemoteDevelopment::DevfileOperations::Main, feature_category: :wo
 
   let(:rop_steps) do
     [
-      [RemoteDevelopment::DevfileOperations::ValidationProcessor, :and_then],
+      [RemoteDevelopment::DevfileOperations::DevfileProcessor, :and_then],
       [observer_class, observer_method],
       [RemoteDevelopment::DevfileOperations::ResponseBuilder, :and_then]
     ]
@@ -68,9 +68,9 @@ RSpec.describe RemoteDevelopment::DevfileOperations::Main, feature_category: :wo
     where(:case_name, :err_result_for_step, :expected_response) do
       [
         [
-          "when ValidationProcessor returns DevfileYamlParseFailed",
+          "when DevfileProcessor returns DevfileYamlParseFailed",
           {
-            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
+            step_class: RemoteDevelopment::DevfileOperations::DevfileProcessor,
             returned_message: lazy { RemoteDevelopment::Messages::DevfileYamlParseFailed.new(err_message_content) }
           },
           {
@@ -80,9 +80,9 @@ RSpec.describe RemoteDevelopment::DevfileOperations::Main, feature_category: :wo
           },
         ],
         [
-          "when ValidationProcessor returns DevfileRestrictionsFailed",
+          "when DevfileProcessor returns DevfileRestrictionsFailed",
           {
-            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
+            step_class: RemoteDevelopment::DevfileOperations::DevfileProcessor,
             returned_message: lazy { RemoteDevelopment::Messages::DevfileRestrictionsFailed.new(err_message_content) }
           },
           {
@@ -92,9 +92,9 @@ RSpec.describe RemoteDevelopment::DevfileOperations::Main, feature_category: :wo
           },
         ],
         [
-          "when ValidationProcessor returns DevfileFlattenFailed",
+          "when DevfileProcessor returns DevfileFlattenFailed",
           {
-            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
+            step_class: RemoteDevelopment::DevfileOperations::DevfileProcessor,
             returned_message: lazy { RemoteDevelopment::Messages::DevfileFlattenFailed.new(err_message_content) }
           },
           {
@@ -106,7 +106,7 @@ RSpec.describe RemoteDevelopment::DevfileOperations::Main, feature_category: :wo
         [
           "when an unmatched error is returned, an exception is raised",
           {
-            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
+            step_class: RemoteDevelopment::DevfileOperations::DevfileProcessor,
             returned_message: lazy { Class.new(Gitlab::Fp::Message).new(err_message_content) }
           },
           Gitlab::Fp::UnmatchedResultError
