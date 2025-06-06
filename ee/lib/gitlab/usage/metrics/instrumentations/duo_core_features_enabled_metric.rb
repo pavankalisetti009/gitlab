@@ -6,7 +6,7 @@ module Gitlab
       module Instrumentations
         class DuoCoreFeaturesEnabledMetric < GenericMetric
           def value
-            ::Ai::Setting.duo_core_features_enabled?
+            ::Ai::Setting.instance.duo_core_features_enabled
           end
         end
       end
