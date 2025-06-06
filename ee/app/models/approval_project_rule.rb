@@ -198,7 +198,7 @@ class ApprovalProjectRule < ApplicationRecord
   end
 
   def merge_request_report_approver_rule(merge_request)
-    if scan_finding? || license_scanning? || any_merge_request?
+    if from_scan_result_policy?
       merge_request
         .approval_rules
         .report_approver

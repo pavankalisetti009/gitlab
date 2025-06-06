@@ -71,7 +71,8 @@ RSpec.describe MergeRequests::SyncReportApproverApprovalRules, feature_category:
             expect(rule).to be_report_approver
             expect(rule.report_type).to eq(report_type.to_s)
             expect(rule.name).to eq(report_approval_project_rule.name)
-            expect(rule.approvals_required).to eq(0)
+            expected_approvals_required = rule.report_type == "code_coverage" ? 2 : 0
+            expect(rule.approvals_required).to eq(expected_approvals_required)
             expect(rule.approval_project_rule).to eq(report_approval_project_rule)
           end
 
@@ -86,7 +87,8 @@ RSpec.describe MergeRequests::SyncReportApproverApprovalRules, feature_category:
             expect(previous_rule.reload).to be_report_approver
             expect(previous_rule.report_type).to eq(report_type.to_s)
             expect(previous_rule.name).to eq(report_approval_project_rule.name)
-            expect(previous_rule.approvals_required).to eq(0)
+            expected_approvals_required = previous_rule.report_type == "code_coverage" ? 2 : 0
+            expect(previous_rule.approvals_required).to eq(expected_approvals_required)
             expect(previous_rule.approval_project_rule).to eq(report_approval_project_rule)
           end
         end
