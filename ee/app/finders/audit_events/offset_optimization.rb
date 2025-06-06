@@ -11,7 +11,6 @@ module AuditEvents
     def self.should_use_offset_optimization?(params)
       optimize_offset = params[:optimize_offset]
       optimize_offset &&
-        Feature.enabled?(:audit_events_api_offset_optimization, :instance) &&
         params[:pagination] != 'keyset' &&
         params[:page].to_i >= PAGE_THRESHOLD_FOR_OFFSET_OPTIMIZATION
     end
