@@ -16275,16 +16275,16 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Ensure your project has an appropriate number of administrators assigned."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures API security scanning is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures API security scanning is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures CI/CD job token scope restrictions are enabled."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures Dynamic Application Security Testing (DAST) is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures Dynamic Application Security Testing (DAST) is configured and running in the project's default branch pipeline."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures Infrastructure as Code (IaC) scanning is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures Infrastructure as Code (IaC) scanning is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures Multi-Factor Authentication is required at the organization level."
@@ -16293,7 +16293,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Ensures Single Sign-On (SSO) authentication is enabled for the project."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures Static Application Security Testing (SAST) is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures Static Application Security Testing (SAST) is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures Terraform integration is enabled for the project."
@@ -16323,16 +16323,16 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Ensures code changes require approval from code owners."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures code quality scanning is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures code quality scanning is configured and running in the project's default branch pipeline."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures container scanning is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures container scanning is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures contributors have Multi-Factor Authentication enabled."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures dependency scanning is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures dependency scanning is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures error tracking is enabled for the project."
@@ -16341,7 +16341,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Ensures fewer administrators are assigned to the project than total members."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures fuzz testing is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures fuzz testing is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures inactive users are reviewed and removed."
@@ -16350,7 +16350,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Ensures issue tracking functionality is enabled for the project."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures license compliance scanning is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures license compliance scanning is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures merge requests require approval from code owners."
@@ -16371,7 +16371,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Ensures push protection is enabled for sensitive files."
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Ensures secret detection scanning is configured and running in the project pipelines."
+msgid "ComplianceStandardsAdherence|Ensures secret detection scanning is configured and running in the project's default branch pipeline."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures stale repositories are reviewed and archived."
