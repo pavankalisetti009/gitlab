@@ -4,15 +4,12 @@ import { REPORT_TYPES_WITH_MANUALLY_ADDED } from 'ee/security_dashboard/constant
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_REPORT_TYPES_ID } from '../../filters/constants';
-import eventHub from '../event_hub';
 
 export const DEFAULT_VENDORS = ['', 'GitLab'];
 
 export default {
   components: {
-    QuerystringSync,
     GlFilteredSearchToken,
     SearchSuggestion,
   },
@@ -36,7 +33,6 @@ export default {
 
     return {
       selectedReportTypes: defaultSelected,
-      querySyncValues: defaultSelected,
     };
   },
   computed: {
@@ -75,14 +71,6 @@ export default {
   methods: {
     resetSelected() {
       this.selectedReportTypes = [ALL_REPORT_TYPES_ID];
-      this.emitFiltersChanged();
-    },
-    emitFiltersChanged() {
-      this.querySyncValues = this.selectedReportTypes;
-
-      eventHub.$emit('filters-changed', {
-        reportType: this.selectedReportTypes.filter((i) => i !== ALL_REPORT_TYPES_ID),
-      });
     },
     updateSelected(selectedValue) {
       if (selectedValue === ALL_REPORT_TYPES_ID) {
@@ -103,24 +91,6 @@ export default {
         this.selectedReportTypes = [ALL_REPORT_TYPES_ID];
       }
     },
-    updateSelectedFromQS(selected) {
-      if (selected.includes(ALL_REPORT_TYPES_ID)) {
-        this.selectedReportTypes = [ALL_REPORT_TYPES_ID];
-      } else if (selected.length > 0) {
-        this.selectedReportTypes = selected;
-      } else {
-        // This happens when we clear the token and re-select `Status`
-        // to open the dropdown. At that stage we simply want to wait
-        // for the user to select new statuses.
-        if (!this.value.data) {
-          return;
-        }
-
-        this.selectedReportTypes = this.value.data;
-      }
-
-      this.emitFiltersChanged();
-    },
     isReportTypeSelected(name) {
       return Boolean(this.selectedReportTypes.find((s) => name === s));
     },
@@ -134,38 +104,29 @@ export default {
 </script>
 
 <template>
-  <querystring-sync
-    querystring-key="reportType"
-    :value="querySyncValues"
-    :valid-values="validValues"
-    data-testid="report-type-token"
-    @input="updateSelectedFromQS"
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :multi-select-values="selectedReportTypes"
+    :value="tokenValue"
+    v-on="$listeners"
+    @select="updateSelected"
+    @destroy="resetSelected"
   >
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :multi-select-values="selectedReportTypes"
-      :value="tokenValue"
-      v-on="$listeners"
-      @select="updateSelected"
-      @destroy="resetSelected"
-      @complete="emitFiltersChanged"
-    >
-      <template #view>
-        <span data-testid="report-type-token-value">
-          {{ toggleText }}
-        </span>
-      </template>
-      <template #suggestions>
-        <search-suggestion
-          v-for="reportType in items"
-          :key="reportType.value"
-          :value="reportType.value"
-          :text="reportType.text"
-          :selected="isReportTypeSelected(reportType.value)"
-          :data-testid="`suggestion-${reportType.value}`"
-        />
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+    <template #view>
+      <span data-testid="report-type-token-value">
+        {{ toggleText }}
+      </span>
+    </template>
+    <template #suggestions>
+      <search-suggestion
+        v-for="reportType in items"
+        :key="reportType.value"
+        :value="reportType.value"
+        :text="reportType.text"
+        :selected="isReportTypeSelected(reportType.value)"
+        :data-testid="`suggestion-${reportType.value}`"
+      />
+    </template>
+  </gl-filtered-search-token>
 </template>

@@ -2,9 +2,7 @@ import { GlFilteredSearchToken } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
-import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search_v2/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { ALL_ID as ALL_REPORT_TYPES_ID } from 'ee/security_dashboard/components/shared/filters/constants';
@@ -49,7 +47,6 @@ describe('ReportTypeToken', () => {
     });
   };
 
-  const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
@@ -125,26 +122,6 @@ describe('ReportTypeToken', () => {
 
       expect(isOptionChecked('ALL')).toBe(true);
     });
-
-    it('emits filters-changed event when a filter is selected', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      await clickDropdownItem('SAST', 'DAST');
-      expect(spy).toHaveBeenCalledWith({
-        reportType: ['SAST', 'DAST'],
-      });
-    });
-
-    it('emits an empty filters-changed event when a all report types is selected', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      await clickDropdownItem('ALL');
-      expect(spy).toHaveBeenCalledWith({
-        reportType: [],
-      });
-    });
   });
 
   describe('on clear', () => {
@@ -153,14 +130,10 @@ describe('ReportTypeToken', () => {
       await nextTick();
     });
 
-    it('emits filters-changed event and resets selected values', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
+    it('resets selected values', async () => {
       findFilteredSearchToken().vm.$emit('destroy');
       await nextTick();
 
-      expect(spy).toHaveBeenCalledWith({ reportType: [] });
       expect(wrapper.vm.selectedReportTypes).toEqual([ALL_REPORT_TYPES_ID]);
     });
   });
@@ -195,47 +168,6 @@ describe('ReportTypeToken', () => {
     it('shows the 2 report types with "+1" when more than 3 options are selected', async () => {
       await clickDropdownItem('DAST', 'API_FUZZING', 'SAST');
       expect(findViewSlot().text()).toBe('API Fuzzing, DAST +1 more');
-    });
-  });
-
-  describe('QuerystringSync component - reportType', () => {
-    beforeEach(() => {
-      createWrapper();
-    });
-
-    it('has expected props', () => {
-      expect(findQuerystringSync().props()).toMatchObject({
-        querystringKey: 'reportType',
-        value: ['ALL'],
-        validValues: [
-          'ALL',
-          'API_FUZZING',
-          'CONTAINER_SCANNING',
-          'COVERAGE_FUZZING',
-          'DAST',
-          'DEPENDENCY_SCANNING',
-          'SAST',
-          'SECRET_DETECTION',
-          'GENERIC',
-        ],
-      });
-    });
-
-    it.each`
-      emitted             | expected
-      ${['SAST', 'DAST']} | ${['SAST', 'DAST']}
-      ${['ALL']}          | ${['ALL']}
-    `('restores selected items - $emitted', async ({ emitted, expected }) => {
-      findQuerystringSync().vm.$emit('input', emitted);
-      await nextTick();
-
-      expected.forEach((item) => {
-        expect(isOptionChecked(item)).toBe(true);
-      });
-
-      allOptionsExcept(expected).forEach((item) => {
-        expect(isOptionChecked(item)).toBe(false);
-      });
     });
   });
 });
