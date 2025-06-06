@@ -107,14 +107,13 @@ module Resolvers
       return Vulnerability.none unless vulnerable
 
       validate_filters(args)
+      set_data_source(args)
       track_event
 
       args[:scanner_id] = resolve_gids(args[:scanner_id], ::Vulnerabilities::Scanner) if args[:scanner_id]
 
       disabled_filters = context.response_extensions["disabled_filters"] ||= []
       disabled_filters << :identifier_name unless search_by_identifier_allowed_on_db?(vulnerable: vulnerable)
-
-      set_data_source(args)
 
       fetch_vulnerabilities(args)
     end
@@ -220,7 +219,8 @@ module Resolvers
         project: vulnerable.is_a?(::Project) ? vulnerable : nil,
         namespace: vulnerable.is_a?(::Group) ? vulnerable : nil,
         additional_properties: {
-          label: 'graphql'
+          label: 'graphql',
+          value: using_elasticsearch ? 1 : 0
         }
       )
     end
