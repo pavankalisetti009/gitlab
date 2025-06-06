@@ -58,14 +58,6 @@ RSpec.describe 'getting a single work item associated with a group', feature_cat
       end
 
       it_behaves_like 'identifies work item at namespace level'
-
-      context 'when the namespace_level_work_items feature flag is disabled' do
-        before do
-          stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
-        end
-
-        it_behaves_like 'identifies work item at namespace level'
-      end
     end
 
     context 'without a group level work items license' do

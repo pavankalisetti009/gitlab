@@ -15,14 +15,12 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
     before do
       sign_in(current_user)
       stub_licensed_features(epics: true)
-      stub_feature_flags(namespace_level_work_items: true)
     end
 
     it 'renders show' do
       show
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
     end
 
     context 'when the new page gets requested' do
@@ -43,23 +41,22 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
           show
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
           expect(response).to render_template(:show)
         end
       end
-    end
 
-    context 'when namespace_level_work_items is disabled' do
-      before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
-      end
+      context 'when it has no epic license' do
+        before do
+          stub_licensed_features(epics: false)
+        end
 
-      let(:iid) { 'new' }
+        let(:iid) { 'new' }
 
-      it 'returns not found' do
-        show
+        it 'returns not found' do
+          show
 
-        expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
       end
     end
 
