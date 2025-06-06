@@ -44946,6 +44946,9 @@ msgstr ""
 msgid "PipelineEditor|Current content in the Edit tab will be used for the simulation."
 msgstr ""
 
+msgid "PipelineEditor|Editor accessibility guide"
+msgstr ""
+
 msgid "PipelineEditor|Git push event to the default branch"
 msgstr ""
 
