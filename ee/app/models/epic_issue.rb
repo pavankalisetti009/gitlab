@@ -17,7 +17,8 @@ class EpicIssue < ApplicationRecord
   belongs_to :work_item_parent_link, class_name: 'WorkItems::ParentLink', inverse_of: :epic_issue
 
   alias_attribute :parent_ids, :epic_id
-  alias_attribute :parent, :epic
+  alias_method :parent, :epic
+  alias_method :parent=, :epic=
 
   attr_accessor :work_item_syncing
   alias_method :work_item_syncing?, :work_item_syncing
