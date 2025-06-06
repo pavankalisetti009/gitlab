@@ -9,18 +9,27 @@ module EE
         field :epics_enabled, GraphQL::Types::Boolean,
           null: true,
           description: "Indicates if Epics are enabled for namespace.",
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
 
         field :epic, ::Types::EpicType,
           null: true, description: 'Find a single epic.',
           resolver: ::Resolvers::EpicsResolver.single,
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
 
         field :epics, ::Types::EpicType.connection_type,
           null: true, description: 'Find epics.',
           extras: [:lookahead],
           resolver: ::Resolvers::EpicsResolver,
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
 
         field :epic_board, ::Types::Boards::EpicBoardType,
           null: true, description: 'Find a single epic board.',
