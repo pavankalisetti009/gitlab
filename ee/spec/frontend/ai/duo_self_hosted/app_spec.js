@@ -1,10 +1,10 @@
 import { nextTick } from 'vue';
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlTab } from '@gitlab/ui';
 import DuoSelfHostedApp from 'ee/ai/duo_self_hosted/app.vue';
 import FeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_table.vue';
 import ExpandedChatFeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { SELF_HOSTED_DUO_TABS } from 'ee/ai/duo_self_hosted/constants';
+import { SELF_HOSTED_DUO_TABS, SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 
 describe('DuoSelfHostedApp', () => {
   let wrapper;
@@ -26,7 +26,7 @@ describe('DuoSelfHostedApp', () => {
     });
   };
 
-  const findTabs = () => wrapper.findByTestId('self-hosted-duo-config-tabs');
+  const findAllTabs = () => wrapper.findAllComponents(GlTab);
   const findFeatureSettingsTable = () => wrapper.findComponent(FeatureSettingsTable);
   const findExpandedChatFeatureSettingsTable = () =>
     wrapper.findComponent(ExpandedChatFeatureSettingsTable);
@@ -55,6 +55,22 @@ describe('DuoSelfHostedApp', () => {
     expect(findAddModelButton().text()).toBe('Add self-hosted model');
   });
 
+  it.each`
+    tabId                                       | expectedActiveTabValue
+    ${SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS} | ${'0'}
+    ${SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS}  | ${'1'}
+    ${undefined}                                | ${'0'}
+  `(
+    'correctly sets active tab when tab id changes to $tabId',
+    async ({ tabId, expectedActiveTabValue }) => {
+      createComponent({ props: { tabId } });
+      await nextTick();
+
+      const tab = wrapper.findByTestId('self-hosted-duo-config-tabs');
+      expect(tab.attributes('value')).toBe(expectedActiveTabValue);
+    },
+  );
+
   describe('Self-hosted models tab', () => {
     it('renders the correct name', () => {
       createComponent();
@@ -65,11 +81,11 @@ describe('DuoSelfHostedApp', () => {
     it('navigates to self-hosted models when tab is clicked', async () => {
       createComponent({ props: { tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS } });
 
-      findTabs().vm.$emit('input', 1);
+      findAllTabs().at(1).vm.$emit('click');
 
       await nextTick();
 
-      expect($router.push).toHaveBeenCalledWith({ name: 'models' });
+      expect($router.push).toHaveBeenCalledWith({ name: SELF_HOSTED_ROUTE_NAMES.MODELS });
     });
   });
 
@@ -83,11 +99,11 @@ describe('DuoSelfHostedApp', () => {
     it('navigates to AI feature settings when tab is clicked', async () => {
       createComponent({ props: { tabId: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS } });
 
-      findTabs().vm.$emit('input', 0);
+      findAllTabs().at(0).vm.$emit('click');
 
       await nextTick();
 
-      expect($router.push).toHaveBeenCalledWith({ name: 'features' });
+      expect($router.push).toHaveBeenCalledWith({ name: SELF_HOSTED_ROUTE_NAMES.FEATURES });
     });
 
     describe('when Duo chat sub-features are disabled', () => {

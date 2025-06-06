@@ -1,5 +1,13 @@
 /* eslint-disable @gitlab/require-i18n-strings */
 
+export const SELF_HOSTED_ROUTE_NAMES = {
+  INDEX: 'index',
+  NEW: 'new',
+  EDIT: 'edit',
+  FEATURES: 'features',
+  MODELS: 'models',
+};
+
 export const SELF_HOSTED_DUO_TABS = {
   SELF_HOSTED_MODELS: 'self-hosted-models',
   AI_FEATURE_SETTINGS: 'ai-feature-settings',
