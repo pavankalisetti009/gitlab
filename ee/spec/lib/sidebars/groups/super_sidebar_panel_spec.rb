@@ -38,6 +38,8 @@ RSpec.describe Sidebars::Groups::SuperSidebarPanel, feature_category: :navigatio
     create(:gitlab_subscription_add_on_purchase, quantity: 50, namespace: group, add_on: add_on)
     # Needed for Roles and permissions
     stub_saas_features(gitlab_com_subscriptions: true)
+    # Needed for virtual registry
+    stub_config(dependency_proxy: { enabled: true })
   end
 
   it_behaves_like 'a panel with uniquely identifiable menu items'
