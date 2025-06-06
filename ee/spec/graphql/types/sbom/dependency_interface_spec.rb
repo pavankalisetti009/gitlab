@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Types::Sbom::DependencyInterface, feature_category: :dependency_management do
-  let(:fields) { %i[id name version componentVersion packager location licenses reachability vulnerability_count] }
+  let(:fields) do
+    %i[id name version componentVersion packager location licenses reachability vulnerability_count vulnerabilities]
+  end
 
   it { expect(described_class).to have_graphql_fields(fields) }
 

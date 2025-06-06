@@ -75,7 +75,8 @@ module Resolvers
           version: [:component_version],
           component_version: [:component_version],
           packager: [:source],
-          location: [:source]
+          location: [:source],
+          vulnerabilities: [:vulnerabilities]
         }
       end
 
