@@ -34,10 +34,6 @@ module Search
 
       private
 
-      def alias_names
-        [elastic_helper.target_name] + elastic_helper.standalone_indices_proxies.map(&:index_name)
-      end
-
       def default_index_options(alias_name:, index_name:)
         # Use existing refresh_interval setting or nil for default
         {
