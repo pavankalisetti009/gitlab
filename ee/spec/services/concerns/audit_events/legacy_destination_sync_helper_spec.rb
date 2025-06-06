@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/FactoryBot/AvoidCreate -- Need to persist models
 RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audit_events do
   let(:helper) { Class.new { include AuditEvents::LegacyDestinationSyncHelper }.new }
 
@@ -14,14 +15,14 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       describe 'http destinations' do
         context 'when instance level' do
           let!(:header) do
-            create(:instance_audit_events_streaming_header, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_audit_events_streaming_header,
               key: 'Custom-Header',
               value: 'test-value',
               active: true)
           end
 
           let!(:source) do
-            create(:instance_external_audit_event_destination, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_external_audit_event_destination,
               name: 'test-destination',
               verification_token: 'a' * 16,
               destination_url: 'https://example.com/webhook',
@@ -29,18 +30,18 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let!(:event_type_filter) do
-            create(:audit_events_streaming_instance_event_type_filter, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_streaming_instance_event_type_filter,
               instance_external_audit_event_destination: source,
               audit_event_type: 'user_created')
           end
 
           let!(:namespace_filter) do
-            create(:audit_events_streaming_http_instance_namespace_filter, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_streaming_http_instance_namespace_filter,
               instance_external_audit_event_destination: source)
           end
 
-          it 'creates streaming destination with all associated records' do
-            destination = create_stream_destination(legacy_destination_model: source, category: :http,
+          it 'creates streaming destination with basic attributes' do
+            destination = helper.create_stream_destination(legacy_destination_model: source, category: :http,
               is_instance: true)
 
             aggregate_failures do
@@ -61,29 +62,24 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
               expect(destination.secret_token).to eq(source.verification_token)
               expect(destination.legacy_destination_ref).to eq(source.id)
               expect(source.stream_destination_id).to eq(destination.id)
-
-              expect(destination.event_type_filters.count).to eq(1)
-              expect(destination.event_type_filters.first.audit_event_type).to eq('user_created')
-
-              expect(destination.namespace_filters.count).to eq(1)
-              expect(destination.namespace_filters.first.namespace)
-                .to eq(namespace_filter.namespace)
+              expect(destination.event_type_filters.count).to eq(0)
+              expect(destination.namespace_filters.count).to eq(0)
             end
           end
         end
 
         context 'when group level' do
-          let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+          let(:group) { create(:group) }
 
           let!(:header) do
-            create(:audit_events_streaming_header, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_streaming_header,
               key: 'Custom-Header',
               value: 'test-value',
               active: true)
           end
 
           let!(:source) do
-            create(:external_audit_event_destination, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:external_audit_event_destination,
               name: 'test-destination',
               group: group,
               verification_token: 'a' * 16,
@@ -92,20 +88,20 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let!(:event_type_filter) do
-            create(:audit_events_streaming_event_type_filter, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_streaming_event_type_filter,
               external_audit_event_destination: source,
               audit_event_type: 'user_created')
           end
 
           context 'when source has a namespace filter' do
             let!(:namespace_filter) do
-              create(:audit_events_streaming_http_namespace_filter, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+              create(:audit_events_streaming_http_namespace_filter,
                 external_audit_event_destination: source,
                 namespace: group)
             end
 
-            it 'creates streaming destination with all associated records' do
-              destination = create_stream_destination(legacy_destination_model: source, category: :http,
+            it 'creates streaming destination with basic attributes' do
+              destination = helper.create_stream_destination(legacy_destination_model: source, category: :http,
                 is_instance: false)
 
               aggregate_failures do
@@ -127,20 +123,15 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
                 expect(destination.secret_token).to eq(source.verification_token)
                 expect(destination.legacy_destination_ref).to eq(source.id)
                 expect(source.stream_destination_id).to eq(destination.id)
-
-                expect(destination.event_type_filters.count).to eq(1)
-                expect(destination.event_type_filters.first.audit_event_type).to eq('user_created')
-                expect(destination.event_type_filters.first.namespace).to eq(group)
-
-                expect(destination.namespace_filters.count).to eq(1)
-                expect(destination.namespace_filters.first.namespace).to eq(group)
+                expect(destination.event_type_filters.count).to eq(0)
+                expect(destination.namespace_filters.count).to eq(0)
               end
             end
           end
 
           context 'when source has no namespace filter' do
             it 'creates streaming destination without namespace filter' do
-              destination = create_stream_destination(legacy_destination_model: source, category: :http,
+              destination = helper.create_stream_destination(legacy_destination_model: source, category: :http,
                 is_instance: false)
 
               expect(destination.namespace_filters.count).to eq(0)
@@ -152,7 +143,7 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       describe 'aws destinations' do
         context 'when instance level' do
           let!(:source) do
-            create(:instance_amazon_s3_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_amazon_s3_configuration,
               name: 'test-destination',
               bucket_name: 'test-bucket',
               aws_region: 'us-east-1',
@@ -179,10 +170,10 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
         end
 
         context 'when group level' do
-          let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+          let(:group) { create(:group) }
 
           let!(:source) do
-            create(:amazon_s3_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:amazon_s3_configuration,
               name: 'test-destination',
               group: group,
               bucket_name: 'test-bucket',
@@ -214,7 +205,7 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       describe 'gcp destinations' do
         context 'when instance level' do
           let!(:source) do
-            create(:instance_google_cloud_logging_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_google_cloud_logging_configuration,
               name: 'test-destination',
               google_project_id_name: 'test-project',
               log_id_name: 'test-log',
@@ -241,10 +232,10 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
         end
 
         context 'when group level' do
-          let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+          let(:group) { create(:group) }
 
           let!(:source) do
-            create(:google_cloud_logging_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:google_cloud_logging_configuration,
               name: 'test-destination',
               group: group,
               google_project_id_name: 'test-project',
@@ -274,8 +265,8 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       end
 
       context 'when an error occurs during creation' do
-        let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
-        let(:source) { create(:external_audit_event_destination, group: group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+        let(:group) { create(:group) }
+        let(:source) { create(:external_audit_event_destination, group: group) }
         let(:mock_destination) { build(:audit_events_group_external_streaming_destination, group: group) }
 
         before do
@@ -308,7 +299,7 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       end
 
       let!(:source) do
-        create(:instance_external_audit_event_destination) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+        create(:instance_external_audit_event_destination)
       end
 
       it 'returns nil' do
@@ -327,14 +318,14 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       describe 'http destinations' do
         context 'when instance level' do
           let!(:header) do
-            create(:instance_audit_events_streaming_header, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_audit_events_streaming_header,
               key: 'Custom-Header',
               value: 'test-value',
               active: true)
           end
 
           let!(:legacy_destination) do
-            create(:instance_external_audit_event_destination, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_external_audit_event_destination,
               name: 'test-stream_destination',
               verification_token: 'a' * 16,
               destination_url: 'https://example.com/webhook',
@@ -342,10 +333,11 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let(:stream_destination) do
-            create(:audit_events_instance_external_streaming_destination, :http, legacy_destination_ref: legacy_destination.id) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_instance_external_streaming_destination, :http,
+              legacy_destination_ref: legacy_destination.id)
           end
 
-          it 'updates streaming stream_destination with all associated records' do
+          it 'updates streaming destination with basic attributes' do
             legacy_destination.update!(
               name: 'updated-stream_destination',
               verification_token: 'b' * 16,
@@ -372,10 +364,10 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
         end
 
         context 'when group level' do
-          let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+          let(:group) { create(:group) }
 
           let!(:legacy_destination) do
-            create(:external_audit_event_destination, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:external_audit_event_destination,
               name: 'test-stream_destination',
               group: group,
               verification_token: 'a' * 16,
@@ -383,10 +375,11 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let(:stream_destination) do
-            create(:audit_events_group_external_streaming_destination, :http, group: group, legacy_destination_ref: legacy_destination.id) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_group_external_streaming_destination, :http,
+              group: group, legacy_destination_ref: legacy_destination.id)
           end
 
-          it 'updates streaming stream_destination correctly' do
+          it 'updates streaming destination correctly' do
             legacy_destination.update!(
               name: 'updated-stream_destination',
               verification_token: 'b' * 16,
@@ -410,7 +403,7 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       describe 'aws destinations' do
         context 'when instance level' do
           let!(:legacy_destination) do
-            create(:instance_amazon_s3_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_amazon_s3_configuration,
               name: 'test-stream_destination',
               bucket_name: 'test-bucket',
               aws_region: 'us-east-1',
@@ -419,10 +412,11 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let(:stream_destination) do
-            create(:audit_events_instance_external_streaming_destination, :aws, legacy_destination_ref: legacy_destination.id) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_instance_external_streaming_destination, :aws,
+              legacy_destination_ref: legacy_destination.id)
           end
 
-          it 'updates streaming stream_destination correctly' do
+          it 'updates streaming destination correctly' do
             legacy_destination.update!(
               name: 'updated-stream_destination',
               bucket_name: 'updated-bucket',
@@ -444,10 +438,10 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
         end
 
         context 'when group level' do
-          let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+          let(:group) { create(:group) }
 
           let!(:legacy_destination) do
-            create(:amazon_s3_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:amazon_s3_configuration,
               name: 'test-stream_destination',
               group: group,
               bucket_name: 'test-bucket',
@@ -456,10 +450,11 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let(:stream_destination) do
-            create(:audit_events_group_external_streaming_destination, :aws, group: group, legacy_destination_ref: legacy_destination.id) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_group_external_streaming_destination, :aws,
+              group: group, legacy_destination_ref: legacy_destination.id)
           end
 
-          it 'updates streaming stream_destination correctly' do
+          it 'updates streaming destination correctly' do
             legacy_destination.update!(
               name: 'updated-stream_destination',
               bucket_name: 'updated-bucket',
@@ -485,7 +480,7 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       describe 'gcp destinations' do
         context 'when instance level' do
           let!(:legacy_destination) do
-            create(:instance_google_cloud_logging_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:instance_google_cloud_logging_configuration,
               name: 'test-stream_destination',
               google_project_id_name: 'test-project',
               log_id_name: 'test-log',
@@ -494,10 +489,11 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let(:stream_destination) do
-            create(:audit_events_instance_external_streaming_destination, :gcp, legacy_destination_ref: legacy_destination.id) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_instance_external_streaming_destination, :gcp,
+              legacy_destination_ref: legacy_destination.id)
           end
 
-          it 'updates streaming stream_destination correctly' do
+          it 'updates streaming destination correctly' do
             legacy_destination.update!(
               name: 'updated-stream_destination',
               google_project_id_name: 'updated-project',
@@ -521,10 +517,10 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
         end
 
         context 'when group level' do
-          let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+          let(:group) { create(:group) }
 
           let!(:legacy_destination) do
-            create(:google_cloud_logging_configuration, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:google_cloud_logging_configuration,
               name: 'test-stream_destination',
               group: group,
               google_project_id_name: 'test-project',
@@ -534,10 +530,11 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
           end
 
           let(:stream_destination) do
-            create(:audit_events_group_external_streaming_destination, :gcp, group: group, legacy_destination_ref: legacy_destination.id) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+            create(:audit_events_group_external_streaming_destination, :gcp,
+              group: group, legacy_destination_ref: legacy_destination.id)
           end
 
-          it 'updates streaming stream_destination correctly' do
+          it 'updates streaming destination correctly' do
             legacy_destination.update!(
               name: 'updated-stream_destination',
               google_project_id_name: 'updated-project',
@@ -563,9 +560,9 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       end
 
       context 'when an error occurs during update' do
-        let(:group) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
-        let(:source) { create(:external_audit_event_destination, group: group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
-        let(:mock_destination) { create(:audit_events_group_external_streaming_destination, group: group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+        let(:group) { create(:group) }
+        let(:source) { create(:external_audit_event_destination, group: group) }
+        let(:mock_destination) { create(:audit_events_group_external_streaming_destination, group: group) }
 
         before do
           source.update_column(:stream_destination_id, mock_destination.id)
@@ -599,7 +596,7 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       end
 
       let!(:legacy_destination) do
-        create(:instance_external_audit_event_destination) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+        create(:instance_external_audit_event_destination)
       end
 
       it 'returns nil' do
@@ -607,56 +604,5 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       end
     end
   end
-
-  describe '#legacy_destination_sync_enabled?' do
-    let(:helper) { Class.new { include AuditEvents::LegacyDestinationSyncHelper }.new }
-
-    context 'when checking instance level' do
-      it 'returns true when feature flag is enabled' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-
-        expect(helper.send(:legacy_destination_sync_enabled?, nil, true)).to be true
-      end
-
-      it 'returns false when feature flag is disabled' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-
-        expect(helper.send(:legacy_destination_sync_enabled?, nil, true)).to be false
-      end
-    end
-
-    context 'when checking group level' do
-      let(:group) { build_stubbed(:group) }
-      let(:subgroup) { build_stubbed(:group, parent: group) }
-      let(:legacy_destination_model) { instance_double(AuditEvents::ExternalAuditEventDestination, group: group) }
-      let(:subgroup_legacy_destination_model) do
-        instance_double(AuditEvents::ExternalAuditEventDestination, group: subgroup)
-      end
-
-      it 'returns true when feature flag is enabled globally' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-
-        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be true
-      end
-
-      it 'returns false when feature flag is disabled globally' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-
-        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be false
-      end
-
-      it 'returns true when feature flag is enabled for the specific group' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: group)
-
-        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be true
-      end
-
-      it 'returns false when feature flag is enabled for a different group' do
-        other_group = build_stubbed(:group)
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: other_group)
-
-        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be false
-      end
-    end
-  end
 end
+# rubocop:enable RSpec/FactoryBot/AvoidCreate

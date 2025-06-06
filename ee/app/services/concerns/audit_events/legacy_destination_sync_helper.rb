@@ -2,7 +2,7 @@
 
 module AuditEvents
   module LegacyDestinationSyncHelper
-    include Gitlab::Utils::StrongMemoize
+    include AuditEvents::DestinationSyncValidator
 
     STREAMING_TOKEN_HEADER_KEY = 'X-Gitlab-Event-Streaming-Token'
 
@@ -26,9 +26,6 @@ module AuditEvents
         destination.group = legacy_destination_model.group unless is_instance
 
         destination.save!
-
-        copy_event_type_filters(legacy_destination_model, destination)
-        copy_namespace_filter(legacy_destination_model, destination)
 
         legacy_destination_model.update!(stream_destination_id: destination.id)
         destination
@@ -57,14 +54,6 @@ module AuditEvents
           secret_token: secret_token(legacy_destination_model, category)
         )
 
-        if stream_destination.respond_to?(:event_type_filters)
-          copy_event_type_filters(legacy_destination_model, stream_destination)
-        end
-
-        if stream_destination.respond_to?(:namespace_filters)
-          copy_namespace_filter(legacy_destination_model, stream_destination)
-        end
-
         stream_destination
       end
     rescue ActiveRecord::RecordInvalid, StandardError => e
@@ -74,57 +63,28 @@ module AuditEvents
 
     private
 
-    def legacy_destination_sync_enabled?(legacy_destination_model, is_instance)
-      Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor,
-        is_instance ? :instance : legacy_destination_model.group)
-    end
-
-    def audit_event_namespace(destination)
-      destination.instance_level? ? 'AuditEvents::Instance' : 'AuditEvents::Group'
-    end
-
-    def copy_event_type_filters(source, destination)
-      return unless source.respond_to?(:event_type_filters)
-
-      filter_class = "#{audit_event_namespace(destination)}::EventTypeFilter".constantize
-      filter_class.delete_by(external_streaming_destination_id: destination.id)
-
-      timestamp = Time.current
-
-      attributes = source.event_type_filters.map do |filter|
-        base_attributes = {
-          audit_event_type: filter.audit_event_type,
-          external_streaming_destination_id: destination.id,
-          created_at: timestamp,
-          updated_at: timestamp
-        }
-
-        base_attributes[:namespace_id] = destination.group_id unless destination.instance_level?
-        base_attributes
-      end
-
-      filter_class.insert_all!(attributes) if attributes.any?
-    end
-
-    def copy_namespace_filter(source, destination)
-      return unless source.respond_to?(:namespace_filter)
-      return unless source.namespace_filter
-
-      filter_class = "#{audit_event_namespace(destination)}::NamespaceFilter".constantize
-      filter_class.delete_by(external_streaming_destination_id: destination.id)
-
-      filter_class.create!(
-        namespace_id: source.namespace_filter.namespace_id,
-        external_streaming_destination_id: destination.id
-      )
-    end
-
     def build_streaming_config(legacy_destination_model, category)
       case category
       when :http
+        all_headers = {}
+
+        all_headers[STREAMING_TOKEN_HEADER_KEY] = {
+          'value' => legacy_destination_model.verification_token,
+          'active' => true
+        }
+
+        if legacy_destination_model.respond_to?(:headers)
+          legacy_destination_model.headers.each do |header|
+            all_headers[header.key] = {
+              'value' => header.value,
+              'active' => header.active
+            }
+          end
+        end
+
         {
           'url' => legacy_destination_model.destination_url,
-          'headers' => build_headers_config(legacy_destination_model)
+          'headers' => all_headers
         }
       when :aws
         {
@@ -137,26 +97,6 @@ module AuditEvents
           'googleProjectIdName' => legacy_destination_model.google_project_id_name,
           'logIdName' => legacy_destination_model.log_id_name || 'audit-events',
           'clientEmail' => legacy_destination_model.client_email
-        }
-      end
-    end
-
-    def build_headers_config(legacy_destination_model)
-      base_headers = {
-        STREAMING_TOKEN_HEADER_KEY => {
-          'value' => legacy_destination_model.verification_token,
-          'active' => true
-        }
-      }
-
-      return base_headers unless legacy_destination_model.respond_to?(:headers)
-
-      headers = legacy_destination_model.headers
-
-      headers.active.each_with_object(base_headers) do |header, hash|
-        hash[header.key] = {
-          'value' => header.value,
-          'active' => header.active
         }
       end
     end

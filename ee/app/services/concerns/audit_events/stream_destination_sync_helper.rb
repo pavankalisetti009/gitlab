@@ -2,10 +2,11 @@
 
 module AuditEvents
   module StreamDestinationSyncHelper
-    include Gitlab::Utils::StrongMemoize
+    include AuditEvents::DestinationSyncValidator
 
     CreateError = Class.new(StandardError)
     UpdateError = Class.new(StandardError)
+    FilterSyncError = Class.new(StandardError)
 
     CATEGORY_MAPPING = {
       'http' => 'ExternalAuditEventDestination',
@@ -27,8 +28,6 @@ module AuditEvents
         destination.namespace_id = stream_destination_model.group_id if destination.respond_to?(:group)
 
         destination.save!
-        copy_legacy_event_type_filters(stream_destination_model, destination)
-        copy_legacy_namespace_filters(stream_destination_model, destination) if stream_destination_model.http?
 
         stream_destination_model.update_column(:legacy_destination_ref, destination.id)
 
@@ -51,6 +50,7 @@ module AuditEvents
           name: stream_destination_model.name,
           **extract_legacy_attributes(stream_destination_model)
         )
+
         destination
       end
     rescue ActiveRecord::RecordInvalid, UpdateError => e
@@ -60,18 +60,11 @@ module AuditEvents
 
     private
 
-    def stream_destination_sync_enabled?(stream_destination_model)
-      Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor,
-        stream_destination_model.respond_to?(:group) ? stream_destination_model.group : :instance)
-    end
-
     def legacy_class_for(model)
-      strong_memoize(:legacy_class) do
-        base = model.instance_level? ? 'AuditEvents::Instance::' : 'AuditEvents::'
-        base = 'AuditEvents::Instance' if model.instance_level? && model.category == 'http'
+      base = model.instance_level? ? 'AuditEvents::Instance::' : 'AuditEvents::'
+      base = 'AuditEvents::Instance' if model.instance_level? && model.category == 'http'
 
-        "#{base}#{CATEGORY_MAPPING[model.category]}".safe_constantize
-      end
+      "#{base}#{CATEGORY_MAPPING[model.category]}".safe_constantize
     end
 
     def extract_legacy_attributes(stream_destination_model)
@@ -95,53 +88,6 @@ module AuditEvents
           client_email: stream_destination_model.config['clientEmail'],
           private_key: stream_destination_model.secret_token
         }
-      end
-    end
-
-    def copy_legacy_event_type_filters(source, destination)
-      return unless source.respond_to?(:event_type_filters)
-
-      source.event_type_filters.find_each do |filter|
-        filter_class = if destination.instance_level?
-                         AuditEvents::Streaming::InstanceEventTypeFilter
-                       else
-                         AuditEvents::Streaming::EventTypeFilter
-                       end
-
-        attributes = {
-          audit_event_type: filter.audit_event_type
-        }
-
-        if destination.instance_level?
-          attributes[:instance_external_audit_event_destination] = destination
-        else
-          attributes[:external_audit_event_destination] = destination
-        end
-
-        filter_class.create!(attributes)
-      end
-    end
-
-    def copy_legacy_namespace_filters(source, destination)
-      return unless source.namespace_filters.any?
-
-      filter_class = if destination.instance_level?
-                       AuditEvents::Streaming::HTTP::Instance::NamespaceFilter
-                     else
-                       AuditEvents::Streaming::HTTP::NamespaceFilter
-                     end
-
-      source.namespace_filters.first.tap do |filter|
-        column_name = if destination.instance_level?
-                        'audit_events_instance_external_audit_event_destination_id'
-                      else
-                        'external_audit_event_destination_id'
-                      end
-
-        filter_class.create!(
-          namespace: filter.namespace,
-          column_name => destination.id
-        )
       end
     end
   end

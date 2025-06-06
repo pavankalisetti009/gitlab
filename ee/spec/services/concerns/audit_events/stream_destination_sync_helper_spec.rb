@@ -29,7 +29,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
               external_streaming_destination: source)
           end
 
-          it 'creates legacy destination with all associated records' do
+          it 'creates legacy destination with basic attributes' do
             destination = helper.create_legacy_destination(source)
 
             aggregate_failures do
@@ -39,12 +39,8 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
               expect(destination.verification_token).to eq(source.secret_token)
               expect(destination.stream_destination_id).to eq(source.id)
               expect(source.legacy_destination_ref).to eq(destination.id)
-
-              expect(destination.event_type_filters.count).to eq(1)
-              expect(destination.event_type_filters.first.audit_event_type).to eq('user_created')
-
-              expect(destination.namespace_filter&.namespace)
-                .to eq(namespace_filter.namespace)
+              expect(destination.event_type_filters.count).to eq(0)
+              expect(destination.namespace_filter).to be_nil
             end
           end
         end
@@ -69,7 +65,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
               namespace: group)
           end
 
-          it 'creates legacy destination with all associated records' do
+          it 'creates legacy destination with basic attributes' do
             destination = helper.create_legacy_destination(source)
 
             aggregate_failures do
@@ -80,10 +76,8 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
               expect(destination.verification_token).to eq(source.secret_token)
               expect(destination.stream_destination_id).to eq(source.id)
               expect(source.legacy_destination_ref).to eq(destination.id)
-              expect(destination.event_type_filters.count).to eq(1)
-              expect(destination.event_type_filters.first.audit_event_type).to eq('user_created')
-              expect(destination.event_type_filters.first.group_id).to eq(group.id)
-              expect(destination.namespace_filter&.namespace).to eq(group)
+              expect(destination.event_type_filters.count).to eq(0)
+              expect(destination.namespace_filter).to be_nil
             end
           end
         end
@@ -299,91 +293,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
               expect(legacy_destination.name).to eq('Updated Name')
               expect(legacy_destination.destination_url).to eq('https://new-url.com')
               expect(legacy_destination.verification_token).to eq('a' * 20)
-              expect(legacy_destination.group).to eq(group)
-              expect(legacy_destination.stream_destination_id).to eq(source.id)
-              expect(source.legacy_destination_ref).to eq(legacy_destination.id)
-            end
-          end
-        end
-      end
-
-      describe 'gcp destinations' do
-        context 'when instance level' do
-          let!(:source) do
-            create(:audit_events_instance_external_streaming_destination, :gcp)
-          end
-
-          let!(:legacy_destination) do
-            create(:instance_google_cloud_logging_configuration)
-          end
-
-          before do
-            source.update_column(:legacy_destination_ref, legacy_destination.id)
-            legacy_destination.update_column(:stream_destination_id, source.id)
-          end
-
-          it 'updates legacy destination with new attributes' do
-            source.update!(
-              name: 'Updated Name',
-              config: {
-                'googleProjectIdName' => 'updated-project-id',
-                'clientEmail' => 'test@example.com',
-                'logIdName' => 'a' * 20
-              },
-              secret_token: 'new_secret_key'
-            )
-
-            helper.update_legacy_destination(source)
-            legacy_destination.reload
-
-            aggregate_failures do
-              expect(legacy_destination.name).to eq('Updated Name')
-              expect(legacy_destination.google_project_id_name).to eq('updated-project-id')
-              expect(legacy_destination.client_email).to eq('test@example.com')
-              expect(legacy_destination.log_id_name).to eq('a' * 20)
-              expect(legacy_destination.private_key).to eq('new_secret_key')
-              expect(legacy_destination.stream_destination_id).to eq(source.id)
-              expect(source.legacy_destination_ref).to eq(legacy_destination.id)
-            end
-          end
-        end
-
-        context 'when group level' do
-          let(:group) { create(:group) }
-
-          let!(:source) do
-            create(:audit_events_group_external_streaming_destination, :gcp, group: group)
-          end
-
-          let!(:legacy_destination) do
-            create(:google_cloud_logging_configuration, group: group)
-          end
-
-          before do
-            source.update_column(:legacy_destination_ref, legacy_destination.id)
-            legacy_destination.update_column(:stream_destination_id, source.id)
-          end
-
-          it 'updates legacy destination with new attributes' do
-            source.update!(
-              name: 'Updated Name',
-              config: {
-                'googleProjectIdName' => 'updated-project-id',
-                'clientEmail' => 'test@example.com',
-                'logIdName' => 'a' * 20
-              },
-              secret_token: 'new_secret_key'
-            )
-
-            helper.update_legacy_destination(source)
-            legacy_destination.reload
-
-            aggregate_failures do
-              expect(legacy_destination.name).to eq('Updated Name')
-              expect(legacy_destination.google_project_id_name).to eq('updated-project-id')
-              expect(legacy_destination.client_email).to eq('test@example.com')
-              expect(legacy_destination.log_id_name).to eq('a' * 20)
-              expect(legacy_destination.private_key).to eq('new_secret_key')
+              expect(legacy_destination.namespace_id).to eq(group.id)
               expect(legacy_destination.stream_destination_id).to eq(source.id)
               expect(source.legacy_destination_ref).to eq(legacy_destination.id)
             end
@@ -475,6 +385,90 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
         end
       end
 
+      describe 'gcp destinations' do
+        context 'when instance level' do
+          let!(:source) do
+            create(:audit_events_instance_external_streaming_destination, :gcp)
+          end
+
+          let!(:legacy_destination) do
+            create(:instance_google_cloud_logging_configuration)
+          end
+
+          before do
+            source.update_column(:legacy_destination_ref, legacy_destination.id)
+            legacy_destination.update_column(:stream_destination_id, source.id)
+          end
+
+          it 'updates legacy destination with new attributes' do
+            source.update!(
+              name: 'Updated Name',
+              config: {
+                'googleProjectIdName' => 'updated-project-id',
+                'clientEmail' => 'test@example.com',
+                'logIdName' => 'a' * 20
+              },
+              secret_token: 'new_secret_key'
+            )
+
+            helper.update_legacy_destination(source)
+            legacy_destination.reload
+
+            aggregate_failures do
+              expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.google_project_id_name).to eq('updated-project-id')
+              expect(legacy_destination.client_email).to eq('test@example.com')
+              expect(legacy_destination.log_id_name).to eq('a' * 20)
+              expect(legacy_destination.private_key).to eq('new_secret_key')
+              expect(legacy_destination.stream_destination_id).to eq(source.id)
+              expect(source.legacy_destination_ref).to eq(legacy_destination.id)
+            end
+          end
+        end
+
+        context 'when group level' do
+          let(:group) { create(:group) }
+
+          let!(:source) do
+            create(:audit_events_group_external_streaming_destination, :gcp, group: group)
+          end
+
+          let!(:legacy_destination) do
+            create(:google_cloud_logging_configuration, group: group)
+          end
+
+          before do
+            source.update_column(:legacy_destination_ref, legacy_destination.id)
+            legacy_destination.update_column(:stream_destination_id, source.id)
+          end
+
+          it 'updates legacy destination with new attributes' do
+            source.update!(
+              name: 'Updated Name',
+              config: {
+                'googleProjectIdName' => 'updated-project-id',
+                'clientEmail' => 'test@example.com',
+                'logIdName' => 'a' * 20
+              },
+              secret_token: 'new_secret_key'
+            )
+
+            helper.update_legacy_destination(source)
+            legacy_destination.reload
+
+            aggregate_failures do
+              expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.google_project_id_name).to eq('updated-project-id')
+              expect(legacy_destination.client_email).to eq('test@example.com')
+              expect(legacy_destination.log_id_name).to eq('a' * 20)
+              expect(legacy_destination.private_key).to eq('new_secret_key')
+              expect(legacy_destination.stream_destination_id).to eq(source.id)
+              expect(source.legacy_destination_ref).to eq(legacy_destination.id)
+            end
+          end
+        end
+      end
+
       context 'when an error occurs during update' do
         let!(:source) do
           create(:audit_events_instance_external_streaming_destination, :http)
@@ -507,67 +501,18 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
         end
       end
     end
-  end
 
-  describe '#stream_destination_sync_enabled?' do
-    let(:helper) { Class.new { include AuditEvents::StreamDestinationSyncHelper }.new }
-
-    context 'when checking instance level' do
-      let(:stream_destination) do
-        instance_double(AuditEvents::Instance::ExternalStreamingDestination, respond_to?: false)
-      end
-
-      it 'returns true when feature flag is enabled' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-
-        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be true
-      end
-
-      it 'returns false when feature flag is disabled' do
+    context 'when feature flag is disabled' do
+      before do
         stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-
-        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be false
-      end
-    end
-
-    context 'when checking group level' do
-      let(:group) { create(:group) }
-      let(:subgroup) { create(:group, parent: group) }
-      let(:stream_destination) do
-        instance_double(AuditEvents::Group::ExternalStreamingDestination,
-          respond_to?: true,
-          group: group)
       end
 
-      let(:subgroup_stream_destination) do
-        instance_double(AuditEvents::Group::ExternalStreamingDestination,
-          respond_to?: true,
-          group: subgroup)
+      let!(:source) do
+        create(:audit_events_instance_external_streaming_destination)
       end
 
-      it 'returns true when feature flag is enabled globally' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-
-        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be true
-      end
-
-      it 'returns false when feature flag is disabled globally' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-
-        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be false
-      end
-
-      it 'returns true when feature flag is enabled for the specific group' do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: group)
-
-        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be true
-      end
-
-      it 'returns false when feature flag is enabled for a different group' do
-        other_group = create(:group)
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: other_group)
-
-        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be false
+      it 'returns nil' do
+        expect(helper.update_legacy_destination(source)).to be_nil
       end
     end
   end
