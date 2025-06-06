@@ -763,6 +763,90 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
   end
 
+  context 'when updating web_based_commit_signing_enabled' do
+    let(:service) do
+      described_class.new(group, user, web_based_commit_signing_enabled: web_based_commit_signing_enabled)
+    end
+
+    let(:repositories_web_based_commit_signing) { true }
+    let(:web_based_commit_signing_enabled) { true }
+
+    before do
+      stub_saas_features(repositories_web_based_commit_signing: repositories_web_based_commit_signing)
+      group.add_owner(user)
+    end
+
+    shared_examples_for 'enqueues job' do
+      it 'enqueues a job' do
+        expect(Namespaces::CascadeWebBasedCommitSigningEnabledWorker).to receive(:perform_async).with(group.id)
+        service.execute
+      end
+    end
+
+    shared_examples_for 'does not enqueue job' do
+      it 'does not enqueue a job' do
+        expect(Namespaces::CascadeWebBasedCommitSigningEnabledWorker).not_to receive(:perform_async).with(group.id)
+        service.execute
+      end
+    end
+
+    shared_examples_for 'ignoring web_based_commit_signing_enabled' do
+      it 'deletes the parameter' do
+        expect(::NamespaceSettings::AssignAttributesService).to receive(:new).with(
+          user,
+          group,
+          hash_not_including(:web_based_commit_signing_enabled)
+        ).twice.and_call_original
+
+        service.execute
+      end
+
+      it_behaves_like 'does not enqueue job'
+    end
+
+    context 'when the repositories_web_based_commit_signing feature is not available' do
+      let(:repositories_web_based_commit_signing) { false }
+
+      it_behaves_like 'ignoring web_based_commit_signing_enabled'
+    end
+
+    context 'when the use_web_based_commit_signing_enabled feature flag is not enabled' do
+      before do
+        stub_feature_flags(use_web_based_commit_signing_enabled: false)
+      end
+
+      it_behaves_like 'ignoring web_based_commit_signing_enabled'
+    end
+
+    context 'when enabling web_based_commit_signing_enabled' do
+      it_behaves_like 'enqueues job'
+
+      context 'and already enabled' do
+        before do
+          group.namespace_settings.update!(web_based_commit_signing_enabled: true)
+          group.reload
+        end
+
+        it_behaves_like 'does not enqueue job'
+      end
+    end
+
+    context 'when disabling web_based_commit_signing_enabled' do
+      let(:web_based_commit_signing_enabled) { false }
+
+      it_behaves_like 'enqueues job'
+
+      context 'and already disabled' do
+        before do
+          group.namespace_settings.update!(web_based_commit_signing_enabled: false)
+          group.reload
+        end
+
+        it_behaves_like 'does not enqueue job'
+      end
+    end
+  end
+
   context 'remove_dormant_members feature handling' do
     shared_examples 'does not schedule worker' do |worker|
       it "does not schedule #{worker} worker" do

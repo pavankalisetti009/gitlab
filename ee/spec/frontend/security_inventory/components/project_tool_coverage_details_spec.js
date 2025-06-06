@@ -1,8 +1,8 @@
 import { GlButton, GlIcon } from '@gitlab/ui';
-import ToolCoverageDetails from 'ee/security_inventory/components/tool_coverage_details.vue';
+import ProjectToolCoverageDetails from 'ee/security_inventory/components/project_tool_coverage_details.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-describe('ToolCoverageDetails', () => {
+describe('ProjectToolCoverageDetails', () => {
   let wrapper;
   const webUrl = '/group1/project1';
 
@@ -61,10 +61,9 @@ describe('ToolCoverageDetails', () => {
   ];
 
   const createComponent = (propsData = {}) => {
-    wrapper = shallowMountExtended(ToolCoverageDetails, {
+    wrapper = shallowMountExtended(ProjectToolCoverageDetails, {
       propsData: {
         securityScanner: multipleAnalyzerStatuses,
-        isProject: true,
         webUrl,
         ...propsData,
       },
@@ -183,13 +182,10 @@ describe('ToolCoverageDetails', () => {
       ${'disabled'}      | ${disabledAnalyzerStatus} | ${true}
       ${'failed'}        | ${failedAnalyzerStatuses} | ${true}
       ${'never enabled'} | ${emptyAnalyzerStatus}    | ${false}
-    `(
-      'renders data updated when the scanner is $name',
-      ({ securityScanner, expectedTextExists }) => {
-        createComponent({ securityScanner });
-        expect(findByTestId('date-updated').exists()).toBe(expectedTextExists);
-      },
-    );
+    `('renders last scan when the scanner is $name', ({ securityScanner, expectedTextExists }) => {
+      createComponent({ securityScanner });
+      expect(findByTestId('date-updated').exists()).toBe(expectedTextExists);
+    });
   });
 
   describe('pipeline job path', () => {
@@ -215,7 +211,7 @@ describe('ToolCoverageDetails', () => {
   });
 
   describe('manage configuration button', () => {
-    it('renders "Manage configuration" button when "isProject" is true', () => {
+    it('renders "Manage configuration" button', () => {
       createComponent();
       expect(findButton().exists()).toBe(true);
       expect(findButton().text()).toBe('Manage configuration');
@@ -223,11 +219,6 @@ describe('ToolCoverageDetails', () => {
       expect(findButton().props('category')).toBe('secondary');
       expect(findButton().props('variant')).toBe('confirm');
       expect(findButton().props('size')).toBe('small');
-    });
-
-    it('does not render "Manage configuration" button when isProject is false', () => {
-      createComponent({ isProject: false });
-      expect(findButton().exists()).toBe(false);
     });
   });
 });

@@ -43,4 +43,11 @@ describe('ToolCoverageCell', () => {
     const indicator = findProjectToolCoverageIndicator();
     expect(indicator.props('item')).toBe(mockProject);
   });
+
+  it('passes the correct props to GroupToolCoverageIndicator', () => {
+    wrapper = createComponent({ item: mockGroup });
+
+    const indicator = findGroupToolCoverageIndicator();
+    expect(indicator.props('item')).toBe(mockGroup);
+  });
 });

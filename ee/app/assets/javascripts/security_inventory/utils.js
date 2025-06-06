@@ -22,11 +22,42 @@ export const isSubGroup = (item) => {
 };
 
 /**
- * Validator function for securityScanner prop
+ * Validates the structure and types of a security scanner group object
+ * @param {Object} value - Object of group security scanner
+ * @returns {Boolean} True if all items have valid structure, false otherwise
+ */
+export const securityScannerOfGroupValidator = (value) => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const typeChecks = {
+    analyzerType: (val) => typeof val === 'string',
+    failure: (val) => typeof val === 'number',
+    notConfigured: (val) => typeof val === 'number',
+    success: (val) => typeof val === 'number',
+  };
+  const optionalTypeChecks = {
+    updatedAt: (val) => val === undefined || typeof val === 'string',
+  };
+  for (const [key, typeCheck] of Object.entries(typeChecks)) {
+    if (!(key in value) || !typeCheck(value[key])) {
+      return false;
+    }
+  }
+  for (const [key, typeCheck] of Object.entries(optionalTypeChecks)) {
+    if (key in value && !typeCheck(value[key])) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
+ * Validates the structure and types of a security scanner project object
  * @param {Array<Object>} value - Array of security scanner objects
  * @returns {Boolean} True if all items have valid structure, false otherwise
  */
-export const securityScannerValidator = (value) => {
+export const securityScannerOfProjectValidator = (value) => {
   return value.every(
     (item) =>
       typeof item === 'object' &&
@@ -51,7 +82,7 @@ export const itemValidator = (value) => {
   if ('analyzerStatuses' in value) {
     if (
       !Array.isArray(value.analyzerStatuses) ||
-      !securityScannerValidator(value.analyzerStatuses)
+      !securityScannerOfProjectValidator(value.analyzerStatuses)
     ) {
       return false;
     }

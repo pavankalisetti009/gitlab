@@ -6,7 +6,7 @@ import {
   PROJECT_SECURITY_CONFIGURATION_PATH,
   SCANNER_POPOVER_LABELS,
 } from 'ee/security_inventory/constants';
-import { securityScannerValidator } from 'ee/security_inventory/utils';
+import { securityScannerOfProjectValidator } from 'ee/security_inventory/utils';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 
 // These statuses represent the situations that can be displayed in the icon
@@ -17,7 +17,7 @@ const STATUS_CONFIG = {
 };
 
 export default {
-  name: 'ToolCoverageDetails',
+  name: 'ProjectToolCoverageDetails',
   components: {
     GlButton,
     GlIcon,
@@ -29,11 +29,7 @@ export default {
       type: Array,
       required: false,
       default: () => [],
-      validator: (value) => securityScannerValidator(value),
-    },
-    isProject: {
-      type: Boolean,
-      required: true,
+      validator: (value) => securityScannerOfProjectValidator(value),
     },
     webUrl: {
       type: String,
@@ -72,7 +68,7 @@ export default {
     },
   },
   i18n: {
-    vulnerabilityReportButton: s__('ToolCoverageDetails|Manage configuration'),
+    vulnerabilityReportButton: s__('ProjectToolCoverageDetails|Manage configuration'),
   },
 };
 </script>
@@ -115,7 +111,6 @@ export default {
     </div>
 
     <gl-button
-      v-if="isProject"
       category="secondary"
       variant="confirm"
       class="gl-my-3 gl-w-full"

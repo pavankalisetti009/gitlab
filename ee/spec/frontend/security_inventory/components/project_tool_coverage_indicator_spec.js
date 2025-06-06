@@ -1,7 +1,7 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
 import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from 'ee/security_inventory/constants';
-import ToolCoverageDetails from 'ee/security_inventory/components/tool_coverage_details.vue';
+import ProjectToolCoverageDetails from 'ee/security_inventory/components/project_tool_coverage_details.vue';
 import { subgroupsAndProjects } from 'ee_jest/security_inventory/mock_data';
 
 describe('ProjectToolCoverageIndicator', () => {
@@ -9,6 +9,7 @@ describe('ProjectToolCoverageIndicator', () => {
 
   const mockProject = subgroupsAndProjects.data.group.projects.nodes[0];
   const projectName = mockProject.name;
+  const { webUrl } = mockProject;
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(ProjectToolCoverageIndicator, {
@@ -23,7 +24,7 @@ describe('ProjectToolCoverageIndicator', () => {
   };
 
   const findPopover = (key) => wrapper.findByTestId(`popover-${key}-${projectName}`);
-  const findToolCoverageDetails = () => wrapper.findComponent(ToolCoverageDetails);
+  const findProjectToolCoverageDetails = () => wrapper.findComponent(ProjectToolCoverageDetails);
   const findBadge = (key) => wrapper.findByTestId(`badge-${key}-${projectName}`);
 
   const scanners = Object.entries(SCANNER_POPOVER_GROUPS).map(([key, scannerTypes]) => ({
@@ -53,7 +54,7 @@ describe('ProjectToolCoverageIndicator', () => {
 
     it('renders tool coverage details component in popovers', () => {
       createComponent();
-      expect(findToolCoverageDetails().exists()).toBe(true);
+      expect(findProjectToolCoverageDetails().exists()).toBe(true);
     });
   });
 
@@ -122,7 +123,10 @@ describe('ProjectToolCoverageIndicator', () => {
       createComponent({
         props: { analyzerStatuses: testScanners },
       });
-      expect(findToolCoverageDetails().props('isProject')).toBe(true);
+      expect(findProjectToolCoverageDetails().props('webUrl')).toBe(webUrl);
+      expect(findProjectToolCoverageDetails().props('securityScanner')).toStrictEqual([
+        { analyzerType: 'DEPENDENCY_SCANNING' },
+      ]);
     });
   });
 
