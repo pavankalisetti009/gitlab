@@ -14,7 +14,7 @@ module EE
       store_accessor(
         :onboarding_status, :step_url, :email_opt_in, :initial_registration_type,
         :registration_type, :registration_objective, :setup_for_company,
-        :glm_content, :glm_source, :joining_project, :role, prefix: true
+        :glm_content, :glm_source, :joining_project, :role, :version, prefix: true
       )
 
       def self.onboarding_status_registration_objectives

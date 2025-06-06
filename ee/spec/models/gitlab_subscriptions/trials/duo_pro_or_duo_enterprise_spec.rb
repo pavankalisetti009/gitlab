@@ -215,7 +215,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
         it 'returns false' do
           create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
 
-          is_expected.to be_falsy
+          is_expected.to be false
         end
       end
 
@@ -223,7 +223,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_categ
         it 'returns true' do
           create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed)
 
-          is_expected.to be_truthy
+          is_expected.to be true
         end
       end
     end

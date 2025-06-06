@@ -128,7 +128,7 @@ describe('SAST Configuration App', () => {
     it('shows a specific error message with link when defined', () => {
       expect(findErrorAlert().exists()).toBe(true);
       expect(findErrorAlert().text()).toContain('some specific error');
-      expect(findErrorAlert().html()).toContain('<a href="#" rel="noopener">error</a>');
+      expect(findErrorAlert().html()).toContain('<a rel="noopener" href="#">error</a>');
     });
   });
 
