@@ -11,7 +11,7 @@ RSpec.shared_examples 'IncidentManagement::PendingEscalation model' do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:process_at) }
     it { is_expected.to validate_presence_of(:rule_id) }
-    it { is_expected.to delegate_method(:project).to(escalatable_type) }
+    it { is_expected.to delegate_method(:project).to(:target) }
     it { is_expected.to validate_uniqueness_of(:rule_id).scoped_to([:"#{escalatable_type}_id"]) }
   end
 

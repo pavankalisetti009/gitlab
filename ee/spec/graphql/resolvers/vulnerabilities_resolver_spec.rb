@@ -609,30 +609,52 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
     let(:event) { 'called_vulnerability_api' }
     let(:category) { described_class.name }
-    let(:additional_properties) { { label: 'graphql' } }
 
-    describe 'at the Project level' do
-      it_behaves_like 'internal event tracking' do
-        let(:project) { proj }
-        let(:namespace) { group }
-        let(:vulnerable) { proj }
+    shared_examples 'tracks events at different levels' do |use_elasticsearch|
+      let(:additional_properties) { { label: 'graphql', value: use_elasticsearch ? 1 : 0 } }
+
+      before do
+        if use_elasticsearch
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:use_elasticsearch?).and_return(true)
+          end
+        end
+      end
+
+      context 'for Project level' do
+        it_behaves_like 'internal event tracking' do
+          let(:project) { proj }
+          let(:namespace) { group }
+          let(:vulnerable) { proj }
+        end
+      end
+
+      context 'for Group level' do
+        it_behaves_like 'internal event tracking' do
+          let(:project) { nil }
+          let(:namespace) { group }
+          let(:vulnerable) { group }
+        end
+      end
+
+      # Elasticsearch is not supported on InstanceSecurityDashboard.
+      unless use_elasticsearch
+        context 'for Instance level' do
+          it_behaves_like 'internal event tracking' do
+            let(:project) { nil }
+            let(:namespace) { nil }
+            let(:vulnerable) { InstanceSecurityDashboard.new(user, project_ids: [proj.id]) }
+          end
+        end
       end
     end
 
-    describe 'at the Group level' do
-      it_behaves_like 'internal event tracking' do
-        let(:project) { nil }
-        let(:namespace) { group }
-        let(:vulnerable) { group }
-      end
+    context 'when using postgres' do
+      it_behaves_like 'tracks events at different levels', false
     end
 
-    describe 'at the Instance level' do
-      it_behaves_like 'internal event tracking' do
-        let(:project) { nil }
-        let(:namespace) { nil }
-        let(:vulnerable) { InstanceSecurityDashboard.new(user, project_ids: [proj.id]) }
-      end
+    context 'when using elasticsearch' do
+      it_behaves_like 'tracks events at different levels', true
     end
   end
 end

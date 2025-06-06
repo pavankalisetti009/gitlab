@@ -9,7 +9,6 @@ module Security
     track_internal_event :index, name: 'visit_vulnerability_report', category: name
 
     before_action do
-      push_frontend_feature_flag(:vulnerability_report_owasp_2021, current_user)
       push_frontend_feature_flag(:hide_vulnerability_severity_override, current_user, type: :ops)
       push_frontend_feature_flag(:existing_jira_issue_attachment_from_vulnerability_bulk_action,
         current_user,

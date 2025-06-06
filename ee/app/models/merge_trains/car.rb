@@ -17,7 +17,7 @@ module MergeTrains
     belongs_to :user
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
 
-    alias_attribute :project, :target_project
+    alias_method :project, :target_project
 
     # Non-persistent/virtual attribute, calculated in using .indexed to avoid N+1s
     attribute :index
