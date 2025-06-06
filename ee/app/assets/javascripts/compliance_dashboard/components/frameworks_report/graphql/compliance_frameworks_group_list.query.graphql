@@ -8,6 +8,7 @@ query complianceFrameworksGroupList(
   $first: Int
   $last: Int
   $projectLimit: Int = 10
+  $sort: ComplianceFrameworkSort
 ) {
   namespace: group(fullPath: $fullPath) {
     id
@@ -18,6 +19,7 @@ query complianceFrameworksGroupList(
       after: $after
       first: $first
       last: $last
+      sort: $sort
     ) {
       ...ComplianceFrameworkConnectionDetails
       nodes {
