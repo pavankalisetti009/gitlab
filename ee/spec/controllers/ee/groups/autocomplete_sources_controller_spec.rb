@@ -48,26 +48,5 @@ RSpec.describe Groups::AutocompleteSourcesController, feature_category: :team_pl
       expect(json_response.count).to eq(3)
       expect(json_response).to match_array(issues_json_response)
     end
-
-    context 'when work_item_epics and namespace_level_work_items feature flags are disabled' do
-      before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
-      end
-
-      it 'returns response without group level work items', :aggregate_failures do
-        issue_json_response = {
-          'iid' => project_issue.iid,
-          'title' => project_issue.title,
-          'reference' => project_issue.to_reference(group)
-        }
-
-        get :issues, params: { group_id: group }
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response).to be_an(Array)
-        expect(json_response.count).to eq(1)
-        expect(json_response.first).to include(issue_json_response)
-      end
-    end
   end
 end

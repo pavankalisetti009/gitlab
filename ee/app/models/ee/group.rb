@@ -297,11 +297,6 @@ module EE
       licensed_feature_available?(:code_suggestions) || licensed_feature_available?(:ai_chat)
     end
 
-    override :namespace_work_items_enabled?
-    def namespace_work_items_enabled?
-      super || work_item_epics_enabled?
-    end
-
     override :supports_group_work_items?
     def supports_group_work_items?
       # For now we only support epics as group work items. We therefore can re-use `epics` as a licensed feature check.
