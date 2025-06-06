@@ -15,7 +15,8 @@ RSpec.describe 'Google Analytics 4 content security policy', feature_category: :
       '*.googletagmanager.com',
       '*.google-analytics.com',
       '*.analytics.google.com',
-      '*.g.doubleclick.net'
+      '*.g.doubleclick.net',
+      '*.analytics.gitlab.com'
     ]
   end
 
