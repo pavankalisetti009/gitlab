@@ -23,7 +23,6 @@ import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.
 import { visitUrl } from '~/lib/utils/url_utility';
 import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import { ADD_ON_PURCHASE_FETCH_ERROR_CODE } from 'ee/usage_quotas/error_constants';
-import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { PQL_MODAL_ID } from 'ee/hand_raise_leads/hand_raise_lead/constants';
 
@@ -154,21 +153,6 @@ export default {
     },
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    subscription: {
-      query: getGitlabSubscriptionQuery,
-      variables() {
-        return {
-          namespaceId: this.groupId,
-        };
-      },
-      skip() {
-        return !this.groupId;
-      },
-      error: (error) => {
-        Sentry.captureException(error);
-      },
-    },
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     subscriptionPermissions: {
       query: getSubscriptionPermissionsData,
