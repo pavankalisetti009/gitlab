@@ -50,7 +50,7 @@ module EE
           execution_policy_job: options[:execution_policy_job],
           policy_name: options[:execution_policy_name],
           policy_variables_override_allowed: options.dig(:execution_policy_variables_override, :allowed),
-          policy_variables_override_exceptions: options.dig(:execution_policy_variables_override, :exceptions)
+          policy_variables_override_exceptions: options.dig(:execution_policy_variables_override, :exceptions).presence
         }.compact
       end
 
