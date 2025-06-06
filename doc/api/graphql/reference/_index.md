@@ -29703,7 +29703,7 @@ Returns [`VulnerabilitySeveritiesCount`](#vulnerabilityseveritiescount).
 
 ##### `Group.workItem`
 
-Find a work item by IID directly associated with the group. Returns `null` if the `namespace_level_work_items` feature flag is disabled.
+Find a work item by IID directly associated with the group.
 
 {{< details >}}
 **Introduced** in GitLab 16.4.
@@ -29742,7 +29742,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Group.workItemStateCounts`
 
-Counts of work items by state for the namespace. Returns `null` if the `namespace_level_work_items` feature flag is disabled.
+Counts of work items by state for the namespace.
 
 {{< details >}}
 **Introduced** in GitLab 16.7.
@@ -34037,7 +34037,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Namespace.workItem`
 
-Find a work item by IID directly associated with the namespace(project or group).  Returns `null` for group level work items if the `namespace_level_work_items` feature flag is disabled.
+Find a work item by IID directly associated with the namespace(project or group).
 
 {{< details >}}
 **Introduced** in GitLab 16.10.

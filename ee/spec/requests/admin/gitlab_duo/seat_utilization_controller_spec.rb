@@ -14,25 +14,12 @@ RSpec.describe Admin::GitlabDuo::SeatUtilizationController, :cloud_licenses, fea
       allow(::Gitlab::Saas).to receive(:feature_available?).and_return(false)
     end
 
-    shared_examples 'renders the activation form' do
-      it 'renders the activation form and skips completion test' do
+    shared_examples 'renders seat management index page' do
+      it 'renders seat management index page' do
         get admin_gitlab_duo_seat_utilization_index_path
 
         expect(response).to render_template(:index)
         expect(response.body).to include('js-code-suggestions-page')
-        expect(flash.now[:notice]).to be_nil
-        expect(flash.now[:alert]).to be_nil
-      end
-
-      context 'when duo pro addon is purchased' do
-        let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :active) }
-
-        it 'renders the activation form' do
-          get admin_gitlab_duo_seat_utilization_index_path
-
-          expect(response).to render_template(:index)
-          expect(response.body).to include('js-code-suggestions-page')
-        end
       end
     end
 
@@ -42,6 +29,14 @@ RSpec.describe Admin::GitlabDuo::SeatUtilizationController, :cloud_licenses, fea
 
         expect(response).to have_gitlab_http_status(:not_found)
         expect(response).to render_template('errors/not_found')
+      end
+    end
+
+    shared_examples 'redirects to gitlab duo home path' do
+      it 'redirects to gitlab duo home path' do
+        get admin_gitlab_duo_seat_utilization_index_path
+
+        expect(response).to redirect_to(admin_gitlab_duo_path)
       end
     end
 
@@ -63,14 +58,50 @@ RSpec.describe Admin::GitlabDuo::SeatUtilizationController, :cloud_licenses, fea
         enable_admin_mode!(admin)
       end
 
-      it_behaves_like 'renders the activation form'
-
       context 'when instance is self-managed' do
         before do
           stub_saas_features(gitlab_com_subscriptions: false)
         end
 
-        it_behaves_like 'renders the activation form'
+        context 'when no duo add on is provisioned' do
+          it_behaves_like 'redirects to gitlab duo home path'
+        end
+
+        context 'with a non seat assignable duo add on' do
+          context 'when duo core add on is provisioned' do
+            let_it_be(:add_on_purchase) do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_core, :active)
+            end
+
+            it_behaves_like 'redirects to gitlab duo home path'
+          end
+
+          context 'when duo amazon q add on is provisioned' do
+            let_it_be(:add_on_purchase) do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_amazon_q, :active)
+            end
+
+            it_behaves_like 'redirects to gitlab duo home path'
+          end
+        end
+
+        context 'with a seat assignable duo add on' do
+          context 'when duo pro add on is provisioned' do
+            let_it_be(:add_on_purchase) do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_pro, :active)
+            end
+
+            it_behaves_like 'renders seat management index page'
+          end
+
+          context 'when duo enterprise add on is provisioned' do
+            let_it_be(:add_on_purchase) do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise, :active)
+            end
+
+            it_behaves_like 'renders seat management index page'
+          end
+        end
       end
 
       context 'when instance is SaaS' do

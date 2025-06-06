@@ -12,6 +12,7 @@ module Admin
       urgency :low
 
       before_action :ensure_feature_available!
+      before_action :ensure_seat_assignable_duo_add_on!
 
       before_action do
         push_frontend_feature_flag(:enable_add_on_users_filtering)
@@ -20,16 +21,23 @@ module Admin
 
       def index
         @subscription_name = License.current.subscription_name
-        duo_purchase = GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.last
-
-        @duo_add_on_start_date = duo_purchase&.started_at
-        @duo_add_on_end_date = duo_purchase&.expires_on
+        @duo_add_on_start_date = duo_pro_or_enterprise_add_on_purchase&.started_at
+        @duo_add_on_end_date = duo_pro_or_enterprise_add_on_purchase&.expires_on
       end
 
       private
 
       def ensure_feature_available!
         render_404 unless !gitlab_com_subscription? && License.current&.paid?
+      end
+
+      def ensure_seat_assignable_duo_add_on!
+        redirect_to admin_gitlab_duo_path unless duo_pro_or_enterprise_add_on_purchase.present?
+      end
+
+      def duo_pro_or_enterprise_add_on_purchase
+        @duo_pro_or_enterprise_add_on_purchase ||=
+          GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.active.last
       end
     end
   end
