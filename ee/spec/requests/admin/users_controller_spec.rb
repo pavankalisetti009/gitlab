@@ -95,6 +95,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
 
       expect(assigns(:users).first.association(:user_highest_role)).to be_loaded
       expect(assigns(:users).first.association(:elevated_members)).to be_loaded
+      expect(assigns(:users).first.association(:member_role)).to be_loaded
     end
   end
 
@@ -128,8 +129,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
 
         context 'and admin_role_id is not present' do
           it 'does not unassign the user\'s existing role' do
-            expect { request }.not_to change { user.reload.user_member_roles.map(&:member_role_id) }
-              .from([existing_role.id])
+            expect { request }.not_to change { user.reload.member_role }.from(existing_role)
           end
 
           context 'when user is an admin' do
@@ -137,8 +137,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
             let_it_be(:existing_role) { create(:admin_member_role, user: user).member_role }
 
             it 'unassigns the user\'s existing role' do
-              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
-                .from([existing_role.id]).to([])
+              expect { request }.to change { user.reload.member_role }.from(existing_role).to(nil)
             end
           end
         end
@@ -149,8 +148,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
             let(:user_attrs) { super().merge(admin_role_id: new_role.id) }
 
             it 'updates the user\'s assigned role to the new role' do
-              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
-                .from([existing_role.id]).to([new_role.id])
+              expect { request }.to change { user.reload.member_role }.from(existing_role).to(new_role)
             end
 
             context 'and assignment fails' do
@@ -198,8 +196,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
             let(:user_attrs) { super().merge(admin_role_id: nil) }
 
             it 'unassigns the user\'s existing role' do
-              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
-                .from([existing_role.id]).to([])
+              expect { request }.to change { user.reload.member_role }.from(existing_role).to(nil)
             end
           end
         end
@@ -212,8 +209,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
             let(:user_attrs) { super().merge(admin_role_id: role.id) }
 
             it 'assigns the role to the user' do
-              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
-                .from([]).to([role.id])
+              expect { request }.to change { user.reload.member_role }.from(nil).to(role)
             end
           end
 
@@ -221,7 +217,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
             let(:user_attrs) { super().merge(admin_role_id: non_existing_record_id) }
 
             it 'does not assign any role to the user' do
-              expect { request }.not_to change { user.user_member_roles.size }.from(0)
+              expect { request }.not_to change { user.user_member_role }
             end
           end
         end
@@ -270,7 +266,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
           it 'assigns the role to the user' do
             request
 
-            expect(created_user.user_member_roles.map(&:member_role_id)).to match_array [role.id]
+            expect(created_user.member_role).to eq(role)
           end
 
           context 'and assignment fails' do
@@ -320,7 +316,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
           it 'does not assign any role to the user' do
             request
 
-            expect(created_user.user_member_roles).to be_empty
+            expect(created_user.user_member_role).to be_nil
           end
         end
       end
