@@ -1,11 +1,6 @@
 import * as getters from 'ee/billings/subscriptions/store/getters';
 import State from 'ee/billings/subscriptions/store/state';
-import {
-  TABLE_TYPE_DEFAULT,
-  TABLE_TYPE_FREE,
-  TABLE_TYPE_RAMON,
-  TABLE_TYPE_TRIAL,
-} from 'ee/billings/constants';
+import { TABLE_TYPE_DEFAULT, TABLE_TYPE_FREE, TABLE_TYPE_TRIAL } from 'ee/billings/constants';
 
 describe('EE billings subscription module getters', () => {
   let state;
@@ -42,7 +37,6 @@ describe('EE billings subscription module getters', () => {
       ${TABLE_TYPE_DEFAULT} | ${'valid'} | ${{ name: 'Premium', code: 'premium' }}
       ${TABLE_TYPE_FREE}    | ${'null'}  | ${{ name: 'Premium', code: null }}
       ${TABLE_TYPE_TRIAL}   | ${'trial'} | ${{ name: 'Premium', code: 'premium', trial: 'true' }}
-      ${TABLE_TYPE_RAMON}   | ${'ramon'} | ${{ name: 'Ramon', code: 'ramon', maximumSeatLimit: 4000 }}
     `('returns $tableKey with $planDesc plan', ({ tableKey, plan }) => {
       state.plan = plan;
       expect(getters.tableKey(state)).toBe(tableKey);
