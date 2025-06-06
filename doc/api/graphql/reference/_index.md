@@ -4356,7 +4356,7 @@ Input type: `CreateDiscussionInput`
 
 {{< details >}}
 **Deprecated** in GitLab 17.5.
-Replaced by WorkItem type.
+Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/).
 {{< /details >}}
 
 Input type: `CreateEpicInput`
@@ -5944,7 +5944,7 @@ Input type: `EnvironmentsCanaryIngressUpdateInput`
 
 {{< details >}}
 **Deprecated** in GitLab 17.5.
-Replaced by WorkItem type.
+Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/).
 {{< /details >}}
 
 Input type: `EpicAddIssueInput`
@@ -6114,7 +6114,7 @@ Input type: `EpicMoveListInput`
 
 {{< details >}}
 **Deprecated** in GitLab 17.5.
-Replaced by WorkItem type.
+Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/).
 {{< /details >}}
 
 Input type: `EpicSetSubscriptionInput`
@@ -9928,7 +9928,7 @@ Input type: `PrometheusIntegrationUpdateInput`
 
 {{< details >}}
 **Deprecated** in GitLab 17.5.
-Replaced by WorkItem type.
+Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/).
 {{< /details >}}
 
 Input type: `PromoteToEpicInput`
@@ -11766,7 +11766,7 @@ Input type: `UpdateDependencyProxySettingsInput`
 
 {{< details >}}
 **Deprecated** in GitLab 17.5.
-Replaced by WorkItem type.
+Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/).
 {{< /details >}}
 
 Input type: `UpdateEpicInput`
@@ -28061,7 +28061,7 @@ GPG signature for a signed commit.
 | <a id="groupemailsenabled"></a>`emailsEnabled` | [`Boolean`](#boolean) | Indicates if a group has email notifications enabled. |
 | <a id="groupenforcefreeusercap"></a>`enforceFreeUserCap` | [`Boolean`](#boolean) | Indicates whether the group has limited users for a free plan. |
 | <a id="groupepicboards"></a>`epicBoards` {{< icon name="warning-solid" >}} | [`EpicBoardConnection`](#epicboardconnection) | **Deprecated** in GitLab 17.5. Replaced by WorkItem type. |
-| <a id="groupepicsenabled"></a>`epicsEnabled` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated** in GitLab 17.5. Replaced by WorkItem type. |
+| <a id="groupepicsenabled"></a>`epicsEnabled` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated** in GitLab 17.5. Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/). |
 | <a id="groupexternalauditeventdestinations"></a>`externalAuditEventDestinations` | [`ExternalAuditEventDestinationConnection`](#externalauditeventdestinationconnection) | External locations that receive audit events belonging to the group. (see [Connections](#connections)) |
 | <a id="groupexternalauditeventstreamingdestinations"></a>`externalAuditEventStreamingDestinations` {{< icon name="warning-solid" >}} | [`GroupAuditEventStreamingDestinationConnection`](#groupauditeventstreamingdestinationconnection) | **Introduced** in GitLab 16.11. **Status**: Experiment. External destinations that receive audit events belonging to the group. |
 | <a id="groupflowmetrics"></a>`flowMetrics` {{< icon name="warning-solid" >}} | [`GroupValueStreamAnalyticsFlowMetrics`](#groupvaluestreamanalyticsflowmetrics) | **Introduced** in GitLab 15.10. **Status**: Experiment. Flow metrics for value stream analytics. |
@@ -28684,7 +28684,7 @@ Find a single epic.
 
 {{< details >}}
 **Deprecated** in GitLab 17.5.
-Replaced by WorkItem type.
+Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/).
 {{< /details >}}
 
 Returns [`Epic`](#epic).
@@ -28741,7 +28741,7 @@ Find epics.
 
 {{< details >}}
 **Deprecated** in GitLab 17.5.
-Replaced by WorkItem type.
+Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/).
 {{< /details >}}
 
 Returns [`EpicConnection`](#epicconnection).
