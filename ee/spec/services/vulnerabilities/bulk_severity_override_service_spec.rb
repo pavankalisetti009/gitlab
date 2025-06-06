@@ -117,9 +117,35 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         )
       end
 
+      it 'triggers an internal tracking event with success status', :clean_gitlab_redis_shared_state do
+        expect { service.execute }.to trigger_internal_events('vulnerability_changed').with(
+          category: described_class.name,
+          project: project,
+          namespace: namespace,
+          user: user,
+          additional_properties: {
+            vulnerability_id: vulnerability.id,
+            label: "vulnerability_change_severity",
+            property: "success",
+            old_value: original_severity.to_s,
+            new_value: new_severity,
+            field: "severity"
+          }
+        ).and increment_usage_metrics(
+          'redis_hll_counters.count_distinct_namespace_id_from_vulnerability_changed_monthly',
+          'redis_hll_counters.count_distinct_namespace_id_from_vulnerability_changed_weekly',
+          'redis_hll_counters.count_distinct_user_id_from_vulnerability_changed_monthly',
+          'redis_hll_counters.count_distinct_user_id_from_vulnerability_changed_weekly',
+          'counts.count_total_vulnerability_changed_monthly',
+          'counts.count_total_vulnerability_changed_weekly',
+          'counts.count_total_vulnerability_changed'
+        )
+      end
+
       context 'when an error occurs during update' do
         before do
-          allow(Vulnerabilities::SeverityOverride).to receive(:insert_all!).and_raise(ActiveRecord::RecordNotUnique)
+          allow(Vulnerabilities::SeverityOverride).to receive(:insert_all!)
+            .and_raise(ActiveRecord::RecordNotUnique, 'override failed')
         end
 
         it 'returns an appropriate service response' do
@@ -127,6 +153,33 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
 
           expect(result).to be_error
           expect(result.errors).to eq(['Could not modify vulnerabilities'])
+        end
+
+        it 'triggers an internal tracking event with error status',
+          :clean_gitlab_redis_shared_state do
+          expect { service.execute }.to trigger_internal_events('vulnerability_changed').with(
+            category: described_class.name,
+            project: project,
+            namespace: namespace,
+            user: user,
+            additional_properties: {
+              vulnerability_id: vulnerability.id,
+              label: "vulnerability_change_severity",
+              property: "error",
+              old_value: original_severity.to_s,
+              new_value: new_severity,
+              field: "severity",
+              error_message: "override failed"
+            }
+          ).and increment_usage_metrics(
+            'redis_hll_counters.count_distinct_namespace_id_from_vulnerability_changed_monthly',
+            'redis_hll_counters.count_distinct_namespace_id_from_vulnerability_changed_weekly',
+            'redis_hll_counters.count_distinct_user_id_from_vulnerability_changed_monthly',
+            'redis_hll_counters.count_distinct_user_id_from_vulnerability_changed_weekly',
+            'counts.count_total_vulnerability_changed_monthly',
+            'counts.count_total_vulnerability_changed_weekly',
+            'counts.count_total_vulnerability_changed'
+          )
         end
       end
 
