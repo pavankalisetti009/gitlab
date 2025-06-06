@@ -198,6 +198,20 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
 
       it_behaves_like 'verified navigation bar'
     end
+
+    context 'when virtual registry is available' do
+      before do
+        stub_config(dependency_proxy: { enabled: true })
+        stub_licensed_features(packages_virtual_registry: true)
+
+        insert_virtual_registry_nav
+        insert_dependency_proxy_nav
+
+        visit group_path(group)
+      end
+
+      it_behaves_like 'verified navigation bar'
+    end
   end
 
   context 'for owners', :saas do
