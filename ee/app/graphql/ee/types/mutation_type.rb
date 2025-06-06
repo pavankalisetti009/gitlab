@@ -28,17 +28,32 @@ module EE
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Issues::SetEscalationPolicy
         mount_mutation ::Mutations::Issues::PromoteToEpic,
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
         mount_mutation ::Mutations::EpicTree::Reorder,
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Epics::Update,
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
         mount_mutation ::Mutations::Epics::Create,
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
         mount_mutation ::Mutations::Epics::SetSubscription,
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
         mount_mutation ::Mutations::Epics::AddIssue,
-          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+          deprecated: {
+            reason: 'Replaced by `WorkItem` type. For more information, see [migration guide](https://docs.gitlab.com/api/graphql/epic_work_items_api_migration_guide/)',
+            milestone: '17.5'
+          }
         mount_mutation ::Mutations::Geo::Registries::Update, experiment: { milestone: '16.1' }
         mount_mutation ::Mutations::Geo::Registries::BulkUpdate, experiment: { milestone: '16.4' }
         mount_mutation ::Mutations::GitlabSubscriptions::Activate

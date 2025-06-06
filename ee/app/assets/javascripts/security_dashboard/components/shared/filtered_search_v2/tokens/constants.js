@@ -7,6 +7,7 @@ import ClusterToken from './cluster_token.vue';
 import ProjectToken from './project_token.vue';
 import ScannerToken from './scanner_token.vue';
 import IdentifierToken from './identifier_token.vue';
+import ReportTypeToken from './report_type_token.vue';
 
 export const STATUS_TOKEN_DEFINITION = {
   type: 'state',
@@ -78,4 +79,13 @@ export const IDENTIFIER_TOKEN_DEFINITION = {
   unique: true,
   token: IdentifierToken,
   operators: OPERATORS_IS,
+};
+
+export const REPORT_TYPE_VENDOR_TOKEN_DEFINITION = {
+  type: 'reportType',
+  title: ReportTypeToken.i18n.label,
+  multiSelect: true,
+  unique: true,
+  token: ReportTypeToken,
+  operators: OPERATORS_OR,
 };

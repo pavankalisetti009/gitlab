@@ -26,7 +26,7 @@ export default {
         dismissible: true,
       });
     },
-    async onClickExport() {
+    onClickExport() {
       this.isExporting = true;
       this.notifyUserReportWillBeEmailed();
     },
