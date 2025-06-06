@@ -37,10 +37,7 @@ module Projects
     end
 
     def verify_available!
-      unless ::Feature.enabled?(:learn_gitlab_redesign, project.namespace) &&
-          ::Onboarding::LearnGitlab.available?(project.namespace, current_user)
-        access_denied!
-      end
+      access_denied! unless ::Onboarding::LearnGitlab.available?(project.namespace, current_user)
     end
   end
 end

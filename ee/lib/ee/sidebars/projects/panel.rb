@@ -27,7 +27,7 @@ module EE
         private
 
         def onboarding_menu
-          if ::Feature.enabled?(:learn_gitlab_redesign, context.project.namespace) && trial_or_on_get_started?
+          if trial_or_on_get_started?
             ::Sidebars::Projects::Menus::GetStartedMenu.new(context)
           else
             ::Sidebars::Projects::Menus::LearnGitlabMenu.new(context)

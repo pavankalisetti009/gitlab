@@ -79,8 +79,7 @@ module Registrations
     end
 
     def learn_gitlab_path(project)
-      if ::Feature.enabled?(:learn_gitlab_redesign, project.namespace) &&
-          onboarding_status_presenter.learn_gitlab_redesign?
+      if onboarding_status_presenter.learn_gitlab_redesign?
         project_get_started_path(project)
       else
         project_learn_gitlab_path(project)
