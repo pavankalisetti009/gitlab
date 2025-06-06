@@ -34457,7 +34457,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="organizationworkspacesclusteragentsfilter"></a>`filter` | [`NamespaceClusterAgentFilter!`](#namespaceclusteragentfilter) | Filter the types of cluster agents to return. |
+| <a id="organizationworkspacesclusteragentsfilter"></a>`filter` | [`OrganizationClusterAgentFilter!`](#organizationclusteragentfilter) | Filter the types of cluster agents to return. |
 
 ### `OrganizationStateCounts`
 
@@ -45663,6 +45663,7 @@ Possible filter types for remote development cluster agents in a namespace.
 
 | Value | Description |
 | ----- | ----------- |
+| <a id="namespaceclusteragentfilterall"></a>`ALL` | All cluster agents in the namespace that can be used for hosting worksapces. |
 | <a id="namespaceclusteragentfilteravailable"></a>`AVAILABLE` | Cluster agents in the namespace that can be used for hosting workspaces. |
 | <a id="namespaceclusteragentfilterdirectly_mapped"></a>`DIRECTLY_MAPPED` | Cluster agents that are directly mapped to the given namespace. |
 | <a id="namespaceclusteragentfilterunmapped"></a>`UNMAPPED` | Cluster agents within a namespace that are not directly mapped to it. |
@@ -45744,6 +45745,15 @@ Enum defining the type of OpenTelemetry metric.
 | <a id="opentelemetrymetrictypegauge_type"></a>`GAUGE_TYPE` | Gauge Type type. |
 | <a id="opentelemetrymetrictypehistogram_type"></a>`HISTOGRAM_TYPE` | Histogram Type type. |
 | <a id="opentelemetrymetrictypesum_type"></a>`SUM_TYPE` | Sum Type type. |
+
+### `OrganizationClusterAgentFilter`
+
+Possible filter types for remote development cluster agents in an organization.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="organizationclusteragentfilterall"></a>`ALL` | All cluster agents in the organization that can be used for hosting workspaces. |
+| <a id="organizationclusteragentfilterdirectly_mapped"></a>`DIRECTLY_MAPPED` | Cluster agents that are directly mapped to the given organization. |
 
 ### `OrganizationGroupProjectDisplay`
 

@@ -4,7 +4,7 @@ import { joinPaths } from '~/lib/utils/url_utility';
 import NewSelfHostedModel from 'ee/ai/duo_self_hosted/self_hosted_models/components/new_self_hosted_model.vue';
 import EditSelfHostedModel from 'ee/ai/duo_self_hosted/self_hosted_models/components/edit_self_hosted_model.vue';
 import DuoSelfHostedApp from 'ee/ai/duo_self_hosted/app.vue';
-import { SELF_HOSTED_DUO_TABS } from 'ee/ai/duo_self_hosted/constants';
+import { SELF_HOSTED_DUO_TABS, SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 
 Vue.use(VueRouter);
 
@@ -14,17 +14,17 @@ export default function createRouter(base) {
     base: joinPaths(gon.relative_url_root || '', base),
     routes: [
       {
-        name: 'index',
+        name: SELF_HOSTED_ROUTE_NAMES.INDEX,
         path: '/',
         component: DuoSelfHostedApp,
       },
       {
-        name: 'new',
+        name: SELF_HOSTED_ROUTE_NAMES.NEW,
         path: '/new',
         component: NewSelfHostedModel,
       },
       {
-        name: 'edit',
+        name: SELF_HOSTED_ROUTE_NAMES.EDIT,
         path: '/:id/edit',
         component: EditSelfHostedModel,
         props: ({ params: { id } }) => {
@@ -32,13 +32,13 @@ export default function createRouter(base) {
         },
       },
       {
-        name: 'features',
+        name: SELF_HOSTED_ROUTE_NAMES.FEATURES,
         path: '/features',
         component: DuoSelfHostedApp,
         props: () => ({ tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS }),
       },
       {
-        name: 'models',
+        name: SELF_HOSTED_ROUTE_NAMES.MODELS,
         path: '/models',
         component: DuoSelfHostedApp,
         props: () => ({ tabId: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS }),

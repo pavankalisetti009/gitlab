@@ -21,6 +21,7 @@ export default {
   },
   computed: {
     optimizedScanners() {
+      //  DAST scans are too complex for the optimized path
       const { [REPORT_TYPE_DAST]: dastOption, ...availableScanners } = RULE_MODE_SCANNERS;
       return Object.entries(availableScanners);
     },

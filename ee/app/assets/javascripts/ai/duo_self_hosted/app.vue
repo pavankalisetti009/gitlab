@@ -5,7 +5,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import SelfHostedModelsTable from './self_hosted_models/components/self_hosted_models_table.vue';
 import FeatureSettingsTable from './feature_settings/components/feature_settings_table.vue';
 import ExpandedChatFeatureSettingsTable from './feature_settings/components/expanded_chat_feature_settings_table.vue';
-import { SELF_HOSTED_DUO_TABS } from './constants';
+import { SELF_HOSTED_DUO_TABS, SELF_HOSTED_ROUTE_NAMES } from './constants';
 
 export default {
   name: 'DuoSelfHostedApp',
@@ -44,7 +44,7 @@ export default {
   ],
   data() {
     return {
-      currentTabIndex: this.$options.tabs.findIndex((tab) => tab.id === this.tabId) || 0,
+      currentTabIndex: 0,
     };
   },
   computed: {
@@ -53,25 +53,29 @@ export default {
     },
   },
   watch: {
-    currentTabIndex(newTabIdx) {
-      const currentTabId = this.$options.tabs[newTabIdx].id;
+    tabId: {
+      handler(newTabId) {
+        this.currentTabIndex = this.$options.tabs.findIndex((tab) => tab.id === newTabId) || 0;
+      },
+      immediate: true,
+    },
+  },
+  methods: {
+    navigateToSelfHostedModelsTab() {
+      this.$router.push({ name: SELF_HOSTED_ROUTE_NAMES.MODELS });
+    },
+    navigateToFeaturesTab() {
+      this.$router.push({ name: SELF_HOSTED_ROUTE_NAMES.FEATURES });
+    },
+    onTabClick(tabId) {
+      if (tabId === this.tabId) return;
 
-      if (currentTabId === this.tabId) return;
-
-      if (currentTabId === SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS) {
+      if (tabId === SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS) {
         this.navigateToFeaturesTab();
         return;
       }
 
       this.navigateToSelfHostedModelsTab();
-    },
-  },
-  methods: {
-    navigateToSelfHostedModelsTab() {
-      this.$router.push({ name: 'models' });
-    },
-    navigateToFeaturesTab() {
-      this.$router.push({ name: 'features' });
     },
   },
 };
@@ -97,7 +101,12 @@ export default {
         class="gl-flex gl-grow"
         nav-class="gl-border-b-0"
       >
-        <gl-tab v-for="tab in $options.tabs" :key="tab.id" :data-testid="`${tab.id}-tab`">
+        <gl-tab
+          v-for="tab in $options.tabs"
+          :key="tab.id"
+          :data-testid="`${tab.id}-tab`"
+          @click="onTabClick(tab.id)"
+        >
           <template #title>
             {{ tab.title }}
           </template>

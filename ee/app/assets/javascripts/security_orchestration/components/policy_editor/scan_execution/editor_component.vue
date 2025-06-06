@@ -1,5 +1,15 @@
 <script>
-import { GlButton, GlCard, GlEmptyState, GlFormRadio, GlTooltipDirective } from '@gitlab/ui';
+import {
+  GlButton,
+  GlCard,
+  GlEmptyState,
+  GlFormRadio,
+  GlIcon,
+  GlLink,
+  GlSprintf,
+  GlTooltipDirective,
+} from '@gitlab/ui';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__, sprintf, n__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -37,6 +47,7 @@ import {
   buildScannerAction,
   buildDefaultPipeLineRule,
   createPolicyObject,
+  getConfiguration,
   getPolicyYaml,
 } from './lib';
 import {
@@ -44,7 +55,8 @@ import {
   CONDITIONS_LABEL,
   DEFAULT_SCANNER,
   ERROR_MESSAGE_MAP,
-  SELECTION_CONFIG,
+  SELECTION_CONFIG_CUSTOM,
+  SELECTION_CONFIG_DEFAULT,
 } from './constants';
 
 export default {
@@ -53,7 +65,8 @@ export default {
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
   SECURITY_POLICY_ACTIONS,
-  SELECTION_CONFIG,
+  SELECTION_CONFIG_CUSTOM,
+  SELECTION_CONFIG_DEFAULT,
   i18n: {
     ACTIONS_LABEL,
     ACTION_SECTION_DISABLE_ERROR,
@@ -79,6 +92,9 @@ export default {
       'SecurityOrchestration|Policy has reached the maximum of %{actionsCount} %{actions}',
     ),
     configurationTitle: s__('SecurityOrchestration|Additional configuration'),
+    scanExecutionPolicyHelpPage: helpPagePath(
+      'user/application_security/policies/scan_execution_policies',
+    ),
   },
   apollo: {
     projectsCount: {
@@ -106,6 +122,9 @@ export default {
     GlCard,
     GlEmptyState,
     GlFormRadio,
+    GlIcon,
+    GlLink,
+    GlSprintf,
     OptimizedScanSelector,
     OverloadWarningModal,
     RuleSection,
@@ -166,7 +185,7 @@ export default {
     const { policy, parsingError } = createPolicyObject(yamlEditorValueWithVariables);
 
     return {
-      configType: SELECTION_CONFIG.DEFAULT,
+      configType: getConfiguration(policy),
       parsingError,
       projectsCount: 0,
       showPerformanceWarningModal: false,
@@ -184,7 +203,7 @@ export default {
   },
   computed: {
     isDefaultConfig() {
-      return this.configType === SELECTION_CONFIG.DEFAULT;
+      return this.configType === SELECTION_CONFIG_DEFAULT;
     },
     hasFlexibleScanExecutionPolicy() {
       return this.glFeatures.flexibleScanExecutionPolicy;
@@ -226,6 +245,9 @@ export default {
             actions,
           })
         : '';
+    },
+    isValidOptimizedPolicy() {
+      return getConfiguration(this.policy) === SELECTION_CONFIG_DEFAULT;
     },
   },
   methods: {
@@ -278,6 +300,8 @@ export default {
       if (mode === EDITOR_MODE_RULE) {
         this.policy = addDefaultVariablesToPolicy({ policy: this.policy });
         this.updateYamlEditorValue(this.policy);
+
+        this.configType = getConfiguration(this.policy);
       }
     },
     handleActionBuilderParsingError(key) {
@@ -432,16 +456,34 @@ export default {
 
     <template #actions>
       <div v-if="hasFlexibleScanExecutionPolicy" class="gl-mt-5">
+        <h4>{{ s__('SecurityOrchestration|Scan execution strategy') }}</h4>
+        <div class="gl-mb-5">
+          <gl-sprintf
+            :message="
+              s__(
+                'SecurityOrchestration|Choose optimization preset %{linkStart}Help me choose%{linkEnd}',
+              )
+            "
+          >
+            <template #link="{ content }">
+              <gl-link :href="$options.i18n.scanExecutionPolicyHelpPage" target="_blank">
+                <gl-icon name="information-o" />
+                {{ content }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </div>
         <gl-card data-testid="default-config" class="gl-mb-5">
           <gl-form-radio
             v-model="configType"
-            :value="$options.SELECTION_CONFIG.DEFAULT"
-            class="gl-mb-0"
+            :value="$options.SELECTION_CONFIG_DEFAULT"
+            :disabled="!isValidOptimizedPolicy"
+            class="gl-mt-3"
             data-testid="default-action-config-radio-button"
           >
             <div>
               <h4 class="gl-mt-0">{{ $options.i18n.defaultConfigHeader }}</h4>
-              <p class="gl-text-gray-300">
+              <p class="gl-text-gray-500">
                 {{ $options.i18n.defaultConfigDescription }}
               </p>
             </div>
@@ -460,12 +502,12 @@ export default {
         <gl-card data-testid="custom-config">
           <gl-form-radio
             v-model="configType"
-            :value="$options.SELECTION_CONFIG.CUSTOM"
+            :value="$options.SELECTION_CONFIG_CUSTOM"
             class="gl-mb-0"
             data-testid="custom-action-config-radio-button"
           >
             <h4 class="gl-mt-0">{{ $options.i18n.customConfigHeader }}</h4>
-            <p class="gl-text-gray-300">{{ $options.i18n.customConfigDescription }}</p>
+            <p class="gl-text-gray-500">{{ $options.i18n.customConfigDescription }}</p>
           </gl-form-radio>
           <div v-if="!isDefaultConfig" data-testid="custom-action-config">
             <hr class="gl-mt-0" />

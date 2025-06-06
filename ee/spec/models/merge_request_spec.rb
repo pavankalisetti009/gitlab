@@ -2085,6 +2085,47 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
+  describe '#synchronize_approval_rules_from_target_project' do
+    let_it_be_with_reload(:merge_request) { create(:ee_merge_request, target_project: project, source_project: project) }
+    let_it_be(:code_coverage_project_approval_rule) do
+      create(:approval_project_rule, :code_coverage, project: project, approvals_required: 2)
+    end
+
+    let_it_be(:license_scanning_project_approval_rule) do
+      create(:approval_project_rule, :license_scanning, project: project, approvals_required: 2)
+    end
+
+    let_it_be(:scan_finding_project_approval_rule) do
+      create(:approval_project_rule, :scan_finding, project: project, approvals_required: 2)
+    end
+
+    let_it_be(:any_merge_request_project_approval_rule) do
+      create(:approval_project_rule, :any_merge_request, project: project, approvals_required: 2)
+    end
+
+    subject { merge_request.synchronize_approval_rules_from_target_project }
+
+    it 'resets security rules approvals but keeps code_coverage rule approvals' do
+      subject
+
+      expect(merge_request.approval_rules.map { |rule| [rule.report_type, rule.approvals_required] })
+        .to match_array([['license_scanning', 0], ['code_coverage', 2], ['scan_finding', 0], ['any_merge_request', 0]])
+    end
+
+    context 'with feature flag policy_mergability_check false' do
+      before do
+        stub_feature_flags(policy_mergability_check: false)
+      end
+
+      it 'does not reset any approval rules' do
+        subject
+
+        expect(merge_request.approval_rules.map { |rule| [rule.report_type, rule.approvals_required] })
+          .to match_array([['license_scanning', 2], ['code_coverage', 2], ['scan_finding', 2], ['any_merge_request', 2]])
+      end
+    end
+  end
+
   describe '#sync_project_approval_rules_for_policy_configuration' do
     let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
     let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }

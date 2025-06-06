@@ -5,7 +5,7 @@ require_relative "./shared"
 
 RSpec.describe "Query.organization.workspaces_cluster_agents (filter: DIRECTLY_MAPPED)", feature_category: :workspaces do
   let(:filter) { :DIRECTLY_MAPPED }
-  let(:expected_agents) { [directly_mapped_but_disabled_agent, available_agent] }
+  let(:expected_agents) { [mapped_agent] }
 
   include_context "with agents and users setup in an organization"
   include_context "for a Query.organization.workspaces_cluster_agents query"

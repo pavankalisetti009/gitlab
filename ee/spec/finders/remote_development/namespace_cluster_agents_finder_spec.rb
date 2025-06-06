@@ -81,6 +81,14 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentsFinder, feature_category
     ).to_a
   end
 
+  shared_examples 'when user does not have adequate permissions' do
+    let(:user) { developer }
+
+    it 'returns an empty response' do
+      expect(response).to eq([])
+    end
+  end
+
   context 'with filter_type set to available' do
     context 'when cluster agents are mapped to the namespace' do
       it 'returns cluster agents mapped to the namespace excluding those with remote dev disabled' do
@@ -129,13 +137,7 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentsFinder, feature_category
       end
     end
 
-    context 'when user does not have adequate permissions' do
-      let(:user) { developer }
-
-      it 'returns an empty response' do
-        expect(response).to eq([])
-      end
-    end
+    it_behaves_like 'when user does not have adequate permissions'
   end
 
   context 'with filter_type set to unmapped' do
@@ -156,13 +158,18 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentsFinder, feature_category
       end
     end
 
-    context 'when user does not have adequate permissions' do
-      let(:user) { developer }
+    it_behaves_like 'when user does not have adequate permissions'
+  end
 
-      it 'returns an empty response' do
-        expect(response).to eq([])
-      end
+  context 'with filter_type set to all' do
+    let(:filter) { :all }
+    let_it_be(:user) { maintainer }
+
+    it 'returns all cluster agents within a namespace' do
+      expect(response).to match_array([root_agent, nested_agent, unmapped_root_agent])
     end
+
+    it_behaves_like 'when user does not have adequate permissions'
   end
 
   context 'with an invalid value for filter_type' do

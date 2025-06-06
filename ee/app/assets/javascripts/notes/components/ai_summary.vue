@@ -41,6 +41,7 @@ export default {
   data() {
     return {
       errorAlert: null,
+      // eslint-disable-next-line vue/no-unused-properties -- Used by Apollo subscription auto-bind
       aiCompletionResponse: {},
       markdown: null,
       textForClipboard: null,

@@ -144,11 +144,7 @@ module ApprovalRuleLike
   end
 
   def from_scan_result_policy?
-    return true if scan_finding?
-    return true if license_scanning? && scan_result_policy_id.present?
-    return true if any_merge_request?
-
-    false
+    scan_finding? || license_scanning? || any_merge_request?
   end
 
   def policy_name
