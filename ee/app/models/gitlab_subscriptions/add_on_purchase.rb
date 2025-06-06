@@ -9,6 +9,7 @@ module GitlabSubscriptions
 
     CLEANUP_DELAY_PERIOD = 14.days
     NORMALIZED_ADD_ON_NAME = { 'code_suggestions' => 'duo_pro' }.freeze
+    NORMALIZED_ADD_ON_NAME_INVERTED = NORMALIZED_ADD_ON_NAME.invert.freeze
 
     belongs_to :add_on, foreign_key: :subscription_add_on_id, inverse_of: :add_on_purchases
     belongs_to :namespace, optional: true
@@ -58,16 +59,24 @@ module GitlabSubscriptions
     scope :for_duo_pro_or_duo_enterprise, -> { for_gitlab_duo_pro.or(for_duo_enterprise) }
     # this queries the `AddOn` table *once* for the duo add-ons (`code_suggestions` and `duo_enterprise`)
     scope :for_duo_add_ons, -> { where(subscription_add_on_id: AddOn.duo_add_ons.select(:id)) }
-    scope :for_active_add_ons, ->(add_on_names, resource: nil) do
+    # Finds all active add-on purchases that match the given add_on_names and resource.
+    # add_on_names:
+    #     Array of add-on names to filter the purchases by.
+    # resource:
+    #     One of :instance, `User`, `Project` or `Group` to scope the search.
+    #     Allowed to be nil, in which case results will not be filtered by resource.
+    scope :for_active_add_ons, ->(add_on_names, resource) do
       scope = by_add_on_name(add_on_names).active
 
-      # On SM/Dedicated, we do not need to check namespace rules.
-      return scope.for_self_managed unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      # On SM/Dedicated, or when requesting instance-wide purchases, we do not need to check namespace rules.
+      if resource == :instance || !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return scope.for_self_managed
+      end
 
       # On gitlab.com, we support checking either via the user's billable group memberships,
       # or via the group directly.
       return scope.for_user(resource) if resource.is_a?(User)
-      return scope.by_namespace(resource.root_ancestor) if resource.is_a?(Group)
+      return scope.by_namespace(resource.root_ancestor) if resource.respond_to?(:root_ancestor)
 
       # Fall through to case that allows the caller to apply custom scopes.
       scope
@@ -91,6 +100,30 @@ module GitlabSubscriptions
     end
 
     delegate :name, :seat_assignable?, to: :add_on, prefix: true
+
+    # Finds all active add-on purchases that grant the given Unit Primitive ("entitlement")
+    # for the given resource. See also: for_active_add_ons.
+    #
+    # unit_primitive_name:
+    #     Symbol representing the unit primitive to find active add-ons for.
+    # resource:
+    #     One of :instance, `User`, `Project` or `Group` to scope the search.
+    #     Passing :instance will match all add-on purchases on this instance.
+    #     Passing a `User`, `Project` or `Group` will match add-on purchases that are
+    #     scoped to the root namespace of these resources.
+    def self.find_for_unit_primitive(unit_primitive_name, resource)
+      unless resource == :instance || [Group, Project, User].any? { |klass| resource.is_a?(klass) }
+        raise ArgumentError, 'resource must be :instance, or a User, Group or Project'
+      end
+
+      unit_primitive = ::Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name)
+      return none unless unit_primitive
+
+      add_on_names = unit_primitive.add_ons.map(&:name)
+      normalized_names = add_on_names.map { |name| NORMALIZED_ADD_ON_NAME_INVERTED[name] || name }
+
+      for_active_add_ons(normalized_names, resource)
+    end
 
     def self.find_by_namespace_and_add_on(namespace, add_on)
       find_by(namespace: namespace, add_on: add_on)

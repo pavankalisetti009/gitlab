@@ -13,8 +13,7 @@ module CloudConnector
 
       override :purchased?
       def purchased?(_namespace = nil)
-        # We are not passing namespace argument because AddOnPurchases for Self-Managed does not have namespace_id
-        super()
+        super(:instance)
       end
     end
   end

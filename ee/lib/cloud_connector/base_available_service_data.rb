@@ -22,7 +22,7 @@ module CloudConnector
     #
     # namespace - Namespace
     def purchased?(namespace = nil)
-      GitlabSubscriptions::AddOnPurchase.for_active_add_ons(@add_on_names, resource: namespace).any?
+      GitlabSubscriptions::AddOnPurchase.for_active_add_ons(@add_on_names, namespace).any?
     end
 
     # Returns CloudConnector access JWT token.
