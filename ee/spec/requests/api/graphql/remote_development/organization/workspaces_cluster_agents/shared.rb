@@ -16,18 +16,10 @@ RSpec.shared_context "with agents and users setup in an organization" do
 
   let_it_be(:unauthorized_user) { create(:user) }
 
-  let_it_be(:available_agent) do
+  let_it_be(:mapped_agent) do
     project = create(:project, organization: organization, namespace: create(:group))
     create(:ee_cluster_agent, project: project, name: "agent-in-org-available").tap do |agent|
       create(:workspaces_agent_config, agent: agent)
-      create(:organization_cluster_agent_mapping, user: authorized_user, agent: agent, organization: organization)
-    end
-  end
-
-  let_it_be(:directly_mapped_but_disabled_agent) do
-    project = create(:project, organization: organization)
-    create(:ee_cluster_agent, project: project, name: "agent-in-org-mapped").tap do |agent|
-      create(:workspaces_agent_config, agent: agent, enabled: false)
       create(:organization_cluster_agent_mapping, user: authorized_user, agent: agent, organization: organization)
     end
   end
@@ -109,14 +101,12 @@ RSpec.shared_examples "multiple agents in organization query" do
   end
 
   # noinspection RubyArgCount -- Rubymine detecting wrong types, thinks some #create are from Minitest, not FactoryBot
-  context "when the user is authorized only on mapped and available agents" do
+  context "when the user is authorized only on mapped agents" do
     let_it_be(:current_user) do
       create(:user).tap do |u|
         create(:organization_user, organization: organization, user: u)
       end
     end
-
-    let_it_be(:unavailable_and_unmapped_agents) { [unmapped_agent.name, directly_mapped_but_disabled_agent.name] }
 
     it_behaves_like "query is a working graphql query"
 
@@ -126,7 +116,7 @@ RSpec.shared_examples "multiple agents in organization query" do
       end
 
       it "does not include unmapped and unavailable agents", :unlimited_max_formatted_output_length do
-        expect(agent_names.sort).not_to include(*unavailable_and_unmapped_agents)
+        expect(agent_names.sort).not_to include(unmapped_agent.name)
       end
     end
   end

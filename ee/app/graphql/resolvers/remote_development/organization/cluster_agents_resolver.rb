@@ -8,7 +8,7 @@ module Resolvers
 
         type Types::Clusters::AgentType.connection_type, null: true
 
-        argument :filter, Types::RemoteDevelopment::NamespaceClusterAgentFilterEnum,
+        argument :filter, Types::RemoteDevelopment::OrganizationClusterAgentFilterEnum,
           required: true,
           description: 'Filter the types of cluster agents to return.'
 
