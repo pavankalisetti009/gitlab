@@ -11,8 +11,6 @@ import { createMockClient } from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.vue';
 import { ADD_ON_PURCHASE_FETCH_ERROR_CODE } from 'ee/usage_quotas/error_constants';
-import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
-import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/constants/duo';
@@ -52,9 +50,8 @@ describe('CodeSuggestionsInfoCard', () => {
     userActionAccess: { limitedAccessReason: 'INVALID_REASON' },
   };
 
-  let queryHandlerMock = jest.fn().mockResolvedValue({
-    data: defaultApolloData,
-  });
+  /** @type {jest.Mock} */
+  let queryHandlerMock;
 
   const findCodeSuggestionsDescription = () => wrapper.findByTestId('description');
   const findCodeSuggestionsSubscriptionInfo = () => wrapper.findByTestId('subscription-info');
@@ -67,26 +64,19 @@ describe('CodeSuggestionsInfoCard', () => {
     wrapper.findByTestId('usage-quotas-gitlab-duo-tab-active-trial-purchase-seats-button');
   const findContactSalesButton = () => wrapper.findComponent(HandRaiseLeadButton);
 
-  const createMockApolloProvider = ({ subscriptionData }) => {
+  const createMockApolloProvider = () => {
     const mockCustomersDotClient = createMockClient([
       [getSubscriptionPermissionsData, queryHandlerMock],
     ]);
-    const mockGitlabClient = createMockClient();
     const mockApollo = new VueApollo({
-      defaultClient: mockGitlabClient,
-      clients: { customersDotClient: mockCustomersDotClient, gitlabClient: mockGitlabClient },
+      clients: { customersDotClient: mockCustomersDotClient },
     });
 
-    mockApollo.clients.defaultClient.cache.writeQuery({
-      query: getGitlabSubscriptionQuery,
-      data: subscriptionData,
-    });
     return mockApollo;
   };
 
-  const createComponent = (options = {}) => {
-    const { props = {}, provide = {}, subscriptionData = {} } = options;
-    const apolloProvider = createMockApolloProvider(subscriptionData);
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
+    const apolloProvider = createMockApolloProvider();
 
     wrapper = shallowMountExtended(CodeSuggestionsInfoCard, {
       propsData: { ...defaultProps, ...props },
@@ -109,6 +99,12 @@ describe('CodeSuggestionsInfoCard', () => {
   };
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+  beforeEach(() => {
+    queryHandlerMock = jest.fn().mockResolvedValueOnce({
+      data: defaultApolloData,
+    });
+  });
 
   describe('when `isLoading` computed value is `true`', () => {
     beforeEach(() => {
@@ -220,9 +216,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
       describe('with Saas', () => {
         beforeEach(async () => {
-          createComponent({
-            subscriptionData: getMockSubscriptionData({ code: 'premium', name: 'Premium' }),
-          });
+          createComponent();
 
           await waitForPromises();
         });
@@ -236,7 +230,7 @@ describe('CodeSuggestionsInfoCard', () => {
       });
       describe('with SM', () => {
         beforeEach(async () => {
-          createComponent({ subscriptionData: {} });
+          createComponent();
 
           await waitForPromises();
         });
@@ -251,7 +245,6 @@ describe('CodeSuggestionsInfoCard', () => {
       describe('with subscription dates not available', () => {
         beforeEach(async () => {
           createComponent({
-            subscriptionData: { subscription: { endDate: null, startDate: null } },
             provide: { duoAddOnStartDate: null, duoAddOnEndDate: null },
           });
 
