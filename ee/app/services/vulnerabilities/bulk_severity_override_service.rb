@@ -16,19 +16,25 @@ module Vulnerabilities
 
       db_attributes = db_attributes_for(vulnerability_attrs)
 
-      SecApplicationRecord.transaction do
-        update_support_tables(selected_vulnerabilities, db_attributes)
-        Vulnerabilities::BulkEsOperationService.new(selected_vulnerabilities).execute do |vulnerabilities|
-          vulnerabilities.update_all(db_attributes[:vulnerabilities])
+      begin
+        SecApplicationRecord.transaction do
+          update_support_tables(selected_vulnerabilities, db_attributes)
+          Vulnerabilities::BulkEsOperationService.new(selected_vulnerabilities).execute do |vulnerabilities|
+            vulnerabilities.update_all(db_attributes[:vulnerabilities])
+          end
         end
-      end
 
-      Note.transaction do
-        notes_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
-        SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
+        Note.transaction do
+          notes_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
+          SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
+        end
+      rescue StandardError => e
+        track_severity_changes(vulnerability_attrs, e)
+        raise
       end
 
       audit_severity_changes(vulnerability_attrs)
+      track_severity_changes(vulnerability_attrs)
     end
 
     def authorized_for_project(project)
@@ -138,6 +144,19 @@ module Vulnerabilities
           updated_at: now
         }
       end
+    end
+
+    def track_severity_changes(vulnerabilities_attributes, error = nil)
+      vulnerabilities = vulnerabilities_attributes.map { |(_, _, _, _, _, vulnerability)| vulnerability }
+
+      Vulnerabilities::ChangesTrackingService.new(
+        user: user,
+        category: self.class.name,
+        vulnerabilities: vulnerabilities,
+        new_value: @new_severity,
+        field: :severity,
+        error: error
+      ).execute
     end
   end
 end
