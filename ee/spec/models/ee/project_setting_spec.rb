@@ -24,6 +24,24 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
   it { is_expected.to validate_length_of(:cube_api_base_url).is_at_most(512) }
   it { is_expected.to validate_length_of(:cube_api_key).is_at_most(255) }
 
+  describe 'duo_context_exclusion_settings validation' do
+    it { is_expected.to allow_value({}).for(:duo_context_exclusion_settings) }
+    it { is_expected.to allow_value({ exclusion_rules: [] }).for(:duo_context_exclusion_settings) }
+    it { is_expected.to allow_value({ exclusion_rules: ['test.log', '.tmp'] }).for(:duo_context_exclusion_settings) }
+
+    it { is_expected.not_to allow_value(nil).for(:duo_context_exclusion_settings) }
+    it { is_expected.not_to allow_value('invalid_string').for(:duo_context_exclusion_settings) }
+    it { is_expected.not_to allow_value([]).for(:duo_context_exclusion_settings) }
+    it { is_expected.not_to allow_value({ exclusion_rules: 'not_an_array' }).for(:duo_context_exclusion_settings) }
+    it { is_expected.not_to allow_value({ exclusion_rules: [123, 456] }).for(:duo_context_exclusion_settings) }
+    it { is_expected.not_to allow_value({ invalid_property: ['.log'] }).for(:duo_context_exclusion_settings) }
+
+    it 'now allow extra properties' do
+      is_expected.not_to allow_value({ exclusion_rules: ['.log'],
+     extra_property: 'no' }).for(:duo_context_exclusion_settings)
+    end
+  end
+
   describe '.has_vulnerabilities' do
     let_it_be(:setting_1) { create(:project_setting, :has_vulnerabilities) }
     let_it_be(:setting_2) { create(:project_setting) }

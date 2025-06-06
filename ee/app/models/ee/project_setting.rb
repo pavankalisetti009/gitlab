@@ -29,6 +29,7 @@ module EE
         addressable_url: { schemes: %w[http https], allow_localhost: true, allow_local_network: true },
         allow_blank: true
       validates :cube_api_key, length: { maximum: 255 }, allow_blank: true
+      validates :duo_context_exclusion_settings, json_schema: { filename: 'duo_context_exclusion_settings' }
 
       validates :observability_alerts_enabled, inclusion: { in: [true, false] }
 

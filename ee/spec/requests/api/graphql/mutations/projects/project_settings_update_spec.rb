@@ -14,13 +14,21 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
   let_it_be(:project) { create(:project, namespace: namespace) }
   let_it_be(:duo_features_enabled) { true }
 
+  let(:duo_context_exclusion_settings) { nil }
   let(:mutation) do
-    params = { full_path: project.full_path, duo_features_enabled: duo_features_enabled }
+    params = {
+      full_path: project.full_path,
+      duo_features_enabled: duo_features_enabled,
+      duo_context_exclusion_settings: duo_context_exclusion_settings
+    }.compact
 
     graphql_mutation(:project_settings_update, params) do
       <<-QL.strip_heredoc
         projectSettings {
           duoFeaturesEnabled
+          duoContextExclusionSettings {
+            exclusionRules
+          }
         }
         errors
       QL
@@ -39,7 +47,41 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
     it 'will update the settings' do
       post_graphql_mutation(mutation, current_user: user)
       expect(graphql_mutation_response('projectSettingsUpdate')['projectSettings'])
-               .to eq({ 'duoFeaturesEnabled' => duo_features_enabled })
+               .to eq({ 'duoFeaturesEnabled' => duo_features_enabled,
+                        'duoContextExclusionSettings' => { 'exclusionRules' => nil } })
+    end
+
+    context 'when updating duo_context_exclusion_settings' do
+      let(:duo_context_exclusion_settings) { { exclusion_rules: ['*.txt', 'node_modules/'] } }
+
+      it 'will update the duo context exclusion settings' do
+        post_graphql_mutation(mutation, current_user: user)
+
+        expect(graphql_mutation_response('projectSettingsUpdate')['projectSettings']['duoContextExclusionSettings'])
+          .to eq({ 'exclusionRules' => ['*.txt', 'node_modules/'] })
+      end
+    end
+
+    context 'when no arguments are provided' do
+      let(:duo_features_enabled) { nil }
+      let(:empty_mutation) do
+        graphql_mutation(:project_settings_update, { full_path: project.full_path }) do
+          <<-QL.strip_heredoc
+            projectSettings {
+              duoFeaturesEnabled
+            }
+            errors
+          QL
+        end
+      end
+
+      it 'returns an error' do
+        post_graphql_mutation(empty_mutation, current_user: user)
+
+        expect(graphql_errors).to include(a_hash_including(
+          'message' => 'Must provide at least one argument'
+        ))
+      end
     end
   end
 end
