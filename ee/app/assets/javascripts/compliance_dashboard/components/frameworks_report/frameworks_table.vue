@@ -114,15 +114,12 @@ export default {
   },
   methods: {
     getIdFromGraphQLId,
-    toggleDrawer(item) {
+    async toggleDrawer(item) {
+      this.closeDrawer();
+
       if (this.selectedFramework?.id !== item.id) {
-        this.closeDrawer();
-        // eslint-disable-next-line promise/catch-or-return
-        this.$nextTick().then(() => {
-          this.openDrawer(item);
-        });
-      } else {
-        this.closeDrawer();
+        await this.$nextTick();
+        this.openDrawer(item);
       }
     },
     copyFrameworkId(id) {
