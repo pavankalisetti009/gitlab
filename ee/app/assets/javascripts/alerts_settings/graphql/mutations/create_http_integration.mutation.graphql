@@ -4,6 +4,7 @@ mutation createHttpIntegrationEE(
   $projectPath: ID!
   $name: String!
   $active: Boolean!
+  $type: AlertManagementIntegrationType
   $payloadExample: JsonString
   $payloadAttributeMappings: [AlertManagementPayloadAlertFieldInput!]
 ) {
@@ -12,6 +13,7 @@ mutation createHttpIntegrationEE(
       projectPath: $projectPath
       name: $name
       active: $active
+      type: $type
       payloadExample: $payloadExample
       payloadAttributeMappings: $payloadAttributeMappings
     }
