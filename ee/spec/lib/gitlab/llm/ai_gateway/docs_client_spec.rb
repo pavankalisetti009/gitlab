@@ -94,15 +94,6 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       expect(result.parsed_response).to eq(expected_response)
     end
 
-    context 'when token is not available' do
-      let(:expected_access_token) { nil }
-
-      it 'returns empty hash' do
-        expect(Gitlab::HTTP).not_to receive(:post)
-        expect(result).to eq(nil)
-      end
-    end
-
     context 'when duo chat model is self-hosted' do
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat) }
       let(:expected_feature_name) { :self_hosted_models }

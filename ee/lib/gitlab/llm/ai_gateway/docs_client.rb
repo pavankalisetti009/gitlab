@@ -19,8 +19,6 @@ module Gitlab
         end
 
         def search(query:, **options)
-          return unless enabled?
-
           perform_search_request(query: query, options: options)
         end
 
@@ -52,10 +50,6 @@ module Gitlab
           response
         end
 
-        def enabled?
-          access_token.present?
-        end
-
         def service
           chat_feature_setting = ::Ai::FeatureSetting.find_by_feature(:duo_chat)
           feature_name = chat_feature_setting&.self_hosted? ? :self_hosted_models : :duo_chat
@@ -63,11 +57,6 @@ module Gitlab
           ::CloudConnector::AvailableServices.find_by_name(feature_name)
         end
         strong_memoize_attr :service
-
-        def access_token
-          service.access_token(user)
-        end
-        strong_memoize_attr :access_token
 
         def request_body(query:)
           {
