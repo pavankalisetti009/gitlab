@@ -20,13 +20,26 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
 
   subject { render && rendered }
 
-  it { is_expected.to have_content(s_('InProductMarketing|Get Started with GitLab')) }
+  context 'when lightweight_trial_registration_redesign is control' do
+    before do
+      stub_experiments(lightweight_trial_registration_redesign: :control)
+    end
 
-  it { is_expected.to have_content(s_('InProductMarketing|No credit card required.')) }
-  it { is_expected.to have_content(s_('InProductMarketing|One platform for Dev, Sec, and Ops teams')) }
+    it { is_expected.to have_content(s_('InProductMarketing|Get Started with GitLab')) }
+    it { is_expected.to have_content(s_('InProductMarketing|No credit card required.')) }
+    it { is_expected.to have_content(s_('InProductMarketing|One platform for Dev, Sec, and Ops teams')) }
 
-  it { is_expected.to have_content(s_('InProductMarketing|Want to host GitLab on your servers?')) }
-  it { is_expected.to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: 'https://about.gitlab.com/free-trial/#selfmanaged/') }
+    it { is_expected.to have_content(s_('InProductMarketing|Want to host GitLab on your servers?')) }
+    it { is_expected.to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: 'https://about.gitlab.com/free-trial/#selfmanaged/') }
+  end
+
+  context 'when lightweight_trial_registration_redesign is candidate' do
+    before do
+      stub_experiments(lightweight_trial_registration_redesign: :candidate)
+    end
+
+    it { is_expected.to have_content("Step 1: Getting Started") }
+  end
 
   context 'for password form' do
     before do
