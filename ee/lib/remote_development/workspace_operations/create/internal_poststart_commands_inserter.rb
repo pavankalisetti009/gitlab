@@ -96,7 +96,7 @@ module RemoteDevelopment
           sleep_until_container_is_running_command_id = "gl-sleep-until-container-is-running-command"
           sleep_until_container_is_running_script =
             format(
-              INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
+              INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_WORKSPACE_IS_RUNNING_SCRIPT,
               workspace_reconciled_actual_state_file_path: WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
             )
 
