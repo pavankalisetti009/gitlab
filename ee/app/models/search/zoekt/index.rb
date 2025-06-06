@@ -6,7 +6,6 @@ module Search
       self.table_name = 'zoekt_indices'
       include EachBatch
       include NamespaceValidateable
-      include Gitlab::Loggable
 
       DEFAULT_USED_STORAGE_BYTES = 1.kilobyte.freeze
       EVICTION_STATES = %i[evicted pending_eviction].freeze
@@ -194,10 +193,6 @@ module Search
         # In case there is more requested bytes than available on the node,
         # we reserve the minimum amount that we have available.
         [ideal_reserved_storage_bytes, max_reservable_storage_bytes].min
-      end
-
-      def logger
-        @logger ||= ::Search::Zoekt::Logger.build
       end
     end
   end

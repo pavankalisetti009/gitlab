@@ -73,6 +73,8 @@ module Search
             zoekt_repository_id: scope.select(:id), task_type: task_type
           ).select(:zoekt_repository_id)
         )
+
+        timestamp = Time.zone.now
         tasks = scope.includes(:zoekt_index).map do |zoekt_repo|
           Search::Zoekt::Task.new(
             zoekt_repository_id: zoekt_repo.id,
@@ -80,18 +82,18 @@ module Search
             project_identifier: zoekt_repo.project_identifier,
             task_type: task_type,
             perform_at: perform_at,
-            created_at: Time.zone.now,
-            updated_at: Time.zone.now
+            created_at: timestamp,
+            updated_at: timestamp
           )
         end
         Search::Zoekt::Task.bulk_insert!(tasks)
         ids = tasks.map(&:zoekt_repository_id)
         deleted_ids = tasks.select(&:delete_repo?).map(&:zoekt_repository_id)
         active_ids = ids - deleted_ids
-        Repository.id_in(active_ids).pending.each_batch do |repos|
+        unscoped.id_in(active_ids).pending.each_batch do |repos|
           repos.update_all(state: :initializing, updated_at: Time.current)
         end
-        Repository.id_in(deleted_ids).each_batch { |repos| repos.update_all(state: :deleted, updated_at: Time.current) }
+        unscoped.id_in(deleted_ids).each_batch { |repos| repos.update_all(state: :deleted, updated_at: Time.current) }
       end
 
       private
