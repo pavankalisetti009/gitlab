@@ -82,8 +82,8 @@ export default {
     return {
       loading: false,
       error: '',
+      // eslint-disable-next-line vue/no-unused-properties -- `group` is used by Apollo integration (`apollo.group`) to fetch iteration data.
       group: { iteration: {} },
-      cadence: {},
       title: '',
       description: '',
       startDate: null,
