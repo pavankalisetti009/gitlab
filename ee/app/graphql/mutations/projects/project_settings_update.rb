@@ -17,8 +17,13 @@ module Mutations
 
       argument :duo_features_enabled,
         GraphQL::Types::Boolean,
-        required: true,
+        required: false,
         description: 'Indicates whether GitLab Duo features are enabled for the project.'
+
+      argument :duo_context_exclusion_settings,
+        Types::Projects::Input::DuoContextExclusionSettingsInputType,
+        required: false,
+        description: 'Settings for excluding files from Duo context.'
 
       field :project_settings,
         Types::Projects::SettingType,
@@ -29,6 +34,16 @@ module Mutations
         raise raise_resource_not_available_error! unless allowed?
 
         project = authorized_find!(full_path)
+
+        # Process duo_context_exclusion_settings to convert it to a hash if present
+        if args[:duo_context_exclusion_settings].present?
+          args[:duo_context_exclusion_settings] = args[:duo_context_exclusion_settings].to_h
+        end
+
+        args.compact!
+
+        raise Gitlab::Graphql::Errors::ArgumentError, 'Must provide at least one argument' if args.empty?
+
         ::Projects::UpdateService.new(project, current_user, { project_setting_attributes: args }).execute
 
         {
