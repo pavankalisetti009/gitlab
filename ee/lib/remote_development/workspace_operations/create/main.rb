@@ -17,7 +17,7 @@ module RemoteDevelopment
             initial_result
               .and_then(AgentValidator.method(:validate))
               .and_then(DevfileFetcher.method(:fetch))
-              .and_then(DevfileOperations::ValidationProcessor.method(:validate))
+              .and_then(DevfileOperations::DevfileProcessor.method(:validate))
               .map(VolumeDefiner.method(:define))
               .map(ToolsInjectorComponentInserter.method(:insert))
               .map(MainComponentUpdater.method(:update))

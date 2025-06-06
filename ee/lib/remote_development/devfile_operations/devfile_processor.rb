@@ -2,7 +2,7 @@
 
 module RemoteDevelopment
   module DevfileOperations
-    class ValidationProcessor
+    class DevfileProcessor
       include RemoteDevelopmentConstants
       include Messages
 

@@ -14,7 +14,7 @@ module RemoteDevelopment
 
         result =
           initial_result
-            .and_then(ValidationProcessor.method(:validate))
+            .and_then(DevfileProcessor.method(:validate))
             # NOTE: Gitlab::InternalEvents lazily sets various class-level state due to memoization, therefore we cannot
             #       enforce immutability when it is used.
             .inspect_ok(Observer.method(:observe), enforce_immutability: false)

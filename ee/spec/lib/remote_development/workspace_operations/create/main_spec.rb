@@ -8,7 +8,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
     [
       [RemoteDevelopment::WorkspaceOperations::Create::AgentValidator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher, :and_then],
-      [RemoteDevelopment::DevfileOperations::ValidationProcessor, :and_then],
+      [RemoteDevelopment::DevfileOperations::DevfileProcessor, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::VolumeDefiner, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComponentInserter, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpdater, :map],
@@ -113,9 +113,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
           },
         ],
         [
-          "when ValidationProcessor returns DevfileYamlParseFailed",
+          "when DevfileProcessor returns DevfileYamlParseFailed",
           {
-            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
+            step_class: RemoteDevelopment::DevfileOperations::DevfileProcessor,
             returned_message: lazy { RemoteDevelopment::Messages::DevfileYamlParseFailed.new(err_message_content) }
           },
           {
@@ -125,9 +125,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
           },
         ],
         [
-          "when ValidationProcessor returns DevfileRestrictionsFailed",
+          "when DevfileProcessor returns DevfileRestrictionsFailed",
           {
-            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
+            step_class: RemoteDevelopment::DevfileOperations::DevfileProcessor,
             returned_message: lazy { RemoteDevelopment::Messages::DevfileRestrictionsFailed.new(err_message_content) }
           },
           {
@@ -137,9 +137,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
           },
         ],
         [
-          "when ValidationProcessor returns DevfileFlattenFailed",
+          "when DevfileProcessor returns DevfileFlattenFailed",
           {
-            step_class: RemoteDevelopment::DevfileOperations::ValidationProcessor,
+            step_class: RemoteDevelopment::DevfileOperations::DevfileProcessor,
             returned_message: lazy { RemoteDevelopment::Messages::DevfileFlattenFailed.new(err_message_content) }
           },
           {
