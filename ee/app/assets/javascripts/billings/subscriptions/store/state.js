@@ -48,7 +48,6 @@ export default () => ({
     name: null,
     trial: false,
     upgradable: false,
-    maximumSeatLimit: null,
   },
   billing: {
     subscriptionStartDate: null,
@@ -172,30 +171,6 @@ export default () => ({
               hideContent: true, // temporarily display a blank cell (as we don't have content yet)
             },
           ],
-        },
-      ],
-    },
-    ramon: {
-      rows: [
-        {
-          header: {
-            icon: 'monitor',
-            title: s__('SubscriptionTable|Usage'),
-          },
-          columns: [
-            ...baseUsageColumns,
-            {
-              id: 'spacer',
-              hideContent: true, // This is to align the columns on both rows
-            },
-          ],
-        },
-        {
-          header: {
-            icon: 'calendar',
-            title: s__('SubscriptionTable|Billing'),
-          },
-          columns: [...baseBillingColumns],
         },
       ],
     },

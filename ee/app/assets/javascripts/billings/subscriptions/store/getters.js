@@ -1,9 +1,4 @@
-import {
-  TABLE_TYPE_DEFAULT,
-  TABLE_TYPE_FREE,
-  TABLE_TYPE_RAMON,
-  TABLE_TYPE_TRIAL,
-} from 'ee/billings/constants';
+import { TABLE_TYPE_DEFAULT, TABLE_TYPE_FREE, TABLE_TYPE_TRIAL } from 'ee/billings/constants';
 
 export const isFreePlan = (state) => ['free', null].includes(state.plan.code);
 export const tableKey = (state) => {
@@ -12,9 +7,6 @@ export const tableKey = (state) => {
     key = TABLE_TYPE_FREE;
   } else if (state.plan.trial) {
     key = TABLE_TYPE_TRIAL;
-  } else if (state.plan.maximumSeatLimit) {
-    key = TABLE_TYPE_RAMON;
   }
-
   return key;
 };

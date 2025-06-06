@@ -123,7 +123,8 @@ module Ai
       private
 
       def check_add_on_purchases(service)
-        purchases = service.add_on_purchases.assigned_to_user(self)
+        purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(service.add_on_names)
+                                                      .assigned_to_user(self)
         return unless purchases.any?
 
         Response.new(

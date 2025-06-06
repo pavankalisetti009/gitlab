@@ -32,22 +32,14 @@ RSpec.describe 'Querying user code suggestions access',
     let_it_be(:current_user) { create(:user) }
 
     before do
-      allow(Ability)
-        .to receive(:allowed?).and_call_original
-
-      stub_licensed_features(code_suggestions: true)
-
-      service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData', name: :code_suggestions,
-        free_access?: false, add_on_names: [])
-      purchases = class_double(GitlabSubscriptions::AddOnPurchase)
-      mock_purchase = instance_double(GitlabSubscriptions::AddOnPurchase, normalized_add_on_name: 'duo_pro')
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user).and_return(purchases)
-      allow(purchases).to receive_messages(any?: user_has_add_on_purchases, uniq_namespace_ids: [], last: mock_purchase)
+      allow(Ability).to receive(:allowed?).and_call_original
+      allow(Ability).to receive(:allowed?)
+        .with(current_user, :access_code_suggestions, :global)
+        .and_return(user_can_access_code_suggestions)
     end
 
     context 'when user has access to code suggestions' do
-      let(:user_has_add_on_purchases) { true }
+      let(:user_can_access_code_suggestions) { true }
 
       it 'returns true' do
         post_graphql(query, current_user: current_user)
@@ -69,7 +61,7 @@ RSpec.describe 'Querying user code suggestions access',
     end
 
     context 'when user does not have access to code suggestions' do
-      let(:user_has_add_on_purchases) { false }
+      let(:user_can_access_code_suggestions) { false }
 
       it 'returns false' do
         post_graphql(query, current_user: current_user)
