@@ -251,7 +251,7 @@ export default {
   },
   fields: [
     {
-      key: 'frameworkName',
+      key: 'name',
       label: __('Frameworks'),
       thClass: 'md:gl-max-w-26 !gl-align-middle',
       tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
@@ -369,8 +369,9 @@ export default {
       stacked="md"
       hover
       @row-clicked="toggleDrawer"
+      @sort-changed="$emit('sortChanged', $event)"
     >
-      <template #cell(frameworkName)="{ item }">
+      <template #cell(name)="{ item }">
         <framework-badge :framework="item" :popover-mode="isTopLevelGroup ? 'edit' : 'details'" />
       </template>
       <template #cell(requirements)="{ item: { complianceRequirements: requirements } }">

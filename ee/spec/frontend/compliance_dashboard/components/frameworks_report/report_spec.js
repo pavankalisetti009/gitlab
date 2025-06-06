@@ -43,13 +43,14 @@ describe('ComplianceFrameworksReport component', () => {
   const findFrameworksTable = () => wrapper.findComponent({ name: 'FrameworksTable' });
   const findPagination = () => wrapper.findComponent({ name: 'GlKeysetPagination' });
 
-  const defaultPaginationAndLimits = () => ({
+  const defaultPaginationAndLimits = {
     before: null,
     after: null,
     first: 20,
     search: '',
     projectLimit: 10,
-  });
+    sort: 'UPDATED_AT_DESC',
+  };
 
   const defaultInjects = {
     migratePipelineToPolicyPath: '/migrate-pipeline--to-policy-example-path',
@@ -60,30 +61,15 @@ describe('ComplianceFrameworksReport component', () => {
     policyDisplayLimit: true,
   };
 
-  function createMockApolloProvider({
-    complianceFrameworksGroupResolverMock,
-    complianceFrameworksProjectResolverMock,
-    deleteFrameworkResolverMock,
-  }) {
-    return createMockApollo([
-      [groupComplianceFrameworks, complianceFrameworksGroupResolverMock],
-      [projectComplianceFrameworks, complianceFrameworksProjectResolverMock],
-      [deleteComplianceFrameworkMutation, deleteFrameworkResolverMock],
-    ]);
-  }
-
-  // eslint-disable-next-line max-params
-  function createComponent(
+  function createComponent({
     mountFn = shallowMount,
     props = {},
-    {
-      complianceFrameworksGroupResolverMock = mockGraphQlLoading,
-      complianceFrameworksProjectResolverMock = mockGraphQlLoading,
-      deleteFrameworkResolverMock = mockDeleteFrameworkSuccess,
-    } = {},
+    complianceFrameworksGroupResolverMock = mockGraphQlLoading,
+    complianceFrameworksProjectResolverMock = mockGraphQlLoading,
+    deleteFrameworkResolverMock = mockDeleteFrameworkSuccess,
     queryParams = {},
     provide = {},
-  ) {
+  } = {}) {
     const currentQueryParams = { ...queryParams };
     $router = {
       push: jest.fn().mockImplementation(({ query }) => {
@@ -91,11 +77,11 @@ describe('ComplianceFrameworksReport component', () => {
       }),
     };
 
-    apolloProvider = createMockApolloProvider({
-      complianceFrameworksGroupResolverMock,
-      complianceFrameworksProjectResolverMock,
-      deleteFrameworkResolverMock,
-    });
+    apolloProvider = createMockApollo([
+      [groupComplianceFrameworks, complianceFrameworksGroupResolverMock],
+      [projectComplianceFrameworks, complianceFrameworksProjectResolverMock],
+      [deleteComplianceFrameworkMutation, deleteFrameworkResolverMock],
+    ]);
 
     wrapper = extendedWrapper(
       mountFn(ComplianceFrameworksReport, {
@@ -134,7 +120,7 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('maintenence mode', () => {
     beforeEach(() => {
-      createComponent(mount, {});
+      createComponent({ mountFn: mount });
     });
 
     it('renders the maintenance-mode-alert', () => {
@@ -157,7 +143,7 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('when initializing in top-level group', () => {
     beforeEach(() => {
-      createComponent(mount, {});
+      createComponent({ mountFn: mount });
     });
 
     it('renders the table loading icon', () => {
@@ -167,7 +153,7 @@ describe('ComplianceFrameworksReport component', () => {
 
     it('fetches the list of frameworks and projects', () => {
       expect(mockGraphQlLoading).toHaveBeenCalledWith({
-        ...defaultPaginationAndLimits(),
+        ...defaultPaginationAndLimits,
         fullPath,
       });
     });
@@ -178,30 +164,33 @@ describe('ComplianceFrameworksReport component', () => {
     const subgroupPath = '/root/subgroup';
 
     beforeEach(() => {
-      createComponent(mount, {
-        groupPath: subgroupPath,
-        rootAncestor: {
-          path: rootPath,
+      createComponent({
+        mountFn: mount,
+        props: {
+          groupPath: subgroupPath,
+          rootAncestor: {
+            path: rootPath,
+          },
         },
       });
     });
 
     it('fetches the list of frameworks from current group', () => {
       expect(mockGraphQlLoading).toHaveBeenCalledWith({
-        ...defaultPaginationAndLimits(),
+        ...defaultPaginationAndLimits,
         fullPath: subgroupPath,
       });
     });
   });
 
   it('loads data when search criteria changes', async () => {
-    createComponent(mount, {});
+    createComponent({ mountFn: mount });
 
     findFrameworksTable().vm.$emit('search', 'test');
     await nextTick();
 
     expect(mockGraphQlLoading).toHaveBeenCalledWith({
-      ...defaultPaginationAndLimits(),
+      ...defaultPaginationAndLimits,
       search: 'test',
       fullPath,
     });
@@ -209,11 +198,10 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('pagination', () => {
     beforeEach(() => {
-      createComponent(
-        mount,
-        {},
-        { complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess },
-      );
+      createComponent({
+        mountFn: mount,
+        complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess,
+      });
       return waitForPromises();
     });
 
@@ -223,7 +211,7 @@ describe('ComplianceFrameworksReport component', () => {
       await nextTick();
 
       expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledWith({
-        ...defaultPaginationAndLimits(),
+        ...defaultPaginationAndLimits,
         after: pagination.props('endCursor'),
         fullPath,
       });
@@ -234,12 +222,10 @@ describe('ComplianceFrameworksReport component', () => {
       pagination.vm.$emit('prev');
       await nextTick();
 
-      const expectedPagination = defaultPaginationAndLimits();
-      expectedPagination.last = expectedPagination.first;
-      delete expectedPagination.first;
-
       expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledWith({
-        ...expectedPagination,
+        ...defaultPaginationAndLimits,
+        last: defaultPaginationAndLimits.first,
+        first: undefined,
         before: pagination.props('startCursor'),
         fullPath,
       });
@@ -247,32 +233,64 @@ describe('ComplianceFrameworksReport component', () => {
 
     it('resets pagination on search query change', async () => {
       const pagination = findPagination();
-      pagination.vm.$emit('next');
-      await nextTick();
 
-      findFrameworksTable().vm.$emit('search', 'test');
+      await pagination.vm.$emit('next');
+      await findFrameworksTable().vm.$emit('search', 'test');
       await nextTick();
 
       expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledWith({
-        ...defaultPaginationAndLimits(),
+        ...defaultPaginationAndLimits,
         search: 'test',
         fullPath,
       });
     });
   });
 
-  describe('when the frameworks query fails', () => {
+  describe('sorting frameworks', () => {
     beforeEach(() => {
-      jest.spyOn(Sentry, 'captureException');
-      createComponent(
-        shallowMount,
-        { props: {} },
-        { complianceFrameworksGroupResolverMock: mockGraphQlError },
+      createComponent({
+        mountFn: mount,
+        complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess,
+      });
+    });
+
+    it('sets default sorting', () => {
+      expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sort: defaultPaginationAndLimits.sort,
+        }),
       );
     });
 
-    it('renders the error message', async () => {
-      await waitForPromises();
+    it.each`
+      sortBy         | sortDesc | sort
+      ${'name'}      | ${false} | ${'NAME_ASC'}
+      ${'name'}      | ${true}  | ${'NAME_DESC'}
+      ${'updatedAt'} | ${false} | ${'UPDATED_AT_ASC'}
+      ${'updatedAt'} | ${true}  | ${'UPDATED_AT_DESC'}
+    `(
+      'fetches the frameworks list with new sorting when sorting is $sortBy and desc is $sortDesc',
+      async ({ sortBy, sortDesc, sort }) => {
+        findFrameworksTable().vm.$emit('sortChanged', { sortBy, sortDesc });
+        await nextTick();
+
+        expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledWith({
+          ...defaultPaginationAndLimits,
+          sort,
+          fullPath,
+        });
+      },
+    );
+  });
+
+  describe('when the frameworks query fails', () => {
+    beforeEach(() => {
+      jest.spyOn(Sentry, 'captureException');
+      createComponent({ complianceFrameworksGroupResolverMock: mockGraphQlError });
+      return waitForPromises();
+    });
+
+    it('renders the error message', () => {
       const error = findQueryError();
 
       expect(error.exists()).toBe(true);
@@ -284,13 +302,13 @@ describe('ComplianceFrameworksReport component', () => {
   });
 
   describe('when there are frameworks', () => {
-    beforeEach(async () => {
-      createComponent(
-        mount,
-        { props: {} },
-        { complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess },
-      );
-      await waitForPromises();
+    beforeEach(() => {
+      createComponent({
+        mountFn: mount,
+        complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess,
+      });
+
+      return waitForPromises();
     });
 
     it('passes results to the table', () => {
@@ -308,13 +326,13 @@ describe('ComplianceFrameworksReport component', () => {
   });
 
   describe('deleting frameworks', () => {
-    beforeEach(async () => {
-      createComponent(
-        mount,
-        { props: {} },
-        { complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess },
-      );
-      await waitForPromises();
+    beforeEach(() => {
+      createComponent({
+        mountFn: mount,
+        complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess,
+      });
+
+      return waitForPromises();
     });
 
     it('calls delete framework mutation on delete framework event with expected id and refetches data', async () => {
@@ -332,17 +350,13 @@ describe('ComplianceFrameworksReport component', () => {
     });
 
     it('shows alert in case of error and does not call refetch', async () => {
-      createComponent(
-        mount,
-        { props: {} },
-        {
-          complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess,
-          deleteFrameworkResolverMock: mockDeleteFrameworkError,
-        },
-        {},
-        {},
+      createComponent({
+        mountFn: mount,
+        complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess,
+        deleteFrameworkResolverMock: mockDeleteFrameworkError,
         mockDeleteFrameworkError,
-      );
+      });
+
       findFrameworksTable().vm.$emit(
         'delete-framework',
         'gid://gitlab/ComplianceManagement::Framework/1',
@@ -361,14 +375,12 @@ describe('ComplianceFrameworksReport component', () => {
     it('uses group query with groupPath when groupPath is provided in props', () => {
       const complianceFrameworksGroupResolverMock = jest.fn();
       const complianceFrameworksProjectResolverMock = jest.fn();
-      createComponent(
-        mount,
-        { groupPath: 'groupPath' },
-        {
-          complianceFrameworksGroupResolverMock,
-          complianceFrameworksProjectResolverMock,
-        },
-      );
+      createComponent({
+        mountFn: mount,
+        props: { groupPath: 'groupPath' },
+        complianceFrameworksGroupResolverMock,
+        complianceFrameworksProjectResolverMock,
+      });
 
       expect(complianceFrameworksGroupResolverMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -381,14 +393,12 @@ describe('ComplianceFrameworksReport component', () => {
     it('uses project query with projectPath when projectPath is provided in props', () => {
       const complianceFrameworksGroupResolverMock = jest.fn();
       const complianceFrameworksProjectResolverMock = jest.fn();
-      createComponent(
-        mount,
-        { groupPath: 'groupPath', projectPath: 'projectPath' },
-        {
-          complianceFrameworksGroupResolverMock,
-          complianceFrameworksProjectResolverMock,
-        },
-      );
+      createComponent({
+        mountFn: mount,
+        props: { groupPath: 'groupPath', projectPath: 'projectPath' },
+        complianceFrameworksGroupResolverMock,
+        complianceFrameworksProjectResolverMock,
+      });
 
       expect(complianceFrameworksProjectResolverMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -400,10 +410,15 @@ describe('ComplianceFrameworksReport component', () => {
   });
 
   describe('refreshFrameworks', () => {
+    beforeEach(() => {
+      createComponent({ mountFn: mount });
+    });
+
     it('refetches frameworks data when successful', async () => {
       const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.frameworks, 'refetch');
 
-      await wrapper.vm.refreshFrameworks();
+      findFrameworksTable().vm.$emit('update-frameworks');
+      await nextTick();
 
       expect(refetchSpy).toHaveBeenCalled();
     });
@@ -412,7 +427,8 @@ describe('ComplianceFrameworksReport component', () => {
       const error = new Error('Network error');
       jest.spyOn(wrapper.vm.$apollo.queries.frameworks, 'refetch').mockRejectedValue(error);
 
-      await wrapper.vm.refreshFrameworks();
+      findFrameworksTable().vm.$emit('update-frameworks');
+      await waitForPromises();
 
       expect(createAlert).toHaveBeenCalledWith({
         message: error,

@@ -186,6 +186,16 @@ describe('FrameworksTable component', () => {
       findSearchBox().vm.$emit('clear');
       expect(wrapper.emitted('search').at(-1)).toStrictEqual(['']);
     });
+
+    it('emits sortChanged when sorting items', async () => {
+      wrapper = createComponent({ isLoading: false });
+
+      const expectedPayload = { sortBy: 'updatedAt', sortDesc: false };
+
+      await findTable().vm.$emit('sort-changed', expectedPayload);
+
+      expect(wrapper.emitted('sortChanged')[0]).toEqual([expectedPayload]);
+    });
   });
 
   describe('when projectPath is provided', () => {

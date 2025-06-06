@@ -3,6 +3,7 @@ import { GlAlert, GlLink, GlSprintf, GlKeysetPagination } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { fetchPolicies } from '~/lib/graphql';
 import { s__ } from '~/locale';
+import { convertToSnakeCase } from '~/lib/utils/text_utility';
 
 import { createAlert } from '~/alert';
 import deleteComplianceFrameworkMutation from '../../graphql/mutations/delete_compliance_framework.mutation.graphql';
@@ -60,6 +61,7 @@ export default {
         before: null,
         after: null,
       },
+      sortKey: 'UPDATED_AT_DESC',
     };
   },
   apollo: {
@@ -74,6 +76,7 @@ export default {
           search: this.searchString,
           ...this.cursor,
           [this.cursor.before ? 'last' : 'first']: FRAMEWORK_LIMIT,
+          sort: this.sortKey,
         };
       },
       update(data) {
@@ -114,6 +117,10 @@ export default {
         after: null,
       };
       this.searchString = searchString;
+    },
+    onSortChanged({ sortBy, sortDesc }) {
+      const sortDir = sortDesc ? 'desc' : 'asc';
+      this.sortKey = `${convertToSnakeCase(sortBy)}_${sortDir}`.toUpperCase();
     },
     handleOnDismissMaintenanceMode() {
       this.maintenanceModeDismissed = true;
@@ -213,6 +220,7 @@ export default {
         :is-loading="isLoading"
         :frameworks="frameworks.nodes"
         @search="onSearch"
+        @sortChanged="onSortChanged"
         @delete-framework="deleteFramework"
         @update-frameworks="refreshFrameworks"
       />
