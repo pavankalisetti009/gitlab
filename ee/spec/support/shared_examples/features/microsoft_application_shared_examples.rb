@@ -16,7 +16,7 @@ RSpec.shared_examples_for 'Microsoft Azure integration form' do
 
     # Default values
     page.within('.microsoft-application') do
-      expect(find_field(s_('Microsoft|Enable Microsoft Azure integration for this group'))).not_to be_checked
+      expect(find_field(s_('Microsoft|Enable Microsoft Azure integration'))).not_to be_checked
       expect(find_field(s_('Microsoft|Login API endpoint')).value)
         .to have_content('https://login.microsoftonline.com')
       expect(find_field(s_('Microsoft|Graph API endpoint')).value)
@@ -26,7 +26,7 @@ RSpec.shared_examples_for 'Microsoft Azure integration form' do
 
   it 'successfully saves' do
     page.within('.microsoft-application') do
-      check s_('Microsoft|Enable Microsoft Azure integration for this group')
+      check s_('Microsoft|Enable Microsoft Azure integration')
       fill_in s_('Microsoft|Tenant ID'), with: tenant_id
       fill_in s_('Microsoft|Client ID'), with: client_id
       fill_in s_('Microsoft|Client secret'), with: client_secret
@@ -35,7 +35,7 @@ RSpec.shared_examples_for 'Microsoft Azure integration form' do
 
       click_button(_("Save changes"))
 
-      expect(find_field(s_('Microsoft|Enable Microsoft Azure integration for this group'))).to be_checked
+      expect(find_field(s_('Microsoft|Enable Microsoft Azure integration'))).to be_checked
       expect(find_field(s_('Microsoft|Tenant ID')).value).to have_content(tenant_id)
       expect(find_field(s_('Microsoft|Client ID')).value).to have_content(client_id)
       expect(find_field(s_('Microsoft|Login API endpoint')).value).to have_content(login_endpoint)
