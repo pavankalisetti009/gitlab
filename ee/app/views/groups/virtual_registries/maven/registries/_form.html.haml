@@ -8,7 +8,7 @@
   .form-group
     = f.label :description, _("Description (optional)")
     = f.text_area :description, class: "gl-form-input form-control", rows: 2
-  .gl-flex.gl-gap-2
+  .gl-flex.gl-gap-3
     - if @maven_registry.persisted?
       = f.submit _('Save changes'), pajamas_button: true
     - else

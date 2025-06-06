@@ -67769,6 +67769,9 @@ msgstr ""
 msgid "Violation Details"
 msgstr ""
 
+msgid "Virtual registry"
+msgstr ""
+
 msgid "VirtualRegistries|API endpoints rate limit"
 msgstr ""
 

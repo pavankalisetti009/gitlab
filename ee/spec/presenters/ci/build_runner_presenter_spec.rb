@@ -598,6 +598,20 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           policy_variables_override_exceptions: ['TEST_VAR']
         )
       end
+
+      context 'when exceptions are empty array' do
+        let(:ci_build) do
+          build(:ee_ci_build, :execution_policy_job_with_variables_override, variables_override_exceptions: [])
+        end
+
+        it 'does not include them in the response' do
+          expect(policy_options).to eq(
+            execution_policy_job: true,
+            policy_name: 'My policy',
+            policy_variables_override_allowed: false
+          )
+        end
+      end
     end
   end
 end

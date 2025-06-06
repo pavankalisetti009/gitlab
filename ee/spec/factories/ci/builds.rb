@@ -243,9 +243,13 @@ FactoryBot.define do
     trait :execution_policy_job_with_variables_override do
       execution_policy_job
 
-      after(:build) do |build|
+      transient do
+        variables_override_exceptions { ['TEST_VAR'] }
+      end
+
+      after(:build) do |build, evaluator|
         build.options.merge!(
-          execution_policy_variables_override: { allowed: false, exceptions: ['TEST_VAR'] }
+          execution_policy_variables_override: { allowed: false, exceptions: evaluator.variables_override_exceptions }
         )
       end
     end
