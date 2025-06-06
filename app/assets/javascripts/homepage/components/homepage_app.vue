@@ -1,8 +1,9 @@
 <script>
+import ActivityWidget from './activity_widget.vue';
 import TodosWidget from './todos_widget.vue';
 
 export default {
-  components: { TodosWidget },
+  components: { ActivityWidget, TodosWidget },
 };
 </script>
 
@@ -10,5 +11,6 @@ export default {
   <div>
     <h1>{{ __("Today's highlights") }}</h1>
     <todos-widget />
+    <activity-widget />
   </div>
 </template>
