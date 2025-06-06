@@ -83,18 +83,16 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         end
 
         let(:expected_allowed) { true }
-        let(:expected_namespace_ids) { [enterprise_gitlab_purchase.namespace_id] }
+        let(:expected_namespace_ids) { Array(enterprise_gitlab_purchase.namespace_id) }
         let(:expected_enablement_type) { 'duo_enterprise' }
 
         let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_enterprise]) }
 
         before do
-          allow(service).to receive_messages(
-            free_access?: free_access,
-            add_on_purchases: GitlabSubscriptions::AddOnPurchase
-          )
+          allow(service).to receive_messages(free_access?: free_access)
 
-          enterprise_gitlab_purchase.namespace.add_owner(user)
+          enterprise_gitlab_purchase.update!(namespace: namespace)
+          namespace&.add_owner(user)
 
           create(
             :gitlab_subscription_user_add_on_assignment,
@@ -186,17 +184,18 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
 
     context 'when on Gitlab.com instance', :saas do
-      let(:allowed_by_namespace_ids) { [active_gitlab_purchase.namespace.id] }
+      let(:namespace) { active_gitlab_purchase.namespace }
+      let(:allowed_by_namespace_ids) { [namespace.id] }
 
       before do
-        active_gitlab_purchase.namespace.add_owner(user)
+        namespace.add_owner(user)
       end
 
       include_examples 'checking assigned seats' do
         let(:feature_flag_blocks_access) { true }
 
         before do
-          active_gitlab_purchase.namespace.namespace_settings.update!(
+          namespace.namespace_settings.update!(
             duo_core_features_enabled: duo_core_features_enabled
           )
         end
@@ -291,6 +290,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
     context 'when on Self managed instance' do
       using RSpec::Parameterized::TableSyntax
+
+      let(:namespace) { nil }
 
       let_it_be_with_reload(:active_gitlab_purchase) do
         create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: gitlab_add_on)

@@ -27,37 +27,37 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
     end
   end
 
-  context 'when user is logged in' do
+  context 'when user has access to Duo Pro' do
     let_it_be(:current_user) { create(:user) }
-    let(:service) { instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name, add_on_names: []) }
-    let(:service_not_available) do
-      instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name, add_on_names: [])
+    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed) }
+
+    let(:service) do
+      instance_double(::CloudConnector::BaseAvailableServiceData,
+        name: :any_name, add_on_names: ['code_suggestions'], free_access?: true)
     end
 
     before do
-      allow(Ability).to receive(:allowed?).and_call_original
       allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user, :allowed?).and_return(true)
 
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service_not_available)
-      allow(service_not_available).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?)
-        .and_return(false)
-      allow(service_not_available).to receive_messages({ free_access?: false })
+      create(
+        :gitlab_subscription_user_add_on_assignment,
+        user: current_user,
+        add_on_purchase: add_on_purchase
+      )
 
-      purchases = class_double(GitlabSubscriptions::AddOnPurchase)
-      mock_purchase = instance_double(GitlabSubscriptions::AddOnPurchase, normalized_add_on_name: 'duo_pro')
-
+      allow(::CloudConnector::AvailableServices).to(
+        receive(:find_by_name).and_return(::CloudConnector::MissingServiceData.new)
+      )
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:include_file_context)
         .and_return(service)
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:include_merge_request_context)
         .and_return(service)
-      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user).and_return(purchases)
-      allow(purchases).to receive_messages(any?: true, uniq_namespace_ids: [], last: mock_purchase)
     end
 
     it 'returns a list of available features' do
       post_graphql(query, current_user: current_user)
 
-      expect(graphql_response).to eq(%w[include_file_context include_merge_request_context])
+      expect(graphql_response).to match_array(%w[include_file_context include_merge_request_context])
     end
 
     context 'when user does not have access to chat' do

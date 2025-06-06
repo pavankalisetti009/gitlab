@@ -138,14 +138,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_
           end
 
           include_examples 'issue a token with scopes'
-
-          context 'with cloud_connector_new_purchase_lookup disabled' do
-            before do
-              stub_feature_flags(cloud_connector_new_purchase_lookup: false)
-            end
-
-            include_examples 'issue a token with scopes'
-          end
         end
       end
 
@@ -163,14 +155,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_
         let(:scopes) { duo_pro_scopes }
 
         include_examples 'issue a token with scopes'
-
-        context 'with cloud_connector_new_purchase_lookup disabled' do
-          before do
-            stub_feature_flags(cloud_connector_new_purchase_lookup: false)
-          end
-
-          include_examples 'issue a token with scopes'
-        end
       end
     end
   end

@@ -45,14 +45,13 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
 
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
-    allow(service).to receive_messages(access_token: token, name: service_name)
-    allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
-    allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
-      .and_return(enabled_by_namespace_ids)
+    allow(service).to receive_messages(access_token: token, name: service_name, add_on_names: ['code_suggestions'])
 
     purchases = class_double(GitlabSubscriptions::AddOnPurchase)
     mock_purchase = instance_double(GitlabSubscriptions::AddOnPurchase, normalized_add_on_name: 'duo_pro')
-    allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user).and_return(purchases)
+    allow(GitlabSubscriptions::AddOnPurchase).to(
+      receive_message_chain(:for_active_add_ons, :assigned_to_user).and_return(purchases)
+    )
     allow(purchases).to receive_messages(any?: true, uniq_namespace_ids: enabled_by_namespace_ids, last: mock_purchase)
 
     stub_feature_flags(incident_fail_over_completion_provider: false)
