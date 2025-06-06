@@ -92,8 +92,8 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
   end
 
   shared_examples 'sets current organization' do
-    it 'uses the first found organization' do
-      expect(::Current).to receive(:organization=).with(::Organizations::Organization.first).and_call_original
+    it 'uses the correct organization' do
+      expect(::Current).to receive(:organization=).with(organization).and_call_original
 
       api_request
     end
