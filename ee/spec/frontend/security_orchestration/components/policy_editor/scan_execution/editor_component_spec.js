@@ -38,6 +38,8 @@ import {
   ACTION_SECTION_DISABLE_ERROR,
   CONDITION_SECTION_DISABLE_ERROR,
   SECURITY_POLICY_ACTIONS,
+  EDITOR_MODE_RULE,
+  EDITOR_MODE_YAML,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import {
   DEFAULT_SCANNER,
@@ -366,8 +368,11 @@ enabled: true`;
   });
 
   describe('action builder', () => {
+    const glFeatures = { flexibleScanExecutionPolicy: true };
+
     beforeEach(() => {
       uniqueId.mockRestore();
+      window.gon = { features: glFeatures };
     });
 
     afterAll(() => {
@@ -377,32 +382,32 @@ enabled: true`;
     describe('default', () => {
       it('shows default and custom cards', () => {
         factory({
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         expect(findCards()).toHaveLength(2);
       });
 
       it('checks optimized scanner by default', () => {
         factory({
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         expect(findActionBuilderDefaultConfigRadioButton().props('checked')).toBe('default');
+        expect(findActionBuilderDefaultConfigRadioButton().attributes().disabled).toBe(undefined);
       });
     });
 
     describe('default configuration', () => {
       it('does not show custom configuration section', () => {
         factory({
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         expect(findActionBuilderDefaultConfig().exists()).toBe(true);
         expect(findActionBuilderCustomConfig().exists()).toBe(false);
       });
 
       it('renders optimized scan selector', () => {
-        window.gon = { features: { flexibleScanExecutionPolicy: true } };
         factory({
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         expect(findOptimizedScanSelector().exists()).toBe(true);
         expect(findOptimizedScanSelector().props()).toEqual({
@@ -412,9 +417,8 @@ enabled: true`;
       });
 
       it('adds new action when selected', async () => {
-        window.gon = { features: { flexibleScanExecutionPolicy: true } };
         factory({
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         await findOptimizedScanSelector().vm.$emit('change', {
           scanner: 'sast',
@@ -439,7 +443,7 @@ enabled: true`;
 
       it('removes action when deselected', async () => {
         factory({
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         await findOptimizedScanSelector().vm.$emit('change', {
           scanner: 'secret_detection',
@@ -453,12 +457,42 @@ enabled: true`;
           }).actions,
         ).toStrictEqual([]);
       });
+
+      it('is disabled when the policy is incompatible', async () => {
+        factory({
+          provide: { glFeatures },
+        });
+
+        // Switch to custom config first
+        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+
+        // Add a DAST scan action, but there are many reasons the policy may be invalid for
+        // optimized scans. See the getConfiguration method in
+        // ee/app/assets/javascripts/security_orchestration/components/policy_editor/scan_execution/lib/index.js
+        // for more info
+        const dastAction = { scan: 'dast' };
+        findActionBuilder().vm.$emit('changed', dastAction);
+        await nextTick();
+
+        // Switch to YAML mode and back to rule mode to trigger recalculation
+        await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_YAML);
+        await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_RULE);
+
+        expect(findActionBuilderDefaultConfigRadioButton().attributes().disabled).toBe('true');
+      });
     });
 
     describe('custom configuration', () => {
+      const newActions = [
+        {
+          scan: 'secret_detection',
+          template: 'latest',
+          variables: { SECURE_ENABLE_LOCAL_CONFIGURATION: 'false' },
+        },
+      ];
       it('does not show default configuration section', async () => {
         factory({
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
         expect(findActionBuilderDefaultConfig().exists()).toBe(false);
@@ -466,41 +500,44 @@ enabled: true`;
       });
 
       it('adds new action', async () => {
-        factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
+        factory({ provide: { glFeatures } });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
 
-        const initialValue = [
-          buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
-        ];
-
-        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
+        expect(findPolicyEditorLayout().props('policy').actions).toEqual(
+          expect.objectContaining(newActions),
+        );
         expect(
           fromYaml({
             manifest: findPolicyEditorLayout().props('yamlEditorValue'),
             type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
           }).actions,
-        ).toStrictEqual(initialValue);
+        ).toEqual(expect.objectContaining(newActions));
 
         findAddActionButton().vm.$emit('click');
         await nextTick();
 
         const finalValue = [
-          buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
+          buildScannerAction({
+            scanner: DEFAULT_SCANNER,
+            isOptimized: true,
+            withDefaultVariables: true,
+          }),
           buildScannerAction({ scanner: DEFAULT_SCANNER }),
         ];
-        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
+
+        expect(findPolicyEditorLayout().props('policy').actions).toEqual(finalValue);
         expect(
           fromYaml({
             manifest: findPolicyEditorLayout().props('yamlEditorValue'),
             type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
           }).actions,
-        ).toStrictEqual(finalValue);
+        ).toEqual(finalValue);
       });
 
       it('adds a new action if the action property does not exist', async () => {
         factory({
           propsData: { existingPolicy: { name: 'test' }, isEditing: true },
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+          provide: { glFeatures },
         });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
 
@@ -514,19 +551,27 @@ enabled: true`;
       });
 
       it('updates action', async () => {
-        factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
+        factory({ provide: { glFeatures } });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
 
         const initialValue = [
-          buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
+          buildScannerAction({
+            scanner: DEFAULT_SCANNER,
+            withDefaultVariables: true,
+            isOptimized: true,
+          }),
         ];
+
         expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
+        expect(findPolicyEditorLayout().props('policy').actions).toEqual(
+          expect.objectContaining(newActions),
+        );
         expect(
           fromYaml({
             manifest: findPolicyEditorLayout().props('yamlEditorValue'),
             type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
           }).actions,
-        ).toStrictEqual(initialValue);
+        ).toEqual(expect.objectContaining(newActions));
 
         const finalValue = [buildScannerAction({ scanner: 'sast', withDefaultVariables: true })];
         findActionBuilder().vm.$emit('changed', finalValue[0]);
@@ -542,7 +587,7 @@ enabled: true`;
       });
 
       it('removes action', async () => {
-        factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
+        factory({ provide: { glFeatures } });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
         findAddActionButton().vm.$emit('click');
         await nextTick();
@@ -574,7 +619,7 @@ enabled: true`;
         factory({
           provide: {
             maxScanExecutionPolicyActions: MAX_ACTIONS,
-            glFeatures: { flexibleScanExecutionPolicy: true },
+            glFeatures,
           },
         });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
