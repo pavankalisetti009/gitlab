@@ -575,6 +575,18 @@ Returns [`CustomField`](#customfield).
 | ---- | ---- | ----------- |
 | <a id="querycustomfieldid"></a>`id` | [`IssuablesCustomFieldID!`](#issuablescustomfieldid) | Global ID of the custom field. |
 
+### `Query.dependency`
+
+Find a dependency.
+
+Returns [`Dependency`](#dependency).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="querydependencyid"></a>`id` | [`SbomOccurrenceID!`](#sbomoccurrenceid) | Global ID of the Dependency. |
+
 ### `Query.designManagement`
 
 Fields related to design management.
@@ -25845,6 +25857,7 @@ A software dependency used by a project.
 | <a id="dependencypackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
 | <a id="dependencyreachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
 | <a id="dependencyversion"></a>`version` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.1. Replaced by component_version. |
+| <a id="dependencyvulnerabilities"></a>`vulnerabilities` | [`VulnerabilityConnection`](#vulnerabilityconnection) | Vulnerabilities associated with the dependency. (see [Connections](#connections)) |
 | <a id="dependencyvulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 ### `DependencyAggregation`
@@ -25864,6 +25877,7 @@ A software dependency aggregation used by a group.
 | <a id="dependencyaggregationpackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
 | <a id="dependencyaggregationreachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
 | <a id="dependencyaggregationversion"></a>`version` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.1. Replaced by component_version. |
+| <a id="dependencyaggregationvulnerabilities"></a>`vulnerabilities` | [`VulnerabilityConnection`](#vulnerabilityconnection) | Vulnerabilities associated with the dependency. (see [Connections](#connections)) |
 | <a id="dependencyaggregationvulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 ### `DependencyPath`
@@ -49020,6 +49034,7 @@ Implementations:
 | <a id="dependencyinterfacepackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
 | <a id="dependencyinterfacereachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
 | <a id="dependencyinterfaceversion"></a>`version` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.1. Replaced by component_version. |
+| <a id="dependencyinterfacevulnerabilities"></a>`vulnerabilities` | [`VulnerabilityConnection`](#vulnerabilityconnection) | Vulnerabilities associated with the dependency. (see [Connections](#connections)) |
 | <a id="dependencyinterfacevulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 #### `DesignFields`

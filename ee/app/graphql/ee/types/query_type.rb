@@ -105,6 +105,14 @@ module EE
             required: true,
             description: 'Global ID of the Vulnerability.'
         end
+        field :dependency,
+          ::Types::Sbom::DependencyType,
+          null: true,
+          description: "Find a dependency." do
+          argument :id, ::Types::GlobalIDType[::Sbom::Occurrence],
+            required: true,
+            description: 'Global ID of the Dependency.'
+        end
         field :workspace, ::Types::RemoteDevelopment::WorkspaceType,
           null: true,
           description: 'Find a workspace.' do
@@ -327,6 +335,10 @@ module EE
       end
 
       def vulnerability(id:)
+        ::GitlabSchema.find_by_gid(id)
+      end
+
+      def dependency(id:)
         ::GitlabSchema.find_by_gid(id)
       end
 
