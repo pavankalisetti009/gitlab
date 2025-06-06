@@ -1,14 +1,15 @@
 import {
   getVulnerabilityTotal,
-  securityScannerValidator,
+  securityScannerOfProjectValidator,
   itemValidator,
-} from 'ee/security_inventory/utils'; // Adjust the import according to your file structure
+  securityScannerOfGroupValidator,
+} from 'ee/security_inventory/utils';
 
 jest.mock('ee/security_inventory/utils', () => {
   const originalModule = jest.requireActual('ee/security_inventory/utils');
   return {
     ...originalModule,
-    securityScannerValidator: jest.fn(originalModule.securityScannerValidator),
+    securityScannerOfProjectValidator: jest.fn(originalModule.securityScannerOfProjectValidator),
   };
 });
 
@@ -47,11 +48,95 @@ describe('getVulnerabilityTotal', () => {
   });
 });
 
-describe('securityScannerValidator', () => {
+describe('securityScannerOfGroupValidator', () => {
+  const item = {
+    analyzerType: 'DEPENDENCY_SCANNING',
+    failure: 1,
+    notConfigured: 3,
+    success: 2,
+    updatedAt: undefined,
+  };
+
+  describe('basic object validation', () => {
+    it('returns false for non-object types', () => {
+      expect(securityScannerOfGroupValidator(123)).toBe(false);
+      expect(securityScannerOfGroupValidator('string')).toBe(false);
+      expect(securityScannerOfGroupValidator([])).toBe(false);
+      expect(securityScannerOfGroupValidator(null)).toBe(false);
+      expect(securityScannerOfGroupValidator('')).toBe(false);
+      expect(securityScannerOfGroupValidator({})).toBe(false);
+    });
+  });
+
+  describe('props validation', () => {
+    it.each`
+      description                     | value                                | expected
+      ${'analyzerType is a number'}   | ${{ ...item, analyzerType: 5 }}      | ${false}
+      ${'analyzerType is undefined'}  | ${{ ...item, analyzerType: {} }}     | ${false}
+      ${'analyzerType is a string'}   | ${{ ...item, analyzerType: 'SAST' }} | ${true}
+      ${'analyzerType is a null'}     | ${{ ...item, analyzerType: null }}   | ${false}
+      ${'failure is a number'}        | ${{ ...item, failure: 5 }}           | ${true}
+      ${'failure is undefined'}       | ${{ ...item, failure: {} }}          | ${false}
+      ${'failure is a string'}        | ${{ ...item, failure: '5' }}         | ${false}
+      ${'failure is a null'}          | ${{ ...item, failure: null }}        | ${false}
+      ${'notConfigured is a number'}  | ${{ ...item, notConfigured: 5 }}     | ${true}
+      ${'notConfigured is undefined'} | ${{ ...item, notConfigured: {} }}    | ${false}
+      ${'notConfigured is a string'}  | ${{ ...item, notConfigured: '5' }}   | ${false}
+      ${'notConfigured is a null'}    | ${{ ...item, notConfigured: null }}  | ${false}
+      ${'success is a number'}        | ${{ ...item, success: 5 }}           | ${true}
+      ${'success is undefined'}       | ${{ ...item, success: {} }}          | ${false}
+      ${'success is a string'}        | ${{ ...item, success: '5' }}         | ${false}
+      ${'success is a null'}          | ${{ ...item, success: null }}        | ${false}
+    `('$description', ({ value, expected }) => {
+      const result = securityScannerOfGroupValidator(value);
+      expect(result).toBe(expected);
+    });
+  });
+
+  describe('complex scenarios', () => {
+    it('returns false when any validation fails', () => {
+      const invalidItems = [
+        { analyzerType: 'SAST' },
+        {
+          analyzerType: 'SAST',
+          notConfigured: 3,
+          success: 2,
+        },
+        {
+          failure: 1,
+          notConfigured: 3,
+          success: 2,
+        },
+        {
+          analyzerType: 2,
+          failure: 1,
+          notConfigured: 3,
+          success: 2,
+        },
+      ];
+      invalidItems.forEach((invalidItem) => {
+        expect(securityScannerOfGroupValidator(invalidItem)).toBe(false);
+      });
+    });
+
+    it('allows additional properties', () => {
+      const itemWithUnexpectedProps = {
+        analyzerType: 'SAST',
+        failure: 1,
+        notConfigured: 3,
+        success: 2,
+        unexpectedProp: 'value',
+      };
+      expect(securityScannerOfGroupValidator(itemWithUnexpectedProps)).toBe(true);
+    });
+  });
+});
+
+describe('securityScannerOfProjectValidator', () => {
   describe('valid scenarios', () => {
     it('returns true for an array with minimal valid objects', () => {
       const validInput = [{ analyzerType: 'SAST' }];
-      expect(securityScannerValidator(validInput)).toBe(true);
+      expect(securityScannerOfProjectValidator(validInput)).toBe(true);
     });
 
     it('returns true for an array with complete valid objects', () => {
@@ -64,7 +149,7 @@ describe('securityScannerValidator', () => {
           updatedAt: '2025-01-01T00:00:00Z',
         },
       ];
-      expect(securityScannerValidator(validInput)).toBe(true);
+      expect(securityScannerOfProjectValidator(validInput)).toBe(true);
     });
 
     it('returns true for an array with multiple valid objects', () => {
@@ -76,7 +161,7 @@ describe('securityScannerValidator', () => {
           buildId: 'gid://git/path/123',
         },
       ];
-      expect(securityScannerValidator(validInput)).toBe(true);
+      expect(securityScannerOfProjectValidator(validInput)).toBe(true);
     });
 
     it('handles objects with additional unexpected properties', () => {
@@ -87,23 +172,23 @@ describe('securityScannerValidator', () => {
           status: 'SUCCESS',
         },
       ];
-      expect(securityScannerValidator(inputWithExtraProps)).toBe(true);
+      expect(securityScannerOfProjectValidator(inputWithExtraProps)).toBe(true);
     });
 
     it('returns true for an empty array', () => {
-      expect(securityScannerValidator([])).toBe(true);
+      expect(securityScannerOfProjectValidator([])).toBe(true);
     });
   });
 
   describe('invalid scenarios', () => {
     it('returns false when object is missing analyzerType', () => {
       const invalidInput = [{ status: 'SUCCESS' }];
-      expect(securityScannerValidator(invalidInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(invalidInput)).toBe(false);
     });
 
     it('returns false when analyzerType is not a string', () => {
       const invalidInput = [{ analyzerType: 123 }];
-      expect(securityScannerValidator(invalidInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(invalidInput)).toBe(false);
     });
 
     it('returns false when status is not a string', () => {
@@ -113,7 +198,7 @@ describe('securityScannerValidator', () => {
           status: 123,
         },
       ];
-      expect(securityScannerValidator(invalidInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(invalidInput)).toBe(false);
     });
 
     it('returns false when buildId is not a string', () => {
@@ -123,7 +208,7 @@ describe('securityScannerValidator', () => {
           buildId: 123,
         },
       ];
-      expect(securityScannerValidator(invalidInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(invalidInput)).toBe(false);
     });
 
     it('returns false when lastCall is not a string', () => {
@@ -133,7 +218,7 @@ describe('securityScannerValidator', () => {
           lastCall: 123,
         },
       ];
-      expect(securityScannerValidator(invalidInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(invalidInput)).toBe(false);
     });
 
     it('returns false when updatedAt is not a string', () => {
@@ -143,17 +228,17 @@ describe('securityScannerValidator', () => {
           updatedAt: 123,
         },
       ];
-      expect(securityScannerValidator(invalidInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(invalidInput)).toBe(false);
     });
 
     it('returns false for non-object items', () => {
       const invalidInput = ['not an object', { analyzerType: 'SAST' }];
-      expect(securityScannerValidator(invalidInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(invalidInput)).toBe(false);
     });
 
     it('handles multiple objects with mixed validity', () => {
       const mixedInput = [{ analyzerType: 'SAST' }, { status: 'SUCCESS' }];
-      expect(securityScannerValidator(mixedInput)).toBe(false);
+      expect(securityScannerOfProjectValidator(mixedInput)).toBe(false);
     });
   });
 });
@@ -175,7 +260,7 @@ describe('itemValidator', () => {
   describe('analyzerStatuses validation', () => {
     it('returns true when analyzerStatuses is a valid array', () => {
       const validAnalyzerStatuses = [{ analyzerType: 'SAST' }];
-      securityScannerValidator.mockReturnValue(true);
+      securityScannerOfProjectValidator.mockReturnValue(true);
       const item = { analyzerStatuses: validAnalyzerStatuses };
       expect(itemValidator(item)).toBe(true);
     });
@@ -185,9 +270,9 @@ describe('itemValidator', () => {
       expect(itemValidator(item)).toBe(false);
     });
 
-    it('returns false when securityScannerValidator fails', () => {
+    it('returns false when securityScannerOfProjectValidator fails', () => {
       const invalidAnalyzerStatuses = [{ invalid: 'object' }];
-      securityScannerValidator.mockReturnValue(false);
+      securityScannerOfProjectValidator.mockReturnValue(false);
       const item = { analyzerStatuses: invalidAnalyzerStatuses };
       expect(itemValidator(item)).toBe(false);
     });
@@ -228,7 +313,7 @@ describe('itemValidator', () => {
         webUrl: 'https://example.com',
         analyzerStatuses: [{ analyzerType: 'SAST' }],
       };
-      securityScannerValidator.mockReturnValue(true);
+      securityScannerOfProjectValidator.mockReturnValue(true);
       expect(itemValidator(validItem)).toBe(true);
     });
 
@@ -244,7 +329,7 @@ describe('itemValidator', () => {
       ];
       invalidItems.forEach((item) => {
         if (item.analyzerStatuses) {
-          securityScannerValidator.mockReturnValue(false);
+          securityScannerOfProjectValidator.mockReturnValue(false);
         }
         expect(itemValidator(item)).toBe(false);
       });

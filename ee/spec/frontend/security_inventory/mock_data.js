@@ -18,6 +18,32 @@ export const subgroupsAndProjects = {
             avatarUrl: '/avatar.png',
             webUrl: 'http://gdk.test:3000/groups/flightjs/test-subgroup',
             updatedAt: '2025-01-01T09:55:10Z',
+            analyzerStatuses: [
+              {
+                __typename: 'AnalyzerGroupStatusType',
+                success: 0,
+                failure: 1,
+                notConfigured: 3,
+                analyzerType: 'SAST',
+                updatedAt: '2025-01-01T10:29:48Z',
+              },
+              {
+                __typename: 'AnalyzerGroupStatusType',
+                success: 0,
+                failure: 1,
+                notConfigured: 3,
+                analyzerType: 'SAST_ADVANCED',
+                updatedAt: '2025-01-01T10:29:48Z',
+              },
+              {
+                __typename: 'AnalyzerGroupStatusType',
+                success: 1,
+                failure: 0,
+                notConfigured: 3,
+                analyzerType: 'SAST_IAC',
+                updatedAt: '2025-01-01T10:29:48Z',
+              },
+            ],
             vulnerabilityNamespaceStatistic: {
               critical: 10,
               high: 10,

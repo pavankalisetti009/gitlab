@@ -2,10 +2,10 @@
 import { GlBadge, GlPopover } from '@gitlab/ui';
 import { itemValidator } from 'ee/security_inventory/utils';
 import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from '../constants';
-import ToolCoverageDetails from './tool_coverage_details.vue';
+import ProjectToolCoverageDetails from './project_tool_coverage_details.vue';
 
 export default {
-  components: { GlBadge, GlPopover, ToolCoverageDetails },
+  components: { GlBadge, GlPopover, ProjectToolCoverageDetails },
   props: {
     item: {
       type: Object,
@@ -30,7 +30,6 @@ export default {
       if (relevantScanner.some((status) => status.status === 'SUCCESS')) {
         return { variant: 'success', class: 'gl-border-transparent' };
       }
-      // otherwise assume status is SCANNER_DISABLED
       return { class: '!gl-bg-default !gl-text-neutral-600 gl-border-gray-200 gl-border-dashed' };
     },
     getToolCoverageTitle(key) {
@@ -62,8 +61,7 @@ export default {
         :data-testid="`popover-${key}-${item.path}`"
         show-close-button
       >
-        <tool-coverage-details
-          :is-project="true"
+        <project-tool-coverage-details
           :security-scanner="getRelevantScannerData(value)"
           :web-url="item.webUrl"
         />
