@@ -17,23 +17,27 @@ RSpec.describe JsonSchemaValidator do
 
     context 'when the schema file exists on CE' do
       let(:schema_name) { 'ce_sample_schema' }
-      let(:schema_path) { Rails.root.join('spec', 'fixtures', 'ce_sample_schema.json').to_s }
+      let(:schema_path) { Rails.root.join('spec', 'fixtures', 'ce_sample_schema.json') }
 
       it 'calls the validator with CE schema' do
         validate_subject
 
         expect(fake_draft).to have_received(:valid?)
+        # noinspection RubyArgCount -- RubyMine thinks `with` should not take any arguments
+        expect(JSONSchemer).to have_received(:schema).with(schema_path)
       end
     end
 
     context 'when the schema file exists on EE' do
       let(:schema_name) { 'ee_sample_schema' }
-      let(:schema_path) { Rails.root.join('ee', 'spec', 'fixtures', 'ee_sample_schema.json').to_s }
+      let(:schema_path) { Rails.root.join('ee', 'spec', 'fixtures', 'ee_sample_schema.json') }
 
       it 'calls the validator with EE schema' do
         validate_subject
 
         expect(fake_draft).to have_received(:valid?)
+        # noinspection RubyArgCount -- RubyMine thinks `with` should not take any arguments
+        expect(JSONSchemer).to have_received(:schema).with(schema_path)
       end
     end
   end
