@@ -1,6 +1,6 @@
-import { GlLoadingIcon, GlSprintf, GlLink, GlButton } from '@gitlab/ui';
+import { GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
@@ -11,8 +11,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useFakeDate } from 'helpers/fake_date';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import { createAlert } from '~/alert';
+import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
 import { mockProjectSecurityChartsWithData, mockSeverityCountsWithData } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -28,16 +27,21 @@ describe('Project Security Dashboard component', () => {
   const findLineChart = () => wrapper.findComponent(GlLineChart);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findSecurityTrainingPromoBanner = () => wrapper.findComponent(SecurityTrainingPromoBanner);
-  const findExportButton = () => wrapper.findComponent(GlButton);
+  const findExportButton = () => wrapper.findComponent(PdfExportButton);
 
   const createApolloProvider = (...queries) => {
     return createMockApollo([...queries]);
   };
 
+  const defaultProps = {
+    projectFullPath,
+    shouldShowPromoBanner: false,
+  };
+
   const createWrapper = ({
     historyQueryData,
     severitiesCountQueryData,
-    shouldShowPromoBanner = false,
+    props = {},
     vulnerabilitiesPdfExport = true,
   } = {}) => {
     severitiesCountQueryHandler = jest.fn().mockResolvedValue(severitiesCountQueryData);
@@ -48,11 +52,8 @@ describe('Project Security Dashboard component', () => {
         [severitiesCountQuery, severitiesCountQueryHandler],
       ),
       propsData: {
-        projectFullPath,
-        shouldShowPromoBanner,
-      },
-      directives: {
-        GlTooltip: createMockDirective('gl-tooltip'),
+        ...defaultProps,
+        ...props,
       },
       stubs: {
         GlSprintf,
@@ -159,50 +160,25 @@ describe('Project Security Dashboard component', () => {
 
   describe('promo banner', () => {
     it.each([[true], [false]])('when prop is %s', async (shouldShowPromoBanner) => {
-      createWrapper({ shouldShowPromoBanner });
+      createWrapper({ props: { shouldShowPromoBanner } });
       await waitForPromises();
       expect(findSecurityTrainingPromoBanner().exists()).toBe(shouldShowPromoBanner);
     });
   });
 
   describe('export button', () => {
-    it('renders the export button', () => {
+    it('should display the export button', () => {
       createWrapper();
-      expect(findExportButton().props()).toMatchObject({
-        category: 'secondary',
-        icon: 'export',
-      });
-      expect(findExportButton().text()).toBe('Export');
+      expect(findExportButton().exists()).toBe(true);
     });
+  });
 
-    it('renders the tooltip', () => {
-      createWrapper();
-      const button = findExportButton();
-      const tooltip = getBinding(button.element, 'gl-tooltip');
-
-      expect(tooltip).toBeDefined();
-      expect(button.attributes('title')).toBe('Export as PDF');
-    });
-
-    it('renders the alert on click', async () => {
-      createWrapper();
-
-      findExportButton().vm.$emit('click');
-      await nextTick();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message:
-          'Report export in progress. After the report is generated, an email will be sent with the download link.',
-        variant: 'info',
-        dismissible: true,
+  describe('when vulnerabilitiesPdfExport is false', () => {
+    it('should not display the export button', () => {
+      createWrapper({
+        vulnerabilitiesPdfExport: false,
       });
-    });
-
-    describe('when vulnerabilitiesPdfExport feature flag is disabled', () => {
-      it('does not render the export button', () => {
-        createWrapper({ vulnerabilitiesPdfExport: false });
-        expect(findExportButton().exists()).toBe(false);
-      });
+      expect(findExportButton().exists()).toBe(false);
     });
   });
 });

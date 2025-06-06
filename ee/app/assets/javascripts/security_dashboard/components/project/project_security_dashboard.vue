@@ -1,19 +1,17 @@
 <script>
-import { GlLoadingIcon, GlSprintf, GlLink, GlButton, GlTooltipDirective } from '@gitlab/ui';
+import { GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import { PROJECT_LOADING_ERROR_MESSAGE } from 'ee/security_dashboard/helpers';
-import {
-  DOC_PATH_PROJECT_SECURITY_DASHBOARD,
-  EXPORT_ALERT_SUCCESS_MESSAGE,
-} from 'ee/security_dashboard/constants';
+import { DOC_PATH_PROJECT_SECURITY_DASHBOARD } from 'ee/security_dashboard/constants';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
+import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 const CHART_DEFAULT_DAYS = 30;
 const MAX_DAYS = 100;
@@ -35,10 +33,7 @@ export default {
     GlSprintf,
     GlLink,
     PageHeading,
-    GlButton,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
+    PdfExportButton,
   },
   mixins: [glFeatureFlagsMixin()],
   props: {
@@ -172,24 +167,6 @@ export default {
       };
     },
   },
-  methods: {
-    onClickExport() {
-      this.notifyUserReportWillBeEmailed();
-    },
-    notifyUserReportWillBeEmailed() {
-      createAlert({
-        message: EXPORT_ALERT_SUCCESS_MESSAGE,
-        variant: 'info',
-        dismissible: true,
-      });
-    },
-  },
-  i18n: {
-    title: s__('SecurityReports|Security dashboard'),
-    subtitle: s__(
-      'SecurityReports|Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. %{linkStart}Learn more.%{linkEnd}',
-    ),
-  },
   DOC_PATH_PROJECT_SECURITY_DASHBOARD,
 };
 </script>
@@ -198,9 +175,15 @@ export default {
   <div>
     <security-training-promo-banner v-if="shouldShowPromoBanner" />
 
-    <page-heading :heading="$options.i18n.title">
+    <page-heading :heading="s__('SecurityReports|Security dashboard')">
       <template #description>
-        <gl-sprintf :message="$options.i18n.subtitle">
+        <gl-sprintf
+          :message="
+            s__(
+              'SecurityReports|Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. %{linkStart}Learn more.%{linkEnd}',
+            )
+          "
+        >
           <template #link="{ content }">
             <gl-link :href="$options.DOC_PATH_PROJECT_SECURITY_DASHBOARD" target="_blank">{{
               content
@@ -208,17 +191,8 @@ export default {
           </template>
         </gl-sprintf>
       </template>
-      <template v-if="glFeatures.vulnerabilitiesPdfExport" #actions>
-        <gl-button
-          v-gl-tooltip
-          :title="s__('SecurityReports|Export as PDF')"
-          category="secondary"
-          class="gl-ml-2"
-          icon="export"
-          @click="onClickExport"
-        >
-          {{ s__('SecurityReports|Export') }}
-        </gl-button>
+      <template #actions>
+        <pdf-export-button v-if="glFeatures.vulnerabilitiesPdfExport" />
       </template>
     </page-heading>
 

@@ -314,6 +314,10 @@ exports[`Security Dashboard default states sets up project-level 1`] = `
         >
           Security dashboard
         </h1>
+        <div
+          class="gl-flex gl-flex-wrap gl-gap-3 gl-items-center gl-shrink-0 gl-w-full lg:gl-mt-2 md:gl-mt-1 page-heading-actions sm:gl-w-auto"
+          data-testid="page-heading-actions"
+        />
       </div>
       <div
         class="gl-text-subtle gl-w-full"
