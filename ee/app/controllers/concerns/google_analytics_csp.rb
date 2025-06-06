@@ -22,7 +22,8 @@ module GoogleAnalyticsCSP
           '*.google-analytics.com',
           '*.analytics.google.com',
           '*.googletagmanager.com',
-          '*.g.doubleclick.net'
+          '*.g.doubleclick.net',
+          '*.analytics.gitlab.com'
         ]
       policy.img_src(*img_src_values)
 
@@ -33,7 +34,8 @@ module GoogleAnalyticsCSP
           '*.google-analytics.com',
           '*.analytics.google.com',
           '*.googletagmanager.com',
-          '*.g.doubleclick.net'
+          '*.g.doubleclick.net',
+          '*.analytics.gitlab.com'
         ]
       policy.connect_src(*connect_src_values)
     end
