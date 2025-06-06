@@ -40,10 +40,10 @@ module EE
 
         prepare_analytics_dashboards_params!
 
+        validate_web_based_commit_signing_enabled
+
         result = super do
-          limit = params.delete(:repository_size_limit)
-          # Repository size limit comes as MB from the view
-          project.repository_size_limit = ::Gitlab::Utils.try_megabytes_to_bytes(limit) if limit
+          assign_repository_size_limit
         end
 
         if result[:status] == :success
@@ -56,17 +56,32 @@ module EE
           project.remove_import_data if project.previous_changes.include?('mirror') && !project.mirror?
           update_amazon_q_service_account!
 
-          if suggested_reviewers_already_enabled
-            trigger_project_deregistration
-          else
-            trigger_project_registration
-          end
+          suggested_reviewers_already_enabled ? trigger_project_deregistration : trigger_project_registration
         end
 
         result
       end
 
       private
+
+      def assign_repository_size_limit
+        limit = params.delete(:repository_size_limit)
+        return unless limit
+
+        # Repository size limit comes as MB from the view
+        project.repository_size_limit = ::Gitlab::Utils.try_megabytes_to_bytes(limit)
+      end
+
+      def validate_web_based_commit_signing_enabled
+        return unless params.key?(:web_based_commit_signing_enabled)
+
+        params.delete(:web_based_commit_signing_enabled) unless
+          ::Feature.enabled?(:use_web_based_commit_signing_enabled, project) && !namespace_settings_enabled?
+      end
+
+      def namespace_settings_enabled?
+        project.group&.namespace_settings&.web_based_commit_signing_enabled
+      end
 
       def prepare_analytics_dashboards_params!
         if params[:analytics_dashboards_pointer_attributes] &&
