@@ -94,6 +94,25 @@ RSpec.describe UserDetail, feature_category: :system_access do
     end
   end
 
+  describe '#onboarding_status_version=' do
+    let(:user_detail) { build(:user_detail) }
+
+    context 'when given version' do
+      it 'correctly handles integer values' do
+        user_detail.onboarding_status_version = 1
+
+        expect(user_detail.onboarding_status_version).to eq(1)
+      end
+    end
+
+    it 'passes nil to super when value is not present' do
+      value = ''
+      user_detail.onboarding_status_role = value
+
+      expect(user_detail.onboarding_status_role).to be_nil
+    end
+  end
+
   describe '#onboarding_status_registration_objective=' do
     let(:user_detail) { build(:user_detail) }
 
