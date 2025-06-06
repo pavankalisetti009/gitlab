@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe ComplianceManagement::Framework, :models, feature_category: :compliance_management do
+  using RSpec::Parameterized::TableSyntax
+
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
     it { is_expected.to have_many(:projects).through(:project_settings) }
@@ -132,6 +134,28 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
 
     it 'returns all frameworks if search string is empty' do
       expect(described_class.search('')).to match_array([framework, framework2])
+    end
+  end
+
+  describe '.sort_by_attribute' do
+    let_it_be(:framework_1) { create(:compliance_framework, name: 'Framework A', updated_at: 1.day.ago) }
+    let_it_be(:framework_2) { create(:compliance_framework, name: 'Framework B', updated_at: 5.days.ago) }
+
+    where(:sort_method, :expected_order) do
+      nil              | ['Framework A', 'Framework B']
+      :non_existent    | ['Framework A', 'Framework B']
+      :name_asc        | ['Framework A', 'Framework B']
+      :name_desc       | ['Framework B', 'Framework A']
+      :updated_at_asc  | ['Framework B', 'Framework A']
+      :updated_at_desc | ['Framework A', 'Framework B']
+    end
+
+    with_them do
+      it "sorts frameworks correctly" do
+        framework_names = described_class.sort_by_attribute(sort_method).pluck(:name)
+
+        expect(framework_names).to eq(expected_order)
+      end
     end
   end
 

@@ -55,6 +55,11 @@ module ComplianceManagement
         )
     }
 
+    scope :sorted_by_name_asc, -> { reorder(Framework.arel_table['name'].lower.asc) }
+    scope :sorted_by_name_desc, -> { reorder(Framework.arel_table['name'].lower.desc) }
+    scope :sorted_by_updated_at_asc, -> { reorder(Framework.arel_table['updated_at'].asc) }
+    scope :sorted_by_updated_at_desc, -> { reorder(Framework.arel_table['updated_at'].desc) }
+
     scope :with_requirements_and_controls, -> {
       joins(compliance_requirements: :compliance_requirements_controls)
         .includes(compliance_requirements: :compliance_requirements_controls)
@@ -73,6 +78,16 @@ module ComplianceManagement
 
     def self.search(query)
       query.present? ? fuzzy_search(query, [:name], use_minimum_char_limit: true) : all
+    end
+
+    def self.sort_by_attribute(method)
+      case method.to_s
+      when 'name_asc' then sorted_by_name_asc
+      when 'name_desc' then sorted_by_name_desc
+      when 'updated_at_asc' then sorted_by_updated_at_asc
+      else
+        sorted_by_updated_at_desc
+      end
     end
 
     def filename = "compliance-framework-#{name.parameterize}-#{id}"
