@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::DevfileOperations::ValidationProcessor, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::DevfileOperations::DevfileProcessor, feature_category: :workspaces do
   let(:context_passed_along_steps) { {} }
   let(:processed_devfile) { { test: "value" } }
 
