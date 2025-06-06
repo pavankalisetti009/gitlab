@@ -883,6 +883,71 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
     end
   end
 
+  shared_examples 'ignores web_based_commit_signing_enabled param' do |param:, expected:|
+    it 'does not update web_based_commit_signing_enabled param' do
+      result = update_project(project, user, param)
+
+      expect(result).to eq(status: :success)
+      expect(project.web_based_commit_signing_enabled).to eq(expected)
+    end
+  end
+
+  context 'with web_based_commit_signing_enabled param' do
+    let_it_be(:group) { create(:group) }
+    let_it_be_with_reload(:project) { create(:project, :repository, creator: user, group: group) }
+
+    context 'when web_based_commit_signing_enabled is not present' do
+      it_behaves_like 'ignores web_based_commit_signing_enabled param',
+        param: {},
+        expected: false
+    end
+
+    context 'when group setting web_based_commit_signing_enabled is enabled' do
+      before_all do
+        group.namespace_settings.update!(web_based_commit_signing_enabled: true)
+        project.project_setting.update!(web_based_commit_signing_enabled: true)
+      end
+
+      it_behaves_like 'ignores web_based_commit_signing_enabled param',
+        param: { web_based_commit_signing_enabled: false },
+        expected: true
+    end
+
+    context 'when group setting web_based_commit_signing_enabled is not enabled' do
+      it 'updates web_based_commit_signing_enabled to the project' do
+        params = { web_based_commit_signing_enabled: true }
+        result = update_project(project, user, params)
+
+        expect(result).to eq(status: :success)
+
+        expect(project.web_based_commit_signing_enabled).to be(true)
+      end
+    end
+
+    context 'when project does not belong to a group' do
+      let_it_be(:project) { create(:project, :repository, creator: user, namespace: user.namespace) }
+
+      it 'updates web_based_commit_signing_enabled to the project' do
+        params = { web_based_commit_signing_enabled: true }
+        result = update_project(project, user, params)
+
+        expect(result).to eq(status: :success)
+
+        expect(project.web_based_commit_signing_enabled).to be(true)
+      end
+    end
+
+    context 'when use_web_based_commit_signing_enabled FF is disabled' do
+      before do
+        stub_feature_flags(use_web_based_commit_signing_enabled: false)
+      end
+
+      it_behaves_like 'ignores web_based_commit_signing_enabled param',
+        param: { web_based_commit_signing_enabled: true },
+        expected: false
+    end
+  end
+
   def update_project(project, user, opts)
     Projects::UpdateService.new(project, user, opts).execute
   end
