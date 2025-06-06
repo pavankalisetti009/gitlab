@@ -1217,7 +1217,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @return [String]
   def sleep_until_container_is_running_script
     format(
-      RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
+      RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_WORKSPACE_IS_RUNNING_SCRIPT,
       workspace_reconciled_actual_state_file_path:
         workspace_operations_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
     )
