@@ -1,42 +1,121 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_tool_coverage_indicator.vue';
-import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from 'ee/security_inventory/constants';
+import GroupToolCoverageDetails from 'ee/security_inventory/components/group_tool_coverage_details.vue';
+import { subgroupsAndProjects } from 'ee_jest/security_inventory/mock_data';
 
 describe('GroupToolCoverageIndicator', () => {
   let wrapper;
 
-  const findScannerBar = (scanner) => wrapper.findComponentByTestId(`${scanner}-bar`);
-  const findScannerLabel = (scanner) => wrapper.findByTestId(`${scanner}-label`).text();
+  const mockGroup = subgroupsAndProjects.data.group.descendantGroups.nodes[0];
+  const groupPath = mockGroup.path;
 
-  const createComponent = (propsData) => {
-    wrapper = shallowMountExtended(GroupToolCoverageIndicator, { propsData });
+  const findScannerBar = (key) => wrapper.findComponentByTestId(`${key}-${groupPath}-bar`);
+  const findScannerLabel = (key) => wrapper.findByTestId(`${key}-${groupPath}-label`).text();
+  const findGroupToolCoverageDetails = () => wrapper.findComponent(GroupToolCoverageDetails);
+
+  const createComponent = (propsData = {}) => {
+    wrapper = shallowMountExtended(GroupToolCoverageIndicator, {
+      propsData: {
+        item: {
+          ...propsData,
+          ...mockGroup,
+          analyzerStatuses: propsData.analyzerStatuses || mockGroup.analyzerStatuses,
+        },
+      },
+    });
   };
 
-  const scanners = Object.keys(SCANNER_POPOVER_GROUPS).map((key) => ({
-    key,
-    label: SCANNER_TYPES[key].textLabel,
-  }));
+  describe('component rendering', () => {
+    it('renders tool coverage details component in popovers', () => {
+      createComponent();
+      expect(findGroupToolCoverageDetails().exists()).toBe(true);
+    });
+  });
 
-  describe.each(scanners)('$label bar', ({ label, key }) => {
-    describe.each([17, 100, 0])('with %d% tool coverage', (value) => {
-      it('passes correct segments prop to segmented bar, shows a label', () => {
-        createComponent({ scanners: { [key]: value } });
-        expect(findScannerBar(key).props()).toStrictEqual({
-          segments: [
-            {
-              class: 'gl-bg-green-500',
-              count: value,
-            },
-            {
-              class: 'gl-bg-neutral-200',
-              count: 100 - value,
-            },
-          ],
-        });
+  describe('segments bar props', () => {
+    it('passes correct segments prop to segmented bar when there are two scanner types', () => {
+      createComponent();
+      const key = 'SAST';
+      expect(findScannerBar(key).props()).toStrictEqual({
+        segments: [
+          {
+            class: 'gl-bg-green-500',
+            count: 0,
+          },
+          {
+            class: 'gl-bg-red-500',
+            count: 2,
+          },
+          {
+            class: 'gl-bg-neutral-200',
+            count: 6,
+          },
+        ],
+      });
 
-        const scannerLabel = findScannerLabel(key);
-        expect(scannerLabel).toContain(label);
-        expect(scannerLabel).toContain(`${value}%`);
+      const scannerLabel = findScannerLabel(key);
+      expect(scannerLabel).toContain(key);
+      expect(scannerLabel).toContain('Tool coverage: 2 of 6');
+    });
+
+    it('passes correct segments prop to segmented bar when there is one scanner type', () => {
+      createComponent();
+      const key = 'SAST_IAC';
+      expect(findScannerBar(key).props()).toStrictEqual({
+        segments: [
+          {
+            class: 'gl-bg-green-500',
+            count: 1,
+          },
+          {
+            class: 'gl-bg-red-500',
+            count: 0,
+          },
+          {
+            class: 'gl-bg-neutral-200',
+            count: 3,
+          },
+        ],
+      });
+
+      const scannerLabel = findScannerLabel(key);
+      expect(scannerLabel).toContain('IaC');
+      expect(scannerLabel).toContain('Tool coverage: 1 of 3');
+    });
+
+    it('passes correct segments prop to segmented bar when there is no scanner type', () => {
+      createComponent();
+      const key = 'DAST';
+      expect(findScannerBar(key).props()).toStrictEqual({
+        segments: [
+          {
+            class: 'gl-bg-green-500',
+            count: 0,
+          },
+          {
+            class: 'gl-bg-red-500',
+            count: 0,
+          },
+          {
+            class: 'gl-bg-neutral-200',
+            count: 0,
+          },
+        ],
+      });
+
+      const scannerLabel = findScannerLabel(key);
+      expect(scannerLabel).toContain(key);
+      expect(scannerLabel).toContain('Tool coverage: 0 of 0');
+    });
+
+    it('passes correct data to tool coverage details component', () => {
+      createComponent();
+      expect(findGroupToolCoverageDetails().props('securityScanner')).toStrictEqual({
+        analyzerType: 'DEPENDENCY_SCANNING',
+        failure: 0,
+        notConfigured: 0,
+        success: 0,
+        updatedAt: undefined,
       });
     });
   });

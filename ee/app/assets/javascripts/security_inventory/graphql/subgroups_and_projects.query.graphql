@@ -29,6 +29,13 @@ query SubgroupsAndProjects(
         avatarUrl
         webUrl
         updatedAt
+        analyzerStatuses {
+          success
+          failure
+          notConfigured
+          analyzerType
+          updatedAt
+        }
         vulnerabilityNamespaceStatistic {
           critical
           high
