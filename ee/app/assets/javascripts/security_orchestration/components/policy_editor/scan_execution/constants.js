@@ -89,7 +89,5 @@ export const PIPELINE_SOURCE_OPTIONS = [
   { value: 'unknown', text: s__('SecurityOrchestration|Unknown source') },
 ];
 
-export const SELECTION_CONFIG = {
-  DEFAULT: 'default',
-  CUSTOM: 'custom',
-};
+export const SELECTION_CONFIG_CUSTOM = 'custom';
+export const SELECTION_CONFIG_DEFAULT = 'default';

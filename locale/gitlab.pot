@@ -55543,6 +55543,9 @@ msgstr ""
 msgid "SecurityOrchestration|Choose exception branches"
 msgstr ""
 
+msgid "SecurityOrchestration|Choose optimization preset %{linkStart}Help me choose%{linkEnd}"
+msgstr ""
+
 msgid "SecurityOrchestration|Choose specific role"
 msgstr ""
 
@@ -56080,6 +56083,9 @@ msgid "SecurityOrchestration|Scan execution policies using `custom` scan action 
 msgstr ""
 
 msgid "SecurityOrchestration|Scan execution policy"
+msgstr ""
+
+msgid "SecurityOrchestration|Scan execution strategy"
 msgstr ""
 
 msgid "SecurityOrchestration|Scan will automatically choose a runner to run on because there are no tags exist on runners. You can %{linkStart}create a new tag in settings%{linkEnd}."
