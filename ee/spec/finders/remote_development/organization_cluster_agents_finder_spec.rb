@@ -12,7 +12,7 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_categ
     end
   end
 
-  let(:filter) { :available }
+  let(:filter) { :directly_mapped }
 
   let_it_be(:mapped_agent_in_org) do
     project = create(:project, organization: organization, namespace: create(:group))
@@ -29,14 +29,6 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_categ
     end
   end
 
-  let_it_be(:agent_in_org_with_remote_dev_disabled) do
-    project = create(:project, organization: organization)
-    create(:ee_cluster_agent, project: project, name: "agent-in-org-unavailable").tap do |agent|
-      create(:workspaces_agent_config, agent: agent, enabled: false)
-      create(:organization_cluster_agent_mapping, user: user, agent: agent, organization: organization)
-    end
-  end
-
   describe '#execute' do
     subject(:response) do
       # noinspection RubyMismatchedArgumentType -- We are passing a test double
@@ -47,27 +39,9 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_categ
       ).to_a
     end
 
-    context 'with filter_type set to available' do
-      context 'when cluster agents are mapped to the organization' do
-        it 'returns cluster agents mapped to the organization excluding those with remote dev disabled' do
-          expect(response).to eq([mapped_agent_in_org])
-        end
-      end
-    end
-
     context 'with filter_type set to directly_mapped' do
-      let(:filter) { :directly_mapped }
-
       it 'returns cluster agents that are mapped directly to the organization, including those disabled' do
-        expect(response).to match_array([mapped_agent_in_org, agent_in_org_with_remote_dev_disabled])
-      end
-    end
-
-    context 'with filter_type set to unmapped' do
-      let(:filter) { :unmapped }
-
-      it 'returns cluster agents that are unmapped to the organization' do
-        expect(response).to eq([unmapped_agent_in_org])
+        expect(response).to match_array([mapped_agent_in_org])
       end
     end
 
@@ -76,6 +50,14 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_categ
 
       it 'returns an empty response' do
         expect(response).to eq([])
+      end
+    end
+
+    context 'with filter_type set to all' do
+      let(:filter) { :all }
+
+      it "returns all cluster agents with remote development enabled within the organization" do
+        expect(response).to match_array([mapped_agent_in_org, unmapped_agent_in_org])
       end
     end
 

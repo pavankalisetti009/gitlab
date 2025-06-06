@@ -18,6 +18,11 @@ module RemoteDevelopment
     # @return [ActiveRecord::Relation]
     def self.fetch_agents(namespace:, filter:, user:)
       case filter
+      when :all
+        return Clusters::Agent.none unless user_can_read_namespace_agent_mappings?(user: user, namespace: namespace)
+
+        # Returns all agents with remote development enabled
+        namespace.cluster_agents.with_remote_development_enabled
       when :unmapped
         return Clusters::Agent.none unless user_can_read_namespace_agent_mappings?(user: user, namespace: namespace)
 
