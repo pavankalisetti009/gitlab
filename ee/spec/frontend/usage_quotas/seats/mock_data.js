@@ -101,7 +101,7 @@ const subscriptionEndDate = '2024-03-16';
 
 // Generates mock data for @client `ee/usage_quotas/seats/graphql/get_gitlab_subscription.query.graphql`
 // as defined in `ee/usage_quotas/seats/resolvers.js`
-export const getMockSubscriptionData = ({
+const createMockSubscription = ({
   id = 1,
   endDate = subscriptionEndDate,
   startDate = subscriptionStartDate,
@@ -113,8 +113,8 @@ export const getMockSubscriptionData = ({
   seatsOwed = 0,
   trial = false,
   trialEndsOn = null,
-} = {}) => ({
-  subscription: {
+} = {}) =>
+  Object.freeze({
     id,
     endDate,
     startDate,
@@ -139,8 +139,21 @@ export const getMockSubscriptionData = ({
       subscription_end_date: endDate,
       trial_ends_on: trialEndsOn,
     },
-  },
-});
+  });
+
+export const createMockFreeSubscription = (config) =>
+  createMockSubscription({
+    ...config,
+    code: 'free',
+    name: 'Free',
+  });
+
+export const createMockUltimateSubscription = (config) =>
+  createMockSubscription({
+    ...config,
+    code: 'ultimate',
+    name: 'Ultimate',
+  });
 
 // Mock for CDot ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql
 export const createMockSubscriptionPermissionsResponse = ({
