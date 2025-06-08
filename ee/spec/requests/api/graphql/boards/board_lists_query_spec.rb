@@ -26,7 +26,7 @@ RSpec.describe 'get board lists', feature_category: :team_planning do
   let(:end_cursor)        { board_data['lists']['pageInfo']['endCursor'] }
 
   before do
-    stub_licensed_features(board_assignee_lists: true, board_milestone_lists: true, work_item_status: true)
+    stub_licensed_features(board_assignee_lists: true, board_milestone_lists: true, board_status_lists: true, work_item_status: true)
   end
 
   def query(list_params = params)
@@ -172,6 +172,9 @@ RSpec.describe 'get board lists', feature_category: :team_planning do
       end
 
       describe 'status' do
+        let(:system_defined_status) { build(:work_item_system_defined_status) }
+        let(:custom_status) { create(:work_item_custom_status, namespace: group) }
+
         let(:fields) do
           <<~GQL
           status {
@@ -181,16 +184,62 @@ RSpec.describe 'get board lists', feature_category: :team_planning do
           GQL
         end
 
-        before do
-          post_graphql(query, current_user: current_user)
+        shared_examples 'does not return data if license is unavailable' do
+          before do
+            stub_licensed_features(board_status_lists: false)
+          end
+
+          it 'returns empty list data' do
+            post_graphql(query(id: global_id_of(status_list)), current_user: current_user)
+
+            expect(lists_data).to be_empty
+          end
         end
 
-        # TODO: Return nil until status on board lists is supported
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/532474
-        it 'returns nil' do
-          list_node = lists_data[0]['node']
+        context 'with system-defined status' do
+          let!(:status_list) { create(:list, list_type: :status, board: board, system_defined_status: system_defined_status) }
 
-          expect(list_node['status']).to be_nil
+          it 'returns system-defined status' do
+            post_graphql(query(id: global_id_of(status_list)), current_user: current_user)
+
+            list_node = lists_data[0]['node']
+
+            expect(list_node['status']).to eq(
+              "id" => system_defined_status.to_gid.to_s,
+              "name" => system_defined_status.name
+            )
+          end
+
+          it_behaves_like 'does not return data if license is unavailable'
+        end
+
+        context 'with custom status' do
+          let!(:status_list) { create(:list, list_type: :status, board: board, custom_status: custom_status) }
+
+          it 'returns custom status' do
+            post_graphql(query(id: global_id_of(status_list)), current_user: current_user)
+
+            list_node = lists_data[0]['node']
+
+            expect(list_node['status']).to eq(
+              "id" => custom_status.to_gid.to_s,
+              "name" => custom_status.name
+            )
+          end
+
+          it_behaves_like 'does not return data if license is unavailable'
+        end
+
+        context 'without any status' do
+          let(:label_list) { create(:list, board: board, label: label) }
+
+          it 'returns nil' do
+            post_graphql(query(id: global_id_of(label_list)), current_user: current_user)
+
+            list_node = lists_data[0]['node']
+
+            expect(list_node['status']).to be_nil
+          end
         end
       end
     end

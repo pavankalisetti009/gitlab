@@ -41,9 +41,7 @@ module EE
         end
 
         def status
-          # TODO: Return nil until status on board lists is supported
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/532474
-          nil
+          object.custom_status || object.system_defined_status
         end
 
         def assignee
