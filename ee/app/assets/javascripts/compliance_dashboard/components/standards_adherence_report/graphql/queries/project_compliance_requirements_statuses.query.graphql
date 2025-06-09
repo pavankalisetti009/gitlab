@@ -50,6 +50,7 @@ query projectComplianceRequirementsStatuses(
                 name
                 controlType
                 externalUrl
+                externalControlName
               }
             }
           }

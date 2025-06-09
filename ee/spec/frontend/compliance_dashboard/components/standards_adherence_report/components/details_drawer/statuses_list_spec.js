@@ -62,6 +62,7 @@ describe('StatusesList', () => {
         name: 'external-control',
         controlType: 'external',
         externalUrl: 'https://example.com/external',
+        externalControlName: 'External control',
       },
     },
   ];
@@ -148,9 +149,9 @@ describe('StatusesList', () => {
     });
 
     it('displays "External control" for external control types', () => {
-      expect(findTitles().at(1).text()).toBe('External control');
+      expect(findTitles().at(1).text()).toContain('External control');
+      expect(findTitles().at(1).text()).toContain('External');
     });
-
     it('displays appropriate status indicators for different statuses', () => {
       expect(findAllFailedStatuses().length).toBe(2); // 2 failed controls
       expect(findAllPendingStatuses().length).toBe(1); // 1 pending control

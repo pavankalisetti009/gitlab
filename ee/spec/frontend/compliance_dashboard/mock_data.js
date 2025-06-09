@@ -643,7 +643,7 @@ export const mockInternalControls = [
 export const mockExternalControl = {
   name: 'external_control',
   controlType: 'external',
-  displayValue: 'Send via: https://example.com',
+  displayValue: 'external_name',
 };
 
 export const mockedRoutes = [
