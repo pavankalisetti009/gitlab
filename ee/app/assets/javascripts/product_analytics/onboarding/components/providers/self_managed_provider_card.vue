@@ -28,10 +28,6 @@ export default {
     },
   },
   props: {
-    projectAnalyticsSettingsPath: {
-      type: String,
-      required: true,
-    },
     projectSettings: {
       type: Object,
       required: true,
