@@ -20,7 +20,6 @@ const defaultProvide = {
   namespaceId: 1,
   namespaceName: 'Group Name',
   maxFreeNamespaceSeats: 5,
-  hasNoSubscription: false,
   hasLimitedFreePlan: false,
   explorePlansPath: '/groups/test_group/-/billings',
   addSeatsHref: '/groups/test_group/-/seat_usage.csv',
@@ -110,7 +109,6 @@ export const SaasWithFreeUnlimited = createTemplate({
 
 export const SaasWithFreeUserCapEnabled = createTemplate({
   provide: {
-    hasNoSubscription: true,
     hasLimitedFreePlan: true,
   },
 });
