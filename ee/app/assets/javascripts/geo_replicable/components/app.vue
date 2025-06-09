@@ -2,8 +2,7 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
-import GeoListFilteredSearchBar from 'ee/geo_shared/list/components/geo_list_filtered_search_bar.vue';
+import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
 import {
@@ -23,10 +22,9 @@ export default {
   components: {
     GlLoadingIcon,
     GeoReplicableFilterBar,
-    GeoListFilteredSearchBar,
+    GeoListTopBar,
     GeoReplicable,
     GeoReplicableEmptyState,
-    GeoListBulkActions,
     GeoFeedbackBanner,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -79,15 +77,15 @@ export default {
 
       this.activeFilters = [getReplicableTypeFilter(segments.pop()), ...filters];
     },
-    onListboxChange(val) {
-      this.onSearch([getReplicableTypeFilter(val), ...this.activeFilteredSearchFilters]);
+    handleListboxChange(val) {
+      this.handleSearch([getReplicableTypeFilter(val), ...this.activeFilteredSearchFilters]);
     },
-    onSearch(filters) {
+    handleSearch(filters) {
       const { query, url } = processFilters(filters);
 
       visitUrl(setUrlParams(query, url.href, true));
     },
-    onBulkAction(action) {
+    handleBulkAction(action) {
       this.initiateAllReplicableAction({ action });
     },
   },
@@ -99,21 +97,17 @@ export default {
   <article class="geo-replicable-container">
     <geo-feedback-banner />
     <geo-replicable-filter-bar v-if="!glFeatures.geoReplicablesFilteredListView" />
-    <template v-else>
-      <geo-list-filtered-search-bar
-        :listbox-header-text="s__('Geo|Select replicable type')"
-        :active-listbox-item="activeReplicableType"
-        :active-filtered-search-filters="activeFilteredSearchFilters"
-        @listboxChange="onListboxChange"
-        @search="onSearch"
-      />
-      <geo-list-bulk-actions
-        v-if="hasReplicableItems"
-        :bulk-actions="$options.BULK_ACTIONS"
-        class="gl-my-5 gl-flex gl-justify-end"
-        @bulkAction="onBulkAction"
-      />
-    </template>
+    <geo-list-top-bar
+      v-else
+      :listbox-header-text="s__('Geo|Select replicable type')"
+      :active-listbox-item="activeReplicableType"
+      :active-filtered-search-filters="activeFilteredSearchFilters"
+      :show-actions="hasReplicableItems"
+      :bulk-actions="$options.BULK_ACTIONS"
+      @listboxChange="handleListboxChange"
+      @search="handleSearch"
+      @bulkAction="handleBulkAction"
+    />
 
     <gl-loading-icon v-if="isLoading" size="xl" />
     <template v-else>

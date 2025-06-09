@@ -51,7 +51,7 @@ export default {
     },
   },
   methods: {
-    onListboxSearch(search) {
+    handleListboxSearch(search) {
       this.listboxSearch = search;
     },
     handleSearch(val) {
@@ -72,7 +72,7 @@ export default {
         searchable
         toggle-aria-labelled-by="listbox-select-label"
         class="gl-mb-4 sm:gl-mb-0"
-        @search="onListboxSearch"
+        @search="handleListboxSearch"
       />
       <div class="flex-grow-1 gl-flex">
         <geo-list-filtered-search

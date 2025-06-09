@@ -93,7 +93,7 @@ describe('GeoReplicableFilterBar', () => {
     });
   });
 
-  describe('onBulkAction', () => {
+  describe('handleBulkAction', () => {
     beforeEach(() => {
       createComponent({ replicableItems: MOCK_BASIC_GRAPHQL_DATA });
     });
