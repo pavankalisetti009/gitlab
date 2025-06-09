@@ -2,11 +2,7 @@ import { GlModal, GlSprintf, GlButton } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
-
-const MOCK_MODAL_DEFINITION = {
-  title: 'Test action on %{type}',
-  description: 'Executes action on %{type}',
-};
+import { MOCK_BULK_ACTIONS } from '../mock_data';
 
 describe('GeoListBulkActions', () => {
   let wrapper;
@@ -16,20 +12,7 @@ describe('GeoListBulkActions', () => {
   };
 
   const defaultProps = {
-    bulkActions: [
-      {
-        id: 'test_action',
-        text: 'Test Action',
-        action: 'TEST_ACTION',
-        modal: MOCK_MODAL_DEFINITION,
-      },
-      {
-        id: 'test_action2',
-        text: 'Test Action 2',
-        action: 'TEST_ACTION_2',
-        modal: MOCK_MODAL_DEFINITION,
-      },
-    ],
+    bulkActions: MOCK_BULK_ACTIONS,
   };
 
   const createComponent = () => {

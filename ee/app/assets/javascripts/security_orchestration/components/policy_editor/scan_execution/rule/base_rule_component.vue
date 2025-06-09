@@ -9,17 +9,12 @@ import {
   TARGET_BRANCHES,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { handleBranchTypeSelect } from '../lib';
-import {
-  PIPELINE_SOURCE_OPTIONS,
-  SCAN_EXECUTION_RULES_LABELS,
-  SCAN_EXECUTION_RULES_PIPELINE_KEY,
-} from '../constants';
+import { SCAN_EXECUTION_RULES_LABELS, SCAN_EXECUTION_RULES_PIPELINE_KEY } from '../constants';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import BranchTypeSelector from './branch_type_selector.vue';
 import PipelineSourceSelector from './pipeline_source_selector.vue';
 
 export default {
-  PIPELINE_SOURCE_OPTIONS,
   SCAN_EXECUTION_RULES_LABELS,
   i18n: {
     pipelineRule: s__(

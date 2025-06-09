@@ -7,10 +7,11 @@ import {
   HUMANIZED_BRANCH_TYPE_TEXT_DICT,
   INVALID_RULE_MESSAGE,
   NO_RULE_MESSAGE,
-  SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
+  VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
 } from '../../policy_editor/constants';
 import { createHumanizedScanners } from '../../policy_editor/utils';
 import { DEFAULT_TEMPLATE } from '../../policy_editor/scan_execution/action/scan_filters/constants';
+import { PIPELINE_SOURCE_OPTIONS } from '../../policy_editor/scan_execution/constants';
 import { buildBranchExceptionsString, humanizedBranchExceptions } from '../utils';
 
 const createTagsMessage = (tags) => {
@@ -145,12 +146,28 @@ const hasBranchType = (rule) => BRANCH_TYPE_KEY in rule;
 const hasValidBranchType = (rule) => {
   if (!rule) return false;
 
-  return (
-    hasBranchType(rule) &&
-    SCAN_EXECUTION_BRANCH_TYPE_OPTIONS()
-      .map(({ value }) => value)
-      .includes(rule.branch_type)
-  );
+  return hasBranchType(rule) && VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS.includes(rule.branch_type);
+};
+
+const buildPipelineSourceString = (sources = []) => {
+  if (sources.length === 0) {
+    return '';
+  }
+
+  const PIPELINE_SOURCE_TEMPLATE = s__('SecurityOrchestration| triggered by %{sources}');
+  const humanizedSources = sources.map((source) => PIPELINE_SOURCE_OPTIONS[source]);
+
+  if (sources.length === 1) {
+    return sprintf(PIPELINE_SOURCE_TEMPLATE, { sources: humanizedSources[0] });
+  }
+
+  const lastSource = humanizedSources.pop();
+  return sprintf(PIPELINE_SOURCE_TEMPLATE, {
+    sources: sprintf(s__('SecurityOrchestration|%{sources} or %{lastSource}'), {
+      sources: humanizedSources.join(', '),
+      lastSource,
+    }),
+  });
 };
 
 const humanizePipelineRule = (rule) => {
@@ -165,11 +182,12 @@ const humanizePipelineRule = (rule) => {
   return {
     summary: sprintf(
       s__(
-        'SecurityOrchestration|Every time a pipeline runs for %{branches}%{branchExceptionsString}',
+        'SecurityOrchestration|Every time a pipeline runs for %{branches}%{pipelineSource}%{branchExceptionsString}',
       ),
       {
         branches: humanizedValue,
         branchExceptionsString: buildBranchExceptionsString(rule.branch_exceptions),
+        pipelineSource: buildPipelineSourceString(rule.pipeline_sources?.including),
       },
     ),
     branchExceptions: humanizedBranchExceptions(rule.branch_exceptions),

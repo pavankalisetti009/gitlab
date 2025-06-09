@@ -1,7 +1,7 @@
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PipelineSourceSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/pipeline_source_selector.vue';
-import { PIPELINE_SOURCE_OPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+import { PIPELINE_SOURCE_LISTBOX_OPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 
 describe('PipelineSourceSelector', () => {
   let wrapper;
@@ -23,7 +23,7 @@ describe('PipelineSourceSelector', () => {
       const listbox = findListbox();
       expect(listbox.exists()).toBe(true);
       expect(listbox.props('multiple')).toBe(true);
-      expect(listbox.props('items')).toEqual(PIPELINE_SOURCE_OPTIONS);
+      expect(listbox.props('items')).toEqual(PIPELINE_SOURCE_LISTBOX_OPTIONS);
       expect(listbox.props('selected')).toEqual([]);
     });
 
@@ -38,7 +38,7 @@ describe('PipelineSourceSelector', () => {
       createComponent([selectedSource]);
 
       // Find the text representation of the selected source
-      const sourceText = PIPELINE_SOURCE_OPTIONS.find(
+      const sourceText = PIPELINE_SOURCE_LISTBOX_OPTIONS.find(
         (option) => option.value === selectedSource,
       ).text;
       expect(findListbox().props('toggleText')).toBe(sourceText);
@@ -53,7 +53,9 @@ describe('PipelineSourceSelector', () => {
 
       // Check that both source texts are included
       selectedSources.forEach((source) => {
-        const sourceText = PIPELINE_SOURCE_OPTIONS.find((option) => option.value === source).text;
+        const sourceText = PIPELINE_SOURCE_LISTBOX_OPTIONS.find(
+          (option) => option.value === source,
+        ).text;
         expect(toggleText).toContain(sourceText);
       });
     });
@@ -65,8 +67,10 @@ describe('PipelineSourceSelector', () => {
       const toggleText = findListbox().props('toggleText');
 
       // Should show first two options and a count
-      const apiText = PIPELINE_SOURCE_OPTIONS.find((option) => option.value === 'api').text;
-      const pushText = PIPELINE_SOURCE_OPTIONS.find((option) => option.value === 'push').text;
+      const apiText = PIPELINE_SOURCE_LISTBOX_OPTIONS.find((option) => option.value === 'api').text;
+      const pushText = PIPELINE_SOURCE_LISTBOX_OPTIONS.find(
+        (option) => option.value === 'push',
+      ).text;
 
       expect(toggleText).toContain(apiText);
       expect(toggleText).toContain(pushText);

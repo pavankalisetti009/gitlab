@@ -203,10 +203,7 @@ export const SCAN_RESULT_BRANCH_TYPE_OPTIONS = (nameSpaceType = NAMESPACE_TYPES.
   SPECIFIC_BRANCHES,
 ];
 
-export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = (
-  namespaceType = NAMESPACE_TYPES.GROUP,
-  featureFlags = {},
-) => {
+export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = (namespaceType = NAMESPACE_TYPES.GROUP) => {
   const isGroupNamespace = isGroup(namespaceType);
 
   // Base options always included
@@ -218,7 +215,7 @@ export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = (
   ];
 
   // Feature flag dependent options
-  if (featureFlags.flexibleScanExecutionPolicy) {
+  if (window.gon?.features?.flexibleScanExecutionPolicy) {
     // Additional options when feature flag is enabled
     const additionalOptions = [
       TARGET_PROTECTED_BRANCHES,
@@ -253,6 +250,12 @@ export const HUMANIZED_BRANCH_TYPE_TEXT_DICT = {
   [ALL_PROTECTED_BRANCHES.value]: s__('SecurityOrchestration|any protected branch'),
   [GROUP_DEFAULT_BRANCHES.value]: s__('SecurityOrchestration|any default branch'),
   [PROJECT_DEFAULT_BRANCH.value]: s__('SecurityOrchestration|the default branch'),
+  [TARGET_PROTECTED_BRANCHES.value]: s__(
+    'SecurityOrchestration|any branch that targets a protected branch',
+  ),
+  [GROUP_TARGET_DEFAULT_BRANCHES.value]: s__(
+    'SecurityOrchestration|any branch that targets the default branch',
+  ),
 };
 
 export const MORE_LABEL = s__('SecurityOrchestration|+%{numberOfAdditionalLabels} more');

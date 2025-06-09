@@ -2,10 +2,10 @@
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-import { PIPELINE_SOURCE_OPTIONS } from '../constants';
+import { PIPELINE_SOURCE_LISTBOX_OPTIONS } from '../constants';
 
 export default {
-  PIPELINE_SOURCE_OPTIONS,
+  PIPELINE_SOURCE_LISTBOX_OPTIONS,
   name: 'PipelineSourceSelector',
   components: {
     GlCollapsibleListbox,
@@ -20,7 +20,7 @@ export default {
   computed: {
     pipelineSourcesText() {
       return getSelectedOptionsText({
-        options: PIPELINE_SOURCE_OPTIONS,
+        options: PIPELINE_SOURCE_LISTBOX_OPTIONS,
         selected: this.sources,
         placeholder: s__('SecurityOrchestration|Select the source'),
         maxOptionsShown: 2,
@@ -42,7 +42,7 @@ export default {
   <gl-collapsible-listbox
     multiple
     data-testid="pipeline-source"
-    :items="$options.PIPELINE_SOURCE_OPTIONS"
+    :items="$options.PIPELINE_SOURCE_LISTBOX_OPTIONS"
     :selected="sources"
     :toggle-text="pipelineSourcesText"
     @select="setPipelineSources"

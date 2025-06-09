@@ -12,14 +12,17 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/constants';
 
 describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
+  afterEach(() => {
+    window.gon = { features: {} };
+  });
+
   describe('with feature flag disabled', () => {
-    const featureFlags = { flexibleScanExecutionPolicy: false };
+    beforeEach(() => {
+      window.gon = { features: { flexibleScanExecutionPolicy: false } };
+    });
 
     it('returns base options for group namespace', () => {
-      const options = SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP, featureFlags);
-
-      expect(options).toHaveLength(4);
-      expect(options).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP)).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -28,10 +31,7 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('returns base options for project namespace', () => {
-      const options = SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.PROJECT, featureFlags);
-
-      expect(options).toHaveLength(4);
-      expect(options).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.PROJECT)).toEqual([
         ALL_BRANCHES,
         PROJECT_DEFAULT_BRANCH,
         ALL_PROTECTED_BRANCHES,
@@ -40,10 +40,7 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('uses group namespace by default when namespace type is not provided', () => {
-      const options = SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(undefined, featureFlags);
-
-      expect(options).toHaveLength(4);
-      expect(options).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(undefined)).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -53,13 +50,12 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
   });
 
   describe('with feature flag enabled', () => {
-    const featureFlags = { flexibleScanExecutionPolicy: true };
+    beforeEach(() => {
+      window.gon = { features: { flexibleScanExecutionPolicy: true } };
+    });
 
     it('returns extended options for group namespace', () => {
-      const options = SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP, featureFlags);
-
-      expect(options).toHaveLength(6);
-      expect(options).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP)).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -70,10 +66,7 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('returns extended options for project namespace', () => {
-      const options = SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.PROJECT, featureFlags);
-
-      expect(options).toHaveLength(6);
-      expect(options).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.PROJECT)).toEqual([
         ALL_BRANCHES,
         PROJECT_DEFAULT_BRANCH,
         ALL_PROTECTED_BRANCHES,
@@ -84,10 +77,7 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('uses group namespace by default when namespace type is not provided', () => {
-      const options = SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(undefined, featureFlags);
-
-      expect(options).toHaveLength(6);
-      expect(options).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(undefined)).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -99,10 +89,7 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
   });
 
   it('uses empty feature flags object by default when not provided', () => {
-    const options = SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP);
-
-    expect(options).toHaveLength(4);
-    expect(options).toEqual([
+    expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP)).toEqual([
       ALL_BRANCHES,
       GROUP_DEFAULT_BRANCHES,
       ALL_PROTECTED_BRANCHES,
