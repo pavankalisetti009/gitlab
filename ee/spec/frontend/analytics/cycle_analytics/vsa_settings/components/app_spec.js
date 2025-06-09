@@ -122,7 +122,7 @@ describe('VSA settings app', () => {
       it('renders form content component', () => {
         expect(findFormContent().props()).toMatchObject({
           initialData: {
-            id: 1,
+            id: 'gid://gitlab/ValueStream/1',
             name: 'oink',
             stages: expect.any(Array),
           },

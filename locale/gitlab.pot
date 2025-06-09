@@ -18852,6 +18852,9 @@ msgstr ""
 msgid "CreateValueStreamForm|An error occurred while creating the custom value stream. Try again."
 msgstr ""
 
+msgid "CreateValueStreamForm|An error occurred while updating the custom value stream. Try again."
+msgstr ""
+
 msgid "CreateValueStreamForm|Code stage start"
 msgstr ""
 

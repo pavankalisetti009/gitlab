@@ -129,10 +129,7 @@ const endEventLabel = { id: 'gid://gitlab/GroupLabel/2' };
 
 export const customStage = {
   hidden: false,
-  legend: 'Custom legend',
-  description: 'Time before an issue gets scheduled',
   id: 341,
-  title: 'Custom stage 1',
   name: 'Custom stage 1',
   startEventIdentifier: 'issue_label_added',
   endEventIdentifier: 'issue_label_removed',
