@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'git access for a read-only GitLab instance' do
+RSpec.shared_examples 'git access for a read-only GitLab instance' do |ssh: false|
   include EE::GeoHelpers
 
   it 'denies push access' do
@@ -50,56 +50,34 @@ RSpec.shared_examples 'git access for a read-only GitLab instance' do
       end
 
       context 'for a git clone/pull' do
-        let(:payload) do
-          {
-            'action' => 'geo_proxy_to_primary',
-            'data' => {
-              'api_endpoints' => %w[/api/v4/geo/proxy_git_ssh/info_refs_upload_pack /api/v4/geo/proxy_git_ssh/upload_pack],
-              'primary_repo' => primary_repo_url,
-              "geo_proxy_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary_with_options" => true,
-              "geo_proxy_fetch_ssh_direct_to_primary" => true,
-              "geo_proxy_push_ssh_direct_to_primary" => true,
-              "request_headers" => include('Authorization')
-            }
-          }
-        end
-
-        it 'attempts to proxy to the primary' do
+        it 'returns success' do
           project.add_maintainer(user)
 
-          expect(pull_changes).to be_a(Gitlab::GitAccessResult::CustomAction)
-          expect(pull_changes.payload).to include(payload)
-          expect(pull_changes.console_messages).to include(*console_messages)
+          expect(pull_changes).to be_a(Gitlab::GitAccessResult::Success)
         end
       end
 
       context 'for a git push' do
-        let(:payload) do
-          {
-            'action' => 'geo_proxy_to_primary',
-            'data' => {
-              'api_endpoints' => %w[/api/v4/geo/proxy_git_ssh/info_refs_receive_pack /api/v4/geo/proxy_git_ssh/receive_pack],
-              'primary_repo' => primary_repo_url,
-              "geo_proxy_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary_with_options" => true,
-              "geo_proxy_fetch_ssh_direct_to_primary" => true,
-              "geo_proxy_push_ssh_direct_to_primary" => true,
-              "request_headers" => include('Authorization')
-            }
-          }
-        end
-
-        it 'attempts to proxy to the primary' do
-          project.add_maintainer(user)
-
-          expect(push_changes).to be_a(Gitlab::GitAccessResult::CustomAction)
-          expect(push_changes.payload).to include(payload)
-          expect(push_changes.console_messages).to include(*console_messages)
+        # this behaviour is isolated to Gitlab::GitAccess.check, in reality the request should be redirected before
+        # running that function
+        if ssh
+          it 'expects a GeoCustomSshError' do
+            expect { push_changes }.to raise_error(EE::Gitlab::GitAccess::GeoCustomSshError, "The repo does not exist or is out-of-date on this secondary site")
+          end
+        else
+          it 'denies push access' do
+            expect { push_changes }.to raise_forbidden("You can't push code to a read-only GitLab instance.")
+          end
         end
       end
     end
   end
+end
+
+RSpec.shared_examples 'git non-ssh access for a read-only GitLab instance' do
+  it_behaves_like 'git access for a read-only GitLab instance', ssh: false
+end
+
+RSpec.shared_examples 'git ssh access for a read-only GitLab instance' do
+  it_behaves_like 'git access for a read-only GitLab instance', ssh: true
 end

@@ -84,6 +84,13 @@ module EE
                 { success: false, message: 'Invalid OTP' }
               end
             end
+
+            override :access_check_result
+            def access_check_result
+              super
+            rescue Gitlab::GitAccess::GeoCustomSshError
+              ::EE::Gitlab::GeoGitAccess.geo_custom_ssh_action
+            end
           end
 
           namespace 'internal' do
