@@ -45,6 +45,10 @@ module Types
         packager = object.packager
         ::Sbom::DependenciesFinder::FILTER_PACKAGE_MANAGERS_VALUES.include?(packager) ? packager : nil
       end
+
+      def vulnerability_count
+        object.vulnerabilities&.size || 0
+      end
     end
   end
 end

@@ -7,21 +7,21 @@ RSpec.describe Types::Sbom::DependencyInterface, feature_category: :dependency_m
     %i[id name version componentVersion packager location licenses reachability vulnerability_count vulnerabilities]
   end
 
+  let(:dependency) { instance_double(::Sbom::Occurrence) }
+  let(:interface) do
+    Class.new do
+      include Types::Sbom::DependencyInterface
+      attr_reader :object
+
+      def initialize(object)
+        @object = object
+      end
+    end.new(dependency)
+  end
+
   it { expect(described_class).to have_graphql_fields(fields) }
 
   describe '#packager' do
-    let(:dependency) { instance_double(::Sbom::Occurrence) }
-    let(:interface) do
-      Class.new do
-        include Types::Sbom::DependencyInterface
-        attr_reader :object
-
-        def initialize(object)
-          @object = object
-        end
-      end.new(dependency)
-    end
-
     context 'when packager is in the predefined list' do
       valid_packagers = %w[bundler npm yarn maven pip]
 
@@ -47,6 +47,26 @@ RSpec.describe Types::Sbom::DependencyInterface, feature_category: :dependency_m
         allow(dependency).to receive(:packager).and_return(nil)
 
         expect(interface.packager).to be_nil
+      end
+    end
+  end
+
+  describe '#vulnerability_count' do
+    context 'when vulnerabilities exist' do
+      let(:vulnerabilities) { instance_double(Array, size: 3) }
+
+      it 'returns the count of vulnerabilities' do
+        allow(dependency).to receive(:vulnerabilities).and_return(vulnerabilities)
+
+        expect(interface.vulnerability_count).to eq(3)
+      end
+    end
+
+    context 'when vulnerabilities do not exist' do
+      it 'returns 0' do
+        allow(dependency).to receive(:vulnerabilities).and_return(nil)
+
+        expect(interface.vulnerability_count).to eq(0)
       end
     end
   end
