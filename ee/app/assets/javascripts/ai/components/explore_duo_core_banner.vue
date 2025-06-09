@@ -34,7 +34,7 @@ export default {
   },
   methods: {
     onInstallExtensionClick() {
-      this.trackEvent('click_install_extension_link_on_duo_core_banner');
+      this.trackEvent('click_extension_link_on_duo_core_banner');
     },
     onExploreGitLabDuoClick() {
       this.trackEvent('click_explore_link_on_duo_core_banner');

@@ -53,7 +53,11 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            '2.0.0' if Feature.enabled?(:summarize_code_review_claude_3_7_sonnet, user)
+            if Feature.enabled?(:summarize_code_review_claude_4_0_sonnet, user)
+              '2.1.0'
+            elsif Feature.enabled?(:summarize_code_review_claude_3_7_sonnet, user)
+              '2.0.0'
+            end
           end
 
           def draft_notes_content
