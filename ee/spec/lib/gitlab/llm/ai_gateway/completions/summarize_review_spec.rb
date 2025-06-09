@@ -50,6 +50,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
 
   describe '#execute' do
     before do
+      stub_feature_flags(summarize_code_review_claude_4_0_sonnet: false)
       stub_feature_flags(summarize_code_review_claude_3_7_sonnet: false)
       stub_feature_flags(ai_model_switching: false)
     end
@@ -111,12 +112,9 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         it_behaves_like 'summarize review'
       end
 
-      context 'with feature flag enabled' do
+      context 'when claude_4_0_sonnet feature flag disabled' do
         let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
-
-        before do
-          stub_feature_flags(summarize_code_review_claude_3_7_sonnet: true)
-        end
+        let(:prompt_version) { "^2.0.0" }
 
         shared_examples_for 'summarize review with prompt version' do
           it 'includes prompt_version in the request' do
@@ -128,7 +126,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
                   prompt_name: :summarize_review,
                   inputs: { draft_notes_content: draft_notes_content },
                   model_metadata: model_metadata,
-                  prompt_version: "2.0.0"
+                  prompt_version: prompt_version
                 )
                 .and_return(example_response)
             end
@@ -138,6 +136,16 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         end
 
         it_behaves_like 'summarize review with prompt version'
+
+        context 'when claude_3_7_sonnet feature flag enabled' do
+          before do
+            stub_feature_flags(summarize_code_review_claude_3_7_sonnet: true)
+          end
+
+          it_behaves_like 'summarize review with prompt version' do
+            let(:prompt_version) { "2.0.0" }
+          end
+        end
 
         context 'when namespace model switching is enabled' do
           let_it_be(:group) { create(:group) }
@@ -173,6 +181,16 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
                 }
               end
             end
+          end
+        end
+
+        context 'when claude_4_0_sonnet feature flag enabled' do
+          before do
+            stub_feature_flags(summarize_code_review_claude_4_0_sonnet: true)
+          end
+
+          it_behaves_like 'summarize review with prompt version' do
+            let(:prompt_version) { "2.1.0" }
           end
         end
       end
