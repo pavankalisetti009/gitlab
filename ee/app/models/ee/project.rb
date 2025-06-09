@@ -1494,6 +1494,11 @@ module EE
       security_setting&.container_scanning_for_registry_enabled?
     end
 
+    def has_container_registry_immutable_tag_rules?
+      container_registry_protection_tag_rules.immutable.exists?
+    end
+    strong_memoize_attr :has_container_registry_immutable_tag_rules?
+
     private
 
     delegate :csp_enabled?, to: ::Security::PolicySetting
