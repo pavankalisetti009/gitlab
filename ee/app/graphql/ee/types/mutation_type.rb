@@ -79,10 +79,10 @@ module EE
         mount_mutation ::Mutations::RequirementsManagement::CreateRequirement
         mount_mutation ::Mutations::RequirementsManagement::ExportRequirements
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
-        mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagerInitialize
-        mount_mutation ::Mutations::SecretsManagement::ProjectSecretCreate
-        mount_mutation ::Mutations::SecretsManagement::ProjectSecretDelete
-        mount_mutation ::Mutations::SecretsManagement::ProjectSecretUpdate
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Initialize
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Create
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Delete
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Update
         mount_mutation ::Mutations::SecretsManagement::Permissions::Update
         mount_mutation ::Mutations::SecretsManagement::Permissions::Delete
         mount_mutation ::Mutations::Security::Finding::CreateIssue
