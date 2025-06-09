@@ -17,7 +17,7 @@ module SecretsManagement
         user = User.find_by_id(current_user_id)
         next unless user
 
-        ProvisionProjectSecretsManagerService.new(secrets_manager, user).execute
+        ProjectSecretsManagers::ProvisionService.new(secrets_manager, user).execute
       end
     end
   end

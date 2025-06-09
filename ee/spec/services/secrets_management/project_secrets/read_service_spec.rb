@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SecretsManagement::ReadProjectSecretService, :gitlab_secrets_manager, feature_category: :secrets_management do
+RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_manager, feature_category: :secrets_management do
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
 

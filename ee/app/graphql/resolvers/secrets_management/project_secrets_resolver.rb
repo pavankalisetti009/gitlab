@@ -17,7 +17,7 @@ module Resolvers
       def resolve(project_path:)
         project = authorized_find!(project_path: project_path)
 
-        result = ::SecretsManagement::ListProjectSecretsService.new(
+        result = ::SecretsManagement::ProjectSecrets::ListService.new(
           project,
           current_user
         ).execute
