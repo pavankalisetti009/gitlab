@@ -1,7 +1,7 @@
 import { GlSprintf, GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemVerificationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_verification_info.vue';
-import { VERIFICATION_STATUS_STATES } from 'ee/geo_replicable_item//constants';
+import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared//constants';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { MOCK_REPLICABLE_WITH_VERIFICATION } from '../mock_data';
 

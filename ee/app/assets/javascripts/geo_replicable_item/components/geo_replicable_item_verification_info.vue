@@ -1,9 +1,9 @@
 <script>
 import { GlSprintf, GlBadge, GlCard } from '@gitlab/ui';
+import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
-import { VERIFICATION_STATUS_STATES } from '../constants';
 
 export default {
   name: 'GeoReplicableItemVerificationInfo',
