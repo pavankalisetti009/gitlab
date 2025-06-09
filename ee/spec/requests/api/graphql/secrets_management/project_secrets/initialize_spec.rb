@@ -48,19 +48,19 @@ RSpec.describe 'Initialize secrets manager on a project', feature_category: :sec
       let(:event) { 'enable_ci_secrets_manager_for_project' }
       let(:namespace) { project.namespace }
       let(:user) { current_user }
-      let(:category) { 'Mutations::SecretsManagement::ProjectSecretsManagerInitialize' }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecretsManagers::Initialize' }
       let(:additional_properties) { { label: 'graphql' } }
     end
 
     context 'and service results to a failure' do
       before do
-        allow_next_instance_of(SecretsManagement::InitializeProjectSecretsManagerService) do |service|
+        allow_next_instance_of(SecretsManagement::ProjectSecretsManagers::InitializeService) do |service|
           allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
         end
       end
 
       it 'returns the service error' do
-        expect_next_instance_of(SecretsManagement::InitializeProjectSecretsManagerService) do |service|
+        expect_next_instance_of(SecretsManagement::ProjectSecretsManagers::InitializeService) do |service|
           result = ServiceResponse.error(message: 'some error')
           expect(service).to receive(:execute).and_return(result)
         end

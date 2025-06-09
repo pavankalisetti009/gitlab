@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SecretsManagement::InitializeProjectSecretsManagerService, feature_category: :secrets_management do
+RSpec.describe SecretsManagement::ProjectSecretsManagers::InitializeService, feature_category: :secrets_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
 

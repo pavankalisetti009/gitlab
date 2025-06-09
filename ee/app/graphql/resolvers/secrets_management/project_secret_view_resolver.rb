@@ -23,7 +23,7 @@ module Resolvers
 
         ensure_active_secrets_manager!(project)
 
-        result = ::SecretsManagement::ReadProjectSecretService.new(project, current_user).execute(name)
+        result = ::SecretsManagement::ProjectSecrets::ReadService.new(project, current_user).execute(name)
 
         if result.success?
           result.payload[:project_secret]

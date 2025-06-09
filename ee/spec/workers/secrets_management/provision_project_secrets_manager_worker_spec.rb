@@ -17,8 +17,8 @@ RSpec.describe SecretsManagement::ProvisionProjectSecretsManagerWorker, :gitlab_
 
       expect(User).to receive(:find_by_id).with(user.id).and_return(user)
 
-      service = instance_double(SecretsManagement::ProvisionProjectSecretsManagerService)
-      expect(SecretsManagement::ProvisionProjectSecretsManagerService)
+      service = instance_double(SecretsManagement::ProjectSecretsManagers::ProvisionService)
+      expect(SecretsManagement::ProjectSecretsManagers::ProvisionService)
         .to receive(:new).with(secrets_manager, user).and_return(service)
 
       expect(service).to receive(:execute)

@@ -2,29 +2,23 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_category: :secrets_management do
+RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_category: :secrets_management do
   include GraphqlHelpers
 
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:mutation_name) { :project_secret_delete }
+  let_it_be(:mutation_name) { :project_secret_create }
 
   let(:secrets_manager) { create(:project_secrets_manager, project: project) }
-
-  let(:project_secret_attributes) do
-    {
-      name: 'TEST_SECRET',
-      description: 'test description',
-      branch: 'dev-branch-*',
-      environment: 'review/*',
-      value: 'test value'
-    }
-  end
 
   let(:params) do
     {
       project_path: project.full_path,
-      name: project_secret_attributes[:name]
+      name: 'TEST_SECRET',
+      description: 'test description',
+      secret: 'the-secret-value',
+      branch: 'main',
+      environment: 'prod'
     }
   end
 
@@ -34,11 +28,8 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
   subject(:post_mutation) { post_graphql_mutation(mutation, current_user: current_user) }
 
   before do
+    stub_last_activity_update
     provision_project_secrets_manager(secrets_manager, current_user)
-
-    create_project_secret(
-      **project_secret_attributes.merge(user: current_user, project: project)
-    )
   end
 
   context 'when current user is not part of the project' do
@@ -58,39 +49,39 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
       project.add_owner(current_user)
     end
 
-    it 'deletes the project secret', :aggregate_failures do
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'create_ci_secret' }
+      let(:user) { current_user }
+      let(:namespace) { project.namespace }
+      let(:additional_properties) { { label: 'graphql' } }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecrets::Create' }
+    end
+
+    it 'creates the project secret', :aggregate_failures do
       post_mutation
 
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['errors']).to be_empty
 
       expect(graphql_data_at(mutation_name, :project_secret))
-        .to match(
-          a_graphql_entity_for(
-            **project_secret_attributes
-              .except(:value)
-              .merge(project: a_graphql_entity_for(project))
-          )
-        )
-    end
-
-    context 'and secret does not exist' do
-      before do
-        params[:name] = 'SOMETHING_ELSE'
-      end
-
-      it 'returns a top-level error with message' do
-        post_mutation
-
-        expect(mutation_response).to be_nil
-        expect(graphql_errors.count).to eq(1)
-        expect(graphql_errors.first['message']).to eq('Project secret does not exist.')
-      end
+        .to match(a_graphql_entity_for(
+          project: a_graphql_entity_for(project),
+          name: params[:name],
+          description: params[:description],
+          branch: params[:branch],
+          environment: params[:environment]
+        ))
     end
 
     context 'and service results to a failure' do
+      before do
+        allow_next_instance_of(SecretsManagement::ProjectSecrets::CreateService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
+        end
+      end
+
       it 'returns the service error' do
-        expect_next_instance_of(SecretsManagement::DeleteProjectSecretService) do |service|
+        expect_next_instance_of(SecretsManagement::ProjectSecrets::CreateService) do |service|
           project_secret = SecretsManagement::ProjectSecret.new
           project_secret.errors.add(:base, 'some error')
 
@@ -102,13 +93,39 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
 
         expect(mutation_response['errors']).to include('some error')
       end
+
+      it_behaves_like 'internal event not tracked'
+    end
+
+    context 'and value exceed allowed limits (10k characters)' do
+      let(:params) do
+        {
+          project_path: project.full_path,
+          name: 'TEST_SECRET_1234',
+          description: 'test description',
+          secret: "x" * 10001,
+          branch: 'main',
+          environment: 'prod'
+        }
+      end
+
+      it 'fails', :aggregate_failures do
+        post_mutation
+
+        msg = 'Length of project secret value exceeds allowed limits (10k bytes).'
+        expect(mutation_response['errors']).to include(msg)
+      end
     end
 
     context 'and name does not conform' do
       let(:params) do
         {
           project_path: project.full_path,
-          name: '../../OTHER_SECRET'
+          name: '../../OTHER_SECRET',
+          description: 'test description',
+          secret: 'Secret123',
+          branch: 'main',
+          environment: 'prod'
         }
       end
 

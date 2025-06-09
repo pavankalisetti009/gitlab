@@ -31,7 +31,7 @@ module SecretsManagement
     end
 
     def provision_project_secrets_manager(secrets_manager, user)
-      ProvisionProjectSecretsManagerService.new(secrets_manager, user).execute
+      ProjectSecretsManagers::ProvisionService.new(secrets_manager, user).execute
     end
 
     def expect_kv_secret_engine_to_be_mounted(path)
@@ -55,7 +55,7 @@ module SecretsManagement
 
     def expect_project_secret_not_to_exist(project, name, user = nil)
       user ||= create(:user)
-      result = ReadProjectSecretService.new(project, user).execute(name)
+      result = ProjectSecrets::ReadService.new(project, user).execute(name)
       expect(result).to be_error
       expect(result.message).to eq('Project secret does not exist.')
     end
@@ -85,7 +85,7 @@ module SecretsManagement
     end
 
     def create_project_secret(user:, project:, name:, branch:, environment:, value:, description: nil)
-      result = CreateProjectSecretService.new(project, user).execute(
+      result = ProjectSecrets::CreateService.new(project, user).execute(
         name: name,
         value: value,
         description: description,

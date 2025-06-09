@@ -67,7 +67,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
       let(:user) { current_user }
       let(:namespace) { project.namespace }
       let(:additional_properties) { { label: 'graphql' } }
-      let(:category) { 'Mutations::SecretsManagement::ProjectSecretUpdate' }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecrets::Update' }
     end
 
     it 'updates the project secret', :aggregate_failures do
@@ -166,13 +166,13 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
 
     context 'and service results to a failure' do
       before do
-        allow_next_instance_of(SecretsManagement::UpdateProjectSecretService) do |service|
+        allow_next_instance_of(SecretsManagement::ProjectSecrets::UpdateService) do |service|
           allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
         end
       end
 
       it 'returns the service error' do
-        expect_next_instance_of(SecretsManagement::UpdateProjectSecretService) do |service|
+        expect_next_instance_of(SecretsManagement::ProjectSecrets::UpdateService) do |service|
           project_secret = SecretsManagement::ProjectSecret.new
           project_secret.errors.add(:base, 'some error')
 
