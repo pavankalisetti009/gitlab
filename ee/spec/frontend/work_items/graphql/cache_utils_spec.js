@@ -5,6 +5,16 @@ import { apolloProvider } from '~/graphql_shared/issuable_client';
 import { namespaceWorkItemTypesQueryResponse } from 'jest/work_items/mock_data';
 
 describe('work items graphql cache utils', () => {
+  const originalFeatures = window.gon.features;
+
+  beforeEach(() => {
+    window.gon.features = {};
+  });
+
+  afterAll(() => {
+    window.gon.features = originalFeatures;
+  });
+
   describe('setNewWorkItemCache', () => {
     it('retrieves defaultOpenStatus for status widget', async () => {
       const mockWriteQuery = jest.fn();
