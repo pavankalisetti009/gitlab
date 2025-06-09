@@ -39,3 +39,23 @@ export const MOCK_FILTERED_SEARCH_TOKENS = [
     options: [MOCK_FILTER_B.value.data],
   },
 ];
+
+export const MOCK_MODAL_DEFINITION = {
+  title: 'Test action on %{type}',
+  description: 'Executes action on %{type}',
+};
+
+export const MOCK_BULK_ACTIONS = [
+  {
+    id: 'test_action',
+    text: 'Test Action',
+    action: 'TEST_ACTION',
+    modal: MOCK_MODAL_DEFINITION,
+  },
+  {
+    id: 'test_action2',
+    text: 'Test Action 2',
+    action: 'TEST_ACTION_2',
+    modal: MOCK_MODAL_DEFINITION,
+  },
+];

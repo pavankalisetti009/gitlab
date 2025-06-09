@@ -9,8 +9,7 @@ import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoReplicableEmptyState from 'ee/geo_replicable/components/geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from 'ee/geo_replicable/components/geo_replicable_filter_bar.vue';
-import GeoListFilteredSearchBar from 'ee/geo_shared/list/components/geo_list_filtered_search_bar.vue';
-import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
+import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import initStore from 'ee/geo_replicable/store';
 import { processFilters } from 'ee/geo_replicable/filters';
 import { TEST_HOST } from 'spec/test_constants';
@@ -72,10 +71,7 @@ describe('GeoReplicableApp', () => {
     findGeoReplicableContainer().findComponent(GeoReplicableEmptyState);
   const findGeoReplicableFilterBar = () =>
     findGeoReplicableContainer().findComponent(GeoReplicableFilterBar);
-  const findGeoListFilteredSearchBar = () =>
-    findGeoReplicableContainer().findComponent(GeoListFilteredSearchBar);
-  const findGeoListBulkActions = () =>
-    findGeoReplicableContainer().findComponent(GeoListBulkActions);
+  const findGeoListTopBar = () => findGeoReplicableContainer().findComponent(GeoListTopBar);
   const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
 
   describe.each`
@@ -138,8 +134,8 @@ describe('GeoReplicableApp', () => {
         expect(findGeoReplicableFilterBar().exists()).toBe(true);
       });
 
-      it('does not render filtered search bar', () => {
-        expect(findGeoListFilteredSearchBar().exists()).toBe(false);
+      it('does not render top bar', () => {
+        expect(findGeoListTopBar().exists()).toBe(false);
       });
     });
 
@@ -158,13 +154,11 @@ describe('GeoReplicableApp', () => {
           expect(findGeoReplicableFilterBar().exists()).toBe(false);
         });
 
-        it('renders filtered search bar with correct listbox item and no search filters', () => {
-          expect(findGeoListFilteredSearchBar().props('activeListboxItem')).toBe(
+        it('renders top bar with correct listbox item and no search filters', () => {
+          expect(findGeoListTopBar().props('activeListboxItem')).toBe(
             MOCK_REPLICABLE_TYPE_FILTER.value,
           );
-          expect(findGeoListFilteredSearchBar().props('activeFilteredSearchFilters')).toStrictEqual(
-            [],
-          );
+          expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toStrictEqual([]);
         });
       });
 
@@ -182,63 +176,50 @@ describe('GeoReplicableApp', () => {
           expect(findGeoReplicableFilterBar().exists()).toBe(false);
         });
 
-        it('renders filtered search bar with correct listbox item and search filters', () => {
-          expect(findGeoListFilteredSearchBar().props('activeListboxItem')).toBe(
+        it('renders top bar with correct listbox item and search filters', () => {
+          expect(findGeoListTopBar().props('activeListboxItem')).toBe(
             MOCK_REPLICABLE_TYPE_FILTER.value,
           );
-          expect(findGeoListFilteredSearchBar().props('activeFilteredSearchFilters')).toStrictEqual(
-            [MOCK_REPLICATION_STATUS_FILTER],
-          );
+          expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toStrictEqual([
+            MOCK_REPLICATION_STATUS_FILTER,
+          ]);
         });
       });
     });
   });
 
   describe('bulk actions', () => {
-    describe('when feature geoReplicablesFilteredListView is disabled', () => {
+    beforeEach(() => {
+      createStore();
+      createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
+    });
+
+    describe('with no replicable items', () => {
       beforeEach(() => {
-        createStore();
-        createComponent({ featureFlags: { geoReplicablesFilteredListView: false } });
-        store.state.replicableItems = MOCK_BASIC_GRAPHQL_DATA;
+        store.state.replicableItems = [];
       });
 
-      it('does not render bulk actions', () => {
-        expect(findGeoListBulkActions().exists()).toBe(false);
+      it('renders top bar with showActions=false', () => {
+        expect(findGeoListTopBar().props('showActions')).toBe(false);
       });
     });
 
-    describe('when feature geoReplicablesFilteredListView is enabled', () => {
+    describe('with replicable items', () => {
       beforeEach(() => {
-        createStore();
-        createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
+        store.state.replicableItems = MOCK_BASIC_GRAPHQL_DATA;
       });
 
-      describe('with no replicable items', () => {
-        beforeEach(() => {
-          store.state.replicableItems = [];
-        });
-
-        it('does not render bulk actions', () => {
-          expect(findGeoListBulkActions().exists()).toBe(false);
-        });
+      it('renders top bar with showActions=true and correct actions', () => {
+        expect(findGeoListTopBar().props('showActions')).toBe(true);
+        expect(findGeoListTopBar().props('bulkActions')).toStrictEqual(BULK_ACTIONS);
       });
 
-      describe('with replicable items', () => {
-        beforeEach(() => {
-          store.state.replicableItems = MOCK_BASIC_GRAPHQL_DATA;
-        });
+      it('when top bar emits @bulkAction, initiateAllReplicableAction is called with correct action', async () => {
+        findGeoListTopBar().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
+        await nextTick();
 
-        it('does render bulk actions with correct actions', () => {
-          expect(findGeoListBulkActions().props('bulkActions')).toStrictEqual(BULK_ACTIONS);
-        });
-
-        it('when bulk actions emits @bulkAction, initiateAllReplicableAction is called with correct action', async () => {
-          findGeoListBulkActions().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
-          await nextTick();
-
-          expect(store.dispatch).toHaveBeenCalledWith('initiateAllReplicableAction', {
-            action: BULK_ACTIONS[0].action,
-          });
+        expect(store.dispatch).toHaveBeenCalledWith('initiateAllReplicableAction', {
+          action: BULK_ACTIONS[0].action,
         });
       });
     });
@@ -254,7 +235,7 @@ describe('GeoReplicableApp', () => {
     });
   });
 
-  describe('onListboxChange', () => {
+  describe('handleListboxChange', () => {
     beforeEach(() => {
       setWindowLocation(
         `${TEST_HOST}/admin/geo/sites/2/replication/${MOCK_REPLICABLE_TYPE_FILTER.value}?${MOCK_REPLICATION_STATUS_FILTER.type}=${MOCK_REPLICATION_STATUS_FILTER.value.data}`,
@@ -267,7 +248,7 @@ describe('GeoReplicableApp', () => {
     it('preserves filters while updating the replicable type before calling processFilters and visitUrl', () => {
       const MOCK_NEW_REPLICABLE_TYPE = 'new_replicable_type';
 
-      findGeoListFilteredSearchBar().vm.$emit('listboxChange', MOCK_NEW_REPLICABLE_TYPE);
+      findGeoListTopBar().vm.$emit('listboxChange', MOCK_NEW_REPLICABLE_TYPE);
 
       expect(processFilters).toHaveBeenCalledWith([
         { type: MOCK_REPLICABLE_TYPE_FILTER.type, value: MOCK_NEW_REPLICABLE_TYPE },
@@ -282,14 +263,14 @@ describe('GeoReplicableApp', () => {
     });
   });
 
-  describe('onSearch', () => {
+  describe('handleSearch', () => {
     beforeEach(() => {
       createStore();
       createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
     });
 
     it('processes filters and calls visitUrl', () => {
-      findGeoListFilteredSearchBar().vm.$emit('search', MOCK_FILTERS);
+      findGeoListTopBar().vm.$emit('search', MOCK_FILTERS);
 
       expect(processFilters).toHaveBeenCalledWith(MOCK_FILTERS);
       expect(setUrlParams).toHaveBeenCalledWith(
