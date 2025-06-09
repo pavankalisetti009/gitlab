@@ -8,6 +8,7 @@ query listAmazonS3Configuration($fullPath: ID!) {
         accessKeyXid
         awsRegion
         bucketName
+        active
       }
     }
   }

@@ -6,6 +6,7 @@ fragment ExternalAuditEventDestinationFragment on ExternalAuditEventDestination 
   destinationUrl
   verificationToken
   eventTypeFilters
+  active
   headers {
     nodes {
       ...AuditEventStreamingHeaderFragment

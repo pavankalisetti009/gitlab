@@ -22680,6 +22680,12 @@ msgstr ""
 msgid "Destination"
 msgstr ""
 
+msgid "Destination activated successfully."
+msgstr ""
+
+msgid "Destination deactivated successfully."
+msgstr ""
+
 msgid "Destination path"
 msgstr ""
 
@@ -26732,6 +26738,9 @@ msgid "Failed to update compliance requirement control. Error: %{error_message}"
 msgstr ""
 
 msgid "Failed to update compliance violation status. Please try again later."
+msgstr ""
+
+msgid "Failed to update destination status. Please try again."
 msgstr ""
 
 msgid "Failed to update framework"

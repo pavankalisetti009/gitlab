@@ -5,6 +5,7 @@ mutation updateInstanceGcpLoggingDestination(
   $clientEmail: String!
   $privateKey: String
   $logIdName: String!
+  $active: Boolean = true
 ) {
   instanceGoogleCloudLoggingConfigurationUpdate(
     input: {
@@ -14,6 +15,7 @@ mutation updateInstanceGcpLoggingDestination(
       clientEmail: $clientEmail
       privateKey: $privateKey
       logIdName: $logIdName
+      active: $active
     }
   ) {
     errors
@@ -23,6 +25,7 @@ mutation updateInstanceGcpLoggingDestination(
       logIdName
       googleProjectIdName
       clientEmail
+      active
     }
   }
 }

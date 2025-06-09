@@ -5,4 +5,5 @@ fragment StreamingDestinationFragment on AuditEventStreamingDestinationInterface
   config
   secretToken
   eventTypeFilters
+  active
 }

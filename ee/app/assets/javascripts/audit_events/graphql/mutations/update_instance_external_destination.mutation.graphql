@@ -3,8 +3,9 @@
 mutation updateInstanceExternalAuditEventDestination(
   $id: AuditEventsInstanceExternalAuditEventDestinationID!
   $name: String!
+  $active: Boolean = true
 ) {
-  instanceExternalAuditEventDestinationUpdate(input: { name: $name, id: $id }) {
+  instanceExternalAuditEventDestinationUpdate(input: { name: $name, id: $id, active: $active }) {
     errors
     instanceExternalAuditEventDestination {
       ...InstanceExternalAuditEventDestinationFragment
