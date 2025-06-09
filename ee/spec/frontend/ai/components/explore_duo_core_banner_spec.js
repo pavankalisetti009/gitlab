@@ -127,14 +127,14 @@ describe('ExploreDuoCoreBanner', () => {
       );
     });
 
-    it('tracks click_install_extension_link_on_duo_core_banner when clicking the install extension link', async () => {
+    it('tracks click_extension_link_on_duo_core_banner when clicking the install extension link', async () => {
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
       trackEventSpy.mockClear();
 
       await findInstallationLink().trigger('click');
 
       expect(trackEventSpy).toHaveBeenCalledWith(
-        'click_install_extension_link_on_duo_core_banner',
+        'click_extension_link_on_duo_core_banner',
         {},
         undefined,
       );
