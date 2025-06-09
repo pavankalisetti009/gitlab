@@ -11,7 +11,6 @@ import {
   FRAMEWORKS_FILTER_TYPE_GROUP,
   FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
   GRAPHQL_FRAMEWORK_TYPE,
-  EXTERNAL_CONTROL_URL_LABEL,
   UNKNOWN_CONTROL_LABEL,
 } from './constants';
 
@@ -205,7 +204,7 @@ export const getControls = (requirementControlNodes, complianceRequirementContro
           ...control,
           displayValue:
             control.controlType === 'external'
-              ? `${EXTERNAL_CONTROL_URL_LABEL} ${control.externalUrl}`
+              ? control.externalControlName
               : matchingGitLabControl?.name || UNKNOWN_CONTROL_LABEL,
         };
       })

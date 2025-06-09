@@ -361,7 +361,7 @@ describe('RequirementModal', () => {
               id: '1',
               name: 'external_control',
               controlType: 'external',
-              externalControlName: 'external_name',
+              externalControlName: 'External name',
               externalUrl: 'https://api.example.com',
               secretToken: 'secret123',
             },
@@ -379,7 +379,7 @@ describe('RequirementModal', () => {
       await editButton.vm.$emit('click');
       await nextTick();
 
-      expect(findExternalNameInput(0).attributes('value')).toBe('external_name');
+      expect(findExternalNameInput(0).attributes('value')).toBe('External name');
       expect(findExternalUrlInput(0).attributes('value')).toBe('https://api.example.com');
       expect(findExternalSecretInput(0).exists()).toBe(true);
 
@@ -390,7 +390,7 @@ describe('RequirementModal', () => {
       await nextTick();
 
       const summaryText = findExternalControlSummary(0).text();
-      expect(summaryText).toContain('Send via: https://api.example.com');
+      expect(summaryText).toContain('External name');
       expect(summaryText).toContain('External');
     });
 
@@ -411,7 +411,7 @@ describe('RequirementModal', () => {
               id: '1',
               name: 'external_control',
               controlType: 'external',
-              externalControlName: 'external_name',
+              externalControlName: 'External name',
               externalUrl: 'https://api.example.com',
               secretToken: 'secret123',
             },
@@ -437,7 +437,7 @@ describe('RequirementModal', () => {
       await nextTick();
 
       const summaryText = findExternalControlSummary(0).text();
-      expect(summaryText).toContain('Send via: https://api.example.com');
+      expect(summaryText).toContain('External name');
       expect(summaryText).toContain('External');
     });
 

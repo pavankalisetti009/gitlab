@@ -93,5 +93,4 @@ export const GRAPHQL_FIELD_MISSING_ERROR_MESSAGE = __(
 );
 
 export const EXTERNAL_CONTROL_LABEL = s__('ComplianceFrameworks|External');
-export const EXTERNAL_CONTROL_URL_LABEL = s__('ComplianceFrameworks|Send via:');
 export const UNKNOWN_CONTROL_LABEL = s__('ComplianceFrameworks|Unknown');

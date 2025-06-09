@@ -138,7 +138,7 @@ describe('Requirements section', () => {
       idx  | name          | description                            | controls                                          | externalBadgeCount
       ${0} | ${'SOC2'}     | ${'Controls for SOC2'}                 | ${[]}                                             | ${0}
       ${1} | ${'GitLab'}   | ${'Controls used by GitLab'}           | ${['Minimum approvals required', 'SAST Running']} | ${0}
-      ${2} | ${'External'} | ${'Requirement with external control'} | ${['Send via: https://example.com']}              | ${1}
+      ${2} | ${'External'} | ${'Requirement with external control'} | ${['external_name']}                              | ${1}
     `(
       'has the correct data for row $idx',
       ({ idx, name, description, controls, externalBadgeCount }) => {
