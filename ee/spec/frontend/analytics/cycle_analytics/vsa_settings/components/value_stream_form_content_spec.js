@@ -1,9 +1,9 @@
-import { GlAlert } from '@gitlab/ui';
-import { nextTick } from 'vue';
-import MockAdapter from 'axios-mock-adapter';
-import axios from '~/lib/utils/axios_utils';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   PRESET_OPTIONS_BLANK,
@@ -13,50 +13,61 @@ import CustomStageFields from 'ee/analytics/cycle_analytics/vsa_settings/compone
 import DefaultStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/default_stage_fields.vue';
 import ValueStreamFormContent from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
-import { HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
-import {
-  convertObjectPropsToCamelCase,
-  convertObjectPropsToSnakeCase,
-} from '~/lib/utils/common_utils';
 import ValueStreamFormContentActions from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content_actions.vue';
-import { customStageEvents as stageEvents, rawCustomStage, endpoints } from '../../mock_data';
-import { defaultStages } from '../mock_data';
+import createValueStream from 'ee/analytics/cycle_analytics/vsa_settings/graphql/create_value_stream.mutation.graphql';
+import updateValueStream from 'ee/analytics/cycle_analytics/vsa_settings/graphql/update_value_stream.mutation.graphql';
+import { customStageEvents as stageEvents } from '../../mock_data';
+import { defaultStages, mockChangeValueStreamResponse } from '../mock_data';
 
+Vue.use(VueApollo);
+
+jest.mock('~/alert');
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrlWithAlerts: jest.fn(),
 }));
 
 describe('ValueStreamFormContent', () => {
-  let mock;
   let wrapper = null;
   let trackingSpy = null;
 
   const mockValueStream = { id: 13 };
   const valueStreamGid = 'gid://gitlab/ValueStream/13';
-  const namespacePath = 'fake/group/path';
+  const fullPath = 'fake/group/path';
   const streamName = 'Cool stream';
-  const formSubmissionErrors = {
-    name: ['has already been taken'],
-    stages: [
-      {
-        name: ['has already been taken'],
-      },
-    ],
+
+  const customStage = {
+    name: 'Coolest beans stage',
+    hidden: false,
+    id: 'gid://gitlab/ValueStream::Stage/10',
+    custom: true,
+    startEventIdentifier: 'issue_first_mentioned_in_commit',
+    endEventIdentifier: 'issue_first_added_to_board',
   };
 
   const initialData = {
     ...mockValueStream,
-    stages: [convertObjectPropsToCamelCase(rawCustomStage)],
+    stages: [customStage],
     name: 'Editable value stream',
   };
 
-  const createComponent = ({ props = {}, provide = {} } = {}) =>
-    shallowMountExtended(ValueStreamFormContent, {
+  const createWrapper = ({
+    props = {},
+    provide = {},
+    createProvider = jest.fn().mockResolvedValue(mockChangeValueStreamResponse),
+    updateProvider = jest.fn().mockResolvedValue(mockChangeValueStreamResponse),
+  } = {}) => {
+    const apolloProvider = createMockApollo([
+      [createValueStream, createProvider],
+      [updateValueStream, updateProvider],
+    ]);
+
+    wrapper = shallowMountExtended(ValueStreamFormContent, {
+      apolloProvider,
       provide: {
         vsaPath: '/mockPath',
-        namespaceFullPath: namespacePath,
+        fullPath,
         stageEvents,
         defaultStages,
         valueStreamGid: '',
@@ -67,6 +78,7 @@ describe('ValueStreamFormContent', () => {
         CrudComponent,
       },
     });
+  };
 
   const findAddStageBtn = () => wrapper.findByTestId('add-button');
   const findFormActions = () => wrapper.findComponent(ValueStreamFormContentActions);
@@ -80,7 +92,6 @@ describe('ValueStreamFormContent', () => {
   const findHiddenStages = () => wrapper.findAllByTestId('vsa-hidden-stage').wrappers;
   const findNameFormGroup = () => wrapper.findByTestId('create-value-stream-name');
   const findNameInput = () => wrapper.findByTestId('create-value-stream-name-input');
-  const findSubmitErrorAlert = () => wrapper.findComponent(GlAlert);
 
   const clickSubmit = () => findFormActions().vm.$emit('clickPrimaryAction');
   const clickAddStage = async () => {
@@ -95,17 +106,9 @@ describe('ValueStreamFormContent', () => {
     findPresetSelector().vm.$emit('input', PRESET_OPTIONS_DEFAULT);
   const changeToCustomStages = () => findPresetSelector().vm.$emit('input', PRESET_OPTIONS_BLANK);
 
-  beforeEach(() => {
-    mock = new MockAdapter(axios);
-  });
-
-  afterEach(() => {
-    mock.restore();
-  });
-
   describe('when creating value stream', () => {
     beforeEach(() => {
-      wrapper = createComponent();
+      createWrapper();
     });
 
     it('has the form actions', () => {
@@ -165,7 +168,7 @@ describe('ValueStreamFormContent', () => {
 
     describe('Add stage button', () => {
       beforeEach(() => {
-        wrapper = createComponent();
+        createWrapper();
       });
 
       it('renders add stage action correctly', () => {
@@ -201,7 +204,7 @@ describe('ValueStreamFormContent', () => {
 
     describe('field validation', () => {
       beforeEach(() => {
-        wrapper = createComponent();
+        createWrapper();
       });
 
       it('validates existing fields when clicked', async () => {
@@ -239,9 +242,11 @@ describe('ValueStreamFormContent', () => {
       });
 
       describe('form submitted successfully', () => {
+        let createProvider;
+
         beforeEach(async () => {
-          mock.onPost(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, mockValueStream);
-          wrapper = createComponent();
+          createProvider = jest.fn().mockResolvedValue(mockChangeValueStreamResponse);
+          createWrapper({ createProvider });
 
           await findNameInput().vm.$emit('input', streamName);
           clickSubmit();
@@ -250,22 +255,14 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('sends a create request', () => {
-          expect(mock.history.post).toHaveLength(1);
-          expect(JSON.parse(mock.history.post[0].data)).toEqual({
+          expect(createProvider).toHaveBeenCalledTimes(1);
+          expect(createProvider).toHaveBeenCalledWith({
+            fullPath,
             name: streamName,
             stages: [
-              {
-                custom: false,
-                name: 'issue',
-              },
-              {
-                custom: false,
-                name: 'plan',
-              },
-              {
-                custom: false,
-                name: 'code',
-              },
+              { name: 'issue', custom: false },
+              { name: 'plan', custom: false },
+              { name: 'code', custom: false },
             ],
           });
         });
@@ -291,13 +288,19 @@ describe('ValueStreamFormContent', () => {
         });
       });
 
-      describe('form submission fails', () => {
-        beforeEach(async () => {
-          mock.onPost(endpoints.valueStreamData).replyOnce(HTTP_STATUS_NOT_FOUND, {
-            payload: { errors: formSubmissionErrors },
-          });
+      describe('form submitted with errors', () => {
+        let createProvider;
 
-          wrapper = createComponent();
+        beforeEach(async () => {
+          createProvider = jest.fn().mockResolvedValue({
+            data: {
+              valueStreamChange: {
+                valueStream: { id: null },
+                errors: ['KABOOM'],
+              },
+            },
+          });
+          createWrapper({ createProvider });
 
           await findNameInput().vm.$emit('input', streamName);
           clickSubmit();
@@ -306,7 +309,40 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('sends a create request', () => {
-          expect(mock.history.post).toHaveLength(1);
+          expect(createProvider).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not redirect to the new value stream page', () => {
+          expect(visitUrlWithAlerts).not.toHaveBeenCalled();
+        });
+
+        it('form actions should not be in loading state', () => {
+          expect(findFormActions().props('isLoading')).toBe(false);
+        });
+
+        it('renders an alert error', () => {
+          expect(createAlert).toHaveBeenCalledWith({ message: 'KABOOM.' });
+        });
+      });
+
+      describe('form submission fails', () => {
+        let mockError;
+        let createProvider;
+
+        beforeEach(async () => {
+          mockError = new Error('KABOOM');
+          createProvider = jest.fn().mockRejectedValue(mockError);
+
+          createWrapper({ createProvider });
+
+          await findNameInput().vm.$emit('input', streamName);
+          clickSubmit();
+
+          await waitForPromises();
+        });
+
+        it('sends a create request', () => {
+          expect(createProvider).toHaveBeenCalledTimes(1);
         });
 
         it('does not clear the name field', () => {
@@ -321,16 +357,12 @@ describe('ValueStreamFormContent', () => {
           expect(findFormActions().props('isLoading')).toBe(false);
         });
 
-        it('renders errors for the name field', () => {
-          expect(findNameFormGroup().attributes('invalid-feedback')).toBe(
-            formSubmissionErrors.name[0],
-          );
-        });
-
-        it('renders a dismissible generic alert error', async () => {
-          expect(findSubmitErrorAlert().exists()).toBe(true);
-          await findSubmitErrorAlert().vm.$emit('dismiss');
-          expect(findSubmitErrorAlert().exists()).toBe(false);
+        it('renders an alert error', () => {
+          expect(createAlert).toHaveBeenCalledWith({
+            message: 'An error occurred while creating the custom value stream. Try again.',
+            error: mockError,
+            captureError: true,
+          });
         });
       });
     });
@@ -339,7 +371,7 @@ describe('ValueStreamFormContent', () => {
   describe('when editing value stream', () => {
     const stageCount = initialData.stages.length;
     beforeEach(() => {
-      wrapper = createComponent({
+      createWrapper({
         provide: {
           valueStreamGid,
         },
@@ -391,7 +423,7 @@ describe('ValueStreamFormContent', () => {
       const hiddenStages = defaultStages.map((s) => ({ ...s, hidden: true }));
 
       beforeEach(() => {
-        wrapper = createComponent({
+        createWrapper({
           provide: {
             valueStreamGid,
           },
@@ -432,7 +464,7 @@ describe('ValueStreamFormContent', () => {
 
     describe('Add stage button', () => {
       beforeEach(() => {
-        wrapper = createComponent({
+        createWrapper({
           provide: {
             valueStreamGid,
           },
@@ -470,10 +502,12 @@ describe('ValueStreamFormContent', () => {
       });
 
       describe('form submitted successfully', () => {
-        beforeEach(() => {
-          mock.onPut(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, mockValueStream);
+        let updateProvider;
 
-          wrapper = createComponent({
+        beforeEach(() => {
+          updateProvider = jest.fn().mockResolvedValue(mockChangeValueStreamResponse);
+          createWrapper({
+            updateProvider,
             provide: {
               valueStreamGid,
             },
@@ -487,15 +521,17 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('sends an update request', () => {
-          expect(mock.history.put).toHaveLength(1);
-          expect(mock.history.put[0].url).toBe(
-            '/fake/group/path/-/analytics/value_stream_analytics/value_streams/13',
-          );
-          expect(JSON.parse(mock.history.put[0].data)).toEqual({
+          expect(updateProvider).toHaveBeenCalledTimes(1);
+          expect(updateProvider).toHaveBeenCalledWith({
+            id: valueStreamGid,
             name: initialData.name,
-            stages: initialData.stages.map((stage) =>
-              convertObjectPropsToSnakeCase(stage, { deep: true }),
-            ),
+            stages: [
+              {
+                ...customStage,
+                startEventIdentifier: 'ISSUE_FIRST_MENTIONED_IN_COMMIT',
+                endEventIdentifier: 'ISSUE_FIRST_ADDED_TO_BOARD',
+              },
+            ],
           });
         });
 
@@ -520,13 +556,21 @@ describe('ValueStreamFormContent', () => {
         });
       });
 
-      describe('form submission fails', () => {
+      describe('form submitted with errors', () => {
+        let updateProvider;
+
         beforeEach(() => {
-          mock.onPut(endpoints.valueStreamData).replyOnce(HTTP_STATUS_NOT_FOUND, {
-            payload: { errors: formSubmissionErrors },
+          updateProvider = jest.fn().mockResolvedValue({
+            data: {
+              valueStreamChange: {
+                valueStream: { id: null },
+                errors: ['KABOOM'],
+              },
+            },
           });
 
-          wrapper = createComponent({
+          createWrapper({
+            updateProvider,
             provide: {
               valueStreamGid,
             },
@@ -540,7 +584,46 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('sends an update request', () => {
-          expect(mock.history.put).toHaveLength(1);
+          expect(updateProvider).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not redirect to the new value stream page', () => {
+          expect(visitUrlWithAlerts).not.toHaveBeenCalled();
+        });
+
+        it('form actions should not be in loading state', () => {
+          expect(findFormActions().props('isLoading')).toBe(false);
+        });
+
+        it('renders an alert error', () => {
+          expect(createAlert).toHaveBeenCalledWith({ message: 'KABOOM.' });
+        });
+      });
+
+      describe('form submission fails', () => {
+        let mockError;
+        let updateProvider;
+
+        beforeEach(() => {
+          mockError = new Error('KABOOM');
+          updateProvider = jest.fn().mockRejectedValue(mockError);
+
+          createWrapper({
+            updateProvider,
+            provide: {
+              valueStreamGid,
+            },
+            props: {
+              initialData,
+            },
+          });
+
+          clickSubmit();
+          return waitForPromises();
+        });
+
+        it('sends an update request', () => {
+          expect(updateProvider).toHaveBeenCalledTimes(1);
         });
 
         it('does not clear the name field', () => {
@@ -557,22 +640,12 @@ describe('ValueStreamFormContent', () => {
           expect(findFormActions().props('isLoading')).toBe(false);
         });
 
-        it('renders errors for the name field', () => {
-          expect(findNameFormGroup().attributes('invalid-feedback')).toBe(
-            formSubmissionErrors.name[0],
-          );
-        });
-
-        it('renders errors for a custom stage field', () => {
-          expect(findCustomStages().at(0).props().errors.name[0]).toBe(
-            formSubmissionErrors.stages[0].name[0],
-          );
-        });
-
-        it('renders a dismissible generic alert error', async () => {
-          expect(findSubmitErrorAlert().exists()).toBe(true);
-          await findSubmitErrorAlert().vm.$emit('dismiss');
-          expect(findSubmitErrorAlert().exists()).toBe(false);
+        it('renders an alert error', () => {
+          expect(createAlert).toHaveBeenCalledWith({
+            message: 'An error occurred while updating the custom value stream. Try again.',
+            error: mockError,
+            captureError: true,
+          });
         });
       });
     });

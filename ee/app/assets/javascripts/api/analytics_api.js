@@ -73,16 +73,6 @@ export const getStageCount = ({ namespacePath, valueStreamId, stageId, params = 
   return axios.get(url, { params });
 };
 
-export const createValueStream = (namespacePath, data) => {
-  const url = buildValueStreamRootPath({ namespacePath });
-  return axios.post(url, data);
-};
-
-export const updateValueStream = ({ namespacePath, valueStreamId, data }) => {
-  const url = buildValueStreamPath({ namespacePath, valueStreamId });
-  return axios.put(url, data);
-};
-
 export const deleteValueStream = (namespacePath, valueStreamId) => {
   const url = buildValueStreamPath({ namespacePath, valueStreamId });
   return axios.delete(url);

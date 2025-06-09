@@ -1,7 +1,6 @@
 <script>
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { generateInitialStageData } from '../utils';
 import getValueStream from '../graphql/get_value_stream.query.graphql';
@@ -68,15 +67,12 @@ export default {
           } = group || project;
 
           const { id, name, stages } = valueStream;
-          this.stages = stages.map(
-            ({ id: stageId, startEventIdentifier, endEventIdentifier, ...rest }) => ({
-              id: getIdFromGraphQLId(stageId),
-              startEventIdentifier: startEventIdentifier.toLowerCase(),
-              endEventIdentifier: endEventIdentifier.toLowerCase(),
-              ...rest,
-            }),
-          );
-          return { id: getIdFromGraphQLId(id), name };
+          this.stages = stages.map(({ startEventIdentifier, endEventIdentifier, ...rest }) => ({
+            startEventIdentifier: startEventIdentifier.toLowerCase(),
+            endEventIdentifier: endEventIdentifier.toLowerCase(),
+            ...rest,
+          }));
+          return { id, name };
         } catch (e) {
           this.handleError(e);
           return {};

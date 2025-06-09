@@ -34,7 +34,6 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
           :full_path,
           :is_project,
           :value_stream_gid,
-          :namespace_full_path,
           :group_path,
           :stage_events
         )
@@ -53,7 +52,6 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
           :full_path,
           :is_project,
           :value_stream_gid,
-          :namespace_full_path,
           :group_path,
           :stage_events
         )
@@ -67,10 +65,6 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
 
       it_behaves_like 'data attributes for frontend'
 
-      it 'returns the correct namespace path' do
-        expect(controller.call_data_attributes[:namespace_full_path]).to eq("groups/#{group.full_path}")
-      end
-
       it 'returns the correct group path' do
         expect(controller.call_data_attributes[:group_path]).to eq(group.full_path)
       end
@@ -82,10 +76,6 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
       end
 
       it_behaves_like 'data attributes for frontend'
-
-      it 'returns the correct namespace_full_path' do
-        expect(controller.call_data_attributes[:namespace_full_path]).to eq(project.full_path)
-      end
 
       it 'returns the correct group path' do
         expect(controller.call_data_attributes[:group_path]).to eq(project.group.full_path)

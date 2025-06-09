@@ -1,10 +1,5 @@
 import { isEqual, pick } from 'lodash';
 import {
-  convertObjectPropsToCamelCase,
-  convertObjectPropsToSnakeCase,
-} from '~/lib/utils/common_utils';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import {
   isStartEvent,
   getAllowedEndEvents,
   eventToOption,
@@ -163,17 +158,16 @@ export const formatStageDataForSubmission = (stages, isEditing = false) => {
     }
 
     const editableFields = pick(rest, editableFormFieldKeys);
-    if (editableFields.startEventLabelId) {
-      editableFields.startEventLabelId = getIdFromGraphQLId(editableFields.startEventLabelId);
-    }
-    if (editableFields.endEventLabelId) {
-      editableFields.endEventLabelId = getIdFromGraphQLId(editableFields.endEventLabelId);
-    }
+
+    // Stage event IDs are `lower_snake_case` for both the frontend and backend
+    // but we require `UPPER_SNAKE_CASE` with GraphQL.
+    editableFields.startEventIdentifier = editableFields.startEventIdentifier.toUpperCase();
+    editableFields.endEventIdentifier = editableFields.endEventIdentifier.toUpperCase();
 
     // While we work on https://gitlab.com/gitlab-org/gitlab/-/issues/321959 we should not allow editing default
     return custom
-      ? convertObjectPropsToSnakeCase({ ...editableFields, ...editProps, name })
-      : convertObjectPropsToSnakeCase({ ...editProps, name, custom: false });
+      ? { ...editableFields, ...editProps, name }
+      : { ...editProps, name, custom: false };
   });
 };
 
@@ -247,8 +241,7 @@ const prepareDefaultStage = (defaultStageConfig, { name, ...rest }) => {
  * @param {Object} errors - Key value pair of stage errors
  * @returns {Array} Returns and array of stage error objects
  */
-export const prepareStageErrors = (stages, errors) =>
-  stages.map((_, index) => convertObjectPropsToCamelCase(errors[index]) || {});
+export const prepareStageErrors = (stages, errors) => stages.map((_, index) => errors[index] || {});
 
 const generateHiddenDefaultStages = (defaultStageConfig, stageNames) => {
   // We use the stage name to check for any default stages that might be hidden

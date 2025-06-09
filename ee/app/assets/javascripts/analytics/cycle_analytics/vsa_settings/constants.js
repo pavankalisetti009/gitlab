@@ -45,9 +45,6 @@ export const i18n = {
   DEFAULT_STAGE_FEATURES: s__(
     'CreateValueStreamForm|Default stages can only be hidden or re-ordered',
   ),
-  SUBMIT_FAILED: s__(
-    'CreateValueStreamForm|An error occurred while creating the custom value stream. Try again.',
-  ),
   CUSTOM_BADGE_LABEL: __('Custom'),
 };
 
@@ -86,14 +83,7 @@ export const formFieldKeys = [
   'endEventLabelId',
 ];
 
-export const editableFormFieldKeys = [
-  ...formFieldKeys,
-  'hidden',
-  'description',
-  'title',
-  'legend',
-  'custom',
-];
+export const editableFormFieldKeys = [...formFieldKeys, 'hidden', 'custom'];
 
 export const defaultFields = formFieldKeys.reduce((acc, field) => ({ ...acc, [field]: null }), {});
 export const defaultErrors = formFieldKeys.reduce((acc, field) => ({ ...acc, [field]: [] }), {});

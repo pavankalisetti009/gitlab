@@ -165,3 +165,14 @@ export const createMockValueStreamResponse = (valueStream) => ({
 });
 
 export const mockValueStreamResponse = createMockValueStreamResponse(mockValueStream);
+
+export const mockChangeValueStreamResponse = {
+  data: {
+    valueStreamChange: {
+      valueStream: {
+        id: 13,
+      },
+      errors: [],
+    },
+  },
+};

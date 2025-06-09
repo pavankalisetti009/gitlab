@@ -9,8 +9,6 @@ import {
   getDurationChart,
   getStageEvents,
   getStagesAndEvents,
-  createValueStream,
-  updateValueStream,
   deleteValueStream,
 } from 'ee/api/analytics_api';
 import * as valueStreamAnalyticsConstants from 'ee/analytics/cycle_analytics/constants';
@@ -128,44 +126,6 @@ describe('ValueStreamAnalyticsApi', () => {
         response,
         expectedUrl,
       });
-    });
-  });
-
-  describe('createValueStream', () => {
-    it('submit the custom value stream data', async () => {
-      const response = {};
-      const customValueStream = { name: 'cool-value-stream-stage' };
-      const expectedUrl = valueStreamBaseUrl({ resource: 'value_streams' });
-      mock.onPost(expectedUrl).reply(HTTP_STATUS_OK, response);
-
-      const {
-        data,
-        config: { data: reqData, url },
-      } = await createValueStream(namespacePath, customValueStream);
-      expect(data).toEqual(response);
-      expect(JSON.parse(reqData)).toMatchObject(customValueStream);
-      expect(url).toEqual(expectedUrl);
-    });
-  });
-
-  describe('updateValueStream', () => {
-    it('updates the custom value stream data', async () => {
-      const response = {};
-      const customValueStream = { name: 'cool-value-stream-stage', stages: [] };
-      const expectedUrl = valueStreamBaseUrl({ resource: `value_streams/${valueStreamId}` });
-      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, response);
-
-      const {
-        data,
-        config: { data: reqData, url },
-      } = await updateValueStream({
-        namespacePath,
-        valueStreamId,
-        data: customValueStream,
-      });
-      expect(data).toEqual(response);
-      expect(JSON.parse(reqData)).toMatchObject(customValueStream);
-      expect(url).toEqual(expectedUrl);
     });
   });
 
