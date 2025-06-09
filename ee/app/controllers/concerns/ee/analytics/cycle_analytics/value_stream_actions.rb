@@ -98,7 +98,6 @@ module EE
             .merge(
               vsa_path: vsa_path,
               stage_events: stage_events.to_json,
-              namespace_full_path: project? ? namespace.full_path : "groups/#{namespace.full_path}",
               group_path: project? ? namespace.group.full_path : namespace.full_path,
               value_stream_gid: action_name == 'edit' ? value_stream.to_global_id : nil,
               full_path: namespace.full_path,

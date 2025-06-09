@@ -186,26 +186,23 @@ describe('formatStageDataForSubmission', () => {
       [res] = formatStageDataForSubmission([{ ...fakeStage, custom: true }]);
     });
 
-    it('will convert all properties to snake case', () => {
-      expect(Object.keys(res)).toEqual([
-        'start_event_identifier',
-        'end_event_identifier',
-        'start_event_label_id',
-        'end_event_label_id',
-        'custom',
-        'name',
-      ]);
-    });
-
     it('will include the event fields', () => {
       [
-        'start_event_identifier',
-        'start_event_label_id',
-        'end_event_identifier',
-        'end_event_label_id',
+        'startEventIdentifier',
+        'startEventLabelId',
+        'endEventIdentifier',
+        'endEventLabelId',
       ].forEach((field) => {
         expect(Object.keys(res).includes(field)).toBe(true);
       });
+    });
+
+    it('converts `startEventIdentifier` to uppercase', () => {
+      expect(res.startEventIdentifier).toBe('ISSUE_CREATED');
+    });
+
+    it('converts `endEventIdentifier` to uppercase', () => {
+      expect(res.endEventIdentifier).toBe('ISSUE_CLOSED');
     });
   });
 
@@ -218,20 +215,6 @@ describe('formatStageDataForSubmission', () => {
     it('will set custom to `true`', () => {
       [res] = formatStageDataForSubmission([{ ...fakeStage, custom: true }], true);
       expect(res.custom).toBe(true);
-    });
-  });
-
-  describe('converts label GIDs to integers', () => {
-    beforeEach(() => {
-      [res] = formatStageDataForSubmission([{ ...fakeStage, custom: true }]);
-    });
-
-    it('start label', () => {
-      expect(res.start_event_label_id).toBe(1);
-    });
-
-    it('end label', () => {
-      expect(res.end_event_label_id).toBe(2);
     });
   });
 });

@@ -1,21 +1,23 @@
 <script>
-import { GlAlert, GlButton, GlForm, GlFormInput, GlFormGroup, GlFormRadioGroup } from '@gitlab/ui';
+import { GlButton, GlForm, GlFormInput, GlFormGroup, GlFormRadioGroup } from '@gitlab/ui';
 import { cloneDeep, uniqueId } from 'lodash';
 import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
-import { sprintf } from '~/locale';
+import { createAlert } from '~/alert';
+import { s__, sprintf } from '~/locale';
 import Tracking from '~/tracking';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { visitUrlWithAlerts, mergeUrlParams } from '~/lib/utils/url_utility';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { getLabelEventsIdentifiers } from 'ee/analytics/cycle_analytics/utils';
-import { createValueStream, updateValueStream } from 'ee/api/analytics_api';
+import createValueStream from '../graphql/create_value_stream.mutation.graphql';
+import updateValueStream from '../graphql/update_value_stream.mutation.graphql';
 import {
   validateValueStreamName,
   cleanStageName,
   validateStage,
   formatStageDataForSubmission,
   hasDirtyStage,
-  prepareStageErrors,
 } from '../utils';
 import {
   STAGE_SORT_DIRECTION,
@@ -48,7 +50,6 @@ export default {
   name: 'ValueStreamFormContent',
   components: {
     CrudComponent,
-    GlAlert,
     GlButton,
     GlForm,
     GlFormInput,
@@ -59,7 +60,7 @@ export default {
     ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
-  inject: ['vsaPath', 'namespaceFullPath', 'valueStreamGid', 'stageEvents', 'defaultStages'],
+  inject: ['vsaPath', 'fullPath', 'valueStreamGid', 'stageEvents', 'defaultStages'],
   props: {
     initialData: {
       type: Object,
@@ -80,7 +81,6 @@ export default {
       name: initialName,
       nameErrors: [],
       stageErrors: [{}],
-      showSubmitError: false,
       isSubmitting: false,
       stages: this.valueStreamGid
         ? initializeEditingStages(initialStages)
@@ -126,53 +126,65 @@ export default {
 
       return { id, message, variant: 'success' };
     },
-    submitParams() {
-      const { name, stages, isEditing } = this;
-      return {
-        name,
-        stages: formatStageDataForSubmission(stages, isEditing),
-      };
+    formattedStages() {
+      return formatStageDataForSubmission(this.stages, this.isEditing);
     },
   },
   methods: {
-    onSubmit() {
-      this.showSubmitError = false;
+    async onSubmit() {
       this.validate();
       if (this.hasFormErrors) return;
 
       this.isSubmitting = true;
 
-      this.submitRequest()
-        .then(({ data: { id } }) => {
-          this.track('submit_form', {
-            label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
-          });
+      try {
+        const {
+          data: {
+            valueStreamChange: { valueStream, errors },
+          },
+        } = await this.submitRequest();
 
-          const redirectPath = mergeUrlParams({ value_stream_id: id }, this.vsaPath);
-          visitUrlWithAlerts(redirectPath, [this.submissionSuccessfulAlert]);
-        })
-        .catch(({ response: { data } }) => {
+        if (errors?.length) {
+          createAlert({ message: `${errors.join('. ')}.` });
           this.isSubmitting = false;
-          this.showSubmitError = true;
+          return;
+        }
 
-          const {
-            payload: { errors: { name, stages = {} } = {} },
-          } = data;
-          this.setErrors({
-            name,
-            stages: prepareStageErrors(this.submitParams.stages, stages),
-          });
+        this.track('submit_form', {
+          label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
         });
+
+        const redirectPath = mergeUrlParams(
+          { value_stream_id: getIdFromGraphQLId(valueStream.id) },
+          this.vsaPath,
+        );
+        visitUrlWithAlerts(redirectPath, [this.submissionSuccessfulAlert]);
+      } catch (error) {
+        const message = this.isEditing
+          ? s__(
+              'CreateValueStreamForm|An error occurred while updating the custom value stream. Try again.',
+            )
+          : s__(
+              'CreateValueStreamForm|An error occurred while creating the custom value stream. Try again.',
+            );
+        createAlert({ message, error, captureError: true });
+
+        this.isSubmitting = false;
+      }
     },
     submitRequest() {
-      const { isEditing, namespaceFullPath, initialData, submitParams } = this;
-      return isEditing
-        ? updateValueStream({
-            namespacePath: namespaceFullPath,
-            valueStreamId: initialData.id,
-            data: submitParams,
-          })
-        : createValueStream(namespaceFullPath, submitParams);
+      const { isEditing, valueStreamGid: id, name, fullPath, formattedStages: stages } = this;
+      const params = isEditing
+        ? {
+            mutation: updateValueStream,
+            variables: { id, name, stages },
+          }
+        : {
+            mutation: createValueStream,
+            variables: { name, fullPath, stages },
+          };
+
+      return this.$apollo.mutate(params);
     },
     stageGroupLabel(index) {
       return sprintf(this.$options.i18n.STAGE_INDEX, { index: index + 1 });
@@ -191,11 +203,6 @@ export default {
           labelEvents: getLabelEventsIdentifiers(this.stageEvents),
         }),
       );
-    },
-    setErrors({ name = [], stages = [{}] }) {
-      const { defaultStages, selectedPreset } = this;
-      this.nameErrors = name;
-      this.stageErrors = cloneDeep(stages) || initializeStageErrors(defaultStages, selectedPreset);
     },
     validate() {
       const { name } = this;
@@ -303,10 +310,6 @@ export default {
 </script>
 <template>
   <div class="gl-flex gl-flex-col gl-gap-5">
-    <gl-alert v-if="showSubmitError" variant="danger" @dismiss="showSubmitError = false">
-      {{ $options.i18n.SUBMIT_FAILED }}
-    </gl-alert>
-
     <gl-form>
       <crud-component
         :title="$options.i18n.STAGES"

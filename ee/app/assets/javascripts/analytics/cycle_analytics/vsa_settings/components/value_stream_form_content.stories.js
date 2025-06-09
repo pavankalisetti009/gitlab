@@ -2,6 +2,8 @@ import { mockLabelsResponse } from 'ee_jest/analytics/cycle_analytics/vsa_settin
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { generateInitialStageData } from '../utils';
 import getCustomStageLabels from '../graphql/get_custom_stage_labels.query.graphql';
+import createValueStream from '../graphql/create_value_stream.mutation.graphql';
+import updateValueStream from '../graphql/update_value_stream.mutation.graphql';
 import {
   defaultStages,
   stageEvents,
@@ -22,15 +24,19 @@ const generateInitialData = (stages) => ({
 });
 
 const mockApolloProvider = () =>
-  createMockApollo([[getCustomStageLabels, () => Promise.resolve(mockLabelsResponse)]]);
+  createMockApollo([
+    [getCustomStageLabels, () => Promise.resolve(mockLabelsResponse)],
+    [createValueStream, () => Promise.reject(new Error('Some network error'))],
+    [updateValueStream, () => Promise.reject(new Error('Some network error'))],
+  ]);
 
 const Template = (args, { argTypes }) => ({
   components: { ValueStreamFormContent },
   apolloProvider: mockApolloProvider(),
   provide: {
     vsaPath: '',
-    namespaceFullPath: '',
     groupPath: 'group',
+    fullPath: 'fullPath',
     valueStreamGid: args.valueStreamGid ?? valueStreamGid,
     stageEvents,
     defaultStages,
