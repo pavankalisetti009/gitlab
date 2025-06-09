@@ -388,7 +388,8 @@ module Gitlab
           },
           filters.slice(
             :order_by, :sort, :confidential, :state, :label_name, :include_archived, :fields,
-            :author_username, :not_author_username
+            :author_username, :not_author_username, :milestone_title, :not_milestone_title,
+            :none_milestones, :any_milestones
           )
         )
 

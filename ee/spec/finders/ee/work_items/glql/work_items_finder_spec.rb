@@ -9,6 +9,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:resource_parent) { group }
   let_it_be(:current_user)    { create(:user) }
+  let_it_be(:milestone)       { create(:milestone, project: project) }
 
   let(:context)          { instance_double(GraphQL::Query::Context) }
   let(:request_params)   { { 'operationName' => 'GLQL' } }
@@ -29,6 +30,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
       state: 'opened',
       confidential: false,
       author_username: current_user.username,
+      milestone_title: [milestone.title],
       not: {}
     }
   end
@@ -171,7 +173,11 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         sort: 'created_desc',
         state: 'opened',
         author_username: current_user.username,
-        not_author_username: nil
+        not_author_username: nil,
+        milestone_title: [milestone.title],
+        not_milestone_title: nil,
+        any_milestones: false,
+        none_milestones: false
       }
     end
 
@@ -187,6 +193,12 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         .and_return(search_service_double)
     end
 
+    shared_examples 'executes ES search with expected params' do
+      it 'executes ES search service' do
+        expect(finder.execute).to contain_exactly(work_item1, work_item2)
+      end
+    end
+
     context 'when resource_parent is a Project' do
       let(:resource_parent) { project }
 
@@ -194,9 +206,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         search_params.merge!(project_id: project.id)
       end
 
-      it 'executes ES search service with expected params' do
-        expect(finder.execute).to contain_exactly(work_item1, work_item2)
-      end
+      it_behaves_like 'executes ES search with expected params'
     end
 
     context 'when resource_parent is a Group' do
@@ -204,19 +214,48 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         search_params.merge!(group_id: group.id)
       end
 
-      it 'executes ES search service with expected params' do
-        expect(finder.execute).to contain_exactly(work_item1, work_item2)
-      end
+      it_behaves_like 'executes ES search with expected params'
     end
 
-    context 'when not_author_username param provided' do
+    context 'with additional params' do
       before do
-        params[:not][:author_username] = current_user.username
-        search_params.merge!(not_author_username: current_user.username, group_id: group.id)
+        search_params.merge!(group_id: group.id)
       end
 
-      it 'executes ES search service with expected params' do
-        expect(finder.execute).to contain_exactly(work_item1, work_item2)
+      context 'when not_author_username param provided' do
+        before do
+          params[:not][:author_username] = current_user.username
+          search_params.merge!(not_author_username: current_user.username)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when not_milestone_title param provided' do
+        before do
+          params[:not][:milestone_title] = [milestone.title]
+          search_params.merge!(not_milestone_title: [milestone.title])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when any_milestones param provided' do
+        before do
+          params[:milestone_wildcard_id] = described_class::FILTER_ANY
+          search_params.merge!(any_milestones: true)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when none_milestones param provided' do
+        before do
+          params[:milestone_wildcard_id] = described_class::FILTER_NONE
+          search_params.merge!(none_milestones: true)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
       end
     end
   end

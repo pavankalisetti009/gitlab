@@ -110,6 +110,73 @@ module Search
           end
         end
 
+        def by_milestone(query_hash:, options:)
+          # milestone_title filters and wildcard filters (any_milestones, none_milestones)
+          # are mutually exclusive and should not be used together in the same query
+          milestone_titles = options[:milestone_title]
+          not_milestone_titles = options[:not_milestone_title]
+          none_milestones = options[:none_milestones]
+          any_milestones = options[:any_milestones]
+
+          return query_hash unless milestone_titles || not_milestone_titles || none_milestones || any_milestones
+
+          context.name(:filters) do
+            if milestone_titles
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must: {
+                      terms: {
+                        _name: context.name(:milestone_title),
+                        milestone_title: milestone_titles
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if not_milestone_titles
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must_not: {
+                      terms: {
+                        _name: context.name(:not_milestone_title),
+                        milestone_title: not_milestone_titles
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if any_milestones
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:any_milestones),
+                    must: { exists: { field: 'milestone_title' } }
+                  }
+                }
+              end
+            end
+
+            if none_milestones
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:none_milestones),
+                    must_not: { exists: { field: 'milestone_title' } }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
         def by_work_item_type_ids(query_hash:, options:)
           work_item_type_ids = options[:work_item_type_ids]
           not_work_item_type_ids = options[:not_work_item_type_ids]

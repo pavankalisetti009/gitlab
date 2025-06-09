@@ -23,8 +23,14 @@ module EE
         extend ::Gitlab::Utils::Override
 
         CONTROL_KEYS = [:sort, :include_ancestors, :include_descendants, :exclude_projects].freeze
-        ALLOWED_ES_FILTERS = [:label_name, :group_id, :project_id, :state, :confidential, :author_username, :not].freeze
-        NOT_FILTERS = [:author_username].freeze
+        ALLOWED_ES_FILTERS = [
+          :label_name, :group_id, :project_id, :state, :confidential, :author_username,
+          :milestone_title, :milestone_wildcard_id, :not
+        ].freeze
+        NOT_FILTERS = [:author_username, :milestone_title].freeze
+
+        FILTER_NONE = 'none'
+        FILTER_ANY = 'any'
 
         attr_reader :current_user, :context, :params
         attr_accessor :resource_parent
@@ -81,7 +87,11 @@ module EE
             state: params[:state],
             confidential: params[:confidential],
             author_username: params[:author_username],
-            not_author_username: params.dig(:not, :author_username)
+            not_author_username: params.dig(:not, :author_username),
+            milestone_title: params[:milestone_title],
+            not_milestone_title: params.dig(:not, :milestone_title),
+            none_milestones: none_milestones?,
+            any_milestones: any_milestones?
           }
         end
 
@@ -91,6 +101,14 @@ module EE
           else
             { group_id: params[:group_id]&.id }
           end
+        end
+
+        def any_milestones?
+          params[:milestone_wildcard_id].to_s.downcase == FILTER_ANY
+        end
+
+        def none_milestones?
+          params[:milestone_wildcard_id].to_s.downcase == FILTER_NONE
         end
 
         def use_elasticsearch?

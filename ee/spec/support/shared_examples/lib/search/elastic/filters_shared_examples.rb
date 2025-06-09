@@ -50,6 +50,42 @@ RSpec.shared_examples 'a query filtered by state' do
   end
 end
 
+RSpec.shared_examples 'a query filtered by author' do
+  it 'does not apply author filters by default' do
+    assert_names_in_query(build, without: %w[filters:author filters:not_author])
+  end
+
+  context 'when author_username option is provided' do
+    let(:options) { base_options.merge(author_username: user.username) }
+
+    it 'applies the filter' do
+      assert_names_in_query(build, with: %w[filters:author])
+    end
+  end
+
+  context 'when not_author_username option is provided' do
+    let(:options) { base_options.merge(not_author_username: user.username) }
+
+    it 'applies the filter' do
+      assert_names_in_query(build, with: %w[filters:not_author])
+    end
+  end
+end
+
+RSpec.shared_examples 'a query filtered by labels' do
+  it 'does not include labels filter by default' do
+    assert_names_in_query(build, without: %w[filters:label_ids])
+  end
+
+  context 'when label_name option is provided' do
+    let(:options) { base_options.merge(label_name: [label.name]) }
+
+    it 'applies label filters' do
+      assert_names_in_query(build, with: %w[filters:label_ids])
+    end
+  end
+end
+
 # requires authorized_project and private_project project defined in caller
 RSpec.shared_examples 'a query filtered by confidentiality' do
   context 'when user has role which allows viewing confidential data' do

@@ -36,13 +36,17 @@ module CodeSuggestions
         private
 
         def prompt_info
-          # anthropic + claude_3_5_sonnet_20241022
-          prompt_version = '^1.0.0'
-
-          if Feature.enabled?(:incident_fail_over_generation_provider, current_user)
-            # vertex + claude_3_5_sonnet_20240620
-            prompt_version = '2.0.0'
-          end
+          prompt_version =
+            if Feature.enabled?(:incident_fail_over_generation_provider, current_user)
+              # vertex + claude_3_5_sonnet_20240620
+              '2.0.0'
+            elsif Feature.enabled?(:code_generation_claude_4_0_rollout, current_user)
+              # anthropic + claude-sonnet-4-20250514
+              '1.1.0-dev'
+            else
+              # anthropic + claude-3-7-sonnet-20250219
+              '^1.0.0'
+            end
 
           {
             prompt_id: PROMPT_ID,
