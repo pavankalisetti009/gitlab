@@ -180,7 +180,6 @@ export default {
 
         <template v-else>
           <self-managed-provider-card
-            :project-analytics-settings-path="projectAnalyticsSettingsPath"
             :project-settings="projectLevelAnalyticsProviderSettings"
             @confirm="onConfirm"
             @open-settings="openSettings"
