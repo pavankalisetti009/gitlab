@@ -5,7 +5,12 @@ require 'spec_helper'
 RSpec.describe 'Groups::Security::ComplianceDashboard::Frameworks', feature_category: :compliance_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:framework) { create(:compliance_framework) }
+  let_it_be(:framework) do
+    create(:compliance_framework, namespace: group).tap do |framework|
+      requirement = create(:compliance_requirement, framework: framework)
+      create(:compliance_requirements_control, compliance_requirement: requirement)
+    end
+  end
 
   before do
     sign_in(user)
@@ -57,7 +62,12 @@ RSpec.describe 'Groups::Security::ComplianceDashboard::Frameworks', feature_cate
         end
 
         context 'when framework name contains special characters' do
-          let(:framework) { create(:compliance_framework, name: 'Test & Framework (2024)') }
+          let(:framework) do
+            create(:compliance_framework, name: 'Test & Framework (2024)', namespace: group).tap do |framework|
+              requirement = create(:compliance_requirement, framework: framework)
+              create(:compliance_requirements_control, compliance_requirement: requirement)
+            end
+          end
 
           it 'sanitizes the filename correctly' do
             make_request
@@ -112,6 +122,21 @@ RSpec.describe 'Groups::Security::ComplianceDashboard::Frameworks', feature_cate
 
             expect(response).to have_gitlab_http_status(:internal_server_error)
             expect(json_response).to eq({ 'error' => 'Failed to generate export' })
+          end
+        end
+
+        context 'when trying to access framework from another group' do
+          let_it_be(:other_group) { create(:group) }
+          let_it_be(:other_framework) { create(:compliance_framework, namespace: other_group) }
+
+          before_all do
+            other_group.add_owner(user)
+          end
+
+          it 'returns not found' do
+            get group_security_compliance_dashboard_framework_path(group, other_framework), as: :json
+
+            expect(response).to have_gitlab_http_status(:not_found)
           end
         end
       end
