@@ -252,6 +252,79 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::AdjustmentService, feature_
           }))
         end
       end
+
+      describe 'logging and event tracking' do
+        let(:service) { described_class.new([group.id]) }
+        let(:logger) { instance_spy(Gitlab::AppLogger) }
+
+        before do
+          stub_const('Gitlab::AppLogger', logger)
+          allow(service).to receive(:track_internal_event)
+        end
+
+        context 'when there are changes' do
+          it 'logs the changes' do
+            service.execute
+
+            expect(logger).to have_received(:warn).with(
+              hash_including(
+                message: 'Namespace vulnerability statistics adjusted',
+                namespace_id: group.id,
+                changes: hash_including(
+                  'total' => 4,
+                  'critical' => 2,
+                  'high' => 2,
+                  'medium' => 0,
+                  'low' => 0,
+                  'info' => 0,
+                  'unknown' => 0
+                )
+              )
+            )
+          end
+
+          it 'tracks the event' do
+            service.execute
+
+            expect(service).to have_received(:track_internal_event).with(
+              'activate_namespace_statistics_adjustment_service',
+              feature_enabled_by_namespace_ids: [group.id]
+            )
+          end
+        end
+
+        context 'when there are no changes' do
+          let(:empty_group) { create(:group) }
+          let(:service) { described_class.new([empty_group.id]) }
+
+          it 'does not log or track events' do
+            service.execute
+
+            expect(logger).not_to have_received(:warn)
+            expect(service).not_to have_received(:track_internal_event)
+          end
+        end
+
+        context 'when multiple namespaces have changes' do
+          let(:namespace_ids) { [root_group.id, group.id, sub_group.id] }
+          let(:service) { described_class.new(namespace_ids) }
+
+          it 'logs changes for each namespace' do
+            service.execute
+
+            expect(logger).to have_received(:warn).exactly(3).times
+          end
+
+          it 'tracks events for all namespaces in a single call' do
+            service.execute
+
+            expect(service).to have_received(:track_internal_event).once.with(
+              'activate_namespace_statistics_adjustment_service',
+              feature_enabled_by_namespace_ids: match_array(namespace_ids)
+            )
+          end
+        end
+      end
     end
   end
 end

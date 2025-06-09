@@ -3,6 +3,8 @@
 module Vulnerabilities
   module NamespaceStatistics
     class AdjustmentService
+      include Gitlab::InternalEventsTracking
+
       TooManyNamespacesError = Class.new(StandardError)
 
       UPSERT_SQL = <<~SQL
@@ -136,10 +138,51 @@ module Vulnerabilities
           all_diffs.concat(non_zero_diffs(diffs.to_a))
         end
 
+        if all_diffs.present?
+          # rubocop:disable CodeReuse/ActiveRecord -- collect namespace ids in single query
+          # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- we limit the number of namespaces in the service
+          namespace_ids = all_diffs.pluck('namespace_id')
+          # rubocop:enable Database/AvoidUsingPluckWithoutLimit
+          # rubocop:enable CodeReuse/ActiveRecord
+          track_event(namespace_ids)
+          all_diffs.each { |diff| log_changes(generate_diff_data(diff)) }
+        end
+
         all_diffs
       end
 
       private
+
+      def generate_diff_data(diff)
+        {
+          namespace_id: diff['namespace_id'],
+          traversal_ids: diff['traversal_ids'],
+          changes: {
+            'total' => diff['total'],
+            'info' => diff['info'],
+            'unknown' => diff['unknown'],
+            'low' => diff['low'],
+            'medium' => diff['medium'],
+            'high' => diff['high'],
+            'critical' => diff['critical']
+          }
+        }
+      end
+
+      def log_changes(diff_data = {})
+        log_data = diff_data.merge(
+          class: self.class.name,
+          message: 'Namespace vulnerability statistics adjusted'
+        )
+        Gitlab::AppLogger.warn(log_data)
+      end
+
+      def track_event(namespace_ids)
+        track_internal_event(
+          'activate_namespace_statistics_adjustment_service',
+          feature_enabled_by_namespace_ids: namespace_ids
+        )
+      end
 
       def connection
         SecApplicationRecord.connection
