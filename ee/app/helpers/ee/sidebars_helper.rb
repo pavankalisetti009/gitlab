@@ -39,8 +39,7 @@ module EE
       root_namespace = (project || group)&.root_ancestor
 
       context.merge!(
-        GitlabSubscriptions::Trials::WidgetPresenter.new(root_namespace, user: current_user).attributes,
-        show_tanuki_bot: ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: nil)
+        GitlabSubscriptions::Trials::WidgetPresenter.new(root_namespace, user: current_user).attributes
       )
 
       context[:trial] = {
