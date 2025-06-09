@@ -63579,6 +63579,9 @@ msgstr ""
 msgid "TimeTracking|Add estimate"
 msgstr ""
 
+msgid "TimeTracking|Add time entry"
+msgstr ""
+
 msgid "TimeTracking|An error occurred while removing the timelog."
 msgstr ""
 
