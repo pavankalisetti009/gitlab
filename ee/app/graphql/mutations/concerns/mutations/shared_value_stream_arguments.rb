@@ -5,10 +5,6 @@ module Mutations
     extend ActiveSupport::Concern
 
     included do
-      argument :stages, [Types::Analytics::CycleAnalytics::ValueStreams::StageInputType],
-        required: false,
-        description: 'Value stream custom stages.'
-
       argument :setting,
         Types::Analytics::CycleAnalytics::ValueStreams::SettingInputType,
         required: false,

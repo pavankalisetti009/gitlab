@@ -17,6 +17,10 @@ module Mutations
             required: true,
             description: 'Value stream name.'
 
+          argument :stages, [Types::Analytics::CycleAnalytics::ValueStreams::CreateStageInputType],
+            required: false,
+            description: 'Value stream stages.'
+
           argument :namespace_path, GraphQL::Types::ID,
             required: true,
             description: 'Full path of the namespace(project or group) the value stream is created in.'

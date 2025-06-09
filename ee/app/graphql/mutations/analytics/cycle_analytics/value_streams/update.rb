@@ -21,6 +21,10 @@ module Mutations
             required: false,
             description: 'Value stream name.'
 
+          argument :stages, [Types::Analytics::CycleAnalytics::ValueStreams::UpdateStageInputType],
+            required: false,
+            description: 'Value stream stages.'
+
           field :value_stream, Types::Analytics::CycleAnalytics::ValueStreamType,
             null: true,
             description: 'Updated value stream.'
