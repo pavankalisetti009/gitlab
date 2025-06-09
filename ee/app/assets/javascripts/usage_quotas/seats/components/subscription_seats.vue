@@ -69,7 +69,6 @@ export default {
     'isPublicNamespace',
     'explorePlansPath',
     'addSeatsHref',
-    'hasNoSubscription',
     'namespaceId',
     'hasLimitedFreePlan',
   ],
@@ -83,12 +82,6 @@ export default {
   computed: {
     isPublicFreeNamespace() {
       return this.hasFreePlan && this.isPublicNamespace;
-    },
-    showUpgradeInfoCard() {
-      if (!this.hasNoSubscription) {
-        return false;
-      }
-      return this.hasLimitedFreePlan;
     },
     isLoaderShown() {
       return this.$apollo.loading;
@@ -150,7 +143,7 @@ export default {
           :seats-in-subscription="seatsInSubscription"
         />
         <subscription-upgrade-info-card
-          v-if="showUpgradeInfoCard"
+          v-if="hasLimitedFreePlan"
           :explore-plans-path="explorePlansPath"
           :active-trial="activeTrial"
         />

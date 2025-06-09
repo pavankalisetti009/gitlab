@@ -14,7 +14,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['hasNoSubscription', 'maxFreeNamespaceSeats', 'namespaceId', 'hasLimitedFreePlan'],
+  inject: ['maxFreeNamespaceSeats', 'namespaceId', 'hasLimitedFreePlan'],
   props: {
     billableMembersCount: {
       type: Number,
@@ -65,12 +65,10 @@ export default {
         number: this.maxFreeNamespaceSeats,
       });
     },
-    hasNoSeatsInSubscription() {
-      return this.totalSeatsUsed == null;
-    },
     percentage() {
-      if (this.hasFreePlan || this.hasNoSeatsInSubscription || this.activeTrial) return null;
-      return Math.round((this.billableMembersCount * 100) / this.totalSeatsUsed);
+      if (this.hasFreePlan || this.seatsInSubscription === 0 || this.activeTrial) return null;
+
+      return Math.round((this.billableMembersCount * 100) / this.totalSeatsInSubscription);
     },
     seatsStatisticsText() {
       if (this.communityPlan) return s__('Billings|Open source Plan Seats used');
@@ -81,18 +79,15 @@ export default {
     shouldDisplayLimitedSeatText() {
       return this.hasFreePlan || this.hasLimitedFreePlan || this.activeTrial;
     },
-    totalSeatsUsed() {
-      if (this.hasNoSubscription) {
-        return this.hasLimitedFreePlan ? this.maxFreeNamespaceSeats : null;
-      }
-      return this.seatsInSubscription;
+    totalSeatsInSubscription() {
+      return this.hasLimitedFreePlan ? this.maxFreeNamespaceSeats : this.seatsInSubscription;
     },
-    totalSeatsUsedToDisplay() {
+    totalSeatsInSubscriptionToDisplay() {
       const unlimited = __('Unlimited');
 
       if (this.activeTrial) return unlimited;
 
-      return this.totalSeatsUsed ? String(this.totalSeatsUsed) : unlimited;
+      return this.totalSeatsInSubscription ? String(this.totalSeatsInSubscription) : unlimited;
     },
     tooltipLink() {
       if (this.communityPlan) return `${PROMO_URL}/solutions/open-source/`;
@@ -138,7 +133,7 @@ export default {
     <template v-else>
       <usage-statistics
         :percentage="percentage"
-        :total-value="totalSeatsUsedToDisplay"
+        :total-value="totalSeatsInSubscriptionToDisplay"
         :usage-value="String(billableMembersCount)"
       >
         <template #additional-info>

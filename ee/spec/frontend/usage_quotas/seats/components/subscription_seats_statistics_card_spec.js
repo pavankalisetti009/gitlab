@@ -43,7 +43,6 @@ describe('SubscriptionSeatsStatisticsCard', () => {
         ...props,
       },
       provide: {
-        hasNoSubscription: true,
         maxFreeNamespaceSeats: 5,
         namespaceId: 13,
         hasLimitedFreePlan: false,
@@ -70,7 +69,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
   describe('with a free plan', () => {
     beforeEach(() => {
-      const props = { hasFreePlan: true };
+      const props = { hasFreePlan: true, seatsInSubscription: 0 };
       createWrapper({ props });
       return waitForPromises();
     });
@@ -178,9 +177,8 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
   describe('with a community plan', () => {
     beforeEach(() => {
-      const provide = { hasNoSubscription: false };
       const initialApolloData = { communityPlan: true };
-      createWrapper({ initialApolloData, provide });
+      createWrapper({ initialApolloData });
       return waitForPromises();
     });
 
@@ -213,8 +211,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
   describe('with a plan', () => {
     beforeEach(() => {
       const props = { hasFreePlan: false };
-      const provide = { hasNoSubscription: false };
-      createWrapper({ props, provide });
+      createWrapper({ props });
       return waitForPromises();
     });
 
