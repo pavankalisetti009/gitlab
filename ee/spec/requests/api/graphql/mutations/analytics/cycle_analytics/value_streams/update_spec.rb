@@ -8,7 +8,7 @@ RSpec.describe 'Update value stream', feature_category: :value_stream_management
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group, :with_organization) }
   let_it_be(:project_1) { create(:project, namespace: group) }
-  let_it_be(:value_stream) do
+  let_it_be_with_refind(:value_stream) do
     create(
       :cycle_analytics_value_stream,
       name: 'Old name',
@@ -100,6 +100,21 @@ RSpec.describe 'Update value stream', feature_category: :value_stream_management
           .to change { value_stream.stages.count }.from(1).to(2)
 
         expect(value_stream.reload.stages.map(&:name)).to match_array(['code', 'Custom 1'])
+      end
+
+      context 'when id argument is present' do
+        let_it_be(:stage_to_update) { value_stream.stages.first }
+
+        let(:extra_parameters) do
+          {
+            stages: { id: stage_to_update.to_global_id, name: 'new stage name' }
+          }
+        end
+
+        it 'updates value stream stage attributes' do
+          expect { post_graphql_mutation(mutation, current_user: current_user) }
+            .to change { stage_to_update.reload.name }.to('new stage name')
+        end
       end
 
       context 'when stages argument has invalid values' do

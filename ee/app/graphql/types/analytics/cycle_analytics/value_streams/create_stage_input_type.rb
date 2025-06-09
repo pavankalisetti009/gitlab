@@ -4,10 +4,10 @@ module Types
   module Analytics
     module CycleAnalytics
       module ValueStreams
-        class StageInputType < Types::BaseInputObject
-          graphql_name 'ValueStreamStageInput'
+        class CreateStageInputType < Types::BaseInputObject
+          graphql_name 'CreateValueStreamStageInput'
 
-          description 'Attributes for value stream stage.'
+          description 'Attributes to create value stream stage.'
 
           argument :name, GraphQL::Types::String, required: true, description: 'Name of the stage.'
 
