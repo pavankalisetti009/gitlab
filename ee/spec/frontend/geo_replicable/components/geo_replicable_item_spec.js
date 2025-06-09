@@ -7,7 +7,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
 import GeoListItemStatus from 'ee/geo_shared/list/components/geo_list_item_status.vue';
-import GeoReplicableTimeAgo from 'ee/geo_replicable/components/geo_replicable_time_ago.vue';
+import GeoListItemTimeAgo from 'ee/geo_shared/list/components/geo_list_item_time_ago.vue';
 import { ACTION_TYPES } from 'ee/geo_replicable/constants';
 import { getStoreConfig } from 'ee/geo_replicable/store';
 import {
@@ -66,7 +66,7 @@ describe('GeoReplicableItem', () => {
   const findReverifyButton = () => wrapper.findByTestId('geo-reverify-item');
   const findReplicableItemNoLinkText = () => findReplicableItemHeader().find('span');
   const findReplicableDetailsLink = () => wrapper.findComponent(GlLink);
-  const findReplicableItemTimeAgos = () => wrapper.findAllComponents(GeoReplicableTimeAgo);
+  const findReplicableItemTimeAgos = () => wrapper.findAllComponents(GeoListItemTimeAgo);
   const findReplicableTimeAgosDateStrings = () =>
     findReplicableItemTimeAgos().wrappers.map((w) => w.props('dateString'));
   const findReplicableTimeAgosDefaultTexts = () =>
@@ -178,11 +178,11 @@ describe('GeoReplicableItem', () => {
       createComponent(null, { verificationEnabled: 'true' });
     });
 
-    it('renders GeoReplicableTimeAgo component for each element in timeAgoArray', () => {
+    it('renders GeoListItemTimeAgo component for each element in timeAgoArray', () => {
       expect(findReplicableItemTimeAgos().length).toBe(2);
     });
 
-    it('passes the correct date strings to the GeoReplicableTimeAgo component', () => {
+    it('passes the correct date strings to the GeoListItemTimeAgo component', () => {
       expect(findReplicableTimeAgosDateStrings().length).toBe(2);
       expect(findReplicableTimeAgosDateStrings()).toStrictEqual([
         mockReplicable.lastSyncedAt,
@@ -190,7 +190,7 @@ describe('GeoReplicableItem', () => {
       ]);
     });
 
-    it('passes the correct date defaultTexts to the GeoReplicableTimeAgo component', () => {
+    it('passes the correct date defaultTexts to the GeoListItemTimeAgo component', () => {
       expect(findReplicableTimeAgosDefaultTexts().length).toBe(2);
       expect(findReplicableTimeAgosDefaultTexts()).toStrictEqual([
         GeoReplicableItem.i18n.unknown,
@@ -204,11 +204,11 @@ describe('GeoReplicableItem', () => {
       createComponent(null, { verificationEnabled: 'false' });
     });
 
-    it('renders GeoReplicableTimeAgo component for each element in timeAgoArray', () => {
+    it('renders GeoListItemTimeAgo component for each element in timeAgoArray', () => {
       expect(findReplicableItemTimeAgos().length).toBe(2);
     });
 
-    it('passes the correct date strings to the GeoReplicableTimeAgo component', () => {
+    it('passes the correct date strings to the GeoListItemTimeAgo component', () => {
       expect(findReplicableTimeAgosDateStrings().length).toBe(2);
       expect(findReplicableTimeAgosDateStrings()).toStrictEqual([
         mockReplicable.lastSyncedAt,
@@ -216,7 +216,7 @@ describe('GeoReplicableItem', () => {
       ]);
     });
 
-    it('passes the correct date defaultTexts to the GeoReplicableTimeAgo component', () => {
+    it('passes the correct date defaultTexts to the GeoListItemTimeAgo component', () => {
       expect(findReplicableTimeAgosDefaultTexts().length).toBe(2);
       expect(findReplicableTimeAgosDefaultTexts()).toStrictEqual([
         GeoReplicableItem.i18n.unknown,

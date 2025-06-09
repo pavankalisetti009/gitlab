@@ -4,12 +4,12 @@ import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import { mapActions, mapState } from 'vuex';
 import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import GeoListItemStatus from 'ee/geo_shared/list/components/geo_list_item_status.vue';
+import GeoListItemTimeAgo from 'ee/geo_shared/list/components/geo_list_item_time_ago.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { __, s__, sprintf } from '~/locale';
 import { ACTION_TYPES } from '../constants';
-import GeoReplicableTimeAgo from './geo_replicable_time_ago.vue';
 
 export default {
   name: 'GeoReplicableItem',
@@ -25,7 +25,7 @@ export default {
   components: {
     GlButton,
     GlLink,
-    GeoReplicableTimeAgo,
+    GeoListItemTimeAgo,
     GeoListItemStatus,
     GlSprintf,
   },
@@ -150,7 +150,7 @@ export default {
         </gl-sprintf>
       </span>
 
-      <geo-replicable-time-ago
+      <geo-list-item-time-ago
         v-for="(timeAgo, index) in timeAgoArray"
         :key="index"
         :label="timeAgo.label"

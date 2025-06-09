@@ -4,7 +4,6 @@ import { s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 
 export default {
-  name: 'GeoReplicableTimeAgo',
   i18n: {
     timeAgoString: s__('Geo|%{label} %{timeAgo}'),
   },
@@ -36,7 +35,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-text-sm gl-text-subtle" data-testid="replicable-time-ago">
+  <div class="gl-text-sm gl-text-subtle">
     <span class="gl-px-2" :class="{ 'gl-border-r-1 gl-border-r-solid': showDivider }">
       <gl-sprintf :message="$options.i18n.timeAgoString">
         <template #label>
