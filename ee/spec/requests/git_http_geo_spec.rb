@@ -69,6 +69,17 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
     end
   end
 
+  shared_examples_for 'a 404 git request' do
+    subject do
+      make_request
+      response
+    end
+
+    it 'returns a NOT FOUND response' do
+      is_expected.to have_gitlab_http_status(:not_found)
+    end
+  end
+
   shared_examples_for 'a Geo 200 git-lfs request' do
     subject do
       make_request
@@ -221,7 +232,7 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
       context 'when the repository does not exist' do
         let_it_be(:project) { project_no_repo }
 
-        it_behaves_like 'a 200 git request'
+        it_behaves_like 'a 404 git request'
       end
 
       context 'when the project does not exist' do

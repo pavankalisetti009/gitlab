@@ -11,13 +11,20 @@ module Geo
 
     belongs_to :project, class_name: 'Project'
 
+    # Returns whether the project repository is out-of-date on this site
+    #
+    # The return value must be cached in RequestStore to ensure a consistent request
+    #
     # @return [Boolean] whether the project repository is out-of-date on this site
     def self.repository_out_of_date?(project_id, synchronous_request_required = false)
       return false unless ::Gitlab::Geo.secondary_with_primary?
 
-      registry = find_or_initialize_by(project_id: project_id)
+      cache_key = "geo_repository_out_of_date:#{project_id}:#{synchronous_request_required}"
 
-      registry.repository_out_of_date?(synchronous_request_required)
+      Gitlab::SafeRequestStore.fetch(cache_key) do
+        registry = find_or_initialize_by(project_id: project_id)
+        registry.repository_out_of_date?(synchronous_request_required)
+      end
     end
 
     # @return [Boolean] whether the project repository is out-of-date on this site

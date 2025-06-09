@@ -797,6 +797,70 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
         end
       end
     end
+
+    context 'when a GeoCustomSshError is raised', :geo do
+      let_it_be(:project) { create(:project, :repository) }
+
+      let(:custom_payload) do
+        {
+          'action' => 'geo_proxy_to_primary',
+          'data' => {
+            'api_endpoints' => ['/api/v4/geo/proxy_git_ssh/info_refs_upload_pack', '/api/v4/geo/proxy_git_ssh/upload_pack'],
+            'primary_repo' => "http://primary.example.com/#{project.full_path}.git",
+            'geo_proxy_direct_to_primary' => true
+          }
+        }
+      end
+
+      let(:console_messages) do
+        [
+          "This request to a Geo secondary node will be forwarded to the",
+          "Geo primary node:",
+          "",
+          "  git@primary.example.com:#{project.full_path}.git"
+        ]
+      end
+
+      # Create a real CustomAction instance with positional arguments
+      let(:custom_action) do
+        result = Gitlab::GitAccessResult::CustomAction.new(custom_payload, console_messages)
+        # Make sure it responds to success? with true
+        allow(result).to receive(:success?).and_return(true)
+        result
+      end
+
+      before do
+        project.add_developer(user)
+        stub_current_geo_node(secondary_node)
+
+        # rubocop:disable RSpec/AnyInstanceOf -- Cannot use allow_next_instance_of with modules that are included in other classes
+        allow_any_instance_of(API::Helpers::InternalHelpers).to receive(:access_check_result) do
+          raise Gitlab::GitAccess::GeoCustomSshError
+        end
+        # rubocop:enable RSpec/AnyInstanceOf
+
+        allow(::EE::Gitlab::GeoGitAccess).to receive(:geo_custom_ssh_action).and_return(custom_action)
+      end
+
+      it 'handles the error and returns a custom action' do
+        post(
+          api("/internal/allowed"),
+          params: {
+            key_id: key.id,
+            project: project.full_path,
+            gl_repository: "project-#{project.id}",
+            action: 'git-upload-pack',
+            protocol: 'ssh'
+          },
+          headers: gitlab_shell_internal_api_request_header
+        )
+
+        expect(response).to have_gitlab_http_status(:multiple_choices) # or :multiple_choice or 300
+        expect(json_response['status']).to be true
+        expect(json_response['gl_console_messages']).to eq(console_messages)
+        expect(json_response['payload']).to eq(custom_payload)
+      end
+    end
   end
 
   describe "POST /internal/lfs_authenticate", :geo do
