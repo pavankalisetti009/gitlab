@@ -19,7 +19,8 @@ module Dora
 
       queries[:incidents_count] = Issue.with_issue_type(:incident).select(Issue.arel_table[:id].count)
         .where(created_at: date.beginning_of_day..date.end_of_day)
-        .where(project_id: environment.project_id).to_sql
+        .where(project_id: environment.project_id)
+        .where(duplicated_to_id: nil).to_sql
 
       queries
     end
