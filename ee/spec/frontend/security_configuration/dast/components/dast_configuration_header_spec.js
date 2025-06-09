@@ -45,7 +45,7 @@ describe('EE DAST Configuration Header', () => {
 
     expect(findBadge().props('variant')).toBe('neutral');
     expect(findBadge().text()).toBe(badgeLabel);
-    expect(findHeaderText().text()).toBe(`${badgeText} in 1 year in pipeline`);
+    expect(findHeaderText().text()).toBe(`${badgeText} Jun 20, 2022 in pipeline`);
   });
 
   it('should be enabled if dast is enabled', () => {
@@ -61,7 +61,7 @@ describe('EE DAST Configuration Header', () => {
 
     expect(findBadge().props('variant')).toBe('success');
     expect(findBadge().text()).toBe(badgeLabel);
-    expect(findHeaderText().text()).toBe('Last scan triggered in 1 year in pipeline');
+    expect(findHeaderText().text()).toBe('Last scan triggered Jun 20, 2022 in pipeline');
 
     expect(findLink().exists()).toBe(true);
     expect(findLink().attributes('href')).toBe(pipelinePath);

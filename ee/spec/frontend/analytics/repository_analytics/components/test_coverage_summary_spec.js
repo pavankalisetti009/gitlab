@@ -60,7 +60,7 @@ describe('Test coverage table component', () => {
       [null, 'Last updated'],
       [0, 'Last updated today'],
       [1, 'Last updated 1 day ago'],
-      [730, 'Last updated 2 years ago'],
+      [730, 'Last updated Jul 7, 2018'],
     ])('when last updated date is %p days ago, renders heading %p', (daysAgo, expectedText) => {
       const date =
         daysAgo === null

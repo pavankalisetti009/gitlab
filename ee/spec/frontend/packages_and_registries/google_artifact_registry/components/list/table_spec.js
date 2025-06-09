@@ -210,7 +210,7 @@ describe('ListTable', () => {
 
     it('renders the created time in the third column', () => {
       const createTimeCell = findCells().at(2);
-      expect(createTimeCell.text()).toContain('1 year ago');
+      expect(createTimeCell.text()).toContain('Jan 1, 2019');
     });
 
     it('renders the update time in the fourth column', () => {
