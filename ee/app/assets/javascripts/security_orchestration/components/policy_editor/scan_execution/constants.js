@@ -72,22 +72,23 @@ export const ERROR_MESSAGE_MAP = {
   [POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY]: DAST_SCANNERS_PARSING_ERROR,
 };
 
-export const PIPELINE_SOURCE_OPTIONS = [
-  { value: 'api', text: s__('SecurityOrchestration|API request') },
-  { value: 'chat', text: s__('SecurityOrchestration|ChatOps command') },
-  { value: 'external', text: s__('SecurityOrchestration|External event') },
-  {
-    value: 'external_pull_request_event',
-    text: s__('SecurityOrchestration|External pull request'),
-  },
-  { value: 'merge_request_event', text: s__('SecurityOrchestration|Merge request pipeline') },
-  { value: 'pipeline', text: s__('SecurityOrchestration|Manual pipeline run') },
-  { value: 'push', text: s__('SecurityOrchestration|Code push') },
-  { value: 'schedule', text: s__('SecurityOrchestration|Scheduled pipeline') },
-  { value: 'trigger', text: s__('SecurityOrchestration|Trigger') },
-  { value: 'web', text: s__('SecurityOrchestration|Web UI') },
-  { value: 'unknown', text: s__('SecurityOrchestration|Unknown source') },
-];
+export const PIPELINE_SOURCE_OPTIONS = {
+  api: s__('SecurityOrchestration|API request'),
+  chat: s__('SecurityOrchestration|ChatOps command'),
+  external: s__('SecurityOrchestration|External event'),
+  external_pull_request_event: s__('SecurityOrchestration|External pull request'),
+  merge_request_event: s__('SecurityOrchestration|Merge request pipeline'),
+  pipeline: s__('SecurityOrchestration|Manual pipeline run'),
+  push: s__('SecurityOrchestration|Code push'),
+  schedule: s__('SecurityOrchestration|Scheduled pipeline'),
+  trigger: s__('SecurityOrchestration|Trigger'),
+  web: s__('SecurityOrchestration|Web UI'),
+  unknown: s__('SecurityOrchestration|Unknown source'),
+};
+
+export const PIPELINE_SOURCE_LISTBOX_OPTIONS = Object.entries(PIPELINE_SOURCE_OPTIONS).map(
+  ([value, text]) => ({ value, text }),
+);
 
 export const SELECTION_CONFIG_CUSTOM = 'custom';
 export const SELECTION_CONFIG_DEFAULT = 'default';

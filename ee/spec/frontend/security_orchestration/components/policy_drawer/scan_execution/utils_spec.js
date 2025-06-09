@@ -75,6 +75,7 @@ const mockRules = [
   },
   { type: 'pipeline', branch_type: 'default' },
 ];
+
 const mockDefaultTagsCriteria = {
   message: 'Automatically selected runners',
   tags: [],
@@ -280,5 +281,40 @@ describe('humanizeRules', () => {
         summary: 'every minute, every 20 hours, on day 4 of the month on any protected branch',
       },
     ]);
+  });
+
+  describe('pipeline sources', () => {
+    const mockRulesWithPipelineSources = [
+      {
+        type: 'pipeline',
+        branches: ['main'],
+        pipeline_sources: { including: ['web'] },
+      },
+      {
+        type: 'pipeline',
+        branches: ['main'],
+        pipeline_sources: { including: ['web', 'api'] },
+      },
+      {
+        type: 'pipeline',
+        branches: ['main'],
+        pipeline_sources: { including: ['web', 'api', 'schedule'] },
+      },
+      {
+        type: 'pipeline',
+        branch_type: 'default',
+        pipeline_sources: { including: ['web'] },
+      },
+    ];
+
+    it.each`
+      title                                                    | rule                               | summary
+      ${'creates summary message for single source'}           | ${mockRulesWithPipelineSources[0]} | ${'Every time a pipeline runs for the main branch triggered by Web UI'}
+      ${'creates summary message for two sources'}             | ${mockRulesWithPipelineSources[1]} | ${'Every time a pipeline runs for the main branch triggered by Web UI or API request'}
+      ${'creates summary message for three sources'}           | ${mockRulesWithPipelineSources[2]} | ${'Every time a pipeline runs for the main branch triggered by Web UI, API request or Scheduled pipeline'}
+      ${'creates summary message with branch type and source'} | ${mockRulesWithPipelineSources[3]} | ${'Every time a pipeline runs for the default branch triggered by Web UI'}
+    `('$title', ({ rule, summary }) => {
+      expect(humanizeRules([rule])[0].summary).toStrictEqual(summary);
+    });
   });
 });
