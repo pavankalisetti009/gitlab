@@ -14,11 +14,6 @@ export default {
     InstrumentationInstructionsSdkDetails,
     InstrumentationInstructions,
   },
-  inject: {
-    collectorHost: {
-      type: String,
-    },
-  },
   props: {
     trackingKey: {
       type: String,
@@ -26,10 +21,6 @@ export default {
       default: null,
     },
     dashboardsPath: {
-      type: String,
-      required: true,
-    },
-    onboardingPath: {
       type: String,
       required: true,
     },

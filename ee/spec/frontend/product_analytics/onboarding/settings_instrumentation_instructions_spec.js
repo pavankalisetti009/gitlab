@@ -14,7 +14,6 @@ describe('ProductAnalyticsSettingsInstrumentationInstructions', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   const dashboardsPath = '/foo/bar/dashboards';
-  const onboardingPath = '/foo/bar/dashboards/onboarding';
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findLink = () => wrapper.findComponent(GlLink);
@@ -31,7 +30,6 @@ describe('ProductAnalyticsSettingsInstrumentationInstructions', () => {
       },
       propsData: {
         dashboardsPath,
-        onboardingPath,
         trackingKey: TEST_TRACKING_KEY,
         ...props,
       },

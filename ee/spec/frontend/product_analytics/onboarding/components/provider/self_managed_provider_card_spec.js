@@ -31,7 +31,6 @@ describe('SelfManagedProviderCard', () => {
   const createWrapper = (props = {}, provide = {}) => {
     wrapper = shallowMountExtended(SelfManagedProviderCard, {
       propsData: {
-        projectAnalyticsSettingsPath: '/settings/analytics',
         projectSettings: getProjectLevelAnalyticsProviderSettings(),
         ...props,
       },
