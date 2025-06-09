@@ -1159,6 +1159,9 @@ msgstr ""
 msgid "%{listToShow}, and %{awardsListLength} more"
 msgstr ""
 
+msgid "%{list} list help popover"
+msgstr ""
+
 msgid "%{locker} has a lock on \"%{path}\". %{additionalPhrase}"
 msgstr ""
 
