@@ -101,11 +101,15 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
   describe 'filters' do
     let_it_be(:private_project) { create(:project, :private) }
     let_it_be(:authorized_project) { create(:project, developers: [user]) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:label) { create(:label, project: authorized_project) }
     let(:project_ids) { [authorized_project.id, private_project.id] }
 
     it_behaves_like 'a query filtered by archived'
     it_behaves_like 'a query filtered by hidden'
     it_behaves_like 'a query filtered by state'
+    it_behaves_like 'a query filtered by author'
+    it_behaves_like 'a query filtered by labels'
 
     describe 'authorization' do
       it 'applies authorization filters' do
@@ -171,46 +175,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
           it 'does not apply filters' do
             assert_names_in_query(build, without: %w[filters:target_branch filters:not_target_branch])
           end
-        end
-      end
-    end
-
-    describe 'author' do
-      let_it_be(:user) { create(:user) }
-
-      it 'does not apply filters by default' do
-        assert_names_in_query(build, without: %w[filters:author filters:not_author])
-      end
-
-      context 'when author_username option is provided' do
-        let(:options) { base_options.merge(author_username: user.username) }
-
-        it 'applies the filter' do
-          assert_names_in_query(build, with: %w[filters:author])
-        end
-      end
-
-      context 'when not_author_username option is provided' do
-        let(:options) { base_options.merge(not_author_username: user.username) }
-
-        it 'applies the filter' do
-          assert_names_in_query(build, with: %w[filters:not_author])
-        end
-      end
-    end
-
-    describe 'labels' do
-      let_it_be(:label) { create(:label, project: authorized_project) }
-
-      it 'does not include labels filter by default' do
-        assert_names_in_query(build, without: %w[filters:label_ids])
-      end
-
-      context 'when label_name option is provided' do
-        let(:options) { base_options.merge(label_name: [label.name]) }
-
-        it 'applies label filters' do
-          assert_names_in_query(build, with: %w[filters:label_ids])
         end
       end
     end

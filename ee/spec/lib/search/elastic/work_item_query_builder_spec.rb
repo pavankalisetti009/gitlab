@@ -375,57 +375,92 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     let_it_be(:group) { create(:group) }
     let_it_be(:private_project) { create(:project, :private, group: group) }
     let_it_be(:authorized_project) { create(:project, developers: [user], group: group) }
+    let_it_be(:label) { create(:label, project: authorized_project, title: 'My Label') }
     let(:project_ids) { [authorized_project.id, private_project.id] }
 
     it_behaves_like 'a query filtered by archived'
     it_behaves_like 'a query filtered by hidden'
     it_behaves_like 'a query filtered by state'
     it_behaves_like 'a query filtered by confidentiality'
+    it_behaves_like 'a query filtered by author'
+    it_behaves_like 'a query filtered by labels'
+    it_behaves_like 'a query filtered by project authorization'
 
-    describe 'authorization' do
-      it_behaves_like 'a query filtered by project authorization'
-    end
+    context 'with milestones' do
+      let_it_be(:milestone) { create(:milestone, project: authorized_project) }
 
-    describe 'labels' do
-      let_it_be(:label) { create(:label, project: authorized_project, title: 'My Label') }
+      context 'when backfill_work_item_milestone_data has finished' do
+        before do
+          set_elasticsearch_migration_to(:backfill_work_item_milestone_data, including: true)
+        end
 
-      it 'does not include labels filter by default' do
-        assert_names_in_query(build, without: %w[filters:label_ids])
-      end
+        it 'does not apply milestone filters by default' do
+          assert_names_in_query(build,
+            without: %w[
+              filters:milestone_title
+              filters:not_milestone_title
+              filters:none_milestones
+              filters:any_milestones
+            ])
+        end
 
-      context 'when label_name option is provided' do
-        let(:options) { base_options.merge(label_name: [label.name]) }
+        context 'when milestone_title option is provided' do
+          let(:options) { base_options.merge(milestone_title: milestone.title) }
 
-        it 'applies label filters' do
-          assert_names_in_query(build, with: %w[filters:label_ids])
+          it 'applies the filter' do
+            assert_names_in_query(build, with: %w[filters:milestone_title])
+          end
+        end
+
+        context 'when not_milestone_title option is provided' do
+          let(:options) { base_options.merge(not_milestone_title: milestone.title) }
+
+          it 'applies the filter' do
+            assert_names_in_query(build, with: %w[filters:not_milestone_title])
+          end
+        end
+
+        context 'when none_milestones option is provided' do
+          let(:options) { base_options.merge(none_milestones: true) }
+
+          it 'applies the filter' do
+            assert_names_in_query(build, with: %w[filters:none_milestones])
+          end
+        end
+
+        context 'when any_milestones option is provided' do
+          let(:options) { base_options.merge(any_milestones: true) }
+
+          it 'applies the filter' do
+            assert_names_in_query(build, with: %w[filters:any_milestones])
+          end
         end
       end
-    end
 
-    describe 'author_username' do
-      it 'does not include author_username filter by default' do
-        assert_names_in_query(build, without: %w[filters:author])
-      end
-
-      context 'when author_username option is provided' do
-        let(:options) { base_options.merge(author_username: [user.username]) }
-
-        it 'applies author_username filters' do
-          assert_names_in_query(build, with: %w[filters:author])
+      context 'when backfill_work_item_milestone_data has not finished' do
+        before do
+          set_elasticsearch_migration_to(:backfill_work_item_milestone_data, including: false)
         end
-      end
-    end
 
-    describe 'not_author_username' do
-      it 'does not include not_author_username filter by default' do
-        assert_names_in_query(build, without: %w[filters:not_author])
-      end
+        context 'when all milestone options are provided' do
+          let(:options) do
+            base_options.merge(
+              milestone_title: milestone.title,
+              not_milestone_title: milestone.title,
+              none_milestones: true,
+              any_milestones: true
+            )
+          end
 
-      context 'when not_author_username option is provided' do
-        let(:options) { base_options.merge(not_author_username: [user.username]) }
-
-        it 'applies not_author_username filters' do
-          assert_names_in_query(build, with: %w[filters:not_author])
+          it 'does not apply any milestone filters' do
+            assert_names_in_query(build,
+              without: %w[
+                filters:milestone_title
+                filters:not_milestone_title
+                filters:none_milestones
+                filters:any_milestones
+              ])
+          end
         end
       end
     end

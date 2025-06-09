@@ -86,32 +86,18 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
   describe 'filters' do
     let_it_be(:private_project) { create(:project, :private) }
     let_it_be(:authorized_project) { create(:project, developers: [user]) }
+    let_it_be(:label) { create(:label, project: authorized_project, title: 'My Label') }
     let(:project_ids) { [authorized_project.id, private_project.id] }
 
     it_behaves_like 'a query filtered by archived'
     it_behaves_like 'a query filtered by hidden'
     it_behaves_like 'a query filtered by state'
     it_behaves_like 'a query filtered by confidentiality'
+    it_behaves_like 'a query filtered by labels'
 
     describe 'authorization' do
       it 'applies authorization filters' do
         assert_names_in_query(build, with: %w[filters:project:membership:id])
-      end
-    end
-
-    describe 'labels' do
-      let_it_be(:label) { create(:label, project: authorized_project, title: 'My Label') }
-
-      it 'does not include labels filter by default' do
-        assert_names_in_query(build, without: %w[filters:label_ids])
-      end
-
-      context 'when label_name option is provided' do
-        let(:options) { base_options.merge(label_name: [label.name]) }
-
-        it 'applies label filters' do
-          assert_names_in_query(build, with: %w[filters:label_ids])
-        end
       end
     end
   end

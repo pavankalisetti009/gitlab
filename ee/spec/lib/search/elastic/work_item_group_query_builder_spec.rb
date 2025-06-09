@@ -90,6 +90,14 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
     it_behaves_like 'a query filtered by hidden'
     it_behaves_like 'a query filtered by state'
 
+    context 'with labels' do
+      let_it_be(:authorized_group) { create(:group, :private, developers: user) }
+      let_it_be(:authorized_project) { create(:project, :private, group: authorized_group) }
+      let_it_be(:label) { create(:label, project: authorized_project, title: 'My Label') }
+
+      it_behaves_like 'a query filtered by labels'
+    end
+
     describe 'confidentiality' do
       context 'when user has role set in min_access_level_non_confidential option' do
         it 'applies only non-confidential public/private filters' do
@@ -181,24 +189,6 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
           assert_names_in_query(build, with: %w[filters:level:group
             filters:permissions:group:namespace_visibility_level:public_and_internal
             filters:permissions:group:namespace_visibility_level:private])
-        end
-      end
-    end
-
-    describe 'labels' do
-      let_it_be(:authorized_group) { create(:group, :private, developers: user) }
-      let_it_be(:authorized_project) { create(:project, :private, group: authorized_group) }
-      let_it_be(:label) { create(:label, project: authorized_project, title: 'My Label') }
-
-      it 'does not include labels filter by default' do
-        assert_names_in_query(build, without: %w[filters:label_ids])
-      end
-
-      context 'when label_name option is provided' do
-        let(:options) { base_options.merge(label_name: [label.name]) }
-
-        it 'applies label filters' do
-          assert_names_in_query(build, with: %w[filters:label_ids])
         end
       end
     end
