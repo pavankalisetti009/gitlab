@@ -32,6 +32,10 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_work_item_type_ids(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
 
+        if ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_item_milestone_data)
+          query_hash = ::Search::Elastic::Filters.by_milestone(query_hash: query_hash, options: options)
+        end
+
         if hybrid_work_item_search?
           query_hash = ::Search::Elastic::Filters.by_knn(query_hash: query_hash, options: options)
         end

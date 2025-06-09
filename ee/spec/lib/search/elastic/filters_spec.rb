@@ -148,6 +148,107 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
+  describe '.by_milestone' do
+    let_it_be(:milestone) { create(:milestone) }
+
+    subject(:by_milestone) { described_class.by_milestone(query_hash: query_hash, options: options) }
+
+    context 'when :milestone_title, :not_milestone_title, :none_milestones and :any_milestones options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:milestone_title] is provided' do
+      let(:options) { { milestone_title: [milestone.title] } }
+
+      it 'adds the milestone_title filter to query_hash' do
+        expected_filter = [{ bool: { must: { terms: { _name: 'filters:milestone_title',
+                                                      milestone_title: [milestone.title] } } } }]
+
+        expect(by_milestone.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:not_milestone_title] is provided' do
+      let(:options) { { not_milestone_title: [milestone.title] } }
+
+      it 'adds the not_milestone_title filter to query_hash' do
+        expected_filter = [{ bool: { must_not: { terms: { _name: 'filters:not_milestone_title',
+                                                          milestone_title: [milestone.title] } } } }]
+
+        expect(by_milestone.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:any_milestones] is provided' do
+      let(:options) { { any_milestones: true } }
+
+      it 'adds the any_milestones filter to query_hash' do
+        expected_filter = [{ bool: { _name: 'filters:any_milestones',
+                                     must: { exists: { field: 'milestone_title' } } } }]
+
+        expect(by_milestone.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:none_milestones] is provided' do
+      let(:options) { { none_milestones: true } }
+
+      it 'adds the none_milestones filter to query_hash' do
+        expected_filter = [{ bool: { _name: 'filters:none_milestones',
+                                     must_not: { exists: { field: 'milestone_title' } } } }]
+
+        expect(by_milestone.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:milestone_title] and options[:not_milestone_title] are both provided' do
+      let_it_be(:another_milestone) { create(:milestone) }
+
+      let(:options) { { milestone_title: [milestone.title], not_milestone_title: [another_milestone.title] } }
+
+      it 'adds both milestone filters to query_hash' do
+        expected_filter = [{
+          bool: {
+            must: {
+              terms: {
+                _name: "filters:milestone_title",
+                milestone_title: [milestone.title]
+              }
+            }
+          }
+        }, {
+          bool: {
+            must_not: {
+              terms: {
+                _name: "filters:not_milestone_title",
+                milestone_title: [another_milestone.title]
+              }
+            }
+          }
+        }]
+
+        expect(by_milestone.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+  end
+
   describe '.by_author' do
     let_it_be(:included_user) { user }
     let_it_be(:excluded_user) { create(:user) }
