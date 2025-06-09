@@ -407,12 +407,15 @@ describe('compliance report utils', () => {
 
     it('sets displayValue to external control URL label for external controls', () => {
       const externalUrl = 'https://example.com';
-      const requirementControlNodes = [{ name: 'control1', controlType: 'external', externalUrl }];
+      const externalControlName = 'External control';
+      const requirementControlNodes = [
+        { name: 'control1', controlType: 'external', externalUrl, externalControlName },
+      ];
       const complianceRequirementControls = [];
 
       const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
 
-      expect(result[0].displayValue).toBe(`Send via: ${externalUrl}`);
+      expect(result[0].displayValue).toBe(externalControlName);
     });
 
     it('sets displayValue to matching GitLab control name for internal controls', () => {
@@ -448,10 +451,11 @@ describe('compliance report utils', () => {
       const internalControlId = 'internal-control';
       const internalControlName = 'Internal Control';
       const externalUrl = 'https://example.com';
+      const externalControlName = 'External control';
 
       const requirementControlNodes = [
         { name: internalControlId, controlType: 'internal' },
-        { name: 'external-control', controlType: 'external', externalUrl },
+        { name: 'external-control', controlType: 'external', externalUrl, externalControlName },
         { name: 'unknown-internal', controlType: 'internal' },
       ];
 
@@ -461,7 +465,7 @@ describe('compliance report utils', () => {
 
       expect(result.length).toBe(3);
       expect(result[0].displayValue).toBe(internalControlName);
-      expect(result[1].displayValue).toBe(`Send via: ${externalUrl}`);
+      expect(result[1].displayValue).toBe(externalControlName);
       expect(result[2].displayValue).toBe('Unknown');
     });
   });

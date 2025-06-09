@@ -2,6 +2,7 @@
 import { GlBadge, GlButton, GlIcon, GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import complianceRequirementsControls from '../../graphql/queries/compliance_requirements_controls.query.graphql';
 import DrawerAccordion from '../../../shared/drawer_accordion.vue';
+import { EXTERNAL_CONTROL_LABEL } from '../../../../constants';
 import { statusesInfo } from './statuses_info';
 
 export default {
@@ -46,6 +47,9 @@ export default {
   },
   methods: {
     getControlName(controlStatus) {
+      if (controlStatus.complianceRequirementsControl.controlType === 'external') {
+        return controlStatus.complianceRequirementsControl.externalControlName;
+      }
       return (
         this.complianceRequirementsControls.find(
           (c) => c.id === controlStatus.complianceRequirementsControl.name,
@@ -65,6 +69,9 @@ export default {
       return statusesInfo[status.name] || DEFAULT_VALUE;
     },
   },
+  i18n: {
+    EXTERNAL_CONTROL_LABEL,
+  },
 };
 </script>
 <template>
@@ -76,7 +83,8 @@ export default {
           {{ getControlName(controlStatus) }}
         </template>
         <template v-if="controlStatus.complianceRequirementsControl.controlType === 'external'">
-          {{ s__('ComplianceStandardsAdherence|External control') }}
+          {{ getControlName(controlStatus) }}
+          <gl-badge>{{ $options.i18n.EXTERNAL_CONTROL_LABEL }}</gl-badge>
         </template>
       </h4>
       <div class="gl-flex gl-flex-row gl-gap-3">

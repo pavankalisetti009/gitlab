@@ -22,7 +22,7 @@ import {
   requirementsDocsUrl,
   requirementEvents,
 } from '../constants';
-import { EXTERNAL_CONTROL_URL_LABEL, EXTERNAL_CONTROL_LABEL } from '../../../../constants';
+import { EXTERNAL_CONTROL_LABEL } from '../../../../constants';
 
 const MAX_NAME_LENGTH = 255;
 const MAX_DESCRIPTION_LENGTH = 500;
@@ -406,7 +406,7 @@ export default {
       };
     },
     externalControlDisplayValue(externalControl) {
-      return `${EXTERNAL_CONTROL_URL_LABEL} ${externalControl.externalUrl}`;
+      return externalControl.externalControlName;
     },
     showExternalControlFieldToggle(control) {
       return control?.id;
@@ -511,7 +511,7 @@ export default {
     <div
       v-for="(control, index) in controls"
       :key="index"
-      class="gl-mb-3 gl-flex gl-items-start gl-justify-between gl-rounded-base gl-bg-subtle gl-p-3"
+      class="gl-mb-3 gl-flex gl-items-center gl-justify-between gl-rounded-base gl-bg-subtle gl-p-3"
     >
       <div class="gl-flex-grow-1 gl-mr-3 gl-w-full">
         <template v-if="isExternalControl(control)">

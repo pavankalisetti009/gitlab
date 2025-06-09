@@ -50,6 +50,7 @@ query groupComplianceRequirementsStatuses(
                 name
                 controlType
                 externalUrl
+                externalControlName
               }
             }
           }
