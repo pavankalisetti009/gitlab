@@ -144,7 +144,6 @@ module Gitlab
               diffs_and_paths[diff_file.new_path] = diff_file.raw_diff
               # Skip newly added files and deleted files since their full content is already in the diff
               next if diff_file.new_file? || diff_file.deleted_file?
-              next unless include_file_content?
 
               content = diff_file.old_blob&.data
               files_content[diff_file.new_path] = content if content.present?
@@ -198,11 +197,6 @@ module Gitlab
             prepare_prompt_inputs(diffs_and_paths, {})
             review_response_for_prompt_inputs
           end
-
-          def include_file_content?
-            Feature.enabled?(:duo_code_review_full_file, user)
-          end
-          strong_memoize_attr :include_file_content?
 
           def duo_code_review_logging_enabled?
             Feature.enabled?(:duo_code_review_response_logging, user)
