@@ -4,6 +4,7 @@ import axios from '~/lib/utils/axios_utils';
 import * as actions from 'ee/dependencies/store/actions';
 import projectDependencies from 'ee/dependencies/graphql/project_dependencies.query.graphql';
 import groupDependencies from 'ee/dependencies/graphql/group_dependencies.query.graphql';
+import dependencyVulnerabilities from 'ee/dependencies/graphql/dependency_vulnerabilities.query.graphql';
 import {
   EXPORT_STARTED_MESSAGE,
   FETCH_ERROR_MESSAGE,
@@ -39,6 +40,7 @@ jest.mock('ee/dependencies/store/utils', () => ({
 }));
 jest.mock('~/graphql_shared/utils', () => ({
   getIdFromGraphQLId: jest.fn(() => 'extracted-from-get-id-from-graphql-id-util'),
+  convertToGraphQLId: jest.fn(() => 'extracted-from-convert-to-graphql-id-util'),
 }));
 
 describe('Dependencies actions', () => {
@@ -1149,6 +1151,165 @@ describe('Dependencies actions', () => {
           });
         },
       );
+    });
+  });
+
+  describe('fetchVulnerabilitiesViaGraphQL', () => {
+    const item = { occurrenceId: '123' };
+    const mockVulnerabilities = [
+      { id: '1', name: 'Vulnerability 1', severity: 'HIGH', url: 'https://example.com/vuln/1' },
+      { id: '2', name: 'Vulnerability 2', severity: 'MEDIUM', url: 'https://example.com/vuln/2' },
+    ];
+    const mockGraphQLResponse = {
+      data: {
+        dependency: {
+          vulnerabilities: {
+            nodes: mockVulnerabilities,
+          },
+        },
+      },
+    };
+
+    describe('when occurrenceId is not provided', () => {
+      it('does nothing', async () => {
+        await testAction(
+          actions.fetchVulnerabilitiesViaGraphQL,
+          { item: {} },
+          getInitialState(),
+          [],
+          [],
+        );
+
+        expect(graphQLClient.query).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('on success', () => {
+      beforeEach(() => {
+        graphQLClient.query.mockResolvedValue(mockGraphQLResponse);
+      });
+
+      it('commits TOGGLE_VULNERABILITY_ITEM_LOADING before and after the request', async () => {
+        await testAction(
+          actions.fetchVulnerabilitiesViaGraphQL,
+          { item },
+          getInitialState(),
+          [
+            {
+              type: types.TOGGLE_VULNERABILITY_ITEM_LOADING,
+              payload: item,
+            },
+            {
+              type: types.SET_VULNERABILITIES,
+              payload: mockVulnerabilities.map((vulnerability) => ({
+                ...vulnerability,
+                occurrence_id: item.occurrenceId,
+              })),
+            },
+            {
+              type: types.TOGGLE_VULNERABILITY_ITEM_LOADING,
+              payload: item,
+            },
+          ],
+          [],
+        );
+      });
+
+      it('calls the GraphQL query with the correct query and variables', async () => {
+        await testAction(
+          actions.fetchVulnerabilitiesViaGraphQL,
+          { item },
+          getInitialState(),
+          expect.any(Array),
+          [],
+        );
+
+        expect(graphQLClient.query).toHaveBeenCalledWith({
+          query: dependencyVulnerabilities,
+          variables: {
+            occurrenceId: 'extracted-from-convert-to-graphql-id-util',
+          },
+        });
+      });
+
+      it('adds `occurrence_id` to each vulnerability', async () => {
+        await testAction(
+          actions.fetchVulnerabilitiesViaGraphQL,
+          { item },
+          getInitialState(),
+          [
+            expect.any(Object),
+            {
+              type: types.SET_VULNERABILITIES,
+              payload: mockVulnerabilities.map((vulnerability) => ({
+                ...vulnerability,
+                occurrence_id: item.occurrenceId,
+              })),
+            },
+            expect.any(Object),
+          ],
+          [],
+        );
+      });
+
+      it('handles vulnerabilities being null', async () => {
+        graphQLClient.query.mockResolvedValue({
+          data: {
+            dependency: {
+              vulnerabilities: {
+                nodes: null,
+              },
+            },
+          },
+        });
+
+        await testAction(
+          actions.fetchVulnerabilitiesViaGraphQL,
+          { item },
+          getInitialState(),
+          [
+            expect.any(Object),
+            {
+              type: types.SET_VULNERABILITIES,
+              payload: [],
+            },
+            expect.any(Object),
+          ],
+          [],
+        );
+      });
+    });
+
+    describe('on error', () => {
+      beforeEach(() => {
+        graphQLClient.query.mockRejectedValue(new Error('GraphQL error'));
+      });
+
+      it('shows an alert with error message and toggles the loading state', async () => {
+        expect(createAlert).toHaveBeenCalledTimes(0);
+
+        await testAction(
+          actions.fetchVulnerabilitiesViaGraphQL,
+          { item },
+          getInitialState(),
+          [
+            {
+              type: types.TOGGLE_VULNERABILITY_ITEM_LOADING,
+              payload: item,
+            },
+            {
+              type: types.TOGGLE_VULNERABILITY_ITEM_LOADING,
+              payload: item,
+            },
+          ],
+          [],
+        );
+
+        expect(createAlert).toHaveBeenCalledTimes(1);
+        expect(createAlert).toHaveBeenCalledWith({
+          message: VULNERABILITIES_FETCH_ERROR_MESSAGE,
+        });
+      });
     });
   });
 });

@@ -50,6 +50,10 @@ export default {
         return dispatch('fetchDependencies', { cursor });
       },
       fetchVulnerabilities(dispatch, item) {
+        if (this.glFeatures.projectDependenciesGraphql) {
+          return dispatch('fetchVulnerabilitiesViaGraphQL', { item });
+        }
+
         return dispatch('fetchVulnerabilities', {
           item,
           vulnerabilitiesEndpoint: this.vulnerabilitiesEndpoint,

@@ -78,14 +78,13 @@ describe('PaginatedDependenciesTable component', () => {
     expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { page });
   });
 
-  it('dispatches fetch vulnerabilities', async () => {
+  it('dispatches `fetchVulnerabilitiesViaGraphQL` when a row is expanded', async () => {
     const item = {};
     const table = wrapper.findComponent(DependenciesTable);
     await table.vm.$emit('row-click', item);
 
-    expect(store.dispatch).toHaveBeenCalledWith('fetchVulnerabilities', {
+    expect(store.dispatch).toHaveBeenCalledWith('fetchVulnerabilitiesViaGraphQL', {
       item,
-      vulnerabilitiesEndpoint: TEST_HOST,
     });
   });
 
@@ -228,24 +227,37 @@ describe('PaginatedDependenciesTable component', () => {
     });
   });
 
-  describe('with GraphQL feature flag disabled', () => {
+  describe('with `projectDependenciesGraphql` feature flag disabled', () => {
+    beforeEach(() => {
+      factory({ glFeatures: { projectDependenciesGraphql: false } });
+      jest.spyOn(store, 'dispatch').mockImplementation();
+    });
+
+    describe('fetching vulnerabilities', () => {
+      it('dispatches fetchVulnerabilities', async () => {
+        const item = {};
+        const table = wrapper.findComponent(DependenciesTable);
+
+        await table.vm.$emit('row-click', item);
+
+        expect(store.dispatch).toHaveBeenCalledWith('fetchVulnerabilities', {
+          item,
+          vulnerabilitiesEndpoint: TEST_HOST,
+        });
+      });
+    });
+
     describe('keyset pagination', () => {
       const nextCursor = 'eyJpZCI6IjQyIiwiX2tkIjoibiJ9';
       const prevCursor = 'eyJpZCI6IjQwIiwiX2tkIjoicCJ9';
 
-      beforeEach(async () => {
-        factory({ glFeatures: { projectDependenciesGraphql: false } });
-
+      beforeEach(() => {
         store.state.pageInfo = {
           hasNextPage: true,
           hasPreviousPage: true,
           startCursor: prevCursor,
           endCursor: nextCursor,
         };
-
-        jest.spyOn(store, 'dispatch').mockImplementation();
-
-        await nextTick();
       });
 
       it('dispatches fetchDependencies when clicking next', () => {
