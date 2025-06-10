@@ -16023,6 +16023,9 @@ msgid_plural "ComplianceStandardsAdherence|%d controls"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "ComplianceStandardsAdherence|%{failedCount} failed"
+msgstr ""
+
 msgid "ComplianceStandardsAdherence|%{failedCount}/%{totalCount} failed"
 msgstr ""
 

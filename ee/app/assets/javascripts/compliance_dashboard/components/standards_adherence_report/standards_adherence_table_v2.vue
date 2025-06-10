@@ -1,5 +1,6 @@
 <script>
 import { nextTick } from 'vue';
+import { debounce } from 'lodash';
 import { GlAlert, GlLink, GlSprintf, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
@@ -11,6 +12,8 @@ import DetailsDrawer from './components/details_drawer/details_drawer.vue';
 import GroupedTable from './components/grouped_table/grouped_table.vue';
 import FiltersBar from './components/filters_bar/filters_bar.vue';
 import { GroupedLoader } from './services/grouped_loader';
+
+const GROUP_PAGE_LIMIT = 20;
 
 export default {
   name: 'ComplianceStandardsAdherenceTableV2',
@@ -64,6 +67,16 @@ export default {
       this.groupedLoader.setFilters(newFilters);
       this.loadFirstPage();
     },
+    groupBy(newGroupBy) {
+      this.perPage = GROUP_PAGE_LIMIT;
+      this.groupedLoader.setGroupBy(newGroupBy);
+      this.items = {
+        data: [],
+        pageInfo: {},
+      };
+      this.isLoading = true;
+      this.loadFirstPage();
+    },
   },
   mounted() {
     const mode = this.projectPath ? 'project' : 'group';
@@ -72,6 +85,7 @@ export default {
       fullPath: this.projectPath || this.groupPath,
       apollo: this.$apollo,
     });
+    this.debouncedInvokeLoader = debounce(this.invokeLoader, 0);
     this.loadFirstPage();
   },
   methods: {
@@ -104,7 +118,7 @@ export default {
     },
 
     loadFirstPage() {
-      return this.invokeLoader();
+      return this.debouncedInvokeLoader();
     },
     onPageSizeChange(perPage) {
       this.perPage = perPage;
@@ -112,10 +126,10 @@ export default {
       this.loadFirstPage();
     },
     loadPrevPage() {
-      this.invokeLoader('loadPrevPage');
+      this.debouncedInvokeLoader('loadPrevPage');
     },
     loadNextPage() {
-      this.invokeLoader('loadNextPage');
+      this.debouncedInvokeLoader('loadNextPage');
     },
   },
   i18n: {
@@ -139,6 +153,7 @@ export default {
       :filters.sync="filters"
       :group-by.sync="groupBy"
       :with-projects="!projectPath"
+      with-group-by
       @load="isInitiallyLoading = false"
     />
     <template v-if="isInitiallyLoading">
@@ -147,7 +162,7 @@ export default {
     <div v-else>
       <gl-loading-icon v-if="isLoading" size="md" class="gl-m-5" />
       <template v-else-if="hasItems">
-        <grouped-table :items="items.data" @row-selected="onRowSelected" />
+        <grouped-table :items="items.data" :group-by="groupBy" @row-selected="onRowSelected" />
         <div v-if="items.pageInfo" class="gl-justify-between md:gl-flex">
           <div class="gl-hidden gl-grow gl-basis-0 md:gl-flex"></div>
           <div class="gl-float-leftmd:gl-flex gl-grow gl-basis-0 gl-justify-center">
@@ -158,7 +173,7 @@ export default {
               @next="loadNextPage"
             />
           </div>
-          <div class="gl-float-right gl-grow gl-basis-0 gl-justify-end md:gl-flex">
+          <div v-if="!groupBy" class="gl-float-right gl-grow gl-basis-0 gl-justify-end md:gl-flex">
             <page-size-selector :value="perPage" @input="onPageSizeChange" />
           </div>
         </div>

@@ -21,8 +21,13 @@ describe('StandardsAdherenceTableV2', () => {
   const findDetailsDrawer = () => wrapper.findComponent(DetailsDrawer);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findAlert = () => wrapper.findComponent(GlAlert);
+<<<<<<< HEAD
   const findEmptyText = () => wrapper.findComponent(GlSprintf);
   const findEmptyLink = () => wrapper.findComponent(GlLink);
+=======
+  const findFiltersBar = () => wrapper.findComponent(FiltersBar);
+  const findPageSizeSelector = () => wrapper.findComponent(PageSizeSelector);
+>>>>>>> 7424a013a6a91 (Implement grouping for new adherence report)
 
   const waitForNextPageLoad = async () => {
     // triggers loading state
@@ -49,6 +54,16 @@ describe('StandardsAdherenceTableV2', () => {
     pageInfo: { hasNextPage: false },
   };
 
+  const mockEmptyItems = {
+    data: [
+      {
+        group: null,
+        children: [],
+      },
+    ],
+    pageInfo: { hasNextPage: false },
+  };
+
   const createComponent = (props = {}) => {
     wrapper = shallowMount(StandardsAdherenceTableV2, {
       propsData: {
@@ -65,12 +80,24 @@ describe('StandardsAdherenceTableV2', () => {
     });
   };
 
+  function createMockLoader(overrides = {}) {
+    return function mockedGroupLoader() {
+      this.loadPage = overrides.loadPage ?? jest.fn().mockResolvedValue(mockItems);
+      this.loadNextPage =
+        overrides.loadNextPage ??
+        jest.fn().mockResolvedValue({
+          data: [{ group: null, children: [{ id: '3', name: 'Requirement 3' }] }],
+          pageInfo: { hasNextPage: false, hasPreviousPage: true },
+        });
+      this.loadPrevPage = overrides.loadPrevPage ?? jest.fn().mockResolvedValue(mockItems);
+      this.setPageSize = overrides.setPageSize ?? jest.fn();
+    };
+  }
+
   beforeEach(() => {
     GroupedLoader.mockClear();
     // Mock the GroupedLoader implementation
-    GroupedLoader.mockImplementation(function mockGroupedLoader() {
-      this.loadPage = jest.fn().mockResolvedValue(mockItems);
-    });
+    GroupedLoader.mockImplementation(createMockLoader());
   });
 
   describe('initialization', () => {
@@ -83,7 +110,6 @@ describe('StandardsAdherenceTableV2', () => {
     describe('initializes GroupedLoader with correct parameters', () => {
       it('for group', () => {
         createComponent();
-
         expect(GroupedLoader).toHaveBeenCalledWith({
           fullPath: groupPath,
           apollo: expect.any(Object),
@@ -130,6 +156,20 @@ describe('StandardsAdherenceTableV2', () => {
         expect(findDetailsDrawer().props('status')).toEqual(selectedItem);
       });
 
+      it('does not update selectedStatus when the same row is selected again', async () => {
+        // First selection
+        findGroupedTable().vm.$emit('row-selected', selectedItem);
+        await nextTick();
+        await nextTick();
+        expect(findDetailsDrawer().props('status')).toEqual(selectedItem);
+
+        // Select the same item again
+        findGroupedTable().vm.$emit('row-selected', selectedItem);
+        await nextTick();
+        await nextTick();
+        expect(findDetailsDrawer().props('status')).toEqual(selectedItem);
+      });
+
       it('passes selected status to details drawer', async () => {
         findGroupedTable().vm.$emit('row-selected', selectedItem);
         await nextTick();
@@ -149,11 +189,30 @@ describe('StandardsAdherenceTableV2', () => {
     });
   });
 
+  describe('empty state', () => {
+    beforeEach(() => {
+      GroupedLoader.mockImplementation(() =>
+        createMockLoader({
+          loadPage: jest.fn().mockResolvedValue(mockEmptyItems),
+        }),
+      );
+      createComponent();
+    });
+
+    it('displays empty message when no items have children', async () => {
+      await nextTick(); // Wait for component to finish loading
+      expect(wrapper.text()).toContain('No statuses found.');
+      expect(findGroupedTable().exists()).toBe(false);
+    });
+  });
+
   describe('error handling', () => {
     it('sets generic error message when fetch fails', async () => {
-      GroupedLoader.mockImplementation(() => ({
-        loadPage: jest.fn().mockRejectedValue(new Error('Network error')),
-      }));
+      GroupedLoader.mockImplementation(
+        createMockLoader({
+          loadPage: jest.fn().mockRejectedValue(new Error('Network error')),
+        }),
+      );
 
       createComponent();
 
@@ -165,17 +224,17 @@ describe('StandardsAdherenceTableV2', () => {
       await nextTick();
 
       expect(findAlert().text()).toContain('There was an error');
-
-      await nextTick();
     });
 
     it('sets specific error message for GraphQL field missing error', async () => {
       const error = new Error('GraphQL error');
       isGraphqlFieldMissingError.mockReturnValue(true);
 
-      GroupedLoader.mockImplementation(() => ({
-        loadPage: jest.fn().mockRejectedValue(error),
-      }));
+      GroupedLoader.mockImplementation(
+        createMockLoader({
+          loadPage: jest.fn().mockRejectedValue(error),
+        }),
+      );
 
       createComponent();
 
@@ -196,22 +255,12 @@ describe('StandardsAdherenceTableV2', () => {
 
   describe('pagination', () => {
     beforeEach(() => {
-      GroupedLoader.mockImplementation(function mockGroupedLoader() {
-        this.loadPage = jest.fn().mockResolvedValue(mockItems);
-        this.loadNextPage = jest.fn().mockResolvedValue({
-          data: [{ group: null, children: [{ id: '3', name: 'Requirement 3' }] }],
-          pageInfo: { hasNextPage: false, hasPreviousPage: true },
-        });
-        this.loadPrevPage = jest.fn().mockResolvedValue(mockItems);
-        this.setPageSize = jest.fn();
-      });
-
+      GroupedLoader.mockImplementation(createMockLoader());
       createComponent();
       return nextTick();
     });
 
     const findPagination = () => wrapper.findComponent(GlKeysetPagination);
-    const findPageSizeSelector = () => wrapper.findComponent(PageSizeSelector);
 
     it('displays pagination component when pageInfo is available', () => {
       expect(findPagination().exists()).toBe(true);
@@ -249,18 +298,25 @@ describe('StandardsAdherenceTableV2', () => {
       await waitForNextPageLoad();
       expect(wrapper.findComponent(PageSizeSelector).props('value')).toBe(newPageSize);
     });
+
+    it('shows PageSizeSelector when groupBy is not set', () => {
+      expect(findPageSizeSelector().exists()).toBe(true);
+    });
+
+    it('hides PageSizeSelector when groupBy is set', async () => {
+      findFiltersBar().vm.$emit('update:groupBy', 'project');
+      await nextTick();
+
+      expect(findPageSizeSelector().exists()).toBe(false);
+    });
   });
 
   describe('filters', () => {
+    beforeEach(() => {
+      GroupedLoader.mockImplementation(createMockLoader());
+    });
+
     it('passes the filters to the GroupedLoader when they change', async () => {
-      const mockLoader = {
-        loadPage: jest.fn().mockResolvedValue(mockItems),
-        setFilters: jest.fn(),
-        setPageSize: jest.fn(),
-      };
-
-      GroupedLoader.mockImplementation(() => mockLoader);
-
       createComponent();
       await nextTick();
       const newFilters = { projectId: 123 };
@@ -270,8 +326,8 @@ describe('StandardsAdherenceTableV2', () => {
       filtersBar.vm.$emit('update:filters', newFilters);
       await nextTick();
 
-      expect(mockLoader.setFilters).toHaveBeenCalledWith(newFilters);
-      expect(mockLoader.loadPage).toHaveBeenCalled();
+      expect(GroupedLoader.mock.instances[0].setFilters).toHaveBeenCalledWith(newFilters);
+      expect(GroupedLoader.mock.instances[0].loadPage).toHaveBeenCalled();
     });
 
     describe('correctly sets with-projects', () => {
@@ -333,6 +389,40 @@ describe('StandardsAdherenceTableV2', () => {
 
     it('does not display pagination in empty state', () => {
       expect(wrapper.findComponent(GlKeysetPagination).exists()).toBe(false);
+    });
+  });
+
+  describe('groupBy functionality', () => {
+    beforeEach(() => {
+      GroupedLoader.mockImplementation(createMockLoader());
+      createComponent();
+    });
+
+    it('updates groupBy when groupBy changes', async () => {
+      const newGroupBy = 'project';
+      findFiltersBar().vm.$emit('update:groupBy', newGroupBy);
+      await nextTick();
+
+      expect(GroupedLoader.mock.instances[0].setGroupBy).toHaveBeenCalledWith(newGroupBy);
+      expect(GroupedLoader.mock.instances[0].loadPage).toHaveBeenCalled();
+    });
+
+    it('sets loading state when groupBy changes', async () => {
+      await nextTick();
+
+      const newGroupBy = 'project';
+      findFiltersBar().vm.$emit('update:groupBy', newGroupBy);
+      await nextTick();
+      expect(findLoadingIcon().exists()).toBe(true);
+    });
+
+    it('passes groupBy to GroupedTable', async () => {
+      const newGroupBy = 'project';
+      findFiltersBar().vm.$emit('update:groupBy', newGroupBy);
+      await nextTick();
+      await waitForNextPageLoad();
+
+      expect(findGroupedTable().props('groupBy')).toBe(newGroupBy);
     });
   });
 });

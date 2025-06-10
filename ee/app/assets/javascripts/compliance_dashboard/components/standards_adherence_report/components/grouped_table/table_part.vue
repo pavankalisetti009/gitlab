@@ -24,6 +24,11 @@ export default {
       type: Array,
       required: true,
     },
+    theadClass: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   i18n: {
     viewDetails: s__('ComplianceStandardsAdherence|View details'),
@@ -35,6 +40,7 @@ export default {
   <gl-table
     :items="items"
     :fields="fields"
+    :thead-class="theadClass"
     stacked="md"
     selectable
     select-mode="single"

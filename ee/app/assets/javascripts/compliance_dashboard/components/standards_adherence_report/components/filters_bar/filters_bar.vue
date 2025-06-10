@@ -3,17 +3,11 @@ import { GlDisclosureDropdown, GlFilteredSearch } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 
 import complianceFrameworksInGroupQuery from '../../graphql/queries/compliance_frameworks_in_group.query.graphql';
+import { GROUP_BY } from '../../constants';
 
 import ProjectToken from './tokens/project_token.vue';
 import FrameworkToken from './tokens/framework_token.vue';
 import RequirementToken from './tokens/requirement_token.vue';
-
-export const GROUP_BY = {
-  NONE: null,
-  REQUIREMENTS: 'requirements',
-  FRAMEWORKS: 'frameworks',
-  PROJECTS: 'projects',
-};
 
 export const FILTERS = {
   [GROUP_BY.REQUIREMENTS]: 'requirementId',

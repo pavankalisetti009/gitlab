@@ -5,6 +5,7 @@ query projectComplianceRequirementsStatuses(
   $before: String
   $after: String
   $filters: ProjectRequirementComplianceStatusInput
+  $orderBy: ProjectComplianceRequirementStatusOrderBy
 ) {
   container: project(fullPath: $fullPath) {
     id
@@ -14,6 +15,7 @@ query projectComplianceRequirementsStatuses(
       before: $before
       after: $after
       filters: $filters
+      orderBy: $orderBy
     ) {
       nodes {
         id

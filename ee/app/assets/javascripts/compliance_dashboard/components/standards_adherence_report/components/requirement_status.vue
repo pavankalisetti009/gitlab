@@ -77,7 +77,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-row gl-gap-3">
+  <div class="gl-inline-flex gl-flex-row gl-gap-3">
     <component :is="config.component" v-bind="config.props" :class="config.fill" />
     <span :class="config.text">
       <template v-if="hasFailed">
