@@ -5,9 +5,6 @@ module ComplianceManagement
     class ComplianceRequirement < ApplicationRecord
       self.table_name = 'compliance_requirements'
 
-      ignore_column :control_expression, remove_with: '17.11', remove_after: '2025-03-22'
-      ignore_column :requirement_type, remove_with: '17.11', remove_after: '2025-03-22'
-
       MAX_COMPLIANCE_REQUIREMENTS_PER_FRAMEWORK_COUNT = 50
 
       belongs_to :framework, class_name: 'ComplianceManagement::Framework', optional: false
