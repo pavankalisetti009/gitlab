@@ -119,6 +119,50 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
     end
   end
 
+  context 'when applying lead fails' do
+    it 'fills out form, submits and sent back to information form with errors and is then resolved' do
+      # setup
+      sign_in(user)
+
+      stub_cdot_namespace_eligible_trials
+      visit new_trial_path
+
+      fill_in_company_information
+
+      # lead failure
+      submit_single_namespace_trial_form(lead_result: lead_failure)
+
+      expect_to_be_on_form_with_trial_submission_error
+
+      # success
+      resubmit_full_request
+
+      expect_to_be_on_gitlab_duo_page
+    end
+  end
+
+  context 'when applying trial fails' do
+    it 'fills out form, submits and is sent to select namespace with errors and is then resolved' do
+      # setup
+      sign_in(user)
+
+      stub_cdot_namespace_eligible_trials
+      visit new_trial_path
+
+      fill_in_company_information
+
+      # trial failure
+      submit_single_namespace_trial_form(trial_result: trial_failure)
+
+      expect_to_be_on_form_with_trial_submission_error
+
+      # success
+      resubmit_trial_request
+
+      expect_to_be_on_gitlab_duo_page
+    end
+  end
+
   def submit_single_namespace_trial_form(
     lead_result: ServiceResponse.success,
     trial_result: ServiceResponse.success,
@@ -142,27 +186,6 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
     click_button 'Activate my trial'
 
     wait_for_requests
-  end
-
-  def expect_lead_submission(lead_result, last_name:, glm:)
-    trial_user_params = {
-      company_name: form_data[:company_name],
-      first_name: user.first_name,
-      last_name: last_name,
-      phone_number: form_data[:phone_number],
-      country: form_data.dig(:country, :id),
-      work_email: user.email,
-      uid: user.id,
-      setup_for_company: user.onboarding_status_setup_for_company,
-      skip_email_confirmation: true,
-      gitlab_com_trial: true,
-      provider: 'gitlab',
-      state: form_data.dig(:state, :id)
-    }.merge(glm)
-
-    expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
-      expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
-    end
   end
 
   def expect_to_be_on_trial_form_with_name_fields

@@ -155,7 +155,7 @@ module GitlabSubscriptions
           namespace: namespace.slice(:id, :name, :path, :kind, :trial_ends_on).merge(plan: namespace.actual_plan.name)
         }
 
-        trial_params.except(:new_group_name).merge(gl_com_params).merge(namespace_params)
+        trial_params.except(:new_group_name, :organization_id).merge(gl_com_params).merge(namespace_params)
       end
 
       def not_found
