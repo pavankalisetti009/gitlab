@@ -23,6 +23,8 @@ module EE
             with_milestone(super)
           when 'iteration'
             with_iteration(super)
+          when 'status'
+            with_status(super)
           else
             super
           end
@@ -122,6 +124,15 @@ module EE
 
         def with_iteration(issues)
           issues.in_iterations(list.iteration_id)
+        end
+
+        def with_status(issues)
+          return issues unless list.status
+
+          ::WorkItems::StatusFilter.new(
+            params: { status: { id: list.status } },
+            parent: parent.root_ancestor
+          ).filter(issues)
         end
 
         # Prevent filtering by milestone stubs

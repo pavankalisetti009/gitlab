@@ -23,6 +23,8 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
 
     let_it_be(:milestone) { create(:milestone, group: group) }
     let_it_be(:iteration) { create(:iteration, iterations_cadence: create(:iterations_cadence, group: group)) }
+    let_it_be(:system_defined_status) { build(:work_item_system_defined_status, namespace: group) }
+    let_it_be(:custom_status) { create(:work_item_custom_status, namespace: group) }
 
     let_it_be(:opened_issue1) { create(:labeled_issue, project: project, milestone: m1, weight: 9, title: 'Issue 1', labels: [bug]) }
     let_it_be(:opened_issue2) { create(:labeled_issue, project: project, milestone: m2, weight: 1, title: 'Issue 2', labels: [p2]) }
@@ -43,16 +45,24 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
     let(:parent) { group }
 
     before do
-      stub_licensed_features(board_assignee_lists: true, board_milestone_lists: true, board_iteration_lists: true)
+      stub_licensed_features(
+        board_assignee_lists: true,
+        board_milestone_lists: true,
+        board_iteration_lists: true,
+        board_status_lists: true,
+        work_item_status: true
+      )
 
       parent.add_developer(user)
       opened_issue3.assignees.push(user_list.user)
     end
 
-    context 'with assignee, milestone, iteration and label lists present' do
+    context 'with assignee, milestone, iteration, label and status lists present' do
       let!(:user_list) { create(:user_list, board: board, position: 2) }
       let!(:milestone_list) { create(:milestone_list, board: board, position: 3, milestone: milestone) }
       let!(:iteration_list) { create(:iteration_list, board: board, position: 4, iteration: iteration) }
+      let(:system_defined_status_list) { create(:status_list, board: board, position: 5, system_defined_status: system_defined_status) }
+      let(:custom_status_list) { create(:status_list, board: board, position: 5, custom_status: custom_status) }
       let!(:backlog)   { board.lists.backlog.first }
       let!(:list1)     { create(:list, board: board, label: development, position: 0) }
       let!(:list2)     { create(:list, board: board, label: testing, position: 1) }
@@ -111,6 +121,61 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
               expect(issues).to include(iteration_issue)
             end
           end
+        end
+      end
+
+      context 'status lists' do
+        shared_examples_for 'status list' do |status_type|
+          context 'with only status mapping' do
+            it 'returns issues based on the status' do
+              expect(issues).to include(status_issue)
+            end
+          end
+
+          context 'with statuses set explicitly' do
+            let!(:current_status) do
+              create(:work_item_current_status, status_type => send(status_type), work_item_id: status_issue.id)
+            end
+
+            it 'returns issues based on the status' do
+              expect(issues).to include(status_issue)
+            end
+          end
+
+          context 'with open/backlog list' do
+            let(:params) { { board_id: board.id, id: backlog.id } }
+
+            # TODO: Exclude issues from open/backlog lists
+            # https://gitlab.com/gitlab-org/gitlab/-/issues/532474
+            it 'includes issues from the status list' do
+              expect(issues).to include(status_issue)
+            end
+          end
+
+          context 'with closed list' do
+            let(:status_issue) { create(:issue, :closed, project: project) }
+            let(:params) { { board_id: board.id, id: closed.id } }
+
+            it 'includes issues from the status list' do
+              expect(issues).to include(status_issue)
+            end
+          end
+        end
+
+        let(:status_issue) { create(:issue, project: project) }
+
+        subject(:issues) { described_class.new(parent.class.find(parent.id), user, params).execute }
+
+        context 'with a system-defined status list' do
+          let(:params) { { board_id: board.id, id: system_defined_status_list.id } }
+
+          it_behaves_like 'status list', :system_defined_status
+        end
+
+        context 'with a custom status list' do
+          let(:params) { { board_id: board.id, id: custom_status_list.id } }
+
+          it_behaves_like 'status list', :custom_status
         end
       end
 
