@@ -35712,6 +35712,7 @@ Project-level settings for product analytics provider.
 | <a id="projectcontainerprotectiontagrules"></a>`containerProtectionTagRules` {{< icon name="warning-solid" >}} | [`ContainerProtectionTagRuleConnection`](#containerprotectiontagruleconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Container repository tag protection rules for the project. |
 | <a id="projectcontainerregistryenabled"></a>`containerRegistryEnabled` | [`Boolean`](#boolean) | Indicates if Container registry is enabled for the current user. |
 | <a id="projectcontainerrepositoriescount"></a>`containerRepositoriesCount` | [`Int!`](#int) | Number of container repositories in the project. |
+| <a id="projectcontainerscanningforregistryenabled"></a>`containerScanningForRegistryEnabled` | [`Boolean`](#boolean) | Indicates whether Container Scanning for Registry is enabled or not for the project. Returns `null` if unauthorized. |
 | <a id="projectcontainertagsexpirationpolicy"></a>`containerTagsExpirationPolicy` | [`ContainerTagsExpirationPolicy`](#containertagsexpirationpolicy) | Container tags expiration policy of the project. |
 | <a id="projectcorpuses"></a>`corpuses` | [`CoverageFuzzingCorpusConnection`](#coveragefuzzingcorpusconnection) | Find corpuses of the project. (see [Connections](#connections)) |
 | <a id="projectcreatedat"></a>`createdAt` | [`Time`](#time) | Timestamp of the project creation. |

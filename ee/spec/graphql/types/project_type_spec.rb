@@ -37,7 +37,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       observability_traces_links dependencies security_exclusions security_exclusion
       compliance_standards_adherence target_branch_rules duo_workflow_status_check component_usages
       vulnerability_archives component_versions vulnerability_statistic analyzer_statuses
-      compliance_requirement_statuses duo_agentic_chat_available
+      compliance_requirement_statuses duo_agentic_chat_available container_scanning_for_registry_enabled
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -119,6 +119,43 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
         it 'returns the expected secret_push_protection_enabled value' do
           secret_push_protection_enabled = response.dig('data', 'project', 'secretPushProtectionEnabled')
           expect(secret_push_protection_enabled).to eq(expected)
+        end
+      end
+    end
+  end
+
+  describe 'container scanning for_registry enabled' do
+    describe 'container_scanning_for_registry_enabled' do
+      where(:enabled, :user_role, :expected) do
+        true  | :guest     | nil
+        true  | :developer | true
+        false | :guest     | nil
+        false | :developer | false
+      end
+
+      with_them do
+        let!(:security_setting) { create(:project_security_setting, container_scanning_for_registry_enabled: enabled) }
+        let!(:project) { security_setting.project }
+
+        before do
+          project.add_role(user, user_role)
+        end
+
+        let(:query) do
+          %(
+            query {
+              project(fullPath: "#{project.full_path}") {
+                containerScanningForRegistryEnabled
+              }
+            }
+          )
+        end
+
+        subject(:response) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+        it 'returns the expected container_scanning_for_registry_enabled value' do
+          container_scanning_for_registry_enabled = response.dig('data', 'project', 'containerScanningForRegistryEnabled')
+          expect(container_scanning_for_registry_enabled).to eq(expected)
         end
       end
     end
