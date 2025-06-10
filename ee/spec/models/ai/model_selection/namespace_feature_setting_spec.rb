@@ -64,6 +64,84 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
 
   it_behaves_like 'model selection feature setting', scope_class_name: 'Group'
 
+  describe ".non_default" do
+    subject { described_class.non_default }
+
+    context 'without default settings' do
+      let!(:feature_settings) do
+        [
+          create(:ai_namespace_feature_setting, namespace: group),
+          create(:ai_namespace_feature_setting, feature: :duo_chat, offered_model_ref: nil, namespace: group),
+          create(:ai_namespace_feature_setting, feature: :duo_chat_explain_code, offered_model_ref: "",
+            namespace: group)
+        ]
+      end
+
+      it 'returns only features settings with non-default models' do
+        expect(described_class.non_default).to contain_exactly(feature_settings[0])
+      end
+    end
+
+    context 'with default settings' do
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '.any_non_default_for_duo_chat?' do
+    let(:namespace) { create(:group) }
+
+    subject { described_class.any_non_default_for_duo_chat?(namespace.id) }
+
+    context 'when there are no duo chat feature settings' do
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there are duo chat feature settings but all are default or non-duochat settings' do
+      before do
+        create(:ai_namespace_feature_setting, feature: :duo_chat, offered_model_ref: nil, namespace: namespace)
+        create(:ai_namespace_feature_setting, feature: :duo_chat_explain_code, offered_model_ref: "",
+          namespace: namespace)
+        create(:ai_namespace_feature_setting, feature: :code_completions, offered_model_ref: 'claude_sonnet_3_7',
+          namespace: namespace)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there are non-default duo chat feature settings' do
+      before do
+        create(
+          :ai_namespace_feature_setting,
+          feature: :duo_chat,
+          offered_model_ref: 'claude-3-7-sonnet-20250219',
+          namespace: namespace
+        )
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when there are non-default settings for both duo chat and other features' do
+      before do
+        create(
+          :ai_namespace_feature_setting,
+          feature: :duo_chat,
+          offered_model_ref: 'claude-3-7-sonnet-20250219',
+          namespace: namespace
+        )
+
+        create(
+          :ai_namespace_feature_setting,
+          feature: :code_completions,
+          offered_model_ref: 'claude_sonnet_3_7',
+          namespace: namespace
+        )
+      end
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe 'validations' do
     include_context 'with model selection definitions'
 

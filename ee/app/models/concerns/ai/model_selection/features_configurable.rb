@@ -36,6 +36,17 @@ module Ai
       # Values are the names of the Feature Flags used to enable the features
       # See https://gitlab.com/gitlab-org/gitlab/-/issues/543087 for more context
 
+      DUO_CHAT_FEATURES = [
+        :duo_chat,
+        :duo_chat_explain_code,
+        :duo_chat_write_tests,
+        :duo_chat_refactor_code,
+        :duo_chat_fix_code,
+        :duo_chat_troubleshoot_job,
+        :duo_chat_explain_vulnerability,
+        :duo_chat_summarize_comments
+      ].freeze
+
       included do
         enum :feature, FEATURES, validate: true
 
