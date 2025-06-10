@@ -7,10 +7,11 @@ import {
 } from '~/lib/utils/common_utils';
 import { __, sprintf } from '~/locale';
 import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { OPERATOR_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import projectDependencies from '../graphql/project_dependencies.query.graphql';
 import groupDependencies from '../graphql/group_dependencies.query.graphql';
+import dependencyVulnerabilities from '../graphql/dependency_vulnerabilities.query.graphql';
 import {
   EXPORT_STARTED_MESSAGE,
   FETCH_ERROR_MESSAGE,
@@ -332,6 +333,43 @@ export const fetchVulnerabilities = ({ commit }, { item, vulnerabilitiesEndpoint
     })
     .then(({ data }) => {
       commit(types.SET_VULNERABILITIES, data);
+    })
+    .catch(() => {
+      createAlert({
+        message: VULNERABILITIES_FETCH_ERROR_MESSAGE,
+      });
+    })
+    .finally(() => {
+      commit(types.TOGGLE_VULNERABILITY_ITEM_LOADING, item);
+    });
+};
+
+export const fetchVulnerabilitiesViaGraphQL = ({ commit }, { item }) => {
+  const { occurrenceId } = item;
+
+  if (!occurrenceId) {
+    return;
+  }
+
+  commit(types.TOGGLE_VULNERABILITY_ITEM_LOADING, item);
+
+  graphQLClient
+    .query({
+      query: dependencyVulnerabilities,
+      variables: {
+        occurrenceId: convertToGraphQLId('Sbom::Occurrence', occurrenceId),
+      },
+    })
+    .then(({ data }) => {
+      const vulnerabilities = data.dependency?.vulnerabilities?.nodes || [];
+
+      const vulnerabilitiesWithOccurrenceId = vulnerabilities.map((vulnerability) => ({
+        ...vulnerability,
+        // the occurrence_id is used by both the mutation and UI to map the vulnerability to the correct dependency
+        occurrence_id: occurrenceId,
+      }));
+
+      commit(types.SET_VULNERABILITIES, vulnerabilitiesWithOccurrenceId);
     })
     .catch(() => {
       createAlert({
