@@ -59882,6 +59882,9 @@ msgstr ""
 msgid "Status lists not available with your current license"
 msgstr ""
 
+msgid "Status not found for given params"
+msgstr ""
+
 msgid "Status not supported"
 msgstr ""
 
@@ -74136,7 +74139,7 @@ msgstr ""
 msgid "must contain only a mastodon handle."
 msgstr ""
 
-msgid "must contain only a orcid ID."
+msgid "must contain only a valid ORCID."
 msgstr ""
 
 msgid "must have a repository"
