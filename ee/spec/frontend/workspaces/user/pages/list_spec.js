@@ -15,6 +15,7 @@ import List from 'ee/workspaces/user/pages/list.vue';
 import { ROUTES } from 'ee/workspaces/user/constants';
 import { WORKSPACE_STATES } from 'ee/workspaces/common/constants';
 import MonitorTerminatingWorkspace from 'ee/workspaces/common/components/monitor_terminating_workspace.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import {
   USER_WORKSPACES_TAB_LIST_QUERY_RESULT,
   USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT,
@@ -34,6 +35,10 @@ describe('workspaces/user/pages/list.vue', () => {
   let userWorkspacesTabListQueryHandler;
   let getProjectsDetailsQueryHandler;
   let getWorkspaceStateQueryHandler;
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+  const mockRouter = {
+    push: jest.fn(),
+  };
 
   const buildMockApollo = () => {
     userWorkspacesTabListQueryHandler = jest
@@ -55,6 +60,9 @@ describe('workspaces/user/pages/list.vue', () => {
       apolloProvider: mockApollo,
       provide: {
         emptyStateSvgPath: SVG_PATH,
+      },
+      mocks: {
+        $router: mockRouter,
       },
       stubs,
     });
@@ -131,6 +139,13 @@ describe('workspaces/user/pages/list.vue', () => {
 
     it('does not show alert', () => {
       expect(findAlert(wrapper).exists()).toBe(false);
+    });
+
+    it('calls trackEvent method when clicked on "New Workspace" button', () => {
+      const { triggerEvent, trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      triggerEvent('[data-testid="list-new-workspace-button"]');
+
+      expect(trackEventSpy).toHaveBeenCalledWith('click_new_workspace_button', {});
     });
   });
 

@@ -15,6 +15,7 @@ import {
   WORKSPACE_STATES,
   WORKSPACE_DESIRED_STATES,
 } from 'ee/workspaces/dropdown_group/constants';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import {
   USER_WORKSPACES_LIST_QUERY_EMPTY_RESULT,
   USER_WORKSPACES_LIST_QUERY_RESULT,
@@ -32,6 +33,7 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
   let userWorkspacesListQueryHandler;
   let updateWorkspaceMutationMock;
   const newWorkspacePath = '/workspaces/create';
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const UpdateWorkspaceMutationStub = {
     render() {
@@ -286,10 +288,17 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
       await waitForPromises();
     });
 
-    it('displays New Workspace button', () => {
+    it('displays "New Workspace" button', () => {
       expect(findNewWorkspaceButton().attributes().href).toBe(
         `${newWorkspacePath}?project=${encodeURIComponent(PROJECT_FULL_PATH)}`,
       );
+    });
+
+    it('calls trackEvent method when clicked on "New Workspace" button', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      findNewWorkspaceButton().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith('click_new_workspace_button', {}, undefined);
     });
 
     describe('when gitRef property is provided', () => {
