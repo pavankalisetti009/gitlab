@@ -11,11 +11,30 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
   describe '#perform' do
     let_it_be(:add_on_name) { 'code_suggestions' }
     let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+    let_it_be(:non_seat_assignable_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
     let_it_be(:expires_on) { 1.day.from_now }
     let_it_be(:namespace_path) { 'Socotra' }
 
     let(:namespace) { create(:group, path: namespace_path) }
     let!(:add_on_purchase) do
+      create(
+        :gitlab_subscription_add_on_purchase,
+        add_on: add_on,
+        expires_on: expires_on.to_date,
+        namespace: namespace
+      )
+    end
+
+    let(:non_seat_assignable_add_on_purchase) do
+      create(
+        :gitlab_subscription_add_on_purchase,
+        add_on: non_seat_assignable_add_on,
+        expires_on: expires_on.to_date,
+        namespace: namespace
+      )
+    end
+
+    let(:no_assigned_user_add_on_purchase) do
       create(
         :gitlab_subscription_add_on_purchase,
         add_on: add_on,
@@ -141,6 +160,28 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
 
               worker.perform
             end
+          end
+        end
+
+        context 'without any assigned users' do
+          let(:add_on_purchase) { no_assigned_user_add_on_purchase }
+
+          it 'does nothing' do
+            expect { worker.perform }.to not_change { add_on_purchase.reload }
+          end
+
+          it 'does not log a deletion message' do
+            expect(Gitlab::AppLogger).not_to receive(:info)
+            worker.perform
+          end
+        end
+
+        context 'with non seat assignable add_ons' do
+          let(:add_on_purchase) { non_seat_assignable_add_on_purchase }
+
+          it 'does not process add-on purchase' do
+            expect(Gitlab::AppLogger).not_to receive(:info)
+            worker.perform
           end
         end
       end

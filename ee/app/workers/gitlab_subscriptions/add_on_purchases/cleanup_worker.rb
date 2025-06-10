@@ -14,15 +14,17 @@ module GitlabSubscriptions
 
       def perform
         GitlabSubscriptions::AddOnPurchase
+          .for_seat_assignable_duo_add_ons
+          .has_assigned_users
+          .ready_for_cleanup
           .includes(:add_on, :assigned_users, :namespace) # rubocop:disable CodeReuse/ActiveRecord -- Avoid N+1 queries
           .each_batch do |add_on_purchases|
-            add_on_purchases.ready_for_cleanup.each do |add_on_purchase|
+            add_on_purchases.each do |add_on_purchase|
               assigned_users = add_on_purchase.assigned_users
               count = assigned_users.count
 
               assigned_users.each_batch(of: BATCH_SIZE) do |user_add_on_assigments|
                 log_deletion(add_on_purchase, user_add_on_assigments.pluck_user_ids)
-
                 user_add_on_assigments.destroy_all # rubocop:disable Cop/DestroyAll -- https://gitlab.com/gitlab-org/gitlab/-/merge_requests/171331#note_2189629294
               end
 
