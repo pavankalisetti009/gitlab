@@ -1,5 +1,5 @@
 ---
-description: Track number of 'Open workspace' button clicks in workspace feature
+description: Track number of 'Open workspace' button clicks in the workspace feature
 internal_events: true
 action: click_open_workspace_button
 identifiers:

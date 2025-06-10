@@ -3,6 +3,7 @@
 import { GlButton, GlTabs } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import { s__ } from '~/locale';
+import { InternalEvents } from '~/tracking';
 import {
   ROUTES,
   I18N_LOADING_WORKSPACES_FAILED,
@@ -23,6 +24,8 @@ export const i18n = {
   newWorkspaceButton: s__('Workspaces|New workspace'),
   loadingWorkspacesFailed: I18N_LOADING_WORKSPACES_FAILED,
 };
+
+const trackingMixin = InternalEvents.mixin();
 
 const DEFAULT_WORKSPACES_DATA = {
   workspaces: [],
@@ -62,6 +65,7 @@ export default {
     WorkspaceTab,
     MonitorTerminatingWorkspace,
   },
+  mixins: [trackingMixin],
   apollo: {
     userWorkspacesTabList: {
       query: userWorkspacesTabListQuery,
@@ -136,6 +140,9 @@ export default {
     isEmpty() {
       return !this.workspaces.length;
     },
+    eventTrackingLabel() {
+      return document.body.dataset.page;
+    },
   },
   watch: {
     active(active) {
@@ -197,8 +204,14 @@ export default {
     @error="onError"
   >
     <template #header>
-      <gl-button variant="confirm" :to="$options.ROUTES.new" data-testid="list-new-workspace-button"
-        >{{ $options.i18n.newWorkspaceButton }}
+      <gl-button
+        variant="confirm"
+        :to="$options.ROUTES.new"
+        data-testid="list-new-workspace-button"
+        data-event-tracking="click_new_workspace_button"
+        :data-event-label="eventTrackingLabel"
+      >
+        {{ $options.i18n.newWorkspaceButton }}
       </gl-button>
     </template>
     <template #workspaces-list>
