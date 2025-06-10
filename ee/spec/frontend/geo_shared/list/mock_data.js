@@ -59,3 +59,16 @@ export const MOCK_BULK_ACTIONS = [
     modal: MOCK_MODAL_DEFINITION,
   },
 ];
+
+export const MOCK_STATUSES = [
+  {
+    tooltip: 'Status: A',
+    icon: 'status_preparing',
+    variant: 'warning',
+  },
+  {
+    tooltip: 'Status: B',
+    icon: 'status_success',
+    variant: 'success',
+  },
+];

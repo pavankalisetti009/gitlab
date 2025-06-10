@@ -27812,6 +27812,9 @@ msgstr ""
 msgid "Geo|Replication summary"
 msgstr ""
 
+msgid "Geo|Replication: %{status}"
+msgstr ""
+
 msgid "Geo|Repository synchronization concurrency limit"
 msgstr ""
 
