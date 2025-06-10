@@ -1490,6 +1490,10 @@ module EE
     end
     strong_memoize_attr :vulnerability_archival_enabled?
 
+    def container_scanning_for_registry_enabled
+      security_setting&.container_scanning_for_registry_enabled?
+    end
+
     private
 
     delegate :csp_enabled?, to: ::Security::PolicySetting
