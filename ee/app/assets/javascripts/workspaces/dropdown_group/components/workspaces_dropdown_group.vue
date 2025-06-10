@@ -13,6 +13,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { InternalEvents } from '~/tracking';
 import userWorkspacesListQuery from '../../common/graphql/queries/user_workspaces_list.query.graphql';
 import {
   WORKSPACES_DROPDOWN_GROUP_POLL_INTERVAL,
@@ -21,6 +22,8 @@ import {
 } from '../constants';
 import UpdateWorkspaceMutation from '../../common/components/update_workspace_mutation.vue';
 import WorkspaceDropdownItem from './workspace_dropdown_item.vue';
+
+const trackingMixin = InternalEvents.mixin();
 
 export const i18n = {
   workspacesGroupLabel: s__('Workspaces|Your workspaces'),
@@ -50,7 +53,7 @@ export default {
     WorkspaceDropdownItem,
     UpdateWorkspaceMutation,
   },
-  mixins: [glFeatureFlagsMixin()],
+  mixins: [glFeatureFlagsMixin(), trackingMixin],
   props: {
     projectId: {
       type: Number,
@@ -142,6 +145,9 @@ export default {
     hideUpdateFailedAlert() {
       this.updateWorkspaceErrorMessage = null;
     },
+    handleNewWorkspaceClick() {
+      this.trackEvent('click_new_workspace_button', { label: document.body.dataset.page });
+    },
   },
   i18n,
   workspacesHelpPath,
@@ -222,6 +228,7 @@ export default {
               :href="newWorkspacePathWithProjectId"
               data-testid="new-workspace-button"
               block
+              @click="handleNewWorkspaceClick"
               >{{ $options.i18n.newWorkspaceButton }}</gl-button
             >
           </div>

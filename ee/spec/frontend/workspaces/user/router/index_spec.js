@@ -25,7 +25,7 @@ Vue.use(VueApollo);
 
 const SVG_PATH = '/assets/illustrations/empty_states/empty_workspaces.svg';
 
-describe('workspaces/router/index.js', () => {
+describe('workspaces/user/router/index.js', () => {
   let router;
   let wrapper;
 
@@ -68,7 +68,7 @@ describe('workspaces/router/index.js', () => {
   };
   const findWorkspacesListPage = () => wrapper.findComponent(WorkspacesList);
   const findCreateWorkspacePage = () => wrapper.findComponent(CreateWorkspace);
-  const findNewWorkspaceButton = () => wrapper.findByRole('link', { name: /New workspace/ });
+  const findNewWorkspaceButton = () => wrapper.findByTestId('list-new-workspace-button');
   const findCreateWorkspaceCancelButton = () => wrapper.findByRole('link', { name: /Cancel/ });
 
   describe('root path', () => {
