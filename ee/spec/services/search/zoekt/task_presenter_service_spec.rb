@@ -40,8 +40,8 @@ RSpec.describe ::Search::Zoekt::TaskPresenterService, feature_category: :global_
 
       it 'returns serialized tasks' do
         expect(execute_task).to contain_exactly(
-          ::Search::Zoekt::TaskSerializerService.execute(task),
-          ::Search::Zoekt::TaskSerializerService.execute(delete_task)
+          ::Search::Zoekt::TaskSerializerService.execute(task, node),
+          ::Search::Zoekt::TaskSerializerService.execute(delete_task, node)
         )
       end
     end
@@ -49,7 +49,7 @@ RSpec.describe ::Search::Zoekt::TaskPresenterService, feature_category: :global_
     context 'when critical storage watermark is exceeded' do
       it 'only presents delete repo tasks' do
         expect(node).to receive(:watermark_exceeded_critical?).and_return(true)
-        expect(execute_task).to contain_exactly(::Search::Zoekt::TaskSerializerService.execute(delete_task))
+        expect(execute_task).to contain_exactly(::Search::Zoekt::TaskSerializerService.execute(delete_task, node))
       end
     end
   end

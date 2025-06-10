@@ -4,14 +4,15 @@ module Search
   module Zoekt
     class TaskSerializerService
       INDEXING_TIMEOUT_S = 1.5.hours.to_i
-      attr_reader :task
+      attr_reader :task, :node
 
       def self.execute(...)
         new(...).execute
       end
 
-      def initialize(task)
+      def initialize(task, node)
         @task = task
+        @node = node
       end
 
       def execute
@@ -58,7 +59,7 @@ module Search
             Storage: repository_storage,
             Path: repository_path
           },
-          Callback: { name: 'index', payload: { task_id: task.id } },
+          Callback: { name: 'index', payload: { task_id: task.id, schema_version: node.schema_version } },
           RepoId: project.id,
           FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
           Timeout: "#{INDEXING_TIMEOUT_S}s"

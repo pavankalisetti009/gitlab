@@ -21,7 +21,7 @@ module Search
 
         [].tap do |payload|
           tasks.each_task_for_processing(limit: concurrency_limit) do |task|
-            payload << TaskSerializerService.execute(task)
+            payload << TaskSerializerService.execute(task, node)
           end
         end
       end

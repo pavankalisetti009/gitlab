@@ -6,16 +6,16 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
   let_it_be(:node) { create(:zoekt_node) }
   let_it_be(:task) { create(:zoekt_task, node: node) }
 
-  let(:service) { described_class.new(task) }
+  let(:service) { described_class.new(task, node) }
 
   subject(:execute_task) { service.execute }
 
   describe '.execute' do
     it 'passes arguments to new and calls execute' do
-      expect(described_class).to receive(:new).with(task).and_return(service)
+      expect(described_class).to receive(:new).with(task, node).and_return(service)
       expect(service).to receive(:execute)
 
-      described_class.execute(task)
+      described_class.execute(task, node)
     end
   end
 

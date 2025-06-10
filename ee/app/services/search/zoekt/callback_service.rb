@@ -46,6 +46,7 @@ module Search
             repo.size_bytes = size_bytes if size_bytes
             repo.index_file_count = index_file_count if index_file_count
             repo.retries_left = Repository.columns_hash['retries_left'].default
+            repo.schema_version = node.schema_version
             index = repo.zoekt_index
             if repo.indexed_at > index.last_indexed_at + LAST_INDEXED_DEBOUNCE_PERIOD
               index.last_indexed_at = repo.indexed_at
