@@ -101,40 +101,23 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       expect(user_prompt).to include('This is updated content')
     end
 
-    context 'when duo_code_review_full_file feature flag is enabled' do
-      it 'includes the original file content introduction text' do
-        expect(user_prompt).to include("You will also be provided with the original content of modified files " \
-          "(before changes). Newly added files are not included as their full content is already in the diffs.")
-      end
-
-      it 'includes content for modified files' do
-        expect(user_prompt).to include('<full_file filename="UPDATED.md">')
-        expect(user_prompt).to include('<full_file filename="OTHER.md">')
-        expect(user_prompt).to include(files_content['UPDATED.md'])
-        expect(user_prompt).to include(files_content['OTHER.md'])
-      end
-
-      it 'formats file contents correctly' do
-        expected_format = files_content.map do |path, content|
-          %(<full_file filename="#{path}">\n#{content}\n</full_file>)
-        end.join("\n\n")
-        expect(user_prompt).to include(expected_format)
-      end
+    it 'includes the original file content introduction text' do
+      expect(user_prompt).to include("You will also be provided with the original content of modified files " \
+        "(before changes). Newly added files are not included as their full content is already in the diffs.")
     end
 
-    context 'when duo_code_review_full_file feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_code_review_full_file: false)
-      end
+    it 'includes content for modified files' do
+      expect(user_prompt).to include('<full_file filename="UPDATED.md">')
+      expect(user_prompt).to include('<full_file filename="OTHER.md">')
+      expect(user_prompt).to include(files_content['UPDATED.md'])
+      expect(user_prompt).to include(files_content['OTHER.md'])
+    end
 
-      it 'does not include the full file content introduction text' do
-        expect(user_prompt).not_to include("You will also be provided with the original content of the file(s)")
-      end
-
-      it 'does not include full content for the files' do
-        expect(user_prompt).not_to include('<full_file filename="UPDATED.md">')
-        expect(user_prompt).not_to include('<full_file filename="OTHER.md">')
-      end
+    it 'formats file contents correctly' do
+      expected_format = files_content.map do |path, content|
+        %(<full_file filename="#{path}">\n#{content}\n</full_file>)
+      end.join("\n\n")
+      expect(user_prompt).to include(expected_format)
     end
   end
 
@@ -207,17 +190,6 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       let(:files_content) { {} }
       let(:expected_full_file_intro) { '' }
       let(:expected_full_content_section) { '' }
-
-      it_behaves_like 'builds prompt inputs'
-    end
-
-    context 'when duo_code_review_full_file feature flag disabled' do
-      let(:expected_full_file_intro) { '' }
-      let(:expected_full_content_section) { '' }
-
-      before do
-        stub_feature_flags(duo_code_review_full_file: false)
-      end
 
       it_behaves_like 'builds prompt inputs'
     end
