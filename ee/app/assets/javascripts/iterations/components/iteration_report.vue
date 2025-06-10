@@ -95,11 +95,6 @@ export default {
     showEmptyState() {
       return !this.loading && this.iteration && !this.iteration.startDate;
     },
-    editPage() {
-      return {
-        name: 'editIteration',
-      };
-    },
     editRoute() {
       return this.$router.resolve({ name: 'editIteration' }).href;
     },
