@@ -42458,6 +42458,20 @@ Represents status.
 | <a id="workitemtypesupportedconversiontypes"></a>`supportedConversionTypes` {{< icon name="warning-solid" >}} | [`[WorkItemType!]`](#workitemtype) | **Introduced** in GitLab 17.8. **Status**: Experiment. Supported conversion types for the work item type. |
 | <a id="workitemtypewidgetdefinitions"></a>`widgetDefinitions` {{< icon name="warning-solid" >}} | [`[WorkItemWidgetDefinition!]`](#workitemwidgetdefinition) | **Introduced** in GitLab 16.7. **Status**: Experiment. Available widgets for the work item type. |
 
+#### Fields with arguments
+
+##### `WorkItemType.unavailableWidgetsOnConversion`
+
+Widgets that will be lost when converting from source work item type to target work item type.
+
+Returns [`[WorkItemWidgetDefinition!]`](#workitemwidgetdefinition).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemtypeunavailablewidgetsonconversiontarget"></a>`target` | [`WorkItemsTypeID!`](#workitemstypeid) | Target work item type to convert to. |
+
 ### `WorkItemTypeCountsByState`
 
 Represents work item counts for the work item type.
