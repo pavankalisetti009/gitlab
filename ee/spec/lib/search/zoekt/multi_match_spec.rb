@@ -111,5 +111,23 @@ RSpec.describe Search::Zoekt::MultiMatch, feature_category: :global_search do
         expect(extracted_result[0].first[:chunks][0][:lines][0][:text]).to eq "GIT_AUTHOR_NAME=\"Áéí óú\" &&"
       end
     end
+
+    context 'when match is in middle and chunk contains no newlines' do
+      let(:raw_response) { File.read Rails.root.join(fixtures_path, 'response_match_in_middle_no_newlines.json') }
+      let(:extracted_result_path) { 'extracted_result_match_in_middle.json' }
+
+      it 'extract results with correct line numbers' do
+        expect(extracted_result).to eq expected_extracted_result
+      end
+    end
+
+    context 'when match is on the first line' do
+      let(:raw_response) { File.read Rails.root.join(fixtures_path, 'response_match_on_first_line.json') }
+      let(:extracted_result_path) { 'extracted_result_match_on_first_line.json' }
+
+      it 'extract results with correct line numbers' do
+        expect(extracted_result).to eq expected_extracted_result
+      end
+    end
   end
 end

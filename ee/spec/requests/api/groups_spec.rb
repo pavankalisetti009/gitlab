@@ -1493,6 +1493,288 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
     end
   end
 
+  describe 'GET /groups/:id/saml_users' do
+    subject(:get_group_saml_users) do
+      get api("/groups/#{group_id}/saml_users", current_user), params: params
+    end
+
+    let_it_be_with_reload(:group) { create(:group) }
+    let_it_be_with_reload(:saml_provider) { create(:saml_provider, group: group) }
+
+    let_it_be(:subgroup) { create(:group, parent: group) }
+
+    let_it_be(:maintainer_of_the_group) { create(:user, maintainer_of: group) }
+    let_it_be(:owner_of_the_group) { create(:user, owner_of: group) }
+
+    let_it_be(:non_saml_user) { create(:user) }
+    let_it_be(:saml_user_of_another_group) { create(:group_saml_identity).user }
+    let_it_be(:non_saml_user_with_identity) { create(:omniauth_user, provider: 'google') }
+
+    let_it_be(:saml_user_of_the_group) { create(:group_saml_identity, saml_provider: saml_provider).user }
+    let_it_be(:saml_user_of_the_group2) { create(:group_saml_identity, saml_provider: saml_provider).user }
+
+    let_it_be(:blocked_saml_user_of_the_group) do
+      create(:group_saml_identity, saml_provider: saml_provider, user: create(:user, :blocked)).user
+    end
+
+    let(:current_user) { owner_of_the_group }
+    let(:group_id) { group.id }
+    let(:params) { {} }
+
+    context 'when current_user is nil' do
+      let(:current_user) { nil }
+
+      it 'returns 401 Unauthorized' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:unauthorized)
+        expect(json_response['message']).to eq('401 Unauthorized')
+      end
+    end
+
+    context 'when group is not found' do
+      let(:group_id) { -42 }
+
+      it 'returns 404 Group Not Found' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to eq('404 Group Not Found')
+      end
+    end
+
+    context 'when group is not top-level group' do
+      let(:group_id) { subgroup.id }
+
+      it 'returns 400 Bad Request with message' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['message']).to eq('400 Bad request - Must be a top-level group')
+      end
+    end
+
+    context 'when current_user is not owner of the group' do
+      let(:current_user) { maintainer_of_the_group }
+
+      it 'returns 403 Forbidden' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response['message']).to eq('403 Forbidden')
+      end
+    end
+
+    it 'returns SAML users of the group in descending order by id' do
+      get_group_saml_users
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response.pluck('id')).to eq(
+        [
+          saml_user_of_the_group,
+          saml_user_of_the_group2,
+          blocked_saml_user_of_the_group
+        ].sort_by(&:id).reverse.pluck(:id)
+      )
+    end
+
+    context 'when group does not have saml_provider' do
+      before_all do
+        saml_provider.destroy!
+      end
+
+      it 'does not return any users' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq([])
+      end
+    end
+
+    context 'for pagination parameters' do
+      let(:params) { { page: 1, per_page: 2 } }
+
+      it 'returns SAML users according to page and per_page parameters' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.pluck('id')).to eq(
+          [
+            saml_user_of_the_group,
+            saml_user_of_the_group2,
+            blocked_saml_user_of_the_group
+          ].sort_by(&:id).reverse.slice(0, 2).pluck(:id)
+        )
+      end
+    end
+
+    context 'for username parameter' do
+      let(:params) { { username: saml_user_of_the_group.username } }
+
+      it 'returns single SAML user with a specific username' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.count).to eq(1)
+        expect(json_response.first['id']).to eq(saml_user_of_the_group.id)
+      end
+    end
+
+    context 'for search parameter' do
+      context 'for search by name' do
+        let(:params) { { search: saml_user_of_the_group.name } }
+
+        it 'returns SAML users of the group according to the search parameter' do
+          get_group_saml_users
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response.count).to eq(1)
+          expect(json_response.first['id']).to eq(saml_user_of_the_group.id)
+        end
+      end
+
+      context 'for search by username' do
+        let(:params) { { search: blocked_saml_user_of_the_group.username } }
+
+        it 'returns SAML users of the group according to the search parameter' do
+          get_group_saml_users
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response.count).to eq(1)
+          expect(json_response.first['id']).to eq(blocked_saml_user_of_the_group.id)
+        end
+      end
+
+      context 'for search by public email' do
+        let_it_be(:saml_user_of_the_group_with_public_email) do
+          create(:group_saml_identity, saml_provider: saml_provider, user: create(:user, :public_email)).user
+        end
+
+        let(:params) do
+          { search: saml_user_of_the_group_with_public_email.public_email }
+        end
+
+        it 'returns SAML users of the group according to the search parameter' do
+          expect(saml_user_of_the_group_with_public_email.public_email).to be_present
+
+          get_group_saml_users
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response.count).to eq(1)
+          expect(json_response.first['id']).to eq(saml_user_of_the_group_with_public_email.id)
+        end
+      end
+
+      context 'for search by private email' do
+        let_it_be(:saml_user_of_the_group_without_public_email) do
+          create(:group_saml_identity, saml_provider: saml_provider, user: create(:user)).user
+        end
+
+        let(:params) do
+          { search: saml_user_of_the_group_without_public_email.email }
+        end
+
+        it 'returns SAML users of the group according to the search parameter' do
+          expect(saml_user_of_the_group_without_public_email.public_email).not_to be_present
+
+          get_group_saml_users
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response.count).to eq(1)
+          expect(json_response.first['id']).to eq(saml_user_of_the_group_without_public_email.id)
+        end
+      end
+    end
+
+    context 'for active parameter' do
+      let(:params) { { active: true } }
+
+      it 'returns only active SAML users' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.pluck('id')).to eq(
+          [
+            saml_user_of_the_group,
+            saml_user_of_the_group2
+          ].sort_by(&:id).reverse.pluck(:id)
+        )
+      end
+    end
+
+    context 'for blocked parameter' do
+      let(:params) { { blocked: true } }
+
+      it 'returns only blocked SAML users' do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.pluck('id')).to eq(
+          [
+            blocked_saml_user_of_the_group
+          ].sort_by(&:id).reverse.pluck(:id)
+        )
+      end
+    end
+
+    context 'for created_after parameter' do
+      let(:params) { { created_after: 10.days.ago } }
+
+      let_it_be(:saml_user_of_the_group_created_12_days_ago) do
+        create(:group_saml_identity, saml_provider: saml_provider).user.tap do |user|
+          user.update_column(:created_at, 12.days.ago)
+        end
+      end
+
+      let_it_be(:saml_user_of_the_group_created_8_days_ago) do
+        create(:group_saml_identity, saml_provider: saml_provider).user.tap do |user|
+          user.update_column(:created_at, 8.days.ago)
+        end
+      end
+
+      it 'returns only SAML users created after the specified time', :freeze_time do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.pluck('id')).to eq(
+          [
+            saml_user_of_the_group,
+            saml_user_of_the_group2,
+            blocked_saml_user_of_the_group,
+            saml_user_of_the_group_created_8_days_ago
+          ].sort_by(&:id).reverse.pluck(:id)
+        )
+      end
+    end
+
+    context 'for created_before parameter' do
+      let(:params) { { created_before: 10.days.ago } }
+
+      let_it_be(:saml_user_of_the_group_created_12_days_ago) do
+        create(:group_saml_identity, saml_provider: saml_provider).user.tap do |user|
+          user.update_column(:created_at, 12.days.ago)
+        end
+      end
+
+      let_it_be(:saml_user_of_the_group_created_8_days_ago) do
+        create(:group_saml_identity, saml_provider: saml_provider).user.tap do |user|
+          user.update_column(:created_at, 8.days.ago)
+        end
+      end
+
+      it 'returns only SAML users created before the specified time', :freeze_time do
+        get_group_saml_users
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.pluck('id')).to eq(
+          [
+            saml_user_of_the_group_created_12_days_ago
+          ].sort_by(&:id).reverse.pluck(:id)
+        )
+      end
+    end
+  end
+
   describe 'GET /groups/:id/provisioned_users' do
     let_it_be(:group) { create(:group) }
     let_it_be(:regular_user) { create(:user) }

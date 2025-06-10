@@ -13,6 +13,7 @@ import {
   LEADS_LAST_NAME_LABEL,
   LEADS_PHONE_NUMBER_LABEL,
 } from 'ee/vue_shared/leads/constants';
+import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
 import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
 import autofocusonshow from '~/vue_shared/directives/autofocusonshow';
@@ -30,6 +31,7 @@ export default {
   name: 'CreateTrialForm',
   csrf,
   components: {
+    ListboxInput,
     GlForm,
     GlButton,
     GlSprintf,
@@ -45,6 +47,10 @@ export default {
       type: Object,
       required: true,
     },
+    namespaceData: {
+      type: Object,
+      required: true,
+    },
     submitPath: {
       type: String,
       required: true,
@@ -56,6 +62,8 @@ export default {
   },
   data() {
     return {
+      selectedGroup: this.namespaceData.initialValue,
+      localItems: this.namespaceData.items,
       initialFormValues: {
         first_name: this.userData.firstName,
         last_name: this.userData.lastName,
@@ -72,6 +80,9 @@ export default {
   computed: {
     showCountry() {
       return !this.$apollo.queries.countries.loading;
+    },
+    showNamespaceSelector() {
+      return this.namespaceData.anyTrialEligibleNamespaces;
     },
     countryOptionsWithDefault() {
       return [
@@ -99,6 +110,21 @@ export default {
     },
     fields() {
       const result = {};
+
+      if (this.showNamespaceSelector) {
+        result.group = {
+          label: __('Group'),
+          groupAttrs: {
+            labelDescription: __('Your trial will be applied to this group.'),
+            class: 'gl-col-span-12',
+          },
+          validators: [
+            formValidators.factory(__('Please select a group for your trial.'), () => {
+              return this.selectedGroup;
+            }),
+          ],
+        };
+      }
 
       if (this.userData.showNameFields) {
         Object.assign(result, {
@@ -252,6 +278,19 @@ export default {
       class="gl-grid md:gl-gap-x-4"
       @submit="onSubmit"
     >
+      <template #input(group)>
+        <listbox-input
+          ref="namespaceListbox"
+          v-model="selectedGroup"
+          name="namespace_id"
+          label-for="namespace_id"
+          :items="localItems"
+          :default-toggle-text="__('Select a group')"
+          :block="true"
+          :fluid-width="true"
+        />
+      </template>
+
       <template v-if="!userData.showNameFields" #after(company_name)>
         <input
           type="hidden"

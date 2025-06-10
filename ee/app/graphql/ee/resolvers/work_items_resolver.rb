@@ -14,12 +14,15 @@ module EE
           required: false,
           deprecated: { reason: 'Use work item IID filter instead', milestone: '15.9' },
           description: 'Input for legacy requirement widget filter.'
-        argument :health_status, ::Types::HealthStatusFilterEnum,
+        argument :health_status_filter, ::Types::HealthStatusFilterEnum,
           required: false,
           description: 'Health status of the work item, "none" and "any" values are supported.'
         argument :weight, GraphQL::Types::String,
           required: false,
           description: 'Weight applied to the work item, "none" and "any" values are supported.'
+        argument :weight_wildcard_id, ::Types::WeightWildcardIdEnum,
+          required: false,
+          description: 'Filter by weight ID wildcard. Incompatible with weight.'
         argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
           required: false,
           experiment: { milestone: '17.10' },
@@ -29,6 +32,8 @@ module EE
           required: false,
           description: 'Filter by status.',
           experiment: { milestone: '18.0' }
+
+        validates mutually_exclusive: [:weight, :weight_wildcard_id]
       end
 
       override :resolve_with_lookahead
@@ -40,6 +45,14 @@ module EE
 
       private
 
+      override :prepare_finder_params
+      def prepare_finder_params(args)
+        params = super
+        prepare_health_status_params(args)
+        rewrite_param_name(params, :weight_wildcard_id, :weight)
+        params
+      end
+
       override :widget_preloads
       def widget_preloads
         super.merge(
@@ -48,6 +61,10 @@ module EE
           color: :color,
           test_reports: :test_reports
         )
+      end
+
+      def prepare_health_status_params(args)
+        args[:health_status] = args.delete(:health_status_filter) if args[:health_status_filter].present?
       end
     end
   end

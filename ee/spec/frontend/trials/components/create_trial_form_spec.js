@@ -13,6 +13,7 @@ import {
 } from 'ee_jest/hand_raise_leads/components/mock_data';
 import { TRIAL_PHONE_DESCRIPTION } from 'ee/trials/constants';
 import waitForPromises from 'helpers/wait_for_promises';
+import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 
 jest.mock('ee/google_tag_manager', () => ({
   trackSaasTrialLeadSubmit: jest.fn(),
@@ -36,8 +37,20 @@ describe('CreateTrialForm', () => {
     showNameFields: true,
   };
 
+  const items = [
+    { text: 'Foo', value: '1' },
+    { text: 'Bob', value: '2' },
+  ];
+
+  const defaultNamespaceData = {
+    items,
+    anyTrialEligibleNamespaces: true,
+    initialValue: items[1].value,
+  };
+
   const createComponent = async ({
     userData = defaultUserData,
+    namespaceData = defaultNamespaceData,
     propsData = {},
     countriesLoading = false,
     statesLoading = false,
@@ -63,6 +76,7 @@ describe('CreateTrialForm', () => {
       apolloProvider: createMockApollo([], mockResolvers),
       propsData: {
         userData,
+        namespaceData,
         submitPath,
         gtmSubmitEventLabel,
         ...propsData,
@@ -77,6 +91,7 @@ describe('CreateTrialForm', () => {
   };
 
   const findForm = () => wrapper.findComponent(GlForm);
+  const findGroupListboxInput = () => wrapper.findComponent(ListboxInput);
   const findCountrySelect = () => wrapper.findByTestId('country-dropdown');
   const findStateSelect = () => wrapper.findByTestId('state-dropdown');
   const findFormFields = () => wrapper.findComponent(GlFormFields);
@@ -84,11 +99,11 @@ describe('CreateTrialForm', () => {
   const findHiddenInput = (name) => wrapper.findByTestId(`hidden-${name}`);
 
   describe('rendering', () => {
-    beforeEach(async () => {
-      wrapper = await createComponent();
-    });
-
     describe('with default props', () => {
+      beforeEach(async () => {
+        wrapper = await createComponent();
+      });
+
       it('renders the form with correct action and method', () => {
         expect(findForm().attributes('action')).toBe(submitPath);
         expect(findForm().attributes('method')).toBe('post');
@@ -127,6 +142,44 @@ describe('CreateTrialForm', () => {
         await nextTick();
 
         expect(findFormFields().props('values')).toEqual(updatedValues);
+      });
+    });
+
+    describe('group selector', () => {
+      it('exists as a field', async () => {
+        wrapper = await createComponent();
+
+        expect(fieldsProps()).toHaveProperty('group');
+      });
+
+      it('is set with initial value', async () => {
+        wrapper = await createComponent();
+
+        expect(findGroupListboxInput().attributes('selected')).toBe(
+          defaultNamespaceData.initialValue,
+        );
+      });
+
+      it('is unset when initialValue is null', async () => {
+        wrapper = await createComponent({
+          namespaceData: { ...defaultNamespaceData, initialValue: '' },
+        });
+
+        expect(findGroupListboxInput().attributes('selected')).toBe('');
+      });
+
+      it('passes the items to the listbox input', async () => {
+        wrapper = await createComponent();
+
+        expect(findGroupListboxInput().props('items')).toBe(items);
+      });
+
+      it('does not exist when there are no eligible namespaces', async () => {
+        wrapper = await createComponent({
+          namespaceData: { ...defaultNamespaceData, anyTrialEligibleNamespaces: false },
+        });
+
+        expect(fieldsProps()).not.toHaveProperty('group');
       });
     });
 
@@ -184,8 +237,22 @@ describe('CreateTrialForm', () => {
   });
 
   describe('field validations', () => {
-    beforeEach(async () => {
-      wrapper = await createComponent();
+    describe('group field validations', () => {
+      it('returns an error if group is not selected', async () => {
+        wrapper = await createComponent({
+          namespaceData: { ...defaultNamespaceData, initialValue: '' },
+        });
+
+        const groupValidator = fieldsProps().group.validators[0];
+        expect(groupValidator()).toBe('Please select a group for your trial.');
+      });
+
+      it('returns no error if group is selected', async () => {
+        wrapper = await createComponent();
+
+        const groupValidator = fieldsProps().group.validators[0];
+        expect(groupValidator()).toBe('');
+      });
     });
 
     describe('name field validations', () => {

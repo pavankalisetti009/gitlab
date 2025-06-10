@@ -70,6 +70,9 @@ module Gitlab
             allow_local_requests: true,
             basic_auth: basic_auth_params
           }
+
+          log_debug('Zoekt HTTP post request', url: url, payload: payload) if debug?
+
           ::Gitlab::HTTP.post(url, defaults.merge(options))
         rescue *Gitlab::HTTP::HTTP_ERRORS => e
           logger.error(message: e.message)
@@ -114,7 +117,10 @@ module Gitlab
         end
 
         def parse_response(response)
-          ::Gitlab::Json.parse(response.body).with_indifferent_access
+          json_response = ::Gitlab::Json.parse(response.body).with_indifferent_access
+          log_debug('Zoekt HTTP response', data: json_response) if debug?
+
+          json_response
         rescue Gitlab::Json.parser_error => e
           logger.error(message: e.message)
           raise ::Search::Zoekt::Errors::ClientConnectionError, e.message
@@ -158,6 +164,14 @@ module Gitlab
 
         def log_error(message, payload = {})
           logger.error(build_structured_payload(**payload.merge(message: message)))
+        end
+
+        def log_debug(message, payload = {})
+          logger.debug(build_structured_payload(**payload.merge(message: message)))
+        end
+
+        def debug?
+          Gitlab.dev_or_test_env? && Gitlab::Utils.to_boolean(ENV['ZOEKT_CLIENT_DEBUG'])
         end
 
         def format_query(query, search_mode:)

@@ -318,7 +318,7 @@ describe('SecretForm component', () => {
           name: 'SECRET_KEY',
           projectPath: 'path/to/project',
           rotationPeriod: '',
-          value: 'SECRET_VALUE',
+          secret: 'SECRET_VALUE',
         });
       });
 
@@ -519,7 +519,7 @@ describe('SecretForm component', () => {
             description: 'This is an edited secret',
             environment: 'edit-env',
             name: 'PROD_PWD',
-            value: 'EDITED_SECRET_VALUE',
+            secret: 'EDITED_SECRET_VALUE',
           }),
         );
       });
@@ -536,7 +536,7 @@ describe('SecretForm component', () => {
           name: 'PROD_PWD',
           projectPath: 'path/to/project',
           rotationPeriod: '',
-          value: 'EDITED_SECRET_VALUE',
+          secret: 'EDITED_SECRET_VALUE',
         });
       });
 
@@ -545,7 +545,7 @@ describe('SecretForm component', () => {
 
         expect(mockUpdateSecretResponse).toHaveBeenCalledTimes(1);
         expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
-          expect.objectContaining({ value: undefined }),
+          expect.objectContaining({ secret: undefined }),
         );
       });
 

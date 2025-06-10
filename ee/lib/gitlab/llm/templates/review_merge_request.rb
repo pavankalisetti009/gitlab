@@ -125,11 +125,6 @@ module Gitlab
 
         private
 
-        def full_file?
-          Feature.enabled?(:duo_code_review_full_file, user)
-        end
-        strong_memoize_attr :full_file?
-
         def user_message
           MULTI_FILE_MESSAGE
         end
@@ -143,8 +138,7 @@ module Gitlab
             full_content_section: ""
           }
 
-          # Add full file content if the feature flag is enabled
-          add_full_file_content(template_variables) if full_file? && files_content.present?
+          add_full_file_content(template_variables) if files_content.present?
 
           template_variables
         end

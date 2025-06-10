@@ -215,6 +215,33 @@ module EE
             end
           end
 
+          desc 'Get a list of SAML users of the group' do
+            success ::API::Entities::UserPublic
+            is_array true
+          end
+          params do
+            optional :username, type: String, desc: 'Return single user with a specific username.'
+            optional :search, type: String, desc: 'Search users by name, email, username.'
+            optional :active, type: Grape::API::Boolean, default: false, desc: 'Return only active users.'
+            optional :blocked, type: Grape::API::Boolean, default: false, desc: 'Return only blocked users.'
+            optional :created_after, type: DateTime, desc: 'Return users created after the specified time.'
+            optional :created_before, type: DateTime, desc: 'Return users created before the specified time.'
+
+            use :pagination
+          end
+          get ':id/saml_users', feature_category: :system_access do
+            authenticate!
+            bad_request!('Must be a top-level group') unless user_group.root?
+
+            finder = ::Authn::GroupSamlUsersFinder.new(
+              current_user,
+              declared_params.merge(group: user_group))
+
+            users = finder.execute.preload(:identities, :group_scim_identities, :instance_scim_identities) # rubocop: disable CodeReuse/ActiveRecord -- preload
+
+            present paginate(users), with: ::API::Entities::UserPublic
+          end
+
           desc 'Get a list of users provisioned by the group' do
             success ::API::Entities::UserPublic
           end

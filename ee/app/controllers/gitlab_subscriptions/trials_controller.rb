@@ -24,7 +24,6 @@ module GitlabSubscriptions
         render GitlabSubscriptions::Trials::Ultimate::TrialFormComponent
                  .new(
                    user: current_user,
-                   namespace_id: general_params[:namespace_id],
                    eligible_namespaces: @eligible_namespaces,
                    params: form_params
                  )
@@ -42,6 +41,42 @@ module GitlabSubscriptions
     end
 
     def create
+      if [
+        GitlabSubscriptions::Trials::UltimateCreateService::FULL,
+        GitlabSubscriptions::Trials::UltimateCreateService::RESUBMIT_LEAD,
+        GitlabSubscriptions::Trials::UltimateCreateService::RESUBMIT_TRIAL
+      ].include?(general_params[:step])
+        new_create
+      else
+        legacy_create
+      end
+    end
+
+    private
+
+    def new_create
+      @result = GitlabSubscriptions::Trials::UltimateCreateService.new(
+        step: general_params[:step], params: create_params, user: current_user
+      ).execute
+
+      if @result.success?
+        # lead and trial created
+        # We go off the add on here instead of the subscription for the expiration date since
+        # in the premium with ultimate trial case the trial_ends_on does not exist on the
+        # gitlab_subscription record.
+        flash[:success] = success_flash_message(@result.payload[:add_on_purchase])
+
+        redirect_to trial_success_path(@result.payload[:namespace])
+      elsif @result.reason == GitlabSubscriptions::Trials::UltimateCreateService::NOT_FOUND
+        render_404
+      else
+        render GitlabSubscriptions::Trials::Ultimate::CreationFailureComponent.new(
+          user: current_user, params: form_params, result: @result
+        )
+      end
+    end
+
+    def legacy_create
       @result = GitlabSubscriptions::Trials::CreateService.new(
         step: general_params[:step], lead_params: lead_params, trial_params: trial_params, user: current_user
       ).execute
@@ -95,8 +130,6 @@ module GitlabSubscriptions
       end
     end
 
-    private
-
     def trial_submit_path
       trials_path(
         step: GitlabSubscriptions::Trials::CreateService::LEAD,
@@ -114,8 +147,19 @@ module GitlabSubscriptions
       ::Onboarding::StatusPresenter.glm_tracking_params(params).merge(params.permit(:new_group_name, :namespace_id)) # rubocop:disable Rails/StrongParams -- method performs strong params
     end
 
+    def create_params
+      params.permit(
+        *::Onboarding::StatusPresenter::GLM_PARAMS,
+        :company_name, :first_name, :last_name, :phone_number,
+        :country, :state, :new_group_name, :namespace_id
+      ).to_h
+    end
+
     def form_params
-      lead_form_params.merge(trial_form_params).with_indifferent_access
+      params.permit(
+        *::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id, :first_name, :last_name, :company_name,
+        :phone_number, :country, :state
+      )
     end
 
     def trial_success_path(namespace)
