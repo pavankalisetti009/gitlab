@@ -521,6 +521,7 @@ export default {
 
     <template #dropdown>
       <gl-collapsible-listbox
+        block
         class="gl-mb-3 gl-max-w-full"
         :items="listboxItems"
         searchable
