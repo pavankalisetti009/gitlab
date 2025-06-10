@@ -206,6 +206,29 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, feature_category: :global_search
     end
 
     it_behaves_like 'with connection errors', :post
+
+    context 'when ZOEKT_CLIENT_DEBUG env var is true' do
+      before do
+        stub_env('ZOEKT_CLIENT_DEBUG', true)
+      end
+
+      it 'logs the request and response' do
+        logger = instance_double(::Search::Zoekt::Logger)
+        expect(::Search::Zoekt::Logger).to receive(:build).and_return(logger)
+        expect(logger).to receive(:debug)
+          .with(hash_including('message' => 'Zoekt HTTP post request', 'url' => anything, 'payload' => anything))
+        expect(logger).to receive(:debug).with(hash_including('message' => 'Zoekt HTTP response', 'data' => anything))
+
+        search
+      end
+
+      it 'only logs for dev or test environments' do
+        allow(Gitlab).to receive(:dev_or_test_env?).and_return(false)
+        expect(::Search::Zoekt::Logger).not_to receive(:build)
+
+        search
+      end
+    end
   end
 
   describe '#search_zoekt_proxy' do
