@@ -1,0 +1,12 @@
+query getComplianceViolation($id: ID!) {
+  complianceViolation(id: $id) @client {
+    id
+    status
+    project {
+      id
+      nameWithNamespace
+      fullPath
+      webUrl
+    }
+  }
+}
