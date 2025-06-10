@@ -19,6 +19,7 @@ import {
   WORKSPACES_DROPDOWN_GROUP_POLL_INTERVAL,
   WORKSPACES_DROPDOWN_GROUP_PAGE_SIZE,
   WORKSPACE_STATES,
+  CLICK_NEW_WORKSPACE_BUTTON_EVENT_NAME,
 } from '../constants';
 import UpdateWorkspaceMutation from '../../common/components/update_workspace_mutation.vue';
 import WorkspaceDropdownItem from './workspace_dropdown_item.vue';
@@ -146,7 +147,7 @@ export default {
       this.updateWorkspaceErrorMessage = null;
     },
     handleNewWorkspaceClick() {
-      this.trackEvent('click_new_workspace_button', { label: document.body.dataset.page });
+      this.trackEvent(CLICK_NEW_WORKSPACE_BUTTON_EVENT_NAME, { label: document.body.dataset.page });
     },
   },
   i18n,

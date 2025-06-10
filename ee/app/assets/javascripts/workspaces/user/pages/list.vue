@@ -9,6 +9,7 @@ import {
   I18N_LOADING_WORKSPACES_FAILED,
   WORKSPACES_LIST_POLL_INTERVAL,
   WORKSPACES_LIST_PAGE_SIZE,
+  CLICK_NEW_WORKSPACE_BUTTON_EVENT_NAME,
 } from '../constants';
 import {
   fetchProjectsDetails,
@@ -193,6 +194,7 @@ export default {
   },
   i18n,
   ROUTES,
+  CLICK_NEW_WORKSPACE_BUTTON_EVENT_NAME,
 };
 </script>
 <template>
@@ -208,7 +210,7 @@ export default {
         variant="confirm"
         :to="$options.ROUTES.new"
         data-testid="list-new-workspace-button"
-        data-event-tracking="click_new_workspace_button"
+        :data-event-tracking="$options.CLICK_NEW_WORKSPACE_BUTTON_EVENT_NAME"
         :data-event-label="eventTrackingLabel"
       >
         {{ $options.i18n.newWorkspaceButton }}
