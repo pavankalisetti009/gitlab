@@ -45,6 +45,7 @@ module EE
           group_disable_invite_members
           notify_compromised_passwords
           repositories_web_based_commit_signing
+          security_scans_api
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'

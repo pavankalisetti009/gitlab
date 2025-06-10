@@ -3203,11 +3203,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             project_level_compliance_dashboard: true }
         end
 
-        let(:allowed_abilities) do
+        # shared in SaaS and non-SaaS scenarios
+        let(:abilities) do
           [
             :access_security_and_compliance,
             :read_security_configuration,
-            :access_security_scans_api,
             :read_on_demand_dast_scan,
             :create_on_demand_dast_scan,
             :edit_on_demand_dast_scan,
@@ -3230,14 +3230,21 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           ]
         end
 
+        let(:allowed_abilities) { abilities }
+
         before do
           # Ensure merge requests are enabled for the project
           project.project_feature.update!(merge_requests_access_level: ProjectFeature::ENABLED)
-          allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:sast).and_return(
-            instance_double(CloudConnector::BaseAvailableServiceData, free_access?: true))
         end
 
         it_behaves_like 'custom roles abilities'
+
+        context 'when on SaaS', :saas do
+          #  access_security_scans_api is only available on SaaS while in beta
+          let(:allowed_abilities) { abilities + [:access_security_scans_api] }
+
+          it_behaves_like 'custom roles abilities'
+        end
       end
     end
 
@@ -4790,44 +4797,51 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     describe 'access_security_scans_api' do
-      context 'when feature is disabled' do
+      context 'when on SaaS', :saas do
+        context 'when feature is disabled' do
+          let(:current_user) { owner }
+
+          before do
+            stub_licensed_features(security_scans_api: false)
+          end
+
+          it 'is not allowed' do
+            is_expected.to be_disallowed(:access_security_scans_api)
+          end
+        end
+
+        context 'when feature is enabled' do
+          where(:current_user, :allowed) do
+            ref(:owner)      | true
+            ref(:maintainer) | true
+            ref(:developer)  | true
+            ref(:guest)      | false
+            ref(:planner)    | false
+            ref(:reporter)   | false
+            ref(:non_member) | false
+          end
+
+          with_them do
+            before do
+              stub_licensed_features(security_scans_api: true)
+            end
+
+            it { is_expected.to(allowed ? be_allowed(:access_security_scans_api) : be_disallowed(:access_security_scans_api)) }
+          end
+        end
+      end
+
+      context 'when on Self-Managed' do
+        # access_security_scans_api is only available on SaaS while in beta
         let(:current_user) { owner }
 
         before do
-          stub_licensed_features(security_scans_api: false)
+          # enable feature explicitly to show that it is still not available because of SaaS check
+          stub_licensed_features(security_scans_api: true)
         end
 
         it 'is not allowed' do
           is_expected.to be_disallowed(:access_security_scans_api)
-        end
-      end
-
-      context 'when feature is enabled' do
-        where(:free_access, :current_user, :allowed) do
-          true  | ref(:owner)      | true
-          true  | ref(:maintainer) | true
-          true  | ref(:developer)  | true
-          true  | ref(:guest)      | false
-          true  | ref(:planner)    | false
-          true  | ref(:reporter)   | false
-          true  | ref(:non_member) | false
-          false | ref(:owner)      | false
-          false | ref(:maintainer) | false
-          false | ref(:developer)  | false
-          false | ref(:guest)      | false
-          false | ref(:planner)    | false
-          false | ref(:reporter)   | false
-          false | ref(:non_member) | false
-        end
-
-        with_them do
-          before do
-            stub_licensed_features(security_scans_api: true)
-            allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:sast).and_return(
-              instance_double(CloudConnector::BaseAvailableServiceData, free_access?: free_access))
-          end
-
-          it { is_expected.to(allowed ? be_allowed(:access_security_scans_api) : be_disallowed(:access_security_scans_api)) }
         end
       end
     end

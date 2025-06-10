@@ -140,9 +140,7 @@ module EE
       end
 
       condition(:security_scans_api_enabled, scope: :subject) do
-        # We check the service name to determine if the backend is globally available
-        # We use free_access? to check that the backend is globally availabile
-        security_scans_service.free_access? &&
+        ::Gitlab::Saas.feature_available?(:security_scans_api) &&
           @subject.licensed_feature_available?(:security_scans_api)
       end
 
@@ -1283,10 +1281,6 @@ module EE
       return false if ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
 
       super
-    end
-
-    def security_scans_service
-      CloudConnector::AvailableServices.find_by_name(:sast)
     end
 
     def in_group?
