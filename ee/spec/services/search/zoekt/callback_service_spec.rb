@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search do
-  let_it_be(:node) { create(:zoekt_node) }
+  let_it_be(:node) { create(:zoekt_node, schema_version: 2525) }
   let(:service) { described_class.new(node, params) }
 
   describe '.execute' do
@@ -73,6 +73,7 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
                     .and change { index_zoekt_task.zoekt_repository.size_bytes }.to(582790)
                       .and change { index_zoekt_task.zoekt_repository.retries_left }.from(2).to(10)
                         .and change { index_zoekt_task.zoekt_repository.zoekt_index.last_indexed_at }.to(Time.current)
+                          .and change { index_zoekt_task.zoekt_repository.schema_version }.from(0).to(2525)
           end
         end
 
@@ -137,9 +138,11 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
         let_it_be(:zoekt_task) { create(:zoekt_task, node: node) }
         let(:base_delay) { Search::Zoekt::Task::RETRY_DELAY }
 
-        it 'updates retries_left and perform_at without updating the task state' do
+        it 'updates retries_left and perform_at without updating the task state and repository schema_version' do
+          zoekt_repository_initial_schema_version = zoekt_task.zoekt_repository.schema_version
           expect { execute }.to change { zoekt_task.reload.retries_left }.by(-1).and not_change { zoekt_task.state }
           expect(zoekt_task.perform_at).to be_within(jitter).of(base_delay.from_now)
+          expect(zoekt_task.zoekt_repository.reload.schema_version).to eq zoekt_repository_initial_schema_version
         end
       end
 
