@@ -102,25 +102,22 @@ export default {
   <div
     v-if="!isDismissed"
     :id="$options.trialWidget.containerId"
-    class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-subtle gl-pt-4 gl-shadow"
+    class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-default gl-pt-4 gl-shadow"
     data-testid="trial-widget-root-element"
   >
     <div data-testid="trial-widget-menu" class="gl-flex gl-w-full gl-flex-col gl-items-stretch">
       <div v-if="isTrialActive">
         <div class="gl-flex-column gl-w-full">
-          <div
-            data-testid="widget-title"
-            class="gl-text-md gl-mb-4 gl-font-bold gl-text-neutral-700"
-          >
+          <div data-testid="widget-title" class="gl-text-md gl-mb-4 gl-font-bold gl-text-default">
             {{ widgetTitle }}
           </div>
           <gl-progress-bar
             :value="percentageComplete"
-            class="custom-gradient-progress gl-mb-4 gl-bg-purple-50"
+            class="custom-gradient-progress gl-mb-4 gl-bg-status-brand dark:gl-bg-purple-900"
             aria-hidden="true"
           />
           <div class="gl-flex gl-w-full gl-justify-between">
-            <span class="gl-text-sm gl-text-neutral-700">
+            <span class="gl-text-sm gl-text-subtle">
               {{ widgetRemainingDays }}
             </span>
           </div>
