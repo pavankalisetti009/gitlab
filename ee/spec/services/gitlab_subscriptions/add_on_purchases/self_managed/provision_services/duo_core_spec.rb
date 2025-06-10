@@ -5,27 +5,10 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore,
   feature_category: :'add-on_provisioning' do
   describe '#execute' do
-    subject(:provision_service) { described_class.new }
+    include_context 'with provision services common setup'
 
     let_it_be(:add_on_duo_core) { create(:gitlab_subscription_add_on, :duo_core) }
     let_it_be(:add_on_duo_enterprise) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-
-    let_it_be(:organization) { create(:organization) }
-    let_it_be(:started_at) { Date.current }
-
-    let(:quantity) { 1 }
-    let(:trial) { false }
-    let(:add_ons) { [] }
-
-    before do
-      create_current_license(
-        cloud_licensing_enabled: true,
-        restrictions: {
-          add_on_products: add_on_products(add_ons: add_ons, started_at: started_at, quantity: quantity),
-          subscription_name: 'A-S00000001'
-        }
-      )
-    end
 
     describe 'delegations' do
       subject { provision_service }
@@ -54,7 +37,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
           quantity: quantity,
           started_at: started_at,
           expires_on: started_at + 1.year,
-          purchase_xid: '123456789',
+          purchase_xid: purchase_xid,
           trial: trial
         )
       end
@@ -81,7 +64,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
           quantity: quantity,
           started_at: started_at,
           expires_on: started_at + 1.year,
-          purchase_xid: '123456789',
+          purchase_xid: purchase_xid,
           trial: trial
         )
       end
@@ -107,7 +90,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
           quantity: quantity,
           started_at: started_at,
           expires_on: started_at + 1.year,
-          purchase_xid: '123456789',
+          purchase_xid: purchase_xid,
           trial: trial
         )
       end
@@ -135,22 +118,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect(existing_add_on_purchase.reload.started_at).to eq(started_at)
         expect(existing_add_on_purchase.expires_on).to eq(started_at + 1.year)
       end
-    end
-  end
-
-  private
-
-  def add_on_products(add_ons:, started_at:, quantity:)
-    add_ons.index_with({}) do
-      [
-        {
-          "quantity" => quantity,
-          "started_on" => started_at.to_s,
-          "expires_on" => (started_at + 1.year).to_s,
-          "purchase_xid" => "123456789",
-          "trial" => trial
-        }
-      ]
     end
   end
 end

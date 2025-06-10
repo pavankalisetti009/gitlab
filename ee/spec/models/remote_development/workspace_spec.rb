@@ -58,6 +58,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
     context "for has_one" do
       it { is_expected.to have_one(:agentk_state) }
+      it { is_expected.to have_one(:workspace_token) }
     end
 
     context "for belongs_to" do

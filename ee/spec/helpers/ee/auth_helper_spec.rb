@@ -327,7 +327,7 @@ RSpec.describe EE::AuthHelper do
     end
 
     it 'returns data for the service accounts UI' do
-      expect(helper.admin_service_accounts_data).to match(a_hash_including({
+      expect(helper.admin_service_accounts_data('dummy_user')).to match(a_hash_including({
         base_path: '/admin/application_settings/service_accounts',
         is_group: 'false',
         service_accounts: {
@@ -339,6 +339,7 @@ RSpec.describe EE::AuthHelper do
         access_token: {
           max_date: '2022-03-02',
           min_date: '2022-03-02',
+          available_scopes: '[]',
           create: '/api/v4/users/:id/personal_access_tokens',
           revoke: '/api/v4/personal_access_tokens',
           rotate: '/api/v4/personal_access_tokens',
@@ -355,7 +356,7 @@ RSpec.describe EE::AuthHelper do
     end
 
     it 'returns data for the service accounts UI' do
-      expect(helper.groups_service_accounts_data(group)).to match(a_hash_including({
+      expect(helper.groups_service_accounts_data(group, 'dummy_user')).to match(a_hash_including({
         base_path: '/groups/my-group-path/-/settings/service_accounts',
         is_group: 'true',
         service_accounts: {
@@ -366,6 +367,7 @@ RSpec.describe EE::AuthHelper do
         },
         access_token: {
           min_date: 1.day.from_now.iso8601,
+          available_scopes: '[]',
           create: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
           revoke: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
           rotate: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
