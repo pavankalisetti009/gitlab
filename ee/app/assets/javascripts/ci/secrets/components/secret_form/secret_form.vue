@@ -81,7 +81,7 @@ export default {
         expiration: undefined,
         name: undefined,
         rotationPeriod: '',
-        value: undefined,
+        secret: undefined, // shown as "value" in the UI
         ...this.secretData,
       },
       showConfirmEditModal: false,
@@ -127,7 +127,7 @@ export default {
         return true; // value is optional when editing
       }
 
-      return this.secret.value.length > 0;
+      return this.secret.secret.length > 0;
     },
     minExpirationDate() {
       // secrets can expire tomorrow, but not today or yesterday
@@ -302,14 +302,14 @@ export default {
         <gl-form-textarea
           id="secret-value"
           ref="editValueField"
-          v-model="secret.value"
+          v-model="secret.secret"
           rows="5"
           max-rows="15"
           no-resize
           :disabled="isValueFieldDisabled"
           :placeholder="valueFieldPlaceholder"
           :spellcheck="false"
-          :state="secret.value === undefined || isValueValid"
+          :state="secret.secret === undefined || isValueValid"
           @blur="disableValueEditing"
         />
       </gl-form-group>
