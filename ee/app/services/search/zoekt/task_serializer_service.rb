@@ -61,7 +61,14 @@ module Search
           Callback: { name: 'index', payload: { task_id: task.id } },
           RepoId: project.id,
           FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
-          Timeout: "#{INDEXING_TIMEOUT_S}s"
+          Timeout: "#{INDEXING_TIMEOUT_S}s",
+          Metadata: {
+            traversal_ids: project.namespace_ancestry,
+            visibility_level: project.visibility_level,
+            repository_access_level: project.repository_access_level,
+            forked: project.forked?,
+            archived: project.archived?
+          }
         }
         payload[:Parallelism] = ::Gitlab::CurrentSettings.zoekt_indexing_parallelism
         payload
