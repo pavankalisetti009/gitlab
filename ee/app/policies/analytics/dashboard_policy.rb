@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ProductAnalytics
+module Analytics
   class DashboardPolicy < BasePolicy
     delegate { @subject.container }
   end

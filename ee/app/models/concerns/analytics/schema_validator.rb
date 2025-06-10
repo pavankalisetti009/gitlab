@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ProductAnalytics
+module Analytics
   module SchemaValidator
     def schema_errors_for(yaml)
       validator = JSONSchemer.schema(Pathname.new(Rails.root.join(self.class::SCHEMA_PATH)))

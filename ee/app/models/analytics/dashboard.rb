@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ProductAnalytics
+module Analytics
   class Dashboard
     include SchemaValidator
 
@@ -35,32 +35,6 @@ module ProductAnalytics
 
       dashboards.flatten.compact
     end
-
-    def initialize(**args)
-      @container = args[:container]
-      @config_project = args[:config_project]
-      @slug = args[:slug]
-      @user_defined = args[:user_defined]
-
-      @yaml_definition = args[:config]
-      @title = @yaml_definition['title']
-      @description = @yaml_definition['description']
-      @schema_version = @yaml_definition['version']
-      @status = @yaml_definition['status']
-      @panels = ProductAnalytics::Panel.from_data(@yaml_definition['panels'], config_project)
-      @category = 'analytics'
-
-      @errors = schema_errors_for(@yaml_definition)
-      @filters = @yaml_definition['filters']
-    end
-
-    def ==(other)
-      slug == other.slug
-    end
-
-    private
-
-    attr_reader :yaml_definition
 
     def self.customized_dashboards(container, config_project, trees)
       trees.delete_if { |tree| tree.name == 'visualizations' }.map do |tree|
@@ -193,5 +167,31 @@ module ProductAnalytics
 
       builtin.flatten
     end
+
+    def initialize(**args)
+      @container = args[:container]
+      @config_project = args[:config_project]
+      @slug = args[:slug]
+      @user_defined = args[:user_defined]
+
+      @yaml_definition = args[:config]
+      @title = @yaml_definition['title']
+      @description = @yaml_definition['description']
+      @schema_version = @yaml_definition['version']
+      @status = @yaml_definition['status']
+      @panels = Analytics::Panel.from_data(@yaml_definition['panels'], config_project)
+      @category = 'analytics'
+
+      @errors = schema_errors_for(@yaml_definition)
+      @filters = @yaml_definition['filters']
+    end
+
+    def ==(other)
+      slug == other.slug
+    end
+
+    private
+
+    attr_reader :yaml_definition
   end
 end
