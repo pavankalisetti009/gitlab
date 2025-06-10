@@ -39,11 +39,24 @@ RSpec.describe Resolvers::WorkItemsResolver do
 
     context 'with health_status filter', feature_category: :requirements_management do
       it 'filters work items by health_status' do
-        expect(resolve_items(health_status: :at_risk)).to contain_exactly(work_item2)
-        expect(resolve_items(health_status: :on_track)).to contain_exactly(work_item3)
+        expect(resolve_items(health_status_filter: :at_risk)).to contain_exactly(work_item2)
+        expect(resolve_items(health_status_filter: :on_track)).to contain_exactly(work_item3)
 
-        expect(resolve_items(health_status: :any)).to contain_exactly(work_item2, work_item3)
-        expect(resolve_items(health_status: :none)).to contain_exactly(work_item1)
+        expect(resolve_items(health_status_filter: :any)).to contain_exactly(work_item2, work_item3)
+        expect(resolve_items(health_status_filter: :none)).to contain_exactly(work_item1)
+      end
+    end
+
+    context 'with negated health_status filter', feature_category: :requirements_management do
+      it 'excludes work items by health_status' do
+        expect(resolve_items(not: { health_status_filter: [:at_risk] }))
+          .to contain_exactly(work_item1, work_item3)
+
+        expect(resolve_items(not: { health_status_filter: [:on_track] }))
+          .to contain_exactly(work_item1, work_item2)
+
+        expect(resolve_items(not: { health_status_filter: [:at_risk, :on_track] }))
+          .to contain_exactly(work_item1)
       end
     end
 
@@ -54,6 +67,41 @@ RSpec.describe Resolvers::WorkItemsResolver do
 
         expect(resolve_items(weight: 'any')).to contain_exactly(work_item2, work_item3)
         expect(resolve_items(weight: 'none')).to contain_exactly(work_item1)
+      end
+    end
+
+    context 'with weight wildcard filter', feature_category: :requirements_management do
+      it 'filters work items by weight wildcard' do
+        expect(resolve_items(weight_wildcard_id: 'ANY')).to contain_exactly(work_item2, work_item3)
+        expect(resolve_items(weight_wildcard_id: 'NONE')).to contain_exactly(work_item1)
+      end
+    end
+
+    context 'with negated weight filter', feature_category: :requirements_management do
+      it 'excludes work items by weight' do
+        expect(resolve_items(not: { weight: '1' }))
+          .to contain_exactly(work_item1, work_item3)
+
+        expect(resolve_items(not: { weight: '2' }))
+          .to contain_exactly(work_item1, work_item2)
+      end
+    end
+
+    context 'with combined filters', feature_category: :requirements_management do
+      it 'combines weight and health_status filters' do
+        expect(resolve_items(weight: 'any', health_status_filter: :at_risk))
+          .to contain_exactly(work_item2)
+      end
+
+      it 'combines regular and negated filters' do
+        # Has weight but not at_risk health status
+        expect(resolve_items(weight: 'any', not: { health_status_filter: [:at_risk] }))
+          .to contain_exactly(work_item3)
+      end
+
+      it 'combines weight wildcard with other filters' do
+        expect(resolve_items(weight_wildcard_id: 'ANY', health_status_filter: :on_track))
+          .to contain_exactly(work_item3)
       end
     end
 
