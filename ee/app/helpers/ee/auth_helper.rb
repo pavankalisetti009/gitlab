@@ -118,7 +118,9 @@ module EE
       }
     end
 
-    def admin_service_accounts_data
+    def admin_service_accounts_data(user = current_user)
+      sources = scope_description(:personal_access_token)
+      scopes = ::Gitlab::Auth.available_scopes_for(user)
       {
         base_path: admin_application_settings_service_accounts_path,
         is_group: false.to_s,
@@ -132,6 +134,7 @@ module EE
           **expires_at_for_service_access_tokens(
             ::Gitlab::CurrentSettings.current_application_settings.service_access_tokens_expiration_enforced
           ),
+          available_scopes: filter_sort_scopes(scopes, sources).to_json,
           create: api_v4_users_personal_access_tokens_path(user_id: ':id'),
           revoke: api_v4_personal_access_tokens_path,
           rotate: api_v4_personal_access_tokens_path,
@@ -140,7 +143,9 @@ module EE
       }
     end
 
-    def groups_service_accounts_data(group)
+    def groups_service_accounts_data(group, user = current_user)
+      sources = scope_description(:personal_access_token)
+      scopes = ::Gitlab::Auth.available_scopes_for(user)
       {
         base_path: group_settings_service_accounts_path(group),
         is_group: true.to_s,
@@ -152,6 +157,7 @@ module EE
         },
         access_token: {
           **expires_at_for_service_access_tokens(group.namespace_settings.service_access_tokens_expiration_enforced),
+          available_scopes: filter_sort_scopes(scopes, sources).to_json,
           create: api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'),
           revoke: api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'),
           rotate: api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'),
