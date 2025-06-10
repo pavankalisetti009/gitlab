@@ -31,7 +31,7 @@ describe('~/environments/environment_details/components/deployment_actions.vue',
       setEnvironmentToRollback: mockSetEnvironmentToRollback,
     },
   };
-  const createWrapper = ({ actions, rollback, approvalEnvironment }) => {
+  const createWrapper = ({ actions, rollback, approvalEnvironment, status }) => {
     const mockApollo = createMockApollo([], mockResolvers);
     return mountExtended(DeploymentActions, {
       apolloProvider: mockApollo,
@@ -43,6 +43,7 @@ describe('~/environments/environment_details/components/deployment_actions.vue',
         rollback,
         approvalEnvironment,
         deploymentWebPath,
+        status,
       },
     });
   };
@@ -50,7 +51,11 @@ describe('~/environments/environment_details/components/deployment_actions.vue',
   describe('environment-approval', () => {
     describe('when there is no environment approval data available', () => {
       beforeEach(() => {
-        wrapper = createWrapper({ actions: [], approvalEnvironment: emptyApprovalEnvironmentData });
+        wrapper = createWrapper({
+          actions: [],
+          approvalEnvironment: emptyApprovalEnvironmentData,
+          status: 'failed',
+        });
       });
 
       it('should not show environment-approval component', () => {
@@ -62,7 +67,11 @@ describe('~/environments/environment_details/components/deployment_actions.vue',
 
     describe('when there is environment approval data available', () => {
       beforeEach(() => {
-        wrapper = createWrapper({ actions: [], approvalEnvironment: approvalEnvironmentData });
+        wrapper = createWrapper({
+          actions: [],
+          approvalEnvironment: approvalEnvironmentData,
+          status: 'running',
+        });
       });
 
       it('should render environment-approval component with correct props', () => {
@@ -73,6 +82,7 @@ describe('~/environments/environment_details/components/deployment_actions.vue',
           requiredApprovalCount: 1,
           showText: false,
           size: 'medium',
+          status: 'running',
         });
       });
     });
