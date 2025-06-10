@@ -170,6 +170,85 @@ RSpec.describe Issuable::BulkUpdateService, feature_category: :team_planning do
         it_behaves_like 'updates iterations'
       end
     end
+
+    context "when updating configurable status" do
+      let(:status) { build(:work_item_system_defined_status, :in_progress) }
+      let(:params) do
+        {
+          issuable_ids: issuables.map(&:id),
+          status: status.to_gid.to_s
+        }
+      end
+
+      before do
+        stub_licensed_features(work_item_status: true)
+      end
+
+      context "for system defined statuses" do
+        it 'succeeds and returns the correct number of issuables updated' do
+          expect(subject.success?).to be_truthy
+          expect(subject.payload[:count]).to eq(issuables.count)
+          issuables.each do |issuable|
+            expect(issuable.reload.current_status.status).to eq(status)
+          end
+        end
+      end
+
+      context "when custom lifecycle exists" do
+        let!(:custom_lifecycle) do
+          create(:work_item_custom_lifecycle, namespace: group.root_ancestor) do |lifecycle|
+            create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: issue1.work_item_type)
+          end
+        end
+
+        let!(:custom_status) do
+          create(:work_item_custom_status, namespace: group.root_ancestor) do |status|
+            create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: status)
+          end
+        end
+
+        context "when status param is a custom status" do
+          let(:status) { custom_status }
+
+          it 'succeeds and returns the correct number of issuables updated' do
+            expect(subject.success?).to be_truthy
+            expect(subject.payload[:count]).to eq(issuables.count)
+            issuables.each do |issuable|
+              expect(issuable.reload.current_status.status).to eq(status)
+            end
+          end
+
+          context "when there is an issuable that does not support a custom lifecycle" do
+            let(:objective) { create(:work_item, :objective, project: project1) }
+            let(:updatable_issues) { [issue1, issue2] }
+            let(:non_updatable_issues) { [objective] }
+            let(:issuables) { updatable_issues + non_updatable_issues }
+
+            it 'succeeds and updates only the updatable issues' do
+              expect(subject.success?).to be_truthy
+              expect(subject.payload[:count]).to eq(issuables.count)
+              updatable_issues.each do |issuable|
+                expect(issuable.reload.current_status.status).to eq(status)
+              end
+
+              non_updatable_issues.each do |issuable|
+                expect(issuable.reload.current_status).to be_nil
+              end
+            end
+          end
+        end
+
+        context "when status param is a system defined status" do
+          it 'succeeds but does not create a current status' do
+            expect(subject.success?).to be_truthy
+            expect(subject.payload[:count]).to eq(issuables.count)
+            issuables.each do |issuable|
+              expect(issuable.reload.current_status).to be_nil
+            end
+          end
+        end
+      end
+    end
   end
 
   context 'with epics' do
