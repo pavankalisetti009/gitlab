@@ -179,7 +179,6 @@ If the import is successful, the new compliance framework appears in the list. A
 {{< history >}}
 
 - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/186525) in GitLab 17.11 [with a flag](../../../administration/feature_flags.md) named `enable_standards_adherence_dashboard_v2`. Enabled by default.
-- External control name [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/192177) in GitLab 18.1.
 
 {{< /history >}}
 
@@ -267,6 +266,12 @@ Combine GitLab compliance controls to help you meet
 | Vulnerabilities SLO days over threshold                  | `vulnerabilities_slo_days_over_threshold`                  | Ensures that [vulnerabilities are addressed](../../application_security/vulnerabilities/_index.md) inside SLO thresholds (180 days). |
 
 ### External controls
+
+{{< history >}}
+
+- External control name [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/192177) in GitLab 18.1.
+
+{{< /history >}}
 
 External controls are API calls to external systems that request the status of an external control or requirement.
 
