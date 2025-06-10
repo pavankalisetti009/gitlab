@@ -74106,7 +74106,7 @@ msgstr ""
 msgid "must contain only a mastodon handle."
 msgstr ""
 
-msgid "must contain only a orcid ID."
+msgid "must contain only a valid ORCID."
 msgstr ""
 
 msgid "must have a repository"
