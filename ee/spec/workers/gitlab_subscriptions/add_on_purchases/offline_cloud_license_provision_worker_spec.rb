@@ -37,9 +37,9 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::OfflineCloudLicenseProvision
       {
         message: 'Offline license checked for potentially new add-on purchases',
         response: {
-          add_on_purchase: kind_of(GitlabSubscriptions::AddOnPurchase),
+          add_on_purchases: [kind_of(GitlabSubscriptions::AddOnPurchase)],
           http_status: :ok,
-          message: nil,
+          message: 'Successfully processed Duo add-ons',
           reason: nil,
           status: :success
         },

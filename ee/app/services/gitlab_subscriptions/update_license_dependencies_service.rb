@@ -38,8 +38,7 @@ module GitlabSubscriptions
     strong_memoize_attr :application_settings
 
     def update_add_on_purchases
-      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive.new.execute
-      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore.new.execute
+      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo.new.execute
     end
 
     def auto_enable_duo_core_features
