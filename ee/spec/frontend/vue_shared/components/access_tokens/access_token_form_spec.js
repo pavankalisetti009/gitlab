@@ -17,6 +17,7 @@ describe('AccessTokenForm', () => {
 
   const accessTokenMaxDate = '2021-07-06';
   const accessTokenMinDate = '2020-07-06';
+  const accessTokenAvailableScopes = [];
 
   const createComponent = (provide = {}) => {
     wrapper = mountExtended(AccessTokenForm, {
@@ -24,6 +25,7 @@ describe('AccessTokenForm', () => {
       provide: {
         accessTokenMaxDate,
         accessTokenMinDate,
+        accessTokenAvailableScopes,
         ...provide,
       },
     });
