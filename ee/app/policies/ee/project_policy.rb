@@ -1153,7 +1153,11 @@ module EE
         ::Gitlab::Llm::StageCheck.available?(@subject, :agentic_chat)
       end
 
-      rule { can?(:access_duo_chat) & duo_agentic_chat_enabled & agentic_chat_allowed }.policy do
+      condition(:model_pinned_for_duo_chat) do
+        ::Feature.enabled?(:ai_model_switching, @subject.root_ancestor) && Ai::ModelSelection::NamespaceFeatureSetting.any_non_default_for_duo_chat?(@subject.root_ancestor.id)
+      end
+
+      rule { can?(:access_duo_chat) & duo_agentic_chat_enabled & agentic_chat_allowed & ~model_pinned_for_duo_chat }.policy do
         enable :access_duo_agentic_chat
       end
 
