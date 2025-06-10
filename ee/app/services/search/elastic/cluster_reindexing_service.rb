@@ -48,43 +48,59 @@ module Search
       end
 
       def initial!
-        unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
-          abort_reindexing!('Elasticsearch indexing is disabled')
-          return false
-        end
-
-        if ::Elastic::DataMigrationService.pending_migrations? && !current_task.options[:skip_pending_migrations_check]
-          # migrations may have paused indexing so we do not want to unpause when aborting the reindexing process
-          abort_reindexing!('You have unapplied advanced search migrations. ' \
-            'Please wait until it is finished', unpause_indexing: false)
-          return false
-        end
+        return false unless elasticsearch_indexing_enabled?
+        return false unless no_pending_migrations?
 
         # Pause indexing
         ::Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: true)
 
-        unless elastic_helper.alias_exists?
-          abort_reindexing!('Your Elasticsearch index must first use aliases before you can use this feature. ' \
-            'Please recreate your index from scratch before reindexing.')
-          return false
-        end
-
-        target_classes = current_task.target_classes
-        current_size = target_classes.sum do |klass|
-          name = elastic_helper.klass_to_alias_name(klass: klass)
-          elastic_helper.index_size_bytes(index_name: name)
-        end
-
-        expected_free_size = current_size * 2
-        if elastic_helper.cluster_free_size_bytes < expected_free_size
-          abort_reindexing!("You should have at least #{expected_free_size} bytes of storage available to perform " \
-            "reindexing. Please increase the storage in your Elasticsearch cluster before reindexing.")
-          return false
-        end
+        return false unless elasticsearch_alias_exists?
+        return false unless sufficient_storage_available?
 
         current_task.update!(state: :indexing_paused)
 
         true
+      end
+
+      def elasticsearch_indexing_enabled?
+        return true if ::Gitlab::CurrentSettings.elasticsearch_indexing?
+
+        abort_reindexing!('Elasticsearch indexing is disabled')
+        false
+      end
+
+      def no_pending_migrations?
+        return true if !::Elastic::DataMigrationService.pending_migrations? ||
+          current_task.options[:skip_pending_migrations_check]
+
+        # migrations may have paused indexing so we do not want to unpause when aborting the reindexing process
+        abort_reindexing!('You have unapplied advanced search migrations. ' \
+          'Please wait until it is finished', unpause_indexing: false)
+        false
+      end
+
+      def elasticsearch_alias_exists?
+        return true if elastic_helper.alias_exists?
+
+        abort_reindexing!('Your Elasticsearch index must first use aliases before you can use this feature. ' \
+          'Please recreate your index from scratch before reindexing.')
+        false
+      end
+
+      def sufficient_storage_available?
+        expected_free_size = current_index_size * 2
+        return true if elastic_helper.cluster_free_size_bytes >= expected_free_size
+
+        abort_reindexing!("You should have at least #{expected_free_size} bytes of storage available to perform " \
+          "reindexing. Please increase the storage in your Elasticsearch cluster before reindexing.")
+        false
+      end
+
+      def current_index_size
+        current_task.target_classes.sum do |klass|
+          name = elastic_helper.klass_to_alias_name(klass: klass)
+          elastic_helper.index_size_bytes(index_name: name)
+        end
       end
 
       def indexing_paused!
