@@ -34200,8 +34200,13 @@ Represents a namespace-cluster-agent mapping.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="namespacepermissionsadminissue"></a>`adminIssue` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_issue` on this resource. |
 | <a id="namespacepermissionsadminlabel"></a>`adminLabel` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_label` on this resource. |
+| <a id="namespacepermissionscreateworkitem"></a>`createWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_work_item` on this resource. |
 | <a id="namespacepermissionsgeneratedescription"></a>`generateDescription` | [`Boolean!`](#boolean) | If `true`, the user can perform `generate_description` on this resource. |
+| <a id="namespacepermissionsimportissues"></a>`importIssues` | [`Boolean!`](#boolean) | If `true`, the user can perform `import_issues` on this resource. |
+| <a id="namespacepermissionsreadcrmcontact"></a>`readCrmContact` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_contact` on this resource. |
+| <a id="namespacepermissionsreadcrmorganization"></a>`readCrmOrganization` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_organization` on this resource. |
 | <a id="namespacepermissionsreadnamespace"></a>`readNamespace` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_namespace` on this resource. |
 
 ### `NamespaceSidebar`
