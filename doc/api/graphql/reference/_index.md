@@ -29461,6 +29461,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="groupsecuritypoliciesincludeunscoped"></a>`includeUnscoped` | [`Boolean`](#boolean) | Filter policies that are scoped to the project. |
 | <a id="groupsecuritypoliciesrelationship"></a>`relationship` | [`SecurityPolicyRelationType`](#securitypolicyrelationtype) | Filter policies by the given policy relationship. |
+| <a id="groupsecuritypoliciestype"></a>`type` | [`PolicyType`](#policytype) | Filter policies by type. |
 
 ##### `Group.securityPolicyProjectSuggestions`
 
@@ -34012,6 +34013,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="namespacesecuritypoliciesincludeunscoped"></a>`includeUnscoped` | [`Boolean`](#boolean) | Filter policies that are scoped to the project. |
 | <a id="namespacesecuritypoliciesrelationship"></a>`relationship` | [`SecurityPolicyRelationType`](#securitypolicyrelationtype) | Filter policies by the given policy relationship. |
+| <a id="namespacesecuritypoliciestype"></a>`type` | [`PolicyType`](#policytype) | Filter policies by type. |
 
 ##### `Namespace.vulnerabilityManagementPolicies`
 
@@ -37645,6 +37647,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="projectsecuritypoliciesincludeunscoped"></a>`includeUnscoped` | [`Boolean`](#boolean) | Filter policies that are scoped to the project. |
 | <a id="projectsecuritypoliciesrelationship"></a>`relationship` | [`SecurityPolicyRelationType`](#securitypolicyrelationtype) | Filter policies by the given policy relationship. |
+| <a id="projectsecuritypoliciestype"></a>`type` | [`PolicyType`](#policytype) | Filter policies by type. |
 
 ##### `Project.securityPolicyProjectLinkedGroups`
 
@@ -46060,6 +46063,16 @@ Types of security policy project created status.
 | ----- | ----------- |
 | <a id="policyprojectcreatedstatuserror"></a>`ERROR` | Creating the security policy project faild. |
 | <a id="policyprojectcreatedstatussuccess"></a>`SUCCESS` | Creating the security policy project was successful. |
+
+### `PolicyType`
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="policytypeapproval_policy"></a>`APPROVAL_POLICY` | Approval policy. |
+| <a id="policytypepipeline_execution_policy"></a>`PIPELINE_EXECUTION_POLICY` | Pipeline execution policy. |
+| <a id="policytypepipeline_execution_schedule_policy"></a>`PIPELINE_EXECUTION_SCHEDULE_POLICY` | Pipeline execution schedule policy. |
+| <a id="policytypescan_execution_policy"></a>`SCAN_EXECUTION_POLICY` | Scan execution policy. |
+| <a id="policytypevulnerability_management_policy"></a>`VULNERABILITY_MANAGEMENT_POLICY` | Vulnerability management policy. |
 
 ### `PolicyViolationErrorType`
 
