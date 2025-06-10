@@ -86,8 +86,17 @@ module Security
       when :vulnerability_management_policy
         config.vulnerability_management_policy
       when :all_policies
-        Feature.enabled?(:security_policies_combined_list, object) ? config.all_policies_with_type : []
+        all_policies_with_type(config)
       end
+    end
+
+    def all_policies_with_type(config)
+      return [] unless Feature.enabled?(:security_policies_combined_list, object)
+
+      policies_with_type = config.all_policies_with_type
+      return policies_with_type if params[:type].blank?
+
+      policies_with_type.select { |policy| policy[:type] == params[:type].to_s }
     end
 
     def policy_scope_applicable?(policy)

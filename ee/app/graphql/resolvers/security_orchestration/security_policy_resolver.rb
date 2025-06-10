@@ -19,6 +19,11 @@ module Resolvers
         required: false,
         default_value: true
 
+      argument :type, ::Types::SecurityOrchestration::PolicyTypeEnum,
+        description: 'Filter policies by type.',
+        required: false,
+        default_value: nil
+
       def resolve(**args)
         ensure_feature_available!
 

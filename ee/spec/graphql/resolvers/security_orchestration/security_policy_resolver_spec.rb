@@ -11,13 +11,16 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
   let(:scan_execution_policy) { build(:scan_execution_policy, name: 'Scan execution policy') }
   let(:vulnerability_management_policy) { build(:vulnerability_management_policy, name: 'Vulnerability management') }
   let(:pipeline_execution_policy) { build(:pipeline_execution_policy, name: 'Pipeline execution policy') }
+  let(:args) { {} }
   let(:pipeline_execution_schedule_policy) do
     build(:pipeline_execution_schedule_policy, name: 'Pipeline schedule policy')
   end
 
   let(:policy_yaml) { build(:orchestration_policy_yaml, approval_policy: [approval_policy]) }
 
-  subject(:resolve_security_policies) { resolve(described_class, obj: project, ctx: { current_user: user }) }
+  subject(:resolve_security_policies) do
+    resolve(described_class, obj: project, args: args, ctx: { current_user: user })
+  end
 
   shared_examples_for 'resource protected by feature flag "security_policies_combined_list"' do
     before do
@@ -29,6 +32,19 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         "`security_policies_combined_list` feature flag is disabled.") do
         resolve_security_policies
       end
+    end
+  end
+
+  shared_examples_for 'filterable by type' do |type|
+    before do
+      stub_licensed_features(security_orchestration_policies: true)
+      project.add_developer(user)
+    end
+
+    context 'with a matching type' do
+      let(:args) { { type: type } }
+
+      it { is_expected.to eq(expected_resolved) }
     end
   end
 
@@ -61,6 +77,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "scan_execution_policy",
         updated_at: policy_configuration.policy_last_updated_at,
+        csp: false,
         yaml: YAML.dump({
           name: scan_execution_policy[:name],
           description: scan_execution_policy[:description],
@@ -81,6 +98,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           content: scan_execution_policy.slice(*Security::Policy::POLICY_CONTENT_FIELDS[:scan_execution_policy]),
           security_orchestration_policy_configuration: policy_configuration)
       end
+
+      it_behaves_like 'filterable by type', 'scan_execution_policy'
     end
   end
 
@@ -116,6 +135,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "approval_policy",
         updated_at: policy_configuration.policy_last_updated_at,
+        csp: false,
         yaml: YAML.dump({
           name: approval_policy[:name],
           description: approval_policy[:description],
@@ -139,6 +159,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           content: approval_policy.slice(*Security::Policy::POLICY_CONTENT_FIELDS[:approval_policy]),
           security_orchestration_policy_configuration: policy_configuration)
       end
+
+      it_behaves_like 'filterable by type', 'approval_policy'
     end
   end
 
@@ -172,6 +194,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "pipeline_execution_policy",
         updated_at: policy_configuration.policy_last_updated_at,
+        csp: false,
         yaml: YAML.dump({
           name: pipeline_execution_policy[:name],
           description: pipeline_execution_policy[:description],
@@ -195,6 +218,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
                      .slice(*Security::Policy::POLICY_CONTENT_FIELDS[:pipeline_execution_policy]),
           security_orchestration_policy_configuration: policy_configuration)
       end
+
+      it_behaves_like 'filterable by type', 'pipeline_execution_policy'
     end
   end
 
@@ -230,6 +255,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "pipeline_execution_schedule_policy",
         updated_at: policy_configuration.policy_last_updated_at,
+        csp: false,
         yaml: YAML.dump({
           name: pipeline_execution_schedule_policy[:name],
           description: pipeline_execution_schedule_policy[:description],
@@ -251,6 +277,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
                      .slice(*Security::Policy::POLICY_CONTENT_FIELDS[:pipeline_execution_schedule_policy]),
           security_orchestration_policy_configuration: policy_configuration)
       end
+
+      it_behaves_like 'filterable by type', 'pipeline_execution_schedule_policy'
     end
   end
 
@@ -284,6 +312,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         type: "vulnerability_management_policy",
         updated_at: policy_configuration.policy_last_updated_at,
+        csp: false,
         yaml: YAML.dump({
           name: vulnerability_management_policy[:name],
           description: vulnerability_management_policy[:description],
@@ -304,6 +333,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
                      .slice(*Security::Policy::POLICY_CONTENT_FIELDS[:vulnerability_management_policy]),
           security_orchestration_policy_configuration: policy_configuration)
       end
+
+      it_behaves_like 'filterable by type', 'vulnerability_management_policy'
     end
   end
 end
