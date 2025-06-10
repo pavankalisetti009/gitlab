@@ -20,12 +20,12 @@ RSpec.describe Resolvers::ProductAnalytics::VisualizationResolver do
     let_it_be(:project) { create(:project, :with_product_analytics_dashboard) }
 
     it 'returns the visualization object' do
-      expect(subject).to be_a(ProductAnalytics::Visualization)
+      expect(subject).to be_a(Analytics::Visualization)
     end
 
     context 'when the visualization does not exist' do
       before do
-        allow_next_instance_of(ProductAnalytics::Panel) do |panel|
+        allow_next_instance_of(Analytics::Panel) do |panel|
           allow(panel).to receive(:visualization).and_return(nil)
         end
       end

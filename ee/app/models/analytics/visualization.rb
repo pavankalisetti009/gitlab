@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ProductAnalytics
+module Analytics
   class Visualization
     include SchemaValidator
 
@@ -140,32 +140,6 @@ module ProductAnalytics
       new(config: YAML.safe_dump(data), slug: slug)
     end
 
-    def initialize_with_error(init_error, slug)
-      @options = {}
-      @type = 'unknown'
-      @data = {}
-      @errors = [init_error]
-      @slug = slug&.parameterize
-    end
-
-    def initialize(config:, slug:, init_error: nil)
-      if init_error
-        initialize_with_error(init_error, slug)
-        return
-      end
-
-      begin
-        @config = YAML.safe_load(config)
-        @type = @config['type']
-        @options = @config['options']
-        @data = @config['data']
-      rescue Psych::Exception => e
-        @errors = [e.message]
-      end
-      @slug = slug&.parameterize
-      @errors = schema_errors_for(@config)
-    end
-
     def self.skip_for_project_namespace?(name)
       VISUALIZATIONS_FOR_GROUP_ONLY.include?(name)
     end
@@ -216,6 +190,32 @@ module ProductAnalytics
       visualizations.flatten
     end
 
+    def initialize(config:, slug:, init_error: nil)
+      if init_error
+        initialize_with_error(init_error, slug)
+        return
+      end
+
+      begin
+        @config = YAML.safe_load(config)
+        @type = @config['type']
+        @options = @config['options']
+        @data = @config['data']
+      rescue Psych::Exception => e
+        @errors = [e.message]
+      end
+      @slug = slug&.parameterize
+      @errors = schema_errors_for(@config)
+    end
+
+    def initialize_with_error(init_error, slug)
+      @options = {}
+      @type = 'unknown'
+      @data = {}
+      @errors = [init_error]
+      @slug = slug&.parameterize
+    end
+
     class << self
       private
 
@@ -236,7 +236,7 @@ module ProductAnalytics
       end
 
       def visualization_config_path(data)
-        "#{ProductAnalytics::Dashboard::DASHBOARD_ROOT_LOCATION}/visualizations/#{data}.yaml"
+        "#{Analytics::Dashboard::DASHBOARD_ROOT_LOCATION}/visualizations/#{data}.yaml"
       end
 
       def load_project_visualization_data(filename:, project:)
