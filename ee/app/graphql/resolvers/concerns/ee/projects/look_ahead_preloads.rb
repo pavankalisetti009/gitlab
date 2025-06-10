@@ -15,7 +15,8 @@ module EE
           vulnerability_statistic: [:vulnerability_statistic],
           merge_requests_disable_committers_approval: [{ group: :group_merge_request_approval_setting }],
           ai_xray_reports: [:xray_reports],
-          analyzer_statuses: [:analyzer_statuses]
+          analyzer_statuses: [:analyzer_statuses],
+          container_scanning_for_registry_enabled: [:security_setting]
         )
       end
     end

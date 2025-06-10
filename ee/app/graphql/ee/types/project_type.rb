@@ -459,6 +459,12 @@ module EE
           description: 'Indicates whether Secret Push Protection is on or not for the project.',
           authorize: :read_secret_push_protection_info
 
+        field :container_scanning_for_registry_enabled, GraphQL::Types::Boolean,
+          null: true,
+          description: 'Indicates whether Container Scanning for Registry is enabled or not for the project. ' \
+            'Returns `null` if unauthorized.',
+          authorize: :read_security_configuration
+
         field :prevent_merge_without_jira_issue_enabled, GraphQL::Types::Boolean,
           null: false,
           method: :prevent_merge_without_jira_issue?,

@@ -5316,4 +5316,36 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe '#container_scanning_for_registry_enabled' do
+    context 'when security_setting exists' do
+      context 'when container_scanning_for_registry_enabled is true' do
+        let_it_be(:security_setting) { create(:project_security_setting, container_scanning_for_registry_enabled: true) }
+
+        it 'returns true' do
+          expect(security_setting.project.container_scanning_for_registry_enabled).to be true
+        end
+      end
+
+      context 'when container_scanning_for_registry_enabled is false' do
+        let_it_be(:security_setting) { create(:project_security_setting, container_scanning_for_registry_enabled: false) }
+
+        it 'returns false' do
+          expect(security_setting.project.container_scanning_for_registry_enabled).to be false
+        end
+      end
+    end
+
+    context 'when security_setting does not exist' do
+      let_it_be(:project) { create(:project, name: 'project-without-security-setting') }
+
+      before do
+        project.security_setting.delete
+      end
+
+      it 'returns nil' do
+        expect(project.reload.container_scanning_for_registry_enabled).to be_nil
+      end
+    end
+  end
 end
