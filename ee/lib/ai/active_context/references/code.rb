@@ -8,7 +8,7 @@ module Ai
 
         add_preprocessor :get_content do |refs|
           identifiers = refs.map(&:identifier)
-          query = ::ActiveContext::Query.filter(id: identifiers)
+          query = ::ActiveContext::Query.filter(id: identifiers).limit(identifiers.count)
 
           fetch_content(refs: refs, query: query, collection: Collections::Code)
         end
