@@ -61,7 +61,6 @@ describe('ResourceLinksBlock', () => {
 
   const findResourceLinkAddButton = () => wrapper.findByTestId('crud-form-toggle');
   const resourceLinkForm = () => wrapper.findComponent(AddIssuableResourceLinkForm);
-  const helpPath = '/help/user/project/issues/linked_resources';
   const issuableId = 1;
   const findResourceCount = () => wrapper.findByTestId('crud-count');
   const findResourceLinksList = () => wrapper.findComponent(ResourceLinksList);
@@ -102,7 +101,6 @@ describe('ResourceLinksBlock', () => {
     wrapper = mountExtended(ResourceLinksBlock, {
       propsData: {
         issuableId,
-        helpPath,
         canAddResourceLinks: true,
       },
       apolloProvider: mockApollo,
