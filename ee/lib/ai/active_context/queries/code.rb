@@ -30,7 +30,7 @@ module Ai
           ).knn(
             target: current_embeddings_field,
             vector: target_embeddings,
-            limit: KNN_COUNT
+            k: KNN_COUNT
           ).limit(
             SEARCH_RESULTS_LIMIT
           )
