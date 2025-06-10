@@ -140,9 +140,7 @@ module EE
       end
 
       condition(:security_scans_api_enabled, scope: :subject) do
-        # We check the service name to determine if the backend is globally available
-        # We use free_access? to check that the backend is globally availabile
-        security_scans_service.free_access? &&
+        ::Gitlab::Saas.feature_available?(:security_scans_api) &&
           @subject.licensed_feature_available?(:security_scans_api)
       end
 
@@ -1153,7 +1151,11 @@ module EE
         ::Gitlab::Llm::StageCheck.available?(@subject, :agentic_chat)
       end
 
-      rule { can?(:access_duo_chat) & duo_agentic_chat_enabled & agentic_chat_allowed }.policy do
+      condition(:model_pinned_for_duo_chat) do
+        ::Feature.enabled?(:ai_model_switching, @subject.root_ancestor) && Ai::ModelSelection::NamespaceFeatureSetting.any_non_default_for_duo_chat?(@subject.root_ancestor.id)
+      end
+
+      rule { can?(:access_duo_chat) & duo_agentic_chat_enabled & agentic_chat_allowed & ~model_pinned_for_duo_chat }.policy do
         enable :access_duo_agentic_chat
       end
 
@@ -1283,10 +1285,6 @@ module EE
       return false if ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
 
       super
-    end
-
-    def security_scans_service
-      CloudConnector::AvailableServices.find_by_name(:sast)
     end
 
     def in_group?

@@ -15,12 +15,17 @@ module Ai
       validate :validate_root_namespace
 
       scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
+      scope :non_default, -> { where.not(offered_model_ref: [nil, ""]) }
 
       def self.find_or_initialize_by_feature(namespace, feature)
         return unless namespace.present? && ::Feature.enabled?(:ai_model_switching, namespace)
         return unless namespace.root?
 
         find_or_initialize_by(namespace_id: namespace.id, feature: feature)
+      end
+
+      def self.any_non_default_for_duo_chat?(namespace_id)
+        for_namespace(namespace_id).non_default.where(feature: DUO_CHAT_FEATURES).exists?
       end
 
       def model_selection_scope
