@@ -33,7 +33,17 @@ module GitlabSubscriptions
 
       where('started_at IS NULL OR started_at <= ?', today).where('? < expires_on', today)
     }
-    scope :ready_for_cleanup, -> { where('expires_on < ?', CLEANUP_DELAY_PERIOD.ago.to_date) }
+    scope :ready_for_cleanup, -> {
+      where('expires_on < ?', CLEANUP_DELAY_PERIOD.ago.to_date)
+    }
+    scope :has_assigned_users, -> {
+      where(
+        "EXISTS (
+          SELECT 1
+          FROM subscription_user_add_on_assignments
+          WHERE add_on_purchase_id = subscription_add_on_purchases.id
+        )")
+    }
     scope :trial, -> { where(trial: true) }
     scope :by_add_on_name, ->(name) { joins(:add_on).where(add_on: { name: name }) }
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
