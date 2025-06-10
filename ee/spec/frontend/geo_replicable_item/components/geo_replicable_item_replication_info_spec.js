@@ -1,7 +1,7 @@
 import { GlSprintf, GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemReplicationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_replication_info.vue';
-import { REPLICATION_STATUS_STATES } from 'ee/geo_replicable_item//constants';
+import { REPLICATION_STATUS_STATES } from 'ee/geo_shared//constants';
 import { MOCK_REPLICABLE_WITH_VERIFICATION } from '../mock_data';
 
 describe('GeoReplicableItemReplicationInfo', () => {

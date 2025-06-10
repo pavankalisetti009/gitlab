@@ -4,8 +4,9 @@ import Vuex from 'vuex';
 import { GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
-import GeoReplicableStatus from 'ee/geo_replicable/components/geo_replicable_status.vue';
+import GeoListItemStatus from 'ee/geo_shared/list/components/geo_list_item_status.vue';
 import GeoReplicableTimeAgo from 'ee/geo_replicable/components/geo_replicable_time_ago.vue';
 import { ACTION_TYPES } from 'ee/geo_replicable/constants';
 import { getStoreConfig } from 'ee/geo_replicable/store';
@@ -60,7 +61,7 @@ describe('GeoReplicableItem', () => {
 
   const findReplicableItemHeader = () => wrapper.findByTestId('replicable-item-header');
   const findReplicableItemSyncStatus = () =>
-    findReplicableItemHeader().findComponent(GeoReplicableStatus);
+    findReplicableItemHeader().findComponent(GeoListItemStatus);
   const findResyncButton = () => wrapper.findByTestId('geo-resync-item');
   const findReverifyButton = () => wrapper.findByTestId('geo-reverify-item');
   const findReplicableItemNoLinkText = () => findReplicableItemHeader().find('span');
@@ -82,8 +83,16 @@ describe('GeoReplicableItem', () => {
         createComponent(null, { verificationEnabled });
       });
 
-      it('renders GeoReplicableStatus', () => {
-        expect(findReplicableItemSyncStatus().exists()).toBe(true);
+      it('renders GeoListItemStatus with correct props', () => {
+        const expectedState = REPLICATION_STATUS_STATES.PENDING;
+
+        expect(findReplicableItemSyncStatus().props('statusArray')).toStrictEqual([
+          {
+            tooltip: `Replication: ${expectedState.title}`,
+            icon: expectedState.icon,
+            variant: expectedState.variant,
+          },
+        ]);
       });
 
       it(`${showResyncAction ? 'does' : 'does not'} render Resync Button`, () => {

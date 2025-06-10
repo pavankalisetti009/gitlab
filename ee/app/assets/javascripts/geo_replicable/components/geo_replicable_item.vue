@@ -2,12 +2,13 @@
 import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
+import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import GeoListItemStatus from 'ee/geo_shared/list/components/geo_list_item_status.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { ACTION_TYPES } from '../constants';
-import GeoReplicableStatus from './geo_replicable_status.vue';
 import GeoReplicableTimeAgo from './geo_replicable_time_ago.vue';
 
 export default {
@@ -19,12 +20,13 @@ export default {
     reverify: s__('Geo|Reverify'),
     lastVerified: s__('Geo|Last time verified'),
     modelRecordId: s__('Geo|Model record: %{modelRecordId}'),
+    replicationStatus: s__('Geo|Replication: %{status}'),
   },
   components: {
     GlButton,
     GlLink,
     GeoReplicableTimeAgo,
-    GeoReplicableStatus,
+    GeoListItemStatus,
     GlSprintf,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -81,6 +83,21 @@ export default {
     name() {
       return `${this.graphqlRegistryClass}/${this.id}`;
     },
+    statusArray() {
+      const replicationStatus =
+        REPLICATION_STATUS_STATES[this.syncStatus?.toUpperCase()] ||
+        REPLICATION_STATUS_STATES.UNKNOWN;
+
+      return [
+        {
+          tooltip: sprintf(this.$options.i18n.replicationStatus, {
+            status: replicationStatus.title,
+          }),
+          icon: replicationStatus.icon,
+          variant: replicationStatus.variant,
+        },
+      ];
+    },
   },
   methods: {
     ...mapActions(['initiateReplicableAction']),
@@ -95,7 +112,7 @@ export default {
       class="geo-replicable-item-grid gl-grid gl-items-center gl-pb-4"
       data-testid="replicable-item-header"
     >
-      <geo-replicable-status :status="syncStatus" />
+      <geo-list-item-status :status-array="statusArray" />
 
       <gl-link v-if="glFeatures.geoReplicablesShowView" class="gl-font-bold" :href="detailsPath">{{
         name

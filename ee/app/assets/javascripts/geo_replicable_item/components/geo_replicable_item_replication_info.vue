@@ -1,8 +1,8 @@
 <script>
 import { GlSprintf, GlBadge, GlCard } from '@gitlab/ui';
+import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
-import { REPLICATION_STATUS_STATES } from '../constants';
 
 export default {
   name: 'GeoReplicableItemReplicationInfo',
