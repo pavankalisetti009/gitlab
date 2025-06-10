@@ -7,7 +7,7 @@ module EE
     include ::Gitlab::Utils::StrongMemoize
 
     override :lazy_subscription
-    def lazy_subscription(user, project = nil)
+    def lazy_subscription(user, project = nil, cache_enforced: true)
       return super unless try(:unified_associations?)
 
       BatchLoader.for(batched_object).batch(cache: false) do |ids, loader, _args|
