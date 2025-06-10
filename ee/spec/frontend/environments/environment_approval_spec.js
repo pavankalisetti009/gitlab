@@ -7,7 +7,12 @@ describe('ee/environments/components/environment_approval.vue', () => {
 
   const deploymentWebPath = '/path/to/deployment';
 
-  const defaultProps = { requiredApprovalCount: 1, deploymentWebPath, showText: true };
+  const defaultProps = {
+    requiredApprovalCount: 1,
+    deploymentWebPath,
+    showText: true,
+    status: 'running',
+  };
 
   const createWrapper = (propsData = {}) => {
     wrapper = shallowMount(EnvironmentApproval, {
@@ -26,6 +31,14 @@ describe('ee/environments/components/environment_approval.vue', () => {
     it("doesn't show the button if requiredApprovalCount = 0", () => {
       createWrapper({
         requiredApprovalCount: 0,
+      });
+
+      expect(findButton().exists()).toBe(false);
+    });
+
+    it("doesn't show the button if status is finished", () => {
+      createWrapper({
+        status: 'FAILED',
       });
 
       expect(findButton().exists()).toBe(false);

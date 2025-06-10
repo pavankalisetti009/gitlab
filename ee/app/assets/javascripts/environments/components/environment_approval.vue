@@ -1,6 +1,7 @@
 <script>
 import { GlButton, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { isFinished } from '~/deployments/utils';
 
 export default {
   components: {
@@ -10,12 +11,12 @@ export default {
     GlTooltip,
   },
   props: {
-    requiredApprovalCount: {
-      type: Number,
-      required: true,
-    },
     deploymentWebPath: {
       type: String,
+      required: true,
+    },
+    requiredApprovalCount: {
+      type: Number,
       required: true,
     },
     showText: {
@@ -29,13 +30,18 @@ export default {
       default: 'medium',
       validator: (value) => ['small', 'medium'].includes(value),
     },
+    status: {
+      type: String,
+      required: true,
+    },
   },
   computed: {
     buttonTitle() {
       return this.showText ? '' : this.$options.i18n.button;
     },
     needsApproval() {
-      return this.requiredApprovalCount > 0;
+      const deploymentStatus = this.status.toUpperCase();
+      return !isFinished({ status: deploymentStatus }) && this.requiredApprovalCount > 0;
     },
   },
   i18n: {
