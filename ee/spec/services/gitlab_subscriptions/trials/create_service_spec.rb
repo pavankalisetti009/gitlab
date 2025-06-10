@@ -125,7 +125,8 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
         context 'when trial creation fails' do
           it 'returns an error indicating trial failed' do
             stub_apply_trial(
-              user, namespace_id: anything, success: false, extra_params: extra_params.merge(new_group_attrs)
+              user, namespace_id: anything, success: false,
+              extra_params: extra_params.except(:organization_id).merge(new_group_attrs)
             )
 
             expect { execute }.to change { Group.count }.by(1)
@@ -141,7 +142,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
 
             stub_apply_trial(
               user, namespace_id: anything, success: true,
-              extra_params: extra_params.merge(new_group_attrs(path: 'gitlab1'))
+              extra_params: extra_params.except(:organization_id).merge(new_group_attrs(path: 'gitlab1'))
             )
 
             expect { execute }.to change { Group.count }.by(1)

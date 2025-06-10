@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormComponent, :saas, :aggregate_failures, type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormComponent, :aggregate_failures, type: :component, feature_category: :acquisition do
+  let(:eligible_namespaces) { Group.none }
   let(:user) { build(:user) }
   let(:form_params) do
     {
@@ -12,7 +13,7 @@ RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormComponent, :saas,
     }.with_indifferent_access
   end
 
-  let(:kwargs) { { user: user, params: form_params } }
+  let(:kwargs) { { user: user, params: form_params, eligible_namespaces: eligible_namespaces } }
 
   subject(:component) { render_inline(described_class.new(**kwargs)) && page }
 
@@ -29,7 +30,7 @@ RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormComponent, :saas,
           country: '',
           state: ''
         },
-        submitPath: trials_path(step: 'lead', glm_source: 'some-source', glm_content: 'some-content', namespace_id: 1),
+        submitPath: trials_path(step: 'full', glm_source: 'some-source', glm_content: 'some-content', namespace_id: 1),
         gtmSubmitEventLabel: 'saasTrialSubmit'
       }.with_indifferent_access
     end
@@ -54,7 +55,12 @@ RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormComponent, :saas,
     let(:form_params) { super().except(:namespace_id) }
     let(:expected_form_data_attributes) do
       {
-        submitPath: trials_path(step: 'lead', glm_source: 'some-source', glm_content: 'some-content')
+        namespaceData: {
+          anyTrialEligibleNamespaces: false,
+          initialValue: '',
+          items: []
+        },
+        submitPath: trials_path(step: 'full', glm_source: 'some-source', glm_content: 'some-content')
       }.with_indifferent_access
     end
 
@@ -66,7 +72,7 @@ RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormComponent, :saas,
   context 'when glm_params are not provided' do
     let(:form_params) { super().except(:glm_source, :glm_content) }
     let(:expected_form_data_attributes) do
-      { submitPath: trials_path(step: 'lead', namespace_id: 1) }.with_indifferent_access
+      { submitPath: trials_path(step: 'full', namespace_id: 1) }.with_indifferent_access
     end
 
     it 'renders form with correct attributes' do
@@ -74,14 +80,88 @@ RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormComponent, :saas,
     end
   end
 
-  def expect_form_data_attribute(data_attributes)
-    data_attributes.each do |attribute, value|
-      actual_element = component.find('#js-create-trial-form')
-      data_view_model = actual_element['data-view-model']
-      parsed_view_model = ::Gitlab::Json.parse(data_view_model)
+  describe 'with single eligible namespace' do
+    let(:group) { build_stubbed(:group) }
+    let(:form_params) { super().except(:namespace_id) }
+    let(:eligible_namespaces) { [group] }
+    let(:expected_form_data_attributes) do
+      {
+        namespaceData: {
+          anyTrialEligibleNamespaces: true,
+          initialValue: group.id.to_s,
+          items: [
+            {
+              text: eligible_namespaces.first.name,
+              value: eligible_namespaces.first.id.to_s
+            }
+          ]
+        },
+        submitPath: trials_path(step: 'full', glm_source: 'some-source', glm_content: 'some-content')
+      }.with_indifferent_access
+    end
 
-      expect(parsed_view_model).to have_key(attribute)
-      expect(parsed_view_model[attribute]).to eq(value)
+    it 'renders form with correct attributes' do
+      expect_form_data_attribute(expected_form_data_attributes)
+    end
+  end
+
+  describe 'with multiple eligible namespaces' do
+    let(:eligible_namespaces) do
+      [
+        build_stubbed(:group),
+        build_stubbed(:group, name: 'name', path: 'path'),
+        build_stubbed(:group, name: 'name', path: 'path2')
+      ]
+    end
+
+    let(:expected_form_data_attributes) do
+      {
+        namespaceData: {
+          anyTrialEligibleNamespaces: true,
+          initialValue: '1',
+          items: [
+            {
+              text: eligible_namespaces.first.name,
+              value: eligible_namespaces.first.id.to_s
+            },
+            {
+              text: 'name (/path)',
+              value: eligible_namespaces.second.id.to_s
+            },
+            {
+              text: 'name (/path2)',
+              value: eligible_namespaces.third.id.to_s
+            }
+          ]
+        }
+      }.with_indifferent_access
+    end
+
+    it 'renders form with correct attributes' do
+      expect_form_data_attribute(expected_form_data_attributes)
+    end
+
+    it 'has values for the option value attribute' do
+      parsed_view_model.dig('namespaceData', 'items').each do |option|
+        msg = "Group selector option '#{option['text']}' has non-numeric value '#{option['value']}', " \
+          'which could cause issues with form submission'
+
+        expect(option['value']).to match(/^\d+$/), msg
+      end
+    end
+  end
+
+  def parsed_view_model
+    actual_element = component.find('#js-create-trial-form')
+    data_view_model = actual_element['data-view-model']
+    ::Gitlab::Json.parse(data_view_model)
+  end
+
+  def expect_form_data_attribute(data_attributes)
+    view_model = parsed_view_model
+
+    data_attributes.each do |attribute, value|
+      expect(view_model[attribute]).to eq(value)
     end
   end
 end

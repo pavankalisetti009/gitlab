@@ -114,6 +114,60 @@ module Features
       fill_in_company_information
     end
 
+    def resubmit_full_request(
+      lead_result: ServiceResponse.success,
+      trial_result: ServiceResponse.success,
+      glm: {}
+    )
+      # lead
+      expect_lead_submission(lead_result, last_name: user.last_name, glm: glm)
+
+      # trial
+      if lead_result.success?
+        stub_apply_trial(namespace_id: group.id, result: trial_result, extra_params: existing_group_attrs)
+        stub_duo_landing_page_data
+      end
+
+      click_button 'Resubmit request'
+
+      wait_for_requests
+    end
+
+    def resubmit_trial_request(result: ServiceResponse.success)
+      stub_apply_trial(namespace_id: group.id, result: result, extra_params: existing_group_attrs)
+      stub_duo_landing_page_data
+
+      click_button 'Resubmit request'
+
+      wait_for_requests
+    end
+
+    def expect_to_be_on_form_with_trial_submission_error
+      expect(page).to have_content('your trial could not be created')
+      expect(page).to have_button('Resubmit request')
+    end
+
+    def expect_lead_submission(lead_result, glm:, last_name: user.last_name)
+      trial_user_params = {
+        company_name: form_data[:company_name],
+        first_name: user.first_name,
+        last_name: last_name,
+        phone_number: form_data[:phone_number],
+        country: form_data.dig(:country, :id),
+        work_email: user.email,
+        uid: user.id,
+        setup_for_company: user.onboarding_status_setup_for_company,
+        skip_email_confirmation: true,
+        gitlab_com_trial: true,
+        provider: 'gitlab',
+        state: form_data.dig(:state, :id)
+      }.merge(glm)
+
+      expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+        expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
+      end
+    end
+
     def submit_company_information_form(
       button_text: 'Continue',
       lead_result: ServiceResponse.success,
@@ -206,13 +260,11 @@ module Features
     end
 
     def stub_apply_trial(namespace_id: anything, result: ServiceResponse.success, extra_params: {})
-      appended_extra_params = { organization_id: anything }.merge(extra_params)
-
       trial_user_params = {
         namespace_id: namespace_id,
         gitlab_com_trial: true,
         sync_to_gl: true
-      }.merge(appended_extra_params)
+      }.merge(extra_params)
 
       service_params = {
         trial_user_information: trial_user_params,
