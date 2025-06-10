@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics do
+RSpec.describe Analytics::Dashboard, feature_category: :product_analytics do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be_with_refind(:project) do
@@ -122,7 +122,7 @@ description: with missing properties
     context 'when resource is a project' do
       let(:resource_parent) { project }
 
-      subject { described_class.for(container: resource_parent, user: user) }
+      subject(:dashboards) { described_class.for(container: resource_parent, user: user) }
 
       before do
         allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
@@ -135,7 +135,7 @@ description: with missing properties
       end
 
       it 'returns a collection of builtin dashboards' do
-        expect(subject.map(&:title)).to match_array(
+        expect(dashboards.map(&:title)).to match_array(
           [
             'Audience',
             'Behavior',
@@ -153,18 +153,19 @@ description: with missing properties
         end
 
         it 'returns custom and builtin dashboards' do
-          expect(subject).to be_a(Array)
-          expect(subject.size).to eq(7)
-          expect(subject.last).to be_a(described_class)
-          expect(subject.last.title).to eq('Dashboard Example 1')
-          expect(subject.last.slug).to eq('dashboard_example_1')
-          expect(subject.last.description).to eq('North Star Metrics across all departments for the last 3 quarters.')
-          expect(subject.last.schema_version).to eq('2')
-          expect(subject.last.filters).to eq({ "projects" => { "enabled" => true },
+          expect(dashboards).to be_a(Array)
+          expect(dashboards.size).to eq(7)
+          expect(dashboards.last).to be_a(described_class)
+          expect(dashboards.last.title).to eq('Dashboard Example 1')
+          expect(dashboards.last.slug).to eq('dashboard_example_1')
+          expect(dashboards.last.description)
+            .to eq('North Star Metrics across all departments for the last 3 quarters.')
+          expect(dashboards.last.schema_version).to eq('2')
+          expect(dashboards.last.filters).to eq({ "projects" => { "enabled" => true },
             "dateRange" => { "enabled" => true }, "excludeAnonymousUsers" => { "enabled" => true },
                                                "filteredSearch" => { "enabled" => true, "options" =>
                                                  [{ "token" => "label", "maxSuggestions" => 20 }] } })
-          expect(subject.last.errors).to be_nil
+          expect(dashboards.last.errors).to be_nil
         end
       end
 
@@ -194,7 +195,7 @@ description: with missing properties
             ["Audience", "Behavior", "Value Streams Dashboard", "AI impact analytics",
               "DORA metrics analytics", "Merge request analytics", "Dashboard Example 1"]
 
-          expect(subject.map(&:title)).to eq(expected_dashboards)
+          expect(dashboards.map(&:title)).to eq(expected_dashboards)
         end
       end
 
@@ -204,7 +205,7 @@ description: with missing properties
         end
 
         it 'excludes product analytics dashboards' do
-          expect(subject.size).to eq(5)
+          expect(dashboards.size).to eq(5)
         end
       end
     end
@@ -212,10 +213,10 @@ description: with missing properties
     context 'when resource is a group' do
       let_it_be(:resource_parent) { group }
 
-      subject { described_class.for(container: resource_parent, user: user) }
+      subject(:dashboards) { described_class.for(container: resource_parent, user: user) }
 
       it 'returns a collection of builtin dashboards' do
-        expect(subject.map(&:title)).to match_array(['Value Streams Dashboard', 'DORA metrics analytics',
+        expect(dashboards.map(&:title)).to match_array(['Value Streams Dashboard', 'DORA metrics analytics',
           'AI impact analytics', 'Contributions Dashboard'])
       end
 
@@ -225,8 +226,8 @@ description: with missing properties
         end
 
         it 'returns custom and builtin dashboards' do
-          expect(subject).to be_a(Array)
-          expect(subject.map(&:title)).to match_array(
+          expect(dashboards).to be_a(Array)
+          expect(dashboards.map(&:title)).to match_array(
             ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
               'Dashboard Example 1', 'Contributions Dashboard']
           )
@@ -245,7 +246,7 @@ description: with missing properties
         end
 
         it 'excludes the dashboard from the list' do
-          expect(subject.map(&:title)).to match_array(
+          expect(dashboards.map(&:title)).to match_array(
             ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
               "Dashboard Example 1", 'Contributions Dashboard']
           )
@@ -263,7 +264,7 @@ description: with missing properties
         end
 
         it 'excludes the dashboard from the list' do
-          expect(subject.map(&:title)).not_to include('DORA metrics analytics')
+          expect(dashboards.map(&:title)).not_to include('DORA metrics analytics')
         end
       end
     end
@@ -285,24 +286,24 @@ description: with missing properties
       project.update!(analytics_dashboards_configuration_project: config_project, namespace: config_project.namespace)
     end
 
-    subject { described_class.for(container: project, user: user).last.panels }
+    subject(:panels) { described_class.for(container: project, user: user).last.panels }
 
     it { is_expected.to be_a(Array) }
 
     it 'is expected to contain two panels' do
-      expect(subject.size).to eq(2)
+      expect(panels.size).to eq(2)
     end
 
     it 'is expected to contain a panel with the correct title' do
-      expect(subject.first.title).to eq('Overall Conversion Rate')
+      expect(panels.first.title).to eq('Overall Conversion Rate')
     end
 
     it 'is expected to contain a panel with the correct grid attributes' do
-      expect(subject.first.grid_attributes).to eq({ 'xPos' => 1, 'yPos' => 4, 'width' => 12, 'height' => 2 })
+      expect(panels.first.grid_attributes).to eq({ 'xPos' => 1, 'yPos' => 4, 'width' => 12, 'height' => 2 })
     end
 
     it 'is expected to contain a panel with the correct query overrides' do
-      expect(subject.first.query_overrides).to eq({
+      expect(panels.first.query_overrides).to eq({
         'timeDimensions' => [{
           'dimension' => 'Stories.time',
           'dateRange' => %w[2016-01-01 2016-02-30],
@@ -391,13 +392,13 @@ description: with missing properties
 
   describe '.ai_impact_dashboard' do
     context 'for groups' do
-      subject { described_class.ai_impact_dashboard(group, config_project, user) }
+      subject(:dashboard) { described_class.ai_impact_dashboard(group, config_project, user) }
 
       it 'returns the dashboard' do
-        expect(subject.title).to eq('AI impact analytics')
-        expect(subject.slug).to eq('ai_impact')
-        expect(subject.schema_version).to eq('2')
-        expect(subject.filters).to be_nil
+        expect(dashboard.title).to eq('AI impact analytics')
+        expect(dashboard.slug).to eq('ai_impact')
+        expect(dashboard.schema_version).to eq('2')
+        expect(dashboard.filters).to be_nil
       end
 
       context 'when clickhouse is not enabled' do
@@ -410,13 +411,13 @@ description: with missing properties
     end
 
     context 'for projects' do
-      subject { described_class.ai_impact_dashboard(project, config_project, user) }
+      subject(:dashboard) { described_class.ai_impact_dashboard(project, config_project, user) }
 
       it 'returns the dashboard' do
-        expect(subject.title).to eq('AI impact analytics')
-        expect(subject.slug).to eq('ai_impact')
-        expect(subject.schema_version).to eq('2')
-        expect(subject.filters).to be_nil
+        expect(dashboard.title).to eq('AI impact analytics')
+        expect(dashboard.slug).to eq('ai_impact')
+        expect(dashboard.schema_version).to eq('2')
+        expect(dashboard.filters).to be_nil
       end
 
       context 'when clickhouse is not enabled' do
@@ -431,14 +432,14 @@ description: with missing properties
 
   describe '.contributions_dashboard' do
     context 'for groups' do
-      subject { described_class.contributions_dashboard(group, config_project) }
+      subject(:dashboard) { described_class.contributions_dashboard(group, config_project) }
 
       it 'returns the dashboard' do
-        expect(subject.title).to eq('Contributions Dashboard')
-        expect(subject.slug).to eq('contributions_dashboard')
-        expect(subject.schema_version).to eq('2')
-        expect(subject.filters).to eq({ "dateRange" => { "enabled" => true, "numberOfDaysLimit" => 90,
-                                                         "options" => %w[7d 30d 90d custom] } })
+        expect(dashboard.title).to eq('Contributions Dashboard')
+        expect(dashboard.slug).to eq('contributions_dashboard')
+        expect(dashboard.schema_version).to eq('2')
+        expect(dashboard.filters).to eq({ "dateRange" => { "enabled" => true, "numberOfDaysLimit" => 90,
+                                                           "options" => %w[7d 30d 90d custom] } })
       end
 
       context 'when contributions_analytics_dashboard feature is disabled' do
@@ -477,14 +478,14 @@ description: with missing properties
     end
 
     context 'for valid path' do
-      subject do
+      subject(:dashboard_config) do
         described_class.load_yaml_dashboard_config('behavior',
           'ee/lib/gitlab/analytics/product_analytics/dashboards')
       end
 
       it 'loads the dashboard config' do
-        expect(subject["title"]).to eq('Behavior')
-        expect(subject.size).to eq(5)
+        expect(dashboard_config["title"]).to eq('Behavior')
+        expect(dashboard_config.size).to eq(5)
       end
     end
   end

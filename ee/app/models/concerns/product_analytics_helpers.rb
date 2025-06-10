@@ -64,7 +64,7 @@ module ProductAnalyticsHelpers
   end
 
   def product_analytics_dashboards(user)
-    ::ProductAnalytics::Dashboard.for(container: self, user: user)
+    ::Analytics::Dashboard.for(container: self, user: user)
   end
 
   def product_analytics_funnels

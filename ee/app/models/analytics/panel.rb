@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ProductAnalytics
+module Analytics
   class Panel
     attr_reader :title, :grid_attributes, :visualization, :project, :query_overrides
 
@@ -27,9 +27,12 @@ module ProductAnalytics
       return if visualization_config.blank?
 
       @visualization = if visualization_config.is_a?(String)
-                         ::ProductAnalytics::Visualization.from_file(filename: visualization_config, project: project)
+                         ::Analytics::Visualization.from_file(
+                           filename: visualization_config,
+                           project: project
+                         )
                        else
-                         ::ProductAnalytics::Visualization.from_data(data: visualization_config)
+                         ::Analytics::Visualization.from_data(data: visualization_config)
                        end
     end
   end

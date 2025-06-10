@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analytics do
+RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:group) { create(:group) }
@@ -110,7 +110,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     end
 
     it 'includes built in visualizations for AI impact dashboard' do
-      expect(subject.map(&:slug)).to include(*ai_impact_available_visualizations)
+      expect(visualizations.map(&:slug)).to include(*ai_impact_available_visualizations)
     end
   end
 
@@ -124,7 +124,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     end
 
     it 'includes built in visualizations for DORA metrics dashboard' do
-      expect(subject.map(&:slug)).to include(*dora_metrics_available_visualizations)
+      expect(visualizations.map(&:slug)).to include(*dora_metrics_available_visualizations)
     end
   end
 
@@ -136,15 +136,15 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     end
 
     it 'includes built in visualizations for Merge request analytics dashboard' do
-      expect(subject.map(&:slug)).to include(*mr_analytics_available_visualizations)
+      expect(visualizations.map(&:slug)).to include(*mr_analytics_available_visualizations)
     end
   end
 
   describe '#slug' do
-    subject { described_class.for(container: project, user: user) }
+    subject(:visualizations) { described_class.for(container: project, user: user) }
 
     it 'returns the slugs' do
-      expect(subject.map(&:slug)).to include('cube_bar_chart', 'cube_line_chart')
+      expect(visualizations.map(&:slug)).to include('cube_bar_chart', 'cube_line_chart')
     end
   end
 
@@ -161,20 +161,20 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
 
   describe '.for' do
     context 'when resource_parent is a Project' do
-      subject { described_class.for(container: project, user: user) }
+      subject(:visualizations) { described_class.for(container: project, user: user) }
 
       it 'returns all visualizations stored in the project as well as built-in ones' do
         available_visualizations_count = num_builtin_visualizations +
           num_custom_visualizations + project_vsd_available_visualizations.length
 
-        expect(subject.count).to eq(available_visualizations_count)
-        expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
+        expect(visualizations.count).to eq(available_visualizations_count)
+        expect(visualizations.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
       end
 
       it 'returns the available project visualizations' do
-        expect(subject.map(&:slug)).to include(*project_vsd_available_visualizations)
+        expect(visualizations.map(&:slug)).to include(*project_vsd_available_visualizations)
 
-        expect(subject.map(&:slug)).not_to include(*group_only_visualizations)
+        expect(visualizations.map(&:slug)).not_to include(*group_only_visualizations)
       end
 
       context 'when a custom dashboard pointer project is configured' do
@@ -190,12 +190,12 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
           # :with_product_analytics_custom_visualization adds another visualization
           expected_visualizations_count = num_builtin_visualizations + 1 + project_vsd_available_visualizations.length
 
-          expect(subject.count).to eq(expected_visualizations_count)
-          expect(subject.map(&:slug)).to include('example_custom_visualization')
+          expect(visualizations.count).to eq(expected_visualizations_count)
+          expect(visualizations.map(&:slug)).to include('example_custom_visualization')
         end
 
         it 'does not return custom visualizations from self' do
-          expect(subject.map { |v| v.config['title'] }).not_to include('Daily Something', 'Example title')
+          expect(visualizations.map { |v| v.config['title'] }).not_to include('Daily Something', 'Example title')
         end
       end
 
@@ -205,8 +205,8 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
 
         it 'returns all visualizations stored in the project but no built in product analytics visualizations' do
-          expect(subject.count).to eq(num_custom_visualizations)
-          expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
+          expect(visualizations.count).to eq(num_custom_visualizations)
+          expect(visualizations.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
         end
       end
 
@@ -219,8 +219,8 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
           available_visualizations_count = num_custom_visualizations +
             project_vsd_available_visualizations.length
 
-          expect(subject.count).to eq(available_visualizations_count)
-          expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
+          expect(visualizations.count).to eq(available_visualizations_count)
+          expect(visualizations.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
         end
       end
 
@@ -231,14 +231,14 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     context 'when resource_parent is a group' do
       let_it_be_with_reload(:group) { create(:group) }
 
-      subject { described_class.for(container: group, user: user) }
+      subject(:visualizations) { described_class.for(container: group, user: user) }
 
       it 'returns built in visualizations' do
-        expect(subject.map(&:slug)).to match_array(group_vsd_available_visualizations)
+        expect(visualizations.map(&:slug)).to match_array(group_vsd_available_visualizations)
       end
 
       it 'returns the group only visualizations' do
-        expect(subject.map(&:slug)).to include(*group_only_visualizations)
+        expect(visualizations.map(&:slug)).to include(*group_only_visualizations)
       end
 
       context 'when group value stream dashboard is not available' do
@@ -247,7 +247,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
 
         it 'does not include built in visualizations for VSD' do
-          expect(subject.map(&:slug)).to be_empty
+          expect(visualizations.map(&:slug)).to be_empty
         end
       end
 
@@ -261,7 +261,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         it 'returns builtin and custom visualizations' do
           expected_visualizations = [].concat(['example_custom_visualization'], group_vsd_available_visualizations)
 
-          expect(subject.map(&:slug)).to match_array(expected_visualizations)
+          expect(visualizations.map(&:slug)).to match_array(expected_visualizations)
         end
       end
 
@@ -330,40 +330,40 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
   end
 
   describe '.product_analytics_visualizations' do
-    subject { described_class.product_analytics_visualizations }
+    subject(:product_analytics_vis) { described_class.product_analytics_visualizations }
 
     num_builtin_visualizations = 14
 
     it 'returns the product analytics builtin visualizations' do
-      expect(subject.count).to eq(num_builtin_visualizations)
+      expect(product_analytics_vis.count).to eq(num_builtin_visualizations)
     end
   end
 
   describe '.value_stream_dashboard_visualizations' do
-    subject { described_class.value_stream_dashboard_visualizations }
+    subject(:vsd_visualizations) { described_class.value_stream_dashboard_visualizations }
 
     num_builtin_visualizations = 14
 
     it 'returns the value stream dashboard builtin visualizations' do
-      expect(subject.count).to eq(num_builtin_visualizations)
+      expect(vsd_visualizations.count).to eq(num_builtin_visualizations)
     end
   end
 
   describe '.dora_metrics_visualizations' do
-    subject { described_class.dora_metrics_visualizations }
+    subject(:dora_metrics_vis) { described_class.dora_metrics_visualizations }
 
     num_builtin_visualizations = 8
 
     it 'returns the dora metrics dashboard builtin visualizations' do
-      expect(subject.count).to eq(num_builtin_visualizations)
+      expect(dora_metrics_vis.count).to eq(num_builtin_visualizations)
     end
   end
 
   describe '.merge_requests_visualizations' do
-    subject { described_class.merge_requests_visualizations }
+    subject(:mr_visualizations) { described_class.merge_requests_visualizations }
 
     it 'returns the merge request analytics dashboard builtin visualizations' do
-      expect(subject.count).to eq(3)
+      expect(mr_visualizations.count).to eq(3)
     end
   end
 
@@ -429,16 +429,16 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       )
     end
 
-    subject { described_class.for(container: project, user: user) }
+    subject(:visualizations) { described_class.for(container: project, user: user) }
 
     it 'captures the error' do
-      vis = (subject.select { |v| v.slug == 'example_invalid_custom_visualization' }).first
+      vis = (visualizations.select { |v| v.slug == 'example_invalid_custom_visualization' }).first
       expected = ["property '/type' is not one of: " \
-                  "[\"AreaChart\", \"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
-                  "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"DoraProjectsComparison\", " \
-                  "\"AiImpactTable\", \"ContributionsByUserTable\", \"ContributionsPushesChart\", " \
-                  "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
-                  "\"MergeRequestsThroughputTable\"]"]
+        "[\"AreaChart\", \"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
+        "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"DoraProjectsComparison\", " \
+        "\"AiImpactTable\", \"ContributionsByUserTable\", \"ContributionsPushesChart\", " \
+        "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
+        "\"MergeRequestsThroughputTable\"]"]
       expect(vis&.errors).to match_array(expected)
     end
   end
@@ -452,26 +452,26 @@ other: okay1111
       YAML
     end
 
-    subject { described_class.new(config: invalid_yaml, slug: 'test') }
+    subject(:visualization) { described_class.new(config: invalid_yaml, slug: 'test') }
 
     it 'captures the syntax error' do
-      expect(subject.errors).to match_array(['root is not of type: object'])
+      expect(visualization.errors).to match_array(['root is not of type: object'])
     end
   end
 
   context 'when initialized with init_error' do
-    subject do
+    subject(:visualization) do
       described_class.new(config: nil, slug: "not-existing",
         init_error: "Some init error")
     end
 
     it 'captures the init_error' do
-      expect(subject.errors).to match_array(['Some init error'])
+      expect(visualization.errors).to match_array(['Some init error'])
     end
   end
 
   describe 'handling slugs correctly' do
-    subject do
+    subject(:visualization_slug) do
       described_class.new(config: nil, slug: slug,
         init_error: "Some init error").slug
     end
