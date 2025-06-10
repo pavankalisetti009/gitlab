@@ -10,6 +10,9 @@ module Search
       NEW_CHUNK_THRESHOLD = 2
       HIGHLIGHT_START_TAG = 'gitlabzoekt_start_'
       HIGHLIGHT_END_TAG = '_gitlabzoekt_end'
+      # LineNumber from zoekt is a 1-based line number
+      # https://github.com/sourcegraph/zoekt/blob/91259775f43ca589d8a846e3add881fe59818f82/api.go#L238
+      LINE_NUMBER_START = 1
 
       attr_reader :max_chunks_size
 
@@ -68,7 +71,8 @@ module Search
         generate_chunk = true # It is set to true at the start to generate the first chunk
         chunk = { lines: {}, match_count_in_chunk: 0 }
         limited_match_count_per_file = 0
-        linematches.each.with_index do |match, count_idx|
+
+        linematches.each.with_index(LINE_NUMBER_START) do |match, line_idx|
           next if match[:FileName]
 
           if generate_chunk
@@ -84,8 +88,8 @@ module Search
           chunk[:match_count_in_chunk] += match_count_per_line
           # Generate lines after the match for the context
           generate_context_blobs(match, chunk, :after)
-          generate_chunk = linematches[count_idx.next].nil? ||
-            (linematches[count_idx.next][:LineNumber] - match[:LineNumber]).abs > NEW_CHUNK_THRESHOLD
+          generate_chunk = linematches[line_idx].nil? ||
+            (linematches[line_idx][:LineNumber] - match[:LineNumber]).abs > NEW_CHUNK_THRESHOLD
 
           if generate_chunk
             limited_match_count_per_file += chunk[:match_count_in_chunk]
@@ -104,17 +108,15 @@ module Search
         decoded_context_array = generate_decoded_context_array(match, context)
 
         if context == :before
-          decoded_context_array.reverse_each.with_index(1) do |line, line_idx|
+          decoded_context_array.reverse_each.with_index(LINE_NUMBER_START) do |line, line_idx|
             unless chunk[:lines][match[:LineNumber] - line_idx]
-              chunk[:lines][match[:LineNumber] - line_idx] =
-                { text: line }
+              chunk[:lines][match[:LineNumber] - line_idx] = { text: line }
             end
           end
         else
-          decoded_context_array.each.with_index(1) do |line, line_idx|
+          decoded_context_array.each.with_index(LINE_NUMBER_START) do |line, line_idx|
             unless chunk[:lines][match[:LineNumber] + line_idx]
-              chunk[:lines][match[:LineNumber] + line_idx] =
-                { text: line }
+              chunk[:lines][match[:LineNumber] + line_idx] = { text: line }
             end
           end
         end
@@ -122,12 +124,12 @@ module Search
 
       def generate_decoded_context_array(match, context)
         context_encoded_string = context == :before ? match[:Before] : match[:After]
-        return [''] if context_encoded_string.nil? || context_encoded_string.empty?
+        return [''] if context_encoded_string.blank?
 
         decoded_string = encode_utf8(Base64.decode64(context_encoded_string))
         return [''] if decoded_string == "\n"
 
-        decoded_string.split("\n", -1)
+        decoded_string.lines(chomp: true)
       end
 
       def transform_chunk(chunk)
