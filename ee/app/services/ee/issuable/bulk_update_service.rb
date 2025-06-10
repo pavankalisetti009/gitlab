@@ -21,7 +21,7 @@ module EE
       def permitted_attrs(type)
         return super unless type == 'issue'
 
-        super.push(:health_status, :epic_id, :sprint_id)
+        super.push(:health_status, :epic_id, :sprint_id, :status)
       end
 
       override :set_update_params
@@ -30,6 +30,7 @@ module EE
 
         set_health_status
         set_epic_param
+        set_status_param
       end
 
       def set_health_status
@@ -45,12 +46,35 @@ module EE
         params[:epic] = find_epic(epic_id)
       end
 
+      def set_status_param
+        return unless params[:status].present?
+
+        status_id = params.delete(:status)
+        params[:status] = find_status(status_id)
+      end
+
       def find_epic(epic_id)
         return if remove_epic?(epic_id)
 
         EpicsFinder.new(current_user, group_id: group&.id, include_ancestor_groups: true).find(epic_id)
       rescue ActiveRecord::RecordNotFound
         raise ArgumentError, _('Epic not found for given params')
+      end
+
+      def find_status(status_id)
+        gid = ::GitlabSchema.parse_gid(status_id, expected_type: ::WorkItems::Statuses::Status)
+        params = {}
+        if gid.model_class <= ::WorkItems::Statuses::SystemDefined::Status
+          params['system_defined_status_identifier'] = gid.model_id
+        else
+          params['custom_status_id'] = gid.model_id
+        end
+
+        status = ::WorkItems::Statuses::Finder.new(parent.root_ancestor, params).execute
+
+        raise ArgumentError, _('Status not found for given params') unless status
+
+        status
       end
 
       def remove_epic?(epic_id)
