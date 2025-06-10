@@ -11,6 +11,7 @@ module RemoteDevelopment
     include SafelyChangeColumnDefault
 
     columns_changing_default :desired_config_generator_version
+    columns_changing_default :actual_state_updated_at
 
     ignore_column :devfile_ref, remove_with: "17.8", remove_after: "2025-01-08"
 
