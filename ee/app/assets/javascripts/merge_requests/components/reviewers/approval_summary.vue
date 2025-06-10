@@ -42,11 +42,6 @@ export default {
   },
   inject: ['projectPath', 'issuableId', 'issuableIid', 'multipleApprovalRulesAvailable'],
   props: {
-    hideIfOptional: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     shortText: {
       type: Boolean,
       required: false,
