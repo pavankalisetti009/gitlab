@@ -129,7 +129,8 @@ RSpec.shared_examples 'security policies finder' do
             :security_orchestration_policy_configuration,
             :namespace,
             security_policy_management_project: policy_management_project,
-            namespace: group
+            namespace: group,
+            experiments: { pipeline_execution_schedule_policy: { enabled: true } }
           )
         end
 
@@ -209,7 +210,8 @@ RSpec.shared_examples 'security policies finder' do
                 :security_orchestration_policy_configuration,
                 :namespace,
                 security_policy_management_project: policy_management_project,
-                namespace: sub_group
+                namespace: sub_group,
+                experiments: { pipeline_execution_schedule_policy: { enabled: true } }
               )
             end
 
@@ -248,7 +250,8 @@ RSpec.shared_examples 'security policies finder' do
             :security_orchestration_policy_configuration,
             :namespace,
             security_policy_management_project: policy_management_project,
-            namespace: group
+            namespace: group,
+            experiments: { pipeline_execution_schedule_policy: { enabled: true } }
           )
         end
 
