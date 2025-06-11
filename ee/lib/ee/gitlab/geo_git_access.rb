@@ -8,11 +8,7 @@ module EE
       include GrapePathHelpers::NamedRouteMatcher
       extend ::Gitlab::Utils::Override
 
-      private
-
-      def geo_custom_action
-        return unless geo_custom_action?
-
+      def geo_custom_ssh_action
         payload = {
           'action' => 'geo_proxy_to_primary',
           'data' => {
@@ -36,12 +32,15 @@ module EE
         ::Gitlab::GitAccessResult::CustomAction.new(payload, messages)
       end
 
-      def geo_custom_action?
-        return unless ::Gitlab::Database.read_only?
-        return unless ::Gitlab::Geo.secondary_with_primary?
+      def forward_ssh_git_request_to_primary?
+        return false unless protocol == 'ssh'
+        return false unless ::Gitlab::Database.read_only?
+        return false unless ::Gitlab::Geo.secondary_with_primary?
 
         receive_pack? || upload_pack_and_out_of_date?
       end
+
+      private
 
       def upload_pack_and_out_of_date?
         return false unless project
@@ -50,7 +49,8 @@ module EE
       end
 
       def geo_repository_out_of_date?(project)
-        ::Geo::ProjectRepositoryRegistry.repository_out_of_date?(project.id)
+        # The return value must be already cached in RequestStore to ensure a consistent request
+        ::Geo::ProjectRepositoryRegistry.repository_out_of_date?(project.id, true)
       end
 
       def proxy_direct_to_primary_headers

@@ -159,7 +159,29 @@ RSpec.describe Gitlab::GitAccessWiki do
     let(:primary_repo_url) { geo_primary_http_internal_url_to_repo(project.wiki) }
     let(:primary_repo_ssh_url) { geo_primary_ssh_url_to_repo(project.wiki) }
 
-    it_behaves_like 'git access for a read-only GitLab instance'
+    it_behaves_like 'git non-ssh access for a read-only GitLab instance'
+  end
+
+  context "when in a read-only GitLab instance using ssh" do
+    let(:primary_repo_url) { geo_primary_http_internal_url_to_repo(project.wiki) }
+    let(:primary_repo_ssh_url) { geo_primary_ssh_url_to_repo(project.wiki) }
+    let(:access) do
+      described_class.new(user, wiki, 'ssh',
+        authentication_abilities: authentication_abilities,
+        redirected_path: redirected_path)
+    end
+
+    subject { access.check('git-receive-pack', changes) }
+
+    before do
+      # A Git request for a wiki shouldn't consult whether a project repo is out-of-date.
+      # This is a bug: https://gitlab.com/gitlab-org/gitlab/-/issues/523770
+      allow(::Geo::ProjectRepositoryRegistry).to receive(:repository_out_of_date?).and_return(false)
+      create(:protected_branch, name: 'feature', project: project)
+      allow(Gitlab::Database).to receive(:read_only?).and_return(true)
+    end
+
+    it_behaves_like 'git ssh access for a read-only GitLab instance'
   end
 
   context 'when wiki is disabled' do

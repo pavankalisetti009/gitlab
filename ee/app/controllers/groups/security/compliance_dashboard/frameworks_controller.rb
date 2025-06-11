@@ -41,7 +41,7 @@ module Groups
         end
         strong_memoize_attr :export_service_response
 
-        def framework = ComplianceManagement::Framework.find(params.permit(:id)[:id])
+        def framework = group.compliance_management_frameworks.find(params.permit(:id)[:id])
         strong_memoize_attr :framework
       end
     end

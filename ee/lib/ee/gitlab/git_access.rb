@@ -8,6 +8,8 @@ module EE
       include PathLocksHelper
       include SubscribableBannerHelper
 
+      GeoCustomSshError = Class.new(StandardError)
+
       attr_accessor :allowed_namespace_path
 
       override :check
@@ -69,9 +71,13 @@ module EE
         !::Gitlab::IpRestriction::Enforcer.new(project.group).allows_current_ip? if project.group
       end
 
-      override :check_custom_action
-      def check_custom_action
-        geo_custom_action || super
+      override :check_custom_ssh_action!
+      def check_custom_ssh_action!
+        if forward_ssh_git_request_to_primary?
+          raise Gitlab::GitAccess::GeoCustomSshError, "The repo does not exist or is out-of-date on this secondary site"
+        end
+
+        super
       end
 
       override :check_for_console_messages
