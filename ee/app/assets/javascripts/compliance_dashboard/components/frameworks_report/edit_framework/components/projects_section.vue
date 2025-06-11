@@ -5,10 +5,7 @@ import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import {
-  mapFiltersToGraphQLVariables,
-  checkGraphQLFilterForChange,
-} from 'ee/compliance_dashboard/utils';
+import { mapFiltersToGraphQLVariables } from 'ee/compliance_dashboard/utils';
 import complianceFrameworksGroupProjects from '../../../../graphql/compliance_frameworks_group_projects.query.graphql';
 import { i18n } from '../constants';
 import Pagination from '../../../shared/pagination.vue';
@@ -44,27 +41,22 @@ export default {
     return {
       isExpanded: false,
       projectList: [],
-      associatedProjects: this.complianceFramework?.projects?.nodes || [],
+      associatedProjects: this.complianceFramework.projects?.nodes || [],
       projectIdsToAdd: new Set(),
       projectIdsToRemove: new Set(),
       initialProjectIds: new Set(),
       errorMessage: null,
-      originalProjectsLength: this.complianceFramework?.projects?.nodes?.length || 0,
+      originalProjectsLength: this.complianceFramework.projects?.nodes?.length || 0,
       pageInfo: {},
       perPage: 20,
       filters: [],
+      pagination: {},
       showOnlySelected: false,
     };
   },
   computed: {
     isLoading() {
       return this.$apollo.queries.projectList.loading;
-    },
-    filteredProjects() {
-      if (!this.showOnlySelected) {
-        return this.projectList;
-      }
-      return this.projectList.filter((project) => this.projectSelected(project.id));
     },
     pageAllSelected() {
       return (
@@ -83,13 +75,20 @@ export default {
       );
     },
     queryVariables() {
-      return {
+      const basicVariables = {
         groupPath: this.groupPath,
         first: this.perPage,
         frameworks: [],
         frameworksNot: [],
+        ...this.pagination,
         ...mapFiltersToGraphQLVariables(this.filters),
       };
+
+      if (this.showOnlySelected) {
+        basicVariables.frameworks.push(this.complianceFramework.id);
+      }
+
+      return basicVariables;
     },
     selectedCount() {
       let count = this.initialProjectIds.size;
@@ -114,7 +113,7 @@ export default {
       return Boolean(hasPreviousPage || hasNextPage);
     },
     selectAllOnPageDisabled() {
-      return this.filteredProjects.length === 0;
+      return this.projectList.length === 0;
     },
     hasFilters() {
       return (this.filters || []).length !== 0;
@@ -196,16 +195,12 @@ export default {
     loadPage(cursor, direction = 'next') {
       const isPrevious = direction === 'prev';
 
-      this.$apollo.queries.projectList.fetchMore({
-        variables: {
-          ...this.queryVariables,
-          first: isPrevious ? null : this.perPage,
-          after: isPrevious ? null : cursor,
-          last: isPrevious ? this.perPage : null,
-          before: isPrevious ? cursor : null,
-        },
-        updateQuery: (previousResult, { fetchMoreResult }) => fetchMoreResult,
-      });
+      this.pagination = {
+        first: isPrevious ? null : this.perPage,
+        after: isPrevious ? null : cursor,
+        last: isPrevious ? this.perPage : null,
+        before: isPrevious ? cursor : null,
+      };
     },
     loadPrevPage(cursor) {
       this.loadPage(cursor, 'prev');
@@ -215,29 +210,13 @@ export default {
     },
     onPageSizeChange(newSize) {
       this.perPage = newSize;
-      this.$apollo.queries.projectList.refetch();
     },
     onFiltersChanged(filters) {
       if (isEqual(this.filters, filters)) {
         return;
       }
+      this.pagination = {};
       this.filters = filters;
-
-      const normalizedFilters = mapFiltersToGraphQLVariables(filters);
-      const filtersWithDefaults = {
-        ...normalizedFilters,
-        frameworks: normalizedFilters.frameworks || [],
-        frameworksNot: normalizedFilters.frameworksNot || [],
-      };
-
-      const hasChanged = checkGraphQLFilterForChange({
-        currentFilters: this.queryVariables,
-        newFilters: filtersWithDefaults,
-      });
-
-      if (hasChanged) {
-        this.$apollo.queries.projectList.refetch();
-      }
     },
   },
   tableFields: [
@@ -310,7 +289,7 @@ export default {
         ref="projectsTable"
         class="gl-mb-6"
         :busy="isLoading"
-        :items="filteredProjects"
+        :items="projectList"
         :fields="$options.tableFields"
         no-local-sorting
         show-empty
