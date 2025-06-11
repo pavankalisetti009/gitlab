@@ -22,7 +22,8 @@ RSpec.shared_context 'with security policies information' do
     create(
       :security_orchestration_policy_configuration,
       security_policy_management_project: policy_management_project,
-      project: object
+      project: object,
+      experiments: { pipeline_execution_schedule_policy: { enabled: true } }
     )
   end
 

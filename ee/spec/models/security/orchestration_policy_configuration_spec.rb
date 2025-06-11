@@ -2971,6 +2971,35 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
       it { is_expected.to be_empty }
     end
+
+    context 'with experiments' do
+      let(:policy_yaml) do
+        build(:orchestration_policy_yaml,
+          experiments: { pipeline_execution_schedule_policy: { enabled: true } },
+          pipeline_execution_schedule_policy: [build(:pipeline_execution_schedule_policy)]
+        )
+      end
+
+      it 'has the correct type for each policy' do
+        policies.each do |policy|
+          expect(policy[:type]).to be_present
+          expect(policy[:type]).to be_a(String)
+        end
+      end
+
+      context 'and pipeline_execution_schedule_policy is not enabled' do
+        let(:policy_yaml) do
+          build(:orchestration_policy_yaml,
+            experiments: { pipeline_execution_schedule_policy: { enabled: false } },
+            pipeline_execution_schedule_policy: [build(:pipeline_execution_schedule_policy)]
+          )
+        end
+
+        it 'is empty' do
+          expect(policies).to be_empty
+        end
+      end
+    end
   end
 
   describe '#delete_scan_finding_rules' do
