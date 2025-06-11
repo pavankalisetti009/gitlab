@@ -1,8 +1,7 @@
 import { GlForm, GlFormInput } from '@gitlab/ui';
-import { createLocalVue } from '@vue/test-utils';
 import { merge } from 'lodash';
 import VueApollo from 'vue-apollo';
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
 import siteProfilesFixtures from 'test_fixtures/graphql/security_configuration/dast_profiles/graphql/dast_site_profiles.query.graphql.basic.json';
 import scannerProfilesFixtures from 'test_fixtures/graphql/security_configuration/dast_profiles/graphql/dast_scanner_profiles.query.graphql.basic.json';
 import OnDemandScansForm from 'ee/on_demand_scans_form/components/on_demand_scans_form.vue';
@@ -59,7 +58,6 @@ jest.mock('~/lib/utils/url_utility', () => {
 });
 
 describe('OnDemandScansForm', () => {
-  let localVue;
   let wrapper;
   let requestHandlers;
 
@@ -115,7 +113,7 @@ describe('OnDemandScansForm', () => {
   const saveScan = () => findSaveButton().vm.$emit('click');
 
   const createMockApolloProvider = (handlers) => {
-    localVue.use(VueApollo);
+    Vue.use(VueApollo);
 
     requestHandlers = {
       dastScannerProfiles: jest.fn().mockResolvedValue(scannerProfilesFixtures),
@@ -132,7 +130,6 @@ describe('OnDemandScansForm', () => {
   const createComponentFactory =
     (mountFn = shallowMountExtended) =>
     (options = {}, withHandlers, glFeatures = {}) => {
-      localVue = createLocalVue();
       let defaultMocks = {
         $apollo: {
           mutate: jest.fn(),
@@ -177,7 +174,7 @@ describe('OnDemandScansForm', () => {
               ConfigurationPageLayout,
             },
           },
-          { ...options, localVue, apolloProvider },
+          { ...options, apolloProvider },
           {
             data() {
               return {
