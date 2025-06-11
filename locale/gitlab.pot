@@ -70847,9 +70847,6 @@ msgstr ""
 msgid "Workspaces|If your devfile is not in the root directory of your project, specify a relative path."
 msgstr ""
 
-msgid "Workspaces|In order to make an agent available/blocked, workspaces must be enabled in the agent's configuration."
-msgstr ""
-
 msgid "Workspaces|Instant development environments"
 msgstr ""
 
@@ -70932,6 +70929,9 @@ msgid "Workspaces|The source branch, tag, or commit hash of your workspace."
 msgstr ""
 
 msgid "Workspaces|This agent is already allowed."
+msgstr ""
+
+msgid "Workspaces|This agent is already available."
 msgstr ""
 
 msgid "Workspaces|This agent is already blocked."

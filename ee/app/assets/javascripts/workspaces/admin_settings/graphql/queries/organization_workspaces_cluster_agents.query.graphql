@@ -6,7 +6,7 @@ query organizationWorkspacesClusterAgents(
   organization(id: $organizationId) {
     id
     organizationWorkspacesClusterAgents: workspacesClusterAgents(
-      filter: DIRECTLY_MAPPED
+      filter: ALL
       first: 5
       before: $before
       after: $after

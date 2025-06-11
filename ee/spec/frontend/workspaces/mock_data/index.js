@@ -907,3 +907,35 @@ export const ORGANIZATION_WORKSPACES_CLUSTER_AGENTS_QUERY_RESULT = {
     },
   },
 };
+
+export const CREATE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT = {
+  data: {
+    organizationCreateClusterAgentMapping: {
+      errors: [],
+    },
+  },
+};
+
+export const CREATE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR = {
+  data: {
+    organizationCreateClusterAgentMapping: {
+      errors: ['Cluster agent mapping already exists'],
+    },
+  },
+};
+
+export const DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT = {
+  data: {
+    organizationDeleteClusterAgentMapping: {
+      errors: [],
+    },
+  },
+};
+
+export const DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR = {
+  data: {
+    organizationDeleteClusterAgentMapping: {
+      errors: ['Cluster agent mapping already exists'],
+    },
+  },
+};

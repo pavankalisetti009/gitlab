@@ -2,7 +2,6 @@
 import {
   GlBadge,
   GlTableLite,
-  GlToggle,
   GlSkeletonLoader,
   GlLink,
   GlAlert,
@@ -12,9 +11,8 @@ import { s__ } from '~/locale';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 
 import AvailabilityPopover from '../components/availability_popover.vue';
+import ClusterAgentAvailabilityToggle from '../components/availability_toggle.vue';
 import GetOrganizationWorkspacesClusterAgentsQuery from '../components/get_organization_workspaces_cluster_agents_query.vue';
-
-import { AVAILABILITY_TEXT } from '../constants';
 
 export default {
   name: 'WorkspacesAgentAvailabilityApp',
@@ -22,9 +20,9 @@ export default {
     SettingsBlock,
     GetOrganizationWorkspacesClusterAgentsQuery,
     AvailabilityPopover,
+    ClusterAgentAvailabilityToggle,
     GlTableLite,
     GlBadge,
-    GlToggle,
     GlSkeletonLoader,
     GlLink,
     GlAlert,
@@ -41,9 +39,6 @@ export default {
     },
   },
   methods: {
-    getAvailabilityText(availability) {
-      return AVAILABILITY_TEXT[availability] ?? null;
-    },
     getStatusBadgeMetadata(item) {
       const { isConnected } = item;
       return {
@@ -126,15 +121,10 @@ export default {
                   }}</gl-badge>
                 </template>
                 <template #cell(availability)="{ item }">
-                  <div class="gl-flex gl-items-center gl-gap-3">
-                    <gl-toggle
-                      :value="item.availability === 'available'"
-                      :label="getAvailabilityText(item.availability)"
-                      label-position="hidden"
-                      class="flex-row"
-                    />
-                    <p class="gl-mb-0">{{ getAvailabilityText(item.availability) }}</p>
-                  </div>
+                  <cluster-agent-availability-toggle
+                    :agent-id="item.id"
+                    :is-mapped="item.isMapped"
+                  />
                 </template>
               </gl-table-lite>
               <gl-keyset-pagination

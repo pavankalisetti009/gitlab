@@ -11,6 +11,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import WorkspacesAgentAvailabilityApp from 'ee_component/workspaces/admin_settings/pages/app.vue';
 import AvailabilityPopover from 'ee_component/workspaces/admin_settings/components/availability_popover.vue';
 import GetOrganizationWorkspacesClusterAgentsQuery from 'ee_component/workspaces/admin_settings/components/get_organization_workspaces_cluster_agents_query.vue';
+import AvailabilityToggle from 'ee_component/workspaces/admin_settings/components/availability_toggle.vue';
 import { stubComponent } from 'helpers/stub_component';
 
 const MOCK_ORG_ID = 'gid://gitlab/Organizations::Organization/1';
@@ -18,13 +19,14 @@ const MOCK_ORG_ID = 'gid://gitlab/Organizations::Organization/1';
 const createMockAgents = (customAgent = {}) => {
   return [
     {
-      availability: 'available',
-      group: 'Gitlab Org',
-      isConnected: false,
+      id: 'gid://gitlab/Clusters::Agent/14',
       name: 'midnightowlgarden',
-      project: 'gitlab-agent-configurations',
       url: 'http://test.host/gitlab-org/gitlab-agent-configurations/-/cluster_agents/midnightowlgarden',
+      project: 'gitlab-agent-configurations',
+      group: 'Gitlab Org',
       workspacesEnabled: true,
+      isConnected: false,
+      isMapped: true,
       ...customAgent,
     },
   ];
@@ -73,6 +75,7 @@ describe('workspaces/admin_settings/pages/app.vue', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
   const findLoadingState = () => wrapper.findComponent(GlSkeletonLoader);
+  const findAvailabilityToggle = () => wrapper.findComponent(AvailabilityToggle);
 
   describe('default', () => {
     beforeEach(async () => {
@@ -149,6 +152,12 @@ describe('workspaces/admin_settings/pages/app.vue', () => {
 
         expect(nameElement.exists()).toBe(true);
         expect(nameElement.attributes('href')).toBe(mockResult[0].url);
+      });
+
+      it('renders agent availability toggle', () => {
+        expect(findAvailabilityToggle().exists()).toBe(true);
+        expect(findAvailabilityToggle().props('agentId')).toBe(mockResult[0].id);
+        expect(findAvailabilityToggle().props('isMapped')).toBe(mockResult[0].isMapped);
       });
     });
   });
