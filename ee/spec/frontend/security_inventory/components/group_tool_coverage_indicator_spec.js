@@ -44,18 +44,18 @@ describe('GroupToolCoverageIndicator', () => {
           },
           {
             class: 'gl-bg-red-500',
-            count: 2,
+            count: 1,
           },
           {
             class: 'gl-bg-neutral-200',
-            count: 6,
+            count: 3,
           },
         ],
       });
 
       const scannerLabel = findScannerLabel(key);
       expect(scannerLabel).toContain(key);
-      expect(scannerLabel).toContain('Tool coverage: 2 of 6');
+      expect(scannerLabel).toContain('Tool coverage: 1 of 3');
     });
 
     it('passes correct segments prop to segmented bar when there is one scanner type', () => {
