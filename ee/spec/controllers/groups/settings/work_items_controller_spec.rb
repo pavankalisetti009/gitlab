@@ -15,7 +15,7 @@ RSpec.describe Groups::Settings::WorkItemsController, type: :controller, feature
 
     context 'when user is not authorized' do
       before do
-        stub_licensed_features(custom_fields: true)
+        stub_licensed_features(custom_fields: true, work_item_status: true)
       end
 
       it 'returns 404' do
@@ -58,6 +58,19 @@ RSpec.describe Groups::Settings::WorkItemsController, type: :controller, feature
           request
 
           expect(response).to render_template('layouts/group_settings')
+        end
+      end
+
+      context 'when work_item_status is available' do
+        before do
+          stub_licensed_features(work_item_status: true)
+        end
+
+        it 'renders the show template' do
+          request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to render_template(:show)
         end
       end
     end
