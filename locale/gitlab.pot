@@ -32065,6 +32065,9 @@ msgstr ""
 msgid "ImportProjects|Importing the project failed: %{reason}"
 msgstr ""
 
+msgid "ImportProjects|Namespace required"
+msgstr ""
+
 msgid "ImportProjects|Organization"
 msgstr ""
 
@@ -32084,6 +32087,15 @@ msgid "ImportProjects|Requesting namespaces failed"
 msgstr ""
 
 msgid "ImportProjects|Requesting your %{provider} repositories failed"
+msgstr ""
+
+msgid "ImportProjects|Select a destination namespace for each repository before importing all."
+msgstr ""
+
+msgid "ImportProjects|Select a destination namespace."
+msgstr ""
+
+msgid "ImportProjects|Select namespace"
 msgstr ""
 
 msgid "ImportProjects|Select the repositories you want to import"
