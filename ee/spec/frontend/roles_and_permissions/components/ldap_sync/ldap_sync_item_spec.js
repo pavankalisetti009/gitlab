@@ -58,7 +58,7 @@ describe('LdapSyncItem component', () => {
 
   const expectTotalRuntime = (index) => {
     expectLabelIconAndText(index, 'timer', 'Total runtime:');
-    expect(findDetailValueAt(index).text()).toBe('2.1 minutes');
+    expect(findDetailValueAt(index).text()).toBe('2 minutes');
   };
 
   const expectSyncError = (index) => {
@@ -213,6 +213,39 @@ describe('LdapSyncItem component', () => {
         it('has expected details', () => {
           expectFns.forEach((expectFn, index) => expectFn(index));
         });
+      });
+    });
+
+    describe('when the sync details is expanded after some time has passed', () => {
+      beforeEach(() => {
+        jest.useFakeTimers({ legacyFakeTimers: false });
+
+        const timestamp = '2020-07-05T23:59:40Z';
+        createWrapper({
+          roleLink: {
+            ...ROLE_LINK_FAILED,
+            createdAt: timestamp,
+            syncStartedAt: timestamp,
+            syncEndedAt: timestamp,
+            lastSuccessfulSyncAt: timestamp,
+          },
+        });
+
+        // Advance time by 5 seconds, then open the more details. We're verifying that the timeago
+        // strings are based on the component mount time, not when the details are expanded.
+        jest.advanceTimersByTime(5000);
+        findMoreDetailsButton().vm.$emit('click');
+      });
+
+      it.each`
+        description                  | findComponent
+        ${'more details button'}     | ${findMoreDetailsButton}
+        ${'sync started at'}         | ${() => findDetailValueAt(0)}
+        ${'sync ended at'}           | ${() => findDetailValueAt(1)}
+        ${'last successful sync at'} | ${() => findDetailValueAt(4)}
+        ${'sync created at'}         | ${() => findDetailValueAt(5)}
+      `('shows correct timeago for $description', ({ findComponent }) => {
+        expect(findComponent().text()).toContain('20 seconds ago');
       });
     });
   });
