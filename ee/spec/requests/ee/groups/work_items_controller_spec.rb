@@ -52,10 +52,10 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
 
         let(:iid) { 'new' }
 
-        it 'returns not found' do
+        it 'renders show' do
           show
 
-          expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to have_gitlab_http_status(:ok)
         end
       end
     end
