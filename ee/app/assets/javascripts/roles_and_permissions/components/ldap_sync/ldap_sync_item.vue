@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlIcon, GlBadge, GlTooltipDirective } from '@gitlab/ui';
-import { getTimeago, humanizeTimeInterval } from '~/lib/utils/datetime_utility';
+import { getTimeago, duration } from '~/lib/utils/datetime_utility';
 import { s__, __, sprintf } from '~/locale';
 
 const TIME_AGO = getTimeago();
@@ -26,6 +26,7 @@ export default {
   data() {
     return {
       isExpanded: false,
+      currentTimestamp: new Date(),
     };
   },
   computed: {
@@ -38,7 +39,7 @@ export default {
     moreDetailsText() {
       // Use the end time if available, then the start time, then default to "More details".
       const timestamp = this.roleLink.syncEndedAt || this.roleLink.syncStartedAt;
-      return timestamp ? TIME_AGO.format(timestamp) : __('More details');
+      return timestamp ? this.formatTimeago(timestamp) : __('More details');
     },
     totalRuntimeString() {
       const { syncStartedAt, syncEndedAt } = this.roleLink;
@@ -46,7 +47,8 @@ export default {
 
       const start = Date.parse(syncStartedAt);
       const end = Date.parse(syncEndedAt);
-      return humanizeTimeInterval((end - start) / 1000);
+
+      return duration(end - start);
     },
     badgeProps() {
       switch (this.roleLink.syncStatus) {
@@ -66,9 +68,12 @@ export default {
     },
   },
   methods: {
+    formatTimeago(timestamp) {
+      return TIME_AGO.format(timestamp, undefined, { relativeDate: this.currentTimestamp });
+    },
     getDateString(timestamp) {
       const dateTime = new Date(timestamp).toLocaleString(undefined, { timeZoneName: 'short' });
-      const timeAgo = TIME_AGO.format(timestamp);
+      const timeAgo = this.formatTimeago(timestamp);
 
       return sprintf(s__('LDAP|%{dateTime} (%{timeAgo})'), { dateTime, timeAgo });
     },
