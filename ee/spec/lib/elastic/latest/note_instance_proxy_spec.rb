@@ -23,7 +23,7 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
         visibility_level: note.project.visibility_level,
         created_at: note.created_at,
         updated_at: note.updated_at,
-        traversal_ids: note.project.elastic_namespace_ancestry,
+        traversal_ids: note.namespace.elastic_namespace_ancestry,
         schema_version: Elastic::Latest::NoteInstanceProxy::SCHEMA_VERSION
       }.with_indifferent_access
     end
@@ -100,27 +100,27 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
       using RSpec::Parameterized::TableSyntax
 
       where(:note_type, :project_feature_permission, :access_level) do
-        :note_on_issue                      | ProjectFeature::ENABLED | 'issues_access_level'
-        :note_on_project_snippet            | ProjectFeature::DISABLED | 'snippets_access_level'
-        :note_on_personal_snippet           | nil | nil
-        :note_on_merge_request              | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :note_on_commit                     | ProjectFeature::PRIVATE | 'repository_access_level'
-        :diff_note_on_merge_request         | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :diff_note_on_commit                | ProjectFeature::PRIVATE | 'repository_access_level'
-        :diff_note_on_design                | ProjectFeature::ENABLED | nil
-        :legacy_diff_note_on_merge_request  | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :legacy_diff_note_on_commit         | ProjectFeature::PRIVATE | 'repository_access_level'
-        :note_on_alert                      | ProjectFeature::PRIVATE | nil
-        :note_on_design                     | ProjectFeature::ENABLED | nil
-        :note_on_epic                       | nil | nil
-        :note_on_vulnerability              | ProjectFeature::PRIVATE | nil
-        :discussion_note_on_vulnerability   | ProjectFeature::PRIVATE | nil
-        :discussion_note_on_merge_request   | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :discussion_note_on_issue           | ProjectFeature::ENABLED | 'issues_access_level'
-        :discussion_note_on_project_snippet | ProjectFeature::DISABLED | 'snippets_access_level'
-        :discussion_note_on_personal_snippet | nil | nil
-        :discussion_note_on_commit          | ProjectFeature::PRIVATE | 'repository_access_level'
-        :track_mr_picking_note              | nil | nil
+        :note_on_issue                      | ProjectFeature::ENABLED   | 'issues_access_level'
+        :note_on_project_snippet            | ProjectFeature::DISABLED  | 'snippets_access_level'
+        :note_on_personal_snippet           | nil                       | nil
+        :note_on_merge_request              | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :note_on_commit                     | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :diff_note_on_merge_request         | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :diff_note_on_commit                | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :diff_note_on_design                | ProjectFeature::ENABLED   | nil
+        :legacy_diff_note_on_merge_request  | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :legacy_diff_note_on_commit         | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :note_on_alert                      | ProjectFeature::PRIVATE   | nil
+        :note_on_design                     | ProjectFeature::ENABLED   | nil
+        :note_on_epic                       | nil                       | nil
+        :note_on_vulnerability              | ProjectFeature::PRIVATE   | nil
+        :discussion_note_on_vulnerability   | ProjectFeature::PRIVATE   | nil
+        :discussion_note_on_merge_request   | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :discussion_note_on_issue           | ProjectFeature::ENABLED   | 'issues_access_level'
+        :discussion_note_on_project_snippet | ProjectFeature::DISABLED  | 'snippets_access_level'
+        :discussion_note_on_personal_snippet | nil                      | nil
+        :discussion_note_on_commit          | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :track_mr_picking_note              | nil                       | nil
       end
 
       with_them do
