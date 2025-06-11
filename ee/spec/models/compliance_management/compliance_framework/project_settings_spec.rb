@@ -154,4 +154,69 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings, type:
       end
     end
   end
+
+  describe '.covered_projects_count' do
+    let_it_be(:framework1) { create(:compliance_framework, namespace: group, name: "framework 1") }
+    let_it_be(:framework2) { create(:compliance_framework, namespace: group, name: "framework 2") }
+
+    let_it_be(:project1) { create(:project, group: group) }
+    let_it_be(:project2) { create(:project, group: group) }
+    let_it_be(:project3) { create(:project, group: group) }
+    let_it_be(:project4) { create(:project, group: group) }
+
+    context 'when some projects have frameworks assigned' do
+      before_all do
+        create(:compliance_framework_project_setting,
+          project: project1,
+          compliance_management_framework: framework1)
+        create(:compliance_framework_project_setting,
+          project: project2,
+          compliance_management_framework: framework1)
+      end
+
+      it 'returns the count of projects with at least one framework' do
+        project_ids = [project1.id, project2.id, project3.id]
+        expect(described_class.covered_projects_count(project_ids)).to eq(2)
+      end
+    end
+
+    context 'when a project has multiple frameworks assigned' do
+      before_all do
+        create(:compliance_framework_project_setting,
+          project: project1,
+          compliance_management_framework: framework1)
+        create(:compliance_framework_project_setting,
+          project: project1,
+          compliance_management_framework: framework2)
+        create(:compliance_framework_project_setting,
+          project: project2,
+          compliance_management_framework: framework1)
+      end
+
+      it 'counts each project only once' do
+        project_ids = [project1.id, project2.id, project3.id]
+        expect(described_class.covered_projects_count(project_ids)).to eq(2)
+      end
+    end
+
+    context 'when passing an empty array of project_ids' do
+      it 'returns 0' do
+        expect(described_class.covered_projects_count([])).to eq(0)
+      end
+    end
+
+    context 'when passing project_ids that do not exist in settings' do
+      let_it_be(:setting1) do
+        create(:compliance_framework_project_setting,
+          project: project1,
+          compliance_management_framework: framework1)
+      end
+
+      it 'returns 0 for non-existent projects' do
+        non_existent_ids = [non_existing_record_id]
+
+        expect(described_class.covered_projects_count(non_existent_ids)).to eq(0)
+      end
+    end
+  end
 end

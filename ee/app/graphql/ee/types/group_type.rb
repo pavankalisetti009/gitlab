@@ -387,6 +387,14 @@ module EE
           resolver: ::Resolvers::VirtualRegistries::Packages::Maven::MavenVirtualRegistryResolver,
           experiment: { milestone: '18.1' }
 
+        field :compliance_framework_coverage_summary,
+          ::Types::ComplianceManagement::ComplianceFramework::FrameworkCoverageSummaryType,
+          null: true,
+          description: 'Summary of compliance framework coverage in a group and its subgroups.',
+          resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::FrameworkCoverageSummaryResolver,
+          authorize: :read_compliance_dashboard,
+          experiment: { milestone: '18.1' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
