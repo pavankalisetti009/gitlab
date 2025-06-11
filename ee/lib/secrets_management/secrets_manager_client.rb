@@ -9,6 +9,8 @@ module SecretsManagement
     TOKEN_HEADER = 'X-Vault-Token'
     DEFAULT_JWT_ROLE = 'app'
     GITLAB_JWT_AUTH_PATH = 'gitlab_rails_jwt'
+    OPENBAO_TOKEN_TTL = '15m'
+    OPENBAO_TOKEN_MAX_TTL = '15m'
 
     ApiError = Class.new(StandardError)
     ConnectionError = Class.new(StandardError)
@@ -142,8 +144,14 @@ module SecretsManagement
     end
 
     def update_jwt_role(mount_path, role_name, **role_data)
+      ttl_values = {
+        token_ttl: OPENBAO_TOKEN_TTL,
+        token_max_ttl: OPENBAO_TOKEN_MAX_TTL
+      }
+
+      update_jwt_role_payload = ttl_values.merge(role_data)
       url = "auth/#{mount_path}/role/#{role_name}"
-      make_request(:post, url, role_data)
+      make_request(:post, url, update_jwt_role_payload)
     end
 
     def read_jwt_role(mount_path, role_name)
