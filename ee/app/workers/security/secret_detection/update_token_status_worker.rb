@@ -27,7 +27,8 @@ module Security
         @pipeline = Ci::Pipeline.find_by_id(pipeline_id)
         return unless @pipeline
 
-        return unless Feature.enabled?(:validity_checks, @pipeline.project)
+        return unless Feature.enabled?(:validity_checks, @pipeline.project) &&
+          @pipeline.project.security_setting&.validity_checks_enabled
 
         @token_lookup_service = Security::SecretDetection::TokenLookupService.new
 

@@ -76,6 +76,30 @@ module API
 
             revoke_token(token, group: user_group)
           end
+
+          desc 'Rotate personal access token' do
+            detail 'Rotates a personal access token.'
+            success Entities::PersonalAccessTokenWithToken
+          end
+          params do
+            optional :expires_at,
+              type: Date,
+              desc: "The expiration date of the token",
+              documentation: { example: '2021-01-31' }
+          end
+          post ':pat_id/rotate' do
+            token = find_token(params[:pat_id])
+
+            # Since this ability is PAT policy it does not check whether token user belongs to
+            # group, hence we need to include this check at API level separately
+            if users.include?(token.user) && Ability.allowed?(current_user, :rotate_token, token)
+              new_token = rotate_token(token, declared_params)
+
+              present new_token, with: Entities::PersonalAccessTokenWithToken
+            else
+              forbidden!
+            end
+          end
         end
 
         resources :resource_access_tokens do
@@ -104,6 +128,12 @@ module API
               { code: 400, message: 'Bad Request' }
             ]
           end
+          params do
+            optional :expires_at,
+              type: Date,
+              desc: "The expiration date of the token",
+              documentation: { example: '2021-01-31' }
+          end
           delete ':prat_id' do
             token = find_token(params[:prat_id])
 
@@ -115,6 +145,33 @@ module API
               .new(current_user, user_group, token).execute
 
             service.success? ? no_content! : bad_request!(service.message)
+          end
+
+          desc 'Rotate a resource access token for the group' do
+            detail 'Rotate a resource access token by using the ID of the resource access token.'
+            success code: 204
+            failure [
+              { code: 400, message: 'Bad Request' }
+            ]
+          end
+          params do
+            optional :expires_at,
+              type: Date,
+              desc: "The expiration date of the token",
+              documentation: { example: '2021-01-31' }
+          end
+          post ':prat_id/rotate' do
+            resource_accessible = Ability.allowed?(current_user, :manage_resource_access_tokens, user_group)
+
+            token = find_token(params[:prat_id]) if resource_accessible
+
+            if !token.user.project_bot? || user_group.bot_users.exclude?(token.user)
+              forbidden!("Cannot rotate resource access token")
+            end
+
+            new_token = rotate_token_for_group(token, user_group, declared_params)
+
+            present new_token, with: Entities::ResourceAccessTokenWithToken
           end
         end
 

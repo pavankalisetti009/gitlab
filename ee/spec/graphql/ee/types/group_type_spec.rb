@@ -48,6 +48,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:ai_usage_data) }
   it { expect(described_class).to have_graphql_field(:ai_user_metrics) }
   it { expect(described_class).to have_graphql_field(:pending_member_approvals) }
+  it { expect(described_class).to have_graphql_field(:compliance_framework_coverage_summary) }
   it { expect(described_class).to have_graphql_field(:dependencies) }
   it { expect(described_class).to have_graphql_field(:components) }
   it { expect(described_class).to have_graphql_field(:custom_fields) }

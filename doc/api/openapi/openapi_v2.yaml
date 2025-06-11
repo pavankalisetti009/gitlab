@@ -45924,6 +45924,12 @@ definitions:
       online:
         type: boolean
         example: true
+      created_by:
+        "$ref": "#/definitions/API_Entities_UserBasic"
+      created_at:
+        type: string
+        format: date-time
+        example: '2025-05-03T00:00:00.000Z'
       status:
         type: string
         example: online
@@ -63636,6 +63642,12 @@ definitions:
       online:
         type: boolean
         example: true
+      created_by:
+        "$ref": "#/definitions/API_Entities_UserBasic"
+      created_at:
+        type: string
+        format: date-time
+        example: '2025-05-03T00:00:00.000Z'
       status:
         type: string
         example: online

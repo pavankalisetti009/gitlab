@@ -37,7 +37,7 @@ RSpec.describe PersonalAccessTokenPolicy, feature_category: :permissions do
     with_them do
       let(:token) { create(:personal_access_token, user: group_member) }
 
-      context "for token revoke policy", saas: params[:saas?] do
+      context "for token revoke and rotate policy", saas: params[:saas?] do
         before do
           stub_licensed_features(
             domain_verification: domain_verification?
@@ -50,6 +50,7 @@ RSpec.describe PersonalAccessTokenPolicy, feature_category: :permissions do
         end
 
         it { is_expected.to(allowed ? be_allowed(:revoke_token) : be_disallowed(:revoke_token)) }
+        it { is_expected.to(allowed ? be_allowed(:rotate_token) : be_disallowed(:rotate_token)) }
       end
     end
   end
