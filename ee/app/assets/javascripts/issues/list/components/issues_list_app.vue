@@ -191,6 +191,9 @@ export default {
     searchedByEpic() {
       return Boolean(this.filterParams?.epicId);
     },
+    issuesListClass() {
+      return this.groupPath ? 'js-issues-group-list-app' : 'js-issues-list-app';
+    },
   },
   methods: {
     refetchIssuables() {
@@ -244,7 +247,7 @@ export default {
 <template>
   <issues-list-app
     ref="issuesListApp"
-    class="js-issues-list-app"
+    :class="issuesListClass"
     :ee-search-tokens="searchTokens"
     :searched-by-epic="searchedByEpic"
     @updateFilterParams="filterParams = $event"
