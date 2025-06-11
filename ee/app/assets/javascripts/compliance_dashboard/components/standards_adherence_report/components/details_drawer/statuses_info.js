@@ -5,7 +5,7 @@ import { PROMO_URL } from '~/constants';
 export const statusesInfo = {
   scanner_sast_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures Static Application Security Testing (SAST) is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures Static Application Security Testing (SAST) is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -133,7 +133,7 @@ export const statusesInfo = {
   },
   scanner_secret_detection_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures secret detection scanning is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures secret detection scanning is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -149,7 +149,7 @@ export const statusesInfo = {
   },
   scanner_dep_scanning_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures dependency scanning is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures dependency scanning is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -165,7 +165,7 @@ export const statusesInfo = {
   },
   scanner_container_scanning_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures container scanning is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures container scanning is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -181,7 +181,7 @@ export const statusesInfo = {
   },
   scanner_license_compliance_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures license compliance scanning is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures license compliance scanning is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -197,7 +197,7 @@ export const statusesInfo = {
   },
   scanner_dast_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures Dynamic Application Security Testing (DAST) is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures Dynamic Application Security Testing (DAST) is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -213,7 +213,7 @@ export const statusesInfo = {
   },
   scanner_api_security_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures API security scanning is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures API security scanning is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -229,7 +229,7 @@ export const statusesInfo = {
   },
   scanner_fuzz_testing_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures fuzz testing is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures fuzz testing is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -245,7 +245,7 @@ export const statusesInfo = {
   },
   scanner_code_quality_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures code quality scanning is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures code quality scanning is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
@@ -261,7 +261,7 @@ export const statusesInfo = {
   },
   scanner_iac_running: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures Infrastructure as Code (IaC) scanning is configured and running in the project pipelines.',
+      "ComplianceStandardsAdherence|Ensures Infrastructure as Code (IaC) scanning is configured and running in the project's default branch pipeline.",
     ),
     fixes: [
       {
