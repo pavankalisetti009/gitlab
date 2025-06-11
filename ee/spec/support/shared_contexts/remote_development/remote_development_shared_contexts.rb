@@ -545,7 +545,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
       if include_all_resources
         resources << secrets_inventory_config_map if include_inventory
-        resources << workspace_resource_quota unless max_resources_per_workspace.blank? && shared_namespace.empty?
+        resources << workspace_resource_quota if workspace_resource_quota
         resources << secret_environment
         resources << secret_file
       end
