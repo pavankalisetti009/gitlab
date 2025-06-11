@@ -32,9 +32,16 @@ module ComplianceManagement
       validate :compliance_control_belongs_to_namespace
       validate :audit_event_has_valid_entity_association
 
-      enum :status, { detected: 0, in_review: 1, resolved: 2, dismissed: 3 }
+      enum :status, ::Enums::ComplianceManagement::Projects::ComplianceViolation.status
 
       scope :order_by_created_at_and_id, ->(direction = :asc) { order(created_at: direction, id: direction) }
+
+      scope :in_optimization_array_mapping_scope, ->(id_expression) {
+        where(arel_table[:namespace_id].eq(id_expression))
+      }
+      scope :in_optimization_finder_query, ->(_project_id_expression, id_expression) {
+        where(arel_table[:id].eq(id_expression))
+      }
 
       private
 

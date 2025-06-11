@@ -395,6 +395,14 @@ module EE
           authorize: :read_compliance_dashboard,
           experiment: { milestone: '18.1' }
 
+        field :project_compliance_violations,
+          ::Types::ComplianceManagement::Projects::ComplianceViolationType.connection_type,
+          null: true,
+          description: 'Compliance violations for the projects in a group and its subgroups.',
+          resolver: ::Resolvers::ComplianceManagement::Projects::GroupViolationsResolver,
+          authorize: :read_compliance_violations_report,
+          experiment: { milestone: '18.1' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
