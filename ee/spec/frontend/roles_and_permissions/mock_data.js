@@ -197,6 +197,14 @@ export const mockMemberRole = {
   dependentSecurityPolicies: [],
   __typename: 'MemberRole',
 };
+export const mockMemberRoleWithUsers = { ...mockMemberRole, usersCount: 2 };
+export const mockMemberRoleWithSecurityPolicies = {
+  ...mockMemberRole,
+  dependentSecurityPolicies: [
+    { name: 'policy 1', editPath: 'path/1' },
+    { name: 'policy 2', editPath: 'path/2' },
+  ],
+};
 
 export const mockAdminRole = {
   id: 2,
@@ -209,6 +217,7 @@ export const mockAdminRole = {
   enabledPermissions: { nodes: [{ value: 'C' }, { value: 'D' }] },
   __typename: 'AdminMemberRole',
 };
+export const mockAdminRoleWithUsers = { ...mockAdminRole, usersCount: 2 };
 
 export const getMemberRoleQueryResponse = (memberRole = mockMemberRole) => ({
   data: { memberRole },
