@@ -16059,6 +16059,9 @@ msgstr ""
 msgid "ComplianceReport|Show old report"
 msgstr ""
 
+msgid "ComplianceReport|There was a problem fetching compliance frameworks."
+msgstr ""
+
 msgid "ComplianceReport|This compliance framework's compliance pipeline has been migrated to a pipeline execution policy."
 msgstr ""
 
