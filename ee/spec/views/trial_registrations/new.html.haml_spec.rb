@@ -30,7 +30,11 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
     it { is_expected.to have_content(s_('InProductMarketing|One platform for Dev, Sec, and Ops teams')) }
 
     it { is_expected.to have_content(s_('InProductMarketing|Want to host GitLab on your servers?')) }
-    it { is_expected.to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: 'https://about.gitlab.com/free-trial/#selfmanaged/') }
+
+    it 'has start self-managed link' do
+      is_expected
+        .to have_link(s_('InProductMarketing|Start with Self-Managed'), href: about_trial_url(hosted: 'self-managed'))
+    end
   end
 
   context 'when lightweight_trial_registration_redesign is candidate' do
