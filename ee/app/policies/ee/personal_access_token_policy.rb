@@ -12,6 +12,7 @@ module EE
 
       rule { is_enterprise_user_manager & group_credentials_inventory_available }.policy do
         enable :revoke_token
+        enable :rotate_token
       end
     end
   end

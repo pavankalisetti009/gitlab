@@ -67,6 +67,93 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     end
   end
 
+  shared_examples 'rotate token endpoint' do |token_type|
+    context 'when current user is an administrator' do
+      let_it_be(:personal_access_token) { create(:personal_access_token, user: create(:admin), scopes: [:api]) }
+
+      context 'when admin mode enabled', :enable_admin_mode do
+        it "rotates the token" do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['token']).not_to eq(token.token)
+          expect(json_response['expires_at']).to eq((Time.zone.today + 1.week).to_s)
+        end
+      end
+    end
+
+    context 'when token does not belong to the group' do
+      let_it_be(:other_group) { create(:group) }
+      let_it_be(:path) { "/groups/#{other_group.id}/manage/#{token_type}/#{token.id}/rotate" }
+
+      before_all do
+        other_group.update!(require_dpop_for_manage_api_endpoints: false)
+      end
+
+      context 'when current user is owner of other group' do
+        before_all do
+          other_group.add_owner(current_user)
+        end
+
+        it "returns forbidden" do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'when current user is an administrator' do
+        let_it_be(:personal_access_token) { create(:personal_access_token, user: create(:admin), scopes: [:api]) }
+
+        context 'when admin mode enabled', :enable_admin_mode do
+          it "returns forbidden" do
+            rotate_request
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+          end
+        end
+      end
+    end
+
+    context 'when token does not exist' do
+      let_it_be(:path) { "/groups/#{group.id}/manage/#{token_type}/#{non_existing_record_id}/rotate" }
+
+      it 'returns 404 for non-existing token' do
+        rotate_request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to eq('404 Not found')
+      end
+    end
+
+    context 'when expiry is defined' do
+      it "rotates user token and sets expires_at", :freeze_time do
+        expiry_date = Time.zone.today + 1.month
+
+        post(api(path, personal_access_token: personal_access_token), params: { expires_at: expiry_date })
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['token']).not_to eq(token.token)
+        expect(json_response['expires_at']).to eq(expiry_date.to_s)
+      end
+    end
+
+    context 'when current_user user is not a group owner' do
+      let_it_be(:regular_user) { create(:user) }
+      let_it_be(:personal_access_token) { create(:personal_access_token, user: regular_user) }
+
+      before_all do
+        group.add_maintainer(regular_user)
+      end
+
+      it "returns forbidden" do
+        rotate_request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
+
   describe 'GET /groups/:id/manage/personal_access_tokens' do
     let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens" }
 
@@ -361,6 +448,124 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
 
         it_behaves_like "forbidden action for delete_request"
       end
+    end
+  end
+
+  describe 'POST /groups/:id/manage/personal_access_tokens/:id/rotate' do
+    let_it_be(:enterprise_user) { create(:enterprise_user, enterprise_group: group) }
+    let_it_be(:token) { create(:personal_access_token, user: enterprise_user) }
+    let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens/#{token.id}/rotate" }
+    let(:rotate_request) do
+      post(api(path, personal_access_token: personal_access_token))
+    end
+
+    before do
+      stub_licensed_features(domain_verification: true)
+    end
+
+    it_behaves_like 'feature is not available to non saas versions', "rotate_request"
+
+    context 'when saas', :saas do
+      before do
+        stub_licensed_features(domain_verification: true)
+      end
+
+      it 'returns 404 for non-existing group' do
+        post(api("/groups/#{non_existing_record_id}/manage/personal_access_tokens/#{token.id}/rotate",
+          personal_access_token: personal_access_token))
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      it 'rotates token of an enterprise user' do
+        rotate_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['token']).not_to eq(token.token)
+        expect(json_response['expires_at']).to eq((Time.zone.today + 1.week).to_s)
+      end
+
+      context 'when token user is not an enterprise user' do
+        let_it_be(:regular_user) { create(:user) }
+        let_it_be(:regular_user_token) { create(:personal_access_token, user: regular_user) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens/#{regular_user_token.id}/rotate" }
+
+        before_all do
+          group.add_developer(regular_user)
+        end
+
+        it "returns forbidden" do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      it_behaves_like "rotate token endpoint", "personal_access_tokens"
+    end
+  end
+
+  describe 'POST /groups/:id/manage/resource_access_tokens/:id/rotate' do
+    let_it_be(:project_bot) { create(:user, :project_bot, bot_namespace: group) }
+    let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+    let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}/rotate" }
+
+    let(:rotate_request) do
+      post(api(path, personal_access_token: personal_access_token))
+    end
+
+    it_behaves_like 'feature is not available to non saas versions', "rotate_request"
+
+    context 'when saas', :saas do
+      before_all do
+        group.add_developer(project_bot)
+      end
+
+      it 'returns 404 for non-existing group' do
+        post(api("/groups/#{non_existing_record_id}/manage/resource_access_tokens/#{token.id}/rotate",
+          personal_access_token: personal_access_token))
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      it 'rotates token of a bot' do
+        rotate_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['token']).not_to eq(token.token)
+        expect(json_response['expires_at']).to eq((Time.zone.today + 1.week).to_s)
+      end
+
+      context 'when token user is not a bot user' do
+        let_it_be(:regular_user) { create(:user) }
+        let_it_be(:regular_user_token) { create(:personal_access_token, user: regular_user) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{regular_user_token.id}/rotate" }
+
+        before_all do
+          group.add_developer(regular_user)
+        end
+
+        it "returns forbidden" do
+          rotate_request
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'when rotate service throws error' do
+        before do
+          allow_next_instance_of(::GroupAccessTokens::RotateService) do |instance|
+            allow(instance).to receive(:execute).and_return(ServiceResponse.error(message: "error"))
+          end
+        end
+
+        it "returns bad_request" do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      it_behaves_like "rotate token endpoint", "resource_access_tokens"
     end
   end
 
