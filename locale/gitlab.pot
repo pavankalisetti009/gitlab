@@ -3971,6 +3971,9 @@ msgstr ""
 msgid "AdherenceReport|There was an error loading adherence report."
 msgstr ""
 
+msgid "AdherenceReport|To show a status here, you must %{linkStart}create a compliance framework with requirements and controls%{linkEnd} and apply it to projects in this group. New frameworks can take a few minutes to appear."
+msgstr ""
+
 msgid "AdherenceReport|We are replacing the standards adherence report with the compliance status report, which includes new features to enhance your compliance workflow."
 msgstr ""
 

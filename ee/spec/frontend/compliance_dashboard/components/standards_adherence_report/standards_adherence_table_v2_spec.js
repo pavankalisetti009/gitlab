@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import { GlAlert, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
+import { GlSprintf, GlLink, GlAlert, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import StandardsAdherenceTableV2 from 'ee/compliance_dashboard/components/standards_adherence_report/standards_adherence_table_v2.vue';
@@ -21,6 +21,8 @@ describe('StandardsAdherenceTableV2', () => {
   const findDetailsDrawer = () => wrapper.findComponent(DetailsDrawer);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findEmptyText = () => wrapper.findComponent(GlSprintf);
+  const findEmptyLink = () => wrapper.findComponent(GlLink);
 
   const waitForNextPageLoad = async () => {
     // triggers loading state
@@ -55,6 +57,10 @@ describe('StandardsAdherenceTableV2', () => {
       },
       mocks: {
         $apollo: {},
+      },
+      stubs: {
+        GlLink,
+        GlSprintf,
       },
     });
   };
@@ -284,6 +290,49 @@ describe('StandardsAdherenceTableV2', () => {
         const filtersBar = wrapper.findComponent(FiltersBar);
         expect(filtersBar.props('withProjects')).toBe(false);
       });
+    });
+  });
+
+  describe('empty state', () => {
+    const emptyItems = {
+      data: [{ group: null, children: [] }],
+      pageInfo: { hasNextPage: false },
+    };
+
+    beforeEach(async () => {
+      GroupedLoader.mockImplementation(function mockGroupedLoader() {
+        this.loadPage = jest.fn().mockResolvedValue(emptyItems);
+      });
+
+      createComponent();
+      await waitForPromises();
+      await nextTick();
+      await nextTick();
+    });
+
+    it('displays empty state message when no items', () => {
+      expect(wrapper.text()).toContain('No statuses found.');
+    });
+
+    it('displays help text with link in empty state', () => {
+      expect(findEmptyText().exists()).toBe(true);
+      expect(wrapper.text()).toContain('To show a status here, you must');
+    });
+
+    it('displays correct link in empty state', () => {
+      expect(findEmptyLink().attributes('href')).toBe(
+        '/user/compliance/compliance_frameworks/_index',
+      );
+      expect(findEmptyLink().attributes('anchor')).toBe('requirements');
+      expect(findEmptyLink().attributes('target')).toBe('_blank');
+    });
+
+    it('does not display GroupedTable in empty state', () => {
+      expect(findGroupedTable().exists()).toBe(false);
+    });
+
+    it('does not display pagination in empty state', () => {
+      expect(wrapper.findComponent(GlKeysetPagination).exists()).toBe(false);
     });
   });
 });
