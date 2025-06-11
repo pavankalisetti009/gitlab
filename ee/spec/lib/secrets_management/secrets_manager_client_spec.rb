@@ -258,6 +258,8 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
       # Verify the role data
       expect(role).to be_present
+      expect(role['token_ttl']).to eq(900)
+      expect(role['token_max_ttl']).to eq(900)
       expect(role['bound_claims']['project_id']).to eq(123)
       expect(role['token_policies']).to include('test-policy')
       expect(role['user_claim']).to eq('project_id')
