@@ -151,7 +151,10 @@ module Gitlab
             end
 
             response = process_review_with_retry(diffs_and_paths, files_content)
-            return if note_not_required?(response)
+            if note_not_required?(response)
+              log_duo_code_review_internal_event('encounter_duo_code_review_error_during_review')
+              return
+            end
 
             # TODO: move the file to ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser
             parsed_body = ::Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::ResponseBodyParser
@@ -248,14 +251,6 @@ module Gitlab
             }
           end
 
-          def ai_client
-            @ai_client ||= ::Gitlab::Llm::Anthropic::Client.new(
-              user,
-              unit_primitive: UNIT_PRIMITIVE,
-              tracking_context: tracking_context
-            )
-          end
-
           def review_bot
             Users::Internal.duo_code_review_bot
           end
@@ -288,11 +283,23 @@ module Gitlab
           end
 
           def summary_response_for(draft_notes)
-            summary_prompt = Gitlab::Llm::Templates::SummarizeReview.new(draft_notes).to_prompt
+            action_name = :summarize_review
+            message_attributes = {
+              request_id: SecureRandom.uuid,
+              content: action_name.to_s.humanize,
+              role: ::Gitlab::Llm::AiMessage::ROLE_USER,
+              ai_action: action_name,
+              user: user,
+              context: ::Gitlab::Llm::AiMessageContext.new(resource: resource)
+            }
+            summary_prompt_message = ::Gitlab::Llm::AiMessage.for(action: action_name).new(message_attributes)
+            summarize_review = Gitlab::Llm::AiGateway::Completions::SummarizeReview.new(
+              summary_prompt_message,
+              nil,
+              { draft_notes: draft_notes }
+            )
 
-            response = ai_client.messages_complete(**summary_prompt)
-
-            ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
+            summarize_review.execute
           end
 
           def log_comment_metrics
@@ -376,11 +383,14 @@ module Gitlab
 
           def summary_note(draft_notes)
             response = summary_response_for(draft_notes)
+            ai_message = response[:ai_message]
 
-            if response.errors.any? || response.response_body.blank?
+            if ai_message.blank? || ai_message.errors.any? || ai_message.content.blank?
+              log_duo_code_review_internal_event('encounter_duo_code_review_error_during_review')
+
               self.class.error_msg
             else
-              response.response_body
+              ai_message.content
             end
           end
 
