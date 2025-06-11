@@ -25,6 +25,7 @@ export default () => {
     isContainerArchived,
     notesFilters,
     reportAbusePath,
+    containerName,
   } = el.dataset;
 
   if (!pageInfo) return false;
@@ -65,6 +66,7 @@ export default () => {
       }),
       notesFilters: JSON.parse(notesFilters || {}),
       isContainerArchived: isContainerArchived === undefined ? false : isContainerArchived !== null,
+      containerName,
     },
     render(createElement) {
       return createElement(WikiNotesApp);

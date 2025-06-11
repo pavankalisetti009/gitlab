@@ -6,9 +6,11 @@ import {
   GlDisclosureDropdownItem,
   GlDisclosureDropdownGroup,
 } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, sprintf } from '~/locale';
 import EmojiPicker from '~/emoji/components/picker.vue';
 import AbuseCategorySelector from '~/abuse_reports/components/abuse_category_selector.vue';
+import UserAccessRoleBadge from '~/vue_shared/components/user_access_role_badge.vue';
+import { WIKI_CONTAINER_TYPE } from '../../constants';
 
 export default {
   i18n: {
@@ -20,6 +22,7 @@ export default {
   },
   name: 'NoteActions',
   components: {
+    UserAccessRoleBadge,
     GlButton,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
@@ -30,6 +33,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: ['containerName', 'containerType'],
   props: {
     authorId: {
       type: String,
@@ -55,6 +59,11 @@ export default {
       required: false,
       default: '',
     },
+    accessLevel: {
+      type: String,
+      required: false,
+      default: '',
+    },
     canAwardEmoji: {
       type: Boolean,
       required: false,
@@ -70,6 +79,15 @@ export default {
     showActionsDropdown() {
       return true;
     },
+    showMemberBadge() {
+      return this.containerType === WIKI_CONTAINER_TYPE.PROJECT && this.accessLevel;
+    },
+    displayMemberBadgeText() {
+      return sprintf(__('This user has the %{access} role in the %{name} project.'), {
+        access: this.accessLevel.toLowerCase(),
+        name: this.containerName,
+      });
+    },
   },
   methods: {
     toggleAbuseDrawer(val) {
@@ -83,6 +101,15 @@ export default {
 </script>
 <template>
   <div class="note-actions gl-justify-end">
+    <user-access-role-badge
+      v-if="showMemberBadge"
+      v-gl-tooltip
+      class="gl-mr-3 gl-hidden sm:gl-block"
+      :title="displayMemberBadgeText"
+    >
+      {{ accessLevel }}
+    </user-access-role-badge>
+    <span class="note-actions__mobile-spacer"></span>
     <emoji-picker
       v-if="canAwardEmoji"
       data-testid="note-emoji-button"

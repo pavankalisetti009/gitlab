@@ -58,6 +58,7 @@ export const note = {
     webUrl: 'http://127.0.0.1:3000/root',
     webPath: '/root',
   },
+  maxAccessLevelOfAuthor: 'Maintainer',
   body: 'an example note',
   bodyHtml: '<p data-sourcepos="1:1-1:29" dir="auto">an example note</p>',
   createdAt: '2024-11-10T14:19:58Z',

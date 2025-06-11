@@ -4,10 +4,13 @@ import EmojiPicker from '~/emoji/components/picker.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import NoteActions from '~/pages/shared/wikis/wiki_notes/components/note_actions.vue';
 import AbuseCategorySelector from '~/abuse_reports/components/abuse_category_selector.vue';
+import UserAccessRoleBadge from '~/vue_shared/components/user_access_role_badge.vue';
 
 describe('WikiNoteActions', () => {
   let wrapper;
 
+  const findUserAccessRoleBadge = () => wrapper.findComponent(UserAccessRoleBadge);
+  const findUserAccessRoleBadgeText = () => findUserAccessRoleBadge().text().trim();
   const findDisclosureDropdownGroup = () => wrapper.findComponent(GlDisclosureDropdownGroup);
   const findReportAbuseButton = () => wrapper.findByTestId('wiki-note-report-abuse-button');
   const findEditButton = () => wrapper.findByTestId('wiki-note-edit-button');
@@ -16,10 +19,16 @@ describe('WikiNoteActions', () => {
   const findDeleteButton = () => wrapper.findByTestId('wiki-note-delete-button');
   const findEmojiPicker = () => wrapper.findComponent(EmojiPicker);
 
-  const createWrapper = (propsData) => {
+  const createWrapper = (propsData, injectData) => {
     return shallowMountExtended(NoteActions, {
+      provide: {
+        containerName: 'test-project',
+        containerType: 'project',
+        ...injectData,
+      },
       propsData: {
         authorId: '1',
+        accessLevel: 'Maintainer',
         ...propsData,
       },
     });
@@ -28,6 +37,38 @@ describe('WikiNoteActions', () => {
   describe('renders correctly', () => {
     beforeEach(() => {
       wrapper = createWrapper();
+    });
+
+    describe('author badges', () => {
+      describe('when the container is a project', () => {
+        it('should render access level badge', () => {
+          expect(findUserAccessRoleBadgeText()).toBe('Maintainer');
+          expect(findUserAccessRoleBadge().attributes('title')).toBe(
+            'This user has the maintainer role in the test-project project.',
+          );
+        });
+
+        it('should not render access level badge when author has no access on project', () => {
+          wrapper = createWrapper({ accessLevel: null });
+          expect(findUserAccessRoleBadge().exists()).toBe(false);
+        });
+      });
+
+      describe('when the container is a group', () => {
+        beforeEach(() => {
+          wrapper = createWrapper(
+            {},
+            {
+              containerName: 'test-group',
+              containerType: 'group',
+            },
+          );
+        });
+
+        it('should not render the access level badge', () => {
+          expect(findUserAccessRoleBadge().exists()).toBe(false);
+        });
+      });
     });
 
     describe('note actions', () => {
