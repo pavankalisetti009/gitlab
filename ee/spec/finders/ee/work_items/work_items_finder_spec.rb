@@ -23,14 +23,6 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
 
       it_behaves_like 'work items finder group parameter', expect_group_items: true
 
-      context 'when use_cte_optimization_for_confidentiality_filter is disabled' do
-        before do
-          stub_feature_flags(use_cte_optimization_for_confidentiality_filter: false)
-        end
-
-        it_behaves_like 'work items finder group parameter', expect_group_items: true
-      end
-
       context 'when epics are disabled' do
         before do
           stub_licensed_features(epics: false)
