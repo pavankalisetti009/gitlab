@@ -226,6 +226,20 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
     end
   end
 
+  describe '.encode' do
+    let(:token_string) { 'test_token_123' }
+
+    it 'encodes the provided token' do
+      expect(Gitlab::CryptoHelper).to receive(:sha256)
+        .with(token_string)
+        .and_return('fake_token_digest')
+
+      encoded_token = described_class.encode(token_string)
+
+      expect(encoded_token).to eq('fake_token_digest')
+    end
+  end
+
   describe '.find_by_token' do
     let(:user) { create(:user) }
     let!(:token) { create(:personal_access_token, user: user) }
