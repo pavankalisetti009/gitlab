@@ -44,7 +44,7 @@ module RemoteDevelopment
           # @return [Boolean] true if the condition matched and the workspace was updated, false if it was not
           def self.stop_if_exceeded_max_active_hours_before_stop(workspace:)
             # We only want to stop "active" workspaces, which means in desired_state of RestartRequested or Running
-            return false if workspace.desired_state == States::STOPPED
+            return false if workspace.desired_state_stopped?
 
             time_to_stop = workspace.desired_state_updated_at +
               workspace.workspaces_agent_config.max_active_hours_before_stop.hours
@@ -59,7 +59,7 @@ module RemoteDevelopment
           # @return [Boolean] true if the condition matched and the workspace was updated, false if it was not
           def self.terminate_if_exceeded_max_stopped_hours_before_termination(workspace:)
             # We only want to terminate stopped workspaces
-            return false unless workspace.desired_state == States::STOPPED
+            return false unless workspace.desired_state_stopped?
 
             hours_since_stop = (Time.zone.now - workspace.desired_state_updated_at) / 1.hour
             unless hours_since_stop > workspace.workspaces_agent_config.max_stopped_hours_before_termination
