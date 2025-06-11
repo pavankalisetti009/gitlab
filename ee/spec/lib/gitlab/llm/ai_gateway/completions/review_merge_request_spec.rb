@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_category: :code_review_workflow do
   let(:review_prompt_class) { Gitlab::Llm::Templates::ReviewMergeRequest }
-  let(:summary_prompt_class) { Gitlab::Llm::Templates::SummarizeReview }
+  let(:summarize_review_class) { Gitlab::Llm::AiGateway::Completions::SummarizeReview }
   let(:tracking_context) { { action: :review_merge_request, request_id: 'uuid' } }
   let(:options) { { progress_note_id: progress_note.id } }
   let(:create_note_allowed?) { true }
@@ -62,7 +62,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
   describe '#execute' do
     let(:combined_review_prompt) { { messages: ['This is the combined review prompt'] } }
-    let(:summary_prompt) { { messages: ['This is a summary prompt'] } }
+    let(:summary_answer) { 'This is a summary response' }
+    let(:summary_response_modifier) do
+      { ai_message: instance_double(Gitlab::Llm::AiMessage, content: summary_answer, errors: []) }
+    end
 
     let(:prompt_inputs) do
       {
@@ -95,20 +98,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         allow(template).to receive(:to_prompt_inputs).and_return(prompt_inputs)
       end
 
-      allow_next_instance_of(summary_prompt_class) do |template|
-        allow(template).to receive(:to_prompt).and_return(summary_prompt)
-      end
-
-      allow_next_instance_of(Gitlab::Llm::Anthropic::Client, user,
-        unit_primitive: 'review_merge_request',
-        tracking_context: tracking_context
-      ) do |client|
-        allow(client)
-          .to receive(:messages_complete)
-          .with(summary_prompt)
-          .and_return(summary_response&.to_json)
-      end
-
       allow_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
         service_name: :review_merge_request,
         tracking_context: tracking_context
@@ -126,11 +115,14 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             instance_double(HTTParty::Response, body: combined_review_response.to_json, success?: true)
           )
       end
+
+      allow_next_instance_of(summarize_review_class) do |completions|
+        allow(completions).to receive(:execute).and_return(summary_response_modifier)
+      end
     end
 
     context 'when passing file contents to ai_prompt_class' do
       let(:combined_review_response) { '<review></review>' }
-      let(:summary_response) { nil }
       let(:updated_file_content) { "existing line 1\nexisting line 2\n" }
       let(:updated_blob) { instance_double(Blob, data: updated_file_content) }
       let(:diff_files) do
@@ -244,7 +236,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       let(:summary_answer) { 'Helpful review summary' }
-      let(:summary_response) { { content: [{ text: summary_answer }] } }
 
       it 'creates diff notes on new and updated files' do
         completion.execute
@@ -408,7 +399,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       context 'when draft_notes is empty after mapping DraftNote objects' do
-        let(:summary_response) { nil }
         let(:combined_review_response) do
           <<~RESPONSE
             <review>
@@ -429,7 +419,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       context 'when draft_notes is empty after mapping DraftNote objects and no comments provided' do
-        let(:summary_response) { nil }
         let(:combined_review_response) do
           <<~RESPONSE
           <review>
@@ -657,12 +646,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         end
 
         context 'when summary returned an error' do
-          let(:summary_response) do
+          let(:summary_response_modifier) do
             {
-              "error" =>
-              {
-                "message" => 'Oh, no. Something went wrong!'
-              }
+              ai_message: instance_double(
+                Gitlab::Llm::AiMessage,
+                content: '',
+                errors: ['Oh, no. Something went wrong!']
+              )
             }
           end
 
@@ -687,8 +677,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           end
         end
 
-        context 'when summary response is nil' do
-          let(:summary_response) { nil }
+        context 'when summary response is blank' do
+          let(:summary_response_modifier) do
+            { ai_message: instance_double(Gitlab::Llm::AiMessage, content: '', errors: []) }
+          end
 
           it 'creates a note with an error message' do
             completion.execute
@@ -740,7 +732,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       context 'when there is an error due of large prompt' do
-        let(:summary_response) { nil }
         let(:retry_response) { { "content" => [{ "text" => "<review></review>" }] } }
 
         let(:example_error_response) do
@@ -841,7 +832,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       context 'with a successful response containing comments' do
-        let(:summary_response) { nil }
         let(:combined_review_response) do
           <<~RESPONSE
             <review>
@@ -908,7 +898,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
     context 'when the AI response is <review></review>' do
       let(:combined_review_response) { ' <review></review> ' }
-      let(:summary_response) { nil }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
@@ -923,7 +912,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
     context 'when the chat client returns an unsuccessful response' do
       let(:combined_review_response) { { detail: 'Error' } }
-      let(:summary_response) { nil }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
@@ -934,7 +922,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
     context 'when the AI response is empty' do
       let(:combined_review_response) { {} }
-      let(:summary_response) { nil }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
@@ -955,8 +942,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           </review>
         RESPONSE
       end
-
-      let(:summary_response) { { content: [{ text: 'Summary' }] } }
 
       before do
         allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([instance_double(Gitlab::Diff::File,
@@ -1019,8 +1004,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       context 'when an error occurs during review' do
         before do
           error = StandardError.new("Test error")
-          allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
-            allow(client).to receive(:messages_complete).and_raise(error)
+          allow_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+            allow(client).to receive(:complete_prompt).and_raise(error)
           end
         end
 

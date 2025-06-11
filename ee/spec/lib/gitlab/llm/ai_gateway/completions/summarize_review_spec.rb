@@ -95,6 +95,22 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         end
       end
 
+      context 'when draft notes passed as options' do
+        let(:draft_note) do
+          build(
+            :draft_note,
+            merge_request: merge_request,
+            author: user,
+            note: 'This is a draft note from options'
+          )
+        end
+
+        let(:draft_notes_content) { "Comment: #{draft_note.note}\n" }
+        let(:options) { { draft_notes: [draft_note] } }
+
+        it_behaves_like 'summarize review'
+      end
+
       context 'when draft note content length fits INPUT_CONTENT_LIMIT' do
         let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
 
