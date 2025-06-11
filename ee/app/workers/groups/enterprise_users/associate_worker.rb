@@ -8,7 +8,7 @@ module Groups
 
       idempotent!
       feature_category :user_management
-      data_consistency :always
+      data_consistency :sticky
 
       def perform(user_id)
         @user = User.find_by_id(user_id)

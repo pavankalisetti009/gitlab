@@ -149,6 +149,22 @@ describe('EE IssuesListApp component', () => {
     });
   };
 
+  it.each`
+    namespace    | groupPath       | className
+    ${'project'} | ${''}           | ${'js-issues-list-app'}
+    ${'group'}   | ${'group/path'} | ${'js-issues-group-list-app'}
+  `(
+    'applies the appropriate class name if the list is at a $namespace level',
+    async ({ groupPath, className }) => {
+      wrapper = mountComponent({
+        provide: { groupPath },
+      });
+      await waitForPromises();
+
+      expect(findIssuesListAppCE().attributes('class')).toContain(className);
+    },
+  );
+
   describe('template', () => {
     beforeEach(async () => {
       wrapper = mountComponent();

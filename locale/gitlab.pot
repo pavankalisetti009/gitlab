@@ -9176,6 +9176,12 @@ msgstr ""
 msgid "Authenticated API requests"
 msgstr ""
 
+msgid "Authenticated Git HTTP rate limit period in seconds"
+msgstr ""
+
+msgid "Authenticated Git HTTP request rate limit"
+msgstr ""
+
 msgid "Authenticated Git LFS rate limit period in seconds"
 msgstr ""
 
@@ -24156,6 +24162,9 @@ msgstr ""
 msgid "Enable authenticated API request rate limit"
 msgstr ""
 
+msgid "Enable authenticated Git HTTP request rate limit"
+msgstr ""
+
 msgid "Enable authenticated Git LFS request rate limit"
 msgstr ""
 
@@ -31090,6 +31099,9 @@ msgstr ""
 msgid "Helps prevent malicious users hide their activity."
 msgstr ""
 
+msgid "Helps reduce authenticated Git HTTP request volume for git paths."
+msgstr ""
+
 msgid "Helps reduce request volume (for example, from crawlers or abusive bots)"
 msgstr ""
 
@@ -37360,6 +37372,9 @@ msgid "Maximum attachment size (MiB)"
 msgstr ""
 
 msgid "Maximum authenticated API requests per rate limit period per user"
+msgstr ""
+
+msgid "Maximum authenticated Git HTTP requests per period per user"
 msgstr ""
 
 msgid "Maximum authenticated requests to %{open}project/:id/jobs%{close} per minute"
