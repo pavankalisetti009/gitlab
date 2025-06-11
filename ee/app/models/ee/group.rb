@@ -587,9 +587,7 @@ module EE
       email_domain = Mail::Address.new(email).domain&.downcase
       return false unless email_domain
 
-      verified_domains = all_projects_pages_domains(only_verified: true).map(&:domain).map(&:downcase)
-
-      verified_domains.include?(email_domain)
+      all_projects_pages_domains(only_verified: true).find_by_domain_case_insensitive(email_domain).present?
     end
 
     # Overrides a method defined in `::EE::Namespace`

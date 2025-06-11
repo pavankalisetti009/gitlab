@@ -3,85 +3,81 @@
 module Security
   module SecretDetection
     class TokenLookupService
-      RUNNER_TOKEN_CONFIG = {
-        model: Ci::Runner,
-        lookup_method: :runner_token_lookup
+      DIGEST_CONFIG = {
+        lookup_method: :with_token_digests,
+        token_method: :token_digest
       }.freeze
 
-      # Maps token type IDs to their corresponding GitLab model classes
+      ENCRYPTION_CONFIG = {
+        lookup_method: :with_encrypted_tokens,
+        token_method: :token_encrypted
+      }.freeze
+
+      # Shared configuration for runner tokens
+      RUNNER_TOKEN_CONFIG = {
+        model: Ci::Runner,
+        **ENCRYPTION_CONFIG
+      }.freeze
+
+      PERSONAL_ACCESS_TOKEN_CONFIG = {
+        model: PersonalAccessToken,
+        **DIGEST_CONFIG
+      }.freeze
+
+      # Maps token type IDs (from secret-detection-rules) to their corresponding GitLab model classes
+      # and the methods needed to look them up
       TOKEN_TYPE_CONFIG = {
-        'gitlab_personal_access_token' => {
-          model: PersonalAccessToken,
-          lookup_method: :token_digest_lookup
-        },
-        'gitlab_personal_access_token_routable' => {
-          model: PersonalAccessToken,
-          lookup_method: :token_digest_lookup
-        },
+        'gitlab_personal_access_token' => PERSONAL_ACCESS_TOKEN_CONFIG,
+        'gitlab_personal_access_token_routable' => PERSONAL_ACCESS_TOKEN_CONFIG,
         'gitlab_deploy_token' => {
           model: DeployToken,
-          lookup_method: :deploy_token_lookup
+          **ENCRYPTION_CONFIG
         },
         'gitlab_runner_auth_token' => RUNNER_TOKEN_CONFIG,
         'gitlab_runner_auth_token_routable' => RUNNER_TOKEN_CONFIG
       }.freeze
 
+      # Checks if a given token type is supported by this service
+      # @param token_type [String] The token type identifier from secret-detection-rules
+      # @return [Boolean] true if the token type can be looked up, false otherwise
       def self.supported_token_type?(token_type)
         TOKEN_TYPE_CONFIG.key?(token_type)
       end
 
-      # Find tokens in database based on token type and values
-      # @param token_type [String] The token type ID
-      # @param token_values [Array<String>] Array of raw token values to look up
-      # @return [Hash] Hash mapping raw token values to their corresponding token objects
+      # Finds tokens in the database based on their type and raw values
+      # @param token_type [String] The type of token to look for (e.g., 'gitlab_personal_access_token')
+      # @param token_values [Array<String>] Array of raw token values to search for
+      # @return [Hash<String, ActiveRecord::Base>] Hash mapping raw tokens to their database records
       def find(token_type, token_values)
         config = TOKEN_TYPE_CONFIG[token_type]
         return unless config
 
-        model_class = config[:model]
-        lookup_method = config[:lookup_method]
-
-        case lookup_method
-        when :token_digest_lookup
-          token_digest_lookup(model_class, token_values)
-        when :deploy_token_lookup, :runner_token_lookup
-          encrypted_token_lookup(model_class, token_values)
-        end
+        token_lookup(config[:model], config[:lookup_method], config[:token_method], token_values)
       end
 
       private
 
-      # Lookup tokens using their digests (for tokens stored with token_digest)
-      # @param model_class [Class] The token model class
-      # @param token_values [Array<String>] Array of raw token values to look up
-      # @return [Hash] Hash mapping raw token values to their corresponding token objects
-      def token_digest_lookup(model_class, token_values)
-        token_digest_to_raw_token = token_values.each_with_object({}) do |raw_token_value, result|
-          result[Gitlab::CryptoHelper.sha256(raw_token_value)] = raw_token_value
-          result
+      # Performs the actual token lookup using the appropriate model and methods
+      # @param model_class [Class] The ActiveRecord model class (e.g., PersonalAccessToken)
+      # @param lookup_method [Symbol] The scope method to use for bulk lookup (e.g., :with_token_digests)
+      # @param token_method [Symbol] The method to call on found records to get their stored token value
+      # @param token_values [Array<String>] Raw token values to search for
+      # @return [Hash<String, ActiveRecord::Base>] Hash mapping raw tokens to their database records
+      def token_lookup(model_class, lookup_method, token_method, token_values)
+        # Create a hash mapping encoded tokens to their raw values
+        # This allows us to map found records back to the original raw tokens
+        #   e.g. `{ "encrypted_value_for_token1" => "raw_token1_value",
+        #           "encrypted_value_for_token2" => "raw_token2_value" }`
+        encrypted_to_raw_token = token_values.index_by do |raw_token_value|
+          model_class.encode(raw_token_value)
         end
-        results = model_class.with_token_digests(token_digest_to_raw_token.keys)
 
+        # Bulk lookup all tokens using the model's scope method
+        results = model_class.public_send(lookup_method, encrypted_to_raw_token.keys) # rubocop:disable GitlabSecurity/PublicSend -- lookup_method is defined in TOKEN_TYPE_CONFIG and cannot be overriden
+
+        # Build the final result hash mapping raw tokens to their database records
         results.each_with_object({}) do |found_token, result|
-          raw_token = token_digest_to_raw_token[found_token.token_digest]
-          result[raw_token] = found_token
-        end
-      end
-
-      # Lookup tokens using their encrypted values
-      # @param model_class [Class] The token model class
-      # @param token_values [Array<String>] Array of raw token values
-      # @return [Hash] Hash mapping raw token values to their corresponding token objects
-      def encrypted_token_lookup(model_class, token_values)
-        encrypted_to_raw_token = token_values.each_with_object({}) do |raw_token_value, result|
-          encrypted = Authn::TokenField::EncryptionHelper.encrypt_token(raw_token_value)
-          result[encrypted] = raw_token_value
-        end
-
-        results = model_class.with_encrypted_tokens(encrypted_to_raw_token.keys)
-
-        results.each_with_object({}) do |found_token, result|
-          raw_token = encrypted_to_raw_token[found_token.token_encrypted]
+          raw_token = encrypted_to_raw_token[found_token.public_send(token_method)] # rubocop:disable GitlabSecurity/PublicSend -- token_method is defined in TOKEN_TYPE_CONFIG and cannot be overriden
           result[raw_token] = found_token
         end
       end
