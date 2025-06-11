@@ -36,7 +36,11 @@ module Vulnerabilities
           Vulnerabilities::StateTransition.bulk_insert!(state_transitions)
         end
 
-        create_system_notes(Vulnerability.by_ids(vulnerability_ids))
+        vulnerability_relation = Vulnerability.by_ids(vulnerability_ids)
+
+        ::Vulnerabilities::BulkEsOperationService.new(vulnerability_relation).execute(&:itself)
+
+        create_system_notes(vulnerability_relation)
       end
     end
 

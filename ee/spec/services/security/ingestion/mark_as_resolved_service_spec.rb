@@ -61,6 +61,12 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           command.execute
         end
 
+        it_behaves_like 'sync vulnerabilities changes to ES' do
+          let(:expected_vulnerabilities) { vulnerability }
+
+          subject { command.execute }
+        end
+
         context 'with multiple batches' do
           let_it_be(:second_vulnerability) do
             create(:vulnerability, :sast,
@@ -187,6 +193,12 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
               'counts.count_total_vulnerability_no_longer_detected_on_default_branch_weekly',
               'counts.count_total_vulnerability_no_longer_detected_on_default_branch_monthly'
             ).by(num_vulnerabilities)
+        end
+
+        it_behaves_like 'sync vulnerabilities changes to ES' do
+          let(:expected_vulnerabilities) { vulnerabilities }
+
+          subject { command.execute }
         end
       end
 

@@ -25,7 +25,7 @@ RSpec.shared_examples 'sync vulnerabilities changes to ES' do
     it 'calls the ProcessBookkeepingService with vulnerabilities' do
       subject
 
-      expect(Elastic::ProcessBookkeepingService).to have_received(:track!)
+      expect(Elastic::ProcessBookkeepingService).to have_received(:track!).at_least(:once)
       expect(received_vulnerabilities).to be_empty
     end
   end
@@ -44,8 +44,9 @@ RSpec.shared_examples 'sync vulnerabilities changes to ES' do
     it 'calls the ProcessBookkeepingService with vulnerabilities' do
       subject
 
-      expect(Elastic::ProcessBookkeepingService).to have_received(:track!)
-      expect(received_vulnerabilities).to match_array(expected_vulnerabilities)
+      expect(Elastic::ProcessBookkeepingService).to have_received(:track!).at_least(:once)
+
+      expect(received_vulnerabilities.uniq).to match_array(expected_vulnerabilities)
     end
   end
 end

@@ -69,6 +69,12 @@ RSpec.describe Security::Ingestion::Tasks::IngestRemediations, feature_category:
       end
     end
 
+    it_behaves_like 'sync vulnerabilities changes to ES' do
+      let(:expected_vulnerabilities) { [vulnerability_read_1, vulnerability_read_2] }
+
+      subject { ingest_finding_remediations }
+    end
+
     it_behaves_like 'bulk insertable task'
   end
 end
