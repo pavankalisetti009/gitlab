@@ -66,6 +66,7 @@ Migration/UpdateLargeTable:
   - :security_scans
   - :uploads
   - :vulnerabilities
+  - :vulnerability_occurrence_identifiers
   - :zoekt_repositories
   DeniedMethods:
   - :change_column_type_concurrently
