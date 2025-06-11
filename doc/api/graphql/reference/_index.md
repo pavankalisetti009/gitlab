@@ -28201,7 +28201,6 @@ GPG signature for a signed commit.
 | <a id="groupgooglecloudloggingconfigurations"></a>`googleCloudLoggingConfigurations` | [`GoogleCloudLoggingConfigurationTypeConnection`](#googlecloudloggingconfigurationtypeconnection) | Google Cloud logging configurations that receive audit events belonging to the group. (see [Connections](#connections)) |
 | <a id="groupgroupmemberscount"></a>`groupMembersCount` | [`Int!`](#int) | Count of direct members of the group. |
 | <a id="groupid"></a>`id` | [`ID`](#id) | ID of the group. |
-| <a id="groupisadjourneddeletionenabled"></a>`isAdjournedDeletionEnabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 16.11. **Status**: Experiment. Indicates if delayed group deletion is enabled. |
 | <a id="groupislinkedtosubscription"></a>`isLinkedToSubscription` | [`Boolean`](#boolean) | Indicates if group is linked to a subscription. |
 | <a id="grouplfsenabled"></a>`lfsEnabled` | [`Boolean`](#boolean) | Indicates if Large File Storage (LFS) is enabled for namespace. |
 | <a id="grouplicensedfeatures"></a>`licensedFeatures` {{< icon name="warning-solid" >}} | [`NamespaceLicensedFeatures!`](#namespacelicensedfeatures) | **Introduced** in GitLab 18.1. **Status**: Experiment. Licensed features available on the namespace. |
@@ -35927,7 +35926,6 @@ Project-level settings for product analytics provider.
 | <a id="projectid"></a>`id` | [`ID!`](#id) | ID of the project. |
 | <a id="projectimportstatus"></a>`importStatus` | [`String`](#string) | Status of import background job of the project. |
 | <a id="projectincidentmanagementtimelineeventtags"></a>`incidentManagementTimelineEventTags` | [`[TimelineEventTagType!]`](#timelineeventtagtype) | Timeline event tags for the project. |
-| <a id="projectisadjourneddeletionenabled"></a>`isAdjournedDeletionEnabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 16.11. **Status**: Experiment. Indicates if delayed project deletion is enabled. |
 | <a id="projectiscatalogresource"></a>`isCatalogResource` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 15.11. **Status**: Experiment. Indicates if a project is a catalog resource. |
 | <a id="projectisforked"></a>`isForked` | [`Boolean!`](#boolean) | Project is forked. |
 | <a id="projectissuesaccesslevel"></a>`issuesAccessLevel` | [`ProjectFeatureAccess`](#projectfeatureaccess) | Access level required for issues access. |
