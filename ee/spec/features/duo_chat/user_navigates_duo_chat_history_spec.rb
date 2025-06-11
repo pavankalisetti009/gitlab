@@ -35,7 +35,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, feature
 
   context 'when Chat History button is clicked' do
     it 'opens chat history list' do
-      find_by_testid("chat-back-button").click
+      find_by_testid("go-back-to-list-button").click
       wait_for_requests
 
       expect(page).to have_css('[data-testid="chat-threads-thread-box"]')
@@ -45,7 +45,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, feature
 
   context 'when existing Chat is clicked from the threads list' do
     it 'opens the chat' do
-      find_by_testid('chat-back-button').click
+      find_by_testid('go-back-to-list-button').click
       wait_for_requests
 
       find_by_testid('chat-threads-thread-box').click
@@ -57,7 +57,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, feature
 
   context 'when New Chat button is clicked from the threads list' do
     it 'creates a new chat' do
-      find_by_testid('chat-back-button').click
+      find_by_testid('go-back-to-list-button').click
       wait_for_requests
 
       find_by_testid('chat-new-button').click
@@ -69,7 +69,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, feature
 
   context 'when New Chat button is clicked from existing chat' do
     it 'creates a new chat' do
-      find_by_testid('chat-back-button').click
+      find_by_testid('go-back-to-list-button').click
       wait_for_requests
 
       find_by_testid('chat-threads-thread-box').click
