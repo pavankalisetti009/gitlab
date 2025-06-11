@@ -26,6 +26,10 @@ module ComplianceManagement
         end
       end
 
+      def self.covered_projects_count(project_ids)
+        by_project_id(project_ids).distinct.count(:project_id)
+      end
+
       private
 
       def frameworks_count_per_project
