@@ -92,3 +92,5 @@ module Namespaces
     end
   end
 end
+
+Namespaces::Storage::RepositoryLimit::Enforcement.prepend_mod

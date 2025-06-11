@@ -1,13 +1,13 @@
 import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import GeoReplicableTimeAgo from 'ee/geo_replicable/components/geo_replicable_time_ago.vue';
+import GeoListItemTimeAgo from 'ee/geo_shared/list/components/geo_list_item_time_ago.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 
 const MOCK_LABEL = 'Test Label';
 const MOCK_DEFAULT_TEXT = 'Default Text';
 const MOCK_JUST_NOW = new Date().toISOString();
 
-describe('GeoReplicableTimeAgo', () => {
+describe('GeoListItemTimeAgo', () => {
   let wrapper;
 
   const defaultProps = {
@@ -18,7 +18,7 @@ describe('GeoReplicableTimeAgo', () => {
   };
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMountExtended(GeoReplicableTimeAgo, {
+    wrapper = shallowMountExtended(GeoListItemTimeAgo, {
       propsData: {
         ...defaultProps,
         ...props,
@@ -29,8 +29,6 @@ describe('GeoReplicableTimeAgo', () => {
       },
     });
   };
-
-  const findReplicableTimeAgo = () => wrapper.findByTestId('replicable-time-ago');
 
   describe.each`
     dateString       | showDivider | expectedText
@@ -45,12 +43,12 @@ describe('GeoReplicableTimeAgo', () => {
 
     describe(`with dateString is ${dateString} and showDivider is ${showDivider}`, () => {
       it(`sets Replicable Time Ago text to ${expectedText}`, () => {
-        expect(findReplicableTimeAgo().text()).toBe(expectedText);
+        expect(wrapper.text()).toBe(expectedText);
       });
 
       it(`does${showDivider ? '' : ' not'} show right border`, () => {
-        expect(findReplicableTimeAgo().find('span').classes('gl-border-r-1')).toBe(showDivider);
-        expect(findReplicableTimeAgo().find('span').classes('gl-border-r-solid')).toBe(showDivider);
+        expect(wrapper.find('span').classes('gl-border-r-1')).toBe(showDivider);
+        expect(wrapper.find('span').classes('gl-border-r-solid')).toBe(showDivider);
       });
     });
   });

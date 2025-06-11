@@ -92,10 +92,13 @@ module API
       # Any Claude model (including failover provider) needs v3 of the code completion prompt
       # which isn't supported by direct access
       def forbid_direct_access?
-        Gitlab::CurrentSettings.disabled_direct_code_suggestions ||
-          Feature.enabled?(:incident_fail_over_completion_provider, current_user) ||
-          completion_model_details.any_user_groups_claude_code_completion? ||
-          ::Ai::AmazonQ.connected?
+        return true if Gitlab::CurrentSettings.disabled_direct_code_suggestions
+        return true if Feature.enabled?(:incident_fail_over_completion_provider, current_user)
+        return true if completion_model_details.any_user_groups_claude_code_completion?
+        return true if completion_model_details.any_user_groups_with_model_selected_for_completion?
+        return true if ::Ai::AmazonQ.connected?
+
+        false
       end
 
       def model_prompt_cache_enabled?(project_path)

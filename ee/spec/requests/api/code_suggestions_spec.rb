@@ -1123,6 +1123,21 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
         end
 
+        context 'when user has a namespace with a pinned model' do
+          before do
+            group = Group.by_id(current_user.duo_available_namespace_ids).first
+
+            create(:ai_namespace_feature_setting, feature: :code_completions, namespace: group)
+          end
+
+          include_examples 'a response', 'unauthorized' do
+            let(:result) { :forbidden }
+            let(:response_body) do
+              { 'message' => '403 Forbidden - Direct connections are disabled' }
+            end
+          end
+        end
+
         # First, define the shared example outside the contexts
         shared_examples 'model prompt cache enabled setting' do |setting_level, cache_value|
           let(:cache) { cache_value }

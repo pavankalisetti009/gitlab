@@ -5,7 +5,15 @@ require 'spec_helper'
 RSpec.shared_examples 'as an orchestration policy' do
   include Security::PolicyCspHelpers
 
-  let!(:policy_configuration) { create(:security_orchestration_policy_configuration, security_policy_management_project: policy_management_project, project: project) }
+  let!(:policy_configuration) do
+    create(
+      :security_orchestration_policy_configuration,
+      security_policy_management_project: policy_management_project,
+      project: project,
+      experiments: { pipeline_execution_schedule_policy: { enabled: true } }
+    )
+  end
+
   let(:repository) { instance_double(Repository, root_ref: 'master', empty?: false) }
 
   before do
@@ -49,7 +57,8 @@ RSpec.shared_examples 'as an orchestration policy' do
           let!(:policy_configuration) do
             create(:security_orchestration_policy_configuration, :namespace,
               namespace: group,
-              security_policy_management_project: policy_management_project)
+              security_policy_management_project: policy_management_project,
+              experiments: { pipeline_execution_schedule_policy: { enabled: true } })
           end
 
           before do

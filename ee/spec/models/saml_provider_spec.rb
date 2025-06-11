@@ -175,16 +175,6 @@ RSpec.describe SamlProvider, feature_category: :system_access do
       expect(settings[:idp_cert_fingerprint_algorithm]).to eq 'http://www.w3.org/2001/04/xmlenc#sha256'
     end
 
-    context 'when explicit_group_saml_fingerprint_algorithm feature flag is disabled' do
-      before do
-        stub_feature_flags(explicit_group_saml_fingerprint_algorithm: false)
-      end
-
-      it 'does not include the fingerprint algorithm' do
-        expect(settings[:idp_cert_fingerprint_algorithm]).to be_nil
-      end
-    end
-
     context 'when saml_message_max_byte_size present in gitlab settings ' do
       before do
         stub_omniauth_setting(saml_message_max_byte_size: 1_000_000)

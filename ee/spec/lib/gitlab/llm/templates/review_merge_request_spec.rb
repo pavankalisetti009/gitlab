@@ -179,7 +179,8 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
           mr_description: mr_description,
           diff_lines: expected_diff_lines,
           full_file_intro: expected_full_file_intro,
-          full_content_section: expected_full_content_section
+          full_content_section: expected_full_content_section,
+          custom_instructions_section: ""
         })
       end
     end
@@ -256,6 +257,101 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       end
 
       it_behaves_like 'builds prompt inputs'
+    end
+
+    context 'with custom instructions' do
+      let(:custom_instructions) do
+        [
+          {
+            name: 'Ruby Style Guide',
+            instructions: 'Follow Ruby style conventions and best practices',
+            glob_pattern: '*.rb'
+          },
+          {
+            name: 'Markdown Standards',
+            instructions: 'Check for proper markdown formatting and structure',
+            glob_pattern: '*.md'
+          },
+          {
+            name: 'Security Review',
+            instructions: 'Focus on security vulnerabilities and data validation',
+            glob_pattern: '*.rb'
+          }
+        ]
+      end
+
+      subject(:prompt_inputs) do
+        described_class.new(
+          mr_title: mr_title,
+          mr_description: mr_description,
+          diffs_and_paths: diffs_and_paths,
+          files_content: files_content,
+          user: user,
+          custom_instructions: custom_instructions
+        ).to_prompt_inputs
+      end
+
+      it 'formats custom instructions section correctly' do
+        expect(prompt_inputs[:custom_instructions_section]).to eq <<~SECTION
+          Custom Review Instructions:
+          <custom_instructions>
+          You must also apply the following custom review instructions. Each instruction specifies which files it applies to:
+
+          For files matching "*.rb" (Ruby Style Guide):
+          Follow Ruby style conventions and best practices
+
+          For files matching "*.md" (Markdown Standards):
+          Check for proper markdown formatting and structure
+
+          For files matching "*.rb" (Security Review):
+          Focus on security vulnerabilities and data validation
+
+          IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
+          </custom_instructions>
+        SECTION
+      end
+
+      context 'when multiple patterns exist for same instruction group' do
+        let(:custom_instructions) do
+          [
+            {
+              name: 'General Code Review',
+              instructions: 'Review for code quality and best practices',
+              glob_pattern: '*.rb'
+            },
+            {
+              name: 'General Code Review',
+              instructions: 'Check for performance optimizations and memory leaks',
+              glob_pattern: '**/*.rb'
+            }
+          ]
+        end
+
+        it 'treats each instruction individually even with same name' do
+          expect(prompt_inputs[:custom_instructions_section]).to eq <<~SECTION
+            Custom Review Instructions:
+            <custom_instructions>
+            You must also apply the following custom review instructions. Each instruction specifies which files it applies to:
+
+            For files matching "*.rb" (General Code Review):
+            Review for code quality and best practices
+
+            For files matching "**/*.rb" (General Code Review):
+            Check for performance optimizations and memory leaks
+
+            IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
+            </custom_instructions>
+          SECTION
+        end
+      end
+
+      context 'when custom instructions is empty' do
+        let(:custom_instructions) { [] }
+
+        it 'returns empty string for custom instructions section' do
+          expect(prompt_inputs[:custom_instructions_section]).to eq("")
+        end
+      end
     end
   end
 end

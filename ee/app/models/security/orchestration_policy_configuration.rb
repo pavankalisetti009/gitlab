@@ -170,7 +170,11 @@ module Security
       return [] if policy_hash.blank?
 
       policy_hash.flat_map do |type, policies|
-        policies.map { |policy| policy.merge(type: type.to_s) }
+        next if available_policy_types.exclude?(type)
+
+        policies.map do |policy|
+          policy.merge(type: type.to_s)
+        end
       end.compact_blank
     end
 
@@ -264,6 +268,12 @@ module Security
     end
 
     private
+
+    def available_policy_types
+      policies_to_exclude = experiment_enabled?(:pipeline_execution_schedule_policy) ? [] : [:pipeline_execution_schedule_policy]
+
+      AVAILABLE_POLICY_TYPES - policies_to_exclude
+    end
 
     def yaml_differs_from_db?(policies_persisted_in_database, policies_in_policy_yaml)
       policy_changes(policies_persisted_in_database.undeleted, policies_in_policy_yaml).any?(&:present?)

@@ -95,12 +95,13 @@ module Gitlab
           PROMPT
         )
 
-        def initialize(mr_title:, mr_description:, diffs_and_paths:, user:, files_content: {})
+        def initialize(mr_title:, mr_description:, diffs_and_paths:, user:, files_content: {}, custom_instructions: [])
           @mr_title = mr_title
           @mr_description = mr_description
           @diffs_and_paths = diffs_and_paths
           @files_content = files_content
           @user = user
+          @custom_instructions = custom_instructions
         end
 
         def to_prompt
@@ -116,7 +117,9 @@ module Gitlab
         end
 
         def to_prompt_inputs
-          variables.slice(:mr_title, :mr_description, :diff_lines, :full_file_intro, :full_content_section)
+          variables.slice(:mr_title, :mr_description, :diff_lines, :full_file_intro, :full_content_section).merge(
+            custom_instructions_section: format_custom_instructions_section
+          )
         end
 
         def model_version
@@ -152,6 +155,28 @@ module Gitlab
             "Original file content (before changes):\n\n" \
               "Check for code duplication, redundancies, and inconsistencies.\n\n" \
               "#{all_files_content_formatted}"
+        end
+
+        def format_custom_instructions_section
+          return "" if custom_instructions.empty?
+
+          <<~SECTION
+            Custom Review Instructions:
+            <custom_instructions>
+            You must also apply the following custom review instructions. Each instruction specifies which files it applies to:
+
+            #{format_custom_instructions_list}
+
+            IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
+            </custom_instructions>
+          SECTION
+        end
+
+        def format_custom_instructions_list
+          custom_instructions.map do |instruction|
+            "For files matching \"#{instruction[:glob_pattern]}\" (#{instruction[:name]}):\n" \
+              "#{instruction[:instructions].strip}"
+          end.join("\n\n")
         end
 
         def all_diffs_formatted
@@ -194,7 +219,7 @@ module Gitlab
           end
         end
 
-        attr_reader :mr_title, :mr_description, :diffs_and_paths, :files_content, :user
+        attr_reader :mr_title, :mr_description, :diffs_and_paths, :files_content, :user, :custom_instructions
       end
     end
   end
