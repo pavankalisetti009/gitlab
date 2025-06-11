@@ -52,8 +52,6 @@ module Gitlab
               )
             ].freeze
 
-            PROMPT_VERSION = '^1.0.0'
-
             SLASH_COMMANDS = {
               '/fix' => {
                 description: 'Fix any errors in the code',
@@ -98,6 +96,16 @@ module Gitlab
                     ''
                   end
               end
+            end
+
+            override :prompt_version
+            def prompt_version
+              return '1.1.0-dev' if Feature.enabled?(
+                :code_based_slash_commands_claude_4_0_rollout,
+                context.current_user
+              )
+
+              super
             end
 
             def authorize

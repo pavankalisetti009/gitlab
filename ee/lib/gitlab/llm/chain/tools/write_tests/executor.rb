@@ -50,8 +50,6 @@ module Gitlab
               )
             ].freeze
 
-            PROMPT_VERSION = '^1.0.0'
-
             SLASH_COMMANDS = {
               '/tests' => {
                 description: 'Write tests for the code',
@@ -84,6 +82,16 @@ module Gitlab
             override :context_options
             def context_options
               { libraries: context.libraries }
+            end
+
+            override :prompt_version
+            def prompt_version
+              return '1.1.0-dev' if Feature.enabled?(
+                :code_based_slash_commands_claude_4_0_rollout,
+                context.current_user
+              )
+
+              super
             end
 
             def authorize
