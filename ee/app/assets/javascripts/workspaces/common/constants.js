@@ -30,3 +30,6 @@ export const I18N_LOADING_WORKSPACES_FAILED = s__(
 export const WORKSPACES_LIST_PAGE_SIZE = 10;
 export const WORKSPACES_LIST_POLL_INTERVAL = 3000;
 export const GET_WORKSPACE_STATE_INTERVAL = 1000;
+
+export const CLICK_NEW_WORKSPACE_BUTTON_EVENT_NAME = 'click_new_workspace_button';
+export const CLICK_OPEN_WORKSPACE_BUTTON_EVENT_NAME = 'click_open_workspace_button';
