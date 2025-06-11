@@ -215,6 +215,10 @@ module EE
 
       delegate :security_policy_management_project, to: :security_orchestration_policy_configuration, allow_nil: true
 
+      delegate :allow_enterprise_bypass_placeholder_confirmation,
+        :allow_enterprise_bypass_placeholder_confirmation=,
+        to: :namespace_settings, allow_nil: true
+
       before_create :sync_membership_lock_with_parent
 
       # Changing the plan or other details may invalidate this cache

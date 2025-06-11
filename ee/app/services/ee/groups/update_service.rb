@@ -7,7 +7,8 @@ module EE
       EE_SETTINGS_PARAMS = [
         :prevent_forking_outside_group,
         :remove_dormant_members,
-        :remove_dormant_members_period
+        :remove_dormant_members_period,
+        :allow_enterprise_bypass_placeholder_confirmation
       ].freeze
 
       override :execute
