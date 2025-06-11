@@ -165,7 +165,7 @@ export default {
       </div>
       <div
         v-if="isShowingLabels && mergeRequest.labels.nodes.length"
-        class="gl-mt-3"
+        class="gl-mt-3 gl-flex gl-flex-wrap gl-gap-2"
         data-testid="labels-container"
       >
         <gl-label
@@ -176,7 +176,6 @@ export default {
           :description="label.description"
           size="sm"
           :scoped="isScopedLabel(label)"
-          class="gl-mr-2"
         />
       </div>
     </td>
