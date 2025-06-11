@@ -39,6 +39,12 @@ module CodeSuggestions
         end
       end
 
+      def any_user_groups_with_model_selected_for_completion?
+        Ai::ModelSelection::NamespaceFeatureSetting.any_model_selected_for_completion?(
+          current_user.duo_available_namespace_ids
+        )
+      end
+
       private
 
       def fireworks_codestral_2501_model_details

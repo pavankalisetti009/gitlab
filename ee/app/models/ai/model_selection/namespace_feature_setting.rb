@@ -28,6 +28,10 @@ module Ai
         for_namespace(namespace_id).non_default.where(feature: DUO_CHAT_FEATURES).exists?
       end
 
+      def self.any_model_selected_for_completion?(namespace_ids)
+        for_namespace(namespace_ids).non_default.where(feature: :code_completions).exists?
+      end
+
       def model_selection_scope
         namespace
       end

@@ -142,6 +142,50 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
     end
   end
 
+  describe '.any_model_selected_for_completion?' do
+    let(:namespaces) { create_list(:group, 3) }
+    let(:namespace0_id) { namespaces[0].id }
+    let(:namespace1_id) { namespaces[1].id }
+    let(:namespace2_id) { namespaces[2].id }
+
+    before do
+      create(
+        :ai_namespace_feature_setting,
+        feature: :duo_chat,
+        offered_model_ref: 'claude-3-7-sonnet-20250219',
+        namespace: namespaces[0]
+      )
+
+      create(
+        :ai_namespace_feature_setting,
+        feature: :code_completions,
+        offered_model_ref: 'claude_sonnet_3_7',
+        namespace: namespaces[1]
+      )
+
+      create(
+        :ai_namespace_feature_setting,
+        feature: :duo_chat,
+        offered_model_ref: 'claude-3-7-sonnet-20250219',
+        namespace: namespaces[1]
+      )
+    end
+
+    subject { described_class.any_model_selected_for_completion?(namespace_ids) }
+
+    context 'when one of the namespaces has model for completion' do
+      let(:namespace_ids) { [namespace0_id, namespace1_id] }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when none of the namespaces has model completion' do
+      let(:namespace_ids) { [namespace0_id, namespace2_id] }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe 'validations' do
     include_context 'with model selection definitions'
 

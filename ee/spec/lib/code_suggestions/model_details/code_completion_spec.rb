@@ -6,15 +6,26 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
   include GitlabSubscriptions::SaasSetAssignmentHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group1) do
-    create(:group).tap do |g|
-      setup_addon_purchase_and_seat_assignment(user, g, :duo_pro)
+  let_it_be(:group1) { create(:group) }
+  let_it_be(:group2) { create(:group) }
+
+  let_it_be(:group1_addon) do
+    create(
+      :gitlab_subscription_add_on_purchase,
+      add_on: create(:gitlab_subscription_add_on, :duo_pro),
+      namespace: group1
+    ).tap do |addon|
+      add_user_to_group(user, addon)
     end
   end
 
-  let_it_be(:group2) do
-    create(:group).tap do |g|
-      setup_addon_purchase_and_seat_assignment(user, g, :duo_enterprise)
+  let_it_be(:group2_addon) do
+    create(
+      :gitlab_subscription_add_on_purchase,
+      add_on: create(:gitlab_subscription_add_on, :duo_enterprise),
+      namespace: group2
+    ).tap do |addon|
+      add_user_to_group(user, addon)
     end
   end
 
@@ -162,6 +173,33 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       it 'returns true' do
         expect(completions_model_details.any_user_groups_claude_code_completion?).to be_truthy
       end
+    end
+  end
+
+  describe '#any_user_groups_with_model_selected_for_completion?' do
+    let!(:user1) { create(:user) }
+    let!(:user2) { create(:user) }
+
+    before do
+      add_user_to_group(user1, group1_addon)
+      add_user_to_group(user2, group1_addon)
+      add_user_to_group(user2, group2_addon)
+
+      create(:ai_namespace_feature_setting, feature: :code_completions, namespace: group2)
+    end
+
+    subject { model_details.any_user_groups_with_model_selected_for_completion? }
+
+    context 'if the current user belongs to no group with selected model' do
+      let(:model_details) { described_class.new(current_user: user1) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'if the current user belongs to at least 1 group with a selected model' do
+      let(:model_details) { described_class.new(current_user: user2) }
+
+      it { is_expected.to be(true) }
     end
   end
 end

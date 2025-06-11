@@ -17,5 +17,13 @@ module GitlabSubscriptions
         add_on_purchase: active_gitlab_duo_purchase
       )
     end
+
+    def add_user_to_group(user, addon)
+      create(
+        :gitlab_subscription_user_add_on_assignment,
+        user: user,
+        add_on_purchase: addon
+      )
+    end
   end
 end
