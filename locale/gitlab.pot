@@ -16917,6 +16917,9 @@ msgstr ""
 msgid "Configure import sources and settings related to import and export features."
 msgstr ""
 
+msgid "Configure instance-wide Editor Extensions settings"
+msgstr ""
+
 msgid "Configure it later"
 msgstr ""
 
@@ -23887,6 +23890,9 @@ msgid "Editing"
 msgstr ""
 
 msgid "Editing this file is not supported"
+msgstr ""
+
+msgid "Editor Extensions"
 msgstr ""
 
 msgid "Editor toolbar"
@@ -35856,6 +35862,9 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
+msgid "Language Server restrictions enabled"
+msgstr ""
+
 msgid "Language type"
 msgstr ""
 
@@ -39035,7 +39044,13 @@ msgstr ""
 msgid "Minimal Access"
 msgstr ""
 
+msgid "Minimum GitLab Language Server client version"
+msgstr ""
+
 msgid "Minimum capacity to be available before we schedule more mirrors preemptively."
+msgstr ""
+
+msgid "Minimum client version to enforce for editor extensions using the GitLab Language Server."
 msgstr ""
 
 msgid "Minimum required approvals"
@@ -69284,6 +69299,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "When:"
+msgstr ""
+
+msgid "Whether to enforce minimum language server version."
 msgstr ""
 
 msgid "Which API requests are affected?"
