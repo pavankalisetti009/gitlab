@@ -8,7 +8,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::DuoCoreFeaturesEnabledM
   where(:duo_core_features_enabled, :expected_value) do
     false | false
     true  | true
-    nil   | false
+    nil   | nil
   end
 
   with_them do
