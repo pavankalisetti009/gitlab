@@ -6,7 +6,7 @@ class OrganizationPushRule < ApplicationRecord
 
   belongs_to :organization, class_name: 'Organizations::Organization', optional: false
 
-  def available?(feature_sym, _object: nil)
+  def available?(feature_sym, object: nil) # rubocop:disable Lint/UnusedMethodArgument -- `object` is unused here but required for interface compatibility
     License.feature_available?(feature_sym)
   end
 end
