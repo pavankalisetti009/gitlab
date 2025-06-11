@@ -7,7 +7,14 @@ RSpec.describe Projects::DeployTokens::CreateService, feature_category: :continu
   let_it_be(:entity) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
 
-  let(:deploy_token_params) { attributes_for(:deploy_token) }
+  let(:deploy_token_params) { default_attributes }
+
+  def default_attributes(overrides = {})
+    {
+      name: 'Deploy Token',
+      read_repository: true
+    }.merge(overrides)
+  end
 
   describe '#execute' do
     subject { described_class.new(entity, user, deploy_token_params).execute }
@@ -38,7 +45,7 @@ RSpec.describe Projects::DeployTokens::CreateService, feature_category: :continu
     end
 
     context 'when the deploy token is invalid' do
-      let(:deploy_token_params) { attributes_for(:deploy_token, read_repository: false, read_registry: false, write_registry: false) }
+      let(:deploy_token_params) { default_attributes(read_repository: false, read_registry: false, write_registry: false) }
 
       it 'creates an audit event' do
         expect { subject }.to change { AuditEvent.count }.by(1)

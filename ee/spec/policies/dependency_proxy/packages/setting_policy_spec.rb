@@ -50,20 +50,16 @@ RSpec.describe DependencyProxy::Packages::SettingPolicy, feature_category: :pack
     end
 
     context 'with deploy token' do
-      let!(:project_deploy_token) do
-        create(:project_deploy_token, project: project, deploy_token: deploy_token)
-      end
-
       subject { described_class.new(deploy_token, setting) }
 
       context 'when a deploy token with read_package_registry scope' do
-        let(:deploy_token) { create(:deploy_token, read_package_registry: true) }
+        let(:deploy_token) { create(:deploy_token, read_package_registry: true, projects: [project]) }
 
         it { is_expected.to be_allowed(:read_package) }
       end
 
       context 'when a deploy token with write_package_registry scope' do
-        let(:deploy_token) { create(:deploy_token, write_package_registry: true) }
+        let(:deploy_token) { create(:deploy_token, write_package_registry: true, projects: [project]) }
 
         it { is_expected.to be_allowed(:read_package) }
       end
@@ -109,20 +105,16 @@ RSpec.describe DependencyProxy::Packages::SettingPolicy, feature_category: :pack
     end
 
     context 'with deploy token' do
-      let!(:project_deploy_token) do
-        create(:project_deploy_token, project: project, deploy_token: deploy_token)
-      end
-
       subject { described_class.new(deploy_token, setting) }
 
       context 'when a deploy token with read_package_registry scope' do
-        let(:deploy_token) { create(:deploy_token, read_package_registry: true) }
+        let(:deploy_token) { create(:deploy_token, read_package_registry: true, projects: [project]) }
 
         it { is_expected.to be_disallowed(:create_package) }
       end
 
       context 'when a deploy token with write_package_registry scope' do
-        let(:deploy_token) { create(:deploy_token, write_package_registry: true) }
+        let(:deploy_token) { create(:deploy_token, write_package_registry: true, projects: [project]) }
 
         it { is_expected.to be_allowed(:create_package) }
       end
@@ -168,20 +160,16 @@ RSpec.describe DependencyProxy::Packages::SettingPolicy, feature_category: :pack
     end
 
     context 'with deploy token' do
-      let!(:project_deploy_token) do
-        create(:project_deploy_token, project: project, deploy_token: deploy_token)
-      end
-
       subject { described_class.new(deploy_token, setting) }
 
       context 'when a deploy token with read_package_registry scope' do
-        let(:deploy_token) { create(:deploy_token, read_package_registry: true) }
+        let(:deploy_token) { create(:deploy_token, read_package_registry: true, projects: [project]) }
 
         it { is_expected.to be_disallowed(:destroy_package) }
       end
 
       context 'when a deploy token with write_package_registry scope' do
-        let(:deploy_token) { create(:deploy_token, write_package_registry: true) }
+        let(:deploy_token) { create(:deploy_token, write_package_registry: true, projects: [project]) }
 
         it { is_expected.to be_allowed(:destroy_package) }
       end
