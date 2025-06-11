@@ -42,7 +42,7 @@ module Gitlab
           private
 
           def draft_notes
-            resource.draft_notes.authored_by(user)
+            options[:draft_notes] || resource.draft_notes.authored_by(user)
           end
           strong_memoize_attr :draft_notes
 
