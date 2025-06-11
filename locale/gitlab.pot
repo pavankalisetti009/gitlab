@@ -28280,6 +28280,9 @@ msgstr ""
 msgid "GitLab Premium"
 msgstr ""
 
+msgid "GitLab Query Language (GLQL) view"
+msgstr ""
+
 msgid "GitLab Security"
 msgstr ""
 
@@ -33891,6 +33894,9 @@ msgid "Issues and merge requests"
 msgstr ""
 
 msgid "Issues are being rebalanced at the moment, so manual reordering is disabled."
+msgstr ""
+
+msgid "Issues assigned to current user"
 msgstr ""
 
 msgid "Issues can be bugs, tasks or ideas to be discussed. Also, issues are searchable and filterable."
