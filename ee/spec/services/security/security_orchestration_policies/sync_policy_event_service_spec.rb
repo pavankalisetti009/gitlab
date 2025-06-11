@@ -11,6 +11,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
     create(:security_policy, scope: policy_scope)
   end
 
+  let(:service) do
+    described_class.new(project: project, security_policy: security_policy, event: event)
+  end
+
   before do
     create(:compliance_framework_project_setting,
       project: project,
@@ -18,7 +22,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
     )
   end
 
-  subject(:execute) { described_class.new(project: project, security_policy: security_policy, event: event).execute }
+  subject(:execute) { service.execute }
 
   describe '#execute' do
     context 'when event is ComplianceFrameworkChangedEvent' do
@@ -192,6 +196,43 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
         execute
 
         expect(sync_service).to have_received(:update_rules).with(undeleted_rules)
+      end
+    end
+
+    context 'when event is PolicyResyncEvent' do
+      let(:event) { Security::PolicyResyncEvent.new(data: { security_policy_id: security_policy.id }) }
+
+      let!(:policy_project_link) do
+        create(:security_policy_project_link, project: project, security_policy: security_policy)
+      end
+
+      context 'when policy is linked to the project' do
+        it 'unlinks and then links the policy to the project' do
+          expect { execute }.not_to change { Security::PolicyProjectLink.count }
+          expect { policy_project_link.reload }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+      end
+
+      context 'when policy is not linked to the project' do
+        before do
+          policy_project_link.destroy!
+        end
+
+        it 'links the policy to the project' do
+          expect { execute }.to change { Security::PolicyProjectLink.count }.by(1)
+
+          expect(project.security_policies).to contain_exactly(security_policy)
+        end
+      end
+
+      context 'when policy is not enabled' do
+        before do
+          security_policy.update!(enabled: false)
+        end
+
+        it 'deletes project link and does not create a new one' do
+          expect { execute }.to change { Security::PolicyProjectLink.count }.by(-1)
+        end
       end
     end
   end

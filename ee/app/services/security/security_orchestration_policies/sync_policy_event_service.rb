@@ -16,10 +16,17 @@ module Security
           sync_policy_for_protected_branch(event)
         when ::Repositories::DefaultBranchChangedEvent
           sync_all_rules
+        when Security::PolicyResyncEvent
+          resync_policy
         end
       end
 
       private
+
+      def resync_policy
+        unlink_policy
+        link_policy
+      end
 
       def sync_all_rules
         sync_project_approval_policy_rules_service.update_rules(security_policy.approval_policy_rules.undeleted)

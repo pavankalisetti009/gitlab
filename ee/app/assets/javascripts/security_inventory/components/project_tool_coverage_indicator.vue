@@ -44,7 +44,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-row gl-gap-2">
+  <div class="gl-flex gl-flex-row gl-flex-wrap gl-gap-2">
     <div v-for="(value, key) in $options.SCANNER_POPOVER_GROUPS" :key="key">
       <gl-badge
         :id="`tool-coverage-${key}-${item.path}`"

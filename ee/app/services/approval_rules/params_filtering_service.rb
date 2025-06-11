@@ -32,6 +32,12 @@ module ApprovalRules
 
       source_rule_ids = []
 
+      if Feature.enabled?(:v2_approval_rules, project)
+        params[:v2_approval_rules_attributes]&.each do |v2_rule_attributes|
+          handle_rule(v2_rule_attributes)
+        end
+      end
+
       params[:approval_rules_attributes].each do |rule_attributes|
         source_rule_ids << rule_attributes[:approval_project_rule_id].presence
         handle_rule(rule_attributes)

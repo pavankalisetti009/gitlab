@@ -22,10 +22,37 @@ RSpec.describe Security::SyncProjectPoliciesWorker, feature_category: :security_
     context 'when project and policy configuration exist' do
       it 'calls SyncProjectPolicyWorker for each undeleted security policy' do
         expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-          project.id, security_policy.id
+          project.id, security_policy.id, {}, {}
         ).once
 
         perform
+      end
+
+      context 'when force_resync is true' do
+        subject(:perform) { described_class.new.perform(project_id, policy_configuration_id, force_resync: true) }
+
+        it 'calls SyncProjectPolicyWorker with resync event payload' do
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project.id, security_policy.id, {}, { event: {
+              event_type: 'Security::PolicyResyncEvent',
+              data: { security_policy_id: security_policy.id }
+            } }
+          ).once
+
+          perform
+        end
+      end
+
+      context 'when force_resync is false' do
+        subject(:perform) { described_class.new.perform(project_id, policy_configuration_id, force_resync: false) }
+
+        it 'calls SyncProjectPolicyWorker with empty params' do
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project.id, security_policy.id, {}, {}
+          ).once
+
+          perform
+        end
       end
     end
 

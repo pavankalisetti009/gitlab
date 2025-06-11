@@ -76,7 +76,11 @@ module Security
       end
 
       def mark_as_no_longer_detected(no_longer_detected_vulnerability_ids)
-        Vulnerability.id_in(no_longer_detected_vulnerability_ids).update_all(resolved_on_default_branch: true)
+        vulnerabilities_relation = Vulnerability.id_in(no_longer_detected_vulnerability_ids)
+
+        ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute do |relation|
+          relation.update_all(resolved_on_default_branch: true)
+        end
 
         CreateVulnerabilityRepresentationInformation.execute(pipeline, no_longer_detected_vulnerability_ids)
 

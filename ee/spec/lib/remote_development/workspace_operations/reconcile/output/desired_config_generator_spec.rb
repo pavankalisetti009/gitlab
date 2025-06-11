@@ -1,12 +1,39 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGenerator, :freeze_time, feature_category: :workspaces do
-  include_context 'with remote development shared fixtures'
+  include_context "with remote development shared fixtures"
 
-  describe '#generate_desired_config' do
+  RSpec.shared_examples "includes env and file secrets if the secrets-inventory configmap is present" do
+    it "verifies that env and file secrets are included when secrets-inventory configmap exists" do
+      secret_configmap = workspace_resources.find do |resource|
+        resource.fetch(:kind) == "ConfigMap" && resource.dig(:metadata, :name).match?(/-secrets-inventory$/)
+      end
+
+      skip "No secrets-inventory configmap found in workspace resources" unless secret_configmap
+
+      secret_configmap_name = secret_configmap.dig(:metadata, :name)
+
+      workspace_secrets = workspace_resources.select { |resource| resource.fetch(:kind) == "Secret" }
+
+      secret_env = workspace_secrets.find do |resource|
+        resource.dig(:metadata, :name).match?(/-env-var$/) &&
+          resource.dig(:metadata, :annotations, :"config.k8s.io/owning-inventory") == secret_configmap_name
+      end
+
+      secret_file = workspace_secrets.find do |resource|
+        resource.dig(:metadata, :name).match?(/-file$/) &&
+          resource.dig(:metadata, :annotations, :"config.k8s.io/owning-inventory") == secret_configmap_name
+      end
+
+      expect(secret_env).not_to be_nil
+      expect(secret_file).not_to be_nil
+    end
+  end
+
+  describe "#generate_desired_config" do
     let(:logger) { instance_double(Logger) }
     let(:user) { create(:user) }
     let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
@@ -14,13 +41,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:actual_state) { states_module::STOPPED }
     let(:started) { true }
     let(:desired_state_is_terminated) { false }
-    let(:include_all_resources) { false }
+    let(:include_all_resources) { true }
     let(:include_scripts_resources) { true }
     let(:legacy_no_poststart_container_command) { false }
     let(:legacy_poststart_container_command) { false }
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
-    let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
+    let(:gitlab_workspaces_proxy_namespace) { "gitlab-workspaces" }
     let(:max_resources_per_workspace) { {} }
     let(:default_resources_per_workspace_container) { {} }
     let(:image_pull_secrets) { [] }
@@ -84,6 +111,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       )
     end
 
+    it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
+
     it "generates the expected config", :unlimited_max_formatted_output_length do
       expect(workspace_resources).to eq(expected_config)
     end
@@ -96,11 +125,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       expect(resources_without_workspace_name_in_name).to be_empty
     end
 
-    context 'when desired_state terminated' do
+    context "when desired_state terminated" do
       let(:desired_state_is_terminated) { true }
       let(:desired_state) { states_module::TERMINATED }
 
-      it 'returns expected config with only inventory config maps', :unlimited_max_formatted_output_length do
+      it "returns expected config with only inventory config maps", :unlimited_max_formatted_output_length do
         actual = workspace_resources
         expected = expected_config
         expect(actual).to eq(expected)
@@ -119,8 +148,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       end
     end
 
-    context 'when desired_state results in started=true' do
-      it 'returns expected config with the replicas set to one', :unlimited_max_formatted_output_length do
+    context "when desired_state results in started=true" do
+      it "returns expected config with the replicas set to one", :unlimited_max_formatted_output_length do
         actual = workspace_resources
         expected = expected_config
         expect(actual).to eq(expected)
@@ -137,13 +166,15 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
         expect(replicas).to eq(1)
       end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
     end
 
-    context 'when desired_state results in started=false' do
+    context "when desired_state results in started=false" do
       let(:desired_state) { states_module::STOPPED }
       let(:started) { false }
 
-      it 'returns expected config with the replicas set to zero' do
+      it "returns expected config with the replicas set to zero" do
         expect(workspace_resources).to eq(expected_config)
         workspace_resources => [
           *_,
@@ -157,24 +188,28 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         ]
         expect(replicas).to eq(0)
       end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
     end
 
-    context 'when network policy is disabled for agent' do
+    context "when network policy is disabled for agent" do
       let(:network_policy_enabled) { false }
 
-      it 'returns expected config without network policy' do
+      it "returns expected config without network policy" do
         expect(workspace_resources).to eq(expected_config)
-        network_policy_resource = workspace_resources.select { |resource| resource.fetch(:kind) == 'NetworkPolicy' }
+        network_policy_resource = workspace_resources.select { |resource| resource.fetch(:kind) == "NetworkPolicy" }
         expect(network_policy_resource).to be_empty
       end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
     end
 
-    context 'when default_resources_per_workspace_container is not empty' do
+    context "when default_resources_per_workspace_container is not empty" do
       let(:default_resources_per_workspace_container) do
-        { limits: { cpu: '1.5', memory: '786Mi' }, requests: { cpu: '0.6', memory: '512M' } }
+        { limits: { cpu: "1.5", memory: "786Mi" }, requests: { cpu: "0.6", memory: "512M" } }
       end
 
-      it 'returns expected config with defaults for the container resources set' do
+      it "returns expected config with defaults for the container resources set" do
         expect(workspace_resources).to eq(expected_config)
         workspace_resources => [
           *_,
@@ -193,26 +228,30 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         resources_per_workspace_container = containers.map { |container| container.fetch(:resources) }
         expect(resources_per_workspace_container).to all(eq(default_resources_per_workspace_container))
       end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
     end
 
-    context 'when there are image-pull-secrets' do
-      let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
-      let(:expected_image_pull_secrets_names) { [{ name: 'secret-name' }] }
+    context "when there are image-pull-secrets" do
+      let(:image_pull_secrets) { [{ name: "secret-name", namespace: "secret-namespace" }] }
+      let(:expected_image_pull_secrets_names) { [{ name: "secret-name" }] }
 
-      it 'returns expected config with a service account resource configured' do
+      it "returns expected config with a service account resource configured" do
         expect(workspace_resources).to eq(expected_config)
-        service_account_resource = workspace_resources.find { |resource| resource.fetch(:kind) == 'ServiceAccount' }
+        service_account_resource = workspace_resources.find { |resource| resource.fetch(:kind) == "ServiceAccount" }
         expect(service_account_resource.to_h.fetch(:imagePullSecrets)).to eq(expected_image_pull_secrets_names)
       end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
     end
 
-    context 'when shared_namespace is not empty' do
+    context "when shared_namespace is not empty" do
       let(:shared_namespace) { "secret-namespace" }
       let(:expected_pod_selector_labels) do
         { "workspaces.gitlab.com/id": workspace.id.to_s }
       end
 
-      it 'returns expected config with no resource quota and explicit pod selector in network policy' do
+      it "returns expected config with no resource quota and explicit pod selector in network policy" do
         expect(workspace_resources).to eq(expected_config)
         resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == "ResourceQuota" }
         expect(resource_quota).to be_nil
@@ -230,55 +269,87 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         ]
         expect(pod_selector_labels).to eq(expected_pod_selector_labels)
       end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
     end
 
-    context 'when include_all_resources is true' do
-      let(:include_all_resources) { true }
+    context "when max_resources_per_workspace is not empty" do
+      let(:max_resources_per_workspace) do
+        { limits: { cpu: "1.5", memory: "786Mi" }, requests: { cpu: "0.6", memory: "512Mi" } }
+      end
 
-      context 'when max_resources_per_workspace is not empty' do
+      it "returns expected config with resource quota set" do
+        expect(workspace_resources).to eq(expected_config)
+        resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == "ResourceQuota" }
+        expect(resource_quota).not_to be_nil
+      end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
+    end
+
+    context "when legacy postStart events are present in devfile" do
+      let(:legacy_poststart_container_command) { true }
+      let(:processed_devfile_yaml) do
+        read_devfile_yaml("example.legacy-poststart-in-container-command-processed-devfile.yaml.erb")
+      end
+
+      it 'returns expected config without script resources' do
+        expect(workspace_resources).to eq(expected_config)
+      end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
+    end
+
+    context "when postStart events are not present in devfile" do
+      let(:include_scripts_resources) { false }
+      let(:legacy_no_poststart_container_command) { true }
+      let(:processed_devfile_yaml) do
+        read_devfile_yaml("example.legacy-no-poststart-in-container-command-processed-devfile.yaml.erb")
+      end
+
+      it "returns expected config without script resources" do
+        expect(workspace_resources).to eq(expected_config)
+      end
+
+      it_behaves_like "includes env and file secrets if the secrets-inventory configmap is present"
+    end
+
+    context "when include_all_resources is false" do
+      let(:include_all_resources) { false }
+
+      it "does not include secrets inventory config map" do
+        secret_configmap = workspace_resources.find do |resource|
+          resource.fetch(:kind) == "ConfigMap" && resource.dig(:metadata, :name).match?(/-secrets-inventory$/)
+        end
+
+        expect(secret_configmap).to be_nil
+      end
+
+      it "does not include any secrets" do
+        secret_env = workspace_resources.find { |resource| resource.fetch(:kind) == "Secret" }
+        expect(secret_env).to be_nil
+      end
+
+      context "when max_resources_per_workspace is not empty" do
         let(:max_resources_per_workspace) do
-          { limits: { cpu: '1.5', memory: '786Mi' }, requests: { cpu: '0.6', memory: '512Mi' } }
+          { limits: { cpu: "1.5", memory: "786Mi" }, requests: { cpu: "0.6", memory: "512Mi" } }
         end
 
-        it 'returns expected config with resource quota set' do
-          expect(workspace_resources).to eq(expected_config)
-          resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == 'ResourceQuota' }
-          expect(resource_quota).not_to be_nil
-        end
-      end
-
-      context "when legacy postStart events are present in devfile" do
-        let(:legacy_poststart_container_command) { true }
-        let(:processed_devfile_yaml) do
-          read_devfile_yaml("example.legacy-poststart-in-container-command-processed-devfile.yaml.erb")
-        end
-
-        it 'returns expected config without script resources' do
-          expect(workspace_resources).to eq(expected_config)
-        end
-      end
-
-      context "when postStart events are not present in devfile" do
-        let(:include_scripts_resources) { false }
-        let(:legacy_no_poststart_container_command) { true }
-        let(:processed_devfile_yaml) do
-          read_devfile_yaml("example.legacy-no-poststart-in-container-command-processed-devfile.yaml.erb")
-        end
-
-        it 'returns expected config without script resources' do
-          expect(workspace_resources).to eq(expected_config)
+        it "does not include workspace resource quota" do
+          resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == "ResourceQuota" }
+          expect(resource_quota).to be_nil
         end
       end
     end
 
-    context 'when DevfileParser returns empty array' do
+    context "when DevfileParser returns empty array" do
       before do
         # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
         allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DevfileParser).to receive(:get_all).and_return([])
         # rubocop:enable Layout/LineLength
       end
 
-      it 'returns an empty array' do
+      it "returns an empty array" do
         expect(workspace_resources).to eq([])
       end
     end

@@ -95,6 +95,49 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
           expect { perform }.to raise_error(Gitlab::EventStore::InvalidEvent, /Event data must be a Hash/)
         end
       end
+
+      context 'for SUPPORTED_EVENTS' do
+        let(:event_payloads) do
+          {
+            'Repositories::ProtectedBranchCreatedEvent' => {
+              protected_branch_id: non_existing_record_id,
+              parent_id: project.id,
+              parent_type: 'project'
+            },
+            'Repositories::ProtectedBranchDestroyedEvent' => {
+              parent_id: project.id,
+              parent_type: 'project'
+            },
+            'Repositories::DefaultBranchChangedEvent' => {
+              container_id: project.id,
+              container_type: 'Project'
+            },
+            'Projects::ComplianceFrameworkChangedEvent' => {
+              project_id: project.id,
+              compliance_framework_id: non_existing_record_id,
+              event_type: 'added'
+            },
+            'Security::PolicyResyncEvent' => {
+              security_policy_id: security_policy.id
+            }
+          }
+        end
+
+        it "calls the SyncPolicyEventService for each supported event" do
+          event_payloads.each do |event_type, event_data|
+            params = { event: { event_type: event_type, data: event_data } }
+            event_class = event_type.constantize
+            event_instance = instance_double(event_class)
+            allow(event_class).to receive(:new).with(data: event_data).and_return(event_instance)
+
+            expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).to receive(:new)
+              .with(project: project, security_policy: security_policy, event: event_instance)
+              .and_call_original
+
+            described_class.new.perform(project.id, security_policy.id, policy_changes, params)
+          end
+        end
+      end
     end
 
     context 'when project does not exist' do

@@ -1,20 +1,7 @@
 <script>
-import { __ } from '~/locale';
 import FilteredSearch from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
-import { UPDATED_ASC, UPDATED_DESC } from '~/issues/list/constants';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import { queryToObject } from '~/lib/utils/url_utility';
-
-const sortOptions = [
-  {
-    id: 1,
-    title: __('Updated date'),
-    sortDirection: {
-      descending: UPDATED_DESC,
-      ascending: UPDATED_ASC,
-    },
-  },
-];
 
 export default {
   name: 'InventoryDashboardFilteredSearchBar',
@@ -71,15 +58,14 @@ export default {
       this.$emit('filterSubgroupsAndProjects', this.filterParams);
     },
   },
-  sortOptions,
 };
 </script>
 
 <template>
   <filtered-search
+    class="gl-pr-3"
     v-bind="$attrs"
     :namespace="namespace"
-    :sort-options="$options.sortOptions"
     :initial-filter-value="initialFilterValue"
     :tokens="searchTokens"
     :initial-sort-by="initialSortBy"

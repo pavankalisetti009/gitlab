@@ -34,7 +34,7 @@ export default {
     v-if="!isSubGroup(item)"
     v-gl-tooltip.hover.left
     :href="projectSecurityConfigurationPath(item)"
-    class="gl-ml-3"
+    class="gl-flex gl-justify-self-end"
     :aria-label="$options.i18n.projectConfigurationTooltipTitle"
     :title="$options.i18n.projectConfigurationTooltipTitle"
     icon="settings"
