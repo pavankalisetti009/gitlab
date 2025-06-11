@@ -1,6 +1,5 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
 import { newWorkItemId } from '~/work_items/utils';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import WorkItemStatus from 'ee/work_items/components/work_item_status.vue';
@@ -14,6 +13,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import {
   mockWorkItemStatus,
+  namespaceWorkItemTypesQueryResponse,
   updateWorkItemMutationResponseFactory,
   workItemByIidResponseFactory,
 } from '../mock_data';

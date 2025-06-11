@@ -2,13 +2,13 @@ import { GlFilteredSearchToken, GlFilteredSearchTokenSegment } from '@gitlab/ui'
 import { mount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
+import { namespaceWorkItemTypesQueryResponse } from 'jest/work_items/mock_data';
 import { mockStatusToken } from '../mock_data';
 
 Vue.use(VueApollo);

@@ -2,7 +2,6 @@ import { GlAvatarLabeled, GlFormRadio, GlFormRadioGroup, GlCollapsibleListbox } 
 import Vue, { nextTick } from 'vue';
 import { unionBy } from 'lodash';
 import VueApollo from 'vue-apollo';
-import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import BoardAddNewColumn, { listTypeInfo } from 'ee/boards/components/board_add_new_column.vue';
@@ -20,7 +19,10 @@ import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
 import { getIterationPeriod } from 'ee/iterations/utils';
 import { createBoardListResponse, labelsQueryResponse } from 'jest/boards/mock_data';
-import { mockWorkItemStatus } from 'ee_else_ce_jest/work_items/mock_data';
+import {
+  mockWorkItemStatus,
+  namespaceWorkItemTypesQueryResponse,
+} from 'ee_else_ce_jest/work_items/mock_data';
 import {
   mockAssignees,
   mockIterations,

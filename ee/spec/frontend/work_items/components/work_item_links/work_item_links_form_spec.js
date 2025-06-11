@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import { GlForm, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
-import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -22,9 +21,10 @@ import namespaceProjectsForLinksWidgetQuery from '~/work_items/graphql/namespace
 import {
   availableWorkItemsResponse,
   createWorkItemMutationResponse,
-  updateWorkItemMutationResponse,
   mockIterationWidgetResponse,
   namespaceProjectsList,
+  namespaceWorkItemTypesQueryResponse,
+  updateWorkItemMutationResponse,
 } from 'jest/work_items/mock_data';
 
 Vue.use(VueApollo);
