@@ -16,7 +16,8 @@ module Security
       'Repositories::ProtectedBranchCreatedEvent',
       'Repositories::ProtectedBranchDestroyedEvent',
       'Repositories::DefaultBranchChangedEvent',
-      'Projects::ComplianceFrameworkChangedEvent'
+      'Projects::ComplianceFrameworkChangedEvent',
+      'Security::PolicyResyncEvent'
     ].freeze
 
     # This is needed to ensure that the worker does not run multiple times for the same security policy
