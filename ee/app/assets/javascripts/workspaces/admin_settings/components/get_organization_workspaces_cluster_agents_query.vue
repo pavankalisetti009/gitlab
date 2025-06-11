@@ -4,7 +4,6 @@ import { logError } from '~/lib/logger';
 
 import organizationWorkspacesClusterAgentsQuery from '../graphql/queries/organization_workspaces_cluster_agents.query.graphql';
 import mappedOrganizationClusterAgentsQuery from '../graphql/queries/organization_mapped_agents.query.graphql';
-import { AVAILABILITY_OPTIONS } from '../constants';
 
 export default {
   props: {
@@ -17,13 +16,23 @@ export default {
     return {
       mappedAgentsLoaded: false,
       mappedAgents: null,
-      agents: [],
+      rawAgents: null,
       error: null,
       beforeCursor: null,
       afterCursor: null,
       hasNextPage: false,
       hasPreviousPage: false,
     };
+  },
+  computed: {
+    agents() {
+      if (!this.rawAgents || !this.mappedAgents) return null;
+
+      return this.rawAgents.map((agent) => ({
+        ...agent,
+        isMapped: this.mappedAgents.has(agent.id),
+      }));
+    },
   },
   apollo: {
     mappedAgents: {
@@ -49,7 +58,7 @@ export default {
         return new Set(mappedAgentIds);
       },
     },
-    agents: {
+    rawAgents: {
       query: organizationWorkspacesClusterAgentsQuery,
       variables() {
         return {
@@ -66,39 +75,35 @@ export default {
       update(data) {
         this.error = null;
 
-        const { pageInfo } = data.organization.organizationWorkspacesClusterAgents;
+        const { pageInfo, nodes } = data.organization.organizationWorkspacesClusterAgents;
 
         this.hasNextPage = pageInfo.hasNextPage;
         this.hasPreviousPage = pageInfo.hasPreviousPage;
         this.beforeCursor = pageInfo.startCursor;
         this.afterCursor = pageInfo.endCursor;
 
-        const agents = data.organization.organizationWorkspacesClusterAgents.nodes.map((agent) => ({
+        return nodes.map((agent) => ({
+          id: agent.id,
           name: agent.name,
           url: joinPaths(window.gon.gitlab_url, agent.webPath),
           group: agent.project?.group?.name || '',
           project: agent.project?.name || '',
           isConnected: Boolean(agent.connections?.nodes.length),
           workspacesEnabled: Boolean(agent.workspacesAgentConfig?.enabled),
-          availability: this.mappedAgents.has(agent.id)
-            ? AVAILABILITY_OPTIONS.AVAILABLE
-            : AVAILABILITY_OPTIONS.BLOCKED,
         }));
-
-        return agents;
       },
     },
   },
   methods: {
     nextPage() {
-      this.$apollo.queries.agents.refetch({
+      this.$apollo.queries.rawAgents.refetch({
         organizationId: this.organizationId,
         before: null,
         after: this.afterCursor,
       });
     },
     prevPage() {
-      this.$apollo.queries.agents.refetch({
+      this.$apollo.queries.rawAgents.refetch({
         organizationId: this.organizationId,
         before: this.beforeCursor,
         after: null,
