@@ -10691,6 +10691,9 @@ msgstr ""
 msgid "Branch name"
 msgstr ""
 
+msgid "Branch name copied to clipboard."
+msgstr ""
+
 msgid "Branch name is available"
 msgstr ""
 
@@ -18289,6 +18292,9 @@ msgid "Copy reference"
 msgstr ""
 
 msgid "Copy secret"
+msgstr ""
+
+msgid "Copy selected ref"
 msgstr ""
 
 msgid "Copy source"
@@ -60948,6 +60954,9 @@ msgid "Tag name"
 msgstr ""
 
 msgid "Tag name cannot be one of the following: %{names}"
+msgstr ""
+
+msgid "Tag name copied to clipboard."
 msgstr ""
 
 msgid "Tag name is required."
