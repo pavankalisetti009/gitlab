@@ -65753,7 +65753,7 @@ msgstr ""
 msgid "UpdateProject|Cancel"
 msgstr ""
 
-msgid "UpdateProject|Cannot rename project because it contains container registry tags!"
+msgid "UpdateProject|Cannot rename or delete project because it contains container registry tags. Delete all container registry tags first. https://docs.gitlab.com/user/packages/container_registry/#move-or-rename-container-registry-repositories"
 msgstr ""
 
 msgid "UpdateProject|Cannot rename project, the container registry path rename validation failed: %{error}"

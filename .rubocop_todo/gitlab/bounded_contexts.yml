@@ -255,6 +255,7 @@ Gitlab/BoundedContexts:
     - 'app/graphql/resolvers/concerns/resolves_snippets.rb'
     - 'app/graphql/resolvers/concerns/search_arguments.rb'
     - 'app/graphql/resolvers/concerns/time_frame_arguments.rb'
+    - 'app/graphql/resolvers/concerns/time_frame_helpers.rb'
     - 'app/graphql/resolvers/container_repositories_resolver.rb'
     - 'app/graphql/resolvers/container_repository_tags_resolver.rb'
     - 'app/graphql/resolvers/crm/contact_state_counts_resolver.rb'

@@ -66,7 +66,7 @@ module Billing
     end
 
     def footer_classes
-      "gl-border-none gl-px-0"
+      "gl-border-none gl-bg-transparent gl-px-0"
     end
 
     def name
