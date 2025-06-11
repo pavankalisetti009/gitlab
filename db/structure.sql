@@ -10697,7 +10697,8 @@ CREATE TABLE bulk_import_configurations (
     encrypted_access_token_iv text,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    organization_id bigint
+    organization_id bigint,
+    CONSTRAINT check_cd24605431 CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE SEQUENCE bulk_import_configurations_id_seq
