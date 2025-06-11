@@ -4,6 +4,8 @@ module Sbom
   class BuildDependencyGraph
     include Gitlab::Utils::StrongMemoize
 
+    BATCH_SIZE = 1000
+
     def self.execute(project)
       new(project).execute
     end
@@ -30,7 +32,9 @@ module Sbom
     attr_reader :project
 
     def remove_existing_dependency_graph
-      Sbom::GraphPath.by_projects(project.id).delete_all
+      Sbom::GraphPath.by_projects(project.id).each_batch(of: BATCH_SIZE) do |batch|
+        batch.delete_all
+      end
     end
 
     def build_dependency_graph
@@ -86,7 +90,9 @@ module Sbom
     end
 
     def bulk_insert_paths(paths)
-      Sbom::GraphPath.bulk_insert!(paths)
+      paths.each_slice(BATCH_SIZE) do |slice|
+        Sbom::GraphPath.bulk_insert!(slice)
+      end
     end
 
     def sbom_occurrences
