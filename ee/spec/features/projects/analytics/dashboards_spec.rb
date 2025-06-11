@@ -32,9 +32,13 @@ end
 RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_management do
   include ValueStreamsDashboardHelpers
   include DoraMetricsDashboardHelpers
+  include MrAnalyticsDashboardHelpers
+  include ListboxHelpers
+  include FilteredSearchHelpers
 
   let_it_be(:current_user) { create(:user) }
   let_it_be(:user) { current_user }
+  let_it_be(:user_2) { create(:user) }
   let_it_be(:group) { create(:group, :with_organization, name: "vsd test group") }
   let_it_be(:project) { create(:project, :repository, name: "vsd project", namespace: group) }
 
@@ -51,6 +55,9 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
     before_all do
       group.add_developer(user)
       project.add_developer(user)
+
+      group.add_developer(user_2)
+      project.add_developer(user_2)
     end
 
     context 'with combined_project_analytics_dashboards and project_level_analytics_dashboard license' do
@@ -230,6 +237,180 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
 
           it_behaves_like 'updates DORA metrics visualizations when filters applied', days_back: 90 do
             let(:filtered_dora_metrics_stats) { ['0.2 /day', '33.3 %', '4.0 days', '2.0 days'] }
+          end
+        end
+      end
+
+      context 'for Merge request analytics dashboard' do
+        context 'without data available' do
+          before do
+            visit_mr_analytics_dashboard(project)
+          end
+
+          it_behaves_like 'MR analytics renders as an analytics dashboard'
+
+          it_behaves_like 'renders `Mean time to merge` panel with correct value', expected_value: _('- days')
+
+          it 'renders `Throughput` panel with an empty state' do
+            within_testid('panel-merge-requests-over-time') do
+              expect(page).to have_text _('Throughput')
+              expect(page).to have_text _('No results match your query or filter.')
+            end
+          end
+
+          it 'renders `Merge requests` panel with an empty state' do
+            within_testid('panel-merge-requests-throughput-table') do
+              expect(page).to have_text _('Merge Requests')
+              expect(page).to have_text _('No results match your query or filter.')
+            end
+          end
+        end
+
+        context 'with data available' do
+          let_it_be(:milestone) { create(:milestone, project: project) }
+
+          let_it_be(:merge_request_1) do
+            merged_at = Time.utc(2025, 5, 29)
+            created_at = Time.utc(2025, 5, 27)
+
+            create(:merge_request, :with_merged_metrics, :simple, created_at: created_at,
+              source_project: project).tap do |mr|
+              mr.metrics.update!(merged_at: merged_at, created_at: created_at)
+            end
+          end
+
+          let_it_be(:merge_request_2) do
+            merged_at = Time.utc(2025, 5, 20)
+            created_at = Time.utc(2025, 5, 15)
+
+            create(:merge_request, :with_merged_metrics, milestone: milestone, author: user_2, created_at: created_at,
+              source_project: project).tap do |mr|
+              mr.metrics.update!(merged_at: merged_at, created_at: created_at)
+            end
+          end
+
+          let_it_be(:merge_request_3) do
+            merged_at = Time.utc(2025, 5, 10)
+            created_at = Time.utc(2025, 5, 7)
+
+            create(:merge_request, :with_merged_metrics, :simple, milestone: milestone, author: user_2,
+              created_at: created_at, source_project: project).tap do |mr|
+              mr.metrics.update!(merged_at: merged_at, created_at: created_at)
+            end
+          end
+
+          let_it_be(:merge_request_4) do
+            merged_at = Time.utc(2025, 4, 25)
+            created_at = Time.utc(2025, 4, 19)
+
+            create(:merge_request, :with_merged_metrics, created_at: created_at,
+              source_project: project).tap do |mr|
+              mr.metrics.update!(merged_at: merged_at, created_at: created_at)
+            end
+          end
+
+          before do
+            visit_mr_analytics_dashboard_with_custom_date_range(project,
+              start_date: Time.utc(2024, 5, 30).to_date.iso8601, end_date: Time.utc(2025, 5, 30).to_date.iso8601)
+          end
+
+          it_behaves_like 'MR analytics renders as an analytics dashboard'
+
+          it_behaves_like 'renders `Mean time to merge` panel with correct value', expected_value: _('4 days')
+
+          it_behaves_like 'renders chart in `Throughput` panel'
+
+          it_behaves_like 'renders merge requests in table in `Merge Requests` panel' do
+            let(:expected_mrs) { [merge_request_1, merge_request_2, merge_request_3, merge_request_4] }
+          end
+
+          context 'when date range changes' do
+            before do
+              within_testid('dashboard-filters-date-range') do
+                toggle_listbox
+                select_listbox_item(_('Custom range'), exact_text: true)
+
+                fill_in _('From'), with: Time.utc(2025, 5, 1).to_date.iso8601
+                fill_in _('To'), with: Time.utc(2025, 5, 30).to_date.iso8601
+
+                send_keys :enter, :tab
+
+                wait_for_requests
+              end
+            end
+
+            it_behaves_like 'renders `Mean time to merge` panel with correct value', expected_value: _('3 days')
+
+            it_behaves_like 'renders chart in `Throughput` panel'
+
+            it_behaves_like 'renders merge requests in table in `Merge Requests` panel' do
+              let(:expected_mrs) { [merge_request_1, merge_request_2, merge_request_3] }
+            end
+          end
+
+          context 'when filtering by author' do
+            before do
+              select_tokens 'Author', user_2.username, submit: true
+
+              wait_for_requests
+            end
+
+            it_behaves_like 'renders `Mean time to merge` panel with correct value', expected_value: _('4 days')
+
+            it_behaves_like 'renders chart in `Throughput` panel'
+
+            it_behaves_like 'renders merge requests in table in `Merge Requests` panel' do
+              let(:expected_mrs) { [merge_request_2, merge_request_3] }
+            end
+          end
+
+          context 'when filtering by target branch' do
+            before do
+              select_tokens 'Target branch', 'master', submit: true
+
+              wait_for_requests
+            end
+
+            it_behaves_like 'renders `Mean time to merge` panel with correct value', expected_value: _('3 days')
+
+            it_behaves_like 'renders chart in `Throughput` panel'
+
+            it_behaves_like 'renders merge requests in table in `Merge Requests` panel' do
+              let(:expected_mrs) { [merge_request_1, merge_request_3] }
+            end
+          end
+
+          context 'when filtering by milestone' do
+            before do
+              select_tokens 'Milestone', '=', milestone.title, submit: true
+
+              wait_for_requests
+            end
+
+            it_behaves_like 'renders `Mean time to merge` panel with correct value', expected_value: _('4 days')
+
+            it_behaves_like 'renders chart in `Throughput` panel'
+
+            it_behaves_like 'renders merge requests in table in `Merge Requests` panel' do
+              let(:expected_mrs) { [merge_request_2, merge_request_3] }
+            end
+          end
+
+          context 'when filtering by author, target branch and milestone' do
+            before do
+              select_tokens 'Author', user_2.username, 'Target branch', 'master', 'Milestone', '=', milestone.title,
+                submit: true
+
+              wait_for_requests
+            end
+
+            it_behaves_like 'renders `Mean time to merge` panel with correct value', expected_value: _('3 days')
+
+            it_behaves_like 'renders chart in `Throughput` panel'
+
+            it_behaves_like 'renders merge requests in table in `Merge Requests` panel' do
+              let(:expected_mrs) { [merge_request_3] }
+            end
           end
         end
       end

@@ -204,6 +204,7 @@ export default {
 
 <template>
   <filtered-search-bar
+    data-testid="dashboard-filters-filtered-search"
     :tokens="tokens"
     :namespace="namespaceFullPath"
     :initial-filter-value="formattedInitialFilterValue"
