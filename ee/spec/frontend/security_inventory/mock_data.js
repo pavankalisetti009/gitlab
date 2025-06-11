@@ -51,6 +51,7 @@ export const subgroupsAndProjects = {
               info: 10,
               medium: 20,
               unknown: 20,
+              updatedAt: '2025-01-01T00:00:00Z',
             },
           },
         ],
@@ -77,6 +78,7 @@ export const subgroupsAndProjects = {
               info: 0,
               medium: 48,
               unknown: 7,
+              updatedAt: '2025-01-01T00:00:00Z',
             },
             analyzerStatuses: [
               {
@@ -104,6 +106,7 @@ export const subgroupsAndProjects = {
               info: 0,
               medium: 0,
               unknown: 0,
+              updatedAt: '2025-01-01T00:00:00Z',
             },
             analyzerStatuses: [
               {

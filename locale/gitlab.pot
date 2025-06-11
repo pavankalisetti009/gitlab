@@ -55314,6 +55314,9 @@ msgstr ""
 msgid "SecurityInventory|View vulnerability report"
 msgstr ""
 
+msgid "SecurityInventory|You're already viewing this subgroup"
+msgstr ""
+
 msgid "SecurityOrchestration| and "
 msgstr ""
 

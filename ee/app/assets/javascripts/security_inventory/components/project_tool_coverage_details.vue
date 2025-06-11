@@ -8,6 +8,7 @@ import {
 } from 'ee/security_inventory/constants';
 import { securityScannerOfProjectValidator } from 'ee/security_inventory/utils';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 // These statuses represent the situations that can be displayed in the icon
 const STATUS_CONFIG = {
@@ -52,12 +53,12 @@ export default {
     getStatusConfig(status) {
       return STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
     },
-    pipelineJobPath(buildIdPath) {
-      let buildId = buildIdPath;
-      if (typeof buildIdPath === 'string') {
-        const lastIndexOf = buildIdPath.lastIndexOf('/');
-        buildId = buildIdPath.substring(lastIndexOf + 1);
-      }
+    getBuildId(buildIdPath) {
+      return getIdFromGraphQLId(buildIdPath);
+    },
+    pipelineJobPath(currentBuildIdPath) {
+      if (!currentBuildIdPath) return '#';
+      const buildId = this.getBuildId(currentBuildIdPath);
       return this.webUrl ? `${this.webUrl}${PROJECT_PIPELINE_JOB_PATH}/${buildId}` : '#';
     },
     getLastScan(lastCall) {
@@ -103,7 +104,7 @@ export default {
             >{{ __('Pipeline job') }}:</span
           >
           <gl-link v-if="item.buildId" :href="pipelineJobPath(item.buildId)"
-            >#{{ item.buildId }}</gl-link
+            >#{{ getBuildId(item.buildId) }}</gl-link
           >
           <gl-icon v-else name="dash" variant="default" :size="12" />
         </div>

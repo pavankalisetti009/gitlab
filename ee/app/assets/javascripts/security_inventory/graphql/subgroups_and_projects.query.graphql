@@ -43,6 +43,7 @@ query SubgroupsAndProjects(
           info
           medium
           unknown
+          updatedAt
         }
       }
     }
@@ -72,6 +73,7 @@ query SubgroupsAndProjects(
           info
           medium
           unknown
+          updatedAt
         }
         analyzerStatuses {
           status

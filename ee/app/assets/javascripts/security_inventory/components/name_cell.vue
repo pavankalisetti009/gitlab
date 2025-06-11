@@ -1,14 +1,22 @@
 <script>
-import { GlIcon, GlLink } from '@gitlab/ui';
+import { GlIcon, GlLink, GlToast, GlTooltipDirective, GlTruncate } from '@gitlab/ui';
+import Vue from 'vue';
+import { getLocationHash, setLocationHash } from '~/lib/utils/url_utility';
 import ProjectAvatar from '~/vue_shared/components/project_avatar.vue';
-import { sprintf, n__, __ } from '~/locale';
+import { sprintf, n__, __, s__ } from '~/locale';
 import { isSubGroup } from '../utils';
+
+Vue.use(GlToast);
 
 export default {
   components: {
     GlIcon,
     GlLink,
+    GlTruncate,
     ProjectAvatar,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     item: {
@@ -29,9 +37,12 @@ export default {
       return isSubGroup(this.item) && this.item.fullPath ? `#${this.item.fullPath}` : undefined;
     },
     fullPath() {
+      const parentWithSpaces = this.parentPath.split('/').join(' / ');
+      return !isSubGroup(this.item) ? parentWithSpaces : '';
+    },
+    parentPath() {
       const lastSlashIndex = this.item.fullPath?.lastIndexOf('/');
-      const parentPath = this.item.fullPath?.substring(0, lastSlashIndex);
-      return !isSubGroup(this.item) ? parentPath : '';
+      return this.item.fullPath?.substring(0, lastSlashIndex);
     },
     showFullPath() {
       return this.showSearchParam && this.fullPath;
@@ -51,6 +62,12 @@ export default {
         subGroupsCount,
       });
     },
+    moveToSubGroup() {
+      const currentPath = getLocationHash();
+      if (currentPath !== this.parentPath) return setLocationHash(this.parentPath);
+      this.$toast.show(s__("SecurityInventory|You're already viewing this subgroup"));
+      return false;
+    },
   },
 };
 </script>
@@ -69,19 +86,25 @@ export default {
       :project-name="item.name"
       :project-avatar-url="item.avatarUrl"
     />
-    <div class="gl-flex gl-flex-col">
+    <div class="gl-flex gl-flex-col gl-overflow-hidden">
       <span class="gl-text-base gl-font-bold gl-wrap-anywhere" data-testid="name-cell-item-name">{{
         item.name
       }}</span>
-      <span v-if="isSubGroup(item)" class="gl-font-normal gl-text-subtle">
+      <span v-if="isSubGroup(item)" class="gl-text-sm gl-font-normal gl-text-subtle">
         {{ projectAndSubgroupCountText(item) }}
       </span>
-      <span
+      <div
         v-if="showFullPath"
-        class="gl-text-link gl-wrap-anywhere"
+        v-gl-tooltip.hover.top="fullPath"
         data-testid="name-cell-item-path"
-        >{{ fullPath }}</span
+        @click="moveToSubGroup()"
       >
+        <gl-truncate
+          :text="fullPath"
+          position="middle"
+          class="gl-cursor-pointer gl-text-sm gl-text-link"
+        />
+      </div>
     </div>
   </component>
 </template>

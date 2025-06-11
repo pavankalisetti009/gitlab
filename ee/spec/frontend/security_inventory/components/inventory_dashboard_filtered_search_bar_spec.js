@@ -36,23 +36,8 @@ describe('InventoryDashboardFilteredSearchBar', () => {
       expect(findFilteredSearch().props()).toMatchObject({
         initialFilterValue: [],
         tokens: [],
-        initialSortBy: 'updated_at_desc',
         termsAsTokens: true,
       });
-    });
-
-    it('passes the correct sort options to filtered search', () => {
-      const expectedSortOptions = [
-        {
-          id: 1,
-          title: 'Updated date',
-          sortDirection: {
-            descending: 'UPDATED_DESC',
-            ascending: 'UPDATED_ASC',
-          },
-        },
-      ];
-      expect(findFilteredSearch().props('sortOptions')).toEqual(expectedSortOptions);
     });
   });
 

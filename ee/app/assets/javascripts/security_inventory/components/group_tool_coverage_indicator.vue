@@ -83,7 +83,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-row gl-gap-2">
+  <div class="gl-flex gl-flex-row gl-flex-wrap gl-gap-2">
     <div v-for="(value, key) in $options.SCANNER_POPOVER_GROUPS" :key="key" class="gl-w-8">
       <segmented-bar
         :id="`${key}-${item.path}-bar`"
