@@ -930,6 +930,9 @@ msgstr ""
 msgid "%{failures} of %{total} failed"
 msgstr ""
 
+msgid "%{feedbackStart}Leave feedback%{feedbackEnd} | %{docStart}Documentation%{docEnd}"
+msgstr ""
+
 msgid "%{filePath} deleted"
 msgstr ""
 

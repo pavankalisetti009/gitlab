@@ -435,43 +435,31 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
     context 'when user is authorized to read linked items' do
       let(:current_user) { reporter }
 
-      shared_examples 'query with linked items widget' do
-        it 'returns linked items data' do
-          post_graphql(query, current_user: current_user)
+      it 'returns linked items data' do
+        post_graphql(query, current_user: current_user)
 
-          expect(work_items_data).to include(
-            hash_including(
-              'widgets' => include(
-                'type' => 'LINKED_ITEMS',
-                'linkedItems' => { 'nodes' => [
-                  { 'linkType' => 'is_blocked_by', 'workItem' => { 'id' => blocking_items[1].to_global_id.to_s } },
-                  { 'linkType' => 'blocks', 'workItem' => { 'id' => blocked_items[1].to_global_id.to_s } },
-                  { 'linkType' => 'relates_to', 'workItem' => { 'id' => related_items[1].to_global_id.to_s } }
-                ] }
-              )
-            ),
-            hash_including(
-              'widgets' => include(
-                'type' => 'LINKED_ITEMS',
-                'linkedItems' => { 'nodes' => [
-                  { 'linkType' => 'is_blocked_by', 'workItem' => { 'id' => blocking_items[0].to_global_id.to_s } },
-                  { 'linkType' => 'blocks', 'workItem' => { 'id' => blocked_items[0].to_global_id.to_s } },
-                  { 'linkType' => 'relates_to', 'workItem' => { 'id' => related_items[0].to_global_id.to_s } }
-                ] }
-              )
+        expect(work_items_data).to include(
+          hash_including(
+            'widgets' => include(
+              'type' => 'LINKED_ITEMS',
+              'linkedItems' => { 'nodes' => [
+                { 'linkType' => 'is_blocked_by', 'workItem' => { 'id' => blocking_items[1].to_global_id.to_s } },
+                { 'linkType' => 'blocks', 'workItem' => { 'id' => blocked_items[1].to_global_id.to_s } },
+                { 'linkType' => 'relates_to', 'workItem' => { 'id' => related_items[1].to_global_id.to_s } }
+              ] }
+            )
+          ),
+          hash_including(
+            'widgets' => include(
+              'type' => 'LINKED_ITEMS',
+              'linkedItems' => { 'nodes' => [
+                { 'linkType' => 'is_blocked_by', 'workItem' => { 'id' => blocking_items[0].to_global_id.to_s } },
+                { 'linkType' => 'blocks', 'workItem' => { 'id' => blocked_items[0].to_global_id.to_s } },
+                { 'linkType' => 'relates_to', 'workItem' => { 'id' => related_items[0].to_global_id.to_s } }
+              ] }
             )
           )
-        end
-      end
-
-      it_behaves_like 'query with linked items widget'
-
-      context 'when batch_load_linked_items feature flag is disabled' do
-        before do
-          stub_feature_flags(batch_load_linked_items: false)
-        end
-
-        it_behaves_like 'query with linked items widget'
+        )
       end
 
       context 'when filtering by link type' do
@@ -510,7 +498,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
       end
 
       context 'for N+1 queries' do
-        shared_examples 'query with limited N+1 queries' do |threshold: 0|
+        shared_examples 'avoids N+1 queries' do
           it 'does not execute extra queries' do
             post_graphql(query, current_user: current_user) # Warmup
 
@@ -529,25 +517,17 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
 
             expect do
               post_graphql(query(new_params), current_user: current_user)
-            end.not_to exceed_all_query_limit(control).with_threshold(threshold)
+            end.not_to exceed_all_query_limit(control)
             expect_graphql_errors_to_be_empty
           end
         end
 
-        it_behaves_like 'query with limited N+1 queries'
+        it_behaves_like 'avoids N+1 queries'
 
         context 'with link type filter' do
           let(:linked_type_filter) { '(filter: BLOCKED_BY)' }
 
-          it_behaves_like 'query with limited N+1 queries'
-        end
-
-        context 'when batch_load_linked_items feature flag is disabled' do
-          before do
-            stub_feature_flags(batch_load_linked_items: false)
-          end
-
-          it_behaves_like 'query with limited N+1 queries', threshold: 7
+          it_behaves_like 'avoids N+1 queries'
         end
       end
 

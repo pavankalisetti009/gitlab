@@ -6,10 +6,10 @@ RSpec.describe 'Updating an approval_rule', feature_category: :source_code_manag
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:current_user) { create(:user, developer_of: project) }
+  let_it_be(:current_user) { create(:user, maintainer_of: project) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
-  let_it_be(:users) { create_list(:user, 3, developer_of: project) }
-  let_it_be(:extra_users) { create_list(:user, 2, developer_of: project) }
+  let_it_be(:users) { create_list(:user, 3, maintainer_of: project) }
+  let_it_be(:extra_users) { create_list(:user, 2, maintainer_of: project) }
   let_it_be(:rule) do
     create(:approval_merge_request_rule, name: "test-rule", merge_request: merge_request, approvals_required: 1)
   end
@@ -28,7 +28,7 @@ RSpec.describe 'Updating an approval_rule', feature_category: :source_code_manag
   end
 
   before do
-    [current_user, *users, *extra_users].each { |user| project.add_developer(user) }
+    [current_user, *users, *extra_users].each { |user| project.add_maintainer(user) }
   end
 
   context "with approvals_required" do
