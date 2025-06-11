@@ -257,20 +257,7 @@ module Security
 
     # TODO: Will be removed with https://gitlab.com/gitlab-org/gitlab/-/issues/504296
     def delete_scan_result_policy_reads_for_project(project, rules)
-      adjusted_policy_index = project.security_policies.type_approval_policy
-        .for_policy_configuration(security_orchestration_policy_configuration)
-        .order_by_index
-        .find_index { |policy| policy.id == id }
-
-      return unless adjusted_policy_index
-
-      rule_indices = rules.map(&:rule_index)
-
-      project.scan_result_policy_reads
-        .for_policy_configuration(security_orchestration_policy_configuration)
-        .for_policy_index(adjusted_policy_index)
-        .for_rule_index(rule_indices)
-        .delete_all
+      project.scan_result_policy_reads.for_approval_policy_rules(rules).delete_all
     end
 
     def delete_scan_execution_policy_rules
