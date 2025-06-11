@@ -36,26 +36,6 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
       worker.perform
     end
 
-    it 'removes metadata except correlation_id from the application context before scheduling mirrors', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/516801' do
-      inner_context = nil
-      outer_context = nil
-
-      Gitlab::ApplicationContext.with_context(project: build(:project)) do
-        outer_context = Gitlab::ApplicationContext.current
-
-        expect(worker).to receive(:schedule_mirrors!) do
-          inner_context = Gitlab::ApplicationContext.current
-
-          # `schedule_mirrors!` needs to return an integer.
-          0
-        end
-      end
-
-      worker.perform
-
-      expect(inner_context).to eq(outer_context.slice('correlation_id', 'meta.sidekiq_destination_shard_redis'))
-    end
-
     it 'schedules mirrors' do
       expect(worker).to receive(:schedule_mirrors!).and_call_original
 

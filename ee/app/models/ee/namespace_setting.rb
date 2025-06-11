@@ -58,6 +58,7 @@ module EE
       validates :remove_dormant_members, inclusion: { in: [false] }, if: :subgroup?
       validates :remove_dormant_members_period,
         numericality: { only_integer: true, greater_than_or_equal_to: 90, less_than_or_equal_to: 1827 } # 90d - ~5 years
+      validates :allow_enterprise_bypass_placeholder_confirmation, inclusion: { in: [true, false] }
 
       enum :enterprise_users_extensions_marketplace_opt_in_status,
         ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, prefix: :enterprise_users_extensions_marketplace
@@ -239,6 +240,7 @@ module EE
         duo_features_enabled
         lock_duo_features_enabled
         enterprise_users_extensions_marketplace_opt_in_status
+        allow_enterprise_bypass_placeholder_confirmation
         web_based_commit_signing_enabled
         lock_web_based_commit_signing_enabled
       ].freeze

@@ -643,6 +643,67 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
         end
       end
     end
+
+    context 'when setting allow_enterprise_bypass_placeholder_confirmation' do
+      let(:params) { { group: { allow_enterprise_bypass_placeholder_confirmation: true } } }
+
+      before do
+        group.add_owner(user)
+        allow(Group).to receive(:find_by_full_path).and_return(group)
+        allow(group).to receive(:domain_verification_available?).and_return(true)
+      end
+
+      it 'successfully updates the setting for top-level group owners' do
+        expect { request }.to change {
+          group.reload.namespace_settings.allow_enterprise_bypass_placeholder_confirmation?
+        }.from(false).to(true)
+
+        expect(response).to have_gitlab_http_status(:found)
+      end
+
+      context 'and user is not a group owner' do
+        before do
+          group.owners.delete(user)
+          group.add_maintainer(user)
+        end
+
+        it 'does not change the setting and returns not found' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.allow_enterprise_bypass_placeholder_confirmation?
+          }.from(false)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when domain verification is not enabled' do
+        before do
+          allow(group).to receive(:domain_verification_available?).and_return(false)
+        end
+
+        it 'does not change the setting' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.allow_enterprise_bypass_placeholder_confirmation?
+          }.from(false)
+
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+
+      context 'when the importer_user_mapping_allow_bypass_of_confirmation feature flag is disabled' do
+        before do
+          stub_feature_flags(importer_user_mapping_allow_bypass_of_confirmation: false)
+        end
+
+        it 'does not change the setting' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.allow_enterprise_bypass_placeholder_confirmation?
+          }.from(false)
+
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+    end
   end
 
   describe 'PUT #transfer', :saas do

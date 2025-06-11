@@ -94,6 +94,8 @@ module EE
               can?(current_user, :owner_access, current_group)
             params_ee << :disable_invite_members
           end
+
+          params_ee << :allow_enterprise_bypass_placeholder_confirmation if enterprise_bypass_placeholders_allowed?
         end
       end
       # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
@@ -118,6 +120,11 @@ module EE
 
       def current_group
         @group
+      end
+
+      def enterprise_bypass_placeholders_allowed?
+        ::Feature.enabled?(:importer_user_mapping_allow_bypass_of_confirmation, current_group) &&
+          current_group&.domain_verification_available?
       end
     end
   end
