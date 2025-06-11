@@ -1,6 +1,5 @@
 <script>
 import { nextTick } from 'vue';
-import { debounce } from 'lodash';
 import { GlAlert, GlLink, GlSprintf, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
@@ -61,11 +60,13 @@ export default {
     hasItems() {
       return this.items.data.some((item) => item.children.length > 0);
     },
+    filtersAndGroupBy() {
+      return { ...this.filters, groupBy: this.groupBy };
+    },
   },
   watch: {
     filters(newFilters) {
       this.groupedLoader.setFilters(newFilters);
-      this.loadFirstPage();
     },
     groupBy(newGroupBy) {
       this.perPage = GROUP_PAGE_LIMIT;
@@ -74,7 +75,8 @@ export default {
         data: [],
         pageInfo: {},
       };
-      this.isLoading = true;
+    },
+    filtersAndGroupBy() {
       this.loadFirstPage();
     },
   },
@@ -85,7 +87,6 @@ export default {
       fullPath: this.projectPath || this.groupPath,
       apollo: this.$apollo,
     });
-    this.debouncedInvokeLoader = debounce(this.invokeLoader, 0);
     this.loadFirstPage();
   },
   methods: {
@@ -118,7 +119,7 @@ export default {
     },
 
     loadFirstPage() {
-      return this.debouncedInvokeLoader();
+      this.invokeLoader();
     },
     onPageSizeChange(perPage) {
       this.perPage = perPage;
@@ -126,10 +127,10 @@ export default {
       this.loadFirstPage();
     },
     loadPrevPage() {
-      this.debouncedInvokeLoader('loadPrevPage');
+      this.invokeLoader('loadPrevPage');
     },
     loadNextPage() {
-      this.debouncedInvokeLoader('loadNextPage');
+      this.invokeLoader('loadNextPage');
     },
   },
   i18n: {

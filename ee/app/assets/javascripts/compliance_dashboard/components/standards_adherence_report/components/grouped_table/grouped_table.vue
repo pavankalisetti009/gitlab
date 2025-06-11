@@ -34,6 +34,23 @@ const FIELD_WIDTHS = {
   },
 };
 
+const tableHeaders = {
+  status: s__('ComplianceStandardsAdherence|Status'),
+  requirement: s__('ComplianceStandardsAdherence|Requirement'),
+  framework: s__('ComplianceStandardsAdherence|Framework'),
+  project: s__('ComplianceStandardsAdherence|Project'),
+  lastScanned: s__('ComplianceStandardsAdherence|Last scanned'),
+  fixSuggestions: s__('ComplianceStandardsAdherence|Fix suggestions'),
+};
+
+const column = (options) => ({
+  label: tableHeaders[options.key],
+  sortable: false,
+  ...options,
+  thClass: options.tdClass || '',
+  tdClass: options.tdClass || '',
+});
+
 export default {
   components: {
     GlSprintf,
@@ -55,14 +72,6 @@ export default {
   },
   computed: {
     fields() {
-      const column = (options) => ({
-        label: this.$options.i18n.tableHeaders[options.key],
-        sortable: false,
-        ...options,
-        thClass: options.tdClass || '',
-        tdClass: options.tdClass || '',
-      });
-
       const widths = FIELD_WIDTHS[this.groupBy];
       const bannedField = BANNED_FIELD[this.groupBy] ?? null;
       const basicColumns = [
@@ -81,14 +90,6 @@ export default {
     },
   },
   i18n: {
-    tableHeaders: {
-      status: s__('ComplianceStandardsAdherence|Status'),
-      requirement: s__('ComplianceStandardsAdherence|Requirement'),
-      framework: s__('ComplianceStandardsAdherence|Framework'),
-      project: s__('ComplianceStandardsAdherence|Project'),
-      lastScanned: s__('ComplianceStandardsAdherence|Last scanned'),
-      fixSuggestions: s__('ComplianceStandardsAdherence|Fix suggestions'),
-    },
     viewDetails: s__('ComplianceStandardsAdherence|View details'),
     failedControls: s__('ComplianceStandardsAdherence|%{failedCount} failed'),
   },

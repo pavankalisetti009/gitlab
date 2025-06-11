@@ -122,16 +122,14 @@ export default {
     requirements() {
       this.$emit('load');
     },
-    groupBy(newGroupBy) {
-      this.selectedTokens = this.selectedTokens.filter(
-        (token) => token.type !== FILTERS[newGroupBy] && token.type !== 'filtered-search-term',
-      );
-      this.$emit('update:filters', this.convertTokensToObject(this.selectedTokens));
-    },
   },
 
   methods: {
     onGroupSelected(grouping) {
+      this.selectedTokens = this.selectedTokens.filter(
+        (token) => token.type !== FILTERS[grouping.value] && token.type !== 'filtered-search-term',
+      );
+      this.$emit('update:filters', this.convertTokensToObject(this.selectedTokens));
       this.$emit('update:groupBy', grouping.value);
     },
 

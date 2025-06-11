@@ -297,7 +297,7 @@ describe('FiltersBar', () => {
 
     it('filters selectedTokens when groupBy changes', async () => {
       createComponent({
-        props: { groupBy: GROUP_BY.FRAMEWORKS },
+        props: { groupBy: GROUP_BY.FRAMEWORKS, withGroupBy: true },
         requestHandlers: [[complianceFrameworksInGroupQuery, complianceFrameworksHandler]],
       });
 
@@ -309,8 +309,7 @@ describe('FiltersBar', () => {
       ];
 
       findFilteredSearch().vm.$emit('submit', filterValue);
-
-      await wrapper.setProps({ groupBy: GROUP_BY.REQUIREMENTS });
+      findDisclosureDropdown().vm.$emit('action', { value: GROUP_BY.REQUIREMENTS });
       await nextTick();
 
       const lastEmit = wrapper.emitted('update:filters').pop();

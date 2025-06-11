@@ -21,13 +21,11 @@ export default {
 <template>
   <div>
     <div
-      role="button"
-      tabindex="0"
       class="gl-flex gl-cursor-pointer gl-select-none gl-flex-row gl-items-center gl-px-5 gl-py-3"
       @click="toggleDetails"
     >
       <gl-animated-chevron-right-down-icon class="gl-mr-2" :is-on="isOpen" />
-      <div>
+      <div role="button" tabindex="0">
         <slot name="header"></slot>
       </div>
     </div>

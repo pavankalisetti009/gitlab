@@ -21,13 +21,10 @@ describe('StandardsAdherenceTableV2', () => {
   const findDetailsDrawer = () => wrapper.findComponent(DetailsDrawer);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findAlert = () => wrapper.findComponent(GlAlert);
-<<<<<<< HEAD
   const findEmptyText = () => wrapper.findComponent(GlSprintf);
   const findEmptyLink = () => wrapper.findComponent(GlLink);
-=======
   const findFiltersBar = () => wrapper.findComponent(FiltersBar);
   const findPageSizeSelector = () => wrapper.findComponent(PageSizeSelector);
->>>>>>> 7424a013a6a91 (Implement grouping for new adherence report)
 
   const waitForNextPageLoad = async () => {
     // triggers loading state

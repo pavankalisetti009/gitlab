@@ -153,7 +153,7 @@ export class GroupedLoader {
         this.processedEntities = [];
         this.pageInfo = statuses.pageInfo;
       }
-    } while (result.length <= this.pageSize && this.pageInfo.hasNextPage);
+    } while (this.pageInfo.hasNextPage);
 
     return {
       data: result,
