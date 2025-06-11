@@ -309,4 +309,60 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
     end
   end
+
+  context 'when event is Security::PolicyResyncEvent' do
+    let(:policy_resync_event) { Security::PolicyResyncEvent.new(data: { security_policy_id: policy.id }) }
+
+    subject(:handle_event) { described_class.new.handle_event(policy_resync_event) }
+
+    it 'calls Security::SyncProjectPolicyWorker with event payload' do
+      expect(::Security::SyncProjectPolicyWorker)
+        .to receive(:bulk_perform_async_with_contexts)
+        .with(
+          [project.id],
+          arguments_proc: kind_of(Proc),
+          context_proc: kind_of(Proc)
+        )
+
+      handle_event
+    end
+
+    it 'calls ComplianceFrameworks::SyncService' do
+      expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService)
+        .to receive(:new)
+        .with(security_policy: policy, policy_diff: nil)
+        .and_return(instance_double(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService,
+          execute: true))
+
+      handle_event
+    end
+
+    it_behaves_like 'triggers SyncPipelineExecutionPolicyMetadataWorker' do
+      subject(:handle_event) { described_class.new.handle_event(policy_resync_event) }
+    end
+
+    context 'when policy is disabled' do
+      before do
+        policy.update!(enabled: false)
+      end
+
+      it 'does not call Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).not_to receive(:bulk_perform_async_with_contexts)
+
+        handle_event
+      end
+
+      it 'does not call ComplianceFrameworks::SyncService' do
+        expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService).not_to receive(:new)
+
+        handle_event
+      end
+
+      it 'does not call SyncPipelineExecutionPolicyMetadataWorker' do
+        expect(::Security::SyncPipelineExecutionPolicyMetadataWorker).not_to receive(:perform_async)
+
+        handle_event
+      end
+    end
+  end
 end

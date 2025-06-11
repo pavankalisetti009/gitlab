@@ -10180,6 +10180,32 @@ Input type: `RestorePagesDeploymentInput`
 | <a id="mutationrestorepagesdeploymenterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationrestorepagesdeploymentpagesdeployment"></a>`pagesDeployment` | [`PagesDeployment!`](#pagesdeployment) | Restored Pages Deployment. |
 
+### `Mutation.resyncSecurityPolicies`
+
+Triggers a resynchronization of security policies linked to the given project or group (`full_path`).
+
+{{< details >}}
+**Introduced** in GitLab 18.1.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `ResyncSecurityPoliciesInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationresyncsecuritypoliciesclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationresyncsecuritypoliciesfullpath"></a>`fullPath` | [`String!`](#string) | Full path of the project or group. |
+| <a id="mutationresyncsecuritypoliciesrelationship"></a>`relationship` | [`RelationshipType`](#relationshiptype) | Relationship of the policies to resync. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationresyncsecuritypoliciesclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationresyncsecuritypolicieserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+
 ### `Mutation.runnerAssignToProject`
 
 {{< details >}}
@@ -46432,6 +46458,15 @@ State of a Geo registry.
 | <a id="registrystatepending"></a>`PENDING` | Registry waiting to be synced. |
 | <a id="registrystatestarted"></a>`STARTED` | Registry currently syncing. |
 | <a id="registrystatesynced"></a>`SYNCED` | Registry that is synced. |
+
+### `RelationshipType`
+
+Relationship of the policies to resync.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="relationshiptypedirect"></a>`DIRECT` | Policies defined for the project/group only. |
+| <a id="relationshiptypeinherited"></a>`INHERITED` | Policies defined for the project/group and ancestor groups. |
 
 ### `RelativePositionType`
 

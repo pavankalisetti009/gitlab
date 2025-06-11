@@ -169,6 +169,7 @@ module EE
         mount_mutation ::Mutations::SecurityPolicy::UnassignSecurityPolicyProject
         mount_mutation ::Mutations::SecurityPolicy::CreateSecurityPolicyProject
         mount_mutation ::Mutations::SecurityPolicy::CreateSecurityPolicyProjectAsync, experiment: { milestone: '17.3' }
+        mount_mutation ::Mutations::SecurityPolicy::ResyncSecurityPolicies, experiment: { milestone: '18.1' }
         mount_mutation ::Mutations::Security::CiConfiguration::ConfigureDependencyScanning
         mount_mutation ::Mutations::Security::CiConfiguration::ConfigureContainerScanning
         mount_mutation ::Mutations::Security::TrainingProviderUpdate

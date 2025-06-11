@@ -22,6 +22,8 @@ module Security
         handle_update_event(policy, event.data)
       when Security::PolicyDeletedEvent
         ::Security::DeleteSecurityPolicyWorker.perform_async(security_policy_id)
+      when Security::PolicyResyncEvent
+        handle_resync_event(policy, event)
       end
     end
 
@@ -33,6 +35,14 @@ module Security
       sync_pipeline_execution_policy_metadata(policy)
       sync_compliance_frameworks(policy)
       sync_policy_for_projects(policy)
+    end
+
+    def handle_resync_event(policy, event)
+      return unless policy.enabled
+
+      sync_pipeline_execution_policy_metadata(policy)
+      sync_compliance_frameworks(policy)
+      sync_policy_for_projects(policy, {}, event)
     end
 
     def handle_update_event(policy, event_data)
@@ -48,10 +58,11 @@ module Security
       sync_policy_for_projects(policy, event_data)
     end
 
-    def sync_policy_for_projects(policy, event_data = {})
+    def sync_policy_for_projects(policy, event_data = {}, event = nil)
       project_ids = all_project_ids(policy)
       return if project_ids.empty?
 
+      event_payload = event ? { event: { event_type: event.class.name, data: event.data } } : {}
       config_context = if policy.security_orchestration_policy_configuration.namespace?
                          { namespace: policy.security_orchestration_policy_configuration.namespace }
                        else
@@ -61,7 +72,7 @@ module Security
       ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
         project_ids,
         arguments_proc: ->(project_id) do
-          [project_id, policy.id, event_data]
+          [project_id, policy.id, event_data, event_payload]
         end,
         context_proc: ->(_) { config_context }
       )
