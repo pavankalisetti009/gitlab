@@ -1,6 +1,6 @@
 <script>
 import { nextTick } from 'vue';
-import { GlAlert, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
+import { GlAlert, GlLink, GlSprintf, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 
@@ -16,6 +16,8 @@ export default {
   name: 'ComplianceStandardsAdherenceTableV2',
   components: {
     GlAlert,
+    GlLink,
+    GlSprintf,
     GlLoadingIcon,
     GlKeysetPagination,
 
@@ -119,6 +121,9 @@ export default {
   i18n: {
     errorMessage: s__('AdherenceReport|There was an error loading adherence report.'),
     emptyReport: s__('AdherenceReport|No statuses found.'),
+    emptyReportHelp: s__(
+      'AdherenceReport|To show a status here, you must %{linkStart}create a compliance framework with requirements and controls%{linkEnd} and apply it to projects in this group. New frameworks can take a few minutes to appear.',
+    ),
   },
 };
 </script>
@@ -161,6 +166,18 @@ export default {
       <template v-else>
         <div class="gl-my-5 gl-text-center">
           {{ $options.i18n.emptyReport }}
+        </div>
+        <div class="gl-my-5 gl-text-center">
+          <gl-sprintf :message="$options.i18n.emptyReportHelp">
+            <template #link="{ content }">
+              <gl-link
+                href="/user/compliance/compliance_frameworks/_index"
+                anchor="requirements"
+                target="_blank"
+                >{{ content }}</gl-link
+              >
+            </template>
+          </gl-sprintf>
         </div>
       </template>
     </div>
