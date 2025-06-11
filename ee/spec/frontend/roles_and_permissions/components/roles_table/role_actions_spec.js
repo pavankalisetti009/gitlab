@@ -1,35 +1,25 @@
-import { GlDisclosureDropdown, GlIcon, GlPopover } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlIcon, GlPopover, GlButton } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RoleActions from 'ee/roles_and_permissions/components/roles_table/role_actions.vue';
-import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import { mockMemberRole, adminRoles } from '../../mock_data';
+import DeleteRoleTooltipWrapper from 'ee/roles_and_permissions/components/delete_role_tooltip_wrapper.vue';
+import {
+  standardRoles,
+  mockMemberRole,
+  adminRoles,
+  mockMemberRoleWithUsers,
+  mockMemberRoleWithSecurityPolicies,
+} from '../../mock_data';
 
 describe('Role actions', () => {
   let wrapper;
 
   const mockToastShow = jest.fn();
-  const defaultRole = { accessLevel: 10 };
-  const customRole = {
-    ...mockMemberRole,
-    detailsPath: 'role/path/1',
-    dependentSecurityPolicies: [],
-  };
-  const customRoleWithMembers = { ...customRole, usersCount: 2 };
-  const dependentSecurityPolicy = { editPath: 'path/to/security/policy', name: 'Security Policy' };
-  const customRoleWithSecurityPolicies = {
-    ...customRole,
-    usersCount: 2,
-    dependentSecurityPolicies: [dependentSecurityPolicy],
-  };
 
-  const createComponent = ({ role = customRole } = {}) => {
+  const createComponent = ({ role = mockMemberRole } = {}) => {
     wrapper = mountExtended(RoleActions, {
       propsData: { role },
       mocks: { $toast: { show: mockToastShow } },
-      directives: {
-        GlTooltip: createMockDirective('gl-tooltip'),
-      },
     });
   };
 
@@ -38,9 +28,12 @@ describe('Role actions', () => {
   const findViewDetailsItem = () => wrapper.findByTestId('view-details-item');
   const findEditRoleItem = () => wrapper.findByTestId('edit-role-item');
   const findDeleteRoleItem = () => wrapper.findByTestId('delete-role-item');
-  const findDeleteRoleItemTooltip = () => getBinding(findDeleteRoleItem().element, 'gl-tooltip');
+  const findDeleteRoleTooltipWrapper = () => wrapper.findComponent(DeleteRoleTooltipWrapper);
   const findPopover = () => wrapper.findComponent(GlPopover);
-  const findPolicyName = () => wrapper.findByTestId('policy-name');
+
+  const clickDropdownButton = () => {
+    return findDropdown().findComponent(GlButton).trigger('click');
+  };
 
   describe('common behavior', () => {
     beforeEach(() => createComponent());
@@ -66,10 +59,10 @@ describe('Role actions', () => {
   });
 
   describe.each`
-    type         | role             | id      | expectedText          | expectedToast
-    ${'default'} | ${defaultRole}   | ${'10'} | ${'Access level: 10'} | ${'Access level copied to clipboard'}
-    ${'custom'}  | ${customRole}    | ${'1'}  | ${'Role ID: 1'}       | ${'Role ID copied to clipboard'}
-    ${'admin'}   | ${adminRoles[0]} | ${'3'}  | ${'Role ID: 3'}       | ${'Role ID copied to clipboard'}
+    type         | role                | id      | expectedText          | expectedToast
+    ${'default'} | ${standardRoles[0]} | ${'10'} | ${'Access level: 10'} | ${'Access level copied to clipboard'}
+    ${'custom'}  | ${mockMemberRole}   | ${'1'}  | ${'Role ID: 1'}       | ${'Role ID copied to clipboard'}
+    ${'admin'}   | ${adminRoles[0]}    | ${'3'}  | ${'Role ID: 3'}       | ${'Role ID copied to clipboard'}
   `('role ID item for $type role', ({ role, id, expectedText, expectedToast }) => {
     beforeEach(() => createComponent({ role }));
 
@@ -91,7 +84,7 @@ describe('Role actions', () => {
   });
 
   describe('for default role', () => {
-    beforeEach(() => createComponent({ role: defaultRole }));
+    beforeEach(() => createComponent({ role: standardRoles[0] }));
 
     it('does not show Edit role item', () => {
       expect(findEditRoleItem().exists()).toBe(false);
@@ -103,7 +96,10 @@ describe('Role actions', () => {
   });
 
   describe('for custom role', () => {
-    beforeEach(() => createComponent());
+    beforeEach(() => {
+      createComponent();
+      return clickDropdownButton();
+    });
 
     it('shows Edit role item', () => {
       expect(findEditRoleItem().props('item')).toMatchObject({
@@ -113,67 +109,38 @@ describe('Role actions', () => {
     });
 
     describe('delete role item', () => {
-      describe('default', () => {
-        it('shows item', () => {
-          expect(findDeleteRoleItem().props('item')).toMatchObject({
-            text: 'Delete role',
-            variant: 'danger',
-            extraAttrs: { disabled: false },
-          });
-        });
-
-        it('does not have a tooltip', () => {
-          expect(findDeleteRoleItemTooltip().value).toBe('');
-        });
-
-        it('emits delete event when clicked', async () => {
-          findDeleteRoleItem().vm.$emit('action');
-          await nextTick();
-
-          expect(wrapper.emitted('delete')).toHaveLength(1);
+      it('shows delete tooltip wrapper', () => {
+        expect(findDeleteRoleTooltipWrapper().props()).toMatchObject({
+          role: mockMemberRole,
+          containerId: 'dropdown-1',
         });
       });
 
-      describe('when there are members assigned', () => {
-        beforeEach(() => createComponent({ role: customRoleWithMembers }));
-
-        it('shows item', () => {
-          expect(findDeleteRoleItem().props('item')).toMatchObject({
-            extraAttrs: { disabled: true },
-          });
-        });
-
-        it('has expected tooltip', () => {
-          expect(getBinding(findDeleteRoleItem().element, 'gl-tooltip')).toMatchObject({
-            value: "You can't delete this custom role until you remove it from all group members.",
-            modifiers: { d0: true, left: true, viewport: true },
-          });
+      it('shows item', () => {
+        expect(findDeleteRoleItem().props('item')).toMatchObject({
+          text: 'Delete role',
+          variant: 'danger',
+          extraAttrs: { disabled: false },
         });
       });
 
-      describe('when there are dependent security policies', () => {
-        beforeEach(() => createComponent({ role: customRoleWithSecurityPolicies }));
+      it('emits delete event when clicked', async () => {
+        findDeleteRoleItem().vm.$emit('action');
+        await nextTick();
 
-        it('disables the delete button', () => {
-          expect(findDeleteRoleItem().props('item')).toMatchObject({
-            extraAttrs: { disabled: true },
-          });
-        });
+        expect(wrapper.emitted('delete')).toHaveLength(1);
+      });
 
-        it('does not render the tooltip', () => {
-          expect(findDeleteRoleItemTooltip().value).toBe('');
-        });
+      it.each`
+        role                                  | description
+        ${mockMemberRoleWithUsers}            | ${'users'}
+        ${mockMemberRoleWithSecurityPolicies} | ${'dependent security policies'}
+      `('disables delete item when role has $description', async ({ role }) => {
+        await wrapper.setProps({ role });
 
-        it('renders the popover', () => {
-          expect(findPopover().exists()).toBe(true);
-          expect(findPopover().text()).toContain(
-            "You can't delete this custom role until you remove it from all security policies:",
-          );
-        });
-
-        it('renders the policy name as a link', () => {
-          expect(findPolicyName().attributes('href')).toBe(dependentSecurityPolicy.editPath);
-          expect(findPolicyName().text()).toBe(dependentSecurityPolicy.name);
+        expect(findDeleteRoleItem().props('item')).toMatchObject({
+          variant: null,
+          extraAttrs: { disabled: true },
         });
       });
     });

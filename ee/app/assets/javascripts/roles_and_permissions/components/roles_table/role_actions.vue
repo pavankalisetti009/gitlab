@@ -1,16 +1,9 @@
 <script>
-import {
-  GlDisclosureDropdown,
-  GlDisclosureDropdownItem,
-  GlIcon,
-  GlLink,
-  GlPopover,
-  GlSprintf,
-  GlTooltipDirective,
-} from '@gitlab/ui';
+import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlIcon, GlSprintf } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { isCustomRole, isAdminRole } from '../../utils';
+import { isCustomRole, isAdminRole, isRoleInUse } from '../../utils';
+import DeleteRoleTooltipWrapper from '../delete_role_tooltip_wrapper.vue';
 
 export default {
   i18n: {
@@ -21,24 +14,13 @@ export default {
     deleteRoleText: s__('MemberRole|Delete role'),
     accessLevelCopied: s__('MemberRole|Access level copied to clipboard'),
     roleIdCopied: s__('MemberRole|Role ID copied to clipboard'),
-    deleteDisabledTooltip: s__(
-      "MemberRole|You can't delete this custom role until you remove it from all group members.",
-    ),
-    deletePopoverTitle: s__('MemberRole|Security policy dependency'),
-    deletePopoverText: s__(
-      "MemberRole|You can't delete this custom role until you remove it from all security policies:",
-    ),
   },
   components: {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlIcon,
-    GlLink,
-    GlPopover,
+    DeleteRoleTooltipWrapper,
     GlSprintf,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
   },
   props: {
     role: {
@@ -50,14 +32,8 @@ export default {
     isCustomOrAdminRole() {
       return isCustomRole(this.role) || isAdminRole(this.role);
     },
-    hasAssignedUsers() {
-      return this.role.usersCount > 0;
-    },
     roleId() {
       return this.isCustomOrAdminRole ? getIdFromGraphQLId(this.role.id) : this.role.accessLevel;
-    },
-    hasDependentSecurityPolicies() {
-      return this.role.dependentSecurityPolicies?.length > 0;
     },
     idText() {
       const { roleIdText, accessLevelText } = this.$options.i18n;
@@ -70,22 +46,17 @@ export default {
     editRoleItem() {
       return { text: this.$options.i18n.editRoleText, href: this.role.editPath };
     },
-    deleteActionId() {
-      return `delete-role-action-${this.roleId}`;
+    dropdownId() {
+      return `dropdown-${this.roleId}`;
     },
     deleteRoleItem() {
+      const disabled = isRoleInUse(this.role);
+
       return {
         text: this.$options.i18n.deleteRoleText,
-        variant: this.hasAssignedUsers ? null : 'danger',
-        extraAttrs: {
-          disabled: this.hasAssignedUsers || this.hasDependentSecurityPolicies,
-        },
+        variant: disabled ? null : 'danger',
+        extraAttrs: { disabled },
       };
-    },
-    deleteTooltip() {
-      return !this.hasDependentSecurityPolicies && this.hasAssignedUsers
-        ? this.$options.i18n.deleteDisabledTooltip
-        : '';
     },
   },
   methods: {
@@ -100,6 +71,17 @@ export default {
 
 <template>
   <gl-disclosure-dropdown category="tertiary" icon="ellipsis_v" placement="bottom-end" no-caret>
+    <template #footer>
+      <!--
+      This is a placeholder for the delete role tooltip/popover to render into. Do not remove it.
+      The tooltip/popover needs to render within the disclosure dropdown, otherwise clicks in the
+      tooltip/popover are treated as off-clicks from the dropdown, which closes the dropdown and
+      in turn hides the tooltip/popover. This means links in the popover won't work because the
+      popover is closed before the link click can be processed.
+      -->
+      <div :id="dropdownId"></div>
+    </template>
+
     <gl-disclosure-dropdown-item
       :data-clipboard-text="roleId"
       data-testid="role-id-item"
@@ -117,30 +99,14 @@ export default {
 
     <template v-if="isCustomOrAdminRole">
       <gl-disclosure-dropdown-item data-testid="edit-role-item" :item="editRoleItem" />
-      <gl-disclosure-dropdown-item
-        :id="deleteActionId"
-        v-gl-tooltip.left.viewport.d0="deleteTooltip"
-        data-testid="delete-role-item"
-        :item="deleteRoleItem"
-        @action="$emit('delete')"
-      />
 
-      <gl-popover
-        v-if="hasDependentSecurityPolicies"
-        :target="deleteActionId"
-        placement="left"
-        boundary="viewport"
-        :title="$options.i18n.deletePopoverTitle"
-      >
-        {{ $options.i18n.deletePopoverText }}
-        <ul class="gl-pl-5">
-          <li v-for="policy in role.dependentSecurityPolicies" :key="policy.name">
-            <gl-link :href="policy.editPath" target="_blank" data-testid="policy-name">
-              {{ policy.name }}
-            </gl-link>
-          </li>
-        </ul>
-      </gl-popover>
+      <delete-role-tooltip-wrapper :role="role" :container-id="dropdownId">
+        <gl-disclosure-dropdown-item
+          data-testid="delete-role-item"
+          :item="deleteRoleItem"
+          @action="$emit('delete')"
+        />
+      </delete-role-tooltip-wrapper>
     </template>
   </gl-disclosure-dropdown>
 </template>

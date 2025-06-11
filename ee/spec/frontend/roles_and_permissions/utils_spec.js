@@ -1,5 +1,12 @@
-import { isCustomRole, isAdminRole } from 'ee/roles_and_permissions/utils';
-import { standardRoles, memberRoles, adminRoles } from './mock_data';
+import { isCustomRole, isAdminRole, isRoleInUse } from 'ee/roles_and_permissions/utils';
+import {
+  standardRoles,
+  memberRoles,
+  adminRoles,
+  mockMemberRole,
+  mockMemberRoleWithUsers,
+  mockMemberRoleWithSecurityPolicies,
+} from './mock_data';
 
 describe('Roles and permissions utils', () => {
   describe('isCustomRole', () => {
@@ -19,6 +26,20 @@ describe('Roles and permissions utils', () => {
       it('returns true', () => {
         expect(isAdminRole(role)).toBe(true);
       });
+    });
+  });
+
+  describe('isRoleInUse', () => {
+    it('returns false when role is not in use', () => {
+      expect(isRoleInUse(mockMemberRole)).toBe(false);
+    });
+
+    it.each`
+      role                                  | description
+      ${mockMemberRoleWithUsers}            | ${'users'}
+      ${mockMemberRoleWithSecurityPolicies} | ${'dependent security policies'}
+    `('returns true when role has $description', ({ role }) => {
+      expect(isRoleInUse(role)).toBe(true);
     });
   });
 });
