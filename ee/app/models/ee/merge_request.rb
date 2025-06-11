@@ -550,15 +550,13 @@ module EE
     end
 
     def latest_comparison_pipeline_with_sbom_reports
-      find_merge_base_pipeline_with_sbom_report || find_base_pipeline_with_sbom_report
+      find_target_branch_pipeline_by_sha_in_order_of_preference([diff_head_pipeline&.target_sha, diff_base_sha],
+        :has_sbom_reports?)
     end
 
     def latest_scan_finding_comparison_pipeline
-      find_common_ancestor_pipeline_with_security_reports || find_diff_start_pipeline_with_security_reports
-    end
-
-    def find_pipeline_with_dependency_scanning_reports(pipelines)
-      find_pipeline_with_reports(pipelines, :has_dependency_scanning_reports?)
+      target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha]
+      find_target_branch_pipeline_by_sha_in_order_of_preference(target_shas, :has_security_reports?)
     end
 
     def diff_head_pipeline?(pipeline)
@@ -684,60 +682,21 @@ module EE
     end
 
     def find_common_ancestor_pipeline_with_security_reports
-      find_merge_base_pipeline_with_security_reports || find_base_pipeline_with_security_reports
-    end
-
-    def find_merge_base_pipeline_with_security_reports
-      find_pipeline_with_reports(
-        last_merge_base_pipelines(limit: MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON),
+      find_target_branch_pipeline_by_sha_in_order_of_preference([diff_head_pipeline&.target_sha, diff_base_sha],
         :has_security_reports?)
     end
 
-    def find_base_pipeline_with_security_reports
-      find_pipeline_with_reports(
-        last_base_pipelines(limit: MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON),
-        :has_security_reports?)
-    end
+    def find_target_branch_pipeline_by_sha_in_order_of_preference(shas, predicate)
+      pipelines = shas
+        .compact
+        .lazy
+        .flat_map do |sha|
+          target_branch_pipelines_for(sha: sha)
+            .order(id: :desc)
+            .limit(MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON)
+        end
 
-    def find_merge_base_pipeline_with_sbom_report
-      find_pipeline_with_reports(
-        last_merge_base_pipelines(limit: MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON),
-        :has_sbom_reports?)
-    end
-
-    def find_base_pipeline_with_sbom_report
-      find_pipeline_with_reports(
-        last_base_pipelines(limit: MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON),
-        :has_sbom_reports?)
-    end
-
-    def find_diff_start_pipeline_with_security_reports
-      find_pipeline_with_reports(
-        last_diff_start_pipelines(limit: MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON),
-        :has_security_reports?
-      )
-    end
-
-    def find_pipeline_with_reports(pipelines, report_method)
-      pipelines.find do |pipeline|
-        pipeline.self_and_project_descendants.any?(&report_method)
-      end
-    end
-
-    def last_merge_base_pipelines(limit:)
-      merge_base_pipelines.order(id: :desc).limit(limit)
-    end
-
-    def last_base_pipelines(limit:)
-      base_pipelines.order(id: :desc).limit(limit)
-    end
-
-    def diff_start_pipelines
-      target_branch_pipelines_for(sha: diff_start_sha)
-    end
-
-    def last_diff_start_pipelines(limit:)
-      diff_start_pipelines.order(id: :desc).limit(limit)
+      pipelines.find { |pipeline| pipeline.self_and_project_descendants.any?(&predicate) }
     end
 
     def has_approved_license_check?

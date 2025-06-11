@@ -122,7 +122,7 @@ module Security
         # We use dependency_scanning_reports instead of SBOM reports because
         # container scanning job also generates SBOM reports. We might pick a pipeline with CS job and not DS job.
         # TODO: Investigate use of SBOM reports in https://gitlab.com/gitlab-org/gitlab/-/issues/500106
-        merge_request.find_pipeline_with_dependency_scanning_reports(related_pipelines(pipeline)) || pipeline
+        pipeline_with_dependency_scanning_reports(related_pipelines(pipeline)) || pipeline
       end
       strong_memoize_attr :source_pipeline
 
@@ -145,9 +145,11 @@ module Security
           ref: merge_request.target_branch
         }).execute
 
-        pipelines = project.all_pipelines.id_in(related_pipeline_ids)
+        pipeline_with_dependency_scanning_reports(project.all_pipelines.id_in(related_pipeline_ids))
+      end
 
-        merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
+      def pipeline_with_dependency_scanning_reports(pipelines)
+        pipelines.find { |pipeline| pipeline.self_and_project_descendants.any?(&:has_dependency_scanning_reports?) }
       end
 
       def validation_context
