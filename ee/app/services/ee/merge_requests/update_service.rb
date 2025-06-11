@@ -3,6 +3,7 @@
 module EE
   module MergeRequests
     module UpdateService
+      include ::MergeRequests::ApprovalRulesAttributeMapping
       extend ::Gitlab::Utils::Override
 
       override :handle_changes
@@ -18,6 +19,11 @@ module EE
 
       override :general_fallback
       def general_fallback(merge_request)
+        if ::Feature.enabled?(:v2_approval_rules, merge_request.project)
+          add_v2_approval_rules_attributes
+          update_v1_approval_rule_ids(merge_request)
+        end
+
         if merge_request.merged?
           params.delete(:reset_approval_rules_to_defaults)
           params.delete(:approval_rules_attributes)

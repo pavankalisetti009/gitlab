@@ -868,5 +868,76 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         end
       end
     end
+
+    describe 'when v2_approval_rules flag is enabled' do
+      let!(:existing_v1_any_rule) { create(:any_approver_rule, merge_request: merge_request) }
+      let!(:existing_v1_rule) { create(:approval_merge_request_rule, merge_request: merge_request, name: 'rule 1') }
+      let!(:existing_v2_any_rule) do
+        create(
+          :merge_requests_approval_rule,
+          merge_request: merge_request,
+          origin: :merge_request,
+          project_id: project.id,
+          rule_type: :any_approver
+        )
+      end
+
+      let!(:existing_v2_rule) do
+        create(
+          :merge_requests_approval_rule,
+          merge_request: merge_request,
+          origin: :merge_request,
+          project_id: project.id,
+          name: 'rule 1')
+      end
+
+      let(:v1_rules) { merge_request.reload.approval_rules }
+      let(:v2_rules) { merge_request.reload.v2_approval_rules }
+
+      let(:opts) { { approval_rules_attributes: approval_rules_attributes } }
+      let(:execute) { update_merge_request(opts) }
+
+      before do
+        stub_feature_flags(v2_approval_rules: true)
+      end
+
+      context 'when approval rules can be overridden' do
+        before do
+          merge_request.project.update!(disable_overriding_approvers_per_merge_request: false)
+        end
+
+        context 'approval_rules_attributes _destroy param is set' do
+          let(:approval_rules_attributes) { [id: existing_v2_rule.id, _destroy: 1] }
+
+          it 'deletes existing v1 and v2 approval rules' do
+            expect { execute }.to change { v1_rules.count }.from(2).to(1).and change { v2_rules.count }.from(2).to(1)
+          end
+        end
+
+        context 'new approval_rules_attribute is provided' do
+          let(:approval_rules_attributes) { [{ name: 'New Rule', approvals_required: 1 }] }
+
+          it 'creates a new v1 and v2 rule' do
+            execute
+
+            expect(v1_rules.size).to eq(3)
+            expect(v2_rules.size).to eq(3)
+            expect(v1_rules.last.name).to eq('New Rule')
+            expect(v2_rules.last.name).to eq('New Rule')
+          end
+        end
+
+        context 'approval_rule name updated' do
+          let(:approval_rules_attributes) { [{ id: existing_v2_rule.id, name: "updated name" }] }
+
+          it 'updates the name of the v1 and v2 rule' do
+            execute
+
+            expect(existing_v1_rule.reload.name).to eq('updated name')
+            expect(existing_v2_rule.reload.name).to eq('updated name')
+          end
+        end
+      end
+    end
   end
 end
