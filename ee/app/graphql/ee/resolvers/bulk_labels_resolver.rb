@@ -28,7 +28,8 @@ module EE
           labels = unified_labels(objects_relation, sync_objects_relation)
 
           ids.each do |ids_pair|
-            loader.call(ids_pair, [labels[ids_pair[0]], labels[ids_pair[1]]].flatten.compact || [])
+            combined_labels = ids_pair.filter_map { |id| labels[id] }.flatten.sort_by(&:title)
+            loader.call(ids_pair, combined_labels)
           end
         end
       end
