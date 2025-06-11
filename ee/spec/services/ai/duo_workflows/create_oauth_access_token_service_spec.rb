@@ -70,6 +70,43 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       end
     end
 
+    context 'when workflow_definition exists' do
+      subject(:execute) do
+        described_class.new(current_user: user, organization: organization, workflow_definition: workflow_definition)
+          .execute
+      end
+
+      context 'when workflow_definition is chat' do
+        let(:workflow_definition) { 'chat' }
+
+        it 'returns error when duo_agentic_chat feature flag is disabled' do
+          stub_feature_flags(duo_agentic_chat: false)
+
+          expect(execute).to be_error
+        end
+
+        it 'creates token when duo_agentic_chat feature flag is enabled' do
+          expect { execute }.to change { OauthAccessToken.count }.by(1)
+        end
+      end
+
+      context 'when workflow_definition is software_developer' do
+        let(:workflow_definition) { 'software_developer' }
+
+        it 'returns error when duo_workflow feature flag is disabled' do
+          stub_feature_flags(duo_workflow: false)
+
+          expect(execute).to be_error
+        end
+
+        it 'creates token when duo_workflow feature flag is enabled' do
+          stub_feature_flags(duo_workflow: true)
+
+          expect { execute }.to change { OauthAccessToken.count }.by(1)
+        end
+      end
+    end
+
     context 'when the duo workflow oauth application does not already exists' do
       it 'creates a new doorkeeper oauth application' do
         expect(::Gitlab::CurrentSettings).to receive(:expire_current_application_settings).and_call_original
