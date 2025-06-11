@@ -67316,6 +67316,9 @@ msgstr ""
 msgid "Value Streams Dashboard | DORA"
 msgstr ""
 
+msgid "Value field is required."
+msgstr ""
+
 msgid "Value stream"
 msgstr ""
 
