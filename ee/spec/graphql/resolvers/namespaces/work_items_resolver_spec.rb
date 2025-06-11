@@ -6,6 +6,7 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team
   include GraphqlHelpers
 
   let_it_be(:group)        { create(:group) }
+  let_it_be(:subgroup)     { create(:group, parent: group) }
   let_it_be(:current_user) { create(:user, developer_of: group) }
 
   specify do
@@ -21,8 +22,12 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team
       create(:work_item, :group_level, :epic, namespace: group)
     end
 
-    def resolve_items(args = {}, context = { current_user: current_user })
-      resolve(described_class, obj: group, args: args, ctx: context, arg_style: :internal)
+    let_it_be(:subgroup_work_item) do
+      create(:work_item, :group_level, :epic, namespace: subgroup)
+    end
+
+    def resolve_items(args = {}, context = { current_user: current_user }, obj = group)
+      resolve(described_class, obj: obj, args: args, ctx: context, arg_style: :internal)
     end
 
     def perform_with_timeframe(timeframe: { start: '2020-08-12', end: '2020-08-14' })
@@ -84,6 +89,24 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team
           it 'returns only work items within timeframe' do
             expect(perform_with_timeframe).to contain_exactly(group_work_item1, group_work_item2)
           end
+        end
+      end
+
+      it 'returns work items from parent groups when include_ancestors is true' do
+        expect(resolve_items({ include_ancestors: true }, { current_user: current_user },
+          subgroup)).to include(group_work_item1)
+      end
+
+      it 'returns work items from descendant groups when include_descendants is true' do
+        expect(resolve_items({ include_descendants: true })).to include(subgroup_work_item)
+      end
+
+      context 'with project level work items' do
+        let_it_be(:project) { create(:project, namespace: group) }
+        let_it_be(:project_work_item) { create(:work_item, project: project) }
+
+        it 'excludes work items from projects within the group when exclude_projects is true' do
+          expect(resolve_items({ exclude_projects: true, include_descendants: true })).not_to include(project_work_item)
         end
       end
     end
