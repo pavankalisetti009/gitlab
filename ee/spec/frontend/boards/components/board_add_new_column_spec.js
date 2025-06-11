@@ -1,4 +1,10 @@
-import { GlAvatarLabeled, GlFormRadio, GlFormRadioGroup, GlCollapsibleListbox } from '@gitlab/ui';
+import {
+  GlAvatarLabeled,
+  GlFormRadio,
+  GlFormRadioGroup,
+  GlCollapsibleListbox,
+  GlButton,
+} from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import { unionBy } from 'lodash';
 import VueApollo from 'vue-apollo';
@@ -56,6 +62,7 @@ describe('BoardAddNewColumn', () => {
   const namespaceQueryHandlerFailure = jest.fn().mockRejectedValue(new Error('Oops, error'));
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findDropdownButton = () => wrapper.findComponent(GlButton);
   const selectItem = (id) => {
     findDropdown().vm.$emit('select', id);
   };
@@ -102,6 +109,7 @@ describe('BoardAddNewColumn', () => {
         GlFormRadioGroup,
         IterationTitle,
         GlCollapsibleListbox,
+        GlButton,
       },
       data() {
         return {
@@ -377,6 +385,25 @@ describe('BoardAddNewColumn', () => {
         await waitForPromises();
         expect(cacheUpdates.setError).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('Accessibility features', () => {
+    beforeEach(() => {
+      mountComponent();
+    });
+
+    it('has the dropdown button with correct ID attribute', () => {
+      expect(findDropdownButton().attributes('id')).toBe('board-value-dropdown');
+    });
+
+    it('adds proper error styling when field is invalid', async () => {
+      selectItem('');
+      findForm().vm.$emit('add-list');
+
+      await nextTick();
+
+      expect(findDropdownButton().classes()).toContain('!gl-shadow-inner-1-red-400');
     });
   });
 });
