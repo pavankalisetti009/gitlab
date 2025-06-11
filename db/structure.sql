@@ -29418,7 +29418,7 @@ ALTER TABLE ONLY ci_build_pending_states
     ADD CONSTRAINT ci_build_pending_states_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ci_build_report_results
-    ADD CONSTRAINT ci_build_report_results_pkey PRIMARY KEY (build_id);
+    ADD CONSTRAINT ci_build_report_results_pkey PRIMARY KEY (build_id, partition_id);
 
 ALTER TABLE ONLY ci_build_trace_chunks
     ADD CONSTRAINT ci_build_trace_chunks_pkey PRIMARY KEY (id);
@@ -34461,8 +34461,6 @@ CREATE INDEX index_ci_build_needs_on_project_id ON ci_build_needs USING btree (p
 CREATE UNIQUE INDEX index_ci_build_pending_states_on_build_id ON ci_build_pending_states USING btree (build_id);
 
 CREATE INDEX index_ci_build_pending_states_on_project_id ON ci_build_pending_states USING btree (project_id);
-
-CREATE UNIQUE INDEX index_ci_build_report_results_on_partition_id_build_id ON ci_build_report_results USING btree (partition_id, build_id);
 
 CREATE INDEX index_ci_build_report_results_on_project_id ON ci_build_report_results USING btree (project_id);
 
