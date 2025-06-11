@@ -65,8 +65,14 @@ module EE
           early_access_path: group_early_access_opt_in_path(@group),
           update_id: @group.id,
           duo_pro_or_duo_enterprise_tier: active_group_duo_pro_or_duo_enterprise_tier,
-          should_show_duo_availability: should_show_duo_availability_general_settings?.to_s
+          should_show_duo_availability: should_show_duo_availability_general_settings?.to_s,
+          duo_workflow_available: duo_workflow_available.to_s,
+          duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s
         }
+      end
+
+      def duo_workflow_available
+        ::Feature.enabled?(:duo_workflow_mcp_support, current_user) && current_user.can?(:admin_duo_workflow, @group)
       end
 
       def group_amazon_q_settings_view_model_data

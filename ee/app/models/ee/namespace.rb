@@ -60,6 +60,7 @@ module EE
 
       accepts_nested_attributes_for :gitlab_subscription, update_only: true
       accepts_nested_attributes_for :namespace_limit
+      accepts_nested_attributes_for :ai_settings, update_only: true
 
       has_one :audit_event_http_namespace_filter, class_name: 'AuditEvents::Streaming::HTTP::NamespaceFilter'
       has_one :audit_event_http_instance_namespace_filter,

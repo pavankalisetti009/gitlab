@@ -60,7 +60,6 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
           context 'when testing each context category individually' do
             feature_flags =
               {
-                duo_include_context_snippet: 'include_snippet_context',
                 duo_include_context_merge_request: 'include_merge_request_context',
                 duo_include_context_issue: 'include_issue_context',
                 duo_include_context_dependency: 'include_dependency_context',
@@ -69,7 +68,7 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
                 duo_include_context_repository: 'include_repository_context'
               }
 
-            already_enabled_context = %w[include_file_context].freeze
+            already_enabled_context = %w[include_file_context include_snippet_context].freeze
 
             feature_flags.each do |flag, feature|
               context "when only #{flag} is enabled" do
