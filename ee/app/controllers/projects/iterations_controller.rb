@@ -7,7 +7,6 @@ class Projects::IterationsController < Projects::ApplicationController
   before_action :set_iteration!, only: [:show]
 
   feature_category :team_planning
-  urgency :low
 
   def index
     redirect_to project_iteration_cadences_path(project)

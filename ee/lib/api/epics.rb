@@ -151,7 +151,7 @@ module API
         params do
           requires :epic_iid, type: Integer, desc: 'The internal ID of an epic', documentation: { example: 5 }
         end
-        get path do
+        get path, urgency: :low do
           authorize_can_read!
 
           present epic, epic_options.merge(include_subscribed: true)
