@@ -3,6 +3,12 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::Files, feature_category: :workspaces do
+  after do
+    # Reset mock data because the tests change class level constants
+    RSpec::Mocks.space.reset_all
+    described_class.reload_constants!
+  end
+
   describe "hot reloading for constants" do
     let(:root_path) { File.expand_path("../../../", __dir__.to_s) }
     let(:script_path) { "settings/default_devfile.yaml" }
