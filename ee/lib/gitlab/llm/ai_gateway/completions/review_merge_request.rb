@@ -12,6 +12,7 @@ module Gitlab
           DRAFT_NOTES_COUNT_LIMIT = 50
           PRIORITY_THRESHOLD = 3
           UNIT_PRIMITIVE = 'review_merge_request'
+          CUSTOM_INSTRUCTIONS_FILE_PATH = '.gitlab/duo/mr-review-instructions.yaml'
           COMMENT_METRICS = %i[
             total_comments
             p1_comments
@@ -93,13 +94,13 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            version = '1.0.0' # Claude 3.7 Sonnet
-
-            if Feature.enabled?(:duo_code_review_claude_4_0_rollout, user)
-              version = '1.1.0' # Claude 4.0 Sonnet
+            if duo_code_review_custom_instructions_enabled?
+              '1.2.0' # Claude 4.0 Sonnet with custom instructions
+            elsif Feature.enabled?(:duo_code_review_claude_4_0_rollout, user)
+              '1.1.0' # Claude 4.0 Sonnet
+            else
+              '1.0.0' # Claude 3.7 Sonnet
             end
-
-            version
           end
 
           def user
@@ -203,6 +204,11 @@ module Gitlab
           end
           strong_memoize_attr :duo_code_review_logging_enabled?
 
+          def duo_code_review_custom_instructions_enabled?
+            Feature.enabled?(:duo_code_review_custom_instructions, user)
+          end
+          strong_memoize_attr :duo_code_review_custom_instructions_enabled?
+
           def process_comments(comments, diff_file, diff_refs)
             comments.each do |comment|
               line = match_comment_to_diff_line(comment, diff_file.diff_lines)
@@ -266,8 +272,49 @@ module Gitlab
               mr_description: merge_request.description,
               diffs_and_paths: diffs_and_paths,
               files_content: files_content,
+              custom_instructions: load_custom_instructions(diffs_and_paths.keys),
               user: user
             ).to_prompt_inputs
+          end
+
+          def load_custom_instructions(file_paths)
+            return [] unless duo_code_review_custom_instructions_enabled?
+
+            all_instructions = load_project_custom_instructions
+            return [] if all_instructions.blank?
+
+            # Select instructions whose glob patterns match any of the diff files
+            all_instructions.select do |instruction|
+              file_paths.any? { |path| File.fnmatch?(instruction[:glob_pattern], path) }
+            end.uniq
+          end
+
+          def load_project_custom_instructions
+            blob = merge_request.project.repository.blob_at(
+              merge_request.target_branch_sha,
+              CUSTOM_INSTRUCTIONS_FILE_PATH
+            )
+
+            return [] unless blob
+
+            yaml_content = YAML.safe_load(blob.data)
+            return [] unless yaml_content&.dig('instructions')
+
+            yaml_content['instructions'].flat_map do |group|
+              Array(group['fileFilters']).map do |pattern|
+                {
+                  name: group['name'],
+                  instructions: group['instructions'],
+                  glob_pattern: pattern
+                }.with_indifferent_access
+              end
+            end
+          rescue StandardError => e
+            Gitlab::ErrorTracking.track_exception(e,
+              project_id: merge_request.project.id,
+              merge_request_id: merge_request.id
+            )
+            []
           end
 
           def review_response_for_prompt_inputs

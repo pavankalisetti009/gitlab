@@ -70,7 +70,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         mr_description: 'MR Description',
         diff_lines: 'Diff lines',
         full_file_intro: 'Full file intro',
-        full_content_section: 'Full content section'
+        full_content_section: 'Full content section',
+        custom_instructions_section: 'Custom instructions section'
       }
     end
 
@@ -83,6 +84,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
     before do
       stub_feature_flags(duo_code_review_claude_4_0_rollout: false)
+      stub_feature_flags(duo_code_review_custom_instructions: false)
 
       allow_next_instance_of(
         review_prompt_class,
@@ -90,6 +92,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         mr_description: merge_request.description,
         diffs_and_paths: kind_of(Hash),
         files_content: kind_of(Hash),
+        custom_instructions: [],
         user: user
       ) do |template|
         allow(template).to receive(:to_prompt_inputs).and_return(prompt_inputs)
@@ -1029,6 +1032,240 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             .to trigger_internal_events('encounter_duo_code_review_error_during_review')
             .with(user: user, project: merge_request.project)
             .exactly(1).times
+        end
+      end
+    end
+
+    context "with custom instructions" do
+      let(:prompt_version) { '1.2.0' }
+
+      before do
+        stub_feature_flags(duo_code_review_custom_instructions: true)
+      end
+
+      context 'when custom instructions file does not exist' do
+        it 'passes empty custom instructions to the review prompt' do
+          expect(review_prompt_class).to receive(:new).with(
+            hash_including(
+              custom_instructions: []
+            )
+          )
+
+          completion.execute
+        end
+      end
+
+      context 'when custom instructions file exists' do
+        let(:yaml_content) do
+          <<~YAML
+            ---
+            instructions:
+              - name: Ruby Style Guide
+                instructions: Follow Ruby style conventions and best practices
+                fileFilters:
+                  - "*.rb"
+                  - "**/*.rb"
+              - name: JavaScript Linting
+                instructions: Ensure proper JavaScript formatting and lint rules
+                fileFilters:
+                  - "*.js"
+                  - "**/*.js"
+              - name: Markdown Standards
+                instructions: Check for proper markdown formatting
+                fileFilters:
+                  - "*.md"
+          YAML
+        end
+
+        let(:blob_data) { yaml_content }
+        let(:blob) { instance_double(Blob, data: blob_data) }
+
+        before do
+          allow(merge_request.project.repository).to receive(:blob_at)
+            .with(merge_request.target_branch_sha, '.gitlab/duo/mr-review-instructions.yaml')
+            .and_return(blob)
+        end
+
+        it 'loads and filters custom instructions based on file patterns' do
+          expected_instructions = [
+            {
+              'name' => 'Markdown Standards',
+              'instructions' => 'Check for proper markdown formatting',
+              'glob_pattern' => '*.md'
+            }
+          ]
+
+          expect(review_prompt_class).to receive(:new).with(
+            hash_including(
+              custom_instructions: expected_instructions
+            )
+          )
+
+          completion.execute
+        end
+
+        context 'when YAML has multiple patterns matching same files' do
+          let(:yaml_content) do
+            <<~YAML
+              ---
+              instructions:
+                - name: General Code Review
+                  instructions: Review for general code quality
+                  fileFilters:
+                    - "*.md"
+                - name: Markdown Specific
+                  instructions: Markdown specific instructions
+                  fileFilters:
+                    - "*.md"
+            YAML
+          end
+
+          it 'includes all matching instructions' do
+            expected_instructions = [
+              {
+                'name' => 'General Code Review',
+                'instructions' => 'Review for general code quality',
+                'glob_pattern' => '*.md'
+              },
+              {
+                'name' => 'Markdown Specific',
+                'instructions' => 'Markdown specific instructions',
+                'glob_pattern' => '*.md'
+              }
+            ]
+
+            expect(review_prompt_class).to receive(:new).with(
+              hash_including(
+                custom_instructions: expected_instructions
+              )
+            )
+
+            completion.execute
+          end
+        end
+
+        context 'when no file patterns match the diff files' do
+          let(:yaml_content) do
+            <<~YAML
+              ---
+              instructions:
+                - name: Python Style
+                  instructions: Follow Python conventions
+                  fileFilters:
+                    - "*.py"
+            YAML
+          end
+
+          it 'passes empty custom instructions array' do
+            expect(review_prompt_class).to receive(:new).with(
+              hash_including(
+                custom_instructions: []
+              )
+            )
+
+            completion.execute
+          end
+        end
+
+        context 'when YAML file is malformed or has invalid structure' do
+          let(:yaml_content) { 'invalid: yaml: content: [malformed' }
+
+          before do
+            allow(Gitlab::ErrorTracking).to receive(:track_exception)
+          end
+
+          it 'handles errors gracefully and passes empty instructions' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              instance_of(Psych::SyntaxError),
+              project_id: merge_request.project.id,
+              merge_request_id: merge_request.id
+            )
+
+            expect(review_prompt_class).to receive(:new).with(
+              hash_including(
+                custom_instructions: []
+              )
+            )
+
+            completion.execute
+          end
+
+          context 'with missing instructions key' do
+            let(:yaml_content) do
+              <<~YAML
+                ---
+                invalid_key: some_value
+                not_instructions: true
+              YAML
+            end
+
+            it 'returns empty instructions array' do
+              expect(review_prompt_class).to receive(:new).with(
+                hash_including(
+                  custom_instructions: []
+                )
+              )
+
+              completion.execute
+            end
+          end
+        end
+      end
+
+      context 'when duo_code_review_custom_instructions feature flag is disabled' do
+        let(:prompt_version) { '1.0.0' }
+
+        let(:yaml_content) do
+          <<~YAML
+            ---
+            instructions:
+              - name: Markdown Standards
+                instructions: Check for proper markdown formatting
+                fileFilters:
+                  - "*.md"
+          YAML
+        end
+
+        let(:blob_data) { yaml_content }
+        let(:blob) { instance_double(Blob, data: blob_data) }
+
+        before do
+          stub_feature_flags(duo_code_review_custom_instructions: false)
+          allow(merge_request.project.repository).to receive(:blob_at)
+            .with(merge_request.target_branch_sha, '.gitlab/duo/mr-review-instructions.yaml')
+            .and_return(blob)
+        end
+
+        it 'does not load custom instructions even if file exists' do
+          expect(review_prompt_class).to receive(:new).with(
+            hash_including(
+              custom_instructions: []
+            )
+          )
+
+          completion.execute
+        end
+
+        it 'does not attempt to read the custom instructions file' do
+          expect(merge_request.project.repository).not_to receive(:blob_at)
+            .with(merge_request.target_branch_sha, '.gitlab/duo/mr-review-instructions.yaml')
+
+          completion.execute
+        end
+
+        it 'uses prompt version 1.0.0' do
+          allow_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
+            service_name: :review_merge_request,
+            tracking_context: tracking_context
+          ) do |client|
+            expect(client)
+              .to receive(:complete_prompt)
+              .with(
+                hash_including(prompt_version: '1.0.0')
+              )
+          end
+
+          completion.execute
         end
       end
     end
