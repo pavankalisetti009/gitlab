@@ -105,6 +105,12 @@ RSpec.describe Vulnerabilities::MarkDroppedAsResolvedWorker, feature_category: :
         expect(non_dismissable_vulnerability.reload.state).to eq("detected")
         expect(non_dismissable_vulnerability.reload.resolved_by_id).to eq(nil)
       end
+
+      it_behaves_like 'sync vulnerabilities changes to ES' do
+        let(:expected_vulnerabilities) { [dismissable_vulnerability, dismissable_vulnerability_2] }
+
+        subject { worker.perform(pipeline.project_id, dropped_identifiers) }
+      end
     end
   end
 end

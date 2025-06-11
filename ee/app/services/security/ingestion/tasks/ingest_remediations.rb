@@ -116,13 +116,17 @@ module Security
         end
 
         def update_vulnerability_reads
-          Vulnerabilities::Read
-            .by_vulnerabilities(vulnerability_ids_for_remediations(unfound_remediations))
-            .update_all(has_remediations: false)
+          unfound_reads = Vulnerabilities::Read.by_vulnerabilities(
+            vulnerability_ids_for_remediations(unfound_remediations))
+          ::Vulnerabilities::BulkEsOperationService.new(unfound_reads).execute do |relation|
+            relation.update_all(has_remediations: false)
+          end
 
-          Vulnerabilities::Read
-            .by_vulnerabilities(vulnerability_ids_for_remediations(found_remediations))
-            .update_all(has_remediations: true)
+          found_reads = Vulnerabilities::Read.by_vulnerabilities(
+            vulnerability_ids_for_remediations(found_remediations))
+          ::Vulnerabilities::BulkEsOperationService.new(found_reads).execute do |relation|
+            relation.update_all(has_remediations: true)
+          end
         end
 
         def new_report_remediations

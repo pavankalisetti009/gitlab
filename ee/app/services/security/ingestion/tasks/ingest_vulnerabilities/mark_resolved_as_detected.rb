@@ -49,13 +49,16 @@ module Security
           end
 
           def update_vulnerability_records
-            ::Vulnerability.id_in(redetected_vulnerability_ids)
-              .update_all(
+            vulnerabilities_relation = ::Vulnerability.id_in(redetected_vulnerability_ids)
+
+            ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute do |relation|
+              relation.update_all(
                 state: :detected,
                 resolved_at: nil,
                 resolved_by_id: nil,
                 updated_at: current_time
               )
+            end
           end
 
           def create_state_transitions

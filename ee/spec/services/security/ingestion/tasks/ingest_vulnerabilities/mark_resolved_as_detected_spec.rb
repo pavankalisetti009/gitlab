@@ -42,6 +42,10 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
     existing_resolved_finding_map.vulnerability_id = resolved_vulnerability.id
   end
 
+  it_behaves_like 'sync vulnerabilities changes to ES' do
+    let(:expected_vulnerabilities) { resolved_vulnerability }
+  end
+
   it 'changes state of resolved Vulnerabilities back to detected' do
     expect { mark_resolved_as_detected }.to change { resolved_vulnerability.reload.state }
       .from("resolved")
