@@ -211,7 +211,7 @@ export default {
         />
         <div
           v-if="pageInfo.hasNextPage || pageInfo.hasPreviousPage"
-          class="gl-mt-3 gl-flex gl-justify-center"
+          class="gl-mt-5 gl-flex gl-justify-center"
         >
           <gl-keyset-pagination
             :has-next-page="pageInfo.hasNextPage"
