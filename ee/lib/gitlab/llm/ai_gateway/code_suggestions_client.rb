@@ -10,6 +10,8 @@ module Gitlab
         COMPLETION_CHECK_TIMEOUT = 3.seconds
         DEFAULT_TIMEOUT = 30.seconds
 
+        AiGatewayError = Class.new(StandardError)
+
         def initialize(user)
           @user = user
         end
@@ -73,9 +75,9 @@ module Gitlab
         end
 
         def direct_access_token
-          return error('Missing instance token') unless access_token
+          raise AiGatewayError, 'Missing instance token' unless access_token
 
-          log_info(message: "Creating user access token",
+          log_info(message: 'Creating user access token',
             event_name: 'user_token_created',
             ai_component: 'code_suggestion'
           )
@@ -88,10 +90,14 @@ module Gitlab
             allow_local_requests: true,
             stream_body: false
           )
-          return error('Token creation failed') unless response.success?
-          return error('Token is missing in response') unless response['token'].present?
+
+          raise AiGatewayError, 'Token creation failed' unless response.success?
+          raise AiGatewayError, 'Token is missing in response' unless response['token'].present?
 
           success(token: response['token'], expires_at: response['expires_at'])
+        rescue AiGatewayError => err
+          Gitlab::ErrorTracking.track_exception(err)
+          error(err.message)
         end
 
         private

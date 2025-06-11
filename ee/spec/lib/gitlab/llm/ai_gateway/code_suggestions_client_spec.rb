@@ -187,18 +187,51 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       end
 
       it { is_expected.to match(a_hash_including(status: :error)) }
+
+      it 'logs the error' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          satisfy { |exception|
+            exception.is_a?(described_class::AiGatewayError) &&
+              exception.message == 'Missing instance token'
+          }
+        )
+
+        result
+      end
     end
 
-    context 'when response fails' do
+    context 'when direct access token creation request fails' do
       let(:http_status) { 500 }
 
       it { is_expected.to match(a_hash_including(status: :error)) }
+
+      it 'logs the error' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          satisfy { |exception|
+            exception.is_a?(described_class::AiGatewayError) &&
+              exception.message == 'Token creation failed'
+          }
+        )
+
+        result
+      end
     end
 
     context 'when token is not included in response' do
       let(:response_body) { { foo: :bar }.to_json }
 
       it { is_expected.to match(a_hash_including(status: :error)) }
+
+      it 'logs the error' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          satisfy { |exception|
+            exception.is_a?(described_class::AiGatewayError) &&
+              exception.message == 'Token is missing in response'
+          }
+        )
+
+        result
+      end
     end
   end
 end
