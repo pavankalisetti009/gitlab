@@ -5,14 +5,14 @@ module Ai
     class CreateOauthAccessTokenService
       include ::Services::ReturnServiceResponses
 
-      def initialize(current_user:, organization:)
+      def initialize(current_user:, organization:, workflow_definition: nil)
         @current_user = current_user
         @organization = organization
+        @workflow_definition = workflow_definition
       end
 
       def execute
-        return error('Duo workflow is not enabled for user', :forbidden) unless Feature.enabled?(:duo_workflow,
-          current_user) || Feature.enabled?(:duo_agentic_chat, current_user)
+        return error('Duo workflow is not enabled for user', :forbidden) if not_available
 
         ensure_oauth_application!
         token = create_oauth_access_token
@@ -77,6 +77,17 @@ module Ai
       def oauth_callback_url
         # This value is unused but cannot be nil
         Gitlab::Routing.url_helpers.root_url
+      end
+
+      def not_available
+        case @workflow_definition
+        when nil
+          Feature.disabled?(:duo_workflow, current_user) && Feature.disabled?(:duo_agentic_chat, current_user)
+        when "chat"
+          Feature.disabled?(:duo_agentic_chat, current_user)
+        else
+          Feature.disabled?(:duo_workflow, current_user)
+        end
       end
     end
   end

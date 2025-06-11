@@ -63,7 +63,8 @@ module API
           def gitlab_oauth_token
             gitlab_oauth_token_result = ::Ai::DuoWorkflows::CreateOauthAccessTokenService.new(
               current_user: current_user,
-              organization: ::Current.organization
+              organization: ::Current.organization,
+              workflow_definition: params[:workflow_definition]
             ).execute
 
             if gitlab_oauth_token_result[:status] == :error
