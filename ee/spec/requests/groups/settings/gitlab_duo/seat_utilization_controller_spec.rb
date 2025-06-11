@@ -10,12 +10,40 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
 
   before do
     stub_licensed_features(code_suggestions: true)
-    add_on = create(:gitlab_subscription_add_on)
-    create(:gitlab_subscription_add_on_purchase, quantity: 50, namespace: group, add_on: add_on)
     sign_in(user)
   end
 
+  shared_examples 'redirects to gitlab duo home path' do
+    it 'redirects to gitlab duo home path for the group' do
+      get_index
+
+      expect(response).to redirect_to(group_settings_gitlab_duo_path(group))
+    end
+  end
+
+  shared_examples 'renders seat management index page for group' do
+    it 'renders duo seat management index page for group' do
+      get_index
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(response).to render_template(:index)
+    end
+  end
+
+  shared_examples 'renders not found error' do
+    it 'renders not found error' do
+      get_index
+
+      expect(response).to have_gitlab_http_status(:not_found)
+    end
+  end
+
   context 'when user has read_usage_quotas permission' do
+    let(:add_on_type) { :duo_pro }
+    let!(:add_on_purchase) do
+      create(:gitlab_subscription_add_on_purchase, add_on_type, quantity: 50, namespace: group)
+    end
+
     before_all do
       group.add_owner(user)
     end
@@ -25,11 +53,7 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 
-      it "renders 404" do
-        get_index
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
+      it_behaves_like 'renders not found error'
     end
 
     context "when show_gitlab_duo_settings_app? returns true" do
@@ -37,11 +61,24 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      it "renders index with 200 status code" do
-        get_index
+      it_behaves_like 'renders seat management index page for group'
+    end
 
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(response).to render_template(:index)
+    context 'with a non seat assignable duo add on' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      context 'when duo core add on is provisioned' do
+        let(:add_on_type) { :duo_core }
+
+        it_behaves_like 'redirects to gitlab duo home path'
+      end
+
+      context 'when duo amazon q add on is provisioned' do
+        let(:add_on_type) { :duo_amazon_q }
+
+        it_behaves_like 'redirects to gitlab duo home path'
       end
     end
 
@@ -67,10 +104,6 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
       stub_saas_features(gitlab_com_subscriptions: true)
     end
 
-    it "renders 404" do
-      get_index
-
-      expect(response).to have_gitlab_http_status(:not_found)
-    end
+    it_behaves_like 'renders not found error'
   end
 end
