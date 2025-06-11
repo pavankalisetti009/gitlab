@@ -8,7 +8,6 @@ class Groups::IterationsController < Groups::ApplicationController
   before_action :set_iteration!, only: [:show, :edit]
 
   feature_category :team_planning
-  urgency :low
 
   def index
     redirect_to group_iteration_cadences_path(group)
