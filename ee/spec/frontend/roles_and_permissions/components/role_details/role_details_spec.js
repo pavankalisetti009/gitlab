@@ -13,7 +13,13 @@ import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/membe
 import adminRoleQuery from 'ee/roles_and_permissions/graphql/admin_role/role.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { mockMemberRole, getMemberRoleQueryResponse } from '../../mock_data';
+import DeleteRoleTooltipWrapper from 'ee/roles_and_permissions/components/delete_role_tooltip_wrapper.vue';
+import {
+  mockMemberRole,
+  getMemberRoleQueryResponse,
+  mockMemberRoleWithUsers,
+  mockMemberRoleWithSecurityPolicies,
+} from '../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -47,10 +53,10 @@ describe('Role details', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findDetailsContent = () => wrapper.findComponent(RoleDetailsContent);
   const findEditButton = () => wrapper.findByTestId('edit-button');
-  const findDeleteButtonWrapper = () => wrapper.findByTestId('delete-button');
-  const findDeleteButton = () => findDeleteButtonWrapper().findComponent(GlButton);
   const findDeleteRoleModal = () => wrapper.findComponent(DeleteRoleModal);
   const getTooltip = (findFn) => getBinding(findFn().element, 'gl-tooltip');
+  const findDeleteRoleTooltipWrapper = () => wrapper.findComponent(DeleteRoleTooltipWrapper);
+  const findDeleteButton = () => findDeleteRoleTooltipWrapper().findComponent(GlButton);
 
   describe('when there is a query error', () => {
     beforeEach(() => createWrapper({ memberRoleHandler: jest.fn().mockRejectedValue('test') }));
@@ -89,7 +95,7 @@ describe('Role details', () => {
 
       it('does not show action buttons', () => {
         expect(findEditButton().exists()).toBe(false);
-        expect(findDeleteButtonWrapper().exists()).toBe(false);
+        expect(findDeleteRoleTooltipWrapper().exists()).toBe(false);
       });
 
       it('shows header description', () => {
@@ -155,29 +161,38 @@ describe('Role details', () => {
   });
 
   describe('delete button', () => {
-    describe.each`
-      usersCount | disabled | expectedTooltip
-      ${0}       | ${false} | ${'Delete role'}
-      ${1}       | ${true}  | ${{ delay: 0, title: 'To delete custom role, remove role from all users.' }}
-    `(`when the role users count is usersCount`, ({ usersCount, disabled, expectedTooltip }) => {
-      beforeEach(() => {
-        const memberRole = { ...mockMemberRole, usersCount };
-        return createWrapper({ memberRoleHandler: getMemberRoleHandler(memberRole) });
-      });
+    beforeEach(() => createWrapper());
 
-      it('shows button', () => {
-        expect(findDeleteButton().props()).toMatchObject({
-          icon: 'remove',
-          category: 'secondary',
-          variant: 'danger',
-          disabled,
-        });
-      });
+    it('shows delete role tooltip wrapper', () => {
+      expect(findDeleteRoleTooltipWrapper().props('role')).toEqual(mockMemberRole);
+    });
 
-      it('shows button tooltip on wrapper', () => {
-        expect(getTooltip(findDeleteButtonWrapper).value).toEqual(expectedTooltip);
+    it('shows button', () => {
+      expect(findDeleteButton().props()).toMatchObject({
+        icon: 'remove',
+        category: 'secondary',
+        variant: 'danger',
+        disabled: false,
       });
     });
+
+    it('shows button tooltip', () => {
+      expect(getTooltip(findDeleteButton).value).toBe('Delete role');
+    });
+  });
+
+  it.each`
+    role                                  | roleQuery          | description
+    ${mockMemberRoleWithUsers}            | ${memberRoleQuery} | ${'users'}
+    ${mockMemberRoleWithSecurityPolicies} | ${memberRoleQuery} | ${'dependent security policies'}
+  `('disables delete button when role has $description', async ({ role, roleQuery }) => {
+    await createWrapper({
+      roleQuery,
+      memberRoleHandler: getMemberRoleHandler(role),
+      isAdminRole: roleQuery === adminRoleQuery,
+    });
+
+    expect(findDeleteButton().props('disabled')).toBe(true);
   });
 
   describe('delete role modal', () => {

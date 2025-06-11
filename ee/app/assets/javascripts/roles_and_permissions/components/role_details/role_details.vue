@@ -10,6 +10,8 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DeleteRoleModal from '../delete_role_modal.vue';
 import memberRoleQuery from '../../graphql/role_details/member_role.query.graphql';
 import adminRoleQuery from '../../graphql/admin_role/role.query.graphql';
+import DeleteRoleTooltipWrapper from '../delete_role_tooltip_wrapper.vue';
+import { isRoleInUse } from '../../utils';
 import RoleDetailsContent from './role_details_content.vue';
 
 export const DETAILS_QUERYSTRING = 'from_details';
@@ -18,6 +20,7 @@ export default {
   components: {
     GlSprintf,
     RoleDetailsContent,
+    DeleteRoleTooltipWrapper,
     GlAlert,
     GlButton,
     GlLoadingIcon,
@@ -80,15 +83,8 @@ export default {
     createdDate() {
       return localeDateFormat.asDate.format(this.role.createdAt);
     },
-    deleteButtonTooltip() {
-      // The button will be disabled if there are assigned members, so we want to show the tooltip immediately on hover
-      // instead of the default 0.5-second delay.
-      return this.hasAssignedUsers
-        ? { title: s__('MemberRole|To delete custom role, remove role from all users.'), delay: 0 }
-        : s__('MemberRole|Delete role');
-    },
-    hasAssignedUsers() {
-      return this.role.usersCount > 0;
+    isRoleInUse() {
+      return isRoleInUse(this.role);
     },
     editRolePath() {
       return `${this.role.editPath}?${DETAILS_QUERYSTRING}`;
@@ -125,21 +121,24 @@ export default {
             :href="editRolePath"
             data-testid="edit-button"
           />
-          <gl-button
-            v-gl-tooltip="deleteButtonTooltip"
-            icon="remove"
-            category="secondary"
-            variant="danger"
-            :disabled="hasAssignedUsers"
-            data-testid="delete-button"
-            @click="roleToDelete = role"
-          />
+          <delete-role-tooltip-wrapper :role="role">
+            <gl-button
+              v-gl-tooltip="s__('MemberRole|Delete role')"
+              icon="remove"
+              category="secondary"
+              variant="danger"
+              :disabled="isRoleInUse"
+              :aria-label="s__('MemberRole|Delete role')"
+              data-testid="delete-button"
+              @click="roleToDelete = role"
+            />
+            <delete-role-modal
+              :role="roleToDelete"
+              @deleted="navigateToListPage"
+              @close="roleToDelete = null"
+            />
+          </delete-role-tooltip-wrapper>
         </div>
-        <delete-role-modal
-          :role="roleToDelete"
-          @deleted="navigateToListPage"
-          @close="roleToDelete = null"
-        />
       </template>
     </page-heading>
 
