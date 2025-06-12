@@ -2,8 +2,6 @@
 
 module Geo
   class EventLog < ApplicationRecord
-    ignore_column :repositories_changed_event_id, remove_with: '17.11', remove_after: '2025-04-17'
-
     include Geo::Model
     include ::EachBatch
 
