@@ -1,7 +1,5 @@
 import { TOKEN_TYPES } from 'ee/geo_replicable/constants';
 
-export const MOCK_GEO_REPLICATION_SVG_PATH = 'illustrations/empty-state/empty-geo-md.svg';
-
 export const MOCK_REPLICABLE_TYPES = [
   {
     titlePlural: 'Design Management Repositories',

@@ -1,8 +1,10 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
+import GeoListEmptyState from 'ee/geo_shared/list/components/geo_list_empty_state.vue';
+import { sprintf, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
 import {
@@ -11,9 +13,13 @@ import {
   getReplicableTypeFilter,
   processFilters,
 } from '../filters';
-import { REPLICATION_STATUS_STATES_ARRAY, TOKEN_TYPES, BULK_ACTIONS } from '../constants';
+import {
+  REPLICATION_STATUS_STATES_ARRAY,
+  TOKEN_TYPES,
+  BULK_ACTIONS,
+  GEO_TROUBLESHOOTING_LINK,
+} from '../constants';
 import GeoReplicable from './geo_replicable.vue';
-import GeoReplicableEmptyState from './geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from './geo_replicable_filter_bar.vue';
 import GeoFeedbackBanner from './geo_feedback_banner.vue';
 
@@ -24,14 +30,13 @@ export default {
     GeoReplicableFilterBar,
     GeoListTopBar,
     GeoReplicable,
-    GeoReplicableEmptyState,
+    GeoListEmptyState,
     GeoFeedbackBanner,
   },
   mixins: [glFeatureFlagsMixin()],
-  props: {
-    geoReplicableEmptySvgPath: {
-      type: String,
-      required: true,
+  inject: {
+    itemTitle: {
+      default: '',
     },
   },
   data() {
@@ -41,6 +46,7 @@ export default {
   },
   computed: {
     ...mapState(['isLoading', 'replicableItems']),
+    ...mapGetters(['hasFilters']),
     hasReplicableItems() {
       return this.replicableItems.length > 0;
     },
@@ -53,6 +59,21 @@ export default {
     },
     activeFilteredSearchFilters() {
       return this.activeFilters.filter(({ type }) => type !== TOKEN_TYPES.REPLICABLE_TYPE);
+    },
+    emptyState() {
+      return {
+        title: sprintf(s__('Geo|There are no %{itemTitle} to show'), { itemTitle: this.itemTitle }),
+        description: s__(
+          'Geo|No %{itemTitle} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information.',
+        ),
+        itemTitle: this.itemTitle,
+        helpLink: GEO_TROUBLESHOOTING_LINK,
+      };
+    },
+    emptyStateHasFilters() {
+      return this.glFeatures.geoReplicablesFilteredListView
+        ? Boolean(this.activeFilteredSearchFilters.length)
+        : this.hasFilters;
     },
   },
   created() {
@@ -112,10 +133,7 @@ export default {
     <gl-loading-icon v-if="isLoading" size="xl" />
     <template v-else>
       <geo-replicable v-if="hasReplicableItems" />
-      <geo-replicable-empty-state
-        v-else
-        :geo-replicable-empty-svg-path="geoReplicableEmptySvgPath"
-      />
+      <geo-list-empty-state v-else :empty-state="emptyState" :has-filters="emptyStateHasFilters" />
     </template>
   </article>
 </template>

@@ -27817,10 +27817,10 @@ msgstr ""
 msgid "Geo|Must match with the %{codeStart}geo_node_name%{codeEnd} in %{codeStart}/etc/gitlab/gitlab.rb%{codeEnd}."
 msgstr ""
 
-msgid "Geo|No %{replicable_type} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information."
+msgid "Geo|No %{itemTitle} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information."
 msgstr ""
 
-msgid "Geo|No %{replicable} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information."
+msgid "Geo|No %{replicable_type} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information."
 msgstr ""
 
 msgid "Geo|No Geo site found"
@@ -28060,10 +28060,10 @@ msgstr ""
 msgid "Geo|The site is currently %{minutes_behind} behind the primary site."
 msgstr ""
 
-msgid "Geo|There are no %{replicable_type} to show"
+msgid "Geo|There are no %{itemTitle} to show"
 msgstr ""
 
-msgid "Geo|There are no %{replicable} to show"
+msgid "Geo|There are no %{replicable_type} to show"
 msgstr ""
 
 msgid "Geo|There was an error deleting the Geo Site"

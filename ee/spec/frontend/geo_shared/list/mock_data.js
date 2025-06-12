@@ -87,3 +87,10 @@ export const MOCK_TIME_AGO = [
     defaultText: 'N/A',
   },
 ];
+
+export const MOCK_EMPTY_STATE = {
+  title: 'There are not Test Items to show',
+  description: 'No %{itemTitle} were found. Click %{linkStart}this link%{linkEnd} to learn more.',
+  itemTitle: 'Test Items',
+  helpLink: '/help/link',
+};

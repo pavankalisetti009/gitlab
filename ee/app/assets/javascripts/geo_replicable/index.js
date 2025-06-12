@@ -10,8 +10,7 @@ Vue.use(Translate);
 
 export default () => {
   const el = document.getElementById('js-geo-replicable');
-  const { geoReplicableEmptySvgPath, geoCurrentSiteId, geoTargetSiteId, replicableBasePath } =
-    el.dataset;
+  const { geoCurrentSiteId, geoTargetSiteId, replicableBasePath } = el.dataset;
 
   const replicableTypes = convertObjectPropsToCamelCase(JSON.parse(el.dataset.replicableTypes), {
     deep: true,
@@ -45,11 +44,7 @@ export default () => {
     },
 
     render(createElement) {
-      return createElement(GeoReplicableApp, {
-        props: {
-          geoReplicableEmptySvgPath,
-        },
-      });
+      return createElement(GeoReplicableApp);
     },
   });
 };
