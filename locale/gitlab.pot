@@ -37230,6 +37230,9 @@ msgstr ""
 msgid "MarkdownEditor|Indent line (%{modifier_key}])"
 msgstr ""
 
+msgid "MarkdownEditor|No records"
+msgstr ""
+
 msgid "MarkdownEditor|Outdent line (%{modifierKey}[)"
 msgstr ""
 
