@@ -380,6 +380,14 @@ module EE
           description: 'Status for all analyzers in the group.',
           experiment: { milestone: '18.0' }
 
+        field :compliance_requirement_control_coverage,
+          ::Types::ComplianceManagement::ComplianceFramework::RequirementControlCoverageType,
+          null: true,
+          description: 'Compliance control status summary showing count of passed, failed, and pending controls.',
+          resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::RequirementControlCoverageResolver,
+          authorize: :read_compliance_dashboard,
+          experiment: { milestone: '18.1' }
+
         field :maven_virtual_registries,
           EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type,
           null: true,
