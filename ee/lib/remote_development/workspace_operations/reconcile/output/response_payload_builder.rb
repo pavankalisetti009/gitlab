@@ -84,25 +84,11 @@ module RemoteDevelopment
             include_all_resources = should_include_all_resources?(update_type: update_type, workspace: workspace)
             resources_include_type = include_all_resources ? ALL_RESOURCES_INCLUDED : PARTIAL_RESOURCES_INCLUDED
 
-            workspace_resources =
-              case workspace.desired_config_generator_version
-              when DesiredConfigGeneratorVersion::LATEST_VERSION
-                DesiredConfigGenerator.generate_desired_config(
-                  workspace: workspace,
-                  include_all_resources: include_all_resources,
-                  logger: logger
-                )
-              else
-                namespace = "RemoteDevelopment::WorkspaceOperations::Reconcile::Output"
-                generator_class_name =
-                  "#{namespace}::DesiredConfigGeneratorV#{workspace.desired_config_generator_version}"
-                generator_class = Object.const_get(generator_class_name, false)
-                generator_class.generate_desired_config(
-                  workspace: workspace,
-                  include_all_resources: include_all_resources,
-                  logger: logger
-                )
-              end
+            workspace_resources = DesiredConfigGenerator.generate_desired_config(
+              workspace: workspace,
+              include_all_resources: include_all_resources,
+              logger: logger
+            )
 
             stable_sorted_workspace_resources = workspace_resources.map do |resource|
               Gitlab::Utils.deep_sort_hash(resource)

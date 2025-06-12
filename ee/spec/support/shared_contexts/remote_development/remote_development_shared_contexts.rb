@@ -322,20 +322,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
     create_config_to_apply(workspace: workspace, **args).map { |resource| YAML.dump(resource.deep_stringify_keys) }.join
   end
 
-  # @param [RemoteDevelopment::Workspace] workspace
-  # @param [Hash] args
-  # @return [Array<Hash>]
-  def create_config_to_apply(workspace:, **args)
-    validate_hash_is_deep_symbolized(args)
-
-    desired_config_generator_version = workspace.desired_config_generator_version
-
-    method_name = "create_config_to_apply_v#{desired_config_generator_version}"
-    # rubocop:disable GitlabSecurity/PublicSend -- We are intentionally doing this send to dynamically select the generator version method
-    send(method_name, workspace: workspace, **args)
-    # rubocop:enable GitlabSecurity/PublicSend
-  end
-
   # rubocop:disable Metrics/ParameterLists, Metrics/AbcSize, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
 
   # @param [RemoteDevelopment::Workspace] workspace
@@ -366,7 +352,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] shared_namespace
   # @param [Boolean] core_resources_only
   # @return [Array<Hash>]
-  def create_config_to_apply_v3(
+  def create_config_to_apply(
     workspace:,
     started: true,
     desired_state_is_terminated: false,
@@ -398,6 +384,15 @@ RSpec.shared_context 'with remote development shared fixtures' do
     shared_namespace: "",
     core_resources_only: false
   )
+    all_parameters =
+      method(__method__.to_s)
+        .parameters
+        .map(&:last)
+        .index_with { |name| binding.local_variable_get(name) }
+        .to_h
+
+    validate_hash_is_deep_symbolized(all_parameters)
+
     spec_replicas = started ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)
 
