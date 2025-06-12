@@ -21489,7 +21489,7 @@ CREATE TABLE project_settings (
     pages_primary_domain text,
     extended_prat_expiry_webhooks_execute boolean DEFAULT false NOT NULL,
     merge_request_title_regex text,
-    protect_merge_request_pipelines boolean DEFAULT false NOT NULL,
+    protect_merge_request_pipelines boolean DEFAULT true NOT NULL,
     auto_duo_code_review_enabled boolean DEFAULT false NOT NULL,
     model_prompt_cache_enabled boolean,
     web_based_commit_signing_enabled boolean DEFAULT false NOT NULL,
