@@ -132,14 +132,6 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         # wait_for_requests, which might wait endlessly since the
         # frontend polls the import status constantly.
         find(:button, 'Connect').click
-        wait_for_requests
-
-        within_testid('project-import-row') do
-          find_by_testid('target-namespace-dropdown').click
-          find('.gl-new-dropdown-item', match: :first).click
-        end
-        find(:button, 'Connect').click
-        wait_for_requests
 
         click_button 'Continue import'
 
