@@ -2,7 +2,8 @@
   id: 'js-push-rules',
   expanded: expanded_by_default?) do |c|
   - c.with_description do
-    = _("Rules that define what git pushes are accepted for a project in this group. All newly created projects in this group will use these settings.")
+    = s_("PushRules|Define push rules for newly created projects in this group. Group settings override instance defaults.")
+    = link_to _('Learn more.'), help_page_path('user/project/repository/push_rules.md'), target: '_blank', rel: 'noopener noreferrer'
   - c.with_body do
     = gitlab_ui_form_for @push_rule, url: group_push_rules_path(@group), as: :push_rule, method: :put do |f|
       - if @push_rule.errors.any?
