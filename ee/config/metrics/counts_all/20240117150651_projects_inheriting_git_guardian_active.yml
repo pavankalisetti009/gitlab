@@ -1,7 +1,7 @@
 ---
 key_path: counts.projects_inheriting_git_guardian_active
 description: Count of active projects inheriting with active integrations for GitGuardian
-product_group: import_and_integrate
+product_group: import
 value_type: number
 status: active
 milestone: "16.9"
