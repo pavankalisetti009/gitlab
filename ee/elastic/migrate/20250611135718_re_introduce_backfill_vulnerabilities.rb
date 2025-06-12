@@ -10,6 +10,7 @@ class ReIntroduceBackfillVulnerabilities < Elastic::Migration
   throttle_delay 30.seconds
   retry_on_failure
 
+  QUEUE_THRESHOLD = 30_000
   DOCUMENT_TYPE = ::Vulnerabilities::Read
 
   # We do not honour this setting for SASS and Dedicated.
