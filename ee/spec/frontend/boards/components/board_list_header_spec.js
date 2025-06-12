@@ -10,6 +10,7 @@ import {
   epicBoardListQueryResponse,
   mockList,
   mockLabelList,
+  mockStatusList,
 } from 'jest/boards/mock_data';
 import { ListType } from '~/boards/constants';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
@@ -27,6 +28,9 @@ const listMocks = {
   },
   [ListType.backlog]: {
     ...mockList,
+  },
+  [ListType.status]: {
+    ...mockStatusList,
   },
 };
 
@@ -117,6 +121,7 @@ describe('Board List Header Component', () => {
   const findNewEpicButton = () => wrapper.findByTestId(newEpicBtnTestId);
   const findSettingsButton = () => wrapper.findByTestId(listSettingsTestId);
   const findCaret = () => wrapper.findByTestId('board-title-caret');
+  const findStatusIcon = () => wrapper.findByTestId('status-icon');
 
   beforeEach(() => {
     cacheUpdates.setError = jest.fn();
@@ -163,7 +168,13 @@ describe('Board List Header Component', () => {
   });
 
   describe('Settings Button', () => {
-    const hasSettings = [ListType.assignee, ListType.milestone, ListType.iteration, ListType.label];
+    const hasSettings = [
+      ListType.assignee,
+      ListType.milestone,
+      ListType.iteration,
+      ListType.label,
+      ListType.status,
+    ];
 
     it.each(hasSettings)('does render for List Type `%s`', (listType) => {
       createComponent({ listType });
@@ -246,6 +257,12 @@ describe('Board List Header Component', () => {
 
       expect(wrapper.findComponent({ ref: 'weightTooltip' }).exists()).toBe(false);
     });
+  });
+
+  it('status list header has icon', () => {
+    createComponent({ listType: ListType.status });
+
+    expect(findStatusIcon().exists()).toBe(true);
   });
 
   it.each`
