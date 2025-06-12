@@ -69,7 +69,7 @@ export default {
     :title="__('Health status')"
     :class="[
       '!gl-cursor-default gl-border-none gl-bg-transparent gl-p-0',
-      displayAsText ? '' : 'gl-rounded-pill',
+      displayAsText ? 'gl-relative gl-top-1' : 'gl-rounded-pill',
     ]"
   >
     <span
