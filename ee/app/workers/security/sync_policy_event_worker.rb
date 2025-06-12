@@ -131,7 +131,7 @@ module Security
     def sync_project_policy(project, security_policy_id, event)
       Security::SyncProjectPolicyWorker.perform_async(
         project.id, security_policy_id, {},
-        { event: { event_type: event.class.name, data: event.data } }
+        { event: { event_type: event.class.name, data: event.data } }.deep_stringify_keys
       )
     end
   end

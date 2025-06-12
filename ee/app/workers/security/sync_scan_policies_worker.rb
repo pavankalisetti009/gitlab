@@ -17,7 +17,7 @@ module Security
 
       return unless configuration
 
-      force_resync = params[:force_resync] || false
+      force_resync = params['force_resync'] || false
 
       update_policy_configuration(configuration, force_resync)
     end

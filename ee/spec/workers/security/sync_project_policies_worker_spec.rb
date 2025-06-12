@@ -29,7 +29,9 @@ RSpec.describe Security::SyncProjectPoliciesWorker, feature_category: :security_
       end
 
       context 'when force_resync is true' do
-        subject(:perform) { described_class.new.perform(project_id, policy_configuration_id, force_resync: true) }
+        subject(:perform) do
+          described_class.new.perform(project_id, policy_configuration_id, { 'force_resync' => true })
+        end
 
         it 'calls SyncProjectPolicyWorker with resync event payload' do
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
@@ -44,7 +46,9 @@ RSpec.describe Security::SyncProjectPoliciesWorker, feature_category: :security_
       end
 
       context 'when force_resync is false' do
-        subject(:perform) { described_class.new.perform(project_id, policy_configuration_id, force_resync: false) }
+        subject(:perform) do
+          described_class.new.perform(project_id, policy_configuration_id, { 'force_resync' => false })
+        end
 
         it 'calls SyncProjectPolicyWorker with empty params' do
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(

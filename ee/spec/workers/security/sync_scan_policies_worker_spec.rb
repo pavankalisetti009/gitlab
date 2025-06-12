@@ -9,7 +9,7 @@ RSpec.describe Security::SyncScanPoliciesWorker, feature_category: :security_pol
     subject(:worker) { described_class.new }
 
     include_examples 'an idempotent worker' do
-      let(:job_args) { [configuration.id, { force_resync: false }] }
+      let(:job_args) { [configuration.id, { 'force_resync' => false }] }
     end
 
     it 'has the `until_executed` deduplicate strategy' do
@@ -32,7 +32,7 @@ RSpec.describe Security::SyncScanPoliciesWorker, feature_category: :security_pol
       it 'calls update_policy_configuration with force_resync: true' do
         expect(worker).to receive(:update_policy_configuration).with(configuration, true)
 
-        worker.perform(configuration.id, { force_resync: true })
+        worker.perform(configuration.id, { 'force_resync' => true })
       end
     end
   end

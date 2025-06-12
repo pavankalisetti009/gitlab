@@ -34,8 +34,8 @@ module Security
 
       return unless project && security_policy
 
-      if params[:event].present?
-        handle_event(project, security_policy, params[:event])
+      if params['event'].present?
+        handle_event(project, security_policy, params['event'])
       else
         handle_policy_changes(project, security_policy, policy_changes)
       end
@@ -50,8 +50,8 @@ module Security
     end
 
     def handle_event(project, security_policy, event)
-      event_type = event[:event_type]
-      event_data = event[:data]
+      event_type = event['event_type']
+      event_data = event['data']
 
       if SUPPORTED_EVENTS.exclude?(event_type) || event_data.blank?
         Gitlab::AppJsonLogger.error(

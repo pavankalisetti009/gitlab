@@ -14,7 +14,7 @@ module Security
 
       configuration.invalidate_policy_yaml_cache
 
-      force_resync = params[:force_resync] || false
+      force_resync = params['force_resync'] || false
 
       persist_policy(configuration, configuration.scan_result_policies, :approval_policy, force_resync)
       persist_policy(configuration, configuration.scan_execution_policy, :scan_execution_policy, force_resync)

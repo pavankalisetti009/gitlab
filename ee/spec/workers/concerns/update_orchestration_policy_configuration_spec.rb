@@ -95,7 +95,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
           .and_call_original
 
         expect(Security::PersistSecurityPoliciesWorker).to receive(:perform_async)
-          .with(configuration.id, { force_resync: false })
+          .with(configuration.id, { 'force_resync' => false })
           .ordered
           .and_call_original
 
@@ -146,7 +146,8 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
             end
 
             it 'does not persist policies' do
-              expect(persistence_worker).not_to receive(:perform_async).with(configuration.id, { force_resync: false })
+              expect(persistence_worker).not_to receive(:perform_async).with(configuration.id,
+                { 'force_resync' => false })
 
               execute
             end
@@ -166,7 +167,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
               let(:force_resync) { true }
 
               it 'persists policies' do
-                expect(persistence_worker).to receive(:perform_async).with(configuration.id, { force_resync: true })
+                expect(persistence_worker).to receive(:perform_async).with(configuration.id, { 'force_resync' => true })
 
                 execute
               end
@@ -179,7 +180,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
             end
 
             it 'persists policies' do
-              expect(persistence_worker).to receive(:perform_async).with(configuration.id, { force_resync: false })
+              expect(persistence_worker).to receive(:perform_async).with(configuration.id, { 'force_resync' => false })
 
               execute
             end

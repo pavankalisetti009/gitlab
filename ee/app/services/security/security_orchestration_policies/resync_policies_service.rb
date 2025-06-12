@@ -9,7 +9,7 @@ module Security
 
           return error(_('Policy project doesn\'t exist')) unless policy_configuration
 
-          Security::SyncScanPoliciesWorker.perform_async(policy_configuration.id, { force_resync: true })
+          Security::SyncScanPoliciesWorker.perform_async(policy_configuration.id, { 'force_resync' => true })
           return success
         end
 
@@ -18,7 +18,8 @@ module Security
         # we will call the worker for group_container.
         if project_container?
           container.all_security_orchestration_policy_configurations.each do |configuration|
-            Security::SyncProjectPoliciesWorker.perform_async(container.id, configuration.id, { force_resync: true })
+            Security::SyncProjectPoliciesWorker.perform_async(container.id, configuration.id,
+              { 'force_resync' => true })
           end
         end
 
