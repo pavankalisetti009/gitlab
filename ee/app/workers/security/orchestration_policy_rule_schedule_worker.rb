@@ -40,7 +40,7 @@ module Security
 
     def schedule_rules(schedule)
       project = schedule.security_orchestration_policy_configuration.project
-      return if project.marked_for_deletion?
+      return if project.deletion_in_progress_or_scheduled_in_hierarchy_chain?
 
       user = project.security_policy_bot
 

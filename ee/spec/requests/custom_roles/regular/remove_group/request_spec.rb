@@ -32,7 +32,7 @@ RSpec.describe 'User with the `remove_group` custom ability', feature_category: 
         delete group_path(subgroup)
 
         expect(response).to have_gitlab_http_status(:found)
-        expect(subgroup.reload).to be_marked_for_deletion
+        expect(subgroup.reload).to be_self_deletion_scheduled
       end
     end
 
@@ -45,7 +45,7 @@ RSpec.describe 'User with the `remove_group` custom ability', feature_category: 
         post group_restore_path(subgroup)
 
         expect(response).to have_gitlab_http_status(:found)
-        expect(subgroup.reload).not_to be_marked_for_deletion
+        expect(subgroup.reload).not_to be_self_deletion_scheduled
       end
     end
   end
@@ -58,7 +58,7 @@ RSpec.describe 'User with the `remove_group` custom ability', feature_category: 
         delete api("/groups/#{subgroup.id}", user)
 
         expect(response).to have_gitlab_http_status(:accepted)
-        expect(subgroup.reload).to be_marked_for_deletion
+        expect(subgroup.reload).to be_self_deletion_scheduled
       end
     end
 
@@ -71,7 +71,7 @@ RSpec.describe 'User with the `remove_group` custom ability', feature_category: 
         post api("/groups/#{subgroup.id}/restore", user)
 
         expect(response).to have_gitlab_http_status(:created)
-        expect(subgroup.reload).not_to be_marked_for_deletion
+        expect(subgroup.reload).not_to be_self_deletion_scheduled
       end
     end
   end

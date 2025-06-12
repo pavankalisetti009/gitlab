@@ -11,7 +11,7 @@ module Security
 
       def perform(project_id, user_id, rule_schedule_id)
         project = Project.find_by_id(project_id)
-        return unless project && !project.marked_for_deletion?
+        return unless project && !project.deletion_in_progress_or_scheduled_in_hierarchy_chain?
 
         user = User.find_by_id(user_id)
         return unless user

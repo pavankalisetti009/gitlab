@@ -12,7 +12,7 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
 
   it 'does not hide the project', :aggregate_failures do
     expect(result[:status]).to eq(:success)
-    expect(project).to be_marked_for_deletion
+    expect(project).to be_self_deletion_scheduled
     expect(project).not_to be_hidden
   end
 
@@ -40,7 +40,7 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
     end
 
     it "doesn't mark the project for deletion" do
-      expect { result }.not_to change { project.marked_for_deletion? }.from(false)
+      expect { result }.not_to change { project.self_deletion_scheduled? }.from(false)
     end
 
     context 'without licensed feature' do
@@ -49,7 +49,7 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
       end
 
       it 'marks the project for deletion' do
-        expect { result }.to change { project.marked_for_deletion? }.from(false).to(true)
+        expect { result }.to change { project.self_deletion_scheduled? }.from(false).to(true)
       end
     end
   end

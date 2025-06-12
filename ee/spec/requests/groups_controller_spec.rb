@@ -747,7 +747,7 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
     it 'does not delete a group with a gitlab.com subscription', :saas do
       create(:gitlab_subscription, :ultimate, namespace: group)
 
-      expect { delete(group_path(group)) }.not_to change { group.reload.marked_for_deletion? }
+      expect { delete(group_path(group)) }.not_to change { group.reload.self_deletion_scheduled? }
       expect(response).to redirect_to(edit_group_path(group))
     end
 
@@ -755,7 +755,8 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
       create(:gitlab_subscription, :ultimate, namespace: group)
       subgroup = create(:group, parent: group)
 
-      expect { delete(group_path(subgroup)) }.to change { subgroup.reload.marked_for_deletion? }.from(false).to(true)
+      expect { delete(group_path(subgroup)) }
+        .to change { subgroup.reload.self_deletion_scheduled? }.from(false).to(true)
       expect(response).to redirect_to(group_path(subgroup))
     end
   end
