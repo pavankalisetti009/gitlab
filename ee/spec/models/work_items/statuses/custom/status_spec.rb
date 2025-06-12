@@ -121,6 +121,22 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     it { is_expected.to include(WorkItems::Statuses::Status) }
   end
 
+  describe '.find_by_namespace_and_name' do
+    context 'when custom status exists' do
+      let!(:custom_status) { create(:work_item_custom_status, name: 'In progress', namespace: group) }
+
+      it 'finds a custom status by namespace and name' do
+        expect(described_class.find_by_namespace_and_name(group.id, 'In progress')).to eq(custom_status)
+      end
+    end
+
+    context 'when custom status does not exist' do
+      it 'returns nil' do
+        expect(described_class.find_by_namespace_and_name(group.id, "In progress")).to be_nil
+      end
+    end
+  end
+
   describe '#icon_name' do
     it 'returns the icon name based on the category' do
       expect(custom_status.icon_name).to eq('status-waiting')

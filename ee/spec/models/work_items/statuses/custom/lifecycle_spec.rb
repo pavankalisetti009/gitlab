@@ -220,4 +220,10 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       expect(custom_lifecycle.has_status_id?(in_dev_status.id)).to be false
     end
   end
+
+  describe '#default_statuses' do
+    it 'returns an array of default statuses' do
+      expect(custom_lifecycle.default_statuses).to contain_exactly(open_status, closed_status, duplicate_status)
+    end
+  end
 end

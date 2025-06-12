@@ -315,6 +315,7 @@ module EE
         mount_mutation ::Mutations::Authz::LdapAdminRoleLinks::Destroy, experiment: { milestone: '18.0' }
         mount_mutation ::Mutations::Authz::AdminRoles::LdapSync, experiment: { milestone: '18.0' }
         mount_mutation ::Mutations::Ai::ModelSelection::Namespaces::Update, experiment: { milestone: '18.1' }
+        mount_mutation ::Mutations::WorkItems::Lifecycles::Update, experiment: { milestone: '18.1' }
 
         prepend(Types::DeprecatedMutations)
       end

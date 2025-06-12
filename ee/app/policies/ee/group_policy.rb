@@ -519,6 +519,10 @@ module EE
         enable :read_work_item_status
       end
 
+      rule { maintainer & work_item_statuses_available }.policy do
+        enable :admin_work_item_lifecycle
+      end
+
       rule { ~can?(:read_cross_project) }.policy do
         prevent :read_group_contribution_analytics
         prevent :read_epic
