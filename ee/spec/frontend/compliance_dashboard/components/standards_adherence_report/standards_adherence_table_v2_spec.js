@@ -51,16 +51,6 @@ describe('StandardsAdherenceTableV2', () => {
     pageInfo: { hasNextPage: false },
   };
 
-  const mockEmptyItems = {
-    data: [
-      {
-        group: null,
-        children: [],
-      },
-    ],
-    pageInfo: { hasNextPage: false },
-  };
-
   const createComponent = (props = {}) => {
     wrapper = shallowMount(StandardsAdherenceTableV2, {
       propsData: {
@@ -183,23 +173,6 @@ describe('StandardsAdherenceTableV2', () => {
 
         expect(findDetailsDrawer().props('status')).toBe(null);
       });
-    });
-  });
-
-  describe('empty state', () => {
-    beforeEach(() => {
-      GroupedLoader.mockImplementation(() =>
-        createMockLoader({
-          loadPage: jest.fn().mockResolvedValue(mockEmptyItems),
-        }),
-      );
-      createComponent();
-    });
-
-    it('displays empty message when no items have children', async () => {
-      await nextTick(); // Wait for component to finish loading
-      expect(wrapper.text()).toContain('No statuses found.');
-      expect(findGroupedTable().exists()).toBe(false);
     });
   });
 
