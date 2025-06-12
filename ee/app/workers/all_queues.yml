@@ -1513,6 +1513,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: authn_cleanup_scim_group_memberships
+  :worker_name: Authn::CleanupScimGroupMembershipsWorker
+  :feature_category: :system_access
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: authn_sync_group_scim_identity_record
   :worker_name: Authn::SyncGroupScimIdentityRecordWorker
   :feature_category: :system_access

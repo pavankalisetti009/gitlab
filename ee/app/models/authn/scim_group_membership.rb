@@ -8,5 +8,7 @@ module Authn
 
     validates :scim_group_uid, presence: true
     validates :user, uniqueness: { scope: :scim_group_uid }
+
+    scope :by_scim_group_uid, ->(scim_group_uid) { where(scim_group_uid: scim_group_uid) }
   end
 end
