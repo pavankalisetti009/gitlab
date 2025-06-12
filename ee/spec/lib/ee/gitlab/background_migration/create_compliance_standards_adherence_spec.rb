@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence, :migration, schema: 20231220225325,
+RSpec.describe Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence, :migration, schema: 20240116205430,
   feature_category: :compliance_management do
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
