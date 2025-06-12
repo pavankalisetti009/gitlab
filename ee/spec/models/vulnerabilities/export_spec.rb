@@ -13,11 +13,41 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
   end
 
   describe 'validations' do
-    subject(:export) { build(:vulnerability_export) }
+    subject(:export) { build(:vulnerability_export, **params) }
+
+    let(:params) { {} }
 
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_presence_of(:format) }
     it { is_expected.not_to validate_presence_of(:file) }
+
+    describe 'report_data JSON schema validation' do
+      context 'when report_data is nil' do
+        let(:params) { { report_data: nil } }
+
+        it { is_expected.to be_invalid }
+      end
+
+      context 'when report_data contains keys not defined in the schema' do
+        let(:params) { { report_data: { some_key: 'some value' } } }
+
+        it { is_expected.to be_invalid }
+      end
+
+      context 'when report_data contains keys defined in the schema' do
+        context 'when the data does not match schema' do
+          let(:params) { { report_data: { project_vulnerabilities_history: 'some value' } } }
+
+          it { is_expected.to be_invalid }
+        end
+
+        context 'when the data does match schema' do
+          let(:params) { { report_data: { project_vulnerabilities_history: { svg: '<svg></svg>' } } } }
+
+          it { is_expected.to be_valid }
+        end
+      end
+    end
 
     context 'when export is finished' do
       subject(:export) { build(:vulnerability_export, :finished) }
