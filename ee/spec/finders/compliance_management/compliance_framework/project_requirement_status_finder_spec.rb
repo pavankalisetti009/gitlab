@@ -219,6 +219,116 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
           end
         end
       end
+
+      context 'when user has custom role with read_compliance_dashboard at group level' do
+        let_it_be(:custom_role_user) do
+          custom_role_user = create(:user)
+          member_role = create(:member_role, :guest, :read_compliance_dashboard, namespace: root_group)
+          create(:group_member, :guest, group: root_group, user: custom_role_user, member_role: member_role)
+          custom_role_user
+        end
+
+        subject(:finder_response) { described_class.new(root_group, custom_role_user, params).execute }
+
+        before do
+          stub_licensed_features(
+            group_level_compliance_adherence_report: true,
+            project_level_compliance_adherence_report: true,
+            custom_roles: true
+          )
+        end
+
+        context 'when querying for all projects in group' do
+          let(:params) { {} }
+
+          it 'returns requirement statuses for all projects under the group' do
+            expect(finder_response.to_a).to eq([requirement_status7, requirement_status5, requirement_status4,
+              requirement_status3, requirement_status2, requirement_status1, requirement_status6])
+          end
+        end
+
+        context 'when querying for specific project' do
+          let(:params) { { project_id: project1.id } }
+
+          it 'returns requirement statuses for the specified project' do
+            expect(finder_response.to_a).to eq([requirement_status4, requirement_status3])
+          end
+        end
+
+        context 'when custom_roles feature is disabled' do
+          before do
+            stub_licensed_features(
+              group_level_compliance_adherence_report: true,
+              project_level_compliance_adherence_report: true,
+              custom_roles: false
+            )
+          end
+
+          it 'returns empty result when custom roles are disabled' do
+            expect(finder_response.to_a).to eq([])
+          end
+        end
+      end
+
+      context 'when user has custom role with read_compliance_dashboard at project level only' do
+        let_it_be(:project_custom_role_user) do
+          project_custom_role_user = create(:user)
+          project_member_role = create(:member_role, :guest, :read_compliance_dashboard, namespace: root_group)
+          create(:project_member, :guest, project: project1, user: project_custom_role_user,
+            member_role: project_member_role)
+          project_custom_role_user
+        end
+
+        subject(:finder_response) { described_class.new(root_group, project_custom_role_user, params).execute }
+
+        before do
+          stub_licensed_features(
+            group_level_compliance_adherence_report: true,
+            project_level_compliance_adherence_report: true,
+            custom_roles: true
+          )
+        end
+
+        context 'when querying for specific project user has access to' do
+          let(:params) { { project_id: project1.id } }
+
+          it 'returns requirement statuses for the project user has access to' do
+            expect(finder_response.to_a).to eq([requirement_status4, requirement_status3])
+          end
+        end
+
+        context 'when querying for project user does not have access to' do
+          let(:params) { { project_id: project2.id } }
+
+          it 'returns empty result for projects user has no access to' do
+            expect(finder_response.to_a).to eq([])
+          end
+        end
+
+        context 'when querying for all projects in group' do
+          let(:params) { {} }
+
+          it 'returns empty result as user does not have group-level access' do
+            expect(finder_response.to_a).to eq([])
+          end
+        end
+
+        context 'when custom_roles feature is disabled' do
+          let(:params) { { project_id: project1.id } }
+
+          before do
+            stub_licensed_features(
+              group_level_compliance_adherence_report: true,
+              project_level_compliance_adherence_report: true,
+              custom_roles: false
+            )
+          end
+
+          it 'returns empty result when custom roles are disabled' do
+            expect(finder_response.to_a).to eq([])
+          end
+        end
+      end
     end
   end
 end

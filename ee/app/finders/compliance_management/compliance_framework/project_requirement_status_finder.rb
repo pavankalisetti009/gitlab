@@ -30,7 +30,8 @@ module ComplianceManagement
       attr_reader :group, :current_user, :params
 
       def allowed?
-        Ability.allowed?(current_user, :read_compliance_adherence_report, group)
+        (project.present? && Ability.allowed?(current_user, :read_compliance_adherence_report, project)) ||
+          Ability.allowed?(current_user, :read_compliance_adherence_report, group)
       end
 
       def model

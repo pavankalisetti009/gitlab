@@ -9,7 +9,11 @@ RSpec.describe ComplianceManagement::FrameworkPolicy, feature_category: :complia
   let_it_be_with_refind(:framework) { create(:compliance_framework, namespace: group) }
 
   let(:licensed_compliance_features) do
-    { custom_compliance_frameworks: true, evaluate_group_level_compliance_pipeline: true }
+    {
+      custom_compliance_frameworks: true,
+      evaluate_group_level_compliance_pipeline: true,
+      group_level_compliance_adherence_report: true
+    }
   end
 
   subject { described_class.new(user, framework) }
@@ -18,6 +22,12 @@ RSpec.describe ComplianceManagement::FrameworkPolicy, feature_category: :complia
     it { is_expected.to be_allowed(:admin_compliance_framework) }
     it { is_expected.to be_allowed(:read_compliance_framework) }
     it { is_expected.to be_allowed(:admin_compliance_pipeline_configuration) }
+  end
+
+  shared_examples 'read only access to compliance framework' do
+    it { is_expected.to be_disallowed(:admin_compliance_framework) }
+    it { is_expected.to be_allowed(:read_compliance_framework) }
+    it { is_expected.to be_disallowed(:admin_compliance_pipeline_configuration) }
   end
 
   shared_examples 'no access to compliance framework administration' do
@@ -81,15 +91,17 @@ RSpec.describe ComplianceManagement::FrameworkPolicy, feature_category: :complia
         subgroup.add_maintainer(user)
       end
 
-      it { is_expected.to be_allowed(:read_compliance_framework) }
-      it { is_expected.to be_disallowed(:admin_compliance_framework) }
-      it { is_expected.to be_disallowed(:admin_compliance_pipeline_configuration) }
+      it_behaves_like 'read only access to compliance framework'
     end
   end
 
   context 'feature is unlicensed' do
     before do
-      stub_licensed_features(custom_compliance_frameworks: false, evaluate_group_level_compliance_pipeline: false)
+      stub_licensed_features(
+        custom_compliance_frameworks: false,
+        evaluate_group_level_compliance_pipeline: false,
+        group_level_compliance_adherence_report: false
+      )
     end
 
     it_behaves_like 'no access to compliance framework administration'
