@@ -5,10 +5,12 @@ import {
   GlSkeletonLoader,
   GlLink,
   GlAlert,
+  GlSprintf,
   GlKeysetPagination,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 import AvailabilityPopover from '../components/availability_popover.vue';
 import ClusterAgentAvailabilityToggle from '../components/availability_toggle.vue';
@@ -26,6 +28,7 @@ export default {
     GlSkeletonLoader,
     GlLink,
     GlAlert,
+    GlSprintf,
     GlKeysetPagination,
   },
   inject: {
@@ -36,6 +39,11 @@ export default {
     defaultExpanded: {
       type: Boolean,
       default: false,
+    },
+  },
+  computed: {
+    helpUrl() {
+      return helpPagePath('user/workspace/gitlab_agent_configuration');
     },
   },
   methods: {
@@ -73,15 +81,23 @@ export default {
 </script>
 <template>
   <settings-block
-    :title="s__('Workspaces|Workspaces Agent Availability')"
+    :title="s__('Workspaces|Available agents for workspaces')"
     :default-expanded="defaultExpanded"
   >
     <template #description>
-      {{
-        s__(
-          'Workspaces|Configure which Kubernetes agents are available for new workspaces. These settings do not affect existing workspaces.',
-        )
-      }}
+      <gl-sprintf
+        :message="
+          s__(
+            'Workspaces|Configure which Kubernetes agents are available for new workspaces. %{learnMore}',
+          )
+        "
+      >
+        <template #learnMore>
+          <gl-link :href="helpUrl" target="_blank">{{
+            s__('Workspaces|Learn more about agents.')
+          }}</gl-link>
+        </template>
+      </gl-sprintf>
     </template>
     <template #default>
       <get-organization-workspaces-cluster-agents-query :organization-id="organizationId">
@@ -95,7 +111,7 @@ export default {
               v-else-if="!loading && !agents.length"
               data-testid="agent-availability-empty-state"
             >
-              {{ s__('Workspaces|No agents available') }}
+              {{ s__('Workspaces|No agents found.') }}
             </div>
             <div v-else class="gl-flex gl-flex-col gl-items-center gl-gap-3">
               <gl-table-lite
@@ -111,9 +127,13 @@ export default {
                   </div>
                 </template>
                 <template #cell(name)="{ item }">
-                  <gl-link class="gl-font-bold" :href="item.url" target="_blank">{{
-                    item.name
-                  }}</gl-link>
+                  <gl-link
+                    data-testid="agent-link"
+                    class="gl-font-bold"
+                    :href="item.url"
+                    target="_blank"
+                    >{{ item.name }}</gl-link
+                  >
                 </template>
                 <template #cell(status)="{ item }">
                   <gl-badge :variant="getStatusBadgeMetadata(item).variant">{{
