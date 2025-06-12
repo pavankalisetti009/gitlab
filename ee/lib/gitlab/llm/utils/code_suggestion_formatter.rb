@@ -37,29 +37,40 @@ module Gitlab
         end
 
         def self.parse(body)
-          return '' if body.blank?
+          return { body: '' } if body.blank?
 
           body_with_suggestions = body
             .scan(CODE_SUGGESTION_REGEX)
             .map do |header, multiline_from, multiline_to, inline_from, inline_to, footer|
-              next "#{header}#{footer}" if (multiline_from || inline_from) == (multiline_to || inline_to)
+              from = multiline_from || inline_from
+              to = multiline_to || inline_to
+
+              next { body: "#{header}#{footer}", from: from } if from == to
 
               # NOTE: We're just interested in counting the existing lines as LLM doesn't
               #   seem to be able to reliably set this by itself.
               #   Also, since we have two optional matching pairs so either `multiline_from` and `multiline_to` or
               #   `inline_from` and `inline_to` would exist.
-              line_offset_below = (multiline_from || inline_from).lines.count - 1
+              line_offset_below = from.lines.count - 1
 
               # NOTE: Inline code suggestion needs to be wrapped in new lines to format it correctly.
               comment = inline_to.nil? ? "\n#{multiline_to}" : "\n#{inline_to}\n"
 
-              "#{header}```suggestion:-0+#{line_offset_below}#{comment}```#{footer}"
+              {
+                body: "#{header}```suggestion:-0+#{line_offset_below}#{comment}```#{footer}",
+                from: from
+              }
             end
 
           # NOTE: Return original body if the body doesn't have any expected suggestion format.
-          return body unless body_with_suggestions.present?
+          return { body: body } unless body_with_suggestions.present?
 
-          body_with_suggestions.join
+          # NOTE: It's unlikely that we have multiple suggestions within the same review comment,
+          #   but when it does we expect the content of <from> start from the same line so we just take the first one.
+
+          # rubocop:disable CodeReuse/ActiveRecord -- Not an activerecord object
+          { body:  body_with_suggestions.pluck(:body).join, from: body_with_suggestions.first[:from] }
+          # rubocop:enable CodeReuse/ActiveRecord
         end
       end
     end

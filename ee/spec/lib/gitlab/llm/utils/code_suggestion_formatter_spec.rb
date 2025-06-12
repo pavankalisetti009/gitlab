@@ -44,7 +44,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
         end
 
         it 'returns the expected comment' do
-          expect(parse).to eq <<~NOTE_CONTENT
+          expect(parse[:from]).to be_nil
+          expect(parse[:body]).to eq <<~NOTE_CONTENT
           First line of comment
           Second line of comment
 
@@ -68,7 +69,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
         end
 
         it 'returns the expected comment' do
-          expect(parse).to eq <<~NOTE_CONTENT
+          expect(parse[:from]).to eq "    first offending line\n"
+          expect(parse[:body]).to eq <<~NOTE_CONTENT
           First comment with suggestions
           ```suggestion:-0+0
               first improved line
@@ -88,7 +90,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "    first offending line"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
             First comment with suggestions
             ```suggestion:-0+0
                 first improved line
@@ -108,7 +111,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq "    first offending line"
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
               First comment with suggestions
 
               Some more comments
@@ -137,7 +141,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "    first offending line\n    second offending line\n    third offending line\n"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
             First comment with a suggestion
             ```suggestion:-0+2
                 first improved line
@@ -168,7 +173,13 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq <<~FROM
+              \
+                  first offending line
+                  second offending line
+                  third offending line
+              FROM
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
               First comment with a suggestion
 
               Some more comments
@@ -203,7 +214,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'parses both suggestions correctly' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "    first offending line\n"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
             First comment with a suggestion
             ```suggestion:-0+0
                 first improved line
@@ -245,7 +257,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq "    first offending line\n"
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
               First comment with a suggestion
 
 
@@ -273,7 +286,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "    <div>first offending line</div>\n      <p>second offending line</p>\n"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
               ```suggestion:-0+1
                   <div>first improved line</div>
                     <p>second improved line</p>
@@ -298,7 +312,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq "    <div>first offending line</div>\n      <p>second offending line</p>\n"
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
                 Some comment
 
                 Some more comment
@@ -322,7 +337,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "    <from>first offending line</from>\n    <to>second offending line</to>\n"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
               ```suggestion:-0+1
                   <from>first improved line</from>
                   <to>second improved line</to>
@@ -347,7 +363,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq "    <from>first offending line</from>\n    <to>second offending line</to>\n"
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
                 Some comment
 
                 Some more comment
@@ -374,7 +391,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "    <from>\n      Old\n    </from>\n"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
               Some comment including a <from> tag
               ```suggestion:-0+2
                   <from>
@@ -403,7 +421,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq "    <from>\n      Old\n    </from>\n"
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
                 Some comment including a <from> tag
 
                 Some more comment
@@ -426,7 +445,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "  a && b\n"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
             First comment with suggestions
             ```suggestion:-0+0
               a && b < c
@@ -449,7 +469,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq "  a && b\n"
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
                 First comment with suggestions
 
                 Some more comment
@@ -474,7 +495,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to eq "\n\n\n"
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
             Please remove extra lines
             ```suggestion:-0+2
 
@@ -501,7 +523,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             end
 
             it 'returns the comment without the suggestions' do
-              expect(parse).to eq <<~NOTE_CONTENT
+              expect(parse[:from]).to eq "\n\n\n"
+              expect(parse[:body]).to eq <<~NOTE_CONTENT
                 Please remove extra lines
 
                 Some more comment
@@ -522,7 +545,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
           end
 
           it 'returns the expected comment' do
-            expect(parse).to eq <<~NOTE_CONTENT
+            expect(parse[:from]).to be_nil
+            expect(parse[:body]).to eq <<~NOTE_CONTENT
               First comment with suggestions
               <to>
                   something random
@@ -538,7 +562,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
       let(:body) { nil }
 
       it 'returns an empty array' do
-        expect(parse).to be_blank
+        expect(parse[:from]).to be_nil
+        expect(parse[:body]).to be_blank
       end
     end
 
@@ -546,7 +571,8 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
       let(:body) { '' }
 
       it 'returns an empty array' do
-        expect(parse).to be_blank
+        expect(parse[:from]).to be_nil
+        expect(parse[:body]).to be_blank
       end
     end
   end

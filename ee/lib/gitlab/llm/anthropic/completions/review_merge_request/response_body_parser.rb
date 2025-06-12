@@ -11,11 +11,12 @@ module Gitlab
             class Comment
               ATTRIBUTES = %w[priority old_line new_line file].freeze
 
-              attr_reader :attributes, :content
+              attr_reader :attributes, :content, :from
 
-              def initialize(attrs, content)
+              def initialize(attrs, content, from)
                 @attributes = attrs
                 @content = content
+                @from = from
               end
 
               ATTRIBUTES.each do |attr|
@@ -50,7 +51,8 @@ module Gitlab
               return [] if review_content.blank?
 
               review_content[1].scan(comment_wrapper_regex).filter_map do |attrs, body|
-                comment = Comment.new(parsed_attrs(attrs), parsed_content(body))
+                parsed_body = parsed_content(body)
+                comment = Comment.new(parsed_attrs(attrs), parsed_body[:body], parsed_body[:from])
                 comment if comment.valid?
               end
             end

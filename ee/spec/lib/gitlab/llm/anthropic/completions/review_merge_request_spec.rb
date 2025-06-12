@@ -21,14 +21,14 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     project.repository.update_file(
       user,
       'UPDATED.md',
-      "existing line 1\nnew line\n",
+      "existing line 1\nnew line 1\nnew line 2",
       message: 'Update file',
       branch_name: source_branch)
 
     project.repository.create_file(
       user,
       'NEW.md',
-      "new line1\nnew line 2\n",
+      "new line1\n  new line 2",
       message: 'Create file',
       branch_name: source_branch)
 
@@ -190,8 +190,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           First comment with suggestions
           With additional line
           <from>
-              first offending line
-                second offending line
+          new line 1
+          new line 2
           </from>
           <to>
               first improved line
@@ -199,9 +199,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           </to>
           Some more comments
           </comment>
-          <comment file="NEW.md" priority="3" old_line="" new_line="1">Second comment with suggestions</comment>
-          <comment file="NEW.md" priority="3" old_line="" new_line="2">Third comment with suggestions</comment>
-          <comment file="NEW.md" priority="2" old_line="" new_line="2">Fourth comment with suggestions</comment>
+          <comment file="NEW.md" priority="3" old_line="" new_line="1">Second comment</comment>
+          <comment file="NEW.md" priority="3" old_line="" new_line="2">Third comment</comment>
+          <comment file="NEW.md" priority="2" old_line="" new_line="2">Fourth comment</comment>
           </review>
         RESPONSE
       end
@@ -216,7 +216,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         expect(diff_notes.count).to eq 4
 
         first_note = diff_notes[0]
-        expect(first_note.note).to eq 'Second comment with suggestions'
+        expect(first_note.note).to eq 'Second comment'
         expect(first_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
@@ -231,7 +231,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
 
         second_note = diff_notes[1]
-        expect(second_note.note).to eq 'Third comment with suggestions'
+        expect(second_note.note).to eq 'Third comment'
         expect(second_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
@@ -246,7 +246,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
 
         third_note = diff_notes[2]
-        expect(third_note.note).to eq 'Fourth comment with suggestions'
+        expect(third_note.note).to eq 'Fourth comment'
 
         fourth_note = diff_notes[3]
         expect(fourth_note.note).to eq <<~NOTE_CONTENT
@@ -285,7 +285,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           expect(diff_notes.count).to eq 3
 
           first_note = diff_notes[0]
-          expect(first_note.note).to eq 'Second comment with suggestions'
+          expect(first_note.note).to eq 'Second comment'
           expect(first_note.position.to_h).to eq({
             base_sha: diff_refs.base_sha,
             start_sha: diff_refs.start_sha,
@@ -300,7 +300,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           })
 
           second_note = diff_notes[1]
-          expect(second_note.note).to eq 'Third comment with suggestions'
+          expect(second_note.note).to eq 'Third comment'
           expect(second_note.position.to_h).to eq({
             base_sha: diff_refs.base_sha,
             start_sha: diff_refs.start_sha,
@@ -479,8 +479,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         let(:combined_review_answer) do
           <<~RESPONSE
             <review>
-            <comment file="UPDATED.md">First comment with suggestions</comment>
-            <comment file="UPDATED.md" priority="3" old_line="" new_line="2">Second comment with suggestions</comment>
+            <comment file="UPDATED.md">First comment with no line numbers or priority</comment>
+            <comment file="UPDATED.md" priority="3" old_line="" new_line="2">Second comment</comment>
             <comment file="NEW.md" priority="" old_line="" new_line="1">Third comment with no priority</comment>
             <comment file="NEW.md" priority="3" old_line="" new_line="">Fourth comment with missing lines</comment>
             <comment file="NEW.md" priority="3" old_line="" new_line="10">Fifth comment with invalid line</comment>
@@ -493,7 +493,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
           diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
 
-          expect(diff_note.note).to eq 'Second comment with suggestions'
+          expect(diff_note.note).to eq 'Second comment'
           expect(diff_note.position.new_line).to eq(2)
         end
 
@@ -501,7 +501,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           let(:combined_review_answer) do
             <<~RESPONSE
             <review>
-            <comment file="UPDATED.md" priority="3" old_line="2" new_line="2">Second comment with suggestions</comment>
+            <comment file="UPDATED.md" priority="3" old_line="2" new_line="2">Second comment</comment>
             </review>
             RESPONSE
           end
@@ -511,8 +511,220 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
             diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
 
-            expect(diff_note.note).to eq 'Second comment with suggestions'
+            expect(diff_note.note).to eq 'Second comment'
             expect(diff_note.position.new_line).to eq(2)
+          end
+        end
+
+        context 'with <from> content' do
+          context 'with no matching line by line numbers' do
+            let(:combined_review_answer) do
+              <<~RESPONSE
+                <review>
+                <comment file="UPDATED.md" priority="3" old_line="" new_line="10">A comment with a suggestion
+                <from>
+                existing line 1
+                new line 1
+                new line 2
+                </from>
+                <to>
+                existing line 1
+                first improved line
+                second improved line
+                </to>
+                </comment>
+                </review>
+              RESPONSE
+            end
+
+            it 'uses the line matched by <from> content' do
+              completion.execute
+
+              diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
+
+              expect(diff_note.note).to eq <<~NOTE_CONTENT
+                  A comment with a suggestion
+                  ```suggestion:-0+2
+                  existing line 1
+                  first improved line
+                  second improved line
+                  ```
+              NOTE_CONTENT
+              expect(diff_note.position.old_line).to eq(1)
+              expect(diff_note.position.new_line).to eq(1)
+            end
+
+            it 'logs matched comment metrics' do
+              # Ignore other logs
+              allow(Gitlab::AppLogger).to receive(:info)
+
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                hash_including(
+                  event: "review_merge_request_llm_response_comments",
+                  comments_line_matched_by_content: 1
+                )
+              )
+
+              completion.execute
+            end
+
+            context 'when <from> content only partially matches' do
+              let(:combined_review_answer) do
+                <<~RESPONSE
+                  <review>
+                  <comment file="UPDATED.md" priority="3" old_line="" new_line="10">A comment with a suggestion
+                  <from>
+                  existing line 1
+                  new line 1
+                  some random content
+                  </from>
+                  <to>
+                  existing line 1
+                  first improved line
+                  second improved line
+                  </to>
+                  </comment>
+                  </review>
+                RESPONSE
+              end
+
+              it 'does not create a diff note' do
+                completion.execute
+
+                diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot)
+
+                expect(diff_notes).to be_blank
+              end
+            end
+          end
+
+          context 'with matching line by line numbers' do
+            context 'when the matched line do not match <from> content' do
+              let(:combined_review_answer) do
+                <<~RESPONSE
+                  <review>
+                  <comment file="UPDATED.md" priority="3" old_line="" new_line="2">A comment with a suggestion
+                  <from>
+                  existing line 1
+                  new line 1
+                  new line 2
+                  </from>
+                  <to>
+                  existing line 1
+                  first improved line
+                  second improved line
+                  </to>
+                  </comment>
+                  </review>
+                RESPONSE
+              end
+
+              it 'uses the line matched by <from> content' do
+                completion.execute
+
+                diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
+
+                expect(diff_note.note).to eq <<~NOTE_CONTENT
+                  A comment with a suggestion
+                  ```suggestion:-0+2
+                  existing line 1
+                  first improved line
+                  second improved line
+                  ```
+                NOTE_CONTENT
+                expect(diff_note.position.old_line).to eq(1)
+                expect(diff_note.position.new_line).to eq(1)
+              end
+
+              it 'logs matched comment metrics' do
+                # Ignore other logs
+                allow(Gitlab::AppLogger).to receive(:info)
+
+                expect(Gitlab::AppLogger).to receive(:info).with(
+                  hash_including(
+                    event: "review_merge_request_llm_response_comments",
+                    comments_line_matched_by_content: 1
+                  )
+                )
+
+                completion.execute
+              end
+
+              context 'when <from> content is not long enough' do
+                let(:combined_review_answer) do
+                  <<~RESPONSE
+                    <review>
+                    <comment file="UPDATED.md" priority="3" old_line="" new_line="2">A comment with a suggestion
+                    <from>
+                    existing line 1
+                    new line 1
+                    </from>
+                    <to>
+                    existing line 1
+                    first improved line
+                    second improved line
+                    </to>
+                    </comment>
+                    </review>
+                  RESPONSE
+                end
+
+                it 'still uses the line found by line number' do
+                  completion.execute
+
+                  diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
+
+                  expect(diff_note.note).to eq <<~NOTE_CONTENT
+                    A comment with a suggestion
+                    ```suggestion:-0+1
+                    existing line 1
+                    first improved line
+                    second improved line
+                    ```
+                  NOTE_CONTENT
+                  expect(diff_note.position.old_line).to be_nil
+                  expect(diff_note.position.new_line).to eq(2)
+                end
+              end
+
+              context 'when <from> content cannot be matched' do
+                let(:combined_review_answer) do
+                  <<~RESPONSE
+                    <review>
+                    <comment file="UPDATED.md" priority="3" old_line="" new_line="2">A comment with a suggestion
+                    <from>
+                    some random content
+                    that do not match
+                    antything
+                    </from>
+                    <to>
+                    existing line 1
+                    first improved line
+                    second improved line
+                    </to>
+                    </comment>
+                    </review>
+                  RESPONSE
+                end
+
+                it 'uses the line matched by line numbers' do
+                  completion.execute
+
+                  diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
+
+                  expect(diff_note.note).to eq <<~NOTE_CONTENT
+                  A comment with a suggestion
+                  ```suggestion:-0+2
+                  existing line 1
+                  first improved line
+                  second improved line
+                  ```
+                  NOTE_CONTENT
+                  expect(diff_note.position.old_line).to be_nil
+                  expect(diff_note.position.new_line).to eq(2)
+                end
+              end
+            end
           end
         end
       end
@@ -523,8 +735,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           <<~RESPONSE
             Let me explain how awesome this review is.
             <review>
-            <comment file="UPDATED.md" priority="3" old_line="" new_line="2">First comment with suggestions</comment>
-            <comment file="NEW.md" priority="3" old_line="" new_line="1">Second comment with suggestions</comment>
+            <comment file="UPDATED.md" priority="3" old_line="" new_line="2">First comment</comment>
+            <comment file="NEW.md" priority="3" old_line="" new_line="1">Second comment</comment>
             </review>
           RESPONSE
         end
@@ -536,11 +748,11 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           expect(diff_notes.count).to eq 2
 
           first_note = diff_notes[0]
-          expect(first_note.note).to eq 'Second comment with suggestions'
+          expect(first_note.note).to eq 'Second comment'
           expect(first_note.position.new_line).to eq(1)
 
           second_note = diff_notes[1]
-          expect(second_note.note).to eq 'First comment with suggestions'
+          expect(second_note.note).to eq 'First comment'
           expect(second_note.position.new_line).to eq(2)
         end
       end
@@ -662,7 +874,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           diff_notes = merge_request.notes.diff_notes
           expect(diff_notes.count).to eq 1
 
-          expect(diff_notes[0].note).to eq 'Second comment with suggestions'
+          expect(diff_notes[0].note).to eq 'Second comment'
           expect(diff_notes[0].position.to_h).to eq({
             base_sha: diff_refs.base_sha,
             start_sha: diff_refs.start_sha,
@@ -935,6 +1147,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             p3_comments: 0,
             comments_with_valid_path: 0,
             comments_with_valid_line: 0,
+            comments_line_matched_by_content: 0,
             created_draft_notes: 0
           }
         end
