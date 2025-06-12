@@ -48544,9 +48544,6 @@ msgstr ""
 msgid "ProjectSettings|Configure your instance"
 msgstr ""
 
-msgid "ProjectSettings|Contact an admin to change this setting."
-msgstr ""
-
 msgid "ProjectSettings|Container registry"
 msgstr ""
 
@@ -48925,13 +48922,10 @@ msgstr ""
 msgid "ProjectSettings|This project can use Amazon Q."
 msgstr ""
 
-msgid "ProjectSettings|This setting is applied on the server level and can be overridden by an admin."
+msgid "ProjectSettings|This setting is on for the instance."
 msgstr ""
 
-msgid "ProjectSettings|This setting is applied on the server level but has been overridden for this project."
-msgstr ""
-
-msgid "ProjectSettings|This setting will be applied to all projects unless overridden by an admin."
+msgid "ProjectSettings|This setting will be applied to all projects unless overridden for a project."
 msgstr ""
 
 msgid "ProjectSettings|Title regex"
@@ -50347,6 +50341,15 @@ msgstr ""
 msgid "PushRules|Commit messages cannot match this %{wiki_syntax_link_start}regular expression%{wiki_syntax_link_end}. If empty, commit messages are not rejected based on any expression."
 msgstr ""
 
+msgid "PushRules|Configure push rules for this project. Project settings override group and instance defaults."
+msgstr ""
+
+msgid "PushRules|Define push rules for newly created projects and groups. Some settings apply to new groups, all settings apply to new projects."
+msgstr ""
+
+msgid "PushRules|Define push rules for newly created projects in this group. Group settings override instance defaults."
+msgstr ""
+
 msgid "PushRules|Do not allow users to remove Git tags with %{code_block_start}git push%{code_block_end}"
 msgstr ""
 
@@ -50378,9 +50381,6 @@ msgid "PushRules|Require expression in commit messages"
 msgstr ""
 
 msgid "PushRules|Restrict commits to existing GitLab users."
-msgstr ""
-
-msgid "PushRules|Restrict push operations for this project."
 msgstr ""
 
 msgid "PushRules|Save push rules"
@@ -52294,12 +52294,6 @@ msgid "Ruby"
 msgstr ""
 
 msgid "Rule name is already taken."
-msgstr ""
-
-msgid "Rules that define what git pushes are accepted for a project in this group. All newly created projects in this group will use these settings."
-msgstr ""
-
-msgid "Rules that define what git pushes are accepted for a project. All newly created projects will use these settings."
 msgstr ""
 
 msgid "Run"

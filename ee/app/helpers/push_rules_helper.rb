@@ -36,22 +36,11 @@ module PushRulesHelper
   def push_rule_update_description(message, push_rule, rule)
     messages = [message]
     if push_rule.global?
-      messages << s_("ProjectSettings|This setting will be applied to all projects unless overridden by an admin.")
+      messages << s_("ProjectSettings|This setting will be applied to all projects unless overridden for a project.")
     else
       enabled_globally = PushRule.global&.public_send(rule)
-      enabled_in_project = push_rule.public_send(rule)
 
-      if enabled_globally
-        messages << if enabled_in_project
-                      s_("ProjectSettings|This setting is applied on the server level and can be overridden by an admin.")
-                    else
-                      s_("ProjectSettings|This setting is applied on the server level but has been overridden for this project.")
-                    end
-
-        unless current_user.can_admin_all_resources?
-          messages << s_("ProjectSettings|Contact an admin to change this setting.")
-        end
-      end
+      messages << s_("ProjectSettings|This setting is on for the instance.") if enabled_globally
     end
 
     messages.join(' ').html_safe

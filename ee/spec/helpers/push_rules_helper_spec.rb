@@ -15,10 +15,8 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
       commit_committer_check_base_help: /Users can only push commits to this repository if the committer email is one of their own verified emails/,
       reject_unsigned_commits_base_help: /Only signed commits can be pushed to this repository/,
       reject_non_dco_commits_base_help: %r{Only commits that include a <code>Signed-off-by:</code> element can be pushed to this repository},
-      default_admin_help: /This setting will be applied to all projects unless overridden by an admin/,
-      setting_can_be_overridden: /This setting is applied on the server level and can be overridden by an admin/,
-      setting_has_been_overridden: /This setting is applied on the server level but has been overridden for this project/,
-      requires_admin_contact: /Contact an admin to change this setting/
+      default_admin_help: /This setting will be applied to all projects unless overridden for a project/,
+      setting_instance_on: /This setting is on for the instance/
     }
   end
 
@@ -35,18 +33,18 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
       [true,  false, false, :admin, :default_admin_help,          nil],
       [true,  true,  true,  :admin, :default_admin_help,          nil],
       [true,  false, true,  :admin, :default_admin_help,          nil],
-      [false, true,  nil,   :admin, :setting_can_be_overridden,   nil],
-      [false, true,  nil,   :owner, :setting_can_be_overridden,   nil],
-      [false, true,  nil,   :owner, :requires_admin_contact,      nil],
-      [false, true,  false, :admin, :setting_has_been_overridden, nil],
-      [false, true,  false, :owner, :setting_has_been_overridden, nil],
-      [false, true,  false, :owner, :requires_admin_contact,      nil],
-      [false, true,  true,  :owner, :setting_can_be_overridden,   nil],
-      [false, true,  false, :owner, :setting_has_been_overridden, nil],
-      [false, true,  true,  :owner, :requires_admin_contact,      :setting_has_been_overridden],
-      [false, true,  false, :owner, :requires_admin_contact,      :setting_can_be_overridden],
-      [false, false, true,  :admin, :base_help,                   :setting_can_be_overridden],
-      [false, false, true,  :admin, :base_help,                   :setting_has_been_overridden]
+      [false, true,  nil,   :admin, :setting_instance_on,         nil],
+      [false, true,  nil,   :owner, :setting_instance_on,         nil],
+      [false, true,  false, :admin, :setting_instance_on,         nil],
+      [false, true,  false, :owner, :setting_instance_on,         nil],
+      [false, true,  true,  :admin, :setting_instance_on,         nil],
+      [false, true,  true,  :owner, :setting_instance_on,         nil],
+      [false, false, nil,   :admin, :base_help,                   :setting_instance_on],
+      [false, false, nil,   :owner, :base_help,                   :setting_instance_on],
+      [false, false, false, :admin, :base_help,                   :setting_instance_on],
+      [false, false, false, :owner, :base_help,                   :setting_instance_on],
+      [false, false, true,  :admin, :base_help,                   :setting_instance_on],
+      [false, false, true,  :owner, :base_help,                   :setting_instance_on]
     ]
   end
 
