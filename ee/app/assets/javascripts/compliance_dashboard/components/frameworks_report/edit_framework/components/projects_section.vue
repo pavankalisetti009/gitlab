@@ -218,6 +218,9 @@ export default {
       this.pagination = {};
       this.filters = filters;
     },
+    onShowOnlySelectedChanged() {
+      this.pagination = {};
+    },
   },
   tableFields: [
     {
@@ -282,6 +285,7 @@ export default {
             data-testid="show-only-selected-toggle"
             :label="$options.i18n.showOnlySelected"
             label-position="left"
+            @change="onShowOnlySelectedChanged"
           />
         </div>
       </div>
