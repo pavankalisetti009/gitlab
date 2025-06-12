@@ -1,8 +1,8 @@
-import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
 import { setNewWorkItemCache } from '~/work_items/graphql/cache_utils';
 import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import { apolloProvider } from '~/graphql_shared/issuable_client';
+import { namespaceWorkItemTypesQueryResponse } from 'jest/work_items/mock_data';
 
 describe('work items graphql cache utils', () => {
   describe('setNewWorkItemCache', () => {

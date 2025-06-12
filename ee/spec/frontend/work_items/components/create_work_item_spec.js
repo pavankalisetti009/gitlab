@@ -1,7 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
-import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import CreateWorkItem from '~/work_items/components/create_work_item.vue';
@@ -29,6 +28,7 @@ import {
   createWorkItemQueryResponse,
   customFieldsWidgetResponseFactory,
   namespaceWorkItemsWithoutEpicSupport,
+  namespaceWorkItemTypesQueryResponse,
 } from '../mock_data';
 
 Vue.use(VueApollo);
