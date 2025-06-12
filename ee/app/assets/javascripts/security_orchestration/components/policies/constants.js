@@ -55,7 +55,7 @@ export const EMPTY_LIST_DESCRIPTION = s__(
 );
 
 export const EMPTY_POLICY_PROJECT_DESCRIPTION = s__(
-  'SecurityOrchestration|This %{namespaceType} is not linked to a security policy project. Either link it to an existing project or create a new policy, which will create a new project that you can use as a security policy project. For help, see %{linkStart}policies%{linkEnd}.',
+  'SecurityOrchestration|This %{namespaceType} is not linked to a security policy project. Create a policy, which also creates and links a security policy project. Alternatively, %{linkStart}link this %{namespaceType} to an existing security policy project%{linkEnd}.',
 );
 
 export const DEPRECATED_CUSTOM_SCAN_PROPERTY = 'custom_scan';
