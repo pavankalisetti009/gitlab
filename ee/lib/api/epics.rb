@@ -316,7 +316,7 @@ module API
           :parent_id, :remove_labels, :start_date_fixed, :start_date_is_fixed, :state_event, :title,
           :start_date, :end_date
       end
-      put ':id/(-/)epics/:epic_iid' do
+      put ':id/(-/)epics/:epic_iid', urgency: :low do
         authorize_can_admin_epic!
 
         # Setting updated_at is allowed only for admins and owners
