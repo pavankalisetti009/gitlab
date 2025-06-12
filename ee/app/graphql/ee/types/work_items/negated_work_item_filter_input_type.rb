@@ -14,6 +14,9 @@ module EE
           argument :weight, GraphQL::Types::String,
             required: false,
             description: 'Weight not applied to the work items.'
+          argument :iteration_id, [::GraphQL::Types::ID],
+            required: false,
+            description: 'List of iteration Global IDs not applied to the work items.'
         end
       end
     end
