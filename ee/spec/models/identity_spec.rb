@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Identity do
+RSpec.describe Identity, feature_category: :system_access do
   describe 'relations' do
     it { is_expected.to belong_to(:saml_provider) }
   end
@@ -46,6 +46,24 @@ RSpec.describe Identity do
             subject.valid?
           end.to change { subject.errors[:base] }.to(['Group requires separate account'])
         end
+      end
+    end
+  end
+
+  describe 'after_destroy' do
+    let!(:user) { create(:user) }
+    let(:ldap_identity) do
+      create(:identity, provider: 'ldapmain', extern_uid: 'uid=john smith,ou=people,dc=example,dc=com', user: user)
+    end
+
+    context 'when a user has admin role assigned' do
+      before do
+        create(:user_member_role, user: user, ldap: true)
+      end
+
+      it 'sets the ldap attributes of the role to false' do
+        expect { ldap_identity.destroy! }.to change { user.reload.user_member_role.ldap? }
+          .from(true).to(false)
       end
     end
   end

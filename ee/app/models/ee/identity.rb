@@ -24,6 +24,8 @@ module EE
 
       validate :validate_managing_group
 
+      after_destroy :update_user_admin_roles
+
       scope :with_secondary_extern_uid, ->(provider, secondary_extern_uid) do
         iwhere(secondary_extern_uid: normalize_uid(provider, secondary_extern_uid)).with_provider(provider)
       end
@@ -72,6 +74,10 @@ module EE
       return unless saml_provider&.enforced_group_managed_accounts?
 
       errors.add(:base, _('Group requires separate account')) if saml_provider.group != user.managing_group
+    end
+
+    def update_user_admin_roles
+      user.user_member_role&.update(ldap: false)
     end
   end
 end
