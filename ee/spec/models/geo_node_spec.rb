@@ -377,6 +377,97 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
 
       expect(described_class.current?(node)).to be_falsy
     end
+
+    it 'returns true when node.name has an extra a slash and matches URL' do
+      allow(described_class).to receive(:current_node_name).and_return('http://example.com')
+      node = described_class.new(name: 'http://example.com/', url: 'http://example.com/')
+
+      expect(described_class.current?(node)).to be_truthy
+    end
+
+    it 'returns true when node.name is missing a slash and matches URL' do
+      allow(described_class).to receive(:current_node_name).and_return('http://example.com/')
+      node = described_class.new(name: 'http://example.com', url: 'http://example.com/')
+
+      expect(described_class.current?(node)).to be_truthy
+    end
+
+    it 'returns false when node.name is not a url even if missing a slash' do
+      allow(described_class).to receive(:current_node_name).and_return('blip/')
+      node = described_class.new(name: 'blip')
+
+      expect(described_class.current?(node)).to be_falsy
+    end
+  end
+
+  describe '.current_node' do
+    context 'when table does not have name column' do
+      before do
+        allow(described_class).to receive(:column_names).and_return([])
+      end
+
+      it 'returns nil' do
+        expect(described_class.current_node).to be_nil
+      end
+    end
+
+    context 'when node with exact name exists' do
+      it 'returns the node' do
+        allow(described_class).to receive(:current_node_name).and_return(primary_node.name)
+
+        expect(described_class.current_node).to eq(primary_node)
+      end
+
+      it 'returns the node with exact matching name even if one with a similar name exists' do
+        node = create(:geo_node, name: 'http://example.com')
+        create(:geo_node, name: 'http://example.com/')
+
+        allow(described_class).to receive_messages(current_node_name: 'http://example.com', current_node_url: 'http://example.com/')
+
+        expect(described_class.current_node).to eq(node)
+      end
+    end
+
+    context "when node with exact name does not exists" do
+      let(:name_no_slash) { 'http://example.com' }
+      let(:name_with_slash) { 'http://example.com/' }
+
+      before do
+        allow(described_class).to receive_messages(current_node_name:, current_node_url:)
+      end
+
+      where(current_node_url: %w[http://example.com http://example.com/])
+
+      with_them do
+        context "when a record missing a slash exists" do
+          let(:current_node_name) { name_with_slash }
+
+          it 'returns the expected node' do
+            expected_node = create(:geo_node, name: name_no_slash)
+
+            expect(described_class.current_node).to eq expected_node
+          end
+        end
+
+        context "when a record with an extra a slash exists" do
+          let(:current_node_name) { name_no_slash }
+
+          it 'returns the expected node' do
+            expected_node = create(:geo_node, name: name_with_slash)
+
+            expect(described_class.current_node).to eq expected_node
+          end
+        end
+
+        context "when no record exists" do
+          let(:current_node_name) { 'fantasy name' }
+
+          it 'returns nil' do
+            expect(described_class.current_node).to be_nil
+          end
+        end
+      end
+    end
   end
 
   describe '#uri' do
@@ -396,46 +487,6 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
       it 'returns nil' do
         expect(empty_node.uri).to be_nil
       end
-    end
-  end
-
-  describe '#name' do
-    it 'adds a trailing forward slash when name looks like url field missing slash' do
-      subject = build(:geo_node, url: 'https://foo.com', name: 'https://foo.com')
-
-      expect(subject.name).to eq('https://foo.com/')
-    end
-
-    it 'does not add a trailing forward slash when name does not looks like url field' do
-      subject = build(:geo_node, url: 'https://foo.com', name: 'https://bar.com')
-
-      expect(subject.name).to eq('https://bar.com')
-    end
-
-    it 'does not add a trailing forward slash when name is nil' do
-      subject = build(:geo_node, name: nil)
-
-      expect(subject.name).to be_nil
-    end
-
-    it 'does not add a trailing forward slash when name is an empty string' do
-      subject = build(:geo_node, name: '')
-
-      expect(subject.name).to be_empty
-    end
-  end
-
-  describe '#name=' do
-    it 'adds a trailing forward slash when name looks like url field missing slash' do
-      subject = create(:geo_node, url: 'https://foo.com', name: 'https://foo.com')
-
-      expect(subject.read_attribute(:name)).to eq('https://foo.com/')
-    end
-
-    it 'does not add a trailing forward slash when name does not looks like url field' do
-      subject = create(:geo_node, url: 'https://foo.com', name: 'https://bar.com')
-
-      expect(subject.read_attribute(:name)).to eq('https://bar.com')
     end
   end
 
