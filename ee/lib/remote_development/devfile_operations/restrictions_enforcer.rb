@@ -6,6 +6,8 @@ module RemoteDevelopment
       include RemoteDevelopmentConstants
       include Messages
 
+      MAX_DEVFILE_SIZE_BYTES = 3.megabytes
+
       # Since this is called after flattening the devfile, we can safely assume that it has valid syntax
       # as per devfile standard. If you are validating something that is not available across all devfile versions,
       # add additional guard clauses.
@@ -22,12 +24,19 @@ module RemoteDevelopment
       SUPPORTED_COMMAND_TYPES = %i[exec apply].freeze
 
       # Currently, we only support `preStart` events
-      SUPPORTED_EVENTS = %i[preStart].freeze
+      SUPPORTED_EVENTS = %i[preStart postStart].freeze
+
+      # Currently, we only support the following options for exec commands
+      SUPPORTED_EXEC_COMMAND_OPTIONS = %i[commandLine component label hotReloadCapable].freeze
+
+      # Currently, we only support the default value `false` for the `hotReloadCapable` option
+      SUPPORTED_HOT_RELOAD_VALUE = false
 
       # @param [Hash] context
       # @return [Gitlab::Fp::Result]
       def self.enforce(context)
         Gitlab::Fp::Result.ok(context)
+                          .and_then(method(:validate_devfile_size))
                           .and_then(method(:validate_schema_version))
                           .and_then(method(:validate_parent))
                           .and_then(method(:validate_projects))
@@ -40,12 +49,37 @@ module RemoteDevelopment
                           .and_then(method(:validate_variables))
       end
 
+      private
+
       # @param [Hash] context
       # @return [Hash] the `processed_devfile` out of the `context` if it exists, otherwise the `devfile`
       def self.devfile_to_validate(context)
         # NOTE: `processed_devfile` is not available in the context until the devfile has been flattened.
         #       If the devfile is flattened, use `processed_devfile`. Else, use `devfile`.
         context[:processed_devfile] || context[:devfile]
+      end
+
+      # @param [Hash] context
+      # @return [Gitlab::Fp::Result]
+      def self.validate_devfile_size(context)
+        devfile = devfile_to_validate(context)
+
+        # Calculate the size of the devfile by converting it to JSON
+        devfile_json = devfile.to_json
+        devfile_size_bytes = devfile_json.bytesize
+
+        if devfile_size_bytes > MAX_DEVFILE_SIZE_BYTES
+          return err(
+            format(
+              _("Devfile size (%{current_size}) exceeds the maximum allowed size of %{max_size}"),
+              current_size: ActiveSupport::NumberHelper.number_to_human_size(devfile_size_bytes),
+              max_size: ActiveSupport::NumberHelper.number_to_human_size(MAX_DEVFILE_SIZE_BYTES)
+            ),
+            context
+          )
+        end
+
+        Gitlab::Fp::Result.ok(context)
       end
 
       # @param [Hash] context
@@ -131,6 +165,7 @@ module RemoteDevelopment
         end
 
         if injected_main_components.length > 1
+          # noinspection RailsParamDefResolve -- this pluck isn't from ActiveRecord, it's from ActiveSupport
           return err(
             format(
               _("Multiple components '%{name}' have '%{attribute}' attribute"),
@@ -242,48 +277,82 @@ module RemoteDevelopment
       def self.validate_commands(context)
         devfile = devfile_to_validate(context)
 
-        # Ensure no command name starts with restricted_prefix
         devfile.fetch(:commands, []).each do |command|
           command_id = command.fetch(:id)
-          if command_id.downcase.start_with?(RESTRICTED_PREFIX)
+
+          # Check command_id for restricted prefix
+          error_result = validate_restricted_prefix(command_id, 'command_id', context)
+          return error_result if error_result
+
+          supported_command_type = SUPPORTED_COMMAND_TYPES.find { |type| command[type].present? }
+
+          unless supported_command_type
             return err(
               format(
-                _("Command id '%{command}' must not start with '%{prefix}'"),
+                _("Command '%{command}' must have one of the supported command types: %{supported_types}"),
                 command: command_id,
-                prefix: RESTRICTED_PREFIX
+                supported_types: SUPPORTED_COMMAND_TYPES.join(", ")
               ),
               context
             )
           end
 
           # Ensure no command is referring to a component with restricted_prefix
-          SUPPORTED_COMMAND_TYPES.each do |supported_command_type|
-            command_type = command[supported_command_type]
-            next unless command_type
+          command_type = command[supported_command_type]
 
-            component_name = command_type.fetch(:component)
-
-            if component_name.downcase.start_with?(RESTRICTED_PREFIX)
-              return err(
-                format(
-                  _("Component name '%{component}' for command id '%{command}' must not start with '%{prefix}'"),
-                  component: component_name,
-                  command: command_id,
-                  prefix: RESTRICTED_PREFIX
-                ),
-                context
-              )
-            end
-
-            command_label = command_type.fetch(:label, "")
-            next unless command_label.downcase.start_with?(RESTRICTED_PREFIX)
-
+          # Check if component is present (required for both exec and apply)
+          unless command_type[:component].present?
             return err(
               format(
-                _("Label '%{command_label}' for command id '%{command}' must not start with '%{prefix}'"),
-                command_label: command_label,
+                _("'%{type}' command '%{command}' must specify a 'component'"),
+                type: supported_command_type,
+                command: command_id
+              ),
+              context
+            )
+          end
+
+          # Check component name for restricted prefix
+          component_name = command_type.fetch(:component)
+
+          error_result = validate_restricted_prefix(component_name, 'component_name', context,
+            { command: command_id })
+          return error_result if error_result
+
+          # Check label for restricted prefix
+          command_label = command_type.fetch(:label, "")
+
+          error_result = validate_restricted_prefix(command_label, 'label', context,
+            { command: command_id })
+          return error_result if command_label.present? && error_result
+
+          # Type-specicific validations for `exec` commands
+          # Since we only support the exec command type for user defined poststart events
+          # We don't need to have validation for other command types
+          next unless supported_command_type == :exec
+
+          exec_command = command_type
+
+          # Validate that only the supported options are used
+          unsupported_options = exec_command.keys - SUPPORTED_EXEC_COMMAND_OPTIONS
+          if unsupported_options.any?
+            return err(
+              format(
+                _("Unsupported options '%{options}' for exec command '%{command}'. " \
+                  "Only '%{supported_options}' are supported."),
+                options: unsupported_options.join(", "),
                 command: command_id,
-                prefix: RESTRICTED_PREFIX
+                supported_options: SUPPORTED_EXEC_COMMAND_OPTIONS.join(", ")
+              ),
+              context
+            )
+          end
+
+          if exec_command.key?(:hotReloadCapable) && exec_command[:hotReloadCapable] != SUPPORTED_HOT_RELOAD_VALUE
+            return err(
+              format(
+                _("Property 'hotReloadCapable' for exec command '%{command}' must be false when specified"),
+                command: command_id
               ),
               context
             )
@@ -293,10 +362,44 @@ module RemoteDevelopment
         Gitlab::Fp::Result.ok(context)
       end
 
+      # @param [String] value
+      # @param [String] type
+      # @param [Hash] context
+      # @param [Hash] additional_params
+      # @return [Gitlab::Fp::Result.err]
+      def self.validate_restricted_prefix(value, type, context, additional_params = {})
+        return unless value.downcase.start_with?(RESTRICTED_PREFIX)
+
+        error_messages = {
+          'command_id' => _("Command id '%{command}' must not start with '%{prefix}'"),
+          'component_name' => _(
+            "Component name '%{component}' for command id '%{command}' must not start with '%{prefix}'"
+          ),
+          'label' => _("Label '%{command_label}' for command id '%{command}' must not start with '%{prefix}'")
+        }
+
+        message_template = error_messages[type]
+        return unless message_template
+
+        params = { prefix: RESTRICTED_PREFIX }.merge(additional_params)
+
+        case type
+        when 'command_id'
+          params[:command] = value
+        when 'component_name'
+          params[:component] = value
+        when 'label'
+          params[:command_label] = value
+        end
+
+        err(format(message_template, params), context)
+      end
+
       # @param [Hash] context
       # @return [Gitlab::Fp::Result]
       def self.validate_events(context)
         devfile = devfile_to_validate(context)
+        commands = devfile.fetch(:commands, [])
 
         devfile.fetch(:events, {}).each do |event_type, event_type_events|
           # Ensure no event type other than "preStart" are allowed
@@ -308,18 +411,35 @@ module RemoteDevelopment
           end
 
           # Ensure no event starts with restricted_prefix
-          event_type_events.each do |event|
-            next unless event.downcase.start_with?(RESTRICTED_PREFIX)
+          event_type_events.each do |command_name|
+            if command_name.downcase.start_with?(RESTRICTED_PREFIX)
+              return err(
+                format(
+                  _("Event '%{event}' of type '%{event_type}' must not start with '%{prefix}'"),
+                  event: command_name,
+                  event_type: event_type,
+                  prefix: RESTRICTED_PREFIX
+                ),
+                context
+              )
+            end
 
-            return err(
-              format(
-                _("Event '%{event}' of type '%{event_type}' must not start with '%{prefix}'"),
-                event: event,
-                event_type: event_type,
-                prefix: RESTRICTED_PREFIX
-              ),
-              context
-            )
+            next unless event_type == :postStart
+
+            # ===== postStart specific validations =====
+
+            # Check if the referenced command is an exec command
+            referenced_command = commands.find { |cmd| cmd[:id] == command_name }
+            unless referenced_command[:exec].present?
+              return err(
+                format(
+                  _("PostStart event references command '%{command}' which is not an exec command. Only exec " \
+                    "commands are supported in postStart events"),
+                  command: command_name
+                ),
+                context
+              )
+            end
           end
         end
 
@@ -358,9 +478,9 @@ module RemoteDevelopment
       def self.err(details, context)
         Gitlab::Fp::Result.err(DevfileRestrictionsFailed.new({ details: details, context: context }))
       end
-      private_class_method :devfile_to_validate, :validate_schema_version, :validate_parent,
+      private_class_method :devfile_to_validate, :validate_devfile_size, :validate_schema_version, :validate_parent,
         :validate_projects, :validate_components, :validate_containers,
-        :validate_endpoints, :validate_commands, :validate_events,
+        :validate_endpoints, :validate_commands, :validate_restricted_prefix, :validate_events,
         :validate_variables, :err, :validate_root_attributes
     end
   end

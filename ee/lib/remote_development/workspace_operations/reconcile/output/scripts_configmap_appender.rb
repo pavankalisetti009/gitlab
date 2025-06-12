@@ -99,7 +99,6 @@ module RemoteDevelopment
 
             # Segregate internal commands and user provided commands.
             # Before any non-blocking post start command is executed, we wait for the workspace to be marked ready.
-            # TODO: User provided commands should be added to the non-blocking poststart script with https://gitlab.com/gitlab-org/gitlab/-/issues/505988
             internal_blocking_poststart_command_ids, non_blocking_poststart_command_ids =
               poststart_command_ids.partition do |id|
                 command = devfile_commands.find { |cmd| cmd[:id] == id }

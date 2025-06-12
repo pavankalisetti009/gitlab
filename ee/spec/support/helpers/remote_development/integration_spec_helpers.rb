@@ -9,20 +9,23 @@ module RemoteDevelopment
     # @param [String] namespace_path
     # @param [String] project_name
     # @param [Array] image_pull_secrets
+    # @param [Array] user_defined_commands
     # @return [Hash]
     def build_additional_args_for_expected_config_to_apply_yaml_stream(
       network_policy_enabled:,
       dns_zone:,
       namespace_path:,
       project_name:,
-      image_pull_secrets:
+      image_pull_secrets:,
+      user_defined_commands:
     )
       {
         dns_zone: dns_zone,
         namespace_path: namespace_path,
         project_name: project_name,
         include_network_policy: network_policy_enabled,
-        image_pull_secrets: image_pull_secrets
+        image_pull_secrets: image_pull_secrets,
+        user_defined_commands: user_defined_commands
       }
     end
 

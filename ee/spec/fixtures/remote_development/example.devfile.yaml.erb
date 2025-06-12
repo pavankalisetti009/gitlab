@@ -12,4 +12,13 @@ components:
       env:
         - name: MYSQL_ROOT_PASSWORD
           value: "my-secret-pw"
-
+commands:
+  - id: user-defined-command
+    exec:
+      component: tooling-container
+      commandLine: echo 'user-defined postStart command'
+      hotReloadCapable: false
+events:
+  preStart: []
+  postStart:
+    - user-defined-command

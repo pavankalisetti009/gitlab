@@ -71,6 +71,19 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
   let(:logger) { instance_double(::Logger) }
 
+  let(:user_defined_commands) do
+    [
+      {
+        id: "user-defined-command",
+        exec: {
+          component: "tooling-container",
+          commandLine: "echo 'user-defined postStart command'",
+          hotReloadCapable: false
+        }
+      }
+    ]
+  end
+
   let(:expected_config_to_apply_yaml_stream) do
     create_config_to_apply_yaml_stream(
       workspace: workspace,
@@ -84,7 +97,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       egress_ip_rules: egress_ip_rules,
       max_resources_per_workspace: max_resources_per_workspace,
       default_resources_per_workspace_container: default_resources_per_workspace_container,
-      image_pull_secrets: image_pull_secrets
+      image_pull_secrets: image_pull_secrets,
+      user_defined_commands: user_defined_commands
     )
   end
 
@@ -260,6 +274,33 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
       it_behaves_like 'unprovisioned workspace expectations'
       it_behaves_like 'versioned workspaces_agent_configs behavior'
+    end
+
+    context 'when workspace has user-defined postStart commands' do
+      it 'includes user-defined commands in the scripts configmap' do
+        workspace_rails_infos = response.fetch(:payload).fetch(:workspace_rails_infos)
+        actual_workspace_rails_info = workspace_rails_infos.detect { |info| info.fetch(:name) == workspace.name }
+        actual_config_to_apply =
+          yaml_safe_load_stream_symbolized(actual_workspace_rails_info.fetch(:config_to_apply))
+
+        scripts_configmap = actual_config_to_apply.find do |resource|
+          resource[:kind] == "ConfigMap" && resource[:metadata][:name].end_with?("-scripts-configmap")
+        end
+
+        expect(scripts_configmap).to be_present
+
+        expect(scripts_configmap[:data].keys).to include(user_defined_commands.first[:id].to_sym)
+
+        expect(scripts_configmap[:data][user_defined_commands.first[:id].to_sym]).to eq(
+          user_defined_commands.first[:exec][:commandLine]
+        )
+
+        # Verify the poststart script includes the user-defined command
+        poststart_script = scripts_configmap[:data][
+          reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym
+        ]
+        expect(poststart_script).to include("Running /workspace-scripts/user-defined-command")
+      end
     end
   end
 

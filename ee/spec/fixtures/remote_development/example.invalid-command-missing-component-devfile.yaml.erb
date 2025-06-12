@@ -7,12 +7,6 @@ components:
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
 commands:
-  - id: example
+  - id: missing-component-command
     exec:
-      component: example
-      commandLine: mvn clean
-events:
-  preStop:
-    - example
-    - gl-example
-variables: {}
+      commandLine: echo "Hello, World!"

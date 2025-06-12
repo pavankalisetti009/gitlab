@@ -72,6 +72,19 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     ]
   end
 
+  let(:user_defined_commands) do
+    [
+      {
+        id: "user-defined-command",
+        exec: {
+          component: "tooling-container",
+          commandLine: "echo 'user-defined postStart command'",
+          hotReloadCapable: false
+        }
+      }
+    ]
+  end
+
   let(:namespace_agents_config_query) do
     <<~GRAPHQL
       query {
@@ -445,7 +458,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
           dns_zone: dns_zone,
           namespace_path: workspace_project_namespace.full_path,
           project_name: workspace_project_name,
-          image_pull_secrets: image_pull_secrets
+          image_pull_secrets: image_pull_secrets,
+          user_defined_commands: user_defined_commands
         )
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK SENDING NEW WORKSPACE

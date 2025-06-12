@@ -25,6 +25,16 @@ RSpec.describe RemoteDevelopment::DevfileOperations::Flattener, feature_category
     )
   end
 
+  it "removes unsupported exec command options" do
+    result_value = result.unwrap
+    exec_command = result_value[:processed_devfile][:commands].first[:exec]
+
+    supported_options = RemoteDevelopment::DevfileOperations::RestrictionsEnforcer::SUPPORTED_EXEC_COMMAND_OPTIONS
+
+    # Should keep only supported options
+    expect(exec_command.keys).to all(be_in(supported_options))
+  end
+
   context "when devfile has no elements" do
     let(:devfile_yaml) { read_devfile_yaml('example.invalid-no-elements-devfile.yaml.erb') }
     let(:expected_processed_devfile) do

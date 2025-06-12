@@ -55,10 +55,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
       reconcile_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         internal_blocking_poststart_commands_script,
       reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
-        non_blocking_poststart_commands_script,
+        non_blocking_poststart_commands_script(user_command_ids: ["user-defined-command"]),
       "gl-sleep-until-container-is-running-command":
         sleep_until_container_is_running_script,
-      "gl-start-sshd-command": files::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
+      "gl-start-sshd-command": files::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT,
+      "user-defined-command": "echo 'user-defined postStart command'"
     )
   end
 

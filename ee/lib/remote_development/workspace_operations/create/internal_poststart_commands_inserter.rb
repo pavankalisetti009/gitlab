@@ -66,7 +66,6 @@ module RemoteDevelopment
               label: INTERNAL_BLOCKING_COMMAND_LABEL
             }
           }
-          poststart_events << clone_project_command_id
 
           # Add the start_sshd event
           start_sshd_command_id = "gl-start-sshd-command"
@@ -78,7 +77,6 @@ module RemoteDevelopment
               label: INTERNAL_BLOCKING_COMMAND_LABEL
             }
           }
-          poststart_events << start_sshd_command_id
 
           # Add the start_vscode event
           start_vscode_command_id = "gl-init-tools-command"
@@ -90,7 +88,6 @@ module RemoteDevelopment
               label: INTERNAL_BLOCKING_COMMAND_LABEL
             }
           }
-          poststart_events << start_vscode_command_id
 
           # Add the sleep_until_container_is_running event
           sleep_until_container_is_running_command_id = "gl-sleep-until-container-is-running-command"
@@ -108,7 +105,14 @@ module RemoteDevelopment
               label: INTERNAL_COMMAND_LABEL
             }
           }
-          poststart_events << sleep_until_container_is_running_command_id
+
+          # Prepend internal commands so they are executed before any user-defined poststart events.
+          poststart_events.prepend(
+            clone_project_command_id,
+            start_sshd_command_id,
+            start_vscode_command_id,
+            sleep_until_container_is_running_command_id
+          )
 
           context
         end
