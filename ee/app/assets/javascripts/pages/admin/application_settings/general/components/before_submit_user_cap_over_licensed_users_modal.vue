@@ -69,6 +69,7 @@ export default {
     :action-cancel="$options.modal.actionCancel"
     :action-primary="$options.modal.actionPrimary"
     :title="s__('ApplicationSettings|Proposed user cap exceeds licensed user count')"
+    :no-focus-on-show="true"
     @hide="$emit('hide')"
     @primary="$emit('primary')"
     @secondary="$emit('secondary')"
