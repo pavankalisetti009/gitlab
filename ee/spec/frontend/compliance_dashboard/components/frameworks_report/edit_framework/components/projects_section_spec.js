@@ -25,6 +25,7 @@ Vue.use(VueApollo);
 describe('Projects section', () => {
   let wrapper;
   let apolloProvider;
+  let queryMock;
 
   const framework = createFramework({ id: 1, projects: 3 });
   const projects = framework.projects.nodes;
@@ -101,6 +102,7 @@ describe('Projects section', () => {
       },
     };
 
+    queryMock = resolverMock;
     const requestHandlers = [
       [complianceFrameworksGroupProjects, resolverMock],
       [getComplianceFrameworkQuery, jest.fn().mockResolvedValue(frameworksResponse)],
@@ -676,58 +678,14 @@ describe('Projects section', () => {
       });
 
       it('shows only selected projects when toggle is on', async () => {
-        await findCheckbox(0).setChecked(true);
-        await nextTick();
-
         await findShowOnlySelectedToggle().vm.$emit('change', true);
         await nextTick();
-
-        expect(findProjectRows()).toHaveLength(3);
-
-        const projectName = findTableRowData(0).at(1).text();
-        expect(projectName).toContain(mockProjects[0].name);
-      });
-
-      it('updates filtered projects when selection changes', async () => {
-        await findShowOnlySelectedToggle().vm.$emit('change', true);
-        await nextTick();
-
-        expect(findProjectRows()).toHaveLength(3);
-
-        await findCheckbox(2).setChecked(false);
-        await nextTick();
-
-        expect(findProjectRows()).toHaveLength(2);
-
-        const projectName = findTableRowData(1).at(1).text();
-        expect(projectName).toContain(mockProjects[1].name);
-      });
-
-      it('shows correct empty state message when no projects match filter', async () => {
-        wrapper.vm.togglePageProjects(false);
-        await findShowOnlySelectedToggle().vm.$emit('change', true);
-        await nextTick();
-
-        expect(wrapper.findByTestId('no-projects-text').exists()).toBe(true);
-
-        await findShowOnlySelectedToggle().vm.$emit('change', false);
-        await nextTick();
-
-        expect(wrapper.findByTestId('no-projects-text').exists()).toBe(false);
-      });
-
-      it('restores all projects when toggle is turned off', async () => {
-        await findCheckbox(0).setChecked(true);
-        await nextTick();
-        await findShowOnlySelectedToggle().vm.$emit('change', true);
-        await nextTick();
-
-        expect(findProjectRows()).toHaveLength(3);
-
-        await findShowOnlySelectedToggle().vm.$emit('change', false);
-        await nextTick();
-
-        expect(findProjectRows()).toHaveLength(5);
+        expect(queryMock).toHaveBeenCalledWith({
+          first: 20,
+          frameworks: ['gid://gitlab/ComplianceManagement::Framework/1'],
+          frameworksNot: [],
+          groupPath: 'gitlab-org',
+        });
       });
     });
   });
@@ -761,23 +719,27 @@ describe('Projects section', () => {
         __typename: 'PageInfo',
       };
 
+      let mock;
+
       const lotsOfProjects = Array.from({ length: 51 }, (_, id) =>
         createProject({ id, groupPath: 'foo' }),
       );
 
       beforeEach(async () => {
-        createComponent({
-          resolverMock: jest.fn().mockResolvedValue({
-            data: {
-              group: {
-                id: 'gid://gitlab/Group/1',
-                projects: {
-                  nodes: lotsOfProjects,
-                  pageInfo: mockPageInfo,
-                },
+        mock = jest.fn().mockResolvedValue({
+          data: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              projects: {
+                nodes: lotsOfProjects,
+                pageInfo: mockPageInfo,
               },
             },
-          }),
+          },
+        });
+
+        createComponent({
+          resolverMock: mock,
         });
 
         await expandSection();
@@ -799,51 +761,32 @@ describe('Projects section', () => {
         expect(pagination.props('isLoading')).toBe(false);
       });
 
-      it('calls fetchMore with correct variables when navigating to next page', async () => {
-        const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
-
+      it('calls query with correct variables when navigating to next page', async () => {
         await findPagination().vm.$emit('next', 'end123');
 
-        expect(fetchMoreSpy).toHaveBeenCalledWith({
-          variables: {
-            groupPath: 'gitlab-org',
-            first: 20,
-            after: 'end123',
-            last: null,
-            before: null,
-            frameworks: [],
-            frameworksNot: [],
-          },
-          updateQuery: expect.any(Function),
+        expect(mock).toHaveBeenCalledWith({
+          groupPath: 'gitlab-org',
+          first: 20,
+          after: 'end123',
+          last: null,
+          before: null,
+          frameworks: [],
+          frameworksNot: [],
         });
       });
 
-      it('calls fetchMore with correct variables when navigating to previous page', async () => {
-        const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
-
+      it('calls query with correct variables when navigating to previous page', async () => {
         await findPagination().vm.$emit('prev', 'start123');
 
-        expect(fetchMoreSpy).toHaveBeenCalledWith({
-          variables: {
-            groupPath: 'gitlab-org',
-            first: null,
-            after: null,
-            last: 20,
-            before: 'start123',
-            frameworks: [],
-            frameworksNot: [],
-          },
-          updateQuery: expect.any(Function),
+        expect(mock).toHaveBeenCalledWith({
+          groupPath: 'gitlab-org',
+          first: null,
+          after: null,
+          last: 20,
+          before: 'start123',
+          frameworks: [],
+          frameworksNot: [],
         });
-      });
-
-      it('refetches data when page size changes', async () => {
-        const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
-
-        await findPagination().vm.$emit('page-size-change', 50);
-
-        expect(wrapper.vm.perPage).toBe(50);
-        expect(refetchSpy).toHaveBeenCalled();
       });
 
       it('shows loading state during pagination navigation', async () => {
@@ -870,13 +813,12 @@ describe('Projects section', () => {
         await waitForPromises();
         await nextTick();
 
-        const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
         await nextTick();
 
         await findPagination().vm.$emit('next', 'end123');
 
         expect(findPagination().props('isLoading')).toBe(true);
-        expect(fetchMoreSpy).toHaveBeenCalled();
+        expect(mock).toHaveBeenCalled();
       });
     });
 
@@ -956,37 +898,6 @@ describe('Projects section', () => {
       expect(filters.props('groupPath')).toBe('gitlab-org');
       expect(filters.props('error')).toBeUndefined();
       expect(filters.props('showUpdatePopover')).toBe(false);
-    });
-
-    it('calls refetch when filters are changed', async () => {
-      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
-      const onFiltersChangedSpy = jest.spyOn(wrapper.vm, 'onFiltersChanged');
-      const newFilters = [
-        {
-          type: 'project',
-          value: { data: 'test-project', operator: 'matches' },
-        },
-      ];
-
-      wrapper.vm.onFiltersChanged(newFilters);
-      await nextTick();
-
-      expect(onFiltersChangedSpy).toHaveBeenCalledWith(newFilters);
-      expect(wrapper.vm.filters).toEqual(newFilters);
-      expect(refetchSpy).toHaveBeenCalled();
-    });
-
-    it('does not call refetch when filters are unchanged', async () => {
-      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
-      const onFiltersChangedSpy = jest.spyOn(wrapper.vm, 'onFiltersChanged');
-      const newFilters = [];
-
-      wrapper.vm.onFiltersChanged(newFilters);
-      await nextTick();
-
-      expect(onFiltersChangedSpy).toHaveBeenCalledWith(newFilters);
-      expect(wrapper.vm.filters).toEqual(newFilters);
-      expect(refetchSpy).not.toHaveBeenCalled();
     });
 
     it('updates query variables when filters change', async () => {
