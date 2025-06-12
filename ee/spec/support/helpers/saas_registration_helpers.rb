@@ -406,7 +406,7 @@ module SaasRegistrationHelpers
       ).and_call_original
   end
 
-  def fill_in_company_form(with_last_name: false, success: true)
+  def fill_in_company_form(with_last_name: false, last_name_only: false, success: true)
     result = if success
                ServiceResponse.success
              else
@@ -419,7 +419,7 @@ module SaasRegistrationHelpers
     ).and_return(instance_double(GitlabSubscriptions::CreateCompanyLeadService, execute: result))
 
     fill_in_company_user_last_name if with_last_name
-    fill_company_form_fields
+    fill_company_form_fields unless last_name_only
   end
 
   def fill_in_company_user_last_name
@@ -428,8 +428,8 @@ module SaasRegistrationHelpers
 
   def fill_company_form_fields
     fill_in 'company_name', with: 'Test Company'
-    select 'United States of America', from: 'country'
-    select 'Florida', from: 'state'
+    select_from_listbox 'United States of America', from: 'Select a country or region'
+    select_from_listbox 'Florida', from: 'Select state or province'
     fill_in 'phone_number', with: '+1234567890'
   end
 

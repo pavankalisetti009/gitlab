@@ -43,7 +43,8 @@ RSpec.describe 'Sign up with trial from external site without confirmation', :sa
       .and_call_original
 
     fill_in 'company_name', with: 'Company name'
-    select 'Australia', from: 'country'
+    select_from_listbox 'Australia', from: 'Select a country or region'
+
     click_on s_('Trial|Continue with trial')
 
     fill_in 'group_name', with: 'Group name'

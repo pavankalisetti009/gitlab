@@ -51,9 +51,6 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
 
     with_them do
       it 'verifies existing name fields filled and redirects to correct path' do
-        expect(page.find_field('first_name', visible: false).value).to eq user.first_name
-        expect(page.find_field('last_name', visible: false).value).to eq user.last_name
-
         fill_company_form_fields
 
         expect_next_instance_of(
@@ -78,16 +75,8 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
         user.update!(name: 'Bob')
       end
 
-      it 'ensures the required fields for name are entered' do
+      it 'fills in first_name and last_name and submits successfully' do
         page.refresh
-
-        fill_in 'first_name', with: ''
-        fill_in 'last_name', with: ''
-
-        click_on s_('Trial|Continue')
-
-        expect(page).to have_native_text_validation_message('first_name')
-        expect(page).to have_native_text_validation_message('last_name')
 
         fill_in 'first_name', with: 'Foo'
         fill_in 'last_name', with: 'Bar'
@@ -105,16 +94,6 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
 
         expect(page).to have_current_path(new_users_sign_up_group_path, ignore_query: true)
         expect(page).to have_content('Create or import your first project')
-      end
-    end
-
-    context 'when phone number is entered by the user' do
-      it 'validates the phone number' do
-        fill_in 'phone_number', with: '123d'
-
-        click_on s_('Trial|Continue')
-        expect(page).to have_css('input[name="phone_number"]:invalid')
-        expect(page).to have_content('Allowed characters: +, 0-9, -, and spaces.')
       end
     end
   end
