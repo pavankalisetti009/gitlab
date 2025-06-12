@@ -49,7 +49,7 @@ describe('Security Dashboard (new version) - Component', () => {
       expect(firstPanel.title).toBe('Vulnerabilities over time');
       expect(firstPanel.component).toBe(OpenVulnerabilitiesOverTimeChart);
       expect(firstPanel.gridAttributes).toEqual({
-        width: 7,
+        width: 6,
         height: 4,
         yPos: 0,
         xPos: 0,
