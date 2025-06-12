@@ -23668,6 +23668,15 @@ msgstr ""
 msgid "DuoTrialDiscover|Ask questions, explore concepts, test ideas, and receive instant feedback directly in your workflow."
 msgstr ""
 
+msgid "DuoWorkflowSettings|Model Context Protocol"
+msgstr ""
+
+msgid "DuoWorkflowSettings|Turn on MCP support for GitLab Duo Agentic Chat and GitLab Duo Workflow"
+msgstr ""
+
+msgid "DuoWorkflowSettings|Turn on Model Context Protocol (MCP) support"
+msgstr ""
+
 msgid "Duplicate entries found for compliance controls for the requirement."
 msgstr ""
 

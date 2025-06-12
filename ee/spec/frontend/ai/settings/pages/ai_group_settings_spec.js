@@ -2,9 +2,10 @@ import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { updateGroupSettings } from 'ee/api/groups_api';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
-import { createAlert } from '~/alert';
+import { createAlert, VARIANT_INFO } from '~/alert';
 import AiCommonSettings from 'ee/ai/settings/components/ai_common_settings.vue';
 import AiGroupSettings from 'ee/ai/settings/pages/ai_group_settings.vue';
+import DuoWorkflowSettingsForm from 'ee/ai/settings/components/duo_workflow_settings_form.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
@@ -29,6 +30,9 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
     provide: {
       showEarlyAccessBanner: false,
       onGeneralSettingsPage: false,
+      duoWorkflowAvailable: true,
+      duoWorkflowMcpEnabled: false,
+      isSaaS: true,
       ...provide,
     },
   });
@@ -36,6 +40,7 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
 
 const findAiCommonSettings = () => wrapper.findComponent(AiCommonSettings);
 const findEarlyAccessBanner = () => wrapper.findComponent({ name: 'EarlyAccessProgramBanner' });
+const findDuoWorkflowSettingsForm = () => wrapper.findComponent(DuoWorkflowSettingsForm);
 
 describe('AiGroupSettings', () => {
   beforeEach(() => {
@@ -45,6 +50,25 @@ describe('AiGroupSettings', () => {
   describe('UI', () => {
     it('renders the component', () => {
       expect(wrapper.exists()).toBe(true);
+    });
+
+    it('renders DuoWorkflowSettingsForm component when duoWorkflowAvailable is true', () => {
+      createComponent({ provide: { duoWorkflowAvailable: true } });
+      expect(findDuoWorkflowSettingsForm().exists()).toBe(true);
+    });
+
+    it('does not render DuoWorkflowSettingsForm component when duoWorkflowAvailable is false', () => {
+      createComponent({ provide: { duoWorkflowAvailable: false } });
+      expect(findDuoWorkflowSettingsForm().exists()).toBe(false);
+    });
+
+    it('passes correct props to DuoWorkflowSettingsForm when rendered', () => {
+      createComponent({ provide: { duoWorkflowAvailable: true } });
+      expect(findDuoWorkflowSettingsForm().props('isMcpEnabled')).toBe(false);
+    });
+
+    it('passes hasFormChanged prop to AiCommonSettings', () => {
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
     });
   });
 
@@ -58,6 +82,44 @@ describe('AiGroupSettings', () => {
       await nextTick();
       await nextTick();
       expect(findEarlyAccessBanner().exists()).toBe(true);
+    });
+  });
+
+  describe('data initialization', () => {
+    it('initializes duoWorkflowMcp from injected value', () => {
+      createComponent({ provide: { duoWorkflowMcpEnabled: true } });
+      expect(findDuoWorkflowSettingsForm().props('isMcpEnabled')).toBe(true);
+    });
+  });
+
+  describe('computed properties', () => {
+    describe('hasFormChanged', () => {
+      it('returns false when duoWorkflowMcp matches injected value', () => {
+        createComponent({ provide: { duoWorkflowMcpEnabled: false } });
+        expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
+      });
+
+      it('returns true when duoWorkflowMcp differs from injected value', async () => {
+        createComponent({ provide: { duoWorkflowMcpEnabled: false } });
+        findDuoWorkflowSettingsForm().vm.$emit('change', true);
+
+        await nextTick();
+
+        expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+      });
+    });
+  });
+
+  describe('methods', () => {
+    describe('onDuoWorkflowFormChanged', () => {
+      it('updates duoWorkflowMcp value', async () => {
+        findDuoWorkflowSettingsForm().vm.$emit('change', true);
+
+        await nextTick();
+
+        expect(findDuoWorkflowSettingsForm().props('isMcpEnabled')).toBe(true);
+        expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+      });
     });
   });
 
@@ -76,7 +138,29 @@ describe('AiGroupSettings', () => {
         experiment_features_enabled: true,
         duo_core_features_enabled: true,
         model_prompt_cache_enabled: true,
+        ai_settings_attributes: {
+          duo_workflow_mcp_enabled: false,
+        },
       });
+    });
+
+    it('includes updated duoWorkflowMcp value in API call', async () => {
+      updateGroupSettings.mockResolvedValue({});
+      wrapper.vm.onDuoWorkflowFormChanged(true);
+      await findAiCommonSettings().vm.$emit('submit', {
+        duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experimentFeaturesEnabled: true,
+        duoCoreFeaturesEnabled: true,
+        promptCacheEnabled: true,
+      });
+      expect(updateGroupSettings).toHaveBeenCalledWith(
+        '100',
+        expect.objectContaining({
+          ai_settings_attributes: {
+            duo_workflow_mcp_enabled: true,
+          },
+        }),
+      );
     });
 
     it('shows success message on successful update', async () => {
@@ -92,7 +176,9 @@ describe('AiGroupSettings', () => {
         expect.any(String),
         expect.arrayContaining([
           expect.objectContaining({
+            id: 'organization-group-successfully-updated',
             message: 'Group was successfully updated.',
+            variant: VARIANT_INFO,
           }),
         ]),
       );
@@ -112,6 +198,7 @@ describe('AiGroupSettings', () => {
         expect.objectContaining({
           message:
             'An error occurred while retrieving your settings. Reload the page to try again.',
+          captureError: true,
           error,
         }),
       );
@@ -126,12 +213,23 @@ describe('AiGroupSettings', () => {
           duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
           experimentFeaturesEnabled: false,
           duoCoreFeaturesEnabled: true,
+          promptCacheEnabled: true,
         });
         expect(updateGroupSettings).toHaveBeenCalledTimes(1);
         expect(updateGroupSettings).toHaveBeenCalledWith('100', {
           duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
           experiment_features_enabled: false,
+          model_prompt_cache_enabled: true,
+          ai_settings_attributes: {
+            duo_workflow_mcp_enabled: false,
+          },
         });
+        expect(updateGroupSettings).not.toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            duo_core_features_enabled: expect.anything(),
+          }),
+        );
       });
     });
   });

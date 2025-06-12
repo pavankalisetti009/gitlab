@@ -43,6 +43,8 @@ export const initAiSettings = (id, component) => {
     duoChatExpirationColumn,
     duoProOrDuoEnterpriseTier,
     shouldShowDuoAvailability,
+    duoWorkflowMcpEnabled,
+    duoWorkflowAvailable,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -68,6 +70,8 @@ export const initAiSettings = (id, component) => {
       promptCacheEnabled: parseBoolean(promptCacheEnabled),
       disabledDirectConnectionMethod: parseBoolean(disabledDirectConnectionMethod),
       showEarlyAccessBanner: parseBoolean(showEarlyAccessBanner),
+      duoWorkflowMcpEnabled: parseBoolean(duoWorkflowMcpEnabled),
+      duoWorkflowAvailable: parseBoolean(duoWorkflowAvailable),
       betaSelfHostedModelsEnabled: parseBoolean(betaSelfHostedModelsEnabled),
       toggleBetaModelsPath,
       enabledExpandedLogging: parseBoolean(enabledExpandedLogging),
