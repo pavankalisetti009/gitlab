@@ -20,15 +20,10 @@ components:
           protocol: https
           exposure: none
 commands:
-  - id: example-valid-non-apply-or-exec-command
-    composite:
-      commands:
-        - example-valid-command
-        - example-valid-second-command
-      parallel: false
   - id: example-valid-command
-    apply:
+    exec:
       component: example-valid-component
+      commandLine: echo "valid command"
   - id: example-valid-second-command
     apply:
       component: example-valid-second-component

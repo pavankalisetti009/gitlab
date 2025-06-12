@@ -35,6 +35,19 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
   let(:variable_value) { "value 1" }
   let(:workspaces_group_settings_path) { "/groups/#{group.name}/-/settings/workspaces" }
 
+  let(:user_defined_commands) do
+    [
+      {
+        id: "user-defined-command",
+        exec: {
+          component: "tooling-container",
+          commandLine: "echo 'user-defined postStart command'",
+          hotReloadCapable: false
+        }
+      }
+    ]
+  end
+
   # @param [String] state
   # @return [void]
   def expect_workspace_state_indicator(state)
@@ -168,7 +181,8 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
           dns_zone: workspaces_agent_config.dns_zone,
           namespace_path: group.path,
           project_name: project.path,
-          image_pull_secrets: image_pull_secrets
+          image_pull_secrets: image_pull_secrets,
+          user_defined_commands: user_defined_commands
         )
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK SENDING NEW WORKSPACE

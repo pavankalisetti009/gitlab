@@ -7,12 +7,6 @@ components:
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
 commands:
-  - id: example
-    exec:
-      component: example
-      commandLine: mvn clean
-events:
-  preStop:
-    - example
-    - gl-example
-variables: {}
+  - id: composite-command
+    composite:
+      commands: []

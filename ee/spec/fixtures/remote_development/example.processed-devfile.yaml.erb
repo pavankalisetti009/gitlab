@@ -67,6 +67,11 @@ components:
     volume:
       size: 50Gi
 commands:
+  - id: user-defined-command
+    exec:
+      component: tooling-container
+      commandLine: echo 'user-defined postStart command'
+      hotReloadCapable: false
   - id: gl-tools-injector-command
     apply:
       component: gl-tools-injector
@@ -111,4 +116,5 @@ events:
     - gl-start-sshd-command
     - gl-init-tools-command
     - gl-sleep-until-container-is-running-command
+    - user-defined-command
 variables: {}

@@ -79,6 +79,19 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       )
     end
 
+    let(:user_defined_commands) do
+      [
+        {
+          id: "user-defined-command",
+          exec: {
+            component: "tooling-container",
+            commandLine: "echo 'user-defined postStart command'",
+            hotReloadCapable: false
+          }
+        }
+      ]
+    end
+
     let(:expected_config) do
       create_config_to_apply(
         workspace: workspace,
@@ -98,7 +111,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         agent_labels: workspace.workspaces_agent_config.labels.deep_symbolize_keys,
         agent_annotations: workspace.workspaces_agent_config.annotations.deep_symbolize_keys,
         image_pull_secrets: image_pull_secrets.map(&:deep_symbolize_keys),
-        shared_namespace: shared_namespace
+        shared_namespace: shared_namespace,
+        user_defined_commands: user_defined_commands
       )
     end
 
@@ -292,6 +306,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       let(:processed_devfile_yaml) do
         read_devfile_yaml("example.legacy-poststart-in-container-command-processed-devfile.yaml.erb")
       end
+
+      let(:user_defined_commands) { [] }
 
       it 'returns expected config without script resources' do
         expect(workspace_resources).to eq(expected_config)

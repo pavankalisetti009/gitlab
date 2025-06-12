@@ -7,12 +7,8 @@ components:
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
 commands:
-  - id: example
+  - id: unsupported-hot-reload-option
     exec:
       component: example
-      commandLine: mvn clean
-events:
-  preStop:
-    - example
-    - gl-example
-variables: {}
+      commandLine: echo "Hello, World!"
+      hotReloadCapable: true

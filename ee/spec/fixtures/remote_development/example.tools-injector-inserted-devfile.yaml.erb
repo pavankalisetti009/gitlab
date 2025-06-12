@@ -30,8 +30,14 @@ components:
 events:
   preStart:
     - gl-tools-injector-command
-  postStart: []
+  postStart:
+    - user-defined-command
 commands:
+  - id: user-defined-command
+    exec:
+      component: tooling-container
+      commandLine: echo 'user-defined postStart command'
+      hotReloadCapable: false
   - id: gl-tools-injector-command
     apply:
       component: gl-tools-injector

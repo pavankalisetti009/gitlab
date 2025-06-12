@@ -7,7 +7,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # rubocop:todo Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
 
-  # @return [Array]
+  # @return [Array<Hash>]
   def create_desired_config_array
     json_content = RemoteDevelopment::FixtureFileHelpers.read_fixture_file('example.desired_config.json')
     Gitlab::Json.parse(json_content).map(&:deep_symbolize_keys)
@@ -361,6 +361,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Array<Hash>] image_pull_secrets
   # @param [Boolean] include_scripts_resources
   # @param [Boolean] legacy_no_poststart_container_command
+  # @param [Boolean] legacy_poststart_container_command
+  # @param [Array<Hash>] user_defined_commands
   # @param [String] shared_namespace
   # @param [Boolean] core_resources_only
   # @return [Array<Hash>]
@@ -392,6 +394,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     include_scripts_resources: true,
     legacy_no_poststart_container_command: false,
     legacy_poststart_container_command: false,
+    user_defined_commands: [],
     shared_namespace: "",
     core_resources_only: false
   )
@@ -482,7 +485,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace_namespace: workspace.namespace,
       labels: labels,
       annotations: workspace_inventory_annotations,
-      legacy_poststart_container_command: legacy_poststart_container_command
+      legacy_poststart_container_command: legacy_poststart_container_command,
+      user_defined_commands: user_defined_commands
     )
 
     secrets_inventory_config_map = secrets_inventory_config_map(
@@ -1175,15 +1179,27 @@ RSpec.shared_context 'with remote development shared fixtures' do
     SCRIPT
   end
 
+  # @param [Array<String>] user_command_ids
   # @return [String]
-  def non_blocking_poststart_commands_script
-    <<~SCRIPT
+  def non_blocking_poststart_commands_script(user_command_ids: [])
+    script = <<~SCRIPT
       #!/bin/sh
       echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
       #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
     SCRIPT
+
+    # Add user-defined commands if any
+    user_command_ids.each do |command_id|
+      script += <<~SCRIPT
+        echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}..."
+        #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id} || true
+      SCRIPT
+    end
+
+    script
   end
 
+  # @return [String]
   def legacy_poststart_commands_script
     <<~SCRIPT
       #!/bin/sh
@@ -1228,21 +1244,25 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] labels
   # @param [Hash] annotations
   # @param [Boolean] legacy_poststart_container_command
+  # @param [Array<Hash>] user_defined_commands
   # @return [Hash]
   def scripts_configmap(
     workspace_name:,
     workspace_namespace:,
     labels:,
     annotations:,
-    legacy_poststart_container_command:
+    legacy_poststart_container_command:,
+    user_defined_commands:
   )
+    user_command_ids = user_defined_commands.pluck(:id)
+
     data = {
       "gl-clone-project-command": clone_project_script,
       "gl-init-tools-command": files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
       reconcile_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         internal_blocking_poststart_commands_script,
       reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
-        non_blocking_poststart_commands_script,
+        non_blocking_poststart_commands_script(user_command_ids: user_command_ids),
       "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
       "gl-start-sshd-command": files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
     }
@@ -1252,6 +1272,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
       data.delete(reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym)
       data[reconcile_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
         legacy_poststart_commands_script
+    end
+
+    # Add each user-defined command to the data hash
+    user_defined_commands.each do |cmd|
+      data[cmd[:id].to_sym] = cmd[:exec][:commandLine]
     end
 
     {

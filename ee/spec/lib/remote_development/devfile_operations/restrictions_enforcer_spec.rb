@@ -68,6 +68,7 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
         "example.invalid-attributes-tools-injector-absent-devfile.yaml.erb" | "No component has '#{main_component_indicator_attribute}' attribute"
         "example.invalid-attributes-tools-injector-multiple-devfile.yaml.erb" | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have '#{main_component_indicator_attribute}' attribute"
         "example.invalid-component-missing-name.yaml.erb" | "Components must have a 'name'"
+        "example.invalid-command-missing-component-devfile.yaml.erb" | "'exec' command 'missing-component-command' must specify a 'component'"
         "example.invalid-components-attributes-container-overrides-devfile.yaml.erb" | "Attribute 'container-overrides' is not yet supported"
         "example.invalid-components-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported"
         "example.invalid-components-entry-empty-devfile.yaml.erb" | "No components present in devfile"
@@ -86,11 +87,14 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
         "example.invalid-restricted-prefix-command-exec-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'"
         "example.invalid-restricted-prefix-variable-name-with-underscore-devfile.yaml.erb" | "Variable name 'gl_example' must not start with 'gl_'"
         "example.invalid-root-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported"
+        "example.invalid-unsupported-command-exec-hot-reload-capable-option-devfile.yaml.erb" | "Property 'hotReloadCapable' for exec command 'unsupported-hot-reload-option' must be false when specified"
+        "example.invalid-unsupported-command-exec-options-devfile.yaml.erb" | "Unsupported options 'unsupportedOption' for exec command 'unsupported-options'. Only 'commandLine, component, label, hotReloadCapable' are supported."
+        "example.invalid-unsupported-command-type-devfile.yaml.erb" | "Command 'composite-command' must have one of the supported command types: exec, apply"
+        "example.invalid-unsupported-command-type-poststart-event-devfile.yaml.erb" | "PostStart event references command 'apply-command' which is not an exec command. Only exec commands are supported in postStart events"
         "example.invalid-unsupported-component-container-dedicated-pod-devfile.yaml.erb" | "Property 'dedicatedPod' of component 'example' is not yet supported"
         "example.invalid-unsupported-component-type-image-devfile.yaml.erb" | "Component type 'image' is not yet supported"
         "example.invalid-unsupported-component-type-kubernetes-devfile.yaml.erb" | "Component type 'kubernetes' is not yet supported"
         "example.invalid-unsupported-component-type-openshift-devfile.yaml.erb" | "Component type 'openshift' is not yet supported"
-        "example.invalid-unsupported-event-type-poststart-devfile.yaml.erb" | "Event type 'postStart' is not yet supported"
         "example.invalid-unsupported-event-type-poststop-devfile.yaml.erb" | "Event type 'postStop' is not yet supported"
         "example.invalid-unsupported-event-type-prestop-devfile.yaml.erb" | "Event type 'preStop' is not yet supported"
         "example.invalid-unsupported-parent-inheritance-devfile.yaml.erb" | "Inheriting from 'parent' is not yet supported"
@@ -133,6 +137,27 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
 
       with_them do
         it_behaves_like "an err result"
+      end
+    end
+
+    context "for devfile size validation" do
+      let(:input_devfile_name) { "example.devfile.yaml.erb" }
+
+      context "when devfile exceeds maximum size" do
+        before do
+          json_string = input_devfile.to_json
+          allow(input_devfile).to receive(:to_json).and_return(json_string)
+          allow(json_string).to receive(:bytesize).and_return(3.megabytes + 1)
+        end
+
+        it "returns an err Result with size exceeded message" do
+          is_expected.to be_err_result do |message|
+            expect(message).to be_a(RemoteDevelopment::Messages::DevfileRestrictionsFailed)
+            message.content => { details: String => error_details, context: Hash => actual_context }
+            expect(error_details).to match(/Devfile size .* exceeds the maximum allowed size/)
+            expect(actual_context).to eq(context)
+          end
+        end
       end
     end
   end
