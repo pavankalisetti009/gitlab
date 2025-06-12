@@ -485,6 +485,8 @@ module EE
 
       delegate :security_policy_management_project, to: :security_orchestration_policy_configuration, allow_nil: true
 
+      delegate :secret_push_protection_enabled, to: :security_setting, allow_nil: true
+
       validates :repository_size_limit,
         numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
       validates :max_pages_size,

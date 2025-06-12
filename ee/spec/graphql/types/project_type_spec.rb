@@ -91,34 +91,36 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
     let_it_be(:security_setting) { create(:project_security_setting, secret_push_protection_enabled: true) }
     let_it_be(:project) { security_setting.project }
 
-    describe 'secret_push_protection_enabled' do
-      where(:user_role, :licensed_feature, :expected) do
-        :guest     | true  | nil
-        :developer | true  | true
-        :developer | false | nil
-      end
-
-      with_them do
-        before do
-          stub_licensed_features(secret_push_protection: licensed_feature)
-          project.add_role(user, user_role)
+    %w[secretPushProtectionEnabled preReceiveSecretDetectionEnabled].each do |field_name|
+      describe field_name.underscore do
+        where(:user_role, :licensed_feature, :expected) do
+          :guest     | true  | nil
+          :developer | true  | true
+          :developer | false | nil
         end
 
-        let(:query) do
-          %(
-            query {
-              project(fullPath: "#{project.full_path}") {
-                secretPushProtectionEnabled
+        with_them do
+          before do
+            stub_licensed_features(secret_push_protection: licensed_feature)
+            project.add_role(user, user_role)
+          end
+
+          let(:query) do
+            %(
+              query {
+                project(fullPath: "#{project.full_path}") {
+                  #{field_name}
+                }
               }
-            }
-          )
-        end
+            )
+          end
 
-        subject(:response) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+          subject(:response) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
 
-        it 'returns the expected secret_push_protection_enabled value' do
-          secret_push_protection_enabled = response.dig('data', 'project', 'secretPushProtectionEnabled')
-          expect(secret_push_protection_enabled).to eq(expected)
+          it "returns the expected value for #{field_name}" do
+            value = response.dig('data', 'project', field_name)
+            expect(value).to eq(expected)
+          end
         end
       end
     end
