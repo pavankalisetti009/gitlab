@@ -27,17 +27,17 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
       end
     end
 
-    context 'when params[:event] is present' do
+    context 'when params["event"] is present' do
       let(:event_type) { 'Repositories::ProtectedBranchCreatedEvent' }
       let(:event_data) do
         {
-          protected_branch_id: non_existing_record_id,
-          parent_id: non_existing_record_id,
-          parent_type: 'project'
+          'protected_branch_id' => non_existing_record_id,
+          'parent_id' => non_existing_record_id,
+          'parent_type' => 'project'
         }
       end
 
-      let(:params) { { event: { event_type: event_type, data: event_data } } }
+      let(:params) { { 'event' => { 'event_type' => event_type, 'data' => event_data } } }
 
       it 'calls the SyncPolicyEventService for supported event' do
         event_instance = instance_double(Repositories::ProtectedBranchCreatedEvent)
@@ -53,7 +53,7 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
 
       context 'when event_type is not supported' do
         let(:event_type) { 'UnsupportedEventType' }
-        let(:params) { { event: { event_type: event_type, data: event_data } } }
+        let(:params) { { 'event' => { 'event_type' => event_type, 'data' => event_data } } }
 
         it 'does not call the SyncPolicyEventService and logs an error' do
           expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
@@ -71,7 +71,7 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
 
       context 'when event_data is blank' do
         let(:event_data) { nil }
-        let(:params) { { event: { event_type: event_type, data: event_data } } }
+        let(:params) { { 'event' => { 'event_type' => event_type, 'data' => event_data } } }
 
         it 'does not call the SyncPolicyEventService and logs an error' do
           expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
@@ -89,7 +89,7 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
 
       context 'when event_data is not a Hash' do
         let(:event_data) { 'not_a_hash' }
-        let(:params) { { event: { event_type: event_type, data: event_data } } }
+        let(:params) { { 'event' => { 'event_type' => event_type, 'data' => event_data } } }
 
         it 'raises Gitlab::EventStore::InvalidEvent' do
           expect { perform }.to raise_error(Gitlab::EventStore::InvalidEvent, /Event data must be a Hash/)
@@ -100,32 +100,32 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
         let(:event_payloads) do
           {
             'Repositories::ProtectedBranchCreatedEvent' => {
-              protected_branch_id: non_existing_record_id,
-              parent_id: project.id,
-              parent_type: 'project'
+              'protected_branch_id' => non_existing_record_id,
+              'parent_id' => project.id,
+              'parent_type' => 'project'
             },
             'Repositories::ProtectedBranchDestroyedEvent' => {
-              parent_id: project.id,
-              parent_type: 'project'
+              'parent_id' => project.id,
+              'parent_type' => 'project'
             },
             'Repositories::DefaultBranchChangedEvent' => {
-              container_id: project.id,
-              container_type: 'Project'
+              'container_id' => project.id,
+              'container_type' => 'Project'
             },
             'Projects::ComplianceFrameworkChangedEvent' => {
-              project_id: project.id,
-              compliance_framework_id: non_existing_record_id,
-              event_type: 'added'
+              'project_id' => project.id,
+              'compliance_framework_id' => non_existing_record_id,
+              'event_type' => 'added'
             },
             'Security::PolicyResyncEvent' => {
-              security_policy_id: security_policy.id
+              'security_policy_id' => security_policy.id
             }
           }
         end
 
         it "calls the SyncPolicyEventService for each supported event" do
           event_payloads.each do |event_type, event_data|
-            params = { event: { event_type: event_type, data: event_data } }
+            params = { 'event' => { 'event_type' => event_type, 'data' => event_data } }
             event_class = event_type.constantize
             event_instance = instance_double(event_class)
             allow(event_class).to receive(:new).with(data: event_data).and_return(event_instance)

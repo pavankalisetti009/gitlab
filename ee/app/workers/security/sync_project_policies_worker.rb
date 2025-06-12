@@ -28,7 +28,7 @@ module Security
     private
 
     def build_policy_payload(params, security_policy_id)
-      return {} unless params[:force_resync]
+      return {} unless params['force_resync']
 
       { event: { event_type: 'Security::PolicyResyncEvent', data: { security_policy_id: security_policy_id } } }
     end

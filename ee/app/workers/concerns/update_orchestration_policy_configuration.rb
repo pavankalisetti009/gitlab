@@ -28,7 +28,7 @@ module UpdateOrchestrationPolicyConfiguration
 
     update_configuration_timestamp!(configuration)
 
-    Security::PersistSecurityPoliciesWorker.perform_async(configuration.id, { force_resync: force_resync })
+    Security::PersistSecurityPoliciesWorker.perform_async(configuration.id, { 'force_resync' => force_resync })
   end
 
   private

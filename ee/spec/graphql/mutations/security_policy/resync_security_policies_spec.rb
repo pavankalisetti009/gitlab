@@ -83,7 +83,7 @@ RSpec.describe Mutations::SecurityPolicy::ResyncSecurityPolicies, feature_catego
           it 'enqueues workers as expected' do
             container.all_security_orchestration_policy_configurations.each do |configuration|
               expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async)
-                .with(container.id, configuration.id, { force_resync: true })
+                .with(container.id, configuration.id, { 'force_resync' => true })
             end
 
             result = resolve_mutation
@@ -106,7 +106,7 @@ RSpec.describe Mutations::SecurityPolicy::ResyncSecurityPolicies, feature_catego
         if container_type == :project
           it 'enqueues SyncScanPoliciesWorker for projects' do
             expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
-              .with(direct_config.id, { force_resync: true })
+              .with(direct_config.id, { 'force_resync' => true })
 
             result = resolve_mutation
             expect(result[:errors]).to be_empty
@@ -114,7 +114,7 @@ RSpec.describe Mutations::SecurityPolicy::ResyncSecurityPolicies, feature_catego
         else
           it 'does not enqueue SyncScanPoliciesWorker for groups' do
             expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
-              .with(namespace_config.id, { force_resync: true })
+              .with(namespace_config.id, { 'force_resync' => true })
 
             result = resolve_mutation
             expect(result[:errors]).to be_empty

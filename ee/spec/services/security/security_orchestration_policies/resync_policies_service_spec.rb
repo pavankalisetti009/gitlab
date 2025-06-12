@@ -33,7 +33,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ResyncPoliciesService, f
 
           it 'enqueues the SyncScanPoliciesWorker with force_resync: true and returns success' do
             expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
-              .with(policy_configuration.id, { force_resync: true })
+              .with(policy_configuration.id, { 'force_resync' => true })
 
             result = execute
             expect(result[:status]).to eq(:success)
@@ -54,7 +54,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ResyncPoliciesService, f
 
           it 'enqueues the SyncScanPoliciesWorker with force_resync: true and returns success' do
             expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
-              .with(policy_configuration.id, { force_resync: true })
+              .with(policy_configuration.id, { 'force_resync' => true })
 
             result = execute
             expect(result[:status]).to eq(:success)
@@ -88,9 +88,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ResyncPoliciesService, f
 
         it 'enqueues SyncProjectPoliciesWorker for each configuration and returns success' do
           expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async)
-            .with(container.id, config1.id, { force_resync: true })
+            .with(container.id, config1.id, { 'force_resync' => true })
           expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async)
-            .with(container.id, config2.id, { force_resync: true })
+            .with(container.id, config2.id, { 'force_resync' => true })
 
           result = execute
           expect(result[:status]).to eq(:success)

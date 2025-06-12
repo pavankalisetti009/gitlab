@@ -72,7 +72,7 @@ module Security
       ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
         project_ids,
         arguments_proc: ->(project_id) do
-          [project_id, policy.id, event_data, event_payload]
+          [project_id, policy.id, event_data, event_payload.deep_stringify_keys]
         end,
         context_proc: ->(_) { config_context }
       )

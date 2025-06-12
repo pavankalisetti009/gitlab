@@ -61,7 +61,7 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
       end
 
       context 'when force_resync is true' do
-        let(:params) { { force_resync: true } }
+        let(:params) { { 'force_resync' => true } }
 
         it 'calls PersistPolicyService for each policy type with expected arguments' do
           [

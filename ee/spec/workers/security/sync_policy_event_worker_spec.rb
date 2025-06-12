@@ -80,7 +80,7 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         it 'executes the sync service for each security policy' do
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
             project.id, security_policy.id, {},
-            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }
+            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
           )
 
           handle_event
@@ -150,14 +150,17 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
 
         it 'executes the sync service for each security policy' do
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-            project_1.id, security_policy.id, {},
-            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } })
+            project_1.id, security_policy.id, {}, { event:
+              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
+          )
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-            project_2.id, security_policy.id, {},
-            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } })
+            project_2.id, security_policy.id, {}, { event:
+              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
+          )
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-            project_3.id, security_policy.id, {},
-            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } })
+            project_3.id, security_policy.id, {}, { event:
+              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
+          )
 
           handle_event
         end
@@ -232,7 +235,7 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
       context 'when all conditions are met' do
         it 'executes the sync service for each security policy' do
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, security_policy.id, {},
-            { event: { event_type: 'Repositories::DefaultBranchChangedEvent', data: event.data } })
+            { event: { event_type: 'Repositories::DefaultBranchChangedEvent', data: event.data } }.deep_stringify_keys)
 
           handle_event
         end
@@ -336,12 +339,12 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
             project.id, security_policy.id, {}, { event: {
               event_type: 'Projects::ComplianceFrameworkChangedEvent', data: compliance_framework_changed_event.data
-            } }
+            } }.deep_stringify_keys
           )
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
             project.id, project_security_policy.id, {}, { event: {
               event_type: 'Projects::ComplianceFrameworkChangedEvent', data: compliance_framework_changed_event.data
-            } }
+            } }.deep_stringify_keys
           )
 
           consume_event(subscriber: described_class, event: compliance_framework_changed_event)
