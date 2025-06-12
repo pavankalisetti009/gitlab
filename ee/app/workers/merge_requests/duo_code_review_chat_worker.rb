@@ -78,7 +78,7 @@ module MergeRequests
     def parse_response(note, response_body)
       return response_body unless note.diff_note?
 
-      ::Gitlab::Llm::Utils::CodeSuggestionFormatter.parse(response_body)
+      ::Gitlab::Llm::Utils::CodeSuggestionFormatter.parse(response_body)[:body]
     end
 
     def save_prompt_message(user, role, resource, content, thread)
