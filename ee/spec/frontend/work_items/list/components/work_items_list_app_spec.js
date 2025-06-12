@@ -1,15 +1,27 @@
 import { GlEmptyState } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
-import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
+import {
+  WORK_ITEM_TYPE_NAME_EPIC,
+  CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+  CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+} from '~/work_items/constants';
+import {
+  TOKEN_TYPE_CUSTOM_FIELD,
+  OPERATORS_IS,
+} from 'ee/vue_shared/components/filtered_search_bar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import getWorkItemsForEpicsFullQuery from 'ee/work_items/graphql/list/get_work_items_for_epics_full.query.graphql';
 import getWorkItemsForEpicsSlimQuery from 'ee/work_items/graphql/list/get_work_items_for_epics_slim.query.graphql';
+import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
+import { mockNamespaceCustomFieldsResponse } from 'ee_jest/vue_shared/components/filtered_search_bar/mock_data';
 
 const skipReason = new SkipReason({
   name: 'WorkItemsListApp EE component',
@@ -22,6 +34,8 @@ describeSkipVue3(skipReason, () => {
   let wrapper;
 
   Vue.use(VueApollo);
+
+  const customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse);
 
   const findCreateWorkItemModal = () => wrapper.findComponent(CreateWorkItemModal);
   const findListEmptyState = () => wrapper.findComponent(EmptyStateWithAnyIssues);
@@ -40,8 +54,10 @@ describeSkipVue3(skipReason, () => {
     props = {},
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
+      apolloProvider: createMockApollo([[namespaceCustomFieldsQuery, customFieldsQueryHandler]]),
       provide: {
         hasEpicsFeature,
+        hasCustomFieldsFeature: true,
         showNewWorkItem,
         isGroup,
         workItemType,
@@ -157,5 +173,43 @@ describeSkipVue3(skipReason, () => {
     mountComponent();
 
     expect(findWorkItemsListApp().props('eeEpicListSlimQuery')).toBe(getWorkItemsForEpicsSlimQuery);
+  });
+
+  describe('custom field filter tokens', () => {
+    const mockCustomFields = mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes;
+    const allowedFields = mockCustomFields.filter(
+      (field) =>
+        [CUSTOM_FIELDS_TYPE_SINGLE_SELECT, CUSTOM_FIELDS_TYPE_MULTI_SELECT].includes(
+          field.fieldType,
+        ) && field.workItemTypes.some((type) => type.name === WORK_ITEM_TYPE_NAME_EPIC),
+    );
+
+    it('fetches custom fields when component is mounted', async () => {
+      mountComponent();
+      await waitForPromises();
+
+      expect(customFieldsQueryHandler).toHaveBeenCalledWith({
+        fullPath: 'gitlab-org',
+        active: true,
+      });
+    });
+
+    it('passes custom field tokens to WorkItemsListApp', async () => {
+      mountComponent();
+      await waitForPromises();
+
+      const expectedTokens = allowedFields.map((field) => ({
+        type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
+        title: field.name,
+        icon: 'multiple-choice',
+        field,
+        fullPath: 'gitlab-org',
+        token: expect.any(Function),
+        operators: OPERATORS_IS,
+      }));
+
+      expect(findWorkItemsListApp().props('eeSearchTokens').length).toBe(1);
+      expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(expectedTokens[0]);
+    });
   });
 });

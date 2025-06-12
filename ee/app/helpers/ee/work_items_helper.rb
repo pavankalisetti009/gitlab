@@ -28,7 +28,8 @@ module EE
           resource_parent, format: :json, only_group_labels: true, include_ancestor_groups: true),
         epics_list_path: group_epics_path(resource_parent),
         has_linked_items_epics_feature: resource_parent.licensed_feature_available?(:linked_items_epics).to_s,
-        has_status_feature: resource_parent.licensed_feature_available?(:work_item_status).to_s
+        has_status_feature: resource_parent.licensed_feature_available?(:work_item_status).to_s,
+        has_custom_fields_feature: resource_parent.licensed_feature_available?(:custom_fields).to_s
       )
     end
 

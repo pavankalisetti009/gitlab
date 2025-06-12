@@ -33,6 +33,7 @@ query getWorkItemsForEpicsFull(
   $beforeCursor: String
   $firstPageSize: Int
   $lastPageSize: Int
+  $customField: [WorkItemWidgetCustomFieldFilterInputType!]
 ) {
   group(fullPath: $fullPath) {
     id
@@ -68,6 +69,7 @@ query getWorkItemsForEpicsFull(
       before: $beforeCursor
       first: $firstPageSize
       last: $lastPageSize
+      customField: $customField
     ) {
       pageInfo {
         ...PageInfo
