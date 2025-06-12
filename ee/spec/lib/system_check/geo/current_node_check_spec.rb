@@ -14,7 +14,7 @@ RSpec.describe SystemCheck::Geo::CurrentNodeCheck, :geo, :silence_stdout, featur
 
     context 'when the current machine does not have a matching GeoNode' do
       it 'returns false' do
-        expect(GeoNode).to receive(:current_node_name).and_return('Foo')
+        expect(GeoNode).to receive(:current_node_name).twice.and_return('Foo')
 
         expect(subject.check?).to be_falsey
       end

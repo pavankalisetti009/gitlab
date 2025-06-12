@@ -102,7 +102,7 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
         run_rake_task('geo:update_primary_node_url')
 
         expect(current_node.reload.url).to eq 'https://primary.geo.example.com/'
-        expect(current_node.name).to eq 'https://primary.geo.example.com/'
+        expect(current_node.name).to eq 'https://primary.geo.example.com'
       end
     end
 

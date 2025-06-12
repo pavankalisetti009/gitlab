@@ -83,7 +83,11 @@ class GeoNode < ApplicationRecord
     def current_node
       return unless column_names.include?('name')
 
-      GeoNode.find_by(name: current_node_name)
+      node = GeoNode.find_by(name: current_node_name)
+      return node if node
+
+      sanitizer = Geo::NodeNameSanitizer.new(name: current_node_name, url: current_node_url)
+      GeoNode.find_by(name: sanitizer.sanitized_name)
     end
 
     def primary_node
@@ -106,7 +110,9 @@ class GeoNode < ApplicationRecord
     end
 
     def current?(node)
-      node.present? && current_node_name == node.name
+      return false unless node.present?
+
+      Geo::NodeNameSanitizer.new(name: node.name, url: node.url).match?(current_node_name)
     end
 
     # Tries to find a GeoNode by oauth_application_id, returning nil if none could be found.
@@ -130,24 +136,6 @@ class GeoNode < ApplicationRecord
 
   def uses_ssh_key?
     secondary? && clone_protocol == 'ssh'
-  end
-
-  def name
-    value = read_attribute(:name)
-
-    if looks_like_url_field_missing_slash?(value)
-      add_ending_slash(value)
-    else
-      value
-    end
-  end
-
-  def name=(value)
-    if looks_like_url_field_missing_slash?(value)
-      write_with_ending_slash(:name, value)
-    else
-      write_attribute(:name, value)
-    end
   end
 
   def url
@@ -344,14 +332,6 @@ class GeoNode < ApplicationRecord
     Gitlab::Geo.expire_cache!
   end
 
-  # This method is required for backward compatibility. If it
-  # returns true,  then we can be fairly confident they did not
-  # set gitlab_rails['geo_node_name']. But if it returns false,
-  # then we aren't sure, so we shouldn't touch the name value.
-  def looks_like_url_field_missing_slash?(value)
-    add_ending_slash(value) == url
-  end
-
   def read_with_ending_slash(attribute)
     value = read_attribute(attribute)
 
@@ -361,7 +341,7 @@ class GeoNode < ApplicationRecord
   def read_without_ending_slash(attribute)
     value = read_attribute(attribute)
 
-    remove_ending_slash(value)
+    Geo::NodeNameSanitizer.new(name: value).name_without_slash
   end
 
   def write_with_ending_slash(attribute, value)
@@ -371,15 +351,6 @@ class GeoNode < ApplicationRecord
   end
 
   def add_ending_slash(value)
-    return value if value.blank?
-    return value if value.end_with?('/')
-
-    "#{value}/"
-  end
-
-  def remove_ending_slash(value)
-    return value if value.blank?
-
-    value.sub(%r{/$}, '')
+    Geo::NodeNameSanitizer.new(name: value).name_with_slash
   end
 end
