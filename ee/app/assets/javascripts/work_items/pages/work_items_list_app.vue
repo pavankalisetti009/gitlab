@@ -1,13 +1,29 @@
 <script>
 import emptyStateSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-epic-md.svg';
 import { GlEmptyState } from '@gitlab/ui';
+import { createAlert } from '~/alert';
+import { s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
-import { WORK_ITEM_TYPE_NAME_EPIC, WORK_ITEM_TYPE_NAME_ISSUE } from '~/work_items/constants';
+import {
+  WORK_ITEM_TYPE_NAME_EPIC,
+  WORK_ITEM_TYPE_NAME_ISSUE,
+  CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+  CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+} from '~/work_items/constants';
+import {
+  TOKEN_TYPE_CUSTOM_FIELD,
+  OPERATORS_IS,
+} from '~/vue_shared/components/filtered_search_bar/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 
+import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import epicListFullQuery from '../graphql/list/get_work_items_for_epics_full.query.graphql';
 import epicListSlimQuery from '../graphql/list/get_work_items_for_epics_slim.query.graphql';
+
+const CustomFieldToken = () =>
+  import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
 
 export default {
   emptyStateSvg,
@@ -18,7 +34,13 @@ export default {
     GlEmptyState,
     WorkItemsListApp,
   },
-  inject: ['hasEpicsFeature', 'isGroup', 'showNewWorkItem', 'workItemType'],
+  inject: [
+    'hasEpicsFeature',
+    'isGroup',
+    'showNewWorkItem',
+    'workItemType',
+    'hasCustomFieldsFeature',
+  ],
   props: {
     withTabs: {
       type: Boolean,
@@ -38,7 +60,42 @@ export default {
   data() {
     return {
       workItemUpdateCount: 0,
+      customFields: [],
     };
+  },
+  apollo: {
+    customFields: {
+      query: namespaceCustomFieldsQuery,
+      variables() {
+        return {
+          fullPath: this.rootPageFullPath,
+          active: true,
+        };
+      },
+      skip() {
+        return !this.hasCustomFieldsFeature;
+      },
+      update(data) {
+        return (data.namespace?.customFields?.nodes || []).filter((field) => {
+          const fieldTypeAllowed = [
+            CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+            CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+          ].includes(field.fieldType);
+          const fieldAllowedOnWorkItem = field.workItemTypes.some(
+            (type) => type.name === this.workItemType,
+          );
+
+          return fieldTypeAllowed && fieldAllowedOnWorkItem;
+        });
+      },
+      error(error) {
+        createAlert({
+          message: s__('WorkItem|Failed to load custom fields.'),
+          captureError: true,
+          error,
+        });
+      },
+    },
   },
   computed: {
     preselectedWorkItemType() {
@@ -46,6 +103,26 @@ export default {
     },
     isEpicsList() {
       return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC;
+    },
+    searchTokens() {
+      const tokens = [];
+
+      if (this.customFields.length > 0) {
+        this.customFields.forEach((field) => {
+          tokens.push({
+            type: `${TOKEN_TYPE_CUSTOM_FIELD}[${getIdFromGraphQLId(field.id)}]`,
+            title: field.name,
+            icon: 'multiple-choice',
+            field,
+            fullPath: this.rootPageFullPath,
+            token: CustomFieldToken,
+            operators: OPERATORS_IS,
+            unique: true,
+          });
+        });
+      }
+
+      return tokens;
     },
   },
   methods: {
@@ -63,6 +140,7 @@ export default {
     :ee-work-item-update-count="workItemUpdateCount"
     :ee-epic-list-full-query="$options.epicListFullQuery"
     :ee-epic-list-slim-query="$options.epicListSlimQuery"
+    :ee-search-tokens="searchTokens"
     :root-page-full-path="rootPageFullPath"
     :with-tabs="withTabs"
     :new-comment-template-paths="newCommentTemplatePaths"
