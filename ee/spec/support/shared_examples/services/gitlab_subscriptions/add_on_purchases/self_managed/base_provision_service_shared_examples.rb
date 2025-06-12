@@ -7,12 +7,7 @@ end
 RSpec.shared_examples 'call runner to handle the provision of add-ons' do
   it 'calls the runner to handle the provision of add-ons' do
     expect_next_instance_of(
-      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive
-    ) do |runner|
-      expect(runner).to receive(:execute).once.and_call_original
-    end
-    expect_next_instance_of(
-      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore
+      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo
     ) do |runner|
       expect(runner).to receive(:execute).once.and_call_original
     end
