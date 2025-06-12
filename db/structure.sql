@@ -26454,6 +26454,7 @@ CREATE TABLE zoekt_nodes (
     usable_storage_bytes bigint DEFAULT 0 NOT NULL,
     usable_storage_bytes_locked_until timestamp with time zone,
     schema_version smallint DEFAULT 0 NOT NULL,
+    services smallint[] DEFAULT '{0}'::smallint[] NOT NULL,
     CONSTRAINT check_32f39efba3 CHECK ((char_length(search_base_url) <= 1024)),
     CONSTRAINT check_38c354a3c2 CHECK ((char_length(index_base_url) <= 1024))
 );

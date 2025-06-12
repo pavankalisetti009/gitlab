@@ -38,6 +38,28 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(node).to be_valid
       end
     end
+
+    describe 'valid_services' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:services, :is_valid) do
+        []        | false
+        nil       | false
+        [:foo]    | false
+        [0, :foo] | false
+        [0, 10]   | false
+        [0]       | true
+        [0, 1]    | true
+      end
+
+      with_them do
+        it 'validates services array' do
+          node = build(:zoekt_node, services: services)
+
+          expect(node.valid?).to eq(is_valid)
+        end
+      end
+    end
   end
 
   describe 'relations' do
@@ -263,6 +285,19 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
       it 'returns nodes with positive unclaimed storage_bytes in ascending order' do
         expect(described_class.order_by_unclaimed_space.to_a).to eq([node3, node2])
+      end
+    end
+
+    describe '.with_service' do
+      let_it_be(:node1) { create(:zoekt_node, services: [described_class::SERVICES[:zoekt]]) }
+      let_it_be(:node2) { create(:zoekt_node, services: [described_class::SERVICES[:knowledge_graph]]) }
+      let_it_be(:node3) do
+        create(:zoekt_node, services: [described_class::SERVICES[:zoekt], described_class::SERVICES[:knowledge_graph]])
+      end
+
+      it "returns nodes which contain the service in the list of services" do
+        expect(described_class.with_service(:zoekt).to_a).to match_array([node, node1, node3])
+        expect(described_class.with_service(:knowledge_graph).to_a).to match_array([node2, node3])
       end
     end
   end
