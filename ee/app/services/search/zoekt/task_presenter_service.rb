@@ -17,28 +17,41 @@ module Search
       end
 
       def execute
-        return [] if ::Gitlab::CurrentSettings.zoekt_indexing_paused?
+        delete_only = node.watermark_exceeded_critical?
+        if delete_only
+          logger.warn(build_structured_payload(
+            message: 'Node watermark exceeded critical threshold. Only presenting delete tasks',
+            meta: node.metadata_json
+          ))
+        end
 
+        # Return both knowledge graph and zoekt tasks in the batch, knowledge graph tasks take half of the batch at max.
+        # When there are only knowledge graph tasks, then currently only half of the capacity is used. This is fine for
+        # now but we could refactor `each_task_for_processing` iterator to use full capacity of the batch.
         [].tap do |payload|
-          tasks.each_task_for_processing(limit: concurrency_limit) do |task|
+          knowledge_graph_tasks(delete_only).each_task_for_processing(limit: concurrency_limit / 2) do |task|
+            payload << TaskSerializerService.execute(task, node)
+          end
+
+          zoekt_tasks(delete_only).each_task_for_processing(limit: concurrency_limit - payload.size) do |task|
             payload << TaskSerializerService.execute(task, node)
           end
         end
       end
 
-      private
+      def zoekt_tasks(delete_only)
+        rel = node.tasks
+        return rel.none if ::Gitlab::CurrentSettings.zoekt_indexing_paused?
+        return rel.delete_repo if delete_only
 
-      def tasks
-        if node.watermark_exceeded_critical?
-          logger.warn(build_structured_payload(
-            message: 'Node watermark exceeded critical threshold. Only presenting delete tasks',
-            meta: node.metadata_json
-          ))
+        rel
+      end
 
-          node.tasks.delete_repo
-        else
-          node.tasks
-        end
+      def knowledge_graph_tasks(delete_only)
+        rel = node.knowledge_graph_tasks
+        return rel.delete_graph_repo if delete_only
+
+        rel
       end
 
       def logger

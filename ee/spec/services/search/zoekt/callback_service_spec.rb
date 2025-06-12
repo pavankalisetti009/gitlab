@@ -20,11 +20,12 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
   describe '#execute' do
     subject(:execute) { service.execute }
 
+    let(:service_type) { 'zoekt' }
     let(:params) do
       {
         'name' => task_type,
         'success' => success,
-        'payload' => { 'task_id' => task_id },
+        'payload' => { 'task_id' => task_id, 'service_type' => service_type },
         'additional_payload' => { 'repo_stats' => { index_file_count: 1, size_in_bytes: 582790 } }
       }
     end
@@ -35,7 +36,7 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
       let(:task_id) { non_existing_record_id }
       let(:task_type) { 'index' }
 
-      it 'does not performs anything' do
+      it 'does not perform anything' do
         expect(execute).to be_nil
       end
     end
@@ -123,6 +124,49 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
 
           it 'moves the task to done' do
             expect { execute }.to change { delete_zoekt_task.reload.state }.to('done')
+          end
+        end
+      end
+
+      context 'with knowledge_graph task' do
+        let(:service_type) { 'knowledge_graph' }
+
+        context 'when the task type is graph_index' do
+          let_it_be_with_reload(:task) { create(:knowledge_graph_task, task_type: 'index_graph_repo', node: node) }
+          let(:task_id) { task.id }
+          let(:task_type) { 'index_graph_repo' }
+
+          before do
+            task.knowledge_graph_replica.update!(retries_left: 2)
+          end
+
+          it 'updates the task state and knowledge_graph_replica data' do
+            freeze_time do
+              expect { execute }.to change { task.reload.state }.to('done')
+                .and change { task.knowledge_graph_replica.state }.to('ready')
+                  .and change { task.knowledge_graph_replica.retries_left }.from(2).to(5)
+            end
+          end
+        end
+
+        context 'when the task type is delete_graph_repo' do
+          let_it_be_with_reload(:task) { create(:knowledge_graph_task, task_type: 'delete_graph_repo', node: node) }
+          let(:task_type) { 'delete_graph_repo' }
+          let(:task_id) { task.id }
+
+          it 'deletes the replica' do
+            expect { execute }.to change { task.reload.state }.to('done')
+            expect(task.knowledge_graph_replica).to be_nil
+          end
+
+          context 'when repository is already deleted' do
+            before do
+              task.knowledge_graph_replica.destroy!
+            end
+
+            it 'moves the task to done' do
+              expect { execute }.to change { task.reload.state }.to('done')
+            end
           end
         end
       end

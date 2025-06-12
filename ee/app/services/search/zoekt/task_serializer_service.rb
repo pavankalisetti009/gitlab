@@ -32,6 +32,16 @@ module Search
             name: :delete,
             payload: delete_repo_payload
           }
+        when :index_graph_repo
+          {
+            name: :index_graph,
+            payload: index_graph_repo_payload
+          }
+        when :delete_graph_repo
+          {
+            name: :delete_graph,
+            payload: delete_graph_repo_payload
+          }
         else
           raise ArgumentError, "Unknown task_type: #{task.task_type.inspect}"
         end
@@ -41,6 +51,53 @@ module Search
 
       def index_repo_payload
         project = task.zoekt_repository.project
+
+        gitaly_payload(project).merge(
+          Callback: { name: 'index', payload: { task_id: task.id, schema_version: node.schema_version } },
+          RepoId: project.id,
+          FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
+          Parallelism: ::Gitlab::CurrentSettings.zoekt_indexing_parallelism,
+          Timeout: "#{INDEXING_TIMEOUT_S}s",
+          Metadata: {
+            traversal_ids: project.namespace_ancestry,
+            visibility_level: project.visibility_level,
+            repository_access_level: project.repository_access_level,
+            forked: project.forked?,
+            archived: project.archived?
+          }
+        )
+      end
+
+      def force_index_repo_payload
+        index_repo_payload.merge(Force: true)
+      end
+
+      def delete_repo_payload
+        {
+          RepoId: task.project_identifier,
+          Callback: { name: 'delete', payload: { task_id: task.id, service_type: :zoekt } }
+        }
+      end
+
+      def index_graph_repo_payload
+        namespace = task.knowledge_graph_replica.knowledge_graph_enabled_namespace&.namespace
+        project = namespace&.project
+
+        gitaly_payload(project).merge(
+          NamespaceId: namespace.id,
+          Callback: { name: 'index_graph', payload: { task_id: task.id, service_type: :knowledge_graph } },
+          Timeout: "#{INDEXING_TIMEOUT_S}s"
+        )
+      end
+
+      def delete_graph_repo_payload
+        {
+          NamespaceId: task.knowledge_graph_replica.namespace_id,
+          Callback: { name: 'delete_graph', payload: { task_id: task.id, service_type: :knowledge_graph } }
+        }
+      end
+
+      def gitaly_payload(project)
         repository_storage = project.repository_storage
         connection_info = Gitlab::GitalyClient.connection_data(repository_storage)
         repository_path = "#{project.repository.disk_path}.git"
@@ -52,37 +109,13 @@ module Search
           address = "unix:#{Rails.root.join(path)}"
         end
 
-        payload = {
+        {
           GitalyConnectionInfo: {
             Address: address,
             Token: connection_info['token'],
             Storage: repository_storage,
             Path: repository_path
-          },
-          Callback: { name: 'index', payload: { task_id: task.id, schema_version: node.schema_version } },
-          RepoId: project.id,
-          FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
-          Timeout: "#{INDEXING_TIMEOUT_S}s",
-          Metadata: {
-            traversal_ids: project.namespace_ancestry,
-            visibility_level: project.visibility_level,
-            repository_access_level: project.repository_access_level,
-            forked: project.forked?,
-            archived: project.archived?
           }
-        }
-        payload[:Parallelism] = ::Gitlab::CurrentSettings.zoekt_indexing_parallelism
-        payload
-      end
-
-      def force_index_repo_payload
-        index_repo_payload.merge(Force: true)
-      end
-
-      def delete_repo_payload
-        {
-          RepoId: task.project_identifier,
-          Callback: { name: 'delete', payload: { task_id: task.id } }
         }
       end
     end

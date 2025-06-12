@@ -3,6 +3,8 @@
 module Search
   module Zoekt
     class CallbackService
+      include Gitlab::Utils::StrongMemoize
+
       LAST_INDEXED_DEBOUNCE_PERIOD = 30.seconds
 
       def self.execute(...)
@@ -28,14 +30,28 @@ module Search
         id = params.dig(:payload, :task_id)
         return unless id
 
-        node.tasks.find_by_id(id)
+        service_type = params.dig(:payload, :service_type)
+        if service_type == "knowledge_graph"
+          node.knowledge_graph_tasks.find_by_id(id)
+        else
+          node.tasks.find_by_id(id)
+        end
       end
+      strong_memoize_attr :task
 
       def process_success
         return if task.done?
 
+        if task.is_a?(Ai::KnowledgeGraph::Task)
+          process_knowledge_graph_success
+        else
+          process_zoekt_success
+        end
+      end
+
+      def process_zoekt_success
         repo = task.zoekt_repository
-        ApplicationRecord.transaction do
+        Search::Zoekt::Task.transaction do
           if task.delete_repo?
             repo&.destroy!
           else
@@ -54,6 +70,21 @@ module Search
             end
 
             repo.save!
+          end
+
+          task.done!
+        end
+      end
+
+      def process_knowledge_graph_success
+        replica = task.knowledge_graph_replica
+        Ai::KnowledgeGraph::Task.transaction do
+          if task.delete_graph_repo?
+            replica&.destroy!
+          else
+            replica.state = :ready if replica.pending? || replica.initializing?
+            replica.retries_left = Ai::KnowledgeGraph::Replica::RETRIES
+            replica.save!
           end
 
           task.done!
@@ -80,6 +111,8 @@ module Search
       end
 
       def publish_task_failed_event_for(task)
+        return if task.is_a?(Ai::KnowledgeGraph::Task)
+
         publish_event(TaskFailedEvent, data: { zoekt_repository_id: task.zoekt_repository_id, task_id: task.id })
       end
 

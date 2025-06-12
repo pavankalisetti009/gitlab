@@ -40,6 +40,7 @@ module Ai
 
         namespace = task.knowledge_graph_replica.knowledge_graph_enabled_namespace&.namespace
         return :orphaned unless namespace
+        return :skipped unless Feature.enabled?(:knowledge_graph_indexing, namespace.project)
 
         unless Ai::KnowledgeGraph::Replica::INDEXABLE_STATES.include?(task.knowledge_graph_replica.state.to_sym)
           return :skipped
