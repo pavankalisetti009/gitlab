@@ -1,12 +1,12 @@
-import { GlModal } from '@gitlab/ui';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import BeforeSubmitApproveUsersModal from '~/pages/admin/application_settings/general/components/before_submit_approve_users_modal.vue';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { GlModal, GlSprintf } from '@gitlab/ui';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import UserCapOverLicensedUsersModal from 'ee/pages/admin/application_settings/general/components/before_submit_user_cap_over_licensed_users_modal.vue';
 import { stubComponent } from 'helpers/stub_component';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
-describe('BeforeSubmitApproveUsersModal', () => {
+describe('UserCapOverLicensedUsersModal', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   let addBeforeSubmitHook;
@@ -19,24 +19,28 @@ describe('BeforeSubmitApproveUsersModal', () => {
   const modalStub = { show: jest.fn(), hide: jest.fn() };
   const GlModalStub = stubComponent(GlModal, { methods: modalStub });
 
-  const createComponent = ({ provide = {} } = {}) => {
+  const createComponent = ({ provide = {} } = {}, mountFn = shallowMountExtended) => {
     addBeforeSubmitHook = jest.fn();
 
-    wrapper = shallowMountExtended(BeforeSubmitApproveUsersModal, {
-      propsData: { id: modalId },
+    wrapper = mountFn(UserCapOverLicensedUsersModal, {
+      propsData: {
+        id: modalId,
+        licensedUserCount: 10,
+        userCap: 13,
+      },
       provide: {
         addBeforeSubmitHook,
         beforeSubmitHookContexts,
-        pendingUserCount: 10,
         ...provide,
       },
       stubs: {
         GlModal: GlModalStub,
+        GlSprintf,
       },
     });
   };
 
-  describe('with should prevent submit', () => {
+  describe('when shouldPreventSubmit returns true', () => {
     beforeEach(() => {
       beforeSubmitHookContexts = { [modalId]: { shouldPreventSubmit: () => true } };
       createComponent();
@@ -48,21 +52,20 @@ describe('BeforeSubmitApproveUsersModal', () => {
     });
 
     it('shows a title', () => {
-      expect(findModal().props('title')).toBe('Change setting and approve pending users?');
+      expect(findModal().props('title')).toBe('Proposed user cap exceeds licensed user count');
     });
 
     it('shows a text', () => {
+      createComponent({}, mountExtended);
+      verifyApproveUsers();
+
       expect(wrapper.text()).toBe(
-        'By changing this setting, you can also automatically approve 10 users who are pending approval.',
+        'Changing the user cap to 13 would exceed the licensed user count of 10, which may result in seat overages. Are you sure you want to proceed with the change?',
       );
     });
 
     it('shows a confirm button', () => {
-      expect(findModal().props('actionPrimary').text).toBe('Proceed and approve 10 users');
-    });
-
-    it('shows a secondary button', () => {
-      expect(findModal().props('actionSecondary').text).toBe('Proceed without auto-approval');
+      expect(findModal().props('actionPrimary').text).toBe('Proceed');
     });
 
     it('shows a cancel button', () => {
@@ -80,17 +83,7 @@ describe('BeforeSubmitApproveUsersModal', () => {
     });
   });
 
-  describe('when the before submit hook has no reference ID', () => {
-    it('does not show the modal', () => {
-      beforeSubmitHookContexts = {};
-      createComponent();
-      verifyApproveUsers();
-
-      expect(modalStub.show).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('with should prevent submit to false', () => {
+  describe('when shouldPreventSubmit returns false', () => {
     it('does not show the modal', () => {
       beforeSubmitHookContexts = { [modalId]: { shouldPreventSubmit: () => false } };
       createComponent();
@@ -100,7 +93,7 @@ describe('BeforeSubmitApproveUsersModal', () => {
     });
   });
 
-  describe('with should prevent submit not provided', () => {
+  describe('when shouldPreventSubmit is undefined', () => {
     it('does not show the modal', () => {
       beforeSubmitHookContexts = { [modalId]: {} };
       createComponent();
@@ -110,7 +103,7 @@ describe('BeforeSubmitApproveUsersModal', () => {
     });
   });
 
-  describe('with should prevent raising an error', () => {
+  describe('when shouldPreventSubmit raises an error', () => {
     it('captures the error with Sentry', () => {
       const error = new Error('This is an error');
       beforeSubmitHookContexts = {
@@ -123,9 +116,7 @@ describe('BeforeSubmitApproveUsersModal', () => {
       createComponent();
       verifyApproveUsers();
 
-      expect(Sentry.captureException).toHaveBeenCalledWith(error, {
-        tags: { vue_component: 'before_submit_approve_users_modal' },
-      });
+      expect(Sentry.captureException).toHaveBeenCalledWith(error);
     });
   });
 });

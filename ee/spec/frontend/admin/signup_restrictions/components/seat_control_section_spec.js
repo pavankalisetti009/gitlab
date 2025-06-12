@@ -1,6 +1,7 @@
 import { nextTick } from 'vue';
 import { GlFormRadioGroup, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import BeforeSubmitUserCapOverLicensedUsersModal from 'ee/pages/admin/application_settings/general/components/before_submit_user_cap_over_licensed_users_modal.vue';
 import SeatControlMemberPromotionManagement from 'ee/pages/admin/application_settings/general/components/seat_control_member_promotion_management.vue';
 import SeatControlSection from 'ee/pages/admin/application_settings/general/components/seat_control_section.vue';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
@@ -14,12 +15,14 @@ describe('SeatControlSection', () => {
     wrapper.findComponent(SeatControlMemberPromotionManagement);
   const findUserCapInput = () => wrapper.findByTestId('user-cap-input');
   const findUserCapHiddenInput = () => wrapper.findByTestId('user-cap-input-hidden');
+  const findUserCapModal = () => wrapper.findComponent(BeforeSubmitUserCapOverLicensedUsersModal);
 
   const mountComponent = ({ provide = {} } = {}) => {
     wrapper = shallowMountExtended(SeatControlSection, {
       provide: {
-        licensedUserCount: 0,
+        licensedUserCount: '0',
         newUserSignupsCap: '',
+        pendingUserCount: 0,
         promotionManagementAvailable: false,
         seatControl: SEAT_CONTROL.OFF,
         // This actually refers to a licensed feature. See https://gitlab.com/gitlab-org/gitlab/-/issues/322460
@@ -29,6 +32,15 @@ describe('SeatControlSection', () => {
       stubs: { GlSprintf },
     });
   };
+
+  it('passes the proper props to the modal', () => {
+    mountComponent({ provide: { newUserSignupsCap: '13' } });
+
+    expect(findUserCapModal().props()).toMatchObject({
+      licensedUserCount: 0,
+      userCap: 13,
+    });
+  });
 
   describe('with member promotion management available', () => {
     beforeEach(() => {
@@ -190,6 +202,15 @@ describe('SeatControlSection', () => {
 
     it(`sets the hidden input value to ${idHiddenDisabled}`, () => {
       expect(findUserCapHiddenInput().attributes().disabled).toBe(idHiddenDisabled);
+    });
+  });
+
+  describe('when the user cap modal emits the primary event', () => {
+    it('emits a submit event', () => {
+      mountComponent();
+      findUserCapModal().vm.$emit('primary');
+
+      expect(wrapper.emitted('submit')).toHaveLength(1);
     });
   });
 });
