@@ -16890,6 +16890,9 @@ msgstr ""
 msgid "Configure Dependency Scanning in `.gitlab-ci.yml`, creating this file if it does not already exist"
 msgstr ""
 
+msgid "Configure Editor Extensions settings for your instance"
+msgstr ""
+
 msgid "Configure Error Tracking"
 msgstr ""
 
@@ -16945,9 +16948,6 @@ msgid "Configure feature \"%{name}\""
 msgstr ""
 
 msgid "Configure import sources and settings related to import and export features."
-msgstr ""
-
-msgid "Configure instance-wide Editor Extensions settings"
 msgstr ""
 
 msgid "Configure it later"
