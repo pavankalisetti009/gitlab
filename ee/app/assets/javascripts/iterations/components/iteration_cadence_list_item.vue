@@ -248,7 +248,7 @@ export default {
 };
 </script>
 <template>
-  <div>
+  <li class="!gl-m-0 !gl-border-b-0 !gl-p-0">
     <gl-alert v-if="error" variant="danger" :dismissible="true" @dismiss="error = ''">
       {{ error }}
     </gl-alert>
@@ -341,5 +341,5 @@ export default {
     >
       {{ i18n.modalText }}
     </gl-modal>
-  </div>
+  </li>
 </template>
