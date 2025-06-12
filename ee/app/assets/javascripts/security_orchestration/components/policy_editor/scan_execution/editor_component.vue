@@ -263,7 +263,9 @@ export default {
         };
       }
 
-      this.policy.actions.push(buildScannerAction({ scanner, isOptimized }));
+      this.policy.actions.push(
+        buildScannerAction({ scanner, isOptimized, withDefaultVariables: true }),
+      );
       this.updateYamlEditorValue(this.policy);
     },
     addRule() {

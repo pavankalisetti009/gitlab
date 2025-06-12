@@ -430,7 +430,7 @@ enabled: true`;
             isOptimized: true,
             withDefaultVariables: true,
           }),
-          buildScannerAction({ scanner: 'sast', isOptimized: true }),
+          buildScannerAction({ scanner: 'sast', isOptimized: true, withDefaultVariables: true }),
         ];
         expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
         expect(
@@ -522,7 +522,7 @@ enabled: true`;
             isOptimized: true,
             withDefaultVariables: true,
           }),
-          buildScannerAction({ scanner: DEFAULT_SCANNER }),
+          buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
         ];
 
         expect(findPolicyEditorLayout().props('policy').actions).toEqual(finalValue);
@@ -668,7 +668,7 @@ enabled: true`;
 
       const finalValue = [
         buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
-        buildScannerAction({ scanner: DEFAULT_SCANNER }),
+        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
       ];
 
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
