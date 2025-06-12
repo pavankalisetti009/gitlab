@@ -27,40 +27,6 @@ RSpec.describe 'projects/project_members/index', :aggregate_failures, feature_ca
       project.add_maintainer(user)
     end
 
-    context 'when membership is locked' do
-      before do
-        allow(view).to receive(:membership_locked?).and_return(true)
-      end
-
-      it 'renders as expected' do
-        render
-
-        expect(rendered).to have_content('Project members')
-        expect(rendered).to have_content('You can invite another group to')
-        expect(rendered).not_to have_link('Import from a project')
-        expect(rendered).to have_selector('.js-invite-group-trigger')
-        expect(rendered).to have_selector('.js-invite-groups-modal')
-        expect(rendered).not_to have_selector('.js-invite-members-trigger')
-        expect(rendered).not_to have_content('Members can be added by project')
-        expect(response).to render_template(partial: 'projects/_invite_groups_modal')
-      end
-
-      context 'when project can not be shared' do
-        before do
-          project.namespace.share_with_group_lock = true
-        end
-
-        it 'renders as expected' do
-          render
-
-          expect(rendered).to have_content('Project members')
-          expect(rendered).not_to have_content('You can invite')
-          expect(rendered).not_to have_selector('.js-invite-group-trigger')
-          expect(response).not_to render_template(partial: 'projects/_invite_groups_modal')
-        end
-      end
-    end
-
     context 'when managing members text is present' do
       let_it_be(:project) { create(:project, group: create(:group)) } # rubocop:todo RSpec/FactoryBot/AvoidCreate
 

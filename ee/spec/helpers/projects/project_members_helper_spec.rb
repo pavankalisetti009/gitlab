@@ -17,7 +17,6 @@ RSpec.describe Projects::ProjectMembersHelper do
     before do
       project.add_developer(current_user)
       create_schedule_with_user(project, current_user)
-      allow(helper).to receive(:can_admin_project_member?).and_return(true)
       allow(helper).to receive(:can?).and_return(true)
       allow(helper).to receive(:manage_member_roles_path).with(project)
         .and_return(admin_application_settings_roles_and_permissions_path)
