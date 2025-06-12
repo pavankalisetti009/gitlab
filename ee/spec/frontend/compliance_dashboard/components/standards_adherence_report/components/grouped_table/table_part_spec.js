@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { GlTable, GlLink, GlButton } from '@gitlab/ui';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
-import RequirementStatus from 'ee/compliance_dashboard/components/standards_adherence_report/components/requirement_status.vue';
+import RequirementStatusWithTooltip from 'ee/compliance_dashboard/components/standards_adherence_report/components/grouped_table/requirement_status_with_tooltip.vue';
 import TablePart from 'ee/compliance_dashboard/components/standards_adherence_report/components/grouped_table/table_part.vue';
 
 describe('TablePart', () => {
@@ -52,6 +52,7 @@ describe('TablePart', () => {
       },
       stubs: {
         GlTable,
+        RequirementStatusWithTooltip: true,
       },
     });
   };
@@ -61,11 +62,9 @@ describe('TablePart', () => {
   });
 
   it('renders RequirementStatus component in status cell', () => {
-    const statusSlot = wrapper.findComponent(RequirementStatus);
+    const statusSlot = wrapper.findComponent(RequirementStatusWithTooltip);
     expect(statusSlot.exists()).toBe(true);
-    expect(statusSlot.props('passCount')).toBe(mockItems[0].passCount);
-    expect(statusSlot.props('pendingCount')).toBe(mockItems[0].pendingCount);
-    expect(statusSlot.props('failCount')).toBe(mockItems[0].failCount);
+    expect(statusSlot.props('status')).toBe(mockItems[0]);
   });
 
   it('renders requirement name in requirement cell', () => {
