@@ -3,7 +3,7 @@
 module Elastic
   module Latest
     class NoteInstanceProxy < ApplicationInstanceProxy
-      SCHEMA_VERSION = 25_23
+      SCHEMA_VERSION = 25_22
 
       delegate :noteable, to: :target
 
@@ -40,8 +40,8 @@ module Elastic
         merge_project_feature_access_level(data)
         data['archived'] = target.project.archived if target.project
         data['schema_version'] = schema_version
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_notes)
-          data['traversal_ids'] = target.namespace.elastic_namespace_ancestry
+        if target.project && ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_notes)
+          data['traversal_ids'] = target.project.elastic_namespace_ancestry
         end
 
         data.merge(generic_attributes)
