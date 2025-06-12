@@ -361,7 +361,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     context "when DevfileParser returns empty array" do
       before do
         # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
-        allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DevfileParser).to receive(:get_all).and_return([])
+        allow(RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::DevfileParser).to receive(:get_all).and_return([])
         # rubocop:enable Layout/LineLength
       end
 

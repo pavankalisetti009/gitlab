@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ScriptsConfigmapAppender, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::ScriptsConfigmapAppender, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:files) { RemoteDevelopment::Files }
@@ -52,9 +52,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
     expect(data).to eq(
       "gl-clone-project-command": clone_project_script,
       "gl-init-tools-command": files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
-      reconcile_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+      create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         internal_blocking_poststart_commands_script,
-      reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+      create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         non_blocking_poststart_commands_script(user_command_ids: ["user-defined-command"]),
       "gl-sleep-until-container-is-running-command":
         sleep_until_container_is_running_script,
@@ -89,7 +89,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
       expect(data).to eq(
         "gl-clone-project-command": clone_project_script,
         "gl-init-tools-command": files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
-        reconcile_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+        create_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
           legacy_poststart_commands_script,
         "gl-sleep-until-container-is-running-command":
           sleep_until_container_is_running_script,

@@ -4,11 +4,11 @@ require 'devfile'
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module Reconcile
-      module Output
+    module Create
+      module DesiredConfig
         class DevfileParser
           include WorkspaceOperationsConstants
-          include ReconcileConstants
+          include CreateConstants
 
           # @param [String] processed_devfile_yaml
           # @param [Hash] params

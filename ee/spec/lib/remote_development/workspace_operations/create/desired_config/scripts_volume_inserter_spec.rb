@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ScriptsVolumeInserter, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::ScriptsVolumeInserter, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:name) { "workspacename-scripts-configmap" }
@@ -47,8 +47,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
     ]
 
     expect(volume_name)
-      .to eq(reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME)
-    expect(mode).to eq(reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_DEFAULT_MODE)
+      .to eq(create_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME)
+    expect(mode).to eq(create_constants_module::WORKSPACE_SCRIPTS_VOLUME_DEFAULT_MODE)
     expect(configmap_name).to eq(name)
   end
 
@@ -73,8 +73,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
     ]
 
     expected_mount = {
-      name: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME,
-      mountPath: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH
+      name: create_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME,
+      mountPath: create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH
     }
 
     expect(inserted_mount_1).to eq(expected_mount)

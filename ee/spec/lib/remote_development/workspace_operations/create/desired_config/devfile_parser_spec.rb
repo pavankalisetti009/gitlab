@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DevfileParser, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::DevfileParser, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:dns_zone) { "workspaces.localdev.me" }

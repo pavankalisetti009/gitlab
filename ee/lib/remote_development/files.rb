@@ -32,12 +32,12 @@ module RemoteDevelopment
 
     # @return [String] content of the file
     def self.kubernetes_legacy_poststart_hook_command
-      read_file("workspace_operations/reconcile/output/kubernetes_legacy_poststart_hook_command.sh")
+      read_file("workspace_operations/create/desired_config/kubernetes_legacy_poststart_hook_command.sh")
     end
 
     # @return [String] content of the file
     def self.kubernetes_poststart_hook_command
-      read_file("workspace_operations/reconcile/output/kubernetes_poststart_hook_command.sh")
+      read_file("workspace_operations/create/desired_config/kubernetes_poststart_hook_command.sh")
     end
 
     # @return [String] content of the file

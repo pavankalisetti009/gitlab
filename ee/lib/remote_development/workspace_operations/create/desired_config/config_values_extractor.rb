@@ -2,8 +2,8 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module Reconcile
-      module Output
+    module Create
+      module DesiredConfig
         class ConfigValuesExtractor
           include States
 

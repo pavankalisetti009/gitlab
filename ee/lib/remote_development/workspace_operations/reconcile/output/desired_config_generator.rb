@@ -4,15 +4,16 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Reconcile
       module Output
+        # TODO this file is marked for deletion by the end of this epic https://gitlab.com/groups/gitlab-org/-/epics/17483
         class DesiredConfigGenerator
-          include ReconcileConstants
+          include Create::CreateConstants
 
           # @param [RemoteDevelopment::Workspace] workspace
           # @param [Boolean] include_all_resources
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array<Hash>]
           def self.generate_desired_config(workspace:, include_all_resources:, logger:)
-            config_values_extractor_result = ConfigValuesExtractor.extract(workspace: workspace)
+            config_values_extractor_result = Create::DesiredConfig::ConfigValuesExtractor.extract(workspace: workspace)
             config_values_extractor_result => {
               allow_privilege_escalation: TrueClass | FalseClass => allow_privilege_escalation,
               common_annotations: Hash => common_annotations,
@@ -76,7 +77,7 @@ module RemoteDevelopment
               use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
             }
 
-            resources_from_devfile_parser = DevfileParser.get_all(
+            resources_from_devfile_parser = Create::DesiredConfig::DevfileParser.get_all(
               processed_devfile_yaml: processed_devfile_yaml,
               params: devfile_parser_params,
               logger: logger
@@ -401,7 +402,7 @@ module RemoteDevelopment
             #       to restart because the deployment would be updated.
             return unless devfile_events[:postStart].present?
 
-            ScriptsConfigmapAppender.append(
+            Create::DesiredConfig::ScriptsConfigmapAppender.append(
               desired_config: desired_config,
               name: name,
               namespace: namespace,
@@ -411,13 +412,13 @@ module RemoteDevelopment
               devfile_events: devfile_events
             )
 
-            ScriptsVolumeInserter.insert(
+            Create::DesiredConfig::ScriptsVolumeInserter.insert(
               configmap_name: name,
               containers: containers,
               volumes: volumes
             )
 
-            KubernetesPoststartHookInserter.insert(
+            Create::DesiredConfig::KubernetesPoststartHookInserter.insert(
               containers: containers,
               devfile_commands: devfile_commands,
               devfile_events: devfile_events
