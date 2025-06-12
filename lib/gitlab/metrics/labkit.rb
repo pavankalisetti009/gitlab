@@ -78,10 +78,12 @@ module Gitlab
 
         private
 
+        # TODO: remove when we move away from Prometheus::Client to Labkit::Metrics::Client completely
+        # https://gitlab.com/gitlab-com/gl-infra/observability/team/-/issues/4160
         def safe_provide_metric(metric_type, metric_name, *args)
           return null_metric unless prometheus_metrics_enabled?
 
-          client.send(metric_type, metric_name, *args) # rubocop:disable GitlabSecurity/PublicSend -- temporary workaround
+          client.send(metric_type, metric_name, *args) # rubocop:disable GitlabSecurity/PublicSend -- temporary workaround, see issue link
         end
 
         def prometheus_metrics_enabled_memoized
