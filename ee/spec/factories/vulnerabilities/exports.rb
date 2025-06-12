@@ -18,6 +18,10 @@ FactoryBot.define do
       file { fixture_file_upload('ee/spec/fixtures/vulnerabilities/exports/root-security-reports_vulnerabilities_2020-03-12T1235.csv') }
     end
 
+    trait :with_pdf_file do
+      file { fixture_file_upload('ee/spec/fixtures/vulnerabilities/exports/group-project_vulnerabilities_2025-06-03T1250.pdf') }
+    end
+
     trait :created do
       status { 'created' }
     end

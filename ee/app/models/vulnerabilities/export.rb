@@ -34,6 +34,11 @@ module Vulnerabilities
       pdf: 1
     }
 
+    attribute :report_data, ::Gitlab::Database::Type::IndifferentJsonb.new, default: -> { {} }
+
+    # rubocop:disable Database/JsonbSizeLimit -- exports are ephemeral
+    validates :report_data, json_schema: { filename: 'vulnerabilities_export' }
+    # rubocop:enable Database/JsonbSizeLimit
     validates :status, presence: true
     validates :format, presence: true
     validates :file, presence: true, if: :finished?
