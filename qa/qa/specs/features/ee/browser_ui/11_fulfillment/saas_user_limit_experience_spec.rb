@@ -46,7 +46,8 @@ module QA
       context 'when Saas user limit experience' do
         it(
           'limit overage enforcement removed from private group when trial is started',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/387826'
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/387826',
+          feature_flag: { name: 'ultimate_trial_single_form', scope: :user }
         ) do
           # Check enforcement notification for limit overage
           create_private_group_with_members
@@ -59,6 +60,7 @@ module QA
                 .within(max_attempts: 5, sleep_interval: 2, reload_page: page)
           end
 
+          Runtime::Feature.disable(:ultimate_trial_single_form, user: group_owner)
           # Remove the enforcement by starting a free Ultimate Trial
           Runtime::Browser.visit(:gitlab, EE::Page::Trials::New)
 
@@ -80,7 +82,8 @@ module QA
 
         it(
           'new group enforcement removed when trial started',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/387827'
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/387827',
+          feature_flag: { name: 'ultimate_trial_single_form', scope: :user }
         ) do
           create_private_group_with_members
           page.refresh
@@ -91,6 +94,7 @@ module QA
                 .within(max_attempts: 5, sleep_interval: 2, reload_page: page)
           end
 
+          Runtime::Feature.disable(:ultimate_trial_single_form, user: group_owner)
           Runtime::Browser.visit(:gitlab, EE::Page::Trials::New)
           register_for_trial
           private_group.visit!
