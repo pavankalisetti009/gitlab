@@ -448,6 +448,10 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
             resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user }).to_a
           end.not_to exceed_query_limit(control)
         end
+
+        context 'when owasp_top_ten_2021 includes "none" and other values' do
+          it_behaves_like 'validates owasp_top_ten_2021 filter', :params
+        end
       end
     end
 
