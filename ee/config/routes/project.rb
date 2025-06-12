@@ -26,6 +26,10 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           end
         end
 
+        scope :agents do
+          get '/(*vueroute)' => 'duo_agents_platform#show', as: :duo_agents_platform, format: false
+        end
+
         namespace :quality do
           resources :test_cases, only: [:index, :new, :show]
         end

@@ -5714,6 +5714,12 @@ msgstr ""
 msgid "Agent not found for provided id."
 msgstr ""
 
+msgid "Agents"
+msgstr ""
+
+msgid "Agents Platform Index"
+msgstr ""
+
 msgid "AiAgents|Agent Name"
 msgstr ""
 
@@ -53575,6 +53581,9 @@ msgid "Runner|Your CSV export has started. It will be sent to your email inbox w
 msgstr ""
 
 msgid "Running"
+msgstr ""
+
+msgid "Runs"
 msgstr ""
 
 msgid "Runs a number of housekeeping tasks within the current repository, such as compressing file revisions and removing unreachable objects."
