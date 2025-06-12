@@ -9,6 +9,7 @@ module Ai
 
       PARTITION_SIZE = 2_000_000
       INDEXABLE_STATES = %i[pending initializing ready].freeze
+      RETRIES = 5
 
       partitioned_by :namespace_id, strategy: :int_range, partition_size: PARTITION_SIZE
 
