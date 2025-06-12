@@ -26,13 +26,13 @@ module RemoteDevelopment
     validates :enabled, inclusion: { in: [true, false] }
 
     validates :network_policy_egress,
-      json_schema: { filename: 'workspaces_agent_configs_network_policy_egress' }
+      json_schema: { filename: 'workspaces_agent_configs_network_policy_egress', size_limit: 64.kilobytes }
     validates :network_policy_egress, 'remote_development/network_policy_egress': true
     validates :default_resources_per_workspace_container,
-      json_schema: { filename: 'workspaces_agent_configs_workspace_container_resources' }
+      json_schema: { filename: 'workspaces_agent_configs_workspace_container_resources', size_limit: 64.kilobytes }
     validates :default_resources_per_workspace_container, 'remote_development/workspace_container_resources': true
     validates :max_resources_per_workspace,
-      json_schema: { filename: 'workspaces_agent_configs_workspace_container_resources' }
+      json_schema: { filename: 'workspaces_agent_configs_workspace_container_resources', size_limit: 64.kilobytes }
     validates :max_resources_per_workspace, 'remote_development/workspace_container_resources': true
     validates :workspaces_quota, numericality: { only_integer: true, greater_than_or_equal_to: UNLIMITED_QUOTA }
     validates :workspaces_per_user_quota,
@@ -45,7 +45,9 @@ module RemoteDevelopment
     validates :labels, 'remote_development/labels': true
 
     validates :image_pull_secrets,
-      json_schema: { filename: 'workspaces_agent_configs_image_pull_secrets', detail_errors: true }
+      json_schema: {
+        filename: 'workspaces_agent_configs_image_pull_secrets', detail_errors: true, size_limit: 64.kilobytes
+      }
     validates :image_pull_secrets, 'remote_development/image_pull_secrets': true
 
     validates :max_active_hours_before_stop,
