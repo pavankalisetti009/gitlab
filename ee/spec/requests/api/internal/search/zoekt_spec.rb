@@ -44,7 +44,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
           allow(::Search::Zoekt::Logger).to receive(:build).and_return(logger)
         end
 
-        context 'and parms success is true' do
+        context 'and params success is true' do
           it 'logs the info and returns accepted' do
             node = Search::Zoekt::Node.find_by_uuid(uuid)
             log_data[:meta] = node.metadata_json

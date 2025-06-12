@@ -22,6 +22,11 @@ module Search
         (zoekt_nodes.usable_storage_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0))
       SQL
 
+      SERVICES = {
+        zoekt: 0,
+        knowledge_graph: 1
+      }.freeze
+
       has_many :indices,
         foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Search::Zoekt::Index'
       has_many :enabled_namespaces,
@@ -46,6 +51,7 @@ module Search
       validates :metadata, json_schema: { filename: 'zoekt_node_metadata' }
       validates :usable_storage_bytes, presence: true, numericality: { only_integer: true }
       validates :schema_version, presence: true
+      validate :valid_services
 
       attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
@@ -81,6 +87,7 @@ module Search
       scope :negative_unclaimed_storage_bytes, -> do
         left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} < 0")
       end
+      scope :with_service, ->(service) { where("? = ANY(services)", SERVICES.fetch(service)) }
 
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access
@@ -194,6 +201,19 @@ module Search
       def set_usable_storage_bytes
         self.usable_storage_bytes = free_bytes + indexed_bytes
         self.usable_storage_bytes_locked_until = nil
+      end
+
+      def valid_services
+        if services.blank?
+          errors.add(:services, :blank)
+          return
+        end
+
+        services.each do |service_num|
+          unless SERVICES.has_value?(service_num)
+            errors.add(:services, format(_("service %{service_num} doesn't exist"), service_num: service_num))
+          end
+        end
       end
     end
   end

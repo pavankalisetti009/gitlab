@@ -107,10 +107,11 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
       let_it_be(:offline_node) { create(:zoekt_node, :offline, :enough_free_space) }
       # Node with no unclaimed storage.
       let_it_be(:no_storage_node) { create(:zoekt_node, total_bytes: 100.gigabytes, used_bytes: 100.gigabytes) }
+      let_it_be(:graph_node) { create(:zoekt_node, services: [::Search::Zoekt::Node::SERVICES[:knowledge_graph]]) }
 
-      it 'returns only online nodes with positive unclaimed storage bytes in ordered by unclaimed_storage_bytes' do
+      it 'returns only online zoekt nodes with positive unclaimed storage ordered by unclaimed_storage_bytes' do
         expect(resource_pool.nodes.to_a).to eq([eligible_node2, eligible_node])
-        expect(resource_pool.nodes).not_to include(no_storage_node, offline_node)
+        expect(resource_pool.nodes).not_to include(no_storage_node, offline_node, graph_node)
       end
     end
 

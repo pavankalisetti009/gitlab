@@ -37,7 +37,7 @@ module Search
       end
 
       def fetch_available_nodes
-        ::Search::Zoekt::Node.order_by_unclaimed_space.online
+        ::Search::Zoekt::Node.with_service(:zoekt).order_by_unclaimed_space.online
       end
     end
   end

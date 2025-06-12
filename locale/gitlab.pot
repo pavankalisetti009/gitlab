@@ -74574,6 +74574,9 @@ msgstr ""
 msgid "selective_code_owner_removals can only be enabled when retain_approvals_on_push is enabled"
 msgstr ""
 
+msgid "service %{service_num} doesn't exist"
+msgstr ""
+
 msgid "service accounts"
 msgstr ""
 
