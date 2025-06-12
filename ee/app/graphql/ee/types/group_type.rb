@@ -391,8 +391,8 @@ module EE
         field :maven_virtual_registries,
           EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type,
           null: true,
-          description: 'Maven virtual registries registered to the group.',
-          resolver: ::Resolvers::VirtualRegistries::Packages::Maven::MavenVirtualRegistryResolver,
+          description: 'Maven virtual registries registered to the group. ' \
+            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
           experiment: { milestone: '18.1' }
 
         field :compliance_framework_coverage_summary,
@@ -439,6 +439,11 @@ module EE
               loader.call(group, group.analyzer_group_statuses)
             end
           end
+        end
+
+        def maven_virtual_registries
+          ::VirtualRegistries::Packages::Maven::Registry.for_group(object) if ::Feature.enabled?(
+            :maven_virtual_registry, current_user)
         end
       end
     end

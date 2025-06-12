@@ -331,13 +331,13 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     with_them do
       let(:query) do
         <<~GQL
-        query {
-          group(fullPath: "#{group.full_path}") {
-            analyzerStatuses {
-              analyzerType
+          query {
+            group(fullPath: "#{group.full_path}") {
+              analyzerStatuses {
+                analyzerType
+              }
             }
           }
-        }
         GQL
       end
 
@@ -491,5 +491,45 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     it { is_expected.to have_graphql_resolver(::Resolvers::Sbom::ComponentVersionResolver) }
 
     it { is_expected.to include_graphql_arguments(:component_name) }
+  end
+
+  describe 'maven virtual registries' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:group) { create(:group, :private) }
+    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
+    let_it_be(:query) do
+      %(
+        query {
+          group(fullPath: "#{group.full_path}") {
+            mavenVirtualRegistries {
+              nodes {
+                id
+                name
+              }
+            }
+          }
+        }
+      )
+    end
+
+    subject(:query_result) { GitlabSchema.execute(query, context: { current_user: current_user }).as_json }
+
+    before do
+      group.add_member(current_user, Gitlab::Access::MAINTAINER)
+      stub_config(dependency_proxy: { enabled: true })
+      stub_licensed_features(packages_virtual_registry: true)
+    end
+
+    context 'with the maven virtual registry feature flag turned off' do
+      before do
+        stub_feature_flags(maven_virtual_registry: false)
+      end
+
+      it 'returns null for the maven registries field' do
+        maven_registries = query_result.dig(*%w[data group mavenVirtualRegistries])
+
+        expect(maven_registries).to be_nil
+      end
+    end
   end
 end
