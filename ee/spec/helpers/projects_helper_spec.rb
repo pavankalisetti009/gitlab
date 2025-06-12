@@ -41,40 +41,6 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
   end
 
-  describe '#can_admin_project_member?' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group) }
-
-    before_all do
-      project.add_maintainer(user)
-    end
-
-    before do
-      allow(helper).to receive(:current_user) { user }
-    end
-
-    context 'when membership is not locked' do
-      before do
-        group.membership_lock = false
-      end
-
-      it 'returns true when membership is not locked' do
-        expect(helper.can_admin_project_member?(project)).to be(true)
-      end
-    end
-
-    context 'when membership is locked' do
-      before do
-        group.membership_lock = true
-      end
-
-      it 'returns false when membership is locked' do
-        expect(helper.can_admin_project_member?(project)).to be(false)
-      end
-    end
-  end
-
   describe '#show_compliance_frameworks_info?' do
     context 'when feature is licensed' do
       before do
