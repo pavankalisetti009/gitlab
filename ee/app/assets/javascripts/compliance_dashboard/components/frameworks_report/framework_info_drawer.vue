@@ -49,11 +49,6 @@ export default {
       required: false,
       default: null,
     },
-    projectPath: {
-      type: String,
-      required: false,
-      default: null,
-    },
     framework: {
       type: Object,
       required: false,
@@ -172,8 +167,11 @@ export default {
         (o) => o.typeName === policy.__typename,
       );
 
-      if (policy.source.namespace.fullPath !== this.groupPath) {
-        return `/${this.projectPath}/security/policies`;
+      if (
+        policy.source.namespace.fullPath !== this.groupPath ||
+        this.groupSecurityPoliciesPath === undefined
+      ) {
+        return `/groups/${policy.source.namespace.fullPath}/-/security/policies`;
       }
 
       return `${this.groupSecurityPoliciesPath}/${policy.name}/edit?type=${urlParameter}`;

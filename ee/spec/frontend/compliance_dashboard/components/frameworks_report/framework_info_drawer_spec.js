@@ -51,7 +51,6 @@ describe('FrameworkInfoDrawer component', () => {
   };
 
   const GROUP_PATH = 'foo';
-  const PROJECT_PATH = 'bar';
   const EXPECTED_REQUIREMENTS_COUNT = 3;
 
   const defaultFramework = createFramework({
@@ -152,7 +151,6 @@ describe('FrameworkInfoDrawer component', () => {
       createComponent({
         props: {
           groupPath: GROUP_PATH,
-          projectPath: PROJECT_PATH,
           rootAncestor: {
             path: GROUP_PATH,
           },
@@ -242,7 +240,6 @@ describe('FrameworkInfoDrawer component', () => {
             projectsInNamespaceResolverMock,
             props: {
               groupPath: GROUP_PATH,
-              projectPath: PROJECT_PATH,
               rootAncestor: {
                 path: GROUP_PATH,
               },
@@ -302,7 +299,6 @@ describe('FrameworkInfoDrawer component', () => {
               }),
               props: {
                 groupPath: GROUP_PATH,
-                projectPath: PROJECT_PATH,
                 rootAncestor: {
                   path: GROUP_PATH,
                 },
@@ -326,10 +322,66 @@ describe('FrameworkInfoDrawer component', () => {
 
       it('renders the Policies list', () => {
         expect(findPoliciesLinks().wrappers).toHaveLength(policiesCount);
-        expect(findPoliciesLinks().at(0).attributes('href')).toBe(`/bar/security/policies`);
+        expect(findPoliciesLinks().at(0).attributes('href')).toBe(
+          `/groups/bar/-/security/policies`,
+        );
         expect(findPoliciesLinks().at(1).attributes('href')).toBe(
           `/group-policies/${defaultFramework.scanResultPolicies.nodes[0].name}/edit?type=approval_policy`,
         );
+      });
+
+      it('generates correct policy URLs for cross-group policies', () => {
+        const crossGroupFramework = {
+          ...defaultFramework,
+          scanResultPolicies: {
+            nodes: [
+              {
+                name: 'cross-group-policy',
+                source: {
+                  namespace: {
+                    fullPath: 'different-group',
+                  },
+                },
+                __typename: 'ScanResultPolicy',
+              },
+            ],
+          },
+        };
+
+        createComponent({
+          props: {
+            groupPath: GROUP_PATH,
+            rootAncestor: {
+              path: GROUP_PATH,
+            },
+            framework: crossGroupFramework,
+          },
+        });
+
+        const policyUrl = wrapper.vm.getPolicyEditUrl(
+          crossGroupFramework.scanResultPolicies.nodes[0],
+        );
+        expect(policyUrl).toBe('/groups/different-group/-/security/policies');
+      });
+
+      it('generates correct policy URLs when not in group context', () => {
+        // e.g. Visiting compliance dashboard in a projet's context
+        // ~ /flightjs/fligthjs-subgroup/sub_flight_project/-/security/compliance_dashboard/frameworks
+        createComponent({
+          props: {
+            groupPath: GROUP_PATH,
+            rootAncestor: {
+              path: GROUP_PATH,
+            },
+            framework: defaultFramework,
+          },
+          provide: {
+            groupSecurityPoliciesPath: undefined,
+          },
+        });
+
+        const policyUrl = wrapper.vm.getPolicyEditUrl(defaultFramework.scanResultPolicies.nodes[0]);
+        expect(policyUrl).toBe('/groups/foo/-/security/policies');
       });
 
       it('does not render edit button popover', () => {
@@ -350,7 +402,6 @@ describe('FrameworkInfoDrawer component', () => {
       createComponent({
         props: {
           groupPath: GROUP_PATH,
-          projectPath: PROJECT_PATH,
           rootAncestor: {
             path: GROUP_PATH,
           },
@@ -383,7 +434,6 @@ describe('FrameworkInfoDrawer component', () => {
       createComponent({
         props: {
           groupPath: GROUP_PATH,
-          projectPath: PROJECT_PATH,
           rootAncestor: {
             path: GROUP_PATH,
           },
@@ -412,7 +462,6 @@ describe('FrameworkInfoDrawer component', () => {
       createComponent({
         props: {
           groupPath: GROUP_PATH,
-          projectPath: PROJECT_PATH,
           rootAncestor: {
             path: GROUP_PATH,
           },
@@ -452,7 +501,6 @@ describe('FrameworkInfoDrawer component', () => {
       createComponent({
         props: {
           groupPath: GROUP_PATH,
-          projectPath: PROJECT_PATH,
           rootAncestor: {
             path: GROUP_PATH,
           },
@@ -475,7 +523,6 @@ describe('FrameworkInfoDrawer component', () => {
       createComponent({
         props: {
           groupPath: GROUP_PATH,
-          projectPath: PROJECT_PATH,
           rootAncestor: {
             path: GROUP_PATH,
           },
