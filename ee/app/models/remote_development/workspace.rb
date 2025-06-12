@@ -13,8 +13,6 @@ module RemoteDevelopment
     columns_changing_default :desired_config_generator_version
     columns_changing_default :actual_state_updated_at
 
-    ignore_column :devfile_ref, remove_with: "17.8", remove_after: "2025-01-08"
-
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
     belongs_to :agent, class_name: "Clusters::Agent", foreign_key: "cluster_agent_id", inverse_of: :workspaces
