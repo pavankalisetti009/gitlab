@@ -62,9 +62,9 @@ module Search
             traversal_ids: project.namespace_ancestry,
             visibility_level: project.visibility_level,
             repository_access_level: project.repository_access_level,
-            forked: project.forked?,
-            archived: project.archived?
-          }
+            forked: project.forked? ? "t" : "f",
+            archived: project.archived? ? "t" : "f"
+          }.transform_values(&:to_s)
         )
       end
 

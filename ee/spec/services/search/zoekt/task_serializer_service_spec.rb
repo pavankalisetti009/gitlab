@@ -22,6 +22,10 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
   describe '#execute' do
     let(:project) { task.zoekt_repository.project }
 
+    before do
+      allow(project).to receive(:archived?).and_return(true)
+    end
+
     it 'serializes the task' do
       expect(execute_task[:name]).to eq(:index)
       expect(execute_task[:payload].keys).to contain_exactly(
@@ -36,10 +40,10 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
 
       meta = execute_task[:payload][:Metadata]
       expect(meta[:traversal_ids]).to eq(project.namespace_ancestry)
-      expect(meta[:visibility_level]).to eq(project.visibility_level)
-      expect(meta[:repository_access_level]).to eq(project.repository_access_level)
-      expect(meta[:forked]).to eq(project.forked?)
-      expect(meta[:archived]).to eq(project.archived?)
+      expect(meta[:visibility_level]).to eq(project.visibility_level.to_s)
+      expect(meta[:repository_access_level]).to eq(project.repository_access_level.to_s)
+      expect(meta[:forked]).to eq("f")
+      expect(meta[:archived]).to eq("t")
     end
 
     context 'when local socket is used' do
