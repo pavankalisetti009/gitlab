@@ -451,6 +451,55 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
           expect(current_settings.new_user_signups_cap).to be_nil
         end
       end
+
+      context 'with form submit button confirmation modal for side-effect of possibly having overages' do
+        active_user_count = 9
+
+        let_it_be(:license) do
+          create(:license, plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: active_user_count })
+        end
+
+        before do
+          current_user_cap_value = 5
+
+          allow(License).to receive(:current).and_return(license)
+
+          current_settings.update!(new_user_signups_cap: current_user_cap_value, seat_control: seat_control_user_cap)
+
+          page.refresh
+        end
+
+        describe 'when user cap is higher than licensed users' do
+          hihger_than_user_cap_value = 13
+
+          it 'shows a modal' do
+            within_testid('sign-up-restrictions-settings-content') do
+              fill_in 'application_setting[new_user_signups_cap]', with: hihger_than_user_cap_value
+
+              click_button 'Save changes'
+            end
+
+            within_modal do
+              expect(page).to have_content "Changing the user cap to 13 would exceed the licensed user " \
+                "count of 9, which may result in seat overages"
+            end
+          end
+        end
+
+        describe 'when user cap is higher lower licensed users' do
+          lower_than_user_cap_value = 3
+
+          it 'submits the form' do
+            within_testid('sign-up-restrictions-settings-content') do
+              fill_in 'application_setting[new_user_signups_cap]', with: lower_than_user_cap_value
+
+              click_button 'Save changes'
+            end
+
+            expect(page).to have_content 'Application settings saved successfully'
+          end
+        end
+      end
     end
 
     context 'for form submit button confirmation modal for side-effect of possibly adding unwanted new users' do
