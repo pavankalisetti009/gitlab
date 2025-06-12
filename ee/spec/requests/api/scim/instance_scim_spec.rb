@@ -1426,5 +1426,78 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
       end
     end
+
+    describe 'DELETE api/scim/v2/application/Groups/:id' do
+      let(:scim_group_uid) { SecureRandom.uuid }
+      let!(:saml_group_link) do
+        create(:saml_group_link, saml_group_name: 'engineering', scim_group_uid: scim_group_uid)
+      end
+
+      subject(:api_request) do
+        delete api("scim/v2/application/Groups/#{scim_group_uid}", user, version: '', access_token: scim_token)
+      end
+
+      it_behaves_like 'Groups feature flag check'
+      it_behaves_like 'Not available to SaaS customers'
+      it_behaves_like 'Instance level SCIM license required'
+      it_behaves_like 'SCIM token authenticated'
+      it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
+
+      context 'when SCIM group exists' do
+        it 'responds with 204 No Content' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:no_content)
+        end
+
+        it 'calls the deletion service' do
+          expect(::EE::Gitlab::Scim::GroupSyncDeletionService).to receive(:new)
+            .with(scim_group_uid: scim_group_uid)
+            .and_call_original
+
+          api_request
+        end
+
+        it 'schedules background cleanup' do
+          expect(::Authn::CleanupScimGroupMembershipsWorker).to receive(:perform_async).with(scim_group_uid)
+
+          api_request
+        end
+      end
+
+      context 'when SCIM group does not exist' do
+        let(:non_existent_scim_group) { SecureRandom.uuid }
+
+        subject(:api_request) do
+          delete api("scim/v2/application/Groups/#{non_existent_scim_group}", user, version: '',
+            access_token: scim_token)
+        end
+
+        it 'returns 404 without calling the service' do
+          expect(::EE::Gitlab::Scim::GroupSyncDeletionService).not_to receive(:new)
+
+          api_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['detail']).to include("Group #{non_existent_scim_group} not found")
+        end
+      end
+
+      context 'when service returns error' do
+        before do
+          allow_next_instance_of(::EE::Gitlab::Scim::GroupSyncDeletionService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'Database error'))
+          end
+        end
+
+        it 'returns 412 precondition failed' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:precondition_failed)
+          expect(json_response['detail']).to include('Database error')
+        end
+      end
+    end
   end
 end

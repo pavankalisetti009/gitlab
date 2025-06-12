@@ -285,6 +285,20 @@ module API
 
             present saml_group_links.first, with: ::EE::API::Entities::Scim::Group, excluded_attributes: ['members']
           end
+
+          desc 'Delete a SCIM group'
+          params do
+            requires :id, type: String, desc: 'The SCIM group ID'
+          end
+          delete ':id' do
+            saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
+            scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
+
+            result = ::EE::Gitlab::Scim::GroupSyncDeletionService.new(scim_group_uid: params[:id]).execute
+            scim_error!(message: result.message) if result.error?
+
+            no_content!
+          end
         end
       end
     end
