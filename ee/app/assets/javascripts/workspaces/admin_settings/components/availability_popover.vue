@@ -9,7 +9,7 @@ export default {
     GlPopover,
   },
   POPOVER_TEXT: s__(
-    "Workspaces|Blocking an agent doesn't delete it. Agents can only be deleted in the project where they were created. In addition, existing workspaces using a blocked agent will continue to run.",
+    'Workspaces|Blocked agents are not deleted and existing workspaces continue running. You can delete agents in their source project.',
   ),
 };
 </script>

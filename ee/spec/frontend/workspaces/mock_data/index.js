@@ -935,7 +935,7 @@ export const DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT = {
 export const DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR = {
   data: {
     organizationDeleteClusterAgentMapping: {
-      errors: ['Cluster agent mapping already exists'],
+      errors: ['Organization cluster agent mapping not found'],
     },
   },
 };

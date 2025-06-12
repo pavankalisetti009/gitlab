@@ -1,12 +1,5 @@
 import { nextTick } from 'vue';
-import {
-  GlTableLite,
-  GlBadge,
-  GlLink,
-  GlAlert,
-  GlKeysetPagination,
-  GlSkeletonLoader,
-} from '@gitlab/ui';
+import { GlTableLite, GlBadge, GlAlert, GlKeysetPagination, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import WorkspacesAgentAvailabilityApp from 'ee_component/workspaces/admin_settings/pages/app.vue';
 import AvailabilityPopover from 'ee_component/workspaces/admin_settings/components/availability_popover.vue';
@@ -148,7 +141,7 @@ describe('workspaces/admin_settings/pages/app.vue', () => {
       });
 
       it('renders agent name with link to the agent page', () => {
-        const nameElement = wrapper.findComponent(GlLink);
+        const nameElement = wrapper.findByTestId('agent-link');
 
         expect(nameElement.exists()).toBe(true);
         expect(nameElement.attributes('href')).toBe(mockResult[0].url);

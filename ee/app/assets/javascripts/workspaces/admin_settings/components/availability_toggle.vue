@@ -1,7 +1,8 @@
 <script>
 import { GlToggle } from '@gitlab/ui';
 import produce from 'immer';
-import { s__, __ } from '~/locale';
+import { s__ } from '~/locale';
+import { logError } from '~/lib/logger';
 
 import createClusterAgentMappingMutation from '../graphql/mutations/create_org_cluster_agent_mapping.mutation.graphql';
 import deleteClusterAgentMappingMutation from '../graphql/mutations/delete_org_cluster_agent_mapping.mutation.graphql';
@@ -73,8 +74,6 @@ export default {
         this.loading = true;
         this.errorMessage = '';
 
-        let hasMutationError = false;
-
         await this.$apollo.mutate({
           mutation,
           variables: {
@@ -90,21 +89,15 @@ export default {
               : data.organizationCreateClusterAgentMapping.errors;
 
             if (errors?.length) {
-              hasMutationError = true;
-              return;
+              throw new Error(errors);
             }
 
             updateMappedAgentsStore(store, agentId, isMapped);
           },
         });
-
-        if (hasMutationError) {
-          this.errorMessage = isDeleting
-            ? s__('Workspaces|This agent is already blocked.')
-            : s__('Workspaces|This agent is already available.');
-        }
       } catch (e) {
-        this.errorMessage = __('Something went wrong. Please try again.');
+        logError(`Error updating Workspaces agent availability`, e.message);
+        this.errorMessage = s__('Workspaces|Unable to complete request. Please try again.');
       } finally {
         this.loading = false;
       }

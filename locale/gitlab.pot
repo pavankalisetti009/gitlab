@@ -70784,6 +70784,9 @@ msgstr ""
 msgid "Workspaces|Available"
 msgstr ""
 
+msgid "Workspaces|Available agents for workspaces"
+msgstr ""
+
 msgid "Workspaces|Block agent"
 msgstr ""
 
@@ -70793,10 +70796,10 @@ msgstr ""
 msgid "Workspaces|Blocked"
 msgstr ""
 
-msgid "Workspaces|Blocking an agent doesn't delete it. Agents can only be deleted in the project where they were created."
+msgid "Workspaces|Blocked agents are not deleted and existing workspaces continue running. You can delete agents in their source project."
 msgstr ""
 
-msgid "Workspaces|Blocking an agent doesn't delete it. Agents can only be deleted in the project where they were created. In addition, existing workspaces using a blocked agent will continue to run."
+msgid "Workspaces|Blocking an agent doesn't delete it. Agents can only be deleted in the project where they were created."
 msgstr ""
 
 msgid "Workspaces|Cancel"
@@ -70805,7 +70808,7 @@ msgstr ""
 msgid "Workspaces|Cluster agent"
 msgstr ""
 
-msgid "Workspaces|Configure which Kubernetes agents are available for new workspaces. These settings do not affect existing workspaces."
+msgid "Workspaces|Configure which Kubernetes agents are available for new workspaces. %{learnMore}"
 msgstr ""
 
 msgid "Workspaces|Connected"
@@ -70889,6 +70892,9 @@ msgstr ""
 msgid "Workspaces|Instant development environments"
 msgstr ""
 
+msgid "Workspaces|Learn more about agents."
+msgstr ""
+
 msgid "Workspaces|Learn more."
 msgstr ""
 
@@ -70901,10 +70907,10 @@ msgstr ""
 msgid "Workspaces|No active workspaces"
 msgstr ""
 
-msgid "Workspaces|No agents available"
+msgid "Workspaces|No agents available to create workspaces. Please consult %{linkStart}Workspaces documentation%{linkEnd} for troubleshooting."
 msgstr ""
 
-msgid "Workspaces|No agents available to create workspaces. Please consult %{linkStart}Workspaces documentation%{linkEnd} for troubleshooting."
+msgid "Workspaces|No agents found."
 msgstr ""
 
 msgid "Workspaces|No terminated workspaces"
@@ -70970,9 +70976,6 @@ msgstr ""
 msgid "Workspaces|This agent is already allowed."
 msgstr ""
 
-msgid "Workspaces|This agent is already available."
-msgstr ""
-
 msgid "Workspaces|This agent is already blocked."
 msgstr ""
 
@@ -70983,6 +70986,9 @@ msgid "Workspaces|This group has no available agents. Select the %{strongStart}A
 msgstr ""
 
 msgid "Workspaces|To create a workspace, add a devfile to this project. A devfile is a configuration file for your workspace."
+msgstr ""
+
+msgid "Workspaces|Unable to complete request. Please try again."
 msgstr ""
 
 msgid "Workspaces|Unable to complete this action"
@@ -71007,9 +71013,6 @@ msgid "Workspaces|When no devfile is provided, the GitLab default devfile will b
 msgstr ""
 
 msgid "Workspaces|Workspaces"
-msgstr ""
-
-msgid "Workspaces|Workspaces Agent Availability"
 msgstr ""
 
 msgid "Workspaces|Workspaces Settings"

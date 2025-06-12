@@ -9,6 +9,7 @@ import deleteClusterAgentMappingMutation from 'ee/workspaces/admin_settings/grap
 import ClusterAgentAvailabilityToggle from 'ee/workspaces/admin_settings/components/availability_toggle.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { logError } from '~/lib/logger';
 
 import {
   DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT,
@@ -182,20 +183,14 @@ describe('workspaces/admin_settings/components/availability_toggle.vue', () => {
   });
 
   describe('on mutation error', () => {
-    beforeEach(() => {
-      setupApolloProvider(
-        CREATE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR,
-        DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR,
-      );
-    });
-
     it.each`
-      isMapped | expectedErrorMessage
-      ${true}  | ${'This agent is already blocked.'}
-      ${false} | ${'This agent is already available.'}
+      isMapped | createResult                                                   | deleteResult                                                   | expectedErrorMessage
+      ${true}  | ${CREATE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT}            | ${DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR} | ${DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR.data.organizationDeleteClusterAgentMapping.errors[0]}
+      ${false} | ${CREATE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR} | ${DELETE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT}            | ${CREATE_ORG_CLUSTER_AGENT_MAPPING_MUTATION_RESULT_WITH_ERROR.data.organizationCreateClusterAgentMapping.errors[0]}
     `(
-      'displays correct error message when mutation fails when agent is mapped: $isMapped',
-      async ({ isMapped, expectedErrorMessage }) => {
+      'handles error when mutation fails when an agent is mapped = $isMapped',
+      async ({ isMapped, createResult, deleteResult, expectedErrorMessage }) => {
+        setupApolloProvider(createResult, deleteResult);
         buildWrapper({
           isMapped,
         });
@@ -204,7 +199,11 @@ describe('workspaces/admin_settings/components/availability_toggle.vue', () => {
         await nextTick();
 
         expect(findToggle().props('disabled')).toBe(false);
-        expect(findErrorMessage().text()).toEqual(expectedErrorMessage);
+        expect(findErrorMessage().text()).toEqual('Unable to complete request. Please try again.');
+        expect(logError).toHaveBeenCalledWith(
+          'Error updating Workspaces agent availability',
+          expectedErrorMessage,
+        );
       },
     );
   });
