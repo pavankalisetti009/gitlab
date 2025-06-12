@@ -1,5 +1,5 @@
 <script>
-import { GlAvatarLink, GlAvatarLabeled, GlLink } from '@gitlab/ui';
+import { GlAvatarLink, GlAvatarLabeled, GlLink, GlIcon } from '@gitlab/ui';
 import { ListType, ListTypeTitles } from '~/boards/constants';
 
 export default {
@@ -7,6 +7,7 @@ export default {
     GlLink,
     GlAvatarLink,
     GlAvatarLabeled,
+    GlIcon,
   },
   props: {
     boardListType: {
@@ -25,10 +26,19 @@ export default {
   },
   computed: {
     activeListObject() {
-      return this.activeList[this.boardListType];
+      return this.activeList[this.boardListType] || {};
     },
     listTypeHeader() {
       return ListTypeTitles[this.boardListType] || '';
+    },
+    statusIconName() {
+      return this.activeListObject?.iconName;
+    },
+    statusColor() {
+      return this.activeListObject?.color;
+    },
+    statusName() {
+      return this.activeListObject?.name;
     },
   },
 };
@@ -49,6 +59,14 @@ export default {
         :src="activeListObject.avatar"
       />
     </gl-avatar-link>
+    <div
+      v-else-if="boardListType === ListType.status"
+      data-testid="status-list-type"
+      class="gl-truncate"
+    >
+      <gl-icon :name="statusIconName" :size="12" class="gl-mr-2" :style="{ color: statusColor }" />
+      <span>{{ statusName }}</span>
+    </div>
     <gl-link v-else class="js-list-title" :href="activeListObject.webUrl">
       {{ activeListObject.title }}
     </gl-link>
