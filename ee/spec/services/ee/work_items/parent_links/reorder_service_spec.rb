@@ -124,10 +124,6 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
       subject(:move_child) { described_class.new(new_parent, user, params).execute }
     end
 
-    before do
-      stub_feature_flags(work_item_epics: true)
-    end
-
     context 'when adjacent_work_item parent link is missing' do
       let(:synced_moving_object) { nil }
 

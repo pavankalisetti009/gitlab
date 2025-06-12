@@ -310,7 +310,6 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
       before do
         stub_licensed_features(epics: true, subepics: true)
-        stub_feature_flags(work_item_epics: true)
         group.add_developer(user)
       end
 
@@ -352,7 +351,6 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
       before do
         stub_licensed_features(epics: true, subepics: true)
-        stub_feature_flags(work_item_epics: true)
         group.add_developer(user)
       end
 

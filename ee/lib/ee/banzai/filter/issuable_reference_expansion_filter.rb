@@ -15,15 +15,9 @@ module EE
 
         override :expand_reference_with_summary
         def expand_reference_with_summary(node, issuable)
-          # Attempt to generate the summary using the associated work item for epics if work_item_epics_enabled?, since
-          # the assignees and other relevant info is linked to the work item record
-          issuable = issuable.work_item if issuable.is_a?(Epic) && work_item_epics_enabled? && issuable.work_item
+          issuable = issuable.work_item if issuable.is_a?(Epic) && issuable.work_item
 
           super
-        end
-
-        def work_item_epics_enabled?
-          (project&.group || group)&.work_item_epics_enabled?
         end
       end
     end

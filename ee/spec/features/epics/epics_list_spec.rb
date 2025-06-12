@@ -230,7 +230,7 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
         end
 
         before do
-          stub_feature_flags(work_item_epics: true, work_item_epics_list: true)
+          stub_feature_flags(work_item_epics_list: true)
         end
 
         it 'renders work item epics' do

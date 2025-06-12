@@ -4038,38 +4038,19 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   end
 
   describe '#work_item_epics_enabled?' do
-    let_it_be(:root_group) { create(:group) }
-    let_it_be(:group) { create(:group, parent: root_group) }
-    let_it_be(:user) { create(:user) }
+    let_it_be(:group) { build(:group) }
 
     subject { group.work_item_epics_enabled? }
 
-    before do
-      stub_feature_flags(work_item_epics: root_group)
-      stub_licensed_features(epics: true)
-    end
+    context 'when license is available' do
+      before do
+        stub_licensed_features(epics: true)
+      end
 
-    context 'when all conditions are met' do
       it { is_expected.to be true }
     end
 
-    context 'when work_item_epics feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_epics: false)
-      end
-
-      it { is_expected.to be false }
-    end
-
-    context 'when work_item_epics enabled for the sub group' do
-      before do
-        stub_feature_flags(work_item_epics: group)
-      end
-
-      it { is_expected.to be false }
-    end
-
-    context 'when epics is not a licensed feature' do
+    context 'when license is unavailable' do
       before do
         stub_licensed_features(epics: false)
       end

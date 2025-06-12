@@ -71,20 +71,5 @@ RSpec.describe 'getting a single work item associated with a group', feature_cat
         expect(work_item_data).to be_blank
       end
     end
-
-    context 'when the namespace_level_work_items feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
-      end
-
-      it 'returns the work item' do
-        post_graphql(query, current_user: current_user)
-
-        expect(work_item_data).to include(
-          'id' => query_work_item.to_gid.to_s,
-          'iid' => query_work_item.iid.to_s
-        )
-      end
-    end
   end
 end

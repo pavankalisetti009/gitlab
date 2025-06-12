@@ -166,7 +166,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
 
       context 'when create_group_level_work_items is disabled' do
         before do
-          stub_feature_flags(create_group_level_work_items: false, work_item_epics: false)
+          stub_feature_flags(create_group_level_work_items: false)
         end
 
         it { is_expected.to be_empty }
@@ -241,11 +241,10 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       end
     end
 
-    context 'when work_item_epics is disabled' do
+    context 'when epics are licensed' do
       let_it_be(:epic) { create(:work_item_type, :epic) }
 
       before do
-        stub_feature_flags(work_item_epics: false)
         stub_licensed_features(epics: true)
       end
 
@@ -258,7 +257,6 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       let_it_be(:epic) { create(:work_item_type, :epic) }
 
       before do
-        stub_feature_flags(work_item_epics: true)
         stub_licensed_features(epics: true)
         allow(Ability).to receive(:allowed?).with(guest_user, :create_epic,
           resource_parent.group).and_return(false)

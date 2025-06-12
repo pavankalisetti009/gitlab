@@ -58,10 +58,6 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
         group.add_developer(current_user)
       end
 
-      before do
-        stub_feature_flags(work_item_epics: true)
-      end
-
       it_behaves_like 'syncs all data from an epic to a work item'
 
       it 'syncs the state to the epic' do
@@ -97,7 +93,6 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
         before do
           epic.close!
           epic.update!(closed_by: create(:user), closed_at: Time.current - 1.day)
-          stub_feature_flags(work_item_epics: true)
         end
 
         it 'does not error and syncs closed_at and closed_by' do
@@ -112,7 +107,6 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
 
       context 'when closing the epic fails due an other error' do
         before do
-          stub_feature_flags(work_item_epics: true)
           allow_next_found_instance_of(Epic) do |epic|
             allow(epic).to receive(:close!).and_raise(ActiveRecord::RecordInvalid.new)
           end

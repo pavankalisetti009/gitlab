@@ -304,8 +304,7 @@ module EE
     end
 
     def work_item_epics_enabled?
-      ::Feature.enabled?(:work_item_epics, root_ancestor) &&
-        licensed_feature_available?(:epics)
+      licensed_feature_available?(:epics)
     end
 
     def work_item_epics_ssot_enabled?

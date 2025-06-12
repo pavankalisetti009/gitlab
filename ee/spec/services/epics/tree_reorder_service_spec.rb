@@ -134,14 +134,6 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               end
 
               it_behaves_like 'reorder objects and returns success status'
-
-              context 'when work_item_epics feature is disabled' do
-                before do
-                  stub_feature_flags(work_item_epics: false)
-                end
-
-                it_behaves_like 'reorder objects and returns success status'
-              end
             end
           end
 
@@ -511,14 +503,6 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 end
 
                 it_behaves_like 'new parent not in an ancestor group'
-
-                context 'when work_item_epics flag is disabled' do
-                  before do
-                    stub_feature_flags(work_item_epics: false)
-                  end
-
-                  it_behaves_like 'new parent not in an ancestor group'
-                end
               end
 
               context 'when the new parent is in a descendant group' do

@@ -870,21 +870,6 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
               Mutations::WorkItems::Create::DISABLED_FF_ERROR
             ]
           end
-
-          context 'when the work_item_epics feature flag is disabled' do
-            before do
-              stub_feature_flags(work_item_epics: false)
-            end
-
-            it 'creates the work item' do
-              expect do
-                post_graphql_mutation(mutation, current_user: current_user)
-              end.to change { WorkItem.count }.by(1)
-
-              expect(response).to have_gitlab_http_status(:success)
-              expect(type_response).to include({ 'name' => 'Task' })
-            end
-          end
         end
 
         context 'when type is Epic' do
@@ -899,21 +884,6 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
             expect(response).to have_gitlab_http_status(:success)
             expect(type_response).to include({ 'name' => 'Epic' })
-          end
-
-          context 'when the work_item_epics feature flag is disabled' do
-            before do
-              stub_feature_flags(work_item_epics: false)
-            end
-
-            it 'creates the work item epic' do
-              expect do
-                post_graphql_mutation(mutation, current_user: current_user)
-              end.to change { WorkItem.count }.by(1)
-
-              expect(response).to have_gitlab_http_status(:success)
-              expect(type_response).to include({ 'name' => 'Epic' })
-            end
           end
         end
       end
