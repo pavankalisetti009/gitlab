@@ -7,6 +7,7 @@ module WorkItems
         self.table_name = 'work_item_custom_lifecycles'
 
         include WorkItems::Statuses::SharedConstants
+        include WorkItems::Statuses::Lifecycle
 
         MAX_STATUSES_PER_LIFECYCLE = 30
         MAX_LIFECYCLES_PER_NAMESPACE = 50
@@ -52,11 +53,11 @@ module WorkItems
           statuses.exists?(id: status_id)
         end
 
-        private
-
         def default_statuses
           [default_open_status, default_closed_status, default_duplicate_status].compact
         end
+
+        private
 
         def ensure_default_statuses_in_lifecycle
           return unless default_open_status && default_closed_status && default_duplicate_status

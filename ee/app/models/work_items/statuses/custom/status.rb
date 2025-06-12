@@ -44,6 +44,10 @@ module WorkItems
         # because you won't be able to change the namespace through the API.
         validate :validate_statuses_per_namespace_limit, on: :create
 
+        def self.find_by_namespace_and_name(namespace_id, name)
+          find_by(namespace_id: namespace_id, name: name)
+        end
+
         def icon_name
           CATEGORY_ICONS[category.to_sym]
         end

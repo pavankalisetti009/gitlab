@@ -8,6 +8,7 @@ module WorkItems
         include ActiveModel::Attributes
         include ActiveRecord::FixedItemsModel::Model
         include GlobalID::Identification
+        include WorkItems::Statuses::Lifecycle
 
         ITEMS = [
           {
