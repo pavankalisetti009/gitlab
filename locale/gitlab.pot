@@ -3959,6 +3959,14 @@ msgstr ""
 msgid "Adds this %{issuable_type} as related to the %{issuable_type} it was created from"
 msgstr ""
 
+msgid "AdherenceReport|%{pendingCount}/%{totalCount} control is pending"
+msgid_plural "AdherenceReport|%{pendingCount}/%{totalCount} controls are pending"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "AdherenceReport|Completed controls"
+msgstr ""
+
 msgid "AdherenceReport|Have questions or thoughts on the new improvements we made? %{linkStart}Please provide feedback on your experience%{linkEnd}."
 msgstr ""
 
@@ -3966,6 +3974,9 @@ msgid "AdherenceReport|Learn more about the changes in our %{linkStart}documenta
 msgstr ""
 
 msgid "AdherenceReport|No statuses found."
+msgstr ""
+
+msgid "AdherenceReport|Pending controls"
 msgstr ""
 
 msgid "AdherenceReport|Show old report"

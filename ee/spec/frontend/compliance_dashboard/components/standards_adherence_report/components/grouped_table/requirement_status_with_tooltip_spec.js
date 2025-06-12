@@ -1,0 +1,270 @@
+import { shallowMount } from '@vue/test-utils';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlBadge, GlTooltip } from '@gitlab/ui';
+import RequirementStatusWithTooltip from 'ee/compliance_dashboard/components/standards_adherence_report/components/grouped_table/requirement_status_with_tooltip.vue';
+import RequirementStatus from 'ee/compliance_dashboard/components/standards_adherence_report/components/requirement_status.vue';
+import waitForPromises from 'helpers/wait_for_promises';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import complianceRequirementsControlsQuery from 'ee/compliance_dashboard/components/standards_adherence_report/graphql/queries/compliance_requirements_controls.query.graphql';
+import { EXTERNAL_CONTROL_LABEL } from 'ee/compliance_dashboard/constants';
+
+Vue.use(VueApollo);
+
+describe('RequirementStatusWithTooltip', () => {
+  let wrapper;
+  let mockRequirementsControlsQuery;
+
+  const mockControlExpressions = [
+    { id: 'control-1', name: 'Control One' },
+    { id: 'control-2', name: 'Control Two' },
+    { id: 'control-3', name: 'Control Three' },
+  ];
+
+  const mockStatus = {
+    pendingCount: 2,
+    passCount: 1,
+    failCount: 1,
+    project: {
+      complianceControlStatus: {
+        nodes: [
+          {
+            id: 'status-1',
+            status: 'PENDING',
+            complianceRequirementsControl: {
+              id: 'control-1',
+              name: 'control-1',
+              controlType: 'internal',
+            },
+          },
+          {
+            id: 'status-2',
+            status: 'PENDING',
+            complianceRequirementsControl: {
+              id: 'control-2',
+              name: 'control-2',
+              controlType: 'external',
+              externalControlName: 'External Control Name',
+            },
+          },
+          {
+            id: 'status-3',
+            status: 'PASS',
+            complianceRequirementsControl: {
+              id: 'control-3',
+              name: 'control-3',
+              controlType: 'internal',
+            },
+          },
+          {
+            id: 'status-4',
+            status: 'FAIL',
+            complianceRequirementsControl: {
+              id: 'control-4',
+              name: 'control-4',
+              controlType: 'external',
+              externalControlName: null,
+            },
+          },
+        ],
+      },
+    },
+    complianceRequirement: {
+      complianceRequirementsControls: {
+        nodes: [{ id: 'control-1' }, { id: 'control-2' }, { id: 'control-3' }, { id: 'control-4' }],
+      },
+    },
+  };
+
+  const createMockRequirementsControlsResponse = () => ({
+    data: {
+      complianceRequirementControls: {
+        controlExpressions: mockControlExpressions,
+      },
+    },
+  });
+
+  const findTooltip = () => wrapper.findComponent(GlTooltip);
+  const findRequirementStatus = () => wrapper.findComponent(RequirementStatus);
+  const findBadges = () => wrapper.findAllComponents(GlBadge);
+  const findHeader = () => wrapper.find('h3');
+  const findHeaderByText = (text) =>
+    wrapper.findAll('h4').wrappers.find((h) => h.text().includes(text));
+
+  function createComponent(props = {}) {
+    mockRequirementsControlsQuery = jest
+      .fn()
+      .mockResolvedValue(createMockRequirementsControlsResponse());
+
+    const apolloProvider = createMockApollo([
+      [complianceRequirementsControlsQuery, mockRequirementsControlsQuery],
+    ]);
+
+    wrapper = shallowMount(RequirementStatusWithTooltip, {
+      propsData: {
+        status: mockStatus,
+        ...props,
+      },
+      apolloProvider,
+      stubs: {
+        GlTooltip: false,
+        GlSprintf: false,
+      },
+    });
+
+    return wrapper;
+  }
+
+  describe('component structure', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('renders the main wrapper div', () => {
+      expect(wrapper.find('div').exists()).toBe(true);
+    });
+
+    it('renders GlTooltip component', () => {
+      expect(findTooltip().exists()).toBe(true);
+    });
+
+    it('renders RequirementStatus component', () => {
+      expect(findRequirementStatus().exists()).toBe(true);
+    });
+
+    it('passes correct props to RequirementStatus', () => {
+      const requirementStatus = findRequirementStatus();
+      expect(requirementStatus.props()).toEqual({
+        passCount: mockStatus.passCount,
+        pendingCount: mockStatus.pendingCount,
+        failCount: mockStatus.failCount,
+      });
+    });
+  });
+
+  describe('control name display', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('displays mapped names for internal controls', () => {
+      expect(wrapper.text()).toContain('Control One');
+      expect(wrapper.text()).toContain('Control Three');
+    });
+
+    it('displays external control labels for external controls', () => {
+      const badges = findBadges();
+      expect(badges.length).toBe(2);
+      badges.wrappers.forEach((badge) => {
+        expect(badge.text()).toBe(EXTERNAL_CONTROL_LABEL);
+      });
+    });
+
+    it('displays external control names when provided', () => {
+      expect(wrapper.text()).toContain('External Control Name');
+    });
+  });
+
+  describe('tooltip content when pendingCount > 0', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('displays pending count header with GlSprintf', () => {
+      const header = findHeader();
+      expect(header.exists()).toBe(true);
+    });
+
+    it('displays pending controls section', () => {
+      const pendingHeader = findHeaderByText('Pending controls');
+      expect(pendingHeader.exists()).toBe(true);
+    });
+  });
+
+  describe('tooltip content when completedControls exist', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('displays completed controls section', () => {
+      const completedHeader = findHeaderByText('Completed controls');
+      expect(completedHeader.exists()).toBe(true);
+    });
+  });
+
+  describe('external control badges', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('displays badges for external controls', () => {
+      const badges = findBadges();
+      expect(badges.length).toBe(2); // Two external controls
+      badges.wrappers.forEach((badge) => {
+        expect(badge.text()).toBe(EXTERNAL_CONTROL_LABEL);
+      });
+    });
+  });
+
+  describe('when pendingCount is 0', () => {
+    beforeEach(async () => {
+      const statusWithNoPending = {
+        ...mockStatus,
+        pendingCount: 0,
+        project: {
+          complianceControlStatus: {
+            nodes: mockStatus.project.complianceControlStatus.nodes.filter(
+              (node) => node.status !== 'PENDING',
+            ),
+          },
+        },
+      };
+      createComponent({ status: statusWithNoPending });
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('does not display pending count header', () => {
+      const header = findHeader();
+      expect(header.exists()).toBe(false);
+    });
+
+    it('does not display pending controls section', () => {
+      const pendingHeader = findHeaderByText('Pending controls');
+      expect(pendingHeader).toBeUndefined();
+    });
+  });
+
+  describe('when no completed controls exist', () => {
+    beforeEach(async () => {
+      const statusWithNoCompleted = {
+        ...mockStatus,
+        project: {
+          complianceControlStatus: {
+            nodes: mockStatus.project.complianceControlStatus.nodes.filter(
+              (node) => node.status === 'PENDING',
+            ),
+          },
+        },
+      };
+      createComponent({ status: statusWithNoCompleted });
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('does not display completed controls section', () => {
+      const completedHeader = findHeaderByText('Completed controls');
+      expect(completedHeader).toBeUndefined();
+    });
+  });
+});

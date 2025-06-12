@@ -3,7 +3,7 @@ import { GlTable, GlLink, GlButton } from '@gitlab/ui';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { s__ } from '~/locale';
 import FrameworkBadge from '../../../shared/framework_badge.vue';
-import RequirementStatus from '../requirement_status.vue';
+import RequirementStatusWithTooltip from './requirement_status_with_tooltip.vue';
 
 export default {
   components: {
@@ -13,7 +13,7 @@ export default {
     TimeAgoTooltip,
 
     FrameworkBadge,
-    RequirementStatus,
+    RequirementStatusWithTooltip,
   },
   props: {
     items: {
@@ -48,12 +48,8 @@ export default {
     hover
     @row-selected="$emit('row-selected', $event[0])"
   >
-    <template #cell(status)="{ item: { passCount, pendingCount, failCount } }">
-      <requirement-status
-        :pass-count="passCount"
-        :pending-count="pendingCount"
-        :fail-count="failCount"
-      />
+    <template #cell(status)="{ item }">
+      <requirement-status-with-tooltip :status="item" />
     </template>
     <template #cell(requirement)="{ item: { complianceRequirement: requirement } }">
       {{ requirement.name }}
