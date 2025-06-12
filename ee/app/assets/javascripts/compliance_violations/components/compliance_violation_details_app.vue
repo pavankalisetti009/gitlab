@@ -1,11 +1,17 @@
 <script>
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon, GlToast } from '@gitlab/ui';
+import Vue from 'vue';
 import { __, sprintf } from '~/locale';
+import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
+import updateComplianceViolationStatus from '../graphql/mutations/update_compliance_violation_status.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
+
+Vue.use(GlToast);
 
 export default {
   name: 'ComplianceViolationDetailsApp',
   components: {
+    ComplianceViolationStatusDropdown,
     GlLoadingIcon,
   },
   props: {
@@ -17,6 +23,7 @@ export default {
   data() {
     return {
       complianceViolation: {},
+      isStatusUpdating: false,
     };
   },
   apollo: {
@@ -40,9 +47,32 @@ export default {
       });
     },
   },
+  methods: {
+    async handleStatusChange(newStatus) {
+      this.isStatusUpdating = true;
+      try {
+        await this.$apollo.mutate({
+          mutation: updateComplianceViolationStatus,
+          variables: {
+            input: {
+              violationId: this.violationId,
+              status: newStatus,
+            },
+          },
+        });
+      } catch (error) {
+        this.$toast.show(this.$options.i18n.statusUpdateError, {
+          variant: 'danger',
+        });
+      } finally {
+        this.isStatusUpdating = false;
+      }
+    },
+  },
   i18n: {
     status: __('Status'),
     location: __('Location'),
+    statusUpdateError: __('Failed to update compliance violation status. Please try again later.'),
   },
 };
 </script>
@@ -57,7 +87,13 @@ export default {
       {{ title }}
     </h1>
     <div class="gl-mt-5" data-testid="compliance-violation-status">
-      <span class="gl-font-bold">{{ $options.i18n.status }}:</span> {{ complianceViolation.status }}
+      <span class="gl-font-bold">{{ $options.i18n.status }}:</span>
+      <compliance-violation-status-dropdown
+        class="gl-ml-3 gl-align-baseline"
+        :value="complianceViolation.status"
+        :loading="isStatusUpdating"
+        @change="handleStatusChange"
+      />
     </div>
     <div class="gl-mt-4">
       <span class="gl-font-bold">{{ $options.i18n.location }}:</span>

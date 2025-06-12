@@ -1,14 +1,13 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { __ } from '~/locale';
 import createDefaultClient from '~/lib/graphql';
 import ViolationDetailsApp from './components/compliance_violation_details_app.vue';
-import complianceViolationQuery from './graphql/compliance_violation.query.graphql';
+import { resolvers } from './graphql/resolvers';
 
 Vue.use(VueApollo);
 
 const apolloProvider = new VueApollo({
-  defaultClient: createDefaultClient(),
+  defaultClient: createDefaultClient(resolvers),
 });
 
 export const initDetailsApp = () => {
@@ -19,23 +18,6 @@ export const initDetailsApp = () => {
   }
 
   const { violationId } = el.dataset;
-
-  apolloProvider.clients.defaultClient.cache.writeQuery({
-    query: complianceViolationQuery,
-    variables: { id: violationId },
-    data: {
-      complianceViolation: {
-        id: 1,
-        status: __('In review'),
-        project: {
-          id: 2,
-          nameWithNamespace: 'GitLab.org / GitLab Test',
-          fullPath: '/gitlab/org/gitlab-test',
-          webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-        },
-      },
-    },
-  });
 
   return new Vue({
     el,
