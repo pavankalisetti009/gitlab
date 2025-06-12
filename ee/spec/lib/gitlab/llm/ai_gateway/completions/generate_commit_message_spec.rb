@@ -43,7 +43,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
     end
 
     let(:expected_diff) { merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(10000) }
-    let(:expected_prompt_version) { "1.1.0" }
+    let(:expected_prompt_version) { "1.2.0" }
 
     before do
       stub_feature_flags(ai_model_switching: false)
@@ -102,6 +102,33 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
   end
 
   describe 'namespace feature setting integration' do
+    shared_examples 'calls the AIGW client' do
+      let(:expected_diff) do
+        merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(described_class::WORDS_LIMIT)
+      end
+
+      it 'sends the correct parameters to the client' do
+        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+          expect(client)
+            .to receive(:complete_prompt)
+            .with(
+              base_url: Gitlab::AiGateway.url,
+              prompt_name: :generate_commit_message,
+              inputs: { diff: expected_diff },
+              model_metadata: hash_including(
+                feature_setting: 'generate_commit_message',
+                identifier: expected_identifier,
+                provider: 'gitlab'
+              ),
+              prompt_version: expected_prompt_version
+            )
+            .and_return(ai_response)
+        end
+
+        generate_commit_message
+      end
+    end
+
     let_it_be(:group) { create(:group) }
     let_it_be(:target_project) { create(:project, :repository, namespace: group) }
     let_it_be(:merge_request) { create(:merge_request, target_project: target_project, source_project: target_project) }
@@ -115,56 +142,31 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
         create(:ai_namespace_feature_setting,
           namespace: group,
           feature: 'generate_commit_message',
-          offered_model_ref: 'claude_sonnet_3_7_20250219',
-          offered_model_name: 'Claude Sonnet 3.7 20250219')
+          offered_model_ref: 'claude_sonnet_4_20250514',
+          offered_model_name: 'Claude Sonnet 4.0 20250514')
       end
 
-      it 'uses namespace-specific model settings' do
-        expected_diff = merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(described_class::WORDS_LIMIT)
-
-        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
-          expect(client)
-            .to receive(:complete_prompt)
-            .with(
-              base_url: Gitlab::AiGateway.url,
-              prompt_name: :generate_commit_message,
-              inputs: { diff: expected_diff },
-              model_metadata: hash_including(
-                feature_setting: 'generate_commit_message',
-                identifier: 'claude_sonnet_3_7_20250219',
-                provider: 'gitlab'
-              ),
-              prompt_version: '1.1.0'
-            )
-            .and_return(ai_response)
-        end
-
-        generate_commit_message
+      it_behaves_like 'calls the AIGW client' do
+        let(:expected_identifier) { 'claude_sonnet_4_20250514' }
+        let(:expected_prompt_version) { '1.2.0' }
       end
     end
 
     context 'when namespace has no specific feature settings' do
-      it 'falls back to default feature settings' do
-        expected_diff = merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(described_class::WORDS_LIMIT)
+      it_behaves_like 'calls the AIGW client' do
+        let(:expected_identifier) { nil }
+        let(:expected_prompt_version) { '1.2.0' }
+      end
+    end
 
-        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
-          expect(client)
-            .to receive(:complete_prompt)
-            .with(
-              base_url: Gitlab::AiGateway.url,
-              prompt_name: :generate_commit_message,
-              inputs: { diff: expected_diff },
-              model_metadata: hash_including(
-                feature_setting: 'generate_commit_message',
-                identifier: nil,
-                provider: 'gitlab'
-              ),
-              prompt_version: '1.1.0'
-            )
-            .and_return(ai_response)
-        end
+    context 'when generate_commit_message_claude_4_0 is disabled' do
+      before do
+        stub_feature_flags(generate_commit_message_claude_4_0: false)
+      end
 
-        generate_commit_message
+      it_behaves_like 'calls the AIGW client' do
+        let(:expected_identifier) { nil }
+        let(:expected_prompt_version) { '1.1.0' }
       end
     end
   end

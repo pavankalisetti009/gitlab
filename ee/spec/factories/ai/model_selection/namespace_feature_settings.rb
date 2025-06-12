@@ -17,7 +17,8 @@ FactoryBot.define do
           { 'name' => 'Claude Sonnet 3.7', 'identifier' => 'claude-3-7-sonnet-20250219' },
           { 'name' => 'Claude 3.5 Sonnet', 'identifier' => 'claude-3-5-sonnet-20240620' },
           { 'name' => 'Claude Sonnet 3.7 20250219', 'identifier' => 'claude_sonnet_3_7_20250219' },
-          { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' }
+          { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' },
+          { 'name' => 'Claude Sonnet 4.0 20250514', 'identifier' => 'claude_sonnet_4_20250514' }
         ],
         "unit_primitives" => [
           {
@@ -58,7 +59,7 @@ FactoryBot.define do
           {
             "feature_setting" => "generate_commit_message",
             "default_model" => "claude_sonnet_3_7_20250219",
-            "selectable_models" => %w[claude_sonnet_3_7_20250219 claude_3_5_sonnet_20240620],
+            "selectable_models" => %w[claude_sonnet_3_7_20250219 claude_3_5_sonnet_20240620 claude_sonnet_4_20250514],
             "beta_models" => [],
             "unit_primitives" => ["generate_commit_message"]
           },
