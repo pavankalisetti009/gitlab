@@ -16805,6 +16805,18 @@ msgstr ""
 msgid "ComplianceViolations|Your Compliance Violations CSV export for the group %{group_link} has been attached to this email."
 msgstr ""
 
+msgid "ComplianceViolation|Detected"
+msgstr ""
+
+msgid "ComplianceViolation|Dismissed"
+msgstr ""
+
+msgid "ComplianceViolation|In review"
+msgstr ""
+
+msgid "ComplianceViolation|Resolved"
+msgstr ""
+
 msgid "Compliance|Framework deleted successfully"
 msgstr ""
 
@@ -26379,6 +26391,9 @@ msgstr ""
 msgid "Failed to update compliance requirement control. Error: %{error_message}"
 msgstr ""
 
+msgid "Failed to update compliance violation status. Please try again later."
+msgstr ""
+
 msgid "Failed to update framework"
 msgstr ""
 
@@ -32334,9 +32349,6 @@ msgid "In progress"
 msgstr ""
 
 msgid "In progress, queued for %{queuedDuration} seconds"
-msgstr ""
-
-msgid "In review"
 msgstr ""
 
 msgid "In the background, we're attempting to connect you again."
