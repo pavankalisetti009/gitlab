@@ -12,6 +12,8 @@ import GroupedTable from './components/grouped_table/grouped_table.vue';
 import FiltersBar from './components/filters_bar/filters_bar.vue';
 import { GroupedLoader } from './services/grouped_loader';
 
+const GROUP_PAGE_LIMIT = 20;
+
 export default {
   name: 'ComplianceStandardsAdherenceTableV2',
   components: {
@@ -58,10 +60,23 @@ export default {
     hasItems() {
       return this.items.data.some((item) => item.children.length > 0);
     },
+    filtersAndGroupBy() {
+      return { ...this.filters, groupBy: this.groupBy };
+    },
   },
   watch: {
     filters(newFilters) {
       this.groupedLoader.setFilters(newFilters);
+    },
+    groupBy(newGroupBy) {
+      this.perPage = GROUP_PAGE_LIMIT;
+      this.groupedLoader.setGroupBy(newGroupBy);
+      this.items = {
+        data: [],
+        pageInfo: {},
+      };
+    },
+    filtersAndGroupBy() {
       this.loadFirstPage();
     },
   },
@@ -104,7 +119,7 @@ export default {
     },
 
     loadFirstPage() {
-      return this.invokeLoader();
+      this.invokeLoader();
     },
     onPageSizeChange(perPage) {
       this.perPage = perPage;
@@ -139,6 +154,7 @@ export default {
       :filters.sync="filters"
       :group-by.sync="groupBy"
       :with-projects="!projectPath"
+      with-group-by
       @load="isInitiallyLoading = false"
     />
     <template v-if="isInitiallyLoading">
@@ -147,7 +163,7 @@ export default {
     <div v-else>
       <gl-loading-icon v-if="isLoading" size="md" class="gl-m-5" />
       <template v-else-if="hasItems">
-        <grouped-table :items="items.data" @row-selected="onRowSelected" />
+        <grouped-table :items="items.data" :group-by="groupBy" @row-selected="onRowSelected" />
         <div v-if="items.pageInfo" class="gl-justify-between md:gl-flex">
           <div class="gl-hidden gl-grow gl-basis-0 md:gl-flex"></div>
           <div class="gl-float-leftmd:gl-flex gl-grow gl-basis-0 gl-justify-center">
@@ -158,7 +174,7 @@ export default {
               @next="loadNextPage"
             />
           </div>
-          <div class="gl-float-right gl-grow gl-basis-0 gl-justify-end md:gl-flex">
+          <div v-if="!groupBy" class="gl-float-right gl-grow gl-basis-0 gl-justify-end md:gl-flex">
             <page-size-selector :value="perPage" @input="onPageSizeChange" />
           </div>
         </div>

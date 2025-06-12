@@ -5,6 +5,7 @@ query groupComplianceRequirementsStatuses(
   $before: String
   $after: String
   $filters: GroupProjectRequirementComplianceStatusInput
+  $orderBy: ProjectComplianceRequirementStatusOrderBy
 ) {
   container: group(fullPath: $fullPath) {
     id
@@ -14,6 +15,7 @@ query groupComplianceRequirementsStatuses(
       before: $before
       after: $after
       filters: $filters
+      orderBy: $orderBy
     ) {
       nodes {
         id

@@ -1,6 +1,14 @@
 import { __, s__ } from '~/locale';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
+export const GROUP_BY = {
+  NONE: null,
+  // Values should be in sync with ProjectComplianceRequirementStatusOrderBy graphql enum
+  REQUIREMENTS: 'REQUIREMENT',
+  FRAMEWORKS: 'FRAMEWORK',
+  PROJECTS: 'PROJECT',
+};
+
 // Checks and proper values sourced from:
 // https://gitlab.com/gitlab-org/gitlab/-/blob/ea5e2706045c51ea2a2e408e39093da0aca3eec7/doc/api/graphql/reference/index.md#L25792
 const PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR = 'PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR';

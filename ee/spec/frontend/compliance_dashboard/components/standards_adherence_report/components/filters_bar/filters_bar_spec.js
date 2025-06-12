@@ -2,9 +2,9 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlDisclosureDropdown, GlFilteredSearch } from '@gitlab/ui';
 import FiltersBar, {
-  GROUP_BY,
   FILTERS,
 } from 'ee/compliance_dashboard/components/standards_adherence_report/components/filters_bar/filters_bar.vue';
+import { GROUP_BY } from 'ee/compliance_dashboard/components/standards_adherence_report/constants';
 import complianceFrameworksInGroupQuery from 'ee/compliance_dashboard/components/standards_adherence_report/graphql/queries/compliance_frameworks_in_group.query.graphql';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -297,7 +297,7 @@ describe('FiltersBar', () => {
 
     it('filters selectedTokens when groupBy changes', async () => {
       createComponent({
-        props: { groupBy: GROUP_BY.FRAMEWORKS },
+        props: { groupBy: GROUP_BY.FRAMEWORKS, withGroupBy: true },
         requestHandlers: [[complianceFrameworksInGroupQuery, complianceFrameworksHandler]],
       });
 
@@ -309,8 +309,7 @@ describe('FiltersBar', () => {
       ];
 
       findFilteredSearch().vm.$emit('submit', filterValue);
-
-      await wrapper.setProps({ groupBy: GROUP_BY.REQUIREMENTS });
+      findDisclosureDropdown().vm.$emit('action', { value: GROUP_BY.REQUIREMENTS });
       await nextTick();
 
       const lastEmit = wrapper.emitted('update:filters').pop();
