@@ -723,4 +723,85 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
       end
     end
   end
+
+  describe '.control_coverage_statistics' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project1) { create(:project, namespace: namespace) }
+    let_it_be(:project2) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+    let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework, namespace: namespace) }
+    let_it_be(:control1) { create(:compliance_requirements_control, compliance_requirement: requirement) }
+    let_it_be(:control2) { create(:compliance_requirements_control, :external, compliance_requirement: requirement) }
+
+    context 'when there are no control statuses' do
+      it 'returns an empty hash' do
+        result = described_class.control_coverage_statistics([project1.id, project2.id])
+
+        expect(result).to eq({})
+      end
+    end
+
+    context 'when there are control statuses' do
+      let_it_be(:pass_status1) do
+        create(:project_control_compliance_status,
+          project: project1,
+          compliance_requirements_control: control1,
+          compliance_requirement: requirement,
+          status: :pass
+        )
+      end
+
+      let_it_be(:fail_status) do
+        create(:project_control_compliance_status,
+          project: project1,
+          compliance_requirements_control: control2,
+          compliance_requirement: requirement,
+          status: :fail
+        )
+      end
+
+      let_it_be(:pending_status) do
+        create(:project_control_compliance_status,
+          project: project2,
+          compliance_requirements_control: control1,
+          compliance_requirement: requirement,
+          status: :pending
+        )
+      end
+
+      let_it_be(:pass_status2) do
+        create(:project_control_compliance_status,
+          project: project2,
+          compliance_requirements_control: control2,
+          compliance_requirement: requirement,
+          status: :pass
+        )
+      end
+
+      it 'returns correct counts grouped by status' do
+        result = described_class.control_coverage_statistics([project1.id, project2.id])
+
+        expect(result).to eq({
+          'pass' => 2,
+          'fail' => 1,
+          'pending' => 1
+        })
+      end
+
+      it 'only includes statuses for specified projects' do
+        result = described_class.control_coverage_statistics([project1.id])
+
+        expect(result).to eq({
+          'pass' => 1,
+          'fail' => 1
+        })
+      end
+
+      it 'returns empty hash when given non-existent project ids' do
+        result = described_class.control_coverage_statistics([non_existing_record_id])
+
+        expect(result).to eq({})
+      end
+    end
+  end
 end

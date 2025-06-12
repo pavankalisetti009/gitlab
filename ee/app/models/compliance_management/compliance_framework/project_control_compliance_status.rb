@@ -55,6 +55,12 @@ module ComplianceManagement
         end
       end
 
+      def self.control_coverage_statistics(project_ids)
+        for_projects(project_ids)
+          .group(:status)
+          .count
+      end
+
       private
 
       def control_belongs_to_requirement
