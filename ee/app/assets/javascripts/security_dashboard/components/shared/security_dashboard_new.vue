@@ -124,7 +124,7 @@ export default {
               chartSeries: tempMockData,
             },
             gridAttributes: {
-              width: 7,
+              width: 6,
               height: 4,
               yPos: 0,
               xPos: 0,
