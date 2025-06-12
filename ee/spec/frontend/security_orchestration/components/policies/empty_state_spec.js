@@ -45,7 +45,7 @@ describe('EmptyState component', () => {
   it('displays the correct empty list state when there is not a policy project', () => {
     createComponent();
     expect(findEmptyListState().text()).toContain(
-      'This project is not linked to a security policy project. Either link it to an existing project or create a new policy, which will create a new project that you can use as a security policy project. For help, see',
+      'This project is not linked to a security policy project. Create a policy, which also creates and links a security policy project. Alternatively, link this project to an existing security policy project.',
     );
   });
 
