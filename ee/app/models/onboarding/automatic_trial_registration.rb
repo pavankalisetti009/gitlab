@@ -11,15 +11,15 @@ module Onboarding
       'SaaS Trial - defaulted'
     end
 
-    override :company_form_type
-    def self.company_form_type
-      'registration'
-    end
-
     # predicate methods
 
     override :show_company_form_side_column?
     def self.show_company_form_side_column?
+      true
+    end
+
+    override :show_company_form_footer?
+    def self.show_company_form_footer?
       true
     end
   end

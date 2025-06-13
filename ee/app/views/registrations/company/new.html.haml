@@ -14,7 +14,7 @@
     %p.gl-text-subtle.gl-text-lg.gl-text-center
       = s_('Trial|We need a few more details from you to activate your trial.')
     .gl-max-w-80
-      #js-registrations-company-form{ data: create_company_form_data(onboarding_status_presenter) }
+      #js-registrations-company-form{ data: { provide: create_company_form_data(onboarding_status_presenter) } }
 
   - if onboarding_status_presenter.show_company_form_side_column?
     = render GitlabSubscriptions::Trials::AdvantagesListComponent.new

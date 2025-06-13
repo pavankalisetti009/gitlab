@@ -63,8 +63,7 @@ module Registrations
         :last_name,
         :phone_number,
         :country,
-        :state,
-        :website_url
+        :state
       )
     end
 

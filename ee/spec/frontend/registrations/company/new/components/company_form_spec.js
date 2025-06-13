@@ -18,10 +18,14 @@ describe('CompanyForm', () => {
           firstName: 'Joe',
           lastName: 'Doe',
           showNameFields: true,
+          companyName: null,
+          phoneNumber: null,
+          country: '',
+          state: '',
           emailDomain: '_email_domain_',
         },
         trackActionForErrors: '_trackActionForErrors_',
-        formType: 'registration',
+        showFormFooter: true,
         ...provideData,
       },
     });
@@ -49,21 +53,21 @@ describe('CompanyForm', () => {
     });
   });
 
-  describe('when formType is trial', () => {
+  describe('when showFormFooter is false', () => {
     beforeEach(() => {
-      wrapper = createComponent({ formType: 'trial' });
+      wrapper = createComponent({ showFormFooter: false });
     });
 
     it('displays correct text on submit button', () => {
       expect(findSubmitButton().text()).toBe('Continue');
     });
 
-    it('does not display footer text', () => {
-      expect(findFooterDescriptionText().text()).toBe('');
+    it('does not display footer', () => {
+      expect(findFooterDescriptionText().exists()).toBe(false);
     });
   });
 
-  describe('when formType is registration', () => {
+  describe('when showFormFooter is true', () => {
     beforeEach(() => {
       wrapper = createComponent();
     });
@@ -85,7 +89,7 @@ describe('CompanyForm', () => {
       wrapper = createComponent();
     });
 
-    it('submits the form when button is clicked', () => {
+    it('has a submit button', () => {
       expect(findSubmitButton().attributes('type')).toBe('submit');
     });
 

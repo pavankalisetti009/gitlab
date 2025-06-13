@@ -11,7 +11,7 @@ module EE
       attr_reader :registration_type, :user_return_to
 
       # string delegations
-      delegate :tracking_label, :company_form_type, to: :registration_type
+      delegate :tracking_label, to: :registration_type
       # translation delegations
       delegate :setup_for_company_label_text, to: :registration_type
       delegate :setup_for_company_help_text, to: :registration_type
@@ -19,7 +19,7 @@ module EE
       delegate :redirect_to_company_form?, :show_company_form_side_column?, to: :registration_type
       delegate :show_joining_project?, :hide_setup_for_company_field?, to: :registration_type
       delegate :read_from_stored_user_location?, :preserve_stored_location?, to: :registration_type
-      delegate :learn_gitlab_redesign?, to: :registration_type
+      delegate :learn_gitlab_redesign?, :show_company_form_footer?, to: :registration_type
 
       module ClassMethods
         extend ::Gitlab::Utils::Override

@@ -58,7 +58,7 @@ module GitlabSubscriptions
         params.permit(
           *::Onboarding::StatusPresenter::GLM_PARAMS,
           :company_name, :first_name, :last_name, :phone_number,
-          :country, :state, :website_url
+          :country, :state
         ).to_h
       end
 

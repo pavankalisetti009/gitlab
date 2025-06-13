@@ -19,18 +19,50 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
       allow(helper).to receive_messages(params: params, current_user: user)
     end
 
-    it 'allows overriding data with params' do
-      attributes = {
-        submit_path: "/users/sign_up/company?#{extra_params.to_query}",
-        first_name: user.first_name,
-        last_name: user.last_name,
-        show_name_fields: 'false',
-        email_domain: user.email_domain,
-        form_type: 'registration',
-        track_action_for_errors: 'trial_registration'
-      }
+    subject(:form_data) { helper.create_company_form_data(::Onboarding::StatusPresenter.new({}, {}, user)) }
 
-      expect(helper.create_company_form_data(::Onboarding::StatusPresenter.new({}, {}, user))).to match(attributes)
+    it 'has default data' do
+      attributes = {
+        user: {
+          firstName: user.first_name,
+          lastName: user.last_name,
+          companyName: nil,
+          phoneNumber: nil,
+          country: '',
+          state: '',
+          showNameFields: false,
+          emailDomain: user.email_domain
+        },
+        submitPath: "/users/sign_up/company?#{extra_params.to_query}",
+        showFormFooter: true,
+        trackActionForErrors: 'trial_registration'
+      }.deep_stringify_keys
+
+      expect(::Gitlab::Json.parse(form_data)).to match(attributes)
+    end
+
+    context 'when params are provided on failure' do
+      let(:params) { super().merge(company_name: '_some_company_', country: 'US', state: 'CA') }
+
+      it 'allows overriding default data with params' do
+        attributes = {
+          user: {
+            firstName: user.first_name,
+            lastName: user.last_name,
+            companyName: '_some_company_',
+            phoneNumber: nil,
+            country: 'US',
+            state: 'CA',
+            showNameFields: false,
+            emailDomain: user.email_domain
+          },
+          submitPath: "/users/sign_up/company?#{extra_params.to_query}",
+          showFormFooter: true,
+          trackActionForErrors: 'trial_registration'
+        }.deep_stringify_keys
+
+        expect(::Gitlab::Json.parse(form_data)).to match(attributes)
+      end
     end
   end
 end
