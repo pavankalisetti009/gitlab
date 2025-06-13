@@ -14,8 +14,6 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
         .with_foreign_key('compliance_requirements_control_id')
     end
 
-    it { is_expected.to belong_to(:audit_event).class_name('AuditEvent') }
-
     it 'has many compliance_violation_issues' do
       is_expected.to have_many(:compliance_violation_issues)
         .class_name('ComplianceManagement::Projects::ComplianceViolationIssue')
@@ -30,13 +28,13 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
     it { is_expected.to validate_presence_of(:namespace) }
     it { is_expected.to validate_presence_of(:compliance_control) }
     it { is_expected.to validate_presence_of(:status) }
-    it { is_expected.to validate_presence_of(:audit_event) }
+    it { is_expected.to validate_presence_of(:audit_event_table_name) }
 
     describe 'uniqueness validations' do
       let_it_be(:namespace) { create(:group) }
       let_it_be(:project) { create(:project, namespace: namespace) }
       let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
-      let_it_be(:audit_event) { create(:audit_event, :project_event, target_project: project) }
+      let_it_be(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
       let_it_be(:other_audit_event) { create(:audit_event, :project_event, target_project: project) }
       let_it_be(:other_compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
 
@@ -46,7 +44,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
             project: project,
             namespace: namespace,
             compliance_control: compliance_control,
-            audit_event: audit_event
+            audit_event_id: audit_event.id,
+            audit_event_table_name: :project_audit_events
           )
         end
 
@@ -55,7 +54,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
             project: project,
             namespace: namespace,
             compliance_control: compliance_control,
-            audit_event: audit_event
+            audit_event_id: audit_event.id,
+            audit_event_table_name: :project_audit_events
           )
         end
 
@@ -74,6 +74,7 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
       let_it_be(:other_project) { create(:project, namespace: other_namespace) }
       let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
       let_it_be(:other_compliance_control) { create(:compliance_requirements_control, namespace: other_namespace) }
+      let_it_be(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
 
       describe '#project_belongs_to_namespace' do
         context 'when project belongs to namespace' do
@@ -82,7 +83,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
               project: project,
               namespace: namespace,
               compliance_control: compliance_control,
-              audit_event: create(:audit_event, :project_event, target_project: project)
+              audit_event_id: audit_event.id,
+              audit_event_table_name: :project_audit_events
             )
           end
 
@@ -97,7 +99,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
               project: project,
               namespace: other_namespace,
               compliance_control: compliance_control,
-              audit_event: create(:audit_event, :project_event, target_project: project)
+              audit_event_id: audit_event.id,
+              audit_event_table_name: :project_audit_events
             )
           end
 
@@ -115,7 +118,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
               project: project,
               namespace: namespace,
               compliance_control: compliance_control,
-              audit_event: create(:audit_event, :project_event, target_project: project)
+              audit_event_id: audit_event.id,
+              audit_event_table_name: :project_audit_events
             )
           end
 
@@ -130,7 +134,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
               project: project,
               namespace: namespace,
               compliance_control: other_compliance_control,
-              audit_event: create(:audit_event, :project_event, target_project: project)
+              audit_event_id: audit_event.id,
+              audit_event_table_name: :project_audit_events
             )
           end
 
@@ -149,7 +154,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
                 project: project,
                 namespace: namespace,
                 compliance_control: compliance_control,
-                audit_event: create(:audit_event, :project_event, target_project: project)
+                audit_event_id: audit_event.id,
+                audit_event_table_name: :project_audit_events
               )
             end
 
@@ -164,13 +170,14 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
                 project: project,
                 namespace: namespace,
                 compliance_control: compliance_control,
-                audit_event: create(:audit_event, :project_event, target_project: other_project)
+                audit_event_id: create(:audit_events_project_audit_event, project_id: other_project.id).id,
+                audit_event_table_name: :project_audit_events
               )
             end
 
             it 'is invalid' do
               expect(violation).not_to be_valid
-              expect(violation.errors[:audit_event]).to include('must reference the specified project as its entity')
+              expect(violation.errors[:audit_event_id]).to include('must reference the specified project as its entity')
             end
           end
         end
@@ -182,7 +189,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
                 project: project,
                 namespace: namespace,
                 compliance_control: compliance_control,
-                audit_event: create(:audit_event, :group_event, target_group: namespace)
+                audit_event_id: create(:audit_events_group_audit_event, group_id: namespace.id).id,
+                audit_event_table_name: :group_audit_events
               )
             end
 
@@ -200,7 +208,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
                 project: sub_group_project,
                 namespace: sub_group,
                 compliance_control: compliance_control,
-                audit_event: create(:audit_event, :group_event, target_group: namespace)
+                audit_event_id: create(:audit_events_group_audit_event, group_id: namespace.id).id,
+                audit_event_table_name: :group_audit_events
               )
             end
 
@@ -215,31 +224,121 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
                 project: project,
                 namespace: namespace,
                 compliance_control: compliance_control,
-                audit_event: create(:audit_event, :group_event, target_group: other_namespace)
+                audit_event_id: create(:audit_events_group_audit_event, group_id: other_namespace.id).id,
+                audit_event_table_name: :group_audit_events
               )
             end
 
             it 'is invalid' do
               expect(violation).not_to be_valid
-              expect(violation.errors[:audit_event]).to include('must reference the specified namespace as its entity')
+              expect(violation.errors[:audit_event_id])
+                .to include('must reference the specified namespace as its entity')
             end
           end
         end
 
         context 'when entity type is not Project or Group' do
-          subject(:violation) do
-            build(:project_compliance_violation,
-              project: project,
-              namespace: namespace,
-              compliance_control: compliance_control,
-              audit_event: create(:user_audit_event)
-            )
+          context 'for user audit events' do
+            subject(:violation) do
+              build(:project_compliance_violation,
+                project: project,
+                namespace: namespace,
+                compliance_control: compliance_control,
+                audit_event_id: create(:audit_events_user_audit_event).id,
+                audit_event_table_name: :user_audit_events
+              )
+            end
+
+            it 'is invalid' do
+              expect(violation).not_to be_valid
+              expect(violation.errors[:audit_event_id])
+                .to include('must be associated with either a Project or Group entity type')
+            end
           end
 
-          it 'is invalid' do
+          context 'for instance audit events' do
+            subject(:violation) do
+              build(:project_compliance_violation,
+                project: project,
+                namespace: namespace,
+                compliance_control: compliance_control,
+                audit_event_id: create(:audit_events_instance_audit_event).id,
+                audit_event_table_name: :instance_audit_events
+              )
+            end
+
+            it 'is invalid' do
+              expect(violation).not_to be_valid
+              expect(violation.errors[:audit_event_id])
+                .to include('must be associated with either a Project or Group entity type')
+            end
+          end
+        end
+      end
+
+      describe '#validate_audit_event_presence' do
+        let_it_be(:namespace) { create(:group) }
+        let_it_be(:project) { create(:project, namespace: namespace) }
+        let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
+        let_it_be(:project_audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+        let(:base_attributes) do
+          {
+            project: project,
+            namespace: namespace,
+            compliance_control: compliance_control
+          }
+        end
+
+        context 'when audit_event_id or audit_event_table_name is blank' do
+          it 'skips validation for blank audit_event_id' do
+            violation = build(:project_compliance_violation, base_attributes.merge(
+              audit_event_id: nil, audit_event_table_name: :project_audit_events
+            ))
+
+            violation.valid?
+            expect(violation.errors[:audit_event_id]).not_to include(match(/does not exist/))
+          end
+
+          it 'skips validation for blank audit_event_table_name' do
+            violation = build(:project_compliance_violation, base_attributes.merge(
+              audit_event_id: 123, audit_event_table_name: nil
+            ))
+
+            violation.valid?
+            expect(violation.errors[:audit_event_id]).not_to include(match(/does not exist/))
+          end
+        end
+
+        context 'when audit event exists' do
+          it 'is valid with existing project audit event' do
+            violation = build(:project_compliance_violation, base_attributes.merge(
+              audit_event_id: project_audit_event.id, audit_event_table_name: :project_audit_events
+            ))
+
+            expect(violation).to be_valid
+          end
+        end
+
+        context 'when audit event does not exist' do
+          it 'is invalid with non-existent project audit event' do
+            violation = build(:project_compliance_violation, base_attributes.merge(
+              audit_event_id: non_existing_record_id, audit_event_table_name: :project_audit_events
+            ))
+
             expect(violation).not_to be_valid
-            expect(violation.errors[:audit_event])
-              .to include('must be associated with either a Project or Group entity type')
+            expect(violation.errors[:audit_event_id])
+              .to include('does not exist in project audit events')
+          end
+
+          it 'is invalid with wrong scope' do
+            violation = build(:project_compliance_violation, base_attributes.merge(
+              audit_event_id: project_audit_event.id, audit_event_table_name: :group_audit_events
+            ))
+
+            expect(violation).not_to be_valid
+            expect(violation.errors[:audit_event_id])
+              .to include('does not exist in group audit events')
           end
         end
       end
@@ -248,6 +347,14 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
 
   describe 'enums' do
     it { is_expected.to define_enum_for(:status).with_values(detected: 0, in_review: 1, resolved: 2, dismissed: 3) }
+
+    it 'defines enum' do
+      is_expected.to define_enum_for(:audit_event_table_name).with_values(
+        project_audit_events: 0,
+        group_audit_events: 1,
+        user_audit_events: 2,
+        instance_audit_events: 3)
+    end
   end
 
   describe '.order_by_created_at_and_id' do

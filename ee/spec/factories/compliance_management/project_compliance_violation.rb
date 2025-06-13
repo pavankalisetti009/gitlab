@@ -5,7 +5,8 @@ FactoryBot.define do
     namespace
     project { association :project, namespace: namespace }
     compliance_control { association :compliance_requirements_control, namespace: namespace }
-    audit_event { association :project_audit_event, target_project: project }
+    audit_event_table_name { :project_audit_events }
+    audit_event_id { association(:audit_events_project_audit_event, project_id: project.id).id }
 
     status { :detected }
 

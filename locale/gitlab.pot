@@ -73268,6 +73268,9 @@ msgstr ""
 msgid "does not exist"
 msgstr ""
 
+msgid "does not exist in %{table_name}"
+msgstr ""
+
 msgid "does not have a supported extension. Only %{extension_list} are supported"
 msgstr ""
 
