@@ -232,7 +232,7 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     visit group_group_members_path(group)
     invite_group(group_to_add.name, role: role, use_exact_text_match: use_exact_text_match)
 
-    expect(page).to have_content("Your subscription includes 1 seat. If you continue, the #{group.name} group will "\
-      "have 2 seats in use and will be billed for the overage. Learn more.")
+    expect(page).to have_content("Your subscription includes 1 seat. If you continue, the #{group.root_ancestor.name} "\
+      "group will have 2 seats in use and will be billed for the overage. Learn more.")
   end
 end

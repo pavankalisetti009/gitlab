@@ -13,7 +13,9 @@ module EE
         free_users_limit: ::Namespaces::FreeUserCap.dashboard_limit,
         overage_members_modal_available: overage_members_modal_available.to_s,
         has_gitlab_subscription: gitlab_com_subscription?.to_s,
-        invite_with_custom_role_enabled: custom_roles_enabled?(source).to_s
+        invite_with_custom_role_enabled: custom_roles_enabled?(source).to_s,
+        full_path: source.root_ancestor.full_path,
+        group_name: source.root_ancestor.name
       )
     end
 
@@ -48,6 +50,8 @@ module EE
       dataset[:manage_member_roles_path] = manage_member_roles_path(source)
       dataset[:overage_members_modal_available] = overage_members_modal_available.to_s
       dataset[:has_gitlab_subscription] = gitlab_com_subscription?.to_s
+      dataset[:full_path] = source.root_ancestor.full_path
+      dataset[:group_name] = source.root_ancestor.name
 
       dataset
     end

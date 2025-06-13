@@ -106,6 +106,7 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
 
           stub_signing_key
           stub_reconciliation_request(true)
+          stub_subscription_request_seat_usage(false)
 
           invite_with_opened_modal(user_name_to_invite)
 
