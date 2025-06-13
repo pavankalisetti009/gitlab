@@ -76,6 +76,21 @@ module ComplianceManagement
         .distinct
     }
 
+    scope :with_project_coverage_for, ->(project_ids) do
+      return none if project_ids.blank?
+
+      subquery_sql = <<~SQL.squish
+        COALESCE((
+          SELECT COUNT(DISTINCT project_id)
+          FROM project_compliance_framework_settings
+          WHERE framework_id = compliance_management_frameworks.id
+          AND project_id IN (?)
+        ), 0) AS covered_count
+      SQL
+
+      select(:id, :name, sanitize_sql_array([subquery_sql, project_ids]))
+    end
+
     def self.search(query)
       query.present? ? fuzzy_search(query, [:name], use_minimum_char_limit: true) : all
     end
