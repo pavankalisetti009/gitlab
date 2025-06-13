@@ -384,4 +384,30 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
       end
     end
   end
+
+  describe '.with_project_coverage_for' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project1) { create(:project, group: namespace) }
+    let_it_be(:project2) { create(:project, group: namespace) }
+    let_it_be(:project3) { create(:project, group: namespace) }
+
+    let_it_be(:framework1) { create(:compliance_framework, namespace: namespace, name: 'Framework 1') }
+    let_it_be(:framework2) { create(:compliance_framework, namespace: namespace, name: 'Framework 2') }
+    let_it_be(:framework3) { create(:compliance_framework, namespace: namespace, name: 'Framework 3') }
+
+    before do
+      create(:compliance_framework_project_setting, compliance_management_framework: framework1, project: project1)
+      create(:compliance_framework_project_setting, compliance_management_framework: framework1, project: project2)
+
+      create(:compliance_framework_project_setting, compliance_management_framework: framework2, project: project1)
+    end
+
+    it 'returns frameworks with covered_count for specified projects' do
+      results = described_class.with_project_coverage_for([project1.id, project2.id])
+
+      expect(results.find { |f| f.name == 'Framework 1' }.covered_count).to eq(2)
+      expect(results.find { |f| f.name == 'Framework 2' }.covered_count).to eq(1)
+      expect(results.find { |f| f.name == 'Framework 3' }.covered_count).to eq(0)
+    end
+  end
 end

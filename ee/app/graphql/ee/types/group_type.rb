@@ -388,6 +388,14 @@ module EE
           authorize: :read_compliance_dashboard,
           experiment: { milestone: '18.1' }
 
+        field :compliance_frameworks_coverage_details,
+          ::Types::ComplianceManagement::ComplianceFramework::FrameworkCoverageDetailType.connection_type,
+          null: true,
+          description: 'Detailed compliance framework coverage for each framework in the group.',
+          resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::FrameworkCoverageDetailsResolver,
+          authorize: :read_compliance_dashboard,
+          experiment: { milestone: '18.1' }
+
         field :maven_virtual_registries,
           EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type,
           null: true,
