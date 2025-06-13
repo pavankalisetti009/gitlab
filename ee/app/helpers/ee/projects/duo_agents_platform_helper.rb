@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+module EE
+  module Projects
+    module DuoAgentsPlatformHelper
+      def duo_agents_platform_data(project)
+        {
+          agents_platform_base_route: project_duo_agents_platform_path(project),
+          project_path: project.full_path,
+          empty_state_illustration_path: image_path('illustrations/empty-state/empty-pipeline-md.svg')
+        }
+      end
+    end
+  end
+end

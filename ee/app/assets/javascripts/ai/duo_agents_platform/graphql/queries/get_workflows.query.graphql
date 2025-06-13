@@ -1,0 +1,24 @@
+query getWorkflows($projectPath: ID!, $after: String, $before: String, $first: Int, $last: Int) {
+  duoWorkflowWorkflows(
+    projectPath: $projectPath
+    first: $first
+    after: $after
+    last: $last
+    before: $before
+  ) {
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    edges {
+      node {
+        id
+        humanStatus
+        updatedAt
+        goal
+      }
+    }
+  }
+}

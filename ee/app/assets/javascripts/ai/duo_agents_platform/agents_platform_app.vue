@@ -1,6 +1,6 @@
 <script>
 export default {
-  name: 'AgentsPlatformApp',
+  name: 'DuoAgentsPlatformApp',
 };
 </script>
 <template>

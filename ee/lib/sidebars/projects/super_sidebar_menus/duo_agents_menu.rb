@@ -14,7 +14,7 @@ module Sidebars
 
         override :title
         def title
-          s_('Agents')
+          s_('DuoAgentsPlatform|Agents')
         end
 
         override :sprite_icon
