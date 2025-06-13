@@ -56,6 +56,20 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
         expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done cancelled])
       end
     end
+
+    describe '.converted_from_system_defined' do
+      let_it_be(:converted_status) do
+        create(:work_item_custom_status, namespace: group, converted_from_system_defined_status_identifier: 1)
+      end
+
+      let_it_be(:non_converted_status) do
+        create(:work_item_custom_status, namespace: group, converted_from_system_defined_status_identifier: nil)
+      end
+
+      it 'returns statuses that were converted from a system defined status' do
+        expect(described_class.converted_from_system_defined).to contain_exactly(converted_status)
+      end
+    end
   end
 
   describe 'validations' do
