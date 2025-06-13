@@ -87,6 +87,7 @@ export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/group/comp
 export const STANDARDS_ADHERENCE_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_status_report/`;
 
 export const FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitlab/-/issues/481586';
+export const FEEDBACK_ISSUE_URL_VIOLATIONS = 'https://gitlab.com/gitlab-org/gitlab/-/issues/547492';
 
 export const GRAPHQL_FIELD_MISSING_ERROR_MESSAGE = __(
   'Your GitLab instance is currently being updated. Please try again later.',
