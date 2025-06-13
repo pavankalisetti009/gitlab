@@ -209,6 +209,11 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
   describe 'GET /api/v4/virtual_registries/packages/maven/registries/:id' do
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}" }
+    let(:registry_as_json) do
+      registry.as_json.merge(
+        registry_upstreams: registry.registry_upstreams.map { |e| e.slice(:id, :upstream_id, :position) }
+      ).as_json
+    end
 
     subject(:api_request) { get api(url), headers: headers }
 
@@ -217,7 +222,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(Gitlab::Json.parse(response.body)).to eq(registry.as_json)
+        expect(Gitlab::Json.parse(response.body)).to eq(registry_as_json)
       end
     end
 

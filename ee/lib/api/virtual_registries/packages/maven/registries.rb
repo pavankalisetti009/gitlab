@@ -110,7 +110,8 @@ module API
               get do
                 authorize! :read_virtual_registry, registry
 
-                present registry, with: ::API::Entities::VirtualRegistries::Packages::Maven::Registry
+                present registry, with: Entities::VirtualRegistries::Packages::Maven::Registry,
+                  with_registry_upstreams: true, exclude_registry_id: true
               end
 
               desc 'Update a specific maven virtual registry' do

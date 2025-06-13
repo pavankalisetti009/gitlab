@@ -219,6 +219,32 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
     end
   end
 
+  describe '#sync_higher_positions' do
+    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
+
+    let_it_be(:registry_upstreams) do
+      create_list(:virtual_registries_packages_maven_registry_upstream, 4, registry:)
+    end
+
+    it 'decrements positions of all registry upstreams with higher positions' do
+      expect(reload_positions).to eq({
+        registry_upstreams[0].id => 1,
+        registry_upstreams[1].id => 2,
+        registry_upstreams[2].id => 3,
+        registry_upstreams[3].id => 4
+      })
+
+      registry_upstreams[1].destroy!
+      registry_upstreams[1].sync_higher_positions
+
+      expect(reload_positions).to eq({
+        registry_upstreams[0].id => 1,
+        registry_upstreams[2].id => 2,
+        registry_upstreams[3].id => 3
+      })
+    end
+  end
+
   def reload_positions(registry = registry_upstreams[0].registry)
     described_class.where(registry:).pluck(:id, :position).to_h
   end

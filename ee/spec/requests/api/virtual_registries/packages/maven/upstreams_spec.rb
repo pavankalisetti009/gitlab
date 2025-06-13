@@ -10,7 +10,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
     let(:upstream_as_json) do
-      upstream.as_json.merge(registry_upstream: upstream.registry_upstreams.take.slice(:id, :position)).as_json
+      upstream.as_json.merge(
+        registry_upstream: upstream.registry_upstreams.take.slice(:id, :registry_id, :position)
+      ).as_json
     end
 
     subject(:api_request) { get api(url), headers: headers }
@@ -86,7 +88,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     let(:params) { { url: 'http://example.com', name: 'foo', username: 'user', password: 'test' } }
     let(:upstream_as_json) do
       upstream_model.last.as_json.merge(
-        registry_upstream: upstream_model.last.registry_upstreams.take.slice(:id, :position)
+        registry_upstream: upstream_model.last.registry_upstreams.take.slice(:id, :registry_id, :position)
       ).as_json
     end
 
@@ -222,6 +224,11 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
   describe 'GET /api/v4/virtual_registries/packages/maven/upstreams/:id' do
     let(:url) { "/virtual_registries/packages/maven/upstreams/#{upstream.id}" }
+    let(:upstream_as_json) do
+      upstream.as_json.merge(
+        registry_upstreams: upstream.registry_upstreams.map { |e| e.slice(:id, :registry_id, :position) }
+      ).as_json
+    end
 
     subject(:api_request) { get api(url), headers: headers }
 
@@ -230,7 +237,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(Gitlab::Json.parse(response.body)).to eq(upstream.as_json)
+        expect(Gitlab::Json.parse(response.body)).to eq(upstream_as_json)
       end
     end
 
