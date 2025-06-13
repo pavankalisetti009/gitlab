@@ -80,8 +80,8 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
       input_settings = described_class.input_settings
 
       expected_list = %i[
-        zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_rollout_retry_interval
-        zoekt_lost_node_threshold
+        zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_indexing_timeout
+        zoekt_rollout_retry_interval zoekt_lost_node_threshold
       ]
       expect(input_settings.keys).to match_array(expected_list)
 
@@ -94,17 +94,57 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
   describe '.parse_duration' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:setting_value, :default, :result) do
-      '0'   | '1d'  | nil # nil for 0 means disabled
-      '1x'  | '1d'  | 1.day # default for invalid interval
-      '5m'  | '2d'  | 5.minutes
-      '2h'  | '3d'  | 2.hours
-      '3d'  | '4d'  | 3.days
+    where(:setting_value, :default, :allow_disabled, :result) do
+      '0'   | '1d'  | true  | nil # nil for 0 means disabled
+      '1x'  | '1d'  | true  | 1.day # default for invalid interval
+      '5m'  | '2d'  | true  | 5.minutes
+      '2h'  | '3d'  | true  | 2.hours
+      '3d'  | '4d'  | true  | 3.days
+      '0'   | '1m'  | false | 1.minute
     end
 
     with_them do
       it 'parses the duration correctly' do
-        expect(described_class.parse_duration(setting_value, default)).to eq(result)
+        expect(described_class.parse_duration(setting_value, default, allow_disabled: allow_disabled)).to eq(result)
+      end
+    end
+  end
+
+  describe '.indexing_timeout' do
+    let_it_be(:_) { create(:application_setting) }
+
+    context 'with various intervals' do
+      before do
+        stub_ee_application_setting(zoekt_indexing_timeout: interval)
+      end
+
+      using RSpec::Parameterized::TableSyntax
+
+      where(:interval, :duration_interval) do
+        '0'   | 30.minutes # default for invalid interval
+        '1x'  | 30.minutes # default for invalid interval
+        '5m'  | 5.minutes
+        '2h'  | 2.hours
+        '3d'  | 3.days
+      end
+
+      with_them do
+        it 'returns the correct duration_interval' do
+          expect(described_class.indexing_timeout).to eq(duration_interval)
+        end
+      end
+    end
+
+    context 'when delegated to parse_duration' do
+      before do
+        allow(ApplicationSetting).to receive_message_chain(:current, :zoekt_rollout_retry_interval).and_return('1d')
+      end
+
+      it 'calls parse_duration with correct arguments' do
+        expect(described_class).to receive(:parse_duration)
+                                     .with('1d', described_class::DEFAULT_ROLLOUT_RETRY_INTERVAL)
+
+        described_class.rollout_retry_interval
       end
     end
   end

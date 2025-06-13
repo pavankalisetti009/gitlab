@@ -15,10 +15,13 @@ module Search
     # 1. Add it to the SETTINGS hash with appropriate configuration
     # 2. The setting will automatically appear in all relevant places
     module Settings
+      DEFAULT_INDEXING_TIMEOUT = '30m'
       DEFAULT_ROLLOUT_RETRY_INTERVAL = '1d'
       DEFAULT_LOST_NODE_THRESHOLD = '12h'
       DISABLED_VALUE = '0'
-      DURATION_INTERVAL_REGEX = %r{\A(?:0|([1-9]\d*)([mhd]))\z}
+      DURATION_BASE_REGEX = %r{([1-9]\d*)([mhd])}
+      DURATION_INTERVAL_REGEX = %r{\A(?:0|#{DURATION_BASE_REGEX})\z}
+      DURATION_INTERVAL_DISABLED_NOT_ALLOWED_REGEX = %r{\A#{DURATION_BASE_REGEX}\z}
 
       SETTINGS = {
         zoekt_indexing_enabled: {
@@ -78,6 +81,13 @@ module Search
           },
           input_type: :text_field
         },
+        zoekt_indexing_timeout: {
+          type: :text,
+          default: DEFAULT_INDEXING_TIMEOUT,
+          label: -> { _('Indexing timeout per project') },
+          input_options: { placeholder: format(N_("Must be in the following format: `30m`, `2h`, or `1d`.")) },
+          input_type: :text_field
+        },
         zoekt_rollout_retry_interval: {
           type: :text,
           default: DEFAULT_ROLLOUT_RETRY_INTERVAL,
@@ -104,21 +114,26 @@ module Search
         SETTINGS.select { |_, config| type_values.include?(config[:type]) }
       end
 
-      def self.parse_duration(setting_value, default_value)
+      def self.parse_duration(setting_value, default_value, allow_disabled: true)
         return if setting_value.blank?
-        return if setting_value == DISABLED_VALUE
+        return if setting_value == DISABLED_VALUE && allow_disabled
 
-        match = setting_value.match(DURATION_INTERVAL_REGEX)
-        match ||= default_value.match(DURATION_INTERVAL_REGEX)
+        regex = allow_disabled ? DURATION_INTERVAL_REGEX : DURATION_INTERVAL_DISABLED_NOT_ALLOWED_REGEX
+        match = setting_value.match(regex)
+        match ||= default_value.match(regex)
 
         value = match[1].to_i
         unit = match[2]
-
         case unit
         when 'm' then value.minute
         when 'h' then value.hour
         when 'd' then value.day
         end
+      end
+
+      def self.indexing_timeout
+        parse_duration(ApplicationSetting.current&.zoekt_indexing_timeout, DEFAULT_INDEXING_TIMEOUT,
+          allow_disabled: false)
       end
 
       def self.rollout_retry_interval

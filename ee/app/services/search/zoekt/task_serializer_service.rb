@@ -3,7 +3,7 @@
 module Search
   module Zoekt
     class TaskSerializerService
-      INDEXING_TIMEOUT_S = 1.5.hours.to_i
+      KNOWLEDGE_GRAPH_INDEXING_TIMEOUT_S = 1.5.hours.to_i
       attr_reader :task, :node
 
       def self.execute(...)
@@ -57,7 +57,7 @@ module Search
           RepoId: project.id,
           FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
           Parallelism: ::Gitlab::CurrentSettings.zoekt_indexing_parallelism,
-          Timeout: "#{INDEXING_TIMEOUT_S}s",
+          Timeout: "#{::Search::Zoekt::Settings.indexing_timeout.to_i}s",
           Metadata: {
             traversal_ids: project.namespace_ancestry,
             visibility_level: project.visibility_level,
@@ -86,7 +86,7 @@ module Search
         gitaly_payload(project).merge(
           NamespaceId: namespace.id,
           Callback: { name: 'index_graph', payload: { task_id: task.id, service_type: :knowledge_graph } },
-          Timeout: "#{INDEXING_TIMEOUT_S}s"
+          Timeout: "#{KNOWLEDGE_GRAPH_INDEXING_TIMEOUT_S}s"
         )
       end
 
