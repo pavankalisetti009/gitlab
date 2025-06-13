@@ -2395,6 +2395,9 @@ msgstr ""
 msgid "AISummary|View summary"
 msgstr ""
 
+msgid "AI|AI Catalog"
+msgstr ""
+
 msgid "AI|Accept & Insert"
 msgstr ""
 
