@@ -325,21 +325,73 @@ RSpec.describe TodoService, feature_category: :notifications do
     let_it_be(:duo_bot) { ::Users::Internal.duo_code_review_bot }
 
     describe '#duo_core_access_granted' do
-      it 'creates a pending todo for multiple users if none exists' do
-        users = create_list(:user, 2)
-        user_with_pending_todo = create(:todo, :pending, :duo_core_access).user
+      let_it_be(:user_with_pending_todo) { create(:todo, :pending, :duo_core_access).user }
+      let_it_be(:user_with_done_todo) { create(:todo, :done, :duo_core_access).user }
+      let_it_be(:users_without_notifications) { create_list(:user, 2) }
 
-        expect_next_instance_of(::Users::UpdateTodoCountCacheService, users.map(&:id)) do |service_instance|
-          expect(service_instance).to receive(:execute).and_call_original
+      context 'when multiple users have received the todo and multiple users have not received the todo' do
+        it 'creates a pending todo for only the users who have not received one', :aggregate_failures do
+          expect_next_instance_of(::Users::UpdateTodoCountCacheService, users_without_notifications.map(&:id)) do |inst|
+            expect(inst).to receive(:execute).and_call_original
+          end
+
+          service.duo_core_access_granted(users_without_notifications + [user_with_pending_todo, user_with_done_todo])
+
+          should_create_todo(
+            user: users_without_notifications[0],
+            author: duo_bot,
+            target: users_without_notifications[0],
+            action: Todo::DUO_CORE_ACCESS_GRANTED
+          )
+          should_create_todo(
+            user: users_without_notifications[1],
+            author: duo_bot,
+            target: users_without_notifications[1],
+            action: Todo::DUO_CORE_ACCESS_GRANTED
+          )
+          expect(users_without_notifications[0].todos.count).to eq(1)
+          expect(users_without_notifications[1].todos.count).to eq(1)
+          expect(user_with_pending_todo.todos.count).to eq(1)
+          expect(user_with_done_todo.todos.count).to eq(1)
         end
+      end
 
-        service.duo_core_access_granted(users + [user_with_pending_todo])
+      context 'when there are no users who have received the todo' do
+        it 'creates a pending todo for multiple users', :aggregate_failures do
+          expect_next_instance_of(::Users::UpdateTodoCountCacheService, users_without_notifications.map(&:id)) do |inst|
+            expect(inst).to receive(:execute).and_call_original
+          end
 
-        should_create_todo(user: users[0], author: duo_bot, target: users[0], action: Todo::DUO_CORE_ACCESS_GRANTED)
-        should_create_todo(user: users[1], author: duo_bot, target: users[1], action: Todo::DUO_CORE_ACCESS_GRANTED)
-        expect(users[0].todos.count).to eq(1)
-        expect(users[1].todos.count).to eq(1)
-        expect(user_with_pending_todo.todos.count).to eq(1)
+          service.duo_core_access_granted(users_without_notifications)
+
+          should_create_todo(
+            user: users_without_notifications[0],
+            author: duo_bot,
+            target: users_without_notifications[0],
+            action: Todo::DUO_CORE_ACCESS_GRANTED
+          )
+          should_create_todo(
+            user: users_without_notifications[1],
+            author: duo_bot,
+            target: users_without_notifications[1],
+            action: Todo::DUO_CORE_ACCESS_GRANTED
+          )
+          expect(users_without_notifications[0].todos.count).to eq(1)
+          expect(users_without_notifications[1].todos.count).to eq(1)
+        end
+      end
+
+      context 'when all of the users have already received the todo' do
+        it 'does not create any todos', :aggregate_failures do
+          expect_next_instance_of(::Users::UpdateTodoCountCacheService, []) do |service_instance|
+            expect(service_instance).to receive(:execute).and_call_original
+          end
+
+          service.duo_core_access_granted([user_with_pending_todo, user_with_done_todo])
+
+          expect(user_with_pending_todo.todos.count).to eq(1)
+          expect(user_with_done_todo.todos.count).to eq(1)
+        end
       end
     end
 
