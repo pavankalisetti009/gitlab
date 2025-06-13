@@ -126,34 +126,30 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
     end
   end
 
-  describe '#fail_stuck_mirrors!', :freeze_time do
+  describe '#fail_stuck_mirrors!' do
     let_it_be_with_reload(:project) { create(:project, :mirror) }
 
     before do
-      project.import_state.update_columns(status: :scheduled, last_update_scheduled_at: 1.hour.ago)
-    end
-
-    context 'when project import state has exceeded the stuck threshold' do
-      it 'updates import state to failed', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/500814' do
-        expect(project.import_state.scheduled?).to be(true)
-
-        worker.fail_stuck_mirrors!
-
-        expect(project.import_state.reload.failed?).to be(true)
-      end
+      project.import_state.update!(status: :scheduled, last_update_scheduled_at: Time.current)
     end
 
     context 'when project import state has yet to exceed the stuck threshold' do
       before do
-        stub_const("#{described_class.name}::STUCK_JOBS_DURATION_THRESHOLD", 2.hours.ago)
+        travel_to(20.minutes.from_now)
       end
 
       it 'does not update import state' do
-        expect(project.import_state.scheduled?).to be(true)
+        expect { worker.fail_stuck_mirrors! }.not_to change { project.import_state.reload.status }.from('scheduled')
+      end
+    end
 
-        worker.fail_stuck_mirrors!
+    context 'when project import state has exceeded the stuck threshold' do
+      before do
+        travel_to(40.minutes.from_now)
+      end
 
-        expect(project.import_state.reload.scheduled?).to be(true)
+      it 'updates import state to failed' do
+        expect { worker.fail_stuck_mirrors! }.to change { project.import_state.reload.status }.from('scheduled').to('failed')
       end
     end
   end
