@@ -54,7 +54,7 @@ RSpec.describe Ci::UpdateInstanceVariablesService, feature_category: :ci_variabl
 
     it 'does not change the count' do
       expect { service.execute }
-        .to change { Ci::InstanceVariable.count }.by(0)
+        .to not_change { Ci::InstanceVariable.count }
     end
   end
 
@@ -82,7 +82,7 @@ RSpec.describe Ci::UpdateInstanceVariablesService, feature_category: :ci_variabl
 
       it 'does not change the count' do
         expect { service.execute }
-          .to change { Ci::InstanceVariable.count }.by(0)
+          .to not_change { Ci::InstanceVariable.count }
       end
     end
 

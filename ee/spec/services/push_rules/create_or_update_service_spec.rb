@@ -27,7 +27,7 @@ RSpec.describe PushRules::CreateOrUpdateService, '#execute' do
 
     it 'updates existing push rule' do
       expect { subject.execute }
-        .to change { PushRule.count }.by(0)
+        .to not_change { PushRule.count }
         .and change { push_rule.reload.max_file_size }.to(28)
     end
 

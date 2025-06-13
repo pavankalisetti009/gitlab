@@ -70,7 +70,7 @@ RSpec.describe Geo::ContainerRepositoryRegistryRemovalService, :geo, feature_cat
 
         it 'does not remove the upload registry record' do
           expect { service.execute }
-            .to change(Geo::ContainerRepositoryRegistry, :count).by(0)
+            .to not_change(Geo::ContainerRepositoryRegistry, :count)
             .and(raise_error(SystemCallError, /Something went wrong/))
         end
       end

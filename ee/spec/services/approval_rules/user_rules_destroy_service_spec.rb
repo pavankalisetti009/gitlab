@@ -24,7 +24,7 @@ RSpec.describe ApprovalRules::UserRulesDestroyService, feature_category: :code_r
 
     it 'destroys related project rule users' do
       expect { execute }.to change { project_rule.users.count }.by(-1)
-        .and(change { project_rule_other_project.users.count }.by(0))
+        .and not_change { project_rule_other_project.users.count }
       expect(project_rule.reload.users).to contain_exactly(user2)
       expect(project_rule_other_project.reload.users).to contain_exactly(user1, user2)
     end

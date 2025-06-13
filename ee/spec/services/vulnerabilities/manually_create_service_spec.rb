@@ -114,7 +114,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         let!(:scanner) { create(:vulnerabilities_scanner, external_id: scanner_attributes[:id], project: project) }
 
         it 'does not create a new Scanner' do
-          expect { subject }.to change(Vulnerabilities::Scanner, :count).by(0)
+          expect { subject }.to not_change(Vulnerabilities::Scanner, :count)
           expect(vulnerability.finding.scanner_id).to eq(scanner.id)
         end
       end

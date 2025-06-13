@@ -39,8 +39,8 @@ RSpec.describe Ci::Minutes::UpdateProjectAndNamespaceUsageService, feature_categ
     shared_examples 'does not update monthly consumption' do
       it 'does not update the usage on a monthly basis' do
         expect { subject }
-          .to change { Ci::Minutes::NamespaceMonthlyUsage.find_or_create_current(namespace_id: namespace.id).amount_used }.by(0)
-          .and change { Ci::Minutes::ProjectMonthlyUsage.find_or_create_current(project_id: project.id).amount_used }.by(0)
+          .to not_change { Ci::Minutes::NamespaceMonthlyUsage.find_or_create_current(namespace_id: namespace.id).amount_used }
+          .and not_change { Ci::Minutes::ProjectMonthlyUsage.find_or_create_current(project_id: project.id).amount_used }
       end
     end
 

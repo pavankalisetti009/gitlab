@@ -50,7 +50,7 @@ RSpec.describe Security::Ingestion::Tasks::IngestCvsSecurityScanners, feature_ca
       end
 
       it 'uses existing scanners' do
-        expect { task.execute }.to change { Vulnerabilities::Scanner.count }.by(0)
+        expect { task.execute }.to not_change { Vulnerabilities::Scanner.count }
       end
 
       it 'does not attempt to upsert scanners' do

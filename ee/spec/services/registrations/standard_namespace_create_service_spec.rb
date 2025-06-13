@@ -159,7 +159,7 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
       it 'does not create a project' do
         expect do
           expect(execute).to be_error
-        end.to change { Group.count }.and change { ::Onboarding::Progress.count }.and change { Project.count }.by(0)
+        end.to change { Group.count }.and change { ::Onboarding::Progress.count }.and not_change { Project.count }
         expect(execute.payload[:project].errors).not_to be_blank
       end
 
@@ -180,10 +180,10 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
       let(:group_params) { { id: group.id } }
 
       it 'creates a project and not another group' do
-        expect do
-          expect(execute).to be_success
-        end.to change { Group.count }.by(0)
-                                     .and change { ::Onboarding::Progress.count }.by(0).and change { Project.count }
+        expect { expect(execute).to be_success }
+          .to not_change { Group.count }
+          .and not_change { ::Onboarding::Progress.count }
+          .and change { Project.count }
       end
 
       it 'selectively tracks events group and project creation' do
@@ -258,9 +258,9 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
         it 'creates a project and not another group or trial' do
           expect(GitlabSubscriptions::Trials::ApplyTrialWorker).not_to receive(:perform_async)
 
-          expect do
-            expect(execute).to be_success
-          end.to change { Group.count }.by(0).and change { Project.count }
+          expect { expect(execute).to be_success }
+            .to not_change { Group.count }
+            .and change { Project.count }
         end
       end
     end

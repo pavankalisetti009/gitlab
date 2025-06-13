@@ -36,7 +36,8 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
 
         context 'when skip_saml_identity is true' do
           it 'preserves linked SAML identity' do
-            expect { destroy_service.execute(member, skip_saml_identity: true) }.to change { member_user.reload.identities.count }.by(0)
+            expect { destroy_service.execute(member, skip_saml_identity: true) }
+              .to not_change { member_user.reload.identities.count }
           end
         end
       end
