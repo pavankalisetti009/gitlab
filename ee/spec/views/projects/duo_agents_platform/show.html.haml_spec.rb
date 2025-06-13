@@ -16,6 +16,11 @@ RSpec.describe 'projects/duo_agents_platform/show', type: :view, feature_categor
     expect(rendered).to have_css('#js-duo-agents-platform-page')
   end
 
+  it 'calls the duo agents platform helper' do
+    expect(view).to receive(:duo_agents_platform_data).with(project).and_call_original
+    render
+  end
+
   it 'includes the correct data attribute for base route' do
     render
 

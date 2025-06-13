@@ -12,7 +12,7 @@ export const initAgentsPlatformPage = (selector = '#js-duo-agents-platform-page'
   }
 
   const { dataset } = el;
-  const { agentsPlatformBaseRoute } = dataset;
+  const { agentsPlatformBaseRoute, projectPath, emptyStateIllustrationPath } = dataset;
 
   Vue.use(VueApollo);
 
@@ -25,6 +25,10 @@ export const initAgentsPlatformPage = (selector = '#js-duo-agents-platform-page'
     name: 'AgentsPlatformApp',
     router: createRouter(agentsPlatformBaseRoute),
     apolloProvider,
+    provide: {
+      emptyStateIllustrationPath,
+      projectPath,
+    },
     render(h) {
       return h(AgentsPlatformApp);
     },
