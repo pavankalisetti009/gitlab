@@ -2,12 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Snippet elastic search', :js, :clean_gitlab_redis_rate_limiting, :elastic_delete_by_query, :aggregate_failures, feature_category: :global_search do
+RSpec.describe 'Snippet elastic search', :js, :elastic_delete_by_query, :aggregate_failures, feature_category: :global_search do
   let_it_be(:public_project) { create(:project, :public) }
   let_it_be(:regular_user) { create(:user) }
   let_it_be(:authorized_user) { create(:user) }
   let_it_be(:admin_user) { create(:admin) }
-  let_it_be(:authorized_project) { create(:project, namespace: authorized_user.namespace, maintainers: authorized_user) }
+  let_it_be(:authorized_project) do
+    create(:project, namespace: authorized_user.namespace, maintainers: authorized_user)
+  end
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -162,17 +164,25 @@ RSpec.describe 'Snippet elastic search', :js, :clean_gitlab_redis_rate_limiting,
 
   def create_snippets
     Sidekiq::Testing.inline! do
-      create(:personal_snippet, :public, title: 'public personal snippet', description: 'a public personal snippet description')
-      create(:project_snippet, :public, title: 'public project snippet', description: 'a public project snippet description', project: public_project)
+      create(:personal_snippet, :public, title: 'public personal snippet',
+        description: 'a public personal snippet description')
+      create(:project_snippet, :public, title: 'public project snippet',
+        description: 'a public project snippet description', project: public_project)
 
-      create(:personal_snippet, :internal, title: 'internal personal snippet', description: 'a internal personal snippet description')
-      create(:project_snippet, :internal, title: 'internal project snippet', description: 'a internal project snippet description', project: public_project)
+      create(:personal_snippet, :internal, title: 'internal personal snippet',
+        description: 'a internal personal snippet description')
+      create(:project_snippet, :internal, title: 'internal project snippet',
+        description: 'a internal project snippet description', project: public_project)
 
-      create(:personal_snippet, :private, title: 'private personal snippet', description: 'a private personal snippet description')
-      create(:project_snippet, :private, title: 'private project snippet', description: 'a private project snippet description', project: public_project)
+      create(:personal_snippet, :private, title: 'private personal snippet',
+        description: 'a private personal snippet description')
+      create(:project_snippet, :private, title: 'private project snippet',
+        description: 'a private project snippet description', project: public_project)
 
-      create(:personal_snippet, :private, title: 'authorized personal snippet', description: 'an authorized personal snippet description', author: authorized_user)
-      create(:project_snippet, :private, title: 'authorized project snippet', description: 'an authorized project snippet description', project: authorized_project)
+      create(:personal_snippet, :private, title: 'authorized personal snippet',
+        description: 'an authorized personal snippet description', author: authorized_user)
+      create(:project_snippet, :private, title: 'authorized project snippet',
+        description: 'an authorized project snippet description', project: authorized_project)
 
       ensure_elasticsearch_index!
     end
