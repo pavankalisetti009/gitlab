@@ -7,10 +7,14 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # rubocop:todo Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
 
+  # @return [String]
+  def create_desired_config_json
+    RemoteDevelopment::FixtureFileHelpers.read_fixture_file('example.desired_config.json')
+  end
+
   # @return [Array<Hash>]
   def create_desired_config_array
-    json_content = RemoteDevelopment::FixtureFileHelpers.read_fixture_file('example.desired_config.json')
-    Gitlab::Json.parse(json_content).map(&:deep_symbolize_keys)
+    Gitlab::Json.parse(create_desired_config_json).map(&:deep_symbolize_keys)
   end
 
   # @param [RemoteDevelopment::Workspace] workspace

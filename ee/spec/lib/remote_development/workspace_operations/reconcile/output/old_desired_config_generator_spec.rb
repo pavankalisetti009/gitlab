@@ -3,7 +3,7 @@
 require "spec_helper"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGenerator, :freeze_time, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldDesiredConfigGenerator, :freeze_time, feature_category: :workspaces do
   include_context "with remote development shared fixtures"
 
   RSpec.shared_examples "includes env and file secrets if the secrets-inventory configmap is present" do
@@ -361,7 +361,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     context "when DevfileParser returns empty array" do
       before do
         # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
-        allow(RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::DevfileParser).to receive(:get_all).and_return([])
+        allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldDevfileParser).to receive(:get_all).and_return([])
         # rubocop:enable Layout/LineLength
       end
 

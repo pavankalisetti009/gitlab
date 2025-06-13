@@ -50,6 +50,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:devfile_fixture_name) { 'example.devfile.yaml.erb' }
   let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
   let(:expected_processed_devfile) { example_processed_devfile }
+  let(:logger) { instance_double(Logger) }
   let(:variables) do
     [
       { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT' },
@@ -117,7 +118,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       internal_events_class: Gitlab::InternalEvents,
       settings: settings,
       vscode_extension_marketplace: vscode_extension_marketplace,
-      vscode_extension_marketplace_metadata: { enabled: vscode_extension_marketplace_metadata_enabled }
+      vscode_extension_marketplace_metadata: { enabled: vscode_extension_marketplace_metadata_enabled },
+      logger: logger
     }
   end
 
@@ -183,6 +185,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
             ).first&.value
           ).to eq(variable[:value])
         end
+
+        expect(workspace.agentk_state).to be_present
+        expect(workspace.agentk_state.desired_config.fetch("desired_config_array")).to be_an(Array)
       end
 
       it_behaves_like 'tracks successful workspace creation event'

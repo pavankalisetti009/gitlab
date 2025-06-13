@@ -84,7 +84,7 @@ module RemoteDevelopment
             include_all_resources = should_include_all_resources?(update_type: update_type, workspace: workspace)
             resources_include_type = include_all_resources ? ALL_RESOURCES_INCLUDED : PARTIAL_RESOURCES_INCLUDED
 
-            workspace_resources = DesiredConfigGenerator.generate_desired_config(
+            workspace_resources = OldDesiredConfigGenerator.generate_desired_config(
               workspace: workspace,
               include_all_resources: include_all_resources,
               logger: logger

@@ -125,7 +125,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
     let(:desired_config_generator_version) { current_desired_config_generator_version }
 
     before do
-      allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGenerator)
+      allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldDesiredConfigGenerator)
         .to(receive(:generate_desired_config))
         .with(hash_including(include_all_resources: expected_include_all_resources)) { generated_config_to_apply }
     end

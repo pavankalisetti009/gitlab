@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::ScriptsConfigmapAppender, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldScriptsConfigmapAppender, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:files) { RemoteDevelopment::Files }
@@ -16,12 +16,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
 
   subject(:updated_desired_config) do
     # Make a fake desired config with one existing fake element, to prove we are appending
-    desired_config_array = [
+    desired_config = [
       {}
     ]
 
     described_class.append(
-      desired_config_array: desired_config_array,
+      desired_config: desired_config,
       name: name,
       namespace: namespace,
       labels: labels,
@@ -30,10 +30,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
       devfile_events: devfile_events
     )
 
-    desired_config_array
+    desired_config
   end
 
-  it "appends ConfigMap to desired_config_array" do
+  it "appends ConfigMap to desired_config" do
     expect(updated_desired_config.length).to eq(2)
 
     updated_desired_config => [
@@ -71,7 +71,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
       )
     end
 
-    it "appends ConfigMap to desired_config_array" do
+    it "appends ConfigMap to desired_config" do
       expect(updated_desired_config.length).to eq(2)
 
       updated_desired_config => [
