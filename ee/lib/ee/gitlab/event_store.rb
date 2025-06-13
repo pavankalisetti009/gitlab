@@ -93,6 +93,7 @@ module EE
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyCreatedEvent
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyDeletedEvent
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyUpdatedEvent
+          store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyResyncEvent
 
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchCreatedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchDestroyedEvent
