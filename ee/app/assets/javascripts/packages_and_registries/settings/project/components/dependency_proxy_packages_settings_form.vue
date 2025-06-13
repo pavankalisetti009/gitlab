@@ -24,9 +24,6 @@ export default {
   data() {
     return {
       alertMessage: '',
-      tracking: {
-        label: 'dependendency_proxy_packages_settings',
-      },
       updateInProgress: false,
       enabled: this.data.enabled,
       mavenFormData: {
