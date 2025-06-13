@@ -49,13 +49,11 @@ module Ai
           }
         end
 
-        # On gitlab.com, this currently issues a token without cross-matching the entitlements
-        # this token contains with add-on purchases for a user's billing namespace.
-        #
-        # Before launching this into GA, there need to be additional checks to ensure that the
-        # user is actually entitled to the requested token.
         def cloud_connector_token
-          CloudConnector::Tokens.get(unit_primitive: :duo_workflow_execute_workflow)
+          CloudConnector::Tokens.get(
+            unit_primitive: :duo_workflow_execute_workflow,
+            root_group_ids: current_user.billable_gitlab_duo_pro_root_group_ids
+          )
         end
 
         def channel_credentials
