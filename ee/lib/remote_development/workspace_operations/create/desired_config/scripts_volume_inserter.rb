@@ -2,10 +2,10 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module Reconcile
-      module Output
+    module Create
+      module DesiredConfig
         class ScriptsVolumeInserter
-          include ReconcileConstants
+          include CreateConstants
 
           # @param [String] configmap_name
           # @param [Array<Hash>] containers

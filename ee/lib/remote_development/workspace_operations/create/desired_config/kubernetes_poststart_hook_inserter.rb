@@ -2,14 +2,14 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module Reconcile
-      module Output
+    module Create
+      module DesiredConfig
         # NOTE: This class has "Kubernetes" prepended to "Poststart" in the name to make it explicit that it
         #       deals with Kubernetes postStart hooks in the Kubernetes Deployment resource, and that
         #       it is NOT dealing with the postStart events which are found in devfiles.
         class KubernetesPoststartHookInserter
           include Files
-          include ReconcileConstants
+          include CreateConstants
 
           # @param [Array] containers
           # @param [Array<Hash>] devfile_commands

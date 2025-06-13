@@ -19,11 +19,6 @@ RSpec.shared_context "with constant modules" do
     RemoteDevelopment::WorkspaceOperations::Create::CreateConstants
   end
 
-  # @return [Module<RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants>]
-  def reconcile_constants_module
-    RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants
-  end
-
   # @return [Module<RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants>]
   def workspace_operations_constants_module
     RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants

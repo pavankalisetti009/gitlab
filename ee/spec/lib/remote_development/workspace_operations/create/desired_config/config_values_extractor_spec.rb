@@ -3,7 +3,7 @@
 require "spec_helper"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ConfigValuesExtractor, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::ConfigValuesExtractor, feature_category: :workspaces do
   include_context "with constant modules"
 
   let_it_be(:user) { create(:user) }

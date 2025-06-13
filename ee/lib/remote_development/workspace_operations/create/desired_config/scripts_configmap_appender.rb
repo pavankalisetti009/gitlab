@@ -2,10 +2,10 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module Reconcile
-      module Output
+    module Create
+      module DesiredConfig
         class ScriptsConfigmapAppender
-          include ReconcileConstants
+          include CreateConstants
           include WorkspaceOperationsConstants
 
           # @param [Array] desired_config

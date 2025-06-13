@@ -297,7 +297,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
         # Verify the poststart script includes the user-defined command
         poststart_script = scripts_configmap[:data][
-          reconcile_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym
+          create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym
         ]
         expect(poststart_script).to include("Running /workspace-scripts/user-defined-command")
       end

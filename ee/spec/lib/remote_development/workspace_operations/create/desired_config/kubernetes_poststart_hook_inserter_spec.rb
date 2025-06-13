@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::KubernetesPoststartHookInserter, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::KubernetesPoststartHookInserter, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:processed_devfile) { example_processed_devfile }
