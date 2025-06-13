@@ -100,11 +100,9 @@ module Search
       end
 
       def indexing_paused!
-        target_classes = current_task.target_classes
-
         items_to_reindex = []
 
-        target_classes.each do |klass|
+        current_task.target_classes.each do |klass|
           alias_name = elastic_helper.klass_to_alias_name(klass: klass)
           index_names = elastic_helper.target_index_names(target: alias_name).keys
 
@@ -149,11 +147,8 @@ module Search
 
           number_of_shards = elastic_helper.get_settings(index_name: item[:index_name_from])['number_of_shards'].to_i
           max_slice = number_of_shards * current_task.slice_multiplier
-          0.upto(max_slice - 1).to_a.each do |slice|
-            subtask.slices.create!(
-              elastic_max_slice: max_slice,
-              elastic_slice: slice
-            )
+          max_slice.times do |slice|
+            subtask.slices.create!(elastic_max_slice: max_slice, elastic_slice: slice)
           end
         end
 
@@ -162,10 +157,10 @@ module Search
 
       def save_documents_count!(refresh:)
         current_task.subtasks.each do |subtask|
-          documents_count = elastic_helper.documents_count(index_name: subtask.index_name_from, refresh: refresh)
-          new_documents_count = elastic_helper.documents_count(index_name: subtask.index_name_to, refresh: refresh)
-
-          subtask.update!(documents_count: documents_count, documents_count_target: new_documents_count)
+          subtask.update!(
+            documents_count: elastic_helper.documents_count(index_name: subtask.index_name_from, refresh: refresh),
+            documents_count_target: elastic_helper.documents_count(index_name: subtask.index_name_to, refresh: refresh)
+          )
         end
       end
 
@@ -372,10 +367,7 @@ module Search
           **additional_logs
         ))
 
-        current_task.update!(
-          state: :failure,
-          error_message: reason
-        )
+        current_task.update!(state: :failure, error_message: reason)
 
         # Unpause indexing
         ::Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: false) if unpause_indexing
