@@ -9,10 +9,12 @@ query groupSecurityPolicies(
   $after: String = ""
   $before: String = ""
   $first: Int = 50
+  $type: PolicyType
 ) {
   namespace: group(fullPath: $fullPath) {
     id
     securityPolicies(
+      type: $type
       relationship: $relationship
       last: $last
       first: $first

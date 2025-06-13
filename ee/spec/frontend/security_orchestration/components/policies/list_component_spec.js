@@ -171,7 +171,7 @@ describe('List component', () => {
       findTypeFilter().vm.$emit('input', POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value);
       expect(urlUtils.updateHistory).toHaveBeenCalledWith({
         title: 'Test title',
-        url: `http://test.host/?type=${POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value.toLowerCase()}`,
+        url: `http://test.host/?type=${POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value}`,
         replace: true,
       });
     });
@@ -659,7 +659,7 @@ describe('List component', () => {
 
         expect(urlUtils.updateHistory).toHaveBeenCalledWith({
           title: 'Test title',
-          url: `http://test.host/?type=${POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value.toLowerCase()}`,
+          url: `http://test.host/?type=${POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value}`,
           replace: true,
         });
       });
@@ -689,7 +689,7 @@ describe('List component', () => {
       it('updates url when source filter is selected', () => {
         expect(urlUtils.updateHistory).toHaveBeenCalledWith({
           title: 'Test title',
-          url: `http://test.host/?source=${POLICY_SOURCE_OPTIONS.INHERITED.value.toLowerCase()}`,
+          url: `http://test.host/?source=${POLICY_SOURCE_OPTIONS.INHERITED.value}`,
           replace: true,
         });
       });

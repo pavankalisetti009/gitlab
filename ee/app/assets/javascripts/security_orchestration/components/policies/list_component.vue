@@ -366,7 +366,7 @@ export default {
       }
     },
     convertFilterValue(defaultValue, value) {
-      return value === defaultValue ? undefined : value.toLowerCase();
+      return value === defaultValue ? undefined : value;
     },
     setTypeFilter(type) {
       this.deselectPolicy();
