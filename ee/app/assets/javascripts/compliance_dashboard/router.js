@@ -16,7 +16,7 @@ import {
 
 import MainLayout from './components/main_layout.vue';
 
-import ViolationsReport from './components/violations_report/report.vue';
+import ViolationsReport from './components/violations_report/violations_report.vue';
 import FrameworksReport from './components/frameworks_report/report.vue';
 import EditFramework from './components/frameworks_report/edit_framework/edit_framework.vue';
 import ProjectsReport from './components/projects_report/report.vue';

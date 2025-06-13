@@ -71,6 +71,7 @@ module EE
         adherence_v2_enabled: ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group).to_s,
 
         feature_violations_report_enabled: violations_report.to_s,
+        violations_v2_enabled: ::Feature.enabled?(:compliance_violations_report, group).to_s,
         active_compliance_frameworks: group.active_compliance_frameworks?.to_s,
         feature_projects_report_enabled: true.to_s,
         can_admin_compliance_frameworks: can_admin_compliance_frameworks.to_s,
