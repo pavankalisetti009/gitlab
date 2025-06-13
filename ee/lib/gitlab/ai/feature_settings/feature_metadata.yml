@@ -198,3 +198,11 @@ glab_ask_git_command:
     - llama3
   unit_primitives:
     - glab_ask_git_command
+review_merge_request:
+  title: Duo Code Review
+  release_state: EXPERIMENT
+  main_feature: Other GitLab Duo features
+  compatible_llms:
+    - claude_3
+  unit_primitives:
+    - review_merge_request

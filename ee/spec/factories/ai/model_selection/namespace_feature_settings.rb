@@ -76,6 +76,13 @@ FactoryBot.define do
             "selectable_models" => %w[claude_sonnet_3_7 claude-3-5-sonnet-20240620],
             "beta_models" => [],
             "unit_primitives" => ["summarize_review"]
+          },
+          {
+            "feature_setting" => "review_merge_request",
+            "default_model" => "claude_sonnet_3_7",
+            "selectable_models" => %w[claude_sonnet_3_7 claude-3-5-sonnet-20240620],
+            "beta_models" => [],
+            "unit_primitives" => ["review_merge_request"]
           }
         ]
       }

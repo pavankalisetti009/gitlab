@@ -88,6 +88,12 @@ module Gitlab
             @prompt_inputs
           end
 
+          # required for model switching
+          override :root_namespace
+          def root_namespace
+            merge_request.target_project.root_ancestor
+          end
+
           private
 
           attr_reader :progress_note

@@ -360,14 +360,32 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     end
 
     describe 'feature metadata completeness' do
+      # certain features are added in feature_metadata.yml for use in
+      # model switching, and they may not be available in self-hosted Duo yet.
+      let(:features_only_for_model_switching) { %w[review_merge_request] }
+
       it 'includes all features defined in feature_metadata.yml', :aggregate_failures do
         metadata_features = described_class::FEATURE_METADATA.keys
         features_in_code = described_class::FEATURES.keys.map(&:to_s)
 
         metadata_features.each do |feature|
+          next if features_only_for_model_switching.include?(feature)
+
           expect(features_in_code).to include(feature),
             "Feature '#{feature}' is defined in feature_metadata.yml " \
               "but missing from STABLE_FEATURES or FLAGGED_FEATURES constants"
+        end
+      end
+
+      it 'does not allow features that are allowed for self-hosted duo ' \
+        'to exist in `features_only_for_model_switching`', :aggregate_failures do
+        features_in_code = described_class::FEATURES.keys.map(&:to_s)
+
+        features_in_code.each do |feature|
+          expect(features_only_for_model_switching).not_to include(feature),
+            "Feature '#{feature}' was previously only available for model switching. " \
+              "Now that it is available for Self-Hosted Duo, please remove it " \
+              "from the variable `features_only_for_model_switching`"
         end
       end
 
@@ -424,7 +442,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           "summarize_new_merge_request" => "summarize_new_merge_request",
           "resolve_vulnerability" => "resolve_vulnerability",
           "summarize_review" => "summarize_review",
-          "glab_ask_git_command" => "glab_ask_git_command"
+          "glab_ask_git_command" => "glab_ask_git_command",
+          "review_merge_request" => "review_merge_request"
         }
       )
     end
