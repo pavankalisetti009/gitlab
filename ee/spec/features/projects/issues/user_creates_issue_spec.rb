@@ -19,6 +19,7 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
   let(:issue_title) { '500 error on profile' }
 
   before do
+    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(issue_weights: true, epics: true)
   end
 
@@ -64,103 +65,57 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
     end
   end
 
-  context "with weight set" do
+  context "with weight and iteration" do
     before do
       sign_in(user)
       visit(new_project_issue_path(project))
     end
 
     it "creates issue" do
-      weight = "7"
-
       fill_in("Title", with: issue_title)
-      fill_in("issue_weight", with: weight)
+
+      within_testid('work-item-weight') do
+        click_button 'Edit'
+        send_keys '7'
+      end
+      within_testid('work-item-iteration') do
+        click_button 'Edit'
+        select_listbox_item(iteration.title)
+      end
 
       click_button 'Create issue'
 
-      page.within(".weight") do
-        expect(page).to have_content(weight)
+      expect(page).to have_css('h1', text: issue_title)
+      within_testid('work-item-weight') do
+        expect(page).to have_text('7')
       end
-
-      expect(page).to have_content(issue_title)
+      within_testid('work-item-iteration') do
+        expect(page).to have_text(iteration.title)
+      end
     end
   end
 
-  context 'with epics' do
+  context "with parent" do
     before do
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(150)
       sign_in(user)
       visit(new_project_issue_path(project))
+    end
+
+    it "creates issue" do
       fill_in("Title", with: issue_title)
-    end
 
-    it 'creates an issue with no epic' do
-      click_button 'Select epic'
-      click_on 'No epic'
-      click_button 'Create issue'
-
-      wait_for_all_requests
-
-      within_testid('select-epic') do
-        expect(page).to have_content('None')
+      within_testid('work-item-parent') do
+        click_button 'Edit'
+        select_listbox_item(epic.title)
       end
-
-      expect(page).to have_content(issue_title)
-    end
-
-    it 'creates an issue with an epic' do
-      click_button 'Select epic'
-      click_on epic.title
-      click_button 'Create issue'
-
-      wait_for_all_requests
-
-      within_testid('select-epic') do
-        expect(page).to have_content(epic.title)
-      end
-
-      expect(page).to have_content(issue_title)
-    end
-  end
-
-  context 'with iterations' do
-    before do
-      sign_in(user)
-      visit(new_project_issue_path(project))
-      fill_in("Title", with: issue_title)
-    end
-
-    it 'creates an issue with no iteration' do
-      click_button 'Select iteration'
-      select_listbox_item 'No iteration'
-
-      expect(page).to have_button('Select iteration')
 
       click_button 'Create issue'
 
-      wait_for_all_requests
-
-      within_testid('select-iteration') do
-        expect(page).to have_content('None')
+      expect(page).to have_css('h1', text: issue_title)
+      within_testid('work-item-parent') do
+        expect(page).to have_text(epic.title)
       end
-
-      expect(page).to have_content(issue_title)
-    end
-
-    it 'creates an issue with an iteration' do
-      click_button 'Select iteration'
-      select_listbox_item(iteration.title)
-
-      expect(page).to have_button(iteration_period(iteration))
-
-      click_button 'Create issue'
-
-      wait_for_all_requests
-
-      within_testid('select-iteration') do
-        expect(page).to have_content(iteration.title)
-      end
-
-      expect(page).to have_content(issue_title)
     end
   end
 
@@ -190,7 +145,7 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
       end
 
       it 'fills in with inherited template' do
-        expect(find('.js-issuable-selector .dropdown-toggle-text')).to have_content('bug')
+        expect(page).to have_button('bug')
       end
     end
   end
