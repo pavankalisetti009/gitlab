@@ -10,6 +10,9 @@ module API
             expose :registry_upstream,
               if: ->(_upstream, options) { options[:with_registry_upstream] },
               using: RegistryUpstream
+            expose :registry_upstreams,
+              if: ->(_upstream, options) { options[:with_registry_upstreams] },
+              using: RegistryUpstream
 
             private
 

@@ -190,6 +190,18 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         expect(recorder.count).to eq(1)
       end
     end
+
+    describe '.for_id_and_group' do
+      let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
+
+      before do
+        create(:virtual_registries_packages_maven_upstream)
+      end
+
+      subject { described_class.for_id_and_group(id: upstream.id, group: upstream.group) }
+
+      it { is_expected.to contain_exactly(upstream) }
+    end
   end
 
   context 'for credentials persistence' do
