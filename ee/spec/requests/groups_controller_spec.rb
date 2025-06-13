@@ -690,9 +690,9 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
         end
       end
 
-      context 'when the importer_user_mapping_allow_bypass_of_confirmation feature flag is disabled' do
+      context 'when the group_owner_placeholder_confirmation_bypass feature flag is disabled' do
         before do
-          stub_feature_flags(importer_user_mapping_allow_bypass_of_confirmation: false)
+          stub_feature_flags(group_owner_placeholder_confirmation_bypass: false)
         end
 
         it 'does not change the setting' do

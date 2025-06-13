@@ -123,7 +123,7 @@ module EE
       end
 
       def enterprise_bypass_placeholders_allowed?
-        ::Feature.enabled?(:importer_user_mapping_allow_bypass_of_confirmation, current_group) &&
+        ::Feature.enabled?(:group_owner_placeholder_confirmation_bypass, current_group) &&
           current_group&.domain_verification_available?
       end
     end
