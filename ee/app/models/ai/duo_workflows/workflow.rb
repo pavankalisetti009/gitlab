@@ -37,6 +37,7 @@ module Ai
         READ_WRITE_GITLAB = 3
         RUN_COMMANDS      = 4
         USE_GIT           = 5
+        RUN_MCP_TOOLS     = 6
 
         ALL_PRIVILEGES = {
           READ_WRITE_FILES => {
@@ -58,6 +59,10 @@ module Ai
           USE_GIT => {
             name: "use_git",
             description: "Allow git commits, push and other git commands"
+          }.freeze,
+          RUN_MCP_TOOLS => {
+            name: "run_mcp_tools",
+            description: "Allow running MCP tools"
           }.freeze
         }.freeze
 
