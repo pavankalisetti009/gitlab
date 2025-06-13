@@ -53,6 +53,11 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
+            # For specific customers, we want to use Claude 3.5 Sonnet for Duo Code Reviews
+            # It uses the `use_claude_code_completion` feature flag because
+            # it is tied to the usage of Claude models for AI features, so it is apt to use it here
+            # as well. This check can be removed once we have enabled model switching.
+            return '1.0.0' if Feature.enabled?(:use_claude_code_completion, root_namespace)
             return '2.1.0' if Feature.enabled?(:summarize_code_review_claude_4_0_sonnet, user)
 
             '2.0.0'
