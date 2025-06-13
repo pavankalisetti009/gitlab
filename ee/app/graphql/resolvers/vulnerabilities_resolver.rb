@@ -27,11 +27,8 @@ module Resolvers
     argument :owasp_top_ten, [Types::VulnerabilityOwaspTop10Enum],
       required: false,
       as: :owasp_top_10,
-      description: 'Filter vulnerabilities by OWASP Top 10 category. Wildcard value `NONE` is also supported ' \
-                   'but it cannot be combined with other OWASP top 10 values. ' \
-                   'Experimental support for OWASP 2021 values is deprecated ' \
-                   'and the removal is tracked in <https://gitlab.com/gitlab-org/gitlab/-/issues/539250> ' \
-                   'Instead, use the `owasp_top_ten_2021` argument to continue filtering by OWASP 2021 values.'
+      description: 'Filter vulnerabilities by OWASP Top 10 2017 category. Wildcard value `NONE` is also supported ' \
+                   'but it cannot be combined with other OWASP top 10 values.'
 
     argument :owasp_top_ten_2021, [::Types::Vulnerabilities::Owasp2021Top10Enum],
       required: false,

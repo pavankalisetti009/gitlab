@@ -353,23 +353,17 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
     end
 
     context 'when owasp_top_10 is given' do
-      let(:params) { { owasp_top_ten: ['A1:2017-Injection', 'A1:2021-Broken Access Control'] } }
+      let(:params) { { owasp_top_ten: ['A1:2017-Injection'] } }
 
       let_it_be(:vuln_read_with_owasp_top_10_first) do
         create(:vulnerability_read, :with_owasp_top_10,
           owasp_top_10: 'A1:2017-Injection', severity: :high, project: project)
       end
 
-      let_it_be(:vuln_read_with_owasp_top_10_second) do
-        create(:vulnerability_read, :with_owasp_top_10,
-          owasp_top_10: 'A1:2021-Broken Access Control', severity: :low, project: project)
-      end
-
       let_it_be(:vuln_read) { create(:vulnerability_read, severity: :medium) }
 
       it 'only returns vulnerabilities with owasp_top_10' do
-        is_expected.to contain_exactly(vuln_read_with_owasp_top_10_first.vulnerability,
-          vuln_read_with_owasp_top_10_second.vulnerability)
+        is_expected.to contain_exactly(vuln_read_with_owasp_top_10_first.vulnerability)
       end
     end
 
