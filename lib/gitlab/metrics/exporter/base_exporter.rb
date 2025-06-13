@@ -2,20 +2,19 @@
 
 require 'webrick'
 
-RACK_EXPORTER =
-  if ENV["LABKIT_METRICS_ENABLED"] == "true"
-    require 'labkit/metrics/rack_exporter'
-    ::Labkit::Metrics::RackExporter
-  else
-    require 'prometheus/client/rack/exporter'
-    ::Prometheus::Client::Rack::Exporter
-  end
-
 module Gitlab
   module Metrics
     module Exporter
       class BaseExporter < Daemon
         CERT_REGEX = /-----BEGIN CERTIFICATE-----(?:.|\n)+?-----END CERTIFICATE-----/
+        RACK_EXPORTER =
+          if ENV["LABKIT_METRICS_ENABLED"] == "true"
+            require 'labkit/metrics/rack_exporter'
+            ::Labkit::Metrics::RackExporter
+          else
+            require 'prometheus/client/rack/exporter'
+            ::Prometheus::Client::Rack::Exporter
+          end
 
         attr_reader :server
 
