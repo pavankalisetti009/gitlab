@@ -2,14 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Gitlab::Metrics::Prometheus, :prometheus, feature_category: :scalability do
+RSpec.describe ::Gitlab::Metrics::Labkit, :prometheus, feature_category: :scalability do
   let(:all_metrics) do
     Class.new do
-      include ::Gitlab::Metrics::Prometheus
+      include ::Gitlab::Metrics::Labkit
     end
   end
 
-  let(:registry) { all_metrics.registry }
+  let(:client) { all_metrics.client }
 
   after do
     all_metrics.clear_errors!
@@ -17,23 +17,21 @@ RSpec.describe ::Gitlab::Metrics::Prometheus, :prometheus, feature_category: :sc
 
   describe '#reset_registry!' do
     it 'clears existing metrics' do
-      registry.counter(:test, 'test metric')
+      counter = client.counter(:test, 'test metric')
+      counter.increment
 
-      expect(registry.metrics.count).to eq(1)
+      expect(counter.get).to eq(1)
 
       all_metrics.reset_registry!
 
-      expect(all_metrics.registry.metrics.count).to eq(0)
+      expect(counter.get).to eq(0)
     end
   end
 
   describe '#error_detected!' do
-    before do
-      allow(all_metrics).to receive(:metrics_folder_present?).and_return(true)
-      stub_application_setting(prometheus_metrics_enabled: true)
-    end
-
     it 'disables Prometheus metrics' do
+      stub_application_setting(prometheus_metrics_enabled: true)
+
       expect(all_metrics.error?).to be_falsey
       expect(all_metrics.prometheus_metrics_enabled?).to be_truthy
 
