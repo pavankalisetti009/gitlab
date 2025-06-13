@@ -10745,7 +10745,8 @@ CREATE TABLE bulk_import_export_uploads (
     batch_id bigint,
     project_id bigint,
     group_id bigint,
-    CONSTRAINT check_5add76239d CHECK ((char_length(export_file) <= 255))
+    CONSTRAINT check_5add76239d CHECK ((char_length(export_file) <= 255)),
+    CONSTRAINT check_e1d215df28 CHECK ((num_nonnulls(group_id, project_id) = 1))
 );
 
 CREATE SEQUENCE bulk_import_export_uploads_id_seq
