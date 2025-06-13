@@ -15637,7 +15637,8 @@ CREATE TABLE incident_management_oncall_participants (
     color_palette smallint NOT NULL,
     color_weight smallint NOT NULL,
     is_removed boolean DEFAULT false NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_d53b689825 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE incident_management_oncall_participants_id_seq
