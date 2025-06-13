@@ -6,17 +6,16 @@ module EE
 
     def duo_core_access_granted(users)
       attributes = {
-        target_type: ::User,
+        target_type: ::User.name,
         action: ::Todo::DUO_CORE_ACCESS_GRANTED,
         author_id: ::Users::Internal.duo_code_review_bot.id
       }
 
-      excluded_user_ids = excluded_user_ids(users, attributes)
-      users.reject! { |user| excluded_user_ids.include?(user.id) }
+      eligible_users = users_who_have_not_received_notification(attributes, users)
 
-      bulk_insert_todos_for_user_target_type(users, attributes)
+      bulk_insert_todos_for_user_target_type(eligible_users, attributes)
 
-      ::Users::UpdateTodoCountCacheService.new(users.map(&:id)).execute
+      ::Users::UpdateTodoCountCacheService.new(eligible_users.map(&:id)).execute
     end
 
     def duo_pro_access_granted(user)
@@ -69,6 +68,19 @@ module EE
     end
 
     private
+
+    def users_who_have_not_received_notification(attributes, users)
+      finder_attributes = attributes.except(:author_id).transform_keys do |key|
+        case key
+        when :action then :action_id
+        when :target_type then :type
+        end
+      end
+
+      filtered_users = ::TodosFinder.new(users: users, **finder_attributes.merge(state: :all)).execute.distinct_user_ids
+
+      users.reject { |user| filtered_users.include?(user.id) }
+    end
 
     override :attributes_for_target
     def attributes_for_target(target)
