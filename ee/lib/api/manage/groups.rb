@@ -39,6 +39,24 @@ module API
           declared(params, include_missing: false)
             .merge({ users: bot_users, impersonation: false })
         end
+
+        def bot_resource(token)
+          member = token.user.members.first
+
+          return unless member
+
+          member.source
+        end
+
+        def validate_bot_tokens(token, bot_resource)
+          unless token.user.project_bot?
+            forbidden!("Cannot revoke resource access token: Token does not belong to bot user")
+          end
+
+          return unless bot_resource&.root_ancestor != user_group
+
+          forbidden!("Cannot access resource access token: Token belongs to a resource outside group's hierarchy")
+        end
       end
 
       namespace 'groups/:id/manage' do
@@ -136,13 +154,11 @@ module API
           end
           delete ':prat_id' do
             token = find_token(params[:prat_id])
-
-            unless token.user.project_bot?
-              forbidden!("Cannot revoke resource access token: token belongs to a human user, not a bot")
-            end
+            bot_resource = bot_resource(token)
+            validate_bot_tokens(token, bot_resource)
 
             service = ::ResourceAccessTokens::RevokeService
-              .new(current_user, user_group, token).execute
+              .new(current_user, bot_resource, token).execute
 
             service.success? ? no_content! : bad_request!(service.message)
           end
@@ -162,14 +178,14 @@ module API
           end
           post ':prat_id/rotate' do
             resource_accessible = Ability.allowed?(current_user, :manage_resource_access_tokens, user_group)
+            forbidden! unless resource_accessible
 
-            token = find_token(params[:prat_id]) if resource_accessible
+            token = find_token(params[:prat_id])
 
-            if !token.user.project_bot? || user_group.bot_users.exclude?(token.user)
-              forbidden!("Cannot rotate resource access token")
-            end
+            bot_resource = bot_resource(token)
+            validate_bot_tokens(token, bot_resource)
 
-            new_token = rotate_token_for_group(token, user_group, declared_params)
+            new_token = rotate_token_for_resource(token, bot_resource, declared_params)
 
             present new_token, with: Entities::ResourceAccessTokenWithToken
           end
