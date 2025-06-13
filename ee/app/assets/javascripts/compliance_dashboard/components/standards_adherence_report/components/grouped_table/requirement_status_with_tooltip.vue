@@ -129,7 +129,7 @@ export default {
               >
                 {{ $options.i18n.EXTERNAL_CONTROL_LABEL }}
               </gl-badge>
-              <span v-if="status.passCount" class="gl-text-status-success">
+              <span v-if="controlStatus.status === 'PASS'" class="gl-text-status-success">
                 {{ s__('ComplianceStandardsAdherence|Passed') }}
               </span>
               <span v-if="controlStatus.status === 'FAIL'" class="gl-text-status-danger">
