@@ -3,17 +3,14 @@ import { uniqueId } from 'lodash';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WikiNotesApp from '~/pages/shared/wikis/wiki_notes/components/wiki_notes_app.vue';
-import WikiCommentForm from '~/pages/shared/wikis/wiki_notes/components/wiki_comment_form.vue';
-import PlaceholderNote from '~/pages/shared/wikis/wiki_notes/components/placeholder_note.vue';
+import WikiNotesApp from '~/wikis/wiki_notes/components/wiki_notes_app.vue';
+import WikiCommentForm from '~/wikis/wiki_notes/components/wiki_comment_form.vue';
+import PlaceholderNote from '~/wikis/wiki_notes/components/placeholder_note.vue';
 import SkeletonNote from '~/vue_shared/components/notes/skeleton_note.vue';
-import WikiDiscussion from '~/pages/shared/wikis/wiki_notes/components/wiki_discussion.vue';
+import WikiDiscussion from '~/wikis/wiki_notes/components/wiki_discussion.vue';
 import wikiPageQuery from '~/wikis/graphql/wiki_page.query.graphql';
-import WikiNotesActivityHeader from '~/pages/shared/wikis/wiki_notes/components/wiki_notes_activity_header.vue';
-import eventHub, {
-  EVENT_EDIT_WIKI_DONE,
-  EVENT_EDIT_WIKI_START,
-} from '~/pages/shared/wikis/event_hub';
+import WikiNotesActivityHeader from '~/wikis/wiki_notes/components/wiki_notes_activity_header.vue';
+import eventHub, { EVENT_EDIT_WIKI_DONE, EVENT_EDIT_WIKI_START } from '~/wikis/event_hub';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { noteableId, queryVariables } from '../mock_data';
 

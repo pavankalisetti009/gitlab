@@ -1,5 +1,5 @@
 import { GlAvatarLink, GlAvatar } from '@gitlab/ui';
-import PlaceholderNote from '~/pages/shared/wikis/wiki_notes/components/placeholder_note.vue';
+import PlaceholderNote from '~/wikis/wiki_notes/components/placeholder_note.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TimelineEntryItem from '~/vue_shared/components/notes/timeline_entry_item.vue';
 import { currentUserData, note } from '../mock_data';

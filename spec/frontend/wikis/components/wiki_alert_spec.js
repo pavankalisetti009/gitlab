@@ -1,6 +1,6 @@
 import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import WikiAlert from '~/pages/shared/wikis/components/wiki_alert.vue';
+import WikiAlert from '~/wikis/components/wiki_alert.vue';
 
 describe('WikiAlert', () => {
   let wrapper;

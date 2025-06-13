@@ -1,10 +1,10 @@
 import { GlAvatarLink, GlAvatar } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WikiNote from '~/pages/shared/wikis/wiki_notes/components/wiki_note.vue';
-import NoteHeader from '~/pages/shared/wikis/wiki_notes/components/note_header.vue';
-import NoteActions from '~/pages/shared/wikis/wiki_notes/components/note_actions.vue';
-import NoteBody from '~/pages/shared/wikis/wiki_notes/components/note_body.vue';
+import WikiNote from '~/wikis/wiki_notes/components/wiki_note.vue';
+import NoteHeader from '~/wikis/wiki_notes/components/note_header.vue';
+import NoteActions from '~/wikis/wiki_notes/components/note_actions.vue';
+import NoteBody from '~/wikis/wiki_notes/components/note_body.vue';
 import deleteNoteMutation from '~/wikis/graphql/notes/delete_wiki_page_note.mutation.graphql';
 import wikiNoteToggleAwardEmojiMutation from '~/wikis/graphql/notes/wiki_note_toggle_award_emoji.mutation.graphql';
 import TimelineEntryItem from '~/vue_shared/components/notes/timeline_entry_item.vue';

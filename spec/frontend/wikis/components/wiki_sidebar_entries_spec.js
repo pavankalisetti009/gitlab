@@ -4,8 +4,8 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import axios from '~/lib/utils/axios_utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import WikiSidebarEntries from '~/pages/shared/wikis/components/wiki_sidebar_entries.vue';
-import WikiSidebarEntry from '~/pages/shared/wikis/components/wiki_sidebar_entry.vue';
+import WikiSidebarEntries from '~/wikis/components/wiki_sidebar_entries.vue';
+import WikiSidebarEntry from '~/wikis/components/wiki_sidebar_entry.vue';
 
 const MOCK_SIDEBAR_PAGES_API = 'sidebar/pages/api';
 const MOCK_VIEW_ALL_PAGES_PATH = 'view/all/pages';
@@ -32,7 +32,7 @@ const MOCK_ENTRIES = [
   { title: 'Page 17', slug: 'page-17', path: 'path/to/page-17' },
 ];
 
-describe('pages/shared/wikis/components/wiki_sidebar_entry', () => {
+describe('wikis/components/wiki_sidebar_entry', () => {
   let wrapper;
   let mock;
 

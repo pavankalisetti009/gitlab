@@ -2,7 +2,7 @@ import { GlSkeletonLoader, GlAlert } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import MockAdapter from 'axios-mock-adapter';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WikiContent from '~/pages/shared/wikis/components/wiki_content.vue';
+import WikiContent from '~/wikis/components/wiki_content.vue';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
@@ -12,7 +12,7 @@ import { handleLocationHash } from '~/lib/utils/common_utils';
 jest.mock('~/behaviors/markdown/render_gfm');
 jest.mock('~/lib/utils/common_utils');
 
-describe('pages/shared/wikis/components/wiki_content', () => {
+describe('wikis/components/wiki_content', () => {
   const PATH = '/test';
   let wrapper;
   let mock;

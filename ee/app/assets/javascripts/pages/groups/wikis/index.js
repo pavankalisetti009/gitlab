@@ -1,7 +1,7 @@
-import Wikis from '~/pages/shared/wikis/wikis';
-import { mountApplications } from '~/pages/shared/wikis/edit';
-import { mountWikiSidebarEntries } from '~/pages/shared/wikis/show';
-import { mountMoreActions } from '~/pages/shared/wikis/more_actions';
+import Wikis from '~/wikis/wikis';
+import { mountApplications } from '~/wikis/edit';
+import { mountWikiSidebarEntries } from '~/wikis/show';
+import { mountMoreActions } from '~/wikis/more_actions';
 
 mountApplications();
 mountWikiSidebarEntries();

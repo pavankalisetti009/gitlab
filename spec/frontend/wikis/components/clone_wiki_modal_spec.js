@@ -1,6 +1,6 @@
 import { GlButton, GlDisclosureDropdownItem, GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CloneWikiModal from '~/pages/shared/wikis/components/clone_wiki_modal.vue';
+import CloneWikiModal from '~/wikis/components/clone_wiki_modal.vue';
 import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
 
 describe('DeleteWikiModal', () => {

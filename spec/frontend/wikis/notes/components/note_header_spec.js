@@ -1,6 +1,6 @@
 import { GlLoadingIcon, GlBadge } from '@gitlab/ui';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
-import NoteHeader from '~/pages/shared/wikis/wiki_notes/components/note_header.vue';
+import NoteHeader from '~/wikis/wiki_notes/components/note_header.vue';
 import { extendedWrapper, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('NoteHeader', () => {
