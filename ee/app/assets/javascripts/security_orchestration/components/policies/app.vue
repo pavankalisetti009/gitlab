@@ -33,6 +33,7 @@ import {
   POLICY_TYPE_FILTER_OPTIONS,
   ACTION_LIMIT,
   POLICIES_PER_PAGE,
+  PIPELINE_TYPE_COMBINED_TYPE_MAP,
 } from './constants';
 
 const NAMESPACE_QUERY_DICT = {
@@ -113,7 +114,10 @@ export default {
         return NAMESPACE_QUERY_DICT_COMBINED_LIST[this.namespaceType];
       },
       variables() {
-        return this.queryVariables;
+        return {
+          ...this.queryVariables,
+          ...(this.type ? { type: this.type } : {}),
+        };
       },
       result({ data }) {
         this.pageInfo = data?.namespace?.securityPolicies?.pageInfo ?? {};
@@ -211,6 +215,7 @@ export default {
   data() {
     const selectedPolicySource = extractSourceParameter(getParameterByName('source'));
     const selectedPolicyType = extractTypeParameter(getParameterByName('type'));
+    const type = PIPELINE_TYPE_COMBINED_TYPE_MAP[selectedPolicyType] || '';
 
     return {
       hasPolicyProject: Boolean(this.assignedPolicyProject?.id),
@@ -225,6 +230,7 @@ export default {
       vulnerabilityManagementPolicies: [],
       pageInfo: {},
       securityPolicies: [],
+      type,
     };
   },
   computed: {
@@ -291,6 +297,9 @@ export default {
           groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter] || [],
         [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
           groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter] || [],
+        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
+          groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter] ||
+          [],
         [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
           groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter] || [],
       };
@@ -361,7 +370,11 @@ export default {
     handleUpdatePolicySource(value) {
       this.selectedPolicySource = value;
     },
-    handleUpdatePolicyType(value) {
+    async handleUpdatePolicyType(value) {
+      if (this.hasCombinedList) {
+        this.type = PIPELINE_TYPE_COMBINED_TYPE_MAP[value] || '';
+      }
+
       this.selectedPolicyType = value;
     },
     async handlePageChange(isNext = false) {
@@ -376,8 +389,8 @@ export default {
             ...pageVariables,
           },
         });
-
         const { pageInfo = {}, nodes = [] } = data?.namespace?.securityPolicies ?? {};
+
         this.pageInfo = pageInfo;
         this.securityPolicies = nodes;
       } catch (e) {

@@ -9,10 +9,12 @@ query projectSecurityPolicies(
   $after: String = ""
   $before: String = ""
   $first: Int = 50
+  $type: PolicyType
 ) {
   namespace: project(fullPath: $fullPath) {
     id
     securityPolicies(
+      type: $type
       relationship: $relationship
       last: $last
       first: $first

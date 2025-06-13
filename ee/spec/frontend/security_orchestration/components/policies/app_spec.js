@@ -30,6 +30,7 @@ import groupVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration
 import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
 import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import * as urlUtils from '~/lib/utils/url_utility';
 import {
   mockGroupPipelineExecutionPolicyCombinedList,
   mockGroupPipelineExecutionSchedulePolicyCombinedList,
@@ -476,6 +477,10 @@ describe('App', () => {
         flattenedProjectSecurityPolicies[
           POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter
         ],
+      [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
+        flattenedProjectSecurityPolicies[
+          POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter
+        ],
       [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
         flattenedProjectSecurityPolicies[
           POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter
@@ -534,6 +539,73 @@ describe('App', () => {
           flattenedProjectSecurityPolicies[
             POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter
           ],
+      });
+    });
+  });
+
+  describe('filtering policies', () => {
+    describe.each`
+      emittedType                      | expectedType
+      ${'APPROVAL'}                    | ${'APPROVAL_POLICY'}
+      ${'SCAN_EXECUTION'}              | ${'SCAN_EXECUTION_POLICY'}
+      ${'PIPELINE_EXECUTION'}          | ${'PIPELINE_EXECUTION_POLICY'}
+      ${'PIPELINE_EXECUTION_SCHEDULE'} | ${'PIPELINE_EXECUTION_SCHEDULE_POLICY'}
+      ${'VULNERABILITY_MANAGEMENT'}    | ${'VULNERABILITY_MANAGEMENT_POLICY'}
+    `('filters policies by type', ({ emittedType, expectedType }) => {
+      it('does not refresh policy list when feature flag is disabled', async () => {
+        createWrapper();
+
+        await waitForPromises();
+
+        await findPoliciesList().vm.$emit('update-policy-type', emittedType);
+
+        expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(0);
+      });
+
+      it('filters policies by type', async () => {
+        createWrapper({
+          provide: {
+            glFeatures: {
+              securityPoliciesCombinedList: true,
+            },
+          },
+        });
+
+        await waitForPromises();
+
+        await findPoliciesList().vm.$emit('update-policy-type', emittedType);
+
+        expect(requestHandlers.projectSecurityPolicies).toHaveBeenNthCalledWith(2, {
+          fullPath: namespacePath,
+          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
+          after: '',
+          before: '',
+          first: 50,
+          type: expectedType,
+        });
+      });
+
+      it('sets correct selected from query type', async () => {
+        jest.spyOn(urlUtils, 'getParameterByName').mockReturnValue(emittedType.toLowerCase());
+
+        createWrapper({
+          provide: {
+            glFeatures: {
+              securityPoliciesCombinedList: true,
+            },
+          },
+        });
+
+        await waitForPromises();
+
+        expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledWith({
+          fullPath: namespacePath,
+          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
+          after: '',
+          before: '',
+          first: 50,
+          type: expectedType,
+        });
       });
     });
   });
