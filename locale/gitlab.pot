@@ -11392,6 +11392,9 @@ msgstr ""
 msgid "Bulk update"
 msgstr ""
 
+msgid "BulkImports|Placeholder user confirmation"
+msgstr ""
+
 msgid "BulkImport|%{count} placeholder user has been matched to a user."
 msgid_plural "BulkImport|%{count} placeholder users have been matched to users."
 msgstr[0] ""
@@ -25815,6 +25818,9 @@ msgid "Expires at"
 msgstr ""
 
 msgid "Expiring soon"
+msgstr ""
+
+msgid "Expiry date"
 msgstr ""
 
 msgid "Explain current vulnerability."
@@ -66929,6 +66935,9 @@ msgid "UserMapping|Placeholder users were created in %{group_names}. These users
 msgstr ""
 
 msgid "UserMapping|Placeholders"
+msgstr ""
+
+msgid "UserMapping|Placeholders can be reassigned to enterprise users without user confirmation."
 msgstr ""
 
 msgid "UserMapping|Please upload a valid CSV file."
