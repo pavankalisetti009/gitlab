@@ -33,6 +33,8 @@ module WorkItems
                     work_item_custom_statuses.id ASC')
         }
 
+        scope :converted_from_system_defined, -> { where.not(converted_from_system_defined_status_identifier: nil) }
+
         validates :namespace, :category, presence: true
         validates :name, presence: true, length: { maximum: 255 }
         # Note that currently all statuses are created at root group level, if we would ever want to allow statuses

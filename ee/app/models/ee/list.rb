@@ -100,10 +100,18 @@ module EE
       when 'iteration'
         iteration.display_text
       when 'status'
-        system_defined_status&.name || custom_status&.name
+        status.name
       else
         super
       end
+    end
+
+    def status
+      return custom_status if custom_status.present?
+
+      system_defined_status&.converted_status_in_namespace(
+        board.resource_parent.root_ancestor
+      )
     end
 
     override :as_json
