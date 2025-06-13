@@ -327,7 +327,7 @@ export default {
     class="board-header gl-relative"
     data-testid="board-list-header"
   >
-    <h3
+    <div
       :class="{
         'gl-cursor-grab': userCanDrag,
         'gl-h-full gl-py-3': list.collapsed && !isSwimlanesHeader,
@@ -378,8 +378,8 @@ export default {
         />
       </a>
       <!-- EE end -->
-      <div
-        class="board-title-text"
+      <h2
+        class="gl-text-bold board-title-text gl-text-base"
         :class="{
           'gl-hidden': list.collapsed && isSwimlanesHeader,
           'gl-mx-0 gl-my-3 gl-flex-grow-0 gl-rotate-90 gl-py-0': list.collapsed,
@@ -416,7 +416,7 @@ export default {
           :scoped="showScopedLabels(list.label)"
           :title="list.label.title"
         />
-      </div>
+      </h2>
 
       <!-- EE start -->
       <span
@@ -531,6 +531,6 @@ export default {
           @click="openSidebarSettings"
         />
       </gl-button-group>
-    </h3>
+    </div>
   </header>
 </template>
