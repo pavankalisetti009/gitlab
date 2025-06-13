@@ -25,6 +25,18 @@ module EE
           *security_policy_violation_check_preloads
         ]
 
+        h[:mergeability_checks] += [
+          *approved_mergeability_check_preloads,
+          *blocked_by_other_mrs_mergeability_check_preloads,
+          *commits_status_mergeability_check_preloads,
+          *security_policy_violation_check_preloads,
+          { target_project: [:security_policy_management_project_linked_configurations] },
+          :blocking_merge_requests,
+          :requested_changes,
+          :failed_scan_result_policy_violations,
+          { target_project: [:project_setting] }
+        ]
+
         h[:squash_read_only] = {
           target_project: [{ protected_branches: :squash_option }, :project_setting]
         }
@@ -81,12 +93,15 @@ module EE
     def approval_merge_request_rules_preloads
       [
         *approval_rules_preloads,
-        { approval_project_rule: approval_project_rules_preloads }
+        { approval_project_rule: approval_project_rules_preloads },
+        :approval_policy_rule,
+        { approval_policy_rule: [:security_policy_management_project] }
       ]
     end
 
     def approval_project_rules_preloads
       [
+        :project,
         :protected_branches,
         *approval_rules_preloads
       ]
