@@ -40,7 +40,7 @@ RSpec.describe AppSec::Dast::SiteValidations::RunnerService do
       end
 
       it 'is allowed to set pipeline variables regardless of minimum override role' do
-        project.update!(restrict_user_defined_variables: true, ci_pipeline_variables_minimum_override_role: :maintainer)
+        project.update!(ci_pipeline_variables_minimum_override_role: :maintainer)
 
         expect(developer.can?(:set_pipeline_variables, project)).to be false
         expect(subject).to be_success
