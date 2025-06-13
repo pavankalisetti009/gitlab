@@ -1,151 +1,65 @@
 # frozen_string_literal: true
-require "spec_helper"
 
-RSpec.describe Billing::PlanComponent, :aggregate_failures, type: :component, feature_category: :subscription_management do
+require 'spec_helper'
+
+RSpec.describe Billing::PlanComponent, type: :component, feature_category: :subscription_management do
   include SubscriptionPortalHelpers
+  using RSpec::Parameterized::TableSyntax
 
-  let(:namespace) { build(:group) }
-  let(:plans_data) { billing_plans_data.map { |plan| Hashie::Mash.new(plan) } }
-  let(:plan) { plans_data.detect { |x| x.code == plan_name } }
-  let(:current_plan_code) { nil }
-  let(:current_plan) { Hashie::Mash.new({ code: current_plan_code }) }
-
-  subject(:component) { described_class.new(plan: plan, namespace: namespace, current_plan: current_plan) }
-
-  before do
-    allow(component).to receive(:plan_purchase_url).and_return('_purchase_url_')
-
-    render_inline(component)
+  where(:method_name, :error_pattern) do
+    :plan_name               | /Missing plan_name implementation/
+    :name                    | /Missing name implementation/
+    :elevator_pitch          | /Missing elevator_pitch implementation/
+    :show_upgrade_button?    | /Missing show_upgrade_button\? implementation/
+    :features_elevator_pitch | /Missing features_elevator_pitch implementation/
+    :features                | /Missing features implementation/
+    :show_learn_more_link?   | /Missing show_learn_more_link\? implementation/
   end
 
-  shared_examples 'plan tracking' do
-    it 'has expected tracking attributes' do
-      attributes = {
-        testid: "upgrade-to-#{plan_name}",
-        action: 'click_button',
-        label: 'plan_cta',
-        property: plan_name
-      }
-      expect(page).to have_tracking(attributes)
+  with_them do
+    it 'raises NoMethodError' do
+      expect { component_without(method_name) }.to raise_error(NoMethodError, error_pattern)
     end
   end
 
-  context 'with free plan' do
-    let(:plan_name) { 'free' }
-
-    it 'has header for the current plan' do
-      expect(page).to have_content('Your current plan')
-      expect(page).to have_selector('.gl-bg-gray-100')
-    end
-
-    it 'has pricing info' do
-      expect(page).to have_content("#{component.currency_symbol} 0")
-      expect(page).not_to have_content('Billed annually')
-    end
-
-    it 'does not have cta_link' do
-      expect(page).not_to have_link('Learn more')
-    end
-
-    context 'with trial as current plan' do
-      let(:current_plan_code) { ::Plan::ULTIMATE_TRIAL }
-
-      it 'does not have header for the current plan' do
-        expect(page).not_to have_content('Your current plan')
-        expect(page).not_to have_selector('.gl-bg-gray-100')
-      end
+  context 'with all required methods implemented' do
+    it 'renders without error' do
+      expect { full_component }.not_to raise_error
     end
   end
 
-  context 'with premium plan' do
-    let(:plan_name) { 'premium' }
+  # Define a method to create a component with specific methods removed
+  def component_without(method = nil)
+    klass = stub_const('TestPlanComponent', Class.new(described_class))
 
-    it 'has header for the current plan' do
-      expect(page).to have_content('Recommended')
-      expect(page).to have_selector('.gl-bg-purple-500')
-    end
+    # Only implement the methods we need, excluding the one we're testing
+    complete_methods = [
+      :plan_name, :name, :elevator_pitch, :show_upgrade_button?,
+      :features_elevator_pitch, :features, :show_learn_more_link?
+    ]
 
-    it 'has pricing info' do
-      expect(page).not_to have_content("#{component.currency_symbol} 0")
-      expect(page).to have_content('Billed annually')
-    end
+    complete_methods.each do |m|
+      next if m == method # Skip the method we want to test
 
-    it 'has expected cta_link' do
-      expect(page).to have_link('Upgrade to Premium', href: '_purchase_url_', class: 'btn-confirm')
-    end
-
-    it 'has primary button as cta' do
-      expect(page).to have_selector('.btn-confirm')
-      expect(page).not_to have_selector('.btn-confirm-secondary')
-    end
-
-    it 'has duo core feature' do
-      within(find_by_testid('feature-list')) do
-        expect(page).to have_content('AI Chat in the ID')
-        expect(page).to have_content('AI Code Suggestions in the IDE')
+      klass.class_eval do
+        define_method(m) do
+          case m
+          when :plan_name then 'free'
+          when :name then 'Free Plan'
+          when :elevator_pitch then 'pitch'
+          when :show_upgrade_button? then false
+          when :features_elevator_pitch then 'features pitch'
+          when :features then ['Feature 1', 'Feature 2']
+          when :show_learn_more_link? then false
+          end
+        end
       end
     end
 
-    it_behaves_like 'plan tracking'
+    plans_data = billing_plans_data.map { |plan| Hashie::Mash.new(plan) }
 
-    context 'with trial as current plan' do
-      let(:current_plan_code) { ::Plan::ULTIMATE_TRIAL }
-
-      it 'has the recommendation header' do
-        expect(page).to have_content('Recommended')
-        expect(page).to have_selector('.gl-bg-purple-500')
-      end
-
-      it 'has primary button as cta' do
-        expect(page).to have_selector('.btn-confirm')
-        expect(page).not_to have_selector('.btn-confirm-secondary')
-      end
-    end
+    render_inline(klass.new(plans_data: plans_data, namespace: nil, current_plan: Hashie::Mash.new(code: 'free')))
   end
 
-  context 'with ultimate plan' do
-    let(:plan_name) { 'ultimate' }
-
-    it 'has pricing info' do
-      expect(page).not_to have_content("#{component.currency_symbol} 0")
-      expect(page).to have_content('Billed annually')
-    end
-
-    it 'has expected cta_link' do
-      expect(page).to have_link(
-        'Upgrade to Ultimate',
-        href: '_purchase_url_',
-        class: 'btn-confirm btn-confirm-secondary'
-      )
-    end
-
-    it 'has outline secondary button as cta' do
-      expect(page).to have_selector('.btn-confirm-secondary')
-    end
-
-    it 'has duo core feature' do
-      within(find_by_testid('feature-list')) do
-        expect(page).to have_content('AI Chat in the ID')
-        expect(page).to have_content('AI Code Suggestions in the IDE')
-      end
-    end
-
-    it_behaves_like 'plan tracking'
-
-    context 'with trial as current plan' do
-      let(:current_plan_code) { ::Plan::ULTIMATE_TRIAL }
-
-      it 'has outline secondary button as cta' do
-        expect(page).to have_selector('.btn-confirm-secondary')
-      end
-    end
-  end
-
-  context 'with unsupported plan' do
-    let(:plan_name) { 'bronze' }
-
-    it 'does not render' do
-      expect(page).to have_content('')
-    end
-  end
+  alias_method :full_component, :component_without
 end

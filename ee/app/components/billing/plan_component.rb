@@ -3,66 +3,56 @@
 module Billing
   class PlanComponent < ViewComponent::Base
     # @param [Namespace or Group] namespace
-    # @param [Hashie::Mash] plan
+    # @param [Hashie::Mash] plans_data
     # @param [Hashie::Mash] current_plan
 
-    def initialize(plan:, namespace:, current_plan:)
-      @plan = plan.merge(plans_data.fetch(plan.code, {}))
+    def initialize(plans_data:, namespace:, current_plan:)
+      @plan = plans_data.find { |plan| plan['code'] == plan_name }
       @namespace = namespace
       @current_plan = current_plan
-    end
-
-    # JH need override the symbol
-    def currency_symbol
-      "$"
     end
 
     private
 
     attr_reader :plan, :namespace, :current_plan
 
-    delegate :number_to_plan_currency, :plan_purchase_url, to: :helpers
-    delegate :sprite_icon, to: :helpers
+    delegate :number_to_plan_currency, :plan_purchase_url, :sprite_icon, to: :helpers
 
-    def render?
-      plans_data.key?(plan.code)
+    def show_upgrade_button?
+      raise NoMethodError, 'Missing show_upgrade_button? implementation'
     end
 
-    def free?
-      plan.free
+    def show_learn_more_link?
+      raise NoMethodError, 'Missing show_learn_more_link? implementation'
     end
 
-    def current_trial_and_free_component?
-      current_plan.code == ::Plan::ULTIMATE_TRIAL && free?
-    end
-
-    def card_classes
-      "gl-text-left gl-mt-7 gl-mr-7 gl-border-none billing-plan-card gl-bg-transparent"
+    # JH needs to override the symbol
+    def currency_symbol
+      '$'
     end
 
     def card_testid
-      "plan-card-#{plan.code}"
+      "plan-card-#{plan_name}"
     end
 
     def header_classes
-      return "gl-border-none gl-p-0 gl-h-0\!" if current_trial_and_free_component?
+      "gl-text-center gl-border-none gl-p-0 gl-leading-28 #{per_plan_header_classes}"
+    end
 
-      "gl-text-center gl-border-none gl-p-0 gl-leading-28 #{plan.header_classes}"
+    def per_plan_header_classes
+      # The inheriting class may override this
     end
 
     def header_text
-      return if current_trial_and_free_component?
-
-      plan.header_text
+      # The inheriting class may override this
     end
 
     def body_classes
-      base = "gl-bg-subtle gl-p-7 gl-border"
+      "#{base_body_classes} gl-rounded-br-base gl-rounded-bl-base"
+    end
 
-      return "#{base} gl-rounded-base" if current_trial_and_free_component?
-
-      "#{base} gl-rounded-br-base gl-rounded-bl-base " \
-        "#{plan.card_body_border_classes}"
+    def base_body_classes
+      'gl-bg-subtle gl-p-7 gl-border'
     end
 
     def footer_classes
@@ -70,180 +60,64 @@ module Billing
     end
 
     def name
-      plan_name = "BillingPlans|#{plan.code.capitalize}"
-      s_(plan_name)
+      raise NoMethodError, 'Missing name implementation'
+    end
+
+    def plan_name
+      raise NoMethodError, 'Missing plan_name implementation'
     end
 
     def elevator_pitch
-      plan.elevator_pitch
+      raise NoMethodError, 'Missing elevator_pitch implementation'
     end
 
     def features_elevator_pitch
-      plan.features_elevator_pitch
+      raise NoMethodError, 'Missing features_elevator_pitch implementation'
     end
 
     def learn_more_text
-      "Learn more about #{plan.code.capitalize}"
+      # The inheriting class may override this
     end
 
     def learn_more_url
-      "https://about.gitlab.com/pricing/#{plan.code}"
+      "https://about.gitlab.com/pricing/#{plan_name}"
     end
 
     def price_per_month
       number_to_currency(plan.price_per_month, unit: '', strip_insignificant_zeros: true)
     end
 
-    def annual_price_text
-      s_("BillingPlans|Billed annually at %{price_per_year} USD") % { price_per_year: price_per_year }
+    def pricing_text
+      s_('BillingPlans|Billed annually at %{price_per_year} USD') % { price_per_year: price_per_year }
     end
 
     def price_per_year
       number_to_plan_currency(plan.price_per_year)
     end
 
+    def cta_category
+      # The inheriting class may override this
+    end
+
     def cta_text
-      plan.fetch(:cta_text, s_("BillingPlans|Upgrade"))
+      # The inheriting class may override this
     end
 
     def cta_url
       plan_purchase_url(namespace, plan)
     end
 
-    def cta_category
-      plan.cta_category
-    end
-
     def cta_data
       {
         track_action: 'click_button',
         track_label: 'plan_cta',
-        track_property: plan.code
-      }.merge(plan.fetch(:cta_data, {}))
+        track_property: plan_name,
+        testid: "upgrade-to-#{plan_name}"
+      }
     end
 
     def features
-      plan.features
-    end
-
-    def plans_data
-      duo_core_features = [
-        {
-          title: s_("BillingPlans|AI Chat in the IDE")
-        },
-        {
-          title: s_("BillingPlans|AI Code Suggestions in the IDE")
-        }
-      ]
-
-      premium_features = [
-        *duo_core_features,
-        {
-          title: s_("BillingPlans|Code Ownership and Protected Branches")
-        },
-        {
-          title: s_("BillingPlans|Merge Request Approval Rules")
-        },
-        {
-          title: s_("BillingPlans|Enterprise Agile Planning")
-        },
-        {
-          title: s_("BillingPlans|Advanced CI/CD")
-        },
-        {
-          title: s_("BillingPlans|Support")
-        },
-        {
-          title: s_("BillingPlans|Enterprise User and Incident Management")
-        },
-        {
-          title: s_("BillingPlans|10,000 CI/CD minutes per month")
-        }
-      ]
-
-      ultimate_features = [
-        *duo_core_features,
-        {
-          title: s_("BillingPlans|Suggested Reviewers")
-        },
-        {
-          title: s_("BillingPlans|Dynamic Application Security Testing")
-        },
-        {
-          title: s_("BillingPlans|Security Dashboards")
-        },
-        {
-          title: s_("BillingPlans|Vulnerability Management")
-        },
-        {
-          title: s_("BillingPlans|Dependency Scanning")
-        },
-        {
-          title: s_("BillingPlans|Container Scanning")
-        },
-        {
-          title: s_("BillingPlans|Static Application Security Testing")
-        },
-        {
-          title: s_("BillingPlans|Multi-Level Epics")
-        },
-        {
-          title: s_("BillingPlans|Portfolio Management")
-        },
-        {
-          title: s_("BillingPlans|Custom Roles")
-        },
-        {
-          title: s_("BillingPlans|Value Stream Management")
-        },
-        {
-          title: s_("BillingPlans|50,000 CI/CD minutes per month")
-        },
-        {
-          title: s_("BillingPlans|Free guest users")
-        }
-      ]
-
-      {
-        'free' => {
-          header_text: s_("BillingPlans|Your current plan"),
-          header_classes: "gl-bg-gray-100",
-          elevator_pitch: s_("BillingPlans|Use GitLab for personal projects"),
-          features_elevator_pitch: s_("BillingPlans|Free forever features:"),
-          features: [
-            {
-              title: s_("BillingPlans|400 CI/CD minutes per month")
-            },
-            {
-              title: s_("BillingPlans|5 users per top-level group")
-            }
-          ]
-        },
-        'premium' => {
-          card_body_border_classes: "gl-border-purple-500\!",
-          header_text: s_("BillingPlans|Recommended"),
-          header_classes: "gl-text-white gl-bg-purple-500",
-          elevator_pitch: s_("BillingPlans|For scaling organizations and multi-team usage"),
-          features_elevator_pitch: s_("BillingPlans|Everything from Free, plus:"),
-          features: premium_features,
-          cta_text: s_("BillingPlans|Upgrade to Premium"),
-          cta_category: 'primary',
-          cta_data: {
-            testid: "upgrade-to-premium"
-          }
-        },
-        'ultimate' => {
-          card_body_border_classes: "gl-rounded-tr-base gl-rounded-tl-base",
-          elevator_pitch: s_("BillingPlans|For enterprises looking to deliver software faster"),
-          features_elevator_pitch: s_("BillingPlans|Everything from Premium, plus:"),
-          features: ultimate_features,
-          cta_text: s_("BillingPlans|Upgrade to Ultimate"),
-          cta_category: 'secondary',
-          cta_data: {
-            testid: "upgrade-to-ultimate"
-          }
-        }
-      }
+      raise NoMethodError, 'Missing features implementation'
     end
   end
 end

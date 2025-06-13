@@ -9928,6 +9928,12 @@ msgstr ""
 msgid "BillingPlans|Introducing GitLab Duo Enterprise"
 msgstr ""
 
+msgid "BillingPlans|Learn more about Premium"
+msgstr ""
+
+msgid "BillingPlans|Learn more about Ultimate"
+msgstr ""
+
 msgid "BillingPlans|Learn more about each plan by visiting our %{pricing_page_link}."
 msgstr ""
 
@@ -10028,9 +10034,6 @@ msgid "BillingPlans|Try GitLab Duo Pro"
 msgstr ""
 
 msgid "BillingPlans|Ultimate"
-msgstr ""
-
-msgid "BillingPlans|Upgrade"
 msgstr ""
 
 msgid "BillingPlans|Upgrade to Premium"
