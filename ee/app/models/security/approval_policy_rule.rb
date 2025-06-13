@@ -43,6 +43,14 @@ module Security
       typed_content['license_types']
     end
 
+    def policy_applies_to_target_branch?(target_branch, default_branch)
+      branches, branch_type = content.values_at("branches", "branch_type")
+
+      return branches_apply_to_target_branch?(target_branch, branches) if branches
+
+      branch_type_applies_to_target_branch?(target_branch, branch_type, default_branch)
+    end
+
     def branches_exempted_by_policy?(source_branch, target_branch)
       return false unless Feature.enabled?(:approval_policy_branch_exceptions, security_policy_management_project)
 
@@ -59,6 +67,20 @@ module Security
     end
 
     private
+
+    def branches_apply_to_target_branch?(target_branch, branches)
+      return true if branches == []
+
+      branches.any? do |pattern|
+        RefMatcher.new(pattern).matches?(target_branch)
+      end
+    end
+
+    def branch_type_applies_to_target_branch?(target_branch, branch_type, default_branch)
+      return true unless branch_type == 'default'
+
+      target_branch == default_branch
+    end
 
     def branch_matches_exception?(branch, exception)
       if exception['name'].present?

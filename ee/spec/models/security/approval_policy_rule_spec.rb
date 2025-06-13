@@ -199,6 +199,71 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
     end
   end
 
+  describe '#policy_applies_to_target_branch?' do
+    let(:target_branch) { 'main' }
+    let(:default_branch) { 'master' }
+
+    let_it_be(:security_policy) { create(:security_policy) }
+
+    subject(:policy_applies_to_target_branch?) do
+      approval_policy_rule.policy_applies_to_target_branch?(target_branch, default_branch)
+    end
+
+    context 'with `branches`' do
+      let(:approval_policy_rule) do
+        build(:approval_policy_rule, :scan_finding, security_policy: security_policy) do |policy_rule|
+          policy_rule.update!(content: policy_rule.content.merge("branches" => branches))
+        end
+      end
+
+      context 'with empty branches' do
+        let(:branches) { [] }
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when matching target branch' do
+        let(:branches) { [target_branch] }
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when mismatching target branch' do
+        let(:branches) { [target_branch.reverse] }
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'with `branch_type`' do
+      let(:approval_policy_rule) do
+        build(:approval_policy_rule, :scan_finding, security_policy: security_policy) do |policy_rule|
+          policy_rule.update!(content: policy_rule.content.excluding("branches").merge("branch_type" => branch_type))
+        end
+      end
+
+      context 'with `default`' do
+        let(:branch_type) { 'default' }
+
+        context 'with default branch' do
+          let(:target_branch) { default_branch }
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'with other branch' do
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'with `protected`' do
+        let(:branch_type) { 'protected' }
+
+        it { is_expected.to be(true) }
+      end
+    end
+  end
+
   describe '#branches_exempted_by_policy?' do
     let_it_be(:project) { create(:project) }
     let_it_be(:source_branch) { 'feature' }
