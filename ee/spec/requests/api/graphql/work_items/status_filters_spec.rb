@@ -19,32 +19,6 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
   let(:current_user) { create(:user, guest_of: group) }
 
-  let(:query) do
-    graphql_query_for(resource_parent.class.name.downcase, { full_path: resource_parent.full_path },
-      <<~BOARDS
-        boards(first: 1) {
-          nodes {
-            lists(id: "#{label_list.to_global_id}") {
-              nodes {
-                issues(#{attributes_to_graphql(filters: params)}) {
-                  nodes {
-                    id
-                  }
-                }
-              }
-            }
-          }
-        }
-      BOARDS
-    )
-  end
-
-  let(:items) do
-    graphql_data.dig(resource_parent.class.name.downcase, 'boards', 'nodes')[0]
-      .dig('lists', 'nodes')[0]
-      .dig('issues', 'nodes')
-  end
-
   before do
     stub_licensed_features(work_item_status: true)
   end
@@ -133,6 +107,110 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
     end
   end
 
+  shared_examples 'filtering by status' do
+    context 'for work items' do
+      let(:query) do
+        graphql_query_for(resource_parent.class.name.downcase, { full_path: resource_parent.full_path },
+          query_nodes(:work_items, :id, args: params)
+        )
+      end
+
+      let(:items) { graphql_data.dig(resource_parent.class.name.downcase, 'workItems', 'nodes') }
+
+      context 'when querying group.workItems' do
+        let_it_be(:resource_parent) { group }
+
+        before do
+          params[:include_descendants] = true
+        end
+
+        it_behaves_like 'supports filtering by status ID'
+        it_behaves_like 'supports filtering by status name'
+        it_behaves_like 'does not support filtering by both status ID and name'
+      end
+
+      context 'when querying project.workItems' do
+        let_it_be(:resource_parent) { project }
+
+        it_behaves_like 'supports filtering by status ID'
+        it_behaves_like 'supports filtering by status name'
+        it_behaves_like 'does not support filtering by both status ID and name'
+      end
+    end
+
+    # Temporarily legacy issues need to be filterable by status for
+    # the legacy issue list and legacy issue boards.
+    context 'for issue lists' do
+      let(:query) do
+        graphql_query_for(resource_parent.class.name.downcase, { full_path: resource_parent.full_path },
+          query_nodes(:issues, :id, args: params)
+        )
+      end
+
+      let(:items) { graphql_data.dig(resource_parent.class.name.downcase, 'issues', 'nodes') }
+
+      context 'when querying group.issues' do
+        let_it_be(:resource_parent) { group }
+
+        it_behaves_like 'supports filtering by status ID'
+        it_behaves_like 'supports filtering by status name'
+        it_behaves_like 'does not support filtering by both status ID and name'
+      end
+
+      context 'when querying project.issues' do
+        let_it_be(:resource_parent) { project }
+
+        it_behaves_like 'supports filtering by status ID'
+        it_behaves_like 'supports filtering by status name'
+        it_behaves_like 'does not support filtering by both status ID and name'
+      end
+    end
+
+    context 'for issue boards' do
+      let(:query) do
+        graphql_query_for(resource_parent.class.name.downcase, { full_path: resource_parent.full_path },
+          <<~BOARDS
+            boards(first: 1) {
+              nodes {
+                lists(id: "#{label_list.to_global_id}") {
+                  nodes {
+                    issues(#{attributes_to_graphql(filters: params)}) {
+                      nodes {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          BOARDS
+        )
+      end
+
+      let(:items) do
+        graphql_data.dig(resource_parent.class.name.downcase, 'boards', 'nodes')[0]
+          .dig('lists', 'nodes')[0]
+          .dig('issues', 'nodes')
+      end
+
+      context 'when querying group.board.lists.issues' do
+        let_it_be(:resource_parent) { group }
+
+        it_behaves_like 'supports filtering by status ID'
+        it_behaves_like 'supports filtering by status name'
+        it_behaves_like 'does not support filtering by both status ID and name'
+      end
+
+      context 'when querying project.board.lists.issues' do
+        let_it_be(:resource_parent) { project }
+
+        it_behaves_like 'supports filtering by status ID'
+        it_behaves_like 'supports filtering by status name'
+        it_behaves_like 'does not support filtering by both status ID and name'
+      end
+    end
+  end
+
   context 'with system defined statuses' do
     let_it_be(:current_status_1) { create(:work_item_current_status, work_item: work_item_1) }
     let_it_be(:current_status_2) { create(:work_item_current_status, work_item: work_item_2) }
@@ -142,21 +220,7 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
     let_it_be(:status) { build(:work_item_system_defined_status, :to_do) }
 
-    context 'when querying group.board.lists.issues' do
-      let_it_be(:resource_parent) { group }
-
-      it_behaves_like 'supports filtering by status ID'
-      it_behaves_like 'supports filtering by status name'
-      it_behaves_like 'does not support filtering by both status ID and name'
-    end
-
-    context 'when querying project.board.lists.issues' do
-      let_it_be(:resource_parent) { project }
-
-      it_behaves_like 'supports filtering by status ID'
-      it_behaves_like 'supports filtering by status name'
-      it_behaves_like 'does not support filtering by both status ID and name'
-    end
+    it_behaves_like 'filtering by status'
   end
 
   context 'with custom statuses' do
@@ -190,20 +254,6 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
       create(:work_item_current_status, :custom, work_item: work_item_4, custom_status: lifecycle.default_closed_status)
     end
 
-    context 'when querying group.board.lists.issues' do
-      let_it_be(:resource_parent) { group }
-
-      it_behaves_like 'supports filtering by status ID'
-      it_behaves_like 'supports filtering by status name'
-      it_behaves_like 'does not support filtering by both status ID and name'
-    end
-
-    context 'when querying project.board.lists.issues' do
-      let_it_be(:resource_parent) { project }
-
-      it_behaves_like 'supports filtering by status ID'
-      it_behaves_like 'supports filtering by status name'
-      it_behaves_like 'does not support filtering by both status ID and name'
-    end
+    it_behaves_like 'filtering by status'
   end
 end
