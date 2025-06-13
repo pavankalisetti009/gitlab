@@ -65,6 +65,7 @@ export const BASE_FORECAST_SERIES_OPTIONS = {
 
 export const STACKED_AREA_CHART_SERIES_OPTIONS = {
   stack: 'chart',
+  showSymbol: true,
 };
 
 export const STACKED_AREA_CHART_NULL_SERIES_OPTIONS = {
