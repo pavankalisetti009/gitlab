@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlIcon, GlBadge, GlTooltipDirective } from '@gitlab/ui';
-import { getTimeago, duration } from '~/lib/utils/datetime_utility';
+import { getTimeago, duration, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import { s__, __, sprintf } from '~/locale';
 
 const TIME_AGO = getTimeago();
@@ -72,7 +72,7 @@ export default {
       return TIME_AGO.format(timestamp, undefined, { relativeDate: this.currentTimestamp });
     },
     getDateString(timestamp) {
-      const dateTime = new Date(timestamp).toLocaleString(undefined, { timeZoneName: 'short' });
+      const dateTime = localeDateFormat.asDateTimeFull.format(newDate(timestamp));
       const timeAgo = this.formatTimeago(timestamp);
 
       return sprintf(s__('LDAP|%{dateTime} (%{timeAgo})'), { dateTime, timeAgo });
