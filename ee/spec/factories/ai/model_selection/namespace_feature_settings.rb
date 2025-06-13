@@ -18,13 +18,20 @@ FactoryBot.define do
           { 'name' => 'Claude 3.5 Sonnet', 'identifier' => 'claude-3-5-sonnet-20240620' },
           { 'name' => 'Claude Sonnet 3.7 20250219', 'identifier' => 'claude_sonnet_3_7_20250219' },
           { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' },
-          { 'name' => 'Claude Sonnet 4.0 20250514', 'identifier' => 'claude_sonnet_4_20250514' }
+          { 'name' => 'Claude Sonnet 4.0 20250514', 'identifier' => 'claude_sonnet_4_20250514' },
+          { 'name' => 'Fireworks Codestral', 'identifier' => 'codestral_2501_fireworks' }
         ],
         "unit_primitives" => [
           {
             "feature_setting" => "code_completions",
             "default_model" => "claude_sonnet_3_5",
-            "selectable_models" => %w[claude_sonnet_3_5 claude_sonnet_3_7 openai_chatgpt_4o],
+            "selectable_models" => %w[
+              claude_sonnet_3_5
+              claude_sonnet_3_7
+              openai_chatgpt_4o
+              claude_sonnet_3_7_20250219
+              codestral_2501_fireworks
+            ],
             "beta_models" => [],
             "unit_primitives" => %w[ask_build ask_commit]
           },

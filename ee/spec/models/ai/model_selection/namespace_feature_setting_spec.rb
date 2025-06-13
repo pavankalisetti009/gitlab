@@ -186,6 +186,38 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
     end
   end
 
+  describe '#set_to_gitlab_default?' do
+    context 'when offered_model_ref is nil' do
+      subject(:ai_feature_setting) do
+        build(:ai_namespace_feature_setting, offered_model_ref: nil, namespace: group)
+      end
+
+      it 'returns true' do
+        expect(ai_feature_setting.set_to_gitlab_default?).to be(true)
+      end
+    end
+
+    context 'when offered_model_ref is an empty string' do
+      subject(:ai_feature_setting) do
+        build(:ai_namespace_feature_setting, offered_model_ref: '', namespace: group)
+      end
+
+      it 'returns true' do
+        expect(ai_feature_setting.set_to_gitlab_default?).to be(true)
+      end
+    end
+
+    context 'when offered_model_ref has a value' do
+      subject(:ai_feature_setting) do
+        build(:ai_namespace_feature_setting, offered_model_ref: 'claude_sonnet_3_7', namespace: group)
+      end
+
+      it 'returns false' do
+        expect(ai_feature_setting.set_to_gitlab_default?).to be(false)
+      end
+    end
+  end
+
   describe 'validations' do
     include_context 'with model selection definitions'
 

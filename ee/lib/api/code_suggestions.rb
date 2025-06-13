@@ -94,7 +94,7 @@ module API
       def forbid_direct_access?
         return true if Gitlab::CurrentSettings.disabled_direct_code_suggestions
         return true if Feature.enabled?(:incident_fail_over_completion_provider, current_user)
-        return true if completion_model_details.any_user_groups_claude_code_completion?
+        return true if completion_model_details.user_group_with_claude_code_completion.present?
         return true if completion_model_details.any_user_groups_with_model_selected_for_completion?
         return true if ::Ai::AmazonQ.connected?
 

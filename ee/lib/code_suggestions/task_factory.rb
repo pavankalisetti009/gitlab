@@ -40,7 +40,7 @@ module CodeSuggestions
 
     def code_completion_task
       CodeSuggestions::Tasks::CodeCompletion.new(
-        params: params,
+        params: code_completion_params,
         unsafe_passthrough_params: unsafe_passthrough_params,
         current_user: current_user,
         client: client
@@ -67,6 +67,12 @@ module CodeSuggestions
         instruction: instruction,
         project: project,
         current_user: current_user
+      )
+    end
+
+    def code_completion_params
+      params.merge(
+        project: project
       )
     end
 

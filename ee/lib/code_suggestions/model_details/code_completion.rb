@@ -5,12 +5,19 @@ module CodeSuggestions
     class CodeCompletion < Base
       FEATURE_SETTING_NAME = 'code_completions'
 
-      def initialize(current_user:)
-        super(current_user: current_user, feature_setting_name: FEATURE_SETTING_NAME)
+      def initialize(current_user:, root_namespace: nil)
+        super(current_user: current_user, feature_setting_name: FEATURE_SETTING_NAME, root_namespace: root_namespace)
       end
 
       # Returns model details for using direct connection in the IDE.
       # Note: Claude Haiku cannot use direct connect so isn't used in this function
+
+      # Also, model selection logic isn't used in this function as customers that have "pinned"
+      # a model for code completion are forbidden from using direct connections.
+      # Customers that use "GitLab Default" as the model for code selection continue
+      # to use direct connections, but the default model in this case continues to
+      # be decided by the Rails monolith basis the function below and not as defined
+      # in the AI Gateway's `unit_primitives.yml` file.
       def current_model
         # if self-hosted, the model details are provided by the client
         return {} if self_hosted?
@@ -23,7 +30,7 @@ module CodeSuggestions
       def saas_primary_model_class
         return if self_hosted?
 
-        if any_user_groups_claude_code_completion?
+        if user_group_with_claude_code_completion.present?
           return CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeHaiku
         end
 
@@ -33,8 +40,8 @@ module CodeSuggestions
       end
 
       # We check :use_claude_code_completion by the top level group
-      def any_user_groups_claude_code_completion?
-        user_duo_groups.any? do |group|
+      def user_group_with_claude_code_completion
+        user_duo_groups.find do |group|
           Feature.enabled?(:use_claude_code_completion, group)
         end
       end

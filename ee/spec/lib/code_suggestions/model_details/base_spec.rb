@@ -67,6 +67,36 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     end
   end
 
+  describe '#namespace_feature_setting?' do
+    subject(:namespace_feature_setting?) { model_details.namespace_feature_setting? }
+
+    it 'returns false' do
+      expect(namespace_feature_setting?).to be(false)
+    end
+
+    context 'when the feature is governed via self-hosted models' do
+      it 'returns false' do
+        create(:ai_feature_setting, feature: feature_setting_name)
+
+        expect(namespace_feature_setting?).to be(false)
+      end
+    end
+
+    context 'when the feature is governed via namespace feature setting' do
+      let!(:root_namespace) { create(:group) }
+      let!(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: root_namespace,
+          feature: feature_setting_name
+        )
+      end
+
+      it 'returns true' do
+        expect(namespace_feature_setting?).to be(true)
+      end
+    end
+  end
+
   describe '#feature_disabled?' do
     subject(:feature_disabled?) { model_details.feature_disabled? }
 

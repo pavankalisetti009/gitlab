@@ -154,14 +154,14 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
     end
   end
 
-  describe '#any_user_groups_claude_code_completion?' do
+  describe '#user_group_with_claude_code_completion' do
     before do
       stub_feature_flags(use_claude_code_completion: false)
     end
 
     context "when none of the user's root groups is using claude code completion model" do
       it 'returns false' do
-        expect(completions_model_details.any_user_groups_claude_code_completion?).to be_falsey
+        expect(completions_model_details.user_group_with_claude_code_completion).to be_nil
       end
     end
 
@@ -170,8 +170,8 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
         stub_feature_flags(use_claude_code_completion: group2)
       end
 
-      it 'returns true' do
-        expect(completions_model_details.any_user_groups_claude_code_completion?).to be_truthy
+      it 'returns the specific group' do
+        expect(completions_model_details.user_group_with_claude_code_completion).to eq(group2)
       end
     end
   end

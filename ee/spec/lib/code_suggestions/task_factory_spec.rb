@@ -13,6 +13,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
     let(:content_below_cursor) { 'some content_below_cursor' }
     let(:user_instruction) { nil }
     let(:expected_project) { nil }
+    let(:project_path) { nil }
 
     let(:instruction) do
       instance_double(CodeSuggestions::Instruction, instruction: 'instruction', trigger_type: 'comment')
@@ -33,6 +34,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         instruction: instruction,
         content_above_cursor: content_above_cursor,
         project: expected_project,
+        project_path: project_path,
         current_user: current_user
       }
     end
@@ -100,6 +102,27 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
           it_behaves_like 'correct task initializer'
         end
       end
+
+      context 'with project' do
+        let_it_be(:expected_project) { create(:project) }
+        let(:project_path) { expected_project.full_path }
+
+        before do
+          allow_next_instance_of(::ProjectsFinder) do |instance|
+            allow(instance).to receive(:execute).and_return([expected_project])
+          end
+        end
+
+        it 'fetches project' do
+          get_task
+
+          expect(::ProjectsFinder).to have_received(:new)
+            .with(
+              current_user: current_user,
+              params: { full_paths: [expected_project.full_path] }
+            )
+        end
+      end
     end
 
     context 'when code generation' do
@@ -123,6 +146,8 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
 
       context 'with project' do
         let_it_be(:expected_project) { create(:project) }
+        let(:project_path) { expected_project.full_path }
+
         let(:params) do
           {
             current_file: {
@@ -130,7 +155,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
               content_above_cursor: content_above_cursor,
               content_below_cursor: content_below_cursor
             },
-            project_path: expected_project.full_path
+            project_path: project_path
           }
         end
 
