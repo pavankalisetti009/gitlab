@@ -93,15 +93,18 @@ module Gitlab
 
         private
 
-        def safe_provide_metric(metric_type, metric_name, *args)
+        def safe_provide_metric(metric_type, name, *args)
+          metric = provide_metric(name)
+          return metric if metric
+
           PROVIDER_MUTEX.synchronize do
-            provide_metric(metric_type, metric_name, *args)
+            provide_metric(name) || registry.method(metric_type).call(name, *args)
           end
         end
 
-        def provide_metric(metric_type, metric_name, *args)
+        def provide_metric(metric_name)
           if prometheus_metrics_enabled?
-            registry.get(metric_name) || registry.method(metric_type).call(metric_name, *args)
+            registry.get(metric_name)
           else
             null_metric
           end
