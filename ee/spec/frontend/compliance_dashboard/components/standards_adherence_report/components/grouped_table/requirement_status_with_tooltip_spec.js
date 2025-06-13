@@ -90,6 +90,8 @@ describe('RequirementStatusWithTooltip', () => {
   const findHeader = () => wrapper.find('h3');
   const findHeaderByText = (text) =>
     wrapper.findAll('h4').wrappers.find((h) => h.text().includes(text));
+  const findControlList = () =>
+    wrapper.findAll('h4, li').wrappers.map((w) => w.text().replace(/\s+/g, ' '));
 
   function createComponent(props = {}) {
     mockRequirementsControlsQuery = jest
@@ -197,6 +199,17 @@ describe('RequirementStatusWithTooltip', () => {
     it('displays completed controls section', () => {
       const completedHeader = findHeaderByText('Completed controls');
       expect(completedHeader.exists()).toBe(true);
+    });
+
+    it('correctly list control statuses', () => {
+      expect(findControlList()).toStrictEqual([
+        'Pending controls:',
+        'Control One',
+        'External Control Name External',
+        'Completed controls:',
+        'Control Three Passed',
+        'External External Failed',
+      ]);
     });
   });
 
