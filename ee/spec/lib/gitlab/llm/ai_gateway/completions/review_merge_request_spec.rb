@@ -9,6 +9,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
   let(:options) { { progress_note_id: progress_note.id } }
   let(:create_note_allowed?) { true }
   let(:prompt_version) { '1.0.0' }
+  let(:received_model_metadata) { nil }
 
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
   let_it_be(:project) do
@@ -60,6 +61,35 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
   subject(:completion) { described_class.new(review_prompt_message, review_prompt_class, options) }
 
+  describe '#root_namespace' do
+    context 'when the target project is in a subgroup' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:project) { create(:project, :repository, group: subgroup) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+      it 'returns the root namespace' do
+        expect(completion.root_namespace).to eq(group)
+      end
+    end
+
+    context 'when the target project is in a group at the root level' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, :repository, group: group) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+      it 'returns the root namespace' do
+        expect(completion.root_namespace).to eq(group)
+      end
+    end
+
+    context 'when the target project is in a user namespace' do
+      it 'returns the root namespace' do
+        expect(completion.root_namespace).to eq(project.root_namespace)
+      end
+    end
+  end
+
   describe '#execute' do
     let(:combined_review_prompt) { { messages: ['This is the combined review prompt'] } }
     let(:summary_answer) { 'This is a summary response' }
@@ -86,6 +116,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
     end
 
     before do
+      stub_feature_flags(ai_model_switching: false)
       stub_feature_flags(duo_code_review_claude_4_0_rollout: false)
       stub_feature_flags(duo_code_review_custom_instructions: false)
 
@@ -111,7 +142,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             base_url: Gitlab::AiGateway.url,
             prompt_name: :review_merge_request,
             inputs: prompt_inputs,
-            model_metadata: nil,
+            model_metadata: received_model_metadata,
             prompt_version: prompt_version
           )
           .and_return(
@@ -173,7 +204,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
               base_url: Gitlab::AiGateway.url,
               prompt_name: :review_merge_request,
               inputs: prompt_inputs,
-              model_metadata: nil,
+              model_metadata: received_model_metadata,
               prompt_version: prompt_version
             )
             .and_return(
@@ -772,7 +803,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
                 base_url: Gitlab::AiGateway.url,
                 prompt_name: :review_merge_request,
                 inputs: kind_of(Hash),
-                model_metadata: nil,
+                model_metadata: received_model_metadata,
                 prompt_version: prompt_version
               )
               .and_return(example_error_response)
@@ -790,7 +821,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
                   base_url: Gitlab::AiGateway.url,
                   prompt_name: :review_merge_request,
                   inputs: kind_of(Hash),
-                  model_metadata: nil,
+                  model_metadata: received_model_metadata,
                   prompt_version: prompt_version
                 )
                 .and_return(example_retry_response)
@@ -1252,6 +1283,62 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
           completion.execute
         end
+      end
+    end
+
+    context 'with model switching enabled' do
+      before do
+        stub_feature_flags(ai_model_switching: true)
+      end
+
+      shared_examples_for 'review merge request with prompt version' do
+        it 'sends AIGW request with correct model metadata' do
+          expect_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
+            service_name: :review_merge_request,
+            tracking_context: tracking_context
+          ) do |client|
+            allow(client)
+              .to receive(:complete_prompt)
+              .with(
+                base_url: Gitlab::AiGateway.url,
+                prompt_name: :review_merge_request,
+                inputs: prompt_inputs,
+                model_metadata: received_model_metadata,
+                prompt_version: prompt_version
+              )
+              .and_return(
+                instance_double(HTTParty::Response, body: combined_review_response.to_json, success?: true)
+              )
+          end
+
+          completion.execute
+        end
+      end
+
+      it_behaves_like 'review merge request with prompt version'
+
+      context 'when the model is pinned to a specific model' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:subgroup) { create(:group, parent: group) }
+        let_it_be(:project) { create(:project, :repository, group: subgroup) }
+        let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+        let(:received_model_metadata) do
+          {
+            feature_setting: 'review_merge_request',
+            identifier: 'claude_sonnet_3_7',
+            provider: 'gitlab'
+          }
+        end
+
+        before do
+          create(:ai_namespace_feature_setting,
+            namespace: group,
+            feature: 'review_merge_request'
+          )
+        end
+
+        it_behaves_like 'review merge request with prompt version'
       end
     end
   end
