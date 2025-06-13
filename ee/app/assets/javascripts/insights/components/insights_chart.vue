@@ -21,25 +21,6 @@ import InsightsChartError from './insights_chart_error.vue';
 
 const CHART_HEIGHT = 300;
 
-const generateInsightsSeriesInfo = (datasets = []) => {
-  if (!datasets.length) return [];
-  const [nullSeries, dataSeries] = datasets;
-  return [
-    {
-      type: 'solid',
-      name: dataSeries.name,
-      // eslint-disable-next-line no-unused-vars
-      data: dataSeries.data.map(([_, v]) => v),
-      color: dataSeries.itemStyle.color,
-    },
-    {
-      type: 'dashed',
-      name: nullSeries.name,
-      color: nullSeries.itemStyle.color,
-    },
-  ];
-};
-
 const extractDataSeriesTooltipValue = (seriesData) => {
   const [, dataSeries] = seriesData;
   if (!dataSeries.data) {
@@ -136,9 +117,6 @@ export default {
     };
   },
   computed: {
-    seriesInfo() {
-      return generateInsightsSeriesInfo(this.data.datasets);
-    },
     chartOptions() {
       let options = {
         yAxis: {
