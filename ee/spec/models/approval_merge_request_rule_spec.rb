@@ -707,6 +707,96 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
       it_behaves_like 'with applicable rules to specified branch'
     end
 
+    describe 'policy target branch matching' do
+      let!(:source_rule) { create(:approval_project_rule, project: merge_request.target_project, approval_policy_rule: approval_policy_rule) }
+      let!(:rule) { create(:approval_merge_request_rule, approval_project_rule: source_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule) }
+
+      before do
+        merge_request.update!(target_branch: "release/staging")
+
+        source_rule.protected_branches = [create(:protected_branch, project: merge_request.project, name: "release/*")]
+        source_rule.save!
+      end
+
+      subject(:applies?) { rule.applicable_to_branch?(merge_request.target_branch) }
+
+      context 'with `branches`' do
+        let(:approval_policy_rule) do
+          build(:approval_policy_rule, :scan_finding) do |policy_rule|
+            policy_rule.update!(content: policy_rule.content.merge("branches" => branches))
+          end
+        end
+
+        context 'with matching branch specification' do
+          let(:branches) { ["release/staging"] }
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'with matching branch specification' do
+          let(:branches) { ["master", "release/staging"] }
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'with matching branch specification' do
+          let(:branches) { ["release/*"] }
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'with mismatching branch specification' do
+          let(:branches) { ["release/production"] }
+
+          it { is_expected.to be(false) }
+
+          context 'with feature disabled' do
+            before do
+              stub_feature_flags(merge_request_approval_policies_target_branch_matching: false)
+            end
+
+            it { is_expected.to be(true) }
+          end
+        end
+      end
+
+      context 'with `branch_type`' do
+        let(:approval_policy_rule) do
+          build(:approval_policy_rule, :scan_finding) do |policy_rule|
+            policy_rule.update!(content: policy_rule.content.excluding("branches").merge("branch_type" => branch_type))
+          end
+        end
+
+        context 'with `default` branch type' do
+          let(:branch_type) { 'default' }
+
+          before do
+            allow(merge_request.project).to receive(:default_branch).and_return(default_branch)
+          end
+
+          context 'when MR targets default branch' do
+            let(:default_branch) { "release/staging" }
+
+            it { is_expected.to be(true) }
+          end
+
+          context 'when MR does not target default branch' do
+            let(:default_branch) { "release/production" }
+
+            it { is_expected.to be(false) }
+
+            context 'with feature disabled' do
+              before do
+                stub_feature_flags(merge_request_approval_policies_target_branch_matching: false)
+              end
+
+              it { is_expected.to be(true) }
+            end
+          end
+        end
+      end
+    end
+
     context 'when there are associated source rules' do
       let!(:source_rule) { create(:approval_project_rule, project: merge_request.target_project) }
       let!(:rule) { create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: source_rule) }
