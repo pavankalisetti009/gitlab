@@ -33,6 +33,7 @@ const mockDiscussion = (...children) => {
         __typename: 'Note',
         id: uniqueId(),
         author: null,
+        maxAccessLevelOfAuthor: null,
         body: c,
         bodyHtml: c,
         createdAt: '2023-05-18T14:24:07.000+00:00',

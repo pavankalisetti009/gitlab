@@ -115,6 +115,7 @@ describe('WikiNote', () => {
         showReply: true,
         showEdit: false,
         canReportAsAbuse: true,
+        accessLevel: 'Maintainer',
       });
     });
 

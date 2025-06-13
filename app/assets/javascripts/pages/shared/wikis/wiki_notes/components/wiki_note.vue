@@ -293,6 +293,7 @@ export default {
             :can-report-as-abuse="canReportAsAbuse"
             :note-url="note.url"
             :can-award-emoji="canAwardEmoji"
+            :access-level="note.maxAccessLevelOfAuthor"
             @reply="$emit('reply')"
             @edit="toggleEditing(true)"
             @delete="deleteNote"
