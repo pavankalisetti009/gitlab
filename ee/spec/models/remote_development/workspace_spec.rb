@@ -169,11 +169,11 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         context "when desired_state changes to Running" do
           it "triggers the event" do
             expect(workspace).to receive(:track_started_workspace)
-            workspace.update!(desired_state: "Running")
+            workspace.update!(desired_state: states_module::RUNNING)
           end
 
           it "triggers internal event with new label on new record" do
-            expect { workspace.update!(desired_state: "Running") }
+            expect { workspace.update!(desired_state: states_module::RUNNING) }
               .to trigger_internal_events("track_started_workspaces")
               .with(user: user, project: project, additional_properties: {
                 label: "new"
@@ -183,7 +183,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
           it "triggers internal event with existing label on existing record" do
             workspace.save!(desired_state: "Stopped")
-            expect { workspace.update!(desired_state: "Running") }
+            expect { workspace.update!(desired_state: states_module::RUNNING) }
               .to trigger_internal_events("track_started_workspaces")
               .with(user: user, project: project, additional_properties: {
                 label: "existing"
@@ -194,7 +194,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
         context "when desired_state changes to a value other than Running" do
           it "does not trigger the event and metric" do
-            expect { workspace.update!(desired_state: "Stopped") }
+            expect { workspace.update!(desired_state: states_module::STOPPED) }
               .to not_trigger_internal_events("track_started_workspaces")
               .and not_increment_usage_metrics('counts.count_total_workspaces_started')
           end
@@ -740,11 +740,35 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
   end
 
   describe "methods" do
+    describe "#actual_state_terminated?" do
+      let(:actual_state) { states_module::TERMINATED }
+
+      it "returns true if actual state is terminated" do
+        expect(workspace.actual_state_terminated?).to be true
+      end
+    end
+
     describe "#desired_state_running?" do
       let(:desired_state) { states_module::RUNNING }
 
-      it "returns true if desired state is terminated" do
+      it "returns true if desired state is running" do
         expect(workspace.desired_state_running?).to be true
+      end
+    end
+
+    describe "#desired_state_restart_requested?" do
+      let(:desired_state) { states_module::RESTART_REQUESTED }
+
+      it "returns true if desired state is restart requested" do
+        expect(workspace.desired_state_restart_requested?).to be true
+      end
+    end
+
+    describe "#desired_state_stopped?" do
+      let(:desired_state) { states_module::STOPPED }
+
+      it "returns true if desired state is stopped" do
+        expect(workspace.desired_state_stopped?).to be true
       end
     end
 

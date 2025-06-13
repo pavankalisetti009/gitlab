@@ -44,7 +44,7 @@ module RemoteDevelopment
             # Handle the special case of RESTART_REQUESTED. desired_state is only set to 'RESTART_REQUESTED' until the
             # actual_state is detected as 'STOPPED', then we switch the desired_state to 'RUNNING' so it will restart.
             # See: https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/blob/main/doc/architecture.md?plain=0#possible-desired_state-values
-            if persisted_workspace.desired_state == States::RESTART_REQUESTED && actual_state == States::STOPPED
+            if persisted_workspace.desired_state_restart_requested? && actual_state == States::STOPPED
               persisted_workspace.desired_state = States::RUNNING
             end
 

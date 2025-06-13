@@ -3,6 +3,7 @@
 module RemoteDevelopment
   # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
   # noinspection RubyNilAnalysis - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32287
+  # noinspection RubyTooManyMethodsInspection
   class Workspace < ApplicationRecord
     include Sortable
     include RemoteDevelopment::WorkspaceOperations::States
@@ -94,17 +95,16 @@ module RemoteDevelopment
     before_validation :set_workspaces_agent_config_version,
       on: :create, if: -> { agent&.unversioned_latest_workspaces_agent_config }
 
-    before_save :touch_desired_state_updated_at, if: ->(workspace) do
-      workspace.new_record? || workspace.desired_state_changed?
+    before_save :touch_desired_state_updated_at, if: -> do
+      new_record? || desired_state_changed?
     end
 
-    # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32287
-    before_save :touch_actual_state_updated_at, if: ->(workspace) do
-      workspace.new_record? || workspace.actual_state_changed?
+    before_save :touch_actual_state_updated_at, if: -> do
+      new_record? || actual_state_changed?
     end
 
     after_save :track_started_workspace, if: -> do
-      saved_change_to_desired_state? && desired_state == "Running"
+      saved_change_to_desired_state? && desired_state_running?
     end
 
     # @return [RemoteDevelopment::WorkspacesAgentConfig]
@@ -149,14 +149,29 @@ module RemoteDevelopment
 
     # @return [Boolean]
     def desired_state_terminated_and_actual_state_not_terminated?
-      return true if desired_state == TERMINATED && actual_state != TERMINATED
+      return true if desired_state_terminated? && !actual_state_terminated?
 
       false
     end
 
     # @return [Boolean]
+    def actual_state_terminated?
+      actual_state == TERMINATED
+    end
+
+    # @return [Boolean]
     def desired_state_running?
       desired_state == RUNNING
+    end
+
+    # @return [Boolean]
+    def desired_state_restart_requested?
+      desired_state == RESTART_REQUESTED
+    end
+
+    # @return [Boolean]
+    def desired_state_stopped?
+      desired_state == STOPPED
     end
 
     # @return [Boolean]
@@ -263,7 +278,7 @@ module RemoteDevelopment
 
     # @return [void]
     def enforce_permanent_termination
-      return unless persisted? && desired_state_changed? && desired_state_was == WorkspaceOperations::States::TERMINATED
+      return unless persisted? && desired_state_changed? && desired_state_was == TERMINATED
 
       errors.add(:desired_state, "is 'Terminated', and cannot be updated. Create a new workspace instead.")
 

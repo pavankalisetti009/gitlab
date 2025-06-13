@@ -78,6 +78,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
           created_at: created_at,
           desired_state_updated_at: desired_state_updated_at,
           desired_state: initial_desired_state,
+          desired_state_stopped?: initial_desired_state == states_module::STOPPED,
           workspaces_agent_config: workspaces_agent_config
         )
       end
