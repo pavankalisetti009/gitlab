@@ -64,12 +64,14 @@ exports[`Get Familiar component renders correctly 1`] = `
       class="gl-display-flex gl-justify-content-start gl-pb-6 gl-pt-1"
     >
       <gl-button-stub
+        aria-label="Try the walkthrough in a new tab"
         buttontextclasses=""
         category="tertiary"
         data-testid="walkthrough-link"
-        href="https://gitlab.navattic.com/gitlab-premium-with-duo"
+        href="https://gitlab.navattic.com/gitlab-with-duo-get-started-page"
         icon=""
         size="medium"
+        target="_blank"
         variant="default"
       >
         Try walkthrough

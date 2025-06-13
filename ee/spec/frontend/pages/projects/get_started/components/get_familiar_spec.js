@@ -52,7 +52,12 @@ describe('Get Familiar component', () => {
     expect(button.exists()).toBe(true);
     expect(button.text()).toContain('Try walkthrough');
     expect(button.attributes('data-testid')).toBe('walkthrough-link');
-    expect(button.attributes('href')).toBe('https://gitlab.navattic.com/gitlab-premium-with-duo');
+    expect(button.attributes('aria-label')).toBe('Try the walkthrough in a new tab');
+
+    expect(button.attributes('href')).toBe(
+      'https://gitlab.navattic.com/gitlab-with-duo-get-started-page',
+    );
+
     expect(button.props('category')).toBe('tertiary');
   });
 
