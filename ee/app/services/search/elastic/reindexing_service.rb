@@ -17,7 +17,7 @@ module Search
       end
 
       def execute
-        initial_task = Search::Elastic::TriggerIndexingWorker::INITIAL_TASK
+        initial_task = Search::Elastic::TriggerIndexingWorker::INITIAL_TASK.to_s
         Search::Elastic::TriggerIndexingWorker.perform_in(delay, initial_task, options)
       end
 
