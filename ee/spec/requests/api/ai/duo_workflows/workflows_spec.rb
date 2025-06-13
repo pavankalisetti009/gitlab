@@ -314,6 +314,28 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
 
         it_behaves_like 'starts duo workflow execution in CI'
       end
+
+      context 'when source_branch is provided' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'Print hello world',
+            source_branch: 'feature-branch'
+          }
+        end
+
+        it 'passes source_branch to StartWorkflowService' do
+          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).with(
+            workflow: anything,
+            params: hash_including(source_branch: 'feature-branch')
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
     end
   end
 

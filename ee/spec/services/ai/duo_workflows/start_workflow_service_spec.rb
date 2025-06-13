@@ -138,4 +138,30 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       expect(execute).to be_success
     end
   end
+
+  context 'with source_branch parameter' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true)
+    end
+
+    it 'passes source_branch to RunWorkloadService when provided' do
+      local_params = params.merge(source_branch: 'feature-branch')
+      service = described_class.new(workflow: workflow, params: local_params)
+
+      expect(::Ci::Workloads::RunWorkloadService).to receive(:new).with(
+        hash_including(source_branch: 'feature-branch')
+      ).and_call_original
+
+      expect(service.execute).to be_success
+    end
+
+    it 'passes nil when source_branch not provided' do
+      expect(::Ci::Workloads::RunWorkloadService).to receive(:new).with(
+        hash_including(source_branch: nil)
+      ).and_call_original
+
+      expect(execute).to be_success
+    end
+  end
 end

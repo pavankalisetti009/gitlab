@@ -34,7 +34,8 @@ module Ai
           current_user: workload_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
-          create_branch: true
+          create_branch: true,
+          source_branch: @params.fetch(:source_branch, nil)
         )
         response = service.execute
 

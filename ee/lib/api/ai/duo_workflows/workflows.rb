@@ -56,7 +56,8 @@ module API
               workflow_id: workflow_id,
               workflow_oauth_token: oauth_token.plaintext_token,
               workflow_service_token: duo_workflow_token[:token],
-              use_service_account: params[:use_service_account]
+              use_service_account: params[:use_service_account],
+              source_branch: params[:source_branch]
             }
           end
 
@@ -95,7 +96,7 @@ module API
           end
 
           def create_workflow_params
-            declared_params(include_missing: false).except(:start_workflow, :use_service_account)
+            declared_params(include_missing: false).except(:start_workflow, :use_service_account, :source_branch)
           end
 
           params :workflow_params do
@@ -124,6 +125,9 @@ module API
               documentation: { example: true }
             optional :image, type: String, desc: 'Container image to use for running the workflow in CI pipeline.',
               documentation: { example: 'registry.gitlab.com/gitlab-org/duo-workflow/custom-image:latest' }
+            optional :source_branch, type: String,
+              desc: 'Source branch for the CI pipeline. Uses default branch when not specified.',
+              documentation: { example: 'main' }
           end
         end
 
