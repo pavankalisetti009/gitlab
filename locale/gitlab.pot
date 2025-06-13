@@ -6548,6 +6548,9 @@ msgstr ""
 msgid "All threads resolved!"
 msgstr ""
 
+msgid "All to-do items"
+msgstr ""
+
 msgid "All users"
 msgstr ""
 
