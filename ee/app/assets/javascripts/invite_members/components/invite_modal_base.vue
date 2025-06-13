@@ -44,6 +44,9 @@ export default {
     inviteWithCustomRoleEnabled: {
       default: false,
     },
+    groupName: {
+      default: '',
+    },
   },
   inheritAttrs: false,
   props: {
@@ -183,7 +186,7 @@ export default {
     modalInfo() {
       if (this.totalUserCount) {
         const infoText = overageModalInfoText(this.subscriptionSeats);
-        const infoWarning = overageModalInfoWarning(this.totalUserCount, this.name);
+        const infoWarning = overageModalInfoWarning(this.totalUserCount, this.groupName);
 
         return `${infoText} ${infoWarning}`;
       }

@@ -54,6 +54,7 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
 
         stub_signing_key
         stub_reconciliation_request(true)
+        stub_subscription_request_seat_usage(false)
 
         invite_with_opened_modal(user_name_to_invite)
 
