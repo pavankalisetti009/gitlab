@@ -308,7 +308,10 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
   describe "DELETE /groups/:id/manage/resource_access_tokens/:token_id" do
     let_it_be(:project_bot) { create(:user, :project_bot, bot_namespace: group) }
     let_it_be(:token) { create(:personal_access_token, user: project_bot) }
-    let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}" }
+    let(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}" }
+    let(:revoke_request) do
+      delete api(path, personal_access_token: personal_access_token)
+    end
 
     before_all do
       group.add_maintainer(project_bot)
@@ -321,7 +324,7 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         let_it_be(:personal_access_token) { create(:personal_access_token, user: current_user) }
 
         it "revokes the resources access token" do
-          delete api(path, personal_access_token: personal_access_token)
+          revoke_request
 
           expect(response).to have_gitlab_http_status(:no_content)
           expect(token.reload).to be_revoked
@@ -338,10 +341,11 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
           end
 
           it "returns bad request and not able to find the bot user as member of group" do
-            delete api(path, personal_access_token: personal_access_token)
+            revoke_request
 
-            expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response['message']).to eq("400 Bad request - Failed to find bot user")
+            expect(response).to have_gitlab_http_status(:forbidden)
+            expect(json_response['message']).to eq("403 Forbidden - Cannot access resource access token: " \
+              "Token belongs to a resource outside group's hierarchy")
           end
         end
 
@@ -352,6 +356,54 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
 
           it_behaves_like "forbidden action for delete_request", "token"
         end
+      end
+
+      context 'when token belongs to a project which belongs to group' do
+        let_it_be(:project) { create(:project, namespace: group) }
+        let_it_be(:project_bot) do
+          create(:user, :project_bot, bot_namespace: project.project_namespace, developer_of: project)
+        end
+
+        let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}" }
+
+        it 'revokes token' do
+          revoke_request
+
+          expect(response).to have_gitlab_http_status(:no_content)
+          expect(token.reload).to be_revoked
+          expect(User.exists?(project_bot.id)).to be_truthy
+        end
+      end
+
+      context 'when token belongs to a sub group' do
+        let_it_be(:sub_group) { create(:group, parent: group) }
+        let_it_be(:project_bot) do
+          create(:user, :project_bot, bot_namespace: sub_group, developer_of: sub_group)
+        end
+
+        let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}" }
+
+        it 'revokes token' do
+          revoke_request
+
+          expect(response).to have_gitlab_http_status(:no_content)
+          expect(token.reload).to be_revoked
+          expect(User.exists?(project_bot.id)).to be_truthy
+        end
+      end
+
+      context 'when token belongs to an unrelated project' do
+        let_it_be(:project) { create(:project, namespace: create(:group)) }
+        let_it_be(:project_bot) do
+          create(:user, :project_bot, bot_namespace: project.project_namespace, developer_of: project)
+        end
+
+        let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}" }
+
+        it_behaves_like "forbidden action for delete_request", "token"
       end
 
       context "when the user does not have valid permissions" do
@@ -562,6 +614,56 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
           rotate_request
 
           expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      context 'when token belongs to a project related to group' do
+        let_it_be(:project) { create(:project, namespace: group) }
+        let_it_be(:project_bot) do
+          create(:user, :project_bot, bot_namespace: project.project_namespace, developer_of: project)
+        end
+
+        let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}/rotate" }
+
+        it 'rotates token' do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['token']).not_to eq(token.token)
+        end
+      end
+
+      context 'when token belongs to a sub group' do
+        let_it_be(:sub_group) { create(:group, parent: group) }
+        let_it_be(:project_bot) do
+          create(:user, :project_bot, bot_namespace: sub_group, developer_of: sub_group)
+        end
+
+        let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}/rotate" }
+
+        it 'rotates token' do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['token']).not_to eq(token.token)
+        end
+      end
+
+      context 'when token belongs to an unrelated project' do
+        let_it_be(:project) { create(:project, namespace: create(:group)) }
+        let_it_be(:project_bot) do
+          create(:user, :project_bot, bot_namespace: project.project_namespace, developer_of: project)
+        end
+
+        let_it_be(:token) { create(:personal_access_token, user: project_bot) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens/#{token.id}/rotate" }
+
+        it 'throws forbidden error' do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
         end
       end
 
