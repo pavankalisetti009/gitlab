@@ -14,7 +14,8 @@ module RemoteDevelopment
 
       validates :desired_config_array, presence: true, json_schema: {
         filename: 'workspaces_kubernetes',
-        detail_errors: true
+        detail_errors: true,
+        size_limit: 64.kilobytes
       }
 
       # @param [DesiredConfig] other
