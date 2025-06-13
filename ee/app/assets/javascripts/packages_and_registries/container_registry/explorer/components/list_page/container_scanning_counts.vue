@@ -11,7 +11,6 @@ import {
   INFO,
   UNKNOWN,
   SEVERITY_COUNT_LIMIT,
-  SEVERITIES,
 } from 'ee/vulnerabilities/constants';
 import { ERROR_POLICY_NONE } from '~/lib/graphql';
 import { s__, sprintf } from '~/locale';
@@ -43,12 +42,6 @@ export default {
     },
     isLoadingCounts() {
       return this.$apollo.queries.project.loading;
-    },
-    severityCounts() {
-      return SEVERITIES.map((severity) => ({
-        severity,
-        count: this.counts[severity] || 0,
-      }));
     },
     vulnerabilityCounts() {
       return this.project?.vulnerabilitySeveritiesCount || {};
