@@ -119,6 +119,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       stub_feature_flags(ai_model_switching: false)
       stub_feature_flags(duo_code_review_claude_4_0_rollout: false)
       stub_feature_flags(duo_code_review_custom_instructions: false)
+      stub_feature_flags(use_claude_code_completion: false)
 
       allow_next_instance_of(
         review_prompt_class,
@@ -152,6 +153,30 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
       allow_next_instance_of(summarize_review_class) do |completions|
         allow(completions).to receive(:execute).and_return(summary_response_modifier)
+      end
+    end
+
+    shared_examples_for 'review merge request with prompt version' do
+      it 'sends AIGW request with correct model metadata' do
+        expect_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
+          service_name: :review_merge_request,
+          tracking_context: tracking_context
+        ) do |client|
+          allow(client)
+            .to receive(:complete_prompt)
+            .with(
+              base_url: Gitlab::AiGateway.url,
+              prompt_name: :review_merge_request,
+              inputs: prompt_inputs,
+              model_metadata: received_model_metadata,
+              prompt_version: prompt_version
+            )
+            .and_return(
+              instance_double(HTTParty::Response, body: combined_review_response.to_json, success?: true)
+            )
+        end
+
+        completion.execute
       end
     end
 
@@ -1286,33 +1311,24 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
     end
 
+    context 'when use_claude_code_completion feature flag is enabled for the root namespace of the merge request' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:project) { create(:project, :repository, group: subgroup) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+      before do
+        stub_feature_flags(use_claude_code_completion: group)
+      end
+
+      it_behaves_like 'review merge request with prompt version' do
+        let(:prompt_version) { '0.9.0' }
+      end
+    end
+
     context 'with model switching enabled' do
       before do
         stub_feature_flags(ai_model_switching: true)
-      end
-
-      shared_examples_for 'review merge request with prompt version' do
-        it 'sends AIGW request with correct model metadata' do
-          expect_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
-            service_name: :review_merge_request,
-            tracking_context: tracking_context
-          ) do |client|
-            allow(client)
-              .to receive(:complete_prompt)
-              .with(
-                base_url: Gitlab::AiGateway.url,
-                prompt_name: :review_merge_request,
-                inputs: prompt_inputs,
-                model_metadata: received_model_metadata,
-                prompt_version: prompt_version
-              )
-              .and_return(
-                instance_double(HTTParty::Response, body: combined_review_response.to_json, success?: true)
-              )
-          end
-
-          completion.execute
-        end
       end
 
       it_behaves_like 'review merge request with prompt version'

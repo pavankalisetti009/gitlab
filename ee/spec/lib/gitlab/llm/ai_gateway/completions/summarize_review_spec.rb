@@ -52,6 +52,26 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
     before do
       stub_feature_flags(summarize_code_review_claude_4_0_sonnet: false)
       stub_feature_flags(ai_model_switching: false)
+      stub_feature_flags(use_claude_code_completion: false)
+    end
+
+    shared_examples_for 'summarize review with prompt version' do
+      it 'includes prompt_version in the request' do
+        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+          expect(client)
+            .to receive(:complete_prompt)
+            .with(
+              base_url: Gitlab::AiGateway.url,
+              prompt_name: :summarize_review,
+              inputs: { draft_notes_content: draft_notes_content },
+              model_metadata: model_metadata,
+              prompt_version: prompt_version
+            )
+            .and_return(example_response)
+        end
+
+        resolve.execute
+      end
     end
 
     context 'when there are no draft notes authored by user' do
@@ -127,28 +147,31 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         it_behaves_like 'summarize review'
       end
 
+      context 'when use_claude_code_completion feature flag is enabled for the root namespace of the merge request' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, :repository, group: group) }
+        let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+        let_it_be(:draft_note_by_current_user) do
+          create(
+            :draft_note,
+            merge_request: merge_request,
+            author: user,
+            note: 'This is a draft note'
+          )
+        end
+
+        before do
+          stub_feature_flags(use_claude_code_completion: group)
+        end
+
+        it_behaves_like 'summarize review with prompt version' do
+          let(:prompt_version) { '1.0.0' }
+        end
+      end
+
       context 'when claude_4_0_sonnet feature flag disabled' do
         let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
         let(:prompt_version) { "2.0.0" }
-
-        shared_examples_for 'summarize review with prompt version' do
-          it 'includes prompt_version in the request' do
-            expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
-              expect(client)
-                .to receive(:complete_prompt)
-                .with(
-                  base_url: Gitlab::AiGateway.url,
-                  prompt_name: :summarize_review,
-                  inputs: { draft_notes_content: draft_notes_content },
-                  model_metadata: model_metadata,
-                  prompt_version: prompt_version
-                )
-                .and_return(example_response)
-            end
-
-            resolve.execute
-          end
-        end
 
         it_behaves_like 'summarize review with prompt version'
 
