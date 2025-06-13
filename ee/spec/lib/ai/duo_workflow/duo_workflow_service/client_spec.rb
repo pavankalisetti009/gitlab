@@ -26,12 +26,10 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
   end
 
   describe '#generate_token' do
-    subject(:generate_token) { client.generate_token('workflow_definition') }
-
     it 'sends the correct metadata hash' do
       expect(::CloudConnector::Tokens).to receive(:get).and_return('instance jwt')
 
-      generate_token
+      client.generate_token
 
       expect(stub).to have_received(:generate_token).with(
         request,
@@ -45,16 +43,8 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
       )
     end
 
-    it 'sends workflow definition' do
-      generate_token
-
-      expect(DuoWorkflowService::GenerateTokenRequest).to have_received(:new).with(
-        workflowDefinition: 'workflow_definition'
-      )
-    end
-
     it 'returns a success ServiceResponse with token and expires_at' do
-      result = generate_token
+      result = client.generate_token
 
       expect(result).to be_success
       expect(result.message).to eq('JWT Generated')
@@ -67,7 +57,7 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
       let(:channel_credentials) { :this_channel_is_insecure }
 
       it 'calls with insecure channel credentials' do
-        result = generate_token
+        result = client.generate_token
 
         expect(result).to be_success
       end

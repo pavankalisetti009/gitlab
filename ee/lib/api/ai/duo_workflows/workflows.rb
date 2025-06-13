@@ -83,12 +83,12 @@ module API
             composite_oauth_token_result[:oauth_access_token]
           end
 
-          def duo_workflow_token(workflow_definition = nil)
+          def duo_workflow_token
             duo_workflow_token_result = ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
               duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url,
               current_user: current_user,
               secure: Gitlab::DuoWorkflow::Client.secure?
-            ).generate_token(workflow_definition)
+            ).generate_token
             bad_request!(duo_workflow_token_result[:message]) if duo_workflow_token_result[:status] == :error
 
             duo_workflow_token_result
@@ -151,7 +151,7 @@ module API
                 end
 
                 oauth_token = gitlab_oauth_token
-                workflow_token = duo_workflow_token(params[:workflow_definition])
+                workflow_token = duo_workflow_token
 
                 access = {
                   gitlab_rails: {

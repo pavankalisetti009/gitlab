@@ -13,15 +13,13 @@ module Ai
           @secure = secure
         end
 
-        def generate_token(workflow_definition = nil)
+        def generate_token
           stub = ::DuoWorkflowService::DuoWorkflow::Stub.new(
             duo_workflow_service_url,
             channel_credentials
           )
 
-          request = ::DuoWorkflowService::GenerateTokenRequest.new(
-            workflowDefinition: workflow_definition
-          )
+          request = ::DuoWorkflowService::GenerateTokenRequest.new
 
           begin
             response = stub.generate_token(request, metadata: metadata)
