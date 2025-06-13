@@ -75,7 +75,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
       context 'with invalid scope' do
         before do
-          policy.scope = { foo: "bar" }
+          policy.scope = { compliance_frameworks: "bar" }
         end
 
         it { is_expected.to be_invalid }

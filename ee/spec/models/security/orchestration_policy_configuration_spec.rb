@@ -4114,4 +4114,179 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
     end
   end
+
+  describe 'JSON Schema Integrity' do
+    # Utility method to load and parse a JSON schema file
+    def load_schema(file_path)
+      schema = File.read(file_path)
+      resolve_refs(::Gitlab::Json.parse(schema))
+    end
+
+    # Utility method to extract a specific section from the main schema based on a path
+    def extract_schema_section(schema, path)
+      return schema if path.blank?
+
+      schema.dig(*path)
+    end
+
+    # Utility method to resolve $ref references in the main schema
+    def resolve_refs(schema, root_schema = nil)
+      root_schema ||= schema
+
+      case schema
+      when Hash
+        if schema.key?('$ref')
+          ref_path = schema['$ref'].sub('#/', '').split('/')
+          ref_value = ref_path.reduce(root_schema) { |s, key| s[key] }
+
+          # Merge the resolved reference with the original schema (excluding $ref)
+          # We resolve references in the merged result to handle nested references
+          ref_schema = schema.reject { |k, _| k == '$ref' }
+          resolve_refs(ref_schema.merge(resolve_refs(ref_value, root_schema)), root_schema)
+        else
+          # Process each key-value pair in the hash
+          schema.transform_values { |value| resolve_refs(value, root_schema) }
+        end
+      when Array
+        # Process each element in the array
+        schema.map { |item| resolve_refs(item, root_schema) }
+      else
+        # Return primitive values as-is
+        schema
+      end
+    end
+
+    # List of all partial schema files
+    let(:partial_schema_files) do
+      [
+        'approval_policies_send_bot_message_action.json',
+        'approval_policy_content.json',
+        'approval_policy_rule_content.json',
+        'pipeline_execution_policy_content.json',
+        'pipeline_execution_schedule_policy_content.json',
+        'scan_execution_policy_content.json',
+        'scan_execution_policy_rule_content.json',
+        'security_policy_experiments.json',
+        'security_policy_scope.json',
+        'vulnerability_management_policy_content.json',
+        'vulnerability_management_policy_rule_content.json'
+      ]
+    end
+
+    # Main schema loaded as a Ruby hash
+    let(:main_schema) { load_schema(main_schema_path) }
+    # Main schema path
+    let(:main_schema_path) { Rails.root.join("ee/app/validators/json_schemas/security_orchestration_policy.json") }
+
+    describe 'schema versions' do
+      it 'ensures all partial schema files use the same schema version as the main schema' do
+        main_schema_version = main_schema['$schema']
+
+        partial_schema_files.each do |file|
+          file_path = Rails.root.join('ee', 'app', 'validators', 'json_schemas', file)
+          partial_schema = load_schema(file_path)
+          expect(partial_schema['$schema']).to eq(main_schema_version),
+            "Schema version mismatch in #{file}. Expected #{main_schema_version}, got #{partial_schema['$schema']}"
+        end
+      end
+    end
+
+    # Shared example for testing schema integrity
+    shared_examples 'schema integrity test' do |partial_schema_file, main_paths, partial_paths = [], compared_fields = []|
+      it "ensures #{partial_schema_file} matches the corresponding section in the main schema" do
+        partial_schema_path = Rails.root.join('ee', 'app', 'validators', 'json_schemas', partial_schema_file)
+        partial_schema = load_schema(partial_schema_path)
+        partial_section = extract_schema_section(partial_schema, partial_paths)
+
+        # Extract the corresponding section from the main schema
+        main_section = extract_schema_section(main_schema, main_paths)
+
+        ignored_fields = %w[$schema description]
+
+        partial_section_to_compare = partial_section.except(*ignored_fields)
+        main_section_to_compare = main_section.except(*ignored_fields)
+
+        if compared_fields.present?
+          partial_section_to_compare = partial_section_to_compare.slice(*compared_fields)
+          main_section_to_compare = main_section_to_compare.slice(*compared_fields)
+        end
+
+        expect(partial_section_to_compare).not_to be_empty, "Partial schema section should not be empty"
+        expect(main_section_to_compare).not_to be_empty, "Main schema section should not be empty"
+
+        # Compare the two schemas
+        expect(partial_section_to_compare).to eq(main_section_to_compare)
+      end
+    end
+
+    describe 'approval_policy_content.json' do
+      it_behaves_like 'schema integrity test',
+        'approval_policy_content.json',
+        %w[properties approval_policy items properties],
+        %w[properties],
+        %w[fallback_behavior policy_tuning actions approval_settings]
+    end
+
+    describe 'approval_policy_rule_content.json' do
+      it_behaves_like 'schema integrity test',
+        'approval_policy_rule_content.json',
+        %w[properties approval_policy items properties rules items properties],
+        %w[properties]
+    end
+
+    describe 'pipeline_execution_policy_content.json' do
+      it_behaves_like 'schema integrity test',
+        'pipeline_execution_policy_content.json',
+        %w[properties pipeline_execution_policy items properties],
+        %w[properties],
+        %w[content pipeline_config_strategy suffix skip_ci variables_override]
+    end
+
+    describe 'pipeline_execution_schedule_policy_content.json' do
+      it_behaves_like 'schema integrity test',
+        'pipeline_execution_schedule_policy_content.json',
+        %w[properties pipeline_execution_schedule_policy items properties],
+        %w[properties],
+        %w[schedules content]
+    end
+
+    describe 'scan_execution_policy_content.json' do
+      it_behaves_like 'schema integrity test',
+        'scan_execution_policy_content.json',
+        %w[properties scan_execution_policy items properties],
+        %w[properties],
+        %w[actions skip_ci]
+    end
+
+    describe 'scan_execution_policy_rule_content.json' do
+      it_behaves_like 'schema integrity test',
+        'scan_execution_policy_rule_content.json',
+        %w[properties scan_execution_policy items properties rules items]
+    end
+
+    describe 'security_policy_experiments.json' do
+      it_behaves_like 'schema integrity test',
+        'security_policy_experiments.json',
+        %w[properties experiments]
+    end
+
+    describe 'security_policy_scope.json' do
+      it_behaves_like 'schema integrity test',
+        'security_policy_scope.json',
+        ['$defs', 'policy_scope']
+    end
+
+    describe 'vulnerability_management_policy_content.json' do
+      it_behaves_like 'schema integrity test',
+        'vulnerability_management_policy_content.json',
+        %w[properties vulnerability_management_policy items properties actions],
+        %w[properties actions]
+    end
+
+    describe 'vulnerability_management_policy_rule_content.json' do
+      it_behaves_like 'schema integrity test',
+        'vulnerability_management_policy_rule_content.json',
+        %w[properties vulnerability_management_policy items properties rules items]
+    end
+  end
 end
