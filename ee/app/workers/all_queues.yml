@@ -3254,6 +3254,26 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_analyzers_status_process_group_transfer_events
+  :worker_name: Security::AnalyzersStatus::ProcessGroupTransferEventsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_analyzers_status_process_project_transfer_events
+  :worker_name: Security::AnalyzersStatus::ProcessProjectTransferEventsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_configuration_set_group_secret_push_protection
   :worker_name: Security::Configuration::SetGroupSecretPushProtectionWorker
   :feature_category: :security_testing_configuration

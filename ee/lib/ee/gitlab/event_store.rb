@@ -132,6 +132,10 @@ module EE
 
           store.subscribe ::Security::AnalyzersStatus::ProcessArchivedEventsWorker, to: ::Projects::ProjectArchivedEvent
           store.subscribe ::Security::AnalyzersStatus::ProcessDeletedEventsWorker, to: ::Projects::ProjectDeletedEvent
+          store.subscribe ::Security::AnalyzersStatus::ProcessGroupTransferEventsWorker,
+            to: ::Groups::GroupTransferedEvent
+          store.subscribe ::Security::AnalyzersStatus::ProcessProjectTransferEventsWorker,
+            to: ::Projects::ProjectTransferedEvent
         end
 
         def subscribe_to_external_issue_links_events(store)

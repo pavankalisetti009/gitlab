@@ -2,6 +2,8 @@
 
 module Security
   class AnalyzerNamespaceStatus < ::SecApplicationRecord
+    include EachBatch
+
     self.table_name = 'analyzer_namespace_statuses'
 
     belongs_to :group, foreign_key: :namespace_id, inverse_of: :analyzer_group_statuses
