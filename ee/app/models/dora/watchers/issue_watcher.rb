@@ -38,7 +38,10 @@ module Dora
         date = refresh_date.to_date.iso8601
         env_id = production_env_id
 
-        issue.run_after_commit_or_now do
+        # Use run_after_commit here
+        # to avoid issue object being dirty
+        # when the RefreshWorker job runs.
+        issue.run_after_commit do
           ::Dora::DailyMetrics::RefreshWorker.perform_async(env_id, date)
         end
       end

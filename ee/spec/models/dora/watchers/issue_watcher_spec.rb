@@ -65,6 +65,7 @@ RSpec.describe Dora::Watchers::IssueWatcher, feature_category: :devops_reports d
       let(:closed_at) { 1.day.ago }
 
       it 'schedules metric refresh for closed_at date' do
+        expect(issue).to receive(:run_after_commit).and_yield
         expect(::Dora::DailyMetrics::RefreshWorker)
           .to receive(:perform_async).with(production_env.id, closed_at.to_date.to_s)
 
@@ -80,6 +81,7 @@ RSpec.describe Dora::Watchers::IssueWatcher, feature_category: :devops_reports d
       it 'schedules metric refresh for closed_at date' do
         issue.closed_at = nil
 
+        expect(issue).to receive(:run_after_commit).and_yield
         expect(::Dora::DailyMetrics::RefreshWorker)
           .to receive(:perform_async).with(production_env.id, closed_at.to_date.to_s)
 
@@ -93,6 +95,7 @@ RSpec.describe Dora::Watchers::IssueWatcher, feature_category: :devops_reports d
       let(:event) { :created }
 
       it 'schedules metric refresh for created_at date' do
+        expect(issue).to receive(:run_after_commit).and_yield
         expect(::Dora::DailyMetrics::RefreshWorker)
           .to receive(:perform_async).with(production_env.id, created_at.to_date.to_s)
 

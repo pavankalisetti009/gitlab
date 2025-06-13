@@ -17,9 +17,10 @@ RSpec.describe Dora::ChangeFailureRateMetric do
     before_all do
       create(:incident, project: project, created_at: date.beginning_of_day)
       create(:incident, project: project, created_at: date.beginning_of_day + 1.hour)
-      create(:incident, project: project, created_at: date.end_of_day)
+      duplicated = create(:incident, project: project, created_at: date.end_of_day)
 
       # Issues which shouldn't be included in calculation
+      create(:incident, project: project, created_at: date.end_of_day, duplicated_to: duplicated) # duplicated
       create(:issue, project: project, created_at: date) # not an incident
       create(:incident, created_at: date) # different project
       create(:incident, project: project, created_at: date - 1.year) # different date
