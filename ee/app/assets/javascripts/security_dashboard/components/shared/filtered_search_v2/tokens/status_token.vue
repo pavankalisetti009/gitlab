@@ -52,7 +52,10 @@ export default {
     },
   },
   data() {
-    const defaultSelected = this.value.data || this.$options.defaultValues;
+    // Default values are set on page load by parent component, when there is no query parameter.
+    // Subsequent token mounts should use the ALL value because clearing tokens should reset to
+    // ALL value and not default values.
+    const defaultSelected = this.value.data || [ALL_STATUS_VALUE];
 
     return {
       selectedStatuses: defaultSelected,

@@ -94,12 +94,10 @@ describe('Status Token component', () => {
 
     it('shows the label', () => {
       expect(findFilteredSearchToken().props('value')).toEqual({
-        data: ['DETECTED', 'CONFIRMED'],
+        data: ['ALL'],
         operator: '=',
       });
-      expect(wrapper.findByTestId('status-token-placeholder').text()).toBe(
-        'Needs triage, Confirmed',
-      );
+      expect(wrapper.findByTestId('status-token-placeholder').text()).toBe('All statuses');
     });
 
     it('shows the dropdown with correct options', () => {
