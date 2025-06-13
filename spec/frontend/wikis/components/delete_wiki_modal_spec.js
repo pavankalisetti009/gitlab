@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlModal } from '@gitlab/ui';
-import DeleteWikiModal from '~/pages/shared/wikis/components/delete_wiki_modal.vue';
+import DeleteWikiModal from '~/wikis/components/delete_wiki_modal.vue';
 import { mockLocation, restoreLocation } from '../test_utils';
 
 describe('DeleteWikiModal', () => {

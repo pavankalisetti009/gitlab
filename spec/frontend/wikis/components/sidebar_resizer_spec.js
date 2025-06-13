@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import SidebarResizer from '~/pages/shared/wikis/components/sidebar_resizer.vue';
+import SidebarResizer from '~/wikis/components/sidebar_resizer.vue';
 import PanelResizer from '~/vue_shared/components/panel_resizer.vue';
 import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 

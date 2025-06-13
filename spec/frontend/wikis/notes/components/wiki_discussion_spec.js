@@ -1,11 +1,11 @@
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WikiDiscussion from '~/pages/shared/wikis/wiki_notes/components/wiki_discussion.vue';
-import WikiNote from '~/pages/shared/wikis/wiki_notes/components/wiki_note.vue';
-import PlaceholderNote from '~/pages/shared/wikis/wiki_notes/components/placeholder_note.vue';
+import WikiDiscussion from '~/wikis/wiki_notes/components/wiki_discussion.vue';
+import WikiNote from '~/wikis/wiki_notes/components/wiki_note.vue';
+import PlaceholderNote from '~/wikis/wiki_notes/components/placeholder_note.vue';
 import DiscussionReplyPlaceholder from '~/notes/components/discussion_reply_placeholder.vue';
-import WikiDiscussionsSignedOut from '~/pages/shared/wikis/wiki_notes/components/wiki_discussions_signed_out.vue';
-import WikiCommentForm from '~/pages/shared/wikis/wiki_notes/components/wiki_comment_form.vue';
+import WikiDiscussionsSignedOut from '~/wikis/wiki_notes/components/wiki_discussions_signed_out.vue';
+import WikiCommentForm from '~/wikis/wiki_notes/components/wiki_comment_form.vue';
 import * as autosave from '~/lib/utils/autosave';
 import ToggleRepliesWidget from '~/notes/components/toggle_replies_widget.vue';
 import { currentUserData, note, noteableId, noteableType } from '../mock_data';

@@ -1,9 +1,9 @@
 import { GlLink, GlIcon } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import WikiSidebarEntry from '~/pages/shared/wikis/components/wiki_sidebar_entry.vue';
+import WikiSidebarEntry from '~/wikis/components/wiki_sidebar_entry.vue';
 import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 
-describe('pages/shared/wikis/components/wiki_sidebar_entry', () => {
+describe('wikis/components/wiki_sidebar_entry', () => {
   useLocalStorageSpy();
 
   let wrapper;

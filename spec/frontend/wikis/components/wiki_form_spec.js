@@ -12,10 +12,10 @@ import MockAdapter from 'axios-mock-adapter';
 import axios from '~/lib/utils/axios_utils';
 import { mockTracking } from 'helpers/tracking_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import WikiForm from '~/pages/shared/wikis/components/wiki_form.vue';
-import WikiTemplate from '~/pages/shared/wikis/components/wiki_template.vue';
+import WikiForm from '~/wikis/components/wiki_form.vue';
+import WikiTemplate from '~/wikis/components/wiki_template.vue';
 import MarkdownEditor from '~/vue_shared/components/markdown/markdown_editor.vue';
-import { WIKI_FORMAT_LABEL, WIKI_FORMAT_UPDATED_ACTION } from '~/pages/shared/wikis/constants';
+import { WIKI_FORMAT_LABEL, WIKI_FORMAT_UPDATED_ACTION } from '~/wikis/constants';
 import { DRAWIO_ORIGIN } from 'spec/test_constants';
 import { mockLocation, restoreLocation } from '../test_utils';
 

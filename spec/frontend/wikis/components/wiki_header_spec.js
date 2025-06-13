@@ -2,9 +2,9 @@ import { GlSprintf } from '@gitlab/ui';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import WikiHeader from '~/pages/shared/wikis/components/wiki_header.vue';
+import WikiHeader from '~/wikis/components/wiki_header.vue';
 
-describe('pages/shared/wikis/components/wiki_header', () => {
+describe('wikis/components/wiki_header', () => {
   let wrapper;
 
   function buildWrapper(provide = {}) {

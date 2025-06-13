@@ -1,8 +1,4 @@
-import {
-  createNoteErrorMessages,
-  getIdFromGid,
-  getAutosaveKey,
-} from '~/pages/shared/wikis/wiki_notes/utils';
+import { createNoteErrorMessages, getIdFromGid, getAutosaveKey } from '~/wikis/wiki_notes/utils';
 import { COMMENT_FORM } from '~/notes/i18n';
 import { sprintf } from '~/locale';
 import * as utils from '~/graphql_shared/utils';

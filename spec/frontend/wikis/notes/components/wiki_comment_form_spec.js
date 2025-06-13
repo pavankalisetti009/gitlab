@@ -1,9 +1,9 @@
 import { GlAlert, GlFormCheckbox, GlButton } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import WikiCommentForm from '~/pages/shared/wikis/wiki_notes/components/wiki_comment_form.vue';
+import WikiCommentForm from '~/wikis/wiki_notes/components/wiki_comment_form.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WikiDiscussionsSignedOut from '~/pages/shared/wikis/wiki_notes/components/wiki_discussions_signed_out.vue';
-import WikiDiscussionLocked from '~/pages/shared/wikis/wiki_notes/components/wiki_discussion_locked.vue';
+import WikiDiscussionsSignedOut from '~/wikis/wiki_notes/components/wiki_discussions_signed_out.vue';
+import WikiDiscussionLocked from '~/wikis/wiki_notes/components/wiki_discussion_locked.vue';
 import * as secretsDetection from '~/lib/utils/secret_detection';
 import * as confirmViaGLModal from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 import { wikiCommentFormProvideData, noteableId } from '../mock_data';

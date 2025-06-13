@@ -2,7 +2,7 @@ import { GlDisclosureDropdownGroup } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import EmojiPicker from '~/emoji/components/picker.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import NoteActions from '~/pages/shared/wikis/wiki_notes/components/note_actions.vue';
+import NoteActions from '~/wikis/wiki_notes/components/note_actions.vue';
 import AbuseCategorySelector from '~/abuse_reports/components/abuse_category_selector.vue';
 
 describe('WikiNoteActions', () => {

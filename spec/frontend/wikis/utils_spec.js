@@ -1,4 +1,4 @@
-import { sidebarEntriesToTree } from '~/pages/shared/wikis/utils';
+import { sidebarEntriesToTree } from '~/wikis/utils';
 
 describe('sidebarEntriesToTree', () => {
   it('returns an empty array if entries are empty', () => {

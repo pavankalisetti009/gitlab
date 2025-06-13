@@ -1,7 +1,7 @@
 import { GlLink, GlIcon } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WikiDiscussionLocked from '~/pages/shared/wikis/wiki_notes/components/wiki_discussion_locked.vue';
+import WikiDiscussionLocked from '~/wikis/wiki_notes/components/wiki_discussion_locked.vue';
 
 describe('WikiDiscussionLocked', () => {
   let wrapper;

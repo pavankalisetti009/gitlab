@@ -1,12 +1,12 @@
 import { GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import WikiMoreDropdown from '~/pages/shared/wikis/components/wiki_more_dropdown.vue';
-import DeleteWikiModal from '~/pages/shared/wikis/components/delete_wiki_modal.vue';
-import CloneWikiModal from '~/pages/shared/wikis/components/clone_wiki_modal.vue';
+import WikiMoreDropdown from '~/wikis/components/wiki_more_dropdown.vue';
+import DeleteWikiModal from '~/wikis/components/delete_wiki_modal.vue';
+import CloneWikiModal from '~/wikis/components/clone_wiki_modal.vue';
 import { mockLocation, restoreLocation } from '../test_utils';
 
-describe('pages/shared/wikis/components/wiki_more_dropdown', () => {
+describe('wikis/components/wiki_more_dropdown', () => {
   let wrapper;
 
   const createComponent = (provide) => {

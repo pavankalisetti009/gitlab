@@ -1,8 +1,8 @@
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import NoteEditedText from '~/notes/components/note_edited_text.vue';
-import WikiCommentForm from '~/pages/shared/wikis/wiki_notes/components/wiki_comment_form.vue';
-import NoteBody from '~/pages/shared/wikis/wiki_notes/components/note_body.vue';
+import WikiCommentForm from '~/wikis/wiki_notes/components/wiki_comment_form.vue';
+import NoteBody from '~/wikis/wiki_notes/components/note_body.vue';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { wikiCommentFormProvideData, note, noteableId } from '../mock_data';
 

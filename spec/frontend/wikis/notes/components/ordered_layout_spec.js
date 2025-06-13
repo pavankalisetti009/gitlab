@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import OrderedLayout from '~/pages/shared/wikis/wiki_notes/components/ordered_layout.vue';
+import OrderedLayout from '~/wikis/wiki_notes/components/ordered_layout.vue';
 
 const children = `
     <template #header>

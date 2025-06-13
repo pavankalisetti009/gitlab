@@ -1,6 +1,6 @@
 import { mount, shallowMount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import WikiTemplate from '~/pages/shared/wikis/components/wiki_template.vue';
+import WikiTemplate from '~/wikis/components/wiki_template.vue';
 
 describe('WikiTemplate', () => {
   let wrapper;
