@@ -125,6 +125,14 @@ module GitlabSubscriptions
       for_active_add_ons(normalized_names, resource)
     end
 
+    def self.find_for_active_duo_add_ons(resource)
+      for_active_add_ons(AddOn::DUO_ADD_ONS, resource)
+    end
+
+    def self.active_duo_add_ons_exist?(resource)
+      find_for_active_duo_add_ons(resource).exists?
+    end
+
     def self.find_by_namespace_and_add_on(namespace, add_on)
       find_by(namespace: namespace, add_on: add_on)
     end

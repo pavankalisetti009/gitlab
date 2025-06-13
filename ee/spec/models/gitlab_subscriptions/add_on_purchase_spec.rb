@@ -939,6 +939,88 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
   end
 
+  context 'when finding active Duo add-ons' do
+    let_it_be(:unrelated_group) { create(:group) }
+    let_it_be(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+    let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+
+    let_it_be(:active_pro_purchase_for_dot_com) do
+      create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on)
+    end
+
+    let_it_be(:active_analytics_purchase) do
+      create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
+    end
+
+    let_it_be_with_reload(:active_pro_purchase_for_self_managed) do
+      create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: gitlab_duo_pro_add_on)
+    end
+
+    describe '.find_for_active_duo_add_ons' do
+      subject(:add_on_purchases) { described_class.find_for_active_duo_add_ons(resource) }
+
+      context 'when scoped to namespace on gitlab.com', :saas do
+        let(:resource) { active_pro_purchase_for_dot_com.namespace }
+
+        it 'returns the correct records' do
+          expect(add_on_purchases).to match_array([active_pro_purchase_for_dot_com])
+        end
+
+        context 'when no active Duo add-ons exist' do
+          let(:resource) { unrelated_group }
+
+          it { is_expected.to be_empty }
+        end
+      end
+
+      context 'when scoped to instance on self-managed' do
+        let(:resource) { :instance }
+
+        it 'returns the correct records' do
+          expect(add_on_purchases).to match_array([active_pro_purchase_for_self_managed])
+        end
+
+        context 'when no active Duo add-ons exist' do
+          before do
+            active_pro_purchase_for_self_managed.update!(expires_on: 1.day.ago)
+          end
+
+          it { is_expected.to be_empty }
+        end
+      end
+    end
+
+    describe '.active_duo_add_ons_exist?' do
+      subject(:active_duo_add_ons_exist?) { described_class.active_duo_add_ons_exist?(resource) }
+
+      context 'when scoped to namespace on gitlab.com', :saas do
+        let(:resource) { active_pro_purchase_for_dot_com.namespace }
+
+        it { is_expected.to eq(true) }
+
+        context 'when no active Duo add-ons exist' do
+          let(:resource) { unrelated_group }
+
+          it { is_expected.to eq(false) }
+        end
+      end
+
+      context 'when scoped to instance on self-managed' do
+        let(:resource) { :instance }
+
+        it { is_expected.to eq(true) }
+
+        context 'when no active Duo add-ons exist' do
+          before do
+            active_pro_purchase_for_self_managed.update!(expires_on: 1.day.ago)
+          end
+
+          it { is_expected.to eq(false) }
+        end
+      end
+    end
+  end
+
   describe '#already_assigned?' do
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
 
