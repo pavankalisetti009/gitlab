@@ -40,6 +40,10 @@
       "type": "number",
       "description": "Number of namespaces per indexing rollout"
     },
+    "zoekt_indexing_timeout": {
+      "type": "string",
+      "description": "Timeout for indexing a project"
+    },
     "zoekt_rollout_retry_interval": {
       "type": "string",
       "description": "Retry interval for the namespaces which could not be rollout in first attempt"

@@ -942,23 +942,53 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe 'zoekt_indexing_timeout' do
+      where(:zoekt_indexing_timeout, :is_valid) do
+        '1m'    | true
+        '2h'    | true
+        '30d'   | true
+        '1.5h'  | false
+        '0'     | false
+        '00'    | false
+        '30D'   | false
+        '5x'    | false
+        '5mm'   | false
+        '5md'   | false
+        '0m'    | false
+        '01d'   | false
+        '5'     | false
+        'm'     | false
+        '1m '   | false
+        ' 1m'   | false
+      end
+
+      with_them do
+        specify do
+          setting.zoekt_indexing_timeout = zoekt_indexing_timeout
+
+          expect(setting.valid?).to eq(is_valid)
+        end
+      end
+    end
+
     describe 'zoekt_rollout_retry_interval' do
       where(:zoekt_rollout_retry_interval, :is_valid) do
-        '1m'  | true
-        '2h'  | true
-        '30d' | true
-        '0'   | true
-        '00'  | false
-        '30D' | false
-        '5x'  | false
-        '5mm' | false
-        '5md' | false
-        '0m'  | false
-        '01d' | false
-        '5'   | false
-        'm'   | false
-        '1m ' | false
-        ' 1m' | false
+        '1m'    | true
+        '2h'    | true
+        '30d'   | true
+        '0'     | true
+        '1.5h'  | false
+        '00'    | false
+        '30D'   | false
+        '5x'    | false
+        '5mm'   | false
+        '5md'   | false
+        '0m'    | false
+        '01d'   | false
+        '5'     | false
+        'm'     | false
+        '1m '   | false
+        ' 1m'   | false
       end
 
       with_them do

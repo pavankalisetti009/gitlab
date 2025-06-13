@@ -38,6 +38,7 @@ module EE
         zoekt_cpu_to_tasks_ratio: [:float, { default: 1.0 }],
         zoekt_indexing_parallelism: [:integer, { default: 1 }],
         zoekt_rollout_batch_size: [:integer, { default: 32 }],
+        zoekt_indexing_timeout: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_INDEXING_TIMEOUT }],
         zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }],
         zoekt_lost_node_threshold: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD }]
 
@@ -307,6 +308,10 @@ module EE
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
       validates :zoekt_indexing_parallelism, numericality: { greater_than: 0 }
       validates :zoekt_rollout_batch_size, numericality: { greater_than: 0 }
+      validates :zoekt_indexing_timeout, format: {
+        with: ::Search::Zoekt::Settings::DURATION_INTERVAL_DISABLED_NOT_ALLOWED_REGEX,
+        message: N_('Must be in the following format: `30m`, `2h`, or `1d`')
+      }
       validates :zoekt_rollout_retry_interval, format: {
         with: ::Search::Zoekt::Settings::DURATION_INTERVAL_REGEX,
         message: N_('Must be in the following format: `30m`, `2h`, or `1d`')
