@@ -85,6 +85,9 @@ module EE
         inverse_of: :root_namespace
       has_many :custom_lifecycles, class_name: 'WorkItems::Statuses::Custom::Lifecycle'
       has_many :custom_statuses, class_name: 'WorkItems::Statuses::Custom::Status'
+      has_many :converted_statuses, -> {
+        converted_from_system_defined
+      }, class_name: 'WorkItems::Statuses::Custom::Status', inverse_of: :namespace
 
       scope :include_gitlab_subscription, -> { includes(:gitlab_subscription) }
       scope :include_gitlab_subscription_with_hosted_plan, -> { includes(gitlab_subscription: :hosted_plan) }

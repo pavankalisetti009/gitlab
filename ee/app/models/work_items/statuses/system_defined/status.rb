@@ -78,11 +78,9 @@ module WorkItems
         end
 
         def converted_status_in_namespace(namespace)
-          converted_statuses = namespace.statuses.converted_from_system_defined.to_a
+          return self if namespace.converted_statuses.blank?
 
-          return self if converted_statuses.blank?
-
-          converted_statuses.find do |s|
+          namespace.converted_statuses.find do |s|
             s.converted_from_system_defined_status_identifier == id
           end
         end

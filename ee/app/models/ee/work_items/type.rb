@@ -90,15 +90,13 @@ module EE
       def custom_lifecycle_for(namespace_id)
         return unless namespace_id
 
-        ::Gitlab::SafeRequestStore.fetch(['WorkItemTypeCustomLifecycle', id, namespace_id]) do
-          ::WorkItems::Statuses::Custom::Lifecycle
-            .includes(:statuses)
-            .joins(:type_custom_lifecycles)
-            .find_by(
-              namespace_id: namespace_id,
-              type_custom_lifecycles: { work_item_type_id: id, namespace_id: namespace_id }
-            )
-        end
+        ::WorkItems::Statuses::Custom::Lifecycle
+          .includes(:statuses)
+          .joins(:type_custom_lifecycles)
+          .find_by(
+            namespace_id: namespace_id,
+            type_custom_lifecycles: { work_item_type_id: id, namespace_id: namespace_id }
+          )
       end
 
       def system_defined_lifecycle

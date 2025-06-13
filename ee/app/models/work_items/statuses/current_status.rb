@@ -23,13 +23,9 @@ module WorkItems
       def status
         return custom_status if custom_status.present?
 
-        custom_lifecycle = work_item_type.custom_lifecycle_for(top_level_namespace_id)
-
-        return system_defined_status if custom_lifecycle.nil?
-
-        custom_lifecycle.statuses.find do |s|
-          s.converted_from_system_defined_status_identifier == system_defined_status.id
-        end
+        system_defined_status&.converted_status_in_namespace(
+          work_item.namespace.root_ancestor
+        )
       end
 
       def status=(new_status)
