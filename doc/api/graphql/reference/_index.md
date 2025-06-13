@@ -36019,6 +36019,7 @@ Project-level settings for product analytics provider.
 | <a id="projectlanguages"></a>`languages` | [`[RepositoryLanguage!]`](#repositorylanguage) | Programming languages used in the project. |
 | <a id="projectlastactivityat"></a>`lastActivityAt` | [`Time`](#time) | Timestamp of the project last activity. |
 | <a id="projectlfsenabled"></a>`lfsEnabled` | [`Boolean`](#boolean) | Indicates if the project has Large File Storage (LFS) enabled. |
+| <a id="projectmarkedfordeletion"></a>`markedForDeletion` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.1. **Status**: Experiment. Indicates if the project or any ancestor is scheduled for deletion. |
 | <a id="projectmarkedfordeletionon"></a>`markedForDeletionOn` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 16.10. **Status**: Experiment. Date when project was scheduled to be deleted. |
 | <a id="projectmaxaccesslevel"></a>`maxAccessLevel` | [`AccessLevel!`](#accesslevel) | Maximum access level of the current user in the project. |
 | <a id="projectmergecommittemplate"></a>`mergeCommitTemplate` | [`String`](#string) | Template used to create merge commit message in merge requests. |
