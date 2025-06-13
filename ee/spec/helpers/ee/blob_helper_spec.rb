@@ -66,15 +66,18 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
   describe '#vue_blob_header_app_data' do
     let(:blob) { fake_blob(path: 'file.md', size: 2.megabytes) }
     let(:project) { build_stubbed(:project) }
+    let(:organization) { build_stubbed(:organization) }
     let(:ref) { 'main' }
     let(:breadcrumb_data) { { title: 'README.md', 'is-last': true } }
 
     it 'returns data related to blob header app' do
+      Current.organization = organization
       allow(helper).to receive_messages(selected_branch: ref, current_user: nil,
         breadcrumb_data_attributes: breadcrumb_data)
 
       expect(helper.vue_blob_header_app_data(project, blob, ref)).to include({
-        new_workspace_path: new_remote_development_workspace_path
+        new_workspace_path: new_remote_development_workspace_path,
+        organization_id: organization.id
       })
     end
   end
@@ -82,15 +85,18 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
   describe '#vue_blob_app_data' do
     let(:blob) { fake_blob(path: 'file.md', size: 2.megabytes) }
     let(:project) { build_stubbed(:project) }
+    let(:organization) { build_stubbed(:organization) }
     let(:ref) { 'main' }
 
     it 'returns data related to blob app' do
       allow(helper).to receive_messages(selected_branch: ref, current_user: nil)
+      Current.organization = organization
 
       expect(helper.vue_blob_app_data(project, blob, ref)).to include({
         user_id: '',
         explain_code_available: 'false',
-        new_workspace_path: new_remote_development_workspace_path
+        new_workspace_path: new_remote_development_workspace_path,
+        organization_id: organization.id
       })
     end
   end

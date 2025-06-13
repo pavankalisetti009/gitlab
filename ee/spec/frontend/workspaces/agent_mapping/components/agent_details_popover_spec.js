@@ -54,7 +54,7 @@ describe('ee/workspaces/agent_mapping/components/agent_details_popover.vue', () 
 
       expect(popover.attributes()).toMatchObject({
         target: EXPECTED_BUTTON_ID,
-        title: 'rootgroup-agent',
+        title: 'root-group-agent',
       });
     });
 
@@ -83,7 +83,7 @@ describe('ee/workspaces/agent_mapping/components/agent_details_popover.vue', () 
 
       expect(popover.attributes()).toMatchObject({
         target: EXPECTED_BUTTON_ID,
-        title: 'rootgroup-agent',
+        title: 'root-group-agent',
       });
     });
 

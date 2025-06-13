@@ -1,9 +1,13 @@
 <script>
 import { logError } from '~/lib/logger';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPE_ORGANIZATION } from '~/graphql_shared/constants';
 import getProjectDetailsQuery from '../graphql/queries/get_project_details.query.graphql';
-import getRemoteDevelopmentClusterAgents from '../graphql/queries/get_remote_development_cluster_agents.query.graphql';
+import getWorkspacesNamespaceClusterAgents from '../graphql/queries/get_workspaces_namespace_cluster_agents.query.graphql';
+import getWorkspacesOrganizationClusterAgents from '../graphql/queries/get_workspaces_organization_cluster_agents.query.graphql';
 
 export default {
+  inject: ['organizationId'],
   props: {
     projectFullPath: {
       type: String,
@@ -51,7 +55,8 @@ export default {
           return;
         }
 
-        const { clusterAgents, errors } = await this.fetchRemoteDevelopmentClusterAgents(
+        const { clusterAgents, errors } = await this.fetchClusterAgents(
+          this.organizationId,
           group.fullPath,
         );
 
@@ -72,32 +77,55 @@ export default {
     },
   },
   methods: {
-    async fetchRemoteDevelopmentClusterAgents(namespace) {
+    async fetchClusterAgents(organizationId, namespace) {
       try {
-        // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
-        const { data, error } = await this.$apollo.query({
-          query: getRemoteDevelopmentClusterAgents,
-          variables: { namespace },
-        });
+        // Execute both queries in parallel
+        const [namespaceResult, organizationResult] = await Promise.all([
+          this.$apollo.query({
+            query: getWorkspacesNamespaceClusterAgents,
+            variables: {
+              namespace,
+            },
+          }),
 
-        if (error) {
-          // NOTE: It seems to be impossible to have test coverage for this line
-          //       with the current version of mock-apollo-client. Any type of
-          //       mock error is always thrown and caught below instead of
-          //       being returned.
-          return { errors: [error] };
+          this.$apollo.query({
+            query: getWorkspacesOrganizationClusterAgents,
+            variables: {
+              organizationID: convertToGraphQLId(TYPE_ORGANIZATION, organizationId),
+            },
+          }),
+        ]);
+
+        // Check for errors in either result
+        if (namespaceResult.error || organizationResult.error) {
+          return {
+            errors: [namespaceResult.error, organizationResult.error].filter(Boolean),
+          };
         }
 
+        const organizationAgents = this.mapAgents(organizationResult.data.organizationAgents);
+        const namespaceAgents = this.mapAgents(namespaceResult.data.namespaceAgents);
+
+        // Some agents mapped at the org level might also be mapped on the namespace level
+        // we should remove duplicates
+        const seenIds = new Set();
+        const allClusterAgents = [...organizationAgents, ...namespaceAgents].filter(
+          (agent) => !seenIds.has(agent.value) && seenIds.add(agent.value),
+        );
+
         return {
-          clusterAgents:
-            data.namespace?.remoteDevelopmentClusterAgents?.nodes.map(({ id, name, project }) => ({
-              value: id,
-              text: `${project.nameWithNamespace} / ${name}`,
-            })) || [],
+          clusterAgents: allClusterAgents,
         };
       } catch (error) {
         return { errors: [error] };
       }
+    },
+    mapAgents(agents) {
+      const nodes = agents?.workspacesClusterAgents?.nodes || [];
+      return nodes.map(({ id, name, project }) => ({
+        value: id,
+        text: `${project.nameWithNamespace} / ${name}`,
+      }));
     },
   },
   render() {

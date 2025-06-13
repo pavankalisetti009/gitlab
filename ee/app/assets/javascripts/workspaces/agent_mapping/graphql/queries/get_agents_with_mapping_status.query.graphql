@@ -1,7 +1,7 @@
 query getAgentsWithMappingStatus($namespace: ID!) {
   namespace(fullPath: $namespace) {
     id
-    mappedAgents: remoteDevelopmentClusterAgents(filter: DIRECTLY_MAPPED) {
+    mappedAgents: workspacesClusterAgents(filter: DIRECTLY_MAPPED) {
       nodes {
         id
         name
@@ -16,7 +16,7 @@ query getAgentsWithMappingStatus($namespace: ID!) {
         }
       }
     }
-    unmappedAgents: remoteDevelopmentClusterAgents(filter: UNMAPPED) {
+    unmappedAgents: workspacesClusterAgents(filter: UNMAPPED) {
       nodes {
         id
         name

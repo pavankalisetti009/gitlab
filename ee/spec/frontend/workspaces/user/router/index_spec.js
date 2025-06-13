@@ -58,6 +58,7 @@ describe('workspaces/user/router/index.js', () => {
       provide: {
         emptyStateSvgPath: SVG_PATH,
         defaultDevfile: 'mock-devfile-value',
+        organizationId: '1',
       },
       stubs: {
         SearchProjectsListbox: {

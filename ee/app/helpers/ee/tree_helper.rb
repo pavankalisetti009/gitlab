@@ -7,9 +7,8 @@ module EE
     override :vue_tree_header_app_data
     def vue_tree_header_app_data(project, repository, ref, pipeline)
       super.merge({
-        new_workspace_path: new_remote_development_workspace_path,
         kerberos_url: alternative_kerberos_url? ? project.kerberos_url_to_repo : ''
-      })
+      }.merge(vue_tree_workspace_data))
     end
 
     override :vue_file_list_data
@@ -26,9 +25,8 @@ module EE
     override :web_ide_button_data
     def web_ide_button_data(options = {})
       super.merge({
-        new_workspace_path: new_remote_development_workspace_path,
         project_id: project_to_use.id
-      })
+      }.merge(vue_tree_workspace_data))
     end
   end
 end

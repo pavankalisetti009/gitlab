@@ -1,7 +1,7 @@
-query getRemoteDevelopmentClusterAgents($namespace: ID!) {
-  namespace(fullPath: $namespace) {
+query getWorkspacesNamespaceClusterAgents($namespace: ID!) {
+  namespaceAgents: namespace(fullPath: $namespace) {
     id
-    remoteDevelopmentClusterAgents(filter: AVAILABLE) {
+    workspacesClusterAgents(filter: AVAILABLE) {
       nodes {
         id
         name

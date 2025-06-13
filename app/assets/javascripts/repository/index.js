@@ -195,6 +195,7 @@ export default function setupVueRepositoryList() {
       directoryDownloadLinks,
       newWorkspacePath,
       projectId,
+      organizationId,
     } = codeDropdownEl.dataset;
 
     const CodeDropdownComponent = gon.features.directoryCodeDropdownUpdates
@@ -217,6 +218,7 @@ export default function setupVueRepositoryList() {
             projectId,
             projectPath,
             newWorkspacePath,
+            organizationId,
           },
         });
       },

@@ -478,28 +478,40 @@ export const GET_PROJECTS_DETAILS_QUERY_RESULT = {
   },
 };
 
-export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS = {
+export const GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS = {
   data: {
-    namespace: {
+    namespaceAgents: {
       id: 'gid://gitlab/Group/81',
       fullPath: 'gitlab-org/subgroup',
-      remoteDevelopmentClusterAgents: {
+      workspacesClusterAgents: {
         nodes: [],
       },
     },
   },
 };
 
-export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
+export const GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS = {
   data: {
-    namespace: {
+    organizationAgents: {
       id: 'gid://gitlab/Group/81',
       fullPath: 'gitlab-org/subgroup',
-      remoteDevelopmentClusterAgents: {
+      workspacesClusterAgents: {
+        nodes: [],
+      },
+    },
+  },
+};
+
+export const GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
+  data: {
+    namespaceAgents: {
+      id: 'gid://gitlab/Group/81',
+      fullPath: 'gitlab-org/subgroup',
+      workspacesClusterAgents: {
         nodes: [
           {
             id: 'gid://gitlab/Clusters::Agent/1',
-            name: 'rootgroup-agent',
+            name: 'root-group-agent',
             project: {
               id: 'gid://gitlab/Project/101',
               nameWithNamespace: 'GitLab Org / GitLab Agent One',
@@ -510,7 +522,7 @@ export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
           },
           {
             id: 'gid://gitlab/Clusters::Agent/2',
-            name: 'rootgroup-agent-2',
+            name: 'root-group-agent-2',
             project: {
               id: 'gid://gitlab/Project/102',
               nameWithNamespace: 'GitLab Org / GitLab Agent Two',
@@ -525,9 +537,69 @@ export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
   },
 };
 
+export const TRANSFORMED_GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = [
+  {
+    text: 'GitLab Org / GitLab Agent One / root-group-agent',
+    value: 'gid://gitlab/Clusters::Agent/1',
+  },
+  {
+    text: 'GitLab Org / GitLab Agent Two / root-group-agent-2',
+    value: 'gid://gitlab/Clusters::Agent/2',
+  },
+];
+
+export const GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
+  data: {
+    organizationAgents: {
+      id: 'gid://gitlab/Organizations::Organization/1',
+      workspacesClusterAgents: {
+        nodes: [
+          {
+            id: 'gid://gitlab/Clusters::Agent/2',
+            name: 'root-group-agent-2',
+            project: {
+              id: 'gid://gitlab/Project/102',
+              nameWithNamespace: 'GitLab Org / GitLab Agent Two',
+            },
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/998',
+            },
+          },
+          {
+            id: 'gid://gitlab/Clusters::Agent/3',
+            name: 'org-agent-1',
+            project: {
+              id: 'gid://gitlab/Project/103',
+              nameWithNamespace: 'GitLab Org / GitLab Agent Three',
+            },
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
+            },
+          },
+        ],
+      },
+    },
+  },
+};
+
+export const TRANSFORMED_GET_WORKSPACES_CLUSTER_AGENTS_QUERY_RESULT_ORG_AND_NAMESPACE_AGENTS = [
+  {
+    text: 'GitLab Org / GitLab Agent Two / root-group-agent-2',
+    value: 'gid://gitlab/Clusters::Agent/2',
+  },
+  {
+    text: 'GitLab Org / GitLab Agent Three / org-agent-1',
+    value: 'gid://gitlab/Clusters::Agent/3',
+  },
+  {
+    text: 'GitLab Org / GitLab Agent One / root-group-agent',
+    value: 'gid://gitlab/Clusters::Agent/1',
+  },
+];
+
 export const MAPPED_CLUSTER_AGENT = {
   id: 'gid://gitlab/Clusters::Agent/1',
-  name: 'rootgroup-agent',
+  name: 'root-group-agent',
   project: {
     id: 'gid://gitlab/Project/101',
     name: 'GitLab Agent One',
@@ -547,7 +619,7 @@ export const MAPPED_CLUSTER_AGENT = {
 
 export const UNMAPPED_CLUSTER_AGENT = {
   id: 'gid://gitlab/Clusters::Agent/2',
-  name: 'rootgroup-agent-2',
+  name: 'root-group-agent-2',
   project: {
     id: 'gid://gitlab/Project/102',
     name: 'GitLab Agent Two',

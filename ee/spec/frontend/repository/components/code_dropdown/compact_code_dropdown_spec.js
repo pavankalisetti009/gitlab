@@ -14,6 +14,7 @@ describe('EE Compact Code Dropdown component', () => {
   const projectPath = 'group/project';
   const projectId = '123';
   const newWorkspacePath = '/workspaces/new';
+  const organizationId = '1';
   const directoryDownloadLinks = [
     { text: 'zip', path: `${httpUrl}/archive.zip` },
     { text: 'tar.gz', path: `${httpUrl}/archive.tar.gz` },
@@ -47,6 +48,7 @@ describe('EE Compact Code Dropdown component', () => {
       provide: {
         glFeatures: { remoteDevelopment: remoteDevelopmentFlag },
         newWorkspacePath,
+        organizationId,
       },
     });
   };
