@@ -46,6 +46,28 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
   let(:anthropic_model_name) { 'claude-3-5-sonnet-20240620' }
 
+  let(:anthropic_prompt) do
+    [
+      {
+        "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
+          "complete the Python code between the given prefix and suffix inside the file 'test.py'.\nYour " \
+          "task is to provide valid code without any additional explanations, comments, or feedback." \
+          "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
+          "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
+          "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
+          "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
+          "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
+          "empty result.",
+        "role" => "system"
+      },
+      {
+        "content" => "<SUFFIX>\nsome content_above_cursor\n</SUFFIX>\n" \
+          "<PREFIX>\nsome content_below_cursor\n</PREFIX>",
+        "role" => "user"
+      }
+    ]
+  end
+
   let(:anthropic_request_body) do
     {
       'model_name' => anthropic_model_name,
@@ -57,25 +79,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       },
       'telemetry' => [{ 'model_engine' => 'anthropic' }],
       'prompt_version' => 3,
-      'prompt' => [
-        {
-          "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
-            "complete the Python code between the given prefix and suffix inside the file 'test.py'.\nYour " \
-            "task is to provide valid code without any additional explanations, comments, or feedback." \
-            "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
-            "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
-            "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
-            "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
-            "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
-            "empty result.",
-          "role" => "system"
-        },
-        {
-          "content" => "<SUFFIX>\nsome content_above_cursor\n</SUFFIX>\n" \
-            "<PREFIX>\nsome content_below_cursor\n</PREFIX>",
-          "role" => "user"
-        }
-      ]
+      'prompt' => anthropic_prompt
     }
   end
 
@@ -200,6 +204,183 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           end
         end
       end
+    end
+  end
+
+  describe 'model switching' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    let(:params) { { current_file: current_file, project: project } }
+
+    context 'when the namespace feature setting is set to a specific Anthropic model' do
+      let_it_be(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          feature: :code_completions,
+          offered_model_ref: 'claude_sonnet_3_7_20250219',
+          namespace: group
+        )
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_feature_name) { :code_suggestions }
+        let(:model_engine) { nil }
+        let(:expected_body) do
+          unsafe_params.merge(
+            model_name: 'claude_sonnet_3_7_20250219',
+            model_provider: 'gitlab',
+            prompt: anthropic_prompt,
+            prompt_version: 3
+          )
+        end
+      end
+    end
+
+    context 'when the namespace feature setting is set to a non-Anthropic Model' do
+      let_it_be(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          feature: :code_completions,
+          offered_model_ref: 'codestral_2501_fireworks',
+          namespace: group
+        )
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_feature_name) { :code_suggestions }
+        let(:model_engine) { nil }
+        let(:expected_body) do
+          unsafe_params.merge(
+            model_name: 'codestral_2501_fireworks',
+            model_provider: 'gitlab',
+            prompt: nil,
+            prompt_version: 3
+          )
+        end
+      end
+    end
+
+    context 'when the user is a member of a group with `claude_code_completion` enabled' do
+      let_it_be(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          feature: :code_completions,
+          offered_model_ref: 'claude_sonnet_3_5',
+          namespace: group
+        )
+      end
+
+      let_it_be(:claude_group) { create(:group) }
+      let_it_be(:claude_group_addon) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: create(:gitlab_subscription_add_on, :duo_enterprise),
+          namespace: claude_group
+        ).tap do |addon|
+          add_user_to_group(current_user, addon)
+        end
+      end
+
+      before do
+        stub_feature_flags(use_claude_code_completion: claude_group)
+      end
+
+      context 'when the claude group has another model pinned for code completion' do
+        let_it_be(:namespace_feature_setting) do
+          create(:ai_namespace_feature_setting,
+            feature: :code_completions,
+            offered_model_ref: 'claude_sonnet_3_7_20250219',
+            namespace: claude_group
+          )
+        end
+
+        it_behaves_like 'code suggestion task' do
+          let(:expected_feature_name) { :code_suggestions }
+          let(:model_engine) { nil }
+          let(:expected_body) do
+            unsafe_params.merge(
+              # uses the model pinned by the claude group, and not from the project's group
+              model_name: 'claude_sonnet_3_7_20250219',
+              model_provider: 'gitlab',
+              prompt: anthropic_prompt,
+              prompt_version: 3
+            )
+          end
+        end
+      end
+
+      context 'when the claude group has set the model for code completion to GitLab Default' do
+        let_it_be(:namespace_feature_setting) do
+          create(:ai_namespace_feature_setting,
+            feature: :code_completions,
+            offered_model_ref: '',
+            namespace: claude_group
+          )
+        end
+
+        it_behaves_like 'code suggestion task' do
+          let(:expected_feature_name) { :code_suggestions }
+          let(:model_engine) { nil }
+          let(:expected_body) do
+            unsafe_params.merge(
+              # it explicitly uses Claude Haiku 3.5 as the model
+              model_name: 'claude_3_5_haiku_20241022',
+              model_provider: 'gitlab',
+              prompt: anthropic_prompt,
+              prompt_version: 3
+            )
+          end
+        end
+      end
+    end
+
+    shared_examples_for 'uses the saas primary model for code completions' do
+      it_behaves_like 'code suggestion task' do
+        let(:expected_feature_name) { :code_suggestions }
+        let(:model_engine) { 'anthropic' }
+        let(:expected_body) do
+          unsafe_params.merge(
+            model_name: 'codestral-2501',
+            model_provider: 'fireworks_ai',
+            prompt_version: 1,
+            telemetry: [{ model_engine: model_engine }]
+          )
+        end
+      end
+    end
+
+    context 'when the namespace feature setting is set to GitLab Default' do
+      let_it_be(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          feature: :code_completions,
+          offered_model_ref: '',
+          namespace: group
+        )
+      end
+
+      # Even though a namespace feature setting is present,
+      # but if the model is set to GitLab Default,
+      # code completions will fallback to using the saas primary model,
+      # as decided by the `saas_prompt` method
+      it_behaves_like 'uses the saas primary model for code completions'
+    end
+
+    context 'when ai_model_switching is disabled' do
+      let_it_be(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          feature: :code_completions,
+          offered_model_ref: 'claude_sonnet_3_5',
+          namespace: group
+        )
+      end
+
+      before do
+        stub_feature_flags(ai_model_switching: false)
+      end
+
+      # Even though a namespace feature setting is present,
+      # but the ai_model_switching FF is disabled,
+      # code completions will fallback to using the saas primary model,
+      # as decided by the `saas_prompt` method
+      it_behaves_like 'uses the saas primary model for code completions'
     end
   end
 

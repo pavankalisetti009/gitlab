@@ -54,13 +54,13 @@ module CodeSuggestions
         !!feature_setting&.self_hosted?
       end
 
-      private
-
-      attr_reader :current_user, :feature_setting_name, :root_namespace
-
       def namespace_feature_setting?
         feature_setting.is_a?(::Ai::ModelSelection::NamespaceFeatureSetting)
       end
+
+      private
+
+      attr_reader :current_user, :feature_setting_name, :root_namespace
     end
   end
 end
