@@ -108,28 +108,16 @@ describe('Scan result policy rules', () => {
       expect(findLicenseScanRuleBuilder().exists()).toBe(true);
     };
 
-    /**
-     * Test would help not to forget to remove
-     * the feature flag when it is cleaned up
-     */
-    it('does not render license allow deny list when ff is off', async () => {
+    it('renders license allow deny list', async () => {
       createWrapper();
 
       await findScanTypeSelect().vm.$emit('select', LICENSE_FINDING);
 
-      expect(findDenyAllowList().exists()).toBe(false);
+      expect(findDenyAllowList().exists()).toBe(true);
     });
 
     it('should select license rule', async () => {
-      createWrapper({
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
-          },
-        },
-      });
-
-      window.gon = { features: { excludeLicensePackages: true } };
+      createWrapper();
 
       await findScanTypeSelect().vm.$emit('select', LICENSE_FINDING);
 

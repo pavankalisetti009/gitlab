@@ -1,7 +1,6 @@
 <script>
 import { GlSprintf, GlAlert } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   buildFiltersFromLicenseRule,
   getDefaultRule,
@@ -20,7 +19,6 @@ import StatusFilter from './scan_filters/status_filter.vue';
 import LicenseFilter from './scan_filters/license_filter.vue';
 import DenyAllowList from './deny_allow_list.vue';
 import {
-  FILTERS_STATUS_INDEX,
   STATUS,
   LICENCE_FILTERS,
   DENIED,
@@ -35,6 +33,7 @@ export default {
   STATUS,
   ALLOW_DENY,
   TYPE,
+  LICENCE_FILTERS,
   components: {
     GlAlert,
     BranchExceptionSelector,
@@ -48,7 +47,6 @@ export default {
     ScanTypeSelect,
     StatusFilter,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType'],
   props: {
     initRule: {
@@ -60,9 +58,6 @@ export default {
     licenseStatuses: s__('ScanResultPolicy|license status'),
     licenseScanResultRuleCopy: s__(
       'ScanResultPolicy|When %{scanType} in an open merge request targeting %{branches} %{branchExceptions} and the licenses match all of the following criteria:',
-    ),
-    tooltipFilterDisabledTitle: s__(
-      'ScanResultPolicy|License scanning allows only one criteria: Status',
     ),
     validationErrorMessage: s__(
       'ScanResultPolicy|You can specify either a license state (allowlist or denylist) or a license type, not both.',
@@ -82,22 +77,11 @@ export default {
     hasValidationError() {
       return 'license_types' in this.initRule && 'licenses' in this.initRule;
     },
-    showLicenseExcludePackages() {
-      return this.glFeatures.excludeLicensePackages;
-    },
     showDenyAllowListFilter() {
-      return this.showLicenseExcludePackages && this.isFilterSelected(this.$options.ALLOW_DENY);
+      return this.isFilterSelected(this.$options.ALLOW_DENY);
     },
     showLicensesTypesFilter() {
       return this.isFilterSelected(this.$options.TYPE);
-    },
-    filters() {
-      return this.showLicenseExcludePackages
-        ? LICENCE_FILTERS
-        : [LICENCE_FILTERS[FILTERS_STATUS_INDEX]];
-    },
-    filtersTooltip() {
-      return this.showLicenseExcludePackages ? '' : this.$options.i18n.tooltipFilterDisabledTitle;
     },
     branchExceptions() {
       return this.initRule.branch_exceptions;
@@ -268,9 +252,7 @@ export default {
         />
 
         <scan-filter-selector
-          :disabled="!showLicenseExcludePackages"
-          :filters="filters"
-          :tooltip-title="filtersTooltip"
+          :filters="$options.LICENCE_FILTERS"
           :should-disable-filter="shouldDisableFilterSelector"
           class="gl-w-full gl-bg-default"
           @select="selectFilter"

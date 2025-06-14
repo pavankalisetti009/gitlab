@@ -7,11 +7,14 @@ import { licenseScanBuildRule } from 'ee/security_orchestration/components/polic
 describe('LicenseFilter', () => {
   let wrapper;
 
-  const DEFAULT_PROPS = { initRule: licenseScanBuildRule() };
+  const licenseRule = { ...licenseScanBuildRule(), license_types: [] };
+  delete licenseRule.licenses;
+
+  const DEFAULT_PROPS = { initRule: licenseRule };
   const APACHE_LICENSE = 'Apache 2.0 License';
   const MIT_LICENSE = 'MIT License';
   const UPDATED_RULE = (licenses) => ({
-    ...licenseScanBuildRule(),
+    ...licenseRule,
     branches: [],
     match_on_inclusion: false,
     license_types: licenses,
@@ -23,7 +26,7 @@ describe('LicenseFilter', () => {
   const createComponent = ({ props = DEFAULT_PROPS, provide = {} } = {}) => {
     wrapper = shallowMountExtended(LicenseFilter, {
       propsData: {
-        initRule: licenseScanBuildRule(),
+        initRule: licenseRule,
         ...props,
       },
       provide: {

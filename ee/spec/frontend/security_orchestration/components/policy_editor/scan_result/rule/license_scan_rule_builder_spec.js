@@ -20,7 +20,6 @@ import {
   ALLOW_DENY,
   ALLOWED,
   DENIED,
-  FILTERS_STATUS_INDEX,
   LICENCE_FILTERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 import { mapComponentLicenseFormatToYaml } from 'ee/security_orchestration/components/policy_editor/utils';
@@ -181,16 +180,16 @@ describe('LicenseScanRuleBuilder', () => {
 
   describe('when editing any attribute of the rule', () => {
     it.each`
-      attribute               | currentComponent             | newValue                                                   | expected                                                   | event
-      ${'branches'}           | ${findBranches}              | ${{ branches: [PROTECTED_BRANCHES_MOCK[0].name] }}         | ${{ branches: UPDATED_RULE.branches }}                     | ${'changed'}
-      ${'license status'}     | ${findPolicyRuleMultiSelect} | ${'Newly Detected'}                                        | ${{ license_states: 'Newly Detected' }}                    | ${'input'}
-      ${'license match type'} | ${findLicenseFilter}         | ${{ match_on_inclusion: UPDATED_RULE.match_on_inclusion }} | ${{ match_on_inclusion: UPDATED_RULE.match_on_inclusion }} | ${'changed'}
-      ${'license type'}       | ${findLicenseFilter}         | ${{ license_types: UPDATED_RULE.license_types }}           | ${{ license_types: UPDATED_RULE.license_types }}           | ${'changed'}
+      attribute           | currentComponent             | newValue                                           | expected                                | event
+      ${'branches'}       | ${findBranches}              | ${{ branches: [PROTECTED_BRANCHES_MOCK[0].name] }} | ${{ branches: UPDATED_RULE.branches }}  | ${'changed'}
+      ${'license status'} | ${findPolicyRuleMultiSelect} | ${'Newly Detected'}                                | ${{ license_states: 'Newly Detected' }} | ${'input'}
+      ${'licenses'}       | ${findDenyAllowList}         | ${[]}                                              | ${{ licenses: UPDATED_RULE.licenses }}  | ${'select-licenses'}
     `(
       'triggers a changed event by $currentComponent for $attribute with the updated rule',
       async ({ currentComponent, newValue, expected, event }) => {
         factory();
         await currentComponent().vm.$emit(event, newValue);
+
         expect(wrapper.emitted().changed).toEqual([[expect.objectContaining(expected)]]);
       },
     );
@@ -204,35 +203,18 @@ describe('LicenseScanRuleBuilder', () => {
 
     const MAPPED_LICENSES = mapComponentLicenseFormatToYaml(LICENSES);
 
-    it('does not render deny allow list', () => {
+    it('does not render deny allow list when removed', async () => {
       factory();
 
+      await findDenyAllowList().vm.$emit('remove');
+
       expect(findDenyAllowList().exists()).toBe(false);
-      expect(findScanFilterSelector().props('disabled')).toBe(true);
-      expect(findScanFilterSelector().props('filters')).toEqual([
-        LICENCE_FILTERS[FILTERS_STATUS_INDEX],
-      ]);
+      expect(findScanFilterSelector().props('filters')).toEqual(LICENCE_FILTERS);
     });
 
-    it('renders allow deny list filter', async () => {
-      factory({
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
-          },
-        },
-      });
-
-      expect(findDenyAllowList().exists()).toBe(false);
-      expect(findScanFilterSelector().props('disabled')).toBe(false);
-      expect(findScanFilterSelector().props('filters')).toEqual(LICENCE_FILTERS);
-
-      await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
-
+    it('renders allow deny list filter', () => {
+      factory();
       expect(findDenyAllowList().exists()).toBe(true);
-      expect(wrapper.emitted('changed')).toEqual([
-        [expect.objectContaining({ licenses: { [ALLOWED]: [] } })],
-      ]);
     });
 
     it.each(['denied', 'allowed'])('renders selected deny list', (key) => {
@@ -243,24 +225,13 @@ describe('LicenseScanRuleBuilder', () => {
             licenses: { [key]: [] },
           },
         },
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
-          },
-        },
       });
 
       expect(findDenyAllowList().exists()).toBe(true);
     });
 
     it('can change list type', async () => {
-      factory({
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
-          },
-        },
-      });
+      factory();
 
       await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
 
@@ -274,13 +245,10 @@ describe('LicenseScanRuleBuilder', () => {
     });
 
     it('can remove allow deny list', async () => {
-      factory({
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
-          },
-        },
-      });
+      const rule = licenseScanBuildRule();
+      delete rule.licenses;
+
+      factory();
 
       await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
 
@@ -289,17 +257,11 @@ describe('LicenseScanRuleBuilder', () => {
       await findDenyAllowList().vm.$emit('remove');
 
       expect(findDenyAllowList().exists()).toBe(false);
-      expect(wrapper.emitted('changed')[1]).toEqual([licenseScanBuildRule()]);
+      expect(wrapper.emitted('changed')[1]).toEqual([rule]);
     });
 
     it('selects licenses', async () => {
-      factory({
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
-          },
-        },
-      });
+      factory();
 
       await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
       await findDenyAllowList().vm.$emit('select-licenses', LICENSES);
@@ -320,11 +282,6 @@ describe('LicenseScanRuleBuilder', () => {
             licenses: { [DENIED]: MAPPED_LICENSES },
           },
         },
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
-          },
-        },
       });
 
       expect(findDenyAllowList().props('licenses')).toEqual([
@@ -338,12 +295,7 @@ describe('LicenseScanRuleBuilder', () => {
         props: {
           initRule: {
             ...licenseScanBuildRule(),
-            licenses: { [DENIED]: MAPPED_LICENSES },
-          },
-        },
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
+            license_types: [],
           },
         },
       });
@@ -364,11 +316,6 @@ describe('LicenseScanRuleBuilder', () => {
           initRule: {
             ...rule,
             licenses: { [DENIED]: MAPPED_LICENSES },
-          },
-        },
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
           },
         },
       });

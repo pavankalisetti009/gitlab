@@ -54206,9 +54206,6 @@ msgstr ""
 msgid "ScanResultPolicy|License is:"
 msgstr ""
 
-msgid "ScanResultPolicy|License scanning allows only one criteria: Status"
-msgstr ""
-
 msgid "ScanResultPolicy|License status"
 msgstr ""
 

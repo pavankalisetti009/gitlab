@@ -20,6 +20,7 @@ import {
 import {
   AGE_MONTH,
   AGE_WEEK,
+  ALLOWED,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 
 const { branch_type: defaultSecurityScanBranchType, ...securityScanBuildRuleWithoutBranchType } =
@@ -223,6 +224,7 @@ const singleValuedLicenseScanRule = {
   humanized: {
     branchExceptions: [],
     licenses: ['MIT License'],
+    denyAllowList: { [ALLOWED]: [] },
     summary:
       'When license scanner finds any license matching %{licenses} that is pre-existing and is in an open merge request targeting the main branch.',
   },
@@ -271,6 +273,7 @@ const multipleValuedLicenseScanRule = {
   },
   humanized: {
     branchExceptions: [],
+    denyAllowList: { [ALLOWED]: [] },
     licenses: ['CMU License', 'CNRI Jython License', 'CNRI Python License'],
     summary:
       'When license scanner finds any license except %{licenses} in an open merge request targeting the staging or main branches.',
@@ -287,6 +290,7 @@ const branchTypeLicenseScanRule = (branchType = PROJECT_DEFAULT_BRANCH.value) =>
   },
   humanized: {
     branchExceptions: [],
+    denyAllowList: { [ALLOWED]: [] },
     summary: `When license scanner finds any license except %{licenses} in an open merge request targeting ${HUMANIZED_BRANCH_TYPE_TEXT_DICT[branchType]}.`,
     licenses: ['CMU License', 'CNRI Jython License', 'CNRI Python License'],
   },
@@ -306,6 +310,7 @@ const branchExceptionLicenseScanRule = (branchExceptions = []) => ({
       HUMANIZED_BRANCH_TYPE_TEXT_DICT[PROJECT_DEFAULT_BRANCH.value]
     } except branches:`,
     branchExceptions: ['test', 'test1'],
+    denyAllowList: { [ALLOWED]: [] },
     licenses: ['CMU License', 'CNRI Jython License', 'CNRI Python License'],
   },
 });
@@ -382,8 +387,6 @@ describe('humanizeRules', () => {
     it.each(['allowed', 'denied'])(
       'returns a single rule as a human-readable string with allow deny list',
       (type) => {
-        window.gon = { features: { excludeLicensePackages: true } };
-
         expect(
           humanizeRules([singleValuedLicenseScanRuleWithAllowDenyList(type).rule]),
         ).toStrictEqual([singleValuedLicenseScanRuleWithAllowDenyList(type).humanized]);

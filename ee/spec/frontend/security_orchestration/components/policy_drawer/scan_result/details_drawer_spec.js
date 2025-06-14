@@ -261,17 +261,11 @@ describe('DetailsDrawer component', () => {
       ${allowDenyScanResultLicenseNonEmptyManifest} | ${false}
       ${denyScanResultLicenseNonEmptyManifest}      | ${true}
     `('renders allow deny list when license packages exist', ({ yaml, isDenied }) => {
-      window.gon = { features: { excludeLicensePackages: true } };
       factory({
         props: {
           policy: {
             ...mockProjectScanResultPolicy,
             yaml,
-          },
-        },
-        provide: {
-          glFeatures: {
-            excludeLicensePackages: true,
           },
         },
       });
