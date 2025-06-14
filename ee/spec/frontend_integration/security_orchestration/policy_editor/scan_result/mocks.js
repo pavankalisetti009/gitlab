@@ -123,7 +123,8 @@ export const mockLicenseApprovalManifest = `approval_policy:
     rules:
       - type: license_finding
         match_on_inclusion_license: true
-        license_types: []
+        licenses:
+          allowed: []
         license_states: []
         branch_type: protected
     actions:

@@ -53,14 +53,11 @@ export const securityScanBuildRule = () => ({
 });
 
 export const licenseScanBuildRule = () => {
-  const { excludeLicensePackages = false } = window.gon?.features || {};
-  const licenses = excludeLicensePackages ? { licenses: { [ALLOWED]: [] } } : { license_types: [] };
-
   return {
     id: uniqueId('rule_'),
     type: LICENSE_FINDING,
     match_on_inclusion_license: true,
-    ...licenses,
+    licenses: { [ALLOWED]: [] },
     license_states: [],
     branch_type: ALL_PROTECTED_BRANCHES.value,
   };

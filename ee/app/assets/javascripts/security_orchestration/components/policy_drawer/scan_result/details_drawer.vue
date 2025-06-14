@@ -2,7 +2,6 @@
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
@@ -35,7 +34,6 @@ export default {
     EdgeCaseSettings,
     Settings,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     policy: {
       type: Object,
@@ -53,9 +51,6 @@ export default {
     },
   },
   computed: {
-    showLicenseExcludePackages() {
-      return this.glFeatures.excludeLicensePackages;
-    },
     actions() {
       return this.parsedYaml?.actions;
     },
@@ -133,7 +128,7 @@ export default {
       return parseAllowDenyLicenseList({ licenses });
     },
     showDenyAllowList(licenses = {}) {
-      return this.showLicenseExcludePackages && this.getDenyAllowList(licenses).licenses.length > 0;
+      return this.getDenyAllowList(licenses).licenses.length > 0;
     },
   },
 };

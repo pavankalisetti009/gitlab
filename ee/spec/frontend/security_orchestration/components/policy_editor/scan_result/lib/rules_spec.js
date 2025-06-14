@@ -306,15 +306,10 @@ describe('invalidVulnerabilityAttributes', () => {
       );
     });
 
-    it.each([false, true])(
-      'creates license rule with allow/deny list',
-      (excludeLicensePackages) => {
-        window.gon = { features: { excludeLicensePackages } };
-        const licenses = excludeLicensePackages
-          ? { licenses: { [ALLOWED]: [] } }
-          : { license_types: [] };
-        expect(licenseScanBuildRule()).toEqual(expect.objectContaining(licenses));
-      },
-    );
+    it('creates license rule with allow/deny list', () => {
+      expect(licenseScanBuildRule()).toEqual(
+        expect.objectContaining({ licenses: { [ALLOWED]: [] } }),
+      );
+    });
   });
 });
