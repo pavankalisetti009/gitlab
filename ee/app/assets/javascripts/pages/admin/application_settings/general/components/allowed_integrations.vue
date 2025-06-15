@@ -41,9 +41,9 @@ export default {
 <template>
   <gl-form-radio-group v-model="allowAllIntegrations" :options="$options.RADIO_OPTIONS">
     <input
+      v-model="allowAllIntegrations"
       type="hidden"
       name="application_setting[allow_all_integrations]"
-      :value="allowAllIntegrations"
     />
 
     <div v-if="!allowAllIntegrations" class="gl-mt-3 gl-pl-6">
