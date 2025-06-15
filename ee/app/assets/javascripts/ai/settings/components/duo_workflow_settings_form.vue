@@ -24,7 +24,7 @@ export default {
     <h5>{{ s__('DuoWorkflowSettings|Model Context Protocol') }}</h5>
 
     <gl-form-checkbox
-      :value="isMcpEnabled"
+      :checked="isMcpEnabled"
       data-testid="enable-duo-workflow-mcp-enabled-checkbox"
       name="namespace[ai_settings_attributes][duo_workflow_mcp_enabled]"
       @change="checkboxChanged"

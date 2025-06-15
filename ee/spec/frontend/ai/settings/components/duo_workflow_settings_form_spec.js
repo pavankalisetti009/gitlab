@@ -47,15 +47,16 @@ describe('DuoWorkflowSettingsForm', () => {
       await nextTick();
 
       if (isMcpEnabled) {
-        expect(findFormCheckbox().attributes('value')).toBe(String(isMcpEnabled));
+        expect(findFormCheckbox().attributes('checked')).toBe(String(isMcpEnabled));
       } else {
-        expect(findFormCheckbox().attributes('value')).toBeUndefined();
+        expect(findFormCheckbox().attributes('checked')).toBeUndefined();
       }
     },
   );
 
   it('emits change event with correct value when checkbox is clicked', async () => {
-    await findFormCheckbox().vm.$emit('change', true);
+    findFormCheckbox().vm.$emit('change', true);
+    await nextTick();
 
     expect(wrapper.emitted('change')[0]).toEqual([true]);
   });
