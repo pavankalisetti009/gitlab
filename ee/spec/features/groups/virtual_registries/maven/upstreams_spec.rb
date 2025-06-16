@@ -128,7 +128,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
             click_button 'Delete'
           end
 
-          expect(page).to have_current_path(group_virtual_registries_maven_registry_path(group, registry))
+          expect(page).to have_current_path(group_virtual_registries_path(group))
           expect(page).to have_content('Maven upstream has been deleted.')
         end
 

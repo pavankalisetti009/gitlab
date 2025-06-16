@@ -29,7 +29,7 @@ describe('MavenEditUpstreamApp', () => {
       username: null,
       cacheValidityHours: 24,
     },
-    registryPath: '/groups/package-group/-/virtual_registries/maven/3',
+    registriesPath: '/groups/package-group/-/virtual_registries',
     upstreamPath: '/groups/package-group/-/virtual_registries/maven/upstreams/3',
     glAbilities: {
       destroyVirtualRegistry: true,
