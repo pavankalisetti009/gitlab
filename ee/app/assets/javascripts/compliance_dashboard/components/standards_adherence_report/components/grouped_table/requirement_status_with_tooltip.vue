@@ -50,8 +50,12 @@ export default {
       return this.relevantControls.filter((control) => control.status === 'PENDING');
     },
 
-    completedControls() {
-      return this.relevantControls.filter((control) => control.status !== 'PENDING');
+    passedControls() {
+      return this.relevantControls.filter((control) => control.status === 'PASS');
+    },
+
+    failedControls() {
+      return this.relevantControls.filter((control) => control.status === 'FAIL');
     },
   },
   methods: {
@@ -70,8 +74,9 @@ export default {
   },
   i18n: {
     EXTERNAL_CONTROL_LABEL,
-    completedControls: s__('AdherenceReport|Completed controls'),
+    failedControls: s__('AdherenceReport|Failed controls'),
     pendingControls: s__('AdherenceReport|Pending controls'),
+    passedControls: s__('AdherenceReport|Passed controls'),
     pendingCount: (count) =>
       n__(
         'AdherenceReport|%{pendingCount}/%{totalCount} control is pending',
@@ -98,11 +103,30 @@ export default {
             <template #pendingCount>{{ status.pendingCount }}</template>
           </gl-sprintf>
         </h3>
+        <template v-if="failedControls.length > 0">
+          <h4 class="gl-m-0 gl-mb-3 gl-text-sm gl-font-bold gl-text-inherit">
+            {{ $options.i18n.failedControls }}:
+          </h4>
+          <ul class="gl-mb-4 gl-pl-4">
+            <li
+              v-for="controlStatus in failedControls"
+              :key="controlStatus.id"
+              class="gl-text-nowrap"
+            >
+              {{ getControlName(controlStatus) }}
+              <gl-badge
+                v-if="controlStatus.complianceRequirementsControl.controlType === 'external'"
+              >
+                {{ $options.i18n.EXTERNAL_CONTROL_LABEL }}
+              </gl-badge>
+            </li>
+          </ul>
+        </template>
         <template v-if="pendingControls.length > 0">
           <h4 class="gl-m-0 gl-mb-3 gl-text-sm gl-font-bold gl-text-inherit">
             {{ $options.i18n.pendingControls }}:
           </h4>
-          <ul class="gl-pl-4">
+          <ul class="gl-mb-4 gl-pl-4">
             <li v-for="controlStatus in pendingControls" :key="controlStatus.id">
               {{ getControlName(controlStatus) }}
               <gl-badge
@@ -113,13 +137,15 @@ export default {
             </li>
           </ul>
         </template>
-        <template v-if="completedControls.length > 0">
+
+        <!-- Passed Controls Section -->
+        <template v-if="passedControls.length > 0">
           <h4 class="gl-m-0 gl-mb-3 gl-text-sm gl-font-bold gl-text-inherit">
-            {{ $options.i18n.completedControls }}:
+            {{ $options.i18n.passedControls }}:
           </h4>
           <ul class="gl-pl-4">
             <li
-              v-for="controlStatus in completedControls"
+              v-for="controlStatus in passedControls"
               :key="controlStatus.id"
               class="gl-text-nowrap"
             >
@@ -129,12 +155,6 @@ export default {
               >
                 {{ $options.i18n.EXTERNAL_CONTROL_LABEL }}
               </gl-badge>
-              <span v-if="controlStatus.status === 'PASS'" class="gl-text-status-success">
-                {{ s__('ComplianceStandardsAdherence|Passed') }}
-              </span>
-              <span v-if="controlStatus.status === 'FAIL'" class="gl-text-status-danger">
-                {{ s__('ComplianceStandardsAdherence|Failed') }}
-              </span>
             </li>
           </ul>
         </template>
