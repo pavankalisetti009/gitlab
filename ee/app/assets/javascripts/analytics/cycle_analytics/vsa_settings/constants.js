@@ -6,23 +6,12 @@ export const NAME_MIN_LENGTH = 3;
 export const i18n = {
   FORM_CREATED: s__("CreateValueStreamForm|'%{name}' Value Stream created"),
   FORM_EDITED: s__("CreateValueStreamForm|'%{name}' Value Stream saved"),
-  SETTINGS_FORM_CREATED: s__(
-    "CreateValueStreamForm|'%{name}' Value Stream has been successfully created.",
-  ),
-  SETTINGS_FORM_UPDATED: s__(
-    "CreateValueStreamForm|'%{name}' Value Stream has been successfully saved.",
-  ),
   RECOVER_HIDDEN_STAGE: s__('CreateValueStreamForm|Recover hidden stage'),
-  RESTORE_HIDDEN_STAGE: s__('CreateValueStreamForm|Restore stage'),
-  RESTORE_DEFAULTS: s__('CreateValueStreamForm|Restore defaults'),
   DEFAULT_STAGE_LABEL: s__('CreateValueStreamForm|Default stage'),
   RECOVER_STAGE_TITLE: s__('CreateValueStreamForm|Default stages'),
   RECOVER_STAGES_VISIBLE: s__('CreateValueStreamForm|All default stages are currently visible'),
   SELECT_START_EVENT: s__('CreateValueStreamForm|Select start event'),
   SELECT_END_EVENT: s__('CreateValueStreamForm|Select end event'),
-  STAGES: s__('CreateValueStreamForm|Value stream stages'),
-  FORM_FIELD_NAME_LABEL: s__('CreateValueStreamForm|Value Stream name'),
-  FORM_FIELD_NAME_PLACEHOLDER: s__('CreateValueStreamForm|Enter value stream name'),
   FORM_FIELD_STAGE_NAME_PLACEHOLDER: s__('CreateValueStreamForm|Enter stage name'),
   FORM_FIELD_START_EVENT: s__('CreateValueStreamForm|Start event'),
   FORM_FIELD_START_EVENT_LABEL: s__('CreateValueStreamForm|Start event label'),
@@ -31,20 +20,14 @@ export const i18n = {
   DEFAULT_FIELD_START_EVENT_LABEL: s__('CreateValueStreamForm|Start event: '),
   DEFAULT_FIELD_END_EVENT_LABEL: s__('CreateValueStreamForm|End event: '),
   BTN_UPDATE_STAGE: s__('CreateValueStreamForm|Update stage'),
-  BTN_ADD_STAGE: s__('CreateValueStreamForm|Add a stage'),
   TITLE_EDIT_STAGE: s__('CreateValueStreamForm|Editing stage'),
   TITLE_ADD_STAGE: s__('CreateValueStreamForm|New stage'),
   BTN_CANCEL: __('Cancel'),
-  STAGE_INDEX: s__('CreateValueStreamForm|Stage %{index}'),
-  HIDDEN_DEFAULT_STAGE: s__('CreateValueStreamForm|%{name} (default)'),
   TEMPLATE_DEFAULT: s__('CreateValueStreamForm|Create from default template'),
   TEMPLATE_BLANK: s__('CreateValueStreamForm|Create from no template'),
   ISSUE_STAGE_END: s__('CreateValueStreamForm|Issue stage end'),
   PLAN_STAGE_START: s__('CreateValueStreamForm|Plan stage start'),
   CODE_STAGE_START: s__('CreateValueStreamForm|Code stage start'),
-  DEFAULT_STAGE_FEATURES: s__(
-    'CreateValueStreamForm|Default stages can only be hidden or re-ordered',
-  ),
   CUSTOM_BADGE_LABEL: __('Custom'),
 };
 
@@ -77,13 +60,14 @@ export const STAGE_SORT_DIRECTION = {
 export const formFieldKeys = [
   'id',
   'name',
+  'hidden',
   'startEventIdentifier',
   'endEventIdentifier',
   'startEventLabelId',
   'endEventLabelId',
 ];
 
-export const editableFormFieldKeys = [...formFieldKeys, 'hidden', 'custom'];
+export const editableFormFieldKeys = [...formFieldKeys, 'custom'];
 
 export const defaultFields = formFieldKeys.reduce((acc, field) => ({ ...acc, [field]: null }), {});
 export const defaultErrors = formFieldKeys.reduce((acc, field) => ({ ...acc, [field]: [] }), {});

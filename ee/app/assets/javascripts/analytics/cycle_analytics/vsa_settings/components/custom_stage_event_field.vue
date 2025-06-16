@@ -64,6 +64,11 @@ export default {
       return this.selectedEvent?.text || this.defaultDropdownText;
     },
   },
+  watch: {
+    initialValue() {
+      this.selectedValue = this.initialValue;
+    },
+  },
   methods: {
     itemSelected(value) {
       this.selectedValue = value;

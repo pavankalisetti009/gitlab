@@ -1,7 +1,6 @@
 <script>
 import { GlButton, GlForm, GlFormInput, GlFormGroup, GlFormRadioGroup } from '@gitlab/ui';
 import { cloneDeep, uniqueId } from 'lodash';
-import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
@@ -18,10 +17,10 @@ import {
   validateStage,
   formatStageDataForSubmission,
   hasDirtyStage,
+  sortStagesByHidden,
 } from '../utils';
 import {
   STAGE_SORT_DIRECTION,
-  i18n,
   defaultCustomStageFields,
   PRESET_OPTIONS,
   PRESET_OPTIONS_DEFAULT,
@@ -41,7 +40,7 @@ const initializeStages = (defaultStages, selectedPreset = PRESET_OPTIONS_DEFAULT
 };
 
 const initializeEditingStages = (stages = []) =>
-  filterStagesByHiddenStatus(cloneDeep(stages), false).map((stage) => ({
+  cloneDeep(stages).map((stage) => ({
     ...stage,
     transitionKey: uniqueId(`stage-${stage.name}-`),
   }));
@@ -75,7 +74,6 @@ export default {
     } = this;
 
     return {
-      hiddenStages: filterStagesByHiddenStatus(initialStages),
       selectedPreset: PRESET_OPTIONS_DEFAULT,
       presetOptions: PRESET_OPTIONS,
       name: initialName,
@@ -105,12 +103,8 @@ export default {
     isDirtyEditing() {
       return (
         this.isEditing &&
-        (this.hasDirtyName(this.name, this.initialData.name) ||
-          hasDirtyStage(this.stages, this.initialData.stages))
+        (this.name !== this.initialData.name || hasDirtyStage(this.stages, this.initialData.stages))
       );
-    },
-    canRestore() {
-      return this.hiddenStages.length || this.isDirtyEditing;
     },
     currentValueStreamStageNames() {
       return this.stages.map(({ name }) => cleanStageName(name));
@@ -119,8 +113,8 @@ export default {
       const id = VSA_SETTINGS_FORM_SUBMISSION_SUCCESS_ALERT_ID;
       const message = sprintf(
         this.isEditing
-          ? this.$options.i18n.SETTINGS_FORM_UPDATED
-          : this.$options.i18n.SETTINGS_FORM_CREATED,
+          ? s__("CreateValueStreamForm|'%{name}' Value Stream has been successfully saved.")
+          : s__("CreateValueStreamForm|'%{name}' Value Stream has been successfully created."),
         { name: this.name },
       );
 
@@ -187,13 +181,10 @@ export default {
       return this.$apollo.mutate(params);
     },
     stageGroupLabel(index) {
-      return sprintf(this.$options.i18n.STAGE_INDEX, { index: index + 1 });
+      return sprintf(s__('CreateValueStreamForm|Stage %{index}'), { index: index + 1 });
     },
     recoverStageTitle(name) {
-      return sprintf(this.$options.i18n.HIDDEN_DEFAULT_STAGE, { name });
-    },
-    hasDirtyName(current, original) {
-      return current.trim().toLowerCase() !== original.trim().toLowerCase();
+      return sprintf(s__('CreateValueStreamForm|%{name} (default)'), { name });
     },
     validateStages() {
       return this.stages.map((stage) =>
@@ -228,24 +219,16 @@ export default {
     fieldErrors(index) {
       return this.stageErrors && this.stageErrors[index] ? this.stageErrors[index] : {};
     },
-    onHide(index) {
-      const target = this.stages[index];
-      this.stages = [...this.stages.filter((_, i) => i !== index)];
-      this.hiddenStages = [...this.hiddenStages, target];
+    setHidden(index, hidden) {
+      const newStages = [...this.stages];
+      newStages[index] = { ...this.stages[index], hidden };
+      this.stages = sortStagesByHidden(newStages);
     },
     onRemove(index) {
       const newErrors = this.stageErrors.filter((_, idx) => idx !== index);
       const newStages = this.stages.filter((_, idx) => idx !== index);
       this.stages = [...newStages];
       this.stageErrors = [...newErrors];
-    },
-    onRestore(hiddenStageIndex) {
-      const target = this.hiddenStages[hiddenStageIndex];
-      this.hiddenStages = [...this.hiddenStages.filter((_, i) => i !== hiddenStageIndex)];
-      this.stages = [
-        ...this.stages,
-        { ...target, transitionKey: uniqueId(`stage-${target.name}-`) },
-      ];
     },
     lastStage() {
       const stages = this.$refs.formStages;
@@ -260,10 +243,10 @@ export default {
     addNewStage() {
       // validate previous stages only and add a new stage
       this.validate();
-      this.stages = [
+      this.stages = sortStagesByHidden([
         ...this.stages,
         { ...defaultCustomStageFields, transitionKey: uniqueId('stage-') },
-      ];
+      ]);
       this.stageErrors = [...this.stageErrors, {}];
     },
     onAddStage() {
@@ -278,7 +261,6 @@ export default {
     },
     resetAllFieldsToDefault() {
       this.stages = initializeStages(this.defaultStages, this.selectedPreset);
-      this.hiddenStages = [];
       this.stageErrors = initializeStageErrors(this.defaultStages, this.selectedPreset);
     },
     handleResetDefaults() {
@@ -301,25 +283,21 @@ export default {
         this.resetAllFieldsToDefault();
       }
     },
-    restoreActionTestId(index) {
-      return `stage-action-restore-${index}`;
-    },
   },
-  i18n,
 };
 </script>
 <template>
   <div class="gl-flex gl-flex-col gl-gap-5">
     <gl-form>
       <crud-component
-        :title="$options.i18n.STAGES"
-        :description="$options.i18n.DEFAULT_STAGE_FEATURES"
+        :title="s__('CreateValueStreamForm|Value stream stages')"
+        :description="s__('CreateValueStreamForm|Default stages can only be hidden or re-ordered')"
         body-class="!gl-mx-0"
       >
-        <template v-if="canRestore" #actions>
+        <template v-if="isDirtyEditing" #actions>
           <transition name="fade">
             <gl-button data-testid="vsa-reset-button" variant="link" @click="handleResetDefaults">{{
-              $options.i18n.RESTORE_DEFAULTS
+              s__('CreateValueStreamForm|Restore defaults')
             }}</gl-button>
           </transition>
         </template>
@@ -328,7 +306,7 @@ export default {
           <gl-form-group
             data-testid="create-value-stream-name"
             label-for="create-value-stream-name"
-            :label="$options.i18n.FORM_FIELD_NAME_LABEL"
+            :label="s__('CreateValueStreamForm|Value Stream name')"
             :invalid-feedback="invalidNameFeedback"
             :state="isValueStreamNameValid"
           >
@@ -338,8 +316,9 @@ export default {
                 v-model.trim="name"
                 name="create-value-stream-name"
                 data-testid="create-value-stream-name-input"
-                :placeholder="$options.i18n.FORM_FIELD_NAME_PLACEHOLDER"
+                :placeholder="s__('CreateValueStreamForm|Enter value stream name')"
                 :state="isValueStreamNameValid"
+                :autofocus="!name"
                 required
               />
             </div>
@@ -358,55 +337,53 @@ export default {
         <div class="gl-border-t gl-pt-5" data-testid="extended-form-fields">
           <transition-group name="stage-list" tag="div">
             <div
-              v-for="(stage, activeStageIndex) in stages"
+              v-for="(stage, index) in stages"
               ref="formStages"
               :key="stage.id || stage.transitionKey"
               class="gl-border-b gl-mb-5 gl-px-5 gl-pb-3"
             >
+              <gl-form-group
+                v-if="stage.hidden"
+                class="gl-mb-0 gl-flex gl-pr-3"
+                label-class="gl-flex gl-float-left"
+                data-testid="vsa-hidden-stage"
+              >
+                <template #label>
+                  <span class="gl-heading-4 gl-mb-0 gl-ml-8">{{
+                    recoverStageTitle(stage.name)
+                  }}</span>
+                </template>
+                <gl-button
+                  variant="link"
+                  data-testid="stage-action-restore"
+                  @click="setHidden(index, false)"
+                  >{{ s__('CreateValueStreamForm|Restore stage') }}</gl-button
+                >
+              </gl-form-group>
               <custom-stage-fields
-                v-if="stage.custom"
-                :stage-label="stageGroupLabel(activeStageIndex)"
+                v-else-if="stage.custom"
+                :stage-label="stageGroupLabel(index)"
                 :stage="stage"
-                :index="activeStageIndex"
+                :index="index"
                 :total-stages="stages.length"
-                :errors="fieldErrors(activeStageIndex)"
+                :errors="fieldErrors(index)"
                 @move="handleMove"
                 @remove="onRemove"
-                @input="onFieldInput(activeStageIndex, $event)"
+                @input="onFieldInput(index, $event)"
               />
               <default-stage-fields
                 v-else
-                :stage-label="stageGroupLabel(activeStageIndex)"
+                :stage-label="stageGroupLabel(index)"
                 :stage="stage"
-                :index="activeStageIndex"
+                :index="index"
                 :total-stages="stages.length"
-                :errors="fieldErrors(activeStageIndex)"
+                :errors="fieldErrors(index)"
                 @move="handleMove"
-                @hide="onHide"
-                @input="validateStageFields(activeStageIndex)"
+                @hide="setHidden(index, true)"
+                @input="validateStageFields(index)"
               />
             </div>
           </transition-group>
-          <div v-if="hiddenStages.length" class="gl-flex gl-flex-col">
-            <gl-form-group
-              v-for="(stage, hiddenStageIndex) in hiddenStages"
-              :key="stage.id"
-              class="gl-border-b gl-flex gl-pb-3 gl-pr-6"
-              label-class="gl-flex gl-gap-5 gl-float-left"
-              data-testid="vsa-hidden-stage"
-            >
-              <template #label>
-                <div class="gl-w-8">&nbsp;</div>
-                <span class="gl-heading-4 gl-mb-0">{{ recoverStageTitle(stage.name) }}</span>
-              </template>
-              <gl-button
-                variant="link"
-                :data-testid="restoreActionTestId(hiddenStageIndex)"
-                @click="onRestore(hiddenStageIndex)"
-                >{{ $options.i18n.RESTORE_HIDDEN_STAGE }}</gl-button
-              >
-            </gl-form-group>
-          </div>
         </div>
 
         <gl-button
@@ -415,7 +392,7 @@ export default {
           data-testid="add-button"
           :disabled="isSubmitting"
           @click="onAddStage"
-          >{{ $options.i18n.BTN_ADD_STAGE }}</gl-button
+          >{{ s__('CreateValueStreamForm|Add a stage') }}</gl-button
         >
       </crud-component>
 
