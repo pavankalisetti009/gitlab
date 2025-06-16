@@ -6,6 +6,7 @@ module SecretsManagement
       include Gitlab::Utils::StrongMemoize
       include SecretsManagerClientHelpers
       include CiPolicies::SecretRefresherHelper
+      include Helpers::UserClientHelper
 
       # MAX_SECRET_SIZE sets the maximum size of a secret value; see note
       # below before removing.
@@ -61,7 +62,7 @@ module SecretsManagement
       # before calling this service. However, the metadata update and policy management will still be handled
       # in this Rails backend service, as they contain essential information for access control.
       def create_secret(project_secret, value)
-        secrets_manager_client.update_kv_secret(
+        user_client.update_kv_secret(
           secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(project_secret.name),
           value,
@@ -74,7 +75,7 @@ module SecretsManagement
           description: project_secret.description
         }.compact
 
-        secrets_manager_client.update_kv_secret_metadata(
+        user_client.update_kv_secret_metadata(
           secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(project_secret.name),
           custom_metadata

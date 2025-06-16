@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_manager, feature_category: :secrets_management do
   let_it_be_with_reload(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, owner_of: project) }
 
   let!(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
@@ -16,9 +16,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
   let(:value) { 'secret-value' }
 
   describe '#execute' do
-    subject(:result) { service.execute(name) }
-
     context 'when secrets manager is active' do
+      subject(:result) { service.execute(name) }
+
       before do
         provision_project_secrets_manager(secrets_manager, user)
       end
@@ -36,15 +36,17 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
           )
         end
 
-        it 'returns success with the secret' do
-          expect(result).to be_success
-          project_secret = result.payload[:project_secret]
-          expect(project_secret).to be_a(SecretsManagement::ProjectSecret)
-          expect(project_secret.name).to eq(name)
-          expect(project_secret.description).to eq(description)
-          expect(project_secret.branch).to eq(branch)
-          expect(project_secret.environment).to eq(environment)
-          expect(project_secret.project).to eq(project)
+        context 'with right permissions' do
+          it 'returns success with the secret metadata' do
+            expect(result).to be_success
+            project_secret = result.payload[:project_secret]
+            expect(project_secret).to be_a(SecretsManagement::ProjectSecret)
+            expect(project_secret.name).to eq(name)
+            expect(project_secret.description).to eq(description)
+            expect(project_secret.branch).to eq(branch)
+            expect(project_secret.environment).to eq(environment)
+            expect(project_secret.project).to eq(project)
+          end
         end
       end
 
@@ -66,7 +68,22 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
       end
     end
 
+    context 'when user is a developer and no permissions' do
+      let(:user) { create(:user, developer_of: project) }
+
+      subject(:result) { service.execute(name) }
+
+      it 'returns an error' do
+        provision_project_secrets_manager(secrets_manager, user)
+        expect { result }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError,
+          "1 error occurred:\n\t* permission denied\n\n")
+      end
+    end
+
     context 'when secrets manager is not active' do
+      subject(:result) { service.execute(name) }
+
       it 'returns an error' do
         expect(result).to be_error
         expect(result.message).to eq('Project secrets manager is not active')

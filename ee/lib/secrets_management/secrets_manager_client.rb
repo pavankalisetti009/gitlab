@@ -30,9 +30,10 @@ module SecretsManagement
       path.read.chomp
     end
 
-    def initialize(jwt:, role: DEFAULT_JWT_ROLE)
+    def initialize(jwt:, role: DEFAULT_JWT_ROLE, auth_mount: GITLAB_JWT_AUTH_PATH)
       @jwt = jwt
       @role = role
+      @auth_mount = auth_mount
       authenticate!
     end
 
@@ -183,7 +184,7 @@ module SecretsManagement
 
     private
 
-    attr_reader :jwt, :auth_token, :role
+    attr_reader :jwt, :auth_token, :role, :auth_mount
 
     def authenticate!
       result = jwt_login
@@ -201,7 +202,7 @@ module SecretsManagement
 
       make_request(
         :post,
-        "auth/#{GITLAB_JWT_AUTH_PATH}/login",
+        "auth/#{auth_mount}/login",
         params
       )
     end

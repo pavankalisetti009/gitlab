@@ -6,7 +6,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
   include SecretsManagement::GitlabSecretsManagerHelpers
 
   let_it_be_with_reload(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
   let(:service) { described_class.new(project, user) }
@@ -26,18 +26,18 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
   let(:branch) { nil }
   let(:environment) { nil }
 
-  subject(:result) do
-    service.execute(
-      name: name,
-      description: description,
-      value: value,
-      branch: branch,
-      environment: environment
-    )
-  end
-
   describe '#execute', :aggregate_failures do
     context 'when the project secrets manager is active' do
+      subject(:result) do
+        service.execute(
+          name: name,
+          description: description,
+          value: value,
+          branch: branch,
+          environment: environment
+        )
+      end
+
       before do
         provision_project_secrets_manager(secrets_manager, user)
 
@@ -368,7 +368,38 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
       end
     end
 
+    context 'when user is a developer and no permissions' do
+      let(:user) { create(:user, developer_of: project) }
+
+      subject(:result) do
+        service.execute(
+          name: name,
+          description: description,
+          value: value,
+          branch: branch,
+          environment: environment
+        )
+      end
+
+      it 'returns an error' do
+        provision_project_secrets_manager(secrets_manager, user)
+        expect { result }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError,
+          "1 error occurred:\n\t* permission denied\n\n")
+      end
+    end
+
     context 'when the project secrets manager is not active' do
+      subject(:result) do
+        service.execute(
+          name: name,
+          description: description,
+          value: value,
+          branch: branch,
+          environment: environment
+        )
+      end
+
       it 'returns an error' do
         expect(result).to be_error
         expect(result.message).to eq('Project secrets manager is not active')

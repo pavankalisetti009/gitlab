@@ -3,12 +3,12 @@
 module SecretsManagement
   module ProjectSecrets
     class ListService < BaseService
-      include SecretsManagerClientHelpers
+      include Helpers::UserClientHelper
 
       def execute
         return inactive_response unless project.secrets_manager&.active?
 
-        secrets = secrets_manager_client.list_secrets(
+        secrets = user_client.list_secrets(
           project.secrets_manager.ci_secrets_mount_path,
           project.secrets_manager.ci_data_path
         ) do |data|
@@ -24,6 +24,8 @@ module SecretsManagement
         end
 
         ServiceResponse.success(payload: { project_secrets: secrets })
+      rescue StandardError => e
+        ServiceResponse.error(message: e.message)
       end
 
       private

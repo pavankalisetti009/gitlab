@@ -32,13 +32,7 @@ module SecretsManagement
     VALID_PRINCIPAL_TYPES = %w[User Role Group MemberRole].freeze
     VALID_RESOURCE_TYPES = %w[Project Group].freeze
     VALID_PERMISSIONS = %w[read update delete create].freeze
-    ROLE_MAPPING = {
-      1 => 'Guest',
-      2 => 'Planner',
-      3 => 'Reporter',
-      4 => 'Developer',
-      5 => 'Maintainer'
-    }.freeze
+    VALID_ROLES = Gitlab::Access.sym_options.freeze
 
     delegate :secrets_manager, to: :project
 
@@ -67,9 +61,9 @@ module SecretsManagement
     end
 
     def validate_role_id
-      return unless principal_type == 'Role' && !ROLE_MAPPING.key?(principal_id)
+      return unless principal_type == 'Role' && VALID_ROLES.values.exclude?(principal_id)
 
-      errors.add(:principal_id, "must be one of: #{ROLE_MAPPING} for Role type")
+      errors.add(:principal_id, "must be one of: #{VALID_ROLES} for Role type")
     end
 
     def valid_resource
@@ -90,7 +84,7 @@ module SecretsManagement
       when 'Group'
         valid_group
       when 'MemberRole'
-        errors.add(:principal_id, "Member Role does not exist") if MemberRole.find_by_id(principal_id).nil?
+        valid_member_role
       end
     end
 
@@ -117,6 +111,17 @@ module SecretsManagement
         project = resource_type.constantize.find_by_id(resource_id)
         unless group_has_access_to_project?(group, project)
           errors.add(:principal_id, "Group is not a descendant of the project")
+        end
+      end
+    end
+
+    def valid_member_role
+      member_role = MemberRole.find_by_id(principal_id)
+      if member_role.nil?
+        errors.add(:principal_id, "Member Role does not exist")
+      else
+        unless project.namespace.self_and_ancestors.where(id: member_role.namespace_id).exists?
+          errors.add(:principal_id, "Member Role does not have access to this project")
         end
       end
     end

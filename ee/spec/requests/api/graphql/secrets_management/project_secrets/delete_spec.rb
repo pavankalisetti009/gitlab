@@ -7,6 +7,7 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
 
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
+  let_it_be(:owner_user) { create(:user) }
   let_it_be(:mutation_name) { :project_secret_delete }
 
   let(:secrets_manager) { create(:project_secrets_manager, project: project) }
@@ -33,11 +34,15 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
 
   subject(:post_mutation) { post_graphql_mutation(mutation, current_user: current_user) }
 
+  before_all do
+    project.add_owner(owner_user)
+  end
+
   before do
-    provision_project_secrets_manager(secrets_manager, current_user)
+    provision_project_secrets_manager(secrets_manager, owner_user)
 
     create_project_secret(
-      **project_secret_attributes.merge(user: current_user, project: project)
+      **project_secret_attributes.merge(user: owner_user, project: project)
     )
   end
 

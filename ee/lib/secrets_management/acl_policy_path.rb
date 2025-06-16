@@ -2,11 +2,7 @@
 
 module SecretsManagement
   class AclPolicyPath
-    # Path of this policy
-    attr_accessor :path
-
-    # Set of capabilities.
-    attr_accessor :capabilities
+    attr_accessor :path, :capabilities, :granted_by, :denied_parameters, :required_parameters, :allowed_parameters
 
     # Individual capabilities
     CAP_CREATE = "create"
@@ -16,10 +12,6 @@ module SecretsManagement
     CAP_DELETE = "delete"
     CAP_LIST = "list"
 
-    # Parameter restrictions.
-    attr_accessor :allowed_parameters
-    attr_accessor :denied_parameters, :required_parameters
-
     def self.build_from_hash(path, object)
       capabilities = Set.new(object["capabilities"]) if object.key?("capabilities")
 
@@ -27,14 +19,16 @@ module SecretsManagement
       ret.allowed_parameters = object["allowed_parameters"] if object.key?("allowed_parameters")
       ret.denied_parameters = object["denied_parameters"] if object.key?("denied_parameters")
       ret.required_parameters = Set.new(object["required_parameters"]) if object.key?("required_parameters")
+      ret.granted_by = object["comment"] if object.key?("comment")
 
       ret
     end
 
-    def initialize(path, capabilities = [])
+    def initialize(path, capabilities = [], user: nil)
       self.path = path
 
       self.capabilities = Set.new(capabilities)
+      self.granted_by = user.id if user.present?
 
       # Most callers will not need to set parameter restrictions.
       self.allowed_parameters = {}
@@ -45,6 +39,7 @@ module SecretsManagement
     def to_openbao_attributes
       ret = {}
       ret["capabilities"] = capabilities unless capabilities.empty?
+      ret["comment"] = granted_by unless granted_by.nil?
 
       ret["allowed_parameters"] = allowed_parameters unless allowed_parameters.empty?
       ret["denied_parameters"] = denied_parameters unless denied_parameters.empty?

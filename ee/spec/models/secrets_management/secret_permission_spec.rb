@@ -96,7 +96,9 @@ RSpec.describe SecretsManagement::SecretPermission, feature_category: :secrets_m
     end
 
     it 'validates role_id when principal_type is Role' do
-      e_msg = 'must be one of: {1=>"Guest", 2=>"Planner", 3=>"Reporter", 4=>"Developer", 5=>"Maintainer"} for Role type'
+      e_msg = 'must be one of: {:guest=>10, :planner=>15, :reporter=>20, ' \
+        ':developer=>30, :maintainer=>40} for Role type'
+
       permission.principal_type = 'Role'
       permission.principal_id = 999 # Invalid role ID
       expect(permission).not_to be_valid
@@ -139,6 +141,33 @@ RSpec.describe SecretsManagement::SecretPermission, feature_category: :secrets_m
           permission.principal_id = test_group.id
           permission.principal_type = 'Group'
           expect(permission).to be_valid
+        end
+      end
+    end
+
+    context 'when principal_type is MemberRole' do
+      let(:member_role) { create(:member_role, namespace: role_namespace) }
+
+      context 'with a valid member role for the group' do
+        let(:role_namespace) { group }
+
+        it 'does not add errors' do
+          permission.principal_id = member_role.id
+          permission.principal_type = 'MemberRole'
+
+          expect(permission.errors).to be_empty
+        end
+      end
+
+      context 'with an invalid member role for the group' do
+        let(:another_group) { create(:group) }
+        let(:role_namespace) { another_group }
+
+        it 'does not add errors' do
+          permission.principal_id = member_role.id
+          permission.principal_type = 'MemberRole'
+          expect(permission).not_to be_valid
+          expect(permission.errors[:principal_id]).to include('Member Role does not have access to this project')
         end
       end
     end

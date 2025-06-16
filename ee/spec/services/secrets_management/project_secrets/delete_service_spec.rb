@@ -6,8 +6,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
   include SecretsManagement::GitlabSecretsManagerHelpers
 
   let_it_be_with_reload(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
-  let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
+  let_it_be(:user) { create(:user, owner_of: project) }
 
   let(:service) { described_class.new(project, user) }
   let(:name) { 'TEST_SECRET' }
@@ -16,10 +15,12 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
   let(:branch) { 'main' }
   let(:environment) { 'prod' }
 
-  subject(:result) { service.execute(name) }
-
   describe '#execute', :aggregate_failures do
     context 'when the project secrets manager is active' do
+      let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
+
+      subject(:result) { service.execute(name) }
+
       before do
         provision_project_secrets_manager(secrets_manager, user)
 
@@ -260,7 +261,57 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
       end
     end
 
+    context 'when user is a developer and no permissions' do
+      let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
+      let(:user) { create(:user, developer_of: project) }
+
+      subject(:result) { service.execute(name) }
+
+      it 'returns an error' do
+        provision_project_secrets_manager(secrets_manager, user)
+        expect { result }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError,
+          "1 error occurred:\n\t* permission denied\n\n")
+      end
+    end
+
+    context "when project's group has proper permissions" do
+      let(:group) { create(:group) }
+      let(:project) { create(:project, group: group) }
+      let(:secrets_manager) { create(:project_secrets_manager, project: project) }
+
+      let(:user) { create(:user, developer_of: project) }
+
+      subject(:result) { service.execute(name) }
+
+      before do
+        provision_project_secrets_manager(secrets_manager, user)
+        update_secret_permission(
+          user: user, project: project, permissions: %w[
+            create update delete read
+          ], principal: { id: group.id, type: 'Group' }
+        )
+
+        # Create a secret to delete
+        create_project_secret(
+          user: user,
+          project: project,
+          name: name,
+          value: value,
+          branch: branch,
+          environment: environment,
+          description: description
+        )
+      end
+
+      it 'returns success' do
+        expect(result).to be_success
+      end
+    end
+
     context 'when the project secrets manager is not active' do
+      subject(:result) { service.execute(name) }
+
       it 'returns an error' do
         expect(result).to be_error
         expect(result.message).to eq('Project secrets manager is not active')
