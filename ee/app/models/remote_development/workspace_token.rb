@@ -11,8 +11,8 @@ module RemoteDevelopment
       format_with_prefix: :workspace_token_prefix,
       routable_token: {
         payload: {
-          o: ->(token_owner_record) { token_owner_record.workspace.project.organization_id.to_s(36) },
-          u: ->(token_owner_record) { token_owner_record.workspace.user_id.to_s(36) }
+          o: ->(token_owner_record) { token_owner_record.workspace.project.organization_id },
+          u: ->(token_owner_record) { token_owner_record.workspace.user_id }
         }
       }
 
