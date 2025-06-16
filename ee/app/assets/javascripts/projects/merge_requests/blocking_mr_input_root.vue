@@ -34,9 +34,6 @@ export default {
       this.setReferences(this.references.concat(untouchedRawReferences));
       this.inputValue = touchedReference;
     },
-    onPendingIssuableRemoveRequest(index) {
-      this.references.splice(index, 1);
-    },
     setReferences(refs) {
       // Remove duplicates but retain order.
       // If you don't do this, Vue will be confused by duplicates and refuse to delete them all.

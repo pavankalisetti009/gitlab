@@ -28,9 +28,11 @@ export default {
     },
   },
   computed: {
+    // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
     statusChecksHeader() {
       return this.$options.i18n.statusChecksHeader;
     },
+    // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
     statusChecksCount() {
       return this.statusChecks.length;
     },
