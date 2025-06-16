@@ -79,6 +79,29 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     end
   end
 
+  describe '#converted_status_in_namespace' do
+    let_it_be(:namespace, reload: true) { create(:group) }
+
+    let(:system_defined_open_status) { described_class.find(1) }
+
+    subject { system_defined_open_status.converted_status_in_namespace(namespace) }
+
+    context 'when the group has converted statuses' do
+      let_it_be(:open_status) { create(:work_item_custom_status, :open, namespace: namespace) }
+      let_it_be(:closed_status) { create(:work_item_custom_status, :closed, namespace: namespace) }
+
+      it 'returns the correct converted status' do
+        is_expected.to eq(open_status)
+      end
+    end
+
+    context 'when the group does not have converted statuses' do
+      it 'returns the system defined status' do
+        is_expected.to eq(system_defined_open_status)
+      end
+    end
+  end
+
   describe '#description' do
     it 'returns nil' do
       expect(status.description).to be_nil

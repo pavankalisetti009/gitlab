@@ -77,6 +77,14 @@ module WorkItems
           lifecycle.has_status_id?(id)
         end
 
+        def converted_status_in_namespace(namespace)
+          return self if namespace.converted_statuses.blank?
+
+          namespace.converted_statuses.find do |s|
+            s.converted_from_system_defined_status_identifier == id
+          end
+        end
+
         def description
           nil
         end

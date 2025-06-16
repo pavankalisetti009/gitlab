@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe List do
-  let_it_be(:board) { create(:board) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :empty_repo, group: group) }
+  let_it_be(:board) { create(:board, project: project) }
 
   describe 'relationships' do
     it { is_expected.to belong_to(:user) }
@@ -65,7 +67,7 @@ RSpec.describe List do
   end
 
   context 'when it is an iteration type' do
-    let(:iteration) { build(:iteration, group: create(:group)) }
+    let(:iteration) { build(:iteration, group: group) }
 
     subject { described_class.new(list_type: :iteration, iteration: iteration, board: board) }
 
@@ -101,6 +103,9 @@ RSpec.describe List do
 
     before do
       stub_licensed_features(board_status_lists: true)
+
+      # Reload group to clear the converted_statuses association
+      group.reload
     end
 
     context 'with system defined status' do
@@ -119,9 +124,34 @@ RSpec.describe List do
         end
       end
 
+      describe '#status' do
+        it 'returns the system defined status' do
+          expect(subject.status).to eq(system_defined_status)
+        end
+      end
+
       describe '#title' do
-        it 'returns the status name' do
+        it 'returns the system defined status name' do
           expect(subject.title).to eq(system_defined_status.name)
+        end
+      end
+
+      context 'when namespace has converted statuses' do
+        let_it_be(:custom_status) do
+          create(:work_item_custom_status, namespace: group,
+            converted_from_system_defined_status_identifier: system_defined_status.id)
+        end
+
+        describe '#status' do
+          it 'returns the custom status' do
+            expect(subject.status).to eq(custom_status)
+          end
+        end
+
+        describe '#title' do
+          it 'returns the custom status name' do
+            expect(subject.title).to eq(custom_status.name)
+          end
         end
       end
     end
@@ -155,8 +185,14 @@ RSpec.describe List do
         end
       end
 
+      describe '#status' do
+        it 'returns the custom status' do
+          expect(subject.status).to eq(custom_status)
+        end
+      end
+
       describe '#title' do
-        it 'returns the status name' do
+        it 'returns the custom status name' do
           expect(subject.title).to eq(custom_status.name)
         end
       end
@@ -201,9 +237,6 @@ RSpec.describe List do
   end
 
   describe '#wip_limits_available?' do
-    let!(:project) { create(:project) }
-    let!(:group) { create(:group) }
-
     let!(:board1) { create(:board, resource_parent: project, name: 'b') }
     let!(:board2) { create(:board, resource_parent: group, name: 'a') }
 
