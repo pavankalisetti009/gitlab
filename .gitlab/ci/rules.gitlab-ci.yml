@@ -530,6 +530,7 @@
 .frontend-code-patterns: &frontend-code-patterns
   - "**/{package.json,yarn.lock}"
   - "**/*.{js,cjs,mjs,vue,graphql}"
+  - ".eslint_todo/*.mjs"
   # match the .rc config files like .browserslistrc, .stylelintrc etc.,
   - "{.,}*rc"
 
