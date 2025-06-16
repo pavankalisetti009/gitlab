@@ -21,7 +21,7 @@ module Security
         private
 
         def generate_job_name_with_index(job_name)
-          "#{job_name.to_s.dasherize}-#{@index}".to_sym
+          :"#{job_name.to_s.dasherize}-#{@index}"
         end
       end
     end

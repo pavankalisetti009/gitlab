@@ -141,7 +141,7 @@ module Gitlab
             # as values stored in dedicated health_status_sum fields
             facet = Issue.health_statuses.key(status) if status
 
-            matching_record.fetch("issues_#{facet}".to_sym, 0)
+            matching_record.fetch(:"issues_#{facet}", 0)
           end
         end
       end

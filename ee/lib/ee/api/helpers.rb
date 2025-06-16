@@ -50,7 +50,7 @@ module EE
 
       def authorize_change_param(subject, *keys)
         keys.each do |key|
-          authorize!("change_#{key}".to_sym, subject) if params.has_key?(key)
+          authorize!(:"change_#{key}", subject) if params.has_key?(key)
         end
       end
 
