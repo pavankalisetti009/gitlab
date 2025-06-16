@@ -9,9 +9,7 @@ module Groups
       idempotent!
       feature_category :user_management
       data_consistency :sticky
-      concurrency_limit -> {
-        100 if Feature.enabled?(:concurrency_limit_group_enterprise_users_associate_worker, Feature.current_request)
-      }
+      concurrency_limit -> { 100 }
 
       def perform(user_id)
         @user = User.find_by_id(user_id)
