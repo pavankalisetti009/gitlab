@@ -71,8 +71,9 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
       let(:add_on_products) { { add_on_name => [] } }
 
       it 'does nothing' do
-        expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(0)
-          .and change { GitlabSubscriptions::AddOnPurchase.count }.by(0)
+        expect { execute_service }
+          .to not_change { GitlabSubscriptions::AddOn.count }
+          .and not_change { GitlabSubscriptions::AddOnPurchase.count }
 
         expect(execute_service).to be_success
         expect(execute_service.message).to be_nil

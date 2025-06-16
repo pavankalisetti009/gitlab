@@ -65,8 +65,8 @@ RSpec.describe WorkItems::LegacyEpics::RelatedEpicLinks::CreateService, feature_
 
       it 'does not create a related epic link and returns an error message when references are empty' do
         expect { execute }
-          .to change { Epic::RelatedEpicLink.count }.by(0)
-          .and change { WorkItems::RelatedWorkItemLink.count }.by(0)
+          .to not_change { Epic::RelatedEpicLink.count }
+          .and not_change { WorkItems::RelatedWorkItemLink.count }
 
         expect(execute[:status]).to eq(:error)
         expect(execute[:message]).to eq(not_found_error)

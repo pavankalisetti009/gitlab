@@ -67,7 +67,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
 
             it 'does not remove the upload registry record' do
               expect { service.execute }
-                .to change(Geo::UploadRegistry, :count).by(0)
+                .to not_change(Geo::UploadRegistry, :count)
                 .and(raise_error(SystemCallError, /Something went wrong/))
             end
           end
@@ -288,7 +288,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
 
             it 'does not remove an upload registry record' do
               expect { service.execute }
-                .to change(Geo::UploadRegistry, :count).by(0)
+                .to not_change(Geo::UploadRegistry, :count)
                 .and(raise_error(SystemCallError, /Something went wrong/))
             end
           end
@@ -511,7 +511,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
 
               it 'does not remove the upload registry record' do
                 expect { service.execute }
-                  .to change(Geo::UploadRegistry, :count).by(0)
+                  .to not_change(Geo::UploadRegistry, :count)
                   .and(raise_error(SystemCallError, /Something went wrong/))
               end
             end

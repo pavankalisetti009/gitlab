@@ -141,8 +141,9 @@ RSpec.describe AppSec::Dast::Profiles::CreateService, :dynamic_analysis,
           end
 
           it 'rollback the transaction' do
-            expect { subject }.to change { ::Dast::ProfileSchedule.count }.by(0)
-                                                                          .and change { ::Dast::Profile.count }.by(0)
+            expect { subject }
+              .to not_change { ::Dast::ProfileSchedule.count }
+              .and not_change { ::Dast::Profile.count }
           end
 
           it 'returns the error service response' do

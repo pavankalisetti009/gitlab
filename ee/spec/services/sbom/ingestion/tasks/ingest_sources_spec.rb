@@ -34,7 +34,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestSources, feature_category: :depende
       end
 
       it 'does not create a new record for the existing source' do
-        expect { ingest_sources }.to change(Sbom::Source, :count).by(0)
+        expect { ingest_sources }.to not_change(Sbom::Source, :count)
       end
 
       it 'sets the source_id for all maps' do

@@ -78,9 +78,9 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
       let(:group_params) { { name: '', path: '' } }
 
       it 'does not create a group' do
-        expect do
-          expect(execute).to be_error
-        end.to change { Group.count }.by(0).and change { ::Onboarding::Progress.count }.by(0)
+        expect { expect(execute).to be_error }
+          .to not_change { Group.count }
+          .and not_change { ::Onboarding::Progress.count }
         expect(execute.payload[:group].errors).not_to be_blank
       end
 

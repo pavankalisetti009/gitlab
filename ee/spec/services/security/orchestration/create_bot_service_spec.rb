@@ -287,7 +287,7 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
       end
 
       it 'reverts the previous actions' do
-        expect { execute_service }.to raise_error(StandardError).and(change { User.count }.by(0))
+        expect { execute_service }.to raise_error(StandardError).and not_change { User.count }
       end
 
       it 'logs process start and the failure' do

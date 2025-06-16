@@ -289,8 +289,9 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
               allow(instance).to receive(:valid?).and_return(false)
             end
 
-            expect { service.execute }.to change { Issue.count }.by(0)
-              .and change { RequirementsManagement::Requirement.count }.by(0)
+            expect { service.execute }
+              .to not_change { Issue.count }
+              .and not_change { RequirementsManagement::Requirement.count }
           end
         end
 
@@ -300,8 +301,9 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
               allow(instance).to receive(:valid?).and_return(false)
             end
 
-            expect { service.execute }.to change { Issue.count }.by(0)
-              .and change { RequirementsManagement::Requirement.count }.by(0)
+            expect { service.execute }
+              .to not_change { Issue.count }
+              .and not_change { RequirementsManagement::Requirement.count }
           end
         end
 
@@ -311,8 +313,9 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
           end
 
           it 'creates a issue work item' do
-            expect { service.execute }.to change { Issue.with_issue_type(:issue).count }.by(1)
-              .and change { RequirementsManagement::Requirement.count }.by(0)
+            expect { service.execute }
+              .to change { Issue.with_issue_type(:issue).count }.by(1)
+              .and not_change { RequirementsManagement::Requirement.count }
           end
         end
       end

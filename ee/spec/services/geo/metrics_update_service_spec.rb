@@ -172,7 +172,7 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
       end
 
       it 'does not create GeoNodeStatus entries' do
-        expect { subject.execute }.to change { GeoNodeStatus.count }.by(0)
+        expect { subject.execute }.to not_change { GeoNodeStatus.count }
       end
     end
 

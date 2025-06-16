@@ -93,11 +93,10 @@ RSpec.describe Vulnerabilities::SecurityFinding::CreateMergeRequestService, '#ex
     end
 
     it 'does not create a new Vulnerability, but creates a new MergeRequest, and a MergeRequestLink' do
-      expect { subject }.to change {
-        project.vulnerabilities.count
-      }.by(0)
-       .and(change(MergeRequest, :count).by(1))
-       .and(change(Vulnerabilities::MergeRequestLink, :count).by(1))
+      expect { subject }
+        .to not_change { project.vulnerabilities.count }
+        .and(change(MergeRequest, :count).by(1))
+        .and(change(Vulnerabilities::MergeRequestLink, :count).by(1))
     end
 
     it 'does not change the vulnerability present_on_default_branch value' do
@@ -146,11 +145,10 @@ RSpec.describe Vulnerabilities::SecurityFinding::CreateMergeRequestService, '#ex
     end
 
     it 'does not create a new Vulnerability, MergeRequest, and MergeRequestLink' do
-      expect { subject }.to change {
-        project.vulnerabilities.count
-      }.by(0)
-       .and(change(Vulnerabilities::MergeRequestLink, :count).by(0))
-       .and(change(MergeRequest, :count).by(0))
+      expect { subject }
+        .to not_change { project.vulnerabilities.count }
+        .and not_change(Vulnerabilities::MergeRequestLink, :count)
+        .and not_change(MergeRequest, :count)
     end
   end
 

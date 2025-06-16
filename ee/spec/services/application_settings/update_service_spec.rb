@@ -22,7 +22,7 @@ RSpec.describe ApplicationSettings::UpdateService do
       let(:user) { nil }
 
       it "does not log an event" do
-        expect { service.execute }.to change { AuditEvent.count }.by(0)
+        expect { service.execute }.to not_change { AuditEvent.count }
       end
     end
   end

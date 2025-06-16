@@ -45,7 +45,7 @@ RSpec.describe ::Ci::DeleteProjectSubscriptionService, feature_category: :contin
         end
 
         it 'does not delete the record' do
-          expect { subject }.to change { ::Ci::Subscriptions::Project.count }.by(0)
+          expect { subject }.to not_change { ::Ci::Subscriptions::Project.count }
         end
       end
 
@@ -60,7 +60,7 @@ RSpec.describe ::Ci::DeleteProjectSubscriptionService, feature_category: :contin
         end
 
         it 'does not delete the record' do
-          expect { subject }.to change { ::Ci::Subscriptions::Project.count }.by(0)
+          expect { subject }.to not_change { ::Ci::Subscriptions::Project.count }
         end
       end
 
@@ -85,7 +85,7 @@ RSpec.describe ::Ci::DeleteProjectSubscriptionService, feature_category: :contin
       end
 
       it 'does not delete the record' do
-        expect { subject }.to change { ::Ci::Subscriptions::Project.count }.by(0)
+        expect { subject }.to not_change { ::Ci::Subscriptions::Project.count }
       end
     end
   end
