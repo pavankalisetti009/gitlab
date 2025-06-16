@@ -317,53 +317,42 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
         let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
 
-        context 'when ai_duo_chat_sub_features_settings feature is disabled' do
-          before do
-            stub_feature_flags(ai_duo_chat_sub_features_settings: false)
-          end
-
-          # it fallback to the chat feature settings
-          it_behaves_like 'performing request to the AI Gateway'
+        let(:model_metadata) do
+          { api_key: model_api_key, endpoint: model_endpoint, name: "mistral", provider: :openai,
+            identifier: model_identifier }
         end
 
-        context 'when ai_duo_chat_sub_features_settings feature is enabled' do
-          let(:model_metadata) do
-            { api_key: model_api_key, endpoint: model_endpoint, name: "mistral", provider: :openai,
-              identifier: model_identifier }
+        it 'fetches the right prompt version' do
+          expect(Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('chat/explain_code', 'mistral')
+                                                                             .and_call_original
+
+          expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
+          expect(request).to eq(response)
+        end
+
+        context 'if feature setting is not set for self_hosted' do
+          let(:unit_primitive) { :fix_code }
+
+          let!(:sub_feature_setting) do
+            create(
+              :ai_feature_setting,
+              feature: :duo_chat_fix_code,
+              provider: :vendored,
+              self_hosted_model: self_hosted_model
+            )
           end
 
-          it 'fetches the right prompt version' do
-            expect(Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('chat/explain_code', 'mistral')
-                                                                               .and_call_original
+          let(:body) do
+            {
+              stream: true,
+              inputs: inputs,
+              prompt_version: "2.0.0"
+            }
+          end
 
+          it 'uses the passed prompt version' do
             expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
             expect(request).to eq(response)
-          end
-
-          context 'and feature setting is not set for self_hosted' do
-            let(:unit_primitive) { :fix_code }
-
-            let!(:sub_feature_setting) do
-              create(
-                :ai_feature_setting,
-                feature: :duo_chat_fix_code,
-                provider: :vendored,
-                self_hosted_model: self_hosted_model
-              )
-            end
-
-            let(:body) do
-              {
-                stream: true,
-                inputs: inputs,
-                prompt_version: "2.0.0"
-              }
-            end
-
-            it 'uses the passed prompt version' do
-              expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
-              expect(request).to eq(response)
-            end
           end
         end
       end

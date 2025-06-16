@@ -78,7 +78,7 @@ module Ai
       def allowed_features
         allowed_features = STABLE_FEATURES
 
-        if Feature.enabled?(:ai_duo_chat_sub_features_settings, :instance) && ::Ai::TestingTermsAcceptance.has_accepted?
+        if ::Ai::TestingTermsAcceptance.has_accepted?
           # FLAGGED_FEATURES are in beta status. We must ensure the GitLab Testing Terms
           # have been accepted by the user in order for them to be used.
           # https://handbook.gitlab.com/handbook/legal/testing-agreement/

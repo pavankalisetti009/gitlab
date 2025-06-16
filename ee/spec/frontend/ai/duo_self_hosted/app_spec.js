@@ -1,7 +1,6 @@
 import { nextTick } from 'vue';
 import { GlButton, GlTab } from '@gitlab/ui';
 import DuoSelfHostedApp from 'ee/ai/duo_self_hosted/app.vue';
-import FeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_table.vue';
 import ExpandedChatFeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { SELF_HOSTED_DUO_TABS, SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
@@ -16,7 +15,6 @@ describe('DuoSelfHostedApp', () => {
         ...props,
       },
       provide: {
-        duoChatSubFeaturesEnabled: false,
         ...provide,
       },
       mocks: {
@@ -27,7 +25,6 @@ describe('DuoSelfHostedApp', () => {
   };
 
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
-  const findFeatureSettingsTable = () => wrapper.findComponent(FeatureSettingsTable);
   const findExpandedChatFeatureSettingsTable = () =>
     wrapper.findComponent(ExpandedChatFeatureSettingsTable);
   const findFeatureSettingsTab = () => wrapper.findByTestId('ai-feature-settings-tab');
@@ -106,23 +103,12 @@ describe('DuoSelfHostedApp', () => {
       expect($router.push).toHaveBeenCalledWith({ name: SELF_HOSTED_ROUTE_NAMES.FEATURES });
     });
 
-    describe('when Duo chat sub-features are disabled', () => {
-      it('renders the feature settings table', () => {
-        createComponent({ props: { tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS } });
-
-        expect(findFeatureSettingsTable().exists()).toBe(true);
+    it('renders the expanded chat sub-features table', () => {
+      createComponent({
+        props: { tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS },
       });
-    });
 
-    describe('when Duo chat sub-features are enabled', () => {
-      it('renders the expanded chat sub-features table', () => {
-        createComponent({
-          props: { tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS },
-          provide: { duoChatSubFeaturesEnabled: true },
-        });
-
-        expect(findExpandedChatFeatureSettingsTable().exists()).toBe(true);
-      });
+      expect(findExpandedChatFeatureSettingsTable().exists()).toBe(true);
     });
   });
 });
