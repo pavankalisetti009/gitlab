@@ -133,7 +133,8 @@ module Gitlab
             response = process_review_with_retry(diffs_and_paths, files_content)
             return if note_not_required?(response)
 
-            parsed_body = ResponseBodyParser.new(response.response_body)
+            parsed_body = ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser
+              .new(response.response_body)
             comments = parsed_body.comments
             @review_description = parsed_body.review_description
 

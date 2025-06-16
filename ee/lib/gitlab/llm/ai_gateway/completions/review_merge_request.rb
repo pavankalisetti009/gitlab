@@ -170,9 +170,7 @@ module Gitlab
               return
             end
 
-            # TODO: move the file to ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser
-            parsed_body = ::Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::ResponseBodyParser
-              .new(response.response_body)
+            parsed_body = ResponseBodyParser.new(response.response_body)
             comments = parsed_body.comments
             @review_description = parsed_body.review_description
 
