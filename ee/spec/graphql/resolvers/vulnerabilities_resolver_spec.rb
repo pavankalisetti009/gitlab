@@ -596,6 +596,65 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
         it_behaves_like "a resolver with proper association preloading"
       end
     end
+
+    describe "ElasticSearch pagination", :elastic do
+      let_it_be(:vulnerabilities_with_owasp) do
+        [
+          { severity: :low, cve: 'CVE-2024-1234' },
+          { severity: :medium, cve: 'CVE-2024-5678' },
+          { severity: :high, cve: 'CVE-2024-9012' },
+          { severity: :critical, cve: 'CVE-2024-3456' }
+        ].map do |attrs|
+          create(:vulnerability, :with_findings, project: project, severity: attrs[:severity])
+            .tap { |v| v.vulnerability_read.update!(identifier_names: [attrs[:cve], 'A01:2021-Broken Access Control']) }
+        end
+      end
+
+      let_it_be(:vulnerability_1) { vulnerabilities_with_owasp[0] }
+      let_it_be(:vulnerability_2) { vulnerabilities_with_owasp[1] }
+      let_it_be(:vulnerability_3) { vulnerabilities_with_owasp[2] }
+      let_it_be(:vulnerability_4) { vulnerabilities_with_owasp[3] }
+
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+        Elastic::ProcessBookkeepingService.track!(
+          *vulnerabilities_with_owasp.map(&:vulnerability_read)
+        )
+        ensure_elasticsearch_index!
+
+        allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
+      end
+
+      shared_examples 'elasticsearch pagination behavior' do |sort_order = nil|
+        it "returns vulnerabilities in #{sort_order || 'default'} order after the cursor" do
+          expect(resolved).to be_a(Search::Elastic::Relation)
+          expect(resolved.after(severity, reference_vulnerability.id).first(2)).to eq(expected_vulnerabilities)
+        end
+      end
+
+      context 'when sorting with pagination using after and first' do
+        context 'with ascending sort and pagination' do
+          let(:params) { { owasp_top_ten_2021: ['A01:2021-Broken Access Control'], sort: :severity_asc } }
+          let(:severity) { Enums::Vulnerability::SEVERITY_LEVELS[:low] }
+          let(:reference_vulnerability) { vulnerability_1 }
+          let(:expected_vulnerabilities) { [vulnerability_2, vulnerability_3] }
+          let(:extra_context) { { current_arguments: { first: 2, after: Base64.urlsafe_encode64([severity, reference_vulnerability.id].to_json) } } }
+
+          it_behaves_like 'elasticsearch pagination behavior', 'ascending severity'
+        end
+
+        context 'with descending sort and pagination' do
+          let(:params) { { owasp_top_ten_2021: ['A01:2021-Broken Access Control'], sort: :severity_desc } }
+          let(:severity) { Enums::Vulnerability::SEVERITY_LEVELS[:critical] }
+          let(:reference_vulnerability) { vulnerability_4 }
+          let(:expected_vulnerabilities) { [vulnerability_3, vulnerability_2] }
+          let(:extra_context) { { current_arguments: { first: 2, after: Base64.urlsafe_encode64([severity, reference_vulnerability.id].to_json) } } }
+
+          it_behaves_like 'elasticsearch pagination behavior', 'descending severity'
+        end
+      end
+    end
   end
 
   describe 'event tracking' do
