@@ -22,7 +22,7 @@ export default {
     upstream: {
       default: {},
     },
-    registryPath: {
+    registriesPath: {
       default: '',
     },
     upstreamPath: {
@@ -65,7 +65,7 @@ export default {
           id: this.upstream.id,
         });
 
-        visitUrlWithAlerts(this.registryPath, [
+        visitUrlWithAlerts(this.registriesPath, [
           {
             message: s__('VirtualRegistry|Maven upstream has been deleted.'),
           },

@@ -136,8 +136,8 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
       json_data = ::Gitlab::Json.parse(helper.edit_upstream_template_data(maven_upstream))
       expect(json_data).to include(
         'upstream' => maven_upstream_attributes,
-        'registryPath' =>
-          group_virtual_registries_maven_registry_path(maven_upstream.group, maven_upstream.registries.first),
+        'registriesPath' =>
+          group_virtual_registries_path(maven_upstream.group),
         'upstreamPath' =>
           group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
       )
