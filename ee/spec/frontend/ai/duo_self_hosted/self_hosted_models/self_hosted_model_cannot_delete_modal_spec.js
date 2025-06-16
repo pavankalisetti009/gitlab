@@ -1,4 +1,4 @@
-import { GlModal, GlButton, GlSprintf } from '@gitlab/ui';
+import { GlModal, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 
 import CannotDeleteModal from 'ee/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_cannot_delete_modal.vue';
@@ -9,6 +9,7 @@ jest.mock('~/lib/utils/url_utility');
 
 const MOCK_MODAL_ID = 'cannot-delete-mock-model-modal';
 const mockModel = mockSelfHostedModelsList[0]; // with feature settings
+
 describe('CannotDeleteModal', () => {
   let wrapper;
   const $router = {
@@ -21,7 +22,7 @@ describe('CannotDeleteModal', () => {
         id: MOCK_MODAL_ID,
         model: mockModel,
       },
-      stubs: { GlModal, GlButton, GlSprintf },
+      stubs: { GlModal, GlSprintf },
       mocks: {
         $router,
       },
@@ -29,7 +30,6 @@ describe('CannotDeleteModal', () => {
   };
 
   const findModal = () => wrapper.findComponent(GlModal);
-  const findButton = () => wrapper.findComponent(GlButton);
 
   beforeEach(() => {
     createComponent();
@@ -50,7 +50,11 @@ describe('CannotDeleteModal', () => {
   });
 
   it('renders primary button', () => {
-    expect(findButton().text()).toBe('View AI-native features');
+    expect(findModal().props('actionPrimary').text).toBe('View AI-native features');
+  });
+
+  it('renders a cancel button', () => {
+    expect(findModal().props('actionCancel').text).toBe('Cancel');
   });
 
   it('navigates to AI features tab on primary button click', () => {

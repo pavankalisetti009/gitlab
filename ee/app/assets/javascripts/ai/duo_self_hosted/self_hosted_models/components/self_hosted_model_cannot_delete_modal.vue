@@ -1,6 +1,6 @@
 <script>
 import { GlModal, GlSprintf } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, __ } from '~/locale';
 import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 
 export default {
@@ -34,6 +34,11 @@ export default {
         },
       };
     },
+    modalActionSecondary() {
+      return {
+        text: __('Cancel'),
+      };
+    },
   },
   methods: {
     navigateToFeaturesTab() {
@@ -49,6 +54,7 @@ export default {
     size="sm"
     :no-focus-on-show="true"
     :action-primary="modalActionPrimary"
+    :action-cancel="modalActionSecondary"
     @primary="navigateToFeaturesTab"
   >
     <p>
