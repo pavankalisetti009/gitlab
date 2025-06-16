@@ -6,6 +6,14 @@ module EE
       module StandardContext
         extend ::Gitlab::Utils::Override
 
+        override :get_plan_name
+        def get_plan_name(namespace)
+          # namespace&.actual_plan_name always returns 'default' when not on gitlab.com
+          return namespace&.actual_plan_name if ::Gitlab.com?
+
+          ::License.current&.plan || super
+        end
+
         override :gitlab_team_member?
         def gitlab_team_member?(user_id)
           return unless ::Gitlab.com?

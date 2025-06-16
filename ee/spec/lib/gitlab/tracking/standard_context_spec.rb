@@ -7,7 +7,9 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
 
   describe '#to_context' do
     let(:user) { build_stubbed(:user) }
+    let(:namespace) { create(:namespace) }
     let(:instance_id) { SecureRandom.uuid }
+    let(:json_data) { snowplow_context.to_json[:data] }
 
     before do
       allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(instance_id)
@@ -18,23 +20,19 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
     end
 
     it 'includes the instance_id' do
-      expect(snowplow_context.to_json[:data][:instance_id]).to eq(instance_id)
+      expect(json_data[:instance_id]).to eq(instance_id)
     end
 
-    context 'on .com' do
-      before do
-        allow(Gitlab).to receive(:com?).and_return(true)
-      end
-
+    context 'on .com', :saas do
       it 'sets the realm to saas' do
-        expect(snowplow_context.to_json[:data][:realm]).to eq('saas')
+        expect(json_data[:realm]).to eq('saas')
       end
 
       context 'when user is nil' do
         let(:user) { nil }
 
         it 'sets is_gitlab_team_member to nil' do
-          expect(snowplow_context.to_json[:data][:is_gitlab_team_member]).to eq(nil)
+          expect(json_data[:is_gitlab_team_member]).to eq(nil)
         end
       end
 
@@ -44,7 +42,7 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
         end
 
         it 'sets is_gitlab_team_member to true' do
-          expect(snowplow_context.to_json[:data][:is_gitlab_team_member]).to eq(true)
+          expect(json_data[:is_gitlab_team_member]).to eq(true)
         end
       end
 
@@ -54,26 +52,62 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
         end
 
         it 'sets is_gitlab_team_member to false' do
-          expect(snowplow_context.to_json[:data][:is_gitlab_team_member]).to eq(false)
+          expect(json_data[:is_gitlab_team_member]).to eq(false)
         end
       end
 
       it 'hold the original user id value' do
-        expect(snowplow_context.to_json[:data][:user_id]).to eq(user.id)
+        expect(json_data[:user_id]).to eq(user.id)
+      end
+
+      describe 'plan' do
+        context 'when no namespace sent' do
+          it 'returns license plan' do
+            expect(json_data[:plan]).to eq(nil)
+          end
+        end
+
+        context 'when namespace sent' do
+          subject { described_class.new(user: user, namespace: namespace) }
+
+          it 'returns namespace\'s plan' do
+            expect(json_data[:plan]).to eq(namespace.actual_plan_name)
+          end
+        end
       end
     end
 
-    context 'on self-managed' do
-      before do
-        allow(Gitlab).to receive(:com?).and_return(false)
-      end
-
+    context 'when on self-managed' do
       it 'sets the realm to self-managed' do
-        expect(snowplow_context.to_json[:data][:realm]).to eq('self-managed')
+        expect(json_data[:realm]).to eq('self-managed')
       end
 
       it 'hashes user_id' do
-        expect(snowplow_context.to_json[:data][:user_id]).to eq(Gitlab::CryptoHelper.sha256(user.id))
+        expect(json_data[:user_id]).to eq(Gitlab::CryptoHelper.sha256(user.id))
+      end
+
+      describe 'plan' do
+        context 'when instance has a license' do
+          it 'returns license\'s plan' do
+            create(:license, plan: ::License::PREMIUM_PLAN)
+
+            expect(json_data[:plan]).to eq(::License::PREMIUM_PLAN)
+          end
+        end
+
+        context 'when instance has default license' do
+          it 'returns starter plan' do
+            expect(json_data[:plan]).to eq(::License::STARTER_PLAN)
+          end
+        end
+
+        context 'when instance has no license' do
+          it 'returns free plan' do
+            ::License.delete_all
+
+            expect(json_data[:plan]).to eq('free')
+          end
+        end
       end
     end
   end
