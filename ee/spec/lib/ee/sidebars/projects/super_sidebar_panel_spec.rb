@@ -42,16 +42,16 @@ RSpec.describe Sidebars::Projects::SuperSidebarPanel, feature_category: :navigat
   before do
     # Give the user access to everything and enable every feature
     allow(Ability).to receive(:allowed?).and_return(true)
-    allow(project).to receive(:licensed_feature_available?).and_return true
+    # Iterations are only available in non-personal projects
+    allow(project).to receive_messages(
+      licensed_feature_available?: true, personal?: false, product_analytics_enabled?: true
+    )
     # Needed to show Container Registry items
     allow(::Gitlab.config.registry).to receive(:enabled).and_return(true)
     # Needed to show Google Artifactory Registry items
     stub_saas_features(google_cloud_support: true)
-    # Iterations are only available in non-personal projects
-    allow(project).to receive(:personal?).and_return(false)
     allow(::ServiceDesk).to receive(:supported?).and_return(true)
     project.update!(service_desk_enabled: true)
-    allow(project).to receive(:product_analytics_enabled?).and_return(true)
     stub_feature_flags(hide_incident_management_features: false)
   end
 
