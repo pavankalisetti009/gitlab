@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Growth', :requires_admin, only: { subdomain: :staging }, product_group: :acquisition do
+  RSpec.describe 'Growth', :requires_admin, only: { subdomain: :staging },
+    feature_flag: { name: 'ultimate_trial_single_form', scope: :user }, product_group: :acquisition do
     describe 'SaaS trials' do
       let(:api_client) { Runtime::API::Client.as_admin }
       let(:user) do
@@ -16,6 +17,7 @@ module QA
       end
 
       before do
+        Runtime::Feature.disable(:ultimate_trial_single_form, user: user)
         Flow::Login.sign_in(as: user)
         group_for_trial.visit!
       end
