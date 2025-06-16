@@ -25,7 +25,6 @@ module Ai
       attr_reader :user, :command, :source, :note, :discussion_id, :input
 
       def execute
-        validate_cloud_connector_token!
         validate_service_account!
         validate_source!
         validate_code_position! if command == 'test' && note.is_a?(DiffNote)
@@ -55,15 +54,6 @@ module Ai
         )
       end
 
-      def service_name
-        :amazon_q_integration
-      end
-
-      def cloud_connector_token
-        ::CloudConnector::AvailableServices.find_by_name(service_name).access_token
-      end
-      strong_memoize_attr :cloud_connector_token
-
       def handle_response(response)
         return if response.success?
 
@@ -85,12 +75,6 @@ module Ai
 
       def validate_source!
         Ai::AmazonQValidateCommandSourceService.new(command: command, source: source).validate
-      end
-
-      def validate_cloud_connector_token!
-        return if cloud_connector_token.present?
-
-        raise CloudConnectorTokenError, "Unable to generate valid cloud connector token for #{service_name}"
       end
 
       def validate_code_position!

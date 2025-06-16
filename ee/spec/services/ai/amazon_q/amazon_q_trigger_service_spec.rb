@@ -27,13 +27,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
     let(:source) { 'issue' }
     let!(:note) { create(:note_on_issue, noteable: issue, project: project) }
     let(:service) { described_class.new(user: user, command: command, source: source, note: note) }
-    let(:service_name) { :amazon_q_integration }
-    let(:service_data) do
-      instance_double(CloudConnector::BaseAvailableServiceData,
-        name: service_name,
-        access_token: SecureRandom.hex)
-    end
-
+    let(:unit_primitive) { :amazon_q_integration }
     let(:expected_payload) { anything }
     let(:client) { instance_double(Gitlab::Llm::QAi::Client, create_event: response) }
 
@@ -41,7 +35,6 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
 
     before do
       allow(Gitlab::Llm::QAi::Client).to receive(:new).with(user).and_return(client)
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service_data)
       allow(SystemNoteService).to receive(:amazon_q_called).and_call_original
     end
 
@@ -202,22 +195,6 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
 
           expect { execution }.not_to raise_error
         end
-      end
-    end
-
-    context 'when unable to generate a cloud connector access token' do
-      let(:service_data) do
-        instance_double(CloudConnector::BaseAvailableServiceData,
-          name: service_name,
-          access_token: nil)
-      end
-
-      it 'raises CloudConnectorTokenError wth expected message' do
-        expect do
-          service.send(:validate_cloud_connector_token!)
-        end.to raise_error(described_class::CloudConnectorTokenError).with_message(
-          'Unable to generate valid cloud connector token for amazon_q_integration'
-        )
       end
     end
 
