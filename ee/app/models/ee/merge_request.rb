@@ -441,7 +441,12 @@ module EE
 
     override :use_merge_base_pipeline_for_comparison?
     def use_merge_base_pipeline_for_comparison?(service_class)
-      !!USES_MERGE_BASE_PIPELINE_FOR_COMPARISON[service_class]&.call(project)
+      proc = USES_MERGE_BASE_PIPELINE_FOR_COMPARISON[service_class]
+      if proc
+        proc.call(project)
+      else
+        super
+      end
     end
 
     def synchronize_approval_rules_from_target_project
