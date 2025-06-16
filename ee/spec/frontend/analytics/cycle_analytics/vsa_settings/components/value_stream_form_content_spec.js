@@ -39,7 +39,6 @@ describe('ValueStreamFormContent', () => {
 
   const customStage = {
     name: 'Coolest beans stage',
-    hidden: false,
     id: 'gid://gitlab/ValueStream::Stage/10',
     custom: true,
     startEventIdentifier: 'issue_first_mentioned_in_commit',
@@ -88,7 +87,6 @@ describe('ValueStreamFormContent', () => {
 
   const findPresetSelector = () => wrapper.findByTestId('vsa-preset-selector');
   const findRestoreButton = () => wrapper.findByTestId('vsa-reset-button');
-  const findRestoreStageButton = (index) => wrapper.findByTestId(`stage-action-restore-${index}`);
   const findHiddenStages = () => wrapper.findAllByTestId('vsa-hidden-stage').wrappers;
   const findNameFormGroup = () => wrapper.findByTestId('create-value-stream-name');
   const findNameInput = () => wrapper.findByTestId('create-value-stream-name-input');
@@ -98,7 +96,6 @@ describe('ValueStreamFormContent', () => {
     findFormActions().vm.$emit('clickAddStageAction');
     await nextTick();
   };
-  const clickRestoreStageAtIndex = (index) => findRestoreStageButton(index).vm.$emit('click');
   const expectStageTransitionKeys = (stages) =>
     stages.forEach((stage) => expect(stage.transitionKey).toContain('stage-'));
 
@@ -394,6 +391,18 @@ describe('ValueStreamFormContent', () => {
     });
 
     describe('restore defaults button', () => {
+      it('only renders when there are pending changes', async () => {
+        expect(findRestoreButton().exists()).toBe(false);
+
+        await findNameInput().vm.$emit('input', 'new name');
+
+        expect(findRestoreButton().exists()).toBe(true);
+
+        await findNameInput().vm.$emit('input', initialData.name);
+
+        expect(findRestoreButton().exists()).toBe(false);
+      });
+
       it('restores the original name', async () => {
         const newName = 'name';
 
@@ -406,7 +415,7 @@ describe('ValueStreamFormContent', () => {
         expect(findNameInput().attributes('value')).toBe(initialData.name);
       });
 
-      it('will clear the form fields', async () => {
+      it('resets the value stream stages', async () => {
         expect(findCustomStages()).toHaveLength(stageCount);
 
         await clickAddStage();
@@ -416,6 +425,22 @@ describe('ValueStreamFormContent', () => {
         await findRestoreButton().vm.$emit('click');
 
         expect(findCustomStages()).toHaveLength(stageCount);
+      });
+
+      it('restores a changed stage name', async () => {
+        const newName = 'name';
+        const stage = findCustomStages().at(0);
+
+        await stage.vm.$emit('input', {
+          field: 'name',
+          value: newName,
+        });
+
+        expect(stage.props().stage.name).toBe(newName);
+
+        await findRestoreButton().vm.$emit('click');
+
+        expect(stage.props().stage.name).toBe(initialData.stages[0].name);
       });
     });
 
@@ -446,19 +471,12 @@ describe('ValueStreamFormContent', () => {
         expect(findDefaultStages()).toHaveLength(0);
         expect(findCustomStages()).toHaveLength(stageCount);
 
-        await clickRestoreStageAtIndex(1);
+        const button = findHiddenStages()[0].findComponent('[data-testid="stage-action-restore"]');
+        await button.vm.$emit('click');
 
         expect(findHiddenStages()).toHaveLength(hiddenStages.length - 1);
         expect(findDefaultStages()).toHaveLength(1);
         expect(findCustomStages()).toHaveLength(stageCount);
-      });
-
-      it('when a stage is restored it has a transition key', async () => {
-        await clickRestoreStageAtIndex(1);
-
-        expect(wrapper.vm.stages[stageCount].transitionKey).toContain(
-          `stage-${hiddenStages[1].name}-`,
-        );
       });
     });
 

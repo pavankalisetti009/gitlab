@@ -96,4 +96,19 @@ describe('CustomStageEventField', () => {
       });
     });
   });
+
+  describe('initialValue prop', () => {
+    beforeEach(() => {
+      wrapper = createComponent({ initialValue: eventsList[0].value });
+    });
+
+    it('sets the selected listbox item', () => {
+      expect(findCollapsibleListbox().props().selected).toBe(eventsList[0].value);
+    });
+
+    it('updates the selected listbox item when the prop changes', async () => {
+      await wrapper.setProps({ initialValue: eventsList[1].value });
+      expect(findCollapsibleListbox().props().selected).toBe(eventsList[1].value);
+    });
+  });
 });

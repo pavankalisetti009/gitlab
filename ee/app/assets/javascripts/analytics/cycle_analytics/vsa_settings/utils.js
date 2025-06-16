@@ -148,7 +148,7 @@ export const validateValueStreamName = ({ name = '' }) => {
  * @returns {Array} the array prepared to be submitted for persistence
  */
 export const formatStageDataForSubmission = (stages, isEditing = false) => {
-  return stages.map(({ id = null, custom = false, name, ...rest }) => {
+  return stages.map(({ id = null, custom = false, name, hidden, ...rest }) => {
     let editProps = { custom };
     if (isEditing) {
       // We can add a new stage to the value stream when either creating, or editing
@@ -161,13 +161,13 @@ export const formatStageDataForSubmission = (stages, isEditing = false) => {
 
     // Stage event IDs are `lower_snake_case` for both the frontend and backend
     // but we require `UPPER_SNAKE_CASE` with GraphQL.
-    editableFields.startEventIdentifier = editableFields.startEventIdentifier.toUpperCase();
-    editableFields.endEventIdentifier = editableFields.endEventIdentifier.toUpperCase();
+    editableFields.startEventIdentifier = editableFields.startEventIdentifier?.toUpperCase();
+    editableFields.endEventIdentifier = editableFields.endEventIdentifier?.toUpperCase();
 
     // While we work on https://gitlab.com/gitlab-org/gitlab/-/issues/321959 we should not allow editing default
     return custom
       ? { ...editableFields, ...editProps, name }
-      : { ...editProps, name, custom: false };
+      : { ...editProps, name, hidden, custom: false };
   });
 };
 
@@ -243,6 +243,15 @@ const prepareDefaultStage = (defaultStageConfig, { name, ...rest }) => {
  */
 export const prepareStageErrors = (stages, errors) => stages.map((_, index) => errors[index] || {});
 
+/**
+ * Sorts the inputs array so that any hidden stages are at the end of the list
+ *
+ * @param {Array} stages - an array of value stream stages
+ * @returns {Array} The sorted array of value stream stages
+ */
+export const sortStagesByHidden = (stages) =>
+  [...stages].sort(({ hidden: a = false }, { hidden: b = false }) => Number(a) - Number(b));
+
 const generateHiddenDefaultStages = (defaultStageConfig, stageNames) => {
   // We use the stage name to check for any default stages that might be hidden
   // Currently the default stages can't be renamed
@@ -265,7 +274,7 @@ export const generateInitialStageData = (defaultStageConfig, selectedValueStream
     selectedValueStreamStages.map((s) => s.name.toLowerCase()),
   );
   const combinedStages = [...selectedValueStreamStages, ...hiddenDefaultStages];
-  return combinedStages.map(
+  const formattedStages = combinedStages.map(
     ({ startEventIdentifier = null, endEventIdentifier = null, custom = false, ...rest }) => {
       const stageData =
         custom && startEventIdentifier && endEventIdentifier
@@ -281,4 +290,6 @@ export const generateInitialStageData = (defaultStageConfig, selectedValueStream
       return {};
     },
   );
+
+  return sortStagesByHidden(formattedStages);
 };

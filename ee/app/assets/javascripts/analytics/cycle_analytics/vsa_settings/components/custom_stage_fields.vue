@@ -121,7 +121,7 @@ export default {
           <!-- eslint-disable vue/no-mutating-props -->
           <gl-form-input
             v-model.trim="stage.name"
-            autofocus
+            :autofocus="!stage.name"
             :name="`custom-stage-name-${index}`"
             :placeholder="$options.i18n.FORM_FIELD_STAGE_NAME_PLACEHOLDER"
             :state="isFieldValid('name')"

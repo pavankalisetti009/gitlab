@@ -213,7 +213,9 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
         click_edit_button
 
-        click_action_button('restore', 0)
+        within(find_by_testid('vsa-hidden-stage', match: :first)) do
+          click_button _('Restore stage')
+        end
 
         click_save_value_stream_button
         wait_for_requests

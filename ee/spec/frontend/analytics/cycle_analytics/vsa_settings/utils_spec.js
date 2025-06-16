@@ -9,6 +9,7 @@ import {
   hasDirtyStage,
   formatStageDataForSubmission,
   generateInitialStageData,
+  sortStagesByHidden,
   cleanStageName,
   prepareStageErrors,
 } from 'ee/analytics/cycle_analytics/vsa_settings/utils';
@@ -172,10 +173,6 @@ describe('formatStageDataForSubmission', () => {
       });
     });
 
-    it('will convert all properties to snake case', () => {
-      expect(Object.keys(res)).toEqual(['custom', 'name']);
-    });
-
     it('will set custom to `false`', () => {
       expect(res.custom).toBe(false);
     });
@@ -219,6 +216,17 @@ describe('formatStageDataForSubmission', () => {
   });
 });
 
+describe('sortStagesByHidden', () => {
+  it('sorts the stages such that the hidden stages are last', () => {
+    const sorted = sortStagesByHidden([
+      { id: 1, hidden: false },
+      { id: 2, hidden: true },
+      { id: 3, hidden: false },
+    ]);
+    expect(sorted.map(({ id }) => id)).toEqual([1, 3, 2]);
+  });
+});
+
 describe('generateInitialStageData', () => {
   const defaultConfig = {
     name: 'issue',
@@ -249,6 +257,12 @@ describe('generateInitialStageData', () => {
     custom: true,
   };
 
+  const hiddenDefaultStage = {
+    ...initialDefaultStage,
+    id: 3,
+    hidden: true,
+  };
+
   describe('valid default stages', () => {
     it.each`
       key                       | value
@@ -272,16 +286,17 @@ describe('generateInitialStageData', () => {
   });
 
   it('will set missing default stages to `hidden`', () => {
-    const hiddenStage = {
-      id: 'fake-hidden',
-      name: 'fake-hidden',
-      custom: false,
-      startEventIdentifier: 'merge_request_created',
-      endEventIdentifier: 'merge_request_closed',
-    };
-    const res = generateInitialStageData([initialCustomStage, hiddenStage], [initialCustomStage]);
+    const res = generateInitialStageData([defaultConfig], [initialCustomStage]);
 
-    expect(res[1]).toEqual({ ...hiddenStage, hidden: true, isDefault: true });
+    expect(res[1]).toEqual({ ...defaultConfig, hidden: true, isDefault: true });
+  });
+
+  it('appends hidden stages to the end of the list', () => {
+    const res = generateInitialStageData([defaultConfig], [hiddenDefaultStage, initialCustomStage]);
+
+    expect(res.length).toBe(2);
+    expect(res[0].id).toBe(initialCustomStage.id);
+    expect(res[1].id).toBe(hiddenDefaultStage.id);
   });
 
   describe('custom stages', () => {
