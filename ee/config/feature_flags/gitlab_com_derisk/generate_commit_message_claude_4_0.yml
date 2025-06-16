@@ -1,9 +1,0 @@
----
-name: generate_commit_message_claude_4_0
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/545695
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183311
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/548149
-milestone: '18.1'
-group: group::code creation
-type: gitlab_com_derisk
-default_enabled: false
