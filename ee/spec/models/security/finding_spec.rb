@@ -236,6 +236,19 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     it { is_expected.to eq(expected_findings) }
   end
 
+  describe '.latest_scan' do
+    let(:scan_old) { create(:security_scan, :latest_successful, scan_type: :dast, latest: false) }
+    let(:finding_old) { create(:security_finding, :with_finding_data, scan: scan_old) }
+    let(:expected_findings) { [finding_1, finding_2] }
+
+    subject { described_class.latest_scan }
+
+    it do
+      expect(described_class.by_report_types(:dast)).to contain_exactly(finding_old, finding_2)
+      is_expected.to match_array(expected_findings)
+    end
+  end
+
   describe '.false_positives' do
     let_it_be(:finding_without_data) { create(:security_finding) }
     let_it_be(:finding_1) { create(:security_finding, :with_finding_data, false_positive: true) }
