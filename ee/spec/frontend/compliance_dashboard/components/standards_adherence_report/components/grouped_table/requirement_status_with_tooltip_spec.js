@@ -19,6 +19,7 @@ describe('RequirementStatusWithTooltip', () => {
     { id: 'control-1', name: 'Control One' },
     { id: 'control-2', name: 'Control Two' },
     { id: 'control-3', name: 'Control Three' },
+    { id: 'control-4', name: 'Control Four' },
   ];
 
   const mockStatus = {
@@ -169,6 +170,11 @@ describe('RequirementStatusWithTooltip', () => {
     it('displays external control names when provided', () => {
       expect(wrapper.text()).toContain('External Control Name');
     });
+
+    it('displays fallback label for external controls without names', () => {
+      // control-4 is external with null externalControlName
+      expect(wrapper.text()).toContain(EXTERNAL_CONTROL_LABEL);
+    });
   });
 
   describe('tooltip content when pendingCount > 0', () => {
@@ -189,26 +195,37 @@ describe('RequirementStatusWithTooltip', () => {
     });
   });
 
-  describe('tooltip content when completedControls exist', () => {
+  describe('tooltip content sections', () => {
     beforeEach(async () => {
       createComponent();
       await waitForPromises();
       await nextTick();
     });
 
-    it('displays completed controls section', () => {
-      const completedHeader = findHeaderByText('Completed controls');
-      expect(completedHeader.exists()).toBe(true);
+    it('displays failed controls section', () => {
+      const failedHeader = findHeaderByText('Failed controls');
+      expect(failedHeader.exists()).toBe(true);
     });
 
-    it('correctly list control statuses', () => {
+    it('displays pending controls section', () => {
+      const pendingHeader = findHeaderByText('Pending controls');
+      expect(pendingHeader.exists()).toBe(true);
+    });
+
+    it('displays passed controls section', () => {
+      const passedHeader = findHeaderByText('Passed controls');
+      expect(passedHeader.exists()).toBe(true);
+    });
+
+    it('correctly lists control statuses in order', () => {
       expect(findControlList()).toStrictEqual([
+        'Failed controls:',
+        'External External',
         'Pending controls:',
         'Control One',
         'External Control Name External',
-        'Completed controls:',
-        'Control Three Passed',
-        'External External Failed',
+        'Passed controls:',
+        'Control Three',
       ]);
     });
   });
@@ -258,26 +275,99 @@ describe('RequirementStatusWithTooltip', () => {
     });
   });
 
-  describe('when no completed controls exist', () => {
+  describe('when no failed controls exist', () => {
     beforeEach(async () => {
-      const statusWithNoCompleted = {
+      const statusWithNoFailed = {
         ...mockStatus,
+        failCount: 0,
         project: {
           complianceControlStatus: {
             nodes: mockStatus.project.complianceControlStatus.nodes.filter(
-              (node) => node.status === 'PENDING',
+              (node) => node.status !== 'FAIL',
             ),
           },
         },
       };
-      createComponent({ status: statusWithNoCompleted });
+      createComponent({ status: statusWithNoFailed });
       await waitForPromises();
       await nextTick();
     });
 
-    it('does not display completed controls section', () => {
-      const completedHeader = findHeaderByText('Completed controls');
-      expect(completedHeader).toBeUndefined();
+    it('does not display failed controls section', () => {
+      const failedHeader = findHeaderByText('Failed controls');
+      expect(failedHeader).toBeUndefined();
+    });
+  });
+
+  describe('when no passed controls exist', () => {
+    beforeEach(async () => {
+      const statusWithNoPassed = {
+        ...mockStatus,
+        passCount: 0,
+        project: {
+          complianceControlStatus: {
+            nodes: mockStatus.project.complianceControlStatus.nodes.filter(
+              (node) => node.status !== 'PASS',
+            ),
+          },
+        },
+      };
+      createComponent({ status: statusWithNoPassed });
+      await waitForPromises();
+      await nextTick();
+    });
+
+    it('does not display passed controls section', () => {
+      const passedHeader = findHeaderByText('Passed controls');
+      expect(passedHeader).toBeUndefined();
+    });
+  });
+
+  describe('when all controls have same status', () => {
+    it('shows only failed controls section when all are failed', async () => {
+      const allFailedStatus = {
+        ...mockStatus,
+        pendingCount: 0,
+        passCount: 0,
+        failCount: 2,
+        project: {
+          complianceControlStatus: {
+            nodes: [
+              {
+                id: 'status-1',
+                status: 'FAIL',
+                complianceRequirementsControl: {
+                  id: 'control-1',
+                  name: 'control-1',
+                  controlType: 'internal',
+                },
+              },
+              {
+                id: 'status-2',
+                status: 'FAIL',
+                complianceRequirementsControl: {
+                  id: 'control-2',
+                  name: 'control-2',
+                  controlType: 'internal',
+                },
+              },
+            ],
+          },
+        },
+        complianceRequirement: {
+          complianceRequirementsControls: {
+            nodes: [{ id: 'control-1' }, { id: 'control-2' }],
+          },
+        },
+      };
+
+      createComponent({ status: allFailedStatus });
+      await waitForPromises();
+      await nextTick();
+
+      expect(findHeaderByText('Failed controls').exists()).toBe(true);
+      expect(findHeaderByText('Pending controls')).toBeUndefined();
+      expect(findHeaderByText('Passed controls')).toBeUndefined();
     });
   });
 });
