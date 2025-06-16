@@ -8,14 +8,13 @@ module QA
           class Elasticsearch < QA::Scenario::Test::Instance::All
             tags :elasticsearch
 
-            # TODO: Enable job when https://gitlab.com/gitlab-org/gitlab/-/issues/541380 is completed
-            # pipeline_mappings test_on_omnibus: %w[elasticsearch],
-            #  test_on_omnibus_nightly: %w[
-            #    integration-elasticsearch-compatibility-version-7
-            #    integration-elasticsearch-compatibility-version-8
-            #    integration-opensearch-compatibility-version-1
-            #    integration-opensearch-compatibility-version-2
-            #  ]
+            pipeline_mappings test_on_omnibus: %w[elasticsearch],
+              test_on_omnibus_nightly: %w[
+                integration-elasticsearch-compatibility-version-7
+                integration-elasticsearch-compatibility-version-8
+                integration-opensearch-compatibility-version-1
+                integration-opensearch-compatibility-version-2
+              ]
           end
         end
       end
