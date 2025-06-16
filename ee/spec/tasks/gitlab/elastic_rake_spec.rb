@@ -3,8 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_category: :global_search do
+  let(:logger) { Logger.new(StringIO.new) }
+
   before do
     Rake.application.rake_require 'tasks/gitlab/elastic'
+
+    allow(Search::RakeTask::Elastic).to receive(:stdout_logger).and_return(logger)
   end
 
   shared_examples 'rake task executor task' do |task|
@@ -83,6 +87,20 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
 
   describe 'gitlab:elastic:list_pending_migrations' do
     include_examples 'rake task executor task', :list_pending_migrations
+
+    context 'with elasticsearch_indexing disabled' do
+      subject(:task) { run_rake_task('gitlab:elastic:list_pending_migrations') }
+
+      before do
+        stub_ee_application_setting(elasticsearch_indexing: false)
+      end
+
+      it 'outputs warning' do
+        expect(logger).to receive(:warn).once.with(/Setting `elasticsearch_indexing` is disabled/)
+
+        task
+      end
+    end
   end
 
   describe 'gitlab:elastic:estimate_cluster_size' do
@@ -106,14 +124,7 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
   end
 
   describe 'gitlab:elastic:index' do
-    let(:logger) { Logger.new(StringIO.new) }
-
     subject(:task) { run_rake_task('gitlab:elastic:index') }
-
-    before do
-      allow(Search::RakeTask::Elastic).to receive(:stdout_logger).and_return(logger)
-      allow(logger).to receive(:info)
-    end
 
     context 'with elasticsearch_indexing is disabled' do
       it 'does not enable `elasticsearch_indexing`' do
