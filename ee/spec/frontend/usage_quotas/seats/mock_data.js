@@ -1,6 +1,3 @@
-const subscriptionStartDate = '2023-03-16';
-const subscriptionEndDate = '2024-03-16';
-
 export const mockMemberDetails = [
   {
     id: 173,
@@ -99,6 +96,11 @@ export const mockTableItems = [
   },
 ];
 
+const subscriptionStartDate = '2023-03-16';
+const subscriptionEndDate = '2024-03-16';
+
+// Generates mock data for @client `ee/usage_quotas/seats/graphql/get_gitlab_subscription.query.graphql`
+// as defined in `ee/usage_quotas/seats/resolvers.js`
 export const getMockSubscriptionData = ({
   id = 1,
   endDate = subscriptionEndDate,

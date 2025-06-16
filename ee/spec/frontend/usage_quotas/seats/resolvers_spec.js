@@ -2,6 +2,11 @@ import { resolvers } from 'ee/usage_quotas/seats/resolvers';
 import Api from 'ee/api';
 import * as GroupsApi from 'ee/api/groups_api';
 import { mockMemberDetails } from 'ee_jest/usage_quotas/seats/mock_data';
+import {
+  HEADER_TOTAL_ENTRIES,
+  HEADER_PAGE_NUMBER,
+  HEADER_ITEMS_PER_PAGE,
+} from 'ee/usage_quotas/seats/constants';
 
 jest.mock('ee/api', () => {
   return {
@@ -117,6 +122,51 @@ describe('resolvers', () => {
               subscription_end_date: '2024-12-31',
             },
           });
+        });
+      });
+    });
+
+    describe('billableMembers', () => {
+      const mockBillableMembersResponse = {
+        data: [
+          { id: 1, name: 'Paul Slaughter' },
+          { id: 2, name: 'Lukas Eipert' },
+        ],
+        headers: {
+          [HEADER_TOTAL_ENTRIES]: '100',
+          [HEADER_PAGE_NUMBER]: '2',
+          [HEADER_ITEMS_PER_PAGE]: '20',
+        },
+      };
+
+      let billableMembersResult;
+
+      beforeEach(async () => {
+        GroupsApi.fetchBillableGroupMembersList.mockResolvedValueOnce(mockBillableMembersResponse);
+
+        billableMembersResult = await resolvers.Query.billableMembers(null, {
+          namespaceId: 0,
+          page: 1,
+          search: 'test search',
+          sort: 'test sort',
+        });
+      });
+
+      it('calls fetchBillableGroupMembersList with the correct arguments', () => {
+        expect(GroupsApi.fetchBillableGroupMembersList).toHaveBeenCalledTimes(1);
+        expect(GroupsApi.fetchBillableGroupMembersList).toHaveBeenCalledWith(0, {
+          page: 1,
+          search: 'test search',
+          sort: 'test sort',
+        });
+      });
+
+      it('returns parsed data', () => {
+        expect(billableMembersResult).toEqual({
+          total: 100,
+          page: 2,
+          perPage: 20,
+          members: mockBillableMembersResponse.data,
         });
       });
     });
