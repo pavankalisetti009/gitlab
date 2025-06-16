@@ -23068,7 +23068,8 @@ CREATE TABLE sentry_issues (
     id bigint NOT NULL,
     issue_id bigint NOT NULL,
     sentry_issue_identifier bigint NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_7c50ed861c CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE sentry_issues_id_seq
