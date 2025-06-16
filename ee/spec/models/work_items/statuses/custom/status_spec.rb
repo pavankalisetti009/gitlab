@@ -16,6 +16,18 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
   end
 
   describe 'scopes' do
+    describe '.in_namespace' do
+      let_it_be(:open_status) { create(:work_item_custom_status, :open, namespace: group) }
+      let_it_be(:closed_status) { create(:work_item_custom_status, :closed, namespace: group) }
+
+      let_it_be(:other_group) { create(:group) }
+      let_it_be(:other_open_status) { create(:work_item_custom_status, :open, namespace: other_group) }
+
+      it 'returns statuses for a specific namespace' do
+        expect(described_class.in_namespace(group)).to contain_exactly(open_status, closed_status)
+      end
+    end
+
     describe '.ordered_for_lifecycle' do
       let_it_be(:open_status) { create(:work_item_custom_status, :open, namespace: group) }
       let_it_be(:closed_status) { create(:work_item_custom_status, :closed, namespace: group) }
@@ -136,18 +148,18 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
   end
 
   describe '.find_by_namespace_and_name' do
-    context 'when custom status exists' do
-      let!(:custom_status) { create(:work_item_custom_status, name: 'In progress', namespace: group) }
+    let_it_be(:custom_status) { create(:work_item_custom_status, name: 'In progress', namespace: group) }
 
-      it 'finds a custom status by namespace and name' do
-        expect(described_class.find_by_namespace_and_name(group.id, 'In progress')).to eq(custom_status)
-      end
+    it 'finds a custom status by namespace and name' do
+      expect(described_class.find_by_namespace_and_name(group, 'In progress')).to eq(custom_status)
     end
 
-    context 'when custom status does not exist' do
-      it 'returns nil' do
-        expect(described_class.find_by_namespace_and_name(group.id, "In progress")).to be_nil
-      end
+    it 'ignores leading and trailing whitespace and matches case insensitively' do
+      expect(described_class.find_by_namespace_and_name(group, ' in Progress ')).to eq(custom_status)
+    end
+
+    it 'returns nil when name does not match' do
+      expect(described_class.find_by_namespace_and_name(group, 'other status')).to be_nil
     end
   end
 

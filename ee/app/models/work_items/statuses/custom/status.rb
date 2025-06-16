@@ -25,6 +25,7 @@ module WorkItems
           through: :lifecycle_statuses,
           class_name: 'WorkItems::Statuses::Custom::Lifecycle'
 
+        scope :in_namespace, ->(namespace) { where(namespace: namespace) }
         scope :ordered_for_lifecycle, ->(lifecycle_id) {
           joins(:lifecycle_statuses)
             .where(work_item_custom_lifecycle_statuses: { lifecycle_id: lifecycle_id })
@@ -46,8 +47,8 @@ module WorkItems
         # because you won't be able to change the namespace through the API.
         validate :validate_statuses_per_namespace_limit, on: :create
 
-        def self.find_by_namespace_and_name(namespace_id, name)
-          find_by(namespace_id: namespace_id, name: name)
+        def self.find_by_namespace_and_name(namespace, name)
+          in_namespace(namespace).find_by('TRIM(BOTH FROM LOWER(name)) = TRIM(BOTH FROM LOWER(?))', name)
         end
 
         def icon_name

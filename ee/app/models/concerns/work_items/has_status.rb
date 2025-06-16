@@ -9,10 +9,46 @@ module WorkItems
         foreign_key: 'work_item_id', inverse_of: :work_item
 
       scope :with_status, ->(status) {
-        # TODO: add case when custom status is introduced
-        # See https://gitlab.com/gitlab-org/gitlab/-/issues/520311
-        joins(:current_status).where(work_item_current_statuses: { system_defined_status_id: status.id })
+        relation = left_joins(:current_status)
+
+        if status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
+          relation = with_system_defined_status(status)
+        else
+          relation = relation.where(work_item_current_statuses: { custom_status_id: status.id })
+
+          if status.converted_from_system_defined_status_identifier.present?
+            system_defined_status = WorkItems::Statuses::SystemDefined::Status.find(
+              status.converted_from_system_defined_status_identifier
+            )
+
+            relation = relation.or(with_system_defined_status(system_defined_status))
+          end
+        end
+
+        relation
       }
+
+      scope :with_system_defined_status, ->(status) {
+        next none unless status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
+
+        relation = left_joins(:current_status)
+                     .where(work_item_current_statuses: { system_defined_status_id: status.id })
+
+        lifecycle = WorkItems::Statuses::SystemDefined::Lifecycle.all.first
+
+        case status.id
+        when lifecycle.default_open_status_id
+          relation = relation.or(opened.without_current_status)
+        when lifecycle.default_duplicate_status_id
+          relation = relation.or(closed.without_current_status.where.not(duplicated_to_id: nil))
+        when lifecycle.default_closed_status_id
+          relation = relation.or(closed.without_current_status.where(duplicated_to_id: nil))
+        end
+
+        relation
+      }
+
+      scope :without_current_status, -> { left_joins(:current_status).where(work_item_current_statuses: { id: nil }) }
 
       def status_with_fallback
         if current_status.nil?
