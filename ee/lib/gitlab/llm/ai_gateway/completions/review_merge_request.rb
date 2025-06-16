@@ -11,6 +11,7 @@ module Gitlab
 
           DRAFT_NOTES_COUNT_LIMIT = 50
           PRIORITY_THRESHOLD = 3
+          LINE_MATCH_THRESHOLD = 3
           UNIT_PRIMITIVE = 'review_merge_request'
           CUSTOM_INSTRUCTIONS_FILE_PATH = '.gitlab/duo/mr-review-instructions.yaml'
           COMMENT_METRICS = %i[
@@ -20,6 +21,7 @@ module Gitlab
             p3_comments
             comments_with_valid_path
             comments_with_valid_line
+            comments_line_matched_by_content
             created_draft_notes
           ].freeze
 
@@ -226,13 +228,13 @@ module Gitlab
 
           def process_comments(comments, diff_file, diff_refs)
             comments.each do |comment|
-              line = match_comment_to_diff_line(comment, diff_file.diff_lines)
+              diff_line = match_comment_to_diff_line(comment, diff_file.diff_lines)
 
-              next unless line.present?
+              next unless diff_line.present?
 
               @comment_metrics[:comments_with_valid_line] += 1
 
-              draft_note_params = build_draft_note_params(comment.content, diff_file, line, diff_refs)
+              draft_note_params = build_draft_note_params(comment.content, diff_file, diff_line, diff_refs)
               next unless draft_note_params.present?
 
               @draft_notes_by_priority << [comment.priority, draft_note_params]
@@ -240,10 +242,62 @@ module Gitlab
           end
 
           def match_comment_to_diff_line(comment, diff_lines)
+            diff_line = find_line_by_line_numbers(comment, diff_lines)
+            from_lines = comment.from&.lines(chomp: true)
+
+            # We only want to match if we have enough context
+            if from_lines.present? && from_lines.count >= LINE_MATCH_THRESHOLD
+              # We can skip the full search if the diff_line already matches the first context line
+              return diff_line if diff_line&.text(prefix: false) == from_lines.first
+
+              return find_line_by_content(from_lines, diff_lines) || diff_line
+            end
+
+            diff_line
+          end
+
+          def find_line_by_content(from_lines, diff_lines)
+            # We need to ignore removed lines as the match needs to be consecutive lines.
+            # Also, removed line cannot have code suggestions so we don't want to match it to removed lines.
+            actual_diff_lines = diff_lines.reject(&:removed?)
+            found_line = nil
+
+            # We look for the matching lines by iterating through diff_lines and comparing entire sequences of lines
+            # from <from> lines.
+            actual_diff_lines.each_with_index do |start_line, start_index|
+              # If we don't have enough lines left to match, we should skip the rest of the lines and exit early.
+              break if start_index + from_lines.count > actual_diff_lines.count
+              next unless start_line.text(prefix: false) == from_lines.first
+
+              # Try to match the entire sequence
+              sequence_matches = true
+
+              from_lines.each_with_index do |from_line, from_index|
+                actual_line = actual_diff_lines[start_index + from_index]
+
+                # If any line doesn't match, the sequence fails
+                unless actual_line.text(prefix: false) == from_line
+                  sequence_matches = false
+                  break
+                end
+              end
+
+              next unless sequence_matches
+
+              # If we found a matching sequence
+              @comment_metrics[:comments_line_matched_by_content] += 1
+              found_line = start_line
+              break
+            end
+
+            # Return the found line or nil if no match
+            found_line
+          end
+
+          def find_line_by_line_numbers(comment, diff_lines)
             # NOTE: LLM may return invalid line numbers sometimes so we should double check the existence of the line.
             #   Also, LLM sometimes sets old_line to the same value as new_line when it should be empty
             #   for some unknown reason. We should fallback to new_line to find a match as much as possible.
-            #
 
             # First try to match both old_line and new_line for precision
             exact_match = diff_lines.find do |line|
@@ -359,17 +413,10 @@ module Gitlab
             return unless duo_code_review_logging_enabled?
 
             Gitlab::AppLogger.info(
-              message: "LLM response comments metrics",
-              event: "review_merge_request_llm_response_comments",
-              unit_primitive: UNIT_PRIMITIVE,
-              merge_request_id: merge_request&.id,
-              total_comments: @comment_metrics[:total_comments],
-              p1_comments: @comment_metrics[:p1_comments],
-              p2_comments: @comment_metrics[:p2_comments],
-              p3_comments: @comment_metrics[:p3_comments],
-              comments_with_valid_path: @comment_metrics[:comments_with_valid_path],
-              comments_with_valid_line: @comment_metrics[:comments_with_valid_line],
-              created_draft_notes: @comment_metrics[:created_draft_notes]
+              { message: "LLM response comments metrics",
+                event: "review_merge_request_llm_response_comments",
+                unit_primitive: UNIT_PRIMITIVE,
+                merge_request_id: merge_request&.id }.merge(@comment_metrics)
             )
           end
 
