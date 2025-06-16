@@ -142,47 +142,82 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
     end
   end
 
-  describe '.any_model_selected_for_completion?' do
-    let(:namespaces) { create_list(:group, 3) }
-    let(:namespace0_id) { namespaces[0].id }
-    let(:namespace1_id) { namespaces[1].id }
-    let(:namespace2_id) { namespaces[2].id }
+  describe '.with_non_default_code_completions' do
+    let_it_be(:namespaces) { create_list(:group, 3) }
+    let_it_be(:namespace0_id) { namespaces[0].id }
+    let_it_be(:namespace1_id) { namespaces[1].id }
+    let_it_be(:namespace2_id) { namespaces[2].id }
 
-    before do
+    let_it_be(:feature_setting1) do
       create(
         :ai_namespace_feature_setting,
         feature: :duo_chat,
         offered_model_ref: 'claude-3-7-sonnet-20250219',
-        namespace: namespaces[0]
+        namespace_id: namespace0_id
       )
+    end
 
+    let_it_be(:feature_setting2) do
       create(
         :ai_namespace_feature_setting,
         feature: :code_completions,
         offered_model_ref: 'claude_sonnet_3_7',
-        namespace: namespaces[1]
+        namespace_id: namespace1_id
       )
+    end
 
+    let_it_be(:feature_setting3) do
       create(
         :ai_namespace_feature_setting,
         feature: :duo_chat,
         offered_model_ref: 'claude-3-7-sonnet-20250219',
-        namespace: namespaces[1]
+        namespace_id: namespace1_id
       )
     end
 
-    subject { described_class.any_model_selected_for_completion?(namespace_ids) }
-
-    context 'when one of the namespaces has model for completion' do
-      let(:namespace_ids) { [namespace0_id, namespace1_id] }
-
-      it { is_expected.to be(true) }
+    let_it_be(:feature_setting4) do
+      create(
+        :ai_namespace_feature_setting,
+        feature: :code_completions,
+        offered_model_ref: '',
+        namespace_id: namespace2_id
+      )
     end
 
-    context 'when none of the namespaces has model completion' do
-      let(:namespace_ids) { [namespace0_id, namespace2_id] }
+    subject(:result) do
+      described_class.with_non_default_code_completions(namespace_ids)
+    end
 
-      it { is_expected.to be(false) }
+    context 'when one of the namespaces has a model selected for code completion' do
+      let(:namespace_ids) { [namespace0_id, namespace1_id] }
+
+      it 'returns only the records with non-default code completion settings' do
+        expect(result).to contain_exactly(feature_setting2)
+      end
+    end
+
+    context 'when none of the records that has a model selected for code completion' do
+      let(:namespace_ids) { [namespace0_id] }
+
+      it 'returns an empty array' do
+        expect(result).to be_empty
+      end
+    end
+
+    context 'when a namespace has the default model selected' do
+      let(:namespace_ids) { [namespace2_id] }
+
+      it 'returns an empty array' do
+        expect(result).to be_empty
+      end
+    end
+
+    context 'when mixing default and non-default model selections' do
+      let(:namespace_ids) { [namespace1_id, namespace2_id] }
+
+      it 'returns only the records with non-default code completion settings' do
+        expect(result).to contain_exactly(feature_setting2)
+      end
     end
   end
 

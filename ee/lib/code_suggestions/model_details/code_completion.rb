@@ -47,9 +47,17 @@ module CodeSuggestions
       end
 
       def any_user_groups_with_model_selected_for_completion?
-        Ai::ModelSelection::NamespaceFeatureSetting.any_model_selected_for_completion?(
-          current_user.duo_available_namespace_ids
-        )
+        namespace_feature_settings_with_model_selected_for_completion =
+          Ai::ModelSelection::NamespaceFeatureSetting.with_non_default_code_completions(
+            current_user.duo_available_namespace_ids
+          )
+
+        namespace_feature_settings_with_model_selected_for_completion.any? do |namespace_feature_setting|
+          Feature.enabled?(
+            :ai_model_switching,
+            Group.actor_from_id(namespace_feature_setting.namespace_id)
+          )
+        end
       end
 
       private
