@@ -135,7 +135,9 @@ module Resolvers
         location: { findings: :latest_finding_pipeline },
         links: { findings: :finding_links },
         external_issue_links: :external_issue_links,
-        primary_identifier: { findings: :primary_identifier }
+        primary_identifier: { findings: :primary_identifier },
+        initial_detected_pipeline: { findings: :initial_finding_pipeline },
+        latest_detected_pipeline: { findings: :latest_finding_pipeline }
       }
 
       return base_associations if using_elasticsearch # With ES we directly return Vulnerability records

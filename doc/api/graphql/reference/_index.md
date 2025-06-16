@@ -25017,6 +25017,8 @@ Represents a vulnerability. The connection type is countable.
 | <a id="countablevulnerabilityhasremediations"></a>`hasRemediations` | [`Boolean`](#boolean) | Indicates whether there is a remediation available for the vulnerability. |
 | <a id="countablevulnerabilityid"></a>`id` | [`ID!`](#id) | GraphQL ID of the vulnerability. |
 | <a id="countablevulnerabilityidentifiers"></a>`identifiers` | [`[VulnerabilityIdentifier!]!`](#vulnerabilityidentifier) | Identifiers of the vulnerability. |
+| <a id="countablevulnerabilityinitialdetectedpipeline"></a>`initialDetectedPipeline` {{< icon name="warning-solid" >}} | [`Pipeline`](#pipeline) | **Introduced** in GitLab 18.2. **Status**: Experiment. Pipeline where the vulnerability was first detected. |
+| <a id="countablevulnerabilitylatestdetectedpipeline"></a>`latestDetectedPipeline` {{< icon name="warning-solid" >}} | [`Pipeline`](#pipeline) | **Introduced** in GitLab 18.2. **Status**: Experiment. Pipeline where the vulnerability was last detected. |
 | <a id="countablevulnerabilitylinks"></a>`links` | [`[VulnerabilityLink!]!`](#vulnerabilitylink) | List of links associated with the vulnerability. |
 | <a id="countablevulnerabilitylocation"></a>`location` | [`VulnerabilityLocation`](#vulnerabilitylocation) | Location metadata for the vulnerability. Its fields depend on the type of security scan that found the vulnerability. |
 | <a id="countablevulnerabilitymergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request that fixes the vulnerability. |
@@ -41727,6 +41729,8 @@ Represents a vulnerability.
 | <a id="vulnerabilityhasremediations"></a>`hasRemediations` | [`Boolean`](#boolean) | Indicates whether there is a remediation available for the vulnerability. |
 | <a id="vulnerabilityid"></a>`id` | [`ID!`](#id) | GraphQL ID of the vulnerability. |
 | <a id="vulnerabilityidentifiers"></a>`identifiers` | [`[VulnerabilityIdentifier!]!`](#vulnerabilityidentifier) | Identifiers of the vulnerability. |
+| <a id="vulnerabilityinitialdetectedpipeline"></a>`initialDetectedPipeline` {{< icon name="warning-solid" >}} | [`Pipeline`](#pipeline) | **Introduced** in GitLab 18.2. **Status**: Experiment. Pipeline where the vulnerability was first detected. |
+| <a id="vulnerabilitylatestdetectedpipeline"></a>`latestDetectedPipeline` {{< icon name="warning-solid" >}} | [`Pipeline`](#pipeline) | **Introduced** in GitLab 18.2. **Status**: Experiment. Pipeline where the vulnerability was last detected. |
 | <a id="vulnerabilitylinks"></a>`links` | [`[VulnerabilityLink!]!`](#vulnerabilitylink) | List of links associated with the vulnerability. |
 | <a id="vulnerabilitylocation"></a>`location` | [`VulnerabilityLocation`](#vulnerabilitylocation) | Location metadata for the vulnerability. Its fields depend on the type of security scan that found the vulnerability. |
 | <a id="vulnerabilitymergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request that fixes the vulnerability. |
