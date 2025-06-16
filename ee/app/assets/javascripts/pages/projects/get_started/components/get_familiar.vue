@@ -82,7 +82,9 @@ export default {
           <gl-button
             data-testid="walkthrough-link"
             category="tertiary"
-            href="https://gitlab.navattic.com/gitlab-premium-with-duo"
+            target="_blank"
+            href="https://gitlab.navattic.com/gitlab-with-duo-get-started-page"
+            :aria-label="s__('LearnGitLab|Try the walkthrough in a new tab')"
             @click="trackTryWalkthroughClick"
           >
             {{ s__('LearnGitLab|Try walkthrough') }}
