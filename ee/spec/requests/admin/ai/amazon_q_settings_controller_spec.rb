@@ -49,13 +49,10 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
     end
   end
 
-  shared_examples 'success when there is a valid identity provider payload' do
+  shared_examples 'success when there is a valid token' do
     before do
-      service = ::CloudConnector::SelfManaged::AvailableServiceData.new(:amazon_q_integration, 1.day.ago, [])
-
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_call_original
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:amazon_q_integration)
-        .and_return(service)
+      allow(::CloudConnector::Tokens).to receive(:get).with(unit_primitive: :amazon_q_integration)
+                                                      .and_return(active_token.token)
     end
 
     it 'renders the frontend entrypoint with view model' do
@@ -83,15 +80,19 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
 
     it_behaves_like 'returns 404 when feature is unavailable'
 
-    it_behaves_like 'success when there is a valid identity provider payload'
+    it_behaves_like 'success when there is a valid token'
 
     context 'when Amazon Q is ready' do
       let(:amazon_q_ready) { true }
 
-      it_behaves_like 'success when there is a valid identity provider payload'
+      it_behaves_like 'success when there is a valid token'
     end
 
-    context 'when there is a problem retreiving the identity provider payload' do
+    context 'when there is a problem retrieving the token' do
+      before do
+        allow(::CloudConnector::Tokens).to receive(:get).with(unit_primitive: :amazon_q_integration).and_return(nil)
+      end
+
       it 'renders alert and empty identityProviderPayload' do
         perform_request
 

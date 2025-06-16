@@ -13,7 +13,7 @@ module Ai
       private
 
       def cloud_connector_token_result
-        token = ::CloudConnector::AvailableServices.find_by_name(:amazon_q_integration)&.access_token
+        token = ::CloudConnector::Tokens.get(unit_primitive: :amazon_q_integration)
         return ::Gitlab::Fp::Result.ok(token) if token
 
         ::Gitlab::Fp::Result.err({
