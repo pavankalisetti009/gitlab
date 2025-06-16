@@ -55704,9 +55704,6 @@ msgstr ""
 msgid "SecurityOrchestration|Automate %{strongStart}vulnerability management%{strongEnd} workflows."
 msgstr ""
 
-msgid "SecurityOrchestration|Automatically configures scans to run only where needed for MR approval policies"
-msgstr ""
-
 msgid "SecurityOrchestration|Automatically selected runners"
 msgstr ""
 
@@ -55767,7 +55764,7 @@ msgstr ""
 msgid "SecurityOrchestration|Configuration"
 msgstr ""
 
-msgid "SecurityOrchestration|Configure exactly when and where scans should run"
+msgid "SecurityOrchestration|Configuration type"
 msgstr ""
 
 msgid "SecurityOrchestration|Configure policies to control whether individual users or service accounts can use %{linkStart}skip_ci%{linkEnd} to skip pipelines."
@@ -55791,7 +55788,7 @@ msgstr ""
 msgid "SecurityOrchestration|Create security policy"
 msgstr ""
 
-msgid "SecurityOrchestration|Custom configuration"
+msgid "SecurityOrchestration|Custom"
 msgstr ""
 
 msgid "SecurityOrchestration|Custom roles"
@@ -56067,9 +56064,6 @@ msgstr ""
 msgid "SecurityOrchestration|Merge request pipeline"
 msgstr ""
 
-msgid "SecurityOrchestration|Merge request security"
-msgstr ""
-
 msgid "SecurityOrchestration|Never"
 msgstr ""
 
@@ -56276,6 +56270,9 @@ msgstr ""
 msgid "SecurityOrchestration|Scan execution"
 msgstr ""
 
+msgid "SecurityOrchestration|Scan execution configuration"
+msgstr ""
+
 msgid "SecurityOrchestration|Scan execution policies can only be created by project owners."
 msgstr ""
 
@@ -56286,9 +56283,6 @@ msgid "SecurityOrchestration|Scan execution policies using `custom` scan action 
 msgstr ""
 
 msgid "SecurityOrchestration|Scan execution policy"
-msgstr ""
-
-msgid "SecurityOrchestration|Scan execution strategy"
 msgstr ""
 
 msgid "SecurityOrchestration|Scan will automatically choose a runner to run on because there are no tags exist on runners. You can %{linkStart}create a new tag in settings%{linkEnd}."
@@ -56439,6 +56433,9 @@ msgid "SecurityOrchestration|Summary"
 msgstr ""
 
 msgid "SecurityOrchestration|Summary of syntax changes:"
+msgstr ""
+
+msgid "SecurityOrchestration|Template"
 msgstr ""
 
 msgid "SecurityOrchestration|The compliance pipeline will continue to override the new pipeline execution policy until it is removed from the compliance framework configuration."
