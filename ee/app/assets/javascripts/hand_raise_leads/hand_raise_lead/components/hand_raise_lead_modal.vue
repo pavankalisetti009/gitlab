@@ -96,6 +96,7 @@ export default {
         },
       };
     },
+    // eslint-disable-next-line vue/no-unused-properties -- used by Tracking mixin for analytics tracking
     tracking() {
       return {
         label: PQL_HAND_RAISE_MODAL_TRACKING_LABEL,

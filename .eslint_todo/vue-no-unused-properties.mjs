@@ -278,8 +278,6 @@ export default {
     'ee/app/assets/javascripts/external_issues_show/components/note.vue',
     'ee/app/assets/javascripts/geo_sites/components/header/geo_site_last_updated.vue',
     'ee/app/assets/javascripts/groups/settings/compliance_frameworks/components/form_modal.vue',
-    'ee/app/assets/javascripts/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue',
-    'ee/app/assets/javascripts/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_modal.vue',
     'ee/app/assets/javascripts/invite_members/components/invite_modal_base.vue',
     'ee/app/assets/javascripts/oncall_schedules/components/add_edit_schedule_form.vue',
     'ee/app/assets/javascripts/oncall_schedules/components/oncall_schedule.vue',
