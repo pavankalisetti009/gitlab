@@ -34,6 +34,12 @@ RSpec.describe 'Activate a subscription', feature_category: :subscription_manage
     }
   end
 
+  let(:unique_instance_id) { 'unique_instance_identifier' }
+
+  before do
+    allow(Gitlab::GlobalAnonymousId).to receive(:instance_uuid).and_return(unique_instance_id)
+  end
+
   it 'persists license key' do
     expect(Gitlab::SubscriptionPortal::Client)
       .to receive(:execute_graphql_query)
@@ -43,6 +49,7 @@ RSpec.describe 'Activate a subscription', feature_category: :subscription_manage
           activationCode: activation_code,
           automated: false,
           instanceIdentifier: application_setting.uuid,
+          uniqueInstanceId: unique_instance_id,
           gitlabVersion: Gitlab::VERSION,
           hostname: Gitlab.config.gitlab.host
         }
@@ -89,6 +96,7 @@ RSpec.describe 'Activate a subscription', feature_category: :subscription_manage
             activationCode: activation_code,
             automated: false,
             instanceIdentifier: application_setting.uuid,
+            uniqueInstanceId: unique_instance_id,
             gitlabVersion: Gitlab::VERSION,
             hostname: Gitlab.config.gitlab.host
           }
