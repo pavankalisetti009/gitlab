@@ -71,7 +71,7 @@ module GitlabSubscriptions
         render_404
       else
         render GitlabSubscriptions::Trials::Ultimate::CreationFailureComponent.new(
-          user: current_user, params: form_params, result: @result
+          user: current_user, eligible_namespaces: @eligible_namespaces, params: form_params, result: @result
         )
       end
     end
@@ -152,13 +152,12 @@ module GitlabSubscriptions
         *::Onboarding::StatusPresenter::GLM_PARAMS,
         :company_name, :first_name, :last_name, :phone_number,
         :country, :state, :new_group_name, :namespace_id
-      ).to_h
+      ).with_defaults(organization_id: Current.organization.id).to_h
     end
 
     def form_params
-      params.permit(
-        *::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id, :first_name, :last_name, :company_name,
-        :phone_number, :country, :state
+      params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :new_group_name, :namespace_id,
+        :first_name, :last_name, :company_name, :phone_number, :country, :state
       )
     end
 

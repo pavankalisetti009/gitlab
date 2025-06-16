@@ -8,6 +8,7 @@ module GitlabSubscriptions
       # Failure/error reasons
       LEAD_FAILED = :lead_failed
       TRIAL_FAILED = :trial_failed
+      NAMESPACE_CREATE_FAILED = :namespace_create_failed
       NOT_FOUND = :not_found
 
       # Flow steps
@@ -36,18 +37,30 @@ module GitlabSubscriptions
 
       private
 
-      attr_reader :user, :params, :step
+      attr_reader :user, :params, :step, :group_created
 
       def full_flow
+        # For our single step/full flow we have 2 cases:
+        # 1. We already have a group, and we can immediately submit the lead and then apply a trial to the group.
+        # 2. We don't have a group, and we need to create a group, submit the lead and then apply a trial to the group.
+        #    We only want to submit a trial if the group creation is successful.
+        #    This will keep us from submitting leads multiple times or a lead being submitted and then a trial
+        #    never being applied if the user does not fix any invalid/failed group creations.
         if existing_namespace_provided?
           submit_lead_and_trial
+        elsif creating_new_group?
+          create_group_and_submit_lead_and_trial
         else
           not_found
         end
       end
 
       def existing_namespace_provided?
-        params[:namespace_id].present?
+        params[:namespace_id].present? && !GitlabSubscriptions::Trials.creating_group_trigger?(params[:namespace_id])
+      end
+
+      def creating_new_group?
+        params.key?(:new_group_name)
       end
 
       def valid_namespace_exists?
@@ -135,6 +148,42 @@ module GitlabSubscriptions
 
         params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id)
               .merge(gl_com_params).merge(namespace_params).to_h.symbolize_keys
+      end
+
+      def create_group_and_submit_lead_and_trial
+        # Instance admins can disable user's ability to create top level groups.
+        # See https://docs.gitlab.com/ee/administration/admin_area.html#prevent-a-user-from-creating-groups
+        return not_found unless user.can_create_group?
+
+        group_params = build_create_group_params
+        response = Groups::CreateService.new(user, group_params).execute
+
+        @namespace = response[:group]
+
+        if response.success?
+          # We need to stick to the primary database in order to allow the following request
+          # fetch the namespace from an up-to-date replica or a primary database.
+          ::Namespace.sticking.stick(:namespace, namespace.id)
+
+          submit_lead_and_trial
+        else
+          ServiceResponse.error(
+            message: namespace.errors.full_messages,
+            payload: { namespace_id: params[:namespace_id] },
+            reason: NAMESPACE_CREATE_FAILED
+          )
+        end
+      end
+
+      def build_create_group_params
+        name = ActionController::Base.helpers.sanitize(params[:new_group_name])
+        path = Namespace.clean_path(name.parameterize)
+
+        {
+          name: name,
+          path: path,
+          organization_id: params[:organization_id]
+        }
       end
 
       def namespaces_eligible_for_trial

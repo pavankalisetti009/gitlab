@@ -1,5 +1,13 @@
 <script>
-import { GlForm, GlButton, GlSprintf, GlLink, GlFormFields, GlFormSelect } from '@gitlab/ui';
+import {
+  GlForm,
+  GlButton,
+  GlFormInput,
+  GlSprintf,
+  GlLink,
+  GlFormFields,
+  GlFormSelect,
+} from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/dist/utils';
 import csrf from '~/lib/utils/csrf';
 import { __, s__ } from '~/locale';
@@ -27,6 +35,8 @@ import {
   TRIAL_STATE_PROMPT,
 } from '../constants';
 
+export const CREATE_GROUP_OPTION_VALUE = '0';
+
 export default {
   name: 'CreateTrialForm',
   csrf,
@@ -34,6 +44,7 @@ export default {
     ListboxInput,
     GlForm,
     GlButton,
+    GlFormInput,
     GlSprintf,
     GlLink,
     GlFormFields,
@@ -62,8 +73,9 @@ export default {
   },
   data() {
     return {
+      serverValidations: { new_group_name: this.namespaceData.createErrors },
       selectedGroup: this.namespaceData.initialValue,
-      localItems: this.namespaceData.items,
+      groupName: this.namespaceData.newGroupName,
       initialFormValues: {
         first_name: this.userData.firstName,
         last_name: this.userData.lastName,
@@ -83,6 +95,15 @@ export default {
     },
     showNamespaceSelector() {
       return this.namespaceData.anyTrialEligibleNamespaces;
+    },
+    showNewGroupNameField() {
+      return (
+        !this.namespaceData.anyTrialEligibleNamespaces ||
+        this.selectedGroup === CREATE_GROUP_OPTION_VALUE
+      );
+    },
+    showCreateGroupButton() {
+      return this.selectedGroup !== CREATE_GROUP_OPTION_VALUE;
     },
     countryOptionsWithDefault() {
       return [
@@ -108,6 +129,12 @@ export default {
         ...this.states,
       ];
     },
+    groupOptions() {
+      return [
+        ...(this.selectedGroup === CREATE_GROUP_OPTION_VALUE ? [this.createGroupOption] : []),
+        ...this.namespaceData.items,
+      ];
+    },
     fields() {
       const result = {};
 
@@ -120,7 +147,21 @@ export default {
           },
           validators: [
             formValidators.factory(__('Please select a group for your trial.'), () => {
-              return this.selectedGroup;
+              return this.selectedGroup || !this.namespaceData.anyTrialEligibleNamespaces;
+            }),
+          ],
+        };
+      }
+
+      if (this.showNewGroupNameField) {
+        result.new_group_name = {
+          label: __('New group name'),
+          groupAttrs: {
+            class: 'gl-col-span-12',
+          },
+          validators: [
+            formValidators.factory(__('You must enter a new group name.'), () => {
+              return this.groupName;
             }),
           ],
         };
@@ -216,11 +257,17 @@ export default {
 
       return result;
     },
+    createGroupOption() {
+      return { value: CREATE_GROUP_OPTION_VALUE, text: __('Create group') };
+    },
   },
   methods: {
     onSubmit() {
       trackSaasTrialLeadSubmit(this.gtmSubmitEventLabel, this.userData.emailDomain);
       this.$refs.form.$el.submit();
+    },
+    handleCreateGroupClick(onSelect) {
+      onSelect(CREATE_GROUP_OPTION_VALUE);
     },
     resetSelectedState() {
       if (!this.showState) {
@@ -276,6 +323,7 @@ export default {
       :form-id="$options.formId"
       :fields="fields"
       class="gl-grid md:gl-gap-x-4"
+      :server-validations="serverValidations"
       @submit="onSubmit"
     >
       <template #input(group)>
@@ -284,10 +332,36 @@ export default {
           v-model="selectedGroup"
           name="namespace_id"
           label-for="namespace_id"
-          :items="localItems"
+          :items="groupOptions"
           :default-toggle-text="__('Select a group')"
           :block="true"
           :fluid-width="true"
+        >
+          <template v-if="showCreateGroupButton" #footer="{ onSelect }">
+            <div
+              class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-dropdown-divider !gl-p-2 !gl-pt-0 gl-border-t-solid"
+            >
+              <gl-button
+                category="tertiary"
+                block
+                class="!gl-mt-2 !gl-justify-start"
+                data-testid="footer-bottom-button"
+                @click="handleCreateGroupClick(onSelect)"
+              >
+                {{ __('Create group') }}
+              </gl-button>
+            </div>
+          </template>
+        </listbox-input>
+      </template>
+
+      <template #input(new_group_name)>
+        <gl-form-input
+          ref="newGroupNameInput"
+          v-model="groupName"
+          v-autofocusonshow
+          name="new_group_name"
+          data-testid="new-group-name-input"
         />
       </template>
 
@@ -310,7 +384,6 @@ export default {
           id="country"
           v-model="selectedCountry"
           name="country"
-          class="gl-field-error-anchor"
           :options="countryOptionsWithDefault"
           value-field="id"
           text-field="name"
@@ -322,9 +395,7 @@ export default {
         <gl-form-select
           id="state"
           v-model="selectedState"
-          v-autofocusonshow
           name="state"
-          class="gl-field-error-anchor"
           :options="stateOptionsWithDefault"
           value-field="id"
           text-field="name"

@@ -75,50 +75,6 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
         expect_to_be_on_group_security_dashboard(group_for_path: Group.last)
       end
     end
-
-    context 'when source of the trial initiation is about.gitlab.com' do
-      it 'fills out form without the company question, submits and lands on the duo page' do
-        glm_source = 'about.gitlab.com'
-
-        sign_in(user)
-
-        visit new_trial_path(glm_source: glm_source)
-
-        fill_in_company_information
-
-        submit_company_information_form(extra_params: { glm_source: glm_source })
-
-        expect_to_be_on_namespace_creation_without_company_question
-
-        fill_in_trial_form_for_new_group
-
-        submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
-
-        expect_to_be_on_gitlab_duo_page
-      end
-    end
-
-    context 'when source of the trial initiation is not a gitlab domain' do
-      it 'fills out form, submits and lands on the duo page' do
-        glm_source = '_some_other_source_'
-
-        sign_in(user)
-
-        visit new_trial_path(glm_source: glm_source)
-
-        fill_in_company_information
-
-        submit_company_information_form(extra_params: { glm_source: glm_source })
-
-        expect_to_be_on_namespace_creation
-
-        fill_in_trial_form_for_new_group
-
-        submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
-
-        expect_to_be_on_gitlab_duo_page
-      end
-    end
   end
 
   context 'when applying lead fails' do
@@ -199,11 +155,6 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
   end
 
   def expect_to_be_on_namespace_creation
-    expect(page).to have_content('New group name')
-    expect(page).not_to have_content('This trial is for')
-  end
-
-  def expect_to_be_on_namespace_creation_without_company_question
     expect(page).to have_content('New group name')
     expect(page).not_to have_content('This trial is for')
   end
