@@ -92,7 +92,7 @@ export default {
     data-testid="panel"
   >
     <div
-      class="gl-relative gl-h-full gl-border-r-1 gl-border-gray-100 gl-pr-2 gl-pt-5 gl-border-r-solid"
+      class="gl-relative gl-h-full gl-border-r-1 gl-border-neutral-100 gl-pr-2 gl-pt-5 gl-border-r-solid"
     >
       <local-storage-sync
         v-model="panelWidth"
@@ -119,6 +119,7 @@ export default {
           role="button"
           :class="{ 'gl-bg-strong': isActiveGroup }"
           @click="selectSubgroup(group.fullPath)"
+          @keydown.enter.space.prevent="selectSubgroup(group.fullPath)"
         >
           <project-avatar
             :project-name="group.name"
