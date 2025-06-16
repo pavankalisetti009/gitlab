@@ -22,11 +22,6 @@ export default {
         projectName: this.projectName,
       });
     },
-    modalContentStartText() {
-      return sprintf(this.$options.i18n.modalContentStartText, {
-        projectName: this.projectName,
-      });
-    },
     actionPrimary() {
       return {
         text: this.$options.i18n.buttonLabel,
