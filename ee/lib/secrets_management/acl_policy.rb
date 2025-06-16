@@ -44,10 +44,11 @@ module SecretsManagement
       ret
     end
 
-    def add_capability(path, cap)
-      paths[path] = AclPolicyPath.new(path) unless paths.key?(path)
+    def add_capability(path, cap, user: nil)
+      paths[path] = AclPolicyPath.new(path, user: user) unless paths.key?(path)
 
       paths[path].capabilities.add(cap)
+      paths[path].granted_by = user.id if user.present?
     end
 
     def remove_capability(path, cap)

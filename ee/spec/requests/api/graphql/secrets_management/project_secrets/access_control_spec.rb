@@ -38,30 +38,6 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
 
   let(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
-  let!(:secret_1) do
-    create_project_secret(
-      user: current_user,
-      project: project,
-      name: 'MY_SECRET_1',
-      description: 'test description 1',
-      branch: 'dev-branch-*',
-      environment: 'review/*',
-      value: 'test value 1'
-    )
-  end
-
-  let!(:secret_2) do
-    create_project_secret(
-      user: current_user,
-      project: project,
-      name: 'MY_SECRET_2',
-      description: 'test description 2',
-      branch: 'master',
-      environment: 'production',
-      value: 'test value 2'
-    )
-  end
-
   context 'when current user is not part of the project' do
     before do
       post_graphql(list_query, current_user: current_user)
@@ -105,6 +81,30 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
   context 'when current user is the project owner' do
     before_all do
       project.add_owner(current_user)
+    end
+
+    let!(:secret_1) do
+      create_project_secret(
+        user: current_user,
+        project: project,
+        name: 'MY_SECRET_1',
+        description: 'test description 1',
+        branch: 'dev-branch-*',
+        environment: 'review/*',
+        value: 'test value 1'
+      )
+    end
+
+    let!(:secret_2) do
+      create_project_secret(
+        user: current_user,
+        project: project,
+        name: 'MY_SECRET_2',
+        description: 'test description 2',
+        branch: 'master',
+        environment: 'production',
+        value: 'test value 2'
+      )
     end
 
     context 'and the project secrets manager is not active' do

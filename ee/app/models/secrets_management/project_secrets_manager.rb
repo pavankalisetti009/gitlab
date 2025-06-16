@@ -3,6 +3,7 @@
 module SecretsManagement
   class ProjectSecretsManager < ApplicationRecord
     include Gitlab::InternalEventsTracking
+    include ProjectSecretsManagers::UserHelper
 
     STATUSES = {
       provisioning: 0,
@@ -79,6 +80,14 @@ module SecretsManagement
       [
         ci_secrets_mount_path,
         'metadata',
+        ci_data_path(secret_key)
+      ].compact.join('/')
+    end
+
+    def detailed_metadata_path(secret_key)
+      [
+        ci_secrets_mount_path,
+        'detailed-metadata',
         ci_data_path(secret_key)
       ].compact.join('/')
     end

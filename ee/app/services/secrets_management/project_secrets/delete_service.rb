@@ -5,6 +5,7 @@ module SecretsManagement
     class DeleteService < BaseService
       include SecretsManagerClientHelpers
       include CiPolicies::SecretRefresherHelper
+      include Helpers::UserClientHelper
 
       def execute(name)
         return inactive_response unless secrets_manager&.active?
@@ -17,7 +18,7 @@ module SecretsManagement
         project_secret = read_result.payload[:project_secret]
 
         # Delete the secret
-        secrets_manager_client.delete_kv_secret(
+        user_client.delete_kv_secret(
           secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(name)
         )

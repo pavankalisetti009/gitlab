@@ -91,11 +91,15 @@ RSpec.configure do |config|
   end
 
   config.before(:example, :gitlab_secrets_manager) do
-    rsa_key = OpenSSL::PKey::RSA.generate(3072)
-    stub_application_setting(ci_jwt_signing_key: rsa_key.to_s)
+    private_key_path = Rails.root.join('ee/spec/fixtures/secrets_manager/test_private_key.pem')
+    private_key = File.read(private_key_path)
+
+    public_key_path = Rails.root.join('ee/spec/fixtures/secrets_manager/test_public_key.pem')
+    public_key = File.read(public_key_path)
+    stub_application_setting(ci_jwt_signing_key: private_key.to_s)
 
     SecretsManagement::OpenbaoTestSetup.start_server
-    SecretsManagement::OpenbaoTestSetup.configure_jwt_auth(rsa_key.public_key.to_s)
+    SecretsManagement::OpenbaoTestSetup.configure_jwt_auth(public_key.to_s)
   end
 
   config.after(:example, :gitlab_secrets_manager) do

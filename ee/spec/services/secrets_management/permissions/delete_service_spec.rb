@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'webmock/rspec'
 
 RSpec.describe SecretsManagement::Permissions::DeleteService, :gitlab_secrets_manager, feature_category: :secrets_management do
   include SecretsManagement::GitlabSecretsManagerHelpers
@@ -65,12 +64,16 @@ RSpec.describe SecretsManagement::Permissions::DeleteService, :gitlab_secrets_ma
 
       before do
         provision_project_secrets_manager(secrets_manager, user)
-
-        stub_request(:delete, %r{.*/v1/sys/policies/acl/.*})
-          .to_raise(SecretsManagement::SecretsManagerClient::ConnectionError.new(error_message))
       end
 
       it 'returns an error response with the connection error message' do
+        client = SecretsManagement::SecretsManagerClient
+        allow(service).to receive(:secrets_manager_client).and_return(instance_double(client))
+        allow(service.secrets_manager_client).to receive(:delete_policy)
+          .and_raise(SecretsManagement::SecretsManagerClient::ConnectionError.new(error_message))
+
+        result = service.execute(principal: { id: principal_id, type: principal_type })
+
         expect(result).to be_error
         expect(result.message).to eq("Failed to delete permission: #{error_message}")
         expect(result.payload[:secret_permission]).to be_nil

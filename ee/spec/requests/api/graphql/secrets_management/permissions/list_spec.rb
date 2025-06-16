@@ -46,7 +46,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
           update read], principal: { id: current_user.id, type: 'User' }
       )
       update_secret_permission(
-        user: current_user, project: project, permissions: %w[create read], principal: { id: 2, type: 'Role' }
+        user: current_user, project: project, permissions: %w[create read], principal: { id: 20, type: 'Role' }
       )
     end
 
@@ -56,7 +56,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
       expect(response).to have_gitlab_http_status(:success)
 
       permissions_data = graphql_data_at['secretPermissions']['edges'].pluck('node')
-      expect(permissions_data.length).to eq(2)
+      expect(permissions_data.length).to eq(3)
 
       expect(permissions_data).to include(
         a_hash_including(
@@ -67,7 +67,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
                               data['permissions'].include?('read')
               }),
         a_hash_including(
-          'principal' => { 'id' => '2', 'type' => 'Role' }
+          'principal' => { 'id' => '20', 'type' => 'Role' }
         ).and(satisfy { |data|
                 data['permissions'].include?('create') &&
                               data['permissions'].include?('read')

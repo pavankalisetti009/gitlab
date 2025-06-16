@@ -6,6 +6,7 @@ module SecretsManagement
       include Gitlab::Utils::StrongMemoize
       include SecretsManagerClientHelpers
       include CiPolicies::SecretRefresherHelper
+      include Helpers::UserClientHelper
 
       # NOTE: There is a potential race condition with secret updates because OpenBao
       # currently doesn't support versioning for metadata operations. This means that
@@ -55,14 +56,14 @@ module SecretsManagement
         # in this Rails backend service, as they contain essential information for access control.
 
         if value
-          secrets_manager_client.update_kv_secret(
+          user_client.update_kv_secret(
             secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(project_secret.name),
             value
           )
         end
 
-        secrets_manager_client.update_kv_secret_metadata(
+        user_client.update_kv_secret_metadata(
           secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(project_secret.name),
           custom_metadata

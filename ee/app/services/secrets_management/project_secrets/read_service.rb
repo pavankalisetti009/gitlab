@@ -3,13 +3,13 @@
 module SecretsManagement
   module ProjectSecrets
     class ReadService < BaseService
-      include SecretsManagerClientHelpers
+      include Helpers::UserClientHelper
 
       def execute(name)
         return inactive_response unless project.secrets_manager&.active?
         return invalid_name_response unless /\A[a-zA-Z0-9_]+\z/.match?(name)
 
-        secret_metadata = secrets_manager_client.read_secret_metadata(
+        secret_metadata = user_client.read_secret_metadata(
           project.secrets_manager.ci_secrets_mount_path,
           project.secrets_manager.ci_data_path(name)
         )

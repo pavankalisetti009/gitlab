@@ -292,6 +292,28 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
     end
   end
 
+  describe "#ci_metadata_full_path" do
+    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
+    subject(:path) { secrets_manager.ci_metadata_full_path("DB_PASS") }
+
+    context 'when the project belongs to a user namespace' do
+      let_it_be(:project) { create(:project) }
+
+      it "returns the correct metadata path" do
+        expect(path).to eq("user_#{project.namespace.id}/project_#{project.id}/secrets/kv/metadata/explicit/DB_PASS")
+      end
+    end
+
+    context 'when the project belongs to a group namespace' do
+      let_it_be(:project) { create(:project, :in_group) }
+
+      it "returns the correct metadata path" do
+        expect(path).to eq("group_#{project.namespace.id}/project_#{project.id}/secrets/kv/metadata/explicit/DB_PASS")
+      end
+    end
+  end
+
   describe '#ci_jwt' do
     let_it_be(:project) { create(:project) }
     let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }

@@ -5,6 +5,8 @@ module SecretsManagement
     class UpdateService < BaseService
       include SecretsManagerClientHelpers
 
+      INTERNAL_PERMISSIONS = %w[list scan].freeze
+
       def execute(principal_id:, principal_type:, permissions:, expired_at:)
         secret_permission = SecretsManagement::SecretPermission.new(principal_id: principal_id,
           principal_type: principal_type,
@@ -25,8 +27,7 @@ module SecretsManagement
       def store_permission(secret_permission)
         return error_response(secret_permission) unless secret_permission.valid?
 
-        # set_list_permission(secret_permission)
-        secret_permission.permissions = secret_permission.permissions + ['list']
+        secret_permission.permissions = secret_permission.permissions + INTERNAL_PERMISSIONS
 
         # Get or create policy
         policy_name = secrets_manager.generate_policy_name(project_id: project.id,
@@ -45,7 +46,7 @@ module SecretsManagement
         secrets_manager_client.set_policy(policy)
 
         # the list permission is only used internally and should not be returned to the user
-        secret_permission.permissions = secret_permission.permissions - ['list']
+        secret_permission.permissions = secret_permission.permissions - INTERNAL_PERMISSIONS
 
         ServiceResponse.success(payload: { secret_permission: secret_permission })
       rescue SecretsManagement::SecretsManagerClient::ApiError => e
@@ -58,17 +59,19 @@ module SecretsManagement
       def update_policy_paths(policy, permissions)
         data_path = secrets_manager.ci_full_path('*')
         metadata_path = secrets_manager.ci_metadata_full_path('*')
+        detailed_metadata_path = secrets_manager.detailed_metadata_path('*')
 
         # Clear existing capabilities for these paths
         policy.paths[data_path].capabilities.clear if policy.paths[data_path]
-
         policy.paths[metadata_path].capabilities.clear if policy.paths[metadata_path]
+        policy.paths[detailed_metadata_path].capabilities.clear if policy.paths[detailed_metadata_path]
 
         # Add new capabilities
         permissions.each do |permission|
-          policy.add_capability(data_path, permission) if permission != 'read'
-          policy.add_capability(metadata_path, permission)
+          policy.add_capability(data_path, permission, user: current_user) if permission != 'read'
+          policy.add_capability(metadata_path, permission, user: current_user)
         end
+        policy.add_capability(detailed_metadata_path, 'list', user: current_user)
       end
 
       def error_response(secret_permission)
