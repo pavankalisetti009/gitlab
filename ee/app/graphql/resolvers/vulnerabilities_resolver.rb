@@ -152,11 +152,11 @@ module Resolvers
     end
 
     def fetch_vulnerabilities(args)
-      finder_params = args.merge(before_severity: before_severity, after_severity: after_severity)
-
       if using_elasticsearch
-        vulnerabilities_from_es(finder_params)
+        vulnerabilities_from_es(args)
       else
+        finder_params = args.merge(before_severity: before_severity, after_severity: after_severity)
+
         vulnerabilities(finder_params)
       end
     end
