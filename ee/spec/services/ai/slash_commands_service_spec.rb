@@ -69,25 +69,51 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
     context 'with issue context' do
       let_it_be(:project) { create(:project) }
       let(:issue) { create(:issue, project: project) }
-      let(:url) { Gitlab::Routing.url_helpers.project_issue_url(project, issue) }
 
-      context 'when user has Duo Enterprise access' do
-        before do
-          allow(user).to receive(:assigned_to_duo_enterprise?).and_return(true)
+      context 'on individual issue page' do
+        let(:url) { Gitlab::Routing.url_helpers.project_issue_url(project, issue) }
+
+        context 'when user has Duo Enterprise access' do
+          before do
+            allow(user).to receive(:assigned_to_duo_enterprise?).and_return(true)
+          end
+
+          it 'returns base commands and issue-specific commands' do
+            expected_commands = base_commands + described_class.commands[:issue]
+            expect(available_commands).to match_array(expected_commands)
+          end
         end
 
-        it 'returns base commands and issue-specific commands' do
-          expected_commands = base_commands + described_class.commands[:issue]
-          expect(available_commands).to match_array(expected_commands)
+        context 'when user does not have Duo Enterprise access' do
+          before do
+            allow(user).to receive(:assigned_to_duo_enterprise?).and_return(false)
+          end
+
+          it_behaves_like 'returns only base commands'
         end
       end
 
-      context 'when user does not have Duo Enterprise access' do
-        before do
-          allow(user).to receive(:assigned_to_duo_enterprise?).and_return(false)
+      context 'on issues index page' do
+        let(:url) { Gitlab::Routing.url_helpers.project_issues_url(project) }
+
+        context 'when user has Duo Enterprise access' do
+          before do
+            allow(user).to receive(:assigned_to_duo_enterprise?).and_return(true)
+          end
+
+          it 'returns base commands without /summarize_comments' do
+            expected_commands = base_commands
+            expect(available_commands).to match_array(expected_commands)
+          end
         end
 
-        it_behaves_like 'returns only base commands'
+        context 'when user does not have Duo Enterprise access' do
+          before do
+            allow(user).to receive(:assigned_to_duo_enterprise?).and_return(false)
+          end
+
+          it_behaves_like 'returns only base commands'
+        end
       end
     end
 
@@ -167,6 +193,47 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
       let(:url) { nil }
 
       it_behaves_like 'returns only base commands'
+    end
+  end
+
+  describe '#on_issues_index_page?' do
+    let_it_be(:project) { create(:project) }
+    let(:issue) { create(:issue, project: project) }
+    let(:service) { described_class.new(user, url) }
+
+    subject { service.send(:on_issues_index_page?) }
+
+    context 'when on issues index page' do
+      let(:url) { Gitlab::Routing.url_helpers.project_issues_url(project) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when on individual issue page' do
+      let(:url) { Gitlab::Routing.url_helpers.project_issue_url(project, issue) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when on different controller' do
+      let(:url) { 'https://gitlab.com/some/other/path' }
+
+      before do
+        allow_next_instance_of(::Gitlab::Llm::Utils::RouteHelper) do |helper|
+          allow(helper).to receive_messages(
+            controller: 'projects/merge_requests',
+            action: 'index'
+          )
+        end
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when controller is nil' do
+      let(:url) { 'invalid_url' }
+
+      it { is_expected.to be false }
     end
   end
 end
