@@ -38,14 +38,29 @@ export default {
     RolesSelector,
     PolicyExceptionsSelector,
   },
+  props: {
+    exceptions: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+    selectedTab: {
+      type: String,
+      required: false,
+      default: null,
+    },
+  },
   data() {
     return {
-      selectedTab: null,
+      selectedExceptions: this.exceptions,
     };
   },
   computed: {
     modalTitle() {
       return EXCEPTIONS_FULL_OPTIONS_MAP[this.selectedTab]?.header || this.$options.i18n.modalTitle;
+    },
+    branches() {
+      return this.exceptions?.branches || [];
     },
   },
   methods: {
@@ -63,7 +78,17 @@ export default {
       this.$refs.modal.show();
     },
     selectTab(tab) {
-      this.selectedTab = tab;
+      this.$emit('select-tab', tab);
+    },
+    setBranches(branches) {
+      this.selectedExceptions = {
+        ...this.selectedExceptions,
+        branches,
+      };
+    },
+    saveChanges() {
+      this.$emit('changed', this.selectedExceptions);
+      this.hideModalWindow();
     },
   },
 };
@@ -88,8 +113,13 @@ export default {
       <roles-selector v-if="tabSelected($options.ROLES)" />
       <groups-selector v-if="tabSelected($options.GROUPS)" />
       <tokens-selector v-if="tabSelected($options.TOKENS)" />
-      <branch-pattern-selector v-if="tabSelected($options.SOURCE_BRANCH_PATTERNS)" />
+      <branch-pattern-selector
+        v-if="tabSelected($options.SOURCE_BRANCH_PATTERNS)"
+        :branches="branches"
+        @set-branches="setBranches"
+      />
     </div>
+
     <policy-exceptions-selector v-else @select="selectTab" />
 
     <template #modal-footer>
@@ -102,9 +132,13 @@ export default {
           <gl-button category="secondary" variant="confirm" @click="hideModalWindow">{{
             $options.i18n.cancelAction
           }}</gl-button>
-          <gl-button category="primary" variant="confirm">{{
-            $options.i18n.primaryAction
-          }}</gl-button>
+          <gl-button
+            data-testid="save-button"
+            category="primary"
+            variant="confirm"
+            @click="saveChanges"
+            >{{ $options.i18n.primaryAction }}</gl-button
+          >
         </div>
       </div>
     </template>

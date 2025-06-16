@@ -2,7 +2,10 @@
 import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { createSourceBranchPatternObject } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
+import {
+  createSourceBranchPatternObject,
+  removeIds,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
 import BranchPatternItem from './branch_pattern_item.vue';
 
 export default {
@@ -21,7 +24,7 @@ export default {
     GlSprintf,
   },
   props: {
-    patterns: {
+    branches: {
       type: Array,
       required: false,
       default: () => [],
@@ -29,24 +32,29 @@ export default {
   },
   data() {
     return {
-      items: this.mapSelectedPatterns(this.patterns),
+      items: this.mapSelectedBranches(this.branches),
     };
   },
   computed: {
-    hasPatterns() {
+    hasBranches() {
       return this.items.length > 0;
     },
   },
   methods: {
-    addPattern() {
+    addBranchPattern() {
       this.items = [...this.items, createSourceBranchPatternObject()];
     },
-    removePattern(id) {
-      this.items = this.items.filter((item) => item.id !== id);
+    setBranch(branch, index) {
+      this.items.splice(index, 1, branch);
+      this.$emit('set-branches', removeIds(this.items));
     },
-    mapSelectedPatterns(patterns) {
-      return patterns.length > 0
-        ? patterns.map(createSourceBranchPatternObject)
+    removeBranchPattern(id) {
+      this.items = this.items.filter((item) => item.id !== id);
+      this.$emit('set-branches', removeIds(this.items));
+    },
+    mapSelectedBranches(branches) {
+      return branches.length > 0
+        ? branches.map(createSourceBranchPatternObject)
         : [createSourceBranchPatternObject()];
     },
   },
@@ -55,7 +63,7 @@ export default {
 
 <template>
   <div class="gl-p-5">
-    <p class="gl-text-neutral-500" data-testid="pattern-header">
+    <p class="gl-text-neutral-300" data-testid="pattern-header">
       <gl-sprintf :message="$options.i18n.description">
         <template #link="{ content }">
           <gl-link :href="$options.BRANCHES_PATTERN_LINK" target="_blank">{{ content }}</gl-link>
@@ -63,22 +71,23 @@ export default {
       </gl-sprintf>
     </p>
 
-    <div v-if="hasPatterns" class="gl-mb-4 gl-flex gl-flex-col gl-gap-4">
+    <div v-if="hasBranches" class="gl-mb-4 gl-flex gl-flex-col gl-gap-4">
       <branch-pattern-item
-        v-for="item in items"
+        v-for="(item, index) in items"
         :key="item.id"
-        :pattern="item"
-        @remove="removePattern(item.id)"
+        :branch="item"
+        @set-branch="setBranch($event, index)"
+        @remove="removeBranchPattern(item.id)"
       />
     </div>
 
     <gl-button
-      data-testid="add-pattern"
+      data-testid="add-branch-pattern"
       icon="plus"
       category="tertiary"
       variant="confirm"
       size="small"
-      @click="addPattern"
+      @click="addBranchPattern"
     >
       {{ $options.i18n.addPatternButton }}
     </gl-button>

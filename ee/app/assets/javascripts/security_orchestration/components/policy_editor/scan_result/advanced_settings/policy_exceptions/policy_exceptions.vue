@@ -13,7 +13,25 @@ export default {
     GlButton,
     PolicyExceptionsModal,
   },
+  props: {
+    exceptions: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+  },
+  data() {
+    return {
+      selectedTab: null,
+    };
+  },
   methods: {
+    emitChanges(changes) {
+      this.$emit('changed', 'bypass_settings', changes);
+    },
+    selectTab(tab) {
+      this.selectedTab = tab;
+    },
     showModal() {
       this.$refs.modal.showModalWindow();
     },
@@ -25,7 +43,13 @@ export default {
   <div>
     <h4>{{ $options.i18n.title }}</h4>
 
-    <policy-exceptions-modal ref="modal" />
+    <policy-exceptions-modal
+      ref="modal"
+      :exceptions="exceptions"
+      :selected-tab="selectedTab"
+      @select-tab="selectTab"
+      @changed="emitChanges"
+    />
 
     <div class="security-policies-bg-subtle gl-w-full gl-rounded-base gl-px-2 gl-py-3">
       <gl-button icon="plus" category="tertiary" variant="confirm" size="small" @click="showModal">
