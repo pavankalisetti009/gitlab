@@ -107,6 +107,7 @@ export default {
           size="small"
           icon-only
           @click="toggleExpanded"
+          @keydown.enter.space.prevent="toggleExpanded"
         />
       </div>
     </div>
