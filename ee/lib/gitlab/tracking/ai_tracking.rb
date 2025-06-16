@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 
-module EE
-  module Gitlab
-    module Tracking
-      module AiTracking
-        extend ::Gitlab::Utils::Override
+module Gitlab
+  module Tracking
+    module AiTracking
+      POSSIBLE_MODELS = [::Ai::CodeSuggestionEvent, ::Ai::DuoChatEvent, ::Ai::TroubleshootJobEvent].freeze
 
-        POSSIBLE_MODELS = [Ai::CodeSuggestionEvent, Ai::DuoChatEvent, Ai::TroubleshootJobEvent].freeze
-
-        override :track_event
+      class << self
         def track_event(event_name, **context_hash)
           event = build_event_model(event_name, context_hash)
 
@@ -17,11 +14,11 @@ module EE
           store_to_clickhouse(event)
           store_to_postgres(event)
 
-          Ai::UserMetrics.refresh_last_activity_on(context_hash[:user])
+          track_user_activity(context_hash[:user])
         end
 
         def track_user_activity(user)
-          Ai::UserMetrics.refresh_last_activity_on(user)
+          ::Ai::UserMetrics.refresh_last_activity_on(user)
         end
 
         private
@@ -57,8 +54,7 @@ module EE
         end
 
         def build_traversal_path(context_hash)
-          context_hash[:project]&.project_namespace&.traversal_path ||
-            context_hash[:namespace]&.traversal_path
+          context_hash[:project]&.project_namespace&.traversal_path || context_hash[:namespace]&.traversal_path
         end
       end
     end
