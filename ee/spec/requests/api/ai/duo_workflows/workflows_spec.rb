@@ -28,7 +28,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         agent_privileges: agent_privileges,
         pre_approved_agent_privileges: pre_approved_agent_privileges,
         workflow_definition: workflow_definition,
-        allow_agent_to_request_user: allow_agent_to_request_user
+        allow_agent_to_request_user: allow_agent_to_request_user,
+        image: "example.com/example-image:latest"
       }
     end
 
@@ -76,6 +77,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         expect(created_workflow.pre_approved_agent_privileges).to eq(pre_approved_agent_privileges)
         expect(created_workflow.workflow_definition).to eq(workflow_definition)
         expect(created_workflow.allow_agent_to_request_user).to eq(allow_agent_to_request_user)
+        expect(created_workflow.image).to eq("example.com/example-image:latest")
       end
 
       context 'when agent_privileges is not provided' do

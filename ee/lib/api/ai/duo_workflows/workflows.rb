@@ -122,6 +122,8 @@ module API
             optional :use_service_account, type: Boolean,
               desc: 'Optional parameter to start the workflow CI pipeline using a service account.',
               documentation: { example: true }
+            optional :image, type: String, desc: 'Container image to use for running the workflow in CI pipeline.',
+              documentation: { example: 'registry.gitlab.com/gitlab-org/duo-workflow/custom-image:latest' }
           end
         end
 

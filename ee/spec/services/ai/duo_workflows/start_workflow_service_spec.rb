@@ -7,8 +7,11 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:maintainer) { create(:user, maintainer_of: project) }
   let_it_be(:reporter) { create(:user, reporter_of: project) }
-  let_it_be(:workflow) { create(:duo_workflows_workflow, project: project, user: maintainer) }
-  let_it_be(:params) do
+
+  let(:image) { 'example.com/example-image:latest' }
+  let(:workflow) { create(:duo_workflows_workflow, project: project, user: maintainer, image: image) }
+
+  let(:params) do
     {
       goal: 'test-goal',
       workflow: workflow,
@@ -18,7 +21,13 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
   end
 
   shared_examples "success" do
-    it 'creates a workload to execute workflow' do
+    it 'creates a workload to execute workflow with the correct definition' do
+      shadowed_project = project
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |project:, workload_definition:, **_kwargs|
+        expect(project).to eq(shadowed_project)
+        expect(workload_definition.image).to eq("example.com/example-image:latest")
+      end.and_call_original
+
       expect(execute).to be_success
 
       workload_id = execute.payload[:workload_id]
@@ -26,6 +35,19 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
 
       workload = Ci::Workloads::Workload.find_by_id([workload_id])
       expect(workload.branch_name).to start_with('workloads/')
+      expect(workload.branch_name).to start_with('workloads/')
+    end
+
+    context 'when image is not provided' do
+      let(:image) { nil }
+
+      it 'executes the workflow with the default image' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.image).to eq(described_class::IMAGE)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
     end
   end
 

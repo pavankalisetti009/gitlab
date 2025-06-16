@@ -14,6 +14,7 @@ module API
           expose :workflow_definition
           expose :status_name, as: :status
           expose :allow_agent_to_request_user
+          expose :image
 
           def agent_privileges_names
             object.agent_privileges.map do |privilege|
