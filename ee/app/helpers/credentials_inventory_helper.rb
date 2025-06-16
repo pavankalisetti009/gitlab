@@ -37,6 +37,18 @@ module CredentialsInventoryHelper
     raise NotImplementedError, "#{self.class} does not implement #{__method__}"
   end
 
+  def default_sort_order
+    'expires_asc'
+  end
+
+  def default_filters
+    [
+      :state, :revoked,
+      :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after,
+      :search, :sort
+    ]
+  end
+
   def user_detail_path(user)
     raise NotImplementedError, "#{self.class} does not implement #{__method__}"
   end

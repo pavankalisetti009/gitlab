@@ -36774,6 +36774,12 @@ CREATE INDEX index_pats_on_expiring_at_sixty_days_notification_sent_at ON person
 
 CREATE INDEX index_pats_on_expiring_at_thirty_days_notification_sent_at ON personal_access_tokens USING btree (expires_at, id) WHERE ((impersonation = false) AND (revoked = false) AND (thirty_days_notification_sent_at IS NULL));
 
+CREATE INDEX index_pats_on_user_id_and_created_at_and_pat_id ON personal_access_tokens USING btree (user_id, created_at, id) WHERE (impersonation = false);
+
+CREATE INDEX index_pats_on_user_id_and_expires_at_and_pat_id ON personal_access_tokens USING btree (user_id, expires_at, id DESC) WHERE (impersonation = false);
+
+CREATE INDEX index_pats_on_user_id_and_last_used_at_and_pat_id ON personal_access_tokens USING btree (user_id, last_used_at, id) WHERE (impersonation = false);
+
 CREATE INDEX index_pe_approval_rules_on_required_approvals_and_created_at ON protected_environment_approval_rules USING btree (required_approvals, created_at);
 
 CREATE INDEX index_pep_policy_config_links_security_policy_id ON security_pipeline_execution_policy_config_links USING btree (security_policy_id);

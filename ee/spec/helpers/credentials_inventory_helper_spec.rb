@@ -110,4 +110,26 @@ RSpec.describe CredentialsInventoryHelper, feature_category: :user_management do
       it { is_expected.to be_truthy }
     end
   end
+
+  describe "#default_sort_order" do
+    subject(:default_sort_order) { helper.default_sort_order }
+
+    let(:sort_order) { 'expires_asc' }
+
+    it { is_expected.to be(sort_order) }
+  end
+
+  describe "#default_filters" do
+    subject(:default_filters) { helper.default_filters }
+
+    let(:filters) do
+      [
+        :state, :revoked,
+        :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after,
+        :search, :sort
+      ]
+    end
+
+    it { is_expected.to match_array(filters) }
+  end
 end

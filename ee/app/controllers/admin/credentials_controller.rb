@@ -66,7 +66,7 @@ class Admin::CredentialsController < Admin::ApplicationController
 
   override :users
   def users
-    nil
+    User.human
   end
 
   override :bot_users
