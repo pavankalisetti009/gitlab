@@ -54,6 +54,7 @@ export default {
     return {
       vulnerabilitiesHistory: {},
       selectedDayRange: DAYS.thirty,
+      chartObject: {},
     };
   },
   days: Object.values(DAYS),
@@ -147,6 +148,9 @@ export default {
       return this.$apollo.queries.vulnerabilitiesHistory.loading;
     },
   },
+  mounted() {
+    this.$emit('chart-report-data-registered', this.getChartReportData);
+  },
   methods: {
     setSelectedDayRange(days) {
       this.selectedDayRange = days;
@@ -163,6 +167,31 @@ export default {
 
         return acc;
       }, {});
+    },
+    onChartCreated(echarts, severityLevel) {
+      this.chartObject[severityLevel] = echarts;
+    },
+    getChartReportData() {
+      const charts = severityLevels.map((severityLevel) => {
+        const chartItem = this.charts.find((item) => item.severityLevel === severityLevel);
+        const chart = this.chartObject[severityLevel];
+
+        return {
+          severity: severityLevel,
+          svg: chart.getDataURL({
+            type: 'svg',
+            excludeComponents: ['toolbox', 'dataZoom'],
+          }),
+          change_in_percent: chartItem?.changeInPercent,
+          current_count: chartItem?.currentVulnerabilitiesCount,
+        };
+      });
+
+      return {
+        charts,
+        selected_day_range: this.selectedDayRange,
+        date_info: this.dateInfo,
+      };
     },
   },
 };
@@ -209,6 +238,7 @@ export default {
             :tooltip-label="__('Vulnerabilities')"
             :show-last-y-value="false"
             class="gl-absolute gl-left-0 gl-top-0 gl-w-full"
+            @created="onChartCreated($event, item.severityLevel)"
           />
         </div>
       </template>

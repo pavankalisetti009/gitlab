@@ -13,6 +13,7 @@ export default {
     PdfExportButton,
   },
   mixins: [glFeatureFlagsMixin()],
+  inject: ['groupFullPath'],
   props: {
     historyQuery: {
       type: Object,
@@ -28,9 +29,22 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      vulnerabilitiesChartFn: null,
+    };
+  },
   computed: {
     showExportButton() {
       return this.showExport && this.glFeatures.vulnerabilitiesPdfExport;
+    },
+  },
+  methods: {
+    getReportData() {
+      return {
+        group_vulnerabilities_over_time: this.vulnerabilitiesChartFn?.() || {},
+        full_path: this.groupFullPath,
+      };
     },
   },
 };
@@ -40,12 +54,15 @@ export default {
   <div>
     <page-heading :heading="s__('SecurityReports|Security dashboard')">
       <template #actions>
-        <pdf-export-button v-if="showExportButton" />
+        <pdf-export-button v-if="showExportButton" :get-report-data="getReportData" />
       </template>
     </page-heading>
 
     <div class="security-charts gl-grid">
-      <vulnerabilities-over-time-chart :query="historyQuery" />
+      <vulnerabilities-over-time-chart
+        :query="historyQuery"
+        @chart-report-data-registered="vulnerabilitiesChartFn = $event"
+      />
       <vulnerability-severities :query="gradesQuery" />
     </div>
   </div>

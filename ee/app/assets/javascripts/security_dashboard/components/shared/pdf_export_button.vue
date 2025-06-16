@@ -47,7 +47,7 @@ export default {
       this.isExporting = true;
 
       try {
-        const reportData = await this.getReportData();
+        const reportData = this.getReportData();
         await axios.post(this.vulnerabilitiesPdfExportEndpoint, {
           report_data: { ...reportData, dashboard_type: this.dashboardType },
           export_format: 'pdf',
