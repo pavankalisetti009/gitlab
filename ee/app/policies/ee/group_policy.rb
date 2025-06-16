@@ -232,7 +232,7 @@ module EE
 
       MemberRole.all_customizable_group_permissions.each do |ability|
         desc "Custom role on group that enables #{ability.to_s.tr('_', ' ')}"
-        condition("custom_role_enables_#{ability}".to_sym) do
+        condition(:"custom_role_enables_#{ability}") do
           custom_role_ability(@user, @subject).allowed?(ability)
         end
       end

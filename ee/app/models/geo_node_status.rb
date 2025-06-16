@@ -27,16 +27,16 @@ class GeoNodeStatus < ApplicationRecord
 
   def self.status_fields_for(replicable_class)
     {
-      "#{replicable_class.replicable_name_plural}_count".to_sym => "Number of #{replicable_class.replicable_title_plural} on the primary",
-      "#{replicable_class.replicable_name_plural}_checksum_total_count".to_sym => "Number of #{replicable_class.replicable_title_plural} available to checksum on primary",
-      "#{replicable_class.replicable_name_plural}_checksummed_count".to_sym => "Number of #{replicable_class.replicable_title_plural} checksummed on the primary",
-      "#{replicable_class.replicable_name_plural}_checksum_failed_count".to_sym => "Number of #{replicable_class.replicable_title_plural} failed to checksum on primary",
-      "#{replicable_class.replicable_name_plural}_synced_count".to_sym => "Number of #{replicable_class.replicable_title_plural} in the registry",
-      "#{replicable_class.replicable_name_plural}_failed_count".to_sym => "Number of #{replicable_class.replicable_title_plural} failed on secondary",
-      "#{replicable_class.replicable_name_plural}_registry_count".to_sym => "Number of #{replicable_class.replicable_title_plural} synced to sync on secondary",
-      "#{replicable_class.replicable_name_plural}_verification_total_count".to_sym => "Number of #{replicable_class.replicable_title_plural} available to verify on secondary",
-      "#{replicable_class.replicable_name_plural}_verified_count".to_sym => "Number of #{replicable_class.replicable_title_plural} verified on the secondary",
-      "#{replicable_class.replicable_name_plural}_verification_failed_count".to_sym => "Number of #{replicable_class.replicable_title_plural} failed to verify on secondary"
+      "#{replicable_class.replicable_name_plural}_count": "Number of #{replicable_class.replicable_title_plural} on the primary",
+      "#{replicable_class.replicable_name_plural}_checksum_total_count": "Number of #{replicable_class.replicable_title_plural} available to checksum on primary",
+      "#{replicable_class.replicable_name_plural}_checksummed_count": "Number of #{replicable_class.replicable_title_plural} checksummed on the primary",
+      "#{replicable_class.replicable_name_plural}_checksum_failed_count": "Number of #{replicable_class.replicable_title_plural} failed to checksum on primary",
+      "#{replicable_class.replicable_name_plural}_synced_count": "Number of #{replicable_class.replicable_title_plural} in the registry",
+      "#{replicable_class.replicable_name_plural}_failed_count": "Number of #{replicable_class.replicable_title_plural} failed on secondary",
+      "#{replicable_class.replicable_name_plural}_registry_count": "Number of #{replicable_class.replicable_title_plural} synced to sync on secondary",
+      "#{replicable_class.replicable_name_plural}_verification_total_count": "Number of #{replicable_class.replicable_title_plural} available to verify on secondary",
+      "#{replicable_class.replicable_name_plural}_verified_count": "Number of #{replicable_class.replicable_title_plural} verified on the secondary",
+      "#{replicable_class.replicable_name_plural}_verification_failed_count": "Number of #{replicable_class.replicable_title_plural} failed to verify on secondary"
     }
   end
 

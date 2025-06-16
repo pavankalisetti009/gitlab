@@ -118,7 +118,7 @@ module Vulnerabilities
     def ensure_timestamps!
       return unless %w[confirmed resolved dismissed].include?(state)
 
-      timestamp = "#{state}_at".to_sym
+      timestamp = :"#{state}_at"
 
       @params[:vulnerability][timestamp] = @params[:vulnerability][timestamp].presence || Time.zone.now
     end

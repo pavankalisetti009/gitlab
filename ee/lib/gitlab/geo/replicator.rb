@@ -257,7 +257,7 @@ module Gitlab
       def consume(event_name, **event_data)
         raise ArgumentError, "Unsupported event: '#{event_name}'" unless self.class.event_supported?(event_name)
 
-        consume_method = "consume_event_#{event_name}".to_sym
+        consume_method = :"consume_event_#{event_name}"
         raise NotImplementedError, "Consume method not implemented: '#{consume_method}'" unless self.methods.include?(consume_method)
 
         send(consume_method, **event_data) # rubocop:disable GitlabSecurity/PublicSend

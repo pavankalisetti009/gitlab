@@ -46,7 +46,7 @@ module API
 
             def dependency_proxy_setting
               setting = project.dependency_proxy_packages_setting
-              external_registry_url_field = "#{package_format}_external_registry_url".to_sym
+              external_registry_url_field = :"#{package_format}_external_registry_url"
               return unless setting.enabled && setting[external_registry_url_field]
 
               return setting if can?(current_user, :read_package, setting)

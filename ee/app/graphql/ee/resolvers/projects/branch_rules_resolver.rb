@@ -54,7 +54,7 @@ module EE
         end
 
         def access_levels_preloads_for(access_type)
-          access_level_name = "#{access_type}_access_levels".to_sym
+          access_level_name = :"#{access_type}_access_levels"
           access_levels_lookahead = access_levels_node_selection(access_level_name)
 
           preloads = []
