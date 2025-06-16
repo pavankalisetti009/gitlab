@@ -5,6 +5,7 @@ module Ai
     class Workflow < ::ApplicationRecord
       include FromUnion
       include EachBatch
+      include Sortable
 
       self.table_name = :duo_workflows_workflows
 

@@ -9,7 +9,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
   let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:project_2) { create(:project, :public, group: group) }
   let_it_be(:user) { create(:user, developer_of: group) }
-  let_it_be(:workflows) { create_list(:duo_workflows_workflow, 3, project: project, user: user) }
+  let_it_be(:workflows) { create_list(:duo_workflows_workflow, 3, project: project, user: user, created_at: 1.day.ago) }
   let_it_be(:workflows_project_2) { create_list(:duo_workflows_workflow, 2, project: project_2, user: user) }
   let_it_be(:workflows_for_different_user) { create_list(:duo_workflows_workflow, 4, project: project) }
   let(:all_project_workflows) { workflows + workflows_project_2 }
@@ -109,6 +109,36 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
           expect(returned_workflows.length).to eq(workflows.length)
           returned_workflows.each do |returned_workflow|
             expect(returned_workflow['userId']).to eq(user.to_global_id.to_s)
+          end
+        end
+      end
+
+      context 'with the sort argument' do
+        context 'when :created_asc' do
+          let(:variables) { { sort: :created_asc } }
+
+          it 'returns the workflows oldest first', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            expect(returned_workflows.length).to eq(all_project_workflows.length)
+            expect(returned_workflows.first['createdAt']).to be < returned_workflows.last['createdAt']
+          end
+        end
+
+        context 'when :created_desc' do
+          let(:variables) { { sort: :created_desc } }
+
+          it 'returns the workflows latest first', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            expect(returned_workflows.length).to eq(all_project_workflows.length)
+            expect(returned_workflows.first['createdAt']).to be > returned_workflows.last['createdAt']
           end
         end
       end

@@ -14,6 +14,11 @@ module Resolvers
           required: false,
           description: 'Type of workflow to filter by (e.g., software_development).'
 
+        argument :sort, Types::SortEnum,
+          description: 'Sort workflows by the criteria.',
+          required: false,
+          default_value: :created_desc
+
         def resolve(**args)
           return [] unless current_user
 
@@ -26,7 +31,7 @@ module Resolvers
 
           workflows = workflows.with_workflow_definition(args[:type]) if args[:type].present?
 
-          workflows
+          workflows.order_by(args[:sort])
         end
       end
     end
