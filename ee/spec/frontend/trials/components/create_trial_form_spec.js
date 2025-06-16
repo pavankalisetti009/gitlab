@@ -81,6 +81,9 @@ describe('CreateTrialForm', () => {
         gtmSubmitEventLabel,
         ...propsData,
       },
+      stubs: {
+        ListboxInput,
+      },
     });
 
     if (!countriesLoading && !statesLoading) {
@@ -92,13 +95,47 @@ describe('CreateTrialForm', () => {
 
   const findForm = () => wrapper.findComponent(GlForm);
   const findGroupListboxInput = () => wrapper.findComponent(ListboxInput);
+  const findCreateGroupButton = () => wrapper.findByTestId('footer-bottom-button');
   const findCountrySelect = () => wrapper.findByTestId('country-dropdown');
   const findStateSelect = () => wrapper.findByTestId('state-dropdown');
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const fieldsProps = () => findFormFields().props('fields');
   const findHiddenInput = (name) => wrapper.findByTestId(`hidden-${name}`);
+  const findNewGroupNameInput = () => wrapper.findByTestId('new-group-name-input');
 
   describe('rendering', () => {
+    describe('initialization', () => {
+      it('initializes items with create group option when createErrors exist', async () => {
+        const createErrors = ['Group name already exists'];
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            initialValue: '0',
+            createErrors,
+          },
+        });
+
+        const createOption = {
+          value: '0',
+          text: 'Create group',
+        };
+        const itemsWithCreateGroup = [createOption].concat(items);
+
+        expect(findGroupListboxInput().props('items')).toEqual(itemsWithCreateGroup);
+      });
+
+      it('initializes items without create group option when no createErrors', async () => {
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            createErrors: null,
+          },
+        });
+
+        expect(findGroupListboxInput().props('items')).toEqual(items);
+      });
+    });
+
     describe('with default props', () => {
       beforeEach(async () => {
         wrapper = await createComponent();
@@ -155,9 +192,7 @@ describe('CreateTrialForm', () => {
       it('is set with initial value', async () => {
         wrapper = await createComponent();
 
-        expect(findGroupListboxInput().attributes('selected')).toBe(
-          defaultNamespaceData.initialValue,
-        );
+        expect(findGroupListboxInput().props('selected')).toBe(defaultNamespaceData.initialValue);
       });
 
       it('is unset when initialValue is null', async () => {
@@ -165,13 +200,7 @@ describe('CreateTrialForm', () => {
           namespaceData: { ...defaultNamespaceData, initialValue: '' },
         });
 
-        expect(findGroupListboxInput().attributes('selected')).toBe('');
-      });
-
-      it('passes the items to the listbox input', async () => {
-        wrapper = await createComponent();
-
-        expect(findGroupListboxInput().props('items')).toBe(items);
+        expect(findGroupListboxInput().props('selected')).toBe('');
       });
 
       it('does not exist when there are no eligible namespaces', async () => {
@@ -180,6 +209,146 @@ describe('CreateTrialForm', () => {
         });
 
         expect(fieldsProps()).not.toHaveProperty('group');
+      });
+
+      describe('create group button', () => {
+        it('shows create group button when a regular group is selected', async () => {
+          wrapper = await createComponent({
+            namespaceData: {
+              ...defaultNamespaceData,
+              initialValue: '2',
+            },
+          });
+
+          expect(findCreateGroupButton().exists()).toBe(true);
+          expect(findCreateGroupButton().text()).toBe('Create group');
+        });
+
+        it('hides create group button when create group option is selected', async () => {
+          wrapper = await createComponent({
+            namespaceData: {
+              ...defaultNamespaceData,
+              initialValue: '0',
+            },
+          });
+
+          expect(findCreateGroupButton().exists()).toBe(false);
+        });
+
+        it('shows create group button when no group is initially selected', async () => {
+          wrapper = await createComponent({
+            namespaceData: {
+              ...defaultNamespaceData,
+              initialValue: '',
+            },
+          });
+
+          expect(findCreateGroupButton().exists()).toBe(true);
+        });
+
+        it('handles create group button click correctly', async () => {
+          wrapper = await createComponent({
+            namespaceData: {
+              ...defaultNamespaceData,
+              initialValue: '2',
+            },
+          });
+
+          findCreateGroupButton().vm.$emit('click');
+
+          await nextTick();
+
+          expect(findGroupListboxInput().props('selected')).toBe('0');
+          expect(findGroupListboxInput().props('items')[0].text).toBe('Create group');
+        });
+
+        it('removes create group option when selectedGroup changes from create group to another option', async () => {
+          wrapper = await createComponent({
+            namespaceData: {
+              ...defaultNamespaceData,
+              initialValue: '2',
+            },
+          });
+
+          findCreateGroupButton().vm.$emit('click');
+
+          await nextTick();
+
+          expect(wrapper.vm.selectedGroup).toBe('0');
+          expect(findGroupListboxInput().props('items')).toHaveLength(items.length + 1);
+
+          findGroupListboxInput().vm.$emit('select', '2');
+
+          await nextTick();
+
+          expect(findGroupListboxInput().props('items')).toEqual(items);
+        });
+      });
+    });
+
+    describe('new group name field', () => {
+      it('shows new group name field when there are no eligible namespaces', async () => {
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            anyTrialEligibleNamespaces: false,
+          },
+        });
+
+        expect(fieldsProps()).toHaveProperty('new_group_name');
+      });
+
+      it('shows new group name field when create group option is selected', async () => {
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            initialValue: '0',
+          },
+        });
+
+        expect(fieldsProps()).toHaveProperty('new_group_name');
+      });
+
+      it('does not show new group name field when eligible namespaces exist and different group is selected', async () => {
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            anyTrialEligibleNamespaces: true,
+            initialValue: '2',
+          },
+        });
+
+        expect(fieldsProps()).not.toHaveProperty('new_group_name');
+      });
+    });
+
+    describe('namespace create errors', () => {
+      it('passes namespace create errors to GlFormFields when createErrors exist', async () => {
+        const createErrors = ['Group name already exists'];
+
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            createErrors,
+          },
+        });
+
+        expect(findFormFields().props('serverValidations')).toEqual({
+          new_group_name: createErrors,
+        });
+      });
+
+      it('passes empty server validations to GlFormFields when no createErrors', async () => {
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            createErrors: null,
+          },
+        });
+
+        expect(findFormFields().props('serverValidations')).toEqual({
+          new_group_name: null,
+        });
       });
     });
 
@@ -252,6 +421,29 @@ describe('CreateTrialForm', () => {
 
         const groupValidator = fieldsProps().group.validators[0];
         expect(groupValidator()).toBe('');
+      });
+    });
+
+    describe('new group name field validations', () => {
+      it('includes proper validation for new group name field', async () => {
+        wrapper = await createComponent({
+          namespaceData: {
+            ...defaultNamespaceData,
+            anyTrialEligibleNamespaces: false,
+          },
+        });
+
+        const newGroupNameValidator = fieldsProps().new_group_name.validators[0];
+
+        findNewGroupNameInput().vm.$emit('input', '');
+        await nextTick();
+
+        expect(newGroupNameValidator('')).toBe('You must enter a new group name.');
+
+        findNewGroupNameInput().vm.$emit('input', 'My New Group');
+        await nextTick();
+
+        expect(newGroupNameValidator()).toBe('');
       });
     });
 

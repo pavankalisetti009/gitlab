@@ -23,11 +23,34 @@ RSpec.describe GitlabSubscriptions::Trials::Ultimate::CreationFailureComponent, 
     {
       user: user,
       result: result,
-      params: params
+      params: params,
+      eligible_namespaces: []
     }
   end
 
   subject(:component) { render_inline(described_class.new(**kwargs)) && page }
+
+  context 'when group creation failed' do
+    let(:result) do
+      ServiceResponse.error(
+        message: 'Group creation failed',
+        reason: GitlabSubscriptions::Trials::UltimateCreateService::NAMESPACE_CREATE_FAILED,
+        payload: { namespace_id: 0 }
+      )
+    end
+
+    it 'displays the title' do
+      is_expected.to have_content(s_('Trial|Start your free trial'))
+    end
+
+    it 'displays the sub title' do
+      is_expected.to have_content(s_('Trial|We need a few more details from you to activate your trial.'))
+    end
+
+    it 'has the javascript form selector' do
+      is_expected.to have_selector('#js-create-trial-form')
+    end
+  end
 
   context 'when lead creation failed' do
     let(:result) do

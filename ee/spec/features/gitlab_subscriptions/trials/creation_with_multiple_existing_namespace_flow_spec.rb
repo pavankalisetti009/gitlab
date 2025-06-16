@@ -63,6 +63,56 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     end
   end
 
+  context 'when selecting to create a new group with an existing group name' do
+    it 'fills out form, submits and lands on the duo page with a unique path' do
+      sign_in(user)
+
+      stub_cdot_namespace_eligible_trials
+      visit new_trial_path
+
+      fill_in_company_information
+      select_create_from_listbox 'Create group', from: 'Select a group'
+      wait_for_requests
+
+      # success
+      group_name = 'gitlab1'
+      fill_in_trial_selection_form_for_new_group
+
+      submit_new_group_trial_form(extra_params: new_group_attrs(path: group_name))
+
+      expect_to_be_on_gitlab_duo_page(path: group_name)
+    end
+  end
+
+  context 'when selecting to create a new group with an invalid group name' do
+    it 'fills out form, submits and is presented with error then fills out valid name' do
+      sign_in(user)
+
+      stub_cdot_namespace_eligible_trials
+      visit new_trial_path
+
+      fill_in_company_information
+      select_create_from_listbox 'Create group', from: 'Select a group'
+      wait_for_requests
+
+      # namespace invalid check
+      fill_in_trial_selection_form_for_new_group(name: '_invalid group name_')
+
+      click_button 'Activate my trial'
+
+      expect_to_be_on_group_creation_with_selection
+      expect_to_have_group_creation_errors
+
+      # success when choosing a valid name instead
+      group_name = 'valid'
+      fill_in_trial_selection_form_for_new_group(name: group_name)
+
+      submit_new_group_trial_form(extra_params: new_group_attrs(path: group_name, name: group_name))
+
+      expect_to_be_on_gitlab_duo_page(path: group_name, name: group_name)
+    end
+  end
+
   context 'when applying lead fails' do
     it 'fills out form, submits and sent back to information form with errors and is then resolved' do
       # setup
@@ -109,6 +159,22 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     end
   end
 
+  def expect_to_be_on_group_creation_with_selection
+    within_testid('trial-form') do
+      expect(page).to have_content('Your trial will be applied to this group')
+      expect(page).to have_content('New group name')
+    end
+  end
+
+  def expect_to_have_group_creation_errors(group_name: '_invalid group name_', error_message: 'Group URL can')
+    wait_for_all_requests
+
+    within_testid('trial-form') do
+      expect(page.find_field('new_group_name').value).to eq(group_name)
+      expect(page).to have_content(error_message)
+    end
+  end
+
   def submit_trial_form(
     lead_result: ServiceResponse.success,
     trial_result: ServiceResponse.success,
@@ -131,5 +197,13 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     click_button 'Activate my trial'
 
     wait_for_requests
+  end
+
+  def fill_in_trial_selection_form_for_new_group(name: 'gitlab')
+    within_testid('trial-form') do
+      expect(page).to have_text('New group name')
+    end
+
+    fill_in_trial_form_for_new_group(name: name)
   end
 end

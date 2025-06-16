@@ -16,8 +16,6 @@ module GitlabSubscriptions
 
         attr_reader :user, :eligible_namespaces, :params
 
-        delegate :page_title, to: :helpers
-
         def form_data
           ::Gitlab::Json.generate(
             {

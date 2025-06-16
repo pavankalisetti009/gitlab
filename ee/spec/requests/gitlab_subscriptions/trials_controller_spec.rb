@@ -579,7 +579,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         def expect_create_with_premium_success(namespace)
           service_params = {
             step: step,
-            params: trial_params.merge(lead_params, glm_params),
+            params: trial_params.merge(lead_params, glm_params, organization_id: anything),
             user: user
           }
 
@@ -595,7 +595,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         def expect_create_success(namespace)
           service_params = {
             step: step,
-            params: trial_params.merge(lead_params, glm_params),
+            params: trial_params.merge(lead_params, glm_params, organization_id: anything),
             user: user
           }
 

@@ -9,6 +9,7 @@ module GitlabSubscriptions
         def initialize(**kwargs)
           @user = kwargs[:user]
           @result = kwargs[:result]
+          @eligible_namespaces = kwargs[:eligible_namespaces]
           @params = kwargs[:params]
         end
 
@@ -18,10 +19,17 @@ module GitlabSubscriptions
 
         private
 
-        attr_reader :user, :result, :params
+        attr_reader :user, :result, :eligible_namespaces, :params
 
         def component_instance
           case result.reason
+          when GitlabSubscriptions::Trials::UltimateCreateService::NAMESPACE_CREATE_FAILED
+            TrialFormWithErrorsComponent.new(
+              user: user,
+              eligible_namespaces: eligible_namespaces,
+              params: params,
+              namespace_create_errors: result.errors.to_sentence
+            )
           when GitlabSubscriptions::Trials::UltimateCreateService::LEAD_FAILED
             ResubmitComponent.new(
               hidden_fields: lead_failed_hidden_fields,

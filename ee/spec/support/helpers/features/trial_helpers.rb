@@ -168,6 +168,26 @@ module Features
       end
     end
 
+    def submit_new_group_trial_form(
+      lead_result: ServiceResponse.success,
+      trial_result: ServiceResponse.success,
+      glm: {},
+      extra_params: {}
+    )
+      # lead
+      expect_lead_submission(lead_result, glm: glm)
+
+      # trial
+      if lead_result.success?
+        stub_apply_trial(result: trial_result, extra_params: extra_params.merge(glm))
+        stub_duo_landing_page_data
+      end
+
+      click_button 'Activate my trial'
+
+      wait_for_requests
+    end
+
     def submit_company_information_form(
       button_text: 'Continue',
       lead_result: ServiceResponse.success,

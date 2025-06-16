@@ -12,8 +12,6 @@ module GitlabSubscriptions
         private
 
         attr_reader :hidden_fields, :submit_path
-
-        delegate :page_title, to: :helpers
       end
     end
   end
