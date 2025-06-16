@@ -23,7 +23,8 @@ RSpec.describe API::Entities::Group, feature_category: :groups_and_projects do
       :file_template_project_id,
       :duo_core_features_enabled,
       :duo_features_enabled,
-      :lock_duo_features_enabled
+      :lock_duo_features_enabled,
+      :web_based_commit_signing_enabled
     )
   end
 
@@ -100,6 +101,18 @@ RSpec.describe API::Entities::Group, feature_category: :groups_and_projects do
           expect(json.keys).to include(
             :duo_features_enabled,
             :lock_duo_features_enabled
+          )
+        end
+      end
+
+      context 'and the repositories_web_based_commit_signing feature is available' do
+        before do
+          stub_saas_features(repositories_web_based_commit_signing: true)
+        end
+
+        it 'returns expected data' do
+          expect(json.keys).to include(
+            :web_based_commit_signing_enabled
           )
         end
       end
