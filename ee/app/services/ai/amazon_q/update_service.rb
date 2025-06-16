@@ -25,7 +25,11 @@ module Ai
       private
 
       def update_settings
-        return unless application_settings.update(duo_availability: params[:availability])
+        ApplicationSettings::UpdateService.new(
+          application_settings,
+          user,
+          { duo_availability: params[:availability] }
+        ).execute
 
         update_integration(params)
       end
