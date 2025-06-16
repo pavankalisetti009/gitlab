@@ -681,6 +681,36 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         expect(response).to have_gitlab_http_status(:ok)
       end
     end
+
+    context 'web_based_commit_signing_enabled' do
+      using RSpec::Parameterized::TableSyntax
+      context 'when authenticated as group owner' do
+        where(:feature_available, :feature_enabled, :result) do
+          true  | false | false
+          true  | true  | true
+          false | true  | nil
+          false | false | nil
+        end
+
+        with_them do
+          let(:params) { { web_based_commit_signing_enabled: true } }
+
+          before do
+            group.add_owner(user)
+
+            stub_saas_features(repositories_web_based_commit_signing: feature_available)
+            stub_feature_flags(use_web_based_commit_signing_enabled: feature_enabled)
+          end
+
+          it 'updates the attribute as expected' do
+            subject
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['web_based_commit_signing_enabled']).to eq(result)
+          end
+        end
+      end
+    end
   end
 
   describe "POST /groups" do

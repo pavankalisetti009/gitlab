@@ -54,6 +54,11 @@ module EE
               group.licensed_ai_features_available? &&
                 Ability.allowed?(options[:current_user], :admin_group, group)
             }
+          expose :web_based_commit_signing_enabled,
+            if: ->(group, options) {
+              ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
+                Ability.allowed?(options[:current_user], :admin_group, group)
+            }
         end
       end
     end
