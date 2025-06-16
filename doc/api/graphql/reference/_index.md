@@ -3730,11 +3730,6 @@ Input type: `CiJobTokenScopeUpdatePoliciesInput`
 Linted and processed contents of a CI config.
 Should not be requested more than once per request.
 
-{{< details >}}
-**Introduced** in GitLab 18.1.
-**Status**: Experiment.
-{{< /details >}}
-
 Input type: `CiLintInput`
 
 #### Arguments
