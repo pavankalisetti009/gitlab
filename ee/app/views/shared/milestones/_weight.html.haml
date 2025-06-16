@@ -12,7 +12,7 @@
       - else
         = _('None')
   .title.hide-collapsed
-    - if Feature.enabled?(:work_item_epic_milestones, current_user)
+    - if @group&.work_item_epic_milestones_feature_flag_enabled?
       = _('Total weight')
     - else
       = _('Total issue weight')
