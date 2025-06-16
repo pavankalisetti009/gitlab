@@ -678,7 +678,11 @@ export default {
           <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />
         </disabled-section>
 
-        <policy-exceptions v-if="hasBypassOptions" />
+        <policy-exceptions
+          v-if="hasBypassOptions"
+          :exceptions="policy.bypass_settings"
+          @changed="handleUpdateProperty"
+        />
 
         <fallback-and-edge-cases-section
           :has-error="parsingError.fallback"

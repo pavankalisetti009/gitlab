@@ -2,6 +2,7 @@ import { GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BranchPatternSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/branch_pattern_selector.vue';
 import BranchPatternItem from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/branch_pattern_item.vue';
+import { mockBranchPatterns } from 'ee_jest/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/mocks';
 
 describe('BranchPatternSelector', () => {
   let wrapper;
@@ -18,7 +19,7 @@ describe('BranchPatternSelector', () => {
     });
   };
 
-  const findAddPatternButton = () => wrapper.findByTestId('add-pattern');
+  const findAddPatternButton = () => wrapper.findByTestId('add-branch-pattern');
   const findBranchPatternItems = () => wrapper.findAllComponents(BranchPatternItem);
   const findHelpLink = () => wrapper.findComponent(GlLink);
   const findComponentHeader = () => wrapper.findByTestId('pattern-header');
@@ -60,19 +61,14 @@ describe('BranchPatternSelector', () => {
   });
 
   describe('with provided patterns', () => {
-    const mockPatterns = [
-      { id: 'pattern_1', source: 'main-*', target: 'target-1' },
-      { id: 'pattern_2', source: 'feature-.*', target: 'target-2' },
-    ];
-
     beforeEach(() => {
-      createComponent({ patterns: mockPatterns });
+      createComponent({ branches: mockBranchPatterns });
     });
 
     it('maps and renders all provided patterns', () => {
       expect(findBranchPatternItems()).toHaveLength(2);
-      expect(findBranchPatternItems().at(0).props('pattern')).toEqual(mockPatterns[0]);
-      expect(findBranchPatternItems().at(1).props('pattern')).toEqual(mockPatterns[1]);
+      expect(findBranchPatternItems().at(0).props('branch')).toEqual(mockBranchPatterns[0]);
+      expect(findBranchPatternItems().at(1).props('branch')).toEqual(mockBranchPatterns[1]);
     });
   });
 
@@ -92,6 +88,24 @@ describe('BranchPatternSelector', () => {
       await findBranchPatternItems().at(0).vm.$emit('remove');
 
       expect(findBranchPatternItems()).toHaveLength(1);
+    });
+
+    it('saves selected branch patterns', async () => {
+      await findBranchPatternItems().at(0).vm.$emit('set-branch', mockBranchPatterns[0]);
+
+      expect(wrapper.emitted('set-branches')).toEqual([
+        [[{ source: 'main-*', target: 'target-1' }]],
+      ]);
+    });
+
+    it('removes existing branch pattern', async () => {
+      createComponent({ branches: mockBranchPatterns });
+
+      await findBranchPatternItems().at(0).vm.$emit('remove');
+
+      expect(wrapper.emitted('set-branches')).toEqual([
+        [[{ source: 'feature-.*', target: 'target-2' }]],
+      ]);
     });
   });
 });

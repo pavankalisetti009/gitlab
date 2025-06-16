@@ -10,6 +10,11 @@ export const UNBLOCK_RULES_TEXT = s__(
   'ScanResultPolicy|Make approval rules optional using execution policies',
 );
 
+export const NAME = 'name';
+export const PATTERN = 'pattern';
+export const SOURCE = 'source';
+export const TARGET = 'target';
+
 export const ROLES = 'roles';
 export const GROUPS = 'groups';
 export const ACCOUNTS = 'accounts';

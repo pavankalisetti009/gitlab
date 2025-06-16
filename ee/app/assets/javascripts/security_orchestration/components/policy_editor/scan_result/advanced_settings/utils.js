@@ -5,3 +5,7 @@ export const createSourceBranchPatternObject = ({ id = '', source = {}, target =
   source,
   target,
 });
+
+export const removeIds = (items = []) => {
+  return items.map(({ id, ...item }) => ({ ...item }));
+};

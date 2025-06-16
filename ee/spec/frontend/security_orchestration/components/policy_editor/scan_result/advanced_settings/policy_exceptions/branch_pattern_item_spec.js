@@ -5,7 +5,7 @@ import BranchPatternItem from 'ee/security_orchestration/components/policy_edito
 describe('BranchPatternItem', () => {
   let wrapper;
 
-  const defaultPattern = {
+  const defaultBranchPattern = {
     source: { pattern: 'feature/*' },
     target: { name: 'main' },
   };
@@ -13,7 +13,7 @@ describe('BranchPatternItem', () => {
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(BranchPatternItem, {
       propsData: {
-        pattern: props.pattern || {},
+        branch: props.branch || {},
         ...props,
       },
     });
@@ -36,7 +36,7 @@ describe('BranchPatternItem', () => {
     });
 
     it('renders the component with pattern values when provided', () => {
-      createComponent({ props: { pattern: defaultPattern } });
+      createComponent({ props: { branch: defaultBranchPattern } });
 
       expect(findSourceInput().props('value')).toBe('feature/*');
       expect(findTargetInput().props('value')).toBe('main');
@@ -59,10 +59,10 @@ describe('BranchPatternItem', () => {
       expect(wrapper.emitted('remove')).toHaveLength(1);
     });
 
-    it('handles pattern with missing source or target properties', () => {
+    it('handles branch pattern with missing source or target properties', () => {
       createComponent({
         props: {
-          pattern: {
+          branch: {
             source: null,
             target: { name: 'main' },
           },
@@ -73,10 +73,10 @@ describe('BranchPatternItem', () => {
       expect(findTargetInput().props('value')).toBe('main');
     });
 
-    it('handles pattern with empty source pattern or target name', () => {
+    it('handles branch with empty source pattern or target name', () => {
       createComponent({
         props: {
-          pattern: {
+          branch: {
             source: { pattern: '' },
             target: { name: '' },
           },
@@ -85,6 +85,18 @@ describe('BranchPatternItem', () => {
 
       expect(findSourceInput().props('value')).toBe('');
       expect(findTargetInput().props('value')).toBe('');
+    });
+
+    it('emits branch patterns', async () => {
+      createComponent();
+
+      await findSourceInput().vm.$emit('input', 'source');
+
+      expect(wrapper.emitted('set-branch')).toEqual([[{ source: { pattern: 'source' } }]]);
+
+      await findTargetInput().vm.$emit('input', 'target');
+
+      expect(wrapper.emitted('set-branch')[1]).toEqual([{ target: { name: 'target' } }]);
     });
   });
 });
