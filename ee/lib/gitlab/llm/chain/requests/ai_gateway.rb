@@ -212,10 +212,6 @@ module Gitlab
           end
 
           def chat_feature_setting(unit_primitive: nil)
-            unless Feature.enabled?(:ai_duo_chat_sub_features_settings) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-              return ::Ai::FeatureSetting.find_by_feature(:duo_chat)
-            end
-
             feature_name = unit_primitive ? :"duo_chat_#{unit_primitive}" : :duo_chat
             feature_setting = ::Ai::FeatureSetting.find_by_feature(feature_name)
 

@@ -92,22 +92,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     let_it_be(:feature_flagged_features) { Ai::FeatureSetting::FLAGGED_FEATURES.dup.stringify_keys }
 
     before do
-      stub_feature_flags(ai_duo_chat_sub_features_settings: true)
       allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
-    end
-
-    context 'when ai_duo_chat_sub_features_settings FF is disabled' do
-      before do
-        stub_feature_flags(ai_duo_chat_sub_features_settings: false)
-      end
-
-      it 'returns only stable features' do
-        expect(described_class.allowed_features).to eq(stable_features)
-      end
-
-      it 'does not include flagged features' do
-        expect(described_class.allowed_features.keys).not_to include(*feature_flagged_features.keys)
-      end
     end
 
     context 'when GitLab testing terms have not been accepted' do
@@ -124,11 +109,9 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       end
     end
 
-    context 'when ai_duo_chat_sub_features_settings feature is enabled' do
-      context 'when GitLab testing terms have been accepted' do
-        it 'returns both stable and flagged features' do
-          expect(described_class.allowed_features).to eq(stable_features.merge(feature_flagged_features))
-        end
+    context 'when GitLab testing terms have been accepted' do
+      it 'returns both stable and flagged features' do
+        expect(described_class.allowed_features).to eq(stable_features.merge(feature_flagged_features))
       end
     end
 

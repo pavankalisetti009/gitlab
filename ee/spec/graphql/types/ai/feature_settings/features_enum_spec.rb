@@ -3,10 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['AiFeatures'], feature_category: :"self-hosted_models" do
-  before do
-    stub_feature_flags(ai_duo_chat_sub_features_settings: false)
-  end
-
   it { expect(described_class.graphql_name).to eq('AiFeatures') }
 
   it 'exposes all the curated self-hosted features' do
