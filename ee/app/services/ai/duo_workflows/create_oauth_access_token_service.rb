@@ -12,7 +12,7 @@ module Ai
       end
 
       def execute
-        return error('Duo workflow is not enabled for user', :forbidden) if not_available
+        return error('Duo workflow is not enabled for user', :forbidden) if feature_disabled_for_user?
 
         ensure_oauth_application!
         token = create_oauth_access_token
@@ -79,7 +79,7 @@ module Ai
         Gitlab::Routing.url_helpers.root_url
       end
 
-      def not_available
+      def feature_disabled_for_user?
         case @workflow_definition
         when nil
           Feature.disabled?(:duo_workflow, current_user) && Feature.disabled?(:duo_agentic_chat, current_user)

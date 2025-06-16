@@ -15,19 +15,23 @@ module Gitlab
         end
 
         def project
-          Project.find_by_full_path("#{route[:namespace_id]}/#{route[:project_id]}")
+          Project.find_by_full_path("#{route&.[](:namespace_id)}/#{route&.[](:project_id)}")
         end
 
         def namespace
-          Namespace.find_by_full_path(route[:namespace_id])
+          Namespace.find_by_full_path(route&.[](:namespace_id))
         end
 
         def controller
-          route[:controller]
+          route&.[](:controller)
         end
 
         def id
-          route[:id]&.to_i
+          route&.[](:id)&.to_i
+        end
+
+        def action
+          route&.[](:action)
         end
 
         private

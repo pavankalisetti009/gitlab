@@ -117,4 +117,25 @@ RSpec.describe Gitlab::Llm::Utils::RouteHelper, feature_category: :duo_chat do
       it { is_expected.to be_nil }
     end
   end
+
+  describe "#action" do
+    subject { helper.action }
+
+    context "when action is found" do
+      let(:url) { 'https://gitlab.com/some/controller/path' }
+      let(:expected_action) { 'show' }
+
+      before do
+        allow(Rails.application.routes).to receive(:recognize_path).and_return({ action: expected_action })
+      end
+
+      it { is_expected.to eq(expected_action) }
+    end
+
+    context "when action is not found" do
+      include_context "with unknown path"
+
+      it { is_expected.to be_nil }
+    end
+  end
 end

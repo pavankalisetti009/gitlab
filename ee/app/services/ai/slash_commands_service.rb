@@ -55,7 +55,17 @@ module Ai
       context = determine_context
       return [] unless can_use_context_commands?(context)
 
-      self.class.commands[context] || []
+      commands = self.class.commands[context] || []
+      filter_context_specific_commands(commands, context)
+    end
+
+    def filter_context_specific_commands(commands, context)
+      # Remove /summarize_comments from issues overview page
+      if context == :issue && on_issues_index_page?
+        commands = commands.reject { |command| command[:name] == '/summarize_comments' }
+      end
+
+      commands
     end
 
     def can_use_context_commands?(context)
@@ -101,6 +111,10 @@ module Ai
       when 'vulnerabilities'
         project.vulnerabilities.sast.id_in(id).exists?
       end
+    end
+
+    def on_issues_index_page?
+      @route.controller == 'projects/issues' && @route.action == 'index'
     end
   end
 end
