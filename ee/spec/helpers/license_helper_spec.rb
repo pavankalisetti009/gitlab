@@ -84,7 +84,7 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
 
     before do
       allow(helper).to receive(:subscription_portal_manage_url).and_return('subscriptions_manage_url')
-      allow(helper).to receive(:new_trial_url).and_return('new_trial_url')
+      allow(helper).to receive(:self_managed_new_trial_url).and_return('self_managed_new_trial_url')
       allow(helper).to receive(:current_user).and_return(current_user)
     end
 
@@ -96,7 +96,7 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
 
         expect(helper.cloud_license_view_data).to eq({ has_active_license: 'true',
                                                        customers_portal_url: 'subscriptions_manage_url',
-                                                       free_trial_path: 'new_trial_url',
+                                                       free_trial_path: 'self_managed_new_trial_url',
                                                        buy_subscription_path: Gitlab::Saas.about_pricing_url,
                                                        subscription_sync_path: sync_seat_link_admin_license_path,
                                                        license_remove_path: admin_license_path,
@@ -111,7 +111,7 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
 
         expect(helper.cloud_license_view_data).to eq({ has_active_license: 'false',
                                                        customers_portal_url: 'subscriptions_manage_url',
-                                                       free_trial_path: 'new_trial_url',
+                                                       free_trial_path: 'self_managed_new_trial_url',
                                                        buy_subscription_path: Gitlab::Saas.about_pricing_url,
                                                        subscription_sync_path: sync_seat_link_admin_license_path,
                                                        license_remove_path: admin_license_path,
