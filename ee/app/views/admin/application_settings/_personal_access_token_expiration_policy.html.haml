@@ -4,5 +4,5 @@
 
 .form-group
   = form.label :max_personal_access_token_lifetime, _('Maximum allowable lifetime for access token (days)'), class: 'label-light'
-  = form.number_field :max_personal_access_token_lifetime, class: 'form-control gl-form-input input-xs', max: max_personal_access_token_lifetime_in_days
+  = form.number_field :max_personal_access_token_lifetime, class: 'form-control gl-form-input input-xs js-max-access-token-lifetime', max: max_personal_access_token_lifetime_in_days
   %span.form-text.gl-text-subtle#max_personal_access_token_lifetime= help_text
