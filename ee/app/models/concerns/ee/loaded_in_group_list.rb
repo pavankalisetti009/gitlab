@@ -5,7 +5,10 @@ module EE
     extend ActiveSupport::Concern
 
     class_methods do
-      def with_selects_for_list(archived: nil)
+      extend ::Gitlab::Utils::Override
+
+      override :with_selects_for_list
+      def with_selects_for_list(archived: nil, active: nil)
         super.preload(:saml_provider)
       end
     end
