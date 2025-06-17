@@ -19,7 +19,7 @@ describe('IssueBoardFilter', () => {
   const createComponent = ({
     hasCustomFieldsFeature = false,
     statusListsAvailable = false,
-    workItemStatusAvailable = false,
+    hasStatusFeature = false,
     workItemStatusFeatureFlagEnabled = false,
   } = {}) => {
     const customFieldsQueryHandler = jest.fn().mockResolvedValue({
@@ -62,7 +62,7 @@ describe('IssueBoardFilter', () => {
         healthStatusFeatureAvailable: true,
         hasCustomFieldsFeature,
         statusListsAvailable,
-        workItemStatusAvailable,
+        hasStatusFeature,
         glFeatures: {
           workItemStatusFeatureFlag: workItemStatusFeatureFlagEnabled,
         },
@@ -128,7 +128,7 @@ describe('IssueBoardFilter', () => {
         createComponent({
           statusListsAvailable: true,
           workItemStatusFeatureFlagEnabled: true,
-          workItemStatusAvailable: true,
+          hasStatusFeature: true,
         });
 
         await waitForPromises();
@@ -147,7 +147,7 @@ describe('IssueBoardFilter', () => {
         createComponent({
           statusListsAvailable: false,
           workItemStatusFeatureFlagEnabled: false,
-          workItemStatusAvailable: false,
+          hasStatusFeature: false,
         });
 
         await waitForPromises();
