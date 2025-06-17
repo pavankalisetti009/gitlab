@@ -21286,6 +21286,9 @@ msgstr ""
 msgid "Deleting protected branches is blocked by security policies"
 msgstr ""
 
+msgid "Deletion in progress"
+msgstr ""
+
 msgid "Deletion scheduled at: %{time}"
 msgstr ""
 
@@ -62253,9 +62256,6 @@ msgstr ""
 msgid "The parent epic is confidential and can only contain confidential epics and issues"
 msgstr ""
 
-msgid "The parent group of this %{context} is pending deletion, so this %{context} will also be deleted on %{date}."
-msgstr ""
-
 msgid "The password for your GitLab account on %{gitlab_url} has successfully been changed."
 msgstr ""
 
@@ -63090,6 +63090,9 @@ msgstr ""
 msgid "This group and its subgroups and projects are pending deletion, and will be deleted on %{date}."
 msgstr ""
 
+msgid "This group and its subgroups are being deleted."
+msgstr ""
+
 msgid "This group can be restored until %{date}. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
@@ -63130,6 +63133,9 @@ msgid "This group is scheduled for deletion on %{date}. This action will permane
 msgstr ""
 
 msgid "This group is scheduled to be deleted on %{date}. You are about to delete this group, including its subgroups and projects, immediately. This action cannot be undone."
+msgstr ""
+
+msgid "This group will be deleted on %{date} because its parent group is scheduled for deletion."
 msgstr ""
 
 msgid "This incident is already escalated with '%{escalation_policy_name}'."
@@ -63449,6 +63455,9 @@ msgstr ""
 msgid "This project is archived and read-only. To resume pull mirroring, unarchive the project."
 msgstr ""
 
+msgid "This project is being deleted. Repository and other project resources are read-only."
+msgstr ""
+
 msgid "This project is licensed under the %{strong_start}%{license_name}%{strong_end}."
 msgstr ""
 
@@ -63474,6 +63483,9 @@ msgid "This project reached the limit of custom domains. (Max %d)"
 msgstr ""
 
 msgid "This project was scheduled for deletion, but failed with the following message:"
+msgstr ""
+
+msgid "This project will be deleted on %{date} because its parent group is scheduled for deletion."
 msgstr ""
 
 msgid "This project's pipeline configuration is located outside this repository"
