@@ -114,6 +114,11 @@ namespace :gitlab do
 
     desc 'GitLab | Elasticsearch | List pending migrations'
     task list_pending_migrations: :environment do
+      unless Gitlab::CurrentSettings.elasticsearch_indexing?
+        Search::RakeTask::Elastic.stdout_logger.warn(Rainbow('Setting `elasticsearch_indexing` is disabled. ' \
+          'Migrations may not be accurate.').yellow)
+      end
+
       Search::RakeTask::Elastic.task_executor_service.execute(:list_pending_migrations)
     end
 
