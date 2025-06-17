@@ -5,8 +5,11 @@ module Admin
     class RolesAndPermissionsController < Admin::ApplicationController
       include ::GitlabSubscriptions::SubscriptionHelper
       include ::EE::RolesAndPermissions # rubocop: disable Cop/InjectEnterpriseEditionModule -- EE-only concern
+      include ProductAnalyticsTracking
 
       feature_category :user_management
+
+      track_internal_event :new, name: 'view_admin_custom_roles_create_page', category: name
 
       before_action :authorize_admin_member_roles!, except: [:index, :show]
       before_action :authorize_view_member_roles!, only: [:index, :show]
@@ -23,6 +26,14 @@ module Admin
 
       def authorize_view_member_roles!
         render_404 if gitlab_com_subscription? || !can?(current_user, :view_member_roles)
+      end
+
+      def tracking_namespace_source
+        nil
+      end
+
+      def tracking_project_source
+        nil
       end
     end
   end
