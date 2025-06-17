@@ -11,6 +11,12 @@ export default {
   components: {
     GlButton,
   },
+  inject: {
+    currentRef: {
+      default: null,
+      type: String,
+    },
+  },
   props: {
     projectId: {
       type: Number,
@@ -53,6 +59,10 @@ export default {
         workflow_definition: this.workflowDefinition,
         agent_privileges: this.agentPrivileges,
       };
+
+      if (this.currentRef) {
+        requestData.source_branch = this.currentRef;
+      }
 
       axios
         .post(this.duoWorkflowInvokePath, requestData)

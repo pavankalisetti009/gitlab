@@ -14,6 +14,7 @@ describe('DuoWorkflowAction component', () => {
   const duoWorkflowInvokePath = `/api/v4/projects/${projectId}/duo_workflows`;
   const pipelineId = 987;
   const pipelinePath = `/project/${projectId}/pipelines/${pipelineId}`;
+  const currentRef = 'feature-branch';
 
   const mockPipelineData = {
     pipeline: {
@@ -32,11 +33,14 @@ describe('DuoWorkflowAction component', () => {
     duoWorkflowInvokePath,
   };
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = {}) => {
     wrapper = shallowMount(DuoWorkflowAction, {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      provide: {
+        ...provide,
       },
     });
   };
@@ -81,6 +85,19 @@ describe('DuoWorkflowAction component', () => {
       await waitForPromises();
 
       expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, expectedRequestData);
+    });
+
+    it('includes source_branch when currentRef is provided', async () => {
+      createComponent({}, { currentRef });
+      axios.post.mockResolvedValue({ data: mockPipelineData });
+
+      findButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+        ...expectedRequestData,
+        source_branch: currentRef,
+      });
     });
 
     describe('when request succeeds', () => {
