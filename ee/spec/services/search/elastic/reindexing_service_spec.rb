@@ -26,7 +26,7 @@ RSpec.describe Search::Elastic::ReindexingService, feature_category: :global_sea
 
       it 'schedules indexing for the instance without skipping projects' do
         expect(Search::Elastic::TriggerIndexingWorker).to receive(:perform_in).with(
-          0, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => [] }
+          0, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK.to_s, { 'skip' => [] }
         )
 
         service.execute
@@ -38,7 +38,7 @@ RSpec.describe Search::Elastic::ReindexingService, feature_category: :global_sea
 
       it 'schedules indexing for the instance without delay' do
         expect(Search::Elastic::TriggerIndexingWorker).to receive(:perform_in).with(
-          0, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, described_class::DEFAULT_OPTIONS
+          0, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK.to_s, described_class::DEFAULT_OPTIONS
         )
 
         service.execute
@@ -52,7 +52,7 @@ RSpec.describe Search::Elastic::ReindexingService, feature_category: :global_sea
 
       it 'schedules indexing for the instance without delay' do
         expect(Search::Elastic::TriggerIndexingWorker).to receive(:perform_in).with(
-          delay, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, described_class::DEFAULT_OPTIONS
+          delay, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK.to_s, described_class::DEFAULT_OPTIONS
         )
 
         service.execute
