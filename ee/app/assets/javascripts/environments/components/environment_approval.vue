@@ -57,7 +57,7 @@ export default {
     :aria-label="buttonTitle"
     :href="deploymentWebPath"
     :size="size"
-    icon="thumb-up"
+    icon="approval"
   >
     <template v-if="showText">
       {{ $options.i18n.button }}
