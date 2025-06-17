@@ -18,4 +18,8 @@ FactoryBot.define do
     label { nil }
     iteration
   end
+
+  factory :status_list, parent: :list do
+    list_type { :status }
+  end
 end
