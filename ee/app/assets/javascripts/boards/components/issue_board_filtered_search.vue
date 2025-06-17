@@ -51,7 +51,7 @@ export default {
     'healthStatusFeatureAvailable',
     'isGroupBoard',
     'statusListsAvailable',
-    'workItemStatusAvailable',
+    'hasStatusFeature',
   ],
   data() {
     return {
@@ -101,7 +101,7 @@ export default {
     showCustomStatusFilter() {
       return (
         this.statusListsAvailable &&
-        this.workItemStatusAvailable &&
+        this.hasStatusFeature &&
         this.glFeatures.workItemStatusFeatureFlag
       );
     },
