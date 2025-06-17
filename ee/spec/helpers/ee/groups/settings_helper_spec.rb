@@ -110,19 +110,6 @@ RSpec.describe EE::Groups::SettingsHelper do
       )
     end
 
-    context 'when duo_workflow_mcp_enabled is disabled' do
-      before do
-        stub_feature_flags(duo_workflow_mcp_support: false)
-      end
-
-      it 'return duo_workflow_available as false' do
-        is_expected.to include(
-          duo_workflow_available: "false",
-          duo_workflow_mcp_enabled: "true"
-        )
-      end
-    end
-
     context 'with Duo Pro' do
       let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase, :duo_pro, :active) }
 
