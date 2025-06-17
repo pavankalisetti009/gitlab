@@ -19,6 +19,26 @@ module EE
 
             super
           end
+
+          override :user_can_admin_all_resources?
+          def user_can_admin_all_resources?(user, project)
+            immutable_tags_feature_available?(project) ? false : super
+          end
+
+          override :fetch_eligible_tag_rules_for_project
+          def fetch_eligible_tag_rules_for_project(tag_rules, project, user)
+            return super unless immutable_tags_feature_available?(project)
+
+            # admins are only restricted by immutable tag rules
+            return tag_rules.immutable if user&.can_admin_all_resources?
+
+            tag_rules
+          end
+
+          def immutable_tags_feature_available?(project)
+            ::Feature.enabled?(:container_registry_immutable_tags, project) &&
+              project.licensed_feature_available?(:container_registry_immutable_tag_rules)
+          end
         end
       end
     end
