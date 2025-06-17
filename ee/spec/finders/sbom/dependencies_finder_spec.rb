@@ -201,27 +201,6 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
             end
           end
         end
-
-        context 'when version filtering FF feature flag is disabled' do
-          before do
-            stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
-            stub_feature_flags(version_filtering_on_group_level_dependency_list: false)
-          end
-
-          let_it_be(:params) do
-            {
-              component_versions: [occurrence_1.component_version.version]
-            }
-          end
-
-          it 'returns only records corresponding to the filter' do
-            component_version_ids = dependencies.map(&:component_version_id)
-
-            expect(component_version_ids).to match_array([occurrence_1.component_version_id,
-              occurrence_2.component_version_id,
-              occurrence_3.component_version_id])
-          end
-        end
       end
 
       context 'when filtered by license' do

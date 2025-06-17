@@ -145,7 +145,7 @@ RSpec.shared_examples 'when dependencies graphql query filtered by component ver
   let(:component_version_query_payload) { { component_versions: queried_component_version } }
   let(:dependencies_query) { pagination_query(component_version_query_payload) }
 
-  context 'when the version filtering feature flag is enabled for the project' do
+  context 'when the version filtering is available for the project' do
     it 'returns only records matching the specified component version(s)' do
       post_graphql(dependencies_query, current_user: current_user)
 
@@ -156,25 +156,6 @@ RSpec.shared_examples 'when dependencies graphql query filtered by component ver
       expect(component_versions_in_result).to contain_exactly(matching_component_version)
       expect(versions_in_result).to contain_exactly(matching_component_version)
       expect(result_nodes.size).to eq(1)
-    end
-  end
-
-  context 'when the component version filtering feature flag is disabled for the project' do
-    before do
-      stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
-    end
-
-    it 'ignores the component filter and returns all relevant records' do
-      post_graphql(dependencies_query, current_user: current_user)
-
-      result_nodes = graphql_data_at(*nodes_path)
-      versions_in_result = result_nodes.pluck('version')
-
-      component_versions_in_result = result_nodes.map { |node| node.dig('componentVersion', 'version') }
-      expect(versions_in_result).to include(matching_component_version, other_component_version)
-
-      expect(component_versions_in_result).to include(matching_component_version, other_component_version)
-      expect(result_nodes.size).to eq(project.sbom_occurrences.count)
     end
   end
 end
@@ -206,21 +187,5 @@ RSpec.shared_examples 'when dependencies graphql query filtered by not component
 
     expect(versions_in_result).to include(included_component_version)
     expect(versions_in_result).not_to include(*excluded_component_versions)
-  end
-
-  context 'when the component version filtering feature flag is disabled for the project' do
-    before do
-      stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
-    end
-
-    it 'ignores the component filter and returns all relevant records' do
-      post_graphql(dependencies_query, current_user: current_user)
-
-      result_nodes = graphql_data_at(*nodes_path)
-      component_versions_in_result = result_nodes.map { |node| node.dig('componentVersion', 'version') }
-
-      expect(component_versions_in_result).to include(*excluded_component_versions, included_component_version)
-      expect(result_nodes.size).to eq(project.sbom_occurrences.count)
-    end
   end
 end

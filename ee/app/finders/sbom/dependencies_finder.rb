@@ -83,8 +83,6 @@ module Sbom
     end
 
     def filter_by_component_versions
-      return if version_filtering_disabled?
-
       negated_filter = params[:not]
 
       return if params[:component_versions].blank? && negated_filter.nil?
@@ -146,14 +144,6 @@ module Sbom
 
     def project?
       dependable.is_a?(::Project)
-    end
-
-    def version_filtering_disabled?
-      if project?
-        Feature.disabled?(:version_filtering_on_project_level_dependency_list, dependable)
-      elsif dependable.is_a?(::Group)
-        Feature.disabled?(:version_filtering_on_group_level_dependency_list, dependable)
-      end
     end
   end
 end

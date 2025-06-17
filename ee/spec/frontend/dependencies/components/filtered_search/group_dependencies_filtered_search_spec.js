@@ -16,9 +16,6 @@ describe('GroupDependenciesFilteredSearch', () => {
   const createComponent = ({ provide = {} } = {}) => {
     wrapper = shallowMount(GroupDependenciesFilteredSearch, {
       provide: {
-        glFeatures: {
-          versionFilteringOnGroupLevelDependencyList: true,
-        },
         ...provide,
       },
     });
@@ -48,26 +45,5 @@ describe('GroupDependenciesFilteredSearch', () => {
         }),
       ]),
     );
-  });
-
-  describe('when version_filtering_on_group_level_dependency_list feature flag is disabled', () => {
-    it('does not contain a "Version" token', () => {
-      createComponent({
-        provide: {
-          glFeatures: { versionFilteringOnGroupLevelDependencyList: false },
-        },
-      });
-
-      expect(findDependenciesFilteredSearch().props('tokens')).not.toMatchObject(
-        expect.arrayContaining([
-          expect.objectContaining({
-            title: 'Version',
-            type: 'version',
-            multiSelect: true,
-            token: VersionToken,
-          }),
-        ]),
-      );
-    });
   });
 });

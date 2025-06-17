@@ -18,12 +18,6 @@ RSpec.describe Sbom::ComponentVersionsFinder, feature_category: :vulnerability_m
       end
     end
 
-    shared_examples 'no versions' do
-      it "returns no versions" do
-        expect(find).to be_empty
-      end
-    end
-
     let(:finder) { described_class.new(object, sbom_component.name) }
 
     subject(:find) { finder.execute }
@@ -31,33 +25,13 @@ RSpec.describe Sbom::ComponentVersionsFinder, feature_category: :vulnerability_m
     context 'when finding versions for project' do
       let(:object) { project }
 
-      context 'when `version_filtering_on_project_level_dependency_list` feature flag is enabled' do
-        it_behaves_like 'when the component has multiple versions'
-      end
-
-      context 'when `version_filtering_on_project_level_dependency_list` feature flag is disabled' do
-        before do
-          stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
-        end
-
-        it_behaves_like 'no versions'
-      end
+      it_behaves_like 'when the component has multiple versions'
     end
 
     context 'when finding versions for group' do
       let(:object) { group }
 
-      context 'when `version_filtering_on_group_level_dependency_list` feature flag is enabled' do
-        it_behaves_like 'when the component has multiple versions'
-      end
-
-      context 'when `version_filtering_on_group_level_dependency_list` feature flag is disabled' do
-        before do
-          stub_feature_flags(version_filtering_on_group_level_dependency_list: false)
-        end
-
-        it_behaves_like 'no versions'
-      end
+      it_behaves_like 'when the component has multiple versions'
     end
   end
 end

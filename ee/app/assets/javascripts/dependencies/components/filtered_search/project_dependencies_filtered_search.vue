@@ -4,7 +4,6 @@ import {
   OPERATORS_IS,
   OPERATORS_IS_NOT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DependenciesFilteredSearch from './dependencies_filtered_search.vue';
 import ComponentToken from './tokens/component_token.vue';
 import VersionToken from './tokens/version_token.vue';
@@ -13,7 +12,6 @@ export default {
   components: {
     DependenciesFilteredSearch,
   },
-  mixins: [glFeatureFlagsMixin()],
   computed: {
     tokens() {
       return [
@@ -25,18 +23,14 @@ export default {
           token: ComponentToken,
           operators: OPERATORS_IS,
         },
-        ...(this.glFeatures.versionFilteringOnProjectLevelDependencyList
-          ? [
-              {
-                type: 'component_versions',
-                title: __('Version'),
-                multiSelect: true,
-                unique: true,
-                token: VersionToken,
-                operators: OPERATORS_IS_NOT,
-              },
-            ]
-          : []),
+        {
+          type: 'component_versions',
+          title: __('Version'),
+          multiSelect: true,
+          unique: true,
+          token: VersionToken,
+          operators: OPERATORS_IS_NOT,
+        },
       ];
     },
   },
