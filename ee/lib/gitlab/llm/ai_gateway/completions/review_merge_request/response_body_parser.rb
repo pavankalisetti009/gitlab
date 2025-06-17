@@ -2,7 +2,7 @@
 
 module Gitlab
   module Llm
-    module Anthropic
+    module AiGateway
       module Completions
         class ReviewMergeRequest
           class ResponseBodyParser
