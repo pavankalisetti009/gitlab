@@ -31365,9 +31365,6 @@ msgstr ""
 msgid "Hostname used in private commit emails. %{learn_more}"
 msgstr ""
 
-msgid "Hotspot indicator"
-msgstr ""
-
 msgid "Hour"
 msgstr ""
 
@@ -31417,9 +31414,6 @@ msgid "How do I set up this service?"
 msgstr ""
 
 msgid "How do I use a web terminal?"
-msgstr ""
-
-msgid "How does it work?"
 msgstr ""
 
 msgid "How does pull mirroring work?"
@@ -65237,9 +65231,6 @@ msgstr ""
 msgid "Troubleshoot failed CI/CD jobs with Root Cause Analysis."
 msgstr ""
 
-msgid "Troubleshoot failed jobs with Root Cause Analysis"
-msgstr ""
-
 msgid "True"
 msgstr ""
 
@@ -66479,9 +66470,6 @@ msgid "Use %{code_start}authorized_keys%{code_end} file to authenticate SSH keys
 msgstr ""
 
 msgid "Use .gitlab-ci.yml"
-msgstr ""
-
-msgid "Use AI to quickly identify the cause of job failures and get example fixes to get your pipeline running."
 msgstr ""
 
 msgid "Use Amazon Q to streamline development workflow and project upgrades"
