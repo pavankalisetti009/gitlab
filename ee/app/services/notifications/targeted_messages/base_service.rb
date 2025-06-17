@@ -13,10 +13,6 @@ module Notifications
 
       attr_reader :params, :targeted_message, :parsed_namespaces
 
-      def target_message_params
-        params.merge(namespace_ids: parsed_namespaces[:valid_namespace_ids])
-      end
-
       def parse_namespaces
         csv = params.delete(:namespace_ids_csv)
 

@@ -50,7 +50,7 @@ RSpec.describe Notifications::TargetedMessages::UpdateService, feature_category:
           execute
 
           expect(targeted_message.reload.targeted_message_namespaces.map(&:namespace_id))
-            .to match(targeted_namespace_ids)
+            .to match_array(targeted_namespace_ids)
         end
       end
     end

@@ -6,9 +6,24 @@ module Notifications
       def execute
         parse_namespaces
 
-        @targeted_message = Notifications::TargetedMessage.new(target_message_params)
+        @targeted_message = Notifications::TargetedMessage.new(targeted_message_params)
 
-        if @targeted_message.save
+        success = Notifications::TargetedMessage.transaction do
+          raise ActiveRecord::Rollback unless @targeted_message.save
+
+          parsed_namespaces[:valid_namespace_ids][1..].each_slice(1000) do |namespace_ids|
+            namespace_data = namespace_ids.map do |namespace_id|
+              {
+                targeted_message_id: @targeted_message.id,
+                namespace_id: namespace_id
+              }
+            end
+
+            Notifications::TargetedMessageNamespace.insert_all(namespace_data)
+          end
+        end
+
+        if success
           handle_success
         else
           handle_failure
@@ -16,6 +31,10 @@ module Notifications
       end
 
       private
+
+      def targeted_message_params
+        params.merge(namespace_ids: parsed_namespaces[:valid_namespace_ids].first)
+      end
 
       def handle_success
         if partial_success?
