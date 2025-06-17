@@ -32,6 +32,7 @@ export default {
   data() {
     return {
       vulnerabilitiesChartFn: null,
+      vulnerabilitySeveritiesChartFn: null,
     };
   },
   computed: {
@@ -43,6 +44,7 @@ export default {
     getReportData() {
       return {
         group_vulnerabilities_over_time: this.vulnerabilitiesChartFn?.() || {},
+        project_security_status: this.vulnerabilitySeveritiesChartFn?.() || {},
         full_path: this.groupFullPath,
       };
     },
@@ -63,7 +65,10 @@ export default {
         :query="historyQuery"
         @chart-report-data-registered="vulnerabilitiesChartFn = $event"
       />
-      <vulnerability-severities :query="gradesQuery" />
+      <vulnerability-severities
+        :query="gradesQuery"
+        @chart-report-data-registered="vulnerabilitySeveritiesChartFn = $event"
+      />
     </div>
   </div>
 </template>

@@ -50,6 +50,38 @@ export const getFormattedSummary = (rawSummary = {}) => {
   return formattedEntries.filter((entry) => entry !== null);
 };
 
+/**
+ * Limits the number of projects displayed per vulnerability grade.
+ *
+ * Takes an array of vulnerability grade data and ensures that each grade
+ * shows at most the specified number of projects. Grades with fewer projects
+ * than the limit are returned unchanged.
+ *
+ * @param {Array} vulnerabilityGradesQueryResults - Array of vulnerability grade objects from GraphQL query
+ * @param {number} [maxProjects=5] - Maximum number of projects to show per grade
+ * @returns {Array} Array of vulnerability grade objects with limited project nodes
+ */
+export const limitVulnerabilityGradeProjects = (
+  vulnerabilityGradesQueryResults,
+  maxProjects = 5,
+) => {
+  return vulnerabilityGradesQueryResults.map((gradeData) => {
+    const nodes = gradeData.projects?.nodes;
+
+    if (!nodes || nodes.length <= maxProjects) {
+      return gradeData;
+    }
+
+    return {
+      ...gradeData,
+      projects: {
+        ...gradeData.projects,
+        nodes: nodes.slice(0, maxProjects),
+      },
+    };
+  });
+};
+
 export const PROJECT_LOADING_ERROR_MESSAGE = __('An error occurred while retrieving projects.');
 
 export default () => ({});

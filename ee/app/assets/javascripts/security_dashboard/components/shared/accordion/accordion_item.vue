@@ -77,6 +77,7 @@ export default {
       } else {
         this.expand();
       }
+      this.$emit('input');
       accordionEventBus.$emit(this.closeOtherItemsEvent, this);
     },
     expand() {

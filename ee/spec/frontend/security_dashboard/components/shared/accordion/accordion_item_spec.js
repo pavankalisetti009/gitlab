@@ -152,6 +152,16 @@ describe('AccordionItem component', () => {
       expect(contentContainer().isVisible()).toBe(false);
     });
 
+    it('emits input event when clicked', async () => {
+      factory();
+
+      expect(wrapper.emitted('input')).toBeUndefined();
+
+      await expansionTrigger().trigger('click');
+
+      expect(wrapper.emitted('input')).toHaveLength(1);
+    });
+
     it('collapses when another accordion item is expanded', async () => {
       factoryMultiple();
       const firstItemContentContainer = allContentContainers().at(0);

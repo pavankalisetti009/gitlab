@@ -1,6 +1,6 @@
 import { GlLink } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import VulnerabilitySeverity from 'ee/security_dashboard/components/shared/project_security_status_chart.vue';
 import { Accordion, AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
@@ -199,6 +199,49 @@ describe('Vulnerability Severity component', () => {
       });
 
       expect(findSecurityDashboardCard().props('isLoading')).toBe(true);
+    });
+  });
+
+  describe('chart report', () => {
+    beforeEach(async () => {
+      wrapper = createComponent({
+        query: instanceVulnerabilityGradesQuery,
+        mockData: mockInstanceVulnerabilityGrades(),
+      });
+      await waitForPromises();
+    });
+
+    it('has correct vulnerability grades structure', () => {
+      const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+      const result = chartReportDataFn();
+
+      expect(result.vulnerability_grades[0]).toMatchObject({
+        grade: expect.any(String),
+        count: expect.any(Number),
+        projects: {
+          nodes: expect.any(Array),
+        },
+      });
+    });
+
+    it('has correct overall data structure with "F" being the default selection', () => {
+      const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+      const result = chartReportDataFn();
+
+      expect(result).toEqual({
+        vulnerability_grades: expect.any(Array),
+        expanded_grade: 'F',
+      });
+    });
+
+    it('updates expanded grade when accordion selection changes', async () => {
+      findAccordionItemByGrade(SEVERITY_GROUP_C).vm.$emit('input', SEVERITY_GROUP_C);
+      await nextTick();
+
+      const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+      const result = chartReportDataFn();
+
+      expect(result.expanded_grade).toBe(SEVERITY_GROUP_C);
     });
   });
 });
