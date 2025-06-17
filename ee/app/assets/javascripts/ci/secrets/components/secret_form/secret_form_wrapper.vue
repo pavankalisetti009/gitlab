@@ -9,7 +9,7 @@ import {
   ENVIRONMENT_QUERY_LIMIT,
   mapEnvironmentNames,
 } from '~/ci/common/private/ci_environments_dropdown';
-import { ENTITY_PROJECT } from '../../constants';
+import { ENTITY_PROJECT, FAILED_TO_LOAD_ERROR_MESSAGE } from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretForm from './secret_form.vue';
 
@@ -94,7 +94,7 @@ export default {
         return data.projectSecret || null;
       },
       error() {
-        createAlert({ message: s__('Secrets|Failed to load secret. Please try again later.') });
+        createAlert({ message: FAILED_TO_LOAD_ERROR_MESSAGE });
       },
     },
   },

@@ -1,4 +1,4 @@
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
 
 export const SECRET_DESCRIPTION_MAX_LENGTH = 200;
 export const BRANCH_QUERY_LIMIT = 100;
@@ -67,3 +67,7 @@ export const ROTATION_PERIOD_OPTIONS = [
 ];
 
 export const POLL_INTERVAL = 2000;
+
+export const FAILED_TO_LOAD_ERROR_MESSAGE = s__(
+  'Secrets|Failed to load secret. Please try again later.',
+);
