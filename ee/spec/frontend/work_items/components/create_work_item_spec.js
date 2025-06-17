@@ -46,6 +46,7 @@ jest.mock('~/lib/utils/url_utility', () => ({
 }));
 
 describe('EE Create work item component', () => {
+  const originalFeatures = gon.features;
   let wrapper;
   let mockApollo;
 
@@ -128,6 +129,11 @@ describe('EE Create work item component', () => {
     gon.current_user_fullname = mockCurrentUser.name;
     gon.current_username = mockCurrentUser.username;
     gon.current_user_avatar_url = mockCurrentUser.avatar_url;
+    gon.features = {};
+  });
+
+  afterAll(() => {
+    gon.features = originalFeatures;
   });
 
   describe('Create work item widgets for Epic work item type', () => {
