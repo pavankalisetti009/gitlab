@@ -12,7 +12,29 @@ module Notifications
       def execute
         parse_namespaces
 
-        if @targeted_message.update(target_message_params)
+        success = Notifications::TargetedMessage.transaction do
+          @targeted_message.assign_attributes(params)
+          raise ActiveRecord::Rollback unless @targeted_message.valid?
+
+          existing_namespace_ids = @targeted_message.namespace_ids
+          namespace_to_delete = existing_namespace_ids - parsed_namespaces[:valid_namespace_ids]
+          namespace_to_create = parsed_namespaces[:valid_namespace_ids] - existing_namespace_ids
+
+          @targeted_message.targeted_message_namespaces.where(namespace_id: namespace_to_delete).delete_all # rubocop:disable CodeReuse/ActiveRecord -- necessary for this service
+
+          namespace_to_create.each_slice(1000) do |namespace_ids|
+            namespace_data = namespace_ids.map do |namespace_id|
+              {
+                targeted_message_id: @targeted_message.id,
+                namespace_id: namespace_id
+              }
+            end
+
+            Notifications::TargetedMessageNamespace.insert_all(namespace_data)
+          end
+        end
+
+        if success
           handle_success
         else
           handle_failure
