@@ -9,8 +9,8 @@ module Ai
       BATCH_LIMIT = 1000
 
       def execute
-        scope =  Ai::DuoWorkflows::Workflow
-                   .with_stale_running(EXPIRATION_IN_MINUTES.minutes.ago)
+        scope = Ai::DuoWorkflows::Workflow.with_status(:created, :running)
+                  .stale_since(EXPIRATION_IN_MINUTES.minutes.ago)
         iterator = Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
 
         iterator.each_batch(of: BATCH_LIMIT) do |workflows|

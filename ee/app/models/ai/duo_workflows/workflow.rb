@@ -26,9 +26,7 @@ module Ai
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
       scope :for_user, ->(user_id) { where(user_id: user_id) }
       scope :for_project, ->(project) { where(project: project) }
-      scope :with_stale_running, ->(time) {
-        with_status(:running).where(updated_at: ...time).order(updated_at: :asc, id: :asc)
-      }
+      scope :stale_since, ->(time) { where(updated_at: ...time).order(updated_at: :asc, id: :asc) }
 
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
       class AgentPrivileges
