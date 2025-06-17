@@ -292,7 +292,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     end
   end
 
-  describe 'group adjourned deletion fields', time_travel_to: '2025-06-01', feature_category: :groups_and_projects do
+  describe 'group adjourned deletion fields' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group, developers: user) }
     let_it_be(:marked_for_deletion_on) { Time.new(2025, 5, 25) }
@@ -300,11 +300,14 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
       create(:group_with_deletion_schedule, marked_for_deletion_on: marked_for_deletion_on, developers: user)
     end
 
+    let_it_be(:parent_pending_delete_group) { create(:group, parent: pending_delete_group) }
+
     let(:group_full_path) { pending_delete_group.full_path }
     let(:query) do
       %(
         query {
           group(fullPath: "#{group_full_path}") {
+            markedForDeletion
             markedForDeletionOn
             permanentDeletionDate
           }
@@ -312,25 +315,52 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
       )
     end
 
+    before do
+      stub_application_setting(deletion_adjourned_period: 7)
+    end
+
     subject(:group_data) do
       result = GitlabSchema.execute(query, context: { current_user: user }).as_json
       {
+        marked_for_deletion: result.dig('data', 'group', 'markedForDeletion'),
         marked_for_deletion_on: result.dig('data', 'group', 'markedForDeletionOn'),
         permanent_deletion_date: result.dig('data', 'group', 'permanentDeletionDate')
       }
     end
 
-    it 'marked_for_deletion_on returns correct date' do
-      marked_for_deletion_on_time = Time.zone.parse(group_data[:marked_for_deletion_on])
-
-      expect(marked_for_deletion_on_time).to eq(pending_delete_group.marked_for_deletion_on.iso8601)
-    end
-
     context 'when group is scheduled for deletion' do
+      it 'marked_for_deletion returns true' do
+        expect(group_data[:marked_for_deletion]).to be true
+      end
+
+      it 'marked_for_deletion_on returns correct date' do
+        expect(Time.zone.parse(group_data[:marked_for_deletion_on]))
+          .to eq(pending_delete_group.marked_for_deletion_on.iso8601)
+      end
+
       it 'returns date group will be permanently deleted for permanent_deletion_date' do
         expect(group_data[:permanent_deletion_date])
           .to eq(
             ::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(marked_for_deletion_on).strftime('%F')
+          )
+      end
+    end
+
+    context 'when parent is scheduled for deletion' do
+      let(:group_full_path) { parent_pending_delete_group.full_path }
+
+      it 'marked_for_deletion returns true' do
+        expect(group_data[:marked_for_deletion]).to be true
+      end
+
+      it 'marked_for_deletion_on returns nil' do
+        expect(group_data[:marked_for_deletion_on]).to be_nil
+      end
+
+      it 'returns date group will be permanently deleted for permanent_deletion_date' do
+        expect(group_data[:permanent_deletion_date])
+          .to eq(
+            ::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F')
           )
       end
     end
@@ -341,6 +371,46 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
       it 'returns theoretical date group will be permanently deleted for permanent_deletion_date' do
         expect(group_data[:permanent_deletion_date])
           .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
+      end
+    end
+  end
+
+  describe 'group deletion in progress field' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group, developers: user) }
+    let_it_be(:group_being_deleted) do
+      create(:group, deleted_at: Time.now, developers: user)
+    end
+
+    let(:group_full_path) { group_being_deleted.full_path }
+    let(:query) do
+      %(
+        query {
+          group(fullPath: "#{group_full_path}") {
+            isSelfDeletionInProgress
+          }
+        }
+      )
+    end
+
+    subject(:group_data) do
+      result = GitlabSchema.execute(query, context: { current_user: user }).as_json
+      {
+        is_self_deletion_in_progress: result.dig('data', 'group', 'isSelfDeletionInProgress')
+      }
+    end
+
+    context 'when group is being deleted' do
+      it 'returns true' do
+        expect(group_data[:is_self_deletion_in_progress]).to be true
+      end
+    end
+
+    context 'when group is not being deleted' do
+      let(:group_full_path) { group.full_path }
+
+      it 'returns false' do
+        expect(group_data[:is_self_deletion_in_progress]).to be false
       end
     end
   end
