@@ -136,13 +136,12 @@ Users with the Developer role can approve merge requests if one of the following
 - Users who are [Code owners](#code-owners-as-eligible-approvers) of the files
   changed in the merge request.
 
-Users with the Reporter role can approve only if both of the following are true:
+Users with the Reporter role can approve only if all of the following are true:
 
 - The users are part of a group that has been [shared](../../members/sharing_projects_groups.md) with the project.
   The group must have at least the Reporter role.
 - The group has been added as merge request approvers.
-
-For detailed instructions, see [Merge request approval segregation of duties](#enable-approval-permissions-for-users-with-the-reporter-role).
+- Approval permissions for users with the reporter role [are enabled](#enable-approval-permissions-for-users-with-the-reporter-role).
 
 To show who has participated in the merge request review, the Approvals widget in
 a merge request displays a **Commented by** column. This column lists eligible approvers
