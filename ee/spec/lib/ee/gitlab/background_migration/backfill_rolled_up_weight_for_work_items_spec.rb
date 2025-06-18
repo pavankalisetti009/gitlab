@@ -17,7 +17,7 @@ RSpec.describe ::Gitlab::BackgroundMigration::BackfillRolledUpWeightForWorkItems
     projects.create!(namespace_id: namespace.id, project_namespace_id: namespace.id, organization_id: organization.id)
   end
 
-  let(:user) { users.create!(email: 'test@example.com', projects_limit: 10) }
+  let(:user) { users.create!(email: 'test@example.com', projects_limit: 10, organization_id: organization.id) }
   let(:issue_type) { work_item_types.find_by(base_type: 0) || work_item_types.create!(name: 'Issue', base_type: 0) }
   let(:epic_type) { work_item_types.find_by(base_type: 7) || work_item_types.create!(name: 'Epic', base_type: 7) }
 

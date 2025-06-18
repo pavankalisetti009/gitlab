@@ -9,7 +9,10 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillPipelineExecutionPoliciesMet
   let(:organizations) { table(:organizations) }
   let(:projects) { table(:projects) }
   let(:namespaces) { table(:namespaces) }
-  let(:user) { table(:users).create!(email: 'john@doe', username: 'john_doe', projects_limit: 10) }
+  let(:user) do
+    table(:users).create!(email: 'john@doe', username: 'john_doe', projects_limit: 10, organization_id: organization.id)
+  end
+
   let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
   let(:namespace) { namespaces.create!(name: 'Test', path: 'test', organization_id: organization.id) }
   let(:project_namespace) do
