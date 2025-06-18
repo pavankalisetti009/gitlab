@@ -1,7 +1,9 @@
 <script>
+import { isEmpty } from 'lodash';
 import { GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PolicyExceptionsModal from './policy_exceptions_modal.vue';
+import PolicyExceptionsSelectedList from './policy_exceptions_selected_list.vue';
 
 export default {
   i18n: {
@@ -12,6 +14,7 @@ export default {
   components: {
     GlButton,
     PolicyExceptionsModal,
+    PolicyExceptionsSelectedList,
   },
   props: {
     exceptions: {
@@ -25,15 +28,29 @@ export default {
       selectedTab: null,
     };
   },
+  computed: {
+    hasExceptions() {
+      return !isEmpty(this.exceptions);
+    },
+  },
   methods: {
     emitChanges(changes) {
       this.$emit('changed', 'bypass_settings', changes);
     },
     selectTab(tab) {
       this.selectedTab = tab;
+      this.showModal();
     },
     showModal() {
       this.$refs.modal.showModalWindow();
+    },
+    showNewModal() {
+      this.selectedTab = null;
+      this.showModal();
+    },
+    removeException(key) {
+      const { [key]: removed, ...exceptions } = this.exceptions;
+      this.emitChanges(exceptions);
     },
   },
 };
@@ -51,8 +68,21 @@ export default {
       @changed="emitChanges"
     />
 
+    <policy-exceptions-selected-list
+      v-if="hasExceptions"
+      :selected-exceptions="exceptions"
+      @edit-item="selectTab"
+      @remove="removeException"
+    />
+
     <div class="security-policies-bg-subtle gl-w-full gl-rounded-base gl-px-2 gl-py-3">
-      <gl-button icon="plus" category="tertiary" variant="confirm" size="small" @click="showModal">
+      <gl-button
+        icon="plus"
+        category="tertiary"
+        variant="confirm"
+        size="small"
+        @click="showNewModal"
+      >
         {{ $options.i18n.addButtonText }}
       </gl-button>
     </div>

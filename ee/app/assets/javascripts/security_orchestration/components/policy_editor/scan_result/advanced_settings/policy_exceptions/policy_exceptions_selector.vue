@@ -1,5 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
+import { __ } from '~/locale';
 import { EXCEPTION_FULL_OPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
 export default {
@@ -8,7 +9,20 @@ export default {
   components: {
     GlButton,
   },
+  props: {
+    selectedExceptions: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+  },
   methods: {
+    buttonText(key) {
+      return this.exceptionSelected(key) ? __('Update') : __('Select');
+    },
+    exceptionSelected(key) {
+      return key in (this.selectedExceptions || {});
+    },
     selectItem(key) {
       this.$emit('select', key);
     },
@@ -35,7 +49,7 @@ export default {
       </div>
       <div class="gl-pt-4">
         <gl-button category="primary" variant="confirm" @click="selectItem(option.key)">
-          {{ __('Select') }}
+          {{ buttonText(option.key) }}
         </gl-button>
       </div>
     </div>

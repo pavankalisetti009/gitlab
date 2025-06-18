@@ -19,7 +19,7 @@ export const ROLES = 'roles';
 export const GROUPS = 'groups';
 export const ACCOUNTS = 'accounts';
 export const TOKENS = 'tokens';
-export const SOURCE_BRANCH_PATTERNS = 'source_branch_patterns';
+export const SOURCE_BRANCH_PATTERNS = 'branches';
 
 export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   [ROLES]: {

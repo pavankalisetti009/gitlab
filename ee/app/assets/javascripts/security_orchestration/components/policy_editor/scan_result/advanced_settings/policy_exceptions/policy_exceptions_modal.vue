@@ -120,7 +120,7 @@ export default {
       />
     </div>
 
-    <policy-exceptions-selector v-else @select="selectTab" />
+    <policy-exceptions-selector v-else :selected-exceptions="exceptions" @select="selectTab" />
 
     <template #modal-footer>
       <div v-if="!selectedTab"></div>
@@ -129,9 +129,6 @@ export default {
           $options.i18n.backAction
         }}</gl-button>
         <div class="gl-ml-auto">
-          <gl-button category="secondary" variant="confirm" @click="hideModalWindow">{{
-            $options.i18n.cancelAction
-          }}</gl-button>
           <gl-button
             data-testid="save-button"
             category="primary"
@@ -139,6 +136,10 @@ export default {
             @click="saveChanges"
             >{{ $options.i18n.primaryAction }}</gl-button
           >
+
+          <gl-button category="secondary" variant="confirm" @click="hideModalWindow">{{
+            $options.i18n.cancelAction
+          }}</gl-button>
         </div>
       </div>
     </template>
