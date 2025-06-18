@@ -45733,6 +45733,12 @@ msgstr ""
 msgid "Pipelines|Pipeline syntax is correct. %{linkStart}Learn more%{linkEnd}"
 msgstr ""
 
+msgid "Pipelines|Preview inputs"
+msgstr ""
+
+msgid "Pipelines|Preview your inputs"
+msgstr ""
+
 msgid "Pipelines|Project cache successfully reset."
 msgstr ""
 
@@ -45803,6 +45809,9 @@ msgid "Pipelines|The GitLab CI configuration could not be updated."
 msgstr ""
 
 msgid "Pipelines|The branch or tag does not exist"
+msgstr ""
+
+msgid "Pipelines|The pipeline will run with these inputs:"
 msgstr ""
 
 msgid "Pipelines|There are currently no finished pipelines."
