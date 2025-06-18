@@ -2,7 +2,7 @@
 
 module Ai
   class TroubleshootJobEvent < ApplicationRecord
-    include UsageEvent
+    include BaseUsageEvent
 
     self.table_name = "ai_troubleshoot_job_events"
     self.clickhouse_table_name = "troubleshoot_job_events"
