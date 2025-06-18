@@ -37292,6 +37292,9 @@ msgstr ""
 msgid "MarkdownEditor|Click to expand"
 msgstr ""
 
+msgid "MarkdownEditor|Close find and replace bar"
+msgstr ""
+
 msgid "MarkdownEditor|Find and replace"
 msgstr ""
 
