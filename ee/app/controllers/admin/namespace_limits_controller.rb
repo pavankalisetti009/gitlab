@@ -5,7 +5,7 @@ module Admin
     feature_category :consumables_cost_management
     urgency :low
 
-    before_action :check_gitlab_com
+    before_action :verify_limits_available!
 
     def index; end
 
@@ -21,8 +21,8 @@ module Admin
 
     private
 
-    def check_gitlab_com
-      not_found unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+    def verify_limits_available!
+      not_found unless ::Gitlab::Saas.feature_available?(:namespaces_storage_limit)
     end
   end
 end

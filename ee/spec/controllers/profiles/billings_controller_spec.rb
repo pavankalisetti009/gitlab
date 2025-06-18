@@ -8,8 +8,7 @@ RSpec.describe Profiles::BillingsController, feature_category: :subscription_man
   describe 'GET #index' do
     before do
       sign_in(user)
-      stub_application_setting(check_namespace_plan: true)
-      allow(Gitlab).to receive(:com?).and_return(true)
+      stub_saas_features(gitlab_com_subscriptions: true)
       allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
         allow(instance).to receive(:execute).and_return([])
       end

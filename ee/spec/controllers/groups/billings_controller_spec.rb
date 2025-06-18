@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::BillingsController, :saas, feature_category: :subscription_management do
+RSpec.describe Groups::BillingsController, feature_category: :subscription_management do
   let_it_be(:owner) { create(:user) }
   let_it_be(:auditor) { create(:auditor) }
   let_it_be(:developer) { create(:user) }
@@ -12,7 +12,7 @@ RSpec.describe Groups::BillingsController, :saas, feature_category: :subscriptio
     group.add_developer(developer)
     group.add_guest(auditor)
     group.add_owner(owner)
-    allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+    stub_saas_features(gitlab_com_subscriptions: true)
   end
 
   describe 'GET index' do
@@ -95,8 +95,8 @@ RSpec.describe Groups::BillingsController, :saas, feature_category: :subscriptio
         is_expected.to have_gitlab_http_status(:not_found)
       end
 
-      it 'renders 404 when the namespace check is disabled' do
-        allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(false)
+      it 'renders 404 when gitlab_com_subscriptions are not available' do
+        stub_saas_features(gitlab_com_subscriptions: false)
 
         sign_in(owner)
 
@@ -107,7 +107,7 @@ RSpec.describe Groups::BillingsController, :saas, feature_category: :subscriptio
     end
   end
 
-  describe 'POST refresh_seats' do
+  describe 'POST refresh_seats', :saas do
     let_it_be(:gitlab_subscription) do
       create(:gitlab_subscription, namespace: group)
     end
@@ -170,8 +170,9 @@ RSpec.describe Groups::BillingsController, :saas, feature_category: :subscriptio
         is_expected.to have_gitlab_http_status(:not_found)
       end
 
-      it 'renders 404 when it is not gitlab.com' do
-        allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(false)
+      it 'renders 404 when gitlab_com_subscriptions are not available' do
+        stub_saas_features(gitlab_com_subscriptions: false)
+
         sign_in(owner)
 
         post_refresh_seats

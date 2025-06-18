@@ -4,7 +4,7 @@ class Groups::BillingsController < Groups::ApplicationController
   include GitlabSubscriptions::SeatCountAlert
 
   before_action :verify_authorization
-  before_action :verify_namespace_plan_check_enabled
+  before_action :verify_subscriptions_available!
 
   before_action only: [:index] do
     push_frontend_feature_flag(:refresh_billings_seats, type: :ops)
@@ -47,6 +47,10 @@ class Groups::BillingsController < Groups::ApplicationController
   end
 
   private
+
+  def verify_subscriptions_available!
+    render_404 unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+  end
 
   def update_subscription_seats
     gitlab_subscription = group.gitlab_subscription

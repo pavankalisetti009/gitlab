@@ -402,7 +402,7 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
 
       it_behaves_like 'renders correct panels' do
         before do
-          stub_ee_application_setting(check_namespace_plan: true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         let(:action) { 'namespace_storage' }
@@ -798,14 +798,14 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
       sign_in(admin)
     end
 
-    it 'returns not found when namespace plans are not checked' do
+    it 'returns not found when gitlab_com_subscriptions are not available' do
       get :namespace_storage
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
 
-    it 'returns ok when namespace plans are checked' do
-      stub_ee_application_setting(check_namespace_plan: true)
+    it 'returns ok when gitlab_com_subscriptions are available' do
+      stub_saas_features(gitlab_com_subscriptions: true)
 
       get :namespace_storage
 

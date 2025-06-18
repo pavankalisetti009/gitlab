@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: :subscription_management do
   describe 'POST /-/gitlab_subscriptions/hand_raise_leads' do
-    let_it_be(:user) { create(:user) }
+    let_it_be(:user) { create(:user, :with_namespace) }
     let_it_be(:namespace) { create(:group, developers: user) }
     let_it_be(:namespace_id) { namespace.id.to_s }
 
@@ -30,6 +30,8 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
     end
 
     before do
+      stub_saas_features(gitlab_com_subscriptions: true)
+
       allow_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
         allow(service).to receive(:execute).and_return(hand_raise_lead_result)
       end
@@ -62,9 +64,9 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
         post_hand_raise_lead
       end
 
-      context 'when not on gitlab.com' do
+      context 'when gitlab_com_subscriptions are not available' do
         before do
-          allow(::Gitlab).to receive(:com?).and_return(false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         it { is_expected.to have_gitlab_http_status(:not_found) }

@@ -7,6 +7,11 @@ RSpec.describe Admin::NamespaceLimitsController, :enable_admin_mode,
   feature_category: :consumables_cost_management do
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
+  let(:namespaces_storage_limit_enabled) { true }
+
+  before do
+    stub_saas_features(namespaces_storage_limit: namespaces_storage_limit_enabled)
+  end
 
   describe 'GET #index', :aggregate_failures do
     subject(:get_index) { get admin_namespace_limits_path }
@@ -24,9 +29,9 @@ RSpec.describe Admin::NamespaceLimitsController, :enable_admin_mode,
         sign_in(admin)
       end
 
-      context 'when on .com', :saas do
+      context 'when namespaces_storage_limit feature is available' do
         before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
+          stub_saas_features(namespaces_storage_limit: true)
         end
 
         it 'is successful' do
@@ -36,7 +41,9 @@ RSpec.describe Admin::NamespaceLimitsController, :enable_admin_mode,
         end
       end
 
-      context 'when not on .com' do
+      context 'when namespaces_storage_limit feature is not available' do
+        let(:namespaces_storage_limit_enabled) { false }
+
         it_behaves_like 'not found'
       end
     end
@@ -66,11 +73,7 @@ RSpec.describe Admin::NamespaceLimitsController, :enable_admin_mode,
         end
 
         context 'when requesting CSV format' do
-          context 'when on .com', :saas do
-            before do
-              stub_ee_application_setting(should_check_namespace_plan: true)
-            end
-
+          context 'when namespaces_storage_limit feature is available' do
             subject(:get_export) { get admin_namespace_limits_export_usage_path }
 
             it 'enqueues the CSV generation', :freeze_time do
