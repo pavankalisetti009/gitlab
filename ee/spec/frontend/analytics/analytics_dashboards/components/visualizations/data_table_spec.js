@@ -11,7 +11,7 @@ describe('DataTable Visualization', () => {
   const findTableHeaders = () => findTable().findAll('th');
   const findTableRowCells = (idx) => findTable().find('tbody').findAll('tr').at(idx).findAll('td');
 
-  const data = [{ field_one: 'alpha', field_two: 'beta' }];
+  const data = [{ field_one: 'alpha', field_two: 'beta', field_three: 'gamma' }];
 
   const createWrapper = (mountFn = shallowMount, props = {}) => {
     wrapper = extendedWrapper(
@@ -40,7 +40,7 @@ describe('DataTable Visualization', () => {
 
       const headers = findTableHeaders();
 
-      expect(headers).toHaveLength(2);
+      expect(headers).toHaveLength(3);
 
       ['Field One', 'Field Two'].forEach((headerText, idx) => {
         expect(headers.at(idx).text()).toBe(headerText);
@@ -52,7 +52,7 @@ describe('DataTable Visualization', () => {
 
       const rowCells = findTableRowCells(0);
 
-      expect(rowCells).toHaveLength(2);
+      expect(rowCells).toHaveLength(3);
 
       Object.values(data[0]).forEach((value, idx) => {
         expect(rowCells.at(idx).text()).toBe(value);
@@ -167,6 +167,50 @@ describe('DataTable Visualization', () => {
       expect(findTableRowCells(0).at(0).find('a').exists()).toBe(true);
       expect(badLink.text()).toBe('bar');
       expect(badLink.attributes('href')).toBe('about:blank');
+    });
+  });
+
+  describe('options', () => {
+    describe('fields', () => {
+      it('can specify the fields to render', () => {
+        createWrapper(mount, {
+          options: {
+            fields: [{ key: 'field_three' }, { key: 'field_two' }],
+          },
+        });
+
+        const rowCells = findTableRowCells(0);
+        expect(rowCells).toHaveLength(2);
+
+        const headers = findTableHeaders();
+        expect(headers).toHaveLength(2);
+
+        [
+          { field: 'Field Three', value: 'gamma' },
+          { field: 'Field Two', value: 'beta' },
+        ].forEach(({ field, value }, index) => {
+          expect(headers.at(index).text()).toBe(field);
+          expect(rowCells.at(index).text()).toBe(value);
+        });
+      });
+
+      it('can customize column labels', () => {
+        createWrapper(mount, {
+          options: {
+            fields: [
+              { key: 'field_three', label: 'Power level' },
+              { key: 'field_two', label: 'Saiyan level' },
+            ],
+          },
+        });
+
+        const headers = findTableHeaders();
+        expect(headers).toHaveLength(2);
+
+        ['Power level', 'Saiyan level'].forEach((field, index) => {
+          expect(headers.at(index).text()).toBe(field);
+        });
+      });
     });
   });
 });

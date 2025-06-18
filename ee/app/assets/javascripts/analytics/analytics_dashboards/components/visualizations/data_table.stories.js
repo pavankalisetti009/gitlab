@@ -63,6 +63,15 @@ const defaultArgs = {
 export const Default = Template.bind({});
 Default.args = defaultArgs;
 
+// See https://bootstrap-vue.org/docs/components/table#fields-as-an-array-of-objects
+export const CustomFields = Template.bind({});
+CustomFields.args = {
+  ...defaultArgs,
+  options: {
+    fields: [{ key: 'additions', label: 'Lines added' }, { key: 'deletions' }, { key: 'title' }],
+  },
+};
+
 export const InDashboardPanel = WithGridstack.bind({});
 InDashboardPanel.args = {
   ...defaultArgs,

@@ -125,6 +125,12 @@
         },
         "includeLegendAvgMax": {
           "type": "boolean"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
         }
       },
       "title": "Options"
