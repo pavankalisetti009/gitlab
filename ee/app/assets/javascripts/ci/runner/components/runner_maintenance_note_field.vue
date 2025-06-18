@@ -10,8 +10,12 @@ export default {
   mixins: [glFeatureFlagMixin()],
   inheritAttrs: false,
   computed: {
+    hasFeature() {
+      const { runnerMaintenanceNote, runnerMaintenanceNoteForNamespace } = this.glFeatures;
+      return runnerMaintenanceNote || runnerMaintenanceNoteForNamespace;
+    },
     shouldRender() {
-      return this.glFeatures.runnerMaintenanceNote;
+      return this.hasFeature;
     },
   },
 };
@@ -22,8 +26,11 @@ export default {
     data-testid="runner-field-maintenance-note"
     :label="s__('Runners|Maintenance note')"
     label-for="runner-maintenance-note"
-    :label-description="s__('Runners|Only administrators can view this.')"
-    :description="s__('Runners|Add notes such as the runner owner or what it should be used for.')"
+    :description="
+      s__(
+        'Runners|Add notes such as the runner owner or what it should be used for. Users with runner update permissions see this note.',
+      )
+    "
   >
     <gl-form-textarea
       id="runner-maintenance-note"

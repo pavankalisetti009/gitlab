@@ -12,6 +12,10 @@ export default {
   },
   mixins: [glFeatureFlagMixin()],
   props: {
+    runner: {
+      type: Object,
+      required: true,
+    },
     value: {
       type: String,
       required: false,
@@ -19,8 +23,16 @@ export default {
     },
   },
   computed: {
+    canUpdateRunner() {
+      // The maintenance note is only relevant to users that can edit the runner
+      return this.runner.userPermissions?.updateRunner;
+    },
+    hasFeature() {
+      const { runnerMaintenanceNote, runnerMaintenanceNoteForNamespace } = this.glFeatures;
+      return runnerMaintenanceNote || runnerMaintenanceNoteForNamespace;
+    },
     shouldRender() {
-      return this.glFeatures.runnerMaintenanceNote;
+      return this.canUpdateRunner && this.hasFeature;
     },
   },
 };

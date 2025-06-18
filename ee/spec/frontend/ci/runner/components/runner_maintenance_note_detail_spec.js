@@ -11,21 +11,21 @@ describe('RunnerMaintenanceNoteDetail', () => {
   const createComponent = ({ props = {}, mountFn = shallowMountExtended, ...options } = {}) => {
     wrapper = mountFn(RunnerMaintenanceNoteDetail, {
       propsData: {
+        runner: {
+          userPermissions: { updateRunner: true },
+        },
         ...props,
+      },
+      provide: {
+        glFeatures: { runnerMaintenanceNote: true },
       },
       ...options,
     });
   };
 
-  describe('when runner_maintenance_note is enabled, note is present', () => {
-    const provide = {
-      glFeatures: { runnerMaintenanceNote: true },
-    };
-
+  describe('when runner_maintenance_note is enabled and user can edit the runner, note is present', () => {
     it('note is present', () => {
-      createComponent({
-        provide,
-      });
+      createComponent();
 
       expect(findRunnerDetail().exists()).toBe(true);
     });
@@ -37,7 +37,6 @@ describe('RunnerMaintenanceNoteDetail', () => {
         props: {
           value,
         },
-        provide,
       });
 
       expect(findRunnerDetail().props('label')).toBe('Maintenance note');
@@ -52,7 +51,6 @@ describe('RunnerMaintenanceNoteDetail', () => {
           value,
         },
         mountFn: mountExtended,
-        provide,
       });
 
       expect(findRunnerDetail().props('label')).toBe('Maintenance note');
@@ -68,6 +66,20 @@ describe('RunnerMaintenanceNoteDetail', () => {
     it('note is not present', () => {
       createComponent({
         provide,
+      });
+
+      expect(findRunnerDetail().exists()).toBe(false);
+    });
+  });
+
+  describe('when user cannot update runner', () => {
+    it('note is not present', () => {
+      createComponent({
+        props: {
+          runner: {
+            userPermissions: { updateRunner: false },
+          },
+        },
       });
 
       expect(findRunnerDetail().exists()).toBe(false);
