@@ -1,0 +1,115 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_suggestions do
+  include LooseForeignKeysHelper
+
+  let_it_be(:project) { create(:project) }
+  let_it_be(:namespace) { create(:group) }
+  let_it_be(:enabled_namespace) do
+    create(:ai_active_context_code_enabled_namespace, namespace: namespace)
+  end
+
+  let(:connection) { enabled_namespace.active_context_connection }
+
+  let(:enabled_namespace_id) { enabled_namespace['id'] }
+
+  subject(:repository) do
+    create(:ai_active_context_code_repository,
+      project: project,
+      enabled_namespace: enabled_namespace
+    )
+  end
+
+  describe 'associations' do
+    it { is_expected.to belong_to(:project) }
+    it { is_expected.to belong_to(:enabled_namespace).class_name('Ai::ActiveContext::Code::EnabledNamespace').optional }
+    it { is_expected.to belong_to(:active_context_connection).class_name('Ai::ActiveContext::Connection') }
+  end
+
+  describe 'validations' do
+    describe 'metadata' do
+      it 'is valid for empty hash' do
+        repository.metadata = {}
+        expect(repository).to be_valid
+      end
+
+      it 'is invalid for a random hash' do
+        repository.metadata = { key: 'value' }
+        expect(repository).not_to be_valid
+      end
+    end
+
+    describe 'connection_id uniqueness' do
+      it 'validates uniqueness of connection_id scoped to project_id' do
+        create(:ai_active_context_code_repository,
+          project: project,
+          enabled_namespace: enabled_namespace,
+          connection_id: connection.id
+        )
+
+        repository2 = build(:ai_active_context_code_repository,
+          project: project,
+          enabled_namespace: enabled_namespace,
+          connection_id: connection.id
+        )
+
+        expect(repository2).not_to be_valid
+        expect(repository2.errors[:connection_id]).to include('has already been taken')
+      end
+
+      it 'allows same connection_id for different project_ids' do
+        create(:ai_active_context_code_repository,
+          project: project,
+          enabled_namespace: enabled_namespace,
+          connection_id: connection.id
+        )
+
+        repository2 = build(:ai_active_context_code_repository,
+          project: create(:project),
+          enabled_namespace: enabled_namespace,
+          connection_id: connection.id
+        )
+
+        expect(repository2).to be_valid
+      end
+    end
+  end
+
+  describe 'table partitioning' do
+    it 'is partitioned by project_id' do
+      expect(described_class.partitioning_strategy).to be_a(Gitlab::Database::Partitioning::IntRangeStrategy)
+      expect(described_class.partitioning_strategy.partitioning_key).to eq(:project_id)
+    end
+  end
+
+  describe 'foreign key constraints' do
+    describe 'when enabled_namespace is deleted' do
+      it_behaves_like 'cleanup by a loose foreign key' do
+        let!(:model) { create(:ai_active_context_code_repository) }
+        let!(:parent) { model.enabled_namespace }
+      end
+    end
+
+    describe 'when project is deleted' do
+      it_behaves_like 'update by a loose foreign key' do
+        let_it_be(:model) { create(:ai_active_context_code_repository) }
+        let!(:parent) { model.project }
+      end
+    end
+
+    describe 'when connection is deleted' do
+      it 'sets connection_id and enabled_namespace_id to nil but keeps the repository record' do
+        expect(repository.connection_id).to eq(connection.id)
+
+        connection.destroy!
+        repository.reload
+
+        expect(repository).to be_persisted
+        expect(repository.project_id).to eq(project.id)
+        expect(repository.connection_id).to be_nil
+      end
+    end
+  end
+end

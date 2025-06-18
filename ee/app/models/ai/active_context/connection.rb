@@ -10,6 +10,9 @@ module Ai
       encrypts :options
 
       has_many :migrations, class_name: 'Ai::ActiveContext::Migration'
+      has_many :enabled_namespaces, class_name: 'Ai::ActiveContext::Code::EnabledNamespace',
+        inverse_of: :active_context_connection
+      has_many :repositories, class_name: 'Ai::ActiveContext::Code::Repository', inverse_of: :active_context_connection
 
       validates :name, presence: true, length: { maximum: 255 }, uniqueness: true
       validates :adapter_class, presence: true, length: { maximum: 255 }
