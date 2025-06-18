@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category: :product_analytics do
+RSpec.describe Resolvers::Analytics::Dashboards::DashboardsResolver, feature_category: :product_analytics do
   include GraphqlHelpers
 
   describe '#resolve' do
@@ -28,7 +28,7 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
     end
 
     context 'when user has guest access' do
-      before do
+      before_all do
         project.add_guest(user)
       end
 
@@ -42,7 +42,7 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
     end
 
     context 'when user has developer access' do
-      before do
+      before_all do
         project.add_developer(user)
       end
 

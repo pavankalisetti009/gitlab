@@ -370,19 +370,19 @@ module EE
           description: 'Preview Billable User Changes',
           resolver: ::Resolvers::GitlabSubscriptions::PreviewBillableUserChangeResolver
 
-        field :customizable_dashboards, ::Types::ProductAnalytics::DashboardType.connection_type,
+        field :customizable_dashboards, ::Types::Analytics::Dashboards::DashboardType.connection_type,
           description: 'Customizable dashboards for the project.',
           null: true,
           calls_gitaly: true,
           experiment: { milestone: '15.6' },
-          resolver: ::Resolvers::ProductAnalytics::DashboardsResolver
+          resolver: ::Resolvers::Analytics::Dashboards::DashboardsResolver
 
-        field :customizable_dashboard_visualizations, ::Types::ProductAnalytics::VisualizationType.connection_type,
+        field :customizable_dashboard_visualizations, ::Types::Analytics::Dashboards::VisualizationType.connection_type,
           description: 'Visualizations of the project or associated configuration project.',
           null: true,
           calls_gitaly: true,
           experiment: { milestone: '16.1' },
-          resolver: ::Resolvers::ProductAnalytics::VisualizationsResolver
+          resolver: ::Resolvers::Analytics::Dashboards::VisualizationsResolver
 
         field :product_analytics_state, ::Types::ProductAnalytics::StateEnum,
           description: 'Current state of the product analytics stack for this project.' \

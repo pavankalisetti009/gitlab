@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::ProductAnalytics::VisualizationResolver do
+RSpec.describe Resolvers::Analytics::Dashboards::VisualizationResolver, feature_category: :product_analytics do
   include GraphqlHelpers
 
   describe '#resolve' do
-    subject do
+    subject(:resolved_visualization) do
       resolve(
         described_class, obj: project.product_analytics_dashboards(user).first.panels.first, ctx: { current_user: user }
       )
@@ -20,7 +20,7 @@ RSpec.describe Resolvers::ProductAnalytics::VisualizationResolver do
     let_it_be(:project) { create(:project, :with_product_analytics_dashboard) }
 
     it 'returns the visualization object' do
-      expect(subject).to be_a(Analytics::Visualization)
+      expect(resolved_visualization).to be_a(Analytics::Visualization)
     end
 
     context 'when the visualization does not exist' do
@@ -31,7 +31,7 @@ RSpec.describe Resolvers::ProductAnalytics::VisualizationResolver do
       end
 
       it 'returns nil' do
-        expect(subject).to be_nil
+        expect(resolved_visualization).to be_nil
       end
     end
   end

@@ -241,17 +241,17 @@ module EE
           experiment: { milestone: '16.4' }
 
         field :customizable_dashboards,
-          ::Types::ProductAnalytics::DashboardType.connection_type,
+          ::Types::Analytics::Dashboards::DashboardType.connection_type,
           description: 'Customizable dashboards for the group.',
           null: true,
           calls_gitaly: true,
-          resolver: ::Resolvers::ProductAnalytics::DashboardsResolver
+          resolver: ::Resolvers::Analytics::Dashboards::DashboardsResolver
 
-        field :customizable_dashboard_visualizations, ::Types::ProductAnalytics::VisualizationType.connection_type,
+        field :customizable_dashboard_visualizations, ::Types::Analytics::Dashboards::VisualizationType.connection_type,
           description: 'Visualizations of the group or associated configuration project.',
           null: true,
           calls_gitaly: true,
-          resolver: ::Resolvers::ProductAnalytics::VisualizationsResolver
+          resolver: ::Resolvers::Analytics::Dashboards::VisualizationsResolver
 
         field :amazon_s3_configurations,
           ::Types::AuditEvents::AmazonS3ConfigurationType.connection_type,

@@ -25805,7 +25805,7 @@ Represents a custom field select option.
 
 ### `CustomizableDashboard`
 
-Represents a product analytics dashboard.
+Represents a customizable dashboard.
 
 #### Fields
 
@@ -25824,7 +25824,7 @@ Represents a product analytics dashboard.
 
 ### `CustomizableDashboardPanel`
 
-Represents a product analytics dashboard panel.
+Represents a customizable dashboard panel.
 
 #### Fields
 
@@ -25837,7 +25837,7 @@ Represents a product analytics dashboard panel.
 
 ### `CustomizableDashboardVisualization`
 
-Represents a product analytics dashboard visualization.
+Represents a customizable dashboard visualization.
 
 #### Fields
 
