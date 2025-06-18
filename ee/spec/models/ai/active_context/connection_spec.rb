@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search do
+  it_behaves_like 'it has loose foreign keys' do
+    let(:factory_name) { :ai_active_context_connection }
+  end
+
   describe 'associations' do
     it { is_expected.to have_many(:migrations).class_name('Ai::ActiveContext::Migration') }
   end
