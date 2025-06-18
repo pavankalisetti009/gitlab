@@ -12,7 +12,8 @@ module ClickHouse
     TABLES = [
       Ai::CodeSuggestionEvent,
       Ai::DuoChatEvent,
-      Ai::TroubleshootJobEvent
+      Ai::TroubleshootJobEvent,
+      Ai::UsageEvent
     ].map(&:clickhouse_table_name).freeze
 
     def perform

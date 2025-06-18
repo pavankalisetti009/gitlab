@@ -37,18 +37,25 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
         event: 'code_suggestion_shown_in_ide',
         organization_id: organization.id,
         payload: { language: 'ruby' })
+      add_to_buffer({ user_id: 3,
+                      event: 'troubleshoot_job',
+                      organization_id: organization.id,
+                      namespace_id: personal_namespace.id,
+                      extras: { foo: 'bar' } },
+        Ai::UsageEvent)
     end
 
     it 'inserts all rows' do
       status = perform
 
-      expect(status).to eq({ status: :processed, inserted_rows: 4 })
+      expect(status).to eq({ status: :processed, inserted_rows: 5 })
       expect(inserted_records).to match([
         hash_including('user_id' => 3, 'event' => 'request_duo_chat_response'),
         hash_including('user_id' => 1, 'event' => 'code_suggestion_shown_in_ide'),
         hash_including('user_id' => 2, 'event' => 'code_suggestion_shown_in_ide'),
         hash_including('user_id' => 3, 'event' => 'code_suggestion_shown_in_ide',
-          'payload' => { 'language' => 'ruby' })
+          'payload' => { 'language' => 'ruby' }),
+        hash_including('user_id' => 3, 'event' => 'troubleshoot_job')
       ])
     end
 
@@ -56,7 +63,7 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
       it 'inserts all rows' do
         stub_const("#{described_class.name}::BATCH_SIZE", 2)
 
-        expect(perform).to eq({ status: :processed, inserted_rows: 4 })
+        expect(perform).to eq({ status: :processed, inserted_rows: 5 })
       end
     end
 

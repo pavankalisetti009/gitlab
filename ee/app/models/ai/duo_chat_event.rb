@@ -3,7 +3,7 @@
 module Ai
   class DuoChatEvent < ApplicationRecord
     include EachBatch
-    include UsageEvent
+    include BaseUsageEvent
 
     self.table_name = "ai_duo_chat_events"
     self.clickhouse_table_name = "duo_chat_events"

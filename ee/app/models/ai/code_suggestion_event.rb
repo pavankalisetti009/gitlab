@@ -3,7 +3,7 @@
 module Ai
   class CodeSuggestionEvent < ApplicationRecord
     include EachBatch
-    include UsageEvent
+    include BaseUsageEvent
 
     self.table_name = "ai_code_suggestion_events"
     self.clickhouse_table_name = "code_suggestion_events"
