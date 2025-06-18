@@ -26,9 +26,22 @@ module API
           declared(params, include_missing: false).merge({ users: users, key_type: 'ssh' })
         end
 
+        def sort_order
+          params[:sort]
+        end
+
         def pat_finder_params
-          declared(params,
-            include_missing: false).merge({ users: users, impersonation: false, owner_type: 'human' })
+          declared(
+            params,
+            include_missing: false).merge(
+              {
+                users: users,
+                impersonation: false,
+                group: user_group,
+                owner_type: 'human',
+                sort: sort_order
+              }
+            )
         end
 
         def bot_users
@@ -74,9 +87,17 @@ module API
             detail 'This feature was introduced in GitLab 17.8.'
           end
           get do
-            tokens = PersonalAccessTokensFinder.new(pat_finder_params).execute.preload_users
+            if Feature.enabled?(:credentials_inventory_pat_finder, user_group || :instance)
+              tokens = ::Authn::CredentialsInventoryPersonalAccessTokensFinder.new(pat_finder_params)
+                                                                                    .execute.preload_users
 
-            present paginate(tokens), with: Entities::PersonalAccessToken
+              # The optimization breaks if re-ordered
+              present paginate(tokens, skip_default_order: true), with: Entities::PersonalAccessToken
+            else
+              tokens = PersonalAccessTokensFinder.new(pat_finder_params).execute.preload_users
+
+              present paginate(tokens), with: Entities::PersonalAccessToken
+            end
           end
 
           desc 'Revoke a personal access token for the group' do
