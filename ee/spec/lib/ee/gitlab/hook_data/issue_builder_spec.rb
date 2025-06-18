@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Gitlab::HookData::IssueBuilder do
+RSpec.describe Gitlab::HookData::IssueBuilder, feature_category: :webhooks do
   let_it_be(:issue) { create(:issue) }
 
   let(:builder) { described_class.new(issue) }
 
   describe '#build' do
-    let(:data) { builder.build }
+    subject(:data) { builder.build }
 
     it 'includes safe attribute' do
       %w[
@@ -55,8 +55,34 @@ RSpec.describe Gitlab::HookData::IssueBuilder do
         stub_licensed_features(oncall_schedules: true, escalation_policies: true)
       end
 
-      it 'includes additional attr' do
-        expect(data).to include(:escalation_policy)
+      it { is_expected.to include(:escalation_policy) }
+    end
+
+    context "when current status exists" do
+      let_it_be_with_reload(:issue) { create(:work_item) }
+
+      context "when the licence is disabled" do
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        it { is_expected.not_to include(:status) }
+      end
+
+      context "when the feature flag is disabled" do
+        before do
+          stub_feature_flags(work_item_status_feature_flag: false)
+        end
+
+        it { is_expected.not_to include(:status) }
+      end
+
+      context "when the license exists" do
+        before do
+          stub_licensed_features(work_item_status: true)
+        end
+
+        it { is_expected.to include(:status) }
       end
     end
   end

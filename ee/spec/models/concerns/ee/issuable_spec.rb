@@ -203,6 +203,111 @@ RSpec.describe EE::Issuable, feature_category: :team_planning do
         end
       end
     end
+
+    context "with status changes" do
+      let(:old_associations) { { status: old_status } }
+
+      before do
+        stub_licensed_features(work_item_status: true)
+        expect(Gitlab::DataBuilder::Issuable).to receive(:new).with(issue).and_return(builder)
+      end
+
+      shared_examples "builder has status changes" do
+        it 'includes status fields' do
+          expect(builder).to receive(:build).with(
+            user: user,
+            changes: hash_including(
+              'status' => [old_status.hook_attrs, new_status.hook_attrs]
+            ),
+            action: 'open'
+          )
+
+          issue.to_hook_data(user, old_associations: old_associations, action: 'open')
+        end
+      end
+
+      shared_examples "builder does not have status changes" do
+        it 'does not include status fields' do
+          expect(builder).to receive(:build).with(
+            user: user,
+            changes: hash_excluding(
+              'status' => [old_status.hook_attrs, new_status.hook_attrs]
+            ),
+            action: 'open'
+          )
+
+          issue.to_hook_data(user, old_associations: old_associations, action: 'open')
+        end
+      end
+
+      context "with system defined statuses" do
+        let(:old_status) { build_stubbed(:work_item_system_defined_status, :to_do) }
+        let(:new_status) { build_stubbed(:work_item_system_defined_status, :in_progress) }
+        let(:issue) { create(:work_item) }
+
+        context "when status changes" do
+          before do
+            current_status = issue.build_current_status
+            current_status.status = new_status
+            current_status.save!
+          end
+
+          it_behaves_like "builder has status changes"
+
+          context "when old_associations status is nil" do
+            let(:old_associations) { nil }
+
+            it_behaves_like "builder does not have status changes"
+          end
+        end
+
+        context "when status is unchanged" do
+          it_behaves_like "builder does not have status changes"
+        end
+
+        context "with feature flag disabled" do
+          before do
+            stub_licensed_features(work_item_status: false)
+          end
+
+          it_behaves_like "builder does not have status changes"
+        end
+      end
+
+      context "with custom statuses" do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, group: group) }
+
+        let(:issue) { create(:work_item, :task, project: project) }
+        let!(:custom_lifecycle) do
+          create(:work_item_custom_lifecycle, namespace: group) do |lifecycle|
+            lifecycle.work_item_types << issue.work_item_type
+          end
+        end
+
+        let(:old_status) { custom_lifecycle.default_open_status }
+        let(:new_status) { custom_lifecycle.default_closed_status }
+
+        context "when status changes" do
+          before do
+            current_status = issue.build_current_status
+            current_status.status = new_status
+            current_status.save!
+          end
+
+          it_behaves_like "builder has status changes"
+          context "when old_associations status is nil" do
+            let(:old_associations) { nil }
+
+            it_behaves_like "builder does not have status changes"
+          end
+        end
+
+        context "when status is unchanged" do
+          it_behaves_like "builder does not have status changes"
+        end
+      end
+    end
   end
 
   describe '#allows_scoped_labels?' do

@@ -8,8 +8,8 @@ module WorkItems
         include ActiveModel::Attributes
         include ActiveRecord::FixedItemsModel::Model
         include GlobalID::Identification
-        include WorkItems::Statuses::SharedConstants
         include WorkItems::Statuses::Status
+        include ::WorkItems::ConfigurableStatus
 
         ITEMS = [
           {
@@ -89,16 +89,8 @@ module WorkItems
           nil
         end
 
-        def icon_name
-          CATEGORY_ICONS[category]
-        end
-
         def matches_name?(other_name)
           name.casecmp(other_name) == 0
-        end
-
-        def state
-          CATEGORIES_STATE.find { |state, categories| state if categories.include?(category.to_sym) }&.first
         end
       end
     end
