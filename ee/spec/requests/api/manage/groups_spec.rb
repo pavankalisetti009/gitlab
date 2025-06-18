@@ -47,6 +47,42 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     end
   end
 
+  shared_examples 'a /manage/PAT GET endpoint using the credentials inventory PAT finder' do
+    context 'when the :credentials_inventory_pat_finder is enabled' do
+      before do
+        stub_feature_flags(credentials_inventory_pat_finder: true)
+      end
+
+      it 'uses the InOperatorOptimization::QueryBuilder module' do
+        expect(::Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder)
+          .to receive(:new).and_call_original
+
+        get_request
+      end
+    end
+
+    context 'when the :credentials_inventory_pat_finder is disabled' do
+      before do
+        stub_feature_flags(credentials_inventory_pat_finder: false)
+      end
+
+      it 'does not use the InOperatorOptimization::QueryBuilder module' do
+        expect(::Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder)
+          .not_to receive(:new).and_call_original
+
+        get_request
+      end
+
+      it 'uses the standard PersonalAccessTokensFinder' do
+        expect_next_instance_of(::PersonalAccessTokensFinder) do |original_pat_finder|
+          expect(original_pat_finder).to receive(:execute).and_call_original
+        end
+
+        get_request
+      end
+    end
+  end
+
   shared_examples 'feature is not available to non saas versions' do |request_type|
     context 'when it is self-managed instance', saas: false do
       it "returns not found error" do
@@ -198,6 +234,8 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       it_behaves_like 'an access token GET API with access token params'
 
       it_behaves_like 'a manage groups GET endpoint'
+
+      it_behaves_like 'a /manage/PAT GET endpoint using the credentials inventory PAT finder'
 
       it 'returns 404 for non-existing group' do
         get(api(
