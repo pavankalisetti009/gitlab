@@ -236,10 +236,6 @@ module Types
       ::MarkupHelper.markdown(object.solution, context.to_h.dup)
     end
 
-    def severity
-      object.vulnerability&.severity || object.severity
-    end
-
     private
 
     def expose_false_positive?
