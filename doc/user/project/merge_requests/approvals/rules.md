@@ -121,11 +121,13 @@ For an overview, see [Multiple Approvers](https://www.youtube.com/watch?v=8JQJ58
 
 ## Eligible approvers
 
-To be eligible as an approver for a project, a user must be a member of at least one of the following:
+To be eligible as an approver for your project, a user must be a direct member of at least one of the following:
 
-- The project.
-- The project's immediate parent [group](#group-approvers).
-- A group that has been [shared](../../members/sharing_projects_groups.md) with the project.
+- Your project.
+- Your project's group.
+- Any of your project's group's parent groups.
+- Another group that has been [shared with your project](../../members/sharing_projects_groups.md#sharing-projects).
+- Another group that has been [shared with your project's group or any of the group's parents](../../members/sharing_projects_groups.md#sharing-groups).
 - A [group added as approvers](#group-approvers).
 
 Users with the Developer role can approve merge requests if one of the following is true:
