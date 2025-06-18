@@ -36,6 +36,10 @@
       "type": "number",
       "description": "Number of parallel processes per indexing task"
     },
+    "zoekt_maximum_files": {
+      "type": "number",
+      "description": "Maximum number of files per project to be indexed"
+    },
     "zoekt_rollout_batch_size": {
       "type": "number",
       "description": "Number of namespaces per indexing rollout"

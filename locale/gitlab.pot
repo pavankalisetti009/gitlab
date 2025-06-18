@@ -37625,6 +37625,9 @@ msgstr ""
 msgid "Maximum number of comments exceeded"
 msgstr ""
 
+msgid "Maximum number of files per project to be indexed"
+msgstr ""
+
 msgid "Maximum number of mirrors that can be synchronizing at the same time."
 msgstr ""
 

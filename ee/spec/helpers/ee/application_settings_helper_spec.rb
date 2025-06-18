@@ -389,10 +389,14 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         selector = 'input[type="text"][name="application_setting[zoekt_indexing_timeout]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_INDEXING_TIMEOUT}\"]"
         expect(result[9]).to have_selector(selector)
-        expect(result[10]).to have_selector('label', text: _('Retry interval for failed namespaces'))
+        expect(result[10]).to have_selector('label', text: _('Maximum number of files per project to be indexed'))
+        selector = 'input[type="number"][name="application_setting[zoekt_maximum_files]"]' \
+          "[value=\"#{Search::Zoekt::Settings::DEFAULT_MAXIMUM_FILES}\"]"
+        expect(result[11]).to have_selector(selector)
+        expect(result[12]).to have_selector('label', text: _('Retry interval for failed namespaces'))
         selector = 'input[type="text"][name="application_setting[zoekt_rollout_retry_interval]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL}\"]"
-        expect(result[11]).to have_selector(selector)
+        expect(result[13]).to have_selector(selector)
       end
     end
 
