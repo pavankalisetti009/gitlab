@@ -42,7 +42,7 @@ module ComplianceManagement
       end
 
       def enforce_pipl_compliance?
-        Feature.enabled?(:enforce_pipl_compliance, user)
+        ::Gitlab::CurrentSettings.enforce_pipl_compliance?
       end
     end
   end

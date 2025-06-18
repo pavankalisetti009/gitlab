@@ -56,9 +56,9 @@ RSpec.describe ComplianceManagement::Pipl::SendInitialComplianceEmailService, fe
     end
   end
 
-  context "when enforce_pipl_compliance is disabled" do
+  context "when enforce_pipl_compliance setting is disabled" do
     before do
-      stub_feature_flags(enforce_pipl_compliance: false)
+      stub_ee_application_setting(enforce_pipl_compliance: false)
     end
 
     it 'returns a service response error' do

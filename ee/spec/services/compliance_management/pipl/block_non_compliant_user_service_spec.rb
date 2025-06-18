@@ -39,9 +39,9 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUserService,
           it_behaves_like 'has a validation error', "Pipl Compliance is not available on this instance"
         end
 
-        context 'when the enforce_pipl_compliance is disabled' do
+        context 'when the enforce_pipl_compliance setting is disabled' do
           before do
-            stub_feature_flags(enforce_pipl_compliance: false)
+            stub_ee_application_setting(enforce_pipl_compliance: false)
           end
 
           it_behaves_like 'does not block the user'

@@ -4633,6 +4633,12 @@ msgstr ""
 msgid "AdminSettings|Enabled"
 msgstr ""
 
+msgid "AdminSettings|Enforce PIPL compliance"
+msgstr ""
+
+msgid "AdminSettings|Enforce PIPL compliance for all users"
+msgstr ""
+
 msgid "AdminSettings|Enforce invitation flow for groups and projects"
 msgstr ""
 
@@ -4708,6 +4714,9 @@ msgstr ""
 msgid "AdminSettings|Make new users' profiles private by default"
 msgstr ""
 
+msgid "AdminSettings|Manage PIPL compliance for all users"
+msgstr ""
+
 msgid "AdminSettings|Manage which integrations can be enabled on this instance."
 msgstr ""
 
@@ -4763,6 +4772,9 @@ msgid "AdminSettings|No required configuration"
 msgstr ""
 
 msgid "AdminSettings|Only enable search after installing the plugin, enabling indexing, and recreating the index."
+msgstr ""
+
+msgid "AdminSettings|PIPL compliance"
 msgstr ""
 
 msgid "AdminSettings|Package registry metadata to sync"

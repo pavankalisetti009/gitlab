@@ -37,9 +37,9 @@ RSpec.describe ComplianceManagement::Pipl::BlockPiplUsersWorker,
 
         it_behaves_like 'an idempotent worker'
 
-        context 'when enforce_pipl_compliance is disabled' do
+        context 'when enforce_pipl_compliance setting is disabled' do
           before do
-            stub_feature_flags(enforce_pipl_compliance: false)
+            stub_ee_application_setting(enforce_pipl_compliance: false)
           end
 
           it 'does not block the blockable users' do

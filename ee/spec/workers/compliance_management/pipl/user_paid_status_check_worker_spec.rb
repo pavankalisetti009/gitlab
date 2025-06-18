@@ -36,9 +36,9 @@ RSpec.describe ComplianceManagement::Pipl::UserPaidStatusCheckWorker,
         assert_subject_to_pipl?(subject_to_pipl)
       end
 
-      context 'when enforce_pipl_compliance is disabled' do
+      context 'when enforce_pipl_compliance setting is disabled' do
         before do
-          stub_feature_flags(enforce_pipl_compliance: false)
+          stub_ee_application_setting(enforce_pipl_compliance: false)
         end
 
         it "caches the user's subject to PIPL status for 24 hours", :aggregate_failures do

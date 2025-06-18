@@ -3,7 +3,7 @@
 module ComplianceManagement
   class PiplUserPolicy < BasePolicy
     condition(:enforce_pipl_compliance) do
-      Feature.enabled?(:enforce_pipl_compliance, @subject)
+      ::Gitlab::CurrentSettings.enforce_pipl_compliance?
     end
 
     condition(:disable_delete_pipl_user) do
