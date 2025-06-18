@@ -34015,6 +34015,9 @@ msgstr ""
 msgid "Issues and merge requests"
 msgstr ""
 
+msgid "Issues and merge requests you visit will appear here."
+msgstr ""
+
 msgid "Issues are being rebalanced at the moment, so manual reordering is disabled."
 msgstr ""
 
@@ -50780,6 +50783,9 @@ msgid "Recent searches"
 msgstr ""
 
 msgid "Recently used"
+msgstr ""
+
+msgid "Recently viewed"
 msgstr ""
 
 msgid "Reconfigure"
