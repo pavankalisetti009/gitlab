@@ -17,11 +17,6 @@ import {
 
 Vue.use(VueApollo);
 
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn(),
-}));
-
 describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue', () => {
   let wrapper;
 
@@ -247,6 +242,39 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
 
         expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalled();
       });
+
+      it.each`
+        mergeRequestId | expectedToHaveProperty
+        ${'1'}         | ${true}
+        ${null}        | ${false}
+      `(
+        'includes mergeRequestId in the mutation variables when mergeRequestId is $mergeRequestId: $expectedToHaveProperty',
+        async ({ mergeRequestId, expectedToHaveProperty }) => {
+          const aiResolveVulnerabilitySpy = jest.fn().mockResolvedValue({
+            data: { aiAction: { errors: [] } },
+          });
+
+          createWrapperWithApollo({
+            responseHandlers: { aiResolveVulnerability: aiResolveVulnerabilitySpy },
+            propsData: { mergeRequestId },
+          });
+
+          clickButton();
+          sendSubscriptionMessage();
+          await waitForPromises();
+
+          const resolveVulnerabilityVariables = aiResolveVulnerabilitySpy.mock.calls[0][0];
+
+          if (expectedToHaveProperty) {
+            expect(resolveVulnerabilityVariables).toHaveProperty(
+              'vulnerableMergeRequestId',
+              `gid://gitlab/MergeRequest/${mergeRequestId}`,
+            );
+          } else {
+            expect(resolveVulnerabilityVariables).not.toHaveProperty('vulnerableMergeRequestId');
+          }
+        },
+      );
 
       it('emits a "success" event when the subscription response returns the correct content', async () => {
         createWrapperWithApollo();

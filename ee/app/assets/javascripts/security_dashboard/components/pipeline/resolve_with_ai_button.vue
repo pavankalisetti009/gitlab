@@ -22,7 +22,8 @@ export default {
   props: {
     mergeRequestId: {
       type: [String, Number],
-      required: true,
+      required: false,
+      default: null,
     },
     findingUuid: {
       type: String,
@@ -115,7 +116,7 @@ export default {
           variables: {
             clientSubscriptionId: CLIENT_SUBSCRIPTION_ID,
             resourceId: this.vulnerabilityGraphqlId,
-            vulnerableMergeRequestId: this.mergeRequestGraphQLId,
+            ...(this.mergeRequestId && { vulnerableMergeRequestId: this.mergeRequestGraphQLId }),
           },
         })
         .then(({ data }) => {

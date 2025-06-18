@@ -728,7 +728,6 @@ describe('MR Widget Security Reports', () => {
         projectFullPath: targetProjectFullPath,
         sourceProjectFullPath,
         branchRef: sourceBranch,
-        showAiResolution: true,
       });
     });
 

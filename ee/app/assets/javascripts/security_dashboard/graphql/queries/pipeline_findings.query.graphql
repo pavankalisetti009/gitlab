@@ -36,6 +36,8 @@ query pipelineFindings(
           id: uuid
           # Removed in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119055
           name: title
+          aiResolutionAvailable
+          aiResolutionEnabled
           description
           falsePositive @include(if: $vetEnabled)
           identifiers {
