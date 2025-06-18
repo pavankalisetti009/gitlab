@@ -10,7 +10,7 @@ RSpec.describe 'Groups > Members > Leave group', feature_category: :groups_and_p
   let(:other_user) { create(:user) }
   let(:group) { create(:group) }
   let(:more_actions_dropdown) do
-    find('[data-testid="groups-projects-more-actions-dropdown"] .gl-new-dropdown-custom-toggle')
+    find_by_testid('groups-projects-more-actions-dropdown')
   end
 
   before do
