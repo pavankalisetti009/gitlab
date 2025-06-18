@@ -9,7 +9,7 @@ import TodoItem from '~/todos/components/todo_item.vue';
 import getTodosQuery from '~/todos/components/queries/get_todos.query.graphql';
 import { TABS_INDICES } from '~/todos/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { todosResponse } from '../todos/mock_data';
+import { todosResponse } from '../../todos/mock_data';
 
 Vue.use(VueApollo);
 
