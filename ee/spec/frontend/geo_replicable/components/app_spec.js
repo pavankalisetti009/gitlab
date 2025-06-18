@@ -3,11 +3,11 @@ import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import { BULK_ACTIONS } from 'ee/geo_replicable/constants';
+import { BULK_ACTIONS, GEO_TROUBLESHOOTING_LINK } from 'ee/geo_replicable/constants';
 import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
-import GeoReplicableEmptyState from 'ee/geo_replicable/components/geo_replicable_empty_state.vue';
+import GeoListEmptyState from 'ee/geo_shared/list/components/geo_list_empty_state.vue';
 import GeoReplicableFilterBar from 'ee/geo_replicable/components/geo_replicable_filter_bar.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import initStore from 'ee/geo_replicable/store';
@@ -16,7 +16,6 @@ import { TEST_HOST } from 'spec/test_constants';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { setUrlParams, visitUrl } from '~/lib/utils/url_utility';
 import {
-  MOCK_GEO_REPLICATION_SVG_PATH,
   MOCK_BASIC_GRAPHQL_DATA,
   MOCK_REPLICABLE_TYPE,
   MOCK_GRAPHQL_REGISTRY,
@@ -27,6 +26,9 @@ import {
 const MOCK_FILTERS = { foo: 'bar' };
 const MOCK_PROCESSED_FILTERS = { query: MOCK_FILTERS, url: { href: 'mock-url/params' } };
 const MOCK_UPDATED_URL = 'mock-url/params?foo=bar';
+
+const MOCK_BASE_LOCATION = `${TEST_HOST}/admin/geo/sites/2/replication/${MOCK_REPLICABLE_TYPE_FILTER.value}`;
+const MOCK_LOCATION_WITH_FILTERS = `${MOCK_BASE_LOCATION}?${MOCK_REPLICATION_STATUS_FILTER.type}=${MOCK_REPLICATION_STATUS_FILTER.value.data}`;
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -45,8 +47,8 @@ describe('GeoReplicableApp', () => {
   let wrapper;
   let store;
 
-  const propsData = {
-    geoReplicableEmptySvgPath: MOCK_GEO_REPLICATION_SVG_PATH,
+  const defaultProvide = {
+    itemTitle: 'Test Item',
   };
 
   const createStore = (options) => {
@@ -57,8 +59,8 @@ describe('GeoReplicableApp', () => {
   const createComponent = ({ featureFlags = {} } = {}) => {
     wrapper = shallowMount(GeoReplicableApp, {
       store,
-      propsData,
       provide: {
+        ...defaultProvide,
         glFeatures: { ...featureFlags },
       },
     });
@@ -67,8 +69,7 @@ describe('GeoReplicableApp', () => {
   const findGeoReplicableContainer = () => wrapper.find('.geo-replicable-container');
   const findGlLoadingIcon = () => findGeoReplicableContainer().findComponent(GlLoadingIcon);
   const findGeoReplicable = () => findGeoReplicableContainer().findComponent(GeoReplicable);
-  const findGeoReplicableEmptyState = () =>
-    findGeoReplicableContainer().findComponent(GeoReplicableEmptyState);
+  const findGeoListEmptyState = () => findGeoReplicableContainer().findComponent(GeoListEmptyState);
   const findGeoReplicableFilterBar = () =>
     findGeoReplicableContainer().findComponent(GeoReplicableFilterBar);
   const findGeoListTopBar = () => findGeoReplicableContainer().findComponent(GeoListTopBar);
@@ -113,7 +114,7 @@ describe('GeoReplicableApp', () => {
         });
 
         it(`${showEmptyState ? 'shows' : 'hides'} the empty state`, () => {
-          expect(findGeoReplicableEmptyState().exists()).toBe(showEmptyState);
+          expect(findGeoListEmptyState().exists()).toBe(showEmptyState);
         });
 
         it(`${showLoader ? 'shows' : 'hides'} the loader`, () => {
@@ -122,6 +123,43 @@ describe('GeoReplicableApp', () => {
       });
     },
   );
+
+  describe.each`
+    geoReplicablesFilteredListView | hasFilters | mockLocation                  | statusFilter
+    ${false}                       | ${false}   | ${MOCK_BASE_LOCATION}         | ${null}
+    ${false}                       | ${true}    | ${MOCK_BASE_LOCATION}         | ${'test-filter'}
+    ${true}                        | ${false}   | ${MOCK_BASE_LOCATION}         | ${undefined}
+    ${true}                        | ${true}    | ${MOCK_LOCATION_WITH_FILTERS} | ${undefined}
+  `('empty state', ({ geoReplicablesFilteredListView, hasFilters, mockLocation, statusFilter }) => {
+    const MOCK_EMPTY_STATE = {
+      title: `There are no ${defaultProvide.itemTitle} to show`,
+      description:
+        'No %{itemTitle} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information.',
+      itemTitle: defaultProvide.itemTitle,
+      helpLink: GEO_TROUBLESHOOTING_LINK,
+    };
+
+    describe(`when feature geoReplicablesFilteredListView is set to ${geoReplicablesFilteredListView}`, () => {
+      describe(`when filters are ${hasFilters}`, () => {
+        beforeEach(() => {
+          setWindowLocation(mockLocation);
+
+          createStore();
+          createComponent({ featureFlags: { geoReplicablesFilteredListView } });
+
+          store.state.statusFilter = statusFilter;
+          store.state.replicableItems = [];
+        });
+
+        it('renders GeoListEmptyState with correct props', () => {
+          expect(findGeoListEmptyState().props()).toStrictEqual({
+            emptyState: MOCK_EMPTY_STATE,
+            hasFilters,
+          });
+        });
+      });
+    });
+  });
 
   describe('filter bar', () => {
     describe('when feature geoReplicablesFilteredListView is disabled', () => {
@@ -142,9 +180,7 @@ describe('GeoReplicableApp', () => {
     describe('when feature geoReplicablesFilteredListView is enabled', () => {
       describe('when no query is present', () => {
         beforeEach(() => {
-          setWindowLocation(
-            `${TEST_HOST}/admin/geo/sites/2/replication/${MOCK_REPLICABLE_TYPE_FILTER.value}`,
-          );
+          setWindowLocation(MOCK_BASE_LOCATION);
 
           createStore();
           createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
@@ -164,9 +200,7 @@ describe('GeoReplicableApp', () => {
 
       describe('when query is present', () => {
         beforeEach(() => {
-          setWindowLocation(
-            `${TEST_HOST}/admin/geo/sites/2/replication/${MOCK_REPLICABLE_TYPE_FILTER.value}?${MOCK_REPLICATION_STATUS_FILTER.type}=${MOCK_REPLICATION_STATUS_FILTER.value.data}`,
-          );
+          setWindowLocation(MOCK_LOCATION_WITH_FILTERS);
 
           createStore();
           createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
@@ -237,9 +271,7 @@ describe('GeoReplicableApp', () => {
 
   describe('handleListboxChange', () => {
     beforeEach(() => {
-      setWindowLocation(
-        `${TEST_HOST}/admin/geo/sites/2/replication/${MOCK_REPLICABLE_TYPE_FILTER.value}?${MOCK_REPLICATION_STATUS_FILTER.type}=${MOCK_REPLICATION_STATUS_FILTER.value.data}`,
-      );
+      setWindowLocation(MOCK_LOCATION_WITH_FILTERS);
 
       createStore();
       createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
