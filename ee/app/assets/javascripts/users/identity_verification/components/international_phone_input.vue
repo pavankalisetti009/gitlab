@@ -50,6 +50,11 @@ export default {
         number: '',
       },
     },
+    isLWRExperimentCandidate: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   props: {
     disableSubmitButton: {
@@ -155,6 +160,9 @@ export default {
         this.filteredCountries.length,
       );
     },
+    formClasses() {
+      return { 'gl-mt-6': this.isLWRExperimentCandidate };
+    },
   },
   mounted() {
     if (this.inputPhoneNumber) {
@@ -249,7 +257,7 @@ export default {
 };
 </script>
 <template>
-  <gl-form @submit.prevent="sendVerificationCode">
+  <gl-form :class="formClasses" @submit.prevent="sendVerificationCode">
     <gl-form-group
       v-if="!$apollo.loading.countries"
       :label="$options.i18n.country"

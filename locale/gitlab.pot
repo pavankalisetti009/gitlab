@@ -31533,6 +31533,9 @@ msgstr ""
 msgid "IdentityVerification|Country or region"
 msgstr ""
 
+msgid "IdentityVerification|Email Verification"
+msgstr ""
+
 msgid "IdentityVerification|Email update is only offered once."
 msgstr ""
 
@@ -31581,6 +31584,12 @@ msgstr ""
 msgid "IdentityVerification|Maximum login attempts exceeded. Wait %{interval} and try again."
 msgstr ""
 
+msgid "IdentityVerification|Payment Method Verification"
+msgstr ""
+
+msgid "IdentityVerification|Phone Number Verification"
+msgstr ""
+
 msgid "IdentityVerification|Phone number"
 msgstr ""
 
@@ -31615,6 +31624,9 @@ msgid "IdentityVerification|Send code in %{timer}"
 msgstr ""
 
 msgid "IdentityVerification|Something went wrong. Please try again."
+msgstr ""
+
+msgid "IdentityVerification|Step %{stepIndex} of %{totalSteps}"
 msgstr ""
 
 msgid "IdentityVerification|Step %{stepNumber}: Verify a payment method"

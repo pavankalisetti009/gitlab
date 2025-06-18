@@ -1,6 +1,9 @@
-import { GlBadge } from '@gitlab/ui';
+import { GlBadge, GlIcon } from '@gitlab/ui';
+import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import VerificationStep from 'ee/users/identity_verification/components/verification_step.vue';
+import { stubExperiments } from 'helpers/experimentation_helper';
+import { getExperimentData } from '~/experimentation/utils';
 
 describe('VerificationStep', () => {
   let wrapper;
@@ -20,6 +23,7 @@ describe('VerificationStep', () => {
     wrapper = shallowMountExtended(VerificationStep, {
       propsData: { ...DEFAULT_PROPS, ...props },
       slots: { default: StepComponent },
+      stubs: { GitlabExperiment },
     });
   };
 
@@ -66,6 +70,32 @@ describe('VerificationStep', () => {
 
     it('renders the default child component', () => {
       expect(findStep().exists()).toBe(true);
+    });
+  });
+
+  describe('with lightweight_trial_registration_redesign experiment', () => {
+    beforeEach(() => {
+      stubExperiments({ lightweight_trial_registration_redesign: 'candidate' });
+
+      createComponent({ props: { completed: true } });
+    });
+
+    it('sets correct experiment data', () => {
+      expect(getExperimentData('lightweight_trial_registration_redesign')).toEqual({
+        experiment: 'lightweight_trial_registration_redesign',
+        variant: 'candidate',
+      });
+    });
+
+    it('renders check icon instead of badge for completed steps', () => {
+      expect(findBadge().exists()).toBe(false);
+      expect(wrapper.findComponent(GlIcon).exists()).toBe(true);
+    });
+
+    it('renders the step help text correctly', () => {
+      createComponent({ props: { totalSteps: 3, stepIndex: 1 } });
+
+      expect(wrapper.text()).toContain('Step 2 of 3');
     });
   });
 });

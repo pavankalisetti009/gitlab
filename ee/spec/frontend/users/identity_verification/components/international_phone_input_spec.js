@@ -66,7 +66,11 @@ describe('International Phone input component', () => {
   };
 
   const createComponent = (
-    { provide, props } = { provide: {}, props: {} },
+    { provide, props, isLWRExperimentCandidate } = {
+      provide: {},
+      props: {},
+      isLWRExperimentCandidate: false,
+    },
     mountFn = shallowMountExtended,
   ) => {
     wrapper = mountFn(InternationalPhoneInput, {
@@ -81,6 +85,7 @@ describe('International Phone input component', () => {
         phoneNumber: {
           ...provide,
         },
+        isLWRExperimentCandidate,
       },
     });
   };
@@ -412,6 +417,20 @@ describe('International Phone input component', () => {
           expect(findSubmitButton().attributes().disabled).toBe('true');
         });
       });
+    });
+  });
+
+  describe('with lightweight_trial_registration_redesign experiment', () => {
+    it('does not change styling when in control group', () => {
+      createComponent();
+
+      expect(findForm().classes()).not.toContain('gl-mt-6');
+    });
+
+    it('changes styling when in candidate group', () => {
+      createComponent({ isLWRExperimentCandidate: true });
+
+      expect(findForm().classes()).toContain('gl-mt-6');
     });
   });
 });

@@ -17,7 +17,16 @@ module Users
     before_action :require_arkose_verification!, except: [:arkose_labs_challenge, :verify_arkose_labs_session,
       :restricted]
 
-    def show; end
+    def show
+      return render :show unless trial_registration?
+
+      experiment(:lightweight_trial_registration_redesign, actor: @user) do |e|
+        e.candidate do
+          @html_class = 'gl-dark'
+          @hide_empty_navbar = true
+        end
+      end
+    end
 
     def arkose_labs_challenge; end
 
@@ -144,6 +153,10 @@ module Users
 
     def required_params
       params.require(controller_name.to_sym)
+    end
+
+    def trial_registration?
+      @user.onboarding_status_initial_registration_type == ::Onboarding::REGISTRATION_TYPE[:trial]
     end
   end
 end

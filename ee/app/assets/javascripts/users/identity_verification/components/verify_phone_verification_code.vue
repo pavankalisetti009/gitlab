@@ -33,7 +33,7 @@ export default {
     verifyButton: s__('IdentityVerification|Verify phone number'),
   },
   links: { contactSupportUrl: CONTACT_SUPPORT_URL },
-  inject: ['phoneSendCodePath', 'phoneVerifyCodePath', 'phoneNumber'],
+  inject: ['phoneSendCodePath', 'phoneVerifyCodePath', 'phoneNumber', 'isLWRExperimentCandidate'],
   props: {
     latestPhoneNumber: {
       type: Object,
@@ -82,6 +82,12 @@ export default {
     },
     isSubmitButtonDisabled() {
       return this.disableSubmitButton || !this.form.fields.verificationCode.state;
+    },
+    submitButtonClasses() {
+      return { 'gl-mt-6': this.isLWRExperimentCandidate };
+    },
+    helpTextClasses() {
+      return { 'gl-mt-5': this.isLWRExperimentCandidate };
     },
   },
   methods: {
@@ -166,9 +172,12 @@ export default {
 </script>
 <template>
   <gl-form @submit.prevent="verifyCode">
+    <p v-if="isLWRExperimentCandidate" class="gl-mb-6 gl-mt-3">
+      {{ labelDescription }}
+    </p>
     <gl-form-group
       :label="$options.i18n.verificationCode"
-      :label-description="labelDescription"
+      :label-description="isLWRExperimentCandidate ? '' : labelDescription"
       label-for="verification_code"
       :state="form.fields.verificationCode.state"
       :invalid-feedback="form.fields.verificationCode.feedback"
@@ -189,7 +198,7 @@ export default {
       />
     </gl-form-group>
 
-    <div v-if="!disableSubmitButton" class="gl-text-sm gl-text-subtle">
+    <div v-if="!disableSubmitButton" class="gl-text-sm gl-text-subtle" :class="helpTextClasses">
       <gl-icon name="information-o" :size="12" class="gl-mt-2" variant="subtle" />
       <gl-sprintf v-if="sendCodeAllowed" :message="$options.i18n.noCode">
         <template #codeLink="{ content }">
@@ -231,6 +240,7 @@ export default {
       type="submit"
       variant="confirm"
       class="gl-mt-5 !gl-w-full"
+      :class="submitButtonClasses"
       :disabled="isSubmitButtonDisabled"
       :loading="isLoading"
       data-testid="verify-btn"
