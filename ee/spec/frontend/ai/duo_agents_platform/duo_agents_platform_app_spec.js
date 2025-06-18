@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
-import AgentsPlatformApp from 'ee/ai/duo_agents_platform/agents_platform_app.vue';
+import DuoAgentsPlatformApp from 'ee/ai/duo_agents_platform/duo_agents_platform_app.vue';
 
-describe('AgentsPlatformApp', () => {
+describe('DuoAgentsPlatformApp', () => {
   let mockRoute;
 
   let wrapper;
@@ -12,7 +12,7 @@ describe('AgentsPlatformApp', () => {
       name: 'agents_platform_index_page',
     };
 
-    return shallowMount(AgentsPlatformApp, {
+    return shallowMount(DuoAgentsPlatformApp, {
       propsData: props,
       mocks: {
         $route: mockRoute,

@@ -1,3 +1,3 @@
-import { initAgentsPlatformPage } from 'ee/ai/duo_agents_platform';
+import { initDuoAgentsPlatformPage } from 'ee/ai/duo_agents_platform';
 
-initAgentsPlatformPage();
+initDuoAgentsPlatformPage();

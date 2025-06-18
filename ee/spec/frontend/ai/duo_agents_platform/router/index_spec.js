@@ -1,6 +1,6 @@
 import { createRouter } from 'ee/ai/duo_agents_platform/router';
 import { AGENTS_PLATFORM_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import AgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/agents_platform_index.vue';
+import AgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/duo_agents_platform_index.vue';
 
 describe('Agents Platform Router', () => {
   let router;
@@ -17,7 +17,7 @@ describe('Agents Platform Router', () => {
     });
 
     it('has the correct number of routes', () => {
-      expect(router.options.routes).toHaveLength(1);
+      expect(router.options.routes).toHaveLength(2);
     });
 
     describe('when examining the index route', () => {

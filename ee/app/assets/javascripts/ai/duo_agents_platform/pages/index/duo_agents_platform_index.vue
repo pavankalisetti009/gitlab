@@ -6,7 +6,7 @@ import WorkflowsList from '../../components/common/workflows_list.vue';
 import { getWorkflows } from '../../graphql/queries/get_workflows.query.graphql';
 
 export default {
-  name: 'AgentPlatformIndex',
+  name: 'DuoAgentPlatformIndex',
   components: {
     GlLoadingIcon,
     WorkflowsList,
@@ -43,6 +43,11 @@ export default {
       },
     },
   },
+  computed: {
+    isLoadingWorkflows() {
+      return this.$apollo.queries.workflows.loading;
+    },
+  },
   methods: {
     handleNextPage() {
       this.$apollo.queries.workflows.refetch({
@@ -66,9 +71,8 @@ export default {
 };
 </script>
 <template>
-  <div>
-    <h1 class="gl-mb-10">{{ __('Agents Platform Index') }}</h1>
-    <gl-loading-icon v-if="$apollo.queries.workflows.loading" size="lg" />
+  <div class="gl-mt-10">
+    <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />
     <workflows-list
       v-else
       :empty-state-illustration-path="emptyStateIllustrationPath"

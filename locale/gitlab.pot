@@ -5737,9 +5737,6 @@ msgstr ""
 msgid "Agents"
 msgstr ""
 
-msgid "Agents Platform Index"
-msgstr ""
-
 msgid "AiAgents|Agent Name"
 msgstr ""
 
@@ -23343,9 +23340,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Failed to fetch workflows"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Last updated"
-msgstr ""
-
 msgid "DuoAgentsPlatform|New Agent runs will appear here."
 msgstr ""
 
@@ -23356,6 +23350,9 @@ msgid "DuoAgentsPlatform|Prompt"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Status"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Updated"
 msgstr ""
 
 msgid "DuoChat|%{linkStart}Learn how%{linkEnd} to set up Code Suggestions and Chat in your IDE. You can also use Chat in GitLab. Ask questions about:"
