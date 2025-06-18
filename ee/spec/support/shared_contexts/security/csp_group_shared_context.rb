@@ -3,7 +3,7 @@
 RSpec.shared_context 'with csp group configuration' do
   include Security::PolicyCspHelpers
 
-  let_it_be(:csp_group) { create(:group) }
+  let_it_be_with_refind(:csp_group) { create(:group) }
   let_it_be(:csp_policy_project) { create(:project, group: csp_group) }
   let_it_be(:csp_security_orchestration_policy_configuration) do
     create(:security_orchestration_policy_configuration, :namespace, namespace: csp_group,

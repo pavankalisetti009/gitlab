@@ -80,7 +80,7 @@ module Security
 
     def sync_rules_for_group(configuration, group, event)
       delay = 0
-      group.all_project_ids.each_batch do |projects|
+      group.all_project_ids_with_csp_in_batches do |projects|
         projects.each do |project|
           sync_rules_for_project(configuration, project, event, delay)
         end

@@ -28,7 +28,7 @@ module Security
 
       schedule.schedule_next_run!
 
-      projects_in_batches(security_orchestration_policy_configuration).each do |projects|
+      projects_in_batches(security_orchestration_policy_configuration) do |projects|
         bots_by_project_id = security_policy_bot_ids_by_project_ids(projects)
         projects.each do |project|
           user_id = bots_by_project_id[project.id]
@@ -65,13 +65,10 @@ module Security
       end
     end
 
-    def projects_in_batches(configuration)
+    def projects_in_batches(configuration, &block)
       configuration
         .namespace
-        .all_projects
-        .not_aimed_for_deletion
-        .select(:id)
-        .find_in_batches(batch_size: BATCH_SIZE) # rubocop: disable CodeReuse/ActiveRecord -- A custom batch size is needed because querying too many bot users at once is too expensive
+        .all_projects_with_csp_in_batches(of: BATCH_SIZE, only_active: true, &block)
     end
 
     def log_invalid_cadence_error(namespace_id, cadence)

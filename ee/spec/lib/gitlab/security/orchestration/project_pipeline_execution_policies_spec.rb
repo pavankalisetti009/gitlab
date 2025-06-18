@@ -14,7 +14,7 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
     )
   end
 
-  let_it_be(:project) { create(:project, :repository, group: namespace) }
+  let_it_be_with_refind(:project) { create(:project, :repository, group: namespace) }
   let_it_be(:policies_repository) { create(:project, :repository, group: namespace) }
   let_it_be(:security_orchestration_policy_configuration) do
     create(
@@ -58,6 +58,48 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
         have_attributes(content: namespace_policy[:content].to_yaml, policy_index: 0,
           policy_project_id: namespace_policies_repository.id)
       ])
+    end
+
+    context 'with a CSP group' do
+      include_context 'with csp group configuration'
+
+      let(:csp_policy) { build(:pipeline_execution_policy) }
+      let(:csp_disabled_policy) { build(:pipeline_execution_policy, enabled: false) }
+      let(:csp_policy_yaml) do
+        build(:orchestration_policy_yaml, pipeline_execution_policy: [csp_policy, csp_disabled_policy])
+      end
+
+      before do
+        allow_next_instance_of(Repository, anything, csp_policy_project, anything) do |repository|
+          allow(repository).to receive(:blob_data_at).and_return(csp_policy_yaml)
+        end
+      end
+
+      it 'includes configs of policies ordered by hierarchy' do
+        expect(configs).to match([
+          have_attributes(content: policy[:content].to_yaml, policy_index: 0,
+            policy_project_id: policies_repository.id),
+          have_attributes(content: namespace_policy[:content].to_yaml, policy_index: 0,
+            policy_project_id: namespace_policies_repository.id),
+          have_attributes(content: csp_policy[:content].to_yaml, policy_index: 0,
+            policy_project_id: csp_policy_project.id)
+        ])
+      end
+
+      context 'when feature flag "security_policies_csp" is disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it 'includes original configs' do
+          expect(configs).to match([
+            have_attributes(content: policy[:content].to_yaml, policy_index: 0,
+              policy_project_id: policies_repository.id),
+            have_attributes(content: namespace_policy[:content].to_yaml, policy_index: 0,
+              policy_project_id: namespace_policies_repository.id)
+          ])
+        end
+      end
     end
 
     describe 'limits' do

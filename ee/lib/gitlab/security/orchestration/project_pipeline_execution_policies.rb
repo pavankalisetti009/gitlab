@@ -47,7 +47,7 @@ module Gitlab
         def configs_ordered_by_hierarchy
           configs = ::Gitlab::Security::Orchestration::ProjectPolicyConfigurations.new(@project)
                                                                                   .all.index_by(&:namespace_id)
-          [nil, *@project.group&.self_and_ancestor_ids].filter_map { |id| configs[id] }.reverse
+          [nil, *@project.group&.self_and_ancestor_ids_with_csp].filter_map { |id| configs[id] }.reverse
         end
 
         def policy_limit

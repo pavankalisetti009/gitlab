@@ -612,17 +612,30 @@ module EE
     end
     strong_memoize_attr :designated_as_csp?
 
+    def all_projects_with_csp_in_batches(of: 1000, only_active: false, &block)
+      relation = designated_as_csp? ? ::Project.all : all_projects
+      relation = relation.not_aimed_for_deletion.non_archived if only_active
+      relation.find_in_batches(batch_size: of, &block)
+    end
+
+    def all_project_ids_with_csp_in_batches(of: 1000, &block)
+      relation = designated_as_csp? ? ::Project.select(:id) : all_project_ids
+      relation.each_batch(of: of, &block)
+    end
+
     def self_and_ancestor_ids_with_csp
       return self_and_ancestor_ids unless csp_enabled?(self)
 
-      [::Security::PolicySetting.instance.csp_namespace_id, *self_and_ancestor_ids].compact.uniq
+      # The most top-level group is last
+      [*self_and_ancestor_ids, ::Security::PolicySetting.instance.csp_namespace_id].compact.uniq
     end
     strong_memoize_attr :self_and_ancestor_ids_with_csp
 
     def ancestor_ids_with_csp
       return ancestor_ids unless csp_enabled?(self)
 
-      [::Security::PolicySetting.instance.csp_namespace_id, *ancestor_ids].compact.uniq
+      # The most top-level group is last
+      [*ancestor_ids, ::Security::PolicySetting.instance.csp_namespace_id].compact.uniq
     end
     strong_memoize_attr :ancestor_ids_with_csp
 
