@@ -36,16 +36,20 @@ module WorkItems
 
         lifecycle = WorkItems::Statuses::SystemDefined::Lifecycle.all.first
 
-        case status.id
-        when lifecycle.default_open_status_id
-          relation = relation.or(opened.without_current_status)
-        when lifecycle.default_duplicate_status_id
-          relation = relation.or(closed.without_current_status.where.not(duplicated_to_id: nil))
-        when lifecycle.default_closed_status_id
-          relation = relation.or(closed.without_current_status.where(duplicated_to_id: nil))
-        end
+        with_default_status = case status.id
+                              when lifecycle.default_open_status_id
+                                opened
+                              when lifecycle.default_duplicate_status_id
+                                closed.where.not(duplicated_to_id: nil)
+                              when lifecycle.default_closed_status_id
+                                closed.where(duplicated_to_id: nil)
+                              end
 
-        relation
+        next relation if with_default_status.nil?
+
+        relation.or(
+          with_default_status.without_current_status.with_issue_type(lifecycle.work_item_base_types)
+        )
       }
 
       scope :without_current_status, -> { left_joins(:current_status).where(work_item_current_statuses: { id: nil }) }
