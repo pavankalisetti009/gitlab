@@ -151,6 +151,10 @@ export default class SamlSettingsForm {
 
         el.disabled = !isRelatedToggleOn;
 
+        if (!isRelatedToggleOn) {
+          el.checked = false;
+        }
+
         if (warning) {
           toggleElementVisibility(warning, !setting.value);
         }
