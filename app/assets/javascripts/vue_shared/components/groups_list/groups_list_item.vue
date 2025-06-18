@@ -8,7 +8,7 @@ import axios from '~/lib/utils/axios_utils';
 import { VISIBILITY_TYPE_ICON, GROUP_VISIBILITY_TYPE } from '~/visibility_level/constants';
 import { ACCESS_LEVEL_LABELS, ACCESS_LEVEL_NO_ACCESS_INTEGER } from '~/access_level/constants';
 import { __ } from '~/locale';
-import { numberToMetricPrefix, isNumeric } from '~/lib/utils/number_utils';
+import { numberToMetricPrefix, numberToHumanSize, isNumeric } from '~/lib/utils/number_utils';
 import { ACTION_DELETE, ACTION_LEAVE } from '~/vue_shared/components/list_actions/constants';
 import {
   TIMESTAMP_TYPES,
@@ -119,6 +119,16 @@ export default {
     showGroupMembersCount() {
       return isNumeric(this.group.groupMembersCount);
     },
+    storageSize() {
+      if (!this.hasStorageSize) {
+        return null;
+      }
+
+      return numberToHumanSize(this.group.rootStorageStatistics?.storageSize || 0);
+    },
+    hasStorageSize() {
+      return Object.hasOwn(this.group, 'rootStorageStatistics');
+    },
     hasActionDelete() {
       return this.group.availableActions?.includes(ACTION_DELETE);
     },
@@ -189,6 +199,7 @@ export default {
 
     <template #stats>
       <group-list-item-inactive-badge :group="group" />
+      <gl-badge v-if="hasStorageSize" data-testid="storage-size">{{ storageSize }}</gl-badge>
       <list-item-stat
         v-if="showDescendantGroupsCount"
         :tooltip-text="$options.i18n.subgroups"
