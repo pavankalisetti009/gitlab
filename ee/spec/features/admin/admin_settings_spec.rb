@@ -714,7 +714,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
   describe 'Namespace storage cost factor for forks setting', feature_category: :consumables_cost_management do
     context 'when checking namespace plans' do
       before do
-        stub_ee_application_setting(check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it 'saves the cost factor for forks' do

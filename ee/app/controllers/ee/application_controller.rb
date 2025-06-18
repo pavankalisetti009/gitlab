@@ -9,14 +9,6 @@ module EE
       include ::Onboarding::Redirect
     end
 
-    def check_if_gl_com_or_dev
-      render_404 unless ::Gitlab.com?
-    end
-
-    def verify_namespace_plan_check_enabled
-      render_404 unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
-    end
-
     override :after_sign_out_path_for
     def after_sign_out_path_for(resource)
       if ::Gitlab::Geo.secondary?

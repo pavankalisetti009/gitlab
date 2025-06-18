@@ -29,7 +29,7 @@ module EE
         before_action :check_microsoft_group_sync_available, only: [:update_microsoft_application]
         before_action :find_or_initialize_microsoft_application, only: [:general, :update_microsoft_application]
 
-        before_action :verify_namespace_plan_check_enabled, only: [:namespace_storage]
+        before_action :verify_subscriptions_available!, only: [:namespace_storage]
 
         feature_category :plan_provisioning, [:seat_link_payload]
         feature_category :source_code_management, [:templates]
@@ -242,6 +242,10 @@ module EE
       end
 
       private
+
+      def verify_subscriptions_available!
+        render_404 unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      end
 
       override :valid_setting_panels
       def valid_setting_panels

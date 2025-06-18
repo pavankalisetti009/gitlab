@@ -2,7 +2,7 @@
 
 module GitlabSubscriptions
   class HandRaiseLeadsController < ApplicationController
-    before_action :check_if_gl_com_or_dev
+    before_action :verify_subscriptions_available!
     before_action :authenticate_user!
     before_action :verify_namespace!
 
@@ -45,6 +45,10 @@ module GitlabSubscriptions
         :first_name, :last_name, :company_name, :phone_number, :country,
         :state, :namespace_id, :comment, :glm_content, :product_interaction
       )
+    end
+
+    def verify_subscriptions_available!
+      render_404 unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
     end
 
     def verify_namespace!
