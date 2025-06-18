@@ -68099,7 +68099,7 @@ msgstr ""
 msgid "VirtualRegistry|Maven upstream has been updated."
 msgstr ""
 
-msgid "VirtualRegistry|Maven virtual registry"
+msgid "VirtualRegistry|Maven virtual registries"
 msgstr ""
 
 msgid "VirtualRegistry|Maven virtual registry was created"
