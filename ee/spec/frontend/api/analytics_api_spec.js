@@ -5,7 +5,6 @@ import {
   getTypeOfWorkTasksByType,
   getTypeOfWorkTopLabels,
   getValueStreams,
-  getGroupLabels,
   getDurationChart,
   getStageEvents,
   getStagesAndEvents,
@@ -213,22 +212,6 @@ describe('ValueStreamAnalyticsApi', () => {
         params,
         expectedUrl,
       });
-    });
-  });
-
-  describe('getGroupLabels', () => {
-    it('fetches group level labels', async () => {
-      const response = [];
-      const expectedUrl = `${dummyUrlRoot}/${namespacePath}/-/labels.json`;
-
-      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, response);
-
-      const {
-        data,
-        config: { url },
-      } = await getGroupLabels(namespacePath);
-      expect(data).toEqual(response);
-      expect(url).toEqual(expectedUrl);
     });
   });
 });

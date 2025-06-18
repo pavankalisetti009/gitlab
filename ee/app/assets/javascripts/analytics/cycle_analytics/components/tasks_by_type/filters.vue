@@ -1,13 +1,13 @@
 <script>
 import { GlCollapsibleListbox, GlSegmentedControl } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapGetters } from 'vuex';
-import { difference, debounce } from 'lodash';
+import { mapState } from 'vuex';
+import { difference } from 'lodash';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __, s__, n__, sprintf } from '~/locale';
-import { getGroupLabels } from 'ee/api/analytics_api';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS, TASKS_BY_TYPE_MAX_LABELS } from '../../constants';
-import { DATA_REFETCH_DELAY } from '../../../shared/constants';
+import getTasksByTypeLabels from '../../graphql/queries/get_tasks_by_type_labels.query.graphql';
 
 export default {
   name: 'TasksByTypeFilters',
@@ -34,14 +34,11 @@ export default {
     return {
       labels: [],
       searchTerm: '',
-      searching: false,
-      loading: false,
-      debouncedSearch: null,
       maxLabelsAlert: null,
     };
   },
   computed: {
-    ...mapGetters(['namespaceRestApiRequestPath']),
+    ...mapState(['groupPath']),
     subjectFilterOptions() {
       return Object.entries(TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS).map(([value, text]) => ({
         text,
@@ -78,39 +75,35 @@ export default {
         this.toggleLabel(addedLabel || removedLabel);
       },
     },
-  },
-  watch: {
-    searchTerm() {
-      this.debouncedSearch();
+    loading() {
+      return this.$apollo.queries.labels.loading;
     },
   },
-  async mounted() {
-    this.debouncedSearch = debounce(this.search, DATA_REFETCH_DELAY);
-
-    this.loading = true;
-    await this.fetchLabels();
-    this.loading = false;
-  },
-  methods: {
-    async fetchLabels() {
-      try {
-        const { data } = await getGroupLabels(this.namespaceRestApiRequestPath, {
-          search: this.searchTerm,
-          only_group_labels: true,
-        });
-
-        this.labels = data;
-      } catch {
+  apollo: {
+    labels: {
+      query: getTasksByTypeLabels,
+      debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+      variables() {
+        return {
+          fullPath: this.groupPath,
+          searchTerm: this.searchTerm.trim(),
+        };
+      },
+      update({
+        group: {
+          labels: { nodes },
+        },
+      }) {
+        return nodes;
+      },
+      error() {
         createAlert({
           message: __('There was an error fetching label data for the selected group'),
         });
-      }
+      },
     },
-    async search() {
-      this.searching = true;
-      await this.fetchLabels();
-      this.searching = false;
-    },
+  },
+  methods: {
     findLabel(title) {
       return this.labels.find((label) => label.title === title);
     },
@@ -144,8 +137,7 @@ export default {
       :name="'test'"
       :header-text="s__('CycleAnalytics|Select labels')"
       :items="items"
-      :loading="loading"
-      :searching="searching"
+      :searching="loading"
       :no-results-text="__('No matching labels')"
       icon="settings"
       searchable
