@@ -91,6 +91,17 @@ module EE
 
         ::Gitlab::CurrentSettings.global_search_commits_enabled?
       end
+
+      override :show_comments_search_tab?
+      def show_comments_search_tab?
+        return true if super
+
+        project.nil? && show_elasticsearch_tabs?
+      end
+
+      def show_elasticsearch_tabs?
+        !!options[:show_elasticsearch_tabs]
+      end
     end
   end
 end

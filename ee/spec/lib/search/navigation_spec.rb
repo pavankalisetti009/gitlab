@@ -341,5 +341,28 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         end
       end
     end
+
+    context 'for comments tab' do
+      where(:tab_enabled, :show_elasticsearch_tabs, :project, :condition) do
+        true  | true  | nil                  | true
+        true  | true  | ref(:project_double) | true
+        false | false | nil                  | false
+        false | false | ref(:project_double) | false
+        false | true  | nil                  | true
+        false | true  | ref(:project_double) | false
+        true  | false | nil                  | true
+        true  | false | ref(:project_double) | true
+      end
+
+      with_them do
+        let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs } }
+
+        it 'data item condition is set correctly' do
+          allow(search_navigation).to receive(:tab_enabled_for_project?).with(:notes).and_return(tab_enabled)
+
+          expect(tabs[:notes][:condition]).to eq(condition)
+        end
+      end
+    end
   end
 end
