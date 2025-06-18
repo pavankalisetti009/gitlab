@@ -2178,6 +2178,99 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#all_projects_with_csp_in_batches' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: group) }
+    let_it_be(:group_project) { create(:project, group: group) }
+    let_it_be(:subgroup_project) { create(:project, group: subgroup) }
+    let_it_be(:other_project) { create(:project) }
+    let_it_be(:archived_project) { create(:project, :archived, group: group) }
+    let_it_be(:project_marked_for_deletion) { create(:project, group: group, marked_for_deletion_at: Time.zone.now) }
+
+    def yielded_projects(group, **args)
+      results = []
+      group.all_projects_with_csp_in_batches(**args) { |projects| results += projects }
+
+      results
+    end
+
+    it 'yields all projects' do
+      expect(yielded_projects(group))
+        .to contain_exactly(group_project, subgroup_project, archived_project, project_marked_for_deletion)
+    end
+
+    context 'with only_active: true' do
+      it 'yields only active projects' do
+        expect(yielded_projects(group, only_active: true)).to contain_exactly(group_project, subgroup_project)
+      end
+    end
+
+    context 'when used for a CSP group' do
+      include_context 'with csp group configuration'
+
+      it 'yields all projects' do
+        expect(yielded_projects(csp_group))
+          .to contain_exactly(group_project, subgroup_project, other_project, csp_policy_project,
+            archived_project, project_marked_for_deletion)
+      end
+
+      context 'with only_active: true' do
+        it 'yields only active projects' do
+          expect(yielded_projects(csp_group, only_active: true))
+            .to contain_exactly(group_project, subgroup_project, other_project, csp_policy_project)
+        end
+      end
+
+      context 'with feature flag "security_policies_csp" disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it 'yields only the group projects' do
+          expect(yielded_projects(csp_group)).to contain_exactly(csp_policy_project)
+        end
+      end
+    end
+  end
+
+  describe '#all_project_ids_with_csp_in_batches' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: group) }
+    let_it_be(:group_project) { create(:project, group: group) }
+    let_it_be(:subgroup_project) { create(:project, group: subgroup) }
+    let_it_be(:other_project) { create(:project) }
+
+    def yielded_projects(group)
+      results = []
+      group.all_project_ids_with_csp_in_batches { |projects| results += projects }
+
+      results
+    end
+
+    it 'yields projects' do
+      expect(yielded_projects(group)).to contain_exactly(group_project, subgroup_project)
+    end
+
+    context 'when used for a CSP group' do
+      include_context 'with csp group configuration'
+
+      it 'yields projects' do
+        expect(yielded_projects(csp_group))
+          .to contain_exactly(group_project, subgroup_project, other_project, csp_policy_project)
+      end
+
+      context 'with feature flag "security_policies_csp" disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it 'yields only the group projects' do
+          expect(yielded_projects(csp_group)).to contain_exactly(csp_policy_project)
+        end
+      end
+    end
+  end
+
   describe '#self_ancestor_ids_with_csp' do
     subject { subgroup.self_and_ancestor_ids_with_csp }
 
@@ -2185,19 +2278,19 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     let_it_be_with_refind(:subgroup) { create(:group, parent: group) }
     let_it_be(:sub_subgroup) { create(:group, parent: subgroup) }
 
-    it { is_expected.to contain_exactly(group.id, subgroup.id) }
+    it { is_expected.to match([subgroup.id, group.id]) }
 
     context 'with a CSP group' do
       include_context 'with csp group configuration'
 
-      it { is_expected.to contain_exactly(csp_group.id, group.id, subgroup.id) }
+      it { is_expected.to match([subgroup.id, group.id, csp_group.id]) }
 
       context 'with feature flag "security_policies_csp" disabled' do
         before do
           stub_feature_flags(security_policies_csp: false)
         end
 
-        it { is_expected.to contain_exactly(group.id, subgroup.id) }
+        it { is_expected.to match([subgroup.id, group.id]) }
       end
     end
   end
@@ -2214,7 +2307,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     context 'with a CSP group' do
       include_context 'with csp group configuration'
 
-      it { is_expected.to contain_exactly(csp_group.id, group.id) }
+      it { is_expected.to match([group.id, csp_group.id]) }
 
       context 'with feature flag "security_policies_csp" disabled' do
         before do

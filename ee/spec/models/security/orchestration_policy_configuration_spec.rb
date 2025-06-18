@@ -4017,7 +4017,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let_it_be(:project) { create(:project) }
 
     context 'when configuration is at namespace-level' do
-      let_it_be(:configuration) do
+      let_it_be_with_refind(:configuration) do
         create(:security_orchestration_policy_configuration, namespace: namespace, project: nil)
       end
 
@@ -4036,6 +4036,30 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           .and_call_original
 
         configuration.all_project_ids
+      end
+
+      context 'when group is a CSP' do
+        include Security::PolicyCspHelpers
+
+        let_it_be(:other_project) { create(:project) }
+
+        before do
+          stub_csp_group(namespace)
+        end
+
+        it 'returns all project IDs in the instance' do
+          expect(configuration.all_project_ids).to match_array(Project.pluck_primary_key)
+        end
+
+        context 'when feature flag "security_policies_csp" is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it 'returns all project IDs under the namespace' do
+            expect(configuration.all_project_ids).to match_array([project1.id, project2.id, project3.id])
+          end
+        end
       end
     end
 
@@ -4058,22 +4082,22 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let_it_be(:nested_subgroup) { create(:group, parent: direct_subgroup) }
     let_it_be(:direct_subgroup_project) { create(:project, group: direct_subgroup) }
 
-    let_it_be(:configuration_top_level_group) do
+    let_it_be_with_refind(:configuration_top_level_group) do
       create(:security_orchestration_policy_configuration, :namespace, namespace: top_level_group,
         security_policy_management_project: security_policy_management_project)
     end
 
-    let_it_be(:configuration_direct_subgroup) do
+    let_it_be_with_refind(:configuration_direct_subgroup) do
       create(:security_orchestration_policy_configuration, :namespace, namespace: direct_subgroup,
         security_policy_management_project: security_policy_management_project)
     end
 
-    let_it_be(:configuration_nested_subgroup) do
+    let_it_be_with_refind(:configuration_nested_subgroup) do
       create(:security_orchestration_policy_configuration, :namespace, namespace: nested_subgroup,
         security_policy_management_project: security_policy_management_project)
     end
 
-    let_it_be(:configuration_project) do
+    let_it_be_with_refind(:configuration_project) do
       create(:security_orchestration_policy_configuration, project: direct_subgroup_project,
         security_policy_management_project: security_policy_management_project)
     end
@@ -4084,6 +4108,28 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       it 'returns project and ancestor configuration ids and excludes nested_subgroup configuration' do
         expect(self_and_ancestor_configuration_ids)
           .to contain_exactly(configuration_project.id, configuration_direct_subgroup.id, configuration_top_level_group.id)
+      end
+
+      context 'with a CSP group' do
+        include_context 'with csp group configuration'
+
+        it 'returns project and ancestor configurations including the CSP configuration' do
+          expect(self_and_ancestor_configuration_ids)
+            .to contain_exactly(configuration_project.id, configuration_direct_subgroup.id,
+              configuration_top_level_group.id, csp_security_orchestration_policy_configuration.id)
+        end
+
+        context 'when feature flag "security_policies_csp" is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it 'returns original set of configurations' do
+            expect(self_and_ancestor_configuration_ids)
+              .to contain_exactly(configuration_project.id, configuration_direct_subgroup.id,
+                configuration_top_level_group.id)
+          end
+        end
       end
     end
 
@@ -4104,6 +4150,27 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         expect(self_and_ancestor_configuration_ids)
           .to contain_exactly(configuration_direct_subgroup.id, configuration_top_level_group.id)
       end
+
+      context 'with a CSP group' do
+        include_context 'with csp group configuration'
+
+        it 'returns direct_subgroup and top-level group configuration ids' do
+          expect(self_and_ancestor_configuration_ids)
+            .to contain_exactly(configuration_direct_subgroup.id, configuration_top_level_group.id,
+              csp_security_orchestration_policy_configuration.id)
+        end
+
+        context 'when feature flag "security_policies_csp" is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it 'returns original set of configurations' do
+            expect(self_and_ancestor_configuration_ids)
+              .to contain_exactly(configuration_direct_subgroup.id, configuration_top_level_group.id)
+          end
+        end
+      end
     end
 
     context 'with top-level group configuration' do
@@ -4111,6 +4178,25 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
       it 'returns top-level group configuration id' do
         expect(self_and_ancestor_configuration_ids).to contain_exactly(configuration_top_level_group.id)
+      end
+
+      context 'with a CSP group' do
+        include_context 'with csp group configuration'
+
+        it 'returns top-level group configuration id including the CSP configuration' do
+          expect(self_and_ancestor_configuration_ids).to contain_exactly(configuration_top_level_group.id,
+            csp_security_orchestration_policy_configuration.id)
+        end
+
+        context 'when feature flag "security_policies_csp" is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it 'returns original set of configurations' do
+            expect(self_and_ancestor_configuration_ids).to contain_exactly(configuration_top_level_group.id)
+          end
+        end
       end
     end
   end

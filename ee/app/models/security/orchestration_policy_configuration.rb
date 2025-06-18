@@ -216,20 +216,10 @@ module Security
     end
 
     def all_project_ids
-      if namespace?
-        project_ids = []
-        cursor = { current_id: namespace_id, depth: [namespace_id] }
-        iterator = ::Gitlab::Database::NamespaceEachBatch.new(namespace_class: Namespace, cursor: cursor)
+      return Array.wrap(project_id) if project?
 
-        iterator.each_batch(of: NAMESPACES_BATCH_SIZE) do |ids|
-          namespace_ids = Namespaces::ProjectNamespace.where(id: ids)
-          # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- IDs will not be used in IN queries
-          project_ids.concat(Project.where(project_namespace_id: namespace_ids).pluck(:id))
-          # rubocop: enable Database/AvoidUsingPluckWithoutLimit
-        end
-        project_ids
-      else
-        Array.wrap(project_id)
+      [].tap do |project_ids|
+        collect_all_project_ids_in_batches { |ids| project_ids.concat(ids) }
       end
     end
 
@@ -317,8 +307,34 @@ module Security
     end
 
     def group_configurations_ids(group)
-      parent_group_ids = group.self_and_ancestor_ids
+      parent_group_ids = group.self_and_ancestor_ids_with_csp
       self.class.for_namespace(parent_group_ids).pluck_primary_key
+    end
+
+    def collect_all_project_ids_in_batches(&block)
+      if namespace.designated_as_csp?
+        collect_csp_project_ids_in_batches(&block)
+      else
+        collect_namespace_project_ids_in_batches(&block)
+      end
+    end
+
+    def collect_csp_project_ids_in_batches
+      namespace.all_project_ids_with_csp_in_batches do |batch|
+        yield batch.pluck_primary_key
+      end
+    end
+
+    def collect_namespace_project_ids_in_batches
+      cursor = { current_id: namespace_id, depth: [namespace_id] }
+      iterator = ::Gitlab::Database::NamespaceEachBatch.new(namespace_class: Namespace, cursor: cursor)
+
+      iterator.each_batch(of: NAMESPACES_BATCH_SIZE) do |ids|
+        namespace_ids = Namespaces::ProjectNamespace.where(id: ids)
+        # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- IDs will not be used in IN queries
+        yield Project.where(project_namespace_id: namespace_ids).pluck(:id)
+        # rubocop: enable Database/AvoidUsingPluckWithoutLimit
+      end
     end
   end
 end

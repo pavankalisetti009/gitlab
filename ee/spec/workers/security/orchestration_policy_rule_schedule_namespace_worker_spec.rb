@@ -8,7 +8,7 @@ RSpec.describe Security::OrchestrationPolicyRuleScheduleNamespaceWorker, feature
     let_it_be(:project_1) { create(:project, namespace: namespace) }
     let_it_be(:project_2) { create(:project, namespace: namespace) }
     let_it_be(:security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: namespace) }
-    let_it_be(:schedule) { create(:security_orchestration_policy_rule_schedule, security_orchestration_policy_configuration: security_orchestration_policy_configuration) }
+    let_it_be_with_reload(:schedule) { create(:security_orchestration_policy_rule_schedule, security_orchestration_policy_configuration: security_orchestration_policy_configuration) }
 
     let(:schedule_id) { schedule.id }
     let(:worker) { described_class.new }
@@ -61,7 +61,7 @@ RSpec.describe Security::OrchestrationPolicyRuleScheduleNamespaceWorker, feature
             create(:project, namespace: namespace)
             schedule.update_column(:next_run_at, 1.minute.ago)
 
-            expect { worker.perform(schedule_id) }.to issue_same_number_of_queries_as(control)
+            expect { worker.perform(schedule_id) }.to issue_same_number_of_queries_as(control).or_fewer
           end
 
           context 'when there is a security_policy_bot in the project' do
@@ -82,6 +82,32 @@ RSpec.describe Security::OrchestrationPolicyRuleScheduleNamespaceWorker, feature
               expect(Security::ScanExecutionPolicies::RuleScheduleWorker).not_to receive(:perform_async).with(project_2.id, anything, schedule.id)
 
               worker.perform(schedule_id)
+            end
+
+            context 'with a CSP group' do
+              include_context 'with csp group configuration'
+
+              let_it_be(:other_project) { create(:project) }
+              let_it_be(:other_project_2) { create(:project) }
+              let_it_be(:other_security_policy_bot) { create(:user, :security_policy_bot) }
+              let_it_be(:pending_deletion_security_policy_bot) { create(:user, :security_policy_bot) }
+              let_it_be(:project_pending_deletion) { create(:project, namespace: namespace, marked_for_deletion_at: Time.zone.now) }
+
+              before_all do
+                other_project.add_guest(other_security_policy_bot)
+                project_pending_deletion.add_guest(pending_deletion_security_policy_bot)
+                schedule.update!(security_orchestration_policy_configuration: csp_security_orchestration_policy_configuration)
+              end
+
+              it 'triggers for all instance projects with policy bot users except those pending deletion' do
+                expect(Security::ScanExecutionPolicies::RuleScheduleWorker).to receive(:perform_async).with(project_1.id, security_policy_bot.id, schedule.id)
+                expect(Security::ScanExecutionPolicies::RuleScheduleWorker).to receive(:perform_async).with(other_project.id, other_security_policy_bot.id, schedule.id)
+                expect(Security::ScanExecutionPolicies::RuleScheduleWorker).not_to receive(:perform_async).with(project_2.id, anything, schedule.id)
+                expect(Security::ScanExecutionPolicies::RuleScheduleWorker).not_to receive(:perform_async).with(other_project_2.id, anything, schedule.id)
+                expect(Security::ScanExecutionPolicies::RuleScheduleWorker).not_to receive(:perform_async).with(project_pending_deletion.id, anything, schedule.id)
+
+                worker.perform(schedule_id)
+              end
             end
           end
 
