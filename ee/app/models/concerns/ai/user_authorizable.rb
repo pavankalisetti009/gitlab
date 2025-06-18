@@ -123,7 +123,11 @@ module Ai
       private
 
       def check_add_on_purchases(service)
-        purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(service.add_on_names)
+        # NOTE: We are passing `nil` as the resource to avoid filtering by namespace.
+        # This is _not_ a good use of this API, and we should separate filtering by namespace
+        # from filtering by user seat assignments. While this works, it will actually join
+        # all add-on purchases in all tenant namespaces, which is not ideal.
+        purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(service.add_on_names, nil)
                                                       .assigned_to_user(self)
         return unless purchases.any?
 
