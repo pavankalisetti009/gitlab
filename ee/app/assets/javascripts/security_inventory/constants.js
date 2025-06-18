@@ -5,9 +5,9 @@ const DEPENDENCY_SCANNING_KEY = 'DEPENDENCY_SCANNING';
 const SAST_KEY = 'SAST';
 export const SAST_ADVANCED_KEY = 'SAST_ADVANCED';
 const SECRET_DETECTION_KEY = 'SECRET_DETECTION';
-const PIPELINE_SECRET_DETECTION_KEY = 'PIPELINE_SECRET_DETECTION';
+export const SECRET_PUSH_PROTECTION_KEY = 'SECRET_PUSH_PROTECTION';
 const CONTAINER_SCANNING_KEY = 'CONTAINER_SCANNING';
-const CONTAINER_SCANNING_FOR_REGISTRY_KEY = 'CONTAINER_SCANNING_FOR_REGISTRY';
+export const CONTAINER_SCANNING_FOR_REGISTRY_KEY = 'CONTAINER_SCANNING_FOR_REGISTRY';
 const DAST_KEY = 'DAST';
 const SAST_IAC_KEY = 'SAST_IAC';
 
@@ -42,9 +42,9 @@ export const SCANNER_TYPES = {
     textLabel: SECRET_DETECTION_LABEL,
     name: s__('SecurityInventory|Secret detection'),
   },
-  [PIPELINE_SECRET_DETECTION_KEY]: {
+  [SECRET_PUSH_PROTECTION_KEY]: {
     textLabel: SECRET_DETECTION_LABEL,
-    name: s__('SecurityInventory|Secret detection'),
+    name: s__('SecurityInventory|Secret push protection'),
   },
   [CONTAINER_SCANNING_KEY]: {
     textLabel: CONTAINER_SCANNING_LABEL,
@@ -67,7 +67,7 @@ export const SCANNER_TYPES = {
 export const SCANNER_POPOVER_GROUPS = {
   [DEPENDENCY_SCANNING_KEY]: ['DEPENDENCY_SCANNING'],
   [SAST_KEY]: ['SAST', 'SAST_ADVANCED'],
-  [SECRET_DETECTION_KEY]: ['SECRET_DETECTION', 'PIPELINE_SECRET_DETECTION'],
+  [SECRET_DETECTION_KEY]: ['SECRET_DETECTION', 'SECRET_PUSH_PROTECTION'],
   [CONTAINER_SCANNING_KEY]: ['CONTAINER_SCANNING', 'CONTAINER_SCANNING_FOR_REGISTRY'],
   [DAST_KEY]: ['DAST'],
   [SAST_IAC_KEY]: ['SAST_IAC'],
@@ -76,8 +76,8 @@ export const SCANNER_POPOVER_GROUPS = {
 export const SCANNER_POPOVER_LABELS = {
   [SAST_KEY]: s__('SecurityInventory|Basic SAST'),
   [SAST_ADVANCED_KEY]: s__('SecurityInventory|GitLab Advanced SAST'),
-  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Secret push protection'),
-  [PIPELINE_SECRET_DETECTION_KEY]: s__('SecurityInventory|Pipeline secret detection'),
+  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Pipeline secret detection'),
+  [SECRET_PUSH_PROTECTION_KEY]: s__('SecurityInventory|Secret push protection'),
   [CONTAINER_SCANNING_KEY]: s__('SecurityInventory|Container scanning (standard)'),
   [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: s__('SecurityInventory|Container scanning for registry'),
 };

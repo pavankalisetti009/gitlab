@@ -66,6 +66,8 @@ query SubgroupsAndProjects(
         avatarUrl
         webUrl
         updatedAt
+        secretPushProtectionEnabled
+        containerScanningForRegistryEnabled
         vulnerabilityStatistic {
           critical
           high

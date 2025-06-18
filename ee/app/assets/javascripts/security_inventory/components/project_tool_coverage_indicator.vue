@@ -1,7 +1,12 @@
 <script>
 import { GlBadge, GlPopover } from '@gitlab/ui';
 import { itemValidator } from 'ee/security_inventory/utils';
-import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from '../constants';
+import {
+  SCANNER_POPOVER_GROUPS,
+  SCANNER_TYPES,
+  SECRET_PUSH_PROTECTION_KEY,
+  CONTAINER_SCANNING_FOR_REGISTRY_KEY,
+} from '../constants';
 import ProjectToolCoverageDetails from './project_tool_coverage_details.vue';
 
 export default {
@@ -16,10 +21,25 @@ export default {
   methods: {
     getRelevantScannerData(scannerTypes) {
       return scannerTypes.map((type) => {
+        if (type === SECRET_PUSH_PROTECTION_KEY) {
+          return {
+            analyzerType: type,
+            status: this.item.secretPushProtectionEnabled ? 'SUCCESS' : 'DEFAULT',
+          };
+        }
+        if (type === CONTAINER_SCANNING_FOR_REGISTRY_KEY) {
+          return {
+            analyzerType: type,
+            status: this.item.containerScanningForRegistryEnabled ? 'SUCCESS' : 'DEFAULT',
+          };
+        }
+
         const existingScanner = this.item.analyzerStatuses.find(
           (scanner) => scanner.analyzerType === type,
         );
-        return existingScanner || { analyzerType: type };
+
+        const defaultType = { analyzerType: type };
+        return existingScanner || defaultType;
       });
     },
     scannerStyling(scannerTypes) {

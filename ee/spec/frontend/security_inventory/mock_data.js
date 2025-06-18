@@ -71,6 +71,8 @@ export const subgroupsAndProjects = {
             avatarUrl: null,
             webUrl: 'http://gdk.test:3000/flightjs/security-reports-example',
             updatedAt: '2025-01-01T09:55:10Z',
+            secretPushProtectionEnabled: false,
+            containerScanningForRegistryEnabled: false,
             vulnerabilityStatistic: {
               critical: 10,
               high: 5,
@@ -99,6 +101,8 @@ export const subgroupsAndProjects = {
             avatarUrl: null,
             webUrl: 'http://gdk.test:3000/flightjs/Flight',
             updatedAt: '2025-01-01T09:55:10Z',
+            secretPushProtectionEnabled: false,
+            containerScanningForRegistryEnabled: false,
             vulnerabilityStatistic: {
               critical: 10,
               high: 0,
