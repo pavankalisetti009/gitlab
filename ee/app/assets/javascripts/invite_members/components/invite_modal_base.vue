@@ -111,6 +111,11 @@ export default {
       required: false,
       default: false,
     },
+    hasErrorDuringInvite: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   apollo: {
     memberRoles: {
@@ -171,6 +176,10 @@ export default {
       return undefined;
     },
     showOverageModal() {
+      if (this.hasErrorDuringInvite) {
+        return false;
+      }
+
       return (
         this.willIncreaseOverage && this.overageMembersModalAvailable && !this.actualFeedbackMessage
       );

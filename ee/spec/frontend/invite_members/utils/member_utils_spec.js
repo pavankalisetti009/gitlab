@@ -1,4 +1,4 @@
-import { triggerExternalAlert } from 'ee/invite_members/utils/member_utils';
+import { triggerExternalAlert, baseBindingAttributes } from 'ee/invite_members/utils/member_utils';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
 import eventHub from '~/invite_members/event_hub';
 
@@ -18,5 +18,14 @@ describe('Trigger External Alert', () => {
     } else {
       expect(eventHub.$emit).not.toHaveBeenCalled();
     }
+  });
+});
+
+describe('baseBindingAttributes', () => {
+  it.each([
+    [true, { 'has-error-during-invite': true }],
+    [false, { 'has-error-during-invite': false }],
+  ])('returns correct attributes', (hasInvalidMembers, expected) => {
+    expect(baseBindingAttributes(hasInvalidMembers)).toEqual(expected);
   });
 });

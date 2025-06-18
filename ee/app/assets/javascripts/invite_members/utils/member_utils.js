@@ -15,3 +15,7 @@ export function triggerExternalAlert(source) {
 
   return false;
 }
+
+export function baseBindingAttributes(hasInvalidMembers) {
+  return { 'has-error-during-invite': hasInvalidMembers };
+}

@@ -463,6 +463,22 @@ describe('EEInviteModalBase', () => {
     });
   });
 
+  describe('when invite is clicked and hasErrorDuringInvite is true', () => {
+    beforeEach(async () => {
+      createComponent({
+        props: { newUsersToInvite: [123], hasErrorDuringInvite: true },
+        overageMembersModalAvailable: true,
+      });
+      clickInviteButton();
+      await waitForPromises();
+    });
+
+    it('does not show the overage modal', () => {
+      expect(findInitialModalContent().isVisible()).toBe(true);
+      expect(findOverageModalContent().isVisible()).toBe(false);
+    });
+  });
+
   describe.each([true, false])(
     'when the group is not eligible to show overage and overageMembersModalAvailable is %s',
     (overageMembersModalAvailable) => {

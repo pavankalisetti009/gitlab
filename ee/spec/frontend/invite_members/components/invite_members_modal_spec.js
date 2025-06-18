@@ -137,6 +137,24 @@ describe('EEInviteMembersModal', () => {
 
       expect(findBase().props('isProject')).toBe(false);
     });
+
+    describe('hasErrorDuringInvite prop', () => {
+      it('passes hasErrorDuringInvite as true when there are invalid members', async () => {
+        createComponent();
+        wrapper.vm.invalidMembers = { foo: 'error message' };
+        await nextTick();
+
+        expect(findBase().props('hasErrorDuringInvite')).toBe(true);
+      });
+
+      it('passes hasErrorDuringInvite as false when there are no invalid members', async () => {
+        createComponent();
+        wrapper.vm.invalidMembers = {};
+        await nextTick();
+
+        expect(findBase().props('hasErrorDuringInvite')).toBe(false);
+      });
+    });
   });
 
   describe('when on the Learn GitLab page', () => {
