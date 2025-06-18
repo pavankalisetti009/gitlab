@@ -66,13 +66,13 @@ describe('RelatedItemsTree', () => {
 
       describe('createdAtInWords', () => {
         it('returns string containing date in words for `createdAt` prop', () => {
-          expect(wrapper.vm.createdAtInWords).toBe('2 years ago');
+          expect(wrapper.vm.createdAtInWords).toBe('Jul 6, 2018');
         });
       });
 
       describe('closedAtInWords', () => {
         it('returns string containing date in words for `closedAt` prop', () => {
-          expect(wrapper.vm.closedAtInWords).toBe('1 year ago');
+          expect(wrapper.vm.closedAtInWords).toBe('Jul 6, 2019');
         });
       });
 
@@ -95,7 +95,7 @@ describe('RelatedItemsTree', () => {
           });
 
           await nextTick();
-          expect(wrapper.vm.stateTimeInWords).toBe('2 years ago');
+          expect(wrapper.vm.stateTimeInWords).toBe('Jul 6, 2018');
         });
 
         it('returns string using `closedAtInWords` prop when `isOpen` is false', async () => {
@@ -104,7 +104,7 @@ describe('RelatedItemsTree', () => {
           });
 
           await nextTick();
-          expect(wrapper.vm.stateTimeInWords).toBe('1 year ago');
+          expect(wrapper.vm.stateTimeInWords).toBe('Jul 6, 2019');
         });
       });
 
@@ -138,7 +138,7 @@ describe('RelatedItemsTree', () => {
 
       describe('getTimestampInWords', () => {
         it('returns string date in words from rawTimestamp', () => {
-          expect(wrapper.vm.getTimestampInWords(mockClosedAt)).toContain('1 year ago');
+          expect(wrapper.vm.getTimestampInWords(mockClosedAt)).toContain('Jul 6, 2019');
         });
       });
     });
@@ -157,7 +157,7 @@ describe('RelatedItemsTree', () => {
       });
 
       it('renders stateTimeInWords', () => {
-        expect(wrapper.text().trim()).toContain('1 year ago');
+        expect(wrapper.text().trim()).toContain('Jul 6, 2019');
       });
 
       it('renders stateTimestamp in muted', () => {
