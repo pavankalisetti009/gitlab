@@ -68,7 +68,7 @@ module EE
     end
 
     def supports_status?
-      resource_parent.work_item_status_feature_available? && is_a?(Issue)
+      is_a?(Issue) && resource_parent.work_item_status_feature_available?
     end
 
     override :hook_association_changes
@@ -92,7 +92,7 @@ module EE
       end
 
       if supports_status? && (old_current_status(old_associations) != status_with_fallback)
-        changes[:status] = [old_current_status(old_associations)&.hook_attrs, status_with_fallback.hook_attrs]
+        changes[:status] = [old_current_status(old_associations)&.hook_attrs, status_with_fallback&.hook_attrs]
       end
 
       changes
