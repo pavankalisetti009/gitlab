@@ -13,11 +13,15 @@ RSpec.describe Groups::RunnersController, feature_category: :fleet_visibility do
     sign_in(user)
   end
 
-  shared_examples 'controller pushing runner upgrade management features' do
-    it 'enables runner_upgrade_management_for_namespace licensed feature' do
-      is_expected.to receive(:push_licensed_feature).with(:runner_upgrade_management_for_namespace, group)
+  shared_examples 'controller pushes runner upgrade management features' do
+    before do
+      allow(controller).to receive(:push_licensed_feature)
+    end
 
+    it 'enables runner_upgrade_management_for_namespace licensed feature' do
       make_request
+
+      is_expected.to have_received(:push_licensed_feature).with(:runner_upgrade_management_for_namespace, group)
     end
 
     context 'when fetching runner releases is disabled' do
@@ -26,10 +30,22 @@ RSpec.describe Groups::RunnersController, feature_category: :fleet_visibility do
       end
 
       it 'does not enable runner_upgrade_management_for_namespace licensed feature' do
-        is_expected.not_to receive(:push_licensed_feature).with(:runner_upgrade_management_for_namespace)
-
         make_request
+
+        is_expected.not_to have_received(:push_licensed_feature).with(:runner_upgrade_management_for_namespace)
       end
+    end
+  end
+
+  shared_examples 'controller pushes maintenance note feature' do
+    before do
+      allow(controller).to receive(:push_licensed_feature)
+    end
+
+    it 'enables runner_maintenance_note_for_namespace licensed feature' do
+      make_request
+
+      is_expected.to have_received(:push_licensed_feature).with(:runner_maintenance_note_for_namespace, group)
     end
   end
 
@@ -38,7 +54,7 @@ RSpec.describe Groups::RunnersController, feature_category: :fleet_visibility do
       get :index, params: { group_id: group }
     end
 
-    it_behaves_like 'controller pushing runner upgrade management features'
+    it_behaves_like 'controller pushes runner upgrade management features'
 
     context 'when user is developer' do
       let(:user) { developer }
@@ -49,6 +65,14 @@ RSpec.describe Groups::RunnersController, feature_category: :fleet_visibility do
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
+  end
+
+  describe '#new' do
+    let(:make_request) do
+      get :new, params: { group_id: group }
+    end
+
+    it_behaves_like 'controller pushes maintenance note feature'
   end
 
   describe '#show' do
@@ -58,7 +82,9 @@ RSpec.describe Groups::RunnersController, feature_category: :fleet_visibility do
 
     let(:runner) { create(:ci_runner, :group, groups: [group]) }
 
-    it_behaves_like 'controller pushing runner upgrade management features'
+    it_behaves_like 'controller pushes runner upgrade management features'
+
+    it_behaves_like 'controller pushes maintenance note feature'
 
     context 'when user is developer' do
       let(:user) { developer }
@@ -69,6 +95,16 @@ RSpec.describe Groups::RunnersController, feature_category: :fleet_visibility do
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
+  end
+
+  describe '#edit' do
+    let(:make_request) do
+      get :edit, params: { group_id: group, id: runner }
+    end
+
+    let(:runner) { create(:ci_runner, :group, groups: [group]) }
+
+    it_behaves_like 'controller pushes maintenance note feature'
   end
 
   describe '#dashboard' do
@@ -83,7 +119,7 @@ RSpec.describe Groups::RunnersController, feature_category: :fleet_visibility do
       stub_licensed_features(runner_performance_insights_for_namespace: feature_available)
     end
 
-    it_behaves_like 'controller pushing runner upgrade management features'
+    it_behaves_like 'controller pushes runner upgrade management features'
 
     context 'when user is developer' do
       let(:user) { developer }

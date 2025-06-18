@@ -263,6 +263,7 @@ module GitlabSubscriptions
       required_ci_templates
       requirements
       runner_maintenance_note
+      runner_maintenance_note_for_namespace
       runner_performance_insights
       runner_performance_insights_for_namespace
       runner_upgrade_management

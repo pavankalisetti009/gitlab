@@ -46,6 +46,11 @@ describe('RunnerDetails', () => {
     });
 
     it('displays note', () => {
+      expect(findRunnerMaintenanceNoteDetail().props('runner')).toEqual({
+        ...mockRunner,
+        maintenanceNoteHtml: mockNoteHtml,
+      });
+
       expect(findRunnerMaintenanceNoteDetail().text()).toContain(mockNoteHtml);
     });
   });
