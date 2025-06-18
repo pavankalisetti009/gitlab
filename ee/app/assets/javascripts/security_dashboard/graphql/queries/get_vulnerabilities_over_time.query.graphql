@@ -1,0 +1,16 @@
+query getGroupVulnerabilitiesOverTime($fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    securityMetrics @client {
+      vulnerabilitiesOverTime {
+        nodes {
+          date
+          bySeverity {
+            count
+            severity
+          }
+        }
+      }
+    }
+  }
+}
