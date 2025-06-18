@@ -182,6 +182,30 @@ module API
               end
             end
 
+            get :ws do
+              forbidden! if Feature.disabled?(:duo_workflow_workhorse, current_user)
+
+              authorize_feature_flag!
+
+              require_gitlab_workhorse!
+
+              status :ok
+              content_type Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE
+
+              headers = Gitlab::DuoWorkflow::Client.headers(user: current_user).merge(
+                'X-Gitlab-Base-Url' => Gitlab.config.gitlab.url,
+                'X-Gitlab-Oauth-Token' => gitlab_oauth_token.plaintext_token
+              )
+
+              {
+                DuoWorkflow: {
+                  Headers: headers,
+                  ServiceURI: Gitlab::DuoWorkflow::Client.url,
+                  Secure: Gitlab::DuoWorkflow::Client.secure?
+                }
+              }
+            end
+
             namespace :workflows do
               desc 'creates workflow persistence' do
                 detail 'This feature is experimental.'
