@@ -52101,6 +52101,9 @@ msgstr ""
 msgid "Reset token"
 msgstr ""
 
+msgid "Resize sidebar"
+msgstr ""
+
 msgid "Resolve"
 msgstr ""
 
