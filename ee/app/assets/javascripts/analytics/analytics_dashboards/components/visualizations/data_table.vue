@@ -19,8 +19,6 @@ export default {
       required: false,
       default: () => [],
     },
-    // Part of the visualizations API, but left unused for tables.
-    // It could be used down the line to allow users to customize tables.
     options: {
       type: Object,
       required: false,
@@ -28,8 +26,9 @@ export default {
     },
   },
   computed: {
-    fields() {
+    derivedFields() {
       // NOTE: we derive the field names from the keys in the first row of data
+      // unless a custom field config is passed in the visualization options
       if (this.data.length < 1) {
         return null;
       }
@@ -38,6 +37,9 @@ export default {
         key,
         tdClass: 'gl-truncate gl-max-w-0',
       }));
+    },
+    fields() {
+      return this.options.fields || this.derivedFields;
     },
   },
   methods: {
