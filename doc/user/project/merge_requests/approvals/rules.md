@@ -167,9 +167,12 @@ You can add a group of users as approvers. All direct members of this group
 can approve the rule. Inherited members cannot approve the rule.
 
 Typically the group is a subgroup in your top-level namespace, unless you are
-collaborating with an external group. If you are collaborating with another group,
-you must [share access to the project](../../members/sharing_projects_groups.md)
-before assigning the group as a group approver.
+collaborating with an external group. If you are collaborating with another group
+and want to use members of that group as approvers, you can either:
+
+- [Share access to the project](../../members/sharing_projects_groups.md#sharing-projects).
+- [Share access to your project's group](../../members/sharing_projects_groups.md#sharing-groups),
+  which gives the external group approval access to all projects in your project's group.
 
 A user's membership in an approver group determines their individual approval permissions
 in the following ways:
@@ -181,8 +184,8 @@ in the following ways:
   To change this behavior, disable the
   [**Prevent author approval**](settings.md#prevent-approval-by-author)
   project setting.
-- Committers to merge requests can approve a merge request. To change this behavior, enable the
-  [**Prevent committers approval**](settings.md#prevent-approvals-by-users-who-add-commits)
+- By default, committers to merge requests can approve a merge request. To change this behavior, enable
+  the [**Prevent committers approval**](settings.md#prevent-approvals-by-users-who-add-commits)
   project setting.
 
 ### Code owners as eligible approvers
