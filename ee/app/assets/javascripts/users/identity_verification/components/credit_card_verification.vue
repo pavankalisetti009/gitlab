@@ -27,6 +27,7 @@ export default {
     'creditCardVerifyCaptchaPath',
     'creditCard',
     'offerPhoneNumberExemption',
+    'isLWRExperimentCandidate',
   ],
   props: {
     requireChallenge: {
@@ -57,6 +58,9 @@ export default {
         this.hasLoadError ||
         this.isRelatedToBannedUser
       );
+    },
+    wrapperClasses() {
+      return { 'gl-mt-6': this.isLWRExperimentCandidate };
     },
   },
   methods: {
@@ -148,7 +152,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-flex gl-flex-col">
+  <div class="gl-flex gl-flex-col" :class="wrapperClasses">
     <zuora
       ref="zuora"
       :current-user-id="currentUserId"

@@ -48,6 +48,7 @@ describe('CreditCardVerification', () => {
           userId: 927,
         },
         offerPhoneNumberExemption: true,
+        isLWRExperimentCandidate: false,
         ...provide,
       },
       propsData: { completed: false, ...props },
@@ -345,6 +346,20 @@ describe('CreditCardVerification', () => {
 
         expect(findSubmitButton().props('disabled')).toBe(true);
       });
+    });
+  });
+
+  describe('with lightweight_trial_registration_redesign experiment', () => {
+    it('does not change styling when in control group', () => {
+      createComponent();
+
+      expect(wrapper.classes()).not.toContain('gl-mt-6');
+    });
+
+    it('changes styling when in candidate group', () => {
+      createComponent({ provide: { isLWRExperimentCandidate: true } });
+
+      expect(wrapper.classes()).toContain('gl-mt-6');
     });
   });
 });

@@ -49,7 +49,7 @@ describe('Verify phone verification code input component', () => {
 
   const findCountdown = () => wrapper.findComponent(GlCountdown);
 
-  const createComponent = ({ props } = { props: {} }) => {
+  const createComponent = ({ props, provide } = { props: {}, provide: {} }) => {
     wrapper = shallowMountExtended(VerifyPhoneVerificationCode, {
       propsData: {
         latestPhoneNumber: {
@@ -65,6 +65,8 @@ describe('Verify phone verification code input component', () => {
         phoneSendCodePath: SEND_CODE_PATH,
         phoneVerifyCodePath: VERIFY_CODE_PATH,
         phoneNumber: {},
+        isLWRExperimentCandidate: false,
+        ...provide,
       },
       stubs: {
         GlSprintf,
@@ -376,6 +378,24 @@ describe('Verify phone verification code input component', () => {
           expect(findResendCodeButton().exists()).toBe(true);
         });
       });
+    });
+  });
+
+  describe('when in candidate group of lightweight_trial_registration_redesign experiment', () => {
+    beforeEach(() => {
+      createComponent({ provide: { isLWRExperimentCandidate: true } });
+    });
+    it('puts description text outside', () => {
+      expect(wrapper.find('p').text()).toContain(
+        sprintf("We've sent a verification code to +%{phoneNumber}", {
+          phoneNumber: INTERNATIONAL_DIAL_CODE + NUMBER,
+        }),
+      );
+      expect(findVerificationCodeFormGroup().attributes('labeldescription')).toBe('');
+    });
+
+    it('changes styling for submit button', () => {
+      expect(findVerifyCodeButton().classes()).toContain('gl-mt-6');
     });
   });
 });

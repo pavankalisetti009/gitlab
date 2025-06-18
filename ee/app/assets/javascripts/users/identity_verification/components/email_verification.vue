@@ -24,7 +24,7 @@ export default {
     GlSprintf,
     GlButton,
   },
-  inject: ['email'],
+  inject: ['email', 'isLWRExperimentCandidate'],
   data() {
     return {
       verificationCode: '',
@@ -50,6 +50,15 @@ export default {
       }
 
       return this.verifyError;
+    },
+    headerClasses() {
+      return { 'gl-mt-3': this.isLWRExperimentCandidate };
+    },
+    formClasses() {
+      return { 'gl-mt-6': this.isLWRExperimentCandidate };
+    },
+    submitButtonClasses() {
+      return this.isLWRExperimentCandidate ? 'gl-mb-0 gl-mt-6' : 'gl-mb-3 gl-mt-5';
     },
   },
   watch: {
@@ -126,14 +135,14 @@ export default {
 </script>
 <template>
   <div>
-    <p>
+    <p :class="headerClasses">
       <gl-sprintf :message="$options.i18n.header">
         <template #email>
           <b>{{ email.obfuscated }}</b>
         </template>
       </gl-sprintf>
     </p>
-    <gl-form @submit.prevent="verify">
+    <gl-form :class="formClasses" @submit.prevent="verify">
       <gl-form-group
         :label="$options.i18n.code"
         label-for="verification_code"
@@ -169,7 +178,7 @@ export default {
         </gl-sprintf>
       </div>
       <gl-button
-        class="gl-mb-3 gl-mt-5"
+        :class="submitButtonClasses"
         block
         variant="confirm"
         type="submit"

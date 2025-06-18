@@ -25,10 +25,12 @@ describe('EmailVerification', () => {
       verifyPath: '/users/identity_verification/verify_email_code',
       resendPath: '/users/identity_verification/resend_email_code',
     },
+    isLWRExperimentCandidate: false,
   };
 
-  const createComponent = () => {
-    wrapper = mountExtended(EmailVerification, { provide: PROVIDE });
+  const createComponent = (option = {}) => {
+    const { provide = {} } = option;
+    wrapper = mountExtended(EmailVerification, { provide: { ...PROVIDE, ...provide } });
   };
 
   const findHeader = () => wrapper.find('p');
@@ -207,6 +209,24 @@ describe('EmailVerification', () => {
 
       expect(findCodeInput().element.value).toBe('');
       expect(findErrorMessage().exists()).toBe(false);
+    });
+  });
+
+  describe('with lightweight_trial_registration_redesign experiment', () => {
+    it('does not change styling when in control group', () => {
+      createComponent();
+
+      expect(findHeader().classes()).not.toContain('gl-mt-3');
+      expect(findForm().classes()).not.toContain('gl-mt-6');
+      expect(findSubmitButton().classes()).not.toContain('gl-mt-6');
+    });
+
+    it('changes styling when in candidate group', () => {
+      createComponent({ provide: { isLWRExperimentCandidate: true } });
+
+      expect(findHeader().classes()).toContain('gl-mt-3');
+      expect(findForm().classes()).toContain('gl-mt-6');
+      expect(findSubmitButton().classes()).toContain('gl-mt-6');
     });
   });
 });

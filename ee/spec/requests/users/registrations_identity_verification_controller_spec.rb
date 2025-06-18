@@ -150,6 +150,36 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         expect(request.session.has_key?(:verification_user_id)).to eq(false)
       end
     end
+
+    context 'with lightweight_trial_registration_redesign experiment' do
+      before do
+        stub_experiments(lightweight_trial_registration_redesign: :candidate)
+      end
+
+      context 'when user is not on trial registration' do
+        it 'does not set html_class and hide_empty_nav_bar' do
+          do_request
+
+          expect(assigns(:html_class)).to be_nil
+          expect(assigns(:hide_empty_navbar)).to be_nil
+        end
+      end
+
+      context 'when user is on trial registration' do
+        let(:user) { create(:user, :unconfirmed, onboarding_status_initial_registration_type: 'trial') }
+
+        before do
+          stub_session(session_data: { verification_user_id: user.id })
+        end
+
+        it 'sets html_class to gl-dark and hide_empty_navbar to true' do
+          do_request
+
+          expect(assigns(:html_class)).to eq('gl-dark')
+          expect(assigns(:hide_empty_navbar)).to be true
+        end
+      end
+    end
   end
 
   describe 'GET restricted' do

@@ -1,8 +1,10 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
+import GITLAB_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg?url';
 import { kebabCase } from 'lodash';
+import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 import { mergeUrlParams, visitUrl } from '~/lib/utils/url_utility';
-import { s__, sprintf } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import { convertArrayToCamelCase, convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
@@ -20,6 +22,7 @@ export default {
     EmailVerification,
     VerificationStep,
     GlLoadingIcon,
+    GitlabExperiment,
   },
   inject: ['verificationStatePath', 'phoneExemptionPath', 'successfulVerificationPath'],
   props: {
@@ -110,6 +113,15 @@ export default {
       };
       return sprintf(templates[step], { stepNumber: number });
     },
+    stepTitleLWRExperiment(step) {
+      const { ccStep, phoneStep, emailStep } = this.$options.i18nLWRExperiment;
+      const templates = {
+        creditCard: ccStep,
+        phone: phoneStep,
+        email: emailStep,
+      };
+      return templates[step];
+    },
     exemptionRequested() {
       axios
         .patch(this.phoneExemptionPath)
@@ -134,33 +146,81 @@ export default {
     phoneStep: s__('IdentityVerification|Step %{stepNumber}: Verify phone number'),
     emailStep: s__('IdentityVerification|Step %{stepNumber}: Verify email address'),
   },
+  i18nLWRExperiment: {
+    pageDescription: s__(
+      "IdentityVerification|For added security, you'll need to verify your identity.",
+    ),
+    ccStep: s__('IdentityVerification|Payment Method Verification'),
+    phoneStep: s__('IdentityVerification|Phone Number Verification'),
+    emailStep: s__('IdentityVerification|Email Verification'),
+  },
+  gitlabLogo: GITLAB_LOGO_SVG_URL,
+  gitlabLogoAlt: __('GitLab logo'),
 };
 </script>
 <template>
-  <div class="gl-flex gl-items-center gl-justify-center">
-    <div class="gl-max-w-62 gl-grow">
-      <header class="gl-text-center">
-        <h2>{{ $options.i18n.pageTitle }}</h2>
-        <p>{{ pageDescription }}</p>
-      </header>
+  <gitlab-experiment name="lightweight_trial_registration_redesign">
+    <template #control>
+      <div class="gl-flex gl-items-center gl-justify-center">
+        <div class="gl-max-w-62 gl-grow">
+          <header class="gl-text-center">
+            <h2>{{ $options.i18n.pageTitle }}</h2>
+            <p>{{ pageDescription }}</p>
+          </header>
 
-      <gl-loading-icon v-if="loading" />
-      <template v-for="(step, index) in orderedSteps" v-else>
-        <verification-step
-          :key="step"
-          :title="stepTitle(step, index + 1)"
-          :completed="stepsVerifiedState[step]"
-          :is-active="step === activeStep"
-        >
-          <component
-            :is="methodComponent(step)"
-            :require-challenge="challengeRequired(step)"
-            @completed="onStepCompleted(step)"
-            @exemptionRequested="exemptionRequested"
-            @set-verification-state="setVerificationState"
-          />
-        </verification-step>
-      </template>
-    </div>
-  </div>
+          <gl-loading-icon v-if="loading" />
+          <template v-for="(step, index) in orderedSteps" v-else>
+            <verification-step
+              :key="step"
+              :title="stepTitle(step, index + 1)"
+              :completed="stepsVerifiedState[step]"
+              :is-active="step === activeStep"
+            >
+              <component
+                :is="methodComponent(step)"
+                :require-challenge="challengeRequired(step)"
+                @completed="onStepCompleted(step)"
+                @exemptionRequested="exemptionRequested"
+                @set-verification-state="setVerificationState"
+              />
+            </verification-step>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <template #candidate>
+      <div class="gl-flex gl-items-center gl-justify-center">
+        <div class="gl-max-w-xl gl-grow gl-rounded-pill gl-bg-subtle gl-p-8">
+          <header class="gl-text-center">
+            <img :src="$options.gitlabLogo" :alt="$options.gitlabLogoAlt" class="gl-h-9" />
+            <h2>{{ $options.i18n.pageTitle }}</h2>
+            <p class="gl-mb-0">
+              {{ $options.i18nLWRExperiment.pageDescription }}
+            </p>
+          </header>
+
+          <gl-loading-icon v-if="loading" class="gl-mt-6" />
+          <template v-for="(step, index) in orderedSteps" v-else>
+            <verification-step
+              :key="step"
+              :title="stepTitleLWRExperiment(step)"
+              :completed="stepsVerifiedState[step]"
+              :is-active="step === activeStep"
+              :total-steps="orderedSteps.length"
+              :step-index="index"
+            >
+              <component
+                :is="methodComponent(step)"
+                :require-challenge="challengeRequired(step)"
+                @completed="onStepCompleted(step)"
+                @exemptionRequested="exemptionRequested"
+                @set-verification-state="setVerificationState"
+              />
+            </verification-step>
+          </template>
+        </div>
+      </div>
+    </template>
+  </gitlab-experiment>
 </template>

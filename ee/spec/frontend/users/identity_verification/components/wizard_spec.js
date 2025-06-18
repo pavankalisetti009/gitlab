@@ -12,6 +12,9 @@ import CreditCardVerification from 'ee/users/identity_verification/components/cr
 import PhoneVerification from 'ee/users/identity_verification/components/phone_verification.vue';
 import EmailVerification from 'ee/users/identity_verification/components/email_verification.vue';
 import { I18N_GENERIC_ERROR } from 'ee/users/identity_verification/constants';
+import { stubExperiments } from 'helpers/experimentation_helper';
+import { getExperimentData } from '~/experimentation/utils';
+import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/url_utility', () => {
@@ -40,6 +43,7 @@ describe('IdentityVerificationWizard', () => {
     wrapper = shallowMount(IdentityVerificationWizard, {
       propsData: DEFAULT_PROPS,
       provide: { ...DEFAULT_PROVIDE, ...provide },
+      stubs: { GitlabExperiment },
     });
   };
 
@@ -271,6 +275,50 @@ describe('IdentityVerificationWizard', () => {
       await nextTick();
 
       expect(findSteps().at(0).props('completed')).toBe(true);
+    });
+  });
+
+  describe('with lightweight_trial_registration_redesign experiment candidate', () => {
+    beforeEach(async () => {
+      mockVerificationState({ credit_card: false, phone: false, email: false });
+      stubExperiments({ lightweight_trial_registration_redesign: 'candidate' });
+
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('sets the correct experiment data', () => {
+      expect(getExperimentData('lightweight_trial_registration_redesign')).toEqual({
+        experiment: 'lightweight_trial_registration_redesign',
+        variant: 'candidate',
+      });
+    });
+
+    it('renders the GitLab logo', () => {
+      const logoImage = wrapper.find('img');
+
+      expect(logoImage.exists()).toBe(true);
+      expect(logoImage.attributes().alt).toBe('GitLab logo');
+    });
+
+    it('displays the shortened description', () => {
+      expect(findDescription().text()).toBe(
+        `For added security, you'll need to verify your identity.`,
+      );
+    });
+
+    it('renders steps with title, and passing correct total steps', () => {
+      const VERIFICATION_STEPS = [
+        { title: 'Payment Method Verification', index: 0 },
+        { title: 'Phone Number Verification', index: 1 },
+        { title: 'Email Verification', index: 2 },
+      ];
+
+      VERIFICATION_STEPS.forEach((step, index) => {
+        expect(findSteps().at(index).props('title')).toBe(step.title);
+        expect(findSteps().at(index).props('totalSteps')).toBe(VERIFICATION_STEPS.length);
+        expect(findSteps().at(index).props('stepIndex')).toBe(step.index);
+      });
     });
   });
 });

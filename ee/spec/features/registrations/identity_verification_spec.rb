@@ -405,6 +405,21 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
     end
 
     it_behaves_like 'allows the user to complete registration when Arkose is unavailable', flow: :trial
+
+    context 'when lightweight_trial_registration_redesign in candidate' do
+      before do
+        stub_experiments(lightweight_trial_registration_redesign: :candidate)
+      end
+
+      context 'when Arkose is up' do
+        it_behaves_like 'registering a user with identity verification when risk is unavailable', flow: :trial
+        it_behaves_like 'registering a low risk user with identity verification', flow: :trial
+        it_behaves_like 'registering a medium risk user with identity verification', flow: :trial
+        it_behaves_like 'registering a high risk user with identity verification', flow: :trial
+      end
+
+      it_behaves_like 'allows the user to complete registration when Arkose is unavailable', flow: :trial
+    end
   end
 
   describe 'SAML flow' do
