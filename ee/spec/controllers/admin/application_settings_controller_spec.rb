@@ -470,15 +470,16 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
 
     context 'when setting disabled_direct_code_suggestions' do
       it 'does not update settings when duo pro is not available' do
+        allow(CloudConnector::AvailableServices)
+          .to receive_message_chain(:find_by_name, :purchased?).and_return(false)
+
         expect { put :update, params: { application_setting: { disabled_direct_code_suggestions: true } } }
           .not_to change { ApplicationSetting.current.reload.disabled_direct_code_suggestions }
       end
 
       it 'updates settings when duo pro is available' do
-        allow(GitlabSubscriptions::AddOnPurchase)
-          .to receive(:find_for_unit_primitive)
-          .with(:complete_code, :instance)
-          .and_return(build_list(:gitlab_subscription_add_on_purchase, 1))
+        allow(CloudConnector::AvailableServices)
+          .to receive_message_chain(:find_by_name, :purchased?).and_return(true)
 
         put :update, params: { application_setting: { disabled_direct_code_suggestions: true } }
 

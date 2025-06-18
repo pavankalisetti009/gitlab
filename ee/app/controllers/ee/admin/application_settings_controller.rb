@@ -214,7 +214,7 @@ module EE
           defaults[:default_branch_protection_defaults] << :code_owner_approval_required
         end
 
-        if ::GitlabSubscriptions::AddOnPurchase.find_for_unit_primitive(:complete_code, :instance).any?
+        if CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
           attrs << :disabled_direct_code_suggestions
         end
 

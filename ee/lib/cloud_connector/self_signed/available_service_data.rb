@@ -61,7 +61,7 @@ module CloudConnector
       end
 
       def add_on_purchases_for(resource = nil)
-        GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_on_names, resource)
+        GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_on_names, resource: resource)
       end
 
       def allowed_scopes_during_free_access

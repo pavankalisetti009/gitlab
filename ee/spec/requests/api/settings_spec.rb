@@ -147,10 +147,8 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
       end
 
       it 'sets setting when code suggestions are available' do
-        allow(GitlabSubscriptions::AddOnPurchase)
-          .to receive(:find_for_unit_primitive)
-          .with(:complete_code, :instance)
-          .and_return(build_list(:gitlab_subscription_add_on_purchase, 1))
+        allow(CloudConnector::AvailableServices)
+          .to receive_message_chain(:find_by_name, :purchased?).and_return(true)
 
         api_request
 
@@ -159,6 +157,9 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
       end
 
       it 'does not set the value when code suggestions are not available' do
+        allow(CloudConnector::AvailableServices)
+          .to receive_message_chain(:find_by_name, :purchased?).and_return(false)
+
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
