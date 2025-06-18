@@ -24,13 +24,14 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
   let_it_be(:other_requirement) { create(:compliance_requirement, namespace: other_group, framework: other_framework) }
   let_it_be(:other_control) { create(:compliance_requirements_control, compliance_requirement: other_requirement) }
 
-  let_it_be(:audit_event1) { create(:audit_event, :project_event, target_project: root_group_project, user: user) }
-  let_it_be(:audit_event2) { create(:audit_event, :group_event, target_group: root_group, user: user) }
-  let_it_be(:audit_event3) { create(:audit_event, :project_event, target_project: other_project, user: user) }
+  let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: root_group_project.id) }
+  let_it_be(:audit_event2) { create(:audit_events_group_audit_event, group_id: root_group.id) }
+  let_it_be(:audit_event3) { create(:audit_events_project_audit_event, project_id: other_project.id) }
 
   let_it_be(:violation1) do
     create(:project_compliance_violation, namespace: root_group_project.namespace, project: root_group_project,
-      audit_event: audit_event1,
+      audit_event_id: audit_event1.id,
+      audit_event_table_name: :project_audit_events,
       compliance_control: control1,
       status: 0
     )
@@ -38,7 +39,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
 
   let_it_be(:violation2) do
     create(:project_compliance_violation, namespace: root_group_project.namespace, project: root_group_project,
-      audit_event: audit_event1,
+      audit_event_id: audit_event1.id,
+      audit_event_table_name: :project_audit_events,
       compliance_control: control2,
       status: 1
     )
@@ -46,7 +48,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
 
   let_it_be(:violation3) do
     create(:project_compliance_violation, namespace: root_group_project.namespace, project: root_group_project,
-      audit_event: audit_event2,
+      audit_event_id: audit_event2.id,
+      audit_event_table_name: :group_audit_events,
       compliance_control: control1,
       status: 2,
       created_at: 1.day.ago
@@ -55,7 +58,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
 
   let_it_be(:violation4) do
     create(:project_compliance_violation, namespace: subgroup_project.namespace, project: subgroup_project,
-      audit_event: audit_event2,
+      audit_event_id: audit_event2.id,
+      audit_event_table_name: :group_audit_events,
       compliance_control: control3,
       status: 3
     )
@@ -63,7 +67,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
 
   let_it_be(:violation5) do
     create(:project_compliance_violation, namespace: other_project.namespace, project: other_project,
-      audit_event: audit_event3,
+      audit_event_id: audit_event3.id,
+      audit_event_table_name: :project_audit_events,
       compliance_control: other_control,
       status: 0
     )

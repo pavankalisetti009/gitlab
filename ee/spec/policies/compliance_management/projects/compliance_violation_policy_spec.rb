@@ -9,11 +9,12 @@ RSpec.describe ::ComplianceManagement::Projects::ComplianceViolationPolicy, feat
   let_it_be(:framework) { create(:compliance_framework, namespace: group) }
   let_it_be(:requirement) { create(:compliance_requirement, namespace: group, framework: framework) }
   let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
-  let_it_be(:audit_event) { create(:audit_event, :project_event, target_project: project, user: user) }
+  let_it_be(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
 
   let_it_be(:violation) do
     create(:project_compliance_violation, namespace: group, project: project,
-      audit_event: audit_event,
+      audit_event_id: audit_event.id,
+      audit_event_table_name: :project_audit_events,
       compliance_control: control,
       status: 0
     )
