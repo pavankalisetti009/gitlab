@@ -4,7 +4,7 @@ import VueApollo from 'vue-apollo';
 import { GlLoadingIcon } from '@gitlab/ui';
 
 import WorkflowsList from 'ee/ai/duo_agents_platform/components/common/workflows_list.vue';
-import AgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/agents_platform_index.vue';
+import AgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/duo_agents_platform_index.vue';
 import { getWorkflows } from 'ee/ai/duo_agents_platform/graphql/queries/get_workflows.query.graphql';
 
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -37,7 +37,6 @@ describe('AgentsPlatformIndex', () => {
     return waitForPromises();
   };
 
-  const findHeading = () => wrapper.find('h1');
   const findWorkflowsList = () => wrapper.findComponent(WorkflowsList);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
@@ -63,10 +62,6 @@ describe('AgentsPlatformIndex', () => {
   describe('when component is mounted', () => {
     beforeEach(async () => {
       await createWrapper();
-    });
-
-    it('renders the correct heading text', () => {
-      expect(findHeading().text()).toBe('Agents Platform Index');
     });
 
     it('renders the workflows list component', () => {

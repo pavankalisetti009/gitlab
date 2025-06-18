@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_workflow do
   include Rails.application.routes.url_helpers
 
-  let_it_be(:project) { build_stubbed(:project) }
+  let_it_be(:group) { build_stubbed(:group, name: 'Test Group') }
+  let_it_be(:project) { build_stubbed(:project, name: 'Test Project', group: group) }
 
   before do
     helper.instance_variable_set(:@project, project)

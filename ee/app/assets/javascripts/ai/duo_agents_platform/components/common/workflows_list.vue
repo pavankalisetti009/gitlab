@@ -1,12 +1,15 @@
 <script>
-import { GlEmptyState, GlKeysetPagination, GlTableLite } from '@gitlab/ui';
+import { GlEmptyState, GlKeysetPagination, GlLink, GlTableLite } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
 
 export default {
   name: 'AgentWorkflowsList',
   components: {
     GlEmptyState,
     GlKeysetPagination,
+    GlLink,
     GlTableLite,
   },
   props: {
@@ -28,11 +31,17 @@ export default {
       return this.workflows?.length > 0;
     },
   },
+  methods: {
+    formatId(id) {
+      return getIdFromGraphQLId(id);
+    },
+  },
+  showRoute: AGENTS_PLATFORM_SHOW_ROUTE,
   workflowFields: [
-    { key: 'id', label: 'ID' },
-    { key: 'humanStatus', label: s__('DuoAgentsPlatform|Status') },
-    { key: 'updatedAt', label: s__('DuoAgentsPlatform|Last updated') },
     { key: 'goal', label: s__('DuoAgentsPlatform|Prompt') },
+    { key: 'humanStatus', label: s__('DuoAgentsPlatform|Status') },
+    { key: 'updatedAt', label: s__('DuoAgentsPlatform|Updated') },
+    { key: 'id', label: 'ID' },
   ],
 };
 </script>
@@ -45,7 +54,16 @@ export default {
       :svg-path="emptyStateIllustrationPath"
     />
     <template v-else>
-      <gl-table-lite :fields="$options.workflowFields" :items="workflows" />
+      <gl-table-lite :fields="$options.workflowFields" :items="workflows">
+        <template #cell(goal)="{ item }">
+          <gl-link :to="{ name: $options.showRoute, params: { id: formatId(item.id) } }">
+            {{ item.goal }}
+          </gl-link>
+        </template>
+        <template #cell(id)="{ item }">
+          {{ formatId(item.id) }}
+        </template>
+      </gl-table-lite>
       <gl-keyset-pagination
         v-bind="workflowsPageInfo"
         class="gl-mt-5 gl-flex gl-justify-center"

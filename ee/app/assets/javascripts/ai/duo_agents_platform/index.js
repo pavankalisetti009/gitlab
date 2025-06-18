@@ -1,11 +1,13 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
+import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
+import DuoAgentsPlatformBreadcrumbs from './router/duo_agents_platform_breadcrumbs.vue';
 
-import AgentsPlatformApp from './agents_platform_app.vue';
+import DuoAgentsPlatformApp from './duo_agents_platform_app.vue';
 import { createRouter } from './router';
 
-export const initAgentsPlatformPage = (selector = '#js-duo-agents-platform-page') => {
+export const initDuoAgentsPlatformPage = (selector = '#js-duo-agents-platform-page') => {
   const el = document.querySelector(selector);
   if (!el) {
     return null;
@@ -13,6 +15,7 @@ export const initAgentsPlatformPage = (selector = '#js-duo-agents-platform-page'
 
   const { dataset } = el;
   const { agentsPlatformBaseRoute, projectPath, emptyStateIllustrationPath } = dataset;
+  const router = createRouter(agentsPlatformBaseRoute);
 
   Vue.use(VueApollo);
 
@@ -20,17 +23,19 @@ export const initAgentsPlatformPage = (selector = '#js-duo-agents-platform-page'
     defaultClient: createDefaultClient(),
   });
 
+  injectVueAppBreadcrumbs(router, DuoAgentsPlatformBreadcrumbs);
+
   return new Vue({
     el,
-    name: 'AgentsPlatformApp',
-    router: createRouter(agentsPlatformBaseRoute),
+    name: 'DuoAgentsPlatformApp',
+    router,
     apolloProvider,
     provide: {
       emptyStateIllustrationPath,
       projectPath,
     },
     render(h) {
-      return h(AgentsPlatformApp);
+      return h(DuoAgentsPlatformApp);
     },
   });
 };

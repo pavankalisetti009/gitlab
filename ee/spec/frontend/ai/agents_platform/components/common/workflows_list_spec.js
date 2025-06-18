@@ -1,4 +1,4 @@
-import { GlEmptyState, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
+import { GlEmptyState, GlLink, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import WorkflowsList from 'ee/ai/duo_agents_platform/components/common/workflows_list.vue';
 import { mockWorkflows } from '../../../mocks';
@@ -16,6 +16,7 @@ describe('WorkflowsList', () => {
       },
       stubs: {
         GlTableLite,
+        RouterLink: true,
       },
     });
   };
@@ -23,6 +24,7 @@ describe('WorkflowsList', () => {
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findTable = () => wrapper.findComponent(GlTableLite);
   const findKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
+  const findGoalLinks = () => findTable().findAllComponents(GlLink);
 
   describe('when component is mounted', () => {
     beforeEach(() => {
@@ -55,10 +57,10 @@ describe('WorkflowsList', () => {
 
       it('passes the correct fields to the table', () => {
         const expectedFields = [
-          { key: 'id', label: 'ID' },
-          { key: 'humanStatus', label: 'Status' },
-          { key: 'updatedAt', label: 'Last updated' },
           { key: 'goal', label: 'Prompt' },
+          { key: 'humanStatus', label: 'Status' },
+          { key: 'updatedAt', label: 'Updated' },
+          { key: 'id', label: 'ID' },
         ];
 
         expect(findTable().props('fields')).toEqual(expectedFields);
@@ -67,6 +69,16 @@ describe('WorkflowsList', () => {
       it('renders workflows as items to the table', () => {
         expect(findTable().html()).toContain(mockWorkflows[0].goal);
         expect(findTable().html()).toContain(mockWorkflows[1].goal);
+      });
+
+      describe('goal column', () => {
+        it('each goal cell is wrapped in a gl-link', () => {
+          expect(findGoalLinks()).toHaveLength(2); // from mockWorkflows.length
+          expect(findGoalLinks().at(0).props('to').name).toBe('agents_platform_show_route');
+          expect(findGoalLinks().at(0).props('to').params).toEqual({
+            id: 1,
+          });
+        });
       });
     });
   });

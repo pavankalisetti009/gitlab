@@ -1,7 +1,8 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import AgentsPlatformIndex from '../pages/index/agents_platform_index.vue';
-import { AGENTS_PLATFORM_INDEX_ROUTE } from './constants';
+import AgentsPlatformIndex from '../pages/index/duo_agents_platform_index.vue';
+import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
+import { AGENTS_PLATFORM_INDEX_ROUTE, AGENTS_PLATFORM_SHOW_ROUTE } from './constants';
 
 Vue.use(VueRouter);
 
@@ -14,6 +15,11 @@ export const createRouter = (base) => {
         name: AGENTS_PLATFORM_INDEX_ROUTE,
         path: '',
         component: AgentsPlatformIndex,
+      },
+      {
+        name: AGENTS_PLATFORM_SHOW_ROUTE,
+        path: '/:id',
+        component: AgentsPlatformShow,
       },
     ],
   });
