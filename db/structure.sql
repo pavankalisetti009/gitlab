@@ -6694,7 +6694,8 @@ CREATE TABLE namespace_descendants (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 )
 PARTITION BY HASH (namespace_id);
 
@@ -6704,7 +6705,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_00 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_01 (
@@ -6713,7 +6715,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_01 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_02 (
@@ -6722,7 +6725,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_02 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_03 (
@@ -6731,7 +6735,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_03 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_04 (
@@ -6740,7 +6745,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_04 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_05 (
@@ -6749,7 +6755,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_05 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_06 (
@@ -6758,7 +6765,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_06 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_07 (
@@ -6767,7 +6775,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_07 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_08 (
@@ -6776,7 +6785,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_08 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_09 (
@@ -6785,7 +6795,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_09 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_10 (
@@ -6794,7 +6805,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_10 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_11 (
@@ -6803,7 +6815,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_11 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_12 (
@@ -6812,7 +6825,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_12 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_13 (
@@ -6821,7 +6835,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_13 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_14 (
@@ -6830,7 +6845,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_14 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_15 (
@@ -6839,7 +6855,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_15 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_16 (
@@ -6848,7 +6865,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_16 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_17 (
@@ -6857,7 +6875,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_17 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_18 (
@@ -6866,7 +6885,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_18 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_19 (
@@ -6875,7 +6895,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_19 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_20 (
@@ -6884,7 +6905,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_20 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_21 (
@@ -6893,7 +6915,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_21 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_22 (
@@ -6902,7 +6925,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_22 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_23 (
@@ -6911,7 +6935,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_23 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_24 (
@@ -6920,7 +6945,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_24 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_25 (
@@ -6929,7 +6955,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_25 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_26 (
@@ -6938,7 +6965,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_26 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_27 (
@@ -6947,7 +6975,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_27 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_28 (
@@ -6956,7 +6985,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_28 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_29 (
@@ -6965,7 +6995,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_29 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_30 (
@@ -6974,7 +7005,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_30 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE gitlab_partitions_static.namespace_descendants_31 (
@@ -6983,7 +7015,8 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_31 (
     all_project_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     traversal_ids bigint[] DEFAULT ARRAY[]::bigint[] NOT NULL,
     outdated_at timestamp with time zone,
-    calculated_at timestamp with time zone
+    calculated_at timestamp with time zone,
+    all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 CREATE TABLE virtual_registries_packages_maven_cache_entries (
