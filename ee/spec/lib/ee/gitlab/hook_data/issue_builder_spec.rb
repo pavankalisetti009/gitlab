@@ -84,6 +84,12 @@ RSpec.describe Gitlab::HookData::IssueBuilder, feature_category: :webhooks do
 
         it { is_expected.to include(:status) }
       end
+
+      context "when status with callback is nil" do
+        let_it_be_with_reload(:issue) { create(:incident) }
+
+        it { is_expected.not_to include(:status) }
+      end
     end
   end
 end

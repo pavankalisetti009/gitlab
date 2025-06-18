@@ -24,7 +24,11 @@ module EE
             attrs[:escalation_policy] = issue.escalation_status.policy&.hook_attrs
           end
 
-          attrs[:status] = issue.status_with_fallback.hook_attrs if issue.supports_status?
+          if issue.supports_status?
+            status = issue.status_with_fallback
+
+            attrs[:status] = status.hook_attrs if status
+          end
 
           attrs
         end
