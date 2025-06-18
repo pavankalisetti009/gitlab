@@ -13772,6 +13772,7 @@ CREATE TABLE design_management_repository_states (
     verification_checksum bytea,
     verification_failure text,
     namespace_id bigint,
+    CONSTRAINT check_380bdde342 CHECK ((namespace_id IS NOT NULL)),
     CONSTRAINT check_bf1387c28b CHECK ((char_length(verification_failure) <= 255))
 );
 
