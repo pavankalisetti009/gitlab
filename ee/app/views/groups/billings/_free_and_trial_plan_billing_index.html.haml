@@ -32,17 +32,7 @@
     .gl-mb-9.gl-mx-auto.billing-plan-divider
       #js-billing-plans{ data: subscription_plan_data_attributes(namespace, current_plan, read_only: read_only) }
 
-  .gl-text-lg.gl-mb-5
-    = s_("BillingPlans|Trusted by")
-  .gl-mb-5
-    - logo_classes = 'gl-mr-5 gl-mb-5'
-    = image_tag("marketing/t-mobile.svg", alt: 'T-mobile', title: 'T-mobile', class: logo_classes)
-    = image_tag("marketing/goldman-sachs.svg", alt: 'Goldman-sachs', title: 'Goldman-sachs', class: logo_classes)
-    = image_tag("marketing/airbus.svg", alt: 'Airbus', title: 'Airbus', class: logo_classes)
-    = image_tag("marketing/lockheed-martin.svg", alt: 'Lockheed-martin', title: 'Lockheed-martin', class: logo_classes)
-    = image_tag("marketing/carfax.svg", alt: 'Carfax', title: 'Carfax', class: logo_classes)
-    = image_tag("marketing/nvidia.svg", alt: 'Nvidia', title: 'Nvidia', class: logo_classes)
-    = image_tag("marketing/ubs.svg", alt: 'Ubs', title: 'Ubs', class: logo_classes)
+  = render 'trusted_by_logos'
   - image_alt = s_('InProductMarketing|Team members collaborating')
   = image_tag 'marketing/free-trial-team-members.png', alt: image_alt, title: image_alt, width: 210, height: 90, class: 'gl-mb-3'
   .gl-text-size-h1.gl-font-bold.gl-leading-24.gl-mb-5
