@@ -167,15 +167,19 @@ const buildGraphQLSortOptions = (sortField = '', sortOrder = '') => {
   };
 };
 
-const mapGraphQLDependencyToStore = (dependency) => ({
+const mapGraphQLDependencyToStore = ({ id, componentVersion, packager, ...dependency }) => ({
   ...dependency,
-  occurrenceId: getIdFromGraphQLId(dependency.id),
+  id,
+  occurrenceId: getIdFromGraphQLId(id),
   // the componentId is needed to fetch related vulnerabilities
-  componentId: getIdFromGraphQLId(dependency.id),
+  componentId: getIdFromGraphQLId(id),
   // Note: This will be mapped to an actual value, once the field has been added to the GraphQL query
   // Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532226
   projectCount: 1,
-  version: dependency.componentVersion?.version,
+  ...(componentVersion && { version: componentVersion.version }),
+  // `packager` is of type enum (`Dependency.PackageManager`), which per convention is returned as an uppercase string
+  //  all supported packager names map nicely to the lowercase version, so we can keep this simple and just transform them to lowercase
+  ...(packager && { packager: packager.toLowerCase() }),
 });
 
 export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params = {}) => {
