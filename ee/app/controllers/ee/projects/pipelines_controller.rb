@@ -18,6 +18,16 @@ module EE
           push_frontend_feature_flag(:dora_metrics_dashboard, project.group)
         end
 
+        before_action only: [:show, :security] do
+          if ::Feature.enabled?(:pipeline_security_ai_vr, project)
+            push_frontend_ability(
+              ability: :resolve_vulnerability_with_ai,
+              resource: project,
+              user: current_user
+            )
+          end
+        end
+
         before_action only: [:index] do
           experiment(:root_cause_analysis_hotspot, actor: current_user, group: project.root_ancestor).publish
         end

@@ -14,6 +14,69 @@ RSpec.describe Projects::PipelinesController do
     sign_in(user)
   end
 
+  describe 'frontend abilities', feature_category: :vulnerability_management do
+    context 'when accessing show action' do
+      subject(:request) do
+        get :show, params: { namespace_id: project.namespace, project_id: project, id: pipeline }
+      end
+
+      it 'pushes the resolve_vulnerability_with_ai ability to the frontend' do
+        expect(controller).to receive(:push_frontend_ability).with(
+          ability: :resolve_vulnerability_with_ai,
+          resource: project,
+          user: user
+        )
+
+        request
+      end
+
+      context 'when pipeline_security_ai_vr feature flag is disabled' do
+        before do
+          stub_feature_flags(pipeline_security_ai_vr: false)
+        end
+
+        it 'does not push the resolve_vulnerability_with_ai ability to the frontend' do
+          expect(controller).not_to receive(:push_frontend_ability)
+
+          request
+        end
+      end
+    end
+
+    context 'when accessing security action' do
+      subject(:request) do
+        get :security, params: { namespace_id: project.namespace, project_id: project, id: pipeline }
+      end
+
+      before do
+        create(:ee_ci_build, :sast, pipeline: pipeline)
+        stub_licensed_features(sast: true, security_dashboard: true)
+      end
+
+      it 'pushes the resolve_vulnerability_with_ai ability to the frontend' do
+        expect(controller).to receive(:push_frontend_ability).with(
+          ability: :resolve_vulnerability_with_ai,
+          resource: project,
+          user: user
+        )
+
+        request
+      end
+
+      context 'when pipeline_security_ai_vr feature flag is disabled' do
+        before do
+          stub_feature_flags(pipeline_security_ai_vr: false)
+        end
+
+        it 'does not push the resolve_vulnerability_with_ai ability to the frontend' do
+          expect(controller).not_to receive(:push_frontend_ability)
+
+          request
+        end
+      end
+    end
+  end
+
   describe 'GET security', feature_category: :vulnerability_management do
     context 'with a sast artifact' do
       let(:request) { get :security, params: { namespace_id: project.namespace, project_id: project, id: pipeline } }
