@@ -19,6 +19,7 @@ import {
   getMemberRoleQueryResponse,
   mockMemberRoleWithUsers,
   mockMemberRoleWithSecurityPolicies,
+  mockAdminRoleWithLdapLinks,
 } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -185,6 +186,7 @@ describe('Role details', () => {
     role                                  | roleQuery          | description
     ${mockMemberRoleWithUsers}            | ${memberRoleQuery} | ${'users'}
     ${mockMemberRoleWithSecurityPolicies} | ${memberRoleQuery} | ${'dependent security policies'}
+    ${mockAdminRoleWithLdapLinks}         | ${adminRoleQuery}  | ${'dependent admin role ldap syncs'}
   `('disables delete button when role has $description', async ({ role, roleQuery }) => {
     await createWrapper({
       roleQuery,

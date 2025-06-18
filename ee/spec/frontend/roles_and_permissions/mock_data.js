@@ -153,6 +153,7 @@ export const adminRoles = [
     usersCount: 0,
     editPath: 'role/path/3/edit',
     detailsPath: 'role/path/3',
+    ldapAdminRoleLinks: { nodes: [] },
     __typename: 'AdminMemberRole',
   },
   {
@@ -162,6 +163,7 @@ export const adminRoles = [
     usersCount: 0,
     editPath: 'role/path/4/edit',
     detailsPath: 'role/path/4',
+    ldapAdminRoleLinks: { nodes: [] },
     __typename: 'AdminMemberRole',
   },
 ];
@@ -183,45 +185,6 @@ export const instanceRolesResponse = {
     adminMemberRoles: { nodes: adminRoles },
   },
 };
-
-export const mockMemberRole = {
-  id: 1,
-  name: 'Custom role',
-  description: 'Custom role description',
-  createdAt: '2024-08-04T12:20:43Z',
-  editPath: 'role/path/1/edit',
-  detailsPath: 'role/path/1',
-  usersCount: 0,
-  baseAccessLevel: { stringValue: 'DEVELOPER', humanAccess: 'Developer' },
-  enabledPermissions: { nodes: [{ value: 'A' }, { value: 'B' }] },
-  dependentSecurityPolicies: [],
-  __typename: 'MemberRole',
-};
-export const mockMemberRoleWithUsers = { ...mockMemberRole, usersCount: 2 };
-export const mockMemberRoleWithSecurityPolicies = {
-  ...mockMemberRole,
-  dependentSecurityPolicies: [
-    { name: 'policy 1', editPath: 'path/1' },
-    { name: 'policy 2', editPath: 'path/2' },
-  ],
-};
-
-export const mockAdminRole = {
-  id: 2,
-  name: 'Admin role',
-  description: 'Admin role description',
-  createdAt: '2024-08-04T12:20:43Z',
-  editPath: 'role/path/2/edit',
-  detailsPath: 'role/path/2',
-  usersCount: 0,
-  enabledPermissions: { nodes: [{ value: 'C' }, { value: 'D' }] },
-  __typename: 'AdminMemberRole',
-};
-export const mockAdminRoleWithUsers = { ...mockAdminRole, usersCount: 2 };
-
-export const getMemberRoleQueryResponse = (memberRole = mockMemberRole) => ({
-  data: { memberRole },
-});
 
 export const ldapAdminRoleLinks = [
   {
@@ -257,6 +220,49 @@ export const ldapAdminRoleLinks = [
     lastSuccessfulSyncAt: '2020-07-04T21:14:54Z',
   },
 ];
+
+export const mockMemberRole = {
+  id: 1,
+  name: 'Custom role',
+  description: 'Custom role description',
+  createdAt: '2024-08-04T12:20:43Z',
+  editPath: 'role/path/1/edit',
+  detailsPath: 'role/path/1',
+  usersCount: 0,
+  baseAccessLevel: { stringValue: 'DEVELOPER', humanAccess: 'Developer' },
+  enabledPermissions: { nodes: [{ value: 'A' }, { value: 'B' }] },
+  dependentSecurityPolicies: [],
+  __typename: 'MemberRole',
+};
+export const mockMemberRoleWithUsers = { ...mockMemberRole, usersCount: 2 };
+export const mockMemberRoleWithSecurityPolicies = {
+  ...mockMemberRole,
+  dependentSecurityPolicies: [
+    { name: 'policy 1', editPath: 'path/1' },
+    { name: 'policy 2', editPath: 'path/2' },
+  ],
+};
+
+export const mockAdminRole = {
+  id: 2,
+  name: 'Admin role',
+  description: 'Admin role description',
+  createdAt: '2024-08-04T12:20:43Z',
+  editPath: 'role/path/2/edit',
+  detailsPath: 'role/path/2',
+  usersCount: 0,
+  enabledPermissions: { nodes: [{ value: 'C' }, { value: 'D' }] },
+  __typename: 'AdminMemberRole',
+};
+export const mockAdminRoleWithUsers = { ...mockAdminRole, usersCount: 2 };
+export const mockAdminRoleWithLdapLinks = {
+  ...mockAdminRole,
+  ldapAdminRoleLinks: { nodes: ldapAdminRoleLinks },
+};
+
+export const getMemberRoleQueryResponse = (memberRole = mockMemberRole) => ({
+  data: { memberRole },
+});
 
 export const ldapServers = [
   { value: 'ldapmain', text: 'LDAP' },

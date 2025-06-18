@@ -3,6 +3,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import DeleteRoleTooltipWrapper from 'ee/roles_and_permissions/components/delete_role_tooltip_wrapper.vue';
 import {
+  mockAdminRoleWithLdapLinks,
   mockMemberRole,
   mockMemberRoleWithUsers,
   mockMemberRoleWithSecurityPolicies,
@@ -49,10 +50,11 @@ describe('Delete role tooltip wrapper', () => {
   });
 
   describe.each`
-    description      | role                       | expectedText
-    ${'custom role'} | ${mockMemberRoleWithUsers} | ${'To delete custom member role, remove role from all group and project members.'}
-    ${'admin role'}  | ${mockAdminRoleWithUsers}  | ${'To delete custom admin role, remove role from all users.'}
-  `('when the $description has assigned users', ({ role, expectedText }) => {
+    description                              | role                          | expectedText
+    ${'custom role has assigned users'}      | ${mockMemberRoleWithUsers}    | ${'To delete custom member role, remove role from all group and project members.'}
+    ${'admin role has assigned users'}       | ${mockAdminRoleWithUsers}     | ${'To delete custom admin role, remove role from all users.'}
+    ${'admin role has dependent LDAP syncs'} | ${mockAdminRoleWithLdapLinks} | ${"You can't delete this admin custom role until you delete all LDAP syncs that use it."}
+  `('when the $description', ({ role, expectedText }) => {
     beforeEach(() => createWrapper({ role }));
 
     it('shows tooltip', () => {

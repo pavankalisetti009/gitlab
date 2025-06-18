@@ -38144,6 +38144,9 @@ msgstr ""
 msgid "MemberRole|View permissions"
 msgstr ""
 
+msgid "MemberRole|You can't delete this admin custom role until you delete all LDAP syncs that use it."
+msgstr ""
+
 msgid "MemberRole|You must fill out all required fields."
 msgstr ""
 

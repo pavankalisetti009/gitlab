@@ -9,6 +9,7 @@ import {
   adminRoles,
   mockMemberRoleWithUsers,
   mockMemberRoleWithSecurityPolicies,
+  mockAdminRoleWithLdapLinks,
 } from '../../mock_data';
 
 describe('Role actions', () => {
@@ -135,6 +136,7 @@ describe('Role actions', () => {
         role                                  | description
         ${mockMemberRoleWithUsers}            | ${'users'}
         ${mockMemberRoleWithSecurityPolicies} | ${'dependent security policies'}
+        ${mockAdminRoleWithLdapLinks}         | ${'dependent admin role ldap syncs'}
       `('disables delete item when role has $description', async ({ role }) => {
         await wrapper.setProps({ role });
 

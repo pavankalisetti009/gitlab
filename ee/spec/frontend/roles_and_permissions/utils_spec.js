@@ -6,6 +6,7 @@ import {
   mockMemberRole,
   mockMemberRoleWithUsers,
   mockMemberRoleWithSecurityPolicies,
+  mockAdminRoleWithLdapLinks,
 } from './mock_data';
 
 describe('Roles and permissions utils', () => {
@@ -38,6 +39,7 @@ describe('Roles and permissions utils', () => {
       role                                  | description
       ${mockMemberRoleWithUsers}            | ${'users'}
       ${mockMemberRoleWithSecurityPolicies} | ${'dependent security policies'}
+      ${mockAdminRoleWithLdapLinks}         | ${'dependent admin role ldap syncs'}
     `('returns true when role has $description', ({ role }) => {
       expect(isRoleInUse(role)).toBe(true);
     });
