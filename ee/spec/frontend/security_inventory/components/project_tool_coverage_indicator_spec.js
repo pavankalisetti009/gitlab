@@ -15,9 +15,9 @@ describe('ProjectToolCoverageIndicator', () => {
     wrapper = shallowMountExtended(ProjectToolCoverageIndicator, {
       propsData: {
         item: {
-          ...props,
           ...mockProject,
           analyzerStatuses: props.analyzerStatuses || mockProject.analyzerStatuses,
+          ...props,
         },
       },
     });
@@ -130,6 +130,29 @@ describe('ProjectToolCoverageIndicator', () => {
     });
   });
 
+  describe.each`
+    analyzer                             | propKey                                  | enabled  | expectedVariant | expectedClass
+    ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${true}  | ${'success'}    | ${'gl-border-transparent'}
+    ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${false} | ${'muted'}      | ${'gl-border-dashed'}
+    ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${true}  | ${'success'}    | ${'gl-border-transparent'}
+    ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${false} | ${'muted'}      | ${'gl-border-dashed'}
+  `(
+    '$analyzer badge rendering',
+    ({ analyzer, propKey, enabled, expectedVariant, expectedClass }) => {
+      it(`renders ${expectedVariant} variant when ${propKey} is ${enabled}`, () => {
+        const analyzerStatuses = enabled ? [{ analyzerType: analyzer, status: 'SUCCESS' }] : [];
+        createComponent({ props: { [propKey]: enabled, analyzerStatuses } });
+
+        const groupKey = Object.keys(SCANNER_POPOVER_GROUPS).find((k) =>
+          SCANNER_POPOVER_GROUPS[k].includes(analyzer),
+        );
+
+        expect(findBadge(groupKey).props('variant')).toBe(expectedVariant);
+        expect(findBadge(groupKey).classes()).toContain(expectedClass);
+      });
+    },
+  );
+
   describe('getRelevantScannerData method', () => {
     it('returns existing statuses when available', () => {
       const testScanners = [
@@ -166,6 +189,26 @@ describe('ProjectToolCoverageIndicator', () => {
         { analyzerType: 'SAST', status: 'SUCCESS' },
         { analyzerType: 'DAST' },
       ]);
+    });
+
+    describe.each`
+      analyzer                             | propKey                                  | enabled  | expectedStatus
+      ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${true}  | ${'SUCCESS'}
+      ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${false} | ${'DEFAULT'}
+      ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${true}  | ${'SUCCESS'}
+      ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${false} | ${'DEFAULT'}
+    `('$analyzer', ({ analyzer, propKey, enabled, expectedStatus }) => {
+      it(`returns status ${expectedStatus} when ${propKey} is ${enabled}`, () => {
+        createComponent({
+          props: {
+            [propKey]: enabled,
+            analyzerStatuses: [],
+          },
+        });
+
+        const result = wrapper.vm.getRelevantScannerData([analyzer]);
+        expect(result).toEqual([{ analyzerType: analyzer, status: expectedStatus }]);
+      });
     });
   });
 });
