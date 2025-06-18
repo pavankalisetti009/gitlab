@@ -513,6 +513,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
   describe 'status scopes' do
     let_it_be(:project) { create(:project, group: reusable_group) }
 
+    let_it_be(:wi_no_status) { create(:work_item, :incident, project: project) }
     let_it_be(:wi_default_open) { create(:work_item, project: project) }
     let_it_be(:wi_default_closed) { create(:work_item, :closed, project: project) }
     let_it_be(:wi_default_duplicated) do
@@ -664,7 +665,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     describe '.without_current_status' do
       it 'returns items that do not have an associated current_status' do
         expect(described_class.without_current_status).to contain_exactly(
-          wi_default_open, wi_default_closed, wi_default_duplicated
+          wi_default_open, wi_default_closed, wi_default_duplicated, wi_no_status
         )
       end
     end
