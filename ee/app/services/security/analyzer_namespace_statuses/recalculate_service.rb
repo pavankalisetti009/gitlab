@@ -65,7 +65,7 @@ module Security
 
         namespace_diffs.each do |diff|
           # Find the analyzer type name from the enum
-          analyzer_name = Enums::Security.analyzer_types.key(diff["analyzer_type"])
+          analyzer_name = Enums::Security.extended_analyzer_types.key(diff["analyzer_type"])
 
           diffs[analyzer_name] = {
             "success" => diff["success"],

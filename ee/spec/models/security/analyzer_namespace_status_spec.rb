@@ -19,6 +19,10 @@ RSpec.describe Security::AnalyzerNamespaceStatus, feature_category: :security_as
     it { is_expected.not_to allow_value(nil).for(:failure) }
   end
 
+  describe 'enums' do
+    it { is_expected.to define_enum_for(:analyzer_type).with_values(Enums::Security.extended_analyzer_types) }
+  end
+
   context 'with loose foreign key on analyzer_namespace_statuses.namespace_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:namespace) }
