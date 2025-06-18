@@ -35,6 +35,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
         :FileSizeLimit,
         :Timeout,
         :Parallelism,
+        :FileCountLimit,
         :Metadata
       )
 
@@ -72,6 +73,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
           :Timeout,
           :Force,
           :Parallelism,
+          :FileCountLimit,
           :Metadata
         )
       end

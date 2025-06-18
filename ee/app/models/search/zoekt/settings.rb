@@ -18,6 +18,7 @@ module Search
       DEFAULT_INDEXING_TIMEOUT = '30m'
       DEFAULT_ROLLOUT_RETRY_INTERVAL = '1d'
       DEFAULT_LOST_NODE_THRESHOLD = '12h'
+      DEFAULT_MAXIMUM_FILES = 500_000
       DISABLED_VALUE = '0'
       DURATION_BASE_REGEX = %r{([1-9]\d*)([mhd])}
       DURATION_INTERVAL_REGEX = %r{\A(?:0|#{DURATION_BASE_REGEX})\z}
@@ -87,6 +88,12 @@ module Search
           label: -> { _('Indexing timeout per project') },
           input_options: { placeholder: format(N_("Must be in the following format: `30m`, `2h`, or `1d`.")) },
           input_type: :text_field
+        },
+        zoekt_maximum_files: {
+          type: :integer,
+          default: DEFAULT_MAXIMUM_FILES,
+          label: -> { _('Maximum number of files per project to be indexed') },
+          input_type: :number_field
         },
         zoekt_rollout_retry_interval: {
           type: :text,

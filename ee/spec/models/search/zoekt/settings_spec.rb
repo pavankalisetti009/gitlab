@@ -77,14 +77,14 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
 
   describe '.input_settings' do
     it 'returns only input_settings settings' do
-      input_settings = described_class.input_settings
-
       expected_list = %i[
         zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_indexing_timeout
-        zoekt_rollout_retry_interval zoekt_lost_node_threshold
+        zoekt_maximum_files zoekt_rollout_retry_interval zoekt_lost_node_threshold
       ]
-      expect(input_settings.keys).to match_array(expected_list)
 
+      input_settings = described_class.input_settings
+
+      expect(input_settings.keys).to match_array(expected_list)
       input_settings.each_value do |config|
         expect(config[:type]).to be_in(%i[float integer text])
       end
