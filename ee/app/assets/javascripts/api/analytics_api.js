@@ -8,9 +8,6 @@ const NAMESPACE_VALUE_STREAMS_PATH = `${NAMESPACE_ANALYTICS_PATH}/value_stream_a
 const NAMESPACE_SELECTED_VALUE_STREAM_PATH = `${NAMESPACE_VALUE_STREAMS_PATH}/:value_stream_id`;
 const NAMESPACE_VALUE_STREAM_STAGE_PATH = `${NAMESPACE_SELECTED_VALUE_STREAM_PATH}/stages/:stage_id`;
 
-const buildPath = ({ namespacePath }) =>
-  buildApiUrl(NAMESPACE_PATH).replace(':namespace_path', namespacePath);
-
 const buildAnalyticsPath = ({ namespacePath }) =>
   buildApiUrl(NAMESPACE_ANALYTICS_PATH).replace(':namespace_path', namespacePath);
 
@@ -87,15 +84,4 @@ export const getDurationChart = ({ namespacePath, valueStreamId, stageId, params
   const stageBase = stageUrl({ namespacePath, valueStreamId, stageId });
   const url = `${stageBase}/average_duration_chart`;
   return axios.get(url, { params });
-};
-
-export const getGroupLabels = (namespacePath, params = { search: null }) => {
-  // TODO: This can be removed when we resolve the labels endpoint
-  // https://gitlab.com/gitlab-org/gitlab/-/merge_requests/25746
-  const endpoint = '/-/labels.json';
-  const url = joinPaths(buildPath({ namespacePath }), endpoint);
-
-  return axios.get(url, {
-    params,
-  });
 };
