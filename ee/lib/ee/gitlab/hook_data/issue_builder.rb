@@ -8,6 +8,7 @@ module EE
 
         EE_SAFE_HOOK_RELATIONS = %i[
           escalation_policy
+          status
         ].freeze
 
         EE_SAFE_HOOK_ATTRIBUTES = %i[
@@ -22,6 +23,8 @@ module EE
           if issue.escalation_policies_available? && issue.escalation_status
             attrs[:escalation_policy] = issue.escalation_status.policy&.hook_attrs
           end
+
+          attrs[:status] = issue.status_with_fallback.hook_attrs if issue.supports_status?
 
           attrs
         end

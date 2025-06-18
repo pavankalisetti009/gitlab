@@ -67,6 +67,10 @@ module EE
       is_a?(MergeRequest)
     end
 
+    def supports_status?
+      resource_parent.work_item_status_feature_available? && is_a?(Issue)
+    end
+
     override :hook_association_changes
     def hook_association_changes(old_associations)
       changes = super
@@ -87,6 +91,10 @@ module EE
         end
       end
 
+      if supports_status? && (old_current_status(old_associations) != status_with_fallback)
+        changes[:status] = [old_current_status(old_associations)&.hook_attrs, status_with_fallback.hook_attrs]
+      end
+
       changes
     end
 
@@ -94,6 +102,10 @@ module EE
 
     def old_approval_rules(assoc)
       @_old_approval_rules ||= assoc.fetch(:approval_rules, approval_rules)
+    end
+
+    def old_current_status(assoc)
+      @_old_current_status ||= assoc.fetch(:status, status_with_fallback)
     end
   end
 end

@@ -6,8 +6,8 @@ module WorkItems
       class Status < ApplicationRecord
         self.table_name = 'work_item_custom_statuses'
 
-        include WorkItems::Statuses::SharedConstants
         include WorkItems::Statuses::Status
+        include ::WorkItems::ConfigurableStatus
 
         MAX_STATUSES_PER_NAMESPACE = 70
 
@@ -51,17 +51,9 @@ module WorkItems
           in_namespace(namespace).find_by('TRIM(BOTH FROM LOWER(name)) = TRIM(BOTH FROM LOWER(?))', name)
         end
 
-        def icon_name
-          CATEGORY_ICONS[category.to_sym]
-        end
-
         def position
           # Temporarily default to 0 as it is not meaningful without lifecycle context
           0
-        end
-
-        def state
-          CATEGORIES_STATE.find { |state, categories| state if categories.include?(category.to_sym) }&.first
         end
 
         private
