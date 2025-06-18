@@ -510,6 +510,106 @@ expires_at: duo_workflow_service_token_expires_at })
     end
   end
 
+  describe 'GET /ai/duo_workflows/ws' do
+    let(:path) { '/ai/duo_workflows/ws' }
+    let(:headers) { { 'Custom-Header' => 'custom-value' } }
+
+    include_context 'workhorse headers'
+
+    before do
+      allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
+        allow(service).to receive(:execute).and_return({
+          status: :success,
+          oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token')
+        })
+      end
+
+      allow(Gitlab::DuoWorkflow::Client).to receive_messages(
+        headers: headers,
+        url: 'duo-workflow-service.example.com:50052',
+        secure?: true
+      )
+    end
+
+    context 'when user is authenticated' do
+      it 'returns the websocket configuration with proper headers' do
+        get api(path, user), headers: workhorse_headers
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
+
+        expected_headers = headers.merge(
+          'X-Gitlab-Base-Url' => Gitlab.config.gitlab.url,
+          'X-Gitlab-Oauth-Token' => 'oauth_token'
+        )
+
+        expect(json_response['DuoWorkflow']['Headers']).to eq(expected_headers)
+        expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
+        expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+      end
+
+      context 'when duo_workflow_workhorse feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_workflow_workhorse: false)
+        end
+
+        it 'is forbidden' do
+          get api(path, user), headers: workhorse_headers
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
+        before do
+          stub_feature_flags(duo_workflow: false)
+          stub_feature_flags(duo_agentic_chat: false)
+        end
+
+        it 'returns not found' do
+          get api(path, user), headers: workhorse_headers
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
+    context 'when CreateOauthAccessTokenService returns an error' do
+      before do
+        allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
+          allow(service).to receive(:execute).and_return({
+            status: :error,
+            http_status: :unauthorized,
+            message: 'Failed to generate OAuth token'
+          })
+        end
+      end
+
+      it 'returns an error response' do
+        get api(path, user), headers: workhorse_headers
+
+        expect(response).to have_gitlab_http_status(:unauthorized)
+        expect(json_response['message']).to eq('Failed to generate OAuth token')
+      end
+    end
+
+    context 'when Workhorse header is missing' do
+      it 'returns an error response' do
+        get api(path, user)
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it 'is forbidden' do
+        get api(path, oauth_access_token: ai_workflows_oauth_token), headers: workhorse_headers
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
+
   describe 'GET /ai/duo_workflows/workflows/agent_privileges' do
     let(:path) { "/ai/duo_workflows/workflows/agent_privileges" }
 
