@@ -192,9 +192,10 @@ module API
               status :ok
               content_type Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE
 
-              headers = Gitlab::DuoWorkflow::Client.headers(user: current_user).merge(
-                'X-Gitlab-Base-Url' => Gitlab.config.gitlab.url,
-                'X-Gitlab-Oauth-Token' => gitlab_oauth_token.plaintext_token
+              push_feature_flags
+
+              headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
+                'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token
               )
 
               {
