@@ -36498,9 +36498,6 @@ msgstr ""
 msgid "Leave project"
 msgstr ""
 
-msgid "Left the '%{group_name}' group successfully."
-msgstr ""
-
 msgid "Legacy Prometheus integrations cannot currently be removed"
 msgstr ""
 
@@ -71818,6 +71815,9 @@ msgid "You have unsaved changes"
 msgstr ""
 
 msgid "You have used all seats in your subscription, so you cannot add new users."
+msgstr ""
+
+msgid "You left the \"%{group_name}\" group."
 msgstr ""
 
 msgid "You left the \"%{membershipable_human_name}\" %{source_type}."

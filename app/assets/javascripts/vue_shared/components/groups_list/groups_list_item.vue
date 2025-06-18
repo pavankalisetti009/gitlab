@@ -141,6 +141,9 @@ export default {
     hasFooterAction() {
       return this.hasActionDelete || this.hasActionLeave;
     },
+    dataTestid() {
+      return `groups-list-item-${this.group.id}`;
+    },
   },
   methods: {
     onActionDelete() {
@@ -181,6 +184,7 @@ export default {
     :icon-name="groupIconName"
     :list-item-class="listItemClass"
     :timestamp-type="timestampType"
+    :data-testid="dataTestid"
   >
     <template #children-toggle>
       <slot name="children-toggle"></slot>
