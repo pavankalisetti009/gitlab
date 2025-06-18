@@ -65,7 +65,7 @@ module Security
 
       def analyzer_groups_from_build(build)
         report_artifacts = build_reports(build)
-        existing_group_types = report_artifacts & Enums::Security.analyzer_types.keys
+        existing_group_types = report_artifacts & Enums::Security.extended_analyzer_types.keys
         normalize_sast_analyzers(build, existing_group_types)
       end
 

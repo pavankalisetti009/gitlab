@@ -7,7 +7,7 @@ module Security
     belongs_to :project
     belongs_to :build, class_name: 'Ci::Build', optional: true
 
-    enum :analyzer_type, Enums::Security.analyzer_types
+    enum :analyzer_type, Enums::Security.extended_analyzer_types
     enum :status, {
       not_configured: 0,
       success: 1,

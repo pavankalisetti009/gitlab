@@ -113,7 +113,7 @@ module Security
           values << [
             diffs_with_metadata[:namespace_id],
             Arel.sql("'{#{diffs_with_metadata[:traversal_ids].join(',')}}'::bigint[]"),
-            Enums::Security.analyzer_types[analyzer_type],
+            Enums::Security.extended_analyzer_types[analyzer_type],
             success,
             failure
           ]
