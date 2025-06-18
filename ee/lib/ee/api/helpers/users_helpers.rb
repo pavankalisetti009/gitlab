@@ -5,7 +5,6 @@ module EE
     module Helpers
       module UsersHelpers
         extend ActiveSupport::Concern
-        extend ::Gitlab::Utils::Override
 
         prepended do
           params :optional_params_ee do
@@ -17,8 +16,17 @@ module EE
 
           params :optional_index_params_ee do
             optional :skip_ldap, type: Grape::API::Boolean, default: false, desc: 'Skip LDAP users'
-            optional :saml_provider_id, type: Integer, desc: 'Return only users from the specified SAML provider Id'
             optional :auditors, type: Grape::API::Boolean, default: false, desc: 'Filters only auditor users'
+          end
+
+          def error_for_saml_provider_id_param_ee
+            return unless params[:saml_provider_id].present?
+
+            forbidden!(
+              "saml_provider_id attribute was removed for security reasons. " \
+                "Consider using 'GET /groups/:id/saml_users' API endpoint instead, " \
+                "see #{Rails.application.routes.url_helpers.help_page_url('api/groups.md', anchor: 'list-all-saml-users')}"
+            )
           end
         end
       end

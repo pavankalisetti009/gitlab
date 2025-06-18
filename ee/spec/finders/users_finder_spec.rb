@@ -39,7 +39,7 @@ RSpec.describe UsersFinder do
           create(:identity, provider: 'group_saml1', saml_provider_id: saml_provider.id, user: saml_user)
         end
 
-        it 'returns all users' do
+        it 'returns all users by default' do
           users = described_class.new(user).execute
 
           expect(users).to contain_exactly(
@@ -51,12 +51,6 @@ RSpec.describe UsersFinder do
             *normal_users,
             *users_visible_to_admin
           )
-        end
-
-        it 'returns saml users and service accounts for the SAML provider and associated group' do
-          users = described_class.new(user, saml_provider_id: saml_provider.id).execute
-
-          expect(users).to contain_exactly(saml_user, service_account)
         end
       end
 
