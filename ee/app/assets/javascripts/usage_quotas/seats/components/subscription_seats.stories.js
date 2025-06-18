@@ -4,7 +4,8 @@ import { createMockClient } from 'helpers/mock_apollo_helper';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import {
-  getMockSubscriptionData,
+  createMockUltimateSubscription,
+  createMockFreeSubscription,
   mockTableItems,
   createMockSubscriptionPermissionsResponse,
 } from 'ee_jest/usage_quotas/seats/mock_data';
@@ -27,13 +28,11 @@ const defaultProvide = {
   seatUsageExportPath: '/groups/test_group/-/seat_usage.csv',
 };
 const defaultMockSubscriptionResponse = Promise.resolve(
-  getMockSubscriptionData({
-    code: 'ultimate',
-    name: 'Ultimate',
+  createMockUltimateSubscription({
     maxSeatsUsed: 3,
     seatsInSubscription: 2,
     seatsOwed: 1,
-  }).subscription,
+  }),
 );
 const defaultMockBillableMembersResponse = Promise.resolve({
   total: mockTableItems.length,
@@ -99,12 +98,7 @@ const createTemplate = ({
 export const SaasWithPaidPlan = createTemplate();
 
 export const SaasWithFreeUnlimited = createTemplate({
-  mockSubscriptionResponse: Promise.resolve(
-    getMockSubscriptionData({
-      code: 'free',
-      name: 'Free',
-    }).subscription,
-  ),
+  mockSubscriptionResponse: Promise.resolve(createMockFreeSubscription()),
 });
 
 export const SaasWithFreeUserCapEnabled = createTemplate({
@@ -117,22 +111,15 @@ export const SaasWithFreePublicNamespace = createTemplate({
   provide: {
     isPublicNamespace: true,
   },
-  mockSubscriptionResponse: Promise.resolve(
-    getMockSubscriptionData({
-      code: 'free',
-      name: 'Free',
-    }).subscription,
-  ),
+  mockSubscriptionResponse: Promise.resolve(createMockFreeSubscription()),
 });
 
 export const SaasWithTrialPlan = createTemplate({
   mockSubscriptionResponse: Promise.resolve(
-    getMockSubscriptionData({
-      code: 'ultimate',
-      name: 'Ultimate',
+    createMockUltimateSubscription({
       trial: true,
       trialEndsOn: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-    }).subscription,
+    }),
   ),
 });
 

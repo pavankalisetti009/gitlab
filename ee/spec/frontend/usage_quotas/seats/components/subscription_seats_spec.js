@@ -8,7 +8,10 @@ import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_sea
 import SubscriptionUpgradeInfoCard from 'ee/usage_quotas/seats/components/subscription_upgrade_info_card.vue';
 import SubscriptionSeats from 'ee/usage_quotas/seats/components/subscription_seats.vue';
 import SubscriptionUserList from 'ee/usage_quotas/seats/components/subscription_user_list.vue';
-import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
+import {
+  createMockFreeSubscription,
+  createMockUltimateSubscription,
+} from 'ee_jest/usage_quotas/seats/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -26,18 +29,12 @@ const providedFields = {
   addSeatsHref: '/groups/test_group/-/seat_usage.csv',
 };
 
-const { subscription: defaultSubscriptionPlanData } = getMockSubscriptionData({
-  code: 'ultimate',
-  name: 'Ultimate',
+const defaultSubscriptionPlanData = createMockUltimateSubscription({
   maxSeatsUsed: 3,
   seatsOwed: 1,
 });
 
-const { subscription: freeSubscriptionPlanData } = getMockSubscriptionData({
-  id: 2,
-  code: 'free',
-  name: 'Free',
-});
+const freeSubscriptionPlanData = createMockFreeSubscription({ id: 2 });
 
 describe('SubscriptionSeats', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

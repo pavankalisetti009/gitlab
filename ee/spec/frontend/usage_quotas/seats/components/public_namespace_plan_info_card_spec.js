@@ -4,10 +4,13 @@ import { GlSprintf } from '@gitlab/ui';
 import Tracking from '~/tracking';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SubscriptionUsageStatisticsCard from 'ee/usage_quotas/seats/components/public_namespace_plan_info_card.vue';
-import { EXPLORE_PAID_PLANS_CLICKED, PLAN_CODE_FREE } from 'ee/usage_quotas/seats/constants';
+import { EXPLORE_PAID_PLANS_CLICKED } from 'ee/usage_quotas/seats/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createMockClient } from 'helpers/mock_apollo_helper';
-import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
+import {
+  createMockFreeSubscription,
+  createMockUltimateSubscription,
+} from 'ee_jest/usage_quotas/seats/mock_data';
 
 Vue.use(VueApollo);
 
@@ -21,15 +24,8 @@ describe('PublicNamespacePlanInfoCard', () => {
   const findDescriptionTitle = () => wrapper.findByTestId('title');
   const findFreePlanInfo = () => wrapper.findByTestId('free-plan-info');
 
-  const defaultSubscriptionPlanData = getMockSubscriptionData({
-    code: 'ultimate',
-    name: 'Ultimate',
-  }).subscription;
-
-  const freeSubscriptionPlanData = getMockSubscriptionData({
-    code: PLAN_CODE_FREE,
-    name: 'Free',
-  }).subscription;
+  const defaultSubscriptionPlanData = createMockUltimateSubscription();
+  const freeSubscriptionPlanData = createMockFreeSubscription();
 
   const createMockApolloProvider = ({ subscriptionData }) => {
     const resolvers = {
