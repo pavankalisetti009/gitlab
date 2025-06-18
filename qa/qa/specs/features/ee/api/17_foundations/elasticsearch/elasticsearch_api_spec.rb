@@ -43,8 +43,11 @@ module QA
 
         it(
           'finds a blob as an authorized user',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348064'
-        ) do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348064',
+          quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/549729',
+            type: :flaky
+          }) do
           response_body = perform_search_with_retry(api_client)
 
           expect(response_body).not_to be_empty, "Expected a blob to be returned from request to /search"
