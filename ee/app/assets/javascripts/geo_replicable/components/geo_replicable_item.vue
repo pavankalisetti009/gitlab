@@ -1,10 +1,9 @@
 <script>
-import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
-import GeoListItemStatus from 'ee/geo_shared/list/components/geo_list_item_status.vue';
-import GeoListItemTimeAgo from 'ee/geo_shared/list/components/geo_list_item_time_ago.vue';
+import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
@@ -23,10 +22,7 @@ export default {
     replicationStatus: s__('Geo|Replication: %{status}'),
   },
   components: {
-    GlButton,
-    GlLink,
-    GeoListItemTimeAgo,
-    GeoListItemStatus,
+    GeoListItem,
     GlSprintf,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -78,7 +74,9 @@ export default {
       return getIdFromGraphQLId(this.registryId);
     },
     detailsPath() {
-      return `${this.replicableBasePath}/${getIdFromGraphQLId(this.id)}`;
+      return this.glFeatures.geoReplicablesShowView
+        ? `${this.replicableBasePath}/${getIdFromGraphQLId(this.id)}`
+        : null;
     },
     name() {
       return `${this.graphqlRegistryClass}/${this.id}`;
@@ -98,66 +96,54 @@ export default {
         },
       ];
     },
+    actionsArray() {
+      const actions = [
+        {
+          id: 'geo-resync-item',
+          value: ACTION_TYPES.RESYNC,
+          text: this.$options.i18n.resync,
+        },
+      ];
+
+      if (this.verificationEnabled) {
+        actions.push({
+          id: 'geo-reverify-item',
+          value: ACTION_TYPES.REVERIFY,
+          text: this.$options.i18n.reverify,
+        });
+      }
+
+      return actions;
+    },
   },
   methods: {
     ...mapActions(['initiateReplicableAction']),
+    handleActionClicked(action) {
+      this.initiateReplicableAction({
+        registryId: this.registryId,
+        name: this.name,
+        action: action.value,
+      });
+    },
   },
-  actionTypes: ACTION_TYPES,
 };
 </script>
 
 <template>
-  <div class="gl-border-b gl-p-5">
-    <div
-      class="geo-replicable-item-grid gl-grid gl-items-center gl-pb-4"
-      data-testid="replicable-item-header"
-    >
-      <geo-list-item-status :status-array="statusArray" />
-
-      <gl-link v-if="glFeatures.geoReplicablesShowView" class="gl-font-bold" :href="detailsPath">{{
-        name
-      }}</gl-link>
-      <span v-else class="gl-font-bold">{{ name }}</span>
-
-      <div>
-        <gl-button
-          data-testid="geo-resync-item"
-          size="small"
-          @click="
-            initiateReplicableAction({ registryId, name, action: $options.actionTypes.RESYNC })
-          "
-        >
-          {{ $options.i18n.resync }}
-        </gl-button>
-        <gl-button
-          v-if="verificationEnabled"
-          data-testid="geo-reverify-item"
-          size="small"
-          @click="
-            initiateReplicableAction({ registryId, name, action: $options.actionTypes.REVERIFY })
-          "
-        >
-          {{ $options.i18n.reverify }}
-        </gl-button>
-      </div>
-    </div>
-    <div class="gl-flex gl-flex-wrap gl-items-center">
-      <span class="gl-border-r-1 gl-px-2 gl-text-sm gl-text-subtle gl-border-r-solid">
-        <gl-sprintf :message="$options.i18n.modelRecordId">
-          <template #modelRecordId>
-            {{ modelRecordId }}
-          </template>
-        </gl-sprintf>
-      </span>
-
-      <geo-list-item-time-ago
-        v-for="(timeAgo, index) in timeAgoArray"
-        :key="index"
-        :label="timeAgo.label"
-        :date-string="timeAgo.dateString"
-        :default-text="timeAgo.defaultText"
-        :show-divider="index !== timeAgoArray.length - 1"
-      />
-    </div>
-  </div>
+  <geo-list-item
+    :name="name"
+    :details-path="detailsPath"
+    :status-array="statusArray"
+    :time-ago-array="timeAgoArray"
+    :actions-array="actionsArray"
+    @actionClicked="handleActionClicked"
+  >
+    <template #extra-details>
+      <gl-sprintf :message="$options.i18n.modelRecordId">
+        <template #modelRecordId>
+          {{ modelRecordId }}
+        </template>
+      </gl-sprintf>
+    </template>
+  </geo-list-item>
 </template>

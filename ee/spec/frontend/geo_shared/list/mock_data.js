@@ -72,3 +72,18 @@ export const MOCK_STATUSES = [
     variant: 'success',
   },
 ];
+
+const MOCK_JUST_NOW = new Date().toISOString();
+
+export const MOCK_TIME_AGO = [
+  {
+    label: 'Time A',
+    dateString: MOCK_JUST_NOW,
+    defaultText: 'N/A',
+  },
+  {
+    label: 'Time B',
+    dateString: MOCK_JUST_NOW,
+    defaultText: 'N/A',
+  },
+];
