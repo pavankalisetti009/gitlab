@@ -1587,6 +1587,9 @@ msgstr ""
 msgid "%{title} webhook (for example, `%{example}`)."
 msgstr ""
 
+msgid "%{title}: %{exceptions}"
+msgstr ""
+
 msgid "%{tooltipText} image"
 msgstr ""
 
@@ -1753,6 +1756,9 @@ msgid "(%d closed)"
 msgid_plural "(%d closed)"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "(%{count}) %{exceptions}"
+msgstr ""
 
 msgid "(%{mrCount} merged)"
 msgstr ""
@@ -25695,6 +25701,11 @@ msgstr ""
 
 msgid "Except policy:"
 msgstr ""
+
+msgid "Exception"
+msgid_plural "Exceptions"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Exceptions"
 msgstr ""
