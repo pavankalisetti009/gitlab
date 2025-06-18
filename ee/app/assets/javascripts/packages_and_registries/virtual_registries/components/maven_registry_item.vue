@@ -39,7 +39,7 @@ export default {
 </script>
 
 <template>
-  <li class="gl-border-t gl-list-none">
+  <li class="gl-list-none">
     <list-item>
       <template #left-primary>
         <gl-link :href="showUrl" class="gl-min-w-0 gl-break-all gl-font-bold gl-text-default">

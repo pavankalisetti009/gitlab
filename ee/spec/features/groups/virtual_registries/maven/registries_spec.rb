@@ -62,7 +62,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         it 'renders maven virtual registry page without actions to create/edit' do
           visit url
 
-          expect(page).to have_selector('h1', text: 'Maven virtual registry')
+          expect(page).to have_selector('h1', text: 'Maven virtual registries')
           expect(page).not_to have_link('Create registry',
             href: new_group_virtual_registries_maven_registry_path(group))
 
@@ -83,7 +83,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         it 'renders maven virtual registry page with actions to create/edit' do
           visit url
 
-          expect(page).to have_selector('h1', text: 'Maven virtual registry')
+          expect(page).to have_selector('h1', text: 'Maven virtual registries')
           expect(page).to have_link('Create registry', href: new_group_virtual_registries_maven_registry_path(group))
 
           expect(page).to have_link('Edit', href:
