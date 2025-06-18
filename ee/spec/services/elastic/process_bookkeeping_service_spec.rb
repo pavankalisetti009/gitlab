@@ -566,11 +566,14 @@ RSpec.describe Elastic::ProcessBookkeepingService,
           notes = []
 
           2.times do
-            notes << create(:note)
+            notes << create(:note_on_issue)
             notes << create(:discussion_note_on_merge_request)
             notes << create(:note_on_merge_request)
             notes << create(:note_on_commit)
             notes << create(:diff_note_on_merge_request)
+            notes << create(:note_on_epic)
+            notes << create(:discussion_note_on_personal_snippet)
+            notes << create(:note, :on_group_work_item)
           end
 
           described_class.track!(*notes)
@@ -578,11 +581,14 @@ RSpec.describe Elastic::ProcessBookkeepingService,
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) { described_class.new.execute }
 
           3.times do
-            notes << create(:note)
+            notes << create(:note_on_issue)
             notes << create(:discussion_note_on_merge_request)
             notes << create(:note_on_merge_request)
             notes << create(:note_on_commit)
             notes << create(:diff_note_on_merge_request)
+            notes << create(:note_on_epic)
+            notes << create(:discussion_note_on_personal_snippet)
+            notes << create(:note, :on_group_work_item)
           end
 
           described_class.track!(*notes)

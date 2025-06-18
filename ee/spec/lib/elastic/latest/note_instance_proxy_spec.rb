@@ -9,6 +9,13 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
     let_it_be(:note) { create(:note_on_merge_request) }
     let(:noteable) { note.noteable }
     let(:common_attributes) do
+      noteable = note.noteable
+      traversal_ids = if noteable.respond_to?(:namespace)
+                        noteable.namespace.elastic_namespace_ancestry
+                      else
+                        noteable.project.namespace.elastic_namespace_ancestry
+                      end
+
       {
         id: note.id,
         hashed_root_namespace_id: note.project.namespace.hashed_root_namespace_id,
@@ -23,13 +30,24 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
         visibility_level: note.project.visibility_level,
         created_at: note.created_at,
         updated_at: note.updated_at,
-        traversal_ids: note.project.elastic_namespace_ancestry,
+        traversal_ids: traversal_ids,
         schema_version: Elastic::Latest::NoteInstanceProxy::SCHEMA_VERSION
       }.with_indifferent_access
     end
 
     before do
       set_elasticsearch_migration_to(:add_traversal_ids_to_notes, including: true)
+    end
+
+    shared_examples 'does not error when note and noteable has no namespace or project' do
+      before do
+        allow(note).to receive_messages(project: nil, namespace: nil)
+        allow(note.noteable).to receive_messages(project_id: nil, namespace_id: nil)
+      end
+
+      it 'does not raise an error' do
+        expect { as_indexed_json }.not_to raise_error
+      end
     end
 
     context 'when add_traversal_ids_to_notes migration is not finished' do
@@ -55,17 +73,24 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
       it 'serializes the object as a hash with issue properties' do
         expect(as_indexed_json).to match(common_attributes.merge(extra_attributes))
       end
+
+      it_behaves_like 'does not error when note and noteable has no namespace or project'
     end
 
     context 'when note is on Snippet' do
       let_it_be(:note) { create(:note_on_project_snippet) }
       let(:extra_attributes) do
-        { snippets_access_level: note.project.project_feature.access_level(:snippets) }
+        {
+          traversal_ids: note.noteable.project.namespace.elastic_namespace_ancestry,
+          snippets_access_level: note.project.project_feature.access_level(:snippets)
+        }
       end
 
       it 'serializes the object as a hash with snippet properties' do
         expect(as_indexed_json).to match(common_attributes.merge(extra_attributes))
       end
+
+      it_behaves_like 'does not error when note and noteable has no namespace or project'
     end
 
     context 'when note is on Commit' do
@@ -88,6 +113,8 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
       it 'serializes the object as a hash with merge request properties' do
         expect(as_indexed_json).to match(common_attributes.merge(extra_attributes))
       end
+
+      it_behaves_like 'does not error when note and noteable has no namespace or project'
     end
 
     it 'raises Elastic::Latest::DocumentShouldBeDeletedFromIndexError when noteable is nil' do
@@ -100,27 +127,27 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
       using RSpec::Parameterized::TableSyntax
 
       where(:note_type, :project_feature_permission, :access_level) do
-        :note_on_issue                      | ProjectFeature::ENABLED | 'issues_access_level'
-        :note_on_project_snippet            | ProjectFeature::DISABLED | 'snippets_access_level'
-        :note_on_personal_snippet           | nil | nil
-        :note_on_merge_request              | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :note_on_commit                     | ProjectFeature::PRIVATE | 'repository_access_level'
-        :diff_note_on_merge_request         | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :diff_note_on_commit                | ProjectFeature::PRIVATE | 'repository_access_level'
-        :diff_note_on_design                | ProjectFeature::ENABLED | nil
-        :legacy_diff_note_on_merge_request  | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :legacy_diff_note_on_commit         | ProjectFeature::PRIVATE | 'repository_access_level'
-        :note_on_alert                      | ProjectFeature::PRIVATE | nil
-        :note_on_design                     | ProjectFeature::ENABLED | nil
-        :note_on_epic                       | nil | nil
-        :note_on_vulnerability              | ProjectFeature::PRIVATE | nil
-        :discussion_note_on_vulnerability   | ProjectFeature::PRIVATE | nil
-        :discussion_note_on_merge_request   | ProjectFeature::PUBLIC | 'merge_requests_access_level'
-        :discussion_note_on_issue           | ProjectFeature::ENABLED | 'issues_access_level'
-        :discussion_note_on_project_snippet | ProjectFeature::DISABLED | 'snippets_access_level'
-        :discussion_note_on_personal_snippet | nil | nil
-        :discussion_note_on_commit          | ProjectFeature::PRIVATE | 'repository_access_level'
-        :track_mr_picking_note              | nil | nil
+        :note_on_issue                      | ProjectFeature::ENABLED   | 'issues_access_level'
+        :note_on_project_snippet            | ProjectFeature::DISABLED  | 'snippets_access_level'
+        :note_on_personal_snippet           | nil                       | nil
+        :note_on_merge_request              | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :note_on_commit                     | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :diff_note_on_merge_request         | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :diff_note_on_commit                | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :diff_note_on_design                | ProjectFeature::ENABLED   | nil
+        :legacy_diff_note_on_merge_request  | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :legacy_diff_note_on_commit         | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :note_on_alert                      | ProjectFeature::PRIVATE   | nil
+        :note_on_design                     | ProjectFeature::ENABLED   | nil
+        :note_on_epic                       | nil                       | nil
+        :note_on_vulnerability              | ProjectFeature::PRIVATE   | nil
+        :discussion_note_on_vulnerability   | ProjectFeature::PRIVATE   | nil
+        :discussion_note_on_merge_request   | ProjectFeature::PUBLIC    | 'merge_requests_access_level'
+        :discussion_note_on_issue           | ProjectFeature::ENABLED   | 'issues_access_level'
+        :discussion_note_on_project_snippet | ProjectFeature::DISABLED  | 'snippets_access_level'
+        :discussion_note_on_personal_snippet | nil                      | nil
+        :discussion_note_on_commit          | ProjectFeature::PRIVATE   | 'repository_access_level'
+        :track_mr_picking_note              | nil                       | nil
       end
 
       with_them do

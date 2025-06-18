@@ -30,7 +30,19 @@ module Elastic
 
       # rubocop: disable CodeReuse/ActiveRecord
       def preload_indexing_data(relation)
-        relation.includes(noteable: :assignees, project: [:project_feature, :route, :namespace])
+        preloaded_data = relation
+          .includes(noteable: [:assignees, :namespace, :group, { project: :namespace, target_project: :namespace }],
+            project: [:project_feature, :route, :namespace])
+
+        project_notes, namespace_notes = preloaded_data.partition(&:for_project_noteable?)
+
+        projects = project_notes.filter_map { |n| n.noteable&.try(:project) || n.noteable&.try(:target_project) }.uniq
+        namespaces = namespace_notes.filter_map { |n| n.noteable&.try(:namespace) }.uniq
+
+        ::Namespaces::Preloaders::ProjectRootAncestorPreloader.new(projects).execute
+        ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(namespaces).execute
+
+        preloaded_data
       end
       # rubocop: enable CodeReuse/ActiveRecord
 
