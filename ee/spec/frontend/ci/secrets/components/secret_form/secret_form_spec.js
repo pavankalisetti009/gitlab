@@ -1,5 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import VueRouter from 'vue-router';
 import {
   GlCollapsibleListbox,
   GlDatepicker,
@@ -14,6 +15,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
+import createRouter from 'ee/ci/secrets/router';
 import SecretBranchesField from 'ee/ci/secrets/components/secret_form/secret_branches_field.vue';
 import createSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
 import updateSecretMutation from 'ee/ci/secrets/graphql/mutations/update_secret.mutation.graphql';
@@ -24,6 +26,7 @@ import { mockProjectBranches, mockProjectSecret, mockProjectUpdateSecret } from 
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
+Vue.use(VueRouter);
 
 describe('SecretForm component', () => {
   let wrapper;
@@ -31,10 +34,7 @@ describe('SecretForm component', () => {
   let mockCreateSecretResponse;
   let mockUpdateSecretResponse;
   let mockProjectBranchesResponse;
-  const mockRouter = {
-    push: jest.fn(),
-    currentRoute: {},
-  };
+  const router = createRouter('/', {});
 
   const defaultProps = {
     areEnvironmentsLoading: false,
@@ -70,10 +70,8 @@ describe('SecretForm component', () => {
     mockApollo = createMockApollo(handlers);
 
     wrapper = mountFn(SecretForm, {
+      router,
       apolloProvider: mockApollo,
-      mocks: {
-        $router: mockRouter,
-      },
       propsData: {
         ...defaultProps,
         ...props,
@@ -323,10 +321,13 @@ describe('SecretForm component', () => {
       });
 
       it('redirects to the secret details page', async () => {
+        const routerPushSpy = jest
+          .spyOn(router, 'push')
+          .mockImplementation(() => Promise.resolve());
         await createSecret();
         await waitForPromises();
 
-        expect(mockRouter.push).toHaveBeenCalledWith({
+        expect(routerPushSpy).toHaveBeenCalledWith({
           name: DETAILS_ROUTE_NAME,
           params: { secretName: 'SECRET_KEY' },
         });
@@ -558,9 +559,12 @@ describe('SecretForm component', () => {
       });
 
       it('redirects to the secret details page', async () => {
+        const routerPushSpy = jest
+          .spyOn(router, 'push')
+          .mockImplementation(() => Promise.resolve());
         await editSecret();
 
-        expect(mockRouter.push).toHaveBeenCalledWith({
+        expect(routerPushSpy).toHaveBeenCalledWith({
           name: DETAILS_ROUTE_NAME,
           params: { secretName: 'PROD_PWD' },
         });

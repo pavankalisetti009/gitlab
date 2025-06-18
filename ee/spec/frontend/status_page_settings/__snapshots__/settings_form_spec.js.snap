@@ -21,6 +21,8 @@ exports[`Status Page settings form default state should match the default snapsh
         data-testid="settings-block-toggle"
         icon="chevron-lg-right"
         size="small"
+        tag="button"
+        type="button"
         variant="default"
       >
         Expand
@@ -183,6 +185,7 @@ exports[`Status Page settings form default state should match the default snapsh
           class="js-no-auto-disable"
           icon=""
           size="medium"
+          tag="button"
           type="submit"
           variant="confirm"
         >

@@ -71,7 +71,9 @@ exports[`Get Familiar component renders correctly 1`] = `
         href="https://gitlab.navattic.com/gitlab-with-duo-get-started-page"
         icon=""
         size="medium"
+        tag="button"
         target="_blank"
+        type="button"
         variant="default"
       >
         Try walkthrough

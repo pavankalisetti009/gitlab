@@ -64,7 +64,7 @@ describe('FeatureListItem', () => {
     });
 
     it('renders the button link', () => {
-      expect(findButtonLink().attributes('to')).toBe('foo-bar');
+      expect(findButtonLink().props('to')).toBe('foo-bar');
     });
   });
 

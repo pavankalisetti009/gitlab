@@ -24,7 +24,9 @@ exports[`DastProfileSummaryCard renders properly 1`] = `
           data-testid="profile-select-btn"
           icon=""
           size="small"
+          tag="button"
           title="Select Profile"
+          type="button"
           variant="confirm"
         >
           Select
@@ -36,7 +38,9 @@ exports[`DastProfileSummaryCard renders properly 1`] = `
           data-testid="profile-edit-btn"
           icon="pencil"
           size="small"
+          tag="button"
           title="Edit scanner profile"
+          type="button"
           variant="default"
         />
       </div>

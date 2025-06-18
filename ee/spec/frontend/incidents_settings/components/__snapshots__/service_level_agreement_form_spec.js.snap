@@ -55,6 +55,7 @@ exports[`Alert integration settings form should match the default snapshot 1`] =
       category="primary"
       icon=""
       size="medium"
+      tag="button"
       type="submit"
       variant="confirm"
     >

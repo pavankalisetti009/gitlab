@@ -30,7 +30,9 @@ exports[`RotationsListSectionComponent when the timeframe includes today renders
             role="button"
             size="medium"
             tabindex="0"
+            tag="button"
             title="Edit rotation"
+            type="button"
             variant="default"
           />
           <gl-button-stub
@@ -41,7 +43,9 @@ exports[`RotationsListSectionComponent when the timeframe includes today renders
             role="button"
             size="medium"
             tabindex="0"
+            tag="button"
             title="Delete rotation"
+            type="button"
             variant="default"
           />
         </div>

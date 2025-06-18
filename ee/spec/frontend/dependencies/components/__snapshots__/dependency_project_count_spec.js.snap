@@ -7,6 +7,8 @@ exports[`Dependency Project Count component renders toggle text 1`] = `
   data-testid="toggle-text"
   icon="project"
   size="medium"
+  tag="button"
+  type="button"
   variant="link"
 >
   <span

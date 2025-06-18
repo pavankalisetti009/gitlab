@@ -111,7 +111,7 @@ describe('SecretsTable component', () => {
     });
 
     it('shows a link to the new secret page', () => {
-      expect(findNewSecretButton().attributes('to')).toBe('new');
+      expect(findNewSecretButton().props('to')).toBe('new');
     });
 
     it('renders a table of secrets', () => {
