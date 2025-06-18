@@ -128,6 +128,12 @@ module EE
 
       validates :observability_settings, json_schema: { filename: "application_setting_observability_settings" }
 
+      jsonb_accessor :security_and_compliance_settings,
+        enforce_pipl_compliance: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }]
+
+      validates :security_and_compliance_settings,
+        json_schema: { filename: "security_and_compliance_settings", detail_errors: true }
+
       validates :mirror_capacity_threshold,
         :mirror_max_capacity,
         :elasticsearch_indexed_file_size_limit_kb,

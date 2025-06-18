@@ -32,3 +32,13 @@
       = _('Manage security policy settings in your GitLab instance')
     - c.with_body do
       = render 'security_policies'
+
+- if ::Gitlab::Saas.feature_available?(:pipl_compliance)
+  = render ::Layouts::SettingsBlockComponent.new(s_('AdminSettings|PIPL compliance'),
+    id: 'js-security-policies-settings',
+    testid: 'admin-security-policies-settings',
+    expanded: expanded_by_default?) do |c|
+    - c.with_description do
+      = s_('AdminSettings|Manage PIPL compliance for all users')
+    - c.with_body do
+      = render 'enforce_pipl_compliance'

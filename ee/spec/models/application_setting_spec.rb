@@ -140,7 +140,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         zoekt_rollout_batch_size: 32,
         zoekt_rollout_retry_interval: Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL,
         zoekt_lost_node_threshold: Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD,
-        zoekt_search_enabled: false
+        zoekt_search_enabled: false,
+        enforce_pipl_compliance: true
       )
     end
   end
@@ -165,6 +166,10 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value(nil).for(:custom_project_templates_group_id) }
 
       it { is_expected.not_to allow_value(nil).for(:observability_backend_ssl_verification_enabled) }
+    end
+
+    describe 'security_and_compliance_setting jsonb_column`s atrributes', feature_category: :compliance_management do
+      it { is_expected.to allow_values([true, false]).for(:enforce_pipl_compliance) }
     end
 
     describe 'elasticsearch', feature_category: :global_search do

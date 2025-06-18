@@ -16,9 +16,9 @@ RSpec.describe ComplianceManagement::PiplUserPolicy, feature_category: :complian
       it { is_expected.to be_allowed(:block_pipl_user) }
       it { is_expected.to be_allowed(:delete_pipl_user) }
 
-      context 'when the enforce_pipl_compliance is disabled' do
+      context 'when the enforce_pipl_compliance setting is disabled' do
         before do
-          stub_feature_flags(enforce_pipl_compliance: false)
+          stub_ee_application_setting(enforce_pipl_compliance: false)
         end
 
         it { is_expected.to be_disallowed(:block_pipl_user) }

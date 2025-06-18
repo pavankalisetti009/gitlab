@@ -14,6 +14,7 @@ RSpec.describe 'user is pipl compliant alert', :saas, :js, feature_category: :co
   end
 
   before do
+    stub_ee_application_setting(enforce_pipl_compliance: true)
     allow(ComplianceManagement::Pipl).to receive(:user_subject_to_pipl?).and_return(true)
   end
 
@@ -31,15 +32,16 @@ RSpec.describe 'user is pipl compliant alert', :saas, :js, feature_category: :co
 
   context 'when the user is not eligible for the alert' do
     before do
+      stub_ee_application_setting(enforce_pipl_compliance: true)
       allow(ComplianceManagement::Pipl).to receive(:user_subject_to_pipl?).and_return(false)
     end
 
     it_behaves_like 'a hidden alert'
   end
 
-  context 'when enforce_pipl_compliance is disabled' do
+  context 'when enforce_pipl_compliance setting is disabled' do
     before do
-      stub_feature_flags(enforce_pipl_compliance: false)
+      stub_ee_application_setting(enforce_pipl_compliance: false)
     end
 
     it_behaves_like 'a hidden alert'

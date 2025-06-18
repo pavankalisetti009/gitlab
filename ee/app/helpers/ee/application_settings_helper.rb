@@ -96,7 +96,8 @@ module EE
         :global_search_wiki_enabled,
         :global_search_epics_enabled,
         :global_search_limited_indexing_enabled,
-        :elastic_migration_worker_enabled
+        :elastic_migration_worker_enabled,
+        :enforce_pipl_compliance
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
         settings.concat(enable_promotion_management_attributes)

@@ -185,7 +185,7 @@ RSpec.describe EE::Users::CalloutsHelper do
 
       context 'when enforce_pipl_compliance is disabled' do
         before do
-          stub_feature_flags(enforce_pipl_compliance: false)
+          stub_ee_application_setting(enforce_pipl_compliance: false)
         end
 
         it 'does not show the alert' do
