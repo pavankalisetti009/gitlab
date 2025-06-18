@@ -252,22 +252,6 @@ module EE
           .find_by(smartcard_identities: { subject: certificate_subject, issuer: certificate_issuer })
       end
 
-      # Limits the users to those who have an identity that belongs to
-      # the given SAML Provider
-      def limit_to_saml_provider(saml_provider_id)
-        if saml_provider_id
-          group_id = SamlProvider.select(:group_id).find(saml_provider_id).group_id
-          saml_users = joins(:identities).where(identities: { saml_provider_id: saml_provider_id })
-          service_accounts =
-            service_account.joins(:user_detail).where(user_detail: { provisioned_by_group_id: group_id })
-
-          union = ::Gitlab::SQL::Union.new([saml_users, service_accounts]).to_sql
-          ::User.from("(#{union}) #{::User.table_name}")
-        else
-          all
-        end
-      end
-
       def billable
         scope = active.without_bots
 

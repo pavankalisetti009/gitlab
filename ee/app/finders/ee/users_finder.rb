@@ -7,7 +7,6 @@ module EE
     override :execute
     def execute
       users = by_non_ldap(super)
-      users = by_saml_provider_id(users)
       users = by_auditors(users) if ::License.feature_available?(:auditor_user)
       order(users)
     end
@@ -16,13 +15,6 @@ module EE
       return users unless params[:skip_ldap]
 
       users.non_ldap
-    end
-
-    def by_saml_provider_id(users)
-      saml_provider_id = params[:saml_provider_id]
-      return users unless saml_provider_id
-
-      users.limit_to_saml_provider(saml_provider_id)
     end
 
     override :by_external_identity

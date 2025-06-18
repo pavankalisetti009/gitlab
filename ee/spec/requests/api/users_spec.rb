@@ -311,20 +311,16 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
 
   describe 'GET /api/users?saml_provider_id' do
     context 'querying users by saml provider id' do
-      let(:group) { create(:group) }
-      let(:saml_provider) { create(:saml_provider, group: group, enabled: true, enforced_sso: true) }
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/424505
+      it 'returns forbidden status with message' do
+        get api("/users", user), params: { saml_provider_id: 42 }
 
-      it 'returns only users for the saml_provider_id' do
-        saml_user = create(:user)
-        create(:identity, provider: 'group_saml1', saml_provider_id: saml_provider.id, user: saml_user)
-        non_saml_user = create(:user)
-
-        get api("/users", user), params: { saml_provider_id: saml_provider.id }
-
-        expect(response).to match_response_schema('public_api/v4/user/basics')
-        expect(response).to include_pagination_headers
-        expect(json_response.map { |u| u['id'] }).to include(saml_user.id)
-        expect(json_response.map { |u| u['id'] }).not_to include(non_saml_user.id)
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response['message']).to eq(
+          "403 Forbidden - saml_provider_id attribute was removed for security reasons. " \
+            "Consider using 'GET /groups/:id/saml_users' API endpoint instead, " \
+            "see #{Rails.application.routes.url_helpers.help_page_url('api/groups.md', anchor: 'list-all-saml-users')}"
+        )
       end
     end
   end
