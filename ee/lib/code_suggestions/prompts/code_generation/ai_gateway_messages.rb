@@ -40,6 +40,9 @@ module CodeSuggestions
             if Feature.enabled?(:incident_fail_over_generation_provider, current_user)
               # vertex + claude_3_5_sonnet_20240620
               '2.0.0'
+            elsif Feature.enabled?(:use_gemini_2_5_flash_in_code_generation, current_user)
+              # vertex + gemini-2.5-flash
+              '1.2.0-dev'
             else
               # anthropic + claude-sonnet-4-20250514
               '^1.0.0'

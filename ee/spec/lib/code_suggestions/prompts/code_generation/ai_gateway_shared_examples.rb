@@ -144,6 +144,7 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
 
         before do
           stub_feature_flags(incident_fail_over_generation_provider: false)
+          stub_feature_flags(use_gemini_2_5_flash_in_code_generation: false)
         end
 
         it 'returns expected request params' do
@@ -179,6 +180,23 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
 
         before do
           stub_feature_flags(incident_fail_over_generation_provider: true)
+          stub_feature_flags(use_gemini_2_5_flash_in_code_generation: true)
+        end
+
+        it 'returns expected request params' do
+          expect(subject.request_params).to eq(expected_request_params)
+        end
+      end
+
+      context 'when opted in to Gemini 2.5 Flash' do
+        let(:expected_saas) { true }
+        let(:expected_prompt_id) { "code_suggestions/generations" }
+        let(:expected_prompt_version) { "1.2.0-dev" }
+
+        before do
+          stub_feature_flags(incident_fail_over_generation_provider: false)
+          stub_feature_flags(code_generation_claude_4_0_rollout: true)
+          stub_feature_flags(use_gemini_2_5_flash_in_code_generation: true)
         end
 
         it 'returns expected request params' do
