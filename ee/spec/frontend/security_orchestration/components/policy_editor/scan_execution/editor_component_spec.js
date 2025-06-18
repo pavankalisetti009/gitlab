@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCard, GlEmptyState, GlToggle } from '@gitlab/ui';
+import { GlEmptyState, GlToggle } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/editor_component.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/rule_section.vue';
@@ -143,7 +143,7 @@ describe('EditorComponent', () => {
   const findActionBuilderCustomConfigRadioButton = () =>
     wrapper.findByTestId('default-action-config-radio-button');
   const findOptimizedScanSelector = () => wrapper.findComponent(OptimizedScanSelector);
-  const findCards = () => wrapper.findAllComponents(GlCard);
+  const findConfigurationSelection = () => wrapper.findByTestId('configuration-selection');
 
   const selectScheduleRule = async () => {
     await findRuleSection().vm.$emit('changed', buildDefaultScheduleRule());
@@ -380,11 +380,11 @@ enabled: true`;
     });
 
     describe('default', () => {
-      it('shows default and custom cards', () => {
+      it('shows default and custom selections', () => {
         factory({
           provide: { glFeatures },
         });
-        expect(findCards()).toHaveLength(2);
+        expect(findConfigurationSelection().exists()).toBe(true);
       });
 
       it('checks optimized scanner by default', () => {
@@ -645,9 +645,9 @@ enabled: true`;
       uniqueId.mockRestore();
     });
 
-    it('does not show custom cards', () => {
+    it('does not show configuration selection', () => {
       factory();
-      expect(findCards()).toHaveLength(0);
+      expect(findConfigurationSelection().exists()).toBe(false);
     });
 
     it('should add new action', async () => {

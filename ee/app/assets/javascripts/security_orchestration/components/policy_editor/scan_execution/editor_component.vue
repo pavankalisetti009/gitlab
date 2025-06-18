@@ -1,7 +1,6 @@
 <script>
 import {
   GlButton,
-  GlCard,
   GlEmptyState,
   GlFormRadio,
   GlIcon,
@@ -38,6 +37,7 @@ import {
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
 import DisabledSection from '../disabled_section.vue';
+import SectionLayout from '../section_layout.vue';
 import RuleSection from './rule/rule_section.vue';
 import OptimizedScanSelector from './action/optimized_scan_selector.vue';
 import ScanAction from './action/scan_action.vue';
@@ -75,14 +75,6 @@ export default {
     CONDITIONS_LABEL,
     CONDITION_SECTION_DISABLE_ERROR,
     PARSING_ERROR_MESSAGE,
-    defaultConfigHeader: s__('SecurityOrchestration|Merge request security'),
-    defaultConfigDescription: s__(
-      'SecurityOrchestration|Automatically configures scans to run only where needed for MR approval policies',
-    ),
-    customConfigHeader: s__('SecurityOrchestration|Custom configuration'),
-    customConfigDescription: s__(
-      'SecurityOrchestration|Configure exactly when and where scans should run',
-    ),
     securityScanTitle: s__('SecurityOrchestration|Security scans to execute'),
     notOwnerButtonText: __('Learn more'),
     notOwnerDescription: s__(
@@ -119,7 +111,6 @@ export default {
     DisabledSection,
     EditorLayout,
     GlButton,
-    GlCard,
     GlEmptyState,
     GlFormRadio,
     GlIcon,
@@ -129,6 +120,7 @@ export default {
     OverloadWarningModal,
     RuleSection,
     ScanAction,
+    SectionLayout,
     SkipCiSelector,
   },
   directives: {
@@ -458,7 +450,7 @@ export default {
 
     <template #actions>
       <div v-if="hasFlexibleScanExecutionPolicy" class="gl-mt-5">
-        <h4>{{ s__('SecurityOrchestration|Scan execution strategy') }}</h4>
+        <h4>{{ s__('SecurityOrchestration|Scan execution configuration') }}</h4>
         <div class="gl-mb-5">
           <gl-sprintf
             :message="
@@ -475,7 +467,8 @@ export default {
             </template>
           </gl-sprintf>
         </div>
-        <gl-card data-testid="default-config" class="gl-mb-5">
+        <div data-testid="configuration-selection">
+          <h5>{{ s__('SecurityOrchestration|Configuration type') }}</h5>
           <gl-form-radio
             v-model="configType"
             :value="$options.SELECTION_CONFIG_DEFAULT"
@@ -483,100 +476,91 @@ export default {
             class="gl-mt-3"
             data-testid="default-action-config-radio-button"
           >
-            <div>
-              <h4 class="gl-mt-0">{{ $options.i18n.defaultConfigHeader }}</h4>
-              <p class="gl-text-gray-500">
-                {{ $options.i18n.defaultConfigDescription }}
-              </p>
-            </div>
+            {{ s__('SecurityOrchestration|Template') }}
           </gl-form-radio>
-          <div v-if="isDefaultConfig" data-testid="default-action-config">
-            <hr class="gl-mt-0" />
-            <div class="gl-ml-6">
-              <optimized-scan-selector
-                :actions="actions"
-                :disabled="addActionButtonDisabled"
-                @change="updateOptimizedAction"
-              />
-            </div>
-          </div>
-        </gl-card>
-        <gl-card data-testid="custom-config">
           <gl-form-radio
             v-model="configType"
             :value="$options.SELECTION_CONFIG_CUSTOM"
             class="gl-mb-0"
             data-testid="custom-action-config-radio-button"
           >
-            <h4 class="gl-mt-0">{{ $options.i18n.customConfigHeader }}</h4>
-            <p class="gl-text-gray-500">{{ $options.i18n.customConfigDescription }}</p>
+            {{ s__('SecurityOrchestration|Custom') }}
           </gl-form-radio>
-          <div v-if="!isDefaultConfig" data-testid="custom-action-config">
-            <hr class="gl-mt-0" />
-            <disabled-section
-              :disabled="parsingError.actions"
-              :error="actionSectionError"
-              data-testid="disabled-action"
-            >
-              <template #title>
-                <h4>{{ $options.i18n.ACTIONS_LABEL }}</h4>
-              </template>
-
-              <scan-action
-                v-for="(action, index) in actions"
-                :key="action.id"
-                :data-testid="`action-${index}`"
-                class="gl-mb-4"
-                :init-action="action"
-                :action-index="index"
-                :error-sources="errorSources"
-                @changed="updateActionOrRule($options.ACTION, index, $event)"
-                @remove="removeActionOrRule($options.ACTION, index)"
-                @parsing-error="handleActionBuilderParsingError"
+        </div>
+        <section-layout class="gl-pt-0" :show-remove-button="false">
+          <template #content>
+            <div v-if="isDefaultConfig" data-testid="default-action-config">
+              <optimized-scan-selector
+                :actions="actions"
+                :disabled="addActionButtonDisabled"
+                @change="updateOptimizedAction"
               />
+            </div>
+            <div v-if="!isDefaultConfig" data-testid="custom-action-config">
+              <disabled-section
+                :disabled="parsingError.actions"
+                :error="actionSectionError"
+                data-testid="disabled-action"
+              >
+                <template #title>
+                  <h4>{{ $options.i18n.ACTIONS_LABEL }}</h4>
+                </template>
 
-              <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
-                <span v-gl-tooltip :title="addActionButtonTitle" data-testid="add-action-wrapper">
-                  <gl-button
-                    :disabled="addActionButtonDisabled"
-                    variant="link"
-                    data-testid="add-action"
-                    @click="addAction"
-                  >
-                    {{ $options.i18n.ADD_ACTION_LABEL }}
+                <scan-action
+                  v-for="(action, index) in actions"
+                  :key="action.id"
+                  :data-testid="`action-${index}`"
+                  class="gl-mb-4"
+                  :init-action="action"
+                  :action-index="index"
+                  :error-sources="errorSources"
+                  @changed="updateActionOrRule($options.ACTION, index, $event)"
+                  @remove="removeActionOrRule($options.ACTION, index)"
+                  @parsing-error="handleActionBuilderParsingError"
+                />
+
+                <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
+                  <span v-gl-tooltip :title="addActionButtonTitle" data-testid="add-action-wrapper">
+                    <gl-button
+                      :disabled="addActionButtonDisabled"
+                      variant="link"
+                      data-testid="add-action"
+                      @click="addAction"
+                    >
+                      {{ $options.i18n.ADD_ACTION_LABEL }}
+                    </gl-button>
+                  </span>
+                </div>
+              </disabled-section>
+              <disabled-section
+                :disabled="parsingError.rules"
+                :error="$options.i18n.CONDITION_SECTION_DISABLE_ERROR"
+                data-testid="disabled-rule"
+              >
+                <template #title>
+                  <h4>{{ $options.i18n.CONDITIONS_LABEL }}</h4>
+                </template>
+
+                <rule-section
+                  v-for="(rule, index) in policy.rules"
+                  :key="rule.id"
+                  :data-testid="`rule-${index}`"
+                  class="gl-mb-4"
+                  :init-rule="rule"
+                  :rule-index="index"
+                  @changed="updateActionOrRule($options.RULE, index, $event)"
+                  @remove="removeActionOrRule($options.RULE, index)"
+                />
+
+                <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
+                  <gl-button variant="link" data-testid="add-rule" @click="addRule">
+                    {{ $options.i18n.ADD_CONDITION_LABEL }}
                   </gl-button>
-                </span>
-              </div>
-            </disabled-section>
-
-            <disabled-section
-              :disabled="parsingError.rules"
-              :error="$options.i18n.CONDITION_SECTION_DISABLE_ERROR"
-              data-testid="disabled-rule"
-            >
-              <template #title>
-                <h4>{{ $options.i18n.CONDITIONS_LABEL }}</h4>
-              </template>
-
-              <rule-section
-                v-for="(rule, index) in policy.rules"
-                :key="rule.id"
-                :data-testid="`rule-${index}`"
-                class="gl-mb-4"
-                :init-rule="rule"
-                :rule-index="index"
-                @changed="updateActionOrRule($options.RULE, index, $event)"
-                @remove="removeActionOrRule($options.RULE, index)"
-              />
-
-              <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
-                <gl-button variant="link" data-testid="add-rule" @click="addRule">
-                  {{ $options.i18n.ADD_CONDITION_LABEL }}
-                </gl-button>
-              </div>
-            </disabled-section>
-          </div>
-        </gl-card>
+                </div>
+              </disabled-section>
+            </div>
+          </template>
+        </section-layout>
       </div>
     </template>
 
