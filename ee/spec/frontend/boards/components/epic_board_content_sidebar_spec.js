@@ -58,6 +58,7 @@ describe('EpicBoardContentSidebar', () => {
         glFeatures,
       },
       stubs: {
+        MountingPortal: stubComponent(MountingPortal),
         GlDrawer: stubComponent(GlDrawer, {
           template: '<div><slot name="header"></slot><slot></slot></div>',
         }),
@@ -74,9 +75,8 @@ describe('EpicBoardContentSidebar', () => {
   });
 
   it('confirms we render MountingPortal', () => {
-    expect(wrapper.findComponent(MountingPortal).props()).toMatchObject({
-      mountTo: '#js-right-sidebar-portal',
-      append: true,
+    expect(wrapper.findComponent(MountingPortal).attributes()).toMatchObject({
+      'mount-to': '#js-right-sidebar-portal',
       name: 'epic-board-sidebar',
     });
   });
