@@ -1,11 +1,11 @@
 <script>
-import { GlAlert, GlButton, GlDisclosureDropdown, GlLoadingIcon } from '@gitlab/ui';
-import { __, s__, sprintf } from '~/locale';
+import { GlButton, GlDisclosureDropdown, GlLoadingIcon } from '@gitlab/ui';
+import { __, sprintf } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
-import { EDIT_ROUTE_NAME } from '../../constants';
+import { EDIT_ROUTE_NAME, FAILED_TO_LOAD_ERROR_MESSAGE } from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import SecretDetails from './secret_details.vue';
@@ -13,7 +13,6 @@ import SecretDetails from './secret_details.vue';
 export default {
   name: 'SecretDetailsWrapper',
   components: {
-    GlAlert,
     GlButton,
     GlDisclosureDropdown,
     GlLoadingIcon,
@@ -51,7 +50,7 @@ export default {
         return data.projectSecret || null;
       },
       error() {
-        createAlert({ message: this.$options.i18n.queryError });
+        createAlert({ message: FAILED_TO_LOAD_ERROR_MESSAGE });
       },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
     },
@@ -100,18 +99,12 @@ export default {
       this.showDeleteModal = false;
     },
   },
-  i18n: {
-    queryError: s__('Secrets|Failed to load secret. Please try again later.'),
-  },
 };
 </script>
 <template>
   <div>
     <gl-loading-icon v-if="isSecretLoading" size="lg" class="gl-mt-6" />
-    <gl-alert v-else-if="!secret" variant="danger" :dismissible="false" class="gl-mt-3">
-      {{ $options.i18n.queryError }}
-    </gl-alert>
-    <div v-else>
+    <div v-if="secret">
       <secret-delete-modal
         :full-path="fullPath"
         :secret-name="secret.name"

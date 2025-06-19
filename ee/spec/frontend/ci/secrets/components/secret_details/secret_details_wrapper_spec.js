@@ -1,12 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import {
-  GlAlert,
-  GlDisclosureDropdown,
-  GlDisclosureDropdownItem,
-  GlLoadingIcon,
-  GlModal,
-} from '@gitlab/ui';
+import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlLoadingIcon, GlModal } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -65,7 +59,6 @@ describe('SecretDetailsWrapper component', () => {
     }
   };
 
-  const findAlert = () => wrapper.findComponent(GlAlert);
   const findDisclosureDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
   const findDeleteButton = () =>
     findDisclosureDropdown().findAllComponents(GlDisclosureDropdownItem).at(0).find('button');
@@ -89,6 +82,8 @@ describe('SecretDetailsWrapper component', () => {
     });
   });
 
+  // We also get a GraphQL error when secret doesn't exist
+  // so this also covers that use case
   describe('when query fails', () => {
     beforeEach(async () => {
       mockSecretQuery.mockRejectedValue();
@@ -100,18 +95,6 @@ describe('SecretDetailsWrapper component', () => {
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Failed to load secret. Please try again later.',
       });
-    });
-  });
-
-  describe('when no secret is found', () => {
-    beforeEach(async () => {
-      mockSecretQuery.mockResolvedValue({ data: { projectSecret: null } });
-      await createComponent();
-    });
-
-    it('renders alert message', () => {
-      expect(findLoadingIcon().exists()).toBe(false);
-      expect(findAlert().text()).toBe('Failed to load secret. Please try again later.');
     });
   });
 
