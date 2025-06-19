@@ -52,7 +52,7 @@ duo_chat:
     - include_terminal_context
     - include_repository_context
 duo_chat_explain_code:
-  title: Explain Code
+  title: Code Explanation
   release_state: GA
   main_feature: GitLab Duo Chat
   compatible_llms:
@@ -64,7 +64,7 @@ duo_chat_explain_code:
   unit_primitives:
     - explain_code
 duo_chat_write_tests:
-  title: Write Test
+  title: Test Generation
   release_state: GA
   main_feature: GitLab Duo Chat
   compatible_llms:
@@ -103,7 +103,7 @@ duo_chat_fix_code:
   unit_primitives:
     - fix_code
 duo_chat_troubleshoot_job:
-  title: Troubleshoot Job
+  title: Root Cause Analysis
   release_state: BETA
   main_feature: GitLab Duo Chat
   compatible_llms:
@@ -115,7 +115,7 @@ duo_chat_troubleshoot_job:
   unit_primitives:
     - troubleshoot_job
 duo_chat_explain_vulnerability:
-  title: Explain Vulnerability
+  title: Vulnerability Explanation
   release_state: BETA
   main_feature: GitLab Duo Chat
   compatible_llms:
@@ -127,7 +127,7 @@ duo_chat_explain_vulnerability:
   unit_primitives:
     - explain_vulnerability
 duo_chat_summarize_comments:
-  title: Summarize Comments
+  title: Discussion Summary
   release_state: BETA
   main_feature: GitLab Duo Chat
   compatible_llms:
@@ -139,7 +139,7 @@ duo_chat_summarize_comments:
   unit_primitives:
     - summarize_comments
 generate_commit_message:
-  title: Generate Commit Message
+  title: Merge Commit Message Generation
   release_state: BETA
   main_feature: Other GitLab Duo features
   compatible_llms:
@@ -151,7 +151,7 @@ generate_commit_message:
   unit_primitives:
     - generate_commit_message
 summarize_new_merge_request:
-  title: Summarize New Merge Request
+  title: Merge Request Summary
   release_state: BETA
   main_feature: Other GitLab Duo features
   compatible_llms:
@@ -163,7 +163,7 @@ summarize_new_merge_request:
   unit_primitives:
     - summarize_new_merge_request
 resolve_vulnerability:
-  title: Resolve Vulnerability
+  title: Vulnerability Resolution
   release_state: BETA
   main_feature: Other GitLab Duo features
   compatible_llms:
@@ -175,7 +175,7 @@ resolve_vulnerability:
   unit_primitives:
     - resolve_vulnerability
 summarize_review:
-  title: Summarize Review
+  title: Code Review Summary
   release_state: EXPERIMENT
   main_feature: Other GitLab Duo features
   compatible_llms:
