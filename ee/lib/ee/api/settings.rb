@@ -92,7 +92,7 @@ module EE
               attrs = attrs.except(:duo_features_enabled, :lock_duo_features_enabled)
             end
 
-            unless CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
+            unless ::GitlabSubscriptions::AddOnPurchase.find_for_unit_primitive(:complete_code, :instance).any?
               attrs = attrs.except(:disabled_direct_code_suggestions)
             end
 

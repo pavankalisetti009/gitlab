@@ -17,4 +17,9 @@ FactoryBot.define do
   trait :future_cut_off_date do
     cut_off_date { Time.current + 1.day }
   end
+
+  trait :complete_code do
+    name { 'complete_code' }
+    add_ons { [association(:cloud_connector_add_on, name: 'duo_pro')] }
+  end
 end
