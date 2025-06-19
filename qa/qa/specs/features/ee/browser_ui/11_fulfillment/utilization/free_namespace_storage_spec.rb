@@ -100,6 +100,11 @@ module QA
       end
 
       def within_a_tenth?(size_displayed, size)
+        # NOTE: On the UI the numbers are generally displayed with `.round(1)`. We are testing that
+        # the sizes that we have extracted from the UI are within this rounding error margin.
+        # Different magnitudes (KiB/MiB/GiB) would give us different margins of errors. Currently we
+        # have only one MiB value, and three KiB magnitude values. So the total possible offset
+        # should be within 0.1 MiB range.
         (size_displayed - size).abs <= 0.1
       end
 
@@ -137,15 +142,19 @@ module QA
               repository_size = convert_to_mib(usage_quota.project_repository_size) # 41.0 KiB
               snippets_size = convert_to_mib(usage_quota.project_snippets_size) # 10.2 KiB
               wiki_size = convert_to_mib(usage_quota.project_wiki_size) # 10.2 KiB
-              containers_registry_size = convert_to_mib(usage_quota.project_containers_registry_size) # 48.2 MiB
+              # NOTE: containers_registry_size value depends on the actual docker image size and
+              # apparently can fluctuate. Currently it's ~ 50 MiB, give or take
+              containers_registry_size = convert_to_mib(usage_quota.project_containers_registry_size)
               total_size = repository_size + snippets_size + wiki_size + containers_registry_size
 
               expect do
                 ::QA::Support::WaitForRequests.wait_for_requests # Handle element loading text
                 usage_quota.namespace_usage_total.squish
               end
-                .to eventually_match(%r{Namespace storage used #{total_size.floor}\.\d+ [KMG]iB.+}i)
-                      .within(max_duration: 300, reload_page: page)
+                .to eventually_match(
+                  %r{Namespace storage used (#{total_size.floor}|#{total_size.ceil})\.\d+ [KMG]iB.+}i
+                )
+                .within(max_duration: 300, reload_page: page)
 
               namespace_usage_total_text = usage_quota.namespace_usage_total.squish
               total_size_displayed = namespace_usage_total_text[/Namespace storage used (\d+\.\d+)/, 1].to_f
