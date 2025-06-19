@@ -15,8 +15,14 @@
   .col-md-8.gl-flex.gl-flex-col
     %h1.gl-mt-0.gl-max-w-75
       = s_('InProductMarketing|Get Started with GitLab')
-    %p.gl-text-lg.gl-max-w-75.gl-mb-6
+    %p.gl-text-lg.gl-max-w-75
       = s_("InProductMarketing|Enjoy 60 days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate.")
+    %p.gl-text-subtle
+      = sprite_icon('question-o', css_class: 'gl-mr-1')
+      = s_('InProductMarketing|Want to host GitLab on your servers?')
+      = link_to s_('InProductMarketing|Start with Self-Managed'), about_trial_url(hosted: 'self-managed'),
+        data: { track_action: 'click_link', track_label: 'start_self-managed_trial' }
+
     .signup-box.gl-max-w-75
       .gl-mb-3.gl-p-6.gl-border-default.gl-border-1.gl-border-solid.gl-rounded-base.gl-bg-default
         = render 'signup_box_form',
@@ -40,15 +46,9 @@
 
       .additional-links.gl-mt-6
         = render 'devise/shared/sign_in_link',
-          wrapper_class: '',
+          wrapper_class: 'gl-pl-6 gl-text-subtle',
           tracking_action: 'click_sign_in_from_registration_page',
           tracking_label: preregistration_tracking_label
-
-        %p
-          = s_('InProductMarketing|Want to host GitLab on your servers?')
-          = link_to s_('InProductMarketing|Start a Self-Managed trial'),
-            'https://about.gitlab.com/free-trial/#selfmanaged/',
-            data: { track_action: 'click_link', track_label: 'start_self-managed_trial' }
 
   .col-md-4.lg:gl-flex.gl-flex-col.gl-mb-6.gl-items-center.gl-pr-8
     %div
