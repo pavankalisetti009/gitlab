@@ -11,26 +11,7 @@ RSpec.shared_examples 'sync vulnerabilities changes to ES' do
     end
   end
 
-  context 'when vulnerability_es_ingestion FF disabled' do
-    before do
-      allow_next_found_instance_of(Vulnerability) do |instance|
-        allow(instance).to receive(:maintaining_elasticsearch?).and_return(false)
-      end
-
-      allow_next_found_instance_of(Vulnerabilities::Read) do |instance|
-        allow(instance).to receive(:maintaining_elasticsearch?).and_return(false)
-      end
-    end
-
-    it 'calls the ProcessBookkeepingService with vulnerabilities' do
-      subject
-
-      expect(Elastic::ProcessBookkeepingService).to have_received(:track!).at_least(:once)
-      expect(received_vulnerabilities).to be_empty
-    end
-  end
-
-  context 'when vulnerability_es_ingestion FF enabled' do
+  context 'for vulnerability es ingestion' do
     before do
       allow_next_found_instance_of(Vulnerability) do |instance|
         allow(instance).to receive(:maintaining_elasticsearch?).and_return(true)
