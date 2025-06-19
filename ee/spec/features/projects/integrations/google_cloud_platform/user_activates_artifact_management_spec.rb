@@ -34,7 +34,7 @@ RSpec.describe 'User activates Artifact Management', :js, :sidekiq_inline, featu
 
       expect(page).not_to have_link('View artifacts')
 
-      expect(page).to be_axe_clean.within('[data-testid=integration-settings-form]')
+      expect(page).to be_axe_clean.within_testid('integration-settings-form')
         .skipping :'link-in-text-block', :'color-contrast'
 
       fill_in s_('GoogleCloud|Google Cloud project ID'),
@@ -51,7 +51,7 @@ RSpec.describe 'User activates Artifact Management', :js, :sidekiq_inline, featu
       expect(page).to have_link('View artifacts',
         href: project_google_cloud_artifact_registry_index_path(project))
 
-      expect(page).to be_axe_clean.within('[data-testid=integration-settings-form]')
+      expect(page).to be_axe_clean.within_testid('integration-settings-form')
         .skipping :'link-in-text-block', :'color-contrast'
     end
   end
@@ -75,7 +75,7 @@ RSpec.describe 'User activates Artifact Management', :js, :sidekiq_inline, featu
 
       expect(page).to have_content('Connection successful.')
 
-      expect(page).to be_axe_clean.within('[data-testid=integration-settings-form]')
+      expect(page).to be_axe_clean.within_testid('integration-settings-form')
         .skipping :'link-in-text-block', :'color-contrast'
     end
   end

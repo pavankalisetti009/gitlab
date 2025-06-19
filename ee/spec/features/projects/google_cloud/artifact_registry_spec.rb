@@ -67,7 +67,7 @@ RSpec.describe 'Google Artifact Registry', :js, feature_category: :container_reg
 
     wait_for_requests
 
-    expect(page).to be_axe_clean.within('[data-testid="artifact-registry-list-page"]') # rubocop:todo Capybara/TestidFinders -- Doesn't cover use case, see https://gitlab.com/gitlab-org/gitlab/-/issues/442224
+    expect(page).to be_axe_clean.within_testid('artifact-registry-list-page')
   end
 
   it 'has a page title set' do
