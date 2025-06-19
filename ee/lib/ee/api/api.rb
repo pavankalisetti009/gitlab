@@ -83,6 +83,7 @@ module EE
         mount ::API::DuoCodeReview
         mount ::API::SecurityScans
         mount ::API::ComplianceExternalControls
+        mount ::API::Security::VulnerabilityScanning::SbomScans
         mount ::API::VirtualRegistries::Packages::Maven::Registries
         mount ::API::VirtualRegistries::Packages::Maven::Upstreams
         mount ::API::VirtualRegistries::Packages::Maven::RegistryUpstreams

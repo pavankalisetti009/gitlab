@@ -26,6 +26,9 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
         :duo_workflow_direct_access | 50 | 1.minute
         :soft_phone_verification_transactions_limit | 60 | 1.day
         :hard_phone_verification_transactions_limit | 100 | 1.day
+        :container_scanning_for_registry_scans |  50 | 1.day
+        :dependency_scanning_sbom_scan_api_upload |  50 | 1.hour
+        :dependency_scanning_sbom_scan_api_download |  150 | 1.hour
         :virtual_registries_endpoints_api_limit | 1000 | 15.seconds
       end
 
