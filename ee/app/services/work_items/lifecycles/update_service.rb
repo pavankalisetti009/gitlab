@@ -53,9 +53,9 @@ module WorkItems
       def create_custom_lifecycle!
         ApplicationRecord.transaction do
           apply_status_changes
+          handle_deferred_status_removal
 
           statuses = @processed_statuses
-
           default_statuses = default_statuses_for_lifecycle(statuses, params)
 
           ::WorkItems::Statuses::Custom::Lifecycle.create!(

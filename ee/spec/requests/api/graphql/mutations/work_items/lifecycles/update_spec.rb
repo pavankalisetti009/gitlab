@@ -9,18 +9,23 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
   let_it_be(:user) { create(:user, maintainer_of: group) }
 
   let_it_be(:system_defined_lifecycle) { WorkItems::Statuses::SystemDefined::Lifecycle.all.first }
+  let_it_be(:system_defined_in_progress_status) { build(:work_item_system_defined_status, :in_progress) }
+  let_it_be(:system_defined_wont_do_status) { build(:work_item_system_defined_status, :wont_do) }
+
   let(:params) do
     {
       namespace_path: group.full_path,
       id: system_defined_lifecycle.to_gid,
       statuses: [
         status_params_for(system_defined_lifecycle.default_open_status),
+        status_params_for(system_defined_in_progress_status),
         status_params_for(system_defined_lifecycle.default_closed_status),
+        status_params_for(system_defined_wont_do_status),
         status_params_for(system_defined_lifecycle.default_duplicate_status)
       ],
       default_open_status_index: 0,
-      default_closed_status_index: 1,
-      default_duplicate_status_index: 2
+      default_closed_status_index: 2,
+      default_duplicate_status_index: 4
     }
   end
 
@@ -43,7 +48,9 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
           'name' => 'Default',
           'statuses' => include(
             a_hash_including('name' => system_defined_lifecycle.default_open_status.name),
+            a_hash_including('name' => system_defined_in_progress_status.name),
             a_hash_including('name' => system_defined_lifecycle.default_closed_status.name),
+            a_hash_including('name' => system_defined_wont_do_status.name),
             a_hash_including('name' => system_defined_lifecycle.default_duplicate_status.name)
           )
         )
@@ -88,6 +95,7 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
               description: nil,
               category: 'TO_DO'
             },
+            status_params_for(custom_lifecycle.default_open_status),
             status_params_for(existing_in_progress_status),
             {
               name: 'Complete', # new default closed status
@@ -99,9 +107,13 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
             status_params_for(custom_lifecycle.default_duplicate_status)
           ],
           default_open_status_index: 0,
-          default_closed_status_index: 2,
-          default_duplicate_status_index: 4
+          default_closed_status_index: 3,
+          default_duplicate_status_index: 5
         }
+      end
+
+      before do
+        custom_lifecycle.default_open_status.name = "To do"
       end
 
       it 'updates the lifecycle' do
@@ -115,6 +127,7 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
             'name' => custom_lifecycle.name,
             'statuses' => include(
               a_hash_including('name' => 'Ready for development'),
+              a_hash_including('name' => 'To do'),
               a_hash_including('name' => existing_in_progress_status.name),
               a_hash_including('name' => 'Complete'),
               a_hash_including('name' => custom_lifecycle.default_closed_status.name),
