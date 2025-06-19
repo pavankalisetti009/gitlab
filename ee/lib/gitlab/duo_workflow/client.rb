@@ -27,6 +27,24 @@ module Gitlab
       def self.debug_mode?
         !!Gitlab.config.duo_workflow.debug
       end
+
+      def self.cloud_connector_headers(user:)
+        Gitlab::AiGateway
+          .public_headers(user: user, service_name: :duo_workflow)
+          .transform_keys(&:downcase)
+          .merge(
+            'x-gitlab-base-url' => Gitlab.config.gitlab.url,
+            'authorization' => "Bearer #{cloud_connector_token(user: user)}",
+            'x-gitlab-authentication-type' => 'oidc'
+          )
+      end
+
+      def self.cloud_connector_token(user:)
+        ::CloudConnector::Tokens.get(
+          unit_primitive: :duo_workflow_execute_workflow,
+          root_group_ids: user.billable_gitlab_duo_pro_root_group_ids
+        )
+      end
     end
   end
 end

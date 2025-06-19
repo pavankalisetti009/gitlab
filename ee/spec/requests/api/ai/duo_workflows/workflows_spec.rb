@@ -512,7 +512,6 @@ expires_at: duo_workflow_service_token_expires_at })
 
   describe 'GET /ai/duo_workflows/ws' do
     let(:path) { '/ai/duo_workflows/ws' }
-    let(:headers) { { 'Custom-Header' => 'custom-value' } }
 
     include_context 'workhorse headers'
 
@@ -525,10 +524,11 @@ expires_at: duo_workflow_service_token_expires_at })
       end
 
       allow(Gitlab::DuoWorkflow::Client).to receive_messages(
-        headers: headers,
         url: 'duo-workflow-service.example.com:50052',
         secure?: true
       )
+
+      allow(::CloudConnector::Tokens).to receive(:get).and_return('token')
     end
 
     context 'when user is authenticated' do
@@ -538,12 +538,16 @@ expires_at: duo_workflow_service_token_expires_at })
         expect(response).to have_gitlab_http_status(:ok)
         expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
 
-        expected_headers = headers.merge(
-          'X-Gitlab-Base-Url' => Gitlab.config.gitlab.url,
-          'X-Gitlab-Oauth-Token' => 'oauth_token'
+        expect(json_response['DuoWorkflow']['Headers']).to include(
+          'x-gitlab-base-url' => Gitlab.config.gitlab.url,
+          'x-gitlab-oauth-token' => 'oauth_token',
+          'authorization' => 'Bearer token',
+          'x-gitlab-authentication-type' => 'oidc',
+          'x-gitlab-enabled-feature-flags' => anything,
+          'x-gitlab-instance-id' => anything,
+          'x-gitlab-version' => Gitlab.version_info.to_s
         )
 
-        expect(json_response['DuoWorkflow']['Headers']).to eq(expected_headers)
         expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
       end

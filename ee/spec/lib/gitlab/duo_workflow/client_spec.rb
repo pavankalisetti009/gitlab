@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
-  let(:user) { create(:user) }
+  let_it_be(:user) { create(:user) }
 
   describe '.url' do
     it 'returns url to Duo Workflow Service fleet' do
@@ -49,6 +49,53 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       expect(described_class.secure?).to eq(false)
       allow(Gitlab.config.duo_workflow).to receive(:secure).and_return nil
       expect(described_class.secure?).to eq(false)
+    end
+  end
+
+  describe '.cloud_connector_headers' do
+    let(:token) { 'duo_workflow_token_123' }
+
+    before do
+      allow(::CloudConnector::Tokens).to receive(:get).and_return(token)
+    end
+
+    it 'returns headers with base URL, authorization, and authentication type' do
+      expected_headers = {
+        'authorization' => "Bearer #{token}",
+        'x-gitlab-authentication-type' => 'oidc',
+        'x-gitlab-base-url' => 'http://localhost',
+        'x-gitlab-feature-enabled-by-namespace-ids' => '',
+        'x-gitlab-global-user-id' => Gitlab::GlobalAnonymousId.user_id(user),
+        'x-gitlab-host-name' => 'localhost',
+        'x-gitlab-instance-id' => 'uuid-not-set',
+        'x-gitlab-realm' => 'self-managed',
+        'x-gitlab-version' => '18.2.0',
+        'x-gitlab-enabled-instance-verbose-ai-logs' => 'true',
+        'x-gitlab-enabled-feature-flags' => '',
+        'x-gitlab-feature-enablement-type' => ''
+      }
+
+      expect(described_class.cloud_connector_headers(user: user)).to eq(expected_headers)
+    end
+  end
+
+  describe '.cloud_connector_token' do
+    let_it_be(:group) { create(:group, maintainers: user) }
+
+    let(:token) { 'duo_workflow_token_456' }
+
+    before do
+      stub_saas_features(gitlab_com_subscriptions: true)
+      allow(::CloudConnector::Tokens).to receive(:get).and_return(token)
+    end
+
+    it 'gets token with correct parameters' do
+      expect(::CloudConnector::Tokens).to receive(:get).with(
+        unit_primitive: :duo_workflow_execute_workflow,
+        root_group_ids: [group.id]
+      )
+
+      expect(described_class.cloud_connector_token(user: user)).to eq(token)
     end
   end
 end
