@@ -1,9 +1,0 @@
----
-name: work_item_epics_list
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/471578
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159604
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/473073
-milestone: '17.3'
-group: group::product planning
-type: beta
-default_enabled: true
