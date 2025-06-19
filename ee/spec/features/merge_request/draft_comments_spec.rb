@@ -24,7 +24,7 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
 
   context 'when submitting a review with a comment' do
     it 'publishes the review' do
-      page.within '.merge-request-tabs-holder' do
+      page.within '.merge-request-tabs-container' do
         click_button 'Your review'
       end
 
@@ -44,7 +44,7 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
       let(:current_user) { create(:user) }
 
       it 'does not allow user to approve' do
-        page.within '.merge-request-tabs-holder' do
+        page.within '.merge-request-tabs-container' do
           click_button 'Your review'
         end
 
@@ -54,7 +54,7 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
 
     context 'when user has permission to approve' do
       it 'allows user to approve' do
-        page.within '.merge-request-tabs-holder' do
+        page.within '.merge-request-tabs-container' do
           click_button 'Your review'
         end
 
@@ -75,7 +75,7 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
         end
 
         it 'does not allow user to approve without password' do
-          page.within '.merge-request-tabs-holder' do
+          page.within '.merge-request-tabs-container' do
             click_button 'Your review'
           end
 
@@ -88,7 +88,7 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
         end
 
         it 'allows user to approve' do
-          page.within '.merge-request-tabs-holder' do
+          page.within '.merge-request-tabs-container' do
             click_button 'Your review'
           end
 
