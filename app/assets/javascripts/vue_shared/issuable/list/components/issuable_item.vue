@@ -285,7 +285,7 @@ export default {
         !this.isIncident &&
         !this.isServiceDeskIssue &&
         !this.isTestCase &&
-        (this.glFeatures.workItemViewForIssues || gon.current_user_use_work_items_view)
+        this.glFeatures.workItemViewForIssues
       );
     },
     hiddenIssuableTitle() {
