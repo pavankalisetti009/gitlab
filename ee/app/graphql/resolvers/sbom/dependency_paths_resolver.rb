@@ -20,46 +20,17 @@ module Resolvers
         return if Feature.disabled?(:dependency_graph_graphql, project)
 
         occurrence_id = resolve_gid(occurrence, ::Sbom::Occurrence)
-        result = Gitlab::Metrics.measure(:dependency_path_cte) do
-          ::Sbom::DependencyPathsFinder.new(
-            project,
-            params: {
-              occurrence_id: occurrence_id
-            }
-          ).execute
-        end
-        record_metrics(result)
-        result
+        sbom_occurrence = ::Sbom::Occurrence.find(occurrence_id)
+
+        return unless sbom_occurrence
+
+        ::Sbom::PathFinder.execute(sbom_occurrence)
       end
 
       private
 
       def resolve_gid(gid, gid_class)
         Types::GlobalIDType[gid_class].coerce_isolated_input(gid).model_id
-      end
-
-      def record_metrics(result)
-        counter = Gitlab::Metrics.counter(
-          :dependency_path_cte_paths_found,
-          'Count of Dependency Paths found using the recursive CTE'
-        )
-
-        counter.increment(
-          { cyclic: false, max_depth_reached: false },
-          result.count { |r| !r.is_cyclic && !r.max_depth_reached }
-        )
-        counter.increment(
-          { cyclic: false, max_depth_reached: true },
-          result.count { |r| !r.is_cyclic && r.max_depth_reached }
-        )
-        counter.increment(
-          { cyclic: true, max_depth_reached: false },
-          result.count { |r| r.is_cyclic && !r.max_depth_reached }
-        )
-        counter.increment(
-          { cyclic: true, max_depth_reached: true },
-          result.count { |r| r.is_cyclic && r.max_depth_reached }
-        )
       end
     end
   end

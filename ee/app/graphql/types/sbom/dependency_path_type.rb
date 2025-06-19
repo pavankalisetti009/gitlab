@@ -15,6 +15,18 @@ module Types
       field :max_depth_reached, GraphQL::Types::Boolean,
         null: false,
         description: "Indicates if the path reached the maximum depth (#{::Sbom::DependencyPath::MAX_DEPTH})."
+
+      def path
+        object[:path].map do |occurrence|
+          { name: occurrence.component_name, version: occurrence.version }
+        end
+      end
+
+      # ::Sbom::PathFinder does not return this field.
+      # This field is maintained here for consistency with frontend until we clean this up
+      def max_depth_reached
+        false
+      end
     end
   end
 end
