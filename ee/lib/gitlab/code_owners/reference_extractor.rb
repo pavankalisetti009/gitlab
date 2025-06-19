@@ -20,15 +20,15 @@ module Gitlab
           (?<user>#{Gitlab::PathRegex::FULL_NAMESPACE_FORMAT_REGEX})
         }x
 
-      ROLE_PREFIX = '@@'
-
-      POSSIBLE_ROLES = {
-        developer: Gitlab::Access::DEVELOPER,
-        maintainer: Gitlab::Access::MAINTAINER,
-        owner: Gitlab::Access::OWNER
+      ROLES_MAP = {
+        'developer' => Gitlab::Access::DEVELOPER,
+        'maintainer' => Gitlab::Access::MAINTAINER,
+        'owner' => Gitlab::Access::OWNER
       }.freeze
 
-      ROLES_MAP = POSSIBLE_ROLES.to_h { |role, role_value| [role_value, "@@#{role}"] }.freeze
+      ROLE_PREFIX = '@@'
+
+      ROLE_REGEXP = %r{(?<![\w@])#{ROLE_PREFIX}(?<role>(#{Regexp.union(ROLES_MAP.keys).source})s?)(?:\s|$)}i
 
       def initialize(text)
         # EE passes an Array to `text` in a few places, so we want to support both
@@ -45,11 +45,11 @@ module Gitlab
       end
 
       def roles
-        matches[:roles]
+        matches[:roles].map { |role| ROLES_MAP[role.singularize.downcase] }.uniq
       end
 
       def raw_roles
-        roles.map { |role_value| ROLES_MAP[role_value] }
+        matches[:roles].map { |role| "#{ROLE_PREFIX}#{role}" }
       end
 
       def emails
@@ -61,11 +61,13 @@ module Gitlab
       def references
         return [] if @text.blank?
 
-        @references ||= matches.values.flatten
+        @references ||= names + roles + emails
       end
 
       def raw_references
-        raw_names + raw_roles + raw_emails
+        return [] if @text.blank?
+
+        @raw_references ||= raw_names + raw_roles + raw_emails
       end
 
       private
@@ -74,20 +76,8 @@ module Gitlab
         @matches ||= {
           emails: @text.scan(EMAIL_REGEXP).flatten.uniq,
           names: @text.scan(NAME_REGEXP).flatten.uniq,
-          roles: text_roles.uniq
+          roles: @text.scan(ROLE_REGEXP).flatten.uniq
         }
-      end
-
-      def text_roles
-        specified_roles = POSSIBLE_ROLES.select do |role, _|
-          role_str = ROLE_PREFIX + role.to_s
-
-          # Match @text for `role_str` with whitespace on either side
-          # or line start or line ending at the end
-          # and an optional single "s" for plurals, ignoring case
-          @text.match(/(?:^|\s)#{Regexp.quote(role_str)}s?(\s|$)/i)
-        end
-        specified_roles.values
       end
     end
   end

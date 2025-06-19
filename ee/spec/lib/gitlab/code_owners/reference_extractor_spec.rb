@@ -11,7 +11,9 @@ RSpec.describe Gitlab::CodeOwners::ReferenceExtractor, feature_category: :source
       @@Developer that was out with other-user@gitlab.org who is a @@reporter.
       @user-1 thought it was late, so went home straight away not to run into
       some @group @group/nested-on/other-group. Another @@user called
-      @@test was not 100% sure that this was a good idea.
+      @@test was not 100% sure that this was a good idea. Roles are
+      case-insensitive and singular or plural e.g. @@developers @@DeVeLoPeR are
+      both valid.
     TXT
   end
 
@@ -145,6 +147,22 @@ RSpec.describe Gitlab::CodeOwners::ReferenceExtractor, feature_category: :source
         )
       end
     end
+
+    context 'when roles are duplicated' do
+      let(:text) do
+        <<~TXT
+          filename @@owner @@owner @@OWNER @@owners @@Owners
+          filename @@mAintainer @@maintainers @@MAINTAINERS
+          filename @@deVeloperS @@developers @@developer
+        TXT
+      end
+
+      it 'deduplicates them' do
+        expect(extractor.roles).to contain_exactly(
+          Gitlab::Access::OWNER, Gitlab::Access::MAINTAINER, Gitlab::Access::DEVELOPER
+        )
+      end
+    end
   end
 
   describe '#raw_names' do
@@ -156,7 +174,7 @@ RSpec.describe Gitlab::CodeOwners::ReferenceExtractor, feature_category: :source
   describe '#raw_roles' do
     subject { extractor.raw_roles }
 
-    it { is_expected.to contain_exactly('@@developer', '@@owner') }
+    it { is_expected.to contain_exactly('@@Developer', '@@owner', '@@developers', '@@DeVeLoPeR') }
   end
 
   describe '#raw_emails' do
