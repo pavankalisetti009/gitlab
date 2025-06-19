@@ -2,14 +2,14 @@
 
 require "spec_helper"
 
-RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
+RSpec.describe 'AiAction for chat', :saas, :with_current_organization, feature_category: :shared do
   include GraphqlHelpers
 
   let_it_be_with_reload(:group) { create(:group_with_plan, :public, plan: :ultimate_plan) }
   let_it_be(:project) { create(:project, :public, group: group) }
-  let_it_be(:current_user) { create(:user, developer_of: [project, group]) }
+  let_it_be(:current_user) { create(:user, organizations: [current_organization], developer_of: [project, group]) }
   let_it_be(:resource) { create(:issue, project: project) }
-  let_it_be(:thread) { create(:ai_conversation_thread, user: current_user) }
+  let_it_be(:thread) { create(:ai_conversation_thread, user: current_user, organization: current_organization) }
   let(:params) { { chat: { resource_id: resource&.to_gid, content: "summarize" }, thread_id: thread.to_gid } }
 
   let(:mutation) do
@@ -18,6 +18,11 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
         errors
       QL
     end
+  end
+
+  before do
+    # Since this doesn't go through a request flow, we need to manually set Current.organization
+    Current.organization = current_organization
   end
 
   include_context 'with ai features enabled for group'

@@ -98,8 +98,13 @@ module Mutations
 
         update_option_by_request_headers(method, options)
 
-        thread = find_thread(options.delete(:thread_id)) || create_thread(options.delete(:conversation_type))
-        options[:thread] = thread if thread
+        if Feature.enabled?(:duo_chat_early_thread_creation, current_user)
+          handle_chat_arguments(options) if method == :chat
+        else
+          thread = find_thread(options.delete(:thread_id)) || create_thread(options.delete(:conversation_type))
+          options[:thread] = thread if thread
+        end
+
         options[:started_at] = started_at
 
         response = Llm::ExecuteMethodService.new(current_user, resource, method, options).execute
@@ -131,6 +136,18 @@ module Mutations
         return find_commit_in_project(resource_id, project_id) if resource_id.model_class == Commit
 
         resource_id.then { |id| authorized_find!(id: id) }
+      end
+
+      def handle_chat_arguments(options)
+        thread_id = options.delete(:thread_id)&.model_id
+        thread = Gitlab::Llm::ThreadEnsurer.new(current_user, Current.organization).execute(
+          thread_id: thread_id,
+          conversation_type: options.delete(:conversation_type),
+          write_mode: true
+        )
+        options[:thread] = thread if thread
+      rescue RuntimeError => e
+        raise Gitlab::Graphql::Errors::ArgumentError, e.message
       end
 
       def find_thread(thread_id)

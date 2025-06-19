@@ -2,9 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
+RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_category: :ai_abstraction_layer do
   include GraphqlHelpers
-  let_it_be(:user) { create(:user) }
+
+  let_it_be(:user) { create(:user, organizations: [current_organization]) }
   let_it_be(:resource, reload: true) { create(:issue) }
   let(:resource_id) { resource.to_gid.to_s }
   let(:request_id) { 'uuid' }
@@ -32,6 +33,11 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
 
   let(:current_user) { user }
   let(:started_at) { 1731398657013 }
+
+  before do
+    # Since this doesn't go through a request flow, we need to manually set Current.organization
+    Current.organization = current_organization
+  end
 
   subject(:mutation) do
     described_class.new(object: nil, context: query_context(user: user, request: request), field: nil)
@@ -239,6 +245,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
         {
           referer_url: "foobar",
           user_agent: "user-agent",
+          thread: instance_of(Ai::Conversation::Thread),
           x_gitlab_client_type: 'ide',
           x_gitlab_client_version: '1.0',
           x_gitlab_client_name: 'gitlab-extension',
@@ -248,6 +255,20 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       end
 
       it_behaves_like 'an AI action'
+
+      context 'when duo_chat_early_thread_creation is disabled' do
+        before do
+          stub_feature_flags(duo_chat_early_thread_creation: false)
+        end
+
+        let(:expected_options) do
+          options = super()
+          options.delete(:thread)
+          options
+        end
+
+        it_behaves_like 'an AI action'
+      end
     end
 
     context 'when summarize_comments input is set' do
@@ -307,8 +328,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     end
 
     context 'when conversation type is specified' do
-      let_it_be(:organization) { create(:organization) }
-      let_it_be(:user) { create(:user, organizations: [organization]) }
+      let_it_be(:user) { create(:user, organizations: [current_organization]) }
 
       let(:input) { { chat: { resource_id: resource_id }, conversation_type: 'duo_chat' } }
       let(:expected_method) { :chat }
@@ -325,14 +345,15 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
         }
       end
 
-      let(:expected_thread_id) { user.ai_conversation_threads.last.to_global_id }
+      let(:expected_thread) { user.ai_conversation_threads.last }
+      let(:expected_thread_id) { expected_thread.to_global_id }
 
       it_behaves_like 'an AI action'
 
       it 'creates a thread' do
         resource.project.add_developer(user)
 
-        expect { subject }.to change { user.ai_conversation_threads.count }.by(1)
+        expect { subject }.to change { user.ai_conversation_threads.for_organization(current_organization).count }.by(1)
       end
 
       context 'when it fails to create a thread' do
@@ -348,7 +369,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     end
 
     context 'when thread id is specified' do
-      let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
+      let_it_be(:thread) { create(:ai_conversation_thread, user: user, organization: current_organization) }
 
       let(:input) { { chat: { resource_id: resource_id }, thread_id: thread.to_global_id } }
       let(:expected_method) { :chat }
@@ -372,7 +393,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       it 'does not create a thread' do
         resource.project.add_developer(user)
 
-        expect { subject }.not_to change { user.ai_conversation_threads.count }
+        expect { subject }.not_to change { user.ai_conversation_threads.for_organization(current_organization).count }
       end
 
       context 'when thread is not found' do
@@ -427,6 +448,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:expected_options) do
         {
           user_agent: "user-agent",
+          thread: instance_of(Ai::Conversation::Thread),
           project_id: project_id,
           referer_url: "foobar",
           x_gitlab_client_type: 'ide',
@@ -446,6 +468,20 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       end
 
       it_behaves_like 'an AI action'
+
+      context 'when duo_chat_early_thread_creation is disabled' do
+        before do
+          stub_feature_flags(duo_chat_early_thread_creation: false)
+        end
+
+        let(:expected_options) do
+          options = super()
+          options.delete(:thread)
+          options
+        end
+
+        it_behaves_like 'an AI action'
+      end
     end
 
     context 'when explain_vulnerability input is set', :saas do

@@ -2,24 +2,36 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Ai::ChatMessagesResolver, feature_category: :duo_chat do
+RSpec.describe Resolvers::Ai::ChatMessagesResolver, :with_current_organization, feature_category: :duo_chat do
   include GraphqlHelpers
 
   describe '#resolve' do
     let_it_be(:project) { create(:project) }
-    let_it_be(:user) { create(:user).tap { |u| project.add_developer(u) } }
-    let_it_be(:another_user) { create(:user).tap { |u| project.add_developer(u) } }
+    let_it_be(:user) { create(:user, organizations: [current_organization]).tap { |u| project.add_developer(u) } }
+    let_it_be(:another_user) do
+      create(:user, organizations: [current_organization]).tap do |u|
+        project.add_developer(u)
+      end
+    end
 
     let(:args) { {} }
 
     subject(:resolver) { resolve(described_class, obj: project, ctx: { current_user: user }, args: args) }
+
+    before do
+      Current.organization = current_organization
+    end
 
     it 'returns empty' do
       expect(resolver).to eq([])
     end
 
     context 'when there is a message' do
-      let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat_legacy) }
+      let!(:thread) do
+        create(:ai_conversation_thread, user: user, conversation_type: :duo_chat_legacy,
+          organization: current_organization)
+      end
+
       let!(:message) do
         create(:ai_conversation_message, created_at: Time.new(2020, 2, 2, 17, 30, 45, '+00:00'),
           thread: thread, message_xid: 'message_xid')
@@ -38,12 +50,20 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, feature_category: :duo_chat 
 
         it_behaves_like 'message response'
 
+        context 'when duo_chat_early_thread_creation is disabled' do
+          before do
+            stub_feature_flags(duo_chat_early_thread_creation: false)
+          end
+
+          it_behaves_like 'message response'
+        end
+
         context 'when thread is not found' do
           let!(:thread) { create(:ai_conversation_thread, user: another_user) }
 
           it 'returns error' do
             expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
-              "Thread #{thread.id} is not found.") do
+              "Thread not found. It may have expired.") do
               resolver
             end
           end
@@ -54,6 +74,14 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, feature_category: :duo_chat 
         let(:args) { { conversation_type: 'duo_chat_legacy' } }
 
         it_behaves_like 'message response'
+
+        context 'when duo_chat_early_thread_creation is disabled' do
+          before do
+            stub_feature_flags(duo_chat_early_thread_creation: false)
+          end
+
+          it_behaves_like 'message response'
+        end
 
         context 'when duo_chat_legacy thread is not found' do
           let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat) }
