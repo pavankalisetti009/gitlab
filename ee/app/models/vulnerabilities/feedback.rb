@@ -4,8 +4,6 @@ module Vulnerabilities
   class Feedback < ::SecApplicationRecord
     include EachBatch
 
-    ignore_column :project_fingerprint, remove_with: '18.0', remove_after: '2025-04-21'
-
     self.table_name = 'vulnerability_feedback'
 
     paginates_per 50
