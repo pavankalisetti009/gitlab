@@ -873,6 +873,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:security_vulnerability_scanning_destroy_expired_sbom_scans
+  :worker_name: Security::VulnerabilityScanning::DestroyExpiredSbomScansWorker
+  :feature_category: :software_composition_analysis
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:sync_seat_link
   :worker_name: SyncSeatLinkWorker
   :feature_category: :plan_provisioning
