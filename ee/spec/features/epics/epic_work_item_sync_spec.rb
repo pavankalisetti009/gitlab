@@ -24,7 +24,6 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
   end
 
   before do
-    stub_feature_flags(work_item_epics_list: false)
     stub_licensed_features(epics: true, subepics: true, epic_colors: true)
 
     sign_in(user)
@@ -40,7 +39,6 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
     subject(:create_epic_work_item) do
       visit group_epics_path(group)
       find_by_testid('new-epic-button').click
-
       find_by_testid('work-item-title-input').fill_in with: epic_title
       find_by_testid('markdown-editor-form-field').native.send_keys(description_input)
       find_by_testid('confidential-checkbox').set(true)

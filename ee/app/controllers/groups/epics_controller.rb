@@ -24,7 +24,6 @@ class Groups::EpicsController < Groups::ApplicationController
     push_force_frontend_feature_flag(:glql_integration, !!@group&.glql_integration_feature_flag_enabled?)
     push_force_frontend_feature_flag(:glql_load_on_click, !!@group&.glql_load_on_click_feature_flag_enabled?)
     push_force_frontend_feature_flag(:continue_indented_text, !!@group&.continue_indented_text_feature_flag_enabled?)
-    push_force_frontend_feature_flag(:work_item_epics_list, !!@group.work_item_epics_list_enabled?)
     push_force_frontend_feature_flag(:work_items_alpha, !!group.work_items_alpha_feature_flag_enabled?)
     push_frontend_feature_flag(:epics_list_drawer, @group)
   end
@@ -53,11 +52,7 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def index
-    if @group.work_item_epics_list_enabled?
-      render 'work_items_index'
-    else
-      render 'index'
-    end
+    render 'work_items_index'
   end
 
   def create
@@ -99,11 +94,7 @@ class Groups::EpicsController < Groups::ApplicationController
       .with_work_item_type
       .find_by_iid(epic.iid)
 
-    if @group.work_item_epics_list_enabled?
-      render 'work_items_index'
-    else
-      render 'groups/work_items/show'
-    end
+    render 'work_items_index'
   end
 
   def epic_params

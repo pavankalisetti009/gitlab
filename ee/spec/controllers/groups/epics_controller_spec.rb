@@ -156,37 +156,11 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
             group.add_developer(user)
           end
 
-          context 'when work_item_epics_list is disabled' do
-            before do
-              stub_feature_flags(work_item_epics_list: false)
-            end
+          it 'renders work item template' do
+            show_epic
 
-            it 'renders template' do
-              show_epic
-
-              expect(response.media_type).to eq 'text/html'
-              expect(response).to render_template 'groups/work_items/show'
-            end
-          end
-
-          context 'work_item_epics_list' do
-            where(:work_item_epics_list_ff, :expected_template) do
-              false | 'groups/work_items/show'
-              true  | 'groups/epics/work_items_index'
-            end
-
-            with_them do
-              before do
-                stub_feature_flags(work_item_epics_list: work_item_epics_list_ff)
-              end
-
-              it 'renders work item template' do
-                show_epic
-
-                expect(response.media_type).to eq 'text/html'
-                expect(response).to render_template expected_template
-              end
-            end
+            expect(response.media_type).to eq 'text/html'
+            expect(response).to render_template 'groups/epics/work_items_index'
           end
 
           it 'logs the view with Gitlab::Search::RecentEpics' do

@@ -17,30 +17,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
   describe 'GET #index' do
     subject(:get_index) { get group_epics_path(group) }
 
-    context 'when work_item_epics_list disabled' do
-      before do
-        stub_feature_flags(work_item_epics_list: false)
-      end
-
-      it 'renders with feature flags disabled' do
-        get_index
-
-        expect(response.body).to have_pushed_frontend_feature_flags(workItemEpicsList: false)
-      end
-    end
-
-    context 'when work_item_epics_list is enabled' do
-      before do
-        stub_feature_flags(work_item_epics_list: true)
-      end
-
-      it 'renders with feature flags disabled' do
-        get_index
-
-        expect(response.body).to have_pushed_frontend_feature_flags(workItemEpicsList: true)
-      end
-    end
-
     context 'when epics are not licensed' do
       before do
         stub_licensed_features(epics: false)
@@ -79,54 +55,19 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
   describe 'GET #show' do
     context 'for work item epics' do
-      context 'when feature flag is set' do
-        where(:work_item_epics_list_ff, :expected_template) do
-          false | 'groups/work_items/show'
-          true  | 'groups/epics/work_items_index'
-        end
+      it 'renders work item page' do
+        get group_epic_path(group, epic)
 
-        with_them do
-          context 'when work_item_epics_list is disabled' do
-            before do
-              stub_feature_flags(work_item_epics_list: work_item_epics_list_ff)
-            end
-
-            it 'renders work item page' do
-              get group_epic_path(group, epic)
-
-              expect(response).to render_template(expected_template)
-              expect(assigns(:work_item)).to eq(epic.work_item)
-              expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
-            end
-
-            it 'renders json when requesting json response' do
-              get group_epic_path(group, epic, format: :json)
-
-              expect(response).to have_gitlab_http_status(:success)
-              expect(response.media_type).to eq('application/json')
-            end
-          end
-        end
+        expect(response).to render_template('groups/epics/work_items_index')
+        expect(assigns(:work_item)).to eq(epic.work_item)
+        expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
       end
 
-      context 'when feature flag is false' do
-        before do
-          stub_feature_flags(work_item_epics_list: false)
-        end
+      it 'renders json when requesting json response' do
+        get group_epic_path(group, epic, format: :json)
 
-        it 'exposes the workItemEpics flag' do
-          get group_epic_path(group, epic)
-
-          expect(response).to render_template(:show)
-          expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
-        end
-
-        it 'renders json when requesting json response' do
-          get group_epic_path(group, epic, format: :json)
-
-          expect(response).to have_gitlab_http_status(:success)
-          expect(response.media_type).to eq('application/json')
-        end
+        expect(response).to have_gitlab_http_status(:success)
+        expect(response.media_type).to eq('application/json')
       end
     end
 

@@ -15,15 +15,15 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(work_item_epics_list: false)
+    stub_feature_flags(work_item_planning_view: false)
 
     sign_in(user)
   end
 
   context 'epics list' do
     available_tokens = ['Author', 'Label', 'My reaction']
-    default_sort_option = 'Start date'
-    available_sort_options = ['Created date', 'Updated date', default_sort_option, 'Due date', 'Title']
+    default_sort_option = 'Created date'
+    available_sort_options = [default_sort_option, 'Updated date', 'Start date', 'Due date', 'Title']
 
     describe 'within a group' do
       let_it_be(:epic1) { create(:epic, group: group, start_date: '2020-12-15', end_date: '2021-1-15', labels: [docs_label]) }
@@ -45,23 +45,23 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
         end
 
         it 'renders epics item with metadata', :aggregate_failures do
-          page.within(".issuable-list #issuable_#{epic2.id}.issue") do
+          page.within(".issuable-list #issuable_#{epic2.work_item.id}.issue") do
             expect(page).to have_link(epic2.title)
-            expect(page).to have_text("&#{epic2.iid}")
+            expect(page).to have_text("##{epic2.iid}")
             expect(page).to have_selector('.issuable-meta [data-testid="issuable-downvotes"]')
-            expect(page.find('.issuable-meta [data-testid="issuable-blocking-count"]')).to have_content('1')
+            expect(page.find('.issuable-meta [data-testid="relationship-blocks-icon"]')).to have_content('1')
             expect(page).to have_text(%r{created .* by #{epic2.author.name}})
           end
 
-          page.within(".issuable-list #issuable_#{epic1.id}.issue") do
+          page.within(".issuable-list #issuable_#{epic1.work_item.id}.issue") do
             expect(page).to have_selector('.issuable-meta [data-testid="issuable-upvotes"]')
           end
         end
 
         it 'renders epic item timeframe', :aggregate_failures do
-          expect(page.find('.issue:nth-of-type(1)')).to have_text('Dec 15, 2020 – No due date')
-          expect(page.find('.issue:nth-of-type(2)')).to have_text('Dec 15, 2020 – Jan 15, 2021')
-          expect(page.find('.issue:nth-of-type(4)')).to have_text('No start date – Jan 15, 2021')
+          expect(page.find('.issue:nth-of-type(3)')).to have_text('Dec 15, 2020 – No due date')
+          expect(page.find('.issue:nth-of-type(4)')).to have_text('Dec 15, 2020 – Jan 15, 2021')
+          expect(page.find('.issue:nth-of-type(2)')).to have_text('Jan 15, 2021')
         end
       end
 
@@ -144,8 +144,8 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
             expect(page).to have_button('Update selected', disabled: true)
             expect(page).to have_button('Cancel')
 
-            expect(page).to have_selector('form#epics-list-bulk-edit')
-            expect(page).to have_button('Label')
+            expect(page).to have_selector('form#work-item-list-bulk-edit')
+            expect(page).to have_button('Select labels')
           end
         end
 
@@ -175,9 +175,11 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
             end
 
             page.within('aside.right-sidebar') do
-              find('button.js-dropdown-button').click
+              click_button('Select labels', match: :first)
 
-              click_link bug_label.title
+              list_item = find('.gl-new-dropdown-item', match: :first)
+              expect(list_item).to have_text(bug_label.title)
+              list_item.click
               click_button 'Update selected'
             end
           end
@@ -194,61 +196,6 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
         end
 
         it_behaves_like 'epic list'
-      end
-
-      context 'when work_item_epics_list is disabled' do
-        let_it_be(:epic_work_item_1) do
-          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 1")
-        end
-
-        let_it_be(:epic_work_item_2) do
-          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 2")
-        end
-
-        it 'renders work item epics' do
-          visit group_epics_path(group)
-
-          page.within('.issuable-list-container') do
-            expect(page).to have_selector('.gl-tabs')
-            expect(page).to have_selector('.vue-filtered-search-bar-container')
-            # We create a synced epic work item for each epic and legacy epic for each WI epic.
-            # We therefore expect 6 epics (4 legacy epics and their synced work item + 2 work item epics)
-            expect(page.find('.issuable-list')).to have_selector('li.issue', count: 6)
-            expect(page.find('.issuable-list')).to have_content(epic_work_item_1.title)
-            expect(page.find('.issuable-list')).to have_content(epic_work_item_2.title)
-          end
-        end
-      end
-
-      context 'when work_item_epics_list is enabled' do
-        let_it_be(:epic_work_item_1) do
-          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 1", assignees: [user])
-        end
-
-        let_it_be(:epic_work_item_2) do
-          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 2", assignees: [user])
-        end
-
-        before do
-          stub_feature_flags(work_item_epics_list: true)
-        end
-
-        it 'renders work item epics' do
-          visit group_epics_path(group)
-
-          # We create a synced epic work item for each epic and legacy epic for each WI epic.
-          # We therefore expect 6 epics (4 legacy epics and their synced work item + 2 work item epics)
-          expect(page).to have_selector('.issue', count: 6)
-          expect(page).to have_link(epic_work_item_1.title)
-          expect(page).to have_link(epic_work_item_2.title)
-        end
-
-        it 'displays epic assignees' do
-          visit group_epics_path(group)
-
-          expect(page.find("#issuable_#{epic_work_item_1.id}")).to have_link("Assigned to #{user.name}")
-          expect(page.find("#issuable_#{epic_work_item_2.id}")).to have_link("Assigned to #{user.name}")
-        end
       end
     end
 
