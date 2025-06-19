@@ -125,171 +125,69 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :team_pl
   end
 
   describe '#execute' do
-    context 'when epic_update_via_work_item feature flag is enabled' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: group)
-      end
-
-      it_behaves_like 'success' do
-        let(:parent_not_found_error) do
-          'No matching epic found. Make sure that you are adding a valid epic URL.'
-        end
-      end
-
-      it 'calls the WorkItems::UpdateService with the correct params' do
-        allow(::WorkItems::UpdateService).to receive(:new).and_call_original
-
-        expect(::WorkItems::UpdateService).to receive(:new).with(
-          a_hash_including(
-            container: group,
-            current_user: user,
-            perform_spam_check: true,
-            params: {
-              title: "updated epic title",
-              confidential: true,
-              updated_by_id: user.id,
-              last_edited_by_id: other_user.id,
-              closed_by_id: other_user.id,
-              closed_at: closed_date,
-              state_id: 2,
-              work_item_type: ::WorkItems::Type.default_by_type(:epic)
-            },
-            widget_params: a_hash_including(
-              description_widget: { description: "updated epic description" },
-              color_widget: { color: '#c91c00' },
-              hierarchy_widget: { parent: parent_epic.work_item },
-              start_and_due_date_widget: { is_fixed: true, due_date: due_date, start_date: start_date },
-              labels_widget: { add_label_ids: [label2.id], label_ids: [label0.id], remove_label_ids: [label1.id] }
-            )
-          )
-        ).and_call_original
-
-        expect(::Epics::UpdateService).not_to receive(:new)
-
-        execute
-      end
-
-      it 'uses WorkItems::UpdateService and transforms the result' do
-        expect(::WorkItems::UpdateService).to receive(:new).and_call_original
-        expect(::Epics::UpdateService).not_to receive(:new)
-
-        execute
-      end
-
-      context 'when WorkItems::UpdateService returns errors' do
-        let(:error_messages) { ['work item error 1', 'work item error 2'] }
-
-        before do
-          allow_next_instance_of(::WorkItems::UpdateService) do |instance|
-            allow(instance).to receive(:execute)
-              .and_return({ status: :error, message: error_messages, work_item: epic.work_item })
-          end
-        end
-
-        it 'transforms and returns epic with errors from the work item service' do
-          updated_epic = execute
-          expect(updated_epic.errors.full_messages).to contain_exactly('work item error 1', 'work item error 2')
-        end
+    it_behaves_like 'success' do
+      let(:parent_not_found_error) do
+        'No matching epic found. Make sure that you are adding a valid epic URL.'
       end
     end
 
-    context 'when epic_update_via_work_item feature flag is disabled' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: false)
-      end
+    it 'calls the WorkItems::UpdateService with the correct params' do
+      allow(::WorkItems::UpdateService).to receive(:new).and_call_original
 
-      it_behaves_like 'success' do
-        let(:parent_not_found_error) do
-          'No matching epic found. Make sure that you are adding a valid epic URL.'
-        end
-      end
-
-      it 'calls the Epics::UpdateService with the correct params' do
-        expect(::Epics::UpdateService).to receive(:new).with(
-          group: group,
+      expect(::WorkItems::UpdateService).to receive(:new).with(
+        a_hash_including(
+          container: group,
           current_user: user,
-          params: params
-        ).and_call_original
+          perform_spam_check: true,
+          params: {
+            title: "updated epic title",
+            confidential: true,
+            updated_by_id: user.id,
+            last_edited_by_id: other_user.id,
+            closed_by_id: other_user.id,
+            closed_at: closed_date,
+            state_id: 2,
+            work_item_type: ::WorkItems::Type.default_by_type(:epic)
+          },
+          widget_params: a_hash_including(
+            description_widget: { description: "updated epic description" },
+            color_widget: { color: '#c91c00' },
+            hierarchy_widget: { parent: parent_epic.work_item },
+            start_and_due_date_widget: { is_fixed: true, due_date: due_date, start_date: start_date },
+            labels_widget: { add_label_ids: [label2.id], label_ids: [label0.id], remove_label_ids: [label1.id] }
+          )
+        )
+      ).and_call_original
 
-        execute
-      end
+      expect(::Epics::UpdateService).not_to receive(:new)
 
-      it 'uses Epics::UpdateService and returns result directly' do
-        mock_service = instance_double(::Epics::UpdateService)
-        allow(::Epics::UpdateService).to receive(:new).and_return(mock_service)
-        expect(mock_service).to receive(:execute).with(epic).and_return(epic)
-        expect(::WorkItems::UpdateService).not_to receive(:new)
-
-        result = execute
-        expect(result).to eq(epic)
-      end
-
-      it 'does not transform the result when using Epics::UpdateService' do
-        expect_next_instance_of(described_class) do |instance|
-          expect(instance).not_to receive(:transform_result)
-        end
-        execute
-      end
-
-      context 'when Epics::UpdateService returns an epic with errors' do
-        let(:epic_with_errors) { epic.dup }
-
-        before do
-          epic_with_errors.errors.add(:base, 'epic service error')
-          allow_next_instance_of(::Epics::UpdateService) do |instance|
-            allow(instance).to receive(:execute).and_return(epic_with_errors)
-          end
-        end
-
-        it 'returns the epic with errors directly from the epic service' do
-          updated_epic = execute
-          expect(updated_epic.errors.full_messages).to contain_exactly('epic service error')
-        end
-      end
+      execute
     end
 
-    context 'when feature flag is enabled for the group' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: group)
-      end
+    it 'uses WorkItems::UpdateService and transforms the result' do
+      expect(::WorkItems::UpdateService).to receive(:new).and_call_original
+      expect(::Epics::UpdateService).not_to receive(:new)
 
-      it 'uses WorkItems::UpdateService' do
-        expect(::WorkItems::UpdateService).to receive(:new).and_call_original
-        expect(::Epics::UpdateService).not_to receive(:new)
-        execute
-      end
+      execute
     end
 
-    context 'when feature flag is enabled for a different group' do
-      let(:other_group) { create(:group) }
+    context 'when WorkItems::UpdateService returns errors' do
+      let(:error_messages) { ['work item error 1', 'work item error 2'] }
 
       before do
-        stub_feature_flags(epic_update_via_work_item: other_group)
+        allow_next_instance_of(::WorkItems::UpdateService) do |instance|
+          allow(instance).to receive(:execute)
+            .and_return({ status: :error, message: error_messages, work_item: epic.work_item })
+        end
       end
 
-      it 'uses Epics::UpdateService' do
-        expect(::Epics::UpdateService).to receive(:new).and_call_original
-        execute
-      end
-    end
-
-    context 'when feature flag is globally enabled' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: true)
-      end
-
-      it 'uses WorkItems::UpdateService' do
-        expect(::WorkItems::UpdateService).to receive(:new).and_call_original
-        expect(::Epics::UpdateService).not_to receive(:new)
-        execute
+      it 'transforms and returns epic with errors from the work item service' do
+        updated_epic = execute
+        expect(updated_epic.errors.full_messages).to contain_exactly('work item error 1', 'work item error 2')
       end
     end
 
     context 'when response includes errors' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: group)
-      end
-
       context 'with epic validation errors' do
         let_it_be(:confidential_parent) { create(:epic, :with_synced_work_item, :confidential, group: group) }
         let(:params) { super().merge(parent: confidential_parent, confidential: false) }
@@ -338,10 +236,6 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :team_pl
     end
 
     context 'when description param has quick action' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: group)
-      end
-
       let(:epic_without_parent) { create(:epic, :with_synced_work_item, group: group) }
 
       context 'for /set_parent' do
@@ -443,10 +337,6 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :team_pl
     end
 
     context 'when updating state' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: group)
-      end
-
       context 'when closing' do
         let(:params) { { state_id: Epic.available_states['closed'] } }
 
@@ -470,10 +360,6 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :team_pl
     end
 
     context 'when updating labels' do
-      before do
-        stub_feature_flags(epic_update_via_work_item: group)
-      end
-
       it 'correctly handles label changes' do
         expect(epic.labels).to contain_exactly(label1)
 
