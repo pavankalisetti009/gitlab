@@ -89,7 +89,8 @@ module EE
             def access_check_result
               super
             rescue Gitlab::GitAccess::GeoCustomSshError
-              ::EE::Gitlab::GeoGitAccess.geo_custom_ssh_action
+              access_checker = access_checker_for(actor, params[:protocol])
+              access_checker.geo_custom_ssh_action
             end
           end
 
