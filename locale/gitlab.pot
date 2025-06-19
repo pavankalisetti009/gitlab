@@ -68983,9 +68983,6 @@ msgstr ""
 msgid "Waiting for approvals"
 msgstr ""
 
-msgid "Waiting for assignee"
-msgstr ""
-
 msgid "Waiting for author or assignee"
 msgstr ""
 
@@ -72045,9 +72042,6 @@ msgid "You're about to reduce the visibility of the project %{strong_start}%{pro
 msgstr ""
 
 msgid "You're about to reduce the visibility of the project %{strong_start}%{project_name}%{strong_end}."
-msgstr ""
-
-msgid "You're assigned to these merge requests, but they don't have reviewers yet."
 msgstr ""
 
 msgid "You're at the first commit"
