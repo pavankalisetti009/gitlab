@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisition do
   include SubscriptionPortalHelpers
 
-  let_it_be(:user) { create(:user, :with_namespace, organization: 'YMCA') }
+  let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
 
   let_it_be(:group) do
     create(

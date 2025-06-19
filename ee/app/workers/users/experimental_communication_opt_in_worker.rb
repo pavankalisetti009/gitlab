@@ -19,7 +19,7 @@ module Users
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.notification_email_or_default,
-        company_name: user.organization.presence,
+        company_name: user.user_detail_organization.presence,
         product_interaction: PRODUCT_INTERACTION
       )
     end

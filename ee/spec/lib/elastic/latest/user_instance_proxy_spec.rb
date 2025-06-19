@@ -22,7 +22,7 @@ RSpec.describe Elastic::Latest::UserInstanceProxy, feature_category: :global_sea
         admin: true,
         state: 'active',
         external: false,
-        organization: user.organization,
+        organization: user.user_detail_organization,
         timezone: user.timezone,
         in_forbidden_state: false,
         status: nil,

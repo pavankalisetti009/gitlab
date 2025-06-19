@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_category: :activation do
   include Features::HandRaiseLeadHelpers
 
-  let_it_be(:user) { create(:user, :with_namespace, organization: 'YMCA') }
+  let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
   let_it_be(:group) do
     create(
       :group_with_plan, plan: :ultimate_trial_plan,

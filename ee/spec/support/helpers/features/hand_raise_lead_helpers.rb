@@ -7,7 +7,7 @@ module Features
         first_name: user.first_name,
         last_name: user.last_name,
         phone_number: '+1 23 456-78-90',
-        company_name: user.organization,
+        company_name: user.user_detail_organization,
         country: { id: 'US', name: 'United States of America' },
         state: { id: 'CA', name: 'California' }
       }

@@ -4,7 +4,7 @@ RSpec.shared_examples 'Gitlab Duo administration' do
   include SubscriptionPortalHelpers
   include Features::HandRaiseLeadHelpers
 
-  let_it_be(:user) { create(:user, :with_namespace, organization: 'YMCA') }
+  let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
   let_it_be(:group) { create(:group_with_plan, plan: :premium_plan, owners: user) }
 
   before do
