@@ -6,6 +6,8 @@ module Ai
 
     include SingletonRecord
 
+    ignore_column :duo_nano_features_enabled, remove_with: '18.3', remove_after: '2025-07-15'
+
     validates :ai_gateway_url, length: { maximum: 2048 }, allow_nil: true
     validates :amazon_q_role_arn, length: { maximum: 2048 }, allow_nil: true
 
@@ -20,8 +22,6 @@ module Ai
 
     belongs_to :duo_workflow_oauth_application, class_name: 'Doorkeeper::Application', optional: true
     belongs_to :duo_workflow_service_account_user, class_name: 'User', optional: true
-
-    alias_attribute :duo_core_features_enabled, :duo_nano_features_enabled
 
     after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_core_features_enabled?
 
