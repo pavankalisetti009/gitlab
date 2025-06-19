@@ -174,4 +174,25 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
       expect(custom_status.position).to eq(0)
     end
   end
+
+  describe '#in_use?' do
+    let(:custom_status) { create(:work_item_custom_status, namespace: group) }
+
+    context 'when custom status is in use' do
+      let(:work_item) { create(:work_item, namespace: group) }
+      let!(:current_status) do
+        create(:work_item_current_status, custom_status: custom_status, work_item: work_item, namespace: group)
+      end
+
+      it 'returns true' do
+        expect(custom_status.in_use?).to be_truthy
+      end
+    end
+
+    context 'when custom status is not in use' do
+      it 'returns false' do
+        expect(custom_status.in_use?).to be_falsy
+      end
+    end
+  end
 end

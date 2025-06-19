@@ -9,7 +9,7 @@ module WorkItems
         return unless params[:statuses].present?
 
         @processed_statuses = process_statuses(params[:statuses])
-        @statuses_to_remove = calculate_statuses_to_remove if custom_lifecycle?
+        @statuses_to_remove = calculate_statuses_to_remove
       end
 
       def process_statuses(statuses)
@@ -45,7 +45,7 @@ module WorkItems
           update_custom_status!(existing_status, status_params)
           existing_status
         else
-          create_custom_status!(status_params)
+          create_custom_status!(prepare_custom_status_params(status_params))
         end
       end
 
@@ -54,8 +54,7 @@ module WorkItems
         create_custom_status!(prepared_params)
       end
 
-      def create_custom_status!(status_params)
-        prepared_params = prepare_custom_status_params(status_params)
+      def create_custom_status!(prepared_params)
         ::WorkItems::Statuses::Custom::Status.create!(prepared_params)
       end
 
@@ -91,37 +90,54 @@ module WorkItems
       end
 
       def calculate_statuses_to_remove
-        lifecycle.statuses.to_a - @processed_statuses
+        original_statuses = lifecycle.statuses.to_a
+
+        if custom_lifecycle?
+          original_statuses - @processed_statuses
+        elsif system_defined_lifecycle?
+          converted_ids = @processed_statuses.filter_map(&:converted_from_system_defined_status_identifier)
+          original_statuses.reject { |status| converted_ids.include?(status.id) }
+        end
       end
 
-      # rubocop: disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- skip
       def handle_deferred_status_removal
         return unless @statuses_to_remove&.any?
 
+        validate_system_to_custom_conversion
+
         status_ids = @statuses_to_remove.map(&:id)
 
-        in_use_status_ids = ::WorkItems::Statuses::CurrentStatus
-                              .where(namespace: group, custom_status_id: status_ids)
-                              .pluck(:custom_status_id)
-                              .uniq
+        validate_default_status_constraints(status_ids)
+        validate_usage_and_mapping_constraints
+        ::WorkItems::Statuses::Custom::Status.where(id: status_ids).delete_all # rubocop:disable CodeReuse/ActiveRecord -- skip
+      end
 
-        if in_use_status_ids.any?
-          in_use_status = @statuses_to_remove.find { |status| in_use_status_ids.include?(status.id) }
-          raise StandardError, "Cannot delete status '#{in_use_status.name}' because it is in use"
+      def validate_system_to_custom_conversion
+        return unless system_defined_lifecycle? && @statuses_to_remove.any?
+
+        raise StandardError,
+          "Cannot delete status '#{@statuses_to_remove.first.name}' during the lifecycle conversion"
+      end
+
+      def validate_usage_and_mapping_constraints
+        mapped_status = @statuses_to_remove.find(&:converted_from_system_defined_status_identifier?)
+        raise StandardError, "Cannot delete status '#{mapped_status.name}' because it is in use" if mapped_status
+
+        @statuses_to_remove.each do |status|
+          raise StandardError, "Cannot delete status '#{status.name}' because it is in use" if status.in_use?
         end
+      end
 
-        default_status_ids = lifecycle.default_statuses.pluck(:id)
+      def validate_default_status_constraints(status_ids)
+        default_status_ids = lifecycle.default_statuses.map(&:id)
         conflicting_ids = status_ids & default_status_ids
 
-        if conflicting_ids.any?
-          conflicting_status = @statuses_to_remove.find { |s| conflicting_ids.include?(s.id) }
-          raise StandardError,
-            "Cannot delete status '#{conflicting_status.name}' because it is marked as a default status"
-        end
+        return unless conflicting_ids.any?
 
-        ::WorkItems::Statuses::Custom::Status.where(id: status_ids).delete_all
+        conflicting_status = @statuses_to_remove.find { |status| conflicting_ids.include?(status.id) }
+        raise StandardError,
+          "Cannot delete status '#{conflicting_status.name}' because it is marked as a default status"
       end
-      # rubocop: enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
 
       def update_lifecycle_status_positions!
         lifecycle.reset

@@ -5,19 +5,24 @@ require 'spec_helper'
 RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_planning do
   let_it_be(:group) { create(:group) }
   let(:user) { create(:user, maintainer_of: group) }
+
   let_it_be(:system_defined_lifecycle) { WorkItems::Statuses::SystemDefined::Lifecycle.all.first }
+  let_it_be(:system_defined_in_progress_status) { build(:work_item_system_defined_status, :in_progress) }
+  let_it_be(:system_defined_wont_do_status) { build(:work_item_system_defined_status, :wont_do) }
 
   let(:params) do
     {
       id: system_defined_lifecycle.to_gid,
       statuses: [
         status_params_for(system_defined_lifecycle.default_open_status),
+        status_params_for(system_defined_in_progress_status),
         status_params_for(system_defined_lifecycle.default_closed_status),
+        status_params_for(system_defined_wont_do_status),
         status_params_for(system_defined_lifecycle.default_duplicate_status)
       ],
       default_open_status_index: 0,
-      default_closed_status_index: 1,
-      default_duplicate_status_index: 2
+      default_closed_status_index: 2,
+      default_duplicate_status_index: 4
     }
   end
 
@@ -44,20 +49,50 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
       end
 
       it 'creates custom statuses from system-defined statuses' do
-        expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(3)
+        expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(5)
 
         expect(lifecycle.statuses.pluck(:name)).to contain_exactly(
           system_defined_lifecycle.default_open_status.name,
+          system_defined_in_progress_status.name,
           system_defined_lifecycle.default_closed_status.name,
+          system_defined_wont_do_status.name,
           system_defined_lifecycle.default_duplicate_status.name
         )
-        expect(lifecycle.statuses.count).to eq(3)
+        expect(lifecycle.statuses.count).to eq(5)
+      end
+
+      it 'preserves the status mapping' do
+        expect(lifecycle.statuses.pluck(:converted_from_system_defined_status_identifier))
+          .to contain_exactly(1, 2, 3, 4, 5)
       end
 
       it 'sets default statuses correctly' do
         expect(lifecycle.default_open_status.name).to eq(system_defined_lifecycle.default_open_status.name)
         expect(lifecycle.default_closed_status.name).to eq(system_defined_lifecycle.default_closed_status.name)
         expect(lifecycle.default_duplicate_status.name).to eq(system_defined_lifecycle.default_duplicate_status.name)
+      end
+
+      context 'when trying to delete statuses during system to custom conversion' do
+        let(:params) do
+          {
+            id: system_defined_lifecycle.to_gid,
+            statuses: [
+              status_params_for(system_defined_lifecycle.default_open_status),
+              status_params_for(system_defined_lifecycle.default_closed_status),
+              status_params_for(system_defined_lifecycle.default_duplicate_status)
+            ],
+            default_open_status_index: 0,
+            default_closed_status_index: 1,
+            default_duplicate_status_index: 2
+          }
+        end
+
+        it 'raises an error' do
+          expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+
+          expect(result).to be_error
+          expect(result.message).to match(/Cannot delete status 'In progress' during the lifecycle conversion/)
+        end
       end
     end
 
@@ -146,6 +181,11 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             )
           end
 
+          it 'preserves the status mapping' do
+            expect(lifecycle.statuses.pluck(:converted_from_system_defined_status_identifier))
+              .to contain_exactly(1, 3, 5)
+          end
+
           context 'when updating status without providing ID' do
             let(:params) do
               {
@@ -187,12 +227,13 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               id: custom_lifecycle.to_gid,
               statuses: [
                 status_params_for(new_open_status),
+                status_params_for(custom_lifecycle.default_open_status),
                 status_params_for(custom_lifecycle.default_closed_status),
                 status_params_for(custom_lifecycle.default_duplicate_status)
               ],
               default_open_status_index: 0,
-              default_closed_status_index: 1,
-              default_duplicate_status_index: 2
+              default_closed_status_index: 2,
+              default_duplicate_status_index: 3
             }
           end
 
@@ -203,7 +244,10 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
         end
 
         context 'when statuses are removed' do
-          let(:custom_status) { create(:work_item_custom_status, name: 'Ready for development', namespace: group) }
+          let(:custom_status) do
+            create(:work_item_custom_status, :without_mapping, name: 'Ready for development', namespace: group)
+          end
+
           let!(:custom_lifecycle_status) do
             create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: custom_status,
               namespace: group)
@@ -237,6 +281,18 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               custom_lifecycle.default_closed_status.name,
               custom_lifecycle.default_duplicate_status.name
             ])
+          end
+
+          context 'when trying to remove a mapped status' do
+            let(:custom_status) do
+              create(:work_item_custom_status, name: 'Ready for development', namespace: group)
+            end
+
+            it 'returns an error' do
+              expect(result).to be_error
+              expect(result.message).to eq("Cannot delete status '#{custom_status.name}' because it is in use")
+              expect(custom_status.reload).to be_persisted
+            end
           end
 
           context 'when trying to remove a status in use' do
@@ -293,6 +349,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                   description: nil,
                   category: 'to_do'
                 },
+                status_params_for(custom_lifecycle.default_open_status),
                 status_params_for(existing_in_progress_status),
                 {
                   name: 'Complete',
@@ -304,14 +361,19 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 status_params_for(custom_lifecycle.default_duplicate_status)
               ],
               default_open_status_index: 0,
-              default_closed_status_index: 2,
-              default_duplicate_status_index: 4
+              default_closed_status_index: 3,
+              default_duplicate_status_index: 5
             }
+          end
+
+          before do
+            custom_lifecycle.default_open_status.name = "To do"
           end
 
           it 'reorders statuses correctly' do
             expect(lifecycle.ordered_statuses.pluck(:name)).to eq([
               'Ready for development',
+              'To do',
               'In Progress',
               'Complete',
               custom_lifecycle.default_closed_status.name,

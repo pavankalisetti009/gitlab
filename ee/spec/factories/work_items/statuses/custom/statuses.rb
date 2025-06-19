@@ -27,5 +27,12 @@ FactoryBot.define do
       category { :cancelled }
       converted_from_system_defined_status_identifier { 5 }
     end
+
+    trait :without_mapping do
+      name { FFaker::Name.unique.name }
+      color { '#737278' }
+      category { :to_do }
+      converted_from_system_defined_status_identifier { nil }
+    end
   end
 end

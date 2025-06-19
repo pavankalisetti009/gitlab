@@ -56,6 +56,10 @@ module WorkItems
           0
         end
 
+        def in_use?
+          ::WorkItems::Statuses::CurrentStatus.exists?(custom_status: self)
+        end
+
         private
 
         def validate_statuses_per_namespace_limit
