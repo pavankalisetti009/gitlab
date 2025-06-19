@@ -47600,6 +47600,9 @@ msgstr ""
 msgid "Profiles|Generate New PIN"
 msgstr ""
 
+msgid "Profiles|GitHub"
+msgstr ""
+
 msgid "Profiles|GitLab is unable to verify your identity automatically. For security purposes, you must set a password by %{openingTag}resetting your password%{closingTag} to delete your account."
 msgstr ""
 
