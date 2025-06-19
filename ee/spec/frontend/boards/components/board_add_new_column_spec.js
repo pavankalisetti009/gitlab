@@ -69,6 +69,8 @@ describe('BoardAddNewColumn', () => {
     findDropdown().vm.$emit('select', id);
   };
 
+  const search = (searchString) => findDropdown().vm.$emit('search', searchString);
+
   let allowedStatus = [];
 
   namespaceWorkItemTypesQueryResponse.data.workspace?.workItemTypes?.nodes?.forEach((type) => {
@@ -279,6 +281,17 @@ describe('BoardAddNewColumn', () => {
 
           expect(statusList.length).toBe(allowedStatus.length);
           expect(statusList.at(0).text()).toContain(allowedStatus[0].name);
+        });
+
+        it('uses fuzzaldrin logic to search on frontend', async () => {
+          search('TO DO');
+
+          await nextTick();
+
+          const statusList = wrapper.findAllByTestId('status-list-item');
+
+          expect(statusList.length).toBe(1);
+          expect(statusList.at(0).text()).toContain('To do');
         });
 
         it('adds status list', async () => {

@@ -1,6 +1,7 @@
 <script>
 import produce from 'immer';
 import { debounce, unionBy } from 'lodash';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import {
   GlAvatar,
   GlAvatarLabeled,
@@ -284,6 +285,15 @@ export default {
       return groupByIterationCadences(this.items);
     },
 
+    filteredStatuses() {
+      // frontend fuzzaldrin search
+      if (this.searchTerm) {
+        return fuzzaldrinPlus.filter(this.items, this.searchTerm, {
+          key: ['text'],
+        });
+      }
+      return this.items;
+    },
     items() {
       return (this[this.info.listPropertyName] || []).map((i) => ({
         ...i,
@@ -293,7 +303,15 @@ export default {
     },
 
     listboxItems() {
-      return this.iterationTypeSelected ? groupOptionsByIterationCadences(this.items) : this.items;
+      if (this.iterationTypeSelected) {
+        return groupOptionsByIterationCadences(this.items);
+      }
+
+      if (this.statusTypeSelected) {
+        return this.filteredStatuses;
+      }
+
+      return this.items;
     },
 
     labelTypeSelected() {
