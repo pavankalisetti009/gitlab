@@ -9,7 +9,7 @@ import {
   HTTP_STATUS_OK,
   HTTP_STATUS_UNAUTHORIZED,
 } from '~/lib/utils/http_status';
-import SharedRunnersToggleComponent from '~/projects/settings/components/shared_runners_toggle.vue';
+import InstanceRunnersToggle from '~/projects/settings/components/instance_runners_toggle.vue';
 import { IDENTITY_VERIFICATION_REQUIRED_ERROR } from '~/projects/settings/constants';
 
 const TEST_UPDATE_PATH = '/test/update_shared_runners';
@@ -19,7 +19,7 @@ describe('projects/settings/components/shared_runners', () => {
   let mockAxios;
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(SharedRunnersToggleComponent, {
+    wrapper = shallowMount(InstanceRunnersToggle, {
       provide: {
         identityVerificationPath: '/-/identity_verification',
         identityVerificationRequired: true,
@@ -72,8 +72,8 @@ describe('projects/settings/components/shared_runners', () => {
         await waitForPromises();
 
         expect(findIdentityVerificationRequiredAlert().exists()).toBe(true);
-        expect(findIdentityVerificationRequiredAlert().props().title).toBe(
-          SharedRunnersToggleComponent.i18n.REQUIRES_IDENTITY_VERIFICATION_TEXT,
+        expect(findIdentityVerificationRequiredAlert().props('title')).toBe(
+          'Before you can use GitLab-hosted runners, we need to verify your account.',
         );
       });
     });
