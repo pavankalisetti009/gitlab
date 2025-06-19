@@ -17,6 +17,29 @@ export const mockWorkflowEdges = [
   },
 ];
 
+export const mockWorkflowEventsResponse = {
+  data: {
+    duoWorkflowEvents: {
+      nodes: [
+        {
+          checkpoint: 'Event 1',
+          errors: null,
+          workflowGoal: 'Test workflow goal',
+          workflowStatus: 'RUNNING',
+          workflowDefinition: 'software_development',
+        },
+        {
+          checkpoint: 'Event 2',
+          errors: null,
+          workflowGoal: 'Test workflow goal',
+          workflowStatus: 'RUNNING',
+          workflowDefinition: 'software_development',
+        },
+      ],
+    },
+  },
+};
+
 export const mockWorkflows = mockWorkflowEdges.map((edge) => edge.node);
 
 export const mockWorkflowsResponse = {
