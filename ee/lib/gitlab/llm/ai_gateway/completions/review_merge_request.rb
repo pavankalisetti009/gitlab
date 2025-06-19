@@ -343,9 +343,21 @@ module Gitlab
             return [] if all_instructions.blank?
 
             # Select instructions whose glob patterns match any of the diff files
-            all_instructions.select do |instruction|
+            matching_instructions = all_instructions.select do |instruction|
               file_paths.any? { |path| File.fnmatch?(instruction[:glob_pattern], path) }
             end.uniq
+
+            if duo_code_review_logging_enabled?
+              Gitlab::AppLogger.info(
+                message: "Custom instructions applied for Duo Code Review",
+                event: "duo_code_review_custom_instructions_applied",
+                unit_primitive: UNIT_PRIMITIVE,
+                merge_request_id: merge_request&.id,
+                matching_instructions_count: matching_instructions.count
+              )
+            end
+
+            matching_instructions
           end
 
           def load_project_custom_instructions

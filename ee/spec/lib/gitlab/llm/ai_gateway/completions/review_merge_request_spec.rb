@@ -1357,6 +1357,36 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           completion.execute
         end
 
+        it 'logs the matching instructions count' do
+          expected_instructions = [
+            {
+              'name' => 'Markdown Standards',
+              'instructions' => 'Check for proper markdown formatting',
+              'glob_pattern' => '*.md'
+            }
+          ]
+
+          allow(review_prompt_class).to receive(:new).with(
+            hash_including(
+              custom_instructions: expected_instructions
+            )
+          ).and_call_original
+
+          allow(Gitlab::AppLogger).to receive(:info)
+
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            hash_including(
+              message: "Custom instructions applied for Duo Code Review",
+              event: "duo_code_review_custom_instructions_applied",
+              unit_primitive: 'review_merge_request',
+              merge_request_id: merge_request.id,
+              matching_instructions_count: 1
+            )
+          )
+
+          completion.execute
+        end
+
         context 'when YAML has multiple patterns matching same files' do
           let(:yaml_content) do
             <<~YAML
