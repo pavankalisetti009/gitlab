@@ -114,6 +114,7 @@ describe('View branch rules in enterprise edition', () => {
   const findStatusChecks = () => wrapper.findByTestId('status-checks-content');
   const findApprovalsApp = () => wrapper.findComponent(ApprovalRulesApp);
   const findProjectRules = () => wrapper.findComponent(ProjectRules);
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findStatusChecksCrud = () => wrapper.findByTestId('status-checks');
   const findStatusChecksTitle = () => wrapper.findByTestId('crud-title');
   const findCodeOwnersToggle = () => wrapper.findByTestId('code-owners-content');
@@ -231,7 +232,7 @@ describe('View branch rules in enterprise edition', () => {
         predefinedBranchRulesMockResponse,
       );
       await waitForPromises();
-      expect(findStatusChecksTitle().exists()).toBe(true);
+      expect(findCrudComponent().props('title')).toBe('Rule target');
       expect(findStatusChecksDrawer().exists()).toBe(true);
     });
 
@@ -243,7 +244,7 @@ describe('View branch rules in enterprise edition', () => {
         branchProtectionsMockResponse,
       );
       await waitForPromises();
-      expect(findStatusChecksTitle().exists()).toBe(true);
+      expect(findCrudComponent().props('title')).toBe('Rule target');
       expect(findStatusChecksDrawer().exists()).toBe(true);
     });
   });
@@ -270,7 +271,8 @@ describe('View branch rules in enterprise edition', () => {
 
     it('renders a branch protection component for status checks if "showStatusChecks" is true', async () => {
       await createComponent({ editBranchRules: false }, { showStatusChecks: true });
-      expect(findStatusChecksTitle().exists()).toBe(true);
+
+      expect(findCrudComponent().props('title')).toBe('Rule target');
       expect(findStatusChecks().props()).toMatchObject({
         header: 'Status checks',
         count: 2,
