@@ -159,24 +159,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
           assert_names_in_query(build, with: %w[filters:not_target_branch])
         end
       end
-
-      context 'when search_mr_filter_target_branch flag is false' do
-        before do
-          stub_feature_flags(search_mr_filter_target_branch: false)
-        end
-
-        it 'does not apply filters' do
-          assert_names_in_query(build, without: %w[filters:target_branch filters:not_target_branch])
-        end
-
-        context 'when target_branch options are provided' do
-          let(:options) { base_options.merge(target_branch: 'hello', not_target_branch: 'world') }
-
-          it 'does not apply filters' do
-            assert_names_in_query(build, without: %w[filters:target_branch filters:not_target_branch])
-          end
-        end
-      end
     end
   end
 
