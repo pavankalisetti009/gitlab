@@ -13,18 +13,23 @@ module Sbom
     end
 
     def execute
-      project_id = occurrence.project_id
-      target_id = occurrence.id
+      result = Gitlab::Metrics.measure(:build_dependency_paths) do
+        project_id = occurrence.project_id
+        target_id = occurrence.id
 
-      parents = build_parent_mapping(project_id)
+        parents = build_parent_mapping(project_id)
 
-      id_paths = find_all_id_paths(target_id, parents)
+        id_paths = find_all_id_paths(target_id, parents)
 
-      occurrence_paths = convert_id_paths_to_occurrences(id_paths)
+        occurrence_paths = convert_id_paths_to_occurrences(id_paths)
 
-      add_top_level_path_if_needed(occurrence_paths, occurrence)
+        add_top_level_path_if_needed(occurrence_paths, occurrence)
 
-      occurrence_paths
+        occurrence_paths
+      end
+
+      record_metrics(result)
+      result
     end
 
     private
@@ -55,7 +60,7 @@ module Sbom
       end
 
       # Default path if none found
-      completed_paths << [target_id] if completed_paths.empty?
+      completed_paths << { path: [target_id], is_cyclic: false } if completed_paths.empty?
 
       completed_paths
     end
@@ -81,12 +86,15 @@ module Sbom
 
       # If we've reached the target, we have a complete path
       if current == target
-        completed_paths << current_path
+        completed_paths << { path: current_path, is_cyclic: false }
         return
       end
 
       # Skip if we've already visited this node on this path to avoid cycles
-      return if visited.include?(current)
+      if visited.include?(current)
+        completed_paths << { path: current_path, is_cyclic: true }
+        return
+      end
 
       visited_for_branch = visited.clone.add(current)
 
@@ -103,7 +111,7 @@ module Sbom
     end
 
     def convert_id_paths_to_occurrences(id_paths)
-      all_ids = id_paths.flatten.uniq
+      all_ids = id_paths.flat_map { |item| item[:path] }.uniq
       occurrence_map = {}
 
       Sbom::Occurrence.id_in(all_ids).with_version.each_batch(of: 1000) do |batch|
@@ -113,19 +121,43 @@ module Sbom
       end
 
       # Convert ID paths to occurrence paths
-      id_paths.map do |path|
-        path.map { |id| occurrence_map[id] }
+      id_paths.map do |item|
+        {
+          path: item[:path].map { |id| occurrence_map[id] },
+          is_cyclic: item[:is_cyclic]
+        }
       end
     end
 
     def add_top_level_path_if_needed(occurrence_paths, target_occurrence)
       has_single_path = occurrence_paths.any? do |p|
-        p.length == 1 && p[0].id == target_occurrence.id
+        p[:path].length == 1 && p[:path][0].id == target_occurrence.id
       end
 
-      occurrence_paths << [target_occurrence] if target_occurrence.top_level? && !has_single_path
+      if target_occurrence.top_level? && !has_single_path
+        occurrence_paths << {
+          path: [target_occurrence],
+          is_cyclic: false
+        }
+      end
 
       occurrence_paths
+    end
+
+    def record_metrics(result)
+      counter = Gitlab::Metrics.counter(
+        :dependency_paths_found,
+        'Count of Dependency Paths found'
+      )
+
+      counter.increment(
+        { cyclic: false },
+        result.count { |r| !r[:is_cyclic] }
+      )
+      counter.increment(
+        { cyclic: true },
+        result.count { |r| r[:is_cyclic] }
+      )
     end
   end
 end
