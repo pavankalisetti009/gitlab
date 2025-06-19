@@ -574,6 +574,7 @@ export const setNewWorkItemCache = async ({
   workItemTypeIconName,
   workItemTitle = '',
   workItemDescription = '',
+  confidential = false,
 }) => {
   const workItemAttributesWrapperOrder = [
     WIDGET_TYPE_STATUS,
@@ -902,7 +903,7 @@ export const setNewWorkItemCache = async ({
           titleHtml: null,
           state: 'OPEN',
           description: null,
-          confidential: false,
+          confidential,
           createdAt: null,
           updatedAt: null,
           closedAt: null,
