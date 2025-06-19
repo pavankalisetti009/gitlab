@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, feature_category: :plan_provisioning do
   describe '#execute' do
     shared_examples 'returns error with proper message' do |message|
       it 'returns error' do

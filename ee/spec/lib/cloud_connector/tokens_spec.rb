@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::Tokens, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
   describe '.get' do
     let(:token_string) { 'ABCDEF' }
     let(:token_provider) { instance_double(expected_provider_class, token: token_string) }

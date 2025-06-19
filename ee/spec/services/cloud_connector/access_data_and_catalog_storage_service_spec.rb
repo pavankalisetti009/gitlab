@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::AccessDataAndCatalogStorageService, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::AccessDataAndCatalogStorageService, feature_category: :plan_provisioning do
   describe '#execute' do
     let_it_be(:service_data) do
       { "available_services" => [{ "name" => "code_suggestions", "serviceStartTime" => "2024-02-15T00:00:00Z" },

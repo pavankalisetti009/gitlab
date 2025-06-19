@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_category: :plan_provisioning do
   let(:cut_off_date) { 1.month.ago }
   let(:bundled_with) { {} }
   let(:backend) { 'gitlab-ai-gateway' }

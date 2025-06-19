@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::MissingServiceData, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::MissingServiceData, feature_category: :plan_provisioning do
   describe '#free_access?' do
     subject(:free_access?) { described_class.new.free_access? }
 

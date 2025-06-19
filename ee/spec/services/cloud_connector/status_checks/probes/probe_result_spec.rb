@@ -3,7 +3,7 @@
 require 'fast_spec_helper'
 require_relative "../../../../../app/services/cloud_connector/status_checks/probes/probe_result"
 
-RSpec.describe CloudConnector::StatusChecks::Probes::ProbeResult, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::ProbeResult, feature_category: :duo_setting do
   let(:name) { 'Test Probe' }
   let(:success) { true }
   let(:message) { 'Probe successful' }

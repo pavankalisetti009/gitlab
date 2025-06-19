@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative 'probes/test_probe'
 
-RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :duo_setting do
   let(:succeeded_probe) { CloudConnector::StatusChecks::Probes::TestProbe.new(success: true) }
   let(:failed_probe) { CloudConnector::StatusChecks::Probes::TestProbe.new(success: false) }
   let(:user) { build(:user) }

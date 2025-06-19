@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::AvailableServices, feature_category: :plan_provisioning do
   let(:feature_name) { :duo_chat }
 
   describe '.select_reader' do

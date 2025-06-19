@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::Tokens::TokenIssuer, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::Tokens::TokenIssuer, feature_category: :plan_provisioning do
   let(:name_or_url) { 'https://example.com' }
   let(:jwt_subject) { 'test-subject' }
   let(:realm) { 'test-realm' }

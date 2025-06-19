@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
+RSpec.describe ::CloudConnector, feature_category: :system_access do
   describe '.gitlab_realm' do
     subject { described_class.gitlab_realm }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::Keys, :models, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::Keys, :models, feature_category: :system_access do
   describe 'validations' do
     subject(:key_record) { create(:cloud_connector_keys) }
 

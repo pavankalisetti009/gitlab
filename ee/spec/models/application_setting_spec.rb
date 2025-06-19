@@ -894,7 +894,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
-    describe 'instance_level_ai_beta_features_enabled', feature_category: :cloud_connector do
+    describe 'instance_level_ai_beta_features_enabled', feature_category: :plan_provisioning do
       it { is_expected.to allow_values([true, false]).for(:instance_level_ai_beta_features_enabled) }
       it { is_expected.not_to allow_value(nil).for(:instance_level_ai_beta_features_enabled) }
     end

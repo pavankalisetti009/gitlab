@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::StatusChecks::Probes::LicenseProbe, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::LicenseProbe, feature_category: :duo_setting do
   describe '#execute', :with_license do
     using RSpec::Parameterized::TableSyntax
 

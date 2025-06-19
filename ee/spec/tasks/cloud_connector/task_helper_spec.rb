@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'rainbow'
 
-RSpec.describe Tasks::CloudConnector::TaskHelper, :silence_stdout, feature_category: :cloud_connector do
+RSpec.describe Tasks::CloudConnector::TaskHelper, :silence_stdout, feature_category: :duo_setting do
   let(:filename) { 'output.txt' }
   let(:filepath) { File.join(described_class::OUTPUT_DIR, filename) }
   let!(:user) { create(:user, username: 'test_user') }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::Access, :models, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::Access, :models, feature_category: :plan_provisioning do
   describe 'validations' do
     context 'when invalid catalog JSON is provided' do
       let(:cloud_connector_access) { build(:cloud_connector_access, catalog: []) }

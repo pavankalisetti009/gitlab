@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe, feature_category: :duo_setting do
   let(:probe) { described_class.new(user) }
   let(:user) { build(:user) }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'cloud_connector:keys', :silence_stdout, feature_category: :cloud_connector do
+RSpec.describe 'cloud_connector:keys', :silence_stdout, feature_category: :system_access do
   include RakeHelpers
 
   let(:key) { build(:cloud_connector_keys) }

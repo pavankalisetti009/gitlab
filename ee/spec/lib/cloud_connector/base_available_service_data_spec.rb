@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::BaseAvailableServiceData, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::BaseAvailableServiceData, feature_category: :plan_provisioning do
   let(:namespace) { active_gitlab_purchase.namespace }
   let(:service_name) { :my_service }
   let_it_be(:cut_off_date) { 1.day.ago }

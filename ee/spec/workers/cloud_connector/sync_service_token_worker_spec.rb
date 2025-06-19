@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::SyncServiceTokenWorker, type: :worker, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::SyncServiceTokenWorker, type: :worker, feature_category: :system_access do
   describe '#perform' do
     let(:service) { instance_double(CloudConnector::SyncCloudConnectorAccessService) }
     let(:service_response) { ServiceResponse.success }

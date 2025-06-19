@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::StatusChecks::Probes::TokenProbe, :freeze_time, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::TokenProbe, :freeze_time, feature_category: :duo_setting do
   using RSpec::Parameterized::TableSyntax
 
   describe '#execute' do
