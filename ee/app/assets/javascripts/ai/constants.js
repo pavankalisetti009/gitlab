@@ -38,3 +38,8 @@ export const DUO_CHAT_VIEWS = {
   CHAT: 'chat',
   LIST: 'list',
 };
+
+export const DUO_WORKFLOW_CHAT_DEFINITION = 'chat';
+export const DUO_WORKFLOW_AGENT_PRIVILEGES = [3];
+export const DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES = [3];
+export const DUO_WORKFLOW_CLIENT_VERSION = '1.0';
