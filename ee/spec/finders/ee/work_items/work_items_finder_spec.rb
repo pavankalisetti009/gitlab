@@ -87,6 +87,7 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
 
       before do
         group.add_reporter(user)
+        stub_licensed_features(epics: true)
 
         epic_work_item1.labels << label3
         epic_work_item2.labels << label5
@@ -169,6 +170,110 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
       let_it_be(:object4) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
 
       it_behaves_like 'filter by unified emoji association'
+    end
+
+    describe 'filtering by issue_types' do
+      let_it_be(:current_user) { create(:user) }
+      let_it_be(:group) { create(:group, developers: [current_user]) }
+      let_it_be(:subgroup) { create(:group, developers: [current_user], parent: group) }
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:subgroup_project) { create(:project, group: subgroup) }
+
+      let_it_be(:task) { create(:work_item, :task, author: current_user, project: project) }
+      let_it_be(:project_issue) { create(:work_item, author: current_user, project: project) }
+      let_it_be(:group_issue) { create(:work_item, author: current_user, namespace: group) }
+      let_it_be(:project_epic) { create(:work_item, :epic, author: current_user, project: project) }
+      let_it_be(:group_epic) { create(:work_item, :epic, author: current_user, namespace: group) }
+      let_it_be(:subgroup_epic) { create(:work_item, :epic, author: current_user, namespace: subgroup) }
+      let_it_be(:subproject_epic) { create(:work_item, :epic, author: current_user, project: project) }
+
+      let(:params) { {} }
+
+      subject(:items) { described_class.new(current_user, params.reverse_merge(scope: 'all', state: 'opened')).execute }
+
+      context 'with group param' do
+        context 'with include_descendants as false' do
+          let(:params) { { group_id: group, include_descendants: false } }
+
+          context 'when epics feature is available' do
+            before do
+              stub_licensed_features(epics: true)
+            end
+
+            it { is_expected.to contain_exactly(group_issue, group_epic) }
+          end
+
+          context 'when epics feature is not available' do
+            before do
+              stub_licensed_features(epics: false)
+            end
+
+            it { is_expected.to be_empty }
+
+            context 'when issue_types param is epic' do
+              let(:params) { { group_id: group, include_descendants: false, issue_types: 'epic' } }
+
+              it { is_expected.to be_empty }
+            end
+          end
+        end
+
+        context 'with include_descendants as true' do
+          let(:params) { { group_id: group, include_descendants: true } }
+
+          context 'when epics feature is available' do
+            before do
+              stub_licensed_features(epics: true)
+            end
+
+            it 'returns allowed types' do
+              is_expected.to contain_exactly(
+                task,
+                project_issue,
+                project_epic,
+                group_issue,
+                group_epic,
+                subgroup_epic,
+                subproject_epic
+              )
+            end
+
+            context 'when project_work_item_epics feature flag is disabled' do
+              before do
+                stub_feature_flags(project_work_item_epics: false)
+              end
+
+              it { is_expected.to contain_exactly(task, project_issue, group_issue, group_epic, subgroup_epic) }
+
+              context 'and issue_types param is epic' do
+                let(:params) { { group_id: group, include_descendants: true, issue_types: 'epic' } }
+
+                it { is_expected.to contain_exactly(group_epic, subgroup_epic) }
+              end
+
+              context 'and issue_types param includes epic' do
+                let(:params) { { group_id: group, include_descendants: true, issue_types: %w[epic task] } }
+
+                it { is_expected.to contain_exactly(task, group_epic, subgroup_epic) }
+              end
+            end
+          end
+
+          context 'when epics feature is not available' do
+            before do
+              stub_licensed_features(epics: false)
+            end
+
+            it { is_expected.to contain_exactly(task, project_issue) }
+
+            context 'and issue_types param is epic' do
+              let(:params) { { group_id: group, include_descendants: true, issue_types: 'epic' } }
+
+              it { is_expected.to be_empty }
+            end
+          end
+        end
+      end
     end
   end
 end
