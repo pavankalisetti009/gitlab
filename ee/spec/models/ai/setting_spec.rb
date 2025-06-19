@@ -182,16 +182,6 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
     it { is_expected.to validate_length_of(:amazon_q_role_arn).is_at_most(2048).allow_nil }
   end
 
-  describe 'Alias attributes' do
-    subject(:setting) { described_class.instance }
-
-    describe '#duo_core_features_enabled' do
-      it 'returns the value of duo_nano_features_enabled' do
-        expect(setting.duo_core_features_enabled).to eq(setting.duo_nano_features_enabled)
-      end
-    end
-  end
-
   describe 'after_commit' do
     context 'for trigger_todo_creation' do
       context 'on update' do
