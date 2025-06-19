@@ -282,8 +282,7 @@ module Vulnerabilities
     # 1. For On-premise, post MVC. We may have to honour the setting of skipping indexing for selected projects. Tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/525484
     override :use_elasticsearch?
     def use_elasticsearch?
-      ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed? && (::Feature.enabled?(:vulnerability_es_ingestion, vulnerability.group, type: :gitlab_com_derisk) ||
-        ::Feature.enabled?(:vulnerability_es_ingestion, vulnerability.project, type: :gitlab_com_derisk))
+      ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed?
     end
 
     override :maintain_elasticsearch_update

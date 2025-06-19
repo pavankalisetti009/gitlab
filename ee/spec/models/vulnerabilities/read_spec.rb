@@ -1053,14 +1053,6 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
       end
 
       it_behaves_like 'uses elasticsearch'
-
-      context 'when vulnerability_es_ingestion feature flag is disabled' do
-        before do
-          stub_feature_flags(vulnerability_es_ingestion: false)
-        end
-
-        it_behaves_like 'does not use elasticsearch'
-      end
     end
 
     context 'when vulnerability indexing is disallowed' do
