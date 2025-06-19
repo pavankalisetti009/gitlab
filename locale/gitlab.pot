@@ -8494,7 +8494,7 @@ msgstr ""
 msgid "Archive"
 msgstr ""
 
-msgid "Archive jobs"
+msgid "Archive pipelines"
 msgstr ""
 
 msgid "Archive project"
@@ -35156,9 +35156,6 @@ msgstr ""
 msgid "Jobs fail if they run longer than the timeout time. Input value is in seconds by default. Human readable input is also accepted, for example %{code_open}1 hour%{code_close}."
 msgstr ""
 
-msgid "Jobs older than the configured time are considered expired and are archived. Archived jobs can no longer be retried. Leave empty to never archive jobs automatically. The default unit is in days, but you can use other units, for example %{code_open}15 days%{code_close}, %{code_open}1 month%{code_close}, %{code_open}2 years%{code_close}. Minimum value is 1 day."
-msgstr ""
-
 msgid "Jobs|All"
 msgstr ""
 
@@ -45531,6 +45528,9 @@ msgid "Pipelines charts"
 msgstr ""
 
 msgid "Pipelines for new changes cause older pending or running pipelines on the same branch to be cancelled."
+msgstr ""
+
+msgid "Pipelines older than the configured time are considered archived. Jobs in archived pipelines can no longer be retried. Leave empty to never archive pipelines automatically. The default unit is in days, but you can use other units, for example %{code_open}15 days%{code_close}, %{code_open}1 month%{code_close}, %{code_open}2 years%{code_close}. Minimum value is 1 day."
 msgstr ""
 
 msgid "Pipelines settings for '%{project_name}' were successfully updated."
