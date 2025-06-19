@@ -6563,6 +6563,9 @@ msgstr ""
 msgid "All users with matching phone numbers"
 msgstr ""
 
+msgid "All your to-do items are done."
+msgstr ""
+
 msgid "Allow"
 msgstr ""
 
@@ -29466,6 +29469,9 @@ msgstr ""
 msgid "Go to your snippets"
 msgstr ""
 
+msgid "Good job!"
+msgstr ""
+
 msgid "Google Artifact Registry"
 msgstr ""
 
@@ -36131,9 +36137,6 @@ msgid "LastPushEvent|at"
 msgstr ""
 
 msgid "Latest pipeline for the most recent commit on this ref"
-msgstr ""
-
-msgid "Latest to-do items"
 msgstr ""
 
 msgid "Latest version"
@@ -64256,6 +64259,9 @@ msgstr ""
 msgid "To-Do List"
 msgstr ""
 
+msgid "To-do items"
+msgstr ""
+
 msgid "Today"
 msgstr ""
 
@@ -64283,6 +64289,9 @@ msgid "Todos|Added approver"
 msgstr ""
 
 msgid "Todos|Alert"
+msgstr ""
+
+msgid "Todos|All"
 msgstr ""
 
 msgid "Todos|Approval required"
