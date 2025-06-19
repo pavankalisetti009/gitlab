@@ -9,6 +9,7 @@ query groupPipelineExecutionSchedulePolicies(
     id
     pipelineExecutionSchedulePolicies(relationship: $relationship) {
       nodes {
+        csp
         name
         yaml
         editPath

@@ -8,6 +8,7 @@ export const customYamlObject = { variable: true };
 
 export const mockUnsupportedAttributeScanExecutionPolicy = {
   __typename: 'ScanExecutionPolicy',
+  csp: false,
   name: unsupportedManifestObject.name,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: unsupportedManifest,
@@ -177,6 +178,7 @@ export const mockBranchExceptionsScanExecutionObject = {
 
 export const mockProjectScanExecutionPolicy = {
   __typename: 'ScanExecutionPolicy',
+  csp: false,
   name: `${mockDastScanExecutionObject.name}-project`,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockDastScanExecutionManifest,
@@ -194,6 +196,7 @@ export const mockProjectScanExecutionPolicy = {
 
 export const mockProjectScanExecutionPolicyCombinedList = {
   __typename: 'ScanExecutionPolicy',
+  csp: false,
   name: `${mockDastScanExecutionObject.name}-project`,
   policyAttributes: {
     __typename: 'ScanExecutionPolicyAttributesType',

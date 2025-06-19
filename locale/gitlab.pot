@@ -56825,6 +56825,9 @@ msgstr ""
 msgid "SecurityOrchestration|in timezone %{timezone}"
 msgstr ""
 
+msgid "SecurityOrchestration|instance policy"
+msgstr ""
+
 msgid "SecurityOrchestration|latest"
 msgstr ""
 

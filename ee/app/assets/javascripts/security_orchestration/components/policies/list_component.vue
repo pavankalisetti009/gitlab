@@ -1,5 +1,6 @@
 <script>
 import {
+  GlBadge,
   GlButtonGroup,
   GlDisclosureDropdown,
   GlLink,
@@ -68,6 +69,7 @@ export default {
   },
   components: {
     BreakingChangesIcon,
+    GlBadge,
     GlButtonGroup,
     GlDisclosureDropdown,
     GlLink,
@@ -483,23 +485,31 @@ export default {
         </div>
       </template>
 
-      <template #cell(source)="{ value: source }">
-        <span
-          v-if="isPolicyInherited(source) && policyHasNamespace(source)"
-          class="gl-whitespace-nowrap"
-        >
-          <gl-sprintf :message="$options.i18n.inheritedLabel">
-            <template #namespace>
-              <gl-link :href="getSecurityPolicyListUrl(policyListUrlArgs(source))" target="_blank">
-                {{ getPolicyText(source) }}
-              </gl-link>
-            </template>
-          </gl-sprintf>
-        </span>
-        <span v-else-if="isPolicyInherited(source) && !policyHasNamespace(source)">{{
-          $options.i18n.inheritedShortLabel
-        }}</span>
-        <span v-else class="gl-whitespace-nowrap">{{ typeLabel }}</span>
+      <template #cell(source)="{ item: { csp, source } }">
+        <div>
+          <span
+            v-if="isPolicyInherited(source) && policyHasNamespace(source)"
+            class="gl-whitespace-nowrap"
+          >
+            <gl-sprintf :message="$options.i18n.inheritedLabel">
+              <template #namespace>
+                <gl-link
+                  :href="getSecurityPolicyListUrl(policyListUrlArgs(source))"
+                  target="_blank"
+                >
+                  {{ getPolicyText(source) }}
+                </gl-link>
+              </template>
+            </gl-sprintf>
+          </span>
+          <span v-else-if="isPolicyInherited(source) && !policyHasNamespace(source)">{{
+            $options.i18n.inheritedShortLabel
+          }}</span>
+          <span v-else class="gl-whitespace-nowrap">{{ typeLabel }}</span>
+        </div>
+        <gl-badge v-if="csp" class="gl-inline-block">
+          {{ s__('SecurityOrchestration|instance policy') }}
+        </gl-badge>
       </template>
 
       <template #cell(scope)="{ item: { policyScope } }">
