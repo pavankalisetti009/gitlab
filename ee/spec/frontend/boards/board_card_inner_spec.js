@@ -225,6 +225,28 @@ describe('Board card component', () => {
 
       expect(findIssueStatusBadge().exists()).toBe(true);
     });
+
+    it('does not render status badge is the status list name and status name are same', () => {
+      list = {
+        id: 301,
+        position: 2,
+        title: 'To do',
+        listType: 'status',
+        status: mockWorkItemStatus,
+      };
+
+      createComponent({
+        workItemStatusFeatureFlagEnabled: true,
+        props: {
+          item: {
+            ...issue,
+            status: mockWorkItemStatus,
+          },
+        },
+      });
+
+      expect(findIssueStatusBadge().exists()).toBe(false);
+    });
   });
 
   describe('Epic board', () => {
