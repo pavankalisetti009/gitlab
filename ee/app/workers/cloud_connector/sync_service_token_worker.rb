@@ -14,7 +14,7 @@ module CloudConnector
 
     worker_has_external_dependencies!
 
-    feature_category :cloud_connector
+    feature_category :system_access
 
     def perform(params = {})
       # We only refresh the token if we force a refresh, have no token or the token expires soon.

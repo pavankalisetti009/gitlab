@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::Config, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::Config, feature_category: :system_access do
   let(:base_url) { 'https://example.com' }
 
   before do

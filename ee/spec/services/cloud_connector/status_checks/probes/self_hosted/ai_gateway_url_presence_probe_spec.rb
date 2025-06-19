@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe, feature_category: :duo_setting do
   let(:probe) { described_class.new }
   let(:url) { 'https://ai-gateway.example.com' }
   let(:ai_setting) { Ai::Setting.instance }

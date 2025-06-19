@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_connector do
+RSpec.describe 'Querying for Cloud Connector status', feature_category: :duo_setting do
   include GraphqlHelpers
 
   let(:query) do

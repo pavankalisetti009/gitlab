@@ -285,7 +285,7 @@
   :queue_namespace: :cronjob
 - :name: cronjob:cloud_connector_sync_service_token
   :worker_name: CloudConnector::SyncServiceTokenWorker
-  :feature_category: :cloud_connector
+  :feature_category: :system_access
   :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown

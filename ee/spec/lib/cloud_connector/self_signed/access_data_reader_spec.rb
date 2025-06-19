@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :plan_provisioning do
   describe '#read_available_services' do
     let(:access_data_reader) { described_class.new }
     let(:access_data) do

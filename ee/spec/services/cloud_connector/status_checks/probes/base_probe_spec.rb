@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative 'test_probe'
 
-RSpec.describe CloudConnector::StatusChecks::Probes::BaseProbe, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::BaseProbe, feature_category: :duo_setting do
   subject(:test_probe) { test_probe_class.new(**params) }
 
   let(:params) { { success: true } }

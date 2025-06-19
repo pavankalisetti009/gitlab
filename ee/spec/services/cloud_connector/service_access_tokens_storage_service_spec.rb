@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::ServiceAccessTokensStorageService, :freeze_time, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::ServiceAccessTokensStorageService, :freeze_time, feature_category: :system_access do
   before do
     create(:service_access_token, :expired)
     create(:service_access_token, :expired)

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::Tokens::TokenLoader, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::Tokens::TokenLoader, feature_category: :system_access do
   subject(:token_issuer) { described_class.new }
 
   describe '#token' do

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::CachingKeyLoader, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::CachingKeyLoader, feature_category: :system_access do
   let_it_be(:cc_key) { create(:cloud_connector_keys) }
 
   describe '.private_jwk' do

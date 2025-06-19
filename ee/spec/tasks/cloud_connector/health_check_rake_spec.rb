@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative '../../services/cloud_connector/status_checks/probes/test_probe'
 
-RSpec.describe 'cloud_connector:health_check', :silence_stdout, feature_category: :cloud_connector do
+RSpec.describe 'cloud_connector:health_check', :silence_stdout, feature_category: :duo_setting do
   let(:test_probe) { CloudConnector::StatusChecks::Probes::TestProbe.new(success: success) }
   let(:filename) { 'output.txt' }
   let(:filepath) { File.join(Tasks::CloudConnector::TaskHelper::OUTPUT_DIR, filename) }

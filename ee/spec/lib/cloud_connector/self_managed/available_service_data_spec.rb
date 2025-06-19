@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::SelfManaged::AvailableServiceData, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::SelfManaged::AvailableServiceData, feature_category: :plan_provisioning do
   describe '#access_token' do
     subject(:access_token) { described_class.new(:duo_chat, nil, nil).access_token(nil) }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category: :duo_setting do
   describe '#execute' do
     subject(:probe) { described_class.new(uri) }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
+RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
   let(:ai_setting) { Ai::Setting.instance }
   let(:url) { 'http://ai-gateway.example.com:5052' }
   let(:namespace_ids) { [1, 2, 3] }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe, feature_category: :duo_setting do
   let_it_be(:organization) { create(:organization) }
   let_it_be_with_reload(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
   let_it_be(:user) { create(:user, organizations: [organization]) }

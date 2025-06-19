@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::CatalogDataLoader, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::CatalogDataLoader, feature_category: :plan_provisioning do
   let(:model_class) { Gitlab::CloudConnector::DataModel::UnitPrimitive }
   let(:selected_loader) { instance_double(CloudConnector::DatabaseDataLoader) }
 
