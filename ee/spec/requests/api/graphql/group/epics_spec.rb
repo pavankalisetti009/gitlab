@@ -590,6 +590,7 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
   end
 
   def execute_query
+    stub_last_activity_update
     query = graphql_query_for(
       :group,
       { full_path: group.full_path },
