@@ -28407,9 +28407,6 @@ msgstr ""
 msgid "GitLab KAS"
 msgstr ""
 
-msgid "GitLab Logo"
-msgstr ""
-
 msgid "GitLab Next|Next"
 msgstr ""
 
