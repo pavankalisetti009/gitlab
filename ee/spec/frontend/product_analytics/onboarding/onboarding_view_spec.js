@@ -42,6 +42,9 @@ describe('ProductAnalyticsOnboardingView', () => {
         canSelectGitlabManagedProvider: false,
         ...provide,
       },
+      stubs: {
+        OnboardingSetup: ProductAnalyticsOnboardingSetup,
+      },
       mocks: {
         $router,
       },
