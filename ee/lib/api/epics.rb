@@ -329,7 +329,7 @@ module API
         update_params[:start_date_fixed] ||= update_params.delete(:start_date) if update_params.key?(:start_date)
         update_params[:due_date_fixed] ||= update_params.delete(:end_date) if update_params.key?(:end_date)
 
-        result = ::Epics::UpdateService.new(
+        result = ::WorkItems::LegacyEpics::UpdateService.new(
           group: user_group,
           current_user: current_user,
           params: update_params

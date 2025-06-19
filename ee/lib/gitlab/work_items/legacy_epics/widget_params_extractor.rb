@@ -54,12 +54,18 @@ module Gitlab
 
         def labels_params(epic_params)
           {
-            add_label_ids: epic_params.values_at(:label_ids, :add_label_ids).flatten.compact,
+            label_ids: epic_params[:label_ids],
+            add_label_ids: epic_params[:add_label_ids],
             remove_label_ids: epic_params[:remove_label_ids]
           }
         end
 
         def hierarchy_params(epic_params)
+          if (epic_params.key?(:parent) && epic_params[:parent].nil?) ||
+              (epic_params.key?(:parent_id) && epic_params[:parent_id].nil?)
+            return { parent: nil }
+          end
+
           parent_work_item = Epic.find_by_id(epic_params[:parent_id] || epic_params[:parent])&.work_item
 
           return unless parent_work_item
@@ -78,6 +84,8 @@ module Gitlab
             work_item_date_params[:due_date] = epic_params[:due_date_fixed]
           elsif epic_params.key?(:end_date)
             work_item_date_params[:due_date] = epic_params[:end_date]
+          elsif epic_params.key?(:due_date)
+            work_item_date_params[:due_date] = epic_params[:due_date]
           end
 
           if epic_params.key?(:start_date_fixed)

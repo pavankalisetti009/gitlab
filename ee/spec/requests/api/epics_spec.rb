@@ -1030,7 +1030,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
             expect(result.start_date_fixed).to eq(Date.new(2018, 7, 17))
             expect(result.start_date_is_fixed).to eq(true)
             expect(result.due_date_fixed).to eq(nil)
-            expect(result.due_date_is_fixed).to be_falsey
+            expect(result.due_date_is_fixed).to eq(true)
             expect(result.confidential).to be_truthy
             expect(result.parent_id).to eq(epic2.id)
           end
@@ -1107,6 +1107,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         context 'when state_event is reopen' do
           it 'allows epic to be reopend' do
             epic.update!(state: 'closed')
+            epic.issue.update!(state: 'closed')
 
             put api(url, user), params: { state_event: 'reopen' }
 

@@ -96,6 +96,7 @@ RSpec.describe Mutations::Epics::Update, feature_category: :portfolio_management
 
         it 'allows epic to be reopend' do
           epic.update!(state: 'closed')
+          epic.issue.update!(state: 'closed')
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -159,6 +160,25 @@ RSpec.describe Mutations::Epics::Update, feature_category: :portfolio_management
 
               labels_ids = mutation_response['epic']['labels']['nodes'].map { |l| l['id'] }
               expected_label_ids = [label_1, label_2, label_3].map { |l| l.to_global_id.to_s }
+
+              expect(labels_ids).to eq(expected_label_ids)
+            end
+          end
+
+          context 'when epic has synced work item with labels' do
+            let(:work_item_label) { create(:group_label, title: "d", group: group) }
+            let(:attributes) { { add_label_ids: [label_1.id] } }
+
+            before do
+              work_item = epic.work_item
+              work_item.labels << work_item_label
+            end
+
+            it 'adds labels correctly and keeps the title ordering' do
+              post_graphql_mutation(mutation, current_user: current_user)
+
+              labels_ids = mutation_response['epic']['labels']['nodes'].map { |l| l['id'] }
+              expected_label_ids = [label_1, label_2, work_item_label].map { |l| l.to_global_id.to_s }
 
               expect(labels_ids).to eq(expected_label_ids)
             end

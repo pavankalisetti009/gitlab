@@ -3,8 +3,7 @@
 module WorkItems
   module LegacyEpics
     class CreateService
-      WORK_ITEM_NOT_FOUND_ERROR = 'No matching work item found'
-      EPIC_NOT_FOUND_ERROR = 'No matching epic found. Make sure that you are adding a valid epic URL.'
+      include ErrorMapping
 
       def initialize(group:, perform_spam_check: true, current_user: nil, params: {})
         @group = group

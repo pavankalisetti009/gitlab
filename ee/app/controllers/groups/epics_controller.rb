@@ -140,7 +140,8 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def update_service
-    ::Epics::UpdateService.new(group: @group, current_user: current_user, params: epic_params.to_h)
+    ::WorkItems::LegacyEpics::UpdateService.new(group: @group, current_user: current_user,
+      params: epic_params)
   end
 
   def finder_type

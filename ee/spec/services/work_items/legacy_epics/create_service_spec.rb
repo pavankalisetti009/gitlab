@@ -187,7 +187,7 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
             color_widget: { color: '#c91c00' },
             hierarchy_widget: { parent: parent_epic.work_item },
             start_and_due_date_widget: { is_fixed: true, due_date: due_date, start_date: start_date },
-            labels_widget: { add_label_ids: [label0.id, label2.id], remove_label_ids: [label1.id] }
+            labels_widget: { add_label_ids: [label2.id], label_ids: [label0.id], remove_label_ids: [label1.id] }
           )
         )
       ).and_call_original
