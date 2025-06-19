@@ -620,7 +620,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         stub_licensed_features(epics: true)
       end
 
-      it 'returns grou work items' do
+      it 'returns group work items' do
         post_graphql(query, current_user: current_user)
 
         work_items = graphql_data_at(:group, :workItems, :nodes)
@@ -769,7 +769,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
           it 'does not return disabled work item types' do
             data = execute['data'][container_name]['workItems']
 
-            expect(data['count']).to eq(20)
+            expect(data['count']).to eq(15)
             expect(data['edges'].count).to eq(15)
             expect(data['edges'].map { |node| node.dig('node', 'id') }).to match_array(
               issuables.flat_map(&:to_gid).map(&:to_s)
@@ -794,13 +794,46 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         it 'does not return licensed work items' do
           data = execute['data'][container_name]['workItems']
 
-          expect(data['count']).to eq(10)
+          expect(data['count']).to eq(5)
           expect(data['edges'].count).to eq(5)
           expect(data['edges'].map { |node| node.dig('node', 'id') }).to match_array(
             project_issues.flat_map(&:to_gid).map(&:to_s)
           )
         end
       end
+    end
+  end
+
+  context 'when skipping authorization' do
+    shared_examples  'request with skipped abilities' do |abilities = []|
+      it 'authorizes objects as expected' do
+        expect_any_instance_of(Gitlab::Graphql::Authorize::ObjectAuthorization) do |authorization|
+          expect(authorization).to receive(:ok).with(
+            group.work_items.first,
+            current_user,
+            scope_validator: nil,
+            skip_abilities: abilities
+          )
+        end
+
+        post_graphql(query, current_user: current_user)
+      end
+    end
+
+    context 'when authorize_issue_types_in_finder feature flag is enabled' do
+      before do
+        stub_feature_flags(authorize_issue_types_in_finder: true)
+      end
+
+      it_behaves_like 'request with skipped abilities', [:read_work_item]
+    end
+
+    context 'when authorize_issue_types_in_finder feature flag is disabled' do
+      before do
+        stub_feature_flags(authorize_issue_types_in_finder: false)
+      end
+
+      it_behaves_like 'request with skipped abilities', []
     end
   end
 

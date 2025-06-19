@@ -587,4 +587,108 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
       it_behaves_like 'a filtered collection' # by status id
     end
   end
+
+  describe 'filtering by issue_types' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:group) { create(:group, developers: [current_user]) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    let_it_be(:task) { create(:issue, :task, author: current_user, project: project) }
+    let_it_be(:issue) { create(:issue, author: current_user, project: project) }
+    let_it_be(:project_epic) { create(:issue, :epic, author: current_user, project: project) }
+
+    let(:params) { {} }
+
+    subject { described_class.new(current_user, params.reverse_merge(scope: 'all', state: 'opened')).execute }
+
+    context 'when issue_types param is not present' do
+      let(:params) { { project_id: project } }
+
+      context 'when epics feature is available' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it { is_expected.to contain_exactly(task, issue, project_epic) }
+
+        context 'and project_work_item_epics feature flag is disabled' do
+          before do
+            stub_feature_flags(project_work_item_epics: false)
+          end
+
+          it { is_expected.to contain_exactly(task, issue) }
+        end
+      end
+
+      context 'when epics feature is not available' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it { is_expected.to contain_exactly(task, issue) }
+      end
+    end
+
+    context 'when issue_types param includes epic' do
+      let(:params) { { project_id: project, issue_types: %w[task epic] } }
+
+      context 'when epics feature is available' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it { is_expected.to contain_exactly(task, project_epic) }
+
+        context 'and project_work_item_epics feature flag is disabled' do
+          before do
+            stub_feature_flags(project_work_item_epics: false)
+          end
+
+          it { is_expected.to contain_exactly(task) }
+        end
+      end
+
+      context 'when epics feature is not available' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it { is_expected.to contain_exactly(task) }
+      end
+    end
+
+    context 'when issue_types param is epic' do
+      let(:params) { { project_id: project, issue_types: 'epic' } }
+
+      context 'when epics feature is available' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it { is_expected.to contain_exactly(project_epic) }
+
+        context 'and project_work_item_epics feature flag is disabled' do
+          before do
+            stub_feature_flags(project_work_item_epics: false)
+          end
+
+          it { is_expected.to be_empty }
+        end
+      end
+
+      context 'when epics feature is not available' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it { is_expected.to be_empty }
+      end
+    end
+
+    context 'when issue_types param includes an invalid type' do
+      let(:params) { { project_id: project, issue_types: %w[foo issue epic] } }
+
+      it { is_expected.to be_empty }
+    end
+  end
 end
