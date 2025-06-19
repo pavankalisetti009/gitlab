@@ -866,8 +866,9 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
           raise Gitlab::GitAccess::GeoCustomSshError
         end
         # rubocop:enable RSpec/AnyInstanceOf
-
-        allow(::EE::Gitlab::GeoGitAccess).to receive(:geo_custom_ssh_action).and_return(custom_action)
+        allow_next_instance_of(::Gitlab::GitAccess) do |git_access|
+          allow(git_access).to receive(:geo_custom_ssh_action).and_return(custom_action)
+        end
       end
 
       it 'handles the error and returns a custom action' do
