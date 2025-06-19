@@ -55,6 +55,10 @@ module Resolvers
         def validate_params!(args)
           params = params_with_defaults(args)
 
+          if params[:start_date].present? && params[:end_date].present? && params[:start_date] > params[:end_date]
+            raise Gitlab::Graphql::Errors::ArgumentError, "start date cannot be after end date"
+          end
+
           return unless params[:start_date] < params[:end_date] - 1.year
 
           raise Gitlab::Graphql::Errors::ArgumentError, 'maximum date range is 1 year'

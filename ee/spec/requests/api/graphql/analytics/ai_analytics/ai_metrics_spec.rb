@@ -113,6 +113,15 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
       expect(ai_metrics).to eq(expected_results)
     end
 
+    context 'when startDate is after endDate' do
+      let(:filter_params) { { startDate: '2024-07-01'.to_date, endDate: '2024-06-30'.to_date } }
+
+      it 'returns an error' do
+        expect_graphql_errors_to_include("start date cannot be after end date")
+        expect(ai_metrics).to be_nil
+      end
+    end
+
     context 'when AiMetrics service returns only part of queried fields' do
       let(:ai_metrics_service_payload) do
         {

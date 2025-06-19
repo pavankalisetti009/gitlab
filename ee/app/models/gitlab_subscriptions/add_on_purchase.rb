@@ -28,10 +28,9 @@ module GitlabSubscriptions
       presence: true,
       length: { maximum: 255 }
 
-    scope :active, -> {
-      today = Date.current
-
-      where('started_at IS NULL OR started_at <= ?', today).where('? < expires_on', today)
+    scope :active, ->(at = Date.current) {
+      where('started_at IS NULL OR started_at <= ?', at)
+        .where('expires_on > ?', at)
     }
     scope :ready_for_cleanup, -> {
       where('expires_on < ?', CLEANUP_DELAY_PERIOD.ago.to_date)
