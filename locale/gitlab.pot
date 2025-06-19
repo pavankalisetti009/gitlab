@@ -15336,7 +15336,7 @@ msgstr ""
 msgid "CompareRevisions|Changes are shown as if the %{boldStart}source%{boldEnd} revision was being merged into the %{boldStart}target%{boldEnd} revision. %{linkStart}Learn more about comparing revisions.%{linkEnd}"
 msgstr ""
 
-msgid "CompareRevisions|Commits on Source (%{commits_amount})"
+msgid "CompareRevisions|Commits on Source"
 msgstr ""
 
 msgid "CompareRevisions|Compare"
