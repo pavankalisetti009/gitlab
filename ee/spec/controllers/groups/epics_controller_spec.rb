@@ -265,6 +265,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
       context 'when state_event param is reopen' do
         before do
           epic.update!(state: 'closed', closed_at: Time.current, closed_by: user)
+          epic.issue.update!(state: 'closed', closed_at: Time.current, closed_by: user)
         end
 
         it 'allows epic to be reopened' do

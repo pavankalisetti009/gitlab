@@ -35,35 +35,53 @@ RSpec.describe Gitlab::WorkItems::LegacyEpics::WidgetParamsExtractor, feature_ca
     end
 
     context 'with labels widget params' do
-      it 'extracts and transforms label_ids to add_label_ids' do
+      it 'extracts label_ids separately' do
         params = { label_ids: [1, 2], other_param: 'value' }
 
         result_params, widget_params = described_class.new(params).extract
 
         expect(widget_params[:labels_widget]).to eq({
-          add_label_ids: [1, 2],
+          label_ids: [1, 2],
+          add_label_ids: nil,
           remove_label_ids: nil
         })
         expect(result_params).to eq({ other_param: 'value', work_item_type: epic_work_item_type })
       end
 
-      it 'combines label_ids and add_label_ids' do
+      it 'keeps label_ids and add_label_ids separate' do
         params = { label_ids: [1, 2], add_label_ids: [3, 4], remove_label_ids: [5, 6] }
 
         _result_params, widget_params = described_class.new(params).extract
 
         expect(widget_params[:labels_widget]).to eq({
-          add_label_ids: [1, 2, 3, 4],
+          label_ids: [1, 2],
+          add_label_ids: [3, 4],
           remove_label_ids: [5, 6]
         })
       end
 
-      it 'handles nil values in label arrays' do
-        params = { label_ids: [1, nil, 2], add_label_ids: [nil, 3] }
+      it 'handles only add_label_ids' do
+        params = { add_label_ids: [3, 4] }
 
         _result_params, widget_params = described_class.new(params).extract
 
-        expect(widget_params[:labels_widget][:add_label_ids]).to eq([1, 2, 3])
+        expect(widget_params[:labels_widget]).to eq({
+          label_ids: nil,
+          add_label_ids: [3, 4],
+          remove_label_ids: nil
+        })
+      end
+
+      it 'handles only remove_label_ids' do
+        params = { remove_label_ids: [5, 6] }
+
+        _result_params, widget_params = described_class.new(params).extract
+
+        expect(widget_params[:labels_widget]).to eq({
+          label_ids: nil,
+          add_label_ids: nil,
+          remove_label_ids: [5, 6]
+        })
       end
     end
 
@@ -113,6 +131,30 @@ RSpec.describe Gitlab::WorkItems::LegacyEpics::WidgetParamsExtractor, feature_ca
         _result_params, widget_params = described_class.new(params).extract
 
         expect(widget_params[:hierarchy_widget]).to be_nil
+      end
+
+      it 'returns {parent: nil} when parent_id is explicitly nil' do
+        params = { parent_id: nil }
+
+        _result_params, widget_params = described_class.new(params).extract
+
+        expect(widget_params[:hierarchy_widget]).to eq({ parent: nil })
+      end
+
+      it 'returns {parent: nil} when parent is explicitly nil' do
+        params = { parent: nil }
+
+        _result_params, widget_params = described_class.new(params).extract
+
+        expect(widget_params[:hierarchy_widget]).to eq({ parent: nil })
+      end
+
+      it 'returns nil when no hierarchy params are provided' do
+        params = { other_param: 'value' }
+
+        _result_params, widget_params = described_class.new(params).extract
+
+        expect(widget_params).not_to have_key(:hierarchy_widget)
       end
     end
 
@@ -244,7 +286,11 @@ RSpec.describe Gitlab::WorkItems::LegacyEpics::WidgetParamsExtractor, feature_ca
 
         expect(widget_params).to eq({
           description_widget: { description: 'Epic description' },
-          labels_widget: { add_label_ids: [1, 2], remove_label_ids: nil },
+          labels_widget: {
+            label_ids: [1, 2],
+            add_label_ids: nil,
+            remove_label_ids: nil
+          },
           hierarchy_widget: { parent: parent_work_item },
           start_and_due_date_widget: { start_date: '2024-01-01', due_date: '2024-12-31' },
           color_widget: { color: '#FF0000' }

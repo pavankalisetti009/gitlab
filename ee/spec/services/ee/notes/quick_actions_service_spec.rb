@@ -380,6 +380,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       before do
         group.add_developer(user)
         epic.update!(state: 'closed')
+        epic.issue.update!(state: 'closed')
       end
 
       context 'when epics are not enabled' do

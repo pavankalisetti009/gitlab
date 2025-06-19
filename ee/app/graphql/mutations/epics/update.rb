@@ -27,7 +27,8 @@ module Mutations
 
         validate_arguments!(args)
 
-        epic = ::Epics::UpdateService.new(group: epic.group, current_user: current_user, params: args).execute(epic)
+        epic = ::WorkItems::LegacyEpics::UpdateService.new(group: epic.group, current_user: current_user,
+          params: args).execute(epic)
 
         {
           epic: epic.reset,

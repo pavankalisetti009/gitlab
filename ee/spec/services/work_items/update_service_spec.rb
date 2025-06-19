@@ -8,7 +8,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:work_item, refind: true) { create(:work_item, project: project) }
 
-  let(:current_user) { developer }
+  let_it_be(:current_user) { developer }
   let(:params) { {} }
 
   describe '#execute' do
@@ -691,6 +691,73 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
 
           it 'does not sync when date did not change as part of the request' do
             expect { execute }.to not_change { epic.reload.start_date }.and not_change { epic.reload.due_date }
+          end
+        end
+
+        context 'when handling changes with todos' do
+          let_it_be(:todo) { create(:todo, target: epic, user: current_user) }
+
+          let(:widget_params) do
+            {
+              description_widget: {
+                description: 'new description'
+              }
+            }
+          end
+
+          it 'resolves todos for the synced epic when there are changes' do
+            expect(TodoService).to receive(:new).twice.and_call_original
+            expect_next_instance_of(TodoService) do |instance|
+              expect(instance).to receive(:resolve_todos_for_target)
+                 .with(epic, current_user).and_call_original
+            end
+
+            expect { execute }.to change { todo.reload.state }.from('pending').to('done')
+          end
+
+          context 'when there are no changes' do
+            let(:widget_params) { {} }
+            let(:params) { {} }
+
+            it 'does not resolve todos' do
+              expect(TodoService).not_to receive(:new)
+
+              execute
+            end
+          end
+        end
+
+        context 'when updating tasks' do
+          let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+          let_it_be(:epic) { work_item.synced_epic }
+
+          let(:params) do
+            {
+              update_task: {
+                line_source: '- [ ] Task item',
+                line_number: 1,
+                checked: true
+              }
+            }
+          end
+
+          let(:service) do
+            described_class.new(
+              container: group,
+              current_user: current_user,
+              params: params
+            )
+          end
+
+          before do
+            work_item.update!(description: "- [ ] Task item\n- [x] Completed task")
+            epic.update!(description: "- [ ] Task item\n- [x] Completed task")
+          end
+
+          it 'updates both work item and epic description' do
+            service.execute(work_item)
+            expect(work_item.reload.description).to eq("- [x] Task item\n- [x] Completed task")
+            expect(work_item.description).to eq(epic.reload.description)
           end
         end
       end

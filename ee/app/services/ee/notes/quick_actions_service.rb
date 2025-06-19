@@ -24,7 +24,9 @@ module EE
       def noteable_update_service(note, update_params)
         return super unless note.for_epic?
 
-        Epics::UpdateService.new(group: note.resource_parent, current_user: current_user, params: update_params)
+        ::WorkItems::LegacyEpics::UpdateService.new(
+          group: note.resource_parent, current_user: current_user, params: update_params
+        )
       end
 
       override :execute_triggers
