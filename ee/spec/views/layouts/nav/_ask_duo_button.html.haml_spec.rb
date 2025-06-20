@@ -15,6 +15,7 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
 
   context 'when Duo Chat is enabled' do
     before do
+      allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(true)
       allow(::Gitlab::Llm::TanukiBot).to receive_messages(
         show_breadcrumbs_entry_point?: true,
         chat_disabled_reason: nil
@@ -41,9 +42,9 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
       end
     end
 
-    context 'when project is not in context' do
+    context 'when duo agentic chat is not available' do
       before do
-        assign(:project, nil)
+        allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(false)
       end
 
       it 'renders the Duo Chat and Duo Agentic Chat button with correct aria-label' do

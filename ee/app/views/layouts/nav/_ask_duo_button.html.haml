@@ -5,7 +5,7 @@
   - chat_disabled_reason = ::Gitlab::Llm::TanukiBot.chat_disabled_reason(user: current_user, container: @group || @project).to_s
   - amazon_q_enabled = ::Ai::AmazonQ.enabled?
 
-  - if Feature.enabled?(:duo_workflow_workhorse, current_user) && @project.present?
+  - if Feature.enabled?(:duo_workflow_workhorse, current_user) && current_user.can?(:access_duo_agentic_chat, @project)
     = render Pajamas::ButtonComponent.new(variant: :default,
       category: :secondary,
       icon: 'duo-agentic-chat',
