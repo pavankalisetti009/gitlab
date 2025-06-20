@@ -1,6 +1,7 @@
 <script>
 import { debounce } from 'lodash';
 import { GlButton, GlFormInput } from '@gitlab/ui';
+import { s__ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import {
   NAME,
@@ -22,6 +23,16 @@ export default {
       type: Object,
       required: false,
       default: () => ({}),
+    },
+    hasValidationError: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    errorMessage: {
+      type: String,
+      required: false,
+      default: s__('SecurityOrchestration|Please remove duplicates.'),
     },
   },
   computed: {
@@ -57,25 +68,33 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-w-full gl-flex-col gl-gap-5 md:gl-flex-row md:gl-items-center">
-    <div class="gl-flex gl-w-full gl-flex-col gl-items-center md:gl-flex-row">
-      <gl-form-input
-        :id="`source-${branch.id}`"
-        data-testid="source-input"
-        :placeholder="s__('ScanResultPolicy|input source branch')"
-        :value="sourcePattern"
-        @input="debouncedSetBranch($event, $options.SOURCE)"
-      />
-      <span class="gl-mx-3">{{ __('to') }}</span>
-      <gl-form-input
-        :id="`target-${branch.id}`"
-        data-testid="target-input"
-        :placeholder="s__('ScanResultPolicy|input target branch')"
-        :value="targetName"
-        @input="debouncedSetBranch($event, $options.TARGET)"
-      />
+  <div>
+    <div class="gl-flex gl-w-full gl-flex-col gl-gap-5 md:gl-flex-row md:gl-items-center">
+      <div class="gl-flex gl-w-full gl-flex-col gl-items-center md:gl-flex-row">
+        <gl-form-input
+          :id="`source-${branch.id}`"
+          data-testid="source-input"
+          :placeholder="s__('ScanResultPolicy|input source branch')"
+          :state="!hasValidationError"
+          :value="sourcePattern"
+          @input="debouncedSetBranch($event, $options.SOURCE)"
+        />
+        <span class="gl-mx-3">{{ __('to') }}</span>
+        <gl-form-input
+          :id="`target-${branch.id}`"
+          data-testid="target-input"
+          :placeholder="s__('ScanResultPolicy|input target branch')"
+          :state="!hasValidationError"
+          :value="targetName"
+          @input="debouncedSetBranch($event, $options.TARGET)"
+        />
+      </div>
+
+      <gl-button :aria-label="__('Remove')" icon="remove" @click="removeItem" />
     </div>
 
-    <gl-button :aria-label="__('Remove')" icon="remove" @click="removeItem" />
+    <p v-if="hasValidationError" data-testid="error-message" class="gl-my-2 gl-text-danger">
+      {{ errorMessage }}
+    </p>
   </div>
 </template>
