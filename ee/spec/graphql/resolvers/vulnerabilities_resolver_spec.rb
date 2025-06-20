@@ -8,6 +8,10 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
   describe '#resolve' do
     subject(:resolved) { resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user, **extra_context }) }
 
+    before do
+      stub_licensed_features(security_dashboard: true)
+    end
+
     let_it_be(:group) { create(:group) }
     let_it_be_with_reload(:project) { create(:project, namespace: group) }
     let_it_be(:user) { create(:user, security_dashboard_projects: [project]) }
@@ -29,6 +33,16 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
     let(:params) { {} }
     let(:extra_context) { {} }
     let(:vulnerable) { project }
+
+    context 'when security_dashboard feature is disabled' do
+      before do
+        stub_licensed_features(security_dashboard: false)
+      end
+
+      it 'returns an empty collection' do
+        expect(subject).to be_empty
+      end
+    end
 
     shared_examples_for "a resolver with proper association preloading" do
       it "preloads necessary associations" do
@@ -659,6 +673,10 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
   describe 'event tracking' do
     subject(:service_action) { resolve(described_class, obj: vulnerable, ctx: { current_user: user }) }
+
+    before do
+      stub_licensed_features(security_dashboard: true)
+    end
 
     let_it_be(:group) { create(:group) }
     let_it_be_with_reload(:proj) { create(:project, namespace: group) }

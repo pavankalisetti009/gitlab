@@ -101,7 +101,7 @@ module Resolvers
       description: 'Returns only the vulnerabilities which have remediations.'
 
     def resolve_with_lookahead(**args)
-      return Vulnerability.none unless vulnerable
+      return Vulnerability.none unless vulnerable&.feature_available?(:security_dashboard)
 
       validate_filters(args)
       set_data_source(args)
