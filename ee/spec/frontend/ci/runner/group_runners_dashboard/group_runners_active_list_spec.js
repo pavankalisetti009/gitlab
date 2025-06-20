@@ -12,7 +12,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import { captureException } from '~/ci/runner/sentry_utils';
-import { JOBS_ROUTE_PATH } from '~/ci/runner/constants';
 
 import { groupMostActiveRunnersData } from '../mock_data';
 
@@ -71,13 +70,11 @@ describe('GroupRunnersActiveList', () => {
       expect(findRunnersActiveList().props('activeRunners')).toHaveLength(2);
     });
 
-    it('shows runner jobs url', () => {
+    it('shows runner url', () => {
       const { webUrl, node } = edge1;
 
       expect(findRunnersActiveList().props('activeRunners')[0]).toMatchObject(node);
-      expect(findRunnersActiveList().props('activeRunners')[0].jobsUrl).toEqual(
-        `${webUrl}#${JOBS_ROUTE_PATH}`,
-      );
+      expect(findRunnersActiveList().props('activeRunners')[0].webUrl).toEqual(webUrl);
     });
   });
 

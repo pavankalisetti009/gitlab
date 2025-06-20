@@ -11,7 +11,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import { captureException } from '~/ci/runner/sentry_utils';
-import { JOBS_ROUTE_PATH } from '~/ci/runner/constants';
 
 import { mostActiveRunnersData } from '../mock_data';
 
@@ -69,9 +68,7 @@ describe('AdminRunnersActiveList', () => {
     it('shows runner jobs url', () => {
       const { adminUrl, ...runner } = mockRunner;
       expect(findRunnersActiveList().props('activeRunners')[0]).toMatchObject(runner);
-      expect(findRunnersActiveList().props('activeRunners')[0].jobsUrl).toEqual(
-        `${adminUrl}#${JOBS_ROUTE_PATH}`,
-      );
+      expect(findRunnersActiveList().props('activeRunners')[0].webUrl).toEqual(adminUrl);
     });
   });
 

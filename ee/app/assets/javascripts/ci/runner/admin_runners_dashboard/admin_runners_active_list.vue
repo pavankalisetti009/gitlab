@@ -5,7 +5,7 @@ import RunnerActiveList from 'ee/ci/runner/components/runner_active_list.vue';
 import { captureException } from '~/ci/runner/sentry_utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
-import { I18N_FETCH_ERROR, JOBS_ROUTE_PATH } from '~/ci/runner/constants';
+import { I18N_FETCH_ERROR } from '~/ci/runner/constants';
 
 export default {
   name: 'AdminRunnerActiveList',
@@ -33,7 +33,7 @@ export default {
               const { adminUrl, ...runner } = item;
               return {
                 ...runner,
-                jobsUrl: this.jobsUrl(adminUrl),
+                webUrl: adminUrl,
               };
             })
         );
@@ -48,14 +48,6 @@ export default {
   computed: {
     loading() {
       return this.$apollo.queries.activeRunners.loading;
-    },
-  },
-  methods: {
-    jobsUrl(adminUrl) {
-      const url = new URL(adminUrl);
-      url.hash = JOBS_ROUTE_PATH;
-
-      return url.href;
     },
   },
 };

@@ -5,7 +5,7 @@ import RunnerActiveList from 'ee/ci/runner/components/runner_active_list.vue';
 import { captureException } from '~/ci/runner/sentry_utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
-import { I18N_FETCH_ERROR, JOBS_ROUTE_PATH } from '~/ci/runner/constants';
+import { I18N_FETCH_ERROR } from '~/ci/runner/constants';
 
 export default {
   name: 'GroupRunnerActiveList',
@@ -33,12 +33,17 @@ export default {
       update(data) {
         const edges = data?.group?.runners?.edges || [];
 
-        return edges
-          .map(({ webUrl, node }) => ({
-            jobsUrl: this.jobsUrl(webUrl),
-            ...node,
-          }))
-          .filter(({ runningJobCount }) => runningJobCount > 0);
+        return (
+          edges
+            .map(({ webUrl, node }) => ({
+              webUrl,
+              ...node,
+            }))
+            // The backend does not filter out inactive runners, but
+            // showing them can be confusing for users. Ignore runners
+            // with no active jobs.
+            .filter(({ runningJobCount }) => runningJobCount > 0)
+        );
       },
       error(error) {
         createAlert({ message: I18N_FETCH_ERROR });
@@ -50,14 +55,6 @@ export default {
   computed: {
     loading() {
       return this.$apollo.queries.activeRunners.loading;
-    },
-  },
-  methods: {
-    jobsUrl(webUrl) {
-      const url = new URL(webUrl);
-      url.hash = JOBS_ROUTE_PATH;
-
-      return url.href;
     },
   },
 };
