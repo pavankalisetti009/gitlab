@@ -11,6 +11,7 @@ require 'oj'
 
 ### Do all EE requires BEFORE CE requires ###
 require_relative '../../../../app/models/remote_development/enums/workspace_variable'
+require_relative '../../../../app/models/remote_development/workspace_state_helpers'
 require_relative '../../../../app/validators/ee/json_schema_validator'
 require_relative '../../../../lib/remote_development/files'
 require_relative '../../../../lib/remote_development/remote_development_constants'
