@@ -373,6 +373,48 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
           .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
       end
     end
+
+    describe 'N+1 queries' do
+      let(:single_group_query) do
+        %(query {
+          groups(markedForDeletionOn: "2025-05-25", first: 1) {
+            nodes {
+              markedForDeletion
+              markedForDeletionOn
+              permanentDeletionDate
+            }
+          }
+        })
+      end
+
+      let_it_be(:pending_delete_group2) do
+        create(:group_with_deletion_schedule, marked_for_deletion_on: marked_for_deletion_on, developers: user)
+      end
+
+      let_it_be(:parent_pending_delete_group2) { create(:group, parent: pending_delete_group2) }
+
+      let(:multiple_groups_query) do
+        %(query {
+          groups(markedForDeletionOn: "2025-05-25") {
+            nodes {
+              markedForDeletion
+              markedForDeletionOn
+              permanentDeletionDate
+            }
+          }
+        })
+      end
+
+      it 'avoids N+1 queries' do
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false, query_recorder_debug: true) do
+          GitlabSchema.execute(single_group_query, context: { current_user: user })
+        end
+
+        expect do
+          GitlabSchema.execute(multiple_groups_query, context: { current_user: user })
+        end.not_to exceed_all_query_limit(control)
+      end
+    end
   end
 
   describe 'group deletion in progress field' do
