@@ -19,6 +19,7 @@ module Ai
 
       validates :status, presence: true
       validates :goal, length: { maximum: 16_384 }
+      validates :image, length: { maximum: 2048 }, allow_blank: true
 
       validate :only_known_agent_priviliges
       validate :only_known_pre_approved_agent_privileges

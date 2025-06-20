@@ -50,7 +50,7 @@ module Ai
 
       def workload_definition
         ::Ci::Workloads::WorkloadDefinition.new do |d|
-          d.image = IMAGE
+          d.image = @workflow.image.presence || IMAGE
           d.variables = variables
           d.commands = commands
         end
