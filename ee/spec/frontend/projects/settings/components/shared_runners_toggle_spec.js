@@ -31,6 +31,9 @@ describe('projects/settings/components/shared_runners', () => {
         updatePath: TEST_UPDATE_PATH,
         ...props,
       },
+      stubs: {
+        IdentityVerificationRequiredAlert,
+      },
     });
   };
 
