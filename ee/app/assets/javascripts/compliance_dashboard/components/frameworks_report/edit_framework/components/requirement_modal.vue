@@ -11,6 +11,7 @@ import {
   GlCollapsibleListbox,
   GlFormInputGroup,
   GlInputGroupText,
+  GlTooltipDirective,
   GlTruncate,
 } from '@gitlab/ui';
 import { cloneDeep, omit } from 'lodash';
@@ -23,6 +24,7 @@ import {
   requirementEvents,
 } from '../constants';
 import { EXTERNAL_CONTROL_LABEL } from '../../../../constants';
+import { statusesInfo } from '../../../standards_adherence_report/components/details_drawer/statuses_info';
 
 const MAX_NAME_LENGTH = 255;
 const MAX_DESCRIPTION_LENGTH = 500;
@@ -42,6 +44,9 @@ export default {
     GlFormInputGroup,
     GlInputGroupText,
     GlTruncate,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     requirement: {
@@ -87,7 +92,11 @@ export default {
       return this.gitlabStandardControls
         .filter((control) => !this.controls.some((c) => c?.name === control.id))
         .filter((control) => control.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
-        .map(({ id, name }) => ({ value: id, text: name }))
+        .map(({ id, name }) => ({
+          value: id,
+          text: name,
+          tooltip: statusesInfo[id]?.description || '',
+        }))
         .sort((a, b) => a.text.localeCompare(b.text));
     },
     modalButtonProps() {
@@ -608,7 +617,13 @@ export default {
           :items="controlItems"
           @select="onControlSelect(index, $event)"
           @search="searchQuery = $event"
-        />
+        >
+          <template #list-item="{ item }">
+            <div v-gl-tooltip="item.tooltip" class="gl-w-full">
+              {{ item.text }}
+            </div>
+          </template>
+        </gl-collapsible-listbox>
       </div>
 
       <template v-if="showExternalControlFieldToggle(control)">
