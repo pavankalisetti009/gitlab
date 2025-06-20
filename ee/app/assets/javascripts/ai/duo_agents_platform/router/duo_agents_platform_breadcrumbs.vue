@@ -1,7 +1,11 @@
 <script>
 import { GlBreadcrumb } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { AGENTS_PLATFORM_INDEX_ROUTE, AGENTS_PLATFORM_SHOW_ROUTE } from './constants';
+import {
+  AGENTS_PLATFORM_INDEX_ROUTE,
+  AGENTS_PLATFORM_SHOW_ROUTE,
+  AGENTS_PLATFORM_NEW_ROUTE,
+} from './constants';
 
 export default {
   components: {
@@ -32,6 +36,9 @@ export default {
     isShowRoute() {
       return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE;
     },
+    isNewRoute() {
+      return this.$route.name === AGENTS_PLATFORM_NEW_ROUTE;
+    },
     crumbs() {
       const crumbs = [...this.staticBreadcrumbs];
 
@@ -44,6 +51,13 @@ export default {
       if (this.$route.params.id && this.isShowRoute) {
         crumbs.push({
           text: this.agentRoute.text,
+          to: undefined, // current page, no link
+        });
+      }
+
+      if (this.isNewRoute) {
+        crumbs.push({
+          text: s__('DuoAgentsPlatform|New'),
           to: undefined, // current page, no link
         });
       }

@@ -78,6 +78,35 @@ describe('DuoWorkflowAction component', () => {
       createComponent();
     });
 
+    describe('when the goal fails to match the promptValidatorRegex', () => {
+      const invalidGoal = 'InvalidPath';
+
+      beforeEach(() => {
+        createComponent({ goal: invalidGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
+        findButton().vm.$emit('click');
+      });
+
+      it('emits prompt-validation-error', () => {
+        expect(wrapper.emitted('prompt-validation-error')).toEqual([[invalidGoal]]);
+        expect(axios.post).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when the goal matches the promptVaidatorRegex', () => {
+      const validGoal = 'Jenkinsfile';
+
+      beforeEach(() => {
+        axios.post.mockResolvedValue({ data: mockPipelineData });
+        createComponent({ goal: validGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
+        findButton().vm.$emit('click');
+      });
+
+      it('does not emit prompt-validation-error when goal matches regex', () => {
+        expect(wrapper.emitted('prompt-validation-error')).toBeUndefined();
+        expect(axios.post).toHaveBeenCalled();
+      });
+    });
+
     it('makes API call with correct data when button is clicked', async () => {
       axios.post.mockResolvedValue({ data: mockPipelineData });
 
@@ -103,12 +132,10 @@ describe('DuoWorkflowAction component', () => {
     describe('when request succeeds', () => {
       beforeEach(() => {
         axios.post.mockResolvedValue({ data: mockPipelineData });
+        findButton().vm.$emit('click');
       });
 
-      it('shows success alert with pipeline link', async () => {
-        findButton().vm.$emit('click');
-        await waitForPromises();
-
+      it('shows success alert with pipeline link', () => {
         expect(createAlert).toHaveBeenCalledWith(
           expect.objectContaining({
             variant: 'success',
@@ -118,6 +145,10 @@ describe('DuoWorkflowAction component', () => {
           }),
         );
       });
+
+      it('emits agent-flow-started event', () => {
+        expect(wrapper.emitted('agent-flow-started')).toEqual([[mockPipelineData]]);
+      });
     });
 
     describe('when request fails', () => {
@@ -125,17 +156,19 @@ describe('DuoWorkflowAction component', () => {
 
       beforeEach(() => {
         axios.post.mockRejectedValue(error);
+        findButton().vm.$emit('click');
       });
 
-      it('shows error alert', async () => {
-        findButton().vm.$emit('click');
-        await waitForPromises();
-
+      it('shows error alert', () => {
         expect(createAlert).toHaveBeenCalledWith({
           message: 'Error occurred when starting the workflow',
           captureError: true,
           error,
         });
+      });
+
+      it('does not emits agent-flow-started event', () => {
+        expect(wrapper.emitted('agent-flow-started')).toBeUndefined();
       });
     });
   });
