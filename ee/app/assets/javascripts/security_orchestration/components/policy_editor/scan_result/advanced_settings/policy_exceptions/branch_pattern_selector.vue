@@ -1,4 +1,5 @@
 <script>
+import { get } from 'lodash';
 import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -39,6 +40,17 @@ export default {
     hasBranches() {
       return this.items.length > 0;
     },
+    duplicatesCounter() {
+      if (this.items.length < 2) return {};
+
+      return this.items.reduce((acc, current) => {
+        const key = this.duplicateKey(current);
+        if (!key) return acc;
+
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+    },
   },
   methods: {
     addBranchPattern() {
@@ -48,9 +60,22 @@ export default {
       this.items.splice(index, 1, branch);
       this.$emit('set-branches', removeIds(this.items));
     },
+    duplicateKey(branch) {
+      const getValue = (item, path) => get(item, path, '');
+      const source = getValue(branch, 'source.pattern');
+      const target = getValue(branch, 'target.name');
+
+      if (!source && !target) return null;
+
+      return `${source}_${target}`;
+    },
     removeBranchPattern(id) {
       this.items = this.items.filter((item) => item.id !== id);
       this.$emit('set-branches', removeIds(this.items));
+    },
+    isDuplicate(branch) {
+      const key = this.duplicateKey(branch);
+      return key !== null && this.duplicatesCounter[this.duplicateKey(branch)] > 1;
     },
     mapSelectedBranches(branches) {
       return branches.length > 0
@@ -76,6 +101,7 @@ export default {
         v-for="(item, index) in items"
         :key="item.id"
         :branch="item"
+        :has-validation-error="isDuplicate(item)"
         @set-branch="setBranch($event, index)"
         @remove="removeBranchPattern(item.id)"
       />

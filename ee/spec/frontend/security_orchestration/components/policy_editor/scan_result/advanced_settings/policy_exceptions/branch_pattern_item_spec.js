@@ -22,6 +22,7 @@ describe('BranchPatternItem', () => {
   const findSourceInput = () => wrapper.findByTestId('source-input');
   const findTargetInput = () => wrapper.findByTestId('target-input');
   const findRemoveButton = () => wrapper.findComponent(GlButton);
+  const findErrorMessage = () => wrapper.findByTestId('error-message');
 
   describe('rendering', () => {
     it('renders the component with empty inputs when no pattern is provided', () => {
@@ -97,6 +98,67 @@ describe('BranchPatternItem', () => {
       await findTargetInput().vm.$emit('input', 'target');
 
       expect(wrapper.emitted('set-branch')[1]).toEqual([{ target: { name: 'target' } }]);
+    });
+  });
+
+  describe('validation error handling', () => {
+    it('shows error message when hasValidationError is true', () => {
+      createComponent({
+        props: {
+          hasValidationError: true,
+          errorMessage: 'Custom error message',
+        },
+      });
+
+      const errorMessage = wrapper.findByTestId('error-message');
+      expect(errorMessage.exists()).toBe(true);
+      expect(errorMessage.text()).toBe('Custom error message');
+      expect(errorMessage.classes()).toContain('gl-text-danger');
+    });
+
+    it('hides error message when hasValidationError is false', () => {
+      createComponent({
+        props: {
+          hasValidationError: false,
+          errorMessage: 'Some error message',
+        },
+      });
+
+      expect(findErrorMessage().exists()).toBe(false);
+    });
+
+    it('uses default error message when none provided', () => {
+      createComponent({
+        props: {
+          hasValidationError: true,
+        },
+      });
+
+      const errorMessage = findErrorMessage();
+      expect(errorMessage.exists()).toBe(true);
+      expect(errorMessage.text()).toBe('Please remove duplicates.');
+    });
+
+    it('sets input state to invalid when hasValidationError is true', () => {
+      createComponent({
+        props: {
+          hasValidationError: true,
+        },
+      });
+
+      expect(findSourceInput().props('state')).toBe(false);
+      expect(findTargetInput().props('state')).toBe(false);
+    });
+
+    it('sets input state to valid when hasValidationError is false', () => {
+      createComponent({
+        props: {
+          hasValidationError: false,
+        },
+      });
+
+      expect(findSourceInput().props('state')).toBe(true);
+      expect(findTargetInput().props('state')).toBe(true);
     });
   });
 });

@@ -108,4 +108,122 @@ describe('BranchPatternSelector', () => {
       ]);
     });
   });
+
+  describe('duplicate validation', () => {
+    const duplicateBranchPatterns = [
+      {
+        id: 'pattern_1',
+        source: { pattern: 'feature/*' },
+        target: { name: 'main' },
+      },
+      {
+        id: 'pattern_2',
+        source: { pattern: 'feature/*' },
+        target: { name: 'main' },
+      },
+      {
+        id: 'pattern_3',
+        source: { pattern: 'hotfix/*' },
+        target: { name: 'develop' },
+      },
+    ];
+
+    beforeEach(() => {
+      createComponent({ branches: duplicateBranchPatterns });
+    });
+
+    it('identifies duplicate branches with same source pattern and target name', () => {
+      const branchPatternItems = findBranchPatternItems();
+
+      // First two items should have validation errors (duplicates)
+      expect(branchPatternItems.at(0).props('hasValidationError')).toBe(true);
+      expect(branchPatternItems.at(1).props('hasValidationError')).toBe(true);
+
+      expect(branchPatternItems.at(2).props('hasValidationError')).toBe(false);
+    });
+
+    it('passes default error message to duplicate items', () => {
+      const branchPatternItems = findBranchPatternItems();
+
+      expect(branchPatternItems.at(0).props('errorMessage')).toBe('Please remove duplicates.');
+      expect(branchPatternItems.at(1).props('errorMessage')).toBe('Please remove duplicates.');
+    });
+
+    it('does not show validation error for unique branches', () => {
+      const uniqueBranchPatterns = [
+        {
+          id: 'pattern_1',
+          source: { pattern: 'feature/*' },
+          target: { name: 'main' },
+        },
+        {
+          id: 'pattern_2',
+          source: { pattern: 'hotfix/*' },
+          target: { name: 'develop' },
+        },
+      ];
+
+      createComponent({ branches: uniqueBranchPatterns });
+      const branchPatternItems = findBranchPatternItems();
+
+      expect(branchPatternItems.at(0).props('hasValidationError')).toBe(false);
+      expect(branchPatternItems.at(1).props('hasValidationError')).toBe(false);
+    });
+
+    it('handles partial duplicates correctly', () => {
+      const partialDuplicateBranches = [
+        {
+          id: 'pattern_1',
+          source: { pattern: 'feature/*' },
+          target: { name: 'main' },
+        },
+        {
+          id: 'pattern_2',
+          source: { pattern: 'feature/*' },
+          target: { name: 'develop' }, // Different target
+        },
+        {
+          id: 'pattern_3',
+          source: { pattern: 'hotfix/*' }, // Different source
+          target: { name: 'main' },
+        },
+      ];
+
+      createComponent({ branches: partialDuplicateBranches });
+      const branchPatternItems = findBranchPatternItems();
+
+      // None should have validation errors as they're all unique combinations
+      expect(branchPatternItems.at(0).props('hasValidationError')).toBe(false);
+      expect(branchPatternItems.at(1).props('hasValidationError')).toBe(false);
+      expect(branchPatternItems.at(2).props('hasValidationError')).toBe(false);
+    });
+
+    it('handles empty or undefined values in duplicate detection', () => {
+      const branchesWithEmptyValues = [
+        {
+          id: 'pattern_1',
+          source: { pattern: '' },
+          target: { name: '' },
+        },
+        {
+          id: 'pattern_2',
+          source: { pattern: '' },
+          target: { name: '' },
+        },
+        {
+          id: 'pattern_3',
+          source: {},
+          target: {},
+        },
+      ];
+
+      createComponent({ branches: branchesWithEmptyValues });
+      const branchPatternItems = findBranchPatternItems();
+
+      // Items with empty values should not be treated as duplicates
+      expect(branchPatternItems.at(0).props('hasValidationError')).toBe(false);
+      expect(branchPatternItems.at(1).props('hasValidationError')).toBe(false);
+      expect(branchPatternItems.at(2).props('hasValidationError')).toBe(false);
+    });
+  });
 });
