@@ -19,18 +19,23 @@ RSpec.shared_examples 'successful work item mutation with status widget' do
 
     work_item_id = GlobalID.parse(mutation_response['workItem']['id']).model_id.to_i
 
-    expect(::WorkItems::Statuses::CurrentStatus.last).to have_attributes(
-      work_item_id: work_item_id,
-      system_defined_status_id: status_id,
-      custom_status_id: nil
-    )
+    current_status = ::WorkItems::Statuses::CurrentStatus.find_by(work_item_id: work_item_id)
+
+    expect(current_status.status).to eq(status)
   end
 end
 
 RSpec.shared_examples 'work item status widget mutation rejects invalid inputs' do
   context 'when status gid references non-existing system-defined status' do
     let(:status_gid) { 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/99' }
-    let(:expected_error_message) { "System-defined status doesn't exist." }
+    let(:expected_error_message) { "Status doesn't exist." }
+
+    it_behaves_like 'work item mutation with status widget with error'
+  end
+
+  context 'when status gid references non-existing custom status' do
+    let(:status_gid) { "gid://gitlab/WorkItems::Statuses::Custom::Status/#{non_existing_record_id}" }
+    let(:expected_error_message) { "Status doesn't exist." }
 
     it_behaves_like 'work item mutation with status widget with error'
   end

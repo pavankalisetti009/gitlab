@@ -9,17 +9,16 @@ module Types
         argument :status, Types::GlobalIDType[::WorkItems::Statuses::Status],
           required: false,
           description: 'Global ID of the status.',
-          prepare: ->(global_id, _) {
+          prepare: ->(global_id, _) do
             return if global_id.nil?
 
-            # ::WorkItems::Statuses::SystemDefined::Status is a FixedItemsModel and not AR
-            # so we need to manually resolve the global ID to the model instance.
-            # In the future we'll also support custom statuses through this interface
-            status = global_id.model_class.find(global_id.model_id.to_i)
-            raise GraphQL::ExecutionError, "System-defined status doesn't exist." if status.nil?
+            status = GitlabSchema.find_by_gid(global_id)
+            status = status.sync if status.respond_to?(:sync)
+
+            raise GraphQL::ExecutionError, "Status doesn't exist." if status.nil?
 
             status
-          }
+          end
       end
     end
   end

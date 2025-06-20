@@ -75,4 +75,75 @@ RSpec.describe 'Create an issue', feature_category: :team_planning do
       end
     end
   end
+
+  context 'when status is provided' do
+    let(:status) { build(:work_item_system_defined_status, :in_progress) }
+    let(:status_gid) { status.to_gid.to_s }
+
+    let(:input) do
+      {
+        'title' => 'New title',
+        'status' => status_gid
+      }
+    end
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    subject(:expected_status) do
+      work_item_id = GlobalID.parse(mutation_response['issue']['id']).model_id.to_i
+      ::WorkItems::Statuses::CurrentStatus.find_by(work_item_id: work_item_id)&.status
+    end
+
+    shared_examples 'a successful mutation' do
+      it 'creates the work item with correct status' do
+        post_graphql_mutation(mutation, current_user: current_user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect_graphql_errors_to_be_empty
+
+        is_expected.to eq(status)
+      end
+    end
+
+    it_behaves_like 'a successful mutation'
+
+    context 'with custom status' do
+      let!(:lifecycle) do
+        create(:work_item_custom_lifecycle, namespace: group, work_item_types: [create(:work_item_type, :issue)])
+      end
+
+      let(:status) { create(:work_item_custom_status, name: 'In review', lifecycles: [lifecycle]) }
+
+      it_behaves_like 'a successful mutation'
+    end
+
+    context 'when status gid references non-existing system-defined status' do
+      let(:status_gid) { 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/99' }
+
+      it_behaves_like 'a mutation that returns top-level errors', errors: ["Status doesn't exist."]
+    end
+
+    context 'when status gid references non-existing custom status' do
+      let(:status_gid) { "gid://gitlab/WorkItems::Statuses::Custom::Status/#{non_existing_record_id}" }
+
+      it_behaves_like 'a mutation that returns top-level errors', errors: ["Status doesn't exist."]
+    end
+
+    context 'when work_item_status_feature_flag is disabled' do
+      before do
+        stub_feature_flags(work_item_status_feature_flag: false)
+      end
+
+      it 'ignores the status argument' do
+        post_graphql_mutation(mutation, current_user: current_user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect_graphql_errors_to_be_empty
+
+        is_expected.to be_nil
+      end
+    end
+  end
 end
