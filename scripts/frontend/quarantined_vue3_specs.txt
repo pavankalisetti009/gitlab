@@ -94,7 +94,6 @@ spec/frontend/groups/components/transfer_group_form_spec.js
 spec/frontend/helpers/init_simple_app_helper_spec.js
 spec/frontend/integrations/edit/components/trigger_field_spec.js
 spec/frontend/integrations/edit/components/trigger_fields_spec.js
-spec/frontend/invite_members/components/members_token_select_spec.js
 spec/frontend/issuable/related_issues/components/related_issues_root_spec.js
 spec/frontend/issues/list/components/issues_list_app_spec.js
 spec/frontend/issues/service_desk/components/service_desk_list_app_spec.js
