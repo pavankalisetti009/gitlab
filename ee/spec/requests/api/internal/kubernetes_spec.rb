@@ -15,7 +15,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
 
   let(:jwt_secret) { SecureRandom.random_bytes(Gitlab::Kas::SECRET_LENGTH) }
   let(:agent_token) { create(:cluster_agent_token) }
-  let(:agent_token_headers) { { 'Authorization' => "Bearer #{agent_token.token}" } }
+  let(:agent_token_headers) { { Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => agent_token.token } }
   let(:agent) { agent_token.agent }
   let(:project) { agent.project }
 
@@ -45,14 +45,14 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
   end
 
   shared_examples 'agent authentication' do
-    it 'returns 401 if Authorization header not sent' do
+    it 'returns 401 if Gitlab-Agent-Api-Request header not sent' do
       send_request(headers: {})
 
       expect(response).to have_gitlab_http_status(:unauthorized)
     end
 
-    it 'returns 401 if Authorization is for non-existent agent' do
-      send_request(headers: { 'Authorization' => 'Bearer NONEXISTENT' })
+    it 'returns 401 if Gitlab-Agent-Api-Request is for non-existent agent' do
+      send_request(headers: { Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => 'NONEXISTENT' })
 
       expect(response).to have_gitlab_http_status(:unauthorized)
     end
