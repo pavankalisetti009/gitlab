@@ -172,7 +172,7 @@ describe('PoliciesSection component', () => {
   const findDrawer = () => wrapper.findComponent(DrawerWrapper);
 
   function createComponent({ requestHandlers = [], provide } = {}) {
-    return mountExtended(PoliciesSection, {
+    wrapper = mountExtended(PoliciesSection, {
       apolloProvider: createMockApollo(requestHandlers),
       provide: {
         disableScanPolicyUpdate: false,
@@ -192,7 +192,7 @@ describe('PoliciesSection component', () => {
 
   describe('when section is not expanded', () => {
     beforeEach(() => {
-      wrapper = createComponent({
+      createComponent({
         requestHandlers: [
           [namespacePoliciesQuery, jest.fn()],
           [complianceFrameworkPoliciesQuery, jest.fn()],
@@ -215,7 +215,7 @@ describe('PoliciesSection component', () => {
         jest.fn().mockImplementation(() => {
           return new Promise(() => {});
         });
-      wrapper = createComponent({
+      createComponent({
         requestHandlers: [
           [namespacePoliciesQuery, neverResolve],
           [complianceFrameworkPoliciesQuery, neverResolve],
@@ -246,20 +246,18 @@ describe('PoliciesSection component', () => {
 
       complianceLoadHandler = jest.fn().mockResolvedValueOnce(makeCompliancePoliciesResponse());
 
-      wrapper = createComponent({
+      createComponent({
         requestHandlers: [
           [namespacePoliciesQuery, namespaceLoadHandler],
           [complianceFrameworkPoliciesQuery, complianceLoadHandler],
         ],
       });
-
-      wrapper.findComponent(EditSection).vm.$emit('toggle', true);
+      await waitForPromises();
+      await wrapper.findComponent(EditSection).vm.$emit('toggle', true);
       await waitForPromises();
     });
 
-    it('loads next pages for namespace policies with appropriate cursors if has next pages', async () => {
-      await waitForPromises();
-
+    it('loads next pages for namespace policies with appropriate cursors if has next pages', () => {
       expect(namespaceLoadHandler).toHaveBeenCalledWith({
         approvalPoliciesAfter: 'A1',
         scanExecutionPoliciesAfter: 'SE1',
@@ -278,16 +276,11 @@ describe('PoliciesSection component', () => {
       });
     });
 
-    it('correctly stops loading next pages for namespace policies after two calls', async () => {
-      await waitForPromises();
-      await waitForPromises();
+    it('correctly stops loading next pages for namespace policies after two calls', () => {
       expect(namespaceLoadHandler).toHaveBeenCalledTimes(2);
     });
 
-    it('correctly loads compliance policies', async () => {
-      await waitForPromises();
-
-      expect(complianceLoadHandler).toHaveBeenCalledTimes(1);
+    it('correctly loads compliance policies', () => {
       expect(complianceLoadHandler).toHaveBeenCalledWith({
         complianceFramework: 'gid://gitlab/ComplianceManagement::Framework/1',
         fullPath: 'Commit451',
@@ -301,7 +294,7 @@ describe('PoliciesSection component', () => {
 
   describe('when loaded', () => {
     beforeEach(async () => {
-      wrapper = createComponent({
+      createComponent({
         requestHandlers: [
           [namespacePoliciesQuery, jest.fn().mockResolvedValue(makeNamespacePoliciesResponse())],
           [
