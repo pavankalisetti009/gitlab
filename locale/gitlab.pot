@@ -58596,6 +58596,9 @@ msgstr ""
 msgid "Show %{count} closed %{itemText}"
 msgstr ""
 
+msgid "Show %{count} more"
+msgstr ""
+
 msgid "Show Pipeline ID"
 msgstr ""
 
