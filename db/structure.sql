@@ -16169,7 +16169,8 @@ CREATE TABLE issuable_slas (
     due_at timestamp with time zone NOT NULL,
     label_applied boolean DEFAULT false NOT NULL,
     issuable_closed boolean DEFAULT false NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_1ae7689c41 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE issuable_slas_id_seq
