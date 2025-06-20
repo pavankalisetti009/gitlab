@@ -52,7 +52,9 @@ export default {
       this.alertMessage = message;
     },
     async submit() {
-      this.track('submit_dependency_proxy_packages_settings');
+      this.track('submit_dependency_proxy_packages_settings', {
+        label: 'dependendency_proxy_packages_settings',
+      });
       this.updateInProgress = true;
       this.alertMessage = '';
       await this.$apollo
