@@ -108,7 +108,7 @@ describe('EmailVerification', () => {
 
         expect(findCodeInput().classes('is-invalid')).toBe(errorShown);
         expect(findErrorMessage().exists()).toBe(errorShown);
-        expect(findSubmitButton().props('disabled')).toBe(errorShown);
+        expect(findSubmitButton().props('disabled')).toBe(false);
         if (errorShown) expect(findErrorMessage().text()).toBe(message);
       });
 

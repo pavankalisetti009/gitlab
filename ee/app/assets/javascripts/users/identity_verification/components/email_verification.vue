@@ -178,11 +178,10 @@ export default {
         </gl-sprintf>
       </div>
       <gl-button
-        :class="submitButtonClasses"
+        :class="`js-no-auto-disable ${submitButtonClasses}`"
         block
         variant="confirm"
         type="submit"
-        :disabled="!isValidInput"
       >
         {{ $options.i18n.verify }}
       </gl-button>
