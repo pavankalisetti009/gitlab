@@ -78,8 +78,14 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
       end
 
       context 'when repository additional_contexts are given' do
-        let_it_be(:project_1) { create(:project, owners: [user]) }
-        let_it_be(:project_2) { create(:project, developers: [user]) }
+        let_it_be(:project_1) { create(:project, description: 'This is Project 1', owners: [user]) }
+        let_it_be(:project_2) { create(:project, description: nil, developers: [user]) }
+        let(:projects_by_gid) do
+          {
+            "gid://gitlab/Project/#{project_1.id}" => project_1,
+            "gid://gitlab/Project/#{project_2.id}" => project_2
+          }
+        end
 
         let(:additional_context) do
           projects = [project_1, project_2]
@@ -87,7 +93,12 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             {
               category: 'repository',
               id: "gid://gitlab/Project/#{p.id}",
-              content: ''
+              content: '',
+              metadata: {
+                'name' => p.name,
+                'pathWithNamespace' => p.full_path,
+                'description' => p.description
+              }
             }
           end
         end
@@ -173,8 +184,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             )
           end
 
-          def expected_search_results(global_project_id)
-            project_id = global_project_id.split("/").last.to_i
+          def expected_search_results(project_id)
             es_docs = elasticsearch_docs[project_id] || []
             es_docs.pluck('_source')
           end
@@ -196,7 +206,15 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
               expected_message = "A semantic search has been performed on the repository."
               expect(ac_content).to include(expected_message)
 
-              expected_search_results(ac['id']).each do |esr_info|
+              context_project = projects_by_gid[ac['id']]
+              repo_infos = [
+                "Name: #{context_project.name}",
+                "Path: #{context_project.full_path}"
+              ]
+              repo_infos << "Description: #{context_project.description}" if context_project.description
+              expect(ac_content).to include(repo_infos.join("\n"))
+
+              expected_search_results(context_project.id).each do |esr_info|
                 expected_search_result = "<search_result>\n" \
                   "<file_path>#{esr_info['path']}</file_path>\n" \
                   "<content>#{esr_info['content']}</content>\n" \

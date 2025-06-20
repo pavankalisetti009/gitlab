@@ -55,28 +55,52 @@ module Gitlab
             end
 
             def enhance_repository_context
-              codebase_query = ACTIVE_CONTEXT_QUERY_CLASS.new(search_term: options[:input], user: context.current_user)
-
               context.additional_context.each do |ctx|
                 next unless ctx[:category] == 'repository'
 
-                project_id = extract_project_id_from_global_id(ctx[:id])
-                next unless project_id
-
-                results = codebase_query.filter(project_id: project_id)
-
-                ctx[:content] += "\n\n" \
-                  "A semantic search has been performed on the repository. " \
-                  "The results are listed below enclosed in <search_result></search_result>. " \
-                  "Each result has a file_path and content. The content may be a snippet " \
-                  "within the file or the full file content.\n\n"
-                ctx[:content] += results.map do |r|
-                  "<search_result>\n" \
-                    "<file_path>#{r['path']}</file_path>\n" \
-                    "<content>#{r['content']}</content>\n" \
-                    "</search_result>"
-                end.join("\n\n")
+                ctx[:content] += repository_info_context(ctx[:metadata])
+                ctx[:content] += search_results_context(ctx[:id])
               end
+            end
+
+            def repository_info_context(metadata)
+              return "" if metadata.blank?
+
+              info_contexts = [
+                "Name: #{metadata['name']}",
+                "Path: #{metadata['pathWithNamespace']}"
+              ]
+              info_contexts << "Description: #{metadata['description']}" if metadata['description']
+
+              info_contexts.join("\n")
+            end
+
+            def search_results_context(project_global_id)
+              project_id = extract_project_id_from_global_id(project_global_id)
+              return "" unless project_id
+
+              results = codebase_query.filter(project_id: project_id)
+
+              sr_context = "\n\n" \
+                "A semantic search has been performed on the repository. " \
+                "The results are listed below enclosed in <search_result></search_result>. " \
+                "Each result has a file_path and content. The content may be a snippet " \
+                "within the file or the full file content.\n\n"
+              sr_context += results.map do |r|
+                "<search_result>\n" \
+                  "<file_path>#{r['path']}</file_path>\n" \
+                  "<content>#{r['content']}</content>\n" \
+                  "</search_result>"
+              end.join("\n\n")
+
+              sr_context
+            end
+
+            def codebase_query
+              @codebase_query ||= ACTIVE_CONTEXT_QUERY_CLASS.new(
+                search_term: options[:input],
+                user: context.current_user
+              )
             end
 
             def extract_project_id_from_global_id(project_global_id)
