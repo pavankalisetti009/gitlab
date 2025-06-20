@@ -2398,19 +2398,19 @@ msgstr ""
 msgid "AIAgent|Your agent's system prompt will be applied to the chat input."
 msgstr ""
 
+msgid "AICatalog|AI Catalog"
+msgstr ""
+
+msgid "AICatalog|Agents"
+msgstr ""
+
 msgid "AISummary|Generates a summary of this issue"
 msgstr ""
 
 msgid "AISummary|View summary"
 msgstr ""
 
-msgid "AI|AI Catalog"
-msgstr ""
-
 msgid "AI|Accept & Insert"
-msgstr ""
-
-msgid "AI|Agents"
 msgstr ""
 
 msgid "AI|Apply AI-generated description"
