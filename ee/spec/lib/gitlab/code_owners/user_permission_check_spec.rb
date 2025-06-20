@@ -212,7 +212,7 @@ RSpec.describe Gitlab::CodeOwners::UserPermissionCheck, feature_category: :sourc
           multiple_reference_entry,
           extra_invalid_entry
         ], limit: limit).errors
-      end.to issue_same_number_of_queries_as(control)
+      end.not_to exceed_query_limit(control.count - 1)
     end
   end
 end

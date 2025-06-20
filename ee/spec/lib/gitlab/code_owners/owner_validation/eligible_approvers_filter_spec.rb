@@ -207,6 +207,6 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::EligibleApproversFilter, fea
       filter.valid_usernames
       filter.invalid_emails
       filter.valid_emails
-    end.to issue_same_number_of_queries_as(control)
+    end.not_to exceed_query_limit(control.count - 1)
   end
 end
