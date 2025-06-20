@@ -83,7 +83,7 @@ RSpec.describe 'Create an issue', feature_category: :team_planning do
     let(:input) do
       {
         'title' => 'New title',
-        'status' => status_gid
+        'statusId' => status_gid
       }
     end
 

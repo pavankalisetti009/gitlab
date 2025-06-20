@@ -26,19 +26,9 @@ module EE
             required: false,
             description: 'Global iteration cadence ID. Required when `iterationWildcardId` is provided.'
 
-          argument :status, ::Types::GlobalIDType[::WorkItems::Statuses::Status],
+          argument :status_id, ::Types::GlobalIDType[::WorkItems::Statuses::Status],
             required: false,
-            description: 'Global ID of the status.',
-            prepare: ->(global_id, _) do
-              return if global_id.nil?
-
-              status = ::GitlabSchema.find_by_gid(global_id)
-              status = status.sync if status.respond_to?(:sync)
-
-              raise ::GraphQL::ExecutionError, "Status doesn't exist." if status.nil?
-
-              status
-            end
+            description: 'Global ID of the status.'
         end
 
         override :resolve
@@ -59,9 +49,21 @@ module EE
         def build_create_issue_params(params, project)
           params[:epic_id] = params[:epic_id]&.model_id if params.key?(:epic_id)
 
+          handle_status_params(params)
           handle_iteration_params(params, project)
 
           super
+        end
+
+        def handle_status_params(params)
+          return if params[:status_id].nil?
+
+          status = ::GitlabSchema.find_by_gid(params.delete(:status_id))
+          status = status.sync if status.respond_to?(:sync)
+
+          raise ::GraphQL::ExecutionError, "Status doesn't exist." if status.nil?
+
+          params[:status] = status
         end
 
         def handle_iteration_params(params, project)
