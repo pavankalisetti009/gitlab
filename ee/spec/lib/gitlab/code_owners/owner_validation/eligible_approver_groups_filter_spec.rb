@@ -97,6 +97,6 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::EligibleApproverGroupsFilter
       filter.output_groups
       filter.valid_group_names
       filter.invalid_group_names
-    end.to issue_same_number_of_queries_as(control)
+    end.not_to exceed_query_limit(control.count - 1)
   end
 end
