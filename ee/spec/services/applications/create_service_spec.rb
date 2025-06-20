@@ -9,11 +9,11 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
   let_it_be(:user) { create(:user) }
 
   let(:group) { create(:group) }
-  let(:params) { attributes_for(:application, scopes: ['read_user']) }
+  let(:params) { attributes_for(:application, scopes: %w[read_user]) }
 
   subject(:service) { described_class.new(user, params) }
 
-  describe '#audit_event_service' do
+  describe '#audit_oauth_application_creation' do
     where(:case_name, :owner, :entity_type) do
       'instance application' | nil         | 'User'
       'group application'    | ref(:group) | 'Group'
@@ -26,9 +26,43 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
         params[:owner] = owner
       end
 
+      it 'creates audit event with correct parameters' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          name: 'oauth_application_created',
+          author: user,
+          scope: owner || user,
+          target: instance_of(::Doorkeeper::Application),
+          message: 'OAuth application added',
+          additional_details: hash_including(
+            application_name: anything,
+            application_id: anything,
+            scopes: %w[read_user]
+          ),
+          ip_address: test_request.remote_ip
+        )
+
+        service.execute(test_request)
+      end
+
       it 'creates AuditEvent with correct entity type' do
-        expect { subject.execute(test_request) }.to change(AuditEvent, :count).by(1)
+        expect { service.execute(test_request) }.to change(AuditEvent, :count).by(1)
         expect(AuditEvent.last.entity_type).to eq(entity_type)
+      end
+    end
+
+    context 'when application has multiple scopes' do
+      let(:params) { attributes_for(:application, scopes: %w[api read_user read_repository]) }
+
+      it 'includes all scopes in audit details' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          hash_including(
+            additional_details: hash_including(
+              scopes: %w[api read_user read_repository]
+            )
+          )
+        )
+
+        service.execute(test_request)
       end
     end
   end
