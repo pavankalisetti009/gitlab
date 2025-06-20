@@ -176,7 +176,7 @@ module Search
       end
 
       def port_ready?(port)
-        health_check_path = port == ZOEKT_INDEX_PORT ? '/indexer/health' : '/'
+        health_check_path = port == ZOEKT_INDEX_PORT ? '/indexer/health' : '/healthz'
         Timeout.timeout(5) do
           ::Gitlab::HTTP.get("http://127.0.0.1:#{port}#{health_check_path}", allow_local_requests: true).success?
         rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Timeout::Error
