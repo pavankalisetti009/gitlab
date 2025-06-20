@@ -740,46 +740,6 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
   end
 
   describe "methods" do
-    describe "#actual_state_terminated?" do
-      let(:actual_state) { states_module::TERMINATED }
-
-      it "returns true if actual state is terminated" do
-        expect(workspace.actual_state_terminated?).to be true
-      end
-    end
-
-    describe "#desired_state_running?" do
-      let(:desired_state) { states_module::RUNNING }
-
-      it "returns true if desired state is running" do
-        expect(workspace.desired_state_running?).to be true
-      end
-    end
-
-    describe "#desired_state_restart_requested?" do
-      let(:desired_state) { states_module::RESTART_REQUESTED }
-
-      it "returns true if desired state is restart requested" do
-        expect(workspace.desired_state_restart_requested?).to be true
-      end
-    end
-
-    describe "#desired_state_stopped?" do
-      let(:desired_state) { states_module::STOPPED }
-
-      it "returns true if desired state is stopped" do
-        expect(workspace.desired_state_stopped?).to be true
-      end
-    end
-
-    describe "#desired_state_terminated?" do
-      let(:desired_state) { states_module::TERMINATED }
-
-      it "returns true if desired state is terminated" do
-        expect(workspace.desired_state_terminated?).to be true
-      end
-    end
-
     describe "#url" do
       before do
         workspace.send(:set_workspaces_agent_config_version)
