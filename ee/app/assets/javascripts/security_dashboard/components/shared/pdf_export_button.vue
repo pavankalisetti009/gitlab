@@ -1,7 +1,8 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { createAlert, VARIANT_INFO } from '~/alert';
+import { createAlert, VARIANT_INFO, VARIANT_DANGER } from '~/alert';
+import axios from '~/lib/utils/axios_utils';
 
 export default {
   name: 'PdfExportButton',
@@ -10,6 +11,13 @@ export default {
   },
   directives: {
     GlTooltip: GlTooltipDirective,
+  },
+  inject: ['vulnerabilitiesPdfExportEndpoint', 'dashboardType'],
+  props: {
+    getReportData: {
+      type: Function,
+      required: true,
+    },
   },
   data() {
     return {
@@ -26,9 +34,30 @@ export default {
         dismissible: true,
       });
     },
-    onClickExport() {
+    notifyUserOfExportError(error) {
+      const message = error.response?.data?.message;
+
+      createAlert({
+        message: message || s__('SecurityReports|There was an error while generating the report.'),
+        variant: VARIANT_DANGER,
+        dismissible: true,
+      });
+    },
+    async onClickExport() {
       this.isExporting = true;
-      this.notifyUserReportWillBeEmailed();
+
+      try {
+        const reportData = await this.getReportData();
+        await axios.post(this.vulnerabilitiesPdfExportEndpoint, {
+          report_data: { ...reportData, dashboard_type: this.dashboardType },
+          export_format: 'pdf',
+        });
+        this.notifyUserReportWillBeEmailed();
+      } catch (error) {
+        this.notifyUserOfExportError(error);
+      } finally {
+        this.isExporting = false;
+      }
     },
   },
 };
