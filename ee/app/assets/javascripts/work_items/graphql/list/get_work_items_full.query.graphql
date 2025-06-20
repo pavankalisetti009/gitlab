@@ -1,7 +1,7 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
-#import "ee_else_ce/work_items/graphql/list/work_item_widgets.fragment.graphql"
+#import "./work_item_widgets.fragment.graphql"
 
-query getWorkItems(
+query getWorkItemsFullEE(
   $excludeProjects: Boolean = false
   $includeDescendants: Boolean = true
   $fullPath: ID!
@@ -33,6 +33,7 @@ query getWorkItems(
   $beforeCursor: String
   $firstPageSize: Int
   $lastPageSize: Int
+  $customField: [WorkItemWidgetCustomFieldFilterInputType!]
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -68,6 +69,7 @@ query getWorkItems(
       before: $beforeCursor
       first: $firstPageSize
       last: $lastPageSize
+      customField: $customField
     ) {
       pageInfo {
         ...PageInfo
@@ -97,7 +99,20 @@ query getWorkItems(
         updatedAt
         userDiscussionsCount
         webUrl
-        widgets {
+        widgets(
+          onlyTypes: [
+            ASSIGNEES
+            AWARD_EMOJI
+            MILESTONE
+            START_AND_DUE_DATE
+            TIME_TRACKING
+            HEALTH_STATUS
+            WEIGHT
+            LINKED_ITEMS
+            ITERATION
+            DEVELOPMENT
+          ]
+        ) {
           type
           ...WorkItemWidgets
         }

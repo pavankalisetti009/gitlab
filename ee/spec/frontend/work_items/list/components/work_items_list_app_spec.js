@@ -18,8 +18,6 @@ import {
   OPERATORS_IS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
-import getWorkItemsForEpicsFullQuery from 'ee/work_items/graphql/list/get_work_items_for_epics_full.query.graphql';
-import getWorkItemsForEpicsSlimQuery from 'ee/work_items/graphql/list/get_work_items_for_epics_slim.query.graphql';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import { mockNamespaceCustomFieldsResponse } from 'ee_jest/vue_shared/components/filtered_search_bar/mock_data';
 
@@ -161,18 +159,6 @@ describeSkipVue3(skipReason, () => {
 
       expect(findWorkItemsListApp().props('withTabs')).toBe(false);
     });
-  });
-
-  it('passes the eeEpicListFullQuery prop down to WorkItemsListApp', () => {
-    mountComponent();
-
-    expect(findWorkItemsListApp().props('eeEpicListFullQuery')).toBe(getWorkItemsForEpicsFullQuery);
-  });
-
-  it('passes the eeEpicListSlimQuery prop down to WorkItemsListApp', () => {
-    mountComponent();
-
-    expect(findWorkItemsListApp().props('eeEpicListSlimQuery')).toBe(getWorkItemsForEpicsSlimQuery);
   });
 
   describe('custom field filter tokens', () => {

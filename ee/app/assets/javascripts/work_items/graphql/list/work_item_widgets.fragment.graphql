@@ -9,13 +9,8 @@ fragment WorkItemWidgets on WorkItemWidget {
     weight
   }
   ... on WorkItemWidgetLinkedItems {
-    linkedItems {
-      nodes {
-        linkId
-        linkType
-        workItemState
-      }
-    }
+    blockingCount
+    blockedByCount
   }
   ... on WorkItemWidgetIteration {
     iteration {
