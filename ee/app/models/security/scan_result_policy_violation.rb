@@ -17,6 +17,8 @@ module Security
     validates :scan_result_policy_id, uniqueness: { scope: %i[merge_request_id] }
     validates :violation_data, json_schema: { filename: 'scan_result_policy_violation_data' }, allow_blank: true
 
+    scope :running, -> { where(status: :running) }
+
     enum :status, {
       running: 0,
       failed: 1,

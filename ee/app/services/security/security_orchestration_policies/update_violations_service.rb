@@ -60,6 +60,7 @@ module Security
         end
 
         publish_violations_updated_event if publish_event?
+        record_violations_detected_audit_event if record_violations_detected_audit_event?
 
         [violated_policies.clear, unviolated_policies.clear, skipped_policies.clear]
       end
@@ -111,6 +112,20 @@ module Security
             data: { merge_request_id: merge_request.id }
           )
         )
+      end
+
+      def record_violations_detected_audit_event?
+        return false unless ::Feature.enabled?(
+          :collect_security_policy_violations_detected_audit_events, merge_request.project
+        )
+
+        violations = merge_request.scan_result_policy_violations
+
+        violations.any? && violations.running.empty?
+      end
+
+      def record_violations_detected_audit_event
+        ::MergeRequests::PolicyViolationsDetectedAuditEventWorker.perform_async(merge_request.id)
       end
     end
   end
