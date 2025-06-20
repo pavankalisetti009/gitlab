@@ -5,16 +5,17 @@ require 'spec_helper'
 RSpec.describe ArkoseHelper, type: :helper, feature_category: :instance_resiliency do
   describe '.arkose_data_exchange_payload' do
     let(:request_double) { instance_double(ActionDispatch::Request) }
+    let(:email) { "test@example.com" }
 
-    subject(:call_method) { helper.arkose_data_exchange_payload(use_case) }
+    subject(:call_method) { helper.arkose_data_exchange_payload(use_case, email: email) }
 
     before do
-      allow(helper).to receive(:request).and_return(request_double)
+      allow(helper).to receive_messages(request: request_double)
     end
 
     shared_examples 'builds the payload with the correct options' do
       specify do
-        options = { use_case: use_case, require_challenge: require_challenge }
+        options = { use_case: use_case, require_challenge: require_challenge, email: email }
         expect_next_instance_of(Arkose::DataExchangePayload, request_double, options) do |instance|
           expect(instance).to receive(:build).and_return('payload')
         end
@@ -32,6 +33,7 @@ RSpec.describe ArkoseHelper, type: :helper, feature_category: :instance_resilien
       it_behaves_like 'builds the payload with the correct options' do
         let(:use_case) { Arkose::DataExchangePayload::USE_CASE_SIGN_UP }
         let(:require_challenge) { false }
+        let(:email) { nil }
       end
 
       context 'and phone verifications hard limit has been exceeded' do

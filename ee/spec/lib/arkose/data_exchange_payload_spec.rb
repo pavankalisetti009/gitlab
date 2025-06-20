@@ -102,6 +102,25 @@ RSpec.describe Arkose::DataExchangePayload, feature_category: :instance_resilien
       it { is_expected.to be_nil }
     end
 
+    context 'when email is present' do
+      let(:email) { "test@example.com" }
+
+      subject(:result) do
+        described_class.new(
+          request,
+          use_case: described_class::USE_CASE_IDENTITY_VERIFICATION,
+          email: email
+        ).build
+      end
+
+      it "includes the email address" do
+        decrypted_payload = decrypt(result, key)
+        json_payload = Gitlab::Json.parse(decrypted_payload)
+
+        expect(json_payload['email_address']).to eq email
+      end
+    end
+
     context 'when require_challenge is true' do
       subject(:result) do
         described_class.new(

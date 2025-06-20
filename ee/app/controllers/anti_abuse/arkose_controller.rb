@@ -10,7 +10,7 @@ module AntiAbuse
     before_action :require_signed_in_user!
 
     def data_exchange_payload
-      render json: { payload: helpers.arkose_data_exchange_payload(use_case) }
+      render json: { payload: helpers.arkose_data_exchange_payload(use_case, email: @user&.email) }
     end
 
     private

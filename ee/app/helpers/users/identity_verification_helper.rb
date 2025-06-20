@@ -56,7 +56,8 @@ module Users
           email: email_verification_data(user),
           arkose: arkose_labs_data,
           arkose_data_exchange_payload:
-            arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION)
+            arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION,
+              email: user.email)
         }.to_json
       }
     end
