@@ -10,13 +10,14 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
 
     before do
       stub_licensed_features(
+        blocked_issues: feature_available,
+        group_bulk_edit: feature_available,
         issuable_health_status: feature_available,
         iterations: feature_available,
         issue_weights: feature_available,
         okrs: feature_available,
         subepics: feature_available,
         epics: feature_available,
-        group_bulk_edit: feature_available,
         quality_management: feature_available,
         scoped_labels: feature_available,
         linked_items_epics: feature_available
@@ -35,6 +36,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns true for the features' do
         expect(work_items_data).to include(
           {
+            has_blocked_issues_feature: "true",
             has_group_bulk_edit_feature: "true",
             has_issuable_health_status_feature: "true",
             has_issue_weights_feature: "true",
@@ -63,6 +65,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns false for the features' do
         expect(work_items_data).to include(
           {
+            has_blocked_issues_feature: "false",
             has_group_bulk_edit_feature: "false",
             has_issuable_health_status_feature: "false",
             has_issue_weights_feature: "false",

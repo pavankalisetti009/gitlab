@@ -9,6 +9,7 @@ module EE
       group = resource_parent.is_a?(Group) ? resource_parent : resource_parent.group
 
       super.merge(
+        has_blocked_issues_feature: resource_parent.licensed_feature_available?(:blocked_issues).to_s,
         has_issue_weights_feature: resource_parent.licensed_feature_available?(:issue_weights).to_s,
         has_okrs_feature: resource_parent.licensed_feature_available?(:okrs).to_s,
         has_epics_feature: resource_parent.licensed_feature_available?(:epics).to_s,
