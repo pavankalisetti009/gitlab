@@ -121,7 +121,10 @@ module Security
       def token_status(token)
         return 'unknown' unless token
 
-        token.active? ? 'active' : 'inactive'
+        return token.active? ? 'active' : 'inactive' if token.respond_to?(:active?)
+
+        # Tokens without active? method (e.g., GroupScimAuthAccessToken) are assumed to be active
+        'active'
       end
 
       # Builds attributes for FindingTokenStatus records grouped by token SHA.

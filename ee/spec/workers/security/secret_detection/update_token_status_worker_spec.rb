@@ -200,6 +200,18 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusWorker, feature_categ
                 {
                   factory: [:ci_runner, :project, { projects: [project] }],
                   identifier: 'gitlab_runner_auth_token_routable'
+                },
+                {
+                  factory: [:cluster_agent_token, :with_plaintext_token],
+                  identifier: 'gitlab_kubernetes_agent_token'
+                },
+                {
+                  factory: [:group_scim_auth_access_token],
+                  identifier: 'gitlab_scim_oauth_token'
+                },
+                {
+                  factory: [:ci_build],
+                  identifier: 'gitlab_ci_build_token'
                 }
               ]
             end
