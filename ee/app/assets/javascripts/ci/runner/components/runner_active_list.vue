@@ -64,7 +64,7 @@ export default {
         <runner-full-name :runner="item" />
       </template>
       <template #cell(runningJobCount)="{ item = {}, value }">
-        <gl-link :href="item.jobsUrl">
+        <gl-link :href="item.webUrl">
           <ci-icon :status="$options.CI_ICON_STATUS" />
           {{ formatNumber(value) }}
         </gl-link>

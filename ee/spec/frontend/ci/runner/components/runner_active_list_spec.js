@@ -3,7 +3,6 @@ import { extendedWrapper, mountExtended } from 'helpers/vue_test_utils_helper';
 
 import RunnerActiveList from 'ee/ci/runner/components/runner_active_list.vue';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { JOBS_ROUTE_PATH } from '~/ci/runner/constants';
 import { mostActiveRunnersData } from '../mock_data';
 
 jest.mock('~/alert');
@@ -12,10 +11,8 @@ jest.mock('~/ci/runner/sentry_utils');
 const mostActiveRunners = mostActiveRunnersData.data.runners.nodes;
 const [{ adminUrl, ...mockRunner }, { adminUrl2, ...mockRunner2 }] = mostActiveRunners;
 
-mockRunner.jobsUrl = `${adminUrl}#${JOBS_ROUTE_PATH}`;
-mockRunner2.jobsUrl = `${adminUrl2}#${JOBS_ROUTE_PATH}`;
-
-// Vue.use(VueApollo);
+mockRunner.webUrl = adminUrl;
+mockRunner2.webUrl = adminUrl2;
 
 describe('RunnerActiveList', () => {
   let wrapper;
@@ -84,7 +81,7 @@ describe('RunnerActiveList', () => {
 
     it('shows jobs link', () => {
       const url = findCell(0, 'runningJobCount').findComponent(GlLink).attributes('href');
-      expect(url).toBe(mockRunner.jobsUrl);
+      expect(url).toBe(mockRunner.webUrl);
     });
   });
 

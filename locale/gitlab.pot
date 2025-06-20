@@ -52637,9 +52637,6 @@ msgstr ""
 msgid "Runners|Assigned Group"
 msgstr ""
 
-msgid "Runners|Assigned Projects (%{projectCount})"
-msgstr ""
-
 msgid "Runners|Assigned project runners"
 msgstr ""
 
@@ -52778,9 +52775,6 @@ msgid "Runners|Deploy GitLab Runner in AWS"
 msgstr ""
 
 msgid "Runners|Description"
-msgstr ""
-
-msgid "Runners|Details"
 msgstr ""
 
 msgid "Runners|Don't see what you are looking for? See the full list of options, including a fully customizable option %{linkStart}here%{linkEnd}."
@@ -53461,9 +53455,6 @@ msgid "Runners|This may not be needed if you manage your runner as a %{linkStart
 msgstr ""
 
 msgid "Runners|This runner has not run any jobs"
-msgstr ""
-
-msgid "Runners|This runner has not run any jobs."
 msgstr ""
 
 msgid "Runners|This runner is outdated, an upgrade is recommended"
