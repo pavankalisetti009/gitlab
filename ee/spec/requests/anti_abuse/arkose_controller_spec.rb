@@ -15,7 +15,7 @@ RSpec.describe AntiAbuse::ArkoseController, :clean_gitlab_redis_sessions, featur
     shared_examples 'returns an Arkose Data exchange payload for the correct use case' do |use_case|
       it 'returns an Arkose Data Exchange payload', :aggregate_failures do
         expect_next_instance_of(Arkose::DataExchangePayload, an_instance_of(ActionDispatch::Request),
-          a_hash_including({ use_case: use_case })) do |instance|
+          a_hash_including({ use_case: use_case, email: user.email })) do |instance|
           expect(instance).to receive(:build).and_return(mock_payload)
         end
 

@@ -9,8 +9,9 @@ module Arkose
     USE_CASE_SIGN_UP = 'SIGN_UP'
     USE_CASE_IDENTITY_VERIFICATION = 'IDENTITY_VERIFICATION'
 
-    def initialize(request, use_case:, require_challenge: false)
+    def initialize(request, use_case:, email: nil, require_challenge: false)
       @request = request
+      @email = email
       @use_case = use_case
 
       # If true, challenge will be interactive mode (i.e. the user will be shown
@@ -31,7 +32,7 @@ module Arkose
 
     private
 
-    attr_reader :request, :use_case, :require_challenge
+    attr_reader :request, :use_case, :email, :require_challenge
 
     def shared_key
       @shared_key ||= ::AntiAbuse::IdentityVerification::Settings.arkose_data_exchange_key
@@ -59,6 +60,9 @@ module Arkose
 
       # Arkose expects the value to be a string instead of a boolean
       data[:interactive] = 'true' if require_challenge
+
+      # Provide the user email address if available
+      data[:email_address] = email if email.present?
 
       data.compact.to_json
     end
