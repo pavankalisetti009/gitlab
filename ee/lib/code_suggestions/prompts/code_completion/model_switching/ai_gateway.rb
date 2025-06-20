@@ -6,6 +6,7 @@ module CodeSuggestions
       module ModelSwitching
         class AiGateway < CodeSuggestions::Prompts::Base
           include CodeSuggestions::Prompts::CodeCompletion::Anthropic::Concerns::Prompt
+          include Gitlab::Loggable
 
           GATEWAY_PROMPT_VERSION = 3
           MODEL_PROVIDER = 'gitlab'
@@ -22,11 +23,13 @@ module CodeSuggestions
           end
 
           def request_params
+            model_name = determine_model_name
+
             {
               model_provider: self.class::MODEL_PROVIDER,
               model_name: model_name.to_s,
               prompt_version: self.class::GATEWAY_PROMPT_VERSION,
-              prompt: find_prompt
+              prompt: find_prompt(model_name)
             }
           end
 
@@ -34,7 +37,7 @@ module CodeSuggestions
 
           attr_reader :user_group_with_claude_code_completion
 
-          def find_prompt
+          def find_prompt(model_name)
             # We still need to pass the prompt due to legacy reasons, but only for Anthropic models.
             # See https://gitlab.com/gitlab-org/gitlab/-/issues/548241#note_2553250550 for details.
             return unless GITLAB_PROVIDED_ANTHROPIC_MODELS_FOR_CODE_COMPLETION.include?(model_name.to_s)
@@ -42,23 +45,42 @@ module CodeSuggestions
             prompt
           end
 
-          def model_name
-            # Currently, only "pinned" models are served via this code path.
-            # Even when a model is pinned, we should adhere to specific group rules that are set
-            # in place by the customer, via feature flags.
+          def root_namespace_id
+            params[:project]&.root_namespace&.id
+          end
+
+          def determine_model_name
             if user_group_with_claude_code_completion.present?
               namespace_feature_setting_from_user_group =
                 ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(
                   user_group_with_claude_code_completion, :code_completions)
 
-              # Once we have made sure that the customers using the `use_claude_code_completion`
-              # have pinned a model for code completion, this return statement can be removed.
-              if namespace_feature_setting_from_user_group.set_to_gitlab_default?
-                return GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME
+              model_to_be_used = if namespace_feature_setting_from_user_group.nil? ||
+                  namespace_feature_setting_from_user_group.set_to_gitlab_default?
+                                   GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME
+                                 else
+                                   namespace_feature_setting_from_user_group.offered_model_ref
+                                 end
+
+              if feature_setting.nil?
+                Gitlab::AppJsonLogger.debug(
+                  build_structured_payload(
+                    root_namespace_id: root_namespace_id,
+                    user_group_with_claude_code_completion_id: user_group_with_claude_code_completion.id,
+                    model_to_be_used: model_to_be_used,
+                    message: 'Model switching executed for code completion without a feature setting'
+                  )
+                )
               end
+
+              return model_to_be_used
             end
 
-            namespace_feature_setting_from_user_group&.offered_model_ref || feature_setting.offered_model_ref
+            # Based on the caller, a `nil` feature setting will only exist
+            # in cases where user_group_with_claude_code_completion is present.
+            # That case is already handled above.
+            # In all other cases, the feature setting will be present.
+            feature_setting.offered_model_ref
           end
         end
       end

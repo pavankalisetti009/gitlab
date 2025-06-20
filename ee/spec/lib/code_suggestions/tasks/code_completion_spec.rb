@@ -191,16 +191,22 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         end
 
         context "when the group uses claude for code completion" do
-          let(:model_engine) { :anthropic }
+          let(:model_engine) { nil }
 
           before do
             stub_feature_flags(use_claude_code_completion: group2)
           end
 
           it_behaves_like 'code suggestion task' do
-            let(:anthropic_model_name) { 'claude-3-5-haiku-20241022' }
-            let(:expected_body) { anthropic_request_body }
             let(:expected_feature_name) { :code_suggestions }
+            let(:expected_body) do
+              unsafe_params.merge(
+                model_name: 'claude_3_5_haiku_20241022',
+                model_provider: 'gitlab',
+                prompt: anthropic_prompt,
+                prompt_version: 3
+              )
+            end
           end
         end
       end
@@ -281,6 +287,24 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
       before do
         stub_feature_flags(use_claude_code_completion: claude_group)
+      end
+
+      context "when the project's namespace has no feature setting" do
+        let_it_be(:namespace_feature_setting) { nil }
+
+        it_behaves_like 'code suggestion task' do
+          let(:expected_feature_name) { :code_suggestions }
+          let(:model_engine) { nil }
+          let(:expected_body) do
+            # explicitly uses the gitlab provided haiku model
+            unsafe_params.merge(
+              model_name: 'claude_3_5_haiku_20241022',
+              model_provider: 'gitlab',
+              prompt: anthropic_prompt,
+              prompt_version: 3
+            )
+          end
+        end
       end
 
       context 'when the claude group has another model pinned for code completion' do

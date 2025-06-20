@@ -32,12 +32,7 @@ module CodeSuggestions
           amazon_q_prompt
         elsif self_hosted?
           self_hosted_prompt
-        # We take this model switching path only if the namespace
-        # has pinned a model for code completion.
-        # If the namespace has set "GitLab Default" as the model,
-        # the model will continued to be decided by the Rails monolith
-        # (using `saas_prompt` below).
-        elsif namespace_feature_setting? && !feature_setting.set_to_gitlab_default?
+        elsif use_model_switching?
           model_switching_ai_gateway_prompt
         else
           saas_prompt
@@ -72,6 +67,20 @@ module CodeSuggestions
 
       def amazon_q_prompt
         CodeSuggestions::Prompts::CodeCompletion::AmazonQ.new(params, current_user)
+      end
+
+      def use_model_switching?
+        # We take this path under 2 conditions:
+        # 1. If the namespace has pinned a
+        # model for code completion.
+        # If the namespace has set "GitLab Default" as the model,
+        # the model will continued to be decided by the Rails monolith
+        # using `saas_prompt` method.
+        # 2. If the namespace has
+        # `use_claude_code_completion` enabled,
+        # but no feature setting can be found based on the current project's details.
+        (namespace_feature_setting? && !feature_setting.set_to_gitlab_default?) ||
+          (model_details.user_group_with_claude_code_completion.present? && feature_setting.nil?)
       end
     end
   end
