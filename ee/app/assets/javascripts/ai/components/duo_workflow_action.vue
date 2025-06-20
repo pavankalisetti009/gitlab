@@ -49,9 +49,18 @@ export default {
       type: String,
       required: true,
     },
+    promptValidatorRegex: {
+      type: RegExp,
+      required: false,
+      default: null,
+    },
   },
   methods: {
     startWorkflow() {
+      if (this.promptValidatorRegex && !this.promptValidatorRegex.test(this.goal)) {
+        this.$emit('prompt-validation-error', this.goal);
+        return;
+      }
       const requestData = {
         project_id: this.projectId,
         start_workflow: true,
@@ -67,6 +76,8 @@ export default {
       axios
         .post(this.duoWorkflowInvokePath, requestData)
         .then(({ data }) => {
+          this.$emit('agent-flow-started', data);
+
           createAlert({
             message: __(`Workflow started successfully`),
             captureError: true,

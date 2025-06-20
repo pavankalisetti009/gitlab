@@ -27,6 +27,8 @@ RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_wor
       expected_data = {
         agents_platform_base_route: '/test-project/-/agents',
         project_path: project.full_path,
+        project_id: project.id,
+        duo_agents_invoke_path: api_v4_ai_duo_workflows_workflows_path,
         empty_state_illustration_path: '/assets/illustrations/empty-state/empty-pipeline-md.svg'
       }
 

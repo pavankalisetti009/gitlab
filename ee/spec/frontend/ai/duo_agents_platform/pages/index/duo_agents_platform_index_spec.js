@@ -39,6 +39,7 @@ describe('AgentsPlatformIndex', () => {
 
   const findWorkflowsList = () => wrapper.findComponent(WorkflowsList);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findNewAgentFlowButton = () => wrapper.find('[data-testid="new-agent-flow-button"]');
 
   beforeEach(() => {
     workflowsHandler.mockResolvedValue(mockWorkflowsResponse);
@@ -70,6 +71,10 @@ describe('AgentsPlatformIndex', () => {
 
     it('does not render the loading icon', () => {
       expect(findLoadingIcon().exists()).toBe(false);
+    });
+
+    it('renders the new agent flow button', () => {
+      expect(findNewAgentFlowButton().exists()).toBe(true);
     });
   });
 

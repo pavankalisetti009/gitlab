@@ -6,6 +6,8 @@ module EE
       def duo_agents_platform_data(project)
         {
           agents_platform_base_route: project_duo_agents_platform_path(project),
+          duo_agents_invoke_path: api_v4_ai_duo_workflows_workflows_path,
+          project_id: project.id,
           project_path: project.full_path,
           empty_state_illustration_path: image_path('illustrations/empty-state/empty-pipeline-md.svg')
         }

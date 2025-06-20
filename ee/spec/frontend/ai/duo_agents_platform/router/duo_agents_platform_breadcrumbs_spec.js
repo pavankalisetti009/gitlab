@@ -4,6 +4,7 @@ import DuoAgentsPlatformBreadcrumbs from 'ee/ai/duo_agents_platform/router/duo_a
 import {
   AGENTS_PLATFORM_INDEX_ROUTE,
   AGENTS_PLATFORM_SHOW_ROUTE,
+  AGENTS_PLATFORM_NEW_ROUTE,
 } from 'ee/ai/duo_agents_platform/router/constants';
 
 describe('DuoAgentsPlatformBreadcrumbs', () => {
@@ -75,6 +76,34 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
     it('has correct number of items', () => {
       const items = getBreadcrumbItems();
       expect(items).toHaveLength(3); // 2 static routes + current page
+    });
+  });
+
+  describe('breadcrumb items on new route', () => {
+    beforeEach(() => {
+      createWrapper(
+        {},
+        {
+          name: AGENTS_PLATFORM_NEW_ROUTE,
+        },
+      );
+    });
+
+    it('includes root route with Vue router navigation', () => {
+      const items = getBreadcrumbItems();
+      expect(items[2]).toEqual({
+        text: 'Agents',
+        to: { name: AGENTS_PLATFORM_INDEX_ROUTE },
+      });
+    });
+
+    it('includes new page as last item without link', () => {
+      const items = getBreadcrumbItems();
+
+      expect(items[items.length - 1]).toEqual({
+        text: 'New',
+        to: undefined,
+      });
     });
   });
 

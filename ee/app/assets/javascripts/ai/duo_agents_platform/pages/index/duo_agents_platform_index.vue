@@ -1,13 +1,15 @@
 <script>
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlButton, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import WorkflowsList from '../../components/common/workflows_list.vue';
 import { getWorkflows } from '../../graphql/queries/get_workflows.query.graphql';
+import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
 
 export default {
   name: 'DuoAgentPlatformIndex',
   components: {
+    GlButton,
     GlLoadingIcon,
     WorkflowsList,
   },
@@ -68,13 +70,23 @@ export default {
       });
     },
   },
+  newPage: AGENTS_PLATFORM_NEW_ROUTE,
 };
 </script>
 <template>
-  <div class="gl-mt-10">
+  <div class="gl-mt-3 gl-flex gl-flex-col">
+    <div class="gl-flex gl-justify-end">
+      <gl-button
+        variant="confirm"
+        :to="{ name: $options.newPage }"
+        data-testid="new-agent-flow-button"
+        >{{ s__('DuoAgentsPlatform|New Agent Flow') }}</gl-button
+      >
+    </div>
     <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />
     <workflows-list
       v-else
+      class="gl-mt-5"
       :empty-state-illustration-path="emptyStateIllustrationPath"
       :workflows="workflows"
       :workflows-page-info="workflowsPageInfo"
