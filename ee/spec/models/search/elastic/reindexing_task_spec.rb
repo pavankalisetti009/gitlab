@@ -38,6 +38,7 @@ RSpec.describe Search::Elastic::ReindexingTask, type: :model, feature_category: 
     end
 
     let(:task_2) { create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: nil) }
+
     let(:task_3) do
       create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 1.day.ago)
     end
@@ -50,7 +51,11 @@ RSpec.describe Search::Elastic::ReindexingTask, type: :model, feature_category: 
       create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 14.days.from_now)
     end
 
-    let(:tasks_for_deletion) { [task_3, task_4] }
+    let(:task_6) do
+      create(:elastic_reindexing_task, :with_subtask, state: :failure, delete_original_index_at: 2.days.ago)
+    end
+
+    let(:tasks_for_deletion) { [task_3, task_4, task_6] }
     let(:other_tasks) { [task_1, task_2, task_5] }
 
     it 'deletes the correct indices' do

@@ -34,7 +34,9 @@ module Search
         original_index_deleted: 12
       }
 
-      scope :old_indices_scheduled_for_deletion, -> { where(state: :success).where.not(delete_original_index_at: nil) }
+      scope :old_indices_scheduled_for_deletion, -> do
+        where(state: %i[success failure]).where.not(delete_original_index_at: nil)
+      end
       scope :old_indices_to_be_deleted, -> do
         old_indices_scheduled_for_deletion.where('delete_original_index_at < NOW()')
       end
