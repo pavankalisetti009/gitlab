@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlBreadcrumb, GlButton } from '@gitlab/ui';
+import { GlTableLite, GlButton } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -14,6 +14,7 @@ import {
   updateHistory,
 } from '~/lib/utils/url_utility';
 import InventoryDashboard from 'ee/security_inventory/components/inventory_dashboard.vue';
+import RecursiveBreadcrumbs from 'ee/security_inventory/components/recursive_breadcrumbs.vue';
 import VulnerabilityIndicator from 'ee/security_inventory/components/vulnerability_indicator.vue';
 import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_tool_coverage_indicator.vue';
 import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
@@ -37,6 +38,11 @@ jest.mock('~/lib/utils/url_utility', () => ({
   queryToObject: jest.fn().mockReturnValue({}),
   setUrlParams: jest.fn().mockReturnValue(''),
   updateHistory: jest.fn(),
+}));
+jest.mock('ee/security_inventory/components/recursive_breadcrumbs.vue', () => ({
+  name: 'RecursiveBreadcrumbs',
+  props: ['currentPath', 'groupFullPath'],
+  render() {},
 }));
 
 const setupDefaultUrlMocks = () => {
@@ -73,6 +79,9 @@ describe('InventoryDashboard', () => {
         stubs: {
           SubgroupSidebar: stubComponent(SubgroupSidebar),
           InventoryDashboardFilteredSearchBar: stubComponent(InventoryDashboardFilteredSearchBar),
+          RecursiveBreadcrumbs: stubComponent(RecursiveBreadcrumbs, {
+            props: ['currentPath', 'groupFullPath'],
+          }),
         },
       });
       await waitForPromises();
@@ -84,7 +93,7 @@ describe('InventoryDashboard', () => {
   const findEmptyState = () => wrapper.findComponent(EmptyState);
   const findTableRows = () => findTable().findAll('tbody tr');
   const findNthTableRow = (n) => findTableRows().at(n);
-  const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
+  const findBreadcrumb = () => wrapper.findComponent(RecursiveBreadcrumbs);
   const findSidebar = () => wrapper.findComponent(SubgroupSidebar);
   const findSidebarToggleButton = () => wrapper.findComponent(GlButton);
   const findInventoryTable = () => wrapper.findComponent(SecurityInventoryTable);
@@ -297,53 +306,22 @@ describe('InventoryDashboard', () => {
     });
   });
 
-  describe('Breadcrumb', () => {
-    it('renders breadcrumb component with correct items', () => {
-      expect(findBreadcrumb().exists()).toBe(true);
-      expect(findBreadcrumb().props('items')).toEqual([
-        {
-          text: 'group',
-          to: {
-            hash: '#group',
-          },
-        },
-        {
-          text: 'project',
-          to: {
-            hash: '#group/project',
-          },
-        },
-      ]);
+  describe('RecursiveBreadcrumbs', () => {
+    it('renders component with correct props', () => {
+      expect(findBreadcrumb().props()).toStrictEqual({
+        groupFullPath: 'group/project',
+        currentPath: 'group/project',
+      });
     });
 
-    it('updates breadcrumb when activeFullPath changes', async () => {
+    it('updates props when activeFullPath changes', async () => {
       getLocationHash.mockReturnValue('group/project/subgroup');
       await createComponent();
 
-      expect(findBreadcrumb().props('items')).toEqual([
-        {
-          text: 'group',
-          to: {
-            hash: '#group',
-          },
-        },
-        {
-          text: 'project',
-          to: {
-            hash: '#group/project',
-          },
-        },
-        {
-          text: 'subgroup',
-          to: {
-            hash: '#group/project/subgroup',
-          },
-        },
-      ]);
-    });
-
-    it('has auto-resize enabled for breadcrumb', () => {
-      expect(findBreadcrumb().props('autoResize')).toBe(true);
+      expect(findBreadcrumb().props()).toStrictEqual({
+        groupFullPath: 'group/project',
+        currentPath: 'group/project/subgroup',
+      });
     });
   });
 

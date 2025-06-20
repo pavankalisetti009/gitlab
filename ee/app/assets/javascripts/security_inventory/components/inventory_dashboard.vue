@@ -1,12 +1,11 @@
 <script>
-import { GlBreadcrumb, GlButton } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import {
   getLocationHash,
-  PATH_SEPARATOR,
   queryToObject,
   setUrlParams,
   updateHistory,
@@ -26,7 +25,7 @@ export default {
   components: {
     SubgroupSidebar,
     LocalStorageSync,
-    GlBreadcrumb,
+    RecursiveBreadcrumbs: () => import('./recursive_breadcrumbs.vue'),
     GlButton,
     EmptyState,
     SecurityInventoryTable,
@@ -127,20 +126,6 @@ export default {
     },
     showEmptyState() {
       return !this.isLoading && !this.hasChildren;
-    },
-    crumbs() {
-      const pathParts = this.activeFullPath.split(PATH_SEPARATOR);
-      let cumulativePath = '';
-
-      return pathParts.map((path) => {
-        cumulativePath = cumulativePath ? `${cumulativePath}${PATH_SEPARATOR}${path}` : path;
-        return {
-          text: path,
-          to: {
-            hash: `#${cumulativePath}`,
-          },
-        };
-      });
     },
   },
   created() {
@@ -319,7 +304,7 @@ export default {
     <div class="gl-flex">
       <subgroup-sidebar v-if="sidebarVisible" :active-full-path="activeFullPath" />
       <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
-        <gl-breadcrumb :items="crumbs" :auto-resize="true" size="md" class="gl-my-5" />
+        <recursive-breadcrumbs :group-full-path="groupFullPath" :current-path="activeFullPath" />
         <empty-state v-if="showEmptyState" />
         <security-inventory-table
           v-else

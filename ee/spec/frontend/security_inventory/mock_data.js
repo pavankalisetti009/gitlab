@@ -215,3 +215,11 @@ export const groupWithoutSubgroups = {
     },
   },
 };
+
+export const mockGroupAvatarAndParent = {
+  name: 'group',
+  avatarUrl: 'path/to/avatar',
+  parent: {
+    fullPath: 'path/to',
+  },
+};
