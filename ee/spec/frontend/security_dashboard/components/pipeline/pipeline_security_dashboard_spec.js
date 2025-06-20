@@ -173,7 +173,7 @@ describe('Pipeline Security Dashboard component', () => {
         'Results show vulnerability findings from the latest successful pipeline.',
       );
       expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-        '/help/user/application_security/vulnerability_report/pipeline.html',
+        '/help/user/application_security/detect/security_scanning_results',
       );
     });
   });

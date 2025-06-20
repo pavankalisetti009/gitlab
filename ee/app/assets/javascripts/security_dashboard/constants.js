@@ -81,8 +81,7 @@ export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_REPORT = helpPagePath(
   { anchor: 'report' },
 );
 export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_RETENTION_PERIOD = helpPagePath(
-  'user/application_security/vulnerability_report/pipeline',
-  { anchor: 'retention-period-for-findings' },
+  'user/application_security/detect/security_scanning_results',
 );
 
 export const DOC_PATH_PROJECT_SECURITY_DASHBOARD = helpPagePath(

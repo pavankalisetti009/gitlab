@@ -392,8 +392,8 @@ export default {
     options: { title: i18n.helpPopoverTitle },
     content: {
       text: i18n.helpPopoverContent,
-      learnMorePath: helpPagePath('user/application_security/detect/security_scan_results', {
-        anchor: 'ultimate',
+      learnMorePath: helpPagePath('user/application_security/detect/security_scanning_results', {
+        anchor: 'merge-request-security-widget',
       }),
     },
   },

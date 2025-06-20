@@ -128,7 +128,7 @@ export default {
       'SecurityReports|Results show vulnerability findings from the latest successful %{helpPageLinkStart}pipeline%{helpPageLinkEnd}.',
     ),
     pageDescriptionHelpLink: helpPagePath(
-      'user/application_security/vulnerability_report/pipeline.html',
+      'user/application_security/detect/security_scanning_results',
     ),
   },
 };
