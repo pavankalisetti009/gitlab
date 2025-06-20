@@ -24,6 +24,21 @@ module Security
         **DIGEST_CONFIG
       }.freeze
 
+      CLUSTERS_AGENT_TOKEN_CONFIG = {
+        model: Clusters::AgentToken,
+        **ENCRYPTION_CONFIG
+      }.freeze
+
+      GROUP_SCIM_AUTH_ACCESS_TOKEN_CONFIG = {
+        model: GroupScimAuthAccessToken,
+        **ENCRYPTION_CONFIG
+      }.freeze
+
+      CI_BUILD_TOKEN_CONFIG = {
+        model: Ci::Build,
+        **ENCRYPTION_CONFIG
+      }.freeze
+
       # Maps token type IDs (from secret-detection-rules) to their corresponding GitLab model classes
       # and the methods needed to look them up
       TOKEN_TYPE_CONFIG = {
@@ -34,7 +49,10 @@ module Security
           **ENCRYPTION_CONFIG
         },
         'gitlab_runner_auth_token' => RUNNER_TOKEN_CONFIG,
-        'gitlab_runner_auth_token_routable' => RUNNER_TOKEN_CONFIG
+        'gitlab_runner_auth_token_routable' => RUNNER_TOKEN_CONFIG,
+        'gitlab_kubernetes_agent_token' => CLUSTERS_AGENT_TOKEN_CONFIG,
+        'gitlab_scim_oauth_token' => GROUP_SCIM_AUTH_ACCESS_TOKEN_CONFIG,
+        'gitlab_ci_build_token' => CI_BUILD_TOKEN_CONFIG
       }.freeze
 
       # Checks if a given token type is supported by this service
