@@ -194,7 +194,7 @@ describeSkipVue3(skipReason, () => {
       });
     });
 
-    it('passes custom field tokens to WorkItemsListApp', async () => {
+    it('passes custom field tokens to WorkItemsListApp and unique field is based on field type', async () => {
       mountComponent();
       await waitForPromises();
 
@@ -206,10 +206,12 @@ describeSkipVue3(skipReason, () => {
         fullPath: 'gitlab-org',
         token: expect.any(Function),
         operators: OPERATORS_IS,
+        unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
       }));
 
-      expect(findWorkItemsListApp().props('eeSearchTokens').length).toBe(1);
+      expect(findWorkItemsListApp().props('eeSearchTokens').length).toBe(2);
       expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(expectedTokens[0]);
+      expect(findWorkItemsListApp().props('eeSearchTokens')[1]).toMatchObject(expectedTokens[1]);
     });
   });
 });

@@ -117,7 +117,7 @@ export default {
             fullPath: this.rootPageFullPath,
             token: CustomFieldToken,
             operators: OPERATORS_IS,
-            unique: true,
+            unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
           });
         });
       }

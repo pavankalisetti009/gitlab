@@ -13,6 +13,7 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
 import IssuesListAppCE from '~/issues/list/components/issues_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
+import { CUSTOM_FIELDS_TYPE_MULTI_SELECT } from '~/work_items/constants';
 import {
   OPERATORS_IS,
   TOKEN_TYPE_ASSIGNEE,
@@ -288,7 +289,7 @@ describe('EE IssuesListApp component', () => {
       });
     });
 
-    it('passes custom field tokens to IssuesListApp', () => {
+    it('passes custom field tokens to IssuesListApp and unique field is based on field type', () => {
       const expectedTokens = allowedFields.map((field) => ({
         type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
         title: field.name,
@@ -297,10 +298,12 @@ describe('EE IssuesListApp component', () => {
         fullPath: 'path/to/project',
         token: expect.any(Function),
         operators: OPERATORS_IS,
+        unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
       }));
 
-      expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(6);
+      expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(7);
       expect(findIssuesListAppCE().props('eeSearchTokens')[4]).toMatchObject(expectedTokens[0]);
+      expect(findIssuesListAppCE().props('eeSearchTokens')[5]).toMatchObject(expectedTokens[1]);
     });
   });
 
