@@ -154,7 +154,7 @@ RSpec.describe 'admin/application_settings/general.html.haml' do
     end
   end
 
-  describe 'Workspaces agent availability settings', feature_category: :remote_development do
+  describe 'Workspaces agent availability settings', feature_category: :workspaces do
     it 'renders correct ee partial' do
       render
 
