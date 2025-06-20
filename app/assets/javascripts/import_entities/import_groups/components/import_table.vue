@@ -225,7 +225,8 @@ export default {
         this.hasSelectedGroups &&
         this.groupsTableData.some(
           (group) =>
-            this.selectedGroupsIds.includes(group.id) && !group.flags.isProjectCreationAllowed,
+            this.selectedGroupsIds.includes(group.id) &&
+            group.flags.isProjectCreationAllowed === false,
         )
       );
     },
