@@ -92,3 +92,18 @@ export const itemValidator = (value) => {
   }
   return !('webUrl' in value && typeof value.webUrl !== 'string');
 };
+
+/**
+ * Checks if recursive breadcrumbs should break and display GlBreadcrumb instead
+ * @param {String} currentPath - the fullPath of the group for which breadcrumbs are being rendered
+ * @param {String} groupFullPath - the fullPath of the group for which the security inventory is being rendered
+ * @param {Object} group - group object as returned by the GroupAvatarAndParentQuery
+ * @returns {Boolean} True if we've reached groupFullPath or a group with no parent (or something has gone wrong)
+ */
+export const hasReachedMainGroup = (currentPath, groupFullPath, group) => {
+  // something has gone wrong
+  if (!currentPath || !groupFullPath || !group || !currentPath.includes(groupFullPath)) return true;
+
+  // reached groupFullPath or group with no parent
+  return currentPath === groupFullPath || !group.parent?.fullPath;
+};
