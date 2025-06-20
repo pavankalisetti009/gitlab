@@ -485,11 +485,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     describe '.for_active_add_ons' do
       using RSpec::Parameterized::TableSyntax
 
-      subject(:active_add_on_purchases) { described_class.for_active_add_ons(add_on_names, resource: resource) }
+      subject(:active_add_on_purchases) { described_class.for_active_add_ons(add_on_names, resource) }
 
       let_it_be(:user) { create(:user) }
       let_it_be(:group_1) { create(:group) }
       let_it_be(:group_2) { create(:group) }
+      let_it_be(:project) { create(:project, namespace: group_1) }
 
       let_it_be(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
       let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
@@ -514,11 +515,16 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       where(:gitlab_com, :resource, :add_on_names, :result) do
         true  | ref(:group_1) | %w[code_suggestions product_analytics] | [ref(:active_pro_purchase_for_group_1)]
         true  | ref(:group_2) | %w[code_suggestions product_analytics] | [ref(:active_pro_purchase_for_group_2), ref(:active_analytics_purchase_for_group_2)]
+        true  | ref(:project) | %w[code_suggestions product_analytics] | [ref(:active_pro_purchase_for_group_1)]
         true  | ref(:group_1) | %w[product_analytics]                  | []
         true  | ref(:user)    | %w[code_suggestions product_analytics] | [ref(:active_pro_purchase_for_group_1)]
+        true  | :instance     | %w[code_suggestions product_analytics] | [ref(:active_analytics_purchase_for_self_managed)]
         true  | nil           | %w[code_suggestions]                   | [ref(:active_pro_purchase_for_group_1), ref(:active_pro_purchase_for_group_2)]
+        false | :instance     | %w[code_suggestions product_analytics] | [ref(:active_analytics_purchase_for_self_managed)]
         false | ref(:group_1) | %w[code_suggestions product_analytics] | [ref(:active_analytics_purchase_for_self_managed)]
-        false | nil           | %w[product_analytics]                  | [ref(:active_analytics_purchase_for_self_managed)]
+        false | ref(:project) | %w[code_suggestions product_analytics] | [ref(:active_analytics_purchase_for_self_managed)]
+        false | ref(:user)    | %w[code_suggestions product_analytics] | [ref(:active_analytics_purchase_for_self_managed)]
+        false | nil           | %w[code_suggestions product_analytics] | [ref(:active_analytics_purchase_for_self_managed)]
         false | nil           | %w[code_suggestions]                   | []
       end
       # rubocop:enable Layout/LineLength
@@ -836,6 +842,100 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
     it 'returns nil when there are no stale records' do
       expect(next_candidate).to eq(nil)
+    end
+  end
+
+  describe '.find_for_unit_primitive' do
+    subject(:add_on_purchases) { described_class.find_for_unit_primitive(unit_primitive_name, resource) }
+
+    let(:unit_primitive_name) { :complete_code }
+    let_it_be(:group) { create(:group) }
+
+    shared_examples 'finds add-on purchases' do
+      context 'when resource is nil' do
+        let(:resource) { nil }
+
+        it 'raises an error' do
+          expect { add_on_purchases }
+            .to raise_error(ArgumentError, 'resource must be :instance, or a User, Group or Project')
+        end
+      end
+
+      context 'when resource is not a User, Group, Project or :instance' do
+        let(:resource) { 'invalid_resource' }
+
+        it 'raises an error' do
+          expect { add_on_purchases }
+            .to raise_error(ArgumentError, 'resource must be :instance, or a User, Group or Project')
+        end
+      end
+
+      context 'when active purchases exist' do
+        let(:add_on_1) { create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace) }
+        let(:add_on_2) { create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace) }
+
+        context 'when the unit primitive exists' do
+          before do
+            allow(::Gitlab::CloudConnector::DataModel::UnitPrimitive)
+              .to receive(:find_by_name)
+              .and_return(build(:cloud_connector_unit_primitive, :complete_code))
+          end
+
+          it 'returns matching add-on purchases' do
+            expect(add_on_purchases).to match_array([add_on_1])
+          end
+        end
+
+        context 'when the unit primitive does not exist' do
+          before do
+            allow(::Gitlab::CloudConnector::DataModel::UnitPrimitive)
+              .to receive(:find_by_name)
+              .and_return(nil)
+          end
+
+          it { is_expected.to be_empty }
+        end
+      end
+
+      context 'when no active purchases exist' do
+        it { is_expected.to be_empty }
+      end
+    end
+
+    context 'with Group resource', :saas do
+      let(:resource) { namespace }
+      let(:namespace) { group }
+
+      it_behaves_like 'finds add-on purchases'
+    end
+
+    context 'with User resource', :saas do
+      let_it_be(:user) { create(:user) }
+
+      let(:resource) { user }
+      let(:namespace) { group }
+
+      before_all do
+        group.add_developer(user)
+      end
+
+      it_behaves_like 'finds add-on purchases'
+    end
+
+    context 'with Project resource', :saas do
+      let_it_be(:project) { create(:project, namespace: group) }
+
+      let(:resource) { project }
+      let(:namespace) { group }
+
+      it_behaves_like 'finds add-on purchases'
+    end
+
+    context 'with :instance resource' do
+      let(:resource) { :instance }
+      let(:namespace) { nil }
+
+      it_behaves_like 'finds add-on purchases'
     end
   end
 
