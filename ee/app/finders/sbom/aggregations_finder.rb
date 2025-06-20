@@ -130,8 +130,6 @@ module Sbom
     end
 
     def filter_by_component_versions(relation)
-      return relation if Feature.disabled?(:version_filtering_on_group_level_dependency_list, namespace)
-
       negated_filter = params[:not]
 
       return relation if params[:component_versions].blank? && negated_filter.nil?

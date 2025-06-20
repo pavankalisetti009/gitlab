@@ -8,9 +8,9 @@ module Sbom
     end
 
     def execute
-      if object.is_a?(Project) && Feature.enabled?(:version_filtering_on_project_level_dependency_list, object)
+      if object.is_a?(Project)
         Sbom::ComponentVersion.by_project_and_component(object.id, component_name)
-      elsif object.is_a?(Group) && Feature.enabled?(:version_filtering_on_group_level_dependency_list, object)
+      elsif object.is_a?(Group)
         Sbom::ComponentVersion.by_group_and_component(object, component_name)
       else
         Sbom::ComponentVersion.none
