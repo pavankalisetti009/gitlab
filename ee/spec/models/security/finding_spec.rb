@@ -459,6 +459,42 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '#severity' do
+    let_it_be_with_reload(:finding) { create(:security_finding, severity: :low) }
+
+    subject(:severity) { finding.severity }
+
+    it 'returns the finding severity' do
+      expect(severity).to eq('low')
+    end
+
+    context 'when there is an associated vulnerability' do
+      let_it_be(:vulnerability) do
+        vulnerability_finding = create(:vulnerabilities_finding, severity: :critical, uuid: finding.uuid)
+        create(:vulnerability, severity: :critical, findings: [vulnerability_finding])
+      end
+
+      it 'returns the severity from the security_finding record' do
+        expect(severity).to eq('low')
+      end
+
+      context 'when there is a severity override' do
+        let_it_be(:override) do
+          create(
+            :vulnerability_severity_override,
+            vulnerability: vulnerability,
+            original_severity: :low,
+            new_severity: :critical
+          )
+        end
+
+        it 'returns the vulnerability severity' do
+          expect(severity).to eq('critical')
+        end
+      end
+    end
+  end
+
   describe 'feedback accessors' do
     shared_examples_for 'has feedback method for' do |type|
       context 'when there is no associated dismissal feedback' do

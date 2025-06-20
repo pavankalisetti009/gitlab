@@ -101,6 +101,51 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFinding',
           expect(security_report_finding['name']).to eq(expected_finding.name)
         end
       end
+
+      context 'when there is a severity override' do
+        let!(:vulnerability) { create(:vulnerability, severity: :critical, project: project) }
+        let!(:vulnerability_finding) do
+          create(
+            :vulnerabilities_finding,
+            project: project,
+            vulnerability: vulnerability,
+            uuid: security_finding.uuid
+          )
+        end
+
+        let!(:severity_override) do
+          create(
+            :vulnerability_severity_override,
+            vulnerability: vulnerability,
+            author: user,
+            original_severity: expected_finding.severity,
+            new_severity: :critical
+          )
+        end
+
+        it 'returns the vulnerability severity' do
+          expect(security_report_finding['severity']).to eq('CRITICAL')
+        end
+      end
+
+      it 'does not have N+1 queries' do
+        control = ActiveRecord::QueryRecorder.new { post_graphql(query, current_user: user) }
+
+        new_vulnerability = create(:vulnerability, :dismissed, project: project)
+        create(
+          :vulnerabilities_finding,
+          project: project,
+          vulnerability: new_vulnerability,
+          uuid: Security::Finding.second.uuid
+        )
+        create(
+          :vulnerability_severity_override,
+          vulnerability: new_vulnerability,
+          author: user
+        )
+
+        expect { post_graphql(query, current_user: user) }.not_to exceed_query_limit(control)
+      end
     end
 
     context 'when user is not a member of the project' do

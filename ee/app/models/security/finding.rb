@@ -220,6 +220,12 @@ module Security
       dismissal_feedback ? 'dismissed' : 'detected'
     end
 
+    def severity
+      return vulnerability.severity if severity_overrides.present?
+
+      super
+    end
+
     # Symbolizing the hash keys is important as Grape entity
     # works with symbolized keys only.
     # See https://github.com/ruby-grape/grape-entity/issues/223

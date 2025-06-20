@@ -36,6 +36,12 @@ module Resolvers
         .then { |findings| offset_pagination(findings) }
     end
 
+    def preloads
+      {
+        severity: { vulnerability: :severity_overrides }
+      }
+    end
+
     private
 
     def limit(args)

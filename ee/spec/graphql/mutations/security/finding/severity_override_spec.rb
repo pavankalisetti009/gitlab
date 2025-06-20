@@ -87,7 +87,7 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
             expect { resolve }.to change { Vulnerabilities::SeverityOverride.count }.by(1)
             last_severity_override = Vulnerabilities::SeverityOverride.last
             expect(last_severity_override.new_severity).to eq(new_severity)
-            expect(last_severity_override.original_severity).to eq(security_finding.severity)
+            expect(last_severity_override.original_severity).to eq(report_finding.severity)
             expect(last_severity_override.project).to eq(security_finding.project)
             expect(last_severity_override.author).to eq(current_user)
             expect(last_severity_override.vulnerability).to eq(Vulnerability.last)
