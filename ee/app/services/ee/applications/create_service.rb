@@ -24,17 +24,29 @@ module EE
       override :execute
       def execute(request)
         super.tap do |application|
-          entity = application.owner || current_user
-          audit_event_service(entity, request.remote_ip).for_user(full_path: application.name, entity_id: application.id).security_event
+          audit_oauth_application_creation(application, request.remote_ip)
         end
       end
 
-      def audit_event_service(entity, ip_address)
-        ::AuditEventService.new(current_user,
-          entity,
-          action: :custom,
-          custom_message: 'OAuth application added',
-          ip_address: ip_address)
+      private
+
+      def audit_oauth_application_creation(application, ip_address)
+        entity = application.owner || current_user
+
+        ::Gitlab::Audit::Auditor.audit(
+          name: 'oauth_application_created',
+          author: current_user,
+          scope: entity,
+          target: application,
+          message: 'OAuth application added',
+          additional_details: {
+            application_name: application.name,
+            application_id: application.id,
+            scopes: application.scopes.to_a,
+            redirect_uri: application.redirect_uri[0, 100]
+          },
+          ip_address: ip_address
+        )
       end
     end
   end
