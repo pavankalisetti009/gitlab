@@ -16,6 +16,8 @@ module Security
     validates :analyzer_type, presence: true
     validates :traversal_ids, presence: true
 
+    scope :by_namespace, ->(namespace) { where(namespace_id: namespace) }
+
     def total_projects_count
       @total_projects_count ||= group.all_project_ids.size
     end
