@@ -1,7 +1,8 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "~/graphql_shared/fragments/user.fragment.graphql"
+#import "~/graphql_shared/fragments/label.fragment.graphql"
 
-query getWorkItemsForEpicsFull(
+query getWorkItemsSlimEE(
   $excludeProjects: Boolean = false
   $includeDescendants: Boolean = true
   $fullPath: ID!
@@ -80,8 +81,6 @@ query getWorkItemsForEpicsFull(
           ...User
         }
         closedAt
-        userDiscussionsCount
-        confidential
         createdAt
         iid
         namespace {
@@ -89,51 +88,19 @@ query getWorkItemsForEpicsFull(
           fullPath
         }
         reference(full: true)
-        state
         title
         updatedAt
         webUrl
-        widgets(
-          onlyTypes: [
-            ASSIGNEES
-            START_AND_DUE_DATE
-            MILESTONE
-            HEALTH_STATUS
-            LINKED_ITEMS
-            AWARD_EMOJI
-          ]
-        ) {
+        state
+        widgets(onlyTypes: [LABELS]) {
           type
-          ... on WorkItemWidgetAssignees {
-            assignees {
+          ... on WorkItemWidgetLabels {
+            allowsScopedLabels
+            labels {
               nodes {
-                ...User
+                ...Label
               }
             }
-          }
-          ... on WorkItemWidgetStartAndDueDate {
-            dueDate
-            startDate
-          }
-          ... on WorkItemWidgetMilestone {
-            milestone {
-              id
-              dueDate
-              startDate
-              title
-              webPath
-            }
-          }
-          ... on WorkItemWidgetHealthStatus {
-            healthStatus
-          }
-          ... on WorkItemWidgetLinkedItems {
-            blockingCount
-            blockedByCount
-          }
-          ... on WorkItemWidgetAwardEmoji {
-            upvotes
-            downvotes
           }
         }
         workItemType {

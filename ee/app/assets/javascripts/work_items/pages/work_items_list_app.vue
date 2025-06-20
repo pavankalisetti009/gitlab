@@ -19,8 +19,6 @@ import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
-import epicListFullQuery from '../graphql/list/get_work_items_for_epics_full.query.graphql';
-import epicListSlimQuery from '../graphql/list/get_work_items_for_epics_slim.query.graphql';
 
 const CustomFieldToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
@@ -130,16 +128,12 @@ export default {
       this.workItemUpdateCount += 1;
     },
   },
-  epicListFullQuery,
-  epicListSlimQuery,
 };
 </script>
 
 <template>
   <work-items-list-app
     :ee-work-item-update-count="workItemUpdateCount"
-    :ee-epic-list-full-query="$options.epicListFullQuery"
-    :ee-epic-list-slim-query="$options.epicListSlimQuery"
     :ee-search-tokens="searchTokens"
     :root-page-full-path="rootPageFullPath"
     :with-tabs="withTabs"
