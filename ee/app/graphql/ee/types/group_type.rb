@@ -378,6 +378,7 @@ module EE
         field :analyzer_statuses, [::Types::Security::AnalyzerGroupStatusType],
           null: true,
           description: 'Status for all analyzers in the group.',
+          resolver: ::Resolvers::Security::AnalyzerGroupStatusResolver,
           experiment: { milestone: '18.0' }
 
         field :compliance_requirement_control_coverage,

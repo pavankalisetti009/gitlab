@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Security::AnalyzerNamespaceStatus, feature_category: :security_asset_inventories do
+  let_it_be(:parent) { create(:namespace) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
     it { is_expected.to belong_to(:group) }
@@ -21,6 +23,16 @@ RSpec.describe Security::AnalyzerNamespaceStatus, feature_category: :security_as
 
   describe 'enums' do
     it { is_expected.to define_enum_for(:analyzer_type).with_values(Enums::Security.extended_analyzer_types) }
+  end
+
+  describe 'scopes' do
+    describe '.by_namespace' do
+      it 'returns records filtered by namespace' do
+        result = create(:analyzer_namespace_status, namespace: parent)
+
+        expect(described_class.by_namespace(parent)).to match_array(result)
+      end
+    end
   end
 
   context 'with loose foreign key on analyzer_namespace_statuses.namespace_id' do
