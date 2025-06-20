@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hosted_models" do
   let_it_be(:user) { create(:user) }
-  let(:feature_setting) { build(:ai_namespace_feature_setting, feature: :code_generations) }
+  let_it_be(:group) { create(:group) }
   let(:offered_model_ref) { 'openai_chatgpt_4o' }
   let(:params) { { offered_model_ref: offered_model_ref } }
   let(:model_definitions) do
@@ -25,7 +25,31 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
     }
   end
 
+  let(:feature_setting) do
+    build(:ai_namespace_feature_setting, feature: :code_generations, namespace: group)
+  end
+
   let(:model_definitions_response) { model_definitions.to_json }
+
+  let(:audit_event) do
+    feature = feature_setting.feature
+    selection_scope = feature_setting.model_selection_scope
+    scope_type = 'Group'
+    scope_id = selection_scope.id
+
+    {
+      name: 'model_selection_feature_changed',
+      author: user,
+      scope: selection_scope,
+      target: selection_scope,
+      message:
+      "The LLM #{offered_model_ref} has been selected for the feature #{feature} of #{scope_type} with ID #{scope_id}",
+      additional_details: {
+        model_ref: offered_model_ref,
+        feature: feature
+      }
+    }
+  end
 
   include_context 'with the model selections fetch definition service as side-effect'
 
@@ -58,6 +82,8 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
       context 'when feature setting update is successful' do
         context 'when feature setting is new' do
           it 'returns a success response with the feature setting' do
+            expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_event).and_call_original
+
             expect(feature_setting.persisted?).to be(false)
 
             response = service.execute
@@ -77,6 +103,8 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
           end
 
           it 'returns a success response with the feature setting' do
+            expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_event).and_call_original
+
             expect(feature_setting.offered_model_ref).not_to eq(offered_model_ref)
             expect(feature_setting.offered_model_name).not_to eq('OpenAI Chat GPT 4o')
 
@@ -94,6 +122,8 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
           let(:offered_model_ref) { '' }
 
           it 'returns a success response with the feature setting' do
+            expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_event).and_call_original
+
             expect(feature_setting.offered_model_ref).not_to eq(offered_model_ref)
             expect(feature_setting.offered_model_name).not_to eq('OpenAI Chat GPT 4o')
 

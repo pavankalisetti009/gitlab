@@ -27,6 +27,8 @@ module Ai
         update_params[:model_definitions] = fetch_model_definition.payload
 
         if feature_setting.update(update_params)
+          record_audit_event
+
           ServiceResponse.success(payload: feature_setting)
         else
           ServiceResponse.error(payload: feature_setting,
@@ -37,6 +39,27 @@ module Ai
       private
 
       attr_accessor :feature_setting, :user, :selection_scope, :params
+
+      def record_audit_event
+        model = params[:offered_model_ref]
+        feature = feature_setting.feature
+        scope_type = selection_scope.class.name
+        scope_id = selection_scope.id
+
+        audit_context = {
+          name: 'model_selection_feature_changed',
+          author: user,
+          scope: selection_scope,
+          target: selection_scope,
+          message: "The LLM #{model} has been selected for the feature #{feature} of #{scope_type} with ID #{scope_id}",
+          additional_details: {
+            model_ref: model,
+            feature: feature
+          }
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
     end
   end
 end
