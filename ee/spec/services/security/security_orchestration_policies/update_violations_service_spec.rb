@@ -197,6 +197,57 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         expect { service.execute }.not_to publish_event(MergeRequests::ViolationsUpdatedEvent)
       end
     end
+
+    describe 'policy_violations_detected audit event' do
+      shared_examples 'not enqueuing the PolicyViolationsDetectedAuditEventWorker' do
+        it 'does not enqueue MergeRequests::PolicyViolationsDetectedAuditEventWorker' do
+          expect(::MergeRequests::PolicyViolationsDetectedAuditEventWorker).not_to receive(:perform_async)
+
+          service.execute
+        end
+      end
+
+      context 'when there are policy violations' do
+        before do
+          service.add([policy_a], [])
+          service.execute
+        end
+
+        it 'enqueues MergeRequests::PolicyViolationsDetectedAuditEventWorker' do
+          expect(::MergeRequests::PolicyViolationsDetectedAuditEventWorker).to receive(:perform_async).with(
+            merge_request.id
+          )
+
+          service.execute
+        end
+      end
+
+      context "when there are running violations" do
+        let_it_be(:running_violation) do
+          create(:scan_result_policy_violation, :running, scan_result_policy_read: policy_a,
+            merge_request: merge_request)
+        end
+
+        let_it_be(:failed_violation) do
+          create(:scan_result_policy_violation, :failed, scan_result_policy_read: policy_b,
+            merge_request: merge_request)
+        end
+
+        it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
+      end
+
+      context "when there are no violations" do
+        it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(collect_security_policy_violations_detected_audit_events: false)
+        end
+
+        it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
+      end
+    end
   end
 
   describe '#add_violation' do

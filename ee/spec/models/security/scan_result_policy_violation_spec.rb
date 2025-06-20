@@ -162,4 +162,13 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
       it { is_expected.to be_empty }
     end
   end
+
+  describe '.running' do
+    let_it_be(:running_violation) { create(:scan_result_policy_violation, :running) }
+    let_it_be(:failed_violation) { create(:scan_result_policy_violation, :failed) }
+
+    it 'returns only running violations' do
+      expect(described_class.running).to contain_exactly(running_violation)
+    end
+  end
 end
