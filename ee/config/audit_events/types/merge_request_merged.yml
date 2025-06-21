@@ -8,3 +8,4 @@ milestone: '17.5'
 saved_to_database: true
 streamed: true
 scope: [Project]
+compliance_controls: [minimum_approvals_required_1, minimum_approvals_required_2, merge_request_prevent_committers_approval, merge_request_prevent_author_approval]
