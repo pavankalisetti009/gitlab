@@ -452,7 +452,7 @@ module Gitlab
               return
             end
 
-            DraftNote.bulk_insert!(draft_notes, batch_size: 20)
+            DraftNote.bulk_insert_and_keep_commits!(draft_notes, batch_size: 20)
 
             @comment_metrics[:created_draft_notes] = draft_notes.count
 
