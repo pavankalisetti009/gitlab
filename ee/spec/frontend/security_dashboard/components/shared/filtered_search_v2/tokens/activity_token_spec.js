@@ -87,10 +87,10 @@ describe('ActivityToken', () => {
     it('shows the label', () => {
       createWrapperWithAbility();
       expect(findFilteredSearchToken().props('value')).toEqual({
-        data: ['STILL_DETECTED'],
+        data: ['ALL'],
         operator: '||',
       });
-      expect(wrapper.findByTestId('activity-token-placeholder').text()).toBe('Still detected');
+      expect(wrapper.findByTestId('activity-token-placeholder').text()).toBe('All activity');
     });
 
     const baseOptions = [
