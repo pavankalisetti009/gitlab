@@ -17,7 +17,6 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
     before do
       allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(true)
       allow(::Gitlab::Llm::TanukiBot).to receive_messages(
-        show_breadcrumbs_entry_point?: true,
         chat_disabled_reason: nil
       )
     end
@@ -60,7 +59,6 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
     before do
       allow(::Ai::AmazonQ).to receive(:enabled?).and_return(true)
       allow(::Gitlab::Llm::TanukiBot).to receive_messages(
-        show_breadcrumbs_entry_point?: true,
         chat_disabled_reason: nil
       )
     end
