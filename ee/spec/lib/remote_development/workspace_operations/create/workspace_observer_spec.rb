@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require "fast_spec_helper"
 
 # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver, feature_category: :workspaces do
