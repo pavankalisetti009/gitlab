@@ -249,6 +249,16 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
               {
                 factory: [:ci_build],
                 identifier: 'gitlab_ci_build_token'
+              },
+              {
+                factory: [:user],
+                model_token_method: :incoming_email_token,
+                identifier: 'gitlab_incoming_email_token'
+              },
+              {
+                factory: [:user],
+                model_token_method: :feed_token,
+                identifier: 'gitlab_feed_token_v2'
               }
             ]
           end
@@ -257,6 +267,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             token_test_cases.map do |test_case|
               {
                 token: create(*test_case[:factory]), # rubocop:disable Rails/SaveBang -- Splat operator causes false positive
+                model_token_method: test_case[:model_token_method] || 'token',
                 finding: create(:vulnerabilities_finding, :with_secret_detection, pipeline: pipeline),
                 identifier: test_case[:identifier]
               }
@@ -266,7 +277,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
           before do
             tokens_and_findings.each do |item|
               metadata = ::Gitlab::Json.parse(item[:finding].raw_metadata)
-              metadata['raw_source_code_extract'] = item[:token].token
+              metadata['raw_source_code_extract'] = item[:token].public_send(item[:model_token_method])
               metadata['identifiers'].first['value'] = item[:identifier]
               item[:finding].update!(raw_metadata: metadata.to_json)
             end
