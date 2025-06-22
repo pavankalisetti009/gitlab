@@ -1252,8 +1252,8 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
     let_it_be(:task_type) { create(:work_item_type, :task) }
     let_it_be(:work_item) { create(:work_item, work_item_type: task_type, project: project) }
 
-    let(:status_id) { 2 }
-    let(:status_gid) { 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2' }
+    let(:status) { build(:work_item_system_defined_status, :in_progress) }
+    let(:status_gid) { status.to_gid.to_s }
     let(:expected_error_message) { 'Following widget keys are not supported by Task type: [:status_widget]' }
 
     let(:current_user) { reporter }
@@ -1282,10 +1282,20 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
         context 'when input is nil' do
           let(:status_gid) { nil }
-          let(:status_id) { 1 } # status is unchanged because we cannot set status to nil
+          let(:status) { current_status.status } # status is unchanged because we cannot set status to nil
 
           it_behaves_like 'successful work item mutation with status widget'
         end
+      end
+
+      context 'with custom status' do
+        let!(:lifecycle) do
+          create(:work_item_custom_lifecycle, namespace: group, work_item_types: [work_item.work_item_type])
+        end
+
+        let(:status) { create(:work_item_custom_status, name: 'In review', lifecycles: [lifecycle]) }
+
+        it_behaves_like 'successful work item mutation with status widget'
       end
 
       it_behaves_like 'work item status widget mutation rejects invalid inputs'
