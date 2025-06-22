@@ -34,18 +34,27 @@ RSpec.describe ::RemoteDevelopment::Settings, feature_category: :workspaces do #
 
   context "when there is and ENV var override and also a ::Gitlab::CurrentSettings override" do
     let(:override_value_from_env) { "value_from_env" }
-    let(:override_value_from_current_settings) { "value_from_current_settings" }
+    let(:overridden_setting_value_from_current_settings) { "value_from_current_settings" }
+    let(:current_settings_class) do
+      # NOTE: We intentionally do not attempt to make this test use the real `ApplicationSetting` class with
+      # `stub_application_setting`, because this resulted in occasional cache-related test failures in
+      # `CurrentSettings.respond_to?` for `ApplicationSetting` fields which are in the process of being deprecated.
+      double( # rubocop:disable RSpec/VerifiedDoubles -- We don't care about using a verified double here, this is a mix of class and dynamic stubbed methods.
+        "Gitlab::CurrentSettings",
+        respond_to?: true,
+        default_branch_name: overridden_setting_value_from_current_settings
+      )
+    end
 
     before do
       stub_env("GITLAB_REMOTE_DEVELOPMENT_DEFAULT_BRANCH_NAME", override_value_from_env)
 
-      create(:application_setting)
-      stub_application_setting(default_branch_name: override_value_from_current_settings)
+      stub_const("Gitlab::CurrentSettings", current_settings_class)
     end
 
     it "uses the ENV var value and not the CurrentSettings value" do
       # fixture sanity check
-      expect(Gitlab::CurrentSettings.default_branch_name).to eq(override_value_from_current_settings)
+      expect(Gitlab::CurrentSettings.default_branch_name).to eq(overridden_setting_value_from_current_settings)
 
       expect(settings_module.get_single_setting(:default_branch_name)).to eq(override_value_from_env)
     end

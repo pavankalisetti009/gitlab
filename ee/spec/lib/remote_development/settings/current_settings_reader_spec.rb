@@ -38,7 +38,7 @@ RSpec.describe ::RemoteDevelopment::Settings::CurrentSettingsReader, feature_cat
 
   before do
     stub_const("#{described_class}::RELEVANT_SETTING_NAMES", relevant_setting_names)
-    stub_const("#{described_class}::Gitlab::CurrentSettings", current_settings_class)
+    stub_const("Gitlab::CurrentSettings", current_settings_class)
   end
 
   context "when the relevant settings are valid CurrentSettings entries" do
