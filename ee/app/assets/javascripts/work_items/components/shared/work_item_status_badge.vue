@@ -1,9 +1,8 @@
 <script>
-import { GlBadge, GlIcon } from '@gitlab/ui';
+import { GlIcon } from '@gitlab/ui';
 
 export default {
   components: {
-    GlBadge,
     GlIcon,
   },
   props: {
@@ -30,10 +29,12 @@ export default {
 </script>
 
 <template>
-  <gl-badge variant="muted" class="!gl-items-center !gl-pl-2" :aria-label="name">
-    <div class="gl-truncate">
-      <gl-icon :size="12" :name="iconName" class="gl-mb-[-1px] gl-mr-1" :style="colorStyle" />
-      <span>{{ name }}</span>
-    </div>
-  </gl-badge>
+  <div
+    class="work-item-status gl-inline-flex gl-max-w-full gl-items-center gl-rounded-pill gl-bg-strong gl-py-1 gl-pl-2 gl-pr-[.375rem] gl-text-sm gl-leading-normal gl-text-strong"
+    data-testid="work-item-status"
+    :aria-label="name"
+  >
+    <gl-icon class="gl-shrink-0" :size="12" :name="iconName" :style="colorStyle" />
+    <span class="gl-ml-2 gl-truncate">{{ name }}</span>
+  </div>
 </template>
