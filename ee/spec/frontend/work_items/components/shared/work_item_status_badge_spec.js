@@ -1,4 +1,4 @@
-import { GlBadge, GlIcon } from '@gitlab/ui';
+import { GlIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 
@@ -6,7 +6,7 @@ describe('WorkItemStatusBadge', () => {
   let wrapper;
 
   const findIcon = () => wrapper.findComponent(GlIcon);
-  const findBadge = () => wrapper.findComponent(GlBadge);
+  const findBadge = () => wrapper.find('[data-testid="work-item-status"]');
   const findBadgeText = () => findBadge().text();
 
   const createComponent = ({
