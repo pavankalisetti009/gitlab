@@ -55,11 +55,10 @@ module Mutations
       private
 
       def allowed?
-        # TODO clean up via https://gitlab.com/gitlab-org/gitlab/-/issues/440546
         return true if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
         return false unless ::License.feature_available?(:code_suggestions)
 
-        ::CloudConnector::AvailableServices.find_by_name(:code_suggestions).purchased?
+        ::GitlabSubscriptions::AddOnPurchase.active_duo_add_ons_exist?(:instance)
       end
     end
   end
