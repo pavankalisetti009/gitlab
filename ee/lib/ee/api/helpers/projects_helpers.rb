@@ -47,6 +47,9 @@ module EE
             optional :merge_trains_enabled, type: Grape::API::Boolean, desc: 'Enable merge trains.'
             optional :merge_trains_skip_train_allowed, type: Grape::API::Boolean, desc: 'Allow merge train merge requests to be merged without waiting for pipelines to finish.'
             optional :ci_restrict_pipeline_cancellation_role, type: String, desc: 'Roles allowed to cancel pipelines and jobs.'
+            optional :web_based_commit_signing_enabled,
+              type: ::Grape::API::Boolean,
+              desc: 'Enable web based commit signing for this project'
           end
 
           params :share_project_params_ee do
@@ -79,7 +82,8 @@ module EE
               :merge_trains_skip_train_allowed,
               :requirements_access_level,
               :prevent_merge_without_jira_issue,
-              :ci_restrict_pipeline_cancellation_role
+              :ci_restrict_pipeline_cancellation_role,
+              :web_based_commit_signing_enabled
             ]
           end
         end

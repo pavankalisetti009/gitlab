@@ -8,6 +8,7 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
   let(:options) { {} }
   let(:developer) { create(:user, developer_of: project) }
   let(:guest) { create(:user, guest_of: project) }
+  let(:maintainer) { create(:user, maintainer_of: project) }
 
   let(:entity) do
     ::API::Entities::Project.new(project, options)
@@ -150,6 +151,46 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
 
       it 'returns nil' do
         expect(subject[:auto_duo_code_review_enabled]).to be_nil
+      end
+    end
+  end
+
+  describe 'web_based_commit_signing_enabled' do
+    before do
+      stub_saas_features(repositories_web_based_commit_signing: repositories_web_based_commit_signing)
+    end
+
+    context 'and the repositories_web_based_commit_signing feature is not available' do
+      let(:repositories_web_based_commit_signing) { false }
+
+      it 'does not serialize web_based_commit_signing_enabled' do
+        expect(subject.keys).not_to include(
+          :web_based_commit_signing_enabled
+        )
+      end
+    end
+
+    context 'and the repositories_web_based_commit_signing feature is available' do
+      let(:repositories_web_based_commit_signing) { true }
+
+      context 'and user does not have permission for the attribute' do
+        let(:options) { { current_user: developer } }
+
+        it 'does not serialize web_based_commit_signing_enabled' do
+          expect(subject.keys).not_to include(
+            :web_based_commit_signing_enabled
+          )
+        end
+      end
+
+      context 'and user is a maintainer' do
+        let(:options) { { current_user: maintainer } }
+
+        it 'returns expected data' do
+          expect(subject.keys).to include(
+            :web_based_commit_signing_enabled
+          )
+        end
       end
     end
   end

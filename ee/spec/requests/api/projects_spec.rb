@@ -1951,6 +1951,55 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         end
       end
     end
+
+    context 'updating web_based_commit_signing_enabled' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:project_params) { { web_based_commit_signing_enabled: true } }
+
+      shared_examples_for 'does not update the value' do
+        it { expect { subject }.not_to change { project.reload.web_based_commit_signing_enabled }.from(false) }
+      end
+
+      context 'when authenticated as maintainer' do
+        before do
+          project.add_maintainer(user)
+        end
+
+        context 'and the feature is not available' do
+          it 'does not render the value' do
+            subject
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response.keys).not_to include('web_based_commit_signing_enabled')
+          end
+
+          it_behaves_like 'does not update the value'
+        end
+
+        context 'and the feature is available' do
+          before do
+            stub_saas_features(repositories_web_based_commit_signing: true)
+          end
+
+          context 'and the feature is not enabled' do
+            before do
+              stub_feature_flags(use_web_based_commit_signing_enabled: false)
+            end
+
+            it_behaves_like 'does not update the value'
+          end
+
+          context 'and the feature is enabled' do
+            it 'updates the attribute as expected' do
+              expect { subject }.to change { project.reload.web_based_commit_signing_enabled }.from(false).to(true)
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['web_based_commit_signing_enabled']).to eq(true)
+            end
+          end
+        end
+      end
+    end
   end
 
   describe 'DELETE /projects/:id' do
