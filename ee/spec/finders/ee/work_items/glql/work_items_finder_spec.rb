@@ -9,13 +9,15 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:resource_parent) { group }
   let_it_be(:current_user)    { create(:user) }
+  let_it_be(:assignee_user)   { create(:user) }
+  let_it_be(:other_user)      { create(:user) }
   let_it_be(:milestone)       { create(:milestone, project: project) }
 
-  let(:context)          { instance_double(GraphQL::Query::Context) }
-  let(:request_params)   { { 'operationName' => 'GLQL' } }
-  let(:url_query)        { 'useES=true' }
-  let(:url)              { 'http://localhost' }
-  let(:referer)          { "#{url}?#{url_query}" }
+  let(:context)        { instance_double(GraphQL::Query::Context) }
+  let(:request_params) { { 'operationName' => 'GLQL' } }
+  let(:url_query)      { 'useES=true' }
+  let(:url)            { 'http://localhost' }
+  let(:referer)        { "#{url}?#{url_query}" }
 
   let(:dummy_request) do
     instance_double(ActionDispatch::Request,
@@ -31,6 +33,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
       confidential: false,
       author_username: current_user.username,
       milestone_title: [milestone.title],
+      assignee_usernames: [assignee_user.username],
       not: {}
     }
   end
@@ -112,6 +115,30 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
           expect(finder.use_elasticsearch_finder?).to be_falsey
         end
       end
+
+      context 'when `or` operator is used with supported filter' do
+        let(:params) { { or: { assignee_usernames: [assignee_user.username] } } }
+
+        it 'returns true' do
+          expect(finder.use_elasticsearch_finder?).to be_truthy
+        end
+      end
+
+      context 'when `or` operator is used with not supported filter' do
+        let(:params) { { or: { not_suported: 'something' } } }
+
+        it 'returns false' do
+          expect(finder.use_elasticsearch_finder?).to be_falsey
+        end
+      end
+
+      context 'when `or` operator is not a hash' do
+        let(:params) { { or: 'something' } }
+
+        it 'returns false' do
+          expect(finder.use_elasticsearch_finder?).to be_falsey
+        end
+      end
     end
 
     context 'when using ES finder' do
@@ -177,7 +204,12 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         milestone_title: [milestone.title],
         not_milestone_title: nil,
         any_milestones: false,
-        none_milestones: false
+        none_milestones: false,
+        assignee_ids: [assignee_user.id],
+        not_assignee_ids: nil,
+        or_assignee_ids: nil,
+        any_assignees: false,
+        none_assignees: false
       }
     end
 
@@ -253,6 +285,51 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         before do
           params[:milestone_wildcard_id] = described_class::FILTER_NONE
           search_params.merge!(none_milestones: true)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when multiple assignee usernames provided' do
+        before do
+          params[:assignee_usernames] = [assignee_user.username, other_user.username]
+          search_params.merge!(assignee_ids: [assignee_user.id, other_user.id])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when not_assignee_usernames param provided' do
+        before do
+          params[:not][:assignee_usernames] = [assignee_user.username]
+          search_params.merge!(not_assignee_ids: [assignee_user.id])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when or assignee param provided' do
+        before do
+          params[:or] = { assignee_usernames: [assignee_user.username, other_user.username] }
+          search_params.merge!(or_assignee_ids: [assignee_user.id, other_user.id])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when any_assignees param provided (assignee wildcard)' do
+        before do
+          params[:assignee_wildcard_id] = described_class::FILTER_ANY
+          search_params.merge!(any_assignees: true)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when none_assignees param provided (assignee wildcard)' do
+        before do
+          params[:assignee_wildcard_id] = described_class::FILTER_NONE
+          search_params.merge!(none_assignees: true)
         end
 
         it_behaves_like 'executes ES search with expected params'

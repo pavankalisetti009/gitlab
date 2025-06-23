@@ -3438,8 +3438,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     context 'when options[:work_item_type_ids] and options[:not_work_item_type_ids] are both provided' do
       let(:options) { { work_item_type_ids: [1], not_work_item_type_ids: [2] } }
 
-      it 'adds the work_item_type_id filter to query_hash' do
-        expected_filter = [
+      let(:expected_filter) do
+        [
           { bool: {
             must: {
               terms: { work_item_type_id: [1], _name: 'filters:work_item_type_ids' }
@@ -3449,46 +3449,35 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             terms: { work_item_type_id: [2], _name: 'filters:not_work_item_type_ids' }
           } } }
         ]
-
-        expect(by_work_item_type_ids.dig(:query, :bool, :filter)).to eq(expected_filter)
-        expect(by_work_item_type_ids.dig(:query, :bool, :must)).to be_empty
-        expect(by_work_item_type_ids.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_work_item_type_ids.dig(:query, :bool, :should)).to be_empty
       end
+
+      it_behaves_like 'adds filter to query_hash'
     end
 
     context 'when options[:work_item_type_ids] is provided' do
       let(:options) { { work_item_type_ids: [1] } }
-
-      it 'adds the work_item_type_id filter to query_hash' do
-        expected_filter = [
+      let(:expected_filter) do
+        [
           { bool: { must: {
             terms: { work_item_type_id: [1], _name: 'filters:work_item_type_ids' }
           } } }
         ]
-
-        expect(by_work_item_type_ids.dig(:query, :bool, :filter)).to eq(expected_filter)
-        expect(by_work_item_type_ids.dig(:query, :bool, :must)).to be_empty
-        expect(by_work_item_type_ids.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_work_item_type_ids.dig(:query, :bool, :should)).to be_empty
       end
+
+      it_behaves_like 'adds filter to query_hash'
     end
 
     context 'when options[:not_work_item_type_ids] is provided' do
       let(:options) { { not_work_item_type_ids: [1] } }
-
-      it 'adds the work_item_type_id filter to query_hash' do
-        expected_filter = [
+      let(:expected_filter) do
+        [
           { bool: { must_not: {
             terms: { work_item_type_id: [1], _name: 'filters:not_work_item_type_ids' }
           } } }
         ]
-
-        expect(by_work_item_type_ids.dig(:query, :bool, :filter)).to eq(expected_filter)
-        expect(by_work_item_type_ids.dig(:query, :bool, :must)).to be_empty
-        expect(by_work_item_type_ids.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_work_item_type_ids.dig(:query, :bool, :should)).to be_empty
       end
+
+      it_behaves_like 'adds filter to query_hash'
     end
   end
 
@@ -4224,6 +4213,126 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           }
         }])
       end
+    end
+  end
+
+  describe '.by_assignees' do
+    let_it_be(:user1) { create(:user) }
+    let_it_be(:user2) { create(:user) }
+    let_it_be(:user3) { create(:user) }
+
+    subject(:by_assignees) { described_class.by_assignees(query_hash: query_hash, options: options) }
+
+    context 'when all assignee options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:assignee_ids] is provided' do
+      let(:options) { { assignee_ids: [user1.id, user2.id] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:assignee_ids',
+            must: [
+              { term: { assignee_id: user1.id } },
+              { term: { assignee_id: user2.id } }
+            ]
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:not_assignee_ids] is provided' do
+      let(:options) { { not_assignee_ids: [user1.id, user2.id] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            must_not: {
+              terms: {
+                _name: 'filters:not_assignee_ids',
+                assignee_id: [user1.id, user2.id]
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:or_assignee_ids] is provided' do
+      let(:options) { { or_assignee_ids: [user1.id, user2.id] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            must: {
+              terms: {
+                _name: 'filters:or_assignee_ids',
+                assignee_id: [user1.id, user2.id]
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:any_assignees] is provided' do
+      let(:options) { { any_assignees: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:any_assignees',
+            must: { exists: { field: 'assignee_id' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:none_assignees] is provided' do
+      let(:options) { { none_assignees: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:none_assignees',
+            must_not: { exists: { field: 'assignee_id' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:assignee_ids] and options[:not_assignee_ids] are both provided' do
+      let(:options) { { assignee_ids: [user1.id], not_assignee_ids: [user2.id, user3.id] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:assignee_ids',
+            must: [
+              { term: { assignee_id: user1.id } }
+            ]
+          }
+        }, {
+          bool: {
+            must_not: {
+              terms: {
+                _name: 'filters:not_assignee_ids',
+                assignee_id: [user2.id, user3.id]
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
     end
   end
 end

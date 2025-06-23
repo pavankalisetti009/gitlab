@@ -26,6 +26,27 @@ module Search
           state
         ].freeze
 
+        PERMITTED_FILTER_KEYS = %i[
+          order_by
+          sort
+          confidential
+          state
+          label_name
+          include_archived
+          fields
+          author_username
+          not_author_username
+          milestone_title
+          not_milestone_title
+          none_milestones
+          any_milestones
+          assignee_ids
+          not_assignee_ids
+          or_assignee_ids
+          none_assignees
+          any_assignees
+        ].freeze
+
         override :serialize
         def self.serialize(record)
           new(record.id, record.es_parent).serialize

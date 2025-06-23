@@ -11,6 +11,7 @@ module Search
       FIELDS = %w[iid^50 title^2 description].freeze
       THRESHOLD_FOR_GENERATING_EMBEDDING = 10
 
+      # rubocop:disable Metrics/AbcSize -- For now it seems that build steps are logically cohesive as a single unit
       def build
         options[:fields] = fields
         options[:related_ids] = related_ids
@@ -31,6 +32,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_work_item_type_ids(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_assignees(query_hash: query_hash, options: options)
 
         if ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_item_milestone_data)
           query_hash = ::Search::Elastic::Filters.by_milestone(query_hash: query_hash, options: options)
@@ -48,6 +50,7 @@ module Search
 
         ::Search::Elastic::Sorts.sort_by(query_hash: query_hash, options: options)
       end
+      # rubocop:enable Metrics/AbcSize
 
       private
 

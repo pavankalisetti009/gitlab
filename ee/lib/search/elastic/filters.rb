@@ -177,6 +177,91 @@ module Search
           query_hash
         end
 
+        def by_assignees(query_hash:, options:)
+          assignee_ids = options[:assignee_ids]
+          not_assignee_ids = options[:not_assignee_ids]
+          or_assignee_ids = options[:or_assignee_ids]
+          none_assignees = options[:none_assignees]
+          any_assignees = options[:any_assignees]
+
+          unless assignee_ids || not_assignee_ids || or_assignee_ids || none_assignees || any_assignees
+            return query_hash
+          end
+
+          context.name(:filters) do
+            if assignee_ids
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:assignee_ids),
+                    must: assignee_ids.map do |assignee_id|
+                      {
+                        term: {
+                          assignee_id: assignee_id
+                        }
+                      }
+                    end
+                  }
+                }
+              end
+            end
+
+            if not_assignee_ids
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must_not: {
+                      terms: {
+                        _name: context.name(:not_assignee_ids),
+                        assignee_id: not_assignee_ids
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if or_assignee_ids
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must: {
+                      terms: {
+                        _name: context.name(:or_assignee_ids),
+                        assignee_id: or_assignee_ids
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if none_assignees
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:none_assignees),
+                    must_not: { exists: { field: 'assignee_id' } }
+                  }
+                }
+              end
+            end
+
+            if any_assignees
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:any_assignees),
+                    must: { exists: { field: 'assignee_id' } }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
         def by_work_item_type_ids(query_hash:, options:)
           work_item_type_ids = options[:work_item_type_ids]
           not_work_item_type_ids = options[:not_work_item_type_ids]
