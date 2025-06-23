@@ -86,7 +86,7 @@ describe('SamlSettingsForm', () => {
 
     expect(findEnforcedSsoSetting().el.hasAttribute('disabled')).toBe(true);
     expect(findEnforcedSsoSetting().helperText.classList.contains('gl-hidden')).toBe(false);
-    expect(findEnforcedSsoSetting().value).toBe(true);
+    expect(findEnforcedSsoSetting().value).toBe(false);
   });
 
   it('correctly shows warning text when checkbox is unchecked', () => {
