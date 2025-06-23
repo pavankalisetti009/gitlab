@@ -24585,6 +24585,7 @@ Represents a ComplianceRequirement associated with a ComplianceFramework.
 | ---- | ---- | ----------- |
 | <a id="compliancerequirementcompliancerequirementscontrols"></a>`complianceRequirementsControls` | [`ComplianceRequirementsControlConnection`](#compliancerequirementscontrolconnection) | Compliance controls of the compliance requirement. (see [Connections](#connections)) |
 | <a id="compliancerequirementdescription"></a>`description` | [`String!`](#string) | Description of the compliance requirement. |
+| <a id="compliancerequirementframework"></a>`framework` | [`ComplianceFramework`](#complianceframework) | Compliance framework associated with the requirement. |
 | <a id="compliancerequirementid"></a>`id` | [`ID!`](#id) | Compliance requirement ID. |
 | <a id="compliancerequirementname"></a>`name` | [`String!`](#string) | Name of the compliance requirement. |
 
@@ -24606,6 +24607,7 @@ Represents a ComplianceRequirementsControl associated with a ComplianceRequireme
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="compliancerequirementscontrolcompliancerequirement"></a>`complianceRequirement` | [`ComplianceRequirement`](#compliancerequirement) | Compliance requirement associated with the control. |
 | <a id="compliancerequirementscontrolcontroltype"></a>`controlType` | [`String!`](#string) | Type of the compliance control. |
 | <a id="compliancerequirementscontrolexpression"></a>`expression` | [`String`](#string) | Expression of the compliance control. |
 | <a id="compliancerequirementscontrolexternalcontrolname"></a>`externalControlName` | [`String`](#string) | Name of the external control. |

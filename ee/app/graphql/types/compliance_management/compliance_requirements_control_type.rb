@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop: disable Graphql/AuthorizeTypes -- because ComplianceRequirementsControlType is, and should only be, accessible via ComplianceRequirementType
+# rubocop: disable Graphql/AuthorizeTypes -- ComplianceRequirementsControlType is accessible from authenticated resolvers only
 
 module Types
   module ComplianceManagement
@@ -31,8 +31,11 @@ module Types
       field :external_url, GraphQL::Types::String, # rubocop: disable GraphQL/ExtractType -- maintain fields on this level for backwards compatibility
         null: true,
         description: 'URL of the external control.'
+
+      field :compliance_requirement, ::Types::ComplianceManagement::ComplianceRequirementType,
+        null: true,
+        description: 'Compliance requirement associated with the control.'
     end
   end
 end
-
 # rubocop: enable Graphql/AuthorizeTypes

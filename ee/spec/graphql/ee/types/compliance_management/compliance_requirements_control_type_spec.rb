@@ -12,6 +12,7 @@ RSpec.describe GitlabSchema.types['ComplianceRequirementsControl'], feature_cate
     control_type
     external_control_name
     external_url
+    compliance_requirement
   ]
 
   it 'has the correct fields' do
