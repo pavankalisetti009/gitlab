@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_chart.vue';
 import ChartButtons from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_chart_buttons.vue';
 import groupVulnerabilityHistoryQuery from 'ee/security_dashboard/graphql/queries/group_vulnerability_history.query.graphql';
@@ -22,6 +22,11 @@ const SecurityDashboardCard = {
       <slot />
     </div>
   `,
+};
+
+const SeverityBadge = {
+  props: ['severity'],
+  template: '<div>{{ severity }}</div>',
 };
 
 describe('Vulnerabilities Over Time Chart Component', () => {
@@ -46,13 +51,19 @@ describe('Vulnerabilities Over Time Chart Component', () => {
   const findTimeInfo = () => wrapper.findByTestId('timeInfo');
   const findChartButtons = () => wrapper.findComponent(ChartButtons);
 
-  const createComponent = ({ requestHandler = defaultRequestHandler } = {}) => {
-    wrapper = shallowMountExtended(VulnerabilitiesOverTimeChart, {
+  const createComponent = ({
+    requestHandler = defaultRequestHandler,
+    mountFn = shallowMountExtended,
+    stubs = {},
+  } = {}) => {
+    wrapper = mountFn(VulnerabilitiesOverTimeChart, {
       apolloProvider: createMockApollo([[groupVulnerabilityHistoryQuery, requestHandler]]),
       propsData: { query: groupVulnerabilityHistoryQuery },
       provide: { groupFullPath: 'group' },
       stubs: {
         SecurityDashboardCard,
+        SeverityBadge,
+        ...stubs,
       },
     });
   };
@@ -135,6 +146,53 @@ describe('Vulnerabilities Over Time Chart Component', () => {
 
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Failed to retrieve the vulnerability data. Please refresh the page.',
+      });
+    });
+  });
+
+  describe('chart report', () => {
+    const mockSvg = '<svg>mock chart data</svg>';
+
+    beforeEach(() => {
+      createComponent({
+        mountFn: mountExtended,
+        stubs: {
+          GlSparklineChart: {
+            template: '<div></div>',
+            mounted() {
+              const mockChart = {
+                getDataURL: jest.fn().mockReturnValue(mockSvg),
+              };
+              this.$emit('created', mockChart);
+            },
+          },
+        },
+      });
+      return waitForPromises();
+    });
+
+    it('has the correct chart structure', () => {
+      const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+      const result = chartReportDataFn();
+
+      expect(result.charts[0]).toEqual({
+        severity: 'critical',
+        svg: mockSvg,
+        change_in_percent: expect.any(String),
+        current_count: expect.any(Number),
+      });
+
+      expect(result.charts.map((c) => c.severity)).toEqual(['critical', 'high', 'medium', 'low']);
+    });
+
+    it('has the correct data structure', () => {
+      const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+      const result = chartReportDataFn();
+
+      expect(result).toEqual({
+        charts: expect.any(Array),
+        selected_day_range: expect.any(Number),
+        date_info: expect.any(String),
       });
     });
   });

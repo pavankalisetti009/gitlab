@@ -10,18 +10,26 @@ import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_
 describe('Security Dashboard Layout component', () => {
   let wrapper;
 
+  const groupFullPath = 'group/path';
+
   const findVulnerabilitiesOverTimeChart = () =>
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
   const findVulnerabilitySeverities = () => wrapper.findComponent(VulnerabilitySeverities);
   const findExportButton = () => wrapper.findComponent(PdfExportButton);
 
-  const createWrapper = ({ vulnerabilitiesPdfExport = true, showExport = false } = {}) => {
+  const createWrapper = ({
+    vulnerabilitiesPdfExport = true,
+    showExport = false,
+    stubs = {},
+  } = {}) => {
     wrapper = shallowMountExtended(SecurityDashboard, {
       propsData: { historyQuery, gradesQuery, showExport },
       stubs: {
         PageHeading,
+        ...stubs,
       },
       provide: {
+        groupFullPath,
         glFeatures: {
           vulnerabilitiesPdfExport,
         },
@@ -54,6 +62,28 @@ describe('Security Dashboard Layout component', () => {
         expect(findExportButton().exists()).toBe(expected);
       },
     );
+
+    it('includes the group full path in the report data', () => {
+      const mockData = 'some test';
+      const mockGetExportData = jest.fn().mockReturnValue(mockData);
+
+      createWrapper({
+        showExport: true,
+        stubs: {
+          VulnerabilitiesOverTimeChart: {
+            template: '<div></div>',
+            methods: {
+              getExportData: mockGetExportData,
+            },
+          },
+        },
+      });
+
+      const getReportDataFn = findExportButton().props('getReportData');
+      const result = getReportDataFn();
+
+      expect(result.full_path).toBe(groupFullPath);
+    });
   });
 
   describe('when vulnerabilitiesPdfExport is false', () => {
