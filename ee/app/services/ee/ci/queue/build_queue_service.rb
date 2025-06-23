@@ -16,8 +16,7 @@ module EE
                      enforce_minutes_based_on_cost_factors(super)
                    end
 
-          if ::Feature.enabled?(:ci_queuing_disaster_recovery_disable_allowed_plans, :instance, type: :ops) ||
-              ::Feature.disabled?(:ci_queuing_include_allowed_plans, :instance, type: :development)
+          if ::Feature.enabled?(:ci_queuing_disaster_recovery_disable_allowed_plans, :instance, type: :ops)
             builds
           else
             enforce_allowed_plans(builds)
