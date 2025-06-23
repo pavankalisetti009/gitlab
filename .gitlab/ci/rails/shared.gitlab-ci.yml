@@ -297,8 +297,12 @@ include:
     - .use-pg15-es7-ee
 
 .rspec-ee-base-pg16:
+  needs:
+    - !reference [.rspec-base, needs]
+    - job: "db:setup-ee pg16"
+      optional: true
   extends:
-    - .rspec-base-pg16
+    - .rspec-base
     - .use-pg16-es7-ee
 
 .rspec-ee-base-pg16-es8:
