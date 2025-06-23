@@ -65,6 +65,10 @@ module EE
           expose :allow_pipeline_trigger_approve_deployment, documentation: { type: 'boolean' }, if: ->(project, _) { project.feature_available?(:protected_environments) }
           expose :prevent_merge_without_jira_issue, if: ->(project, _) { project.feature_available?(:jira_issue_association_enforcement) }
           expose :auto_duo_code_review_enabled, if: ->(project, _) { project.namespace.has_active_add_on_purchase?(:duo_enterprise) }
+          expose :web_based_commit_signing_enabled, if: ->(project, options) do
+            ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
+              Ability.allowed?(options[:current_user], :admin_project, project)
+          end
         end
       end
     end

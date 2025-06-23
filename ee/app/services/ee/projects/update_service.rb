@@ -75,8 +75,11 @@ module EE
       def validate_web_based_commit_signing_enabled
         return unless params.key?(:web_based_commit_signing_enabled)
 
-        params.delete(:web_based_commit_signing_enabled) unless
-          ::Feature.enabled?(:use_web_based_commit_signing_enabled, project) && !namespace_settings_enabled?
+        return if ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
+          ::Feature.enabled?(:use_web_based_commit_signing_enabled, project) &&
+          !namespace_settings_enabled?
+
+        params.delete(:web_based_commit_signing_enabled)
       end
 
       def namespace_settings_enabled?
