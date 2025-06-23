@@ -19,11 +19,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_label_ids(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_source_branch(query_hash: query_hash, options: options)
-
-        if Feature.enabled?(:search_mr_filter_target_branch, options[:current_user])
-          query_hash = ::Search::Elastic::Filters.by_target_branch(query_hash: query_hash, options: options)
-        end
-
+        query_hash = ::Search::Elastic::Filters.by_target_branch(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_not_hidden(query_hash: query_hash, options: options)
 
         return ::Search::Elastic::Aggregations.by_label_ids(query_hash: query_hash) if options[:aggregation]
