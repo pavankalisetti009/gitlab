@@ -101,9 +101,6 @@ export default {
     policyOptions() {
       return this.selectedPolicy || POLICY_TYPE_COMPONENT_OPTIONS.scanExecution;
     },
-    shouldAllowPolicyTypeSelection() {
-      return !this.existingPolicy;
-    },
   },
   watch: {
     async securityPolicyProject(project) {
@@ -180,6 +177,7 @@ export default {
         this.policyModificationAction = null;
       }
     },
+
     setError(errors) {
       [this.error, ...this.errorMessages] = errors.split('\n');
     },
@@ -217,7 +215,6 @@ export default {
       :is="policyOptions.component"
       :error-sources="errorSources"
       :existing-policy="existingPolicy"
-      :assigned-policy-project="securityPolicyProject"
       :is-creating="isCreating"
       :is-deleting="isDeleting"
       :is-editing="isEditing"

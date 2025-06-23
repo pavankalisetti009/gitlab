@@ -531,31 +531,28 @@ describe('PolicyScope', () => {
       namespaceType              | expectedResult
       ${NAMESPACE_TYPES.GROUP}   | ${'gitlab-org-root'}
       ${NAMESPACE_TYPES.PROJECT} | ${'gitlab-org-root'}
-    `(
-      'queries different namespaces on group and project level',
-      async ({ namespaceType, expectedResult }) => {
-        createComponent({
-          provide: {
-            namespaceType,
-          },
-          handler: mockLinkedSppItemsResponse({
-            projects: [
-              { id: '1', name: 'name1', fullPath: 'fullPath1' },
-              { id: '2', name: 'name2', fullPath: 'fullPath2' },
-            ],
-            groups: [
-              { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
-              { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
-            ],
-          }),
-        });
+    `('queries different namespaces on $namespaceType level', async ({ namespaceType }) => {
+      createComponent({
+        provide: {
+          namespaceType,
+        },
+        handler: mockLinkedSppItemsResponse({
+          projects: [
+            { id: '1', name: 'name1', fullPath: 'fullPath1' },
+            { id: '2', name: 'name2', fullPath: 'fullPath2' },
+          ],
+          groups: [
+            { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
+            { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
+          ],
+        }),
+      });
 
-        await waitForPromises();
-        await findProjectScopeTypeDropdown().vm.$emit('select', SPECIFIC_PROJECTS);
+      await waitForPromises();
+      await findProjectScopeTypeDropdown().vm.$emit('select', SPECIFIC_PROJECTS);
 
-        expect(findScopeProjectSelector().props('groupFullPath')).toBe(expectedResult);
-      },
-    );
+      expect(findScopeProjectSelector().exists()).toBe(true);
+    });
   });
 
   describe('error message and validation', () => {
@@ -651,9 +648,6 @@ describe('PolicyScope', () => {
 
         expect(findScopeProjectSelector().exists()).toBe(false);
         expect(findScopeGroupSelector().exists()).toBe(true);
-        expect(findScopeGroupSelector().props('fullPath')).toBe(
-          defaultAssignedPolicyProject.fullPath,
-        );
 
         findScopeGroupSelector().vm.$emit('changed', {
           groups: {

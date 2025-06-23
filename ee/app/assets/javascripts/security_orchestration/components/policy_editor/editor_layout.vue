@@ -113,11 +113,6 @@ export default {
       required: false,
       default: EDITOR_MODE_RULE,
     },
-    disableTooltip: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
     editorModes: {
       type: Array,
       required: false,
