@@ -34,13 +34,13 @@ module WorkItems
             id: 4,
             name: "Won't do",
             color: '#DD2B0E',
-            category: :cancelled
+            category: :canceled
           },
           {
             id: 5,
             name: 'Duplicate',
             color: '#DD2B0E',
-            category: :cancelled,
+            category: :canceled,
             position: 10
           }
         ].freeze
