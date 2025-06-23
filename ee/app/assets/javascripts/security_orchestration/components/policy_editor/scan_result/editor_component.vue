@@ -149,10 +149,6 @@ export default {
     'scanPolicyDocumentationPath',
   ],
   props: {
-    assignedPolicyProject: {
-      type: Object,
-      required: true,
-    },
     errorSources: {
       type: Array,
       required: true,

@@ -57,7 +57,6 @@ export default {
   data() {
     return {
       items: this.mapLicenses(this.licenses),
-      selectedExceptionType: NO_EXCEPTION_KEY,
     };
   },
   computed: {
@@ -160,6 +159,7 @@ export default {
     mapLicenses(licenses) {
       return licenses.length > 0 ? licenses.map(createLicenseObject) : [createLicenseObject()];
     },
+    // eslint-disable-next-line vue/no-unused-properties -- called via $refs from DenyAllowList.vue
     showModalWindow() {
       this.$refs.modal.show();
     },

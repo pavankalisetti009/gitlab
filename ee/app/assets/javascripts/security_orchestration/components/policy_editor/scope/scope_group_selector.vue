@@ -55,11 +55,6 @@ export default {
       required: false,
       default: false,
     },
-    groupFullPath: {
-      type: String,
-      required: false,
-      default: null,
-    },
     fullPath: {
       type: String,
       required: false,

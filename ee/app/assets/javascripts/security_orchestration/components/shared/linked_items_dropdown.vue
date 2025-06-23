@@ -91,8 +91,9 @@ export default {
     return {
       items: [],
       pageInfo: {},
-      linkedSppItems: {},
       searchTerm: '',
+      // eslint-disable-next-line vue/no-unused-properties -- initialized for Apollo reactivity
+      linkedSppItems: {},
     };
   },
   computed: {

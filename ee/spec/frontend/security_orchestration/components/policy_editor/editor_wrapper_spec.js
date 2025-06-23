@@ -13,10 +13,7 @@ import PipelineExecutionPolicyEditor from 'ee/security_orchestration/components/
 import ScanExecutionPolicyEditor from 'ee/security_orchestration/components/policy_editor/scan_execution/editor_component.vue';
 import ScanResultPolicyEditor from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
 import VulnerabilityManagementPolicyEditor from 'ee/security_orchestration/components/policy_editor/vulnerability_management/editor_component.vue';
-import {
-  DEFAULT_ASSIGNED_POLICY_PROJECT,
-  NAMESPACE_TYPES,
-} from 'ee/security_orchestration/constants';
+import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
   mockDastScanExecutionManifest,
   mockDastScanExecutionObject,
@@ -59,10 +56,6 @@ describe('EditorWrapper component', () => {
   });
 
   const defaultProjectPath = 'path/to/project';
-  const existingAssignedPolicyProject = {
-    branch: 'main',
-    fullPath: 'path/to/new-project',
-  };
 
   const findErrorAlert = () => wrapper.findByTestId('error-alert');
   const findPipelineExecutionPolicyEditor = () =>
@@ -83,7 +76,6 @@ describe('EditorWrapper component', () => {
         ...propsData,
       },
       provide: {
-        assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
         namespacePath: defaultProjectPath,
         namespaceType: NAMESPACE_TYPES.PROJECT,
         policyType: undefined,
@@ -146,7 +138,12 @@ describe('EditorWrapper component', () => {
 
   describe('when there is existingPolicy attached', () => {
     beforeEach(() => {
-      factory({ provide: { existingPolicy: mockDastScanExecutionObject } });
+      factory({
+        provide: {
+          existingPolicy: mockDastScanExecutionObject,
+        },
+        subscriptionMock: getSecurityPolicyProjectSubscriptionHandlerMock,
+      });
     });
 
     it('renders the policy editor for editing', () => {
@@ -169,12 +166,6 @@ describe('EditorWrapper component', () => {
         },
       });
       await waitForPromises();
-      expect(findScanExecutionPolicyEditor().props('assignedPolicyProject')).toEqual({
-        name: 'New security policy project',
-        fullPath: 'path/to/new-project',
-        id: '01',
-        branch: 'main',
-      });
       expect(findScanExecutionPolicyEditor().props('errorMessages')).toBe(undefined);
       expect(goToPolicyMR).not.toHaveBeenCalled();
     });
@@ -235,10 +226,10 @@ describe('EditorWrapper component', () => {
       expect(goToPolicyMR).toHaveBeenCalledWith({
         action: SECURITY_POLICY_ACTIONS.APPEND,
         assignedPolicyProject: {
-          name: 'New security policy project',
+          branch: 'main',
           fullPath: 'path/to/new-project',
           id: '01',
-          branch: 'main',
+          name: 'New security policy project',
         },
         extraMergeRequestInput: null,
         name: mockDastScanExecutionObject.name,
@@ -270,8 +261,10 @@ describe('EditorWrapper component', () => {
         ${'to delete an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}
       `('makes the request to "goToPolicyMR" $status', async ({ action }) => {
         factory({
-          provide: { assignedPolicyProject: existingAssignedPolicyProject },
-          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorAsDataHandlerMock,
+          provide: {
+            existingPolicy: mockDastScanExecutionObject,
+          },
+          subscriptionMock: getSecurityPolicyProjectSubscriptionHandlerMock,
         });
         findScanExecutionPolicyEditor().vm.$emit('save', {
           action,
@@ -281,7 +274,12 @@ describe('EditorWrapper component', () => {
         expect(goToPolicyMR).toHaveBeenCalledTimes(1);
         expect(goToPolicyMR).toHaveBeenCalledWith({
           action,
-          assignedPolicyProject: existingAssignedPolicyProject,
+          assignedPolicyProject: {
+            name: 'New security policy project',
+            fullPath: 'path/to/new-project',
+            id: '01',
+            branch: 'main',
+          },
           extraMergeRequestInput: null,
           name: mockDastScanExecutionObject.name,
           namespacePath: defaultProjectPath,
@@ -293,8 +291,10 @@ describe('EditorWrapper component', () => {
     describe('compliance framework migration', () => {
       it('passes extra merge request input to goToPolicyMR', async () => {
         factory({
-          provide: { assignedPolicyProject: existingAssignedPolicyProject },
-          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorAsDataHandlerMock,
+          provide: {
+            existingPolicy: mockDastScanExecutionObject,
+          },
+          subscriptionMock: getSecurityPolicyProjectSubscriptionHandlerMock,
         });
         const extraMergeRequestInput = {
           title: 'test',
@@ -322,7 +322,7 @@ describe('EditorWrapper component', () => {
       it('passes down an error with the cause of `approvers_ids` and does not display an error', async () => {
         const error = createError([approverCause]);
         goToPolicyMR.mockRejectedValue(error);
-        factory({ provide: { assignedPolicyProject: existingAssignedPolicyProject } });
+        factory();
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
@@ -339,11 +339,7 @@ describe('EditorWrapper component', () => {
       it('passes down an error with the cause of `action` and does not display an error', async () => {
         const error = createError([approverCause]);
         goToPolicyMR.mockRejectedValue(error);
-        factory({
-          provide: {
-            assignedPolicyProject: existingAssignedPolicyProject,
-          },
-        });
+        factory();
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
@@ -364,7 +360,7 @@ describe('EditorWrapper component', () => {
           cause: { field: 'branches' },
         };
         goToPolicyMR.mockRejectedValue(branchesError);
-        factory({ provide: { assignedPolicyProject: existingAssignedPolicyProject } });
+        factory();
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
@@ -383,7 +379,7 @@ describe('EditorWrapper component', () => {
 
       it('does not pass down an error with an unknown cause and displays an error', async () => {
         goToPolicyMR.mockRejectedValue(createError([unknownCause]));
-        factory({ provide: { assignedPolicyProject: existingAssignedPolicyProject } });
+        factory();
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
@@ -399,7 +395,7 @@ describe('EditorWrapper component', () => {
       it('handles mixed errors', async () => {
         const error = createError([approverCause, branchesCause, unknownCause]);
         goToPolicyMR.mockRejectedValue(error);
-        factory({ provide: { assignedPolicyProject: existingAssignedPolicyProject } });
+        factory();
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
