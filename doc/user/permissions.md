@@ -379,25 +379,43 @@ Guest users and members with the Reporter role cannot do any of these actions.
 
 Project permissions for [compliance](compliance/_index.md) features including compliance center, audit events, compliance frameworks, and licenses.
 
-| Action                                                                                            | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View [allowed and denied licenses in MR](compliance/license_scanning_of_cyclonedx_files/_index.md) |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | On GitLab Self-Managed, users with the Guest role are able to perform this action only on public and internal projects (not on private projects). [External users](../administration/external_users.md) must be have at least the Reporter role, even if the project is internal. Users with the Guest role on GitLab.com are able to perform this action only on public projects because internal visibility is not available. |
-| View [audit events](compliance/audit_events.md)                                                   |       |         |          |     ✓     |     ✓      |   ✓   | Users can only view events based on their individual actions. For more details, see the [prerequisites](compliance/audit_events.md#prerequisites). |
-| View licenses in [dependency list](application_security/dependency_list/_index.md)                 |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Manage [audit streams](compliance/audit_event_streaming.md)                                       |       |         |          |           |            |   ✓   |       |
+| Action                                                                                                          | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| --------------------------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View [allowed and denied licenses in MR](compliance/license_scanning_of_cyclonedx_files/_index.md) <sup>1</sup> |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [audit events](compliance/audit_events.md) <sup>2</sup>                                                    |       |         |          |     ✓     |     ✓      |   ✓   |
+| View licenses in [dependency list](application_security/dependency_list/_index.md)                              |       |         |          |     ✓     |     ✓      |   ✓   |
+| Manage [audit streams](compliance/audit_event_streaming.md)                                                     |       |         |          |           |            |   ✓   |
+
+**Footnotes**
+
+1. On GitLab Self-Managed, users with the Guest role are able to perform this action only on public
+   and internal projects (not on private projects). [External users](../administration/external_users.md)
+   must have at least the Reporter role, even if the project is internal. Users with the Guest
+   role on GitLab.com are able to perform this action only on public projects because internal
+   visibility is not available.
+1. Users can only view events based on their individual actions. For more details, see the [prerequisites](compliance/audit_events.md#prerequisites).
 
 ### Machine learning model registry and experiment
 
 Project permissions for [model registry](project/ml/model_registry/_index.md) and [model experiments](project/ml/experiment_tracking/_index.md).
 
-| Action                                                            | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ----------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | :---: |
-| View [models and versions](project/ml/model_registry/_index.md)    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | Non-members can only view models and versions in public projects with the **Everyone with access** visibility level. Non-members can't view internal projects, even if they're logged in. |
-| View [model experiments](project/ml/experiment_tracking/_index.md) |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | Non-members can only view model experiments in public projects with the **Everyone with access** visibility level. Non-members can't view internal projects, even if they're logged in. |
-| Create models, versions, and artifacts                            |       |         |          |     ✓     |     ✓      |   ✓   | You can also upload and download artifacts with the package registry API, which uses it's own set of permissions. |
-| Edit & delete models, versions, and artifacts                     |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Create experiments and candidates                                 |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Edit & delete experiments and candidates                          |       |         |          |     ✓     |     ✓      |   ✓   |       |
+| Action                                                                          | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View [models and versions](project/ml/model_registry/_index.md) <sup>1</sup>    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [model experiments](project/ml/experiment_tracking/_index.md) <sup>2</sup> |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create models, versions, and artifacts <sup>3</sup>                             |       |         |          |     ✓     |     ✓      |   ✓   |
+| Edit & delete models, versions, and artifacts                                   |       |         |          |     ✓     |     ✓      |   ✓   |
+| Create experiments and candidates                                               |       |         |          |     ✓     |     ✓      |   ✓   |
+| Edit & delete experiments and candidates                                        |       |         |          |     ✓     |     ✓      |   ✓   |
+
+**Footnotes**
+
+1. Non-members can only view models and versions in public projects with the **Everyone with access**
+   visibility level. Non-members can't view internal projects, even if they're logged in.
+1. Non-members can only view model experiments in public projects with the **Everyone with access**
+   visibility level. Non-members can't view internal projects, even if they're logged in.
+1. You can also upload and download artifacts with the package registry API, which uses
+   a different set of permissions.
 
 ### Monitoring
 
@@ -425,70 +443,85 @@ Project permissions for monitoring including [error tracking](../operations/erro
 
 Project permissions for [issues](project/issues/_index.md):
 
-| Action                                                                | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes                                                                                                                                                                                                                                                                                                                                |
-|-----------------------------------------------------------------------|:-----:|:-------:|:--------:|:---------:|:----------:|:-----:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| View issues                                                           |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| [Search](search/_index.md) issues and comments                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Create issues                                                         |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| View [confidential issues](project/issues/confidential_issues.md)     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| [Search](search/_index.md) confidential issues and comments           |       |         |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Edit issues, including metadata, item locking, and resolving threads  |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | Metadata includes labels, assignees, milestones, epics, weight, confidentiality, time tracking, and more.<br /><br />Guest users can only set metadata when creating an issue. They cannot change the metadata on existing issues. Guest users can modify the title and description of issues that they authored or are assigned to. |
-| Add internal note                                                     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Close and reopen issues                                               |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | Guest users can close and reopen issues that they authored or are assigned to.                                                                                                                                                                                                                                                       |
-| Manage [design management](project/issues/design_management.md) files |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Manage [issue boards](project/issue_board.md)                         |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Manage [milestones](project/milestones/_index.md)                     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| [Search](search/_index.md) milestones                                 |       |         |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Archive or reopen [requirements](project/requirements/_index.md)      |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | Guest users can archive and reopen issues that they authored or are assigned to.                                                                                                                                                                                                                                                     |
-| Create or edit [requirements](project/requirements/_index.md)         |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | Guest users can modify the title and description that they authored or are assigned to.                                                                                                                                                                                                                                              |
-| Import or export [requirements](project/requirements/_index.md)       |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Archive [test cases](../ci/test_cases/_index.md)                      |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Create [test cases](../ci/test_cases/_index.md)                       |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Move [test cases](../ci/test_cases/_index.md)                         |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Reopen [test cases](../ci/test_cases/_index.md)                       |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| [Import](project/issues/csv_import.md) issues from a CSV file         |       |    ✓    |          |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| [Export](project/issues/csv_export.md) issues to a CSV file           |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Delete issues                                                         |       |    ✓    |          |           |            |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
-| Manage [Feature flags](../operations/feature_flags.md)                |       |         |          |     ✓     |     ✓      |   ✓   |                                                                                                                                                                                                                                                                                                                                      |
+| Action                                                                            | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| --------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View issues                                                                       |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| [Search](search/_index.md) issues and comments                                    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create issues                                                                     |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [confidential issues](project/issues/confidential_issues.md)                 |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| [Search](search/_index.md) confidential issues and comments                       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Edit issues, including metadata, item locking, and resolving threads <sup>1</sup> |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Add internal note                                                                 |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Close and reopen issues <sup>2</sup>                                              |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Manage [design management](project/issues/design_management.md) files             |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Manage [issue boards](project/issue_board.md)                                     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Manage [milestones](project/milestones/_index.md)                                 |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| [Search](search/_index.md) milestones                                             |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Archive or reopen [requirements](project/requirements/_index.md) <sup>3</sup>     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create or edit [requirements](project/requirements/_index.md) <sup>4</sup>        |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Import or export [requirements](project/requirements/_index.md)                   |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Archive [test cases](../ci/test_cases/_index.md)                                  |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create [test cases](../ci/test_cases/_index.md)                                   |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Move [test cases](../ci/test_cases/_index.md)                                     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Reopen [test cases](../ci/test_cases/_index.md)                                   |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| [Import](project/issues/csv_import.md) issues from a CSV file                     |       |    ✓    |          |     ✓     |     ✓      |   ✓   |
+| [Export](project/issues/csv_export.md) issues to a CSV file                       |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Delete issues                                                                     |       |    ✓    |          |           |            |   ✓   |
+| Manage [Feature flags](../operations/feature_flags.md)                            |       |         |          |     ✓     |     ✓      |   ✓   |
+
+**Footnotes**
+
+1. Metadata includes labels, assignees, milestones, epics, weight, confidentiality, time tracking,
+   and more. Guest users can only set metadata when creating an issue. They cannot change the
+   metadata on existing issues. Guest users can modify the title and description of issues that
+   they authored or are assigned to.
+1. Guest users can close and reopen issues that they authored or are assigned to.
+1. Guest users can archive and reopen issues that they authored or are assigned to.
+1. Guest users can modify the title and description that they authored or are assigned to.
 
 Project permissions for [tasks](tasks.md):
 
-| Action                                                              | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View tasks                                                          |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| [Search](search/_index.md) tasks                                    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                         |
-| Create tasks                                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |  |
-| Edit tasks, including metadata, item locking, and resolving threads |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | Guest users can modify the title and description that they authored or are assigned to. |
-| Add a linked item                                                   |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                         |
-| Convert to another item type                                        |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                         |
-| Remove from issue                                                   |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                         |
-| Add internal note                                                   |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |                                                                                         |
-| Delete tasks                                                        |       |    ✓    |          |           |            |   ✓   | Users who don't have the Planner or Owner role can delete the tasks they authored.      |
+| Action                                                                           | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| -------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View tasks                                                                       |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| [Search](search/_index.md) tasks                                                 |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create tasks                                                                     |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Edit tasks, including metadata, item locking, and resolving threads <sup>1</sup> |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Add a linked item                                                                |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Convert to another item type                                                     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Remove from issue                                                                |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Add internal note                                                                |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Delete tasks <sup>2</sup>                                                        |       |    ✓    |          |           |            |   ✓   |
+
+**Footnotes**
+
+1. Guest users can modify the title and description that they authored or are assigned to.
+1. Users who don't have the Planner or Owner role can delete the tasks they authored.
 
 Project permissions for [OKRs](okrs.md):
 
-| Action                                                             | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View OKRs                                                          |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| [Search](search/_index.md) OKRs                                    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Create OKRs                                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Edit OKRs, including metadata, item locking, and resolving threads |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Add a child OKR                                                    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Add a linked item                                                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Convert to another item type                                       |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Edit OKRs                                                          |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Change confidentiality in OKR                                      |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Add internal note                                                  |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
+| Action                                                             | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View OKRs                                                          |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| [Search](search/_index.md) OKRs                                    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create OKRs                                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Edit OKRs, including metadata, item locking, and resolving threads |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Add a child OKR                                                    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Add a linked item                                                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Convert to another item type                                       |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Edit OKRs                                                          |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Change confidentiality in OKR                                      |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Add internal note                                                  |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
 
 Project permissions for [wikis](project/wiki/_index.md):
 
-| Action                           | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-|----------------------------------|:-----:|:-------:|:--------:|:---------:|:----------:|:-----:|-------|
-| View wiki                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| [Search](search/_index.md) wikis |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Create wiki pages                |       |    ✓    |          |     ✓     |     ✓      |   ✓   |       |
-| Edit wiki pages                  |       |    ✓    |          |     ✓     |     ✓      |   ✓   |       |
-| Delete wiki pages                |       |    ✓    |          |     ✓     |     ✓      |   ✓   |       |
+| Action                           | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| -------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View wiki                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| [Search](search/_index.md) wikis |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create wiki pages                |       |    ✓    |          |     ✓     |     ✓      |   ✓   |
+| Edit wiki pages                  |       |    ✓    |          |     ✓     |     ✓      |   ✓   |
+| Delete wiki pages                |       |    ✓    |          |     ✓     |     ✓      |   ✓   |
 
 ### Packages and registry
 
