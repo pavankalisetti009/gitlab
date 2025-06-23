@@ -464,6 +464,84 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+
+    describe 'assignees' do
+      let_it_be(:assignee_user) { create(:user) }
+      let_it_be(:other_user) { create(:user) }
+
+      it 'does not apply assignee filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:assignee_ids
+            filters:not_assignee_ids
+            filters:or_assignee_ids
+            filters:none_assignees
+            filters:any_assignees
+          ])
+      end
+
+      context 'when assignee_ids option is provided' do
+        let(:options) { base_options.merge(assignee_ids: [assignee_user.id, other_user.id]) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:assignee_ids])
+        end
+      end
+
+      context 'when not_assignee_ids option is provided' do
+        let(:options) { base_options.merge(not_assignee_ids: [assignee_user.id, other_user.id]) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_assignee_ids])
+        end
+      end
+
+      context 'when or_assignee_ids option is provided' do
+        let(:options) { base_options.merge(or_assignee_ids: [assignee_user.id, other_user.id]) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:or_assignee_ids])
+        end
+      end
+
+      context 'when none_assignees option is provided' do
+        let(:options) { base_options.merge(none_assignees: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:none_assignees])
+        end
+      end
+
+      context 'when any_assignees option is provided' do
+        let(:options) { base_options.merge(any_assignees: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:any_assignees])
+        end
+      end
+
+      context 'when multiple assignee options are provided' do
+        let(:options) do
+          base_options.merge(
+            assignee_ids: [assignee_user.id],
+            not_assignee_ids: [other_user.id],
+            or_assignee_ids: [assignee_user.id, other_user.id],
+            none_assignees: true,
+            any_assignees: true
+          )
+        end
+
+        it 'applies all provided assignee filters' do
+          assert_names_in_query(build, with: %w[
+            filters:assignee_ids
+            filters:not_assignee_ids
+            filters:or_assignee_ids
+            filters:none_assignees
+            filters:any_assignees
+          ])
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'

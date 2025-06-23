@@ -25,9 +25,10 @@ module EE
         CONTROL_KEYS = [:sort, :include_ancestors, :include_descendants, :exclude_projects].freeze
         ALLOWED_ES_FILTERS = [
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
-          :milestone_title, :milestone_wildcard_id, :not
+          :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or
         ].freeze
-        NOT_FILTERS = [:author_username, :milestone_title].freeze
+        NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames].freeze
+        OR_FILTERS = [:assignee_usernames].freeze
 
         FILTER_NONE = 'none'
         FILTER_ANY = 'any'
@@ -91,7 +92,12 @@ module EE
             milestone_title: params[:milestone_title],
             not_milestone_title: params.dig(:not, :milestone_title),
             none_milestones: none_milestones?,
-            any_milestones: any_milestones?
+            any_milestones: any_milestones?,
+            assignee_ids: assignee_ids(params[:assignee_usernames]),
+            not_assignee_ids: assignee_ids(params.dig(:not, :assignee_usernames)),
+            or_assignee_ids: assignee_ids(params.dig(:or, :assignee_usernames)),
+            none_assignees: none_assignees?,
+            any_assignees: any_assignees?
           }
         end
 
@@ -157,7 +163,7 @@ module EE
         end
 
         def elasticsearch_fields_supported?
-          allowed_main_filters? && allowed_not_filters?
+          allowed_main_filters? && allowed_not_filters? && allowed_or_filters?
         end
 
         def allowed_main_filters?
@@ -171,6 +177,27 @@ module EE
           return false unless params[:not].is_a?(Hash)
 
           (params[:not].keys - NOT_FILTERS).empty?
+        end
+
+        def allowed_or_filters?
+          return true unless params[:or].present?
+          return false unless params[:or].is_a?(Hash)
+
+          (params[:or].keys - OR_FILTERS).empty?
+        end
+
+        def none_assignees?
+          params[:assignee_wildcard_id].to_s.downcase == FILTER_NONE
+        end
+
+        def any_assignees?
+          params[:assignee_wildcard_id].to_s.downcase == FILTER_ANY
+        end
+
+        def assignee_ids(assignee_usernames)
+          return unless assignee_usernames.present?
+
+          ::User.by_username(assignee_usernames).pluck_primary_key
         end
       end
     end
