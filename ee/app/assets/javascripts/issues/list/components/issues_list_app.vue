@@ -18,6 +18,7 @@ import {
   TOKEN_TYPE_CUSTOM_FIELD,
   TOKEN_TITLE_STATUS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
+import { CUSTOM_FIELDS_TYPE_MULTI_SELECT } from '~/work_items/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
@@ -169,7 +170,7 @@ export default {
             fullPath: this.fullPath,
             token: CustomFieldToken,
             operators: OPERATORS_IS,
-            unique: true,
+            unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
           });
         });
       }

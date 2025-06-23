@@ -209,9 +209,20 @@ export const mockNamespaceCustomFieldsResponse = {
           },
           {
             id: 'gid://gitlab/Issuables::CustomField/27',
-            name: 'Single select custom field',
-            fieldType: 'SINGLE_SELECT',
-            workItemTypes: [],
+            name: 'Multi select custom field',
+            fieldType: 'MULTI_SELECT',
+            workItemTypes: [
+              {
+                id: 'gid://gitlab/WorkItems::Type/8',
+                name: 'Epic',
+                __typename: 'WorkItemType',
+              },
+              {
+                id: 'gid://gitlab/WorkItems::Type/1',
+                name: 'Issue',
+                __typename: 'WorkItemType',
+              },
+            ],
             __typename: 'CustomField',
           },
           {

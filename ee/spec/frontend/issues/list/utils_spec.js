@@ -4,8 +4,13 @@ import {
   getFilterTokens,
   convertToApiParams,
   convertToUrlParams,
+  getCustomFieldTokenId,
+  mergeDuplicatedCustomFieldTokens,
 } from 'ee/issues/list/utils';
-import { TOKEN_TYPE_STATE } from '~/vue_shared/components/filtered_search_bar/constants';
+import {
+  TOKEN_TYPE_STATE,
+  OPERATOR_IS,
+} from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_ENUM_INCIDENT,
@@ -123,5 +128,135 @@ describe('convertToUrlParams', () => {
     const params = convertToUrlParams(filterTokens, { hasCustomFieldsFeature: true });
 
     expect(params['custom-field[123]']).toEqual('456');
+  });
+});
+
+describe('getCustomFieldTokenId', () => {
+  it('extracts custom field ID from token type', () => {
+    const token = { type: 'custom-field[123]' };
+    expect(getCustomFieldTokenId(token)).toBe('123');
+  });
+
+  it('returns undefined for null token', () => {
+    expect(getCustomFieldTokenId(null)).toBeUndefined();
+  });
+
+  it('returns undefined for undefined token', () => {
+    expect(getCustomFieldTokenId(undefined)).toBeUndefined();
+  });
+
+  it('returns undefined for token without type', () => {
+    const token = { value: { data: 'test' } };
+    expect(getCustomFieldTokenId(token)).toBeUndefined();
+  });
+});
+
+describe('mergeDuplicatedCustomFieldTokens', () => {
+  it('merges tokens with the same custom field ID', () => {
+    const tokens = [
+      {
+        type: 'custom-field[1]',
+        value: { data: 'option1', operator: OPERATOR_IS },
+      },
+      {
+        type: 'custom-field[1]',
+        value: { data: 'option2', operator: OPERATOR_IS },
+      },
+    ];
+
+    const result = mergeDuplicatedCustomFieldTokens(tokens);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      type: 'custom-field[1]',
+      value: {
+        data: ['option1', 'option2'],
+        operator: OPERATOR_IS,
+      },
+    });
+  });
+
+  it('preserves tokens with different custom field IDs', () => {
+    const tokens = [
+      {
+        type: 'custom-field[2]',
+        value: { data: 'option1', operator: OPERATOR_IS },
+      },
+      {
+        type: 'custom-field[4]',
+        value: { data: 'option2', operator: OPERATOR_IS },
+      },
+    ];
+
+    const result = mergeDuplicatedCustomFieldTokens(tokens);
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({
+      type: 'custom-field[2]',
+      value: {
+        data: ['option1'],
+        operator: OPERATOR_IS,
+      },
+    });
+    expect(result[1]).toEqual({
+      type: 'custom-field[4]',
+      value: {
+        data: ['option2'],
+        operator: OPERATOR_IS,
+      },
+    });
+  });
+
+  it('removes duplicate values when merging', () => {
+    const tokens = [
+      {
+        type: 'custom-field[1]',
+        value: { data: 'option1', operator: OPERATOR_IS },
+      },
+      {
+        type: 'custom-field[1]',
+        value: { data: 'option1', operator: OPERATOR_IS },
+      },
+      {
+        type: 'custom-field[1]',
+        value: { data: 'option2', operator: OPERATOR_IS },
+      },
+    ];
+
+    const result = mergeDuplicatedCustomFieldTokens(tokens);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      type: 'custom-field[1]',
+      value: {
+        data: ['option1', 'option2'],
+        operator: OPERATOR_IS,
+      },
+    });
+  });
+
+  it('handles empty array input', () => {
+    const result = mergeDuplicatedCustomFieldTokens([]);
+    expect(result).toEqual([]);
+  });
+
+  it('handles single token', () => {
+    const tokens = [
+      {
+        type: 'custom-field[1]',
+        value: { data: 'option1', operator: OPERATOR_IS },
+      },
+    ];
+
+    const result = mergeDuplicatedCustomFieldTokens(tokens);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      type: 'custom-field[1]',
+      value: {
+        data: ['option1'],
+        operator: OPERATOR_IS,
+      },
+    });
   });
 });
