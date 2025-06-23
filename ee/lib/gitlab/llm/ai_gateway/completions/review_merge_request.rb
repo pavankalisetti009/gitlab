@@ -344,8 +344,8 @@ module Gitlab
 
             # Select instructions whose glob patterns match any of the diff files
             matching_instructions = all_instructions.select do |instruction|
-              file_paths.any? { |path| File.fnmatch?(instruction[:glob_pattern], path) }
-            end.uniq
+              file_paths.any? { |path| matches_pattern?(path, instruction) }
+            end
 
             if duo_code_review_logging_enabled?
               Gitlab::AppLogger.info(
@@ -371,14 +371,15 @@ module Gitlab
             yaml_content = YAML.safe_load(blob.data)
             return [] unless yaml_content&.dig('instructions')
 
-            yaml_content['instructions'].flat_map do |group|
-              Array(group['fileFilters']).map do |pattern|
-                {
-                  name: group['name'],
-                  instructions: group['instructions'],
-                  glob_pattern: pattern
-                }.with_indifferent_access
-              end
+            yaml_content['instructions'].map do |group|
+              excludes, includes = Array(group['fileFilters']).partition { |p| p.start_with?('!') }
+
+              {
+                name: group['name'],
+                instructions: group['instructions'],
+                include_patterns: includes,
+                exclude_patterns: excludes.map { |p| p[1..] } # rubocop:disable Rails/Pluck -- Not an ActiveRecord relation
+              }.with_indifferent_access
             end
           rescue StandardError => e
             Gitlab::ErrorTracking.track_exception(e,
@@ -386,6 +387,19 @@ module Gitlab
               merge_request_id: merge_request.id
             )
             []
+          end
+
+          def matches_pattern?(path, instruction)
+            includes = instruction[:include_patterns]
+            excludes = instruction[:exclude_patterns]
+
+            # Matching logic:
+            # - With include patterns: Match ONLY files that match include patterns (minus exclusions)
+            # - Without include patterns: Match ALL files (minus exclusions)
+            matches_include = includes.empty? || includes.any? { |pattern| File.fnmatch?(pattern, path) }
+            matches_exclude = excludes.any? { |pattern| File.fnmatch?(pattern, path) }
+
+            matches_include && !matches_exclude
           end
 
           def review_response_for_prompt_inputs

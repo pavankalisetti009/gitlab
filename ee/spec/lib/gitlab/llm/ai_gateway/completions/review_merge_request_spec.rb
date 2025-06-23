@@ -1344,7 +1344,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             {
               'name' => 'Markdown Standards',
               'instructions' => 'Check for proper markdown formatting',
-              'glob_pattern' => '*.md'
+              'include_patterns' => ['*.md'],
+              'exclude_patterns' => []
             }
           ]
 
@@ -1362,7 +1363,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             {
               'name' => 'Markdown Standards',
               'instructions' => 'Check for proper markdown formatting',
-              'glob_pattern' => '*.md'
+              'include_patterns' => ['*.md'],
+              'exclude_patterns' => []
             }
           ]
 
@@ -1408,12 +1410,14 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
               {
                 'name' => 'General Code Review',
                 'instructions' => 'Review for general code quality',
-                'glob_pattern' => '*.md'
+                'include_patterns' => ['*.md'],
+                'exclude_patterns' => []
               },
               {
                 'name' => 'Markdown Specific',
                 'instructions' => 'Markdown specific instructions',
-                'glob_pattern' => '*.md'
+                'include_patterns' => ['*.md'],
+                'exclude_patterns' => []
               }
             ]
 
@@ -1483,6 +1487,101 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             end
 
             it 'returns empty instructions array' do
+              expect(review_prompt_class).to receive(:new).with(
+                hash_including(
+                  custom_instructions: []
+                )
+              )
+
+              completion.execute
+            end
+          end
+        end
+
+        context 'with exclusion patterns' do
+          let(:yaml_content) do
+            <<~YAML
+            ---
+            instructions:
+              - name: TypeScript Files
+                instructions: Review TypeScript code for type safety
+                fileFilters:
+                  - "**/*.ts"
+                  - "!**/*.test.ts"
+            YAML
+          end
+
+          let(:blob_data) { yaml_content }
+          let(:blob) { instance_double(Blob, data: blob_data) }
+
+          before do
+            allow(merge_request.project.repository).to receive(:blob_at)
+              .with(merge_request.target_branch_sha, '.gitlab/duo/mr-review-instructions.yaml')
+              .and_return(blob)
+          end
+
+          context 'when diff contains both matching and excluded files' do
+            let(:diff_files) do
+              [
+                instance_double(Gitlab::Diff::File,
+                  new_path: 'app/components/button.ts',
+                  new_file?: false,
+                  deleted_file?: false,
+                  old_path: 'app/components/button.ts',
+                  old_blob: instance_double(Blob, data: 'content'),
+                  raw_diff: '@@ -1,2 +1,2 @@ existing line'),
+                instance_double(Gitlab::Diff::File,
+                  new_path: 'app/components/button.test.ts',
+                  new_file?: false,
+                  deleted_file?: false,
+                  old_path: 'app/components/button.test.ts',
+                  old_blob: instance_double(Blob, data: 'test content'),
+                  raw_diff: '@@ -1,2 +1,2 @@ test line')
+              ]
+            end
+
+            before do
+              allow(merge_request).to receive(:ai_reviewable_diff_files).and_return(diff_files)
+            end
+
+            it 'only passes custom instructions for non-excluded files' do
+              expected_instructions = [
+                {
+                  'name' => 'TypeScript Files',
+                  'instructions' => 'Review TypeScript code for type safety',
+                  'include_patterns' => ['**/*.ts'],
+                  'exclude_patterns' => ['**/*.test.ts']
+                }
+              ]
+
+              expect(review_prompt_class).to receive(:new).with(
+                hash_including(
+                  custom_instructions: expected_instructions
+                )
+              )
+
+              completion.execute
+            end
+          end
+
+          context 'when all files match exclusion patterns' do
+            let(:diff_files) do
+              [
+                instance_double(Gitlab::Diff::File,
+                  new_path: 'app/components/button.test.ts',
+                  new_file?: false,
+                  deleted_file?: false,
+                  old_path: 'app/components/button.test.ts',
+                  old_blob: instance_double(Blob, data: 'test content'),
+                  raw_diff: '@@ -1,2 +1,2 @@ test line')
+              ]
+            end
+
+            before do
+              allow(merge_request).to receive(:ai_reviewable_diff_files).and_return(diff_files)
+            end
+
+            it 'passes empty custom instructions array' do
               expect(review_prompt_class).to receive(:new).with(
                 hash_including(
                   custom_instructions: []
