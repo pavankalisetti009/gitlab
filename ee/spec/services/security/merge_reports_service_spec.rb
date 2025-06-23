@@ -57,7 +57,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
     let(:gemnasium_report) do
       build(:ci_reports_security_report,
         type: :dependency_scanning,
-        scanners: [gemnasium_scanner],
+        scanner: gemnasium_scanner,
         findings: [finding_id_1],
         identifiers: finding_id_1.identifiers
       )
@@ -67,7 +67,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
       build(
         :ci_reports_security_report,
         type: :dependency_scanning,
-        scanners: [bundler_audit_scanner],
+        scanner: bundler_audit_scanner,
         findings: [finding_id_2],
         identifiers: finding_id_2.identifiers
       )
@@ -77,7 +77,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
       build(
         :ci_reports_security_report,
         type: :dependency_scanning,
-        scanners: [retire_js_scaner],
+        scanner: retire_js_scaner,
         findings: [finding_id_3],
         identifiers: finding_id_3.identifiers
       )
@@ -87,7 +87,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
       build(
         :ci_reports_security_report,
         type: :dependency_scanning,
-        scanners: [scanner_2],
+        scanner: scanner_2,
         findings: [finding_id_2_loc_1],
         identifiers: finding_id_2_loc_1.identifiers
       )
@@ -96,7 +96,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
     context 'when reports are gathered in an unprioritized order' do
       subject(:ds_merged_report) { described_class.new(gemnasium_report, retirejs_report, bundler_audit_report).execute }
 
-      specify { expect(ds_merged_report.scanners.values).to eql([bundler_audit_scanner, retire_js_scaner, gemnasium_scanner]) }
+      specify { expect(ds_merged_report.scanner).to eq(gemnasium_scanner) }
       specify { expect(ds_merged_report.findings.count).to eq(2) }
       specify { expect(ds_merged_report.findings.first.identifiers).to contain_exactly(identifier_cve) }
       specify { expect(ds_merged_report.findings.last.identifiers).to contain_exactly(identifier_npm) }
@@ -105,7 +105,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
     context 'when a custom analyzer is completed before the known analyzers' do
       subject(:ds_merged_report) { described_class.new(custom_analyzer_report, retirejs_report, bundler_audit_report).execute }
 
-      specify { expect(ds_merged_report.scanners.values).to eql([bundler_audit_scanner, retire_js_scaner, scanner_2]) }
+      specify { expect(ds_merged_report.scanner).to eq(scanner_2) }
       specify { expect(ds_merged_report.findings.count).to eq(3) }
       specify { expect(ds_merged_report.findings.last.identifiers).to match_array(finding_id_2_loc_1.identifiers) }
     end
@@ -119,7 +119,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
       let(:gemnasium_report) do
         build(:ci_reports_security_report,
           type: :dependency_scanning,
-          scanners: [gemnasium_scanner],
+          scanner: gemnasium_scanner,
           findings: [finding_id_1, finding_id_4],
           identifiers: [finding_id_1.identifiers, finding_id_4.identifiers].flatten
         )
@@ -129,7 +129,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
         build(
           :ci_reports_security_report,
           type: :dependency_scanning,
-          scanners: [retire_js_scaner],
+          scanner: retire_js_scaner,
           findings: [finding_id_3, finding_id_5],
           identifiers: [finding_id_3.identifiers, finding_id_5.identifiers].flatten
         )

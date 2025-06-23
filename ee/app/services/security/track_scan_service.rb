@@ -41,7 +41,7 @@ module Security
     def data_to_track(report_type, report)
       analyzer = report&.analyzer
       scan = report&.scan
-      primary_scanner = report&.primary_scanner
+      scanner = report&.scanner
       findings = report&.findings || []
 
       {
@@ -52,9 +52,9 @@ module Security
         end_time: scan&.end_time,
         report_schema_version: report&.version,
         scan_type: scan_type(report, report_type),
-        scanner: primary_scanner&.external_id,
-        scanner_vendor: primary_scanner&.vendor,
-        scanner_version: primary_scanner&.version,
+        scanner: scanner&.external_id,
+        scanner_vendor: scanner&.vendor,
+        scanner_version: scanner&.version,
         start_time: scan&.start_time,
         status: scan&.status || 'success'
       }

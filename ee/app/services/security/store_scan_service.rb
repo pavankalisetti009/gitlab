@@ -125,8 +125,8 @@ module Security
     end
 
     def vulnerability_scanner
-      project.vulnerability_scanners.safe_find_or_create_by!(external_id: security_report.primary_scanner.external_id) do |scanner|
-        scanner.assign_attributes(security_report.primary_scanner.to_hash)
+      project.vulnerability_scanners.safe_find_or_create_by!(external_id: security_report.scanner.external_id) do |scanner|
+        scanner.assign_attributes(security_report.scanner.to_hash)
       end
     end
   end
