@@ -332,6 +332,15 @@ module EE
           description: 'List of configurable AI features for namespace Model Selection.',
           resolver: ::Resolvers::Ai::ModelSelection::Namespaces::FeatureSettingsResolver,
           experiment: { milestone: '18.1' }
+
+        field :project_compliance_violation,
+          ::Types::ComplianceManagement::Projects::ComplianceViolationType,
+          null: true,
+          description: "Find a project compliance violation." do
+          argument :id, ::Types::GlobalIDType[::ComplianceManagement::Projects::ComplianceViolation],
+            required: true,
+            description: 'Global ID of the project compliance violation.'
+        end
       end
 
       def vulnerability(id:)
@@ -375,6 +384,10 @@ module EE
 
       def admin_member_role_permissions
         get_enabled_permissions(MemberRole.all_customizable_admin_permission_keys)
+      end
+
+      def project_compliance_violation(id:)
+        ::GitlabSchema.find_by_gid(id)
       end
 
       private
