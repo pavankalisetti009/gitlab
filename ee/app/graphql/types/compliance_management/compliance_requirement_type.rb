@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop: disable Graphql/AuthorizeTypes -- because ComplianceRequirementType is, and should only be, accessible via ComplianceFrameworkType
-
+# rubocop: disable Graphql/AuthorizeTypes -- ComplianceRequirementType is accessible from authenticated resolvers only
 module Types
   module ComplianceManagement
     class ComplianceRequirementType < Types::BaseObject
@@ -24,8 +23,11 @@ module Types
         ::Types::ComplianceManagement::ComplianceRequirementsControlType.connection_type,
         null: true,
         description: 'Compliance controls of the compliance requirement.'
+
+      field :framework, ::Types::ComplianceManagement::ComplianceFrameworkType,
+        null: true,
+        description: 'Compliance framework associated with the requirement.'
     end
   end
 end
-
 # rubocop: enable Graphql/AuthorizeTypes
