@@ -477,7 +477,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         ::Gitlab::Llm::Chain::Answer.new(status: :ok, context: context, content: 'content', tool: nil)
       end
 
-      context 'when there is no repository additional context' do
+      context 'when there is no codebase-related additional context' do
         let(:additional_context) do
           [
             { category: 'file', id: 'file://somefile.text', content: 'file content', metadata: {} }
@@ -500,6 +500,30 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
               category: 'repository',
               id: "gid://gitlab/Project/1",
               content: ''
+            }
+          ]
+        end
+
+        it 'executes the codebase search tool then the react executor' do
+          expect(codebase_search_tool).to receive(:execute)
+
+          expect(react_executor).to receive(:execute)
+
+          execute
+        end
+      end
+
+      context 'when there is a directory additional context' do
+        let(:additional_context) do
+          [
+            {
+              category: 'directory',
+              id: "dir://User/project/some/path",
+              content: '',
+              metadata: {
+                'projectId' => 'gid://gitlab/Project/1',
+                'relativePath' => 'some/path'
+              }
             }
           ]
         end
