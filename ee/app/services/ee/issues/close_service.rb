@@ -39,12 +39,14 @@ module EE
 
       override :after_close
       def after_close(issue, status, closed_via: nil, notifications: true, system_note: true)
-        ::Gitlab::EventStore.publish(
-          ::WorkItems::WorkItemClosedEvent.new(data: {
-            id: issue.id,
-            namespace_id: issue.namespace_id
-          })
-        )
+        issue.run_after_commit_or_now do
+          ::Gitlab::EventStore.publish(
+            ::WorkItems::WorkItemClosedEvent.new(data: {
+              id: issue.id,
+              namespace_id: issue.namespace_id
+            })
+          )
+        end
 
         update_status_to_closed(issue, status)
 

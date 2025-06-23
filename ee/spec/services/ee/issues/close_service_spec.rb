@@ -143,6 +143,55 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
       end
     end
 
+    context 'when closing regular work items' do
+      let_it_be(:current_user) { create(:user) }
+      let_it_be(:group) { create(:group) }
+      let_it_be_with_reload(:task_work_item) { create(:work_item, :task, namespace: group) }
+
+      let(:service) { described_class.new(container: group, current_user: current_user) }
+
+      subject(:execute) { service.execute(task_work_item) }
+
+      before_all do
+        group.add_developer(current_user)
+      end
+
+      it 'publishes a work item closed event for tasks' do
+        expect { execute }
+          .to publish_event(::WorkItems::WorkItemClosedEvent)
+          .with({
+            id: task_work_item.id,
+            namespace_id: task_work_item.namespace.id
+          })
+      end
+
+      it 'closes the task work item' do
+        expect { execute }.to change { task_work_item.reload.state }.from('opened').to('closed')
+      end
+
+      context 'with weight rollup scenarios' do
+        let_it_be(:project) { create(:project, :repository) }
+        let_it_be(:parent_issue) { create(:work_item, :issue, project: project) }
+        let_it_be(:child_task_1) { create(:work_item, :task, project: project, weight: 3) }
+        let_it_be(:child_task_2) { create(:work_item, :task, project: project, weight: 2) }
+
+        let_it_be(:parent_link_1) { create(:parent_link, work_item: child_task_1, work_item_parent: parent_issue) }
+        let_it_be(:parent_link_2) { create(:parent_link, work_item: child_task_2, work_item_parent: parent_issue) }
+
+        before do
+          project.add_developer(current_user)
+        end
+
+        it 'triggers weight update for parent when child is closed', :sidekiq_inline do
+          expect(WorkItems::Weights::UpdateWeightsWorker)
+            .to receive(:perform_async)
+            .with(array_including(parent_issue.id))
+
+          described_class.new(container: project, current_user: current_user).execute(child_task_1)
+        end
+      end
+    end
+
     context "for current_status" do
       let_it_be(:current_user) { create(:user) }
       let_it_be(:group) { create(:group) }
