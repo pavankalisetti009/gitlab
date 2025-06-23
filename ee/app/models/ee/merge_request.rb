@@ -611,7 +611,7 @@ module EE
 
     override :comparison_base_pipeline
     def comparison_base_pipeline(service_class)
-      return super unless security_comparision?(service_class)
+      return super unless security_comparison?(service_class)
 
       latest_scan_finding_comparison_pipeline
     end
@@ -682,7 +682,7 @@ module EE
 
     private
 
-    def security_comparision?(service_class)
+    def security_comparison?(service_class)
       service_class == ::Ci::CompareSecurityReportsService
     end
 
