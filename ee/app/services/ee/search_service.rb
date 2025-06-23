@@ -2,7 +2,6 @@
 
 module EE
   module SearchService
-    include ::Gitlab::Utils::StrongMemoize
     extend ::Gitlab::Utils::Override
 
     # This is a proper method instead of a `delegate` in order to
@@ -24,16 +23,6 @@ module EE
       search_service.search_type
     end
 
-    override :projects
-    def projects
-      return unless params[:project_ids].present? && params[:project_ids].is_a?(String)
-
-      project_ids = params[:project_ids].split(',')
-      the_projects = ::Project.id_in(project_ids)
-      allowed_projects = the_projects.find_all { |p| can?(current_user, :read_project, p) }
-      allowed_projects.presence
-    end
-    strong_memoize_attr :projects
     def use_zoekt?
       search_service.try(:use_zoekt?)
     end
@@ -69,15 +58,6 @@ module EE
       return if errors.empty?
 
       errors.join(', ')
-    end
-
-    private
-
-    override :search_service
-    def search_service
-      return super unless projects
-
-      @search_service ||= ::Search::ProjectService.new(current_user, projects, params) # rubocop: disable Gitlab/ModuleWithInstanceVariables
     end
   end
 end

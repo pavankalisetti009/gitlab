@@ -511,8 +511,6 @@ module EE
         elasticsearch_indexes_namespace?(scope)
       when Project
         elasticsearch_indexes_project?(scope)
-      when Array
-        scope.any? { |project| elasticsearch_indexes_project?(project) }
       else
         ::Gitlab::CurrentSettings.global_search_limited_indexing_enabled?
       end

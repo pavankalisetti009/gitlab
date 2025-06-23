@@ -255,16 +255,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     end
   end
 
-  context 'when a multiple projects provided' do
-    it_behaves_like 'EE search service shared examples', ::Gitlab::ProjectSearchResults,
-      ::Gitlab::Elastic::SearchResults do
-      let_it_be(:scope) { create_list(:project, 3, namespace: group) }
-
-      let(:user) { group.owner }
-      let(:service) { described_class.new(user, scope, params) }
-    end
-  end
-
   context 'with default branch support' do
     let_it_be(:scope) { create(:project) }
 

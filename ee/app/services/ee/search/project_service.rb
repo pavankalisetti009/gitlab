@@ -24,32 +24,16 @@ module EE
         order_by = params[:order_by]
         sort = params[:sort]
 
-        if project.is_a?(Array)
-          project_id_root_ancestor_id_hash = project.to_h { |p| [p.id, p.root_ancestor.id] }
-          project_ids = project_id_root_ancestor_id_hash.keys
-          root_ancestor_ids = project_id_root_ancestor_id_hash.values
-          ::Gitlab::Elastic::SearchResults.new(
-            current_user,
-            search,
-            project_ids,
-            root_ancestor_ids: root_ancestor_ids,
-            public_and_internal_projects: false,
-            order_by: order_by,
-            sort: sort,
-            filters: filters
-          )
-        else
-          ::Gitlab::Elastic::ProjectSearchResults.new(
-            current_user,
-            search,
-            project: project,
-            root_ancestor_ids: [project.root_ancestor.id],
-            repository_ref: repository_ref,
-            order_by: order_by,
-            sort: sort,
-            filters: filters
-          )
-        end
+        ::Gitlab::Elastic::ProjectSearchResults.new(
+          current_user,
+          search,
+          project: project,
+          root_ancestor_ids: [project.root_ancestor.id],
+          repository_ref: repository_ref,
+          order_by: order_by,
+          sort: sort,
+          filters: filters
+        )
       end
 
       def repository_ref
