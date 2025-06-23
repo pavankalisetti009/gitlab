@@ -50,6 +50,34 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
 
       it { is_expected.to redirect_to(new_trial_path(get_params)) }
     end
+
+    describe '#ensure_first_name_and_last_name_not_empty' do
+      subject(:post_create_with_empty_names) do
+        post trial_registrations_path, params: { user: attributes_for(:user, first_name: '', last_name: '') }
+      end
+
+      context 'with experiment `lightweight_trial_registration_redesign`' do
+        context 'when control' do
+          before do
+            stub_experiments(lightweight_trial_registration_redesign: :control)
+          end
+
+          it 'prevents user creation with empty first and last names' do
+            expect { post_create_with_empty_names }.not_to change { User.count }
+          end
+        end
+
+        context 'when candidate' do
+          before do
+            stub_experiments(lightweight_trial_registration_redesign: :candidate)
+          end
+
+          it 'allows user creation with empty first and last names' do
+            expect { post_create_with_empty_names }.to change { User.count }.by(1)
+          end
+        end
+      end
+    end
   end
 
   describe 'POST create' do

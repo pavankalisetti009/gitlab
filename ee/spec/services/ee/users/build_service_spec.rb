@@ -231,4 +231,50 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
       end
     end
   end
+
+  describe '#build_user_params_for_non_admin' do
+    let(:service) { described_class.new(current_user, params) }
+    let(:current_user) { create(:user) }
+
+    context 'with lightweight_trial_registration_redesign experiment' do
+      context 'when experiment is in control variant' do
+        let(:params) do
+          {
+            username: 'jduser',
+            name: 'John Doe',
+            email: 'jd@example.com'
+          }
+        end
+
+        before do
+          stub_experiments(lightweight_trial_registration_redesign: :control)
+
+          service.send(:build_user_params_for_non_admin)
+        end
+
+        it 'keeps the existing name' do
+          expect(service.instance_variable_get(:@user_params)[:name]).to eq('John Doe')
+        end
+      end
+
+      context 'when experiment is in candidate variant' do
+        let(:params) do
+          {
+            username: 'jduser',
+            email: 'jd@example.com'
+          }
+        end
+
+        before do
+          stub_experiments(lightweight_trial_registration_redesign: :candidate)
+
+          service.send(:build_user_params_for_non_admin)
+        end
+
+        it 'overwrites name with username' do
+          expect(service.instance_variable_get(:@user_params)[:name]).to eq('jduser')
+        end
+      end
+    end
+  end
 end

@@ -29,6 +29,15 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
     it { is_expected.to have_content(s_('InProductMarketing|No credit card required.')) }
     it { is_expected.to have_content(s_('InProductMarketing|One platform for Dev, Sec, and Ops teams')) }
 
+    it { is_expected.to have_content(_('First name')) }
+    it { is_expected.to have_content(_('Last name')) }
+    it { is_expected.to have_content(_('Username')) }
+
+    it { is_expected.to have_content(_('Email')) }
+    it { is_expected.to have_content(_('We recommend a work email address.')) }
+
+    it { is_expected.to have_content(_('Password')) }
+
     it { is_expected.to have_content(s_('InProductMarketing|Want to host GitLab on your servers?')) }
 
     it 'has start self-managed link' do
@@ -42,7 +51,20 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
       stub_experiments(lightweight_trial_registration_redesign: :candidate)
     end
 
-    it { is_expected.to have_content("Step 1: Getting Started") }
+    it { is_expected.to have_content(s_('InProductMarketing|Get Started with GitLab')) }
+
+    it { is_expected.not_to have_content(_('First name')) }
+    it { is_expected.not_to have_content(_('Last name')) }
+
+    it { is_expected.to have_content(_('Company email')) }
+    it { is_expected.not_to have_content(_('We recommend a work email address.')) }
+
+    it { is_expected.not_to have_content(_('Must be between 8-128 characters')) }
+    it { is_expected.not_to have_content(_('Cannot use common phrases (e.g. "password")')) }
+    it { is_expected.not_to have_content(_('Cannot include your name, username, or email')) }
+
+    it { is_expected.to have_content(s_('InProductMarketing|Want to host GitLab on your servers?')) }
+    it { is_expected.to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: 'https://about.gitlab.com/free-trial/#selfmanaged/') }
   end
 
   context 'for password form' do
