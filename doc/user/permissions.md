@@ -68,41 +68,41 @@ The following table lists group permissions available for each role:
 
 Group permission for [analytics](analytics/_index.md) features including value streams, product analytics, and insights:
 
-| Action                                                             | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View [Insights](project/insights/_index.md)                         |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [Insights](project/insights/_index.md) charts                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [Issue analytics](group/issues_analytics/_index.md)           |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View Contribution analytics                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View value stream analytics                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [Productivity analytics](analytics/productivity_analytics.md) |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [Group DevOps Adoption](group/devops_adoption/_index.md)      |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View metrics dashboard annotations                                 |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Create/edit/delete metrics dashboard annotations                   |       |         |          |     ✓     |     ✓      |   ✓   |       |
+| Action                                                             | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View [Insights](project/insights/_index.md)                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [Insights](project/insights/_index.md) charts                 |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [Issue analytics](group/issues_analytics/_index.md)           |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View Contribution analytics                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View value stream analytics                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [Productivity analytics](analytics/productivity_analytics.md) |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [Group DevOps Adoption](group/devops_adoption/_index.md)      |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View metrics dashboard annotations                                 |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create/edit/delete metrics dashboard annotations                   |       |         |          |     ✓     |     ✓      |   ✓   |
 
 ### Application security group permissions
 
 Group permissions for [Application Security](application_security/secure_your_application.md) features including dependency management, security analyzers, security policies, and vulnerability management.
 
-| Action                                                                          | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View [dependency list](application_security/dependency_list/_index.md)           |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| View [vulnerability report](application_security/vulnerability_report/_index.md) |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| View [security dashboard](application_security/security_dashboard/_index.md)     |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Create [security policy project](application_security/policies/_index.md)        |       |         |          |           |            |   ✓   |       |
-| Assign [security policy project](application_security/policies/_index.md)        |       |         |          |           |            |   ✓   |       |
+| Action                                                                           | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| -------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View [dependency list](application_security/dependency_list/_index.md)           |       |         |          |     ✓     |     ✓      |   ✓   |
+| View [vulnerability report](application_security/vulnerability_report/_index.md) |       |         |          |     ✓     |     ✓      |   ✓   |
+| View [security dashboard](application_security/security_dashboard/_index.md)     |       |         |          |     ✓     |     ✓      |   ✓   |
+| Create [security policy project](application_security/policies/_index.md)        |       |         |          |           |            |   ✓   |
+| Assign [security policy project](application_security/policies/_index.md)        |       |         |          |           |            |   ✓   |
 
 ### CI/CD group permissions
 
 Group permissions for [CI/CD](../ci/_index.md) features including runners, variables, and protected environments:
 
-| Action                                | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View group runners                    |       |         |          |           |     ✓      |   ✓   |       |
-| Manage group-level Kubernetes cluster |       |         |          |           |     ✓      |   ✓   |       |
-| Manage group runners                  |       |         |          |           |            |   ✓   |       |
-| Manage group level CI/CD variables    |       |         |          |           |            |   ✓   |       |
-| Manage group protected environments   |       |         |          |           |            |   ✓   |       |
+| Action                                | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View group runners                    |       |         |          |           |     ✓      |   ✓   |
+| Manage group-level Kubernetes cluster |       |         |          |           |     ✓      |   ✓   |
+| Manage group runners                  |       |         |          |           |            |   ✓   |
+| Manage group level CI/CD variables    |       |         |          |           |            |   ✓   |
+| Manage group protected environments   |       |         |          |           |            |   ✓   |
 
 ### Compliance group permissions
 
@@ -166,11 +166,11 @@ Group permissions for [group features](group/_index.md):
 
 Group permissions for project planning features including iterations, milestones, and labels:
 
-| Action                  | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ----------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| Manage group labels     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Manage group milestones |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Manage iterations       |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
+| Action                  | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ----------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| Manage group labels     |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Manage group milestones |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Manage iterations       |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
 
 Group permissions for [epics](group/epics/_index.md):
 
@@ -208,49 +208,49 @@ Group permissions for [container registry](packages/_index.md):
 
 Group permissions for [package registry](packages/_index.md):
 
-| Action                                   | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ---------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| Pull packages                            |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Publish packages                         |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Delete packages                          |       |         |          |           |     ✓      |   ✓   |       |
-| Manage package settings                  |       |         |          |           |            |   ✓   |       |
-| Manage dependency proxy cleanup policies |       |         |          |           |            |   ✓   |       |
-| Enable dependency proxy                  |       |         |          |           |            |   ✓   |       |
-| Disable dependency proxy                 |       |         |          |           |            |   ✓   |       |
-| Purge the dependency proxy for a group   |       |         |          |           |            |   ✓   |       |
-| Enable package request forwarding        |       |         |          |           |            |   ✓   |       |
-| Disable package request forwarding       |       |         |          |           |            |   ✓   |       |
+| Action                                   | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ---------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| Pull packages                            |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Publish packages                         |       |         |          |     ✓     |     ✓      |   ✓   |
+| Delete packages                          |       |         |          |           |     ✓      |   ✓   |
+| Manage package settings                  |       |         |          |           |            |   ✓   |
+| Manage dependency proxy cleanup policies |       |         |          |           |            |   ✓   |
+| Enable dependency proxy                  |       |         |          |           |            |   ✓   |
+| Disable dependency proxy                 |       |         |          |           |            |   ✓   |
+| Purge the dependency proxy for a group   |       |         |          |           |            |   ✓   |
+| Enable package request forwarding        |       |         |          |           |            |   ✓   |
+| Disable package request forwarding       |       |         |          |           |            |   ✓   |
 
 ### Repository group permissions
 
 Group permissions for [repository](project/repository/_index.md) features including merge requests, push rules, and deploy tokens.
 
-| Action                                                                                 | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| -------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| Manage [deploy tokens](project/deploy_tokens/_index.md)                                 |       |         |          |           |            |   ✓   |       |
-| Manage [merge request settings](group/manage.md#group-merge-request-approval-settings) |       |         |          |           |            |   ✓   |       |
-| Manage [push rules](group/access_and_permissions.md#group-push-rules)                  |       |         |          |           |            |   ✓   |       |
+| Action                                                                                 | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| -------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| Manage [deploy tokens](project/deploy_tokens/_index.md)                                |       |         |          |           |            |   ✓   |
+| Manage [merge request settings](group/manage.md#group-merge-request-approval-settings) |       |         |          |           |            |   ✓   |
+| Manage [push rules](group/access_and_permissions.md#group-push-rules)                  |       |         |          |           |            |   ✓   |
 
 ### User management group permissions
 
 Group permissions for user management:
 
-| Action                          | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View 2FA status of members      |       |         |          |           |            |   ✓   |       |
-| Manage group members            |       |         |          |           |            |   ✓   |       |
-| Manage group-level custom roles |       |         |          |           |            |   ✓   |       |
-| Share (invite) groups to groups |       |         |          |           |            |   ✓   |       |
-| Filter members by 2FA status    |       |         |          |           |            |   ✓   |       |
+| Action                          | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View 2FA status of members      |       |         |          |           |            |   ✓   |
+| Manage group members            |       |         |          |           |            |   ✓   |
+| Manage group-level custom roles |       |         |          |           |            |   ✓   |
+| Share (invite) groups to groups |       |         |          |           |            |   ✓   |
+| Filter members by 2FA status    |       |         |          |           |            |   ✓   |
 
 ### Workspace group permissions
 
 Groups permissions for workspaces:
 
-| Action                                                    | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| --------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View workspace cluster agents mapped to a group           |       |         |          |           |     ✓      |   ✓   |       |
-| Map or unmap workspace cluster agents to and from a group |       |         |          |           |            |   ✓   |       |
+| Action                                                    | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| --------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View workspace cluster agents mapped to a group           |       |         |          |           |     ✓      |   ✓   |
+| Map or unmap workspace cluster agents to and from a group |       |         |          |           |            |   ✓   |
 
 ## Project members permissions
 
@@ -274,16 +274,16 @@ The following tables list the project permissions available for each role.
 
 Project permissions for [analytics](analytics/_index.md) features including value streams, usage trends, product analytics, and insights.
 
-| Action                                                                                     | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View [issue analytics](group/issues_analytics/_index.md)                                   |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [value stream analytics](group/value_stream_analytics/_index.md)                      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [CI/CD analytics](analytics/ci_cd_analytics.md)                                       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [code review analytics](analytics/code_review_analytics.md)                           |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [DORA metrics](analytics/ci_cd_analytics.md)                                          |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [merge request analytics](analytics/merge_request_analytics.md)                       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [repository analytics](analytics/repository_analytics.md)                             |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [Value Streams Dashboard & AI impact analytics](analytics/value_streams_dashboard.md) |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
+| Action                                                                                     | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ------------------------------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View [issue analytics](group/issues_analytics/_index.md)                                   |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [value stream analytics](group/value_stream_analytics/_index.md)                      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [CI/CD analytics](analytics/ci_cd_analytics.md)                                       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [code review analytics](analytics/code_review_analytics.md)                           |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [DORA metrics](analytics/ci_cd_analytics.md)                                          |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [merge request analytics](analytics/merge_request_analytics.md)                       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [repository analytics](analytics/repository_analytics.md)                             |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [Value Streams Dashboard & AI impact analytics](analytics/value_streams_dashboard.md) |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
 
 ### Application security
 
@@ -403,23 +403,23 @@ Project permissions for [model registry](project/ml/model_registry/_index.md) an
 
 Project permissions for monitoring including [error tracking](../operations/error_tracking.md) and [incident management](../operations/incident_management/_index.md):
 
-| Action                                                                                                              | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ------------------------------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View an [incident](../operations/incident_management/incidents.md)                                                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Assign an [incident management](../operations/incident_management/_index.md) alert                                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Participate in on-call rotation for [Incident Management](../operations/incident_management/_index.md)              |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [alerts](../operations/incident_management/alerts.md)                                                          |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [error tracking](../operations/error_tracking.md) list                                                         |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [escalation policies](../operations/incident_management/escalation_policies.md)                                |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [on-call schedules](../operations/incident_management/oncall_schedules.md)                                     |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Create [incident](../operations/incident_management/incidents.md)                                                   |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Change [alert status](../operations/incident_management/alerts.md#change-an-alerts-status)                          |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Change [incident severity](../operations/incident_management/manage_incidents.md#change-severity)                   |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Change [incident escalation status](../operations/incident_management/manage_incidents.md#change-status)            |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Change [incident escalation policy](../operations/incident_management/manage_incidents.md#change-escalation-policy) |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Manage [error tracking](../operations/error_tracking.md)                                                            |       |         |          |           |     ✓      |   ✓   |       |
-| Manage [escalation policies](../operations/incident_management/escalation_policies.md)                              |       |         |          |           |     ✓      |   ✓   |       |
-| Manage [on-call schedules](../operations/incident_management/oncall_schedules.md)                                   |       |         |          |           |     ✓      |   ✓   |       |
+| Action                                                                                                              | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ------------------------------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View an [incident](../operations/incident_management/incidents.md)                                                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Assign an [incident management](../operations/incident_management/_index.md) alert                                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Participate in on-call rotation for [Incident Management](../operations/incident_management/_index.md)              |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [alerts](../operations/incident_management/alerts.md)                                                          |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [error tracking](../operations/error_tracking.md) list                                                         |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [escalation policies](../operations/incident_management/escalation_policies.md)                                |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| View [on-call schedules](../operations/incident_management/oncall_schedules.md)                                     |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Create [incident](../operations/incident_management/incidents.md)                                                   |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Change [alert status](../operations/incident_management/alerts.md#change-an-alerts-status)                          |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Change [incident severity](../operations/incident_management/manage_incidents.md#change-severity)                   |       |         |    ✓     |     ✓     |     ✓      |   ✓   |
+| Change [incident escalation status](../operations/incident_management/manage_incidents.md#change-status)            |       |         |          |     ✓     |     ✓      |   ✓   |
+| Change [incident escalation policy](../operations/incident_management/manage_incidents.md#change-escalation-policy) |       |         |          |     ✓     |     ✓      |   ✓   |
+| Manage [error tracking](../operations/error_tracking.md)                                                            |       |         |          |           |     ✓      |   ✓   |
+| Manage [escalation policies](../operations/incident_management/escalation_policies.md)                              |       |         |          |           |     ✓      |   ✓   |
+| Manage [on-call schedules](../operations/incident_management/oncall_schedules.md)                                   |       |         |          |           |     ✓      |   ✓   |
 
 ### Project planning
 
@@ -494,14 +494,14 @@ Project permissions for [wikis](project/wiki/_index.md):
 
 Project permissions for [container registry](packages/_index.md):
 
-| Action                                                                                          | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-|-------------------------------------------------------------------------------------------------|:-----:|:-------:|:--------:|:---------:|:----------:|:-----:|-------|
-| Pull an image from the container registry <sup>1</sup>                                          |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| Push an image to the container registry                                                         |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Delete a container registry image                                                               |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Manage cleanup policies                                                                         |       |         |          |           |     ✓      |   ✓   |       |
-| Create [tag protection](packages/container_registry/protected_container_tags.md) rule           |       |         |          |           |     ✓      |   ✓   |       |
-| Create [immutable tag protection](packages/container_registry/immutable_container_tags.md) rule |       |         |          |           |            |   ✓   |       |
+| Action                                                                                          | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ----------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| Pull an image from the container registry <sup>1</sup>                                          |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |
+| Push an image to the container registry                                                         |       |         |          |     ✓     |     ✓      |   ✓   |
+| Delete a container registry image                                                               |       |         |          |     ✓     |     ✓      |   ✓   |
+| Manage cleanup policies                                                                         |       |         |          |           |     ✓      |   ✓   |
+| Create [tag protection](packages/container_registry/protected_container_tags.md) rule           |       |         |          |           |     ✓      |   ✓   |
+| Create [immutable tag protection](packages/container_registry/immutable_container_tags.md) rule |       |         |          |           |            |   ✓   |
 
 **Footnotes**:
 
