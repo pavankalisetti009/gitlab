@@ -45,8 +45,11 @@ module Search
       private
 
       def fetch_projects_through_replicas
-        projects.without_order.joins(zoekt_repositories: { zoekt_index: { replica: :zoekt_enabled_namespace } })
-          .merge(EnabledNamespace.search_enabled).merge(Replica.ready)
+        projects.without_order
+          .joins(zoekt_repositories: { zoekt_index: [{ replica: :zoekt_enabled_namespace }, :node] })
+          .merge(EnabledNamespace.search_enabled)
+          .merge(Replica.ready)
+          .merge(Node.online)
       end
       # rubocop:enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
     end
