@@ -14804,6 +14804,9 @@ msgstr ""
 msgid "CodeSuggestions|GitLab Duo Pro"
 msgstr ""
 
+msgid "CodeSuggestions|GitLab Duo Self-Hosted"
+msgstr ""
+
 msgid "CodeSuggestions|GitLab Duo should be operational."
 msgstr ""
 

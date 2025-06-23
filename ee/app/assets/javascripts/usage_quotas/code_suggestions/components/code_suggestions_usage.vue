@@ -93,14 +93,30 @@ export default {
   },
   data() {
     return {
-      addOnPurchase: undefined,
-      addOnPurchaseFetchError: undefined,
+      addOnPurchases: undefined,
+      addOnPurchasesFetchError: undefined,
       currentSubscription: {},
       activationNotification: null,
       subscriptionFetchError: null,
     };
   },
   computed: {
+    addOnPurchase() {
+      // Prioritization order: Duo with Amazon Q > Duo Enterprise > Duo Pro > Duo Core
+      // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on,
+      // and Duo Enterprise would take precedence
+
+      return this.addOnPurchases?.reduce((priorityPurchase, currentPurchase) => {
+        if (currentPurchase.name === DUO_AMAZON_Q) return currentPurchase;
+        if (priorityPurchase?.name === DUO_AMAZON_Q) return priorityPurchase;
+        if (currentPurchase.name === DUO_ENTERPRISE) return currentPurchase;
+        if (priorityPurchase?.name === DUO_ENTERPRISE) return priorityPurchase;
+        if (currentPurchase.name === DUO_PRO) return currentPurchase;
+        if (priorityPurchase?.name === DUO_PRO) return priorityPurchase;
+
+        return currentPurchase;
+      }, undefined);
+    },
     queryVariables() {
       return {
         namespaceId: this.groupGraphQLId,
@@ -115,22 +131,22 @@ export default {
     usageValue() {
       return this.addOnPurchase?.assignedQuantity ?? 0;
     },
-    duoTier() {
+    activeDuoTier() {
       return this.addOnPurchase?.name || DUO_CORE;
     },
     areSeatsAssignable() {
-      return this.duoTier === DUO_PRO || this.duoTier === DUO_ENTERPRISE;
+      return this.activeDuoTier === DUO_PRO || this.activeDuoTier === DUO_ENTERPRISE;
     },
     isDuoTierAmazonQ() {
       // Currently, AmazonQ is available for self-managed customers only, so let's add an extra isSaaS check
-      return !this.isSaaS && this.duoTier === DUO_AMAZON_Q;
+      return !this.isSaaS && this.activeDuoTier === DUO_AMAZON_Q;
     },
     hasAddOnPurchase() {
       return this.totalValue > 0 && this.usageValue >= 0;
     },
     isLoading() {
       return (
-        this.$apollo.queries.addOnPurchase.loading ||
+        this.$apollo.queries.addOnPurchases.loading ||
         this.$apollo.queries.currentSubscription.loading
       );
     },
@@ -146,7 +162,7 @@ export default {
         return false;
       }
 
-      return !this.isLoading && (this.hasAddOnPurchase || this.addOnPurchaseFetchError);
+      return !this.isLoading && (this.hasAddOnPurchase || this.addOnPurchasesFetchError);
     },
     shouldShowIntro() {
       return !this.hasAddOnPurchase;
@@ -162,10 +178,10 @@ export default {
       return sprintf(message, { addOnName: this.duoTitle });
     },
     duoTitle() {
-      return DUO_TITLES[this.duoTier];
+      return DUO_TITLES[this.activeDuoTier];
     },
     duoBadgeTitle() {
-      return DUO_BADGE_TITLES[this.duoTier];
+      return DUO_BADGE_TITLES[this.activeDuoTier];
     },
     activationListeners() {
       return {
@@ -174,30 +190,14 @@ export default {
     },
   },
   apollo: {
-    addOnPurchase: {
+    addOnPurchases: {
       query: getAddOnPurchasesQuery,
       variables() {
         return this.queryVariables;
       },
-      update({ addOnPurchases }) {
-        // Prioritization order: Duo with Amazon Q > Duo Enterprise > Duo Pro > Duo Core
-        // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on,
-        // and Duo Enterprise would take precedence
-
-        return addOnPurchases?.reduce((priorityPurchase, currentPurchase) => {
-          if (currentPurchase.name === DUO_AMAZON_Q) return currentPurchase;
-          if (priorityPurchase?.name === DUO_AMAZON_Q) return priorityPurchase;
-          if (currentPurchase.name === DUO_ENTERPRISE) return currentPurchase;
-          if (priorityPurchase?.name === DUO_ENTERPRISE) return priorityPurchase;
-          if (currentPurchase.name === DUO_PRO) return currentPurchase;
-          if (priorityPurchase?.name === DUO_PRO) return priorityPurchase;
-
-          return currentPurchase;
-        }, undefined);
-      },
       error(error) {
         const errorWithCause = Object.assign(error, { cause: ADD_ON_PURCHASE_FETCH_ERROR_CODE });
-        this.handleAddOnPurchaseFetchError(errorWithCause);
+        this.addOnPurchasesFetchError = errorWithCause;
         this.reportError(error);
       },
     },
@@ -215,9 +215,6 @@ export default {
     },
   },
   methods: {
-    handleAddOnPurchaseFetchError(error) {
-      this.addOnPurchaseFetchError = error;
-    },
     reportError(error) {
       Sentry.captureException(error, {
         tags: {
@@ -242,7 +239,7 @@ export default {
         };
       }
 
-      this.$apollo.queries.addOnPurchase.refetch();
+      this.$apollo.queries.addOnPurchases.refetch();
       this.$apollo.queries.currentSubscription.refetch();
     },
     dismissActivationNotification() {
@@ -308,7 +305,7 @@ export default {
 
       <duo-amazon-q-info-card v-if="isDuoTierAmazonQ" />
       <section v-else-if="hasAddOnPurchase">
-        <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
+        <slot name="duo-card" v-bind="{ totalValue, usageValue, activeDuoTier, addOnPurchases }">
           <template v-if="isSaaS && !isStandalonePage && duoPagePath">
             <gl-alert
               variant="info"
@@ -327,31 +324,31 @@ export default {
               <code-suggestions-statistics-card
                 :total-value="totalValue"
                 :usage-value="usageValue"
-                :duo-tier="duoTier"
+                :duo-tier="activeDuoTier"
               />
               <code-suggestions-info-card
                 :group-id="groupId"
-                :duo-tier="duoTier"
-                @error="handleAddOnPurchaseFetchError"
+                :duo-tier="activeDuoTier"
+                @error="(errorWithCause) => (addOnPurchasesFetchError = errorWithCause)"
               />
             </section>
             <saas-add-on-eligible-user-list
               v-if="isSaaS"
               :add-on-purchase-id="addOnPurchase.id"
-              :duo-tier="duoTier"
+              :duo-tier="activeDuoTier"
             />
             <self-managed-add-on-eligible-user-list
               v-else
               :add-on-purchase-id="addOnPurchase.id"
-              :duo-tier="duoTier"
+              :duo-tier="activeDuoTier"
             />
           </template>
         </slot>
       </section>
       <error-alert
-        v-else-if="addOnPurchaseFetchError"
+        v-else-if="addOnPurchasesFetchError"
         data-testid="add-on-purchase-fetch-error"
-        :error="addOnPurchaseFetchError"
+        :error="addOnPurchasesFetchError"
         :error-dictionary="$options.addOnErrorDictionary"
         class="gl-mt-5"
       />

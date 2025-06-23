@@ -64,11 +64,11 @@ export default {
     },
   },
   methods: {
-    shouldShowDuoCoreUpgradeCard(duoTier) {
-      return duoTier === DUO_CORE;
+    shouldShowDuoCoreUpgradeCard(activeDuoTier) {
+      return activeDuoTier === DUO_CORE;
     },
-    shouldShowSeatUtilizationInfoCard(duoTier) {
-      return duoTier === DUO_PRO || duoTier === DUO_ENTERPRISE;
+    shouldShowSeatUtilizationInfoCard(activeDuoTier) {
+      return activeDuoTier === DUO_PRO || activeDuoTier === DUO_ENTERPRISE;
     },
   },
 };
@@ -91,16 +91,17 @@ export default {
       <template #health-check>
         <health-check-list v-if="!isSaaS" />
       </template>
-      <template #duo-card="{ totalValue, usageValue, duoTier }">
+      <template #duo-card="{ totalValue, usageValue, activeDuoTier, addOnPurchases }">
         <section class="gl-grid gl-gap-5 gl-pb-5 md:gl-grid-cols-2">
-          <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(duoTier)" />
+          <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(activeDuoTier)" />
           <duo-seat-utilization-info-card
-            v-if="shouldShowSeatUtilizationInfoCard(duoTier)"
+            v-if="shouldShowSeatUtilizationInfoCard(activeDuoTier)"
             :total-value="totalValue"
             :usage-value="usageValue"
-            :duo-tier="duoTier"
+            :active-duo-tier="activeDuoTier"
+            :add-on-purchases="addOnPurchases"
           />
-          <duo-configuration-settings-info-card :duo-tier="duoTier" />
+          <duo-configuration-settings-info-card :duo-tier="activeDuoTier" />
         </section>
         <duo-models-configuration-info-card
           v-if="isModelSwitchingEnabled || isSelfHostedModelsEnabled"

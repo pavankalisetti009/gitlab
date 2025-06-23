@@ -2,7 +2,7 @@
 import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
-import { DUO_PRO, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
+import { DUO_PRO, DUO_SELF_HOSTED, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
 import { InternalEvents } from '~/tracking';
 import { formatDate } from '~/lib/utils/datetime_utility';
 
@@ -35,10 +35,15 @@ export default {
       type: Number,
       required: true,
     },
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
+    },
+    addOnPurchases: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
   },
   computed: {
@@ -46,10 +51,13 @@ export default {
       return Math.floor((this.usageValue / this.totalValue) * 100);
     },
     duoTitle() {
-      return DUO_TITLES[this.duoTier];
+      return DUO_TITLES[this.activeDuoTier];
     },
-    isDuoPro() {
-      return this.duoTier === DUO_PRO;
+    showPurchaseSeatsButton() {
+      // Hide the button for instances with the Duo Self-Hosted add-on,
+      // since self-service purchase of it is currently not supported. See:
+      // https://gitlab.com/gitlab-org/gitlab/-/issues/548390
+      return this.activeDuoTier === DUO_PRO && !this.hasDuoSelfHostedAddOn;
     },
     duoSeatUtilizationDescription() {
       return this.sprintf(this.$options.i18n.duoSeatUtilizationDescriptionText, {
@@ -67,6 +75,9 @@ export default {
         '%{endDate}',
         this.formatSubscriptionDate(this.duoAddOnEndDate),
       );
+    },
+    hasDuoSelfHostedAddOn() {
+      return this.addOnPurchases.some(({ name }) => name === DUO_SELF_HOSTED);
     },
   },
   methods: {
@@ -119,7 +130,7 @@ export default {
           $options.i18n.duoAssignSeatsButtonText
         }}</gl-button>
         <gl-button
-          v-if="isDuoPro"
+          v-if="showPurchaseSeatsButton"
           category="primary"
           variant="default"
           :href="addDuoProHref"
