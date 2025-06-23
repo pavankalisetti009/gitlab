@@ -210,6 +210,23 @@ RSpec.describe 'get board lists', feature_category: :team_planning do
             )
           end
 
+          context 'when status is converted to a custom status' do
+            let!(:custom_status) do
+              create(:work_item_custom_status, namespace: group, converted_from_system_defined_status_identifier: system_defined_status.id)
+            end
+
+            it 'returns the custom status' do
+              post_graphql(query(id: global_id_of(status_list)), current_user: current_user)
+
+              list_node = lists_data[0]['node']
+
+              expect(list_node['status']).to eq(
+                "id" => custom_status.to_gid.to_s,
+                "name" => custom_status.name
+              )
+            end
+          end
+
           it_behaves_like 'does not return data if license is unavailable'
         end
 
