@@ -10,7 +10,7 @@ RSpec.shared_examples 'base SamlProvider service' do
     }
   end
 
-  let(:fingerprint) { '11:22:33:44:55:66:77:88:99:11:22:33:44:55:66:77:88:99' }
+  let(:fingerprint) { '11:22:33:44:55:66:77:88:99:11:22:33:44:55:66:77:88:99:AA:BB' }
 
   before do
     stub_licensed_features(group_saml: true)
