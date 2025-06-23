@@ -26,6 +26,7 @@ db:setup pg16:
 db:setup-ee pg16:
   extends:
     - .db:setup pg16
+    - .rails:rules:setup-test-env-ee
 
 db:rollback single-db-ci-connection:
   extends:
