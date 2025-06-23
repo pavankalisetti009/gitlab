@@ -22,6 +22,7 @@ query groupSecurityPolicies(
       before: $before
     ) {
       nodes {
+        csp
         name
         yaml
         type

@@ -9,6 +9,7 @@ query groupScanExecutionPolicies(
     id
     scanExecutionPolicies(relationship: $relationship) {
       nodes {
+        csp
         name
         yaml
         editPath
