@@ -36,7 +36,6 @@ export default {
     'documentationPath',
     'endpoint',
     'exportEndpoint',
-    'pageInfo',
     'namespaceType',
     'latestSuccessfulScanPath',
     'scanFinishedAt',
