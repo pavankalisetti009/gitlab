@@ -13,7 +13,8 @@ describe('GitLab Duo Home', () => {
   const defaultSlotProps = {
     totalValue: 100,
     usageValue: 50,
-    duoTier: DUO_PRO,
+    activeDuoTier: DUO_PRO,
+    addOnPurchases: [{ name: DUO_PRO }],
   };
 
   let wrapper;
@@ -130,19 +131,19 @@ describe('GitLab Duo Home', () => {
 
     describe('template rendering', () => {
       it('renders the correct cards for Duo Pro', () => {
-        createComponent({ customSlotProps: { duoTier: DUO_PRO } });
+        createComponent({ customSlotProps: { activeDuoTier: DUO_PRO } });
         expect(findDuoCoreUpgradeCard().exists()).toBe(false);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(true);
       });
 
       it('renders the correct cards for Duo Enterprise', () => {
-        createComponent({ customSlotProps: { duoTier: DUO_ENTERPRISE } });
+        createComponent({ customSlotProps: { activeDuoTier: DUO_ENTERPRISE } });
         expect(findDuoCoreUpgradeCard().exists()).toBe(false);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(true);
       });
 
       it('renders the correct cards for Duo Core', () => {
-        createComponent({ customSlotProps: { duoTier: DUO_CORE } });
+        createComponent({ customSlotProps: { activeDuoTier: DUO_CORE } });
         expect(findDuoCoreUpgradeCard().exists()).toBe(true);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
       });

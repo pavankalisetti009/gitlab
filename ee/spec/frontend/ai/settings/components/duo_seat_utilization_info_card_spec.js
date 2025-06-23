@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlCard, GlIcon, GlButton } from '@gitlab/ui';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
-import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/constants/duo';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_SELF_HOSTED, DUO_AMAZON_Q } from 'ee/constants/duo';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('~/lib/utils/url_utility');
@@ -15,7 +15,7 @@ describe('DuoSeatUtilizationInfoCard', () => {
       propsData: {
         usageValue: 5,
         totalValue: 10,
-        duoTier: DUO_PRO,
+        activeDuoTier: DUO_PRO,
         ...props,
       },
       provide: {
@@ -89,14 +89,14 @@ describe('DuoSeatUtilizationInfoCard', () => {
       expect(findSeatUtilizationDescription().text()).toContain('A user can be assigned a');
     });
 
-    it('sets duoTitle correctly based on duoTier', () => {
-      wrapper = createComponent({ duoTier: DUO_PRO });
+    it('sets duoTitle correctly based on activeDuoTier', () => {
+      wrapper = createComponent({ activeDuoTier: DUO_PRO });
       expect(findSeatUtilizationDescription().text()).toContain('GitLab Duo Pro');
 
-      wrapper = createComponent({ duoTier: DUO_ENTERPRISE });
+      wrapper = createComponent({ activeDuoTier: DUO_ENTERPRISE });
       expect(findSeatUtilizationDescription().text()).toContain('GitLab Duo Enterprise');
 
-      wrapper = createComponent({ duoTier: DUO_AMAZON_Q });
+      wrapper = createComponent({ activeDuoTier: DUO_AMAZON_Q });
       expect(findSeatUtilizationDescription().text()).toContain('GitLab Duo with Amazon Q');
     });
 
@@ -112,11 +112,26 @@ describe('DuoSeatUtilizationInfoCard', () => {
       expect(findActionButtons().at(1).findComponent(GlIcon).props('name')).toBe('external-link');
     });
 
-    it('renders only assign seats button for non-Duo Pro add-ons', () => {
-      wrapper = createComponent({ duoTier: DUO_ENTERPRISE });
+    describe('non Duo Pro add-ons', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ activeDuoTier: DUO_ENTERPRISE });
+      });
 
-      expect(findActionButtons()).toHaveLength(1);
-      expect(findActionButtons().at(0).text()).toBe('Assign seats');
+      it('renders only assign seats button', () => {
+        expect(findActionButtons()).toHaveLength(1);
+        expect(findActionButtons().at(0).text()).toBe('Assign seats');
+      });
+    });
+
+    describe('Duo Pro add-on with Duo Self-Hosted add-on', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ addOnPurchases: [{ name: DUO_SELF_HOSTED }] });
+      });
+
+      it('renders only assign seats button', () => {
+        expect(findActionButtons()).toHaveLength(1);
+        expect(findActionButtons().at(0).text()).toBe('Assign seats');
+      });
     });
   });
 });
