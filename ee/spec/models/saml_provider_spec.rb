@@ -40,19 +40,53 @@ RSpec.describe SamlProvider, feature_category: :system_access do
     it 'expects certificate_fingerprint to be in an accepted format' do
       expect(subject).to allow_value('000030EDC285E01D6B5EA33010A79ADD142F5004').for(:certificate_fingerprint)
       expect(subject).to allow_value('00:00:30:ED:C2:85:E0:1D:6B:5E:A3:30:10:A7:9A:DD:14:2F:50:04').for(:certificate_fingerprint)
-      expect(subject).to allow_value('00-00-30-ED-C2-85-E0-1D-6B-5E-A3-30-10-A7-9A-DD-14-2F-50-04').for(:certificate_fingerprint)
       expect(subject).to allow_value('00 00 30 ED C2 85 E0 1D 6B 5E A3 30 10 A7 9A DD 14 2F 50 04').for(:certificate_fingerprint)
-      sha512 = 'a12bc3d4567ef89ba97f4d1904815d56a497ffc2fe9d5b0f13439a5da73f4f1afde03b1c1b213128e173da24e75cadf224286696f5171540eedf59b684a5f8dd'
-      expect(subject).to allow_value(sha512).for(:certificate_fingerprint)
+      expect(subject).to allow_value('D84D439499F3FD8C2304250FD74A7BE81007D428BB95A1F9FD5642EDAE51472A').for(:certificate_fingerprint)
+      expect(subject).to allow_value('3E:2E:3D:B7:83:C0:FE:11:65:F0:30:A3:8B:E6:7B:3C:01:92:36:72:02:42:62:98:F8:64:F3:62:E2:52:14:AB').for(:certificate_fingerprint)
+      expect(subject).to allow_value('68 0C 5A 3F CC 4C DB 04 B1 E1 3B 81 C1 3E A3 0A 5B 29 AD 87 B5 5C 6B 71 B7 1A CD DA 2E CB BC 26').for(:certificate_fingerprint)
 
       too_short = '00:00:30'
       invalid_characters = '00@0030EDC285E01D6B5EA33010A79ADD142F5004'
+      invalid_separator = '00-00-30-ED-C2-85-E0-1D-6B-5E-A3-30-10-A7-9A-DD-14-2F-50-04'
+      sha512 = 'a12bc3d4567ef89ba97f4d1904815d56a497ffc2fe9d5b0f13439a5da73f4f1afde03b1c1b213128e173da24e75cadf224286696f5171540eedf59b684a5f8dd'
       expect(subject).not_to allow_value(too_short).for(:certificate_fingerprint)
       expect(subject).not_to allow_value(invalid_characters).for(:certificate_fingerprint)
+      expect(subject).not_to allow_value(invalid_separator).for(:certificate_fingerprint)
+      expect(subject).not_to allow_value(sha512).for(:certificate_fingerprint)
     end
 
     it 'strips left-to-right marks from certificate_fingerprint' do
       expect(subject).to allow_value("\u200E00 00 30 ED C2 85 E0 1D 6B 5E A3 30 10 A7 9A DD 14 2F 50 04‎").for(:certificate_fingerprint)
+    end
+
+    context 'for an existing record with a previously valid fingerprint' do
+      before do
+        previously_valid_fingerprint = '00-00-30-ED-C2-85-E0-1D-6B-5E-A3-30-10-A7-9A-DD-14-2F-50-04'
+        subject.update_attribute(:certificate_fingerprint, previously_valid_fingerprint)
+      end
+
+      it 'does not validate the certificate_fingerprint format with the new logic when it is not updated' do
+        expect(subject).to be_valid
+      end
+
+      it 'validates the certificate_fingerprint format with the new logic when it is updated' do
+        expect(subject).not_to allow_value('00-00-30-ED-C2-85-E0-1D').for(:certificate_fingerprint)
+      end
+    end
+
+    context 'for an existing record with a previously invalid fingerprint' do
+      before do
+        previously_valid_fingerprint = '00-00-30-ED-C2-85-E0-1D-6B-5E-A3-30-10-A7-9A'
+        subject.update_attribute(:certificate_fingerprint, previously_valid_fingerprint)
+      end
+
+      it 'considers the record invalid' do
+        expect(subject).to be_invalid
+      end
+
+      it 'validates the certificate_fingerprint format with the new logic when it is updated' do
+        expect(subject).not_to allow_value('00-00-30-ED-C2-85-E0-1D-6B-5E-A3-30-10-A7-9A-DD').for(:certificate_fingerprint)
+      end
     end
 
     it 'requires group to be top-level' do
