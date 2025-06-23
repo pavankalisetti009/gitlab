@@ -153,7 +153,7 @@ module Gitlab
         end
 
         def has_codebase_additional_context?
-          context.additional_context.any? { |ctx| ctx[:category] == 'repository' }
+          context.additional_context.any? { |ctx| ctx[:category] == 'repository' || ctx[:category] == 'directory' }
         end
 
         def execute_with_slash_command_tool(stream_response_handler)

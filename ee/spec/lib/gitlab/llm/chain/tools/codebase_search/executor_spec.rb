@@ -87,7 +87,9 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
           }
         end
 
-        let(:additional_context) do
+        let(:additional_context) { repository_additional_contexts + directory_additional_contexts }
+
+        let(:repository_additional_contexts) do
           projects = [project_1, project_2]
           projects.map do |p|
             {
@@ -101,6 +103,21 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
               }
             }
           end
+        end
+
+        let(:directory_additional_contexts) do
+          [
+            {
+              category: 'directory',
+              id: "dir:///User/project/some/path",
+              content: '',
+              metadata: {
+                'relativePath' => 'some/path',
+                'projectId' => "gid://gitlab/Project/#{project_1.id}",
+                'projectPathWithNamespace' => project_1.full_path
+              }
+            }
+          ]
         end
 
         let(:codebase_query) { ::Ai::ActiveContext::Queries::Code.new(search_term: user_input, user: user) }
@@ -142,14 +159,16 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
               include_ref_fields: false
             )
 
-            # mock codebase query, with different results depending on project_id
-            allow(codebase_query).to receive(:filter).with(project_id: project_1.id)
-              .and_return(build_es_query_result(project_1.id))
-            allow(codebase_query).to receive(:filter).with(project_id: project_2.id)
-              .and_return(build_es_query_result(project_2.id))
+            # mock codebase query, with different results depending on filters
+            allow(codebase_query).to receive(:filter).with(project_id: project_1.id, path: nil)
+              .and_return(build_es_query_result(repository_es_docs[project_1.id]))
+            allow(codebase_query).to receive(:filter).with(project_id: project_2.id, path: nil)
+              .and_return(build_es_query_result(repository_es_docs[project_2.id]))
+            allow(codebase_query).to receive(:filter).with(project_id: project_1.id, path: 'some/path')
+              .and_return(build_es_query_result(directory_es_docs))
           end
 
-          let(:elasticsearch_docs) do
+          let(:repository_es_docs) do
             {
               project_1.id => [
                 build_es_doc_source(project_1, "proj1/file1.txt", "test content 1-1"),
@@ -161,32 +180,39 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             }
           end
 
-          def build_es_doc_source(project, file_path, content)
-            {
-              '_source' => {
-                'project_id' => project.id,
-                'path' => file_path,
-                'content' => content
-              }
-            }
+          let(:directory_es_docs) do
+            [
+              build_es_doc_source(project_1, "proj1/file1.txt", "test content 1-1")
+            ]
           end
 
-          def build_es_query_result(project_id)
-            es_docs = elasticsearch_docs[project_id]
-            return unless es_docs
-
-            es_hits = { 'hits' => { 'total' => { 'value' => 1 }, 'hits' => es_docs } }
-
-            ActiveContext::Databases::Elasticsearch::QueryResult.new(
-              result: es_hits,
-              collection: Ai::ActiveContext::Collections::Code,
-              user: user
-            )
-          end
-
-          def expected_search_results(project_id)
-            es_docs = elasticsearch_docs[project_id] || []
+          def expected_repository_search_results(project_id)
+            es_docs = repository_es_docs[project_id] || []
             es_docs.pluck('_source')
+          end
+
+          def expected_directory_search_results
+            directory_es_docs.pluck('_source')
+          end
+
+          def expected_repository_info(project)
+            repo_infos = [
+              "Name: #{project.name}",
+              "Path: #{project.full_path}"
+            ]
+            repo_infos << "Description: #{project.description}" if project.description
+
+            repo_infos.join("\n")
+          end
+
+          def expected_directory_info
+            dir_infos = [
+              "Path: some/path",
+              "Repository ID: gid://gitlab/Project/#{project_1.id}"
+            ]
+            dir_infos << "Repository Path: #{project_1.full_path}"
+
+            dir_infos.join("\n")
           end
 
           it 'returns a successful answer' do
@@ -197,24 +223,30 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             expect(answer.content).to eq(expected_message)
           end
 
-          it 'enhances the repository additional contexts' do
+          it 'enhances the repository and directory additional contexts' do
             execute_tool
 
             gitlab_context.additional_context.each do |ac|
               ac_content = ac['content']
 
-              expected_message = "A semantic search has been performed on the repository."
+              expected_info = ""
+              expected_search_results = []
+
+              if ac['category'] == 'repository'
+                context_project = projects_by_gid[ac['id']]
+                expected_info = expected_repository_info(context_project)
+                expected_search_results = expected_repository_search_results(context_project.id)
+              elsif ac['category'] == 'directory'
+                expected_info = expected_directory_info
+                expected_search_results = expected_directory_search_results
+              end
+
+              expect(ac_content).to include(expected_info)
+
+              expected_message = "A semantic search has been performed on the #{ac['category']}."
               expect(ac_content).to include(expected_message)
 
-              context_project = projects_by_gid[ac['id']]
-              repo_infos = [
-                "Name: #{context_project.name}",
-                "Path: #{context_project.full_path}"
-              ]
-              repo_infos << "Description: #{context_project.description}" if context_project.description
-              expect(ac_content).to include(repo_infos.join("\n"))
-
-              expected_search_results(context_project.id).each do |esr_info|
+              expected_search_results.each do |esr_info|
                 expected_search_result = "<search_result>\n" \
                   "<file_path>#{esr_info['path']}</file_path>\n" \
                   "<content>#{esr_info['content']}</content>\n" \
@@ -241,6 +273,48 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             )
 
             execute_tool
+          end
+
+          context 'when the directory additional context does not have the required metadata' do
+            # only setup 1 repository additional context to make the test simpler
+            let(:repository_additional_contexts) do
+              [
+                {
+                  category: 'repository',
+                  id: "gid://gitlab/Project/#{project_1.id}",
+                  content: '',
+                  metadata: {
+                    'name' => project_1.name,
+                    'pathWithNamespace' => project_1.full_path,
+                    'description' => project_1.description
+                  }
+                }
+              ]
+            end
+
+            let(:directory_additional_contexts) do
+              [
+                {
+                  category: 'directory',
+                  id: "dir:///User/project/some/path",
+                  content: '',
+                  metadata: {
+                    'projectId' => "gid://gitlab/Project/#{project_2.id}"
+                  }
+                }
+              ]
+            end
+
+            it 'runs successfully but does not perform a semantic search on the directory' do
+              expect(codebase_query).not_to receive(:filter).with(project_id: project_2.id, path: anything)
+
+              answer = execute_tool
+              expect(answer.status).to eq(:ok)
+
+              directory_ac = gitlab_context.additional_context.find { |ac| ac['category'] == 'directory' }
+              semantic_search_message = 'A semantic search has been performed on the directory.'
+              expect(directory_ac['content']).not_to include(semantic_search_message)
+            end
           end
 
           context 'when there is an error in the semantic search' do
@@ -279,5 +353,27 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
         end
       end
     end
+  end
+
+  def build_es_doc_source(project, file_path, content)
+    {
+      '_source' => {
+        'project_id' => project.id,
+        'path' => file_path,
+        'content' => content
+      }
+    }
+  end
+
+  def build_es_query_result(es_docs)
+    return unless es_docs
+
+    es_hits = { 'hits' => { 'total' => { 'value' => 1 }, 'hits' => es_docs } }
+
+    ActiveContext::Databases::Elasticsearch::QueryResult.new(
+      result: es_hits,
+      collection: Ai::ActiveContext::Collections::Code,
+      user: user
+    )
   end
 end

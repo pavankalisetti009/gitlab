@@ -41,7 +41,9 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         # mock code collections search, with different results depending on project_id
         allow(::Ai::ActiveContext::Collections::Code).to receive(:search) do |args|
           project_id = args[:query].children.first.children.first.value[:project_id]
-          build_es_query_result(project_id)
+
+          es_docs = elasticsearch_docs[project_id]
+          build_es_query_result(es_docs)
         end
       end
 
@@ -59,19 +61,6 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             { '_source' => { 'id' => 2, 'project_id' => project_2.id, 'content' => "test content 2-1" } }
           ]
         }
-      end
-
-      def build_es_query_result(project_id)
-        es_docs = elasticsearch_docs[project_id]
-        return unless es_docs
-
-        es_hits = { 'hits' => { 'total' => { 'value' => 1 }, 'hits' => es_docs } }
-
-        ActiveContext::Databases::Elasticsearch::QueryResult.new(
-          result: es_hits,
-          collection: Ai::ActiveContext::Collections::Code,
-          user: user
-        )
       end
 
       it 'generates embeddings only once for multiple filters' do
@@ -95,6 +84,46 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         project_2_results = codebase_query.filter(project_id: project_2.id)
         expect(project_2_results.each.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
       end
+
+      context 'when filtering by path' do
+        let(:project_es_docs_in_path) do
+          [
+            { '_source' => { 'id' => 1, 'project_id' => project.id, 'content' => "test content in path" } }
+          ]
+        end
+
+        it 'passes the correct query parameters to search and returns the expected results' do
+          allow(::Ai::ActiveContext::Collections::Code).to receive(:search) do |args|
+            and_query = args[:query].children.first.children.first.children
+            first_query = and_query.first
+            second_query = and_query.second
+
+            expect(first_query.type).to eq(:filter)
+            expect(first_query.value).to eq({ project_id: project.id })
+
+            expect(second_query.type).to eq(:prefix)
+            expect(second_query.value).to eq({ path: 'some/path/' })
+
+            # make sure to return query results
+            build_es_query_result(project_es_docs_in_path)
+          end
+
+          results = codebase_query.filter(project_id: project.id, path: 'some/path')
+          expect(results.each.to_a).to eq(project_es_docs_in_path.pluck('_source'))
+        end
+      end
     end
+  end
+
+  def build_es_query_result(es_docs)
+    return unless es_docs
+
+    es_hits = { 'hits' => { 'total' => { 'value' => 1 }, 'hits' => es_docs } }
+
+    ActiveContext::Databases::Elasticsearch::QueryResult.new(
+      result: es_hits,
+      collection: Ai::ActiveContext::Collections::Code,
+      user: user
+    )
   end
 end
