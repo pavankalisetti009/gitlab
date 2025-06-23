@@ -20,12 +20,11 @@ module LicenseHelper
   end
 
   # EE:Self Managed
-  def new_trial_url
-    return_to_url = CGI.escape(Gitlab.config.gitlab.url)
-    uri = URI.parse(subscription_portal_url)
-    uri.path = '/trials/new'
-    uri.query = "return_to=#{return_to_url}&id=#{Base64.strict_encode64(current_user.email)}"
-    uri.to_s
+  def self_managed_new_trial_url
+    subscription_portal_new_trial_url(
+      return_to: CGI.escape(Gitlab.config.gitlab.url),
+      id: Base64.strict_encode64(current_user.email)
+    )
   end
 
   def show_promotions?(selected_user = current_user, hide_on_self_managed: false)
@@ -59,7 +58,7 @@ module LicenseHelper
     {
       buy_subscription_path: Gitlab::Saas.about_pricing_url,
       customers_portal_url: subscription_portal_manage_url,
-      free_trial_path: new_trial_url,
+      free_trial_path: self_managed_new_trial_url,
       has_active_license: (has_active_license? ? 'true' : 'false'),
       license_remove_path: (current_user.can?(:destroy_licenses) ? admin_license_path : ''),
       subscription_sync_path: sync_seat_link_admin_license_path,
