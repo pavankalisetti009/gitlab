@@ -64,12 +64,12 @@ the PostgreSQL server should have:
 
 For the following versions of GitLab, use these PostgreSQL versions:
 
-| GitLab version | Minimum PostgreSQL version | Maximum PostgreSQL version |
-| -------------- | -------------------------- | -------------------------- |
-| 18.x           | 16.x                       | To be determined           |
-| 17.x           | 14.x                       | 16.x ([tested against GitLab 16.10 and later](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145298)) |
-| 16.x           | 13.6                       | 15.x ([tested against GitLab 16.1 and later](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119344)) |
-| 15.x           | 12.10                      | 14.x ([tested against GitLab 15.11 only](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/114624)), 13.x |
+| GitLab version | Helm chart version | Minimum PostgreSQL version | Maximum PostgreSQL version |
+| -------------- | ------------------ | -------------------------- | -------------------------- |
+| 18.x           | 9.x                | 16.x                       | To be determined           |
+| 17.x           | 8.x                | 14.x                       | 16.x ([tested against GitLab 16.10 and later](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145298)) |
+| 16.x           | 7.x                | 13.6                       | 15.x ([tested against GitLab 16.1 and later](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119344)) |
+| 15.x           | 6.x                | 12.10                      | 14.x ([tested against GitLab 15.11 only](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/114624)), 13.x |
 
 Minor PostgreSQL releases [include only bug and security fixes](https://www.postgresql.org/support/versioning/).
 Always use the latest minor version to avoid known issues in PostgreSQL.
