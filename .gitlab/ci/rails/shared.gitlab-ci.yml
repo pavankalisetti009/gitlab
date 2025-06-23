@@ -298,7 +298,7 @@ include:
 
 .rspec-ee-base-pg16:
   extends:
-    - .rspec-base
+    - .rspec-base-pg16
     - .use-pg16-es7-ee
 
 .rspec-ee-base-pg16-es8:
