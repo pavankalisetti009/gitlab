@@ -11,7 +11,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
   let(:workspaces_per_user_quota) { 10 }
   let(:workspaces_quota) { 10 }
   let(:dns_zone) { "workspace.me" }
-  let(:desired_state) { states_module::STOPPED }
+  let(:desired_state) { states_module::RUNNING }
   let(:actual_state) { states_module::STOPPED }
 
   let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
@@ -142,6 +142,47 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           }
         end
       end
+
+      describe "WorkspaceToken deletion" do
+        before do
+          workspace.save!
+        end
+
+        context "when changing from Running" do
+          using RSpec::Parameterized::TableSyntax
+
+          let(:desired_state) { states_module::RUNNING }
+
+          shared_examples "deletes the associated WorkspaceToken record if it exists" do
+            it "deletes the associated WorkspaceToken record if it exists when Stopped" do
+              expect { workspace.update!(desired_state: new_desired_state) }.to change {
+                RemoteDevelopment::WorkspaceToken.count
+              }.by(-1)
+
+              expect(workspace.workspace_token).to be_nil
+            end
+
+            it "does not raise an error when WorkspaceToken record does not exist" do
+              workspace.workspace_token.destroy!
+              workspace.reload
+
+              expect { workspace.update!(desired_state: new_desired_state) }.not_to raise_error
+            end
+          end
+
+          where(:new_desired_state) do
+            [
+              states_module::RESTART_REQUESTED,
+              states_module::STOPPED,
+              states_module::TERMINATED
+            ]
+          end
+
+          with_them do
+            it_behaves_like "deletes the associated WorkspaceToken record if it exists"
+          end
+        end
+      end
     end
 
     describe "before_validation" do
@@ -167,6 +208,8 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
     describe "after_save" do
       describe "track_started_workspace callback" do
         context "when desired_state changes to Running" do
+          let(:desired_state) { states_module::STOPPED }
+
           it "triggers the event" do
             expect(workspace).to receive(:track_started_workspace)
             workspace.update!(desired_state: states_module::RUNNING)
@@ -175,36 +218,100 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           it "triggers internal event with new label on new record" do
             expect { workspace.update!(desired_state: states_module::RUNNING) }
               .to trigger_internal_events("track_started_workspaces")
-              .with(user: user, project: project, additional_properties: {
-                label: "new"
-              })
-            .and increment_usage_metrics("counts.count_total_workspaces_started")
+                    .with(user: user, project: project, additional_properties: {
+                      label: "new"
+                    })
+                    .and increment_usage_metrics("counts.count_total_workspaces_started")
           end
 
           it "triggers internal event with existing label on existing record" do
             workspace.save!(desired_state: "Stopped")
             expect { workspace.update!(desired_state: states_module::RUNNING) }
               .to trigger_internal_events("track_started_workspaces")
-              .with(user: user, project: project, additional_properties: {
-                label: "existing"
-              })
-            .and increment_usage_metrics("counts.count_total_workspaces_started")
+                    .with(user: user, project: project, additional_properties: {
+                      label: "existing"
+                    })
+                    .and increment_usage_metrics("counts.count_total_workspaces_started")
           end
         end
 
         context "when desired_state changes to a value other than Running" do
+          let(:desired_state) { states_module::RUNNING }
+
           it "does not trigger the event and metric" do
             expect { workspace.update!(desired_state: states_module::STOPPED) }
               .to not_trigger_internal_events("track_started_workspaces")
-              .and not_increment_usage_metrics('counts.count_total_workspaces_started')
+                    .and not_increment_usage_metrics('counts.count_total_workspaces_started')
           end
         end
 
         context "when desired_state doesn't change" do
+          before do
+            workspace.save!
+          end
+
           it "does not trigger the event" do
             expect { workspace.update!(name: "workspace_new_name") }
               .to not_trigger_internal_events("track_started_workspaces")
-              .and not_increment_usage_metrics('counts.count_total_workspaces_started')
+                    .and not_increment_usage_metrics('counts.count_total_workspaces_started')
+          end
+        end
+      end
+
+      describe "WorkspaceToken creation" do
+        context "for a new record" do
+          it "creates an associated WorkspaceToken record" do
+            expect(workspace).to be_new_record # fixture sanity check
+
+            expect { workspace.save! }.to change {
+              RemoteDevelopment::WorkspaceToken.count
+            }.by(1)
+
+            expect(workspace.workspace_token).not_to be_nil
+          end
+        end
+
+        context "for an existing record" do
+          context "when changing to Running" do
+            using RSpec::Parameterized::TableSyntax
+
+            let(:desired_state) { states_module::STOPPED }
+
+            before do
+              workspace.save!
+            end
+
+            it "creates an associated WorkspaceToken record" do
+              expect(workspace.workspace_token).to be_nil # fixture sanity check
+
+              expect { workspace.update!(desired_state: states_module::RUNNING) }.to change {
+                RemoteDevelopment::WorkspaceToken.count
+              }.by(1)
+
+              expect(workspace.workspace_token).not_to be_nil
+            end
+
+            context "when WorkspaceToken record already exists" do
+              before do
+                workspace.create_workspace_token!
+              end
+
+              it "does not raise an error" do
+                expect { workspace.update!(desired_state: states_module::RUNNING) }.not_to raise_error
+
+                expect(workspace.workspace_token).not_to be_nil
+              end
+
+              it "rotates (recreates) the existing token" do
+                previous_token_id = workspace.workspace_token.id
+
+                expect { workspace.update!(desired_state: states_module::RUNNING) }.not_to change {
+                  RemoteDevelopment::WorkspaceToken.count
+                }
+
+                expect(workspace.workspace_token.id).not_to eq(previous_token_id)
+              end
+            end
           end
         end
       end

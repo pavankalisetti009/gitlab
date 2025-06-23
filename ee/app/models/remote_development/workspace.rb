@@ -101,6 +101,14 @@ module RemoteDevelopment
       new_record? || actual_state_changed?
     end
 
+    before_save :delete_workspace_token, if: -> do
+      saved_change_to_desired_state? && !desired_state_running?
+    end
+
+    after_save :do_create_workspace_token, if: -> do
+      saved_change_to_desired_state? && desired_state_running?
+    end
+
     after_save :track_started_workspace, if: -> do
       saved_change_to_desired_state? && desired_state_running?
     end
@@ -314,6 +322,27 @@ module RemoteDevelopment
     end
 
     # @return [void]
+    def do_create_workspace_token
+      delete_workspace_token # rotate (delete) the token if it already exists (fail-safe, normally should never happen)
+
+      # NOTE: This is a convenience method provided by Rails for has_one associations. This is also why we have to
+      #       name the method do_..., in order to not conflict with the convenience method.
+      create_workspace_token!
+
+      nil
+    end
+
+    # @return [void]
+    def delete_workspace_token
+      return unless workspace_token.present?
+
+      workspace_token.destroy
+      self.workspace_token = nil # ActiveRecord doesn't automatically set the instance state for the attribute to nil.
+
+      nil
+    end
+
+    # @return [void]
     def track_started_workspace
       track_internal_event(
         "track_started_workspaces",
@@ -323,6 +352,7 @@ module RemoteDevelopment
           label: previously_new_record? ? "new" : "existing"
         }
       )
+
       nil
     end
   end
