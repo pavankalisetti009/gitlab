@@ -134,6 +134,9 @@ Here are some required settings for externally managed PostgreSQL instances.
 | `shared_buffers`       | minimum `2 GB`  | You require more for larger database servers. The Linux package default is set to 25% of server RAM. |
 | `statement_timeout`    | maximum 1 min  | A statement timeout prevents runaway issues with locks and the database rejecting new clients. One minute matches the Puma rack timeout setting. |
 
+You can configure some PostgreSQL settings for the specific database, rather than for all databases on the server. You might limit configuration to specific databases when hosting
+multiple databases on the same server. For guidance on where to apply configuration, consult your database administrator.
+
 ## Puma
 
 The recommended [Puma](https://puma.io/) settings depend on your [installation](install_methods.md).
