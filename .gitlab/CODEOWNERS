@@ -1286,7 +1286,6 @@ lib/gitlab/checks/
 /app/assets/javascripts/pages/projects/settings/access_tokens/
 /app/assets/javascripts/pages/user_settings/personal_access_tokens/
 /app/assets/javascripts/profile/password_prompt/
-/app/assets/javascripts/projects/settings/topics/components/
 /app/assets/stylesheets/page_bundles/profile_two_factor_auth.scss
 /app/controllers/admin/impersonation_tokens_controller.rb
 /app/controllers/concerns/access_tokens_actions.rb
