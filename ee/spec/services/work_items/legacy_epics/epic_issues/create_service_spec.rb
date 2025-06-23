@@ -281,16 +281,36 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
 
         context "when assigning issuable which don't support epics" do
           let(:references) { [incident.to_reference(full: true)] }
-          let(:error_message) do
-            "#{incident.to_reference} cannot be added: it's not allowed to add this type of parent item"
-          end
-
           let_it_be(:incident) { create(:incident, project: project) }
 
-          it 'returns error status' do
-            expect(execute[:status]).to eq(:error)
-            expect(execute[:http_status]).to eq(422)
-            expect(execute[:message]).to eq(error_message)
+          context 'when user is a reporter' do
+            let_it_be(:reporter_user) { create(:user) }
+            let(:user) { reporter_user }
+
+            before_all do
+              project.add_reporter(reporter_user)
+              group.add_reporter(reporter_user)
+            end
+
+            it 'returns validation error' do
+              error_message = "#{incident.to_reference} cannot be added: " \
+                "it's not allowed to add this type of parent item"
+
+              expect(execute[:status]).to eq(:error)
+              expect(execute[:http_status]).to eq(422)
+              expect(execute[:message]).to eq(error_message)
+            end
+          end
+
+          context 'when user is a guest' do
+            let(:user) { guest }
+
+            it 'returns not found error' do
+              expect(execute[:status]).to eq(:error)
+              expect(execute[:http_status]).to eq(404)
+              expect(execute[:message]).to eq('No matching issue found. ' \
+                'Make sure that you are adding a valid issue URL.')
+            end
           end
         end
       end
