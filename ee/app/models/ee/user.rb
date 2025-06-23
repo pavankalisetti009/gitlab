@@ -188,6 +188,11 @@ module EE
           .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422405')
       end
 
+      scope :with_admin_role, ->(admin_role_id) do
+        joins(:user_member_role)
+          .where(user_member_role: { member_role_id: admin_role_id })
+      end
+
       scope :subscribed_for_admin_email, -> { where(admin_email_unsubscribed_at: nil) }
 
       scope :with_provider, ->(provider) do

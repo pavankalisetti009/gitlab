@@ -561,6 +561,19 @@ RSpec.describe User, feature_category: :system_access do
 
       it { is_expected.to contain_exactly(security_policy_bot_1, security_policy_bot_2) }
     end
+
+    describe '.with_admin_role' do
+      let_it_be(:user_1) { create(:user) }
+      let_it_be(:user_2) { create(:user) }
+      let_it_be(:user_3) { create(:user) }
+
+      let_it_be(:user_role_1) { create(:user_member_role, user: user_1) }
+      let_it_be(:user_role_2) { create(:user_member_role, user: user_2) }
+
+      it 'returns the users with specific admin role' do
+        expect(described_class.with_admin_role(user_role_1.member_role.id)).to eq([user_1])
+      end
+    end
   end
 
   describe 'after_create' do

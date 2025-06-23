@@ -3,19 +3,30 @@
 require 'spec_helper'
 
 RSpec.describe Admin::UsersController, feature_category: :user_management do
-  let(:admin) { create(:admin) }
-  let(:user) { create(:user) }
+  let_it_be(:admin) { create(:admin) }
+  let_it_be(:user) { create(:user) }
 
   before do
     sign_in(admin)
   end
 
   describe 'GET #index' do
+    let_it_be(:user_2) { create(:user) }
+
+    let_it_be(:user_role_1) { create(:user_member_role, user: user) }
+    let_it_be(:user_role_2) { create(:user_member_role, user: user_2) }
+
     it 'eager loads obstacles to user deletion' do
       get :index
 
       expect(assigns(:users).first.association(:oncall_schedules)).to be_loaded
       expect(assigns(:users).first.association(:escalation_policies)).to be_loaded
+    end
+
+    it 'filters by admin custom role' do
+      get :index, params: { admin_role_id: user_role_2.member_role.id }
+
+      expect(assigns(:users)).to eq([user_2])
     end
   end
 

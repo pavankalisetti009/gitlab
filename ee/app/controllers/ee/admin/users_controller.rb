@@ -160,6 +160,16 @@ module EE
           custom_attributes_attributes: [:id, :value]
         ]
       end
+
+      def filter_users
+        return super unless admin_role_param
+
+        super.with_admin_role(admin_role_param)
+      end
+
+      def admin_role_param
+        params.permit(:admin_role_id)[:admin_role_id]
+      end
     end
   end
 end
