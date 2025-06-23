@@ -118,8 +118,6 @@ export default {
     'app/assets/javascripts/ml/model_registry/components/delete_model_disclosure_dropdown_item.vue',
     'app/assets/javascripts/ml/model_registry/components/model_detail.vue',
     'app/assets/javascripts/ml/model_registry/components/model_edit.vue',
-    'app/assets/javascripts/notebook/cells/output/error.vue',
-    'app/assets/javascripts/notebook/cells/prompt.vue',
     'app/assets/javascripts/notes/components/comment_form.vue',
     'app/assets/javascripts/notes/components/comment_type_dropdown.vue',
     'app/assets/javascripts/notes/components/diff_discussion_header.vue',
