@@ -132,10 +132,63 @@ RSpec.describe Issues::ReopenService, feature_category: :team_planning do
       context 'when it has no legacy epic' do
         let_it_be_with_reload(:work_item) { create(:work_item, :closed, :epic, namespace: group) }
 
-        it 'closes the work item' do
+        it 'reopens the work item' do
           execute
 
           expect(work_item.reload.state).to eq('opened')
+        end
+      end
+    end
+
+    context 'when reopening regular work items' do
+      let_it_be(:current_user) { create(:user) }
+      let_it_be(:group) { create(:group) }
+      let_it_be_with_reload(:task_work_item) { create(:work_item, :task, :closed, namespace: group) }
+
+      let(:service) { described_class.new(container: group, current_user: current_user) }
+
+      subject(:execute) { service.execute(task_work_item) }
+
+      before_all do
+        group.add_developer(current_user)
+      end
+
+      it 'publishes a work item reopened event for tasks' do
+        expect { execute }
+          .to publish_event(::WorkItems::WorkItemReopenedEvent)
+          .with({
+            id: task_work_item.id,
+            namespace_id: task_work_item.namespace.id
+          })
+      end
+
+      it 'reopens the task work item' do
+        expect { execute }.to change { task_work_item.reload.state }.from('closed').to('opened')
+      end
+
+      context 'with weight rollup scenarios' do
+        let_it_be(:project) { create(:project, :repository) }
+        let_it_be(:parent_issue) { create(:work_item, :issue, project: project) }
+        let_it_be(:child_task_1) { create(:work_item, :task, project: project, weight: 3) }
+        let_it_be(:child_task_2) { create(:work_item, :task, project: project, weight: 2) }
+
+        let_it_be(:parent_link_1) { create(:parent_link, work_item: child_task_1, work_item_parent: parent_issue) }
+        let_it_be(:parent_link_2) { create(:parent_link, work_item: child_task_2, work_item_parent: parent_issue) }
+
+        before do
+          project.add_developer(current_user)
+          # Close the child task so it can be reopened in the test
+          child_task_1.close!
+          # Initialize parent weights with all children closed
+          WorkItems::Weights::UpdateWeightsService.new([parent_issue]).execute
+        end
+
+        it 'triggers weight update for parent when child is reopened', :sidekiq_inline do
+          expect(WorkItems::Weights::UpdateWeightsWorker)
+            .to receive(:perform_async)
+            .with(array_including(parent_issue.id))
+
+          described_class.new(container: project, current_user: current_user).execute(child_task_1)
         end
       end
     end

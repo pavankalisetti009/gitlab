@@ -27,7 +27,7 @@ module WorkItems
               CASE
                  WHEN child_work_items.state_id = #{Issuable::STATE_ID_MAP[:closed]}
                  THEN COALESCE(work_item_weights_sources.rolled_up_weight, child_work_items.weight)
-                 ELSE work_item_weights_sources.rolled_up_completed_weight
+                 ELSE COALESCE(work_item_weights_sources.rolled_up_completed_weight, 0)
               END
             ),
             NOW(),
