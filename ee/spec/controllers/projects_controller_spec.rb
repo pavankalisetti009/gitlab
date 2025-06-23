@@ -867,7 +867,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
       end
 
       it "doesn't mark for deletion" do
-        expect { delete_project }.not_to change { project.reload.marked_for_deletion? }.from(false)
+        expect { delete_project }.not_to change { project.reload.self_deletion_scheduled? }.from(false)
       end
     end
   end

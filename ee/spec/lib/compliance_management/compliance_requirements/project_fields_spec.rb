@@ -1426,26 +1426,16 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       end
 
       describe 'project_marked_for_deletion' do
-        it 'returns true when project is marked for deletion with a date' do
+        it 'returns true when project is marked for deletion' do
           allow(project).to receive_messages(
-            marked_for_deletion?: true,
-            marked_for_deletion_at: Time.current
+            self_deletion_scheduled?: true
           )
           expect(described_class.map_field(project, 'project_marked_for_deletion')).to be true
         end
 
         it 'returns false when project is not marked for deletion' do
           allow(project).to receive_messages(
-            marked_for_deletion?: false,
-            marked_for_deletion_at: nil
-          )
-          expect(described_class.map_field(project, 'project_marked_for_deletion')).to be false
-        end
-
-        it 'returns false when marked_for_deletion? is true but marked_for_deletion_at is nil' do
-          allow(project).to receive_messages(
-            marked_for_deletion?: true,
-            marked_for_deletion_at: nil
+            self_deletion_scheduled?: false
           )
           expect(described_class.map_field(project, 'project_marked_for_deletion')).to be false
         end

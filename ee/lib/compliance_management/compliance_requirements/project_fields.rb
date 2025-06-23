@@ -400,7 +400,7 @@ module ComplianceManagement
         end
 
         def project_marked_for_deletion?(project, _context = {})
-          project.marked_for_deletion? && !project.marked_for_deletion_at.nil?
+          project.self_deletion_scheduled?
         end
       end
     end

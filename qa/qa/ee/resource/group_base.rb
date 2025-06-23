@@ -89,7 +89,7 @@ module QA
         end
 
         def api_delete_path
-          if marked_for_deletion?
+          if self_deletion_scheduled?
             "#{super}?permanently_remove=true&full_path=#{CGI.escape(full_path)}"
           else
             super
@@ -99,13 +99,13 @@ module QA
         # Check if the group has already been scheduled to be deleted
         #
         # @return [Boolean]
-        def marked_for_deletion?
+        def self_deletion_scheduled?
           reload!.api_response[:marked_for_deletion_on].present?
         end
 
         # Remove the group unless it's already scheduled for deletion.
         def remove_via_api!(force: false)
-          if marked_for_deletion? && !force
+          if self_deletion_scheduled? && !force
             QA::Runtime::Logger.debug("#{self.class.name} #{identifier} is already scheduled to be removed.")
 
             return

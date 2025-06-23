@@ -333,13 +333,13 @@ RSpec.describe ApplicationHelper do
       before do
         helper.instance_variable_set(:@project, project)
 
-        allow(project).to receive(:marked_for_deletion?)
+        allow(project).to receive(:self_deletion_scheduled?)
       end
 
       it 'renders the CE partial' do
         helper.render_ce(partial)
 
-        expect(project).not_to receive(:marked_for_deletion?)
+        expect(project).not_to receive(:self_deletion_scheduled?)
       end
     end
 
