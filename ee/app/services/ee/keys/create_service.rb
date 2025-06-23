@@ -10,15 +10,15 @@ module EE
       end
 
       def log_audit_event(key)
-        audit_event_service.for_user(full_path: key.title, entity_id: key.id).security_event
-      end
+        audit_context = {
+          name: 'add_ssh_key',
+          author: current_user,
+          scope: user&.enterprise_group.presence || user,
+          target: key,
+          message: 'Added SSH key'
+        }
 
-      def audit_event_service
-        ::AuditEventService.new(current_user,
-          user,
-          action: :custom,
-          custom_message: 'Added SSH key',
-          ip_address: @ip_address) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end
