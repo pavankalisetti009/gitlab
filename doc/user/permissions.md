@@ -289,23 +289,27 @@ Project permissions for [analytics](analytics/_index.md) features including valu
 
 Project permissions for [application security](application_security/secure_your_application.md) features including dependency management, security analyzers, security policies, and vulnerability management.
 
-| Action                                                                                                                             | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
-| ---------------------------------------------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View [dependency list](application_security/dependency_list/_index.md)                                                              |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| View licenses in [dependency list](application_security/dependency_list/_index.md)                                                  |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| View [security dashboard](application_security/security_dashboard/_index.md)                                                        |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| View [vulnerability report](application_security/vulnerability_report/_index.md)                                                    |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Create [vulnerability manually](application_security/vulnerability_report/_index.md#manually-add-a-vulnerability)                   |       |         |          |          |     ✓      |   ✓   |       |
-| Create [issue](application_security/vulnerabilities/_index.md#create-a-gitlab-issue-for-a-vulnerability) from vulnerability finding |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Create [on-demand DAST scans](application_security/dast/on-demand_scan.md)                                                         |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Run [on-demand DAST scans](application_security/dast/on-demand_scan.md)                                                            |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Create [individual security policies](application_security/policies/_index.md)                                                      |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Change [individual security policies](application_security/policies/_index.md)                                                      |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Delete [individual security policies](application_security/policies/_index.md)                                                      |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Create [CVE ID request](application_security/cve_id_request.md)                                                                    |       |         |          |           |     ✓      |   ✓   |       |
-| Change vulnerability status                                                                                                        |       |         |          |           |     ✓      |   ✓   | The `admin_vulnerability` permission was [removed](https://gitlab.com/gitlab-org/gitlab/-/issues/412693) from the Developer role in GitLab 17.0. |
-| Create or assign [security policy project](application_security/policies/_index.md)                                                 |       |         |          |           |            |   ✓   |       |
-| Manage [security configurations](application_security/detect/security_configuration.md)                                                      |       |         |          |           |            |   ✓   |       |
+| Action                                                                                                                              | Guest | Planner | Reporter | Developer | Maintainer | Owner |
+| ----------------------------------------------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: |
+| View [dependency list](application_security/dependency_list/_index.md)                                                              |       |         |          |     ✓     |     ✓      |   ✓   |
+| View licenses in [dependency list](application_security/dependency_list/_index.md)                                                  |       |         |          |     ✓     |     ✓      |   ✓   |
+| View [security dashboard](application_security/security_dashboard/_index.md)                                                        |       |         |          |     ✓     |     ✓      |   ✓   |
+| View [vulnerability report](application_security/vulnerability_report/_index.md)                                                    |       |         |          |     ✓     |     ✓      |   ✓   |
+| Create [vulnerability manually](application_security/vulnerability_report/_index.md#manually-add-a-vulnerability)                   |       |         |          |           |     ✓      |   ✓   |
+| Create [issue](application_security/vulnerabilities/_index.md#create-a-gitlab-issue-for-a-vulnerability) from vulnerability finding |       |         |          |     ✓     |     ✓      |   ✓   |
+| Create [on-demand DAST scans](application_security/dast/on-demand_scan.md)                                                          |       |         |          |     ✓     |     ✓      |   ✓   |
+| Run [on-demand DAST scans](application_security/dast/on-demand_scan.md)                                                             |       |         |          |     ✓     |     ✓      |   ✓   |
+| Create [individual security policies](application_security/policies/_index.md)                                                      |       |         |          |     ✓     |     ✓      |   ✓   |
+| Change [individual security policies](application_security/policies/_index.md)                                                      |       |         |          |     ✓     |     ✓      |   ✓   |
+| Delete [individual security policies](application_security/policies/_index.md)                                                      |       |         |          |     ✓     |     ✓      |   ✓   |
+| Create [CVE ID request](application_security/cve_id_request.md)                                                                     |       |         |          |           |     ✓      |   ✓   |
+| Change vulnerability status <sup>1</sup>                                                                                            |       |         |          |           |     ✓      |   ✓   |
+| Create or assign [security policy project](application_security/policies/_index.md)                                                 |       |         |          |           |            |   ✓   |
+| Manage [security configurations](application_security/detect/security_configuration.md)                                             |       |         |          |           |            |   ✓   |
+
+**Footnotes**
+
+1. The `admin_vulnerability` permission was [removed](https://gitlab.com/gitlab-org/gitlab/-/issues/412693) from the Developer role in GitLab 17.0.
 
 ### CI/CD
 
@@ -318,62 +322,90 @@ Project permissions for [application security](application_security/secure_your_
 
 Project Owners can perform any listed action, and can delete pipelines:
 
-| Action                                                                                                                         | Non-member | Guest | Planner | Reporter | Developer | Maintainer | Notes |
-| ------------------------------------------------------------------------------------------------------------------------------ | :--------: | :---: | :-----: | :------: | :-------: | :--------: | ----- |
-| View existing artifacts                                                                                                        |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members and guests: Only if the project is public. |
-| View list of jobs                                                                                                              |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members: Only if the project is public and **Public pipelines** is enabled in **Project Settings > CI/CD**.<br>Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD**. |
-| View artifacts                                                                                                                 |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members: Only if the project is public, **Public pipelines** is enabled in **Project Settings > CI/CD**, and [`artifacts:public: false`](../ci/yaml/_index.md#artifactspublic) is not set on the job.<br>Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD** and `artifacts:public: false` is not set on the job.<br>Reporters: Only if `artifacts:public: false` is not set on the job. |
-| Download artifacts                                                                                                             |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members: Only if the project is public, **Public pipelines** is enabled in **Project Settings > CI/CD**, and [`artifacts:public: false`](../ci/yaml/_index.md#artifactspublic) is not set on the job.<br>Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD** and `artifacts:public: false` is not set on the job.<br>Reporters: Only if `artifacts:public: false` is not set on the job. |
-| View [environments](../ci/environments/_index.md)                                                                              |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members and guests: Only if the project is public. |
-| View job logs and job details page                                                                                             |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members: Only if the project is public and **Public pipelines** is enabled in **Project Settings > CI/CD**.<br>Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD**. |
-| View pipelines and pipeline details pages                                                                                      |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members: Only if the project is public and **Public pipelines** is enabled in **Project Settings > CI/CD**.<br>Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD**. |
-| View pipelines tab in MR                                                                                                       |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members and guests: Only if the project is public. |
-| View [vulnerabilities in a pipeline](application_security/detect/security_scanning_results.md) |            |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD**. |
-| Run deployment job for a protected environment                                                                                 |            |       |         |    ✓     |     ✓     |     ✓      | Reporters: Only if the user is [part of a group with access to the protected environment](../ci/environments/protected_environments.md#deployment-only-access-to-protected-environments).<br>Developers and maintainers: Only if the user is [allowed to deploy to the protected branch](../ci/environments/protected_environments.md#protecting-environments). |
-| View [agents for Kubernetes](clusters/agent/_index.md)                                                                          |            |       |         |          |     ✓     |     ✓      |       |
-| View project [Secure Files](../api/secure_files.md)                                                                            |            |       |         |          |     ✓     |     ✓      |       |
-| Download project [Secure Files](../api/secure_files.md)                                                                        |            |       |         |          |     ✓     |     ✓      |       |
-| View a job with [debug logging](../ci/variables/variables_troubleshooting.md#enable-debug-logging)                             |            |       |         |          |     ✓     |     ✓      |       |
-| Create [environments](../ci/environments/_index.md)                                                                             |            |       |         |          |     ✓     |     ✓      |       |
-| Delete [environments](../ci/environments/_index.md)                                                                             |            |       |         |          |     ✓     |     ✓      |       |
-| Stop [environments](../ci/environments/_index.md)                                                                               |            |       |         |          |     ✓     |     ✓      |       |
-| Run CI/CD pipeline                                                                                                             |            |       |         |          |     ✓     |     ✓      |       |
-| Run CI/CD pipeline for a protected branch                                                                                      |            |       |         |          |     ✓     |     ✓      | Developers and maintainers: Only if the user is [allowed to merge or push to the protected branch](../ci/pipelines/_index.md#pipeline-security-on-protected-branches). |
-| Run CI/CD job                                                                                                                  |            |       |         |          |     ✓     |     ✓      |       |
-| Delete job logs or job artifacts                                                                                               |            |       |         |          |     ✓     |     ✓      | Developers: Only if the job was triggered by the user and runs for a non-protected branch. |
-| Enable [review apps](../ci/review_apps/_index.md)                                                                              |            |       |         |          |     ✓     |     ✓      |       |
-| Cancel jobs                                                                                                                    |            |       |         |          |     ✓     |     ✓      | Cancellation permissions can be [restricted in the pipeline settings](../ci/pipelines/settings.md#restrict-roles-that-can-cancel-pipelines-or-jobs). |
-| Retry jobs                                                                                                                     |            |       |         |          |     ✓     |     ✓      |       |
-| Read [Terraform](infrastructure/_index.md) state                                                                               |            |       |         |          |     ✓     |     ✓      |       |
-| Run [interactive web terminals](../ci/interactive_web_terminal/_index.md)                                                      |            |       |         |          |     ✓     |     ✓      |       |
-| Use pipeline editor                                                                                                            |            |       |         |          |     ✓     |     ✓      |       |
-| Manage [agents for Kubernetes](clusters/agent/_index.md)                                                                        |            |       |         |          |           |     ✓      |       |
-| Manage CI/CD settings                                                                                                          |            |       |         |          |           |     ✓      |       |
-| Manage job triggers                                                                                                            |            |       |         |          |           |     ✓      |       |
-| Manage project CI/CD variables                                                                                                 |            |       |         |          |           |     ✓      |       |
-| Manage project protected environments                                                                                          |            |       |         |          |           |     ✓      |       |
-| Manage project [Secure Files](../api/secure_files.md)                                                                          |            |       |         |          |           |     ✓      |       |
-| Manage [Terraform](infrastructure/_index.md) state                                                                             |            |       |         |          |           |     ✓      |       |
-| Add project runners to project                                                                                                 |            |       |         |          |           |     ✓      |       |
-| Clear runner caches manually                                                                                                   |            |       |         |          |           |     ✓      |       |
-| Enable instance runners in project                                                                                             |            |       |         |          |           |     ✓      |       |
+| Action                                                                                                      | Non-member | Guest | Planner | Reporter | Developer | Maintainer |
+| ----------------------------------------------------------------------------------------------------------- | :--------: | :---: | :-----: | :------: | :-------: | :--------: |
+| View existing artifacts <sup>1</sup>                                                                        |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| View list of jobs <sup>2</sup>                                                                              |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| View artifacts <sup>3</sup>                                                                                 |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| Download artifacts <sup>3</sup>                                                                             |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| View [environments](../ci/environments/_index.md) <sup>1</sup>                                              |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| View job logs and job details page <sup>2</sup>                                                             |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| View pipelines and pipeline details pages <sup>2</sup>                                                      |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| View pipelines tab in MR <sup>1</sup>                                                                       |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| View [vulnerabilities in a pipeline](application_security/detect/security_scanning_results.md) <sup>4</sup> |            |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |
+| Run deployment job for a protected environment <sup>5</sup>                                                 |            |       |         |    ✓     |     ✓     |     ✓      |
+| View [agents for Kubernetes](clusters/agent/_index.md)                                                      |            |       |         |          |     ✓     |     ✓      |
+| View project [Secure Files](../api/secure_files.md)                                                         |            |       |         |          |     ✓     |     ✓      |
+| Download project [Secure Files](../api/secure_files.md)                                                     |            |       |         |          |     ✓     |     ✓      |
+| View a job with [debug logging](../ci/variables/variables_troubleshooting.md#enable-debug-logging)          |            |       |         |          |     ✓     |     ✓      |
+| Create [environments](../ci/environments/_index.md)                                                         |            |       |         |          |     ✓     |     ✓      |
+| Delete [environments](../ci/environments/_index.md)                                                         |            |       |         |          |     ✓     |     ✓      |
+| Stop [environments](../ci/environments/_index.md)                                                           |            |       |         |          |     ✓     |     ✓      |
+| Run CI/CD pipeline                                                                                          |            |       |         |          |     ✓     |     ✓      |
+| Run CI/CD pipeline for a protected branch <sup>6</sup>                                                      |            |       |         |          |     ✓     |     ✓      |
+| Run CI/CD job                                                                                               |            |       |         |          |     ✓     |     ✓      |
+| Delete job logs or job artifacts <sup>7</sup>                                                               |            |       |         |          |     ✓     |     ✓      |
+| Enable [review apps](../ci/review_apps/_index.md)                                                           |            |       |         |          |     ✓     |     ✓      |
+| Cancel jobs <sup>8</sup>                                                                                    |            |       |         |          |     ✓     |     ✓      |
+| Retry jobs                                                                                                  |            |       |         |          |     ✓     |     ✓      |
+| Read [Terraform](infrastructure/_index.md) state                                                            |            |       |         |          |     ✓     |     ✓      |
+| Run [interactive web terminals](../ci/interactive_web_terminal/_index.md)                                   |            |       |         |          |     ✓     |     ✓      |
+| Use pipeline editor                                                                                         |            |       |         |          |     ✓     |     ✓      |
+| Manage [agents for Kubernetes](clusters/agent/_index.md)                                                    |            |       |         |          |           |     ✓      |
+| Manage CI/CD settings                                                                                       |            |       |         |          |           |     ✓      |
+| Manage job triggers                                                                                         |            |       |         |          |           |     ✓      |
+| Manage project CI/CD variables                                                                              |            |       |         |          |           |     ✓      |
+| Manage project protected environments                                                                       |            |       |         |          |           |     ✓      |
+| Manage project [Secure Files](../api/secure_files.md)                                                       |            |       |         |          |           |     ✓      |
+| Manage [Terraform](infrastructure/_index.md) state                                                          |            |       |         |          |           |     ✓      |
+| Add project runners to project                                                                              |            |       |         |          |           |     ✓      |
+| Clear runner caches manually                                                                                |            |       |         |          |           |     ✓      |
+| Enable instance runners in project                                                                          |            |       |         |          |           |     ✓      |
+
+**Footnotes**
+
+<!-- Disable ordered list rule https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md#md029---ordered-list-item-prefix -->
+<!-- markdownlint-disable MD029 -->
+
+1. Non-members and guests: Only if the project is public.
+2. Non-members: Only if the project is public and **Public pipelines** is enabled in **Project Settings > CI/CD**.
+   <br>Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD**.
+3. Non-members: Only if the project is public, **Public pipelines** is enabled in **Project Settings > CI/CD**,
+   and [`artifacts:public: false`](../ci/yaml/_index.md#artifactspublic) is not set on the job.
+   <br>Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD** and
+   `artifacts:public: false` is not set on the job.<br>Reporters: Only if `artifacts:public: false`
+   is not set on the job.
+4. Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD**.
+5. Reporters: Only if the user is [part of a group with access to the protected environment](../ci/environments/protected_environments.md#deployment-only-access-to-protected-environments).
+   <br>Developers and maintainers: Only if the user is [allowed to deploy to the protected branch](../ci/environments/protected_environments.md#protecting-environments).
+6. Developers and maintainers: Only if the user is [allowed to merge or push to the protected branch](../ci/pipelines/_index.md#pipeline-security-on-protected-branches).
+7. Developers: Only if the job was triggered by the user and runs for a non-protected branch.
+8. Cancellation permissions can be [restricted in the pipeline settings](../ci/pipelines/settings.md#restrict-roles-that-can-cancel-pipelines-or-jobs).
+
+<!-- markdownlint-enable MD029 -->
 
 This table shows granted privileges for jobs triggered by specific roles.
 
 Project Owners can do any listed action, but no users can push source and LFS together.
 Guest users and members with the Reporter role cannot do any of these actions.
 
-| Action                                       | Developer | Maintainer | Notes |
-| -------------------------------------------- | :-------: | :--------: | ----- |
-| Clone source and LFS from current project    |     ✓     |     ✓      |       |
-| Clone source and LFS from public projects    |     ✓     |     ✓      |       |
-| Clone source and LFS from internal projects  |     ✓     |     ✓      | Developers and Maintainers: Only if the triggering user is not an external user. |
-| Clone source and LFS from private projects   |     ✓     |     ✓      | Only if the triggering user is a member of the project. See also [Usage of private Docker images with `if-not-present` pull policy](https://docs.gitlab.com/runner/security/#usage-of-private-docker-images-with-if-not-present-pull-policy). |
-| Pull container images from current project   |     ✓     |     ✓      |       |
-| Pull container images from public projects   |     ✓     |     ✓      |       |
-| Pull container images from internal projects |     ✓     |     ✓      | Developers and Maintainers: Only if the triggering user is not an external user. |
-| Pull container images from private projects  |     ✓     |     ✓      | Only if the triggering user is a member of the project. See also [Usage of private Docker images with `if-not-present` pull policy](https://docs.gitlab.com/runner/security/#usage-of-private-docker-images-with-if-not-present-pull-policy). |
-| Push container images to current project     |     ✓     |     ✓      | You cannot push container images to other projects. |
+| Action                                                    | Developer | Maintainer |
+| --------------------------------------------------------- | :-------: | :--------: |
+| Clone source and LFS from current project                 |     ✓     |     ✓      |
+| Clone source and LFS from public projects                 |     ✓     |     ✓      |
+| Clone source and LFS from internal projects <sup>1</sup>  |     ✓     |     ✓      |
+| Clone source and LFS from private projects <sup>2</sup>   |     ✓     |     ✓      |
+| Pull container images from current project                |     ✓     |     ✓      |
+| Pull container images from public projects                |     ✓     |     ✓      |
+| Pull container images from internal projects <sup>1</sup> |     ✓     |     ✓      |
+| Pull container images from private projects <sup>2</sup>  |     ✓     |     ✓      |
+| Push container images to current project <sup>3</sup>     |     ✓     |     ✓      |
+
+**Footnotes**
+
+1. Developers and Maintainers: Only if the triggering user is not an external user.
+1. Only if the triggering user is a member of the project. See also [Usage of private Docker images with `if-not-present` pull policy](https://docs.gitlab.com/runner/security/#usage-of-private-docker-images-with-if-not-present-pull-policy).
+1. You cannot push container images to other projects.
 
 ### Compliance
 
