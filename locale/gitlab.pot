@@ -15291,6 +15291,9 @@ msgstr ""
 msgid "Company"
 msgstr ""
 
+msgid "Company email"
+msgstr ""
+
 msgid "Company name"
 msgstr ""
 
@@ -32504,6 +32507,9 @@ msgid "InProductMarketing|One platform for Dev, Sec, and Ops teams"
 msgstr ""
 
 msgid "InProductMarketing|Ship secure software faster"
+msgstr ""
+
+msgid "InProductMarketing|Start a Self-Managed trial"
 msgstr ""
 
 msgid "InProductMarketing|Start with Self-Managed"

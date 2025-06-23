@@ -63,6 +63,14 @@ class TrialRegistrationsController < RegistrationsController
   def preregistration_tracking_label
     ::Onboarding::TrialRegistration.tracking_label
   end
+
+  override :ensure_first_name_and_last_name_not_empty
+  def ensure_first_name_and_last_name_not_empty
+    experiment(:lightweight_trial_registration_redesign, actor: current_user) do |e|
+      e.control { super }
+      e.candidate { next }
+    end
+  end
 end
 
 TrialRegistrationsController.prepend_mod

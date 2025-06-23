@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Users::CreateBotService, feature_category: :security_policy_management do
   describe '#execute' do
-    let(:current_user) { build(:user) }
+    let(:current_user) { create(:user) }
     let(:params) { { private_profile: true } }
 
     subject(:execute_service) { described_class.new(current_user, params).execute }

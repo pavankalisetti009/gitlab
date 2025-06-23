@@ -6,7 +6,7 @@ RSpec.describe Users::BuildBotService, feature_category: :security_policy_manage
   describe '#execute' do
     subject(:execute_service) { described_class.new(current_user, params).execute }
 
-    let(:current_user) { build(:user) }
+    let(:current_user) { create(:user) }
     let(:params) { { private_profile: true } }
 
     it 'allows the private_profile param', :aggregate_failures do
