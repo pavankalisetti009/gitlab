@@ -22,6 +22,7 @@ module Gitlab
             variables = {
               activationCode: activation_code,
               instanceIdentifier: Gitlab::CurrentSettings.uuid,
+              uniqueInstanceId: Gitlab::GlobalAnonymousId.instance_uuid,
               automated: automated,
               gitlabVersion: Gitlab::VERSION,
               hostname: Gitlab.config.gitlab.host
@@ -31,6 +32,7 @@ module Gitlab
               mutation(
                 $activationCode: String!,
                 $instanceIdentifier: String!,
+                $uniqueInstanceId: String!,
                 $automated: Boolean!,
                 $gitlabVersion: String!,
                 $hostname: String!
@@ -39,6 +41,7 @@ module Gitlab
                   input: {
                     activationCode: $activationCode,
                     instanceIdentifier: $instanceIdentifier,
+                    uniqueInstanceId: $uniqueInstanceId,
                     automated: $automated,
                     gitlabVersion: $gitlabVersion,
                     hostname: $hostname
