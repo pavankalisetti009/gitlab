@@ -51,7 +51,7 @@ RSpec.describe 'User with admin_cicd_variables custom role', feature_category: :
     it 'returns minimum override role' do
       result = GitlabSchema.execute(query, context: { current_user: user }).as_json
       settings = result.dig('data', 'project', 'ciCdSettings')
-      expect(settings).to eq('pipelineVariablesMinimumOverrideRole' => 'no_one_allowed')
+      expect(settings).to eq('pipelineVariablesMinimumOverrideRole' => 'developer')
     end
   end
 
