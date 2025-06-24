@@ -8,11 +8,14 @@ import {
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import RequirementModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirement_modal.vue';
+import { statusesInfo } from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/statuses_info';
 import {
   emptyRequirement,
   requirementEvents,
 } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
+import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   mockGitLabStandardControls,
@@ -47,6 +50,20 @@ describe('RequirementModal', () => {
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(RequirementModal, {
       propsData: { ...defaultProps, ...props },
+      stubs: {
+        GlCollapsibleListbox: stubComponent(GlCollapsibleListbox, {
+          template: `
+            <div>
+              <div v-for="item in items" :key="item.value" v-gl-tooltip="item.tooltip" class="list-item">
+                {{ item.text }}
+              </div>
+            </div>
+          `,
+          directives: {
+            GlTooltip: createMockDirective('gl-tooltip'),
+          },
+        }),
+      },
     });
   };
 
@@ -108,6 +125,16 @@ describe('RequirementModal', () => {
   describe('Interaction', () => {
     beforeEach(() => {
       createComponent();
+    });
+
+    it('renders a tooltip for control', async () => {
+      await addControl();
+
+      const listItems = wrapper.findAll('.list-item');
+      const sastItem = listItems.wrappers.find((item) => item.text().includes('SAST Running'));
+      const tooltipBinding = getBinding(sastItem.element, 'gl-tooltip');
+
+      expect(tooltipBinding.value).toBe(statusesInfo.scanner_sast_running.description);
     });
 
     it('allows adding a control', async () => {
