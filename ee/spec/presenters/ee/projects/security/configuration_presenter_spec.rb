@@ -31,6 +31,14 @@ RSpec.describe Projects::Security::ConfigurationPresenter, feature_category: :so
     it 'includes a default value for secret_push_protection_enabled' do
       expect(result[:secret_push_protection_enabled]).to eq(false)
     end
+
+    it 'includes a default value for validity_checks_enabled' do
+      expect(result[:validity_checks_enabled]).to eq(false)
+    end
+
+    it 'includes validity_checks_available' do
+      expect(result).to have_key(:validity_checks_available)
+    end
   end
 
   describe '#to_html_data_attribute' do

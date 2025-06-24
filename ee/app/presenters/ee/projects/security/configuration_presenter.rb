@@ -27,6 +27,11 @@ module EE
           project_settings&.secret_push_protection_enabled
         end
 
+        override :validity_checks_enabled
+        def validity_checks_enabled
+          project_settings&.validity_checks_enabled
+        end
+
         override :features
         def features
           super << scan(:container_scanning_for_registry, configured: container_scanning_for_registry_enabled)
