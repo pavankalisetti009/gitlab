@@ -1037,6 +1037,7 @@ module EE
       with_scope :subject
       condition(:group_model_selection_enabled) do
         next false unless subject.root?
+        next false if ::Ai::Setting.self_hosted?
         next false unless ::Feature.enabled?(:ai_model_switching, subject)
 
         subject.namespace_settings&.duo_features_enabled?
