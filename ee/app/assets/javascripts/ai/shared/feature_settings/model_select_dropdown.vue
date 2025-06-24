@@ -22,9 +22,10 @@ export default {
       type: Array,
       required: true,
     },
-    dropdownToggleText: {
+    placeholderDropdownText: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     isFeatureSettingDropdown: {
       type: Boolean,
@@ -37,12 +38,13 @@ export default {
       default: false,
     },
   },
-  data() {
-    return {
-      option: JSON.stringify(this.selectedOption) || null,
-    };
-  },
   computed: {
+    selected() {
+      return this.selectedOption?.value || '';
+    },
+    dropdownToggleText() {
+      return this.selectedOption?.text || this.placeholderDropdownText;
+    },
     headerText() {
       return this.isFeatureSettingDropdown ? s__('AdminAIPoweredFeatures|Compatible models') : null;
     },
@@ -51,15 +53,15 @@ export default {
     isBetaModel(model) {
       return model?.releaseState === RELEASE_STATES.BETA;
     },
-    onSelect() {
-      this.$emit('select', this.option);
+    onSelect(option) {
+      this.$emit('select', option);
     },
   },
 };
 </script>
 <template>
   <gl-collapsible-listbox
-    v-model="option"
+    :selected="selected"
     data-testid="model-dropdown-selector"
     :items="items"
     :header-text="headerText"

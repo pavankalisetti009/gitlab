@@ -78,7 +78,6 @@ describe('FeatureSettingsModelSelector', () => {
   const findFeatureSettingsModelSelector = () =>
     wrapper.findComponent(FeatureSettingsModelSelector);
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
-  const findDropdownToggleText = () => findModelSelectDropdown().props('dropdownToggleText');
 
   it('renders the component', () => {
     createComponent();
@@ -174,28 +173,34 @@ describe('FeatureSettingsModelSelector', () => {
     });
 
     describe('when the feature state is changed', () => {
-      it('updates the dropdown toggle text', async () => {
-        expect(findDropdownToggleText()).toBe('Select a self-hosted model');
+      it('updates the selected option', async () => {
+        const modelSelectDropdown = findModelSelectDropdown();
 
-        findModelSelectDropdown().vm.$emit('select', 'disabled');
+        expect(modelSelectDropdown.props('selectedOption')).toBe(null);
 
+        modelSelectDropdown.vm.$emit('select', 'disabled');
         await waitForPromises();
 
-        expect(findDropdownToggleText()).toBe('Disabled');
+        expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
+          value: 'disabled',
+          text: 'Disabled',
+        });
       });
     });
 
     describe('when a model has been selected', () => {
       it('displays the selected deployment name and model', async () => {
         const selectedModel = mockSelfHostedModels[0];
+        const modelSelectDropdown = findModelSelectDropdown();
 
-        findModelSelectDropdown().vm.$emit('select', selectedModel.id);
-
+        modelSelectDropdown.vm.$emit('select', selectedModel.id);
         await waitForPromises();
 
-        expect(findDropdownToggleText()).toBe(
-          `${selectedModel.name} (${selectedModel.modelDisplayName})`,
-        );
+        expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
+          value: selectedModel.id,
+          text: `${selectedModel.name} (${selectedModel.modelDisplayName})`,
+          releaseState: selectedModel.releaseState,
+        });
       });
     });
   });
@@ -226,9 +231,7 @@ describe('FeatureSettingsModelSelector', () => {
     });
 
     it('does not update the selected option', () => {
-      expect(findModelSelectDropdown().props('dropdownToggleText')).toEqual(
-        'Select a self-hosted model',
-      );
+      expect(findModelSelectDropdown().props('selectedOption')).toBe(null);
     });
 
     it('triggers an error message', () => {

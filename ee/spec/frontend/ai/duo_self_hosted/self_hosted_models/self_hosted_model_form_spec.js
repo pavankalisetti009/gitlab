@@ -144,7 +144,9 @@ describe('SelfHostedModelForm', () => {
       describe('model select dropdown', () => {
         it('renders the model select dropdown', () => {
           expect(findModelDropDownSelector().exists()).toBe(true);
-          expect(findModelDropDownSelector().props('dropdownToggleText')).toEqual('Select model');
+          expect(findModelDropDownSelector().props('placeholderDropdownText')).toEqual(
+            'Select model',
+          );
         });
 
         it('passes it model options sorted by release state', () => {
@@ -528,6 +530,14 @@ describe('SelfHostedModelForm', () => {
       expect(button.text()).toBe('Save changes');
     });
 
+    it('renders the model dropdown with initial model', () => {
+      expect(findModelDropDownSelector().props('selectedOption')).toStrictEqual({
+        text: 'Mistral',
+        value: 'MISTRAL',
+        releaseState: 'GA',
+      });
+    });
+
     it('invokes the update mutation with correct input variables', async () => {
       await findNameInputField().setValue('test deployment');
       await findEndpointInputField().setValue('http://test.com');
@@ -553,7 +563,6 @@ describe('SelfHostedModelForm', () => {
 
     it('displays success message when model successfully saved', async () => {
       await findNameInputField().setValue('test deployment');
-
       wrapper.find('form').trigger('submit.prevent');
 
       await waitForPromises();
