@@ -13154,6 +13154,9 @@ msgstr ""
 msgid "CiVariables|Input variable value"
 msgstr ""
 
+msgid "CiVariables|Insufficient permissions to view Group CI/CD variable."
+msgstr ""
+
 msgid "CiVariables|Key"
 msgstr ""
 
