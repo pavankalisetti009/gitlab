@@ -1279,6 +1279,10 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
 
     context 'when user does not have access to the policy repository' do
+      before do
+        project_policies_project.project_setting.update!(spp_repository_pipeline_access: false)
+      end
+
       it 'responds with error' do
         expect(execute).to be_error
         expect(execute.payload.errors.full_messages)
@@ -1301,6 +1305,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       context 'when group has setting `spp_repository_pipeline_access` enabled' do
         before do
           group.namespace_settings.update!(spp_repository_pipeline_access: true)
+          project_policies_project.project_setting.update!(spp_repository_pipeline_access: nil)
         end
 
         it 'responds with success' do
@@ -1310,6 +1315,8 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
       context 'when application setting `spp_repository_pipeline_access` is enabled' do
         before do
+          group.namespace_settings.update!(spp_repository_pipeline_access: nil)
+          project_policies_project.project_setting.update!(spp_repository_pipeline_access: nil)
           stub_application_setting(spp_repository_pipeline_access: true)
         end
 

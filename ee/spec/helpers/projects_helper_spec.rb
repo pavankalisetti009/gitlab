@@ -547,14 +547,14 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     describe 'sppRepositoryPipelineAccess' do
-      it { is_expected.to include(sppRepositoryPipelineAccess: false) }
+      it { is_expected.to include(sppRepositoryPipelineAccess: true) }
 
-      context 'when the setting is enabled' do
+      context 'when the setting is disabled' do
         before do
-          project.project_setting.update!(spp_repository_pipeline_access: true)
+          project.project_setting.update!(spp_repository_pipeline_access: false)
         end
 
-        it { is_expected.to include(sppRepositoryPipelineAccess: true) }
+        it { is_expected.to include(sppRepositoryPipelineAccess: false) }
       end
     end
   end
