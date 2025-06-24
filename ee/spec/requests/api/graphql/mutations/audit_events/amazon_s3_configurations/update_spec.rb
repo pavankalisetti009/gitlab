@@ -17,6 +17,11 @@ RSpec.describe 'Update Amazon S3 configuration', feature_category: :audit_events
   let_it_be(:updated_destination_name) { 'updated_destination_name' }
   let_it_be(:config_gid) { global_id_of(config) }
 
+  let(:mutation_name) { :audit_events_amazon_s3_configuration_update }
+  let(:mutation_field) { 'amazonS3Configuration' }
+  let(:model) { config }
+  let(:event_name) { Mutations::AuditEvents::AmazonS3Configurations::Update::UPDATE_EVENT_NAME }
+
   let(:mutation) { graphql_mutation(:audit_events_amazon_s3_configuration_update, input) }
   let(:mutation_response) { graphql_mutation_response(:audit_events_amazon_s3_configuration_update) }
 
@@ -27,7 +32,8 @@ RSpec.describe 'Update Amazon S3 configuration', feature_category: :audit_events
       secretAccessKey: updated_secret_access_key,
       bucketName: updated_bucket_name,
       awsRegion: updated_aws_region,
-      name: updated_destination_name
+      name: updated_destination_name,
+      active: true
     }
   end
 
@@ -52,6 +58,7 @@ RSpec.describe 'Update Amazon S3 configuration', feature_category: :audit_events
     context 'when current user is a group owner' do
       before_all do
         group.add_owner(current_user)
+        config.deactivate!
       end
 
       it 'updates the configuration' do
@@ -64,6 +71,7 @@ RSpec.describe 'Update Amazon S3 configuration', feature_category: :audit_events
         expect(config.bucket_name).to eq(updated_bucket_name)
         expect(config.aws_region).to eq(updated_aws_region)
         expect(config.name).to eq(updated_destination_name)
+        expect(config.active).to be(true)
       end
 
       it 'audits the update' do
@@ -142,6 +150,8 @@ RSpec.describe 'Update Amazon S3 configuration', feature_category: :audit_events
             legacy_destination_ref: config.id)
         end
 
+        it_behaves_like 'audits legacy active status changes'
+
         it_behaves_like 'updates a streaming destination',
           :config,
           proc {
@@ -160,6 +170,68 @@ RSpec.describe 'Update Amazon S3 configuration', feature_category: :audit_events
               }
             }
           }
+      end
+
+      context 'when only specific fields are updated' do
+        before do
+          allow(Gitlab::Audit::Auditor).to receive(:audit)
+        end
+
+        let(:input) do
+          {
+            id: config_gid,
+            bucketName: updated_bucket_name,
+            awsRegion: updated_aws_region
+          }
+        end
+
+        it 'only audits the changed attributes' do
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: event_name,
+              author: current_user,
+              scope: group,
+              target: config,
+              message: "Changed bucket_name from #{config.bucket_name} to #{updated_bucket_name}"
+            )
+          ).once
+
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: event_name,
+              author: current_user,
+              scope: group,
+              target: config,
+              message: "Changed aws_region from #{config.aws_region} to #{updated_aws_region}"
+            )
+          ).once
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed access_key_xid/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed secret_access_key/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed name/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed active/)
+          )
+
+          mutate
+
+          config.reload
+          expect(config.bucket_name).to eq(updated_bucket_name)
+          expect(config.aws_region).to eq(updated_aws_region)
+
+          expect(config.access_key_xid).not_to eq(updated_access_key_xid)
+          expect(config.secret_access_key).not_to eq(updated_secret_access_key)
+          expect(config.name).not_to eq(updated_destination_name)
+        end
       end
     end
 

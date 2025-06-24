@@ -18,6 +18,10 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
 
   let(:mutation) { graphql_mutation(:audit_events_instance_amazon_s3_configuration_update, input) }
   let(:mutation_response) { graphql_mutation_response(:audit_events_instance_amazon_s3_configuration_update) }
+  let(:mutation_name) { :audit_events_instance_amazon_s3_configuration_update }
+  let(:mutation_field) { 'instanceAmazonS3Configuration' }
+  let(:model) { config }
+  let(:event_name) { Mutations::AuditEvents::Instance::AmazonS3Configurations::Update::UPDATE_EVENT_NAME }
 
   let(:input) do
     {
@@ -26,7 +30,8 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
       secretAccessKey: updated_secret_access_key,
       bucketName: updated_bucket_name,
       awsRegion: updated_aws_region,
-      name: updated_destination_name
+      name: updated_destination_name,
+      active: true
     }
   end
 
@@ -48,6 +53,10 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
     end
 
     context 'when current user is instance admin' do
+      before_all do
+        config.deactivate!
+      end
+
       before do
         allow(Gitlab::Audit::Auditor).to receive(:audit)
       end
@@ -62,10 +71,11 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
         expect(config.bucket_name).to eq(updated_bucket_name)
         expect(config.aws_region).to eq(updated_aws_region)
         expect(config.name).to eq(updated_destination_name)
+        expect(config.active).to be(true)
       end
 
       it 'audits the update' do
-        Mutations::AuditEvents::Instance::AmazonS3Configurations::Update::COLUMNS_TO_AUDIT.each do |column|
+        Mutations::AuditEvents::Instance::AmazonS3Configurations::Update::AUDIT_EVENT_COLUMNS.each do |column|
           message = if column == :secret_access_key
                       "Changed #{column}"
                     else
@@ -73,7 +83,7 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
                     end
 
           expected_hash = {
-            name: 'instance_amazon_s3_configuration_updated',
+            name: event_name,
             author: current_user,
             scope: an_instance_of(Gitlab::Audit::InstanceScope),
             target: config,
@@ -140,6 +150,8 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
             legacy_destination_ref: config.id)
         end
 
+        it_behaves_like 'audits legacy active status changes'
+
         it_behaves_like 'updates a streaming destination',
           :config,
           proc {
@@ -158,6 +170,67 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
               }
             }
           }
+      end
+
+      context 'when only specific fields are updated' do
+        before do
+          allow(Gitlab::Audit::Auditor).to receive(:audit)
+        end
+
+        let(:input) do
+          {
+            id: config_gid,
+            bucketName: updated_bucket_name,
+            awsRegion: updated_aws_region
+          }
+        end
+
+        it 'only audits the changed attributes' do
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: event_name,
+              author: current_user,
+              scope: an_instance_of(Gitlab::Audit::InstanceScope),
+              target: config,
+              message: "Changed bucket_name from #{config.bucket_name} to #{updated_bucket_name}"
+            )
+          ).once
+
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: event_name,
+              author: current_user,
+              scope: an_instance_of(Gitlab::Audit::InstanceScope),
+              target: config,
+              message: "Changed aws_region from #{config.aws_region} to #{updated_aws_region}"
+            )
+          ).once
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed access_key_xid/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed secret_access_key/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed name/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed active/)
+          )
+
+          mutate
+
+          config.reload
+          expect(config.bucket_name).to eq(updated_bucket_name)
+          expect(config.aws_region).to eq(updated_aws_region)
+          expect(config.access_key_xid).not_to eq(updated_access_key_xid)
+          expect(config.secret_access_key).not_to eq(updated_secret_access_key)
+          expect(config.name).not_to eq(updated_destination_name)
+        end
       end
     end
 

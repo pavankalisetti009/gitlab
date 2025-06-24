@@ -10,7 +10,8 @@ module Mutations
           include ::AuditEvents::Changes
           include ::AuditEvents::LegacyDestinationSyncHelper
 
-          COLUMNS_TO_AUDIT = [:access_key_xid, :secret_access_key, :bucket_name, :aws_region, :name].freeze
+          UPDATE_EVENT_NAME = 'instance_amazon_s3_configuration_updated'
+          AUDIT_EVENT_COLUMNS = [:access_key_xid, :secret_access_key, :bucket_name, :aws_region, :name, :active].freeze
 
           argument :id, ::Types::GlobalIDType[::AuditEvents::Instance::AmazonS3Configuration],
             required: true,
@@ -36,18 +37,26 @@ module Mutations
             required: false,
             description: 'AWS region where the bucket is created.'
 
+          argument :active, GraphQL::Types::Boolean,
+            required: false,
+            description: 'Active status of the destination.'
+
           field :instance_amazon_s3_configuration, ::Types::AuditEvents::Instance::AmazonS3ConfigurationType,
             null: true,
             description: 'Updated instance-level Amazon S3 configuration.'
 
-          def resolve(id:, access_key_xid: nil, secret_access_key: nil, bucket_name: nil, aws_region: nil, name: nil)
+          def resolve(
+            id:, access_key_xid: nil, secret_access_key: nil, bucket_name: nil, aws_region: nil, name: nil, active: nil
+          )
             config = authorized_find!(id: id)
+
             config_attributes = {
               access_key_xid: access_key_xid,
               secret_access_key: secret_access_key,
               bucket_name: bucket_name,
               aws_region: aws_region,
-              name: name
+              name: name,
+              active: active
             }.compact
 
             if config.update(config_attributes)
@@ -62,13 +71,13 @@ module Mutations
           private
 
           def audit_update(config)
-            COLUMNS_TO_AUDIT.each do |column|
+            AUDIT_EVENT_COLUMNS.each do |column|
               audit_changes(
                 column,
                 as: column.to_s,
                 entity: Gitlab::Audit::InstanceScope.new,
                 model: config,
-                event_type: 'instance_amazon_s3_configuration_updated'
+                event_type: UPDATE_EVENT_NAME
               )
             end
           end

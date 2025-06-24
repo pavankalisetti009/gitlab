@@ -10,7 +10,7 @@ module Mutations
         include ::AuditEvents::LegacyDestinationSyncHelper
 
         UPDATE_EVENT_NAME = 'amazon_s3_configuration_updated'
-        AUDIT_EVENT_COLUMNS = [:access_key_xid, :secret_access_key, :bucket_name, :aws_region, :name].freeze
+        AUDIT_EVENT_COLUMNS = [:access_key_xid, :secret_access_key, :bucket_name, :aws_region, :name, :active].freeze
 
         argument :id, ::Types::GlobalIDType[::AuditEvents::AmazonS3Configuration],
           required: true,
@@ -32,6 +32,10 @@ module Mutations
           required: false,
           description: 'Name of the bucket where the audit events would be logged.'
 
+        argument :active, GraphQL::Types::Boolean,
+          required: false,
+          description: 'Active status of the destination.'
+
         argument :aws_region, GraphQL::Types::String,
           required: false,
           description: 'AWS region where the bucket is created.'
@@ -40,14 +44,18 @@ module Mutations
           null: true,
           description: 'Updated Amazon S3 configuration.'
 
-        def resolve(id:, access_key_xid: nil, secret_access_key: nil, bucket_name: nil, aws_region: nil, name: nil)
+        def resolve(
+          id:, access_key_xid: nil, secret_access_key: nil, bucket_name: nil, aws_region: nil, name: nil, active: nil
+        )
           config = authorized_find!(id: id)
+
           config_attributes = {
             access_key_xid: access_key_xid,
             secret_access_key: secret_access_key,
             bucket_name: bucket_name,
             aws_region: aws_region,
-            name: name
+            name: name,
+            active: active
           }.compact
 
           if config.update(config_attributes)

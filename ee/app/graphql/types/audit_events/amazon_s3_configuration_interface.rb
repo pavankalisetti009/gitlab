@@ -24,6 +24,10 @@ module Types
       field :aws_region, GraphQL::Types::String,
         null: false,
         description: 'AWS region where the bucket is created.'
+
+      field :active, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Active status of the destination.'
     end
   end
 end
