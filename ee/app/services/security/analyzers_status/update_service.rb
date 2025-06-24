@@ -3,17 +3,13 @@
 module Security
   module AnalyzersStatus
     class UpdateService
-      BUILD_TO_ANALYZER_STATUS = {
-        "success" => "success",
-        "failed" => "failed",
-        "canceled" => "failed",
-        "skipped" => "failed"
-      }.freeze
+      include ::Security::AnalyzersStatus::AggregatedTypesHandler
 
-      STATUS_PRIORITY = {
-        "failed" => 2,
-        "success" => 1,
-        "not_configured" => 0
+      BUILD_TO_ANALYZER_STATUS = {
+        "success" => :success,
+        "failed" => :failed,
+        "canceled" => :failed,
+        "skipped" => :failed
       }.freeze
 
       def initialize(pipeline)
@@ -50,14 +46,23 @@ module Security
       end
 
       def analyzers_statuses
-        @analyzers_statuses ||= pipeline_builds.each_with_object({}) do |build, memo|
+        @analyzers_statuses ||= begin
+          pipeline_based = pipeline_based_analyzers_statuses
+          not_configured = not_configured_statuses(pipeline_based)
+          aggregated_statuses = aggregated_statuses(pipeline_based.merge(not_configured))
+
+          pipeline_based.merge(not_configured).merge(aggregated_statuses)
+        end
+      end
+
+      def pipeline_based_analyzers_statuses
+        pipeline_builds.each_with_object({}) do |build, memo|
           build_analyzer_groups = analyzer_groups_from_build(build)
+          status = BUILD_TO_ANALYZER_STATUS[build.status] || :not_configured
 
-          build_analyzer_groups&.each do |build_analyzer_group|
-            status_data = analyzer_status(build_analyzer_group, build)
-
-            if status_priority(status_data) > status_priority(memo[build_analyzer_group])
-              memo[build_analyzer_group] = status_data
+          build_analyzer_groups.each do |build_analyzer_group|
+            if status_priority(status) > status_priority(memo[build_analyzer_group]&.[](:status))
+              memo[build_analyzer_group] = build_analyzer_status_hash(project, build_analyzer_group, status, build)
             end
           end
         end
@@ -66,7 +71,17 @@ module Security
       def analyzer_groups_from_build(build)
         report_artifacts = build_reports(build)
         existing_group_types = report_artifacts & Enums::Security.extended_analyzer_types.keys
-        normalize_sast_analyzers(build, existing_group_types)
+        normalize_sast_types = normalize_sast_analyzers(build, existing_group_types)
+        normalize_aggregated_types(normalize_sast_types)
+      end
+
+      def not_configured_statuses(analyzers_statuses)
+        excluded_types = TYPE_MAPPINGS.keys + (analyzers_statuses.present? ? analyzers_statuses.keys : [])
+        AnalyzerProjectStatus.by_projects(project).without_types(excluded_types).select(:analyzer_type)
+          .each_with_object({}) do |record, memo|
+          analyzer_type = record.analyzer_type
+          memo[analyzer_type] = build_analyzer_status_hash(project, analyzer_type, :not_configured)
+        end
       end
 
       def normalize_sast_analyzers(build, existing_group_types)
@@ -85,41 +100,36 @@ module Security
         existing_group_types
       end
 
-      def analyzer_status(type, build)
-        {
-          project_id: project.id,
-          traversal_ids: traversal_ids,
-          analyzer_type: type,
-          status: BUILD_TO_ANALYZER_STATUS[build.status] || :not_configured,
-          last_call: build.started_at || build.created_at,
-          archived: project.archived,
-          build_id: build.id
-        }
+      def normalize_aggregated_types(existing_group_types)
+        TYPE_MAPPINGS.each do |type, config|
+          if existing_group_types.include?(type)
+            existing_group_types.delete(type)
+            existing_group_types.push(config[:pipeline_type])
+          end
+        end
+
+        existing_group_types
       end
 
-      def upsert_analyzers_statuses
-        processed_types = analyzers_statuses.present? ? analyzers_statuses.keys : []
+      def aggregated_statuses(analyzers_statuses)
+        TYPE_MAPPINGS.values.each_with_object({}) do |config, memo|
+          pipeline_type = config[:pipeline_type]
+          next unless analyzers_statuses[pipeline_type]
 
-        AnalyzerProjectStatus.transaction do
-          if analyzers_statuses.present?
-            AnalyzerProjectStatus.upsert_all(analyzers_statuses.values, unique_by: [:project_id, :analyzer_type])
-          end
-
-          AnalyzerProjectStatus.by_projects(project).without_types(processed_types)
-            .update_all(status: :not_configured, updated_at: Time.zone.now)
+          aggregated_status =
+            build_aggregated_type_status(project, pipeline_type, analyzers_statuses[pipeline_type][:status])
+          memo[aggregated_status[:analyzer_type]] = aggregated_status if aggregated_status
         end
       end
 
-      def traversal_ids
-        @traversal_ids ||= project.namespace.traversal_ids
+      def upsert_analyzers_statuses
+        return unless analyzers_statuses.present?
+
+        AnalyzerProjectStatus.upsert_all(analyzers_statuses.values, unique_by: [:project_id, :analyzer_type])
       end
 
       def build_reports(build)
         build.options[:artifacts][:reports].keys
-      end
-
-      def status_priority(status_data)
-        STATUS_PRIORITY[status_data&.dig(:status)] || -1
       end
 
       def update_ancestors(status_diff)
