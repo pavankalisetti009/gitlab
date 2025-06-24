@@ -82,8 +82,6 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
       context 'when feature setting update is successful' do
         context 'when feature setting is new' do
           it 'returns a success response with the feature setting' do
-            expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_event).and_call_original
-
             expect(feature_setting.persisted?).to be(false)
 
             response = service.execute
@@ -103,8 +101,6 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
           end
 
           it 'returns a success response with the feature setting' do
-            expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_event).and_call_original
-
             expect(feature_setting.offered_model_ref).not_to eq(offered_model_ref)
             expect(feature_setting.offered_model_name).not_to eq('OpenAI Chat GPT 4o')
 
@@ -122,8 +118,6 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
           let(:offered_model_ref) { '' }
 
           it 'returns a success response with the feature setting' do
-            expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_event).and_call_original
-
             expect(feature_setting.offered_model_ref).not_to eq(offered_model_ref)
             expect(feature_setting.offered_model_name).not_to eq('OpenAI Chat GPT 4o')
 
@@ -134,6 +128,29 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
             expect(response.payload.id).to eq(feature_setting.id)
             expect(feature_setting.offered_model_ref).to be_empty
             expect(feature_setting.offered_model_name).to be_empty
+          end
+        end
+
+        context 'with recorded events' do
+          it 'tracks event' do
+            expect { service.execute }
+              .to trigger_internal_events('update_model_selection_feature')
+                    .with(
+                      user: user,
+                      category: described_class.name,
+                      additional_properties: {
+                        label: offered_model_ref,
+                        property: feature_setting.feature,
+                        selection_scope_gid: group.to_global_id.to_s
+                      }
+                    )
+                    .and increment_usage_metrics('counts.count_total_update_model_selection_feature_weekly')
+          end
+
+          it 'records an audit event' do
+            expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_event).and_call_original
+
+            service.execute
           end
         end
       end
@@ -148,6 +165,18 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
           expect(response).to be_error
           expect(response.payload).to eq(feature_setting)
           expect(response.message).to include(error_message)
+        end
+
+        context 'with recorded events' do
+          it 'does not record an audit event' do
+            expect(Gitlab::Audit::Auditor).not_to receive(:audit)
+
+            service.execute
+          end
+
+          it 'does not track the event internally' do
+            expect { service.execute }.not_to trigger_internal_events('update_model_selection_feature')
+          end
         end
       end
     end
