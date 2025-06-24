@@ -861,6 +861,14 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.not_to allow_value(0).for(:package_metadata_purl_types) }
     end
 
+    describe 'import_sources', feature_category: :importers do
+      before do
+        stub_licensed_features(custom_project_templates: true)
+      end
+
+      it { is_expected.to allow_value(['gitlab_custom_project_template']).for(:import_sources) }
+    end
+
     context "for unconfirmed user deletion", feature_category: :user_management do
       context 'when email confirmation is set to hard' do
         before do

@@ -11,4 +11,20 @@ RSpec.describe Gitlab::ImportSources, feature_category: :importers do
       expect(described_class.import_table).to include(*described_class.ee_import_table)
     end
   end
+
+  describe '.project_template_importers' do
+    it 'includes the custom project template importer' do
+      expect(described_class.project_template_importers).to include('gitlab_custom_project_template')
+    end
+  end
+
+  describe '.template?' do
+    subject { described_class.template?(template) }
+
+    context 'when importer is project template importer' do
+      let(:template) { 'gitlab_custom_project_template' }
+
+      it { is_expected.to be_truthy }
+    end
+  end
 end

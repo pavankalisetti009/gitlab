@@ -5,6 +5,8 @@ module EE
     module ImportSources
       extend ::Gitlab::Utils::Override
 
+      EE_PROJECT_TEMPLATE_IMPORTERS = ['gitlab_custom_project_template'].freeze
+
       override :import_table
       def import_table
         super + ee_import_table
@@ -20,6 +22,11 @@ module EE
         [::Gitlab::ImportSources::ImportSource.new('gitlab_custom_project_template',
           'GitLab custom project template export',
           ::Gitlab::ImportExport::Importer)]
+      end
+
+      override :project_template_importers
+      def project_template_importers
+        (super + EE_PROJECT_TEMPLATE_IMPORTERS).freeze
       end
     end
   end
