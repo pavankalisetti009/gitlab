@@ -141,8 +141,11 @@ module QA
           Page::MergeRequest::Show.perform(&:has_merge_button?)
         end
 
-        Support::Retrier.retry_on_exception(sleep_interval: 2, message: "Retrying policy merge") do
-          Page::MergeRequest::Show.perform(&:merge!)
+        Page::MergeRequest::Show.perform do |mr_page|
+          Support::Retrier.retry_on_exception(sleep_interval: 2, reload_page: mr_page,
+            message: "Retrying policy merge") do
+            mr_page.merge!
+          end
         end
       end
 

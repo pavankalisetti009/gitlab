@@ -90,7 +90,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
   end
 
   describe 'GET #index' do
-    it 'eager loads authorized projects association' do
+    it 'eager loads required associations' do
       get admin_users_path
 
       expect(assigns(:users).first.association(:user_highest_role)).to be_loaded

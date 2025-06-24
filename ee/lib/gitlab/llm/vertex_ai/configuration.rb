@@ -34,10 +34,6 @@ module Gitlab
           ::CloudConnector::AvailableServices.find_by_name(:vertex_ai_proxy)
         end
 
-        def access_token
-          service.access_token(user)
-        end
-
         def headers
           {
             "Accept" => "application/json",

@@ -58,9 +58,8 @@ module Gitlab
             # it is tied to the usage of Claude models for AI features, so it is apt to use it here
             # as well. This check can be removed once we have enabled model switching.
             return '1.0.0' if Feature.enabled?(:use_claude_code_completion, root_namespace)
-            return '2.1.0' if Feature.enabled?(:summarize_code_review_claude_4_0_sonnet, user)
 
-            '2.0.0'
+            '2.1.0'
           end
 
           def draft_notes_content
