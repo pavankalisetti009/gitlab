@@ -12672,6 +12672,9 @@ msgstr ""
 msgid "Check feature availability on namespace plan"
 msgstr ""
 
+msgid "Check option: %{option}"
+msgstr ""
+
 msgid "Check out branch"
 msgstr ""
 
