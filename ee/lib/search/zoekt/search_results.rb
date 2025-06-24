@@ -162,7 +162,8 @@ module Search
                        query,
                        num: ZOEKT_COUNT_LIMIT,
                        targets: zoekt_targets,
-                       search_mode: search_mode
+                       search_mode: search_mode,
+                       current_user: current_user
                      )
                    end
 

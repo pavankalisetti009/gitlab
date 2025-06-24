@@ -41,12 +41,22 @@ module Gitlab
           add_request_details(start_time: start, path: path, body: payload)
         end
 
-        def search_zoekt_proxy(query, num:, targets:, search_mode:)
+        def search_zoekt_proxy(query, num:, targets:, search_mode:, current_user: nil)
           start = Time.current
-          payload = build_search_payload(query, num: num, search_mode: search_mode)
-          payload[:ForwardTo] = targets.map do |node_id, project_ids|
-            target_node = node(node_id)
-            { Endpoint: target_node.search_base_url, RepoIds: project_ids }
+
+          if use_ast_search_payload?(current_user)
+            payload = ::Search::Zoekt::SearchRequest.new(
+              query: format_query(query, search_mode: search_mode),
+              targets: targets,
+              num_context_lines: CONTEXT_LINES_COUNT,
+              max_line_match_results: num
+            ).as_json
+          else
+            payload = build_search_payload(query, num: num, search_mode: search_mode)
+            payload[:ForwardTo] = targets.map do |node_id, project_ids|
+              target_node = node(node_id)
+              { Endpoint: target_node.search_base_url, RepoIds: project_ids }
+            end
           end
 
           # Unless a node is specified, prefer the node with the most projects
@@ -183,6 +193,10 @@ module Gitlab
           else
             raise ArgumentError, 'Not a valid search_mode'
           end
+        end
+
+        def use_ast_search_payload?(current_user)
+          Feature.enabled?(:zoekt_ast_search_payload, current_user)
         end
       end
     end
