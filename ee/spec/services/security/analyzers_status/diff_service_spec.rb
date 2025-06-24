@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::AnalyzersStatus::DiffService, feature_category: :vulnerability_management do
   let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be_with_reload(:project) { create(:project, namespace: group) }
   let_it_be(:diff_metadata) do
     {
       namespace_id: group.id,

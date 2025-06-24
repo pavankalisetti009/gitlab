@@ -179,7 +179,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       "HS256"
     )
     agent_token_headers = {
-      "Authorization" => "Bearer #{agent_token.token}",
+      Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => agent_token.token,
       Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => jwt_token
     }
     agent_configuration_url = api("/internal/kubernetes/agent_configuration", personal_access_token: agent_token)
@@ -422,7 +422,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       "HS256"
     )
     agent_token_headers = {
-      "Authorization" => "Bearer #{agent_token.token}",
+      Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => agent_token.token,
       Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => jwt_token
     }
     reconcile_url = api("/internal/kubernetes/modules/remote_development/reconcile", personal_access_token: agent_token)

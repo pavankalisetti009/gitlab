@@ -25,7 +25,7 @@ module Security
       end
 
       def fetch_current_statuses
-        @current_statuses ||= AnalyzerProjectStatus.by_projects(project).index_by(&:analyzer_type)
+        @current_statuses ||= project.analyzer_statuses.index_by(&:analyzer_type)
           .transform_keys(&:to_sym)
       end
 

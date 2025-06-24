@@ -17,7 +17,9 @@ module Security
       def execute
         return unless TYPE_MAPPINGS[analyzer_type].present? && projects.present?
 
+        namespaces_diffs = DiffsService.new(analyzers_statuses).execute
         upsert_analyzers_statuses
+        update_ancestors(namespaces_diffs)
       end
 
       private
@@ -34,26 +36,40 @@ module Security
       end
 
       def analyzers_statuses
-        @analyzers_statuses ||= projects.flat_map do |project|
+        @analyzers_statuses ||= projects.each_with_object({}) do |project, memo|
           setting_field = TYPE_MAPPINGS[@analyzer_type][:setting_field]
           setting_enabled = project.security_setting&.read_attribute(setting_field) || false
           setting_status = status_to_symbol(setting_enabled)
+          setting_type = TYPE_MAPPINGS[@analyzer_type][:setting_type]
 
-          [
-            build_analyzer_status_hash(project, TYPE_MAPPINGS[@analyzer_type][:setting_type], setting_status),
+          aggregated_status =
             build_aggregated_type_status(project, TYPE_MAPPINGS[@analyzer_type][:setting_type], setting_status)
-          ].compact
+
+          memo[project] = {
+            setting_type => build_analyzer_status_hash(project, setting_type, setting_status)
+          }.tap do |hash|
+            hash[aggregated_status[:analyzer_type]] = aggregated_status if aggregated_status
+          end
         end
       end
 
       def upsert_analyzers_statuses
-        return unless analyzers_statuses.present?
+        statuses_array = analyzers_statuses.values.flat_map(&:values)
+        return unless statuses_array.present?
 
-        AnalyzerProjectStatus.upsert_all(analyzers_statuses, unique_by: [:project_id, :analyzer_type])
+        AnalyzerProjectStatus.upsert_all(statuses_array, unique_by: [:project_id, :analyzer_type])
       end
 
       def status_to_symbol(status)
         status ? :success : :not_configured
+      end
+
+      def update_ancestors(namespaces_diffs)
+        return unless namespaces_diffs.present?
+
+        namespaces_diffs.each do |namespace_diffs|
+          Security::AnalyzerNamespaceStatuses::AncestorsUpdateService.execute(namespace_diffs)
+        end
       end
 
       def filter_feature_enabled_projects(projects)

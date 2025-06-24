@@ -10,6 +10,7 @@ module Sbom
     worker_resource_boundary :cpu
     queue_namespace :sbom_graphs
     feature_category :dependency_management
+    sidekiq_options retry: 2
 
     defer_on_database_health_signal :gitlab_sec, [:sbom_graph_paths], 1.minute
 
