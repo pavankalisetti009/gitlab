@@ -30,10 +30,6 @@ module EE
         before_action :authorize_read_security_reports!, only: [:security_reports]
         before_action :set_application_context!, only: [:show, :diffs, :commits, :pipelines]
 
-        before_action only: [:show] do
-          experiment(:root_cause_analysis_hotspot, actor: current_user, group: project.root_ancestor).publish
-        end
-
         after_action :display_duo_seat_warning, only: [:update]
 
         feature_category :vulnerability_management, [:container_scanning_reports, :dependency_scanning_reports,

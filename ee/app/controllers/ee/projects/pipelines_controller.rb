@@ -28,10 +28,6 @@ module EE
           end
         end
 
-        before_action only: [:index] do
-          experiment(:root_cause_analysis_hotspot, actor: current_user, group: project.root_ancestor).publish
-        end
-
         feature_category :software_composition_analysis, [:licenses, :license_count]
         feature_category :vulnerability_management, [:security]
         feature_category :code_quality, [:codequality_report]
