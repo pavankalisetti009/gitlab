@@ -45,7 +45,8 @@ module EE
           public_and_internal_projects: elastic_global,
           order_by: params[:order_by],
           sort: params[:sort],
-          filters: filters
+          filters: filters,
+          source: params[:source]
         )
       end
 

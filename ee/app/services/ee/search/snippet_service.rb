@@ -9,7 +9,7 @@ module EE
       def execute
         return super unless use_elasticsearch?
 
-        ::Gitlab::Elastic::SnippetSearchResults.new(current_user, params[:search], projects)
+        ::Gitlab::Elastic::SnippetSearchResults.new(current_user, params[:search], projects, source: params[:source])
       end
 
       override :elasticsearchable_scope

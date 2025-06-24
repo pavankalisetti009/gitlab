@@ -164,7 +164,10 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     let(:hybrid_similarity) { 0.5 }
     let(:hybrid_boost) { 0.5 }
     let(:query) { 'test with long query' }
-    let(:options) { base_options.merge(hybrid_similarity: hybrid_similarity, hybrid_boost: hybrid_boost) }
+    let(:source) { nil }
+    let(:options) do
+      base_options.merge(hybrid_similarity: hybrid_similarity, hybrid_boost: hybrid_boost, source: source)
+    end
 
     before do
       allow(user).to receive(:any_group_with_ai_available?).and_return(true)
@@ -200,6 +203,14 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       before do
         allow(helper).to receive(:vectors_supported?).with(:elasticsearch).and_return(false)
         allow(helper).to receive(:vectors_supported?).with(:opensearch).and_return(true)
+      end
+
+      context 'when query source is GLQL' do
+        let(:source) { 'glql' }
+
+        it 'does not add a knn query' do
+          expect(build).not_to have_key(:knn)
+        end
       end
 
       it 'add knn query for opensearch using the textembedding-gecko@003 model' do
