@@ -1,6 +1,7 @@
-import { differenceWith, isEqual, uniqueId } from 'lodash';
+import { isEqual, uniqueId } from 'lodash';
 import { s__ } from '~/locale';
 import { SPECIFIC_BRANCHES } from 'ee/security_orchestration/components/policy_editor/constants';
+import { policyBodyToYaml } from '../../utils';
 import {
   DEFAULT_CONDITION_STRATEGY,
   SCAN_EXECUTION_PIPELINE_RULE,
@@ -126,17 +127,9 @@ export const STRATEGIES_RULE_MAP = STRATEGIES.reduce((acc, curr) => {
   return acc;
 }, {});
 
-const ruleNoIds = (rules) => rules.map(({ id, ...rest }) => rest);
-const strategies = STRATEGIES.map(({ rules }) => rules);
-
 export const hasPredefinedRuleStrategy = (rules) => {
-  return strategies.some((strategyRules) => {
-    // early return
-    if (rules.length !== strategyRules.length) return false;
-
-    // If difference is empty, arrays contain same elements
-    const difference = differenceWith(strategyRules, ruleNoIds(rules), isEqual);
-
-    return difference.length === 0;
-  });
+  const rulesYaml = policyBodyToYaml({ rules });
+  return STRATEGIES.map((strategy) => policyBodyToYaml({ rules: strategy.rules })).some(
+    (strategyYaml) => isEqual(strategyYaml, rulesYaml),
+  );
 };
