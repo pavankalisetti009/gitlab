@@ -1,17 +1,20 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.analytics.g_analytics_insights_monthly
-description: Unique visitors to /groups/:group/-/insights/ by month
-product_group: optimize
+key_path: redis_hll_counters.incident_management.incident_management_incident_published
+description: Count of unique users that published incidents
+product_group: platform_insights
 value_type: number
 status: active
-time_frame: 28d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
   events:
-  - g_analytics_insights
+  - incident_management_incident_published
 tiers:
+- free
 - premium
 - ultimate
 performance_indicator_type: []

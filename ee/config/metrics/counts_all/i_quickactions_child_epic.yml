@@ -1,18 +1,19 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.analytics.p_analytics_insights_weekly
-description: Unique visitors to /:group/:project/insights/ by week
-product_group: optimize
+key_path: redis_hll_counters.quickactions.i_quickactions_child_epic
+description: Count of unique active users using the `/child_epic` quick action
+product_group: product_planning
 value_type: number
 status: active
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
   events:
-  - p_analytics_insights
+  - i_quickactions_child_epic
 tiers:
-- premium
 - ultimate
 performance_indicator_type: []
 milestone: "<13.9"
