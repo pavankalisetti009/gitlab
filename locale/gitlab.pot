@@ -63673,6 +63673,9 @@ msgstr ""
 msgid "This user is the author of this %{workItemType}."
 msgstr ""
 
+msgid "This user is the author of this page."
+msgstr ""
+
 msgid "This value is not valid."
 msgstr ""
 
