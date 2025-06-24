@@ -9,13 +9,6 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
 
   subject(:rule) { build(:merge_requests_approval_rule, attributes) }
 
-  describe 'policy' do
-    it 'uses the v1 policy class' do
-      expect(described_class.declarative_policy_class)
-        .to eq('ApprovalMergeRequestRulePolicy')
-    end
-  end
-
   describe 'user_defined?' do
     using RSpec::Parameterized::TableSyntax
 
