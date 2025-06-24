@@ -399,6 +399,9 @@
                         "daily"
                       ]
                     },
+                    "branches": {
+                      "$ref": "#/$defs/schedule_branches"
+                    },
                     "start_time": {
                       "type": "string",
                       "description": "HH:mm format",
@@ -466,6 +469,9 @@
                         "weekly"
                       ]
                     },
+                    "branches": {
+                      "$ref": "#/$defs/schedule_branches"
+                    },
                     "days": {
                       "type": "array",
                       "uniqueItems": true,
@@ -481,7 +487,7 @@
                           "Sunday"
                         ]
                       },
-                      "description": "List of days, e.g. ['Monday', 'Friday']"
+                      "description": "List of days. For example: ['Monday', 'Friday']"
                     },
                     "start_time": {
                       "type": "string",
@@ -551,6 +557,9 @@
                         "monthly"
                       ]
                     },
+                    "branches": {
+                      "$ref": "#/$defs/schedule_branches"
+                    },
                     "days_of_month": {
                       "type": "array",
                       "uniqueItems": true,
@@ -559,7 +568,7 @@
                         "minimum": 1,
                         "maximum": 31
                       },
-                      "description": "Dates within the month, e.g. [3, 10, 17]"
+                      "description": "Dates within the month. For example: [3, 10, 17]"
                     },
                     "start_time": {
                       "type": "string",
@@ -1813,6 +1822,15 @@
         "required": [
           "name"
         ]
+      }
+    },
+    "schedule_branches": {
+      "type": "array",
+      "description": "List of branches to schedule pipelines for. Maximum five branches per schedule. The policy only schedules pipelines for branches that exist in the project.",
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
       }
     }
   }

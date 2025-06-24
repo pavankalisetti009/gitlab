@@ -35,6 +35,8 @@ module Security
         result = execute(schedule, branch)
 
         log_pipeline_creation_failure(result, schedule, branch) if result.error?
+
+        track_pipeline_creation_event(schedule, result)
       end
 
       private
@@ -42,12 +44,14 @@ module Security
       def execute(schedule, branch)
         ci_content = schedule.ci_content.deep_stringify_keys.to_yaml
 
-        result = Ci::CreatePipelineService.new(
+        Ci::CreatePipelineService.new(
           schedule.project,
           schedule.project.security_policy_bot,
           ref: branch
         ).execute(PIPELINE_SOURCE, content: ci_content, ignore_skip_ci: true)
+      end
 
+      def track_pipeline_creation_event(schedule, result)
         ::Gitlab::InternalEvents.track_event(
           'execute_job_scheduled_pipeline_execution_policy',
           project: schedule.project,
@@ -55,8 +59,6 @@ module Security
             label: result.status.to_s
           }
         )
-
-        result
       end
 
       def log_pipeline_creation_failure(result, schedule, branch)

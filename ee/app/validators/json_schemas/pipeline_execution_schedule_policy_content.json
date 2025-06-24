@@ -2,6 +2,17 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Policy content for pipeline_execution_schedule_policy type",
   "type": "object",
+  "$defs": {
+    "schedule_branches": {
+      "type": "array",
+      "description": "List of branches to schedule pipelines for. Maximum five branches per schedule. The policy only schedules pipelines for branches that exist in the project.",
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
   "properties": {
     "content": {
       "description": "Specifies the content of custom configuration.",
@@ -52,6 +63,9 @@
                 "enum": [
                   "daily"
                 ]
+              },
+              "branches": {
+                "$ref": "#/$defs/schedule_branches"
               },
               "start_time": {
                 "type": "string",
@@ -135,7 +149,10 @@
                     "Sunday"
                   ]
                 },
-                "description": "List of days, e.g. ['Monday', 'Friday']"
+                "description": "List of days. For example: ['Monday', 'Friday']"
+              },
+              "branches": {
+                "$ref": "#/$defs/schedule_branches"
               },
               "start_time": {
                 "type": "string",
@@ -213,7 +230,10 @@
                   "minimum": 1,
                   "maximum": 31
                 },
-                "description": "Dates within the month, e.g. [3, 10, 17]"
+                "description": "Dates within the month. For example: [3, 10, 17]"
+              },
+              "branches": {
+                "$ref": "#/$defs/schedule_branches"
               },
               "start_time": {
                 "type": "string",

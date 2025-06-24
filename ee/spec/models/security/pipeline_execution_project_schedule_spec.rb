@@ -278,4 +278,40 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
       it { is_expected.to be(false) }
     end
   end
+
+  describe '#branches' do
+    let_it_be(:project) { create(:project, :repository) }
+
+    let(:security_policy) { build(:security_policy, :pipeline_execution_schedule_policy) }
+    let(:schedule) do
+      build(:security_pipeline_execution_project_schedule, security_policy: security_policy, project: project)
+    end
+
+    subject(:branches) { schedule.branches }
+
+    it { is_expected.to eq(['master']) }
+
+    context 'when security policy content has branches' do
+      let(:security_policy) { build(:security_policy, :pipeline_execution_schedule_policy, content: policy_content) }
+      let(:branches_content) { %w[branch-1 branch-2] }
+
+      let(:policy_content) do
+        {
+          content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
+          schedules: [
+            { type: "daily", start_time: "00:00", time_window: { value: 4000, distribution: 'random' },
+              branches: branches_content }
+          ]
+        }
+      end
+
+      it { is_expected.to eq(branches_content) }
+
+      context 'when the same branch is used twice' do
+        let(:branches_content) { %w[branch-1 branch-1] }
+
+        it { is_expected.to eq(%w[branch-1]) }
+      end
+    end
+  end
 end

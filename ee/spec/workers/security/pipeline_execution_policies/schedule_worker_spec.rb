@@ -21,7 +21,8 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
 
   it_behaves_like 'an idempotent worker' do
     it 'enqueues the run worker' do
-      expect(Security::PipelineExecutionPolicies::RunScheduleWorker).to receive(:perform_in).with(delay, schedule.id)
+      expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
+        .to receive(:perform_in).with(delay, schedule.id, { branch: 'master' })
 
       perform
     end
@@ -53,7 +54,8 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
     schedule_2.update!(next_run_at: 1.hour.ago)
 
     # +4 queries to update next_run_at for one additional schedule
-    expect { described_class.new.perform }.not_to exceed_query_limit(control_count + 4)
+    # +1 query to get the security policy configuration
+    expect { described_class.new.perform }.not_to exceed_query_limit(control_count + 5)
   end
 
   context 'when another worker is still running' do
@@ -72,6 +74,8 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
   end
 
   context 'if cron is valid' do
+    let(:cron) { '0 9 * * *' }
+
     before do
       schedule.update!(cron: cron)
     end
@@ -83,7 +87,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
 
       it 'enqueues the run worker' do
         expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
-          .to receive(:perform_in).with(delay, schedule.id)
+          .to receive(:perform_in).with(delay, schedule.id, { branch: 'master' })
 
         perform
       end
@@ -109,6 +113,25 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
       let(:cron) { '0 3 1,15,30 * *' }
 
       it_behaves_like 'schedules'
+    end
+
+    context 'and the schedule has branches' do
+      let(:branches) { %w[main feature-branch non-existent-branch] }
+
+      before do
+        new_content = schedule.security_policy.content
+        new_content['schedules'].first['branches'] = branches
+        schedule.security_policy.update!(content: new_content)
+      end
+
+      it 'enqueues one worker for each branch' do
+        branches.each do |branch|
+          expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
+            .to receive(:perform_in).with(delay, schedule.id, { branch: branch })
+        end
+
+        perform
+      end
     end
 
     context 'when snoozed' do
@@ -164,7 +187,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
 
     it 'enqueues the run worker for valid schedules' do
       expect(Security::PipelineExecutionPolicies::RunScheduleWorker).to(
-        receive(:perform_in).with(delay, valid_schedule.id)
+        receive(:perform_in).with(delay, valid_schedule.id, { branch: 'master' })
       )
 
       perform
