@@ -1,16 +1,20 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.analytics.p_analytics_repo_monthly
-description: Unique visitors to /:group/:project/-/graphs/master/charts by month
-product_group: optimize
+key_path: redis_hll_counters.search.i_search_advanced
+description: Calculated unique users to perform Advanced searches
+product_group: global_search
+product_categories:
+- global_search
 value_type: number
 status: active
-time_frame: 28d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
   events:
-  - p_analytics_repo
+  - i_search_advanced
 tiers:
 - premium
 - ultimate
