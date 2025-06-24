@@ -3,6 +3,8 @@
 module Ai
   module ModelSelection
     class UpdateService
+      include Gitlab::InternalEventsTracking
+
       def initialize(feature_setting, user, params)
         @feature_setting = feature_setting
         @user = user
@@ -28,6 +30,7 @@ module Ai
 
         if feature_setting.update(update_params)
           record_audit_event
+          track_update_event
 
           ServiceResponse.success(payload: feature_setting)
         else
@@ -59,6 +62,20 @@ module Ai
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def track_update_event
+        selection_scope_gid = selection_scope.to_global_id.to_s
+
+        track_internal_event(
+          'update_model_selection_feature',
+          user: user,
+          additional_properties: {
+            label: params[:offered_model_ref],
+            property: feature_setting.feature,
+            selection_scope_gid: selection_scope_gid
+          }
+        )
       end
     end
   end
