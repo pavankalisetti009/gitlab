@@ -613,6 +613,9 @@ msgstr ""
 msgid "%{argument_name} must be formatted correctly. For example: 1h 30m."
 msgstr ""
 
+msgid "%{argument_name} must start with a number."
+msgstr ""
+
 msgid "%{attribute} already taken."
 msgstr ""
 
@@ -63797,6 +63800,9 @@ msgid "Time spent can't be zero."
 msgstr ""
 
 msgid "Time spent must be formatted correctly. For example: 1h 30m."
+msgstr ""
+
+msgid "Time spent must start with a number."
 msgstr ""
 
 msgid "Time to Merge"
