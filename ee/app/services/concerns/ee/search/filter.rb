@@ -27,6 +27,7 @@ module EE
           hybrid_boost: params[:hybrid_boost]&.to_f,
           num_context_lines: params[:num_context_lines]&.to_i,
           type: params[:type],
+          source: params[:source],
           assignee_ids: params[:assignee_ids],
           not_assignee_ids: params[:not_assignee_ids],
           or_assignee_ids: params[:or_assignee_ids],

@@ -33,6 +33,8 @@ module EE
         FILTER_NONE = 'none'
         FILTER_ANY = 'any'
 
+        GLQL_SOURCE = 'glql'
+
         attr_reader :current_user, :context, :params
         attr_accessor :resource_parent
 
@@ -81,6 +83,7 @@ module EE
 
         def base_params
           {
+            source: GLQL_SOURCE,
             search: '*',
             per_page: 100,
             label_name: params[:label_name],

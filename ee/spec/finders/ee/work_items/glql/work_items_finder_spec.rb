@@ -193,6 +193,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
     let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
     let(:search_params) do
       {
+        source: described_class::GLQL_SOURCE,
         confidential: false,
         label_name: ['test-label'],
         per_page: 100,
