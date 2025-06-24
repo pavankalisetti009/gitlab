@@ -68,21 +68,8 @@ export default {
 
       return [...modelOptions, disableOption];
     },
-    selectedModel() {
-      return this.compatibleModels.find((m) => m.id === this.selfHostedModelId);
-    },
     selectedOptionItem() {
       return this.listItems.find((item) => item.value === this.selectedOption);
-    },
-    dropdownToggleText() {
-      if (this.provider === PROVIDERS.DISABLED) {
-        return s__('AdminAIPoweredFeatures|Disabled');
-      }
-      if (this.selectedModel) {
-        return `${this.selectedModel.name} (${this.selectedModel.modelDisplayName})`;
-      }
-
-      return s__('AdminAIPoweredFeatures|Select a self-hosted model');
     },
   },
   methods: {
@@ -154,7 +141,7 @@ export default {
   <model-select-dropdown
     :selected-option="selectedOptionItem"
     :items="listItems"
-    :dropdown-toggle-text="dropdownToggleText"
+    :placeholder-dropdown-text="s__('AdminAIPoweredFeatures|Select a self-hosted model')"
     :is-loading="isSaving || batchUpdateIsSaving"
     is-feature-setting-dropdown
     @select="onSelect"

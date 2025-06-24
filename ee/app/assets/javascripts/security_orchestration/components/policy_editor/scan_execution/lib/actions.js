@@ -1,4 +1,4 @@
-import { uniqueId, isEmpty } from 'lodash';
+import { isEmpty, isEqual, uniqBy, uniqueId } from 'lodash';
 import {
   REPORT_TYPE_DAST,
   REPORT_TYPE_SAST,
@@ -104,4 +104,20 @@ export const addDefaultVariablesToManifest = ({ manifest } = {}) => {
     addDefaultVariablesToPolicy({ policy }),
     POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
   );
+};
+
+// Action scans must be unique (e.g. only one of each scan type)
+export const hasUniqueScans = (actions) => uniqBy(actions, 'scan').length === actions.length;
+
+//  DAST scans are too complex for the optimized path
+export const hasOnlyAllowedScans = (actions) =>
+  actions.every(({ scan }) => scan !== REPORT_TYPE_DAST);
+
+// Each action must be optimized (e.g. template: latest only, no runner tags or CI variables)
+export const hasSimpleScans = (actions) => {
+  const optimizedAction = { template: 'latest' };
+  return actions.every((action) => {
+    const { id, scan, variables, ...rest } = action;
+    return isEqual(rest, optimizedAction);
+  });
 };

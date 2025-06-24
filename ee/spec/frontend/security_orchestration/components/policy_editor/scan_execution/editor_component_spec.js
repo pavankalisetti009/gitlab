@@ -42,6 +42,7 @@ import {
   EDITOR_MODE_YAML,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import {
+  DEFAULT_CONDITION_STRATEGY,
   DEFAULT_SCANNER,
   SCAN_EXECUTION_PIPELINE_RULE,
   POLICY_ACTION_BUILDER_TAGS_ERROR_KEY,
@@ -57,6 +58,7 @@ import {
 import { policyBodyToYaml } from 'ee/security_orchestration/components/policy_editor/utils';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
 import OptimizedScanSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/optimized_scan_selector.vue';
+import RuleStrategySelector from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/strategy_selector.vue';
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
@@ -143,6 +145,7 @@ describe('EditorComponent', () => {
   const findActionBuilderCustomConfigRadioButton = () =>
     wrapper.findByTestId('default-action-config-radio-button');
   const findOptimizedScanSelector = () => wrapper.findComponent(OptimizedScanSelector);
+  const findRuleStrategySelector = () => wrapper.findComponent(RuleStrategySelector);
   const findConfigurationSelection = () => wrapper.findByTestId('configuration-selection');
 
   const selectScheduleRule = async () => {
@@ -405,80 +408,98 @@ enabled: true`;
         expect(findActionBuilderCustomConfig().exists()).toBe(false);
       });
 
-      it('renders optimized scan selector', () => {
-        factory({
-          provide: { glFeatures },
-        });
-        expect(findOptimizedScanSelector().exists()).toBe(true);
-        expect(findOptimizedScanSelector().props()).toEqual({
-          disabled: false,
-          actions: [expect.objectContaining({ scan: 'secret_detection', template: 'latest' })],
+      describe('rule strategy selector', () => {
+        it('updates the rules when a change is emitted', async () => {
+          const rules = [{ branch_type: 'all' }];
+          factory({
+            provide: { glFeatures },
+          });
+          expect(findRuleStrategySelector().props('strategy')).toBe(DEFAULT_CONDITION_STRATEGY);
+          await findRuleStrategySelector().vm.$emit('changed', {
+            strategy: 'any',
+            rules,
+          });
+          expect(findRuleStrategySelector().props('strategy')).toBe('any');
+          expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(rules);
         });
       });
 
-      it('adds new action when selected', async () => {
-        factory({
-          provide: { glFeatures },
-        });
-        await findOptimizedScanSelector().vm.$emit('change', {
-          scanner: 'sast',
-          enabled: true,
-        });
-        const finalValue = [
-          buildScannerAction({
-            scanner: DEFAULT_SCANNER,
-            isOptimized: true,
-            withDefaultVariables: true,
-          }),
-          buildScannerAction({ scanner: 'sast', isOptimized: true, withDefaultVariables: true }),
-        ];
-        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
-        expect(
-          fromYaml({
-            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-          }).actions,
-        ).toStrictEqual(finalValue);
-      });
-
-      it('removes action when deselected', async () => {
-        factory({
-          provide: { glFeatures },
-        });
-        await findOptimizedScanSelector().vm.$emit('change', {
-          scanner: 'secret_detection',
-          enabled: false,
-        });
-        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual([]);
-        expect(
-          fromYaml({
-            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-          }).actions,
-        ).toStrictEqual([]);
-      });
-
-      it('is disabled when the policy is incompatible', async () => {
-        factory({
-          provide: { glFeatures },
+      describe('optimized scan selector', () => {
+        it('renders optimized scan selector', () => {
+          factory({
+            provide: { glFeatures },
+          });
+          expect(findOptimizedScanSelector().exists()).toBe(true);
+          expect(findOptimizedScanSelector().props()).toEqual({
+            disabled: false,
+            actions: [expect.objectContaining({ scan: 'secret_detection', template: 'latest' })],
+          });
         });
 
-        // Switch to custom config first
-        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        it('adds new action when selected', async () => {
+          factory({
+            provide: { glFeatures },
+          });
+          await findOptimizedScanSelector().vm.$emit('change', {
+            scanner: 'sast',
+            enabled: true,
+          });
+          const finalValue = [
+            buildScannerAction({
+              scanner: DEFAULT_SCANNER,
+              isOptimized: true,
+              withDefaultVariables: true,
+            }),
+            buildScannerAction({ scanner: 'sast', isOptimized: true, withDefaultVariables: true }),
+          ];
+          expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
+          expect(
+            fromYaml({
+              manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+              type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+            }).actions,
+          ).toStrictEqual(finalValue);
+        });
 
-        // Add a DAST scan action, but there are many reasons the policy may be invalid for
-        // optimized scans. See the getConfiguration method in
-        // ee/app/assets/javascripts/security_orchestration/components/policy_editor/scan_execution/lib/index.js
-        // for more info
-        const dastAction = { scan: 'dast' };
-        findActionBuilder().vm.$emit('changed', dastAction);
-        await nextTick();
+        it('removes action when deselected', async () => {
+          factory({
+            provide: { glFeatures },
+          });
+          await findOptimizedScanSelector().vm.$emit('change', {
+            scanner: 'secret_detection',
+            enabled: false,
+          });
+          expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual([]);
+          expect(
+            fromYaml({
+              manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+              type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+            }).actions,
+          ).toStrictEqual([]);
+        });
 
-        // Switch to YAML mode and back to rule mode to trigger recalculation
-        await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_YAML);
-        await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_RULE);
+        it('is disabled when the policy is incompatible', async () => {
+          factory({
+            provide: { glFeatures },
+          });
 
-        expect(findActionBuilderDefaultConfigRadioButton().attributes().disabled).toBe('true');
+          // Switch to custom config first
+          await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+
+          // Add a DAST scan action, but there are many reasons the policy may be invalid for
+          // optimized scans. See the getConfiguration method in
+          // ee/app/assets/javascripts/security_orchestration/components/policy_editor/scan_execution/lib/index.js
+          // for more info
+          const dastAction = { scan: 'dast' };
+          findActionBuilder().vm.$emit('changed', dastAction);
+          await nextTick();
+
+          // Switch to YAML mode and back to rule mode to trigger recalculation
+          await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_YAML);
+          await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_RULE);
+
+          expect(findActionBuilderDefaultConfigRadioButton().attributes().disabled).toBe('true');
+        });
       });
     });
 

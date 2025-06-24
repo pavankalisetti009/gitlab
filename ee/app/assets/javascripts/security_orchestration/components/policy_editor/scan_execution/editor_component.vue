@@ -38,6 +38,7 @@ import {
 import EditorLayout from '../editor_layout.vue';
 import DisabledSection from '../disabled_section.vue';
 import SectionLayout from '../section_layout.vue';
+import RuleStrategySelector from './rule/strategy_selector.vue';
 import RuleSection from './rule/rule_section.vue';
 import OptimizedScanSelector from './action/optimized_scan_selector.vue';
 import ScanAction from './action/scan_action.vue';
@@ -53,6 +54,7 @@ import {
 import {
   ADD_CONDITION_LABEL,
   CONDITIONS_LABEL,
+  DEFAULT_CONDITION_STRATEGY,
   DEFAULT_SCANNER,
   ERROR_MESSAGE_MAP,
   SELECTION_CONFIG_CUSTOM,
@@ -119,6 +121,7 @@ export default {
     OptimizedScanSelector,
     OverloadWarningModal,
     RuleSection,
+    RuleStrategySelector,
     ScanAction,
     SectionLayout,
     SkipCiSelector,
@@ -187,6 +190,7 @@ export default {
         'scan-execution-policy-editor',
       ),
       specificActionSectionError: '',
+      conditionStrategy: DEFAULT_CONDITION_STRATEGY,
     };
   },
   computed: {
@@ -342,6 +346,11 @@ export default {
         this.updateYamlEditorValue(this.policy);
       }
     },
+    updateRuleStrategy({ strategy, rules }) {
+      this.conditionStrategy = strategy;
+      this.policy.rules = rules;
+      this.updateYamlEditorValue(this.policy);
+    },
     updateYaml(manifest) {
       if (this.areManifestsEqual(manifest)) {
         return;
@@ -486,6 +495,7 @@ export default {
         <section-layout class="gl-pt-0" :show-remove-button="false">
           <template #content>
             <div v-if="isDefaultConfig" data-testid="default-action-config">
+              <rule-strategy-selector :strategy="conditionStrategy" @changed="updateRuleStrategy" />
               <optimized-scan-selector
                 :actions="actions"
                 :disabled="addActionButtonDisabled"

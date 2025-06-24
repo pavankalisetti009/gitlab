@@ -42,9 +42,6 @@ export default {
     selectedOption() {
       return this.listItems.find(({ value }) => value === this.selectedModel);
     },
-    dropdownToggleText() {
-      return this.selectedOption?.text;
-    },
   },
   methods: {
     async onSelect(option) {
@@ -103,7 +100,6 @@ export default {
   <model-select-dropdown
     :selected-option="selectedOption"
     :items="listItems"
-    :dropdown-toggle-text="dropdownToggleText"
     :is-loading="isSaving"
     @select="onSelect"
   />
