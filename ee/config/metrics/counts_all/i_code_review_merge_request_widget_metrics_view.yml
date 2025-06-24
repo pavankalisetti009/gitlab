@@ -1,6 +1,6 @@
 ---
-key_path: redis_hll_counters.code_review.i_code_review_merge_request_widget_metrics_full_report_clicked_monthly
-description: The count of unique users (monthly) who clicked the Full Report button on the Metrics widget extension
+key_path: redis_hll_counters.code_review.i_code_review_merge_request_widget_metrics_view
+description: The count of unique users who were able to see the Metrics widget extension
 product_group: code_review
 product_categories:
 - code_review_workflow
@@ -8,14 +8,16 @@ value_type: number
 status: active
 milestone: "15.3"
 introduced_by_url: "https://gitlab.com/gitlab-org/gitlab/-/merge_requests/94807"
-time_frame: 28d
-data_category: optional
+time_frame:
+- 28d
+- 7d
 data_source: internal_events
 events:
-  - name: click_full_report_on_merge_request_widget
+  - name: view_merge_request_widget
     unique: user.id
     filter:
       label: metrics
+data_category: optional
 tiers:
 - premium
 - ultimate
