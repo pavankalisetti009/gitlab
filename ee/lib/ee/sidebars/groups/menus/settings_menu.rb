@@ -107,7 +107,7 @@ module EE
             ::Sidebars::MenuItem.new(
               title: _('SAML SSO'),
               link: group_saml_providers_path(context.group),
-              active_routes: { path: 'saml_providers#show' },
+              active_routes: { path: %w[saml_providers#show saml_providers#update] },
               item_id: :saml_sso
             )
           end
