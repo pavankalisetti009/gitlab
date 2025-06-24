@@ -264,6 +264,7 @@ export const mockDeprecatedScanResultObject = {
 
 export const mockProjectScanResultPolicy = {
   __typename: 'ScanResultPolicy',
+  csp: false,
   name: `${mockDefaultBranchesScanResultObject.name}-project`,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockDefaultBranchesScanResultManifest,
@@ -282,6 +283,7 @@ export const mockProjectScanResultPolicy = {
 
 export const mockProjectScanResultPolicyCombinedList = {
   __typename: 'ScanResultPolicy',
+  csp: false,
   policyAttributes: {
     __typename: 'ApprovalPolicyAttributesType',
     actionApprovers: [],
@@ -312,6 +314,7 @@ export const mockProjectScanResultPolicyCombinedList = {
 
 export const mockGroupScanResultPolicy = {
   __typename: 'ScanResultPolicy',
+  csp: false,
   name: `${mockDefaultBranchesScanResultObject.name}-group`,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockDefaultBranchesScanResultManifest,
@@ -334,6 +337,7 @@ export const mockGroupScanResultPolicy = {
 
 export const mockGroupScanResultPolicyCombinedList = {
   __typename: 'ScanResultPolicy',
+  csp: false,
   name: `${mockDefaultBranchesScanResultObject.name}-group`,
   policyAttributes: {
     __typename: 'ApprovalPolicyAttributesType',
@@ -499,6 +503,7 @@ actions:
 
 export const mockProjectWithBranchesScanResultPolicy = {
   __typename: 'ScanResultPolicy',
+  csp: false,
   name: 'low vulnerability SAST approvals',
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockWithBranchesScanResultManifest,
@@ -518,6 +523,7 @@ export const mockProjectWithBranchesScanResultPolicy = {
 
 export const mockProjectWithAllApproverTypesScanResultPolicy = {
   __typename: 'ScanResultPolicy',
+  csp: false,
   name: mockDefaultBranchesScanResultObject.name,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockDefaultBranchesScanResultManifest,
@@ -646,6 +652,7 @@ export const mockWarnActionScanResultObject = {
 
 const defaultScanResultPolicy = {
   __typename: 'ScanResultPolicy',
+  csp: false,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   editPath: '/policies/policy-name/edit?type="approval_policy"',
   enabled: true,

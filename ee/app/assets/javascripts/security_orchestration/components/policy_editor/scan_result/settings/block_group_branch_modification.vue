@@ -86,7 +86,6 @@ export default {
       groups: [],
       selectedExceptionType: this.exceptions.length ? EXCEPT_GROUPS : WITHOUT_EXCEPTIONS,
       searchValue: '',
-      searching: false,
       pageInfo: {},
     };
   },

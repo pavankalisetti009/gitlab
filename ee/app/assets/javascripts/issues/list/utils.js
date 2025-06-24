@@ -126,20 +126,74 @@ export const getFilterTokens = (locationSearch, options = {}) =>
       };
     });
 
+/**
+ * @param {Object} token - Custom field token ex. { type: "custom-field[2]", }
+ * @returns {string} - Custom field token id ex. "2"
+ */
+export const getCustomFieldTokenId = (token) =>
+  token?.type?.replace('custom-field[', '').replace(']', '');
+
+/**
+ * @param {Object} filterTokensCustomFields - Custom field tokens
+ * @returns {Object} - Custom field tokens with duplicated ids merged into one
+ */
+export const mergeDuplicatedCustomFieldTokens = (filterTokensCustomFields) => {
+  return Object.values(
+    filterTokensCustomFields.reduce((acc, token) => {
+      const customFieldId = getCustomFieldTokenId(token);
+
+      if (!customFieldId) {
+        return acc;
+      }
+
+      if (acc[customFieldId]) {
+        const existingData = Array.isArray(acc[customFieldId].value.data)
+          ? acc[customFieldId].value.data
+          : [acc[customFieldId].value.data];
+        const newData = Array.isArray(token.value.data) ? token.value.data : [token.value.data];
+
+        acc[customFieldId].value.data = [...new Set([...existingData, ...newData])];
+      } else {
+        acc[customFieldId] = {
+          ...token,
+          value: {
+            ...token.value,
+            data: Array.isArray(token.value.data) ? token.value.data : [token.value.data],
+          },
+        };
+      }
+
+      return acc;
+    }, {}),
+  );
+};
+
 export const convertToApiParams = (filterTokens, options = {}) => {
   const params = new Map();
   const filterTokensFoss = filterTokens.filter((t) => !isCustomFieldToken(t));
 
   if (options.hasCustomFieldsFeature) {
     const filterTokensCustomFields = filterTokens.filter((t) => isCustomFieldToken(t));
-    filterTokensCustomFields.forEach((token) => {
-      const customFieldId = token.type.replace('custom-field[', '').replace(']', '');
+
+    // Merge duplicated custom fields tokens that have the same id/field
+    const uniqueFilterTokensCustomFields =
+      mergeDuplicatedCustomFieldTokens(filterTokensCustomFields);
+
+    uniqueFilterTokensCustomFields.forEach((token) => {
+      const customFieldId = getCustomFieldTokenId(token);
+
+      const isValueArray = Array.isArray(token.value.data);
+      // When field type is multi-select, the value will be an array, so we need to get each ID individually
+      const selectedOptionIds = isValueArray
+        ? token.value.data.map((value) =>
+            convertToGraphQLId(TYPENAME_CUSTOM_FIELD_SELECT_OPTION, value),
+          )
+        : [convertToGraphQLId(TYPENAME_CUSTOM_FIELD_SELECT_OPTION, token.value.data)];
+
       const data = [
         {
           customFieldId: convertToGraphQLId(TYPENAME_CUSTOM_FIELD, customFieldId),
-          selectedOptionIds: [
-            convertToGraphQLId(TYPENAME_CUSTOM_FIELD_SELECT_OPTION, token.value.data),
-          ],
+          selectedOptionIds,
         },
       ];
 

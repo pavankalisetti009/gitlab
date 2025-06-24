@@ -1,4 +1,5 @@
 import {
+  GlBadge,
   GlDisclosureDropdown,
   GlDrawer,
   GlLink,
@@ -103,6 +104,7 @@ describe('List component', () => {
   const findScopeCells = () => wrapper.findAllByTestId('policy-scope-cell');
   const findTooltip = (root) => root.findComponent(GlTooltip);
   const findInheritedPolicyCell = (findMethod) => findMethod().at(1);
+  const findInstancePolicyBadge = (cell) => cell.findComponent(GlBadge);
   const findNonInheritedPolicyCell = (findMethod) => findMethod().at(0);
   const findDeleteAction = (root) => root.findAll('button').at(1);
   const findOverloadWarningModal = () => wrapper.findComponent(OverloadWarningModal);
@@ -392,6 +394,27 @@ describe('List component', () => {
         expect(trimText(findInheritedPolicyCell(findSourceCells).text())).toBe(
           'Inherited from parent-group-name',
         );
+      });
+
+      it('does not render the instance badge for non-instance policies', () => {
+        mountWrapper();
+        expect(findInstancePolicyBadge(findSourceCells().at(0)).exists()).toBe(false);
+      });
+
+      it('renders the instance badge for instance policies', () => {
+        mountWrapper({
+          props: {
+            policiesByType: {
+              [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]: [
+                {
+                  ...mockPipelineExecutionPoliciesResponse[0],
+                  csp: true,
+                },
+              ],
+            },
+          },
+        });
+        expect(findInstancePolicyBadge(findSourceCells().at(0)).exists()).toBe(true);
       });
     });
 

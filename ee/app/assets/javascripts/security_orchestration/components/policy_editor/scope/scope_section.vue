@@ -177,9 +177,6 @@ export default {
     assignedPolicyProjectPath() {
       return this.isGroupLevel ? this.assignedPolicyProject?.fullPath || '' : this.namespacePath;
     },
-    scopeItems() {
-      return PROJECT_SCOPE_TYPE_LISTBOX_ITEMS;
-    },
     hasGroups() {
       return Boolean(this.policyScope.groups?.including);
     },
@@ -432,7 +429,6 @@ export default {
                 :projects="projects"
                 :disabled="disableScopeSelector"
                 :full-path="assignedPolicyProjectPath"
-                :group-full-path="rootNamespacePath"
                 @select-exception-type="selectExceptionType"
                 @changed="setSelectedItems"
               />

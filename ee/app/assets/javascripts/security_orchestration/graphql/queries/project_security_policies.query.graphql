@@ -22,6 +22,7 @@ query projectSecurityPolicies(
       before: $before
     ) {
       nodes {
+        csp
         name
         yaml
         type

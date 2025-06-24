@@ -303,6 +303,7 @@ export const mockPipelineScanExecutionObject = {
 
 export const mockProjectPipelineExecutionPolicy = {
   __typename: 'PipelineExecutionPolicy',
+  csp: false,
   name: `${mockPipelineScanExecutionObject.name}-project`,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockPipelineExecutionManifest,
@@ -320,6 +321,7 @@ export const mockProjectPipelineExecutionPolicy = {
 
 export const mockProjectPipelineExecutionPolicyCombinedList = {
   __typename: 'PipelineExecutionPolicy',
+  csp: false,
   name: `${mockPipelineScanExecutionObject.name}-project`,
   policyAttributes: {
     __typename: 'PipelineExecutionPolicyAttributesType',

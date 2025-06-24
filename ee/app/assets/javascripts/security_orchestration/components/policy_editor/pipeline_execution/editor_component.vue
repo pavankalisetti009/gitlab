@@ -57,10 +57,6 @@ export default {
     'scanPolicyDocumentationPath',
   ],
   props: {
-    assignedPolicyProject: {
-      type: Object,
-      required: true,
-    },
     existingPolicy: {
       type: Object,
       required: false,
@@ -123,9 +119,6 @@ export default {
     },
     isScheduledPolicy() {
       return this.strategy === SCHEDULE;
-    },
-    originalName() {
-      return this.existingPolicy?.name;
     },
     schedules() {
       return this.policy?.schedules;

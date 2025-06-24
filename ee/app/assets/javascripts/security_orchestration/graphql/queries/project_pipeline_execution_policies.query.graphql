@@ -9,6 +9,7 @@ query projectPipelineExecutionPolicies(
     id
     pipelineExecutionPolicies(relationship: $relationship, includeUnscoped: false) {
       nodes {
+        csp
         name
         yaml
         editPath

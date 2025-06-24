@@ -63,7 +63,6 @@ export default {
       hasDuplicates: false,
       parsedBranches: this.branches,
       parsedWithErrorsBranches: [],
-      protectedBranches: [],
       asyncValidationErrors: '',
     };
   },
@@ -185,7 +184,7 @@ export default {
       this.hideModalWindow();
       this.$emit('add-branches', parsedSelectedBranches);
     },
-
+    // eslint-disable-next-line vue/no-unused-properties -- used by parent via $refs to open modal
     showModalWindow() {
       this.$refs.modal.show();
     },

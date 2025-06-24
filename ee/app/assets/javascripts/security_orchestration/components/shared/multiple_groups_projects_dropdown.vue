@@ -84,9 +84,6 @@ export default {
     variant() {
       return this.hasError ? 'danger' : 'default';
     },
-    hasGroupIds() {
-      return this.groupIds.length > 0;
-    },
     searchUsed() {
       return this.searchTerm !== '';
     },

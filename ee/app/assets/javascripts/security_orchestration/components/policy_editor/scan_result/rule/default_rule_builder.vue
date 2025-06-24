@@ -37,10 +37,6 @@ export default {
       required: false,
       default: 0,
     },
-    initRule: {
-      type: Object,
-      required: true,
-    },
   },
   data() {
     return {
@@ -50,9 +46,6 @@ export default {
     };
   },
   computed: {
-    branchExceptions() {
-      return this.initRule.branch_exceptions;
-    },
     ruleWithSelectedBranchesOnly() {
       return { branches: this.selectedBranches };
     },

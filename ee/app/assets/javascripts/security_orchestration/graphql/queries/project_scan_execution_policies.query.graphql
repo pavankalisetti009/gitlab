@@ -9,6 +9,7 @@ query projectScanExecutionPolicies(
     id
     scanExecutionPolicies(relationship: $relationship, includeUnscoped: false) {
       nodes {
+        csp
         name
         yaml
         editPath
