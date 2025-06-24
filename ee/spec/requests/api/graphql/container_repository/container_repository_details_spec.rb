@@ -80,6 +80,10 @@ RSpec.describe 'container repository details', feature_category: :container_regi
         )
       end
 
+      before do
+        stub_licensed_features(container_registry_immutable_tag_rules: true)
+      end
+
       it 'returns the maximum access fields from the matching protection rules' do
         graphql_query
 
@@ -94,6 +98,23 @@ RSpec.describe 'container repository details', feature_category: :container_regi
       context 'when the feature container_registry_immutable_tags is disabled' do
         before do
           stub_feature_flags(container_registry_immutable_tags: false)
+        end
+
+        it 'ignores the immutable rule' do
+          graphql_query
+
+          expect(tag_permissions_response).to eq(
+            {
+              'minimumAccessLevelForPush' => 'OWNER',
+              'minimumAccessLevelForDelete' => 'OWNER'
+            }
+          )
+        end
+      end
+
+      context 'when the feature is unlicensed' do
+        before do
+          stub_licensed_features(container_registry_immutable_tag_rules: false)
         end
 
         it 'ignores the immutable rule' do
