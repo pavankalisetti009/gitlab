@@ -5158,7 +5158,7 @@ msgstr ""
 msgid "AdminUsers|Could not load custom admin roles."
 msgstr ""
 
-msgid "AdminUsers|Could not load user group counts. Please refresh the page to try again."
+msgid "AdminUsers|Could not load user membership counts. Please refresh the page to try again."
 msgstr ""
 
 msgid "AdminUsers|Create"
