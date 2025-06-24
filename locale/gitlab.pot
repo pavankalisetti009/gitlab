@@ -2404,6 +2404,9 @@ msgstr ""
 msgid "AICatalog|Agents"
 msgstr ""
 
+msgid "AICatalog|Edit agent"
+msgstr ""
+
 msgid "AISummary|Generates a summary of this issue"
 msgstr ""
 
