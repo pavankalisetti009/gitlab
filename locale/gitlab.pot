@@ -10405,9 +10405,6 @@ msgstr ""
 msgid "Blocking"
 msgstr ""
 
-msgid "Blocking epics"
-msgstr ""
-
 msgid "Blocking issues"
 msgstr ""
 
@@ -25142,16 +25139,10 @@ msgstr ""
 msgid "Epics|Something went wrong while fetching child epics."
 msgstr ""
 
-msgid "Epics|Something went wrong while fetching epics list."
-msgstr ""
-
 msgid "Epics|Something went wrong while moving item."
 msgstr ""
 
 msgid "Epics|Something went wrong while ordering item."
-msgstr ""
-
-msgid "Epics|Something went wrong while updating epics."
 msgstr ""
 
 msgid "Epics|This will also remove any descendents of %{bStart}%{targetEpicTitle}%{bEnd} from %{bStart}%{parentEpicTitle}%{bEnd}. Are you sure?"
