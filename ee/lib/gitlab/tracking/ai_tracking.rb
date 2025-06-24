@@ -30,7 +30,13 @@ module Gitlab
 
       class << self
         def track_event(event_name, **context_hash)
-          OldApproach.track_event(event_name, **context_hash)
+          tracked = OldApproach.track_event(event_name, **context_hash)
+
+          if Feature.enabled?(:unified_ai_events_write, context_hash[:user])
+            tracked = UnifiedApproach.track_event(event_name, **context_hash) || tracked
+          end
+
+          track_user_activity(context_hash[:user]) if tracked
         end
 
         def track_user_activity(user)
