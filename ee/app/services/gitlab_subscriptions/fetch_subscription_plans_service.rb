@@ -48,12 +48,6 @@ module GitlabSubscriptions
         else
           "pnp-subscription-plan-#{@plan}"
         end
-      elsif Feature.enabled?(:subscription_plan_cache_key)
-        if @namespace_id.present?
-          "subscription-plan-#{@plan}-#{@namespace_id}"
-        else
-          "subscription-plan-#{@plan}"
-        end
       elsif @namespace_id.present?
         "subscription-plans-#{@plan}-#{@namespace_id}"
       else
