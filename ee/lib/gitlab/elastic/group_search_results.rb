@@ -10,15 +10,22 @@ module Gitlab
 
       attr_reader :group, :default_project_filter, :filters
 
-      # rubocop:disable Metrics/ParameterLists
-      def initialize(current_user, query, limit_project_ids = nil, group:, public_and_internal_projects: false, default_project_filter: false, order_by: nil, sort: nil, filters: {})
+      def initialize(current_user, query, limit_project_ids = nil, group:, **opts)
         @group = group
-        @default_project_filter = default_project_filter
-        @filters = filters
+        @default_project_filter = opts.fetch(:default_project_filter, false)
+        @filters = opts.fetch(:filters, {})
 
-        super(current_user, query, limit_project_ids, public_and_internal_projects: public_and_internal_projects, order_by: order_by, sort: sort, filters: filters)
+        super(
+          current_user,
+          query,
+          limit_project_ids,
+          public_and_internal_projects: opts.fetch(:public_and_internal_projects, false),
+          order_by: opts.fetch(:order_by, nil),
+          sort: opts.fetch(:sort, nil),
+          filters: filters,
+          source: opts.fetch(:source, nil)
+        )
       end
-      # rubocop:enable Metrics/ParameterLists
 
       override :base_options
       def base_options
@@ -35,7 +42,8 @@ module Gitlab
           super.except(:group_ids) # User uses group_id for namespace_query
         when :work_items
           options = super.merge(root_ancestor_ids: [group.root_ancestor.id])
-          if Feature.enabled?(:search_work_item_queries_notes, current_user)
+
+          if !glql_query?(source) && Feature.enabled?(:search_work_item_queries_notes, current_user)
             options[:related_ids] = related_ids_for_notes(Issue.name)
           end
 

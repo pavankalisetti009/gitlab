@@ -10,13 +10,21 @@ module Gitlab
 
       attr_reader :project, :filters
 
-      def initialize(
-        current_user, query, project:, root_ancestor_ids: nil, repository_ref: nil, order_by: nil,
-        sort: nil, filters: {})
+      def initialize(current_user, query, project:, **opts)
         @project = project
-        @original_repository_ref = repository_ref
+        @original_repository_ref = opts.fetch(:repository_ref, nil)
 
-        super(current_user, query, [project.id], root_ancestor_ids: root_ancestor_ids, public_and_internal_projects: false, order_by: order_by, sort: sort, filters: filters)
+        super(
+          current_user,
+          query,
+          [project.id],
+          root_ancestor_ids: opts.fetch(:root_ancestor_ids, nil),
+          public_and_internal_projects: false,
+          order_by: opts.fetch(:order_by, nil),
+          sort: opts.fetch(:sort, nil),
+          filters: opts.fetch(:filters, {}),
+          source: opts.fetch(:source, nil)
+        )
       end
 
       # Lazily compute the repository reference only when needed.
@@ -103,7 +111,7 @@ module Gitlab
         when :work_items
           options = super.merge(filters.slice(:hybrid_similarity, :hybrid_boost))
           options[:root_ancestor_ids] = [project.root_ancestor.id]
-          if Feature.enabled?(:search_work_item_queries_notes, current_user)
+          if !glql_query?(source) && Feature.enabled?(:search_work_item_queries_notes, current_user)
             options[:related_ids] = related_ids_for_notes(Issue.name)
           end
 

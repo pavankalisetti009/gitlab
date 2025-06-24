@@ -9,9 +9,10 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
 
   let(:filters) { {} }
   let(:query) { '*' }
+  let(:source) { nil }
 
   subject(:results) do
-    described_class.new(user, query, group.projects.pluck_primary_key, group: group, filters: filters)
+    described_class.new(user, query, group.projects.pluck_primary_key, group: group, filters: filters, source: source)
   end
 
   before do
@@ -455,6 +456,12 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       before do
         stub_feature_flags(search_work_item_queries_notes: false)
       end
+
+      include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes, scopes_with_multiple: []
+    end
+
+    context 'when query source is GLQL' do
+      let(:source) { 'glql' }
 
       include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes, scopes_with_multiple: []
     end
