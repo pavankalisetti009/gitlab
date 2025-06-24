@@ -11539,9 +11539,6 @@ msgstr ""
 msgid "BulkImport|More than six imports were attempted in one minute. Try again after a minute."
 msgstr ""
 
-msgid "BulkImport|New group"
-msgstr ""
-
 msgid "BulkImport|No additional information provided"
 msgstr ""
 
