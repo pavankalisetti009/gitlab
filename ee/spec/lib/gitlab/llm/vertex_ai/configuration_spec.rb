@@ -29,12 +29,6 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
-  describe '#access_token' do
-    it 'returns cloud connector access token' do
-      expect(configuration.access_token).to eq current_token
-    end
-  end
-
   describe '#headers' do
     it 'returns headers with text host header replacing host value' do
       expect(configuration.headers).to include(
