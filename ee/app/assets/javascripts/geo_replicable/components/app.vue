@@ -1,9 +1,8 @@
 <script>
-import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState, mapGetters } from 'vuex';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
-import GeoListEmptyState from 'ee/geo_shared/list/components/geo_list_empty_state.vue';
+import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { sprintf, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
@@ -26,12 +25,11 @@ import GeoFeedbackBanner from './geo_feedback_banner.vue';
 export default {
   name: 'GeoReplicableApp',
   components: {
-    GlLoadingIcon,
     GeoReplicableFilterBar,
     GeoListTopBar,
     GeoReplicable,
-    GeoListEmptyState,
     GeoFeedbackBanner,
+    GeoList,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: {
@@ -60,6 +58,11 @@ export default {
     activeFilteredSearchFilters() {
       return this.activeFilters.filter(({ type }) => type !== TOKEN_TYPES.REPLICABLE_TYPE);
     },
+    emptyStateHasFilters() {
+      return this.glFeatures.geoReplicablesFilteredListView
+        ? Boolean(this.activeFilteredSearchFilters.length)
+        : this.hasFilters;
+    },
     emptyState() {
       return {
         title: sprintf(s__('Geo|There are no %{itemTitle} to show'), { itemTitle: this.itemTitle }),
@@ -68,12 +71,8 @@ export default {
         ),
         itemTitle: this.itemTitle,
         helpLink: GEO_TROUBLESHOOTING_LINK,
+        hasFilters: this.emptyStateHasFilters,
       };
-    },
-    emptyStateHasFilters() {
-      return this.glFeatures.geoReplicablesFilteredListView
-        ? Boolean(this.activeFilteredSearchFilters.length)
-        : this.hasFilters;
     },
   },
   created() {
@@ -130,10 +129,8 @@ export default {
       @bulkAction="handleBulkAction"
     />
 
-    <gl-loading-icon v-if="isLoading" size="xl" />
-    <template v-else>
-      <geo-replicable v-if="hasReplicableItems" />
-      <geo-list-empty-state v-else :empty-state="emptyState" :has-filters="emptyStateHasFilters" />
-    </template>
+    <geo-list :is-loading="isLoading" :has-items="hasReplicableItems" :empty-state="emptyState">
+      <geo-replicable />
+    </geo-list>
   </article>
 </template>
