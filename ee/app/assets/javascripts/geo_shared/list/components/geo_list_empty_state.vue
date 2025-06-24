@@ -14,18 +14,13 @@ export default {
       type: Object,
       required: true,
     },
-    hasFilters: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   computed: {
     title() {
-      return this.hasFilters ? __('No results found') : this.emptyState.title;
+      return this.emptyState.hasFilters ? __('No results found') : this.emptyState.title;
     },
     description() {
-      return this.hasFilters
+      return this.emptyState.hasFilters
         ? __('Edit your search filter and try again.')
         : this.emptyState.description;
     },
