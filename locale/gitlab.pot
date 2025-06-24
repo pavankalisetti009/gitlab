@@ -2407,6 +2407,9 @@ msgstr ""
 msgid "AI|Accept & Insert"
 msgstr ""
 
+msgid "AI|Agents"
+msgstr ""
+
 msgid "AI|Apply AI-generated description"
 msgstr ""
 
