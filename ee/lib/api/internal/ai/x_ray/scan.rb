@@ -17,7 +17,6 @@ module API
           before do
             authenticate_job!
             not_found! unless can?(current_user, :access_x_ray_on_instance)
-            unauthorized!(TOKEN_NOT_FOUND_MESSAGE) unless token_available?
             unauthorized!(PURCHASE_NOT_FOUND_MESSAGE) unless x_ray_available?
           end
 
@@ -26,10 +25,6 @@ module API
 
             def x_ray_available?
               code_suggestions_data.purchased?(current_namespace)
-            end
-
-            def token_available?
-              ai_gateway_token.present?
             end
 
             def code_suggestions_data

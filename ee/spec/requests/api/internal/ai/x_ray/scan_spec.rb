@@ -132,16 +132,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         context 'with Duo Pro add-on' do
           before_all { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: code_suggestion_add_on) }
 
-          context 'when cloud connector access token is missing' do
-            let(:ai_gateway_token) { nil }
-
-            it 'returns UNAUTHORIZED status' do
-              post_api
-
-              expect(response).to have_gitlab_http_status(:unauthorized)
-            end
-          end
-
           context 'when cloud connector access token is valid' do
             before do
               allow(::CloudConnector::ServiceAccessToken)
