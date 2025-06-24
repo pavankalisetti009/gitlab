@@ -93,4 +93,5 @@ export const MOCK_EMPTY_STATE = {
   description: 'No %{itemTitle} were found. Click %{linkStart}this link%{linkEnd} to learn more.',
   itemTitle: 'Test Items',
   helpLink: '/help/link',
+  hasFilters: false,
 };

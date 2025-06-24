@@ -7,15 +7,9 @@ import { MOCK_EMPTY_STATE } from '../mock_data';
 describe('GeoListEmptyState', () => {
   let wrapper;
 
-  const defaultProps = {
-    emptyState: MOCK_EMPTY_STATE,
-    hasFilters: false,
-  };
-
   const createComponent = ({ props } = {}) => {
     wrapper = shallowMountExtended(GeoListEmptyState, {
       propsData: {
-        ...defaultProps,
         ...props,
       },
       stubs: {
@@ -33,7 +27,7 @@ describe('GeoListEmptyState', () => {
     ${true}    | ${'No results found'}     | ${'Edit your search filter and try again.'}                                      | ${false}
   `('template when hasFilters is $hasFilters', ({ hasFilters, title, description, link }) => {
     beforeEach(() => {
-      createComponent({ props: { hasFilters } });
+      createComponent({ props: { emptyState: { ...MOCK_EMPTY_STATE, hasFilters } } });
     });
 
     it(`sets empty state title to ${title}`, () => {

@@ -1,4 +1,3 @@
-import { GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
@@ -7,7 +6,7 @@ import { BULK_ACTIONS, GEO_TROUBLESHOOTING_LINK } from 'ee/geo_replicable/consta
 import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
-import GeoListEmptyState from 'ee/geo_shared/list/components/geo_list_empty_state.vue';
+import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import GeoReplicableFilterBar from 'ee/geo_replicable/components/geo_replicable_filter_bar.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import initStore from 'ee/geo_replicable/store';
@@ -51,6 +50,15 @@ describe('GeoReplicableApp', () => {
     itemTitle: 'Test Item',
   };
 
+  const MOCK_EMPTY_STATE = {
+    title: `There are no ${defaultProvide.itemTitle} to show`,
+    description:
+      'No %{itemTitle} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information.',
+    itemTitle: defaultProvide.itemTitle,
+    helpLink: GEO_TROUBLESHOOTING_LINK,
+    hasFilters: false,
+  };
+
   const createStore = (options) => {
     store = initStore({ replicableType: MOCK_REPLICABLE_TYPE, ...options });
     jest.spyOn(store, 'dispatch').mockImplementation();
@@ -67,62 +75,44 @@ describe('GeoReplicableApp', () => {
   };
 
   const findGeoReplicableContainer = () => wrapper.find('.geo-replicable-container');
-  const findGlLoadingIcon = () => findGeoReplicableContainer().findComponent(GlLoadingIcon);
   const findGeoReplicable = () => findGeoReplicableContainer().findComponent(GeoReplicable);
-  const findGeoListEmptyState = () => findGeoReplicableContainer().findComponent(GeoListEmptyState);
+  const findGeoList = () => findGeoReplicableContainer().findComponent(GeoList);
   const findGeoReplicableFilterBar = () =>
     findGeoReplicableContainer().findComponent(GeoReplicableFilterBar);
   const findGeoListTopBar = () => findGeoReplicableContainer().findComponent(GeoListTopBar);
   const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
 
   describe.each`
-    isLoading | graphqlFieldName         | replicableItems            | showReplicableItems | showEmptyState | showLoader
-    ${false}  | ${null}                  | ${MOCK_BASIC_GRAPHQL_DATA} | ${true}             | ${false}       | ${false}
-    ${false}  | ${null}                  | ${[]}                      | ${false}            | ${true}        | ${false}
-    ${false}  | ${MOCK_GRAPHQL_REGISTRY} | ${MOCK_BASIC_GRAPHQL_DATA} | ${true}             | ${false}       | ${false}
-    ${false}  | ${MOCK_GRAPHQL_REGISTRY} | ${[]}                      | ${false}            | ${true}        | ${false}
-    ${true}   | ${null}                  | ${MOCK_BASIC_GRAPHQL_DATA} | ${false}            | ${false}       | ${true}
-    ${true}   | ${null}                  | ${[]}                      | ${false}            | ${false}       | ${true}
-    ${true}   | ${MOCK_GRAPHQL_REGISTRY} | ${MOCK_BASIC_GRAPHQL_DATA} | ${false}            | ${false}       | ${true}
-    ${true}   | ${MOCK_GRAPHQL_REGISTRY} | ${[]}                      | ${false}            | ${false}       | ${true}
-  `(
-    `template`,
-    ({
-      isLoading,
-      graphqlFieldName,
-      replicableItems,
-      showReplicableItems,
-      showEmptyState,
-      showLoader,
-    }) => {
+    isLoading | replicableItems
+    ${false}  | ${MOCK_BASIC_GRAPHQL_DATA}
+    ${false}  | ${[]}
+    ${true}   | ${MOCK_BASIC_GRAPHQL_DATA}
+    ${true}   | ${[]}
+  `(`template`, ({ isLoading, replicableItems }) => {
+    beforeEach(() => {
+      createStore({ graphqlFieldName: MOCK_GRAPHQL_REGISTRY });
+      createComponent();
+    });
+
+    describe(`when isLoading is ${isLoading} and ${replicableItems.length ? 'does' : 'does not'} have replicableItems`, () => {
       beforeEach(() => {
-        createStore({ graphqlFieldName });
-        createComponent();
+        store.state.isLoading = isLoading;
+        store.state.replicableItems = replicableItems;
       });
 
-      describe(`when isLoading is ${isLoading} and graphqlFieldName is ${graphqlFieldName}, ${
-        replicableItems.length ? 'with' : 'without'
-      } replicableItems`, () => {
-        beforeEach(() => {
-          store.state.isLoading = isLoading;
-          store.state.replicableItems = replicableItems;
-          store.state.paginationData.total = replicableItems.length;
-        });
-
-        it(`${showReplicableItems ? 'shows' : 'hides'} the replicable items`, () => {
-          expect(findGeoReplicable().exists()).toBe(showReplicableItems);
-        });
-
-        it(`${showEmptyState ? 'shows' : 'hides'} the empty state`, () => {
-          expect(findGeoListEmptyState().exists()).toBe(showEmptyState);
-        });
-
-        it(`${showLoader ? 'shows' : 'hides'} the loader`, () => {
-          expect(findGlLoadingIcon().exists()).toBe(showLoader);
+      it('renders GeoList with the correct params', () => {
+        expect(findGeoList().props()).toStrictEqual({
+          isLoading,
+          hasItems: Boolean(replicableItems.length),
+          emptyState: MOCK_EMPTY_STATE,
         });
       });
-    },
-  );
+
+      it('renders GeoReplicable in the default slot of GeoList always', () => {
+        expect(findGeoReplicable().exists()).toBe(true);
+      });
+    });
+  });
 
   describe.each`
     geoReplicablesFilteredListView | hasFilters | mockLocation                  | statusFilter
@@ -130,36 +120,31 @@ describe('GeoReplicableApp', () => {
     ${false}                       | ${true}    | ${MOCK_BASE_LOCATION}         | ${'test-filter'}
     ${true}                        | ${false}   | ${MOCK_BASE_LOCATION}         | ${undefined}
     ${true}                        | ${true}    | ${MOCK_LOCATION_WITH_FILTERS} | ${undefined}
-  `('empty state', ({ geoReplicablesFilteredListView, hasFilters, mockLocation, statusFilter }) => {
-    const MOCK_EMPTY_STATE = {
-      title: `There are no ${defaultProvide.itemTitle} to show`,
-      description:
-        'No %{itemTitle} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information.',
-      itemTitle: defaultProvide.itemTitle,
-      helpLink: GEO_TROUBLESHOOTING_LINK,
-    };
+  `(
+    'empty state property',
+    ({ geoReplicablesFilteredListView, hasFilters, mockLocation, statusFilter }) => {
+      describe(`when feature geoReplicablesFilteredListView is set to ${geoReplicablesFilteredListView}`, () => {
+        describe(`when filters are ${hasFilters}`, () => {
+          beforeEach(() => {
+            setWindowLocation(mockLocation);
 
-    describe(`when feature geoReplicablesFilteredListView is set to ${geoReplicablesFilteredListView}`, () => {
-      describe(`when filters are ${hasFilters}`, () => {
-        beforeEach(() => {
-          setWindowLocation(mockLocation);
+            createStore();
+            createComponent({ featureFlags: { geoReplicablesFilteredListView } });
 
-          createStore();
-          createComponent({ featureFlags: { geoReplicablesFilteredListView } });
+            store.state.statusFilter = statusFilter;
+            store.state.replicableItems = [];
+          });
 
-          store.state.statusFilter = statusFilter;
-          store.state.replicableItems = [];
-        });
-
-        it('renders GeoListEmptyState with correct props', () => {
-          expect(findGeoListEmptyState().props()).toStrictEqual({
-            emptyState: MOCK_EMPTY_STATE,
-            hasFilters,
+          it('renders GeoList with correct empty state prop', () => {
+            expect(findGeoList().props('emptyState')).toStrictEqual({
+              ...MOCK_EMPTY_STATE,
+              hasFilters,
+            });
           });
         });
       });
-    });
-  });
+    },
+  );
 
   describe('filter bar', () => {
     describe('when feature geoReplicablesFilteredListView is disabled', () => {
