@@ -15,6 +15,7 @@ module AuditEvents
       before_validation :assign_default_name
       before_validation :assign_secret_token_for_http
       before_validation :assign_default_log_id, if: :gcp?
+      before_validation :ensure_protected_header_not_modified
 
       enum :category, {
         http: 0,
@@ -111,6 +112,29 @@ module AuditEvents
         return unless http?
 
         self.secret_token ||= SecureRandom.base64(18)
+      end
+
+      def sync_helper?
+        (new_record? && legacy_destination_ref.present?) || (persisted? && changes.key?('secret_token'))
+      end
+
+      def ensure_protected_header_not_modified
+        return unless config_changed?
+
+        old_config = config_was || {}
+        new_config = config || {}
+
+        old_headers = old_config['headers'] || {}
+        new_headers = new_config['headers'] || {}
+
+        old_headers_upcase = old_headers.transform_keys(&:upcase)
+        new_headers_upcase = new_headers.transform_keys(&:upcase)
+        protected_key_upcase = STREAMING_TOKEN_HEADER_KEY.upcase
+
+        return unless !old_headers_upcase.key?(protected_key_upcase) && new_headers_upcase.key?(protected_key_upcase)
+        return if sync_helper?
+
+        errors.add(:config, "headers cannot contain #{STREAMING_TOKEN_HEADER_KEY}")
       end
     end
   end
