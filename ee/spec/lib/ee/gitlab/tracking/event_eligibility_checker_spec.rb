@@ -98,25 +98,5 @@ RSpec.describe Gitlab::Tracking::EventEligibilityChecker, feature_category: :ser
         it { is_expected.to eq(result) }
       end
     end
-
-    context 'when collect_product_usage_events feature flag is disabled' do
-      where(:event_name, :product_usage_data_enabled, :result) do
-        'perform_completion_worker' | true  | false
-        'perform_completion_worker' | false | false
-        'some_other_event'          | true  | false
-        'some_other_event'          | false | false
-      end
-
-      before do
-        stub_feature_flags(collect_product_usage_events: false)
-        stub_application_setting(
-          snowplow_enabled?: false, gitlab_product_usage_data_enabled?: product_usage_data_enabled
-        )
-      end
-
-      with_them do
-        it { is_expected.to eq(result) }
-      end
-    end
   end
 end

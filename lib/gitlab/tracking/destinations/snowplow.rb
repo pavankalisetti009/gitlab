@@ -42,7 +42,7 @@ module Gitlab
         end
 
         def frontend_client_options(group)
-          if Gitlab::CurrentSettings.snowplow_enabled? || ::Feature.disabled?(:collect_product_usage_events, :instance)
+          if Gitlab::CurrentSettings.snowplow_enabled?
             snowplow_options(group)
           else
             product_usage_events_options
@@ -50,8 +50,7 @@ module Gitlab
         end
 
         def enabled?
-          Gitlab::CurrentSettings.snowplow_enabled? ||
-            ::Feature.enabled?(:collect_product_usage_events, :instance)
+          true
         end
 
         def hostname
