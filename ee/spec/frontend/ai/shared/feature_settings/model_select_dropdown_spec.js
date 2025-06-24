@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
@@ -7,7 +8,7 @@ import { listItems, featureSettingsListItems } from './mock_data';
 describe('ModelSelectDropdown', () => {
   let wrapper;
 
-  const dropdownToggleText = 'Select model';
+  const placeholderDropdownText = 'Select model';
   const selectedOption = listItems[0];
 
   const createComponent = ({ props = {} } = {}) => {
@@ -15,7 +16,7 @@ describe('ModelSelectDropdown', () => {
       mount(ModelSelectDropdown, {
         propsData: {
           items: listItems,
-          dropdownToggleText,
+          placeholderDropdownText,
           selectedOption,
           ...props,
         },
@@ -36,10 +37,20 @@ describe('ModelSelectDropdown', () => {
     expect(findModelSelectDropdown().exists()).toBe(true);
   });
 
-  it('renders the dropdown toggle text', () => {
-    createComponent();
+  describe('dropdown toggle text', () => {
+    it('renders the placeholder text when no selected option is provided', () => {
+      createComponent({
+        props: { selectedOption: null },
+      });
 
-    expect(findDropdownToggleText().text()).toBe('Select model');
+      expect(findDropdownToggleText().text()).toBe(placeholderDropdownText);
+    });
+
+    it('displays the text based on selected option', () => {
+      createComponent();
+
+      expect(findDropdownToggleText().text()).toBe(selectedOption.text);
+    });
   });
 
   describe('list items', () => {
@@ -55,6 +66,28 @@ describe('ModelSelectDropdown', () => {
       expect(findGLCollapsibleListbox().props('items')).toBe(featureSettingsListItems);
       expect(findDropdownListItems().at(5).text()).toEqual('Disable');
       expect(findDropdownListItems().at(6).text()).toEqual('GitLab AI Vendor');
+    });
+
+    it('sets a default selected value based on the selected option', () => {
+      createComponent({
+        props: {
+          selectedOption,
+        },
+      });
+
+      const dropdown = findGLCollapsibleListbox();
+
+      // selected based on selected option prop
+      expect(dropdown.props('selected')).toBe(selectedOption.value);
+    });
+
+    it('emits select event when an item is selected', async () => {
+      createComponent();
+
+      findGLCollapsibleListbox().vm.$emit('select', selectedOption.value);
+      await nextTick();
+
+      expect(wrapper.emitted('select')).toStrictEqual([[selectedOption.value]]);
     });
   });
 

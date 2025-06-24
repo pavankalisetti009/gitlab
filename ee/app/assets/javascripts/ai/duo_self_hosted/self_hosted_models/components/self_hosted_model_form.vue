@@ -167,10 +167,6 @@ export default {
       apiToken = '',
     } = this.initialFormValues;
 
-    const selectedModel = this.modelOptions.find(
-      ({ modelValue }) => modelValue === model.toUpperCase(),
-    );
-
     /*
       When an identifier starts with "bedrock/", we can infer it to be a bedrock model.
       This is only a workaround for going GA in 17.9 - as a more permanent solution this value should
@@ -186,11 +182,10 @@ export default {
         name,
         endpoint,
         identifier,
-        model: selectedModel && selectedModel.modelValue,
+        model: model.toUpperCase(),
       },
       platform,
       apiToken,
-      selectedModel,
       serverValidations: {},
       isSaving: false,
     };
@@ -205,14 +200,14 @@ export default {
       );
 
       // sort model options by releaseState
-      return [...gaModels, ...betaModels].map(({ modelName, modelValue, releaseState }) => ({
+      return [...gaModels, ...betaModels].map(({ modelValue, modelName, releaseState }) => ({
         value: modelValue,
         text: modelName,
         releaseState,
       }));
     },
-    dropdownToggleText() {
-      return this.selectedModel?.modelName || s__('AdminSelfHostedModels|Select model');
+    selectedModel() {
+      return this.availableModels.find(({ value }) => value === this.baseFormValues.model);
     },
     formFields() {
       const platformFields = this.isApiPlatform ? apiFormFields : bedrockFormFields;
@@ -276,7 +271,7 @@ export default {
         return 'bedrock/';
       }
 
-      const model = this.selectedModel?.modelValue;
+      const { model } = this.baseFormValues;
       if (model && !Object.values(CLOUD_PROVIDER_MODELS).includes(model)) {
         return 'custom_openai/';
       }
@@ -345,10 +340,9 @@ export default {
         this.isSaving = false;
       }
     },
-    onSelect(model) {
+    onSelect(selectedModelValue) {
       this.onInputField({ name: 'model' });
-      this.selectedModel = this.modelOptions.find((item) => item.modelValue === model);
-      this.baseFormValues.model = this.selectedModel.modelValue;
+      this.baseFormValues.model = selectedModelValue;
     },
     // clears the validation error
     onInputField({ name }) {
@@ -443,7 +437,7 @@ export default {
         <model-select-dropdown
           :selected-option="selectedModel"
           :items="availableModels"
-          :dropdown-toggle-text="dropdownToggleText"
+          :placeholder-dropdown-text="s__('AdminSelfHostedModels|Select model')"
           :is-loading="isSaving"
           @select="onSelect"
         />

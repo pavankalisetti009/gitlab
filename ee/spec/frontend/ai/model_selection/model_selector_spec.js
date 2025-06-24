@@ -57,7 +57,6 @@ describe('ModelSelector', () => {
 
   const findModelSelector = () => wrapper.findComponent(ModelSelector);
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
-  const findDropdownToggleText = () => findModelSelectDropdown().props('dropdownToggleText');
 
   it('renders the component', () => {
     createComponent();
@@ -106,14 +105,22 @@ describe('ModelSelector', () => {
         );
       });
 
-      it('updates the dropdown toggle text', async () => {
-        expect(findDropdownToggleText()).toBe('GitLab Default');
+      it('updates the selected option', async () => {
+        const mockSelectedModelId = 'claude_3_5_sonnet_20240620';
+        const modelSelectionDropdown = findModelSelectDropdown();
 
-        findModelSelectDropdown().vm.$emit('select', 'claude_3_5_sonnet_20240620');
+        expect(modelSelectionDropdown.props('selectedOption')).toStrictEqual({
+          value: '',
+          text: 'GitLab Default',
+        });
 
+        modelSelectionDropdown.vm.$emit('select', mockSelectedModelId);
         await waitForPromises();
 
-        expect(findDropdownToggleText()).toBe('Claude Sonnet 3.5 - Anthropic');
+        expect(modelSelectionDropdown.props('selectedOption')).toStrictEqual({
+          value: mockSelectedModelId,
+          text: 'Claude Sonnet 3.5 - Anthropic',
+        });
       });
     });
 
@@ -138,11 +145,16 @@ describe('ModelSelector', () => {
       });
 
       it('does not update the selected option', async () => {
-        findModelSelectDropdown().vm.$emit('select', 'claude_3_5_sonnet_20240620');
+        const modelSelectionDropdown = findModelSelectDropdown();
+
+        modelSelectionDropdown.vm.$emit('select', 'claude_3_5_sonnet_20240620');
 
         await waitForPromises();
 
-        expect(findModelSelectDropdown().props('dropdownToggleText')).toEqual('GitLab Default');
+        expect(modelSelectionDropdown.props('selectedOption')).toStrictEqual({
+          value: '',
+          text: 'GitLab Default',
+        });
       });
 
       it('triggers an error message', async () => {
