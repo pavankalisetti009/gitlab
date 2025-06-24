@@ -50,7 +50,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
 
   describe '#execute' do
     before do
-      stub_feature_flags(summarize_code_review_claude_4_0_sonnet: false)
       stub_feature_flags(ai_model_switching: false)
       stub_feature_flags(use_claude_code_completion: false)
     end
@@ -105,7 +104,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
                 prompt_name: :summarize_review,
                 inputs: { draft_notes_content: draft_notes_content },
                 model_metadata: model_metadata,
-                prompt_version: "2.0.0"
+                prompt_version: "2.1.0"
               )
               .and_return(example_response)
           end
@@ -169,56 +168,41 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         end
       end
 
-      context 'when claude_4_0_sonnet feature flag disabled' do
+      context 'when namespace model switching is enabled' do
         let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
-        let(:prompt_version) { "2.0.0" }
+        let(:prompt_version) { "2.1.0" }
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, :repository, group: group) }
+        let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+        let_it_be(:draft_note_by_current_user) do
+          create(
+            :draft_note,
+            merge_request: merge_request,
+            author: user,
+            note: 'This is a draft note'
+          )
+        end
 
-        it_behaves_like 'summarize review with prompt version'
+        before do
+          stub_feature_flags(ai_model_switching: true)
+        end
 
-        context 'when namespace model switching is enabled' do
-          let_it_be(:group) { create(:group) }
-          let_it_be(:project) { create(:project, :repository, group: group) }
-          let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
-          let_it_be(:draft_note_by_current_user) do
-            create(
-              :draft_note,
-              merge_request: merge_request,
-              author: user,
-              note: 'This is a draft note'
+        context 'when the model is pinned to a specific model' do
+          before do
+            create(:ai_namespace_feature_setting,
+              namespace: group,
+              feature: 'summarize_review'
             )
           end
 
-          before do
-            stub_feature_flags(ai_model_switching: true)
-          end
-
-          context 'when the model is pinned to a specific model' do
-            before do
-              create(:ai_namespace_feature_setting,
-                namespace: group,
-                feature: 'summarize_review'
-              )
-            end
-
-            it_behaves_like 'summarize review with prompt version' do
-              let(:model_metadata) do
-                {
-                  feature_setting: 'summarize_review',
-                  identifier: 'claude_sonnet_3_7',
-                  provider: 'gitlab'
-                }
-              end
-            end
-          end
-        end
-
-        context 'when claude_4_0_sonnet feature flag enabled' do
-          before do
-            stub_feature_flags(summarize_code_review_claude_4_0_sonnet: true)
-          end
-
           it_behaves_like 'summarize review with prompt version' do
-            let(:prompt_version) { "2.1.0" }
+            let(:model_metadata) do
+              {
+                feature_setting: 'summarize_review',
+                identifier: 'claude_sonnet_3_7',
+                provider: 'gitlab'
+              }
+            end
           end
         end
       end
