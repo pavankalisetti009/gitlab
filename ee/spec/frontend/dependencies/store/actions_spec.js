@@ -841,15 +841,18 @@ describe('Dependencies actions', () => {
 
     describe('on success', () => {
       const expectedDependencies =
-        mockGraphQLDependenciesResponse.data.namespace.dependencies.nodes.map((dependency) => ({
-          ...dependency,
-          occurrenceId: 'extracted-from-get-id-from-graphql-id-util',
-          componentId: 'extracted-from-get-id-from-graphql-id-util',
-          // Note: This will be mapped to an actual value, once the field has been added to the GraphQL query
-          // Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532226
-          projectCount: 1,
-          version: dependency.componentVersion.version,
-        }));
+        mockGraphQLDependenciesResponse.data.namespace.dependencies.nodes.map(
+          ({ packager, componentVersion, ...dependency }) => ({
+            ...dependency,
+            occurrenceId: 'extracted-from-get-id-from-graphql-id-util',
+            componentId: 'extracted-from-get-id-from-graphql-id-util',
+            // Note: This will be mapped to an actual value, once the field has been added to the GraphQL query
+            // Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532226
+            projectCount: 1,
+            version: componentVersion.version,
+            packager: packager.toLowerCase(),
+          }),
+        );
 
       beforeEach(() => {
         graphQLClient.query.mockResolvedValue(mockGraphQLDependenciesResponse);
