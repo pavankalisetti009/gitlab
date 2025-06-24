@@ -97,6 +97,7 @@ module GitlabSubscriptions
       cluster_deployments
       code_owner_approval_required
       code_suggestions
+      combined_project_analytics_dashboards
       commit_committer_check
       commit_committer_name_check
       compliance_framework
@@ -127,6 +128,7 @@ module GitlabSubscriptions
       group_allowed_email_domains
       group_coverage_reports
       group_forking_protection
+      group_level_analytics_dashboard
       group_level_compliance_dashboard
       group_milestone_project_releases
       group_project_templates
@@ -155,6 +157,7 @@ module GitlabSubscriptions
       pages_multiple_versions
       productivity_analytics
       project_aliases
+      project_level_analytics_dashboard
       protected_environments
       reject_non_dco_commits
       reject_unsigned_commits
@@ -214,7 +217,6 @@ module GitlabSubscriptions
       cluster_receptive_agents
       cluster_image_scanning
       external_status_checks
-      combined_project_analytics_dashboards
       compliance_pipeline_configuration
       container_registry_immutable_tag_rules
       container_scanning
@@ -239,7 +241,6 @@ module GitlabSubscriptions
       project_level_compliance_dashboard
       project_level_compliance_adherence_report
       project_level_compliance_violations_report
-      group_level_analytics_dashboard
       incident_management
       inline_codequality
       insights
@@ -256,7 +257,6 @@ module GitlabSubscriptions
       secret_push_protection
       product_analytics
       project_quality_summary
-      project_level_analytics_dashboard
       quality_management
       release_evidence_test_artifacts
       report_approver_rules
