@@ -6605,6 +6605,9 @@ msgstr ""
 msgid "Allow access to members of the following group"
 msgstr ""
 
+msgid "Allow access to pipelines and job details, including output logs and artifacts, based on your project's visibility settings."
+msgstr ""
+
 msgid "Allow access to the following IP addresses"
 msgstr ""
 
@@ -6651,9 +6654,6 @@ msgid "Allow projects and subgroups to override the group setting"
 msgstr ""
 
 msgid "Allow projects to enable secret push protection. This does not enable secret push protection."
-msgstr ""
-
-msgid "Allow public access to pipelines and job details, including output logs and artifacts."
 msgstr ""
 
 msgid "Allow secret push protection"
@@ -48203,6 +48203,9 @@ msgstr ""
 msgid "Project with ID %{project_id} not found"
 msgstr ""
 
+msgid "Project-based pipeline visibility"
+msgstr ""
+
 msgid "Project:Branches: %{source_project_path}:%{source_branch} to %{target_project_path}:%{target_branch}"
 msgstr ""
 
@@ -50403,9 +50406,6 @@ msgid "Public Access Help"
 msgstr ""
 
 msgid "Public deploy keys"
-msgstr ""
-
-msgid "Public pipelines"
 msgstr ""
 
 msgid "Public projects are an easy way to allow everyone to have read-only access."
