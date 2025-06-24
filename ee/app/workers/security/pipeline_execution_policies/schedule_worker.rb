@@ -57,12 +57,14 @@ module Security
           return
         end
 
-        time_window = [schedule.time_window_seconds, schedule.next_run_in].min
+        schedule.branches.each do |branch|
+          time_window = [schedule.time_window_seconds, schedule.next_run_in].min
 
-        delay = Random.rand(time_window)
+          delay = Random.rand(time_window)
 
-        with_context(project: schedule.project_id) do
-          Security::PipelineExecutionPolicies::RunScheduleWorker.perform_in(delay, schedule.id)
+          with_context(project: schedule.project_id) do
+            Security::PipelineExecutionPolicies::RunScheduleWorker.perform_in(delay, schedule.id, { branch: branch })
+          end
         end
       end
 

@@ -49,7 +49,24 @@ module Security
       snoozed_until.future?
     end
 
+    def branches
+      return [project.default_branch_or_main] if branches_content.nil?
+
+      branches_content
+    end
+
     private
+
+    def branches_content
+      # Using the first schedule because we only support one schedule per policy right now.
+      # We might want to support multiple schedules in the future, which would require
+      # changes to this code.
+      schedule_content = security_policy.content['schedules']&.first
+
+      return unless schedule_content['branches'].present?
+
+      schedule_content['branches'].uniq
+    end
 
     def timezone
       security_policy.content.dig('schedule', 'timezone')
