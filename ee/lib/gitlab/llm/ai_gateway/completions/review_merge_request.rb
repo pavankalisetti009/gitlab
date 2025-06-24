@@ -378,7 +378,7 @@ module Gitlab
                 name: group['name'],
                 instructions: group['instructions'],
                 include_patterns: includes,
-                exclude_patterns: excludes.map { |p| p[1..] } # rubocop:disable Rails/Pluck -- Not an ActiveRecord relation
+                exclude_patterns: excludes.map { |p| p.delete_prefix('!') }
               }.with_indifferent_access
             end
           rescue StandardError => e
