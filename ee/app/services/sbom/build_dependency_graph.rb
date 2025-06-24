@@ -4,7 +4,7 @@ module Sbom
   class BuildDependencyGraph
     include Gitlab::Utils::StrongMemoize
 
-    BATCH_SIZE = 500
+    BATCH_SIZE = 250
 
     def self.execute(project)
       new(project).execute
