@@ -9,7 +9,7 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
   let_it_be(:personal_namespace) { create(:user_namespace) }
 
   let(:inserted_records) do
-    UsageEvents::DumpWriteBufferCronWorker::MODELS.flat_map { |model| model.all.map(&:attributes) }
+    UsageEvents::DumpWriteBufferCronWorker::MODELS.flat_map { |model| model.order(:id).all.map(&:attributes) }
   end
 
   it 'does not insert anything' do
@@ -18,8 +18,8 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
     expect(inserted_records).to be_empty
   end
 
-  def add_to_buffer(attributes, model = Ai::CodeSuggestionEvent)
-    data = { 'timestamp' => Time.current }.merge(attributes.stringify_keys)
+  def add_to_buffer(attributes, model = Ai::CodeSuggestionEvent, timestamp = Time.current)
+    data = { 'timestamp' => timestamp }.merge(attributes.stringify_keys)
     Ai::UsageEventWriteBuffer.add(model.name, data)
   end
 
@@ -31,7 +31,36 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
                     personal_namespace_id: personal_namespace.id },
         Ai::DuoChatEvent)
       add_to_buffer(user_id: 1, event: 'code_suggestion_shown_in_ide', organization_id: organization.id)
-      add_to_buffer(user_id: 2, event: 'code_suggestion_shown_in_ide', organization_id: organization.id)
+
+      # Duplicates for Ai::CodeSuggestionEvent
+      timestamp = Time.current
+      add_to_buffer(
+        user_id: 2,
+        event: 'code_suggestion_shown_in_ide',
+        organization_id: organization.id,
+        timestamp: timestamp
+      )
+      add_to_buffer(
+        user_id: 2,
+        event: 'code_suggestion_shown_in_ide',
+        organization_id: organization.id,
+        timestamp: timestamp
+      )
+
+      # Already existing record for Ai::UsageEvent
+      Ai::UsageEvent.create!(
+        user_id: 2,
+        event: 'code_suggestion_shown_in_ide',
+        organization_id: organization.id,
+        timestamp: timestamp
+      )
+      add_to_buffer({
+        user_id: 2,
+        event: 'code_suggestion_shown_in_ide',
+        organization_id: organization.id,
+        timestamp: timestamp
+      }, Ai::UsageEvent)
+
       add_to_buffer(
         user_id: 3,
         event: 'code_suggestion_shown_in_ide',
@@ -48,22 +77,38 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
     it 'inserts all rows' do
       status = perform
 
-      expect(status).to eq({ status: :processed, inserted_rows: 5 })
+      expect(status).to eq({ status: :processed, inserted_rows: 7 })
       expect(inserted_records).to match([
         hash_including('user_id' => 3, 'event' => 'request_duo_chat_response'),
         hash_including('user_id' => 1, 'event' => 'code_suggestion_shown_in_ide'),
         hash_including('user_id' => 2, 'event' => 'code_suggestion_shown_in_ide'),
+        hash_including('user_id' => 2, 'event' => 'code_suggestion_shown_in_ide'),
         hash_including('user_id' => 3, 'event' => 'code_suggestion_shown_in_ide',
           'payload' => { 'language' => 'ruby' }),
+        hash_including('user_id' => 2, 'event' => 'code_suggestion_shown_in_ide'),
         hash_including('user_id' => 3, 'event' => 'troubleshoot_job')
       ])
+    end
+
+    it 'deduplicates the code suggestion events in Ai::UsageEvent' do
+      status = perform
+
+      expect(status).to eq({ status: :processed, inserted_rows: 7 })
+
+      # Ai::CodeSuggestionEvent is not deduplicated
+      events = Ai::CodeSuggestionEvent.where(user_id: 2).to_a
+      expect(events.count).to eq(2)
+
+      # Ai::UsageEvent is deduplicated
+      events = Ai::UsageEvent.where(user_id: 2).to_a
+      expect(events.count).to eq(1)
     end
 
     context 'when looping twice' do
       it 'inserts all rows' do
         stub_const("#{described_class.name}::BATCH_SIZE", 2)
 
-        expect(perform).to eq({ status: :processed, inserted_rows: 5 })
+        expect(perform).to eq({ status: :processed, inserted_rows: 7 })
       end
     end
 
@@ -80,7 +125,8 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
         expect(status).to eq({ status: :over_time, inserted_rows: 2 })
         expect(inserted_records).to match([
           hash_including('user_id' => 3),
-          hash_including('user_id' => 1)
+          hash_including('user_id' => 1),
+          hash_including('user_id' => 2) # already exist in the database
         ])
       end
     end
