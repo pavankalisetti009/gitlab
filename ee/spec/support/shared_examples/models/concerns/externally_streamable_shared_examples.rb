@@ -345,18 +345,59 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
         end
       end
 
-      context 'when secret token header is overwritten' do
-        let(:http_headers) do
-          { AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY => { value: 'custom_token_overwrite',
-                                                                               active: true } }
+      context 'when attempting to use protected header key' do
+        it 'prevents creation with protected header' do
+          expect do
+            create(model_factory_name, config: {
+              url: 'https://example.com',
+              headers: {
+                AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY => {
+                  value: 'custom_token_overwrite',
+                  active: true
+                }
+              }
+            })
+          end.to raise_error(ActiveRecord::RecordInvalid, /headers cannot contain X-Gitlab-Event-Streaming-Token/)
         end
 
-        it 'returns a hash with original secret token header' do
-          headers_hash = destination.headers_hash
+        it 'prevents creation with protected header in different case' do
+          expect do
+            create(model_factory_name, config: {
+              url: 'https://example.com',
+              headers: {
+                'x-gitlab-event-streaming-token' => {
+                  value: 'custom_token_overwrite',
+                  active: true
+                }
+              }
+            })
+          end.to raise_error(ActiveRecord::RecordInvalid, /headers cannot contain X-Gitlab-Event-Streaming-Token/)
+        end
 
-          expect(headers_hash.length).to eq(1)
-          expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
-          .to eq(destination.secret_token)
+        context 'when protected header exists in database (bypass scenario)' do
+          it 'headers_hash still uses the real secret token' do
+            destination = create(model_factory_name, config: { url: 'https://example.com' })
+
+            destination.class.where(id: destination.id).update_all(
+              config: {
+                url: 'https://example.com',
+                headers: {
+                  AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY => {
+                    value: 'fake_token_from_db',
+                    active: true
+                  }
+                }
+              }.to_json
+            )
+
+            destination.reload
+            headers_hash = destination.headers_hash
+
+            expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
+              .to eq(destination.secret_token)
+            expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
+              .not_to eq('fake_token_from_db')
+          end
         end
       end
     end

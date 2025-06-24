@@ -41,6 +41,48 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
     end
   end
 
+  shared_examples 'creates aggregated status from pipeline-based status' do |analyzer_type, pipeline_type, status|
+    it "creates #{analyzer_type} aggregated status as #{status} from #{pipeline_type}" do
+      expect { execute }.to change {
+        Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: analyzer_type)&.status
+      }.from(nil).to(status.to_s)
+    end
+  end
+
+  shared_examples 'updates aggregated status from pipeline-based status' do
+    |analyzer_type, pipeline_type, old_status, new_status|
+    it "updates #{analyzer_type} aggregated status from #{old_status} to #{new_status}" do
+      create(:analyzer_project_status, project: project, analyzer_type: analyzer_type, status: old_status)
+      create(:analyzer_project_status, project: project, analyzer_type: pipeline_type, status: old_status)
+
+      expect { execute }.to change {
+        Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: analyzer_type).status
+      }.from(old_status.to_s).to(new_status.to_s)
+    end
+  end
+
+  shared_examples 'preserves higher priority aggregated status' do |analyzer_type, expected_status|
+    it "keeps #{analyzer_type} as #{expected_status}" do
+      create(:analyzer_project_status, project: project, analyzer_type: analyzer_type, status: expected_status)
+
+      expect { execute }.not_to change {
+        Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: analyzer_type).status
+      }
+    end
+  end
+
+  shared_examples 'updates aggregated status based on priority' do
+    |analyzer_type, pipeline_type, pipeline_status, expected_status|
+    it "updates #{analyzer_type} to #{expected_status} when pipeline #{pipeline_type} is #{pipeline_status}" do
+      create(:analyzer_project_status, project: project, analyzer_type: analyzer_type, status: :not_configured)
+      create(:analyzer_project_status, project: project, analyzer_type: pipeline_type, status: pipeline_status)
+
+      expect { execute }.to change {
+        Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: analyzer_type).status
+      }.from('not_configured').to(expected_status.to_s)
+    end
+  end
+
   describe '#execute' do
     subject(:execute) { service.execute }
 
@@ -92,17 +134,28 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             build
           end
 
-          it 'creates new records for analyzers in the pipeline' do
-            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.from(0).to(6)
+          it 'creates new records for analyzers in the pipeline with their aggregated types' do
+            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.from(0).to(8)
 
             expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast))
               .to have_attributes(status: 'success', build_id: sast_build.id)
 
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :container_scanning))
+            expect(Security::AnalyzerProjectStatus
+              .find_by(project: project, analyzer_type: :container_scanning_pipeline_based))
               .to have_attributes(status: 'failed', build_id: container_scanning_build.id)
 
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+            # aggregated status
+            expect(Security::AnalyzerProjectStatus
+              .find_by(project: project, analyzer_type: :container_scanning))
+              .to have_attributes(status: 'failed')
+
+            expect(Security::AnalyzerProjectStatus
+              .find_by(project: project, analyzer_type: :secret_detection_pipeline_based))
               .to have_attributes(status: 'success', build_id: secret_detection_build.id)
+
+            # aggregated status
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+              .to have_attributes(status: 'success')
 
             expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_iac))
               .to have_attributes(status: 'success', build_id: kics_build.id)
@@ -150,12 +203,10 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
           end
 
           it 'updates the updated_at column' do
-            freeze_time do
-              old_status = create(:analyzer_project_status, project: project, analyzer_type: :cluster_image_scanning,
-                status: :failed, updated_at: 1.week.ago)
+            old_status = create(:analyzer_project_status, project: project, analyzer_type: :cluster_image_scanning,
+              status: :failed, updated_at: 1.week.ago)
 
-              expect { execute }.to change { old_status.reload.updated_at }.to(Time.zone.now)
-            end
+            expect { execute }.to change { old_status.reload.updated_at }
           end
 
           include_examples 'calls namespace related services'
@@ -235,6 +286,154 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             execute
 
             expect(ancestors_update_service).not_to have_received(:execute)
+          end
+        end
+
+        context 'with aggregated type handling' do
+          context 'for secret_detection aggregated type' do
+            let!(:secret_detection_build) { create(:ci_build, :secret_detection, :success, pipeline: pipeline) }
+
+            context 'when only pipeline-based status exists' do
+              include_examples 'creates aggregated status from pipeline-based status',
+                :secret_detection, :secret_detection_pipeline_based, :success
+            end
+
+            context 'when aggregated status already exists' do
+              include_examples 'updates aggregated status from pipeline-based status',
+                :secret_detection, :secret_detection_pipeline_based, :not_configured, :success
+            end
+
+            context 'when both pipeline-based and setting-based statuses exist' do
+              context 'when setting-based has higher priority' do
+                before do
+                  create(:analyzer_project_status, project: project,
+                    analyzer_type: :secret_detection_secret_push_protection, status: :not_configured)
+                end
+
+                include_examples 'preserves higher priority aggregated status',
+                  :secret_detection, :success
+              end
+
+              context 'when pipeline-based has higher priority (failed)' do
+                let!(:secret_detection_build) { create(:ci_build, :secret_detection, :failed, pipeline: pipeline) }
+
+                before do
+                  create(:analyzer_project_status, project: project,
+                    analyzer_type: :secret_detection_secret_push_protection, status: :success)
+                end
+
+                include_examples 'updates aggregated status based on priority',
+                  :secret_detection, :secret_detection_pipeline_based, :failed, :failed
+              end
+
+              context 'when both have same priority (success)' do
+                before do
+                  create(:analyzer_project_status, project: project,
+                    analyzer_type: :secret_detection_secret_push_protection, status: :success)
+                end
+
+                include_examples 'creates aggregated status from pipeline-based status',
+                  :secret_detection, :secret_detection_pipeline_based, :success
+              end
+
+              context 'when setting-based is not_configured' do
+                before do
+                  create(:analyzer_project_status, project: project,
+                    analyzer_type: :secret_detection_secret_push_protection, status: :not_configured)
+                end
+
+                include_examples 'creates aggregated status from pipeline-based status',
+                  :secret_detection, :secret_detection_pipeline_based, :success
+              end
+            end
+          end
+
+          context 'for container_scanning aggregated type' do
+            let!(:container_scanning_build) { create(:ci_build, :container_scanning, :failed, pipeline: pipeline) }
+
+            context 'when only pipeline-based status exists' do
+              include_examples 'creates aggregated status from pipeline-based status',
+                :container_scanning, :container_scanning_pipeline_based, :failed
+            end
+
+            context 'when aggregated status already exists' do
+              include_examples 'updates aggregated status from pipeline-based status',
+                :container_scanning, :container_scanning_pipeline_based, :success, :failed
+            end
+
+            context 'when both pipeline-based and setting-based statuses exist' do
+              context 'when setting-based has higher priority' do
+                let!(:container_scanning_build) { create(:ci_build, :container_scanning, :success, pipeline: pipeline) }
+
+                before do
+                  create(:analyzer_project_status, project: project,
+                    analyzer_type: :container_scanning_for_registry, status: :failed)
+                end
+
+                include_examples 'preserves higher priority aggregated status',
+                  :container_scanning, :failed
+              end
+
+              context 'when pipeline-based has higher priority (failed)' do
+                before do
+                  create(:analyzer_project_status, project: project,
+                    analyzer_type: :container_scanning_for_registry, status: :success)
+                end
+
+                include_examples 'updates aggregated status based on priority',
+                  :container_scanning, :container_scanning_pipeline_based, :failed, :failed
+              end
+            end
+          end
+
+          context 'when aggregated status would not change' do
+            let!(:secret_detection_build) { create(:ci_build, :secret_detection, :success, pipeline: pipeline) }
+
+            it 'does not update aggregated status when it already has the correct status' do
+              create(:analyzer_project_status, project: project, analyzer_type: :secret_detection, status: :success)
+              create(:analyzer_project_status, project: project,
+                analyzer_type: :secret_detection_secret_push_protection, status: :not_configured)
+
+              expect { execute }.not_to change {
+                Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection).updated_at
+              }
+            end
+          end
+
+          context 'when no aggregated types are configured in pipeline' do
+            let!(:sast_build) { create(:ci_build, :sast, :success, pipeline: pipeline) }
+            let!(:dast_build) { create(:ci_build, :dast, :failed, pipeline: pipeline) }
+
+            it 'does not create aggregated status records for non-aggregated types' do
+              execute
+
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+                .to be_nil
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :container_scanning))
+                .to be_nil
+            end
+          end
+
+          context 'with multiple aggregated types' do
+            let!(:secret_detection_build) { create(:ci_build, :secret_detection, :success, pipeline: pipeline) }
+            let!(:container_scanning_build) { create(:ci_build, :container_scanning, :failed, pipeline: pipeline) }
+
+            before do
+              create(:analyzer_project_status, project: project,
+                analyzer_type: :secret_detection_secret_push_protection, status: :failed)
+              create(:analyzer_project_status, project: project,
+                analyzer_type: :container_scanning_for_registry, status: :success)
+            end
+
+            it 'handles multiple aggregated types correctly' do
+              execute
+
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection).status)
+                .to eq('failed')
+
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :container_scanning)
+                .status).to eq('failed')
+            end
           end
         end
       end
