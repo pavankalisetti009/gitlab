@@ -1123,9 +1123,6 @@ msgstr ""
 msgid "%{labelStart}Validity check:%{labelEnd} %{validityCheck}"
 msgstr ""
 
-msgid "%{label_for_message} unavailable"
-msgstr ""
-
 msgid "%{label_name} is locked and was not removed"
 msgstr ""
 
@@ -48111,9 +48108,6 @@ msgid "Project groups"
 msgstr ""
 
 msgid "Project has not been marked for deletion"
-msgstr ""
-
-msgid "Project has too many %{label_for_message} to search"
 msgstr ""
 
 msgid "Project import requests"
