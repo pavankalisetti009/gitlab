@@ -55009,10 +55009,25 @@ msgstr ""
 msgid "SecretDetection|Use secret detection exclusions to specify file paths, raw values, and regex that should be excluded by secret detection in this project. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
+msgid "SecretDetection|Validate tokens using third-party API calls. When the pipeline is complete, your tokens are labeled Active, Possibly active, or Inactive. You must have pipeline secret detection enabled."
+msgstr ""
+
+msgid "SecretDetection|Validity checks"
+msgstr ""
+
+msgid "SecretDetection|Validity checks disabled"
+msgstr ""
+
+msgid "SecretDetection|Validity checks enabled"
+msgstr ""
+
 msgid "SecretDetection|Warning: Potential secret detected"
 msgid_plural "SecretDetection|Warning: Potential secrets detected"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "SecretDetection|What are validity checks?"
+msgstr ""
 
 msgid "Secrets"
 msgstr ""

@@ -14,6 +14,7 @@ module EE
 
           before_action only: [:show] do
             push_force_frontend_feature_flag(:vulnerability_archival, project.vulnerability_archival_enabled?)
+            push_frontend_feature_flag(:validity_checks, project)
           end
 
           feature_category :static_application_security_testing, [:show]
