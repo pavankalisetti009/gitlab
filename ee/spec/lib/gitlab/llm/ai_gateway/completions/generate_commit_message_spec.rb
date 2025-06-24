@@ -158,17 +158,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
         let(:expected_prompt_version) { '1.2.0' }
       end
     end
-
-    context 'when generate_commit_message_claude_4_0 is disabled' do
-      before do
-        stub_feature_flags(generate_commit_message_claude_4_0: false)
-      end
-
-      it_behaves_like 'calls the AIGW client' do
-        let(:expected_identifier) { nil }
-        let(:expected_prompt_version) { '1.1.0' }
-      end
-    end
   end
 
   describe '#root_namespace' do
