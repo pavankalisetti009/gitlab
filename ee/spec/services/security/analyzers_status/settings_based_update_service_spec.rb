@@ -361,5 +361,112 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
         end
       end
     end
+
+    context 'when projects have status changes' do
+      before do
+        project1.security_setting.update!(secret_push_protection_enabled: true)
+        project2.security_setting.update!(secret_push_protection_enabled: false)
+      end
+
+      it 'calls DiffsService with correct analyzers_statuses hash structure' do
+        expected_hash_structure = hash_including(
+          project1 => hash_including(
+            secret_detection_secret_push_protection: hash_including(
+              project_id: project1.id,
+              analyzer_type: :secret_detection_secret_push_protection,
+              status: :success
+            ),
+            secret_detection: hash_including(
+              project_id: project1.id,
+              analyzer_type: :secret_detection,
+              status: :success
+            )
+          ),
+          project2 => hash_including(
+            secret_detection_secret_push_protection: hash_including(
+              project_id: project2.id,
+              analyzer_type: :secret_detection_secret_push_protection,
+              status: :not_configured
+            ),
+            secret_detection: hash_including(
+              project_id: project2.id,
+              analyzer_type: :secret_detection,
+              status: :not_configured
+            )
+          )
+        )
+
+        expect(Security::AnalyzersStatus::DiffsService).to receive(:new).with(expected_hash_structure).and_call_original
+
+        execute
+      end
+
+      it 'calls AncestorsUpdateService with correct namespace diff structure when there are changes' do
+        create(:analyzer_project_status, project: project1, analyzer_type: :secret_detection_secret_push_protection,
+          status: :failed)
+
+        create(:analyzer_project_status, project: project1, analyzer_type: :secret_detection, status: :failed)
+
+        expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService)
+          .to receive(:execute).with(hash_including(
+            namespace_id: group.id,
+            traversal_ids: group.traversal_ids,
+            diff: hash_including(
+              secret_detection_secret_push_protection: hash_including('success' => 1, 'failed' => -1),
+              secret_detection: hash_including('success' => 1, 'failed' => -1)
+            )))
+
+        execute
+      end
+    end
+
+    context 'with multiple namespaces' do
+      let_it_be(:another_root_group) { create(:group) }
+      let_it_be(:another_group) { create(:group, parent: another_root_group) }
+      let_it_be_with_reload(:project_in_another_namespace) { create(:project, group: another_group) }
+
+      let(:project_ids) { [project1.id, project_in_another_namespace.id] }
+
+      before do
+        stub_feature_flags(post_pipeline_analyzer_status_updates: [root_group, another_root_group])
+        project1.security_setting.update!(secret_push_protection_enabled: true)
+        project_in_another_namespace.security_setting.update!(secret_push_protection_enabled: false)
+      end
+
+      it 'calls AncestorsUpdateService once for each namespace' do
+        expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService)
+          .to receive(:execute).with(hash_including(namespace_id: group.id)).once
+
+        expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService).to receive(:execute)
+          .with(hash_including(namespace_id: another_group.id)).once
+
+        execute
+      end
+    end
+
+    context 'without an aggregated status for some projects' do
+      before do
+        project1.security_setting.update!(secret_push_protection_enabled: true)
+
+        create(:analyzer_project_status, project: project1, analyzer_type: :secret_detection_pipeline_based,
+          status: :success)
+      end
+
+      it 'excludes nil aggregated statuses from the hash structure' do
+        expected_hash_structure = hash_including(
+          project1 => hash_including(
+            secret_detection_secret_push_protection: hash_including(
+              project_id: project1.id,
+              analyzer_type: :secret_detection_secret_push_protection,
+              status: :success
+            )
+          )
+        )
+
+        expect(Security::AnalyzersStatus::DiffsService).to receive(:new).with(expected_hash_structure).and_call_original
+
+        execute
+      end
+    end
   end
 end
