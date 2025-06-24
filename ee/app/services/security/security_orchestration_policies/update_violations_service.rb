@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class UpdateViolationsService
+      include ::Gitlab::Utils::StrongMemoize
+
       attr_reader :merge_request, :violated_policies, :unviolated_policies, :skipped_policies, :violation_data
 
       delegate :project, to: :merge_request
@@ -61,6 +63,7 @@ module Security
 
         publish_violations_updated_event if publish_event?
         record_violations_detected_audit_event if record_violations_detected_audit_event?
+        record_violations_resolved_audit_event if record_violations_resolved_audit_event?
 
         [violated_policies.clear, unviolated_policies.clear, skipped_policies.clear]
       end
@@ -73,9 +76,14 @@ module Security
 
       # rubocop: disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- unviolated_policies is a Set
       def delete_violations
-        Security::ScanResultPolicyViolation
+        violations = Security::ScanResultPolicyViolation
           .where(merge_request_id: merge_request.id, scan_result_policy_id: unviolated_policies.pluck(:id))
-          .each_batch(order_hint: :updated_at) { |batch| batch.delete_all }
+
+        @deleted_violations_with_data = violations.with_violation_data.exists?
+
+        violations.each_batch do |batch|
+          batch.delete_all
+        end
       end
       # rubocop: enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
 
@@ -119,13 +127,28 @@ module Security
           :collect_security_policy_violations_detected_audit_events, merge_request.project
         )
 
-        violations = merge_request.scan_result_policy_violations
-
-        violations.any? && violations.running.empty?
+        updated_violations.any? && updated_violations.running.empty?
       end
 
       def record_violations_detected_audit_event
         ::MergeRequests::PolicyViolationsDetectedAuditEventWorker.perform_async(merge_request.id)
+      end
+
+      def updated_violations
+        merge_request.scan_result_policy_violations
+      end
+      strong_memoize_attr :updated_violations
+
+      def record_violations_resolved_audit_event?
+        return unless ::Feature.enabled?(
+          :collect_security_policy_violations_resolved_audit_events, merge_request.project
+        )
+
+        @deleted_violations_with_data && updated_violations.empty?
+      end
+
+      def record_violations_resolved_audit_event
+        ::MergeRequests::PolicyViolationsResolvedAuditEventWorker.perform_async(merge_request.id)
       end
     end
   end

@@ -248,6 +248,64 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
       end
     end
+
+    describe 'policy_violations_resolved audit event' do
+      shared_examples 'not enqueuing the PolicyViolationsResolvedAuditEventWorker' do
+        it 'does not enqueue MergeRequests::PolicyViolationsResolvedAuditEventWorker' do
+          expect(::MergeRequests::PolicyViolationsResolvedAuditEventWorker).not_to receive(:perform_async)
+
+          service.execute
+        end
+      end
+
+      context 'when violations with data are removed' do
+        let_it_be(:existing_violation) do
+          create(:scan_result_policy_violation, :failed, merge_request: merge_request, project: project,
+            scan_result_policy_read: policy_a, violation_data: { any_merge_request: { commits: true } })
+        end
+
+        before do
+          service.remove_violation(policy_a)
+        end
+
+        context 'when there are no other existing violations' do
+          it 'enqueues MergeRequests::PolicyViolationsResolvedAuditEventWorker' do
+            expect(::MergeRequests::PolicyViolationsResolvedAuditEventWorker).to receive(:perform_async).with(
+              merge_request.id
+            )
+
+            service.execute
+          end
+        end
+
+        context 'when there are other existing violations' do
+          before do
+            service.add([policy_b], [])
+          end
+
+          it_behaves_like 'not enqueuing the PolicyViolationsResolvedAuditEventWorker'
+        end
+
+        context 'when the feature flag is disabled' do
+          before do
+            stub_feature_flags(collect_security_policy_violations_resolved_audit_events: false)
+          end
+
+          it_behaves_like 'not enqueuing the PolicyViolationsResolvedAuditEventWorker'
+        end
+      end
+
+      context 'when violations without data are removed' do
+        before do
+          create(:scan_result_policy_violation, :running, merge_request: merge_request, project: project,
+            scan_result_policy_read: policy_a, violation_data: nil)
+
+          service.remove_violation(policy_a)
+        end
+
+        it_behaves_like 'not enqueuing the PolicyViolationsResolvedAuditEventWorker'
+      end
+    end
   end
 
   describe '#add_violation' do
