@@ -1,17 +1,20 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.quickactions.i_quickactions_remove_parent_epic_monthly
-description: Count of MAU using the `/remove_parent_epic` quick action
-product_group: product_planning
+key_path: redis_hll_counters.quickactions.i_quickactions_remove_epic
+description: Count of unique active users using the `/remove_epic` quick action
+product_group: project_management
 value_type: number
 status: active
-time_frame: 28d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
   events:
-  - i_quickactions_remove_parent_epic
+  - i_quickactions_remove_epic
 tiers:
+- premium
 - ultimate
 performance_indicator_type: []
 milestone: "<13.9"

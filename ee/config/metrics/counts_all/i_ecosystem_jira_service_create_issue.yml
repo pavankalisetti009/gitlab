@@ -1,17 +1,22 @@
 ---
 data_category: optional
-key_path: redis_hll_counters.quickactions.i_quickactions_remove_parent_epic_weekly
-description: Count of WAU using the `/remove_parent_epic` quick action
-product_group: product_planning
+key_path: redis_hll_counters.ecosystem.i_ecosystem_jira_service_create_issue
+description: Number of users creating Jira issues
+product_group: import
+product_categories:
+- integrations
 value_type: number
 status: active
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 options:
   events:
-  - i_quickactions_remove_parent_epic
+  - i_ecosystem_jira_service_create_issue
 tiers:
+- premium
 - ultimate
 performance_indicator_type: []
 milestone: "<13.9"
