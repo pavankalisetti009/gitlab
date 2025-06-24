@@ -1,6 +1,11 @@
-import { uniqueId } from 'lodash';
+import { differenceWith, isEqual, uniqueId } from 'lodash';
+import { s__ } from '~/locale';
 import { SPECIFIC_BRANCHES } from 'ee/security_orchestration/components/policy_editor/constants';
-import { SCAN_EXECUTION_PIPELINE_RULE, SCAN_EXECUTION_SCHEDULE_RULE } from '../constants';
+import {
+  DEFAULT_CONDITION_STRATEGY,
+  SCAN_EXECUTION_PIPELINE_RULE,
+  SCAN_EXECUTION_SCHEDULE_RULE,
+} from '../constants';
 import { CRON_DEFAULT_TIME } from './cron';
 
 export const buildDefaultPipeLineRule = () => {
@@ -69,4 +74,69 @@ export const handleBranchTypeSelect = ({
   }
 
   return updatedRule;
+};
+
+export const STRATEGIES = [
+  {
+    key: DEFAULT_CONDITION_STRATEGY,
+    header: s__('SecurityOrchestration|Merge Request Security'),
+    description: s__(
+      'SecurityOrchestration|Runs scans on source branches targeting protected branches. Optimized for MR approval policy compatibility',
+    ),
+    rules: [
+      { type: 'pipeline', branch_type: 'default' },
+      {
+        type: 'pipeline',
+        branch_type: 'target_default',
+        pipeline_sources: { including: ['merge_request_event'] },
+      },
+    ],
+  },
+  {
+    key: 'scheduled',
+    header: s__('SecurityOrchestration|Scheduled Scanning'),
+    description: s__(
+      'SecurityOrchestration|Runs scans on a schedule for maintenance and continuous monitoring of protected branches',
+    ),
+    rules: [
+      {
+        type: 'schedule',
+        cadence: '0 0 * * *',
+        branch_type: 'protected',
+        timezone: 'Etc/UTC',
+        time_window: { distribution: 'random', value: 36000 },
+      },
+    ],
+  },
+  {
+    key: 'release',
+    header: s__('SecurityOrchestration|Merge Release Security'),
+    description: s__(
+      'SecurityOrchestration|Runs comprehensive scans during release processes and when merging to main/production branches',
+    ),
+    rules: [
+      { type: 'pipeline', branches: ['release/*'] },
+      { type: 'pipeline', branch_type: 'default' },
+    ],
+  },
+];
+
+export const STRATEGIES_RULE_MAP = STRATEGIES.reduce((acc, curr) => {
+  acc[curr.key] = curr.rules;
+  return acc;
+}, {});
+
+const ruleNoIds = (rules) => rules.map(({ id, ...rest }) => rest);
+const strategies = STRATEGIES.map(({ rules }) => rules);
+
+export const hasPredefinedRuleStrategy = (rules) => {
+  return strategies.some((strategyRules) => {
+    // early return
+    if (rules.length !== strategyRules.length) return false;
+
+    // If difference is empty, arrays contain same elements
+    const difference = differenceWith(strategyRules, ruleNoIds(rules), isEqual);
+
+    return difference.length === 0;
+  });
 };

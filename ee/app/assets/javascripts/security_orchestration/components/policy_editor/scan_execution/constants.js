@@ -92,3 +92,5 @@ export const PIPELINE_SOURCE_LISTBOX_OPTIONS = Object.entries(PIPELINE_SOURCE_OP
 
 export const SELECTION_CONFIG_CUSTOM = 'custom';
 export const SELECTION_CONFIG_DEFAULT = 'default';
+
+export const DEFAULT_CONDITION_STRATEGY = 'merge-request';

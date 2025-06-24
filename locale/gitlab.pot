@@ -56159,6 +56159,12 @@ msgstr ""
 msgid "SecurityOrchestration|Maximum security policy project schedule rule count exceeded"
 msgstr ""
 
+msgid "SecurityOrchestration|Merge Release Security"
+msgstr ""
+
+msgid "SecurityOrchestration|Merge Request Security"
+msgstr ""
+
 msgid "SecurityOrchestration|Merge request approval"
 msgstr ""
 
@@ -56374,6 +56380,15 @@ msgstr ""
 msgid "SecurityOrchestration|Run a %{scannerStart}%{scanner}%{scannerEnd} scan with the following options:"
 msgstr ""
 
+msgid "SecurityOrchestration|Runs comprehensive scans during release processes and when merging to main/production branches"
+msgstr ""
+
+msgid "SecurityOrchestration|Runs scans on a schedule for maintenance and continuous monitoring of protected branches"
+msgstr ""
+
+msgid "SecurityOrchestration|Runs scans on source branches targeting protected branches. Optimized for MR approval policy compatibility"
+msgstr ""
+
 msgid "SecurityOrchestration|Save allowlist"
 msgstr ""
 
@@ -56401,6 +56416,9 @@ msgstr ""
 msgid "SecurityOrchestration|Scan execution policy"
 msgstr ""
 
+msgid "SecurityOrchestration|Scan execution strategy"
+msgstr ""
+
 msgid "SecurityOrchestration|Scan will automatically choose a runner to run on because there are no tags exist on runners. You can %{linkStart}create a new tag in settings%{linkEnd}."
 msgstr ""
 
@@ -56411,6 +56429,9 @@ msgid "SecurityOrchestration|Schedule the following pipeline execution policy to
 msgstr ""
 
 msgid "SecurityOrchestration|Schedule to run for %{branchSelector}"
+msgstr ""
+
+msgid "SecurityOrchestration|Scheduled Scanning"
 msgstr ""
 
 msgid "SecurityOrchestration|Scheduled pipeline"
