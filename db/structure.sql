@@ -21663,7 +21663,7 @@ CREATE TABLE project_settings (
     duo_features_enabled boolean DEFAULT true NOT NULL,
     require_reauthentication_to_approve boolean,
     observability_alerts_enabled boolean DEFAULT true NOT NULL,
-    spp_repository_pipeline_access boolean,
+    spp_repository_pipeline_access boolean DEFAULT true,
     max_number_of_vulnerabilities integer,
     pages_primary_domain text,
     extended_prat_expiry_webhooks_execute boolean DEFAULT false NOT NULL,

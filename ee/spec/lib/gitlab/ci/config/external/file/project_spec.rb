@@ -54,6 +54,12 @@ RSpec.describe Gitlab::Ci::Config::External::File::Project, feature_category: :p
         end
       end
 
+      shared_examples_for 'user has access to the project' do
+        it 'returns true' do
+          expect(valid?).to be(true)
+        end
+      end
+
       context 'when user does not have permission to access file' do
         let(:context_user) { create(:user) }
 
@@ -65,29 +71,27 @@ RSpec.describe Gitlab::Ci::Config::External::File::Project, feature_category: :p
               project: context_project)
           end
 
-          it_behaves_like 'user has no access to the project'
+          it_behaves_like 'user has access to the project'
 
           context 'and project is linked to the context project as a security policy project' do
             before_all do
               security_orchestration_policy_configuration.update!(project: context_project)
             end
 
-            it_behaves_like 'user has no access to the project'
+            it_behaves_like 'user has access to the project'
 
-            context 'and project allows SPP repository access via project settings' do
+            context 'when creating_policy_pipeline? is false' do
+              let(:creating_policy_pipeline) { false }
+
+              it_behaves_like 'user has no access to the project'
+            end
+
+            context 'when project forbids SPP repository access via project settings' do
               before do
-                project.project_setting.update!(spp_repository_pipeline_access: true)
+                project.project_setting.update!(spp_repository_pipeline_access: false)
               end
 
-              it 'returns true' do
-                expect(valid?).to be(true)
-              end
-
-              context 'when creating_policy_pipeline? is false' do
-                let(:creating_policy_pipeline) { false }
-
-                it_behaves_like 'user has no access to the project'
-              end
+              it_behaves_like 'user has no access to the project'
             end
           end
         end

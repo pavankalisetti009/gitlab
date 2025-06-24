@@ -3646,36 +3646,36 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           create(:security_orchestration_policy_configuration, security_policy_management_project: project)
         end
 
-        it { is_expected.not_to be_allowed(:download_code_spp_repository) }
+        context 'and the project is private' do
+          let(:project) { private_project }
 
-        context 'and project allows spp_repository_pipeline_access' do
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is internal' do
+          let(:project) { internal_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is public' do
+          let(:project) { public_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is public in group' do
+          let(:project) { public_project_in_group }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the spp_repository_pipeline_access setting is disabled' do
           before do
-            project.project_setting.update!(spp_repository_pipeline_access: true)
+            project.project_setting.update!(spp_repository_pipeline_access: false)
           end
 
-          context 'and the project is private' do
-            let(:project) { private_project }
-
-            it { is_expected.to be_allowed(:download_code_spp_repository) }
-          end
-
-          context 'and the project is internal' do
-            let(:project) { internal_project }
-
-            it { is_expected.to be_allowed(:download_code_spp_repository) }
-          end
-
-          context 'and the project is public' do
-            let(:project) { public_project }
-
-            it { is_expected.to be_allowed(:download_code_spp_repository) }
-          end
-
-          context 'and the project is public in group' do
-            let(:project) { public_project_in_group }
-
-            it { is_expected.to be_allowed(:download_code_spp_repository) }
-          end
+          it { is_expected.not_to be_allowed(:download_code_spp_repository) }
         end
 
         context 'and namespace allows spp_repository_pipeline_access' do

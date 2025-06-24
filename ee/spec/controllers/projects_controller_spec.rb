@@ -722,14 +722,14 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
           namespace_id: project.namespace,
           project: {
             project_setting_attributes: {
-              spp_repository_pipeline_access: true
+              spp_repository_pipeline_access: false
             }
           }
         }
       end
 
       it 'does not update the setting' do
-        expect { request }.not_to change { project.reload.project_setting.spp_repository_pipeline_access }.from(false)
+        expect { request }.not_to change { project.reload.project_setting.spp_repository_pipeline_access }.from(true)
       end
 
       context 'with licensed feature' do
@@ -739,7 +739,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         it 'sets spp_repository_pipeline_access' do
           expect { request }
-            .to change { project.reload.project_setting.spp_repository_pipeline_access }.from(false).to(true)
+            .to change { project.reload.project_setting.spp_repository_pipeline_access }.from(true).to(false)
         end
       end
     end
