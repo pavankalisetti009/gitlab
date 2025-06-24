@@ -38746,7 +38746,7 @@ msgstr ""
 msgid "MergeRequestApprovals|Enforce %{link_start}separation of duties%{link_end} for all projects."
 msgstr ""
 
-msgid "MergeRequestApprovals|Enforce %{separationLinkStart}separation of duties%{separationLinkEnd} for all projects. %{learnLinkStart}Learn more.%{learnLinkEnd}"
+msgid "MergeRequestApprovals|Enforce %{separationLinkStart}separation of duties%{separationLinkEnd} for all projects. %{learnLinkStart}Learn more%{learnLinkEnd}."
 msgstr ""
 
 msgid "MergeRequestDiffs|Commenting on lines %{selectStart}start%{selectEnd} to %{end}"
