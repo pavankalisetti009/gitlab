@@ -90,13 +90,13 @@ export default {
       </div>
 
       <div class="gl-mx-auto gl-my-3 gl-flex gl-flex-wrap gl-gap-3">
-        <work-item-status-badge
-          v-for="status in lifecycle.statuses"
-          :key="status.id"
-          :name="status.name"
-          :icon-name="status.iconName"
-          :color="status.color"
-        />
+        <div v-for="status in lifecycle.statuses" :key="status.id" class="gl-max-w-20">
+          <work-item-status-badge
+            :name="status.name"
+            :icon-name="status.iconName"
+            :color="status.color"
+          />
+        </div>
       </div>
 
       <gl-button size="small">{{ s__('WorkItem|Edit statuses') }}</gl-button>

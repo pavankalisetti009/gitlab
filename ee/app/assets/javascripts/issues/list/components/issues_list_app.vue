@@ -264,12 +264,14 @@ export default {
       />
     </template>
     <template #custom-status="{ issuable }">
-      <work-item-status-badge
-        v-if="hasCustomStatus(issuable)"
-        :name="customStatusName(issuable)"
-        :icon-name="customStatusIconName(issuable)"
-        :color="customStatusColor(issuable)"
-      />
+      <div class="gl-max-w-20">
+        <work-item-status-badge
+          v-if="hasCustomStatus(issuable)"
+          :name="customStatusName(issuable)"
+          :icon-name="customStatusIconName(issuable)"
+          :color="customStatusColor(issuable)"
+        />
+      </div>
     </template>
   </issues-list-app>
 </template>
