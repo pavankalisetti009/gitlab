@@ -37,7 +37,7 @@ export default {
   i18n: {
     groupSettingsHeader: __('Merge request approvals'),
     groupSettingsDescription: s__(
-      'MergeRequestApprovals|Enforce %{separationLinkStart}separation of duties%{separationLinkEnd} for all projects. %{learnLinkStart}Learn more.%{learnLinkEnd}',
+      'MergeRequestApprovals|Enforce %{separationLinkStart}separation of duties%{separationLinkEnd} for all projects. %{learnLinkStart}Learn more%{learnLinkEnd}.',
     ),
   },
   labels: GROUP_APPROVAL_SETTINGS_LABELS_I18N,
