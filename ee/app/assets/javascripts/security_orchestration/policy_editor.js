@@ -8,6 +8,7 @@ export default (el, namespaceType) => {
   if (!el) return null;
 
   const {
+    accessTokens,
     assignedPolicyProject,
     disableScanPolicyUpdate,
     createAgentHelpPath,
@@ -45,6 +46,7 @@ export default (el, namespaceType) => {
 
   let parsedSoftwareLicenses;
   let parsedTimezones;
+  let parsedAccessTokens;
 
   try {
     parsedSoftwareLicenses = JSON.parse(softwareLicenses).map((license) => {
@@ -60,6 +62,12 @@ export default (el, namespaceType) => {
     parsedTimezones = [];
   }
 
+  try {
+    parsedAccessTokens = JSON.parse(accessTokens);
+  } catch {
+    parsedAccessTokens = [];
+  }
+
   const count = parseInt(maxScanExecutionPolicyActions, 10);
   const parsedMaxScanExecutionPolicyActions = Number.isNaN(count)
     ? MAX_SCAN_EXECUTION_ACTION_COUNT
@@ -69,6 +77,7 @@ export default (el, namespaceType) => {
     el,
     apolloProvider,
     provide: {
+      accessTokens: parsedAccessTokens,
       createAgentHelpPath,
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),
       enabledExperiments,
