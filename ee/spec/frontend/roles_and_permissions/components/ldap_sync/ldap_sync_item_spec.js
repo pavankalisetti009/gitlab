@@ -43,17 +43,17 @@ describe('LdapSyncItem component', () => {
 
   const expectSyncCreated = (index) => {
     expectLabelIconAndText(index, 'file-addition', 'Sync created at:');
-    expect(findDetailValueAt(index).text()).toBe('7/4/2020, 9:14:54 PM GMT (1 day ago)');
+    expect(findDetailValueAt(index).text()).toBe('July 4, 2020 at 9:14:54 PM GMT (1 day ago)');
   };
 
   const expectSyncStarted = (index) => {
     expectLabelIconAndText(index, 'play', 'Started at:');
-    expect(findDetailValueAt(index).text()).toBe('7/5/2020, 11:55:24 PM GMT (4 minutes ago)');
+    expect(findDetailValueAt(index).text()).toBe('July 5, 2020 at 11:55:24 PM GMT (4 minutes ago)');
   };
 
   const expectSyncEnded = (index) => {
     expectLabelIconAndText(index, 'stop', 'Ended at:');
-    expect(findDetailValueAt(index).text()).toBe('7/5/2020, 11:57:31 PM GMT (2 minutes ago)');
+    expect(findDetailValueAt(index).text()).toBe('July 5, 2020 at 11:57:31 PM GMT (2 minutes ago)');
   };
 
   const expectTotalRuntime = (index) => {
@@ -68,7 +68,7 @@ describe('LdapSyncItem component', () => {
 
   const expectLastSuccessfulSync = (index) => {
     expectLabelIconAndText(index, 'check', 'Last successful sync:');
-    expect(findDetailValueAt(index).text()).toBe('7/4/2020, 12:55:19 PM GMT (1 day ago)');
+    expect(findDetailValueAt(index).text()).toBe('July 4, 2020 at 12:55:19 PM GMT (1 day ago)');
   };
 
   describe.each`

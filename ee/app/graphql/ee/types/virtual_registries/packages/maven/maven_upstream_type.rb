@@ -39,6 +39,13 @@ module EE
             field :description, GraphQL::Types::String, null: true,
               description: 'Description of the upstream registry.',
               experiment: { milestone: '18.1' }
+
+            field :registry_upstreams,
+              [EE::Types::VirtualRegistries::Packages::Maven::MavenRegistryUpstreamType],
+              null: false,
+              description: 'Represents the upstream registry for the upstream ' \
+                'which contains the position data.',
+              experiment: { milestone: '18.2' }
           end
         end
       end
