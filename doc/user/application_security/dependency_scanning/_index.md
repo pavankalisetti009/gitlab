@@ -231,12 +231,6 @@ For more details of the dependency scanning report, see the
 
 ### CycloneDX Software Bill of Materials
 
-{{< history >}}
-
-- Generally available in GitLab 15.7.
-
-{{< /history >}}
-
 Dependency Scanning outputs a [CycloneDX](https://cyclonedx.org/) Software Bill of Materials (SBOM)
 for each supported lock or build file it detects.
 
@@ -311,7 +305,7 @@ merge cyclonedx sboms:
       - gl-sbom-all.cdx.json
 ```
 
-## Roll out 
+## Roll out
 
 After you are confident in the Dependency Scanning results for a single project, you can extend its implementation to additional projects:
 
