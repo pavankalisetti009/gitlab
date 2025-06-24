@@ -85,12 +85,14 @@ export default {
     @removeChild="$emit('removeChild', childItem)"
   >
     <template #child-contents>
-      <work-item-status-badge
-        v-if="showCustomStatus"
-        :name="name"
-        :icon-name="iconName"
-        :color="color"
-      />
+      <div class="gl-max-w-20">
+        <work-item-status-badge
+          v-if="showCustomStatus"
+          :name="name"
+          :icon-name="iconName"
+          :color="color"
+        />
+      </div>
     </template>
   </work-item-link-child-contents>
 </template>
