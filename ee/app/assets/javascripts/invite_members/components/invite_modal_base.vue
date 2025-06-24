@@ -155,11 +155,9 @@ export default {
       totalUserCount: null,
       subscriptionSeats: 0,
       namespaceId: parseInt(this.rootGroupId, 10),
-      eligibleForSeatReconciliation: false,
       currentlyLoading: false,
       isVisible: false,
       actualFeedbackMessage: this.invalidFeedbackMessage,
-      billableUsersDetails: null,
       memberRoles: [],
     };
   },
@@ -324,9 +322,6 @@ export default {
     },
     emitSubmit({ accessLevel, expiresAt, memberRoleId } = {}) {
       this.$emit('submit', { accessLevel, expiresAt, memberRoleId });
-    },
-    passthroughSlotNames() {
-      return Object.keys(this.$scopedSlots || {});
     },
     partitionNewUsersToInvite() {
       const [usersToInviteByEmail, usersToAddById] = partition(
