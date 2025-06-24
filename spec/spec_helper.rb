@@ -223,6 +223,7 @@ RSpec.configure do |config|
 
   config.include_context 'when rendered has no HTML escapes', type: :view
   config.include_context 'with STI disabled', type: :model
+  config.include_context 'with JSONB validated columns', type: :model
 
   include StubCurrentOrganization
   include StubFeatureFlags
