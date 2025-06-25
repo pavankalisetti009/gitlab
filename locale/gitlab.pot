@@ -37384,6 +37384,9 @@ msgstr ""
 msgid "MarkdownEditor|Close find and replace bar"
 msgstr ""
 
+msgid "MarkdownEditor|Continue editing (%{shiftKey}%{modifierKey}P)"
+msgstr ""
+
 msgid "MarkdownEditor|Find and replace"
 msgstr ""
 
@@ -37406,6 +37409,9 @@ msgid "MarkdownEditor|Outdent line (%{modifierKey}[)"
 msgstr ""
 
 msgid "MarkdownEditor|Outdent line (%{modifier_key}[)"
+msgstr ""
+
+msgid "MarkdownEditor|Preview (%{shiftKey}%{modifierKey}P)"
 msgstr ""
 
 msgid "MarkdownEditor|header"
