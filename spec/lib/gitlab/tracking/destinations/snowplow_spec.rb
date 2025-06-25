@@ -257,20 +257,8 @@ RSpec.describe Gitlab::Tracking::Destinations::Snowplow, :do_not_stub_snowplow_b
         stub_application_setting(snowplow_enabled?: false)
       end
 
-      context 'and collect_product_usage_events is enabled' do
-        it 'returns true' do
-          expect(subject.enabled?).to be_truthy
-        end
-      end
-
-      context 'and collect_product_usage_events is disabled' do
-        before do
-          stub_feature_flags(collect_product_usage_events: false)
-        end
-
-        it 'returns false' do
-          expect(subject.enabled?).to be_falsey
-        end
+      it 'returns true' do
+        expect(subject.enabled?).to be_truthy
       end
     end
   end

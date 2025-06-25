@@ -40,11 +40,7 @@ module EE
 
         override :eligible?
         def eligible?(event, app_id = nil)
-          if ::Feature.enabled?(:collect_product_usage_events, :instance)
-            super || eligible_duo_event?(event, app_id)
-          else
-            super
-          end
+          super || eligible_duo_event?(event, app_id)
         end
 
         private
