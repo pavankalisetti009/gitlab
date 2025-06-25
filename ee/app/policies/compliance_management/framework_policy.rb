@@ -32,10 +32,12 @@ module ComplianceManagement
     rule { can?(:owner_access) & custom_compliance_frameworks_enabled }.policy do
       enable :admin_compliance_framework
       enable :read_compliance_framework
+      enable :read_compliance_adherence_report
     end
 
     rule { read_root_group & custom_compliance_frameworks_enabled }.policy do
       enable :read_compliance_framework
+      enable :read_compliance_adherence_report
     end
 
     rule { can?(:owner_access) & group_level_compliance_pipeline_enabled }.policy do
@@ -45,6 +47,7 @@ module ComplianceManagement
     rule { custom_ability_compliance_enabled & custom_compliance_frameworks_enabled }.policy do
       enable :admin_compliance_framework
       enable :read_compliance_framework
+      enable :read_compliance_adherence_report
     end
 
     rule { custom_ability_compliance_enabled & group_level_compliance_pipeline_enabled }.policy do
