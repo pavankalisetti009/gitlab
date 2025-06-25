@@ -22,30 +22,39 @@ RSpec.shared_examples 'maven virtual registry not authenticated user' do
   it_behaves_like 'returning response status', :unauthorized
 end
 
-RSpec.shared_examples 'maven virtual registry authenticated endpoint' do |success_shared_example_name:|
-  %i[personal_access_token deploy_token job_token].each do |token_type|
-    context "with a #{token_type}" do
-      let_it_be(:user) { deploy_token } if token_type == :deploy_token
-
-      context 'when sent by headers' do
-        let(:headers) { super().merge(token_header(token_type)) }
-
-        it_behaves_like success_shared_example_name
-      end
-
-      context 'when sent by basic auth' do
-        let(:headers) { super().merge(token_basic_auth(token_type)) }
-
-        it_behaves_like success_shared_example_name
-      end
-    end
-  end
-end
-
 RSpec.shared_examples 'maven virtual registry feature not licensed' do
   before do
     stub_licensed_features(packages_virtual_registry: false)
   end
 
   it_behaves_like 'returning response status', :not_found
+end
+
+RSpec.shared_examples 'an authenticated virtual registry REST API' do |with_successful_status: :ok|
+  using RSpec::Parameterized::TableSyntax
+
+  where(:token, :sent_as, :status) do
+    :personal_access_token | :header        | with_successful_status
+    :personal_access_token | :bearer_header | with_successful_status
+    :personal_access_token | :query_param   | with_successful_status
+
+    :job_token             | :header        | with_successful_status
+    :job_token             | :query_param   | with_successful_status
+
+    :oauth_token           | :bearer_header | with_successful_status
+    :oauth_token           | :query_param   | with_successful_status
+
+    :deploy_token          | :header        | :unauthorized
+  end
+
+  with_them do
+    let(:headers) { token_header(token, sent_as: sent_as) }
+    let(:url) do
+      base_url = super()
+      base_url += "?#{token_query_param(token).to_query}" if sent_as == :query_param
+      base_url
+    end
+
+    it_behaves_like 'returning response status', params[:status]
+  end
 end

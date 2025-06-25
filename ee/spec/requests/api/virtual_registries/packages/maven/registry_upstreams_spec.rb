@@ -56,25 +56,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
       end
     end
 
-    context 'for authentication' do
+    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
       before_all do
         group.add_maintainer(user)
-      end
-
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :created
-        :deploy_token          | :header     | :forbidden
-        :job_token             | :header     | :created
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        if params[:status] == :created
-          it_behaves_like 'successful response'
-        else
-          it_behaves_like 'returning response status', params[:status]
-        end
       end
     end
 
@@ -145,21 +129,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
         it_behaves_like 'returning response status', params[:status]
       end
 
-      context 'for authentication' do
+      it_behaves_like 'an authenticated virtual registry REST API' do
         before_all do
           group.add_maintainer(user)
-        end
-
-        where(:token, :sent_as, :status) do
-          :personal_access_token | :header     | :ok
-          :deploy_token          | :header     | :forbidden
-          :job_token             | :header     | :ok
-        end
-
-        with_them do
-          let(:headers) { token_header(token) }
-
-          it_behaves_like 'returning response status', params[:status]
         end
       end
     end
@@ -222,25 +194,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
       end
     end
 
-    context 'for authentication' do
+    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
       before_all do
         group.add_maintainer(user)
-      end
-
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :no_content
-        :deploy_token          | :header     | :forbidden
-        :job_token             | :header     | :no_content
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        if params[:status] == :no_content
-          it_behaves_like 'successful response for orphan upstream'
-        else
-          it_behaves_like 'returning response status', params[:status]
-        end
       end
     end
 

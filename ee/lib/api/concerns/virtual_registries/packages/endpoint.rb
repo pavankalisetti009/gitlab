@@ -6,6 +6,7 @@ module API
       module Packages
         module Endpoint
           extend ActiveSupport::Concern
+          include ::API::Helpers::Authentication
 
           EXTRA_RESPONSE_HEADERS = {
             'Content-Security-Policy' => "sandbox; default-src 'none'; require-trusted-types-for 'script'",

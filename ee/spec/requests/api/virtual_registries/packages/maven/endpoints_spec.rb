@@ -6,6 +6,26 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
   using RSpec::Parameterized::TableSyntax
   include_context 'for maven virtual registry api setup'
 
+  shared_examples 'maven virtual registry authenticated endpoint' do |success_shared_example_name:|
+    %i[personal_access_token deploy_token job_token].each do |token_type|
+      context "with a #{token_type}" do
+        let_it_be(:user) { deploy_token } if token_type == :deploy_token
+
+        context 'when sent by headers' do
+          let(:headers) { super().merge(token_header(token_type)) }
+
+          it_behaves_like success_shared_example_name
+        end
+
+        context 'when sent by basic auth' do
+          let(:headers) { super().merge(token_basic_auth(token_type)) }
+
+          it_behaves_like success_shared_example_name
+        end
+      end
+    end
+  end
+
   describe 'GET /api/v4/virtual_registries/packages/maven/:id/*path' do
     let_it_be(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
 
