@@ -11,7 +11,7 @@ export function mountMarkdownEditor(options = {}) {
 
   const editor = mountCEMarkdownEditor({
     provide: {
-      editorAiActions: provideEEAiActions,
+      legacyEditorAiActions: provideEEAiActions,
       mrGeneratedContent,
       ...(options.provide ?? {}),
     },
