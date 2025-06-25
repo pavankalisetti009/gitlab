@@ -71,5 +71,48 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
         end
       end
     end
+
+    context 'when experiment `lightweight_trial_registration_redesign` is candidate', :js do
+      include IdentityVerificationHelpers
+
+      let(:user_email) { new_user.email }
+
+      before do
+        stub_application_setting_enum('email_confirmation_setting', 'hard')
+        stub_experiments(lightweight_trial_registration_redesign: :candidate)
+      end
+
+      it 'goes through the experiment trial registration flow' do
+        visit new_trial_registration_path
+
+        # Step 1
+        expect(page).to have_content('Get Started with GitLab')
+        expect(page).not_to have_content('First name')
+        expect(page).not_to have_content('Last name')
+
+        fill_in 'new_user_username', with: new_user.username
+        fill_in 'new_user_email', with: new_user.email
+        fill_in 'new_user_password', with: new_user.password
+
+        click_button _('Continue')
+
+        # Step 2
+        expect(page).to have_content('Help us keep GitLab secure')
+        expect(page).not_to have_content('You are signed in as')
+
+        fill_in 'verification_code', with: email_verification_code
+
+        click_button _('Verify email address')
+
+        # Step 3
+        expect(page).to have_content('Verification successful')
+
+        wait_for_all_requests
+
+        # Step 4
+        # To be updated once Step 4 is completed in https://gitlab.com/gitlab-org/gitlab/-/issues/550313
+        expect(page).to have_content('Welcome to GitLab')
+      end
+    end
   end
 end
