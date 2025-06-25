@@ -9,7 +9,9 @@ import GenerateDescriptionModal from '../components/ai_generate_issue_descriptio
 
 let el;
 
-function initDescriptionModal() {
+function initDescriptionModal({
+  resourceId = convertToGraphQLId(TYPENAME_PROJECT, document.body.dataset.projectId),
+} = {}) {
   if (!el) {
     el = document.createElement('div');
     document.body.appendChild(el);
@@ -22,7 +24,6 @@ function initDescriptionModal() {
   });
 
   const userId = convertToGraphQLId(TYPENAME_USER, gon.current_user_id);
-  const resourceId = convertToGraphQLId(TYPENAME_PROJECT, document.body.dataset.projectId);
 
   return new Vue({
     el,
@@ -53,11 +54,11 @@ function initDescriptionModal() {
   });
 }
 
-export const generateDescriptionAction = () => ({
+export const generateDescriptionAction = ({ resourceId } = {}) => ({
   title: s__('AI|Generate issue description'),
   description: s__('AI|Create issue description based on a short prompt'),
   handler() {
-    initDescriptionModal();
+    initDescriptionModal({ resourceId });
 
     return Promise.resolve(null);
   },

@@ -55,12 +55,17 @@ export default {
     newCommentTemplatePaths: {
       default: () => [],
     },
-    editorAiActions: { default: () => [] },
     mrGeneratedContent: { default: null },
     canSummarizeChanges: { default: false },
     canUseComposer: { default: false },
+    legacyEditorAiActions: { default: () => [] },
   },
   props: {
+    editorAiActions: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
     previewMarkdown: {
       type: Boolean,
       required: true,
@@ -138,6 +143,12 @@ export default {
     };
   },
   computed: {
+    aiActions() {
+      if (this.editorAiActions.length > 0) {
+        return this.editorAiActions;
+      }
+      return this.legacyEditorAiActions;
+    },
     commentTemplatePaths() {
       return this.newCommentTemplatePaths.length > 0
         ? this.newCommentTemplatePaths
@@ -572,10 +583,10 @@ export default {
             </div>
           </template>
           <div class="gl-flex gl-gap-y-2">
-            <div v-if="!previewMarkdown && editorAiActions.length" class="gl-flex gl-gap-y-2">
+            <div v-if="!previewMarkdown && aiActions.length" class="gl-flex gl-gap-y-2">
               <header-divider v-if="!previewMarkdown" />
               <ai-actions-dropdown
-                :actions="editorAiActions"
+                :actions="aiActions"
                 @input="insertAIAction"
                 @replace="replaceTextarea"
               />

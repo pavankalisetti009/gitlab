@@ -39,7 +39,7 @@ describe('Markdown field header component', () => {
     (enabled) => {
       createWrapper({
         provide: {
-          editorAiActions: enabled ? [{ value: 'myAction', title: 'myAction' }] : [],
+          legacyEditorAiActions: enabled ? [{ value: 'myAction', title: 'myAction' }] : [],
         },
       });
 
@@ -68,7 +68,7 @@ _This description was generated for revision ${sha} using AI_`;
       createWrapper({
         attachTo: '#root',
         provide: {
-          editorAiActions: [{ value: 'myAction', title: 'myAction' }],
+          legacyEditorAiActions: [{ value: 'myAction', title: 'myAction' }],
           mrGeneratedContent: gen,
         },
       });
