@@ -18,7 +18,8 @@ module Security
 
       instance.csp_namespace_id.present? && (
         ::Feature.enabled?(:security_policies_csp, group) ||
-          ::Feature.enabled?(:security_policies_csp, group&.root_ancestor)
+          ::Feature.enabled?(:security_policies_csp, group&.root_ancestor) ||
+          ::Feature.enabled?(:security_policies_csp, :instance)
       )
     end
 

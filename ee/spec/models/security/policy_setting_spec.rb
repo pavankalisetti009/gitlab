@@ -115,6 +115,14 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
         it { is_expected.to be(true) }
       end
+
+      context 'with feature flag "security_policies_csp" enabled for :instance' do
+        before do
+          stub_feature_flags(security_policies_csp: Feature::FlipperGitlabInstance.new)
+        end
+
+        it { is_expected.to be(true) }
+      end
     end
   end
 end
