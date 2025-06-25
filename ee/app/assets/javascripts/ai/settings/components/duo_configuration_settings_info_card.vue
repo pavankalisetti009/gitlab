@@ -41,7 +41,7 @@ export default {
     areDuoCoreFeaturesEnabled: { default: false },
   },
   props: {
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
@@ -49,7 +49,7 @@ export default {
   },
   computed: {
     isDuoCoreTier() {
-      return this.duoTier === DUO_CORE;
+      return this.activeDuoTier === DUO_CORE;
     },
     onSelfManaged() {
       return !this.isSaaS;
@@ -74,7 +74,7 @@ export default {
       return this.$options.i18n.disabled;
     },
     title() {
-      return DUO_TITLES[this.duoTier];
+      return DUO_TITLES[this.activeDuoTier];
     },
   },
 };

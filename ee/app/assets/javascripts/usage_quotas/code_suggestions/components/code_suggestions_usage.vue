@@ -324,23 +324,23 @@ export default {
               <code-suggestions-statistics-card
                 :total-value="totalValue"
                 :usage-value="usageValue"
-                :duo-tier="activeDuoTier"
+                :active-duo-tier="activeDuoTier"
               />
               <code-suggestions-info-card
                 :group-id="groupId"
-                :duo-tier="activeDuoTier"
+                :active-duo-tier="activeDuoTier"
                 @error="(errorWithCause) => (addOnPurchasesFetchError = errorWithCause)"
               />
             </section>
             <saas-add-on-eligible-user-list
               v-if="isSaaS"
               :add-on-purchase-id="addOnPurchase.id"
-              :duo-tier="activeDuoTier"
+              :active-duo-tier="activeDuoTier"
             />
             <self-managed-add-on-eligible-user-list
               v-else
               :add-on-purchase-id="addOnPurchase.id"
-              :duo-tier="activeDuoTier"
+              :active-duo-tier="activeDuoTier"
             />
           </template>
         </slot>

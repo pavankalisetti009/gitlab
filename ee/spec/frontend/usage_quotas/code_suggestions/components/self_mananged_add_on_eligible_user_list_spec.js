@@ -58,7 +58,7 @@ describe('Add On Eligible User List', () => {
     sort: DEFAULT_SORT_OPTION,
   };
 
-  const duoTier = DUO_PRO;
+  const activeDuoTier = DUO_PRO;
   const duoProDefaultQueryVariables = {
     addOnType: DUO_PRO,
     addOnPurchaseIds: [duoProAddOnPurchaseId],
@@ -86,7 +86,7 @@ describe('Add On Eligible User List', () => {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         addOnPurchaseId: duoProAddOnPurchaseId,
-        duoTier,
+        activeDuoTier,
         ...props,
       },
       provide: {
@@ -113,7 +113,7 @@ describe('Add On Eligible User List', () => {
     it('displays add-on eligible user list', () => {
       const expectedProps = {
         addOnPurchaseId: duoProAddOnPurchaseId,
-        duoTier: DUO_PRO,
+        activeDuoTier: DUO_PRO,
         isLoading: false,
         pageInfo: pageInfoWithMorePages,
         pageSize: DEFAULT_PER_PAGE,
@@ -172,7 +172,7 @@ describe('Add On Eligible User List', () => {
     describe('with Duo Enterprise add-on tier', () => {
       beforeEach(() => {
         return createComponent({
-          props: { duoTier: DUO_ENTERPRISE, addOnPurchaseId: duoEnterpriseAddOnPurchaseId },
+          props: { activeDuoTier: DUO_ENTERPRISE, addOnPurchaseId: duoEnterpriseAddOnPurchaseId },
         });
       });
 
@@ -186,7 +186,7 @@ describe('Add On Eligible User List', () => {
     describe('with Duo with Amazon Q add-on tier', () => {
       beforeEach(() => {
         return createComponent({
-          props: { duoTier: DUO_AMAZON_Q, addOnPurchaseId: duoAmazonQAddOnPurchaseId },
+          props: { activeDuoTier: DUO_AMAZON_Q, addOnPurchaseId: duoAmazonQAddOnPurchaseId },
         });
       });
 
@@ -203,7 +203,7 @@ describe('Add On Eligible User List', () => {
       it('displays add-on eligible user list', () => {
         const expectedProps = {
           addOnPurchaseId: duoProAddOnPurchaseId,
-          duoTier: DUO_PRO,
+          activeDuoTier: DUO_PRO,
           isLoading: false,
           pageInfo: undefined,
           pageSize: DEFAULT_PER_PAGE,

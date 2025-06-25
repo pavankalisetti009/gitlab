@@ -198,7 +198,7 @@ describe('Add On Eligible User List', () => {
           pageInfo: pageInfoWithNoPages,
           pageSize: DEFAULT_PER_PAGE,
           isLoading: false,
-          duoTier: DUO_PRO,
+          activeDuoTier: DUO_PRO,
           ...props,
         },
         provide: {
@@ -394,7 +394,7 @@ describe('Add On Eligible User List', () => {
       beforeEach(() => {
         return createComponent({
           mountFn: mount,
-          props: { duoTier: DUO_PRO },
+          props: { activeDuoTier: DUO_PRO },
         });
       });
 
@@ -407,7 +407,7 @@ describe('Add On Eligible User List', () => {
       beforeEach(() => {
         return createComponent({
           mountFn: mount,
-          props: { duoTier: DUO_ENTERPRISE },
+          props: { activeDuoTier: DUO_ENTERPRISE },
         });
       });
 
@@ -420,7 +420,7 @@ describe('Add On Eligible User List', () => {
       beforeEach(() => {
         return createComponent({
           mountFn: mount,
-          props: { duoTier: DUO_AMAZON_Q },
+          props: { activeDuoTier: DUO_AMAZON_Q },
         });
       });
 

@@ -199,7 +199,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
         addOnAssignments: [],
         userId: userIdForAssignment,
         addOnPurchaseId: duoProAddOnPurchaseId,
-        duoTier: DUO_PRO,
+        activeDuoTier: DUO_PRO,
         ...props,
       },
     });
@@ -223,7 +223,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   describe('with Duo Enterprise add-on enabled', () => {
     beforeEach(() => {
-      return createComponent({ props: { duoTier: DUO_ENTERPRISE } });
+      return createComponent({ props: { activeDuoTier: DUO_ENTERPRISE } });
     });
 
     it('shows correct label on the toggle', () => {
@@ -233,7 +233,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   describe('with Duo with Amazon Q add-on enabled', () => {
     beforeEach(() => {
-      return createComponent({ props: { duoTier: DUO_AMAZON_Q } });
+      return createComponent({ props: { activeDuoTier: DUO_AMAZON_Q } });
     });
 
     it('shows correct label on the toggle', () => {
@@ -315,7 +315,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
       createComponent({
         props: {
           addOnAssignments: [],
-          duoTier: DUO_ENTERPRISE,
+          activeDuoTier: DUO_ENTERPRISE,
           userId: userIdForAssignment,
           addOnPurchaseId: duoEnterpriseAddOnPurchaseId,
         },
@@ -354,7 +354,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
       createComponent({
         props: {
           addOnAssignments: [],
-          duoTier: DUO_AMAZON_Q,
+          activeDuoTier: DUO_AMAZON_Q,
           userId: userIdForAssignment,
           addOnPurchaseId: duoAmazonQAddOnPurchaseId,
         },

@@ -37,7 +37,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
   const defaultProps = {
     groupId: 4321,
-    duoTier: DUO_PRO,
+    activeDuoTier: DUO_PRO,
   };
 
   const defaultApolloData = {
@@ -135,7 +135,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
     describe('with Duo Pro add-on enabled', () => {
       beforeEach(async () => {
-        createComponent({ props: { duoTier: DUO_PRO } });
+        createComponent({ props: { activeDuoTier: DUO_PRO } });
 
         await waitForPromises();
       });
@@ -158,7 +158,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
     describe('with Duo Enterprise add-on enabled', () => {
       beforeEach(async () => {
-        createComponent({ props: { duoTier: DUO_ENTERPRISE } });
+        createComponent({ props: { activeDuoTier: DUO_ENTERPRISE } });
 
         await waitForPromises();
       });
@@ -182,7 +182,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
     describe('with Duo Amazon Q add-on enabled', () => {
       beforeEach(async () => {
-        createComponent({ props: { duoTier: DUO_AMAZON_Q } });
+        createComponent({ props: { activeDuoTier: DUO_AMAZON_Q } });
 
         await waitForPromises();
       });
@@ -267,7 +267,7 @@ describe('CodeSuggestionsInfoCard', () => {
       beforeEach(async () => {
         createComponent({
           props: {
-            duoTier: DUO_PRO,
+            activeDuoTier: DUO_PRO,
           },
           provide: {
             duoAddOnIsTrial: true,
@@ -307,7 +307,7 @@ describe('CodeSuggestionsInfoCard', () => {
       beforeEach(async () => {
         createComponent({
           props: {
-            duoTier: DUO_ENTERPRISE,
+            activeDuoTier: DUO_ENTERPRISE,
           },
           provide: {
             duoAddOnIsTrial: true,
@@ -338,7 +338,7 @@ describe('CodeSuggestionsInfoCard', () => {
           beforeEach(async () => {
             createComponent({
               props: {
-                duoTier: DUO_PRO,
+                activeDuoTier: DUO_PRO,
               },
               provide: {
                 duoAddOnIsTrial: true,
@@ -398,7 +398,7 @@ describe('CodeSuggestionsInfoCard', () => {
           beforeEach(async () => {
             createComponent({
               props: {
-                duoTier: DUO_ENTERPRISE,
+                activeDuoTier: DUO_ENTERPRISE,
               },
               provide: {
                 duoAddOnIsTrial: true,
@@ -452,7 +452,7 @@ describe('CodeSuggestionsInfoCard', () => {
         describe('when add on is duo enterprise', () => {
           it('does not render the purchase seats button', async () => {
             createComponent({
-              props: { duoTier: DUO_ENTERPRISE },
+              props: { activeDuoTier: DUO_ENTERPRISE },
               provide: { duoAddOnIsTrial: false },
             });
             await waitForPromises();
@@ -463,7 +463,7 @@ describe('CodeSuggestionsInfoCard', () => {
           describe('contact sales button', () => {
             it('is rendered after apollo is loaded with the correct props', async () => {
               createComponent({
-                props: { duoTier: DUO_ENTERPRISE },
+                props: { activeDuoTier: DUO_ENTERPRISE },
                 provide: { duoAddOnIsTrial: false },
               });
 
@@ -483,7 +483,7 @@ describe('CodeSuggestionsInfoCard', () => {
               const mockError = new Error('Woops, error in permissions call');
               beforeEach(async () => {
                 queryHandlerMock = jest.fn().mockRejectedValueOnce(mockError);
-                createComponent({ props: { duoTier: DUO_ENTERPRISE } });
+                createComponent({ props: { activeDuoTier: DUO_ENTERPRISE } });
 
                 await waitForPromises();
               });
@@ -520,7 +520,7 @@ describe('CodeSuggestionsInfoCard', () => {
                       userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
                     },
                   });
-                  createComponent({ props: { duoTier: DUO_ENTERPRISE } });
+                  createComponent({ props: { activeDuoTier: DUO_ENTERPRISE } });
                   await waitForPromises();
 
                   findContactSalesButton().vm.$emit('click');
@@ -552,7 +552,7 @@ describe('CodeSuggestionsInfoCard', () => {
                       userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
                     },
                   });
-                  createComponent({ props: { duoTier: DUO_ENTERPRISE } });
+                  createComponent({ props: { activeDuoTier: DUO_ENTERPRISE } });
                   await waitForPromises();
 
                   findContactSalesButton().vm.$emit('click');
@@ -591,7 +591,7 @@ describe('CodeSuggestionsInfoCard', () => {
               const mockError = new Error('Woops, error in permissions call');
               beforeEach(async () => {
                 queryHandlerMock = jest.fn().mockRejectedValueOnce(mockError);
-                createComponent({ props: { duoTier: DUO_PRO } });
+                createComponent({ props: { activeDuoTier: DUO_PRO } });
 
                 await waitForPromises();
               });
@@ -624,7 +624,7 @@ describe('CodeSuggestionsInfoCard', () => {
                 ${true}  | ${'add_duo_pro_saas'}
                 ${false} | ${'add_duo_pro_sm'}
               `('tracks the click with correct labels', async ({ isSaaS, label }) => {
-                createComponent({ props: { duoTier: DUO_PRO }, provide: { isSaaS } });
+                createComponent({ props: { activeDuoTier: DUO_PRO }, provide: { isSaaS } });
                 await waitForPromises();
 
                 const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
@@ -655,7 +655,7 @@ describe('CodeSuggestionsInfoCard', () => {
                       userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
                     },
                   });
-                  createComponent({ props: { duoTier: DUO_PRO } });
+                  createComponent({ props: { activeDuoTier: DUO_PRO } });
                   await waitForPromises();
 
                   findAddSeatsButton().vm.$emit('click');
@@ -691,7 +691,7 @@ describe('CodeSuggestionsInfoCard', () => {
                       userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
                     },
                   });
-                  createComponent({ props: { duoTier: DUO_PRO } });
+                  createComponent({ props: { activeDuoTier: DUO_PRO } });
                   await waitForPromises();
 
                   findAddSeatsButton().vm.$emit('click');
@@ -713,7 +713,7 @@ describe('CodeSuggestionsInfoCard', () => {
         describe('when add on is Duo with Amazon Q', () => {
           beforeEach(async () => {
             createComponent({
-              props: { duoTier: DUO_AMAZON_Q },
+              props: { activeDuoTier: DUO_AMAZON_Q },
               provide: { duoAddOnIsTrial: false },
             });
 

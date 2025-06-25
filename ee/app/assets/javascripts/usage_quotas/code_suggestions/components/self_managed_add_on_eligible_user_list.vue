@@ -34,7 +34,7 @@ export default {
       type: String,
       required: true,
     },
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (value) => DUO_IDENTIFIERS.includes(value),
@@ -83,7 +83,7 @@ export default {
     },
     queryVariables() {
       return {
-        addOnType: this.duoTier,
+        addOnType: this.activeDuoTier,
         addOnPurchaseIds: [this.addOnPurchaseId],
         sort: this.sort,
         ...this.filterOptions,
@@ -160,7 +160,7 @@ export default {
     :page-info="pageInfo"
     :page-size="pageSize"
     :search="filterOptions.search"
-    :duo-tier="duoTier"
+    :active-duo-tier="activeDuoTier"
     @next="handleNext"
     @prev="handlePrev"
     @page-size-change="handlePageSizeChange"

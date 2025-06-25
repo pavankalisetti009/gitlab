@@ -281,7 +281,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsStatistics().props()).toEqual({
             usageValue: 0,
             totalValue: 20,
-            duoTier: DUO_PRO,
+            activeDuoTier: DUO_PRO,
           });
         });
 
@@ -289,7 +289,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsInfo().exists()).toBe(true);
           expect(findCodeSuggestionsInfo().props()).toEqual({
             groupId: 289561,
-            duoTier: DUO_PRO,
+            activeDuoTier: DUO_PRO,
           });
         });
       });
@@ -306,7 +306,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsStatistics().props()).toEqual({
             usageValue: 0,
             totalValue: 20,
-            duoTier: DUO_ENTERPRISE,
+            activeDuoTier: DUO_ENTERPRISE,
           });
         });
 
@@ -314,7 +314,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsInfo().exists()).toBe(true);
           expect(findCodeSuggestionsInfo().props()).toEqual({
             groupId: 289561,
-            duoTier: DUO_ENTERPRISE,
+            activeDuoTier: DUO_ENTERPRISE,
           });
         });
 
@@ -477,7 +477,7 @@ describe('GitLab Duo Usage', () => {
 
       expect(findSaasAddOnEligibleUserList().props()).toEqual({
         addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        duoTier: DUO_PRO,
+        activeDuoTier: DUO_PRO,
       });
     });
 
@@ -490,7 +490,7 @@ describe('GitLab Duo Usage', () => {
 
       expect(findSelfManagedAddOnEligibleUserList().props()).toEqual({
         addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        duoTier: DUO_PRO,
+        activeDuoTier: DUO_PRO,
       });
     });
   });

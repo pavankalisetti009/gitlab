@@ -40,7 +40,7 @@ describe('Add On Eligible User List', () => {
   const fullPath = 'namespace/full-path';
   const duoProAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
-  const duoTier = DUO_PRO;
+  const activeDuoTier = DUO_PRO;
   const error = new Error('Error');
 
   const defaultPaginationParams = {
@@ -109,7 +109,7 @@ describe('Add On Eligible User List', () => {
       ),
       propsData: {
         addOnPurchaseId: duoProAddOnPurchaseId,
-        duoTier,
+        activeDuoTier,
         ...props,
       },
       provide: {
@@ -142,7 +142,7 @@ describe('Add On Eligible User List', () => {
         mockPaginatedAddOnEligibleUsers.data.namespace.addOnEligibleUsers;
       const expectedProps = {
         addOnPurchaseId: duoProAddOnPurchaseId,
-        duoTier,
+        activeDuoTier,
         isLoading: false,
         pageInfo,
         pageSize: DEFAULT_PER_PAGE,
@@ -160,7 +160,7 @@ describe('Add On Eligible User List', () => {
     describe('with Duo Enterprise add-on tier', () => {
       beforeEach(() => {
         return createComponent({
-          props: { duoTier: DUO_ENTERPRISE, addOnPurchaseId: duoEnterpriseAddOnPurchaseId },
+          props: { activeDuoTier: DUO_ENTERPRISE, addOnPurchaseId: duoEnterpriseAddOnPurchaseId },
         });
       });
 

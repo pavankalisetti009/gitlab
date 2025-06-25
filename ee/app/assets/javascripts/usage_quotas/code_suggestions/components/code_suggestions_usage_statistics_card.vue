@@ -29,7 +29,7 @@ export default {
       type: Number,
       required: true,
     },
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
@@ -43,7 +43,7 @@ export default {
       return Boolean(this.totalValue) && this.percentage >= 0;
     },
     duoTitle() {
-      return DUO_TITLES[this.duoTier];
+      return DUO_TITLES[this.activeDuoTier];
     },
   },
 };
