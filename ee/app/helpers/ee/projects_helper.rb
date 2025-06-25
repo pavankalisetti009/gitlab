@@ -16,7 +16,6 @@ module EE
       super.merge({
         requirementsAccessLevel: project.requirements_access_level,
         cveIdRequestEnabled: project.public? && project.project_setting.cve_id_request_enabled?,
-        duoFeaturesEnabled: project.project_setting.duo_features_enabled?,
         sppRepositoryPipelineAccess: project.project_setting.spp_repository_pipeline_access
       })
     end
@@ -33,15 +32,22 @@ module EE
           can?(current_user, :admin_project_secrets_manager, project),
         isSecretsManagerAvailable: project.licensed_feature_available?(:native_secrets_management),
         requirementsAvailable: project.feature_available?(:requirements),
-        licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
-        amazonQAvailable: Ai::AmazonQ.connected?,
-        amazonQAutoReviewEnabled: project.amazon_q_integration&.auto_review_enabled.present?,
-        duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         requestCveAvailable: ::Gitlab.com?,
         cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request.md'),
         sppRepositoryPipelineAccessLocked: project.project_setting.spp_repository_pipeline_access_locked?,
         policySettingsAvailable: project.licensed_feature_available?(:security_orchestration_policies) &&
           ::Security::OrchestrationPolicyConfiguration.policy_management_project?(project)
+      })
+    end
+
+    override :gitlab_duo_settings_data
+    def gitlab_duo_settings_data(project)
+      super.merge({
+        duoFeaturesEnabled: project.project_setting.duo_features_enabled?,
+        licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
+        amazonQAvailable: Ai::AmazonQ.connected?,
+        amazonQAutoReviewEnabled: project.amazon_q_integration&.auto_review_enabled.present?,
+        duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?
       })
     end
 

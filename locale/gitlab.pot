@@ -48734,6 +48734,9 @@ msgstr ""
 msgid "ProjectSettings|Configure %{link_start}data sources%{link_end} to be used for your dashboards."
 msgstr ""
 
+msgid "ProjectSettings|Configure GitLab Duo features for this project."
+msgstr ""
+
 msgid "ProjectSettings|Configure your infrastructure."
 msgstr ""
 

@@ -522,7 +522,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     let(:expected_settings) do
-      { requirementsAccessLevel: 20, securityAndComplianceAccessLevel: 10, duoFeaturesEnabled: true }
+      { requirementsAccessLevel: 20, securityAndComplianceAccessLevel: 10 }
     end
 
     subject { helper.project_permissions_settings(project) }
@@ -564,8 +564,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
     let(:user) { instance_double(User, can_admin_all_resources?: false) }
     let(:expected_data) do
-      { requirementsAvailable: false, licensedAiFeaturesAvailable: false, duoFeaturesLocked: false,
-        sppRepositoryPipelineAccessLocked: false, policySettingsAvailable: false }
+      { requirementsAvailable: false, sppRepositoryPipelineAccessLocked: false, policySettingsAvailable: false }
     end
 
     subject(:data) { helper.project_permissions_panel_data(project) }
@@ -575,26 +574,6 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     it { is_expected.to include(expected_data) }
-
-    context "if AmazonQ is connected" do
-      let_it_be(:integration) { create(:amazon_q_integration, instance: false, project: project) }
-
-      where(
-        connected: [true, false],
-        auto_review_enabled: [true, false]
-      )
-      with_them do
-        before do
-          allow(::Ai::AmazonQ).to receive(:connected?).and_return(connected)
-          integration.update!(auto_review_enabled: auto_review_enabled)
-        end
-
-        it 'sets amazonQAvailable to the correct value' do
-          expect(data[:amazonQAvailable]).to eq(connected)
-          expect(data[:amazonQAutoReviewEnabled]).to eq(auto_review_enabled)
-        end
-      end
-    end
 
     context "if in Gitlab.com" do
       where(is_gitlab_com: [true, false])
@@ -684,6 +663,41 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           end
 
           it { is_expected.to include(canManageSecretManager: false) }
+        end
+      end
+    end
+  end
+
+  describe '#gitlab_duo_settings_data' do
+    let(:user) { instance_double(User, can_admin_all_resources?: false) }
+    let(:expected_data) do
+      { duoFeaturesEnabled: true, licensedAiFeaturesAvailable: false, duoFeaturesLocked: false }
+    end
+
+    subject(:data) { helper.gitlab_duo_settings_data(project) }
+
+    before do
+      allow(helper).to receive_messages(current_user: user, can?: false)
+    end
+
+    it { is_expected.to include(expected_data) }
+
+    context "if AmazonQ is connected" do
+      let_it_be(:integration) { create(:amazon_q_integration, instance: false, project: project) }
+
+      where(
+        connected: [true, false],
+        auto_review_enabled: [true, false]
+      )
+      with_them do
+        before do
+          allow(::Ai::AmazonQ).to receive(:connected?).and_return(connected)
+          integration.update!(auto_review_enabled: auto_review_enabled)
+        end
+
+        it 'sets amazonQAvailable to the correct value' do
+          expect(data[:amazonQAvailable]).to eq(connected)
+          expect(data[:amazonQAutoReviewEnabled]).to eq(auto_review_enabled)
         end
       end
     end

@@ -9,12 +9,18 @@ module EE
 
       override :general_settings
       def general_settings
-        return super unless project.licensed_feature_available?(:issuable_default_templates)
+        settings = super
 
-        super.concat [
-          { text: _("Default description template for issues"),
-            href: edit_project_path(project, anchor: 'js-issue-settings') }
-        ]
+        if project.licensed_ai_features_available?
+          settings.push({ text: _("GitLab Duo"), href: edit_project_path(project, anchor: 'js-gitlab-duo-settings') })
+        end
+
+        if project.licensed_feature_available?(:issuable_default_templates)
+          settings.push({ text: _("Default description template for issues"),
+            href: edit_project_path(project, anchor: 'js-issue-settings') })
+        end
+
+        settings
       end
 
       override :repository_settings
