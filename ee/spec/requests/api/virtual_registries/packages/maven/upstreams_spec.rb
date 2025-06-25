@@ -67,19 +67,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
     end
 
-    context 'for authentication' do
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :ok
-        :deploy_token          | :header     | :ok
-        :job_token             | :header     | :ok
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
+    it_behaves_like 'an authenticated virtual registry REST API'
   end
 
   describe 'POST /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
@@ -195,29 +183,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         message: { 'registry_upstreams.position' => ['must be less than or equal to 20'] }
     end
 
-    context 'for authentication' do
+    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
       before_all do
         group.add_maintainer(user)
       end
 
       before do
         registry.upstreams.each(&:destroy!)
-      end
-
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :created
-        :deploy_token          | :header     | :forbidden
-        :job_token             | :header     | :created
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        if params[:status] == :created
-          it_behaves_like 'successful response'
-        else
-          it_behaves_like 'returning response status', params[:status]
-        end
       end
     end
   end
@@ -270,19 +242,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
     end
 
-    context 'for authentication' do
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :ok
-        :deploy_token          | :header     | :ok
-        :job_token             | :header     | :ok
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
+    it_behaves_like 'an authenticated virtual registry REST API'
   end
 
   describe 'PATCH /api/v4/virtual_registries/packages/maven/upstreams/:id' do
@@ -316,21 +276,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         it_behaves_like 'returning response status', params[:status]
       end
 
-      context 'for authentication' do
+      it_behaves_like 'an authenticated virtual registry REST API' do
         before_all do
           group.add_maintainer(user)
-        end
-
-        where(:token, :sent_as, :status) do
-          :personal_access_token | :header     | :ok
-          :deploy_token          | :header     | :forbidden
-          :job_token             | :header     | :ok
-        end
-
-        with_them do
-          let(:headers) { token_header(token) }
-
-          it_behaves_like 'returning response status', params[:status]
         end
       end
     end
@@ -410,25 +358,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
     end
 
-    context 'for authentication' do
+    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
       before_all do
         group.add_maintainer(user)
-      end
-
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :no_content
-        :deploy_token          | :header     | :forbidden
-        :job_token             | :header     | :no_content
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        if params[:status] == :no_content
-          it_behaves_like 'successful response'
-        else
-          it_behaves_like 'returning response status', params[:status]
-        end
       end
     end
 

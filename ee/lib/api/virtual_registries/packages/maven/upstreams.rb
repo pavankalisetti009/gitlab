@@ -6,6 +6,7 @@ module API
       module Maven
         class Upstreams < ::API::Base
           include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedSetup
+          include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedAuthentication
 
           helpers do
             include ::Gitlab::Utils::StrongMemoize

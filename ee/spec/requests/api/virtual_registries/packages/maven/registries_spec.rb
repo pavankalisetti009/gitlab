@@ -62,19 +62,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
       end
     end
 
-    context 'for authentication' do
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :ok
-        :deploy_token          | :header     | :ok
-        :job_token             | :header     | :ok
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
+    it_behaves_like 'an authenticated virtual registry REST API'
   end
 
   describe 'POST /api/v4/groups/:id/-/virtual_registries/packages/maven/registries' do
@@ -131,25 +119,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
         it_behaves_like 'successful response'
       end
 
-      context 'for authentication' do
+      it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
         before_all do
           group.add_maintainer(user)
         end
 
         before do
           registry_class.for_group(group).delete_all
-        end
-
-        where(:token, :sent_as, :status) do
-          :personal_access_token | :header     | :created
-          :deploy_token          | :header     | :forbidden
-          :job_token             | :header     | :created
-        end
-
-        with_them do
-          let(:headers) { token_header(token) }
-
-          it_behaves_like 'returning response status', params[:status]
         end
       end
     end
@@ -266,19 +242,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
       end
     end
 
-    context 'for authentication' do
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :ok
-        :deploy_token          | :header     | :ok
-        :job_token             | :header     | :ok
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
+    it_behaves_like 'an authenticated virtual registry REST API'
   end
 
   describe 'PATCH /api/v4/virtual_registries/packages/maven/registries/:id' do
@@ -312,21 +276,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
         it_behaves_like 'returning response status', params[:status]
       end
 
-      context 'for authentication' do
+      it_behaves_like 'an authenticated virtual registry REST API' do
         before_all do
           group.add_maintainer(user)
-        end
-
-        where(:token, :sent_as, :status) do
-          :personal_access_token | :header     | :ok
-          :deploy_token          | :header     | :forbidden
-          :job_token             | :header     | :ok
-        end
-
-        with_them do
-          let(:headers) { token_header(token) }
-
-          it_behaves_like 'returning response status', params[:status]
         end
       end
     end
@@ -406,21 +358,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
       end
     end
 
-    context 'for authentication' do
+    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
       before_all do
         group.add_maintainer(user)
-      end
-
-      where(:token, :sent_as, :status) do
-        :personal_access_token | :header     | :no_content
-        :deploy_token          | :header     | :forbidden
-        :job_token             | :header     | :no_content
-      end
-
-      with_them do
-        let(:headers) { token_header(token) }
-
-        it_behaves_like 'returning response status', params[:status]
       end
     end
   end

@@ -18,22 +18,52 @@ RSpec.shared_context 'for maven virtual registry api setup' do
     create(:deploy_token, :group, groups: [group], read_virtual_registry: true)
   end
 
+  let_it_be(:oauth_application) { create(:oauth_application, owner: user) }
+  let_it_be(:oauth_token) do
+    create(:oauth_access_token, application_id: oauth_application.id, resource_owner_id: user.id, scopes: [:api])
+  end
+
   let(:personal_access_token) { create(:personal_access_token, user: user) }
-  let(:headers) { token_header(:personal_access_token) }
+  let(:headers) { token_header(:personal_access_token, sent_as: :header) }
 
   before do
     stub_config(dependency_proxy: { enabled: true }) # not enabled by default
     stub_licensed_features(packages_virtual_registry: true)
   end
 
-  def token_header(token)
+  def token_header(token, sent_as: :header)
     case token
     when :personal_access_token
-      { 'PRIVATE-TOKEN' => personal_access_token.token }
+      header_name = 'PRIVATE-TOKEN'
+      token_value = personal_access_token.token
     when :deploy_token
-      { 'Deploy-Token' => deploy_token.token }
+      header_name = 'Deploy-Token'
+      token_value = deploy_token.token
     when :job_token
-      { 'Job-Token' => job.token }
+      header_name = 'Job-Token'
+      token_value = job.token
+    when :oauth_token
+      # oauth tokens don't support a custom header.
+      # they should always be sent with the bearer header.
+      token_value = oauth_token.plaintext_token
+    end
+
+    case sent_as
+    when :header
+      { header_name => token_value }
+    when :bearer_header
+      { 'Authorization' => "Bearer #{token_value}" }
+    end
+  end
+
+  def token_query_param(token)
+    case token
+    when :personal_access_token
+      { private_token: personal_access_token.token }
+    when :job_token
+      { job_token: job.token }
+    when :oauth_token
+      { access_token: oauth_token.plaintext_token }
     end
   end
 
