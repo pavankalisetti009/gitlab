@@ -19,6 +19,7 @@ module RemoteDevelopment
         LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME = "gl-run-poststart-commands.sh"
         NAMESPACE_PREFIX = "gl-rd-ns"
         PROJECT_CLONING_SUCCESSFUL_FILE_NAME = ".gl_project_cloning_successful"
+        CLONE_DEPTH_OPTION = "--depth 10"
         RUN_AS_USER = 5001
         RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME = "gl-run-internal-blocking-poststart-commands.sh"
         RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME = "gl-run-non-blocking-poststart-commands.sh"

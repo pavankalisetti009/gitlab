@@ -9,3 +9,4 @@ while [ "$(cat ${status_file})" != "Running" ]; do
 done
 echo "$(date -Iseconds): Workspace state is now 'Running', continuing postStart hook execution."
 echo "$(date -Iseconds): Finished sleeping until workspace is running."
+echo "$(date -Iseconds): ----------------------------------------"

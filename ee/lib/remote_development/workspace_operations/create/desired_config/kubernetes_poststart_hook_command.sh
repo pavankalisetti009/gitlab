@@ -3,6 +3,7 @@
 mkdir -p "${GL_WORKSPACE_LOGS_DIR}"
 ln -sf "${GL_WORKSPACE_LOGS_DIR}" /tmp
 
+# shellcheck disable=SC2129 # We area using redirects with a command block as this warning proposes to do. It must be a false positive from the subsequent lines which handle stdout and stderr seprately.
 {
     echo "$(date -Iseconds): ----------------------------------------"
     echo "$(date -Iseconds): Running poststart commands for workspace..."
@@ -14,8 +15,13 @@ ln -sf "${GL_WORKSPACE_LOGS_DIR}" /tmp
 "%<run_internal_blocking_poststart_commands_script_file_path>s" 1>>"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log" 2>>"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log"
 
 {
+    echo "$(date -Iseconds): Finished running internal blocking poststart commands script."
     echo "$(date -Iseconds): ----------------------------------------"
     echo "$(date -Iseconds): Running non-blocking poststart commands script..."
 } >> "${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log"
 
 "%<run_non_blocking_poststart_commands_script_file_path>s" 1>>"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log" 2>>"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log" &
+
+{
+  echo "$(date -Iseconds): Finished running non-blocking poststart commands script."
+} >> "${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log"

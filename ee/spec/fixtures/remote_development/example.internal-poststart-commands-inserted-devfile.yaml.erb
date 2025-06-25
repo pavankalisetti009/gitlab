@@ -72,6 +72,15 @@ commands:
         %>
       component: tooling-container
       label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
+  - id: gl-clone-unshallow-command
+    exec:
+      commandLine: |
+        <%=
+          script = INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT
+          indent_yaml_literal(script, 8)
+        %>
+      component: tooling-container
+      label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
   - id: gl-start-sshd-command
     exec:
       commandLine: |
@@ -101,6 +110,7 @@ events:
     - gl-tools-injector-command
   postStart:
     - gl-clone-project-command
+    - gl-clone-unshallow-command
     - gl-start-sshd-command
     - gl-init-tools-command
     - gl-sleep-until-container-is-running-command

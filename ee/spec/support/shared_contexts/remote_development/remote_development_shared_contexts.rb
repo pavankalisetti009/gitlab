@@ -1165,12 +1165,22 @@ RSpec.shared_context 'with remote development shared fixtures' do
   def internal_blocking_poststart_commands_script
     <<~SCRIPT
       #!/bin/sh
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command."
+      echo "$(date -Iseconds): ----------------------------------------"
+      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command..."
+      #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command."
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command."
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command."
     SCRIPT
   end
 
@@ -1179,15 +1189,19 @@ RSpec.shared_context 'with remote development shared fixtures' do
   def non_blocking_poststart_commands_script(user_command_ids: [])
     script = <<~SCRIPT
       #!/bin/sh
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command."
     SCRIPT
 
     # Add user-defined commands if any
     user_command_ids.each do |command_id|
       script += <<~SCRIPT
+        echo "$(date -Iseconds): ----------------------------------------"
         echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}..."
         #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id} || true
+        echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}."
       SCRIPT
     end
 
@@ -1198,14 +1212,22 @@ RSpec.shared_context 'with remote development shared fixtures' do
   def legacy_poststart_commands_script
     <<~SCRIPT
       #!/bin/sh
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command."
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command."
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command."
+      echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
       #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command."
     SCRIPT
   end
 
@@ -1221,7 +1243,20 @@ RSpec.shared_context 'with remote development shared fixtures' do
       project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
       clone_dir: Shellwords.shellescape(clone_dir),
       project_ref: Shellwords.shellescape(project_ref),
-      project_url: Shellwords.shellescape(project_url)
+      project_url: Shellwords.shellescape(project_url),
+      clone_depth_option: create_constants_module::CLONE_DEPTH_OPTION
+    )
+  end
+
+  # @return [String]
+  def clone_unshallow_script
+    volume_path = workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
+    project_cloning_successful_file = "#{volume_path}/#{create_constants_module::PROJECT_CLONING_SUCCESSFUL_FILE_NAME}"
+    clone_dir = "#{workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH}/test-project"
+    format(
+      RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT,
+      project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
+      clone_dir: Shellwords.shellescape(clone_dir)
     )
   end
 
@@ -1253,6 +1288,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     data = {
       "gl-clone-project-command": clone_project_script,
+      "gl-clone-unshallow-command": clone_unshallow_script,
       "gl-init-tools-command": files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
       create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         internal_blocking_poststart_commands_script,
@@ -1265,6 +1301,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     if legacy_poststart_container_command
       data.delete(create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym)
       data.delete(create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym)
+      data.delete(:"gl-clone-unshallow-command")
       data[create_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
         legacy_poststart_commands_script
     end

@@ -37,6 +37,8 @@ module RemoteDevelopment
           clone_dir = "#{volume_path}/#{project.path}"
           project_url = project.http_url_to_repo
 
+          clone_depth_option = workspaces_shallow_clone_project_feature_enabled?(project) ? CLONE_DEPTH_OPTION : ""
+
           # Add the clone_project event
           clone_project_command_id = "gl-clone-project-command"
           clone_project_script =
@@ -45,7 +47,8 @@ module RemoteDevelopment
               project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
               clone_dir: Shellwords.shellescape(clone_dir),
               project_ref: Shellwords.shellescape(project_ref),
-              project_url: Shellwords.shellescape(project_url)
+              project_url: Shellwords.shellescape(project_url),
+              clone_depth_option: clone_depth_option
             )
 
           # NOTE: We will always have exactly one main_component found, because we have already
@@ -66,6 +69,26 @@ module RemoteDevelopment
               label: INTERNAL_BLOCKING_COMMAND_LABEL
             }
           }
+
+          unless clone_depth_option.empty?
+            # Add the clone_unshallow event
+            clone_unshallow_command_id = "gl-clone-unshallow-command"
+            clone_unshallow_script =
+              format(
+                INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT,
+                project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
+                clone_dir: Shellwords.shellescape(clone_dir)
+              )
+
+            commands << {
+              id: clone_unshallow_command_id,
+              exec: {
+                commandLine: clone_unshallow_script,
+                component: main_component_name,
+                label: INTERNAL_BLOCKING_COMMAND_LABEL
+              }
+            }
+          end
 
           # Add the start_sshd event
           start_sshd_command_id = "gl-start-sshd-command"
@@ -106,16 +129,29 @@ module RemoteDevelopment
             }
           }
 
-          # Prepend internal commands so they are executed before any user-defined poststart events.
-          poststart_events.prepend(
+          commands_to_prepend = [
             clone_project_command_id,
             start_sshd_command_id,
             start_vscode_command_id,
             sleep_until_container_is_running_command_id
-          )
+          ]
+
+          # Insert the unshallow command after the clone command, if the FF is enabled and clone_depth_option is set.
+          commands_to_prepend.insert(1, clone_unshallow_command_id) unless clone_depth_option.empty?
+
+          # Prepend internal commands so they are executed before any user-defined poststart events.
+          poststart_events.prepend(*commands_to_prepend)
 
           context
         end
+
+        # @param [Project] project
+        # @return [TrueClass, FalseClass]
+        def self.workspaces_shallow_clone_project_feature_enabled?(project)
+          Feature.enabled?(:workspaces_shallow_clone_project, project)
+        end
+
+        private_class_method :workspaces_shallow_clone_project_feature_enabled?
       end
     end
   end

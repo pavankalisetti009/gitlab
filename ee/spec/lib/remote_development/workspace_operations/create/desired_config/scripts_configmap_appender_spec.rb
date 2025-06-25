@@ -51,6 +51,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
     expect(configmap_name).to eq(name)
     expect(data).to eq(
       "gl-clone-project-command": clone_project_script,
+      "gl-clone-unshallow-command": clone_unshallow_script,
       "gl-init-tools-command": files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
       create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         internal_blocking_poststart_commands_script,
