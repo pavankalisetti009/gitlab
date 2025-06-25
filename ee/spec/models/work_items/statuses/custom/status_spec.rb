@@ -65,7 +65,7 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
           duplicate_status.name
         ])
 
-        expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done cancelled])
+        expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done canceled])
       end
     end
 

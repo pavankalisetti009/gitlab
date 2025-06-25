@@ -52,3 +52,7 @@ export const VERIFICATION_STATUS_STATES = {
     icon: 'status_canceled',
   },
 };
+
+export const ACTION_TYPES = {
+  REVERIFY: 'REVERIFY',
+};

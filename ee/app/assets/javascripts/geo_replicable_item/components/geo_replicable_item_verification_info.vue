@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf, GlBadge, GlCard } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlCard, GlButton } from '@gitlab/ui';
 import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -11,6 +11,7 @@ export default {
     GlSprintf,
     GlBadge,
     GlCard,
+    GlButton,
     TimeAgo,
     ClipboardButton,
   },
@@ -20,6 +21,7 @@ export default {
       required: true,
     },
   },
+  emits: ['reverify'],
   i18n: {
     copy: __('Copy'),
     verificationInformation: s__('Geo|Verification information'),
@@ -57,7 +59,12 @@ export default {
 <template>
   <gl-card>
     <template #header>
-      <h5 class="gl-my-0">{{ $options.i18n.verificationInformation }}</h5>
+      <div class="gl-flex gl-items-center">
+        <h5 class="gl-my-0">{{ $options.i18n.verificationInformation }}</h5>
+        <gl-button class="gl-ml-auto" @click="$emit('reverify')">{{
+          s__('Geo|Reverify')
+        }}</gl-button>
+      </div>
     </template>
 
     <div class="gl-flex gl-flex-col gl-gap-4">

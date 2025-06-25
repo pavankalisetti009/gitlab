@@ -26,12 +26,12 @@ FactoryBot.define do
 
     trait :wont_do do
       id { 4 }
-      casetegory { :cancelled }
+      category { :canceled }
     end
 
     trait :duplicate do
       id { 5 }
-      category { :cancelled }
+      category { :canceled }
     end
   end
 end

@@ -1,4 +1,5 @@
-import { GlSprintf, GlBadge } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlCard, GlButton } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemVerificationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_verification_info.vue';
 import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared//constants';
@@ -22,11 +23,13 @@ describe('GeoReplicableItemVerificationInfo', () => {
       propsData,
       stubs: {
         GlSprintf,
+        GlCard,
       },
     });
   };
 
   const findGlBadge = () => wrapper.findComponent(GlBadge);
+  const findReverifyButton = () => wrapper.findComponent(GlButton);
   const findRetryAt = () => wrapper.findByTestId('verification-retry-at-time-ago');
   const findVerificationStartedAt = () => wrapper.findByTestId('verification-started-at-time-ago');
   const findLastVerifiedAt = () => wrapper.findByTestId('last-verified-at-time-ago');
@@ -102,6 +105,23 @@ describe('GeoReplicableItemVerificationInfo', () => {
         expect(wrapper.text()).not.toContain('Next verification retry:');
         expect(findRetryAt().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('reverify button', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders the reverify button in the header', () => {
+      expect(findReverifyButton().exists()).toBe(true);
+    });
+
+    it('emits reverify event when clicked', async () => {
+      findReverifyButton().vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.emitted('reverify')).toHaveLength(1);
     });
   });
 

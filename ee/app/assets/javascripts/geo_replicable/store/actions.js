@@ -1,9 +1,9 @@
 import { createAlert } from '~/alert';
 import { s__, __, sprintf } from '~/locale';
 import toast from '~/vue_shared/plugins/global_toast';
+import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
 import { PREV, NEXT, DEFAULT_PAGE_SIZE } from '../constants';
 import buildReplicableTypeQuery from '../graphql/replicable_type_query_builder';
-import replicableTypeUpdateMutation from '../graphql/replicable_type_update_mutation.graphql';
 import replicableTypeBulkUpdateMutation from '../graphql/replicable_type_bulk_update_mutation.graphql';
 import { getGraphqlClient } from '../utils';
 import * as types from './mutation_types';

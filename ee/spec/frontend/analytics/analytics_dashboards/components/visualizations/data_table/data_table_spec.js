@@ -1,7 +1,8 @@
 import { GlIcon, GlTableLite } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import DataTable from 'ee/analytics/analytics_dashboards/components/visualizations/data_table.vue';
+import DataTable from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/data_table.vue';
+import DiffLineChanges from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/diff_line_changes.vue';
 
 describe('DataTable Visualization', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -20,6 +21,9 @@ describe('DataTable Visualization', () => {
           data,
           options: {},
           ...props,
+        },
+        stubs: {
+          DiffLineChanges,
         },
       }),
     );
@@ -211,6 +215,23 @@ describe('DataTable Visualization', () => {
           expect(headers.at(index).text()).toBe(field);
         });
       });
+
+      it.each`
+        component          | customData
+        ${DiffLineChanges} | ${{ additions: 10, deletions: 10 }}
+      `(
+        'renders the custom $component.name component with the correct props',
+        ({ component, customData }) => {
+          createWrapper(mount, {
+            data: [{ custom: customData }],
+            options: {
+              fields: [{ key: 'custom', component: component.name }],
+            },
+          });
+
+          expect(wrapper.findComponent(component).props()).toEqual(customData);
+        },
+      );
     });
   });
 });

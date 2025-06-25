@@ -2165,7 +2165,7 @@ class User < ApplicationRecord
   end
 
   def merge_request_dashboard_enabled?
-    Feature.enabled?(:merge_request_dashboard, self, type: :wip)
+    Feature.enabled?(:merge_request_dashboard, self, type: :beta)
   end
 
   def assigned_open_merge_requests_count(force: false)

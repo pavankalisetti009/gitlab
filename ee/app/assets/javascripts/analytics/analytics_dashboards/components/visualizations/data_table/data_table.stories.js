@@ -4,7 +4,7 @@ import DataTable from './data_table.vue';
 
 export default {
   component: DataTable,
-  title: 'ee/analytics/analytics_dashboards/components/visualizations/data_table',
+  title: 'ee/analytics/analytics_dashboards/components/visualizations/data_table/data_table',
 };
 
 const Template = (args, { argTypes }) => ({
@@ -53,12 +53,7 @@ const data = [
   },
 ];
 
-const defaultArgs = {
-  data,
-  options: {
-    decimalPlaces: 1,
-  },
-};
+const defaultArgs = { data };
 
 export const Default = Template.bind({});
 Default.args = defaultArgs;

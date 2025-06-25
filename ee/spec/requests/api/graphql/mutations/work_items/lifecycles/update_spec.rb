@@ -172,7 +172,7 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
       post_graphql_mutation(mutation, current_user: user)
 
       expect_graphql_errors_to_include(
-        /Expected "INVALID_CATEGORY" to be one of: TRIAGE, TO_DO, IN_PROGRESS, DONE, CANCELLED/
+        /Expected "INVALID_CATEGORY" to be one of: TRIAGE, TO_DO, IN_PROGRESS, DONE, CANCELED/
       )
     end
   end
