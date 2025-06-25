@@ -11,7 +11,6 @@ module EE
 
           # rubocop:disable Metrics/CyclomaticComplexity
           # rubocop:disable Metrics/PerceivedComplexity
-          # rubocop:disable Metrics/AbcSize
           override :filter_attributes_using_license
           def filter_attributes_using_license(attrs)
             unless ::License.feature_available?(:repository_mirrors)
@@ -92,7 +91,7 @@ module EE
               attrs = attrs.except(:duo_features_enabled, :lock_duo_features_enabled)
             end
 
-            unless ::GitlabSubscriptions::AddOnPurchase.find_for_unit_primitive(:complete_code, :instance).any?
+            unless ::GitlabSubscriptions::AddOnPurchase.exists_for_unit_primitive?(:complete_code, :instance)
               attrs = attrs.except(:disabled_direct_code_suggestions)
             end
 
@@ -104,7 +103,6 @@ module EE
           end
           # rubocop:enable Metrics/CyclomaticComplexity
           # rubocop:enable Metrics/PerceivedComplexity
-          # rubocop:enable Metrics/AbcSize
         end
       end
     end

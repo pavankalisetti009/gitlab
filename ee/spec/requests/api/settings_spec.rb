@@ -148,9 +148,9 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
 
       it 'sets setting when code suggestions are available' do
         allow(GitlabSubscriptions::AddOnPurchase)
-          .to receive(:find_for_unit_primitive)
+          .to receive(:exists_for_unit_primitive?)
           .with(:complete_code, :instance)
-          .and_return(build_list(:gitlab_subscription_add_on_purchase, 1))
+          .and_return(true)
 
         api_request
 
