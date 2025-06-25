@@ -42,6 +42,33 @@ RSpec.shared_examples_for 'triggers policy bot comment' do |expected_violation|
           execute
         end
       end
+
+      context 'when it is disabled for a violated policy and enabled for an unviolated policy' do
+        before do
+          # Disable for all policies, including the violated ones
+          merge_request.project.scan_result_policy_reads.update_all(send_bot_message: { enabled: false })
+          # Create a rule without violations for unviolated policy with enabled policy bot comment
+          policy = create(:scan_result_policy_read, :with_send_bot_message, project: merge_request.project)
+          create(:report_approver_rule, :any_merge_request, merge_request: merge_request,
+            scan_result_policy_read: policy, name: 'Unviolated rule with enabled policy bot comment')
+        end
+
+        it_behaves_like 'does not trigger policy bot comment'
+
+        context 'when a comment is already present on the merge request' do
+          include Security::PolicyBotCommentHelpers
+
+          before do
+            create_policy_bot_comment(merge_request)
+          end
+
+          it 'enqueues Security::GeneratePolicyViolationCommentWorker' do
+            expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(merge_request.id)
+
+            execute
+          end
+        end
+      end
     end
   end
 end

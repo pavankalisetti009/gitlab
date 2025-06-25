@@ -680,6 +680,12 @@ module EE
     end
     strong_memoize_attr :squash_option
 
+    def policy_bot_comment
+      notes
+        .authored_by(::Users::Internal.security_bot)
+        .note_starting_with(Security::ScanResultPolicies::PolicyViolationComment::MESSAGE_HEADER).first
+    end
+
     private
 
     def security_comparison?(service_class)
