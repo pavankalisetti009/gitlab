@@ -4,6 +4,7 @@ import VueApollo from 'vue-apollo';
 
 import DuoAgentsPlatformShow from 'ee/ai/duo_agents_platform/pages/show/duo_agents_platform_show.vue';
 import WorkflowDetails from 'ee/ai/duo_agents_platform/pages/show/components/workflow_details.vue';
+import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from 'ee/ai/duo_agents_platform/constants';
 import { getDuoWorkflowEventsQuery } from 'ee/ai/duo_agents_platform/graphql/queries/get_duo_workflow_events.query.graphql';
 
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -135,6 +136,32 @@ describe('DuoAgentsPlatformShow', () => {
           expect(createAlert).toHaveBeenCalledWith(
             'Something went wrong while fetching Agent Flows',
           );
+        });
+      });
+
+      describe('polling', () => {
+        beforeEach(async () => {
+          workflowEventsHandler.mockResolvedValue(mockWorkflowEventsResponse);
+          await createWrapper();
+        });
+
+        it('polls after 10 seconds', async () => {
+          expect(workflowEventsHandler).toHaveBeenCalledTimes(1);
+
+          jest.advanceTimersByTime(3000);
+          await waitForPromises();
+
+          expect(workflowEventsHandler).toHaveBeenCalledTimes(1);
+
+          jest.advanceTimersByTime(DUO_AGENTS_PLATFORM_POLLING_INTERVAL);
+          await waitForPromises();
+
+          expect(workflowEventsHandler).toHaveBeenCalledTimes(2);
+
+          jest.advanceTimersByTime(DUO_AGENTS_PLATFORM_POLLING_INTERVAL);
+          await waitForPromises();
+
+          expect(workflowEventsHandler).toHaveBeenCalledTimes(3);
         });
       });
     });
