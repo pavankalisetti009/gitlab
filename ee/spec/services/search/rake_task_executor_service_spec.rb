@@ -899,6 +899,12 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       allow(helper).to receive_messages(ping?: true, get_meta: { 'created_by' => '123' })
     end
 
+    it 'outputs GitLab version' do
+      expect(logger).to receive(:info).with(/GitLab version:\s+\d+\.\d+\.\d+/)
+
+      info
+    end
+
     it 'outputs server version' do
       expect(logger).to receive(:info).with(/Server version:\s+\d+.\d+.\d+/)
 
@@ -1037,6 +1043,41 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
         it 'outputs an error' do
           expect(logger).to receive(:info).with(/Current Migration/)
           expect(logger).to receive(:error).with(/Unable to connect to search cluster to retrieve data/)
+
+          info
+        end
+      end
+    end
+
+    describe 'current reindexing tasks status' do
+      it 'outputs current reindexing task' do
+        task = create(:elastic_reindexing_task, targets: [Project, Issue])
+
+        expect(logger).to receive(:info).with(/Current Zero-downtime Reindexing Tasks/)
+        expect(logger).to receive(:info)
+          .with(/Reindexing task started at: #{task.created_at} with targets: \[Project, Issue\]/)
+
+        info
+      end
+
+      context 'when there is no current reindexing task' do
+        it 'outputs a message stating no current reindexing task' do
+          expect(logger).to receive(:info).with(/Current Zero-downtime Reindexing Tasks/)
+          expect(logger).to receive(:info).with(/There is no current reindexing task/)
+
+          info
+        end
+      end
+
+      context 'when an error occurs while retrieving reindexing task data' do
+        before do
+          allow(::Search::Elastic::ReindexingTask).to receive(:current).and_raise(StandardError.new('Database error'))
+        end
+
+        it 'outputs an error' do
+          expect(logger).to receive(:info).with(/Current Zero-downtime Reindexing Tasks/)
+          expect(logger).to receive(:error)
+            .with(/An exception occurred during the retrieval of the data: StandardError: Database error/)
 
           info
         end

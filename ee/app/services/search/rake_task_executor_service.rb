@@ -419,17 +419,40 @@ module Search
       logger.info("Indexing group wikis... #{Rainbow('done').green}")
     end
 
-    # rubocop: disable Metrics/AbcSize -- existing violations to be refactored in followup work
     def info
+      logger.info("\nGitLab version:\t\t\t#{Gitlab.version_info}")
+
+      display_search_server_info
+
+      display_search_application_settings
+
+      display_indexing_queues
+
+      check_handler do
+        display_pending_migrations
+      end
+
+      check_handler do
+        display_current_migration
+      end
+
+      check_handler do
+        display_current_reindexing_tasks
+      end
+
+      display_index_settings
+    end
+
+    def check_handler
+      yield
+    rescue StandardError => e
+      logger.error(Rainbow("An exception occurred during the retrieval of the data: #{e.class}: #{e.message}").red)
+    end
+
+    def display_search_application_settings
       setting = ::ApplicationSetting.current
       current_index_version = helper.get_meta&.dig('created_by')
 
-      server_info = helper.server_info(skip_cache: true)
-      logger.info(Rainbow("\nAdvanced Search").yellow)
-      logger.info("Server version:\t\t\t" \
-        "#{server_info[:version] || Rainbow('unknown').red}")
-      logger.info("Server distribution:\t\t" \
-        "#{server_info[:distribution] || Rainbow('unknown').red}")
       logger.info("Indexing enabled:\t\t#{setting.elasticsearch_indexing? ? Rainbow('yes').green : 'no'}")
       logger.info("Search enabled:\t\t\t#{setting.elasticsearch_search? ? Rainbow('yes').green : 'no'}")
       logger.info("Requeue Indexing workers:\t" \
@@ -444,26 +467,15 @@ module Search
         "#{::Elastic::ProcessBookkeepingService.active_number_of_shards}")
       logger.info("Max code indexing concurrency:\t" \
         "#{setting.elasticsearch_max_code_indexing_concurrency}")
-
-      display_indexing_queues
-
-      check_handler do
-        display_pending_migrations
-      end
-
-      check_handler do
-        display_current_migration
-      end
-
-      display_index_settings
     end
 
-    # rubocop:enable Metrics/AbcSize
-
-    def check_handler
-      yield
-    rescue StandardError => e
-      logger.error(Rainbow("An exception occurred during the retrieval of the data: #{e.class}: #{e.message}").red)
+    def display_search_server_info
+      logger.info(Rainbow("\nAdvanced Search").yellow)
+      server_info = helper.server_info(skip_cache: true)
+      logger.info("Server version:\t\t\t" \
+        "#{server_info[:version] || Rainbow('unknown').red}")
+      logger.info("Server distribution:\t\t" \
+        "#{server_info[:distribution] || Rainbow('unknown').red}")
     end
 
     def display_current_migration
@@ -492,6 +504,19 @@ module Search
       concurrency_limit_service = Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService
       queue_size = concurrency_limit_service.queue_size('Search::Elastic::CommitIndexerWorker')
       logger.info("Concurrency limit code queue:\t#{queue_size}")
+    end
+
+    def display_current_reindexing_tasks
+      logger.info(Rainbow("\nCurrent Zero-downtime Reindexing Tasks").yellow)
+
+      current_task = ::Search::Elastic::ReindexingTask.current
+      unless current_task
+        logger.info('There is no current reindexing task.')
+        return
+      end
+
+      targets = current_task.target_classes.map(&:name).join(', ')
+      logger.info("Reindexing task started at: #{current_task.created_at} with targets: [#{targets}]")
     end
 
     def display_index_settings
