@@ -19358,6 +19358,7 @@ CREATE TABLE packages_debian_group_component_files (
     file text NOT NULL,
     file_sha256 bytea NOT NULL,
     group_id bigint,
+    CONSTRAINT check_6d7454a717 CHECK ((group_id IS NOT NULL)),
     CONSTRAINT check_839e1685bc CHECK ((char_length(file) <= 255))
 );
 
