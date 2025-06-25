@@ -123,6 +123,7 @@ export default {
   },
   data() {
     const modifierKey = getModifierKey();
+
     return {
       tag: '> ',
       suggestPopoverVisible: false,
@@ -180,6 +181,17 @@ export default {
         currentHighlight: this.findAndReplace.highlightedMatchIndex,
         totalHighlights: this.findAndReplace.totalMatchCount,
       });
+    },
+    previewToggleTooltip() {
+      return sprintf(
+        this.previewMarkdown
+          ? s__('MarkdownEditor|Continue editing (%{shiftKey}%{modifierKey}P)')
+          : s__('MarkdownEditor|Preview (%{shiftKey}%{modifierKey}P)'),
+        {
+          shiftKey: this.shiftKey,
+          modifierKey: this.modifierKey,
+        },
+      );
     },
   },
   watch: {
@@ -518,8 +530,10 @@ export default {
         >
           <gl-button
             v-if="enablePreview"
+            v-gl-tooltip
             data-testid="preview-toggle"
             :value="previewMarkdown ? 'preview' : 'edit'"
+            :title="previewToggleTooltip"
             :label="$options.i18n.previewTabTitle"
             class="js-md-preview-button gl-flex-row-reverse gl-items-center !gl-font-normal"
             size="small"
