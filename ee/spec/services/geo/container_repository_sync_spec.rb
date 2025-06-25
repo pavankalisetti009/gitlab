@@ -468,9 +468,11 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
       end
 
       it 'logs the error and continues execution', :aggregate_failures do
-        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).with(a_kind_of(StandardError), extra: { tag_name: tag[:name], message: "Error while syncing tag" })
+        expect(subject).to receive(:log_error).with("Error while syncing tag latest: Sync failed")
 
-        expect(subject.execute).to be true
+        result = subject.execute
+
+        expect(result).to be true
       end
 
       it 'logs multiple errors if multiple tags fail', :aggregate_failures do
@@ -483,7 +485,7 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
         allow(subject).to receive(:sync_tag).and_raise(StandardError.new("Sync failed"))
 
         multiple_tags.each do |tag|
-          expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).with(a_kind_of(StandardError), extra: { tag_name: tag[:name], message: "Error while syncing tag" })
+          expect(subject).to receive(:log_error).with("Error while syncing tag #{tag[:name]}: Sync failed")
         end
 
         expect { subject.execute }.not_to raise_error
@@ -506,15 +508,13 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
       end
 
       it 'logs the error message', :aggregate_failures do
-        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception)
-          .with(a_kind_of(StandardError), extra: { tag_name: tag[:name], message: "Error while removing tag" })
+        expect(subject).to receive(:log_error)
+          .with("Error while removing tag latest: Failed to remove tag")
 
         expect(subject.execute).to be true
       end
 
       it 'continues execution after logging the error' do
-        allow(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).once
-
         expect { subject.execute }.not_to raise_error
       end
 
@@ -530,7 +530,7 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
           .and_return(true)
 
         expect(container_repository).to receive(:delete_tag).twice
-        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).once
+        expect(subject).to receive(:log_error).once
 
         subject.execute
       end

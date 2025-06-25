@@ -28,15 +28,13 @@ module Geo
       tags_to_sync.each do |tag|
         sync_tag(tag)
       rescue StandardError => e
-        Gitlab::ErrorTracking.track_and_raise_exception(e,
-          extra: { tag_name: tag[:name], message: "Error while syncing tag" })
+        log_error "Error while syncing tag #{tag[:name]}: #{e.message}"
       end
 
       tags_to_remove.each do |tag|
         remove_tag(tag)
       rescue StandardError => e
-        Gitlab::ErrorTracking.track_and_raise_exception(e,
-          extra: { tag_name: tag[:name], message: "Error while removing tag" })
+        log_error "Error while removing tag #{tag[:name]}: #{e.message}"
       end
 
       true
