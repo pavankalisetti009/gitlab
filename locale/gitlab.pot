@@ -28222,6 +28222,9 @@ msgstr ""
 msgid "Geo|Verification status"
 msgstr ""
 
+msgid "Geo|Verification: %{status}"
+msgstr ""
+
 msgid "Geo|Verified"
 msgstr ""
 

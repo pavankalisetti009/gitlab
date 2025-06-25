@@ -29,7 +29,8 @@ export default {
       :key="item.id"
       :registry-id="item.id"
       :model-record-id="item.modelRecordId"
-      :sync-status="item.state.toLowerCase()"
+      :sync-status="item.state"
+      :verification-state="item.verificationState"
       :last-synced="item.lastSyncedAt"
       :last-verified="item.verifiedAt"
     />

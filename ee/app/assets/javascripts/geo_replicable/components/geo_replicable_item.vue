@@ -2,7 +2,7 @@
 import { GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import { REPLICATION_STATUS_STATES, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -20,6 +20,7 @@ export default {
     lastVerified: s__('Geo|Last time verified'),
     modelRecordId: s__('Geo|Model record: %{modelRecordId}'),
     replicationStatus: s__('Geo|Replication: %{status}'),
+    verificationStatus: s__('Geo|Verification: %{status}'),
   },
   components: {
     GeoListItem,
@@ -41,6 +42,11 @@ export default {
       required: false,
       default: '',
     },
+    verificationState: {
+      type: String,
+      required: false,
+      default: '',
+    },
     lastSynced: {
       type: String,
       required: false,
@@ -57,7 +63,7 @@ export default {
     timeAgoArray() {
       return [
         {
-          label: capitalizeFirstCharacter(this.syncStatus),
+          label: capitalizeFirstCharacter(this.syncStatus?.toLowerCase()),
           dateString: this.lastSynced,
           defaultText: this.$options.i18n.unknown,
         },
@@ -86,7 +92,7 @@ export default {
         REPLICATION_STATUS_STATES[this.syncStatus?.toUpperCase()] ||
         REPLICATION_STATUS_STATES.UNKNOWN;
 
-      return [
+      const statuses = [
         {
           tooltip: sprintf(this.$options.i18n.replicationStatus, {
             status: replicationStatus.title,
@@ -95,6 +101,22 @@ export default {
           variant: replicationStatus.variant,
         },
       ];
+
+      if (this.verificationEnabled) {
+        const verificationStatus =
+          VERIFICATION_STATUS_STATES[this.verificationState?.toUpperCase()] ||
+          VERIFICATION_STATUS_STATES.UNKNOWN;
+
+        statuses.push({
+          tooltip: sprintf(this.$options.i18n.verificationStatus, {
+            status: verificationStatus.title,
+          }),
+          icon: verificationStatus.icon,
+          variant: verificationStatus.variant,
+        });
+      }
+
+      return statuses;
     },
     actionsArray() {
       const actions = [
