@@ -11,7 +11,6 @@ describe('FeatureListItem', () => {
   const findBadge = () => wrapper.findComponent(GlBadge);
   const findBadgePopover = () => wrapper.findComponent(GlPopover);
   const findButton = () => wrapper.findComponent(GlButton);
-  const findButtonLink = () => findButton().find('a');
 
   const defaultProps = {
     title: 'Hello world',
@@ -64,7 +63,7 @@ describe('FeatureListItem', () => {
     });
 
     it('renders the button link', () => {
-      expect(findButtonLink().props('to')).toBe('foo-bar');
+      expect(findButton().attributes('href')).toBe('foo-bar');
     });
   });
 
