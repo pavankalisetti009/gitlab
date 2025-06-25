@@ -129,7 +129,14 @@
         "fields": {
           "type": "array",
           "items": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "component": {
+                "enum": [
+                  "DiffLineChanges"
+                ]
+              }
+            }
           }
         }
       },

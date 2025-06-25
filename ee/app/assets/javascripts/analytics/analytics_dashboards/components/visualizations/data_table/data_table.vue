@@ -4,7 +4,7 @@ import { GlIcon, GlLink, GlTableLite } from '@gitlab/ui';
 import { __ } from '~/locale';
 import { isExternal } from '~/lib/utils/url_utility';
 
-import { formatVisualizationValue } from './utils';
+import { formatVisualizationValue } from '../utils';
 
 export default {
   name: 'DataTable',
@@ -12,6 +12,7 @@ export default {
     GlIcon,
     GlLink,
     GlTableLite,
+    DiffLineChanges: () => import('./diff_line_changes.vue'),
   },
   props: {
     data: {
@@ -60,8 +61,9 @@ export default {
 <template>
   <div>
     <gl-table-lite :fields="fields" :items="data" hover responsive class="gl-mt-4">
-      <template #cell()="{ value }">
-        <gl-link v-if="isLink(value)" :href="value.href"
+      <template #cell()="{ value, field }">
+        <component :is="field.component" v-if="field.component" v-bind="value" />
+        <gl-link v-else-if="isLink(value)" :href="value.href"
           >{{ formatVisualizationValue(value.text) }}
           <gl-icon
             v-if="isExternalLink(value.href)"
