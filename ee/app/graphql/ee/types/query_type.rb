@@ -90,7 +90,8 @@ module EE
           null: true,
           extras: [:lookahead],
           description: "Vulnerabilities reported on projects on the current user's instance security dashboard.",
-          resolver: ::Resolvers::VulnerabilitiesResolver
+          resolver: ::Resolvers::VulnerabilitiesResolver,
+          scopes: [:api, :read_api, :ai_workflows]
         field :vulnerabilities_count_by_day,
           ::Types::VulnerabilitiesCountByDayType.connection_type,
           null: true,
