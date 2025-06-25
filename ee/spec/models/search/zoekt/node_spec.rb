@@ -188,6 +188,18 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           end
         end
       end
+
+      describe '.available_for_knowledge_graph_namespace' do
+        let_it_be(:node_no_kg) { create(:zoekt_node) }
+        let_it_be(:node_kg1) { create(:zoekt_node, :knowledge_graph) }
+        let_it_be(:node_kg2) { create(:zoekt_node, :knowledge_graph) }
+        let_it_be(:replica) { create(:knowledge_graph_replica, zoekt_node: node_kg1) }
+
+        it 'returns only nodes with knowledge graph service which are not used for the namespace' do
+          expect(described_class.available_for_knowledge_graph_namespace(replica.knowledge_graph_enabled_namespace))
+            .to contain_exactly(node_kg2)
+        end
+      end
     end
 
     describe '.negative_unclaimed_storage_bytes' do
@@ -279,12 +291,12 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
     end
 
-    describe '.order_by_unclaimed_space' do
-      let_it_be(:node2) { create(:zoekt_node, :enough_free_space) }
-      let_it_be(:node3) { create(:zoekt_node, :not_enough_free_space) }
+    describe '.order_by_unclaimed_space_desc' do
+      let_it_be(:node2) { create(:zoekt_node, :not_enough_free_space) }
+      let_it_be(:node3) { create(:zoekt_node, :enough_free_space) }
 
-      it 'returns nodes with positive unclaimed storage_bytes in ascending order' do
-        expect(described_class.order_by_unclaimed_space.to_a).to eq([node3, node2])
+      it 'returns nodes with positive unclaimed storage_bytes in descending order' do
+        expect(described_class.order_by_unclaimed_space_desc.to_a).to eq([node3, node2])
       end
     end
 

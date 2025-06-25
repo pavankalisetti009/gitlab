@@ -9,6 +9,7 @@ module EE
       def execute
         enqueue_elasticsearch_indexing
         enqueue_zoekt_indexing
+        enqueue_knowledge_graph_indexing
         enqueue_update_external_pull_requests
         enqueue_product_analytics_event_metrics
         enqueue_repository_xray
@@ -46,6 +47,16 @@ module EE
         return false unless project.use_zoekt?
 
         project.repository.async_update_zoekt_index
+      end
+
+      def enqueue_knowledge_graph_indexing
+        return false unless ::Feature.enabled?(:knowledge_graph_indexing, project.project_namespace)
+        return false unless default_branch?
+
+        return false unless ::GitlabSubscriptions::AddOnPurchase
+          .for_active_add_ons(['duo_core'], resource: project.project_namespace).present?
+
+        ::Ai::KnowledgeGraph::IndexingTaskWorker.perform_async(project.project_namespace.id, :index_graph_repo)
       end
 
       def enqueue_update_external_pull_requests

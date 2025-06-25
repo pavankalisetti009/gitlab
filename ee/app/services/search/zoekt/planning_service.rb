@@ -148,7 +148,7 @@ module Search
         end
 
         def find_best_node(stats)
-          nodes.reject { |n| @used_node_ids.member?(n[:id]) || (n[:unclaimed_storage_bytes] < scaled_size(stats)) }.last
+          nodes.find { |n| !@used_node_ids.member?(n[:id]) && (n[:unclaimed_storage_bytes] >= scaled_size(stats)) }
         end
 
         def assign_project_to_index(node, stats, replica_indices)
