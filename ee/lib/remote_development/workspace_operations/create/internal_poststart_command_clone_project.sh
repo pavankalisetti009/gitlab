@@ -8,7 +8,8 @@ echo "$(date -Iseconds): Cloning project if necessary..."
 # If the file does not exist, clone the project.
 if [ -f "%<project_cloning_successful_file>s" ]
 then
-  echo "$(date -Iseconds): Project cloning was already successful"
+  echo "$(date -Iseconds): Project cloning was already successful, because '%<project_cloning_successful_file>s' file already exists"
+  echo "$(date -Iseconds): ----------------------------------------"
   exit 0
 fi
 
@@ -20,8 +21,11 @@ then
   rm -rf "%<clone_dir>s"
 fi
 
-echo "$(date -Iseconds): Cloning project"
-git clone --branch "%<project_ref>s" "%<project_url>s" "%<clone_dir>s"
+clone_depth_option="%<clone_depth_option>s"
+depth_msg="${clone_depth_option:+ with \"${clone_depth_option}\" option}"
+
+echo "$(date -Iseconds): Cloning project${depth_msg}"
+git clone $clone_depth_option --branch "%<project_ref>s" "%<project_url>s" "%<clone_dir>s"
 exit_code=$?
 
 # Once cloning is successful, create the file which is used in the check above.
@@ -30,10 +34,12 @@ if [ "${exit_code}" -eq 0 ]
 then
   echo "$(date -Iseconds): Project cloning successful"
   touch "%<project_cloning_successful_file>s"
-  echo "$(date -Iseconds): Updated file to indicate successful project cloning"
+  echo "$(date -Iseconds): Updated '%<project_cloning_successful_file>s' file to indicate successful project cloning"
+  echo "$(date -Iseconds): Successfully finished cloning project."
 else
   echo "$(date -Iseconds): Project cloning failed with exit code: ${exit_code}" >&2
+  echo "$(date -Iseconds): Failed to clone project, exit code was ${exit_code}"
 fi
 
-echo "$(date -Iseconds): Finished cloning project if necessary."
+echo "$(date -Iseconds): ----------------------------------------"
 exit "${exit_code}"

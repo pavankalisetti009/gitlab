@@ -59,6 +59,7 @@ module RemoteDevelopment
         "%<clone_dir>s",
         Shellwords.shellescape("#{WORKSPACE_DATA_VOLUME_PATH}/#{project_name}")
       )
+      content.gsub!("%<clone_depth_option>s", CLONE_DEPTH_OPTION)
 
       nil
     end

@@ -1,10 +1,10 @@
 #!/bin/sh
 
 echo "$(date -Iseconds): ----------------------------------------"
-echo "$(date -Iseconds): Running main_component_updater_start_vscode.sh with output written to ${GL_WORKSPACE_LOGS_DIR}/start_vscode.log..."
+echo "$(date -Iseconds): Starting GitLab Fork of VS Code server in background with output written to ${GL_WORKSPACE_LOGS_DIR}/start-vscode.log..."
 
 # Define log file path
-LOG_FILE="${GL_WORKSPACE_LOGS_DIR}/start_vscode.log"
+LOG_FILE="${GL_WORKSPACE_LOGS_DIR}/start-vscode.log"
 
 mkdir -p "$(dirname "${LOG_FILE}")"
 
@@ -89,11 +89,13 @@ echo "$(date -Iseconds): - Log level: ${GL_VSCODE_LOG_LEVEL}"
 echo "$(date -Iseconds): - Without connection token: yes"
 echo "$(date -Iseconds): - Workspace trust disabled: yes"
 
-# For the actual server execution, we need to make sure it doesn't get backgrounded
-# and its output continues going to the log file
+# The server execution is backgrounded to allow for the rest of the internal init scripts to execute.
 "${GL_TOOLS_DIR}/vscode-reh-web/bin/gitlab-webide-server" \
 	--host "${GL_VSCODE_HOST}" \
 	--port "${GL_VSCODE_PORT}" \
 	--log "${GL_VSCODE_LOG_LEVEL}" \
 	--without-connection-token \
 	--disable-workspace-trust &
+
+echo "$(date -Iseconds): Finished starting GitLab Fork of VS Code server in background"
+echo "$(date -Iseconds): ----------------------------------------"

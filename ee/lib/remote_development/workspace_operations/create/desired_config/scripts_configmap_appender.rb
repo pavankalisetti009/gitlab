@@ -130,8 +130,10 @@ module RemoteDevelopment
               #       See https://github.com/eclipse-che/che/issues/23404#issuecomment-2787779571
               #       for more context.
               <<~SH
+                echo "$(date -Iseconds): ----------------------------------------"
                 echo "$(date -Iseconds): Running #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id}..."
                 #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id} || true
+                echo "$(date -Iseconds): Finished running #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id}."
               SH
             end.join
           end

@@ -12,7 +12,7 @@ RSpec.describe "Remote Development VSCode Startup Script", feature_category: :wo
   let(:log_dir) { Dir.mktmpdir }
   let(:tools_dir) { Dir.mktmpdir }
   let(:product_json_path) { File.join(tools_dir, "vscode-reh-web/product.json") }
-  let(:log_file_path) { File.join(log_dir, "start_vscode.log") }
+  let(:log_file_path) { File.join(log_dir, "start-vscode.log") }
   let(:extension_marketplace_service_url) { "https://marketplace.example.com" }
   let(:extension_marketplace_item_url) { "https://item.example.com" }
   let(:extension_marketplace_resource_url_template) { "https://resource.example.com/{path}" }
