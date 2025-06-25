@@ -9,14 +9,6 @@ module EE
     include ::Gitlab::Utils::StrongMemoize
     include FromUnion
 
-    USES_MERGE_BASE_PIPELINE_FOR_COMPARISON = {
-      ::Ci::CompareMetricsReportsService => ->(_project) { true },
-      ::Ci::CompareCodequalityReportsService => ->(_project) { true },
-      ::Ci::CompareSecurityReportsService => ->(_project) { true },
-      ::Ci::CompareLicenseScanningReportsCollapsedService => ->(_project) { true },
-      ::Ci::CompareLicenseScanningReportsService => ->(_project) { true }
-    }.freeze
-
     MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON = 10
 
     prepended do
@@ -437,16 +429,6 @@ module EE
       return missing_report_error('api fuzzing') unless has_api_fuzzing_reports?
 
       compare_reports(::Ci::CompareSecurityReportsService, current_user, 'api_fuzzing')
-    end
-
-    override :use_merge_base_pipeline_for_comparison?
-    def use_merge_base_pipeline_for_comparison?(service_class)
-      proc = USES_MERGE_BASE_PIPELINE_FOR_COMPARISON[service_class]
-      if proc
-        proc.call(project)
-      else
-        super
-      end
     end
 
     def synchronize_approval_rules_from_target_project
