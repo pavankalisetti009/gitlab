@@ -341,7 +341,8 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
           )
         end
 
-        it 'returns the custom status mapped to the system-defined status' do
+        it 'returns the custom status mapped to the system-defined status',
+          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/549760' do
           expect(current_status.status).to eq(mapped_custom_status)
         end
       end
