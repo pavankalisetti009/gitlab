@@ -54,6 +54,12 @@ export default {
       required: false,
       default: null,
     },
+    size: {
+      type: String,
+      default: 'small',
+      required: false,
+      validator: (size) => ['small', 'medium', 'large'].includes(size),
+    },
   },
   methods: {
     startWorkflow() {
@@ -103,7 +109,7 @@ export default {
     category="primary"
     icon="tanuki-ai"
     :title="hoverMessage"
-    size="small"
+    :size="size"
     data-testid="duo-workflow-action-button"
     @click="startWorkflow"
   >
