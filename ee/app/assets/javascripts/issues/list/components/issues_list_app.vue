@@ -23,7 +23,7 @@ import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_EPIC, TYPENAME_ISSUE } from '~/graphql_shared/constants';
+import { TYPENAME_EPIC, TYPENAME_ISSUE, TYPENAME_TASK } from '~/graphql_shared/constants';
 import searchIterationsQuery from '../queries/search_iterations.query.graphql';
 import NewIssueDropdown from './new_issue_dropdown.vue';
 
@@ -84,7 +84,7 @@ export default {
         return (data.namespace?.customFields?.nodes || []).filter((field) => {
           const fieldTypeAllowed = ['SINGLE_SELECT', 'MULTI_SELECT'].includes(field.fieldType);
           const fieldAllowedOnWorkItem = field.workItemTypes.some(
-            (type) => type.name === TYPENAME_ISSUE,
+            (type) => type.name === TYPENAME_ISSUE || type.name === TYPENAME_TASK,
           );
 
           return fieldTypeAllowed && fieldAllowedOnWorkItem;

@@ -940,12 +940,12 @@ export const mockTokens = ({
     ? [
         {
           type: 'custom-field[12345]',
-          title: 'A multi select thing',
+          title: 'Issue only field',
           icon: 'multiple-choice',
           field: {
             fieldType: 'MULTI_SELECT',
             id: 'gid://gitlab/CustomField/12345',
-            name: 'A multi select thing',
+            name: 'Issue only field',
             workItemTypes: [
               {
                 id: 'gid://gitlab/WorkItemTypes/1',

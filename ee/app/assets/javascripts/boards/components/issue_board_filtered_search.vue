@@ -12,7 +12,7 @@ import {
   TOKEN_TYPE_WEIGHT,
   TOKEN_TYPE_STATUS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
-import { TYPENAME_ISSUE } from '~/graphql_shared/constants';
+import { TYPENAME_ISSUE, TYPENAME_TASK } from '~/graphql_shared/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
@@ -77,7 +77,9 @@ export default {
             CUSTOM_FIELDS_TYPE_MULTI_SELECT,
           ].includes(field.fieldType);
           const fieldAllowedOnWorkItem = field.workItemTypes.some(
-            (type) => type.name === TYPENAME_ISSUE,
+            (type) =>
+              type.name === TYPENAME_ISSUE ||
+              (this.glFeatures.workItemsBeta && type.name === TYPENAME_TASK),
           );
 
           return fieldTypeAllowed && fieldAllowedOnWorkItem;

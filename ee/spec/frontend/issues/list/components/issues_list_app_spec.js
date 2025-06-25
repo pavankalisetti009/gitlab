@@ -268,10 +268,8 @@ describe('EE IssuesListApp component', () => {
 
   describe('custom fields', () => {
     const mockCustomFields = mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes;
-    const allowedFields = mockCustomFields.filter(
-      (field) =>
-        ['SINGLE_SELECT', 'MULTI_SELECT'].includes(field.fieldType) &&
-        field.workItemTypes.some((type) => type.name === 'Epic'),
+    const allowedFields = mockCustomFields.filter((field) =>
+      ['SINGLE_SELECT', 'MULTI_SELECT'].includes(field.fieldType),
     );
     const customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse);
 
@@ -301,9 +299,10 @@ describe('EE IssuesListApp component', () => {
         unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
       }));
 
-      expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(7);
+      expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(8);
       expect(findIssuesListAppCE().props('eeSearchTokens')[4]).toMatchObject(expectedTokens[0]);
       expect(findIssuesListAppCE().props('eeSearchTokens')[5]).toMatchObject(expectedTokens[1]);
+      expect(findIssuesListAppCE().props('eeSearchTokens')[6]).toMatchObject(expectedTokens[2]); // Task type only
     });
   });
 
