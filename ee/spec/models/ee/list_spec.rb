@@ -236,6 +236,72 @@ RSpec.describe List do
     end
   end
 
+  describe '.with_open_status_categories' do
+    let_it_be(:system_defined_todo_status) { build(:work_item_system_defined_status, :to_do) }
+    let_it_be(:system_defined_done_status) { build(:work_item_system_defined_status, :done) }
+    let_it_be(:custom_todo_status) { create(:work_item_custom_status, :open, namespace: group) }
+    let_it_be(:custom_todo_status_without_mapping) do
+      create(:work_item_custom_status, :without_mapping, namespace: group)
+    end
+
+    let_it_be(:custom_done_status) { create(:work_item_custom_status, :closed, namespace: group) }
+    let_it_be(:non_status_list) { create(:list, list_type: :label, board: board) }
+
+    before do
+      stub_licensed_features(board_status_lists: true, work_item_status: true)
+    end
+
+    subject { described_class.with_open_status_categories }
+
+    context 'when status lists exist' do
+      let_it_be(:open_system_defined_status_list) do
+        build(:list, list_type: :status, system_defined_status: system_defined_todo_status,
+          board: board, project: project).tap do |list|
+          list.save!(validate: false)
+        end
+      end
+
+      let_it_be(:closed_system_defined_status_list) do
+        build(:list, list_type: :status, system_defined_status: system_defined_done_status, board: board,
+          project: project).tap do |list|
+          list.save!(validate: false)
+        end
+      end
+
+      let_it_be(:open_custom_status_list) do
+        build(:list, list_type: :status, custom_status: custom_todo_status, board: board,
+          project: project).tap do |list|
+          list.save!(validate: false)
+        end
+      end
+
+      let_it_be(:open_custom_status_list_without_mapping) do
+        build(:list, list_type: :status, custom_status: custom_todo_status_without_mapping, board: board,
+          project: project).tap do |list|
+          list.save!(validate: false)
+        end
+      end
+
+      let_it_be(:closed_custom_status_list) do
+        build(:list, list_type: :status, custom_status: custom_done_status, board: board,
+          project: project).tap do |list|
+          list.save!(validate: false)
+        end
+      end
+
+      it 'returns only status lists with open categories' do
+        expect(subject).to contain_exactly(open_system_defined_status_list, open_custom_status_list,
+          open_custom_status_list_without_mapping)
+      end
+    end
+
+    context 'when no status lists exist' do
+      it 'returns empty collection' do
+        expect(subject).to be_empty
+      end
+    end
+  end
+
   describe '#wip_limits_available?' do
     let!(:board1) { create(:board, resource_parent: project, name: 'b') }
     let!(:board2) { create(:board, resource_parent: group, name: 'a') }

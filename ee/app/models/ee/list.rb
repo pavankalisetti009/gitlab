@@ -16,6 +16,7 @@ module EE
     # so we cannot call `super` if we use it.
     def self.prepended(base)
       base.include(UsageStatistics)
+      base.include(::Boards::Lists::HasStatus)
       base.include(ActiveRecord::FixedItemsModel::HasOne)
 
       class << base

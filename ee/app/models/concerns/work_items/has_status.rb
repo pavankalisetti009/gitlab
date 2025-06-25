@@ -14,7 +14,9 @@ module WorkItems
         if status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
           relation = with_system_defined_status(status)
         else
-          relation = relation.where(work_item_current_statuses: { custom_status_id: status.id })
+          relation = relation
+            .where.not(work_item_current_statuses: { custom_status_id: nil })
+            .where(work_item_current_statuses: { custom_status_id: status.id })
 
           if status.converted_from_system_defined_status_identifier.present?
             system_defined_status = WorkItems::Statuses::SystemDefined::Status.find(
@@ -32,7 +34,8 @@ module WorkItems
         next none unless status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
 
         relation = left_joins(:current_status)
-                     .where(work_item_current_statuses: { system_defined_status_id: status.id })
+                    .where.not(work_item_current_statuses: { system_defined_status_id: nil })
+                    .where(work_item_current_statuses: { system_defined_status_id: status.id })
 
         lifecycle = WorkItems::Statuses::SystemDefined::Lifecycle.all.first
 
@@ -53,6 +56,16 @@ module WorkItems
       }
 
       scope :without_current_status, -> { left_joins(:current_status).where(work_item_current_statuses: { id: nil }) }
+
+      scope :not_in_statuses, ->(statuses) {
+        return all if statuses.blank?
+
+        items_to_exclude = statuses.reduce(unscoped.none) do |relation, status|
+          relation.or(with_status(status))
+        end
+
+        merge(items_to_exclude.invert_where)
+      }
 
       def status_with_fallback
         if current_status.nil?
