@@ -19,40 +19,28 @@ module SoftwareLicensePolicies
     private
 
     def create_for_scan_result_policy
-      insert_software_license_policy
-    end
-
-    def insert_software_license_policy
-      software_license = find_software_license(params[:name])
       catalogue_license = find_software_license_in_catalogue(params[:name])
 
-      # also creates a software license if needed to allow enabling and disabling the feature flags static_licenses
-      # and custom_software_license as needed.
-      new_software_license = software_license || SoftwareLicense.create!(name: params[:name])
-
       if catalogue_license
-        create_software_license_policies_with_software_license(new_software_license, catalogue_license)
+        create_software_license_policies_with_software_license(catalogue_license)
       else
-        create_software_license_policies_with_custom_software_license(find_or_create_custom_software_license,
-          new_software_license)
+        create_software_license_policies_with_custom_software_license(find_or_create_custom_software_license)
       end
     end
 
-    def create_software_license_policies_with_software_license(software_license, catalogue_license)
+    def create_software_license_policies_with_software_license(catalogue_license)
       project.software_license_policies.create!(
         classification: params[:approval_status],
-        software_license: software_license,
         scan_result_policy_read: params[:scan_result_policy_read],
         approval_policy_rule_id: params[:approval_policy_rule_id],
         software_license_spdx_identifier: catalogue_license&.spdx_identifier
       )
     end
 
-    def create_software_license_policies_with_custom_software_license(custom_software_license, new_software_license)
+    def create_software_license_policies_with_custom_software_license(custom_software_license)
       project.software_license_policies.create!(
         classification: params[:approval_status],
         custom_software_license: custom_software_license,
-        software_license: new_software_license,
         scan_result_policy_read: params[:scan_result_policy_read],
         approval_policy_rule_id: params[:approval_policy_rule_id]
       )
@@ -63,10 +51,6 @@ module SoftwareLicensePolicies
         params: params).execute
 
       response.payload[:custom_software_license]
-    end
-
-    def find_software_license(name)
-      SoftwareLicense.find_by_name(name)
     end
 
     def find_software_license_in_catalogue(name)

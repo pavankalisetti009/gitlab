@@ -69,7 +69,6 @@ module SCA
 
         project
           .software_license_policies
-          .including_license
           .including_scan_result_policy_read
           .unreachable_limit
       end

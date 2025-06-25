@@ -44,9 +44,8 @@ RSpec.describe Security::Policies::ProjectTransferWorker, :sidekiq_inline, featu
         create(:scan_result_policy_read, security_orchestration_policy_configuration: policy_config, project: project)
       end
 
-      let_it_be(:software_license) { create(:software_license) }
       let_it_be(:software_license_policy) do
-        create(:software_license_policy, project: project, software_license: software_license,
+        create(:software_license_policy, project: project,
           scan_result_policy_read: scan_result_policy_read)
       end
 
@@ -124,7 +123,7 @@ RSpec.describe Security::Policies::ProjectTransferWorker, :sidekiq_inline, featu
       end
 
       let_it_be(:software_license_policy) do
-        create(:software_license_policy, project: project, software_license: create(:software_license),
+        create(:software_license_policy, project: project,
           scan_result_policy_read: scan_result_policy_read)
       end
 

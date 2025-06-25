@@ -690,7 +690,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
   describe '#has_denied_policies?', feature_category: :software_composition_analysis do
     let(:merge_request) { create(:ee_merge_request, :with_license_scanning_reports, source_project: project) }
-    let(:apache) { build(:software_license, :apache_2_0) }
 
     let!(:head_pipeline) do
       create(
@@ -739,7 +738,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'with allowed policy' do
-          let(:allowed_policy) { create(:software_license_policy, :allowed, software_license: apache) }
+          let(:allowed_policy) { create(:software_license_policy, :allowed, :with_apache_license) }
 
           before do
             project.software_license_policies << allowed_policy
@@ -750,10 +749,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'with denied policy' do
-          let(:denied_policy) do
-            create(:software_license_policy, :denied, software_license: apache,
-              software_license_spdx_identifier: apache.spdx_identifier)
-          end
+          let(:denied_policy) { create(:software_license_policy, :denied, :with_apache_license) }
 
           let(:merge_request) { create(:ee_merge_request, :with_cyclonedx_reports, source_project: project) }
 
@@ -779,12 +775,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             let!(:license_check) { create(:report_approver_rule, :license_scanning, merge_request: merge_request) }
 
             context 'when rule is not approved' do
-              let(:software_license) { build(:software_license, :apache_2_0) }
               let(:merge_request) { create(:ee_merge_request, :with_cyclonedx_reports, source_project: project) }
-              let(:denied_policy) do
-                create(:software_license_policy, :denied, software_license: software_license,
-                  software_license_spdx_identifier: software_license.spdx_identifier)
-              end
+              let(:denied_policy) { create(:software_license_policy, :denied, :with_apache_license) }
 
               before do
                 allow_any_instance_of(ApprovalWrappedRule).to receive(:approved?).and_return(false)
@@ -1370,10 +1362,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'cache key includes software license policies' do
-          let(:apache_2_0) { build(:software_license, :apache_2_0) }
-          let!(:license_1) { create(:software_license_policy, project: project, software_license: apache_2_0, software_license_spdx_identifier: apache_2_0.spdx_identifier) }
-          let(:mit) { build(:software_license, :mit) }
-          let!(:license_2) { create(:software_license_policy, project: project, software_license: mit, software_license_spdx_identifier: mit.spdx_identifier) }
+          let!(:license_1) { create(:software_license_policy, :with_apache_license, project: project) }
+          let!(:license_2) { create(:software_license_policy, :with_mit_license, project: project) }
 
           it 'returns key with license information' do
             expect_any_instance_of(Ci::CompareLicenseScanningReportsService)

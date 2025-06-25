@@ -40,7 +40,7 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
 
         let(:match_on_inclusion_license) { policy_state == :denied }
         let(:license_states) { states }
-        let(:license) { create(:software_license, spdx_identifier: policy_license[0], name: policy_license[1]) }
+        let(:license_name) { policy_license[1] }
         let(:scan_result_policy_read) do
           create(:scan_result_policy_read, project: project, license_states: license_states,
             match_on_inclusion_license: match_on_inclusion_license)
@@ -57,9 +57,8 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
 
           create(:software_license_policy, policy_state,
             project: project,
-            software_license: license,
             scan_result_policy_read: scan_result_policy_read,
-            software_license_spdx_identifier: license_name_spdx_map[license.name]
+            software_license_spdx_identifier: license_name_spdx_map[license_name]
           )
         end
 
@@ -99,7 +98,7 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
           create(:software_license_policy, policy_state,
             project: project,
             custom_software_license: custom_license,
-            software_license: nil,
+            software_license_spdx_identifier: nil,
             scan_result_policy_read: scan_result_policy_read
           )
         end
@@ -147,15 +146,14 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
               create(:software_license_policy, policy_state,
                 project: project,
                 custom_software_license: nil,
-                software_license: license,
                 scan_result_policy_read: scan_result_policy_read,
-                software_license_spdx_identifier: license.spdx_identifier
+                software_license_spdx_identifier: policy_license[0]
               )
             else
               create(:software_license_policy, policy_state,
                 project: project,
                 custom_software_license: license,
-                software_license: nil,
+                software_license_spdx_identifier: nil,
                 scan_result_policy_read: scan_result_policy_read
               )
             end
