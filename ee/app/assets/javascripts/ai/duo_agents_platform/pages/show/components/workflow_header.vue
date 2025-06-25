@@ -1,5 +1,6 @@
 <script>
 import { GlSkeletonLoader } from '@gitlab/ui';
+import { s__ } from '~/locale';
 
 export default {
   components: {
@@ -10,20 +11,25 @@ export default {
       required: true,
       type: Boolean,
     },
-    prompt: {
+    workflowDefinition: {
       required: true,
       type: String,
+    },
+  },
+  computed: {
+    pageTitle() {
+      return `${this.workflowDefinition || s__('DuoAgentsPlatform|Agent Flow')} #${this.$route.params.id}`;
     },
   },
 };
 </script>
 <template>
-  <div>
-    <div v-if="isLoading" class="gl-mt-6">
+  <div class="gl-mt-6">
+    <div v-if="isLoading">
       <gl-skeleton-loader :lines="1" :width="400" />
     </div>
-    <h1 v-else class="gl-truncate gl-text-size-h1">
-      {{ prompt || s__('DuoAgentsPlatform|Prompt is unavailable') }}
-    </h1>
+    <div v-else>
+      <h1 class="gl-heading-1">{{ pageTitle }}</h1>
+    </div>
   </div>
 </template>

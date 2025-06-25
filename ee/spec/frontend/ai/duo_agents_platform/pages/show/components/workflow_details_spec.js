@@ -9,7 +9,6 @@ describe('WorkflowDetails', () => {
 
   const defaultProps = {
     isLoading: false,
-    prompt: 'Test prompt',
     status: 'RUNNING',
     workflowDefinition: 'software_development',
     workflowEvents: [{ checkpoint: 'Event 1' }, { checkpoint: 'Event 2' }],
@@ -41,10 +40,6 @@ describe('WorkflowDetails', () => {
   });
 
   describe('props passing', () => {
-    it('passes prompt to WorkflowHeader', () => {
-      expect(findWorkflowHeader().props('prompt')).toBe(defaultProps.prompt);
-    });
-
     it('passes workflowEvents to WorkflowLogs', () => {
       expect(findWorkflowLogs().props('workflowEvents')).toEqual(defaultProps.workflowEvents);
     });

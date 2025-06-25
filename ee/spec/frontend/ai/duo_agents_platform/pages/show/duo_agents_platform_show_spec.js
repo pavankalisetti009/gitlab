@@ -69,7 +69,6 @@ describe('DuoAgentsPlatformShow', () => {
 
       expect(workflowDetailsProps).toEqual({
         isLoading: false,
-        prompt: firstEvent.workflowGoal,
         status: firstEvent.workflowStatus,
         workflowDefinition: firstEvent.workflowDefinition,
         workflowEvents: mockWorkflowEventsResponse.data.duoWorkflowEvents.nodes,
