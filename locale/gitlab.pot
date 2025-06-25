@@ -45735,6 +45735,9 @@ msgstr ""
 msgid "Pipelines|Go to the pipeline editor"
 msgstr ""
 
+msgid "Pipelines|How do I use inputs?"
+msgstr ""
+
 msgid "Pipelines|If you are unsure, ask a project maintainer to review it for you."
 msgstr ""
 
