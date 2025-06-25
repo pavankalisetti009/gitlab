@@ -138,10 +138,6 @@ class Groups::EpicsController < Groups::ApplicationController
       params: epic_params)
   end
 
-  def finder_type
-    EpicsFinder
-  end
-
   def sorting_field
     :epics_sort
   end
@@ -153,7 +149,7 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def authorize_create_epic!
-    return render_404 unless can?(current_user, :create_epic, group)
+    render_404 unless can?(current_user, :create_epic, group)
   end
 
   def verify_group_bulk_edit_enabled!
