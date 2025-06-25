@@ -6,7 +6,7 @@ module PackageMetadata
 
     data_consistency :delayed
     feature_category :software_composition_analysis
-    urgency :low
+    urgency :throttled
     deduplicate :until_executed
     idempotent!
     concurrency_limit -> { 10 }

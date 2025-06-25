@@ -2777,7 +2777,7 @@
   :worker_name: PackageMetadata::GlobalAdvisoryScanWorker
   :feature_category: :software_composition_analysis
   :has_external_dependencies: false
-  :urgency: :low
+  :urgency: :throttled
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
