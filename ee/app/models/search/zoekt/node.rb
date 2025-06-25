@@ -81,13 +81,17 @@ module Search
         SQL
         left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} > 0").select(sql)
       end
-      scope :order_by_unclaimed_space, -> do
-        with_positive_unclaimed_storage_bytes.order('unclaimed_storage_bytes')
+      scope :order_by_unclaimed_space_desc, -> do
+        with_positive_unclaimed_storage_bytes.order('unclaimed_storage_bytes DESC')
       end
       scope :negative_unclaimed_storage_bytes, -> do
         left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} < 0")
       end
       scope :with_service, ->(service) { where("? = ANY(services)", SERVICES.fetch(service)) }
+
+      scope :available_for_knowledge_graph_namespace, ->(namespace) do
+        with_service(:knowledge_graph).where.not(id: namespace.replicas.select(:zoekt_node_id))
+      end
 
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access

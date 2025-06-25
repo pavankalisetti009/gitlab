@@ -13,6 +13,7 @@ module Ai
 
       scope :for_partition, ->(partition) { where(partition_id: partition) }
       scope :with_namespace, -> { includes(knowledge_graph_replica: { knowledge_graph_enabled_namespace: :namespace }) }
+      scope :for_namespace, ->(namespace) { where(knowledge_graph_replica: namespace.replicas) }
 
       enum :task_type, {
         index_graph_repo: 0,

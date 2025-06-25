@@ -42,6 +42,21 @@ RSpec.describe ::Ai::KnowledgeGraph::Task, feature_category: :global_search do
       end
     end
 
+    describe '.for_namespace' do
+      let_it_be(:replica2) do
+        create(:knowledge_graph_replica, knowledge_graph_enabled_namespace: replica.knowledge_graph_enabled_namespace)
+      end
+
+      let_it_be(:task1) { create(:knowledge_graph_task, knowledge_graph_replica: replica) }
+      let_it_be(:task2) { create(:knowledge_graph_task, knowledge_graph_replica: replica2) }
+      let_it_be(:task3) { create(:knowledge_graph_task) }
+
+      it 'returns only tasks for replicas of the namespace' do
+        expect(described_class.for_namespace(replica.knowledge_graph_enabled_namespace))
+          .to match_array([task1, task2])
+      end
+    end
+
     describe '.perform_now' do
       let_it_be(:task) { create(:knowledge_graph_task, perform_at: 1.day.ago, knowledge_graph_replica: replica) }
       let_it_be(:task2) { create(:knowledge_graph_task, perform_at: 1.day.from_now, knowledge_graph_replica: replica) }

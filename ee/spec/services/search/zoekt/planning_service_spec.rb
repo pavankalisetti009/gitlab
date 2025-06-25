@@ -8,7 +8,7 @@ RSpec.describe Search::Zoekt::PlanningService, :freeze_time, feature_category: :
   let_it_be(:group2) { create(:group) }
   let_it_be(:enabled_namespace2) { create(:zoekt_enabled_namespace, namespace: group2) }
   let_it_be(:_) { create_list(:zoekt_node, 5, total_bytes: 100.gigabytes, used_bytes: 90.gigabytes) }
-  let_it_be(:nodes) { Search::Zoekt::Node.order_by_unclaimed_space.online }
+  let_it_be(:nodes) { Search::Zoekt::Node.order_by_unclaimed_space_desc.online }
   let_it_be(:projects_namespace1) do
     [
       create(:project, namespace: group1, statistics: create(:project_statistics, repository_size: 1.gigabyte)),

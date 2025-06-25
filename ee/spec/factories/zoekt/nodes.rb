@@ -29,5 +29,9 @@ FactoryBot.define do
       total_bytes { 100_000_000 }
       used_bytes { 90_000_000 }
     end
+
+    trait :knowledge_graph do
+      services { [::Search::Zoekt::Node::SERVICES[:knowledge_graph]] }
+    end
   end
 end

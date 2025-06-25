@@ -36745,7 +36745,7 @@ CREATE UNIQUE INDEX index_p_knowledge_graph_enabled_namespaces_on_namespace_id O
 
 CREATE INDEX index_p_knowledge_graph_enabled_namespaces_on_state ON ONLY p_knowledge_graph_enabled_namespaces USING btree (state);
 
-CREATE UNIQUE INDEX index_p_knowledge_graph_replicas_on_namespace_id ON ONLY p_knowledge_graph_replicas USING btree (namespace_id);
+CREATE INDEX index_p_knowledge_graph_replicas_on_namespace_id ON ONLY p_knowledge_graph_replicas USING btree (namespace_id);
 
 CREATE INDEX index_p_knowledge_graph_replicas_on_state ON ONLY p_knowledge_graph_replicas USING btree (state);
 
