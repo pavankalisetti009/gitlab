@@ -23361,6 +23361,9 @@ msgstr ""
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Agent Flow"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Agents"
 msgstr ""
 
@@ -23398,9 +23401,6 @@ msgid "DuoAgentsPlatform|Path must be a Jenkinsfile with the exact matching case
 msgstr ""
 
 msgid "DuoAgentsPlatform|Prompt"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Prompt is unavailable"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Run an Agent Flow"

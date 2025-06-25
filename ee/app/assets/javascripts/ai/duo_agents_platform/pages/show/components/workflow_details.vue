@@ -15,10 +15,6 @@ export default {
       required: true,
       type: Boolean,
     },
-    prompt: {
-      required: true,
-      type: String,
-    },
     status: {
       required: true,
       type: String,
@@ -36,7 +32,7 @@ export default {
 </script>
 <template>
   <div>
-    <workflow-header :is-loading="isLoading" :prompt="prompt" />
+    <workflow-header :is-loading="isLoading" :workflow-definition="workflowDefinition" />
     <div class="gl-mt-6 gl-flex">
       <workflow-logs :is-loading="isLoading" :workflow-events="workflowEvents" />
       <workflow-info

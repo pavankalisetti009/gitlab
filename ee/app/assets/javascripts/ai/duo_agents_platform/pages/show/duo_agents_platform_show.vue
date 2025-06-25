@@ -38,9 +38,6 @@ export default {
     isLoading() {
       return this.$apollo.queries.workflowEvents.loading;
     },
-    prompt() {
-      return this.workflowEvents[0]?.workflowGoal || '';
-    },
     status() {
       return this.workflowEvents[0]?.workflowStatus || '';
     },
@@ -53,7 +50,6 @@ export default {
 <template>
   <workflow-details
     :is-loading="isLoading"
-    :prompt="prompt"
     :status="status"
     :workflow-definition="workflowDefinition"
     :workflow-events="workflowEvents"

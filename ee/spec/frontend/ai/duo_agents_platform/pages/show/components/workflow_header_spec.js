@@ -9,8 +9,13 @@ describe('WorkflowHeader', () => {
     wrapper = shallowMount(WorkflowHeader, {
       propsData: {
         isLoading: false,
-        prompt: 'Test prompt',
+        workflowDefinition: 'Software development',
         ...props,
+      },
+      mocks: {
+        $route: {
+          params: { id: '123' },
+        },
       },
     });
   };
@@ -26,29 +31,31 @@ describe('WorkflowHeader', () => {
     it('renders the loader', () => {
       expect(findSkeletonLoader().exists()).toBe(true);
     });
-  });
 
-  describe('with valid prompt', () => {
-    beforeEach(() => {
-      createComponent({ prompt: 'This is a test prompt' });
-    });
-
-    it('renders the prompt text', () => {
-      expect(findHeading().text()).toBe('This is a test prompt');
+    it('does not render the heading or prompt text', () => {
+      expect(findHeading().exists()).toBe(false);
     });
   });
 
-  describe('with empty prompt', () => {
-    beforeEach(() => {
-      createComponent({ prompt: '' });
+  describe('when loaded', () => {
+    describe('with workflow definition', () => {
+      beforeEach(() => {
+        createComponent({ prompt: 'This is a test prompt' });
+      });
+
+      it('renders the workflow header title', () => {
+        expect(findHeading().text()).toBe('Software development #123');
+      });
     });
 
-    it('does not render the loader', () => {
-      expect(findSkeletonLoader().exists()).toBe(false);
-    });
+    describe('without a workflow definition', () => {
+      beforeEach(() => {
+        createComponent({ workflowDefinition: '' });
+      });
 
-    it('renders fallback text when prompt is empty', () => {
-      expect(findHeading().text()).toBe('Prompt is unavailable');
+      it('renders the default workflow header title', () => {
+        expect(findHeading().text()).toBe('Agent Flow #123');
+      });
     });
   });
 });
