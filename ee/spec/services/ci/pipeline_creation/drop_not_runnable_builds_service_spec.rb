@@ -138,10 +138,6 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, :freeze_time,
       it_behaves_like 'always running'
     end
 
-    before do
-      stub_feature_flags(ci_runner_separation_by_plan: true)
-    end
-
     context 'with public projects' do
       before do
         pipeline.project.update!(visibility_level: ::Gitlab::VisibilityLevel::PUBLIC)
