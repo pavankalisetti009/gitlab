@@ -1,11 +1,15 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
+import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
+import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import GroupSecurityDashboardV2 from 'ee/security_dashboard/components/shared/security_dashboard_new.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_vulnerabilities_over_time.query.graphql';
+import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
@@ -17,7 +21,7 @@ describe('Security Dashboard (new version) - Component', () => {
 
   const mockGroupFullPath = 'group/subgroup';
 
-  const mockVulnerabilitiesOverTimeData = {
+  const defaultMockVulnerabilitiesOverTimeData = {
     data: {
       group: {
         id: 'gid://gitlab/Group/1',
@@ -51,13 +55,18 @@ describe('Security Dashboard (new version) - Component', () => {
 
   const createComponent = ({
     props = {},
-    vulnerabilitiesOverTimeHandler = jest.fn().mockResolvedValue(mockVulnerabilitiesOverTimeData),
+    mountFn = shallowMountExtended,
+    mockVulnerabilitiesOverTimeHandler = null,
   } = {}) => {
+    const vulnerabilitiesOverTimeHandler =
+      mockVulnerabilitiesOverTimeHandler ||
+      jest.fn().mockResolvedValue(defaultMockVulnerabilitiesOverTimeData);
+
     const apolloProvider = createMockApollo([
       [getVulnerabilitiesOverTime, vulnerabilitiesOverTimeHandler],
     ]);
 
-    wrapper = mountExtended(GroupSecurityDashboardV2, {
+    wrapper = mountFn(GroupSecurityDashboardV2, {
       apolloProvider,
       propsData: {
         ...props,
@@ -66,9 +75,12 @@ describe('Security Dashboard (new version) - Component', () => {
         groupFullPath: mockGroupFullPath,
       },
     });
+
+    return { vulnerabilitiesOverTimeHandler };
   };
 
   const findDashboardLayout = () => wrapper.findComponent(DashboardLayout);
+  const findFilteredSearch = () => wrapper.findComponent(FilteredSearch);
   const getDashboardConfig = () => findDashboardLayout().props('config');
   const getFirstPanel = () => getDashboardConfig().panels[0];
 
@@ -106,10 +118,7 @@ describe('Security Dashboard (new version) - Component', () => {
 
   describe('chart data retrieval', () => {
     it('fetches vulnerabilities over time data when component is created', () => {
-      const vulnerabilitiesOverTimeHandler = jest
-        .fn()
-        .mockResolvedValue(mockVulnerabilitiesOverTimeData);
-      createComponent({ vulnerabilitiesOverTimeHandler });
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
@@ -171,36 +180,110 @@ describe('Security Dashboard (new version) - Component', () => {
         },
       };
 
-      const vulnerabilitiesOverTimeHandler = jest.fn().mockResolvedValue(emptyResponse);
-      createComponent({ vulnerabilitiesOverTimeHandler });
+      createComponent({
+        mockVulnerabilitiesOverTimeHandler: jest.fn().mockResolvedValue(emptyResponse),
+      });
       await waitForPromises();
 
       expect(getFirstPanel().componentProps.chartSeries).toEqual([]);
     });
   });
 
+  describe('filtered search', () => {
+    it('gets passed the correct tokens', () => {
+      expect(findFilteredSearch().props('tokens')).toMatchObject(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'projectId',
+            title: 'Project',
+            multiSelect: true,
+            unique: true,
+            token: markRaw(ProjectToken),
+            operators: OPERATORS_OR,
+          }),
+        ]),
+      );
+    });
+
+    it('updates filters when filters-changed event is emitted', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+
+      const newFilters = { projectId: 'gid://gitlab/Project/123' };
+      findFilteredSearch().vm.$emit('filters-changed', newFilters);
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenLastCalledWith({
+        fullPath: mockGroupFullPath,
+        ...newFilters,
+      });
+    });
+
+    it('clears filters when empty filters object is emitted', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+
+      const initialFilters = { projectId: 'gid://gitlab/Project/123' };
+      findFilteredSearch().vm.$emit('filters-changed', initialFilters);
+
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenLastCalledWith({
+        fullPath: mockGroupFullPath,
+        ...initialFilters,
+      });
+
+      // Clear filters
+      findFilteredSearch().vm.$emit('filters-changed', {});
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenLastCalledWith({
+        fullPath: mockGroupFullPath,
+      });
+    });
+
+    it('includes projectId in GraphQL variables when project filter is set', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+
+      const projectId = 'gid://gitlab/Project/123';
+      findFilteredSearch().vm.$emit('filters-changed', { projectId });
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
+        fullPath: mockGroupFullPath,
+        projectId,
+      });
+    });
+  });
+
   describe('error handling', () => {
     describe.each`
-      errorType                   | vulnerabilitiesOverTimeHandler
+      errorType                   | mockVulnerabilitiesOverTimeHandler
       ${'GraphQL query failures'} | ${jest.fn().mockRejectedValue(new Error('GraphQL query failed'))}
       ${'server error responses'} | ${jest.fn().mockResolvedValue({ errors: [{ message: 'Internal server error' }] })}
-    `('$errorType', ({ vulnerabilitiesOverTimeHandler }) => {
+    `('$errorType', ({ mockVulnerabilitiesOverTimeHandler }) => {
       it('does not render the chart component', async () => {
-        createComponent({ vulnerabilitiesOverTimeHandler });
+        createComponent({
+          mockVulnerabilitiesOverTimeHandler,
+        });
         await waitForPromises();
 
         expect(wrapper.findComponent('VulnerabilitiesOverTimeChart').exists()).toBe(false);
       });
 
       it('sets the panel alert state', async () => {
-        createComponent({ vulnerabilitiesOverTimeHandler });
+        createComponent({
+          mockVulnerabilitiesOverTimeHandler,
+        });
         await waitForPromises();
 
         expect(getFirstPanel().showAlertState).toBe(true);
       });
 
       it('renders the correct error message', async () => {
-        createComponent({ vulnerabilitiesOverTimeHandler });
+        // we need to mount extended here because the error message is deep within scoped slots
+        createComponent({
+          mockVulnerabilitiesOverTimeHandler,
+          mountFn: mountExtended,
+        });
         await waitForPromises();
 
         const panelsBase = wrapper.findComponent(PanelsBase);

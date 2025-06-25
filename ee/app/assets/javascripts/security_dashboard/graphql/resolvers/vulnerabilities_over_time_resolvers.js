@@ -1,13 +1,14 @@
 export default {
   Group: {
-    securityMetrics: () => {
+    securityMetrics: (parent, { projectId = [] } = {}) => {
       return {
         __typename: 'SecurityMetrics',
+        projectId, // Pass projectIds to child resolvers
       };
     },
   },
   SecurityMetrics: {
-    vulnerabilitiesOverTime: async () => {
+    vulnerabilitiesOverTime: async (parent) => {
       // This simulates data from 2025-04-17 to 2025-04-26
       const dates = [
         '2025-04-17',
@@ -22,13 +23,33 @@ export default {
         '2025-04-26',
       ];
 
+      // Get projectIds from parent resolver
+      const { projectId = [] } = parent;
+
+      // Mock logic: adjust data based on number of projects
+      // If no projects specified, use full data
+      // If projects specified, scale data based on number of projects
+      const projectMultiplier = projectId.length === 0 ? 1 : Math.max(0.3, projectId.length / 5);
+
       const severityData = {
-        critical: [5, 5, 7, 7, 6, 8, 10, 10, 12, 11],
-        high: [25, 27, 30, 30, 28, 31, 35, 35, 38, 36],
-        medium: [45, 47, 50, 52, 48, 51, 55, 55, 58, 56],
-        low: [65, 68, 72, 72, 69, 73, 78, 78, 82, 79],
-        info: [12, 15, 15, 18, 18, 16, 19, 19, 22, 22],
-        unknown: [8, 8, 10, 10, 9, 9, 12, 12, 11, 11],
+        critical: [5, 5, 7, 7, 6, 8, 10, 10, 12, 11].map((val) =>
+          Math.round(val * projectMultiplier),
+        ),
+        high: [25, 27, 30, 30, 28, 31, 35, 35, 38, 36].map((val) =>
+          Math.round(val * projectMultiplier),
+        ),
+        medium: [45, 47, 50, 52, 48, 51, 55, 55, 58, 56].map((val) =>
+          Math.round(val * projectMultiplier),
+        ),
+        low: [65, 68, 72, 72, 69, 73, 78, 78, 82, 79].map((val) =>
+          Math.round(val * projectMultiplier),
+        ),
+        info: [12, 15, 15, 18, 18, 16, 19, 19, 22, 22].map((val) =>
+          Math.round(val * projectMultiplier),
+        ),
+        unknown: [8, 8, 10, 10, 9, 9, 12, 12, 11, 11].map((val) =>
+          Math.round(val * projectMultiplier),
+        ),
       };
 
       // simulate data fetching delay
