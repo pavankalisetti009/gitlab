@@ -939,6 +939,31 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
   end
 
+  describe '.exists_for_unit_primitive?' do
+    subject(:exists_for_unit_primitive?) { described_class.exists_for_unit_primitive?(:complete_code, :instance) }
+
+    let_it_be(:duo_pro) { create(:gitlab_subscription_add_on, :duo_pro) }
+    let_it_be(:duo_pro_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_pro) }
+
+    before do
+      allow(::Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name)
+        .with(:complete_code)
+        .and_return(build(:cloud_connector_unit_primitive, add_ons: cloud_connector_add_ons))
+    end
+
+    context 'when no add-on exist for unit primitive' do
+      let(:cloud_connector_add_ons) { build_list(:cloud_connector_add_on, 1, name: 'other') }
+
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when an add-on exists for unit primitive' do
+      let(:cloud_connector_add_ons) { build_list(:cloud_connector_add_on, 1, name: 'duo_pro') }
+
+      it { is_expected.to eq(true) }
+    end
+  end
+
   context 'when finding active Duo add-ons' do
     let_it_be(:unrelated_group) { create(:group) }
     let_it_be(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }

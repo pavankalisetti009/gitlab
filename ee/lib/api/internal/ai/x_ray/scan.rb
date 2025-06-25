@@ -25,7 +25,7 @@ module API
             include ::Gitlab::Utils::StrongMemoize
 
             def x_ray_available?
-              code_suggestions_data.purchased?(current_namespace)
+              ::GitlabSubscriptions::AddOnPurchase.exists_for_unit_primitive?(:complete_code, current_namespace)
             end
 
             def token_available?

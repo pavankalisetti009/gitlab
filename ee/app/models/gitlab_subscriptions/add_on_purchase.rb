@@ -125,6 +125,10 @@ module GitlabSubscriptions
       for_active_add_ons(normalized_names, resource)
     end
 
+    def self.exists_for_unit_primitive?(unit_primitive_name, resource)
+      find_for_unit_primitive(unit_primitive_name, resource).exists?
+    end
+
     def self.find_for_active_duo_add_ons(resource)
       for_active_add_ons(AddOn::DUO_ADD_ONS, resource)
     end

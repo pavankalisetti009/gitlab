@@ -476,9 +476,8 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
 
       it 'updates settings when duo pro is available' do
         allow(GitlabSubscriptions::AddOnPurchase)
-          .to receive(:find_for_unit_primitive)
-          .with(:complete_code, :instance)
-          .and_return(build_list(:gitlab_subscription_add_on_purchase, 1))
+          .to receive(:exists_for_unit_primitive?)
+          .and_return(true)
 
         put :update, params: { application_setting: { disabled_direct_code_suggestions: true } }
 
