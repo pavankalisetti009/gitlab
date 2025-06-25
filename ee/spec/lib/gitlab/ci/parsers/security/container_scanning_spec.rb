@@ -17,8 +17,7 @@ RSpec.describe Gitlab::Ci::Parsers::Security::ContainerScanning do
     it "parses all identifiers and findings for unapproved vulnerabilities" do
       expect(report.findings.length).to eq(8)
       expect(report.identifiers.length).to eq(8)
-      expect(report.scanners).to include("trivy")
-      expect(report.scanners.length).to eq(1)
+      expect(report.scanner.external_id).to eq("trivy")
     end
 
     it 'generates expected location', :aggregate_failures do

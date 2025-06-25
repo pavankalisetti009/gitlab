@@ -16,7 +16,6 @@ RSpec.describe Gitlab::Ci::Parsers::Security::Dast do
       :occurrence_count,
       :identifier_count,
       :evidence_count,
-      :scanner_count,
       :scanned_resources_count,
       :last_occurrence_hostname,
       :last_occurrence_method_name,
@@ -25,8 +24,8 @@ RSpec.describe Gitlab::Ci::Parsers::Security::Dast do
       :last_occurrence_confidence,
       :last_occurrence_evidence_summary
     ) do
-      :dast                             | 24 | 15 | 2 | 1 | 6 | 'http://goat:8080' | 'GET' | '/WebGoat/plugins/bootstrap/css/bootstrap.min.css' | 'info' | 'low' | nil
-      :dast_multiple_sites              | 25 | 15 | 1 | 1 | 0 | 'http://goat:8080' | 'GET' | '/WebGoat/plugins/bootstrap/css/bootstrap.min.css' | 'info' | 'low' | nil
+      :dast                             | 24 | 15 | 2 | 6 | 'http://goat:8080' | 'GET' | '/WebGoat/plugins/bootstrap/css/bootstrap.min.css' | 'info' | 'low' | nil
+      :dast_multiple_sites              | 25 | 15 | 1 | 0 | 'http://goat:8080' | 'GET' | '/WebGoat/plugins/bootstrap/css/bootstrap.min.css' | 'info' | 'low' | nil
     end
 
     with_them do
@@ -39,7 +38,6 @@ RSpec.describe Gitlab::Ci::Parsers::Security::Dast do
       it 'parses all identifiers, findings and scanned resources' do
         expect(report.findings.length).to eq(occurrence_count)
         expect(report.identifiers.length).to eq(identifier_count)
-        expect(report.scanners.length).to eq(scanner_count)
         expect(report.scanned_resources.length).to eq(scanned_resources_count)
       end
 

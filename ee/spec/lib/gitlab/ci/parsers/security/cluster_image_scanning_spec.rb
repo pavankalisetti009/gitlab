@@ -18,8 +18,7 @@ RSpec.describe Gitlab::Ci::Parsers::Security::ClusterImageScanning do
     it "parses all identifiers and findings for unapproved vulnerabilities" do
       expect(report.findings.length).to eq(2)
       expect(report.identifiers.length).to eq(2)
-      expect(report.scanners).to include("starboard")
-      expect(report.scanners.length).to eq(1)
+      expect(report.scanner.external_id).to eq("starboard")
     end
 
     it 'generates expected location' do

@@ -18,7 +18,7 @@ RSpec.describe Security::StoreSbomFindingsService, feature_category: :dependency
     build(
       :ci_reports_security_report,
       findings: [security_finding_1, security_finding_2, security_finding_3, security_finding_4],
-      scanners: [security_scanner]
+      scanner: security_scanner
     )
   end
 

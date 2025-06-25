@@ -60,7 +60,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
       findings = { artifact_ds => report_ds, artifact_sast => report_sast }.flat_map do |artifact, report|
         scan = create(:security_scan, :latest_successful, scan_type: artifact.job.name, build: artifact.job)
-        scanner_external_id = report.scanners.each_value.first.external_id
+        scanner_external_id = report.scanner.external_id
         scanner = create(:vulnerabilities_scanner, project: pipeline.project, external_id: scanner_external_id)
 
         report.findings.flat_map do |finding, _index|
@@ -196,7 +196,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
         end
 
         context 'when the `scanner` is provided' do
-          let(:scanner) { report_sast.scanners.each_value.first.external_id }
+          let(:scanner) { report_sast.scanner.external_id }
           let(:expected_uuids) { Security::Finding.by_scan(Security::Scan.find_by(scan_type: 'sast')).pluck(:uuid) }
 
           it { is_expected.to match_array(expected_uuids) }

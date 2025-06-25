@@ -11,9 +11,9 @@ RSpec.describe Gitlab::Ci::Parsers::Security::DependencyScanning, feature_catego
     let(:artifact) { create(:ee_ci_job_artifact, :dependency_scanning) }
     let(:report) { Gitlab::Ci::Reports::Security::Report.new(artifact.file_type, pipeline, 2.weeks.ago) }
 
-    where(:report_format, :occurrence_count, :identifier_count, :scanner_count, :file_path, :package_name, :package_version, :version) do
-      :dependency_scanning             | 4 | 7 | 1 | 'app/pom.xml' | 'io.netty/netty' | '3.9.1.Final' | '15.0.6'
-      :dependency_scanning_remediation | 2 | 3 | 1 | 'yarn.lock'   | 'debug'          | '1.0.5'       | '15.0.6'
+    where(:report_format, :occurrence_count, :identifier_count, :file_path, :package_name, :package_version, :version) do
+      :dependency_scanning             | 4 | 7 | 'app/pom.xml' | 'io.netty/netty' | '3.9.1.Final' | '15.0.6'
+      :dependency_scanning_remediation | 2 | 3 | 'yarn.lock'   | 'debug'          | '1.0.5'       | '15.0.6'
     end
 
     with_them do
@@ -26,7 +26,6 @@ RSpec.describe Gitlab::Ci::Parsers::Security::DependencyScanning, feature_catego
       it "parses all identifiers and findings" do
         expect(report.findings.length).to eq(occurrence_count)
         expect(report.identifiers.length).to eq(identifier_count)
-        expect(report.scanners.length).to eq(scanner_count)
       end
 
       it 'generates expected location' do
