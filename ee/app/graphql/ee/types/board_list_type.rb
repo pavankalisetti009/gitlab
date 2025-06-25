@@ -40,10 +40,6 @@ module EE
           ::Gitlab::Graphql::Loaders::BatchModelLoader.new(::Iteration, object.iteration_id).find
         end
 
-        def status
-          object.custom_status || object.system_defined_status
-        end
-
         def assignee
           object.assignee? ? object.user : nil
         end
