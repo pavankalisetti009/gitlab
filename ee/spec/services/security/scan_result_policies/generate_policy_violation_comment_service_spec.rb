@@ -141,14 +141,11 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
     end
 
     context 'when there is already a bot comment' do
+      include Security::PolicyBotCommentHelpers
+
       let(:violated_reports) { report_type }
       let!(:bot_comment) do
-        create(:note, project: project, noteable: merge_request, author: bot_user,
-          note: [
-            Security::ScanResultPolicies::PolicyViolationComment::MESSAGE_HEADER,
-            "<!-- violated_reports: #{violated_reports} -->",
-            "Previous comment"
-          ].join("\n"))
+        create_policy_bot_comment(merge_request, violated_reports: violated_reports)
       end
 
       describe 'note body' do
@@ -178,13 +175,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
 
           context 'when the existing comment was violated with optional approvals' do
             let!(:bot_comment) do
-              create(:note, project: project, noteable: merge_request, author: bot_user,
-                note: [
-                  Security::ScanResultPolicies::PolicyViolationComment::MESSAGE_HEADER,
-                  "<!-- violated_reports: #{violated_reports} -->",
-                  "<!-- optional_approvals: #{violated_reports} -->",
-                  "Previous comment"
-                ].join("\n"))
+              create_policy_bot_comment(merge_request, violated_reports: violated_reports)
             end
 
             it 'updates the comment and removes the optional approvals section' do

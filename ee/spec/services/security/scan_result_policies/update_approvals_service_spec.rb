@@ -377,7 +377,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
     end
 
     context 'when target pipeline is nil' do
-      let_it_be(:merge_request) do
+      let_it_be_with_refind(:merge_request) do
         create(:merge_request, source_project: project, target_project: project,
           source_branch: 'feature', target_branch: 'target-branch')
       end
@@ -527,14 +527,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           let(:existing_uuid) { uuids.first }
 
           it_behaves_like 'sets approvals_required to 0'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+          it_behaves_like 'triggers policy bot comment', false
         end
 
         context 'when there are violated approval rules' do
           let(:existing_uuid) { SecureRandom.uuid }
 
           it_behaves_like 'does not update approvals_required'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+          it_behaves_like 'triggers policy bot comment', true
         end
       end
 
@@ -576,14 +576,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           let(:existing_uuid) { uuids.first }
 
           it_behaves_like 'sets approvals_required to 0'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+          it_behaves_like 'triggers policy bot comment', false
         end
 
         context 'when there are violated approval rules' do
           let(:existing_uuid) { SecureRandom.uuid }
 
           it_behaves_like 'does not update approvals_required'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+          it_behaves_like 'triggers policy bot comment', true
         end
       end
     end
