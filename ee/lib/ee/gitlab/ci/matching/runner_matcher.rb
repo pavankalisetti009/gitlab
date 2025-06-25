@@ -12,7 +12,6 @@ module EE
           end
 
           def matches_allowed_plans?(build_matcher)
-            return true if ::Feature.disabled?(:ci_runner_separation_by_plan, :instance, type: :ops)
             return true if allowed_plan_ids.empty?
 
             allowed_plan_ids.include?(build_matcher.project.actual_plan.id)

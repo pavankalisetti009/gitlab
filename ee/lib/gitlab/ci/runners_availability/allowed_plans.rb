@@ -5,7 +5,6 @@ module Gitlab
     module RunnersAvailability
       class AllowedPlans < Base
         def available?(build_matcher)
-          return true if ::Feature.disabled?(:ci_runner_separation_by_plan, :instance, type: :ops)
           return true unless project.shared_runners_enabled?
 
           !plan_not_matched?(build_matcher)

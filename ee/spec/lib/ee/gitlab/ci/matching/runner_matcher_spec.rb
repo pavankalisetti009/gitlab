@@ -157,14 +157,6 @@ RSpec.describe Gitlab::Ci::Matching::RunnerMatcher, feature_category: :continuou
         let(:plan) { ultimate_plan }
 
         it { is_expected.to be_falsey }
-
-        context 'when ci_runner_separation_by_plan feature flag is disabled' do
-          before do
-            stub_feature_flags(ci_runner_separation_by_plan: false)
-          end
-
-          it { is_expected.to be_truthy }
-        end
       end
     end
   end
