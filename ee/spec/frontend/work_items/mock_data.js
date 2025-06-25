@@ -216,6 +216,9 @@ export const namespaceWorkItemsWithoutEpicSupport = {
     workspace: {
       id: 'gid://gitlab/Group/14',
       webUrl: 'http://127.0.0.1:3000/groups/flightjs',
+      userPermissions: {
+        setNewWorkItemMetadata: true,
+      },
       workItemTypes: {
         nodes: [
           {
