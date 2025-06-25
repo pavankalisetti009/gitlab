@@ -6,14 +6,13 @@ module AuditEvents
       class AmazonS3DestinationStrategy < BaseAmazonS3DestinationStrategy
         def streamable?
           ::License.feature_available?(:external_audit_events) &&
-            AuditEvents::Instance::AmazonS3Configuration.exists?
+            AuditEvents::Instance::AmazonS3Configuration.active.exists?
         end
 
         private
 
         def destinations
-          # Only 5 Amazon S3 configs are allowed per instance
-          AuditEvents::Instance::AmazonS3Configuration.all
+          AuditEvents::Instance::AmazonS3Configuration.active.limit(5)
         end
       end
     end
