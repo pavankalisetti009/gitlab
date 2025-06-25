@@ -36,7 +36,8 @@ RSpec.describe WorkItems::WidgetDefinition, feature_category: :team_planning do
         ::WorkItems::Widgets::Status,
         ::WorkItems::Widgets::CustomFields,
         ::WorkItems::Widgets::ErrorTracking,
-        ::WorkItems::Widgets::Vulnerabilities
+        ::WorkItems::Widgets::Vulnerabilities,
+        ::WorkItems::Widgets::LinkedResources
       )
     end
 
@@ -46,9 +47,7 @@ RSpec.describe WorkItems::WidgetDefinition, feature_category: :team_planning do
         expect(Object.const_defined?(widget_class_name)).to be true
       end
 
-      # Using - 1 here temporarily as the linked_resources widget is still not added to any work item type
-      # Follow-up will add the widget to the types as part of https://gitlab.com/gitlab-org/gitlab/-/issues/372482
-      expect(described_class.widget_types.size - 1).to eq(described_class.available_widgets.size)
+      expect(described_class.widget_types.size).to eq(described_class.available_widgets.size)
     end
   end
 
