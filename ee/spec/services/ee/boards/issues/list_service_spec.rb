@@ -125,11 +125,21 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
       end
 
       context 'status lists' do
+        shared_examples_for 'includes status issue' do
+          it 'includes issues from the status list' do
+            expect(issues).to include(status_issue)
+          end
+        end
+
+        shared_examples_for 'excludes status issue' do
+          it 'does not include issues from the status list' do
+            expect(issues).not_to include(status_issue)
+          end
+        end
+
         shared_examples_for 'status list' do |status_type|
           context 'with only status mapping' do
-            it 'returns issues based on the status' do
-              expect(issues).to include(status_issue)
-            end
+            it_behaves_like 'includes status issue'
           end
 
           context 'with statuses set explicitly' do
@@ -137,18 +147,36 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
               create(:work_item_current_status, status_type => send(status_type), work_item_id: status_issue.id)
             end
 
-            it 'returns issues based on the status' do
-              expect(issues).to include(status_issue)
-            end
+            it_behaves_like 'includes status issue'
           end
 
           context 'with open/backlog list' do
             let(:params) { { board_id: board.id, id: backlog.id } }
 
-            # TODO: Exclude issues from open/backlog lists
-            # https://gitlab.com/gitlab-org/gitlab/-/issues/532474
-            it 'includes issues from the status list' do
-              expect(issues).to include(status_issue)
+            it_behaves_like 'excludes status issue'
+
+            context 'when board_status_lists feature is not available' do
+              before do
+                stub_licensed_features(board_status_lists: false, work_item_status: true)
+              end
+
+              it_behaves_like 'includes status issue'
+            end
+
+            context 'when work_item_status feature is not available' do
+              before do
+                stub_licensed_features(board_status_lists: true, work_item_status: false)
+              end
+
+              it_behaves_like 'includes status issue'
+            end
+
+            context 'when work_item_status_feature_flag is disabled' do
+              before do
+                stub_feature_flags(work_item_status_feature_flag: false)
+              end
+
+              it_behaves_like 'includes status issue'
             end
           end
 
@@ -156,8 +184,30 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
             let(:status_issue) { create(:issue, :closed, project: project) }
             let(:params) { { board_id: board.id, id: closed.id } }
 
-            it 'includes issues from the status list' do
-              expect(issues).to include(status_issue)
+            it_behaves_like 'includes status issue'
+
+            context 'when board_status_lists feature is not available' do
+              before do
+                stub_licensed_features(board_status_lists: false, work_item_status: true)
+              end
+
+              it_behaves_like 'includes status issue'
+            end
+
+            context 'when work_item_status feature is not available' do
+              before do
+                stub_licensed_features(board_status_lists: true, work_item_status: false)
+              end
+
+              it_behaves_like 'includes status issue'
+            end
+
+            context 'when work_item_status_feature_flag is disabled' do
+              before do
+                stub_feature_flags(work_item_status_feature_flag: false)
+              end
+
+              it_behaves_like 'includes status issue'
             end
           end
         end
@@ -169,11 +219,19 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
         context 'with a system-defined status list' do
           let(:params) { { board_id: board.id, id: system_defined_status_list.id } }
 
+          before do
+            system_defined_status_list
+          end
+
           it_behaves_like 'status list', :system_defined_status
         end
 
         context 'with a custom status list' do
           let(:params) { { board_id: board.id, id: custom_status_list.id } }
+
+          before do
+            custom_status_list
+          end
 
           it_behaves_like 'status list', :custom_status
         end

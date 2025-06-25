@@ -14,6 +14,7 @@ module EE
             issues = without_assignees_from_lists(issues)
             issues = without_milestones_from_lists(issues)
             issues = without_iterations_from_lists(issues)
+            issues = without_status_from_lists(issues)
           end
 
           case list&.list_type
@@ -75,6 +76,14 @@ module EE
         end
         # rubocop: enable CodeReuse/ActiveRecord
 
+        def all_open_status_lists
+          if parent.feature_available?(:board_status_lists)
+            board.lists.status.with_open_status_categories
+          else
+            ::List.none
+          end
+        end
+
         # rubocop: disable CodeReuse/ActiveRecord
         def without_assignees_from_lists(issues)
           return issues if all_assignee_lists.empty?
@@ -110,6 +119,18 @@ module EE
           return issues if all_iteration_lists.empty?
 
           issues.not_in_iterations(all_iteration_lists.select(:iteration_id))
+        end
+
+        def without_status_from_lists(issues)
+          return issues unless parent&.root_ancestor.try(:work_item_status_feature_available?)
+
+          open_status_lists = all_open_status_lists
+          return issues if open_status_lists.empty?
+
+          statuses = open_status_lists.filter_map(&:status)
+          return issues if statuses.empty?
+
+          issues.not_in_statuses(statuses)
         end
 
         def with_assignee(issues)

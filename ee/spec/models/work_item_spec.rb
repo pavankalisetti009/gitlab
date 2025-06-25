@@ -520,24 +520,25 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       create(:work_item, :closed, project: project, duplicated_to_id: wi_default_closed.id)
     end
 
+    let_it_be(:system_defined_todo_status) { build(:work_item_system_defined_status, :to_do) }
+    let_it_be(:system_defined_done_status) { build(:work_item_system_defined_status, :done) }
+    let_it_be(:system_defined_duplicate_status) { build(:work_item_system_defined_status, :duplicate) }
+    let_it_be(:system_defined_wont_do_status) { build(:work_item_system_defined_status, :wont_do) }
+
     let_it_be(:wi_system_defined_todo) do
-      create(:work_item, project: project,
-        system_defined_status_id: build(:work_item_system_defined_status, :to_do).id)
+      create(:work_item, project: project, system_defined_status_id: system_defined_todo_status.id)
     end
 
     let_it_be(:wi_system_defined_done) do
-      create(:work_item, :closed, project: project,
-        system_defined_status_id: build(:work_item_system_defined_status, :done).id)
+      create(:work_item, :closed, project: project, system_defined_status_id: system_defined_done_status.id)
     end
 
     let_it_be(:wi_system_defined_duplicated) do
-      create(:work_item, :closed, project: project,
-        system_defined_status_id: build(:work_item_system_defined_status, :duplicate).id)
+      create(:work_item, :closed, project: project, system_defined_status_id: system_defined_duplicate_status.id)
     end
 
     let_it_be(:wi_system_defined_wont_do) do
-      create(:work_item, :closed, project: project,
-        system_defined_status_id: build(:work_item_system_defined_status, :wont_do).id)
+      create(:work_item, :closed, project: project, system_defined_status_id: system_defined_wont_do_status.id)
     end
 
     let_it_be(:lifecycle) do
@@ -578,7 +579,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       subject { described_class.with_status(status) }
 
       context 'with a system defined status' do
-        let(:status) { build(:work_item_system_defined_status, :to_do) }
+        let(:status) { system_defined_todo_status }
 
         it 'returns items with matching current_status or its equivalent fallback state' do
           is_expected.to contain_exactly(wi_system_defined_todo, wi_default_open)
@@ -622,7 +623,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       subject { described_class.with_system_defined_status(status) }
 
       context 'with todo status' do
-        let(:status) { build(:work_item_system_defined_status, :to_do) }
+        let(:status) { system_defined_todo_status }
 
         it 'returns items with matching current_status or open items' do
           is_expected.to contain_exactly(wi_system_defined_todo, wi_default_open)
@@ -630,7 +631,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       end
 
       context 'with done status' do
-        let(:status) { build(:work_item_system_defined_status, :done) }
+        let(:status) { system_defined_done_status }
 
         it 'returns items with matching current_status or closed items' do
           is_expected.to contain_exactly(wi_system_defined_done, wi_default_closed)
@@ -638,7 +639,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       end
 
       context 'with duplicate status' do
-        let(:status) { build(:work_item_system_defined_status, :duplicate) }
+        let(:status) { system_defined_duplicate_status }
 
         it 'returns items with matching current_status or duplicated items' do
           is_expected.to contain_exactly(wi_system_defined_duplicated, wi_default_duplicated)
@@ -646,7 +647,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       end
 
       context 'with wont_do status' do
-        let(:status) { build(:work_item_system_defined_status, :wont_do) }
+        let(:status) { system_defined_wont_do_status }
 
         it 'returns items with matching current_status' do
           is_expected.to contain_exactly(wi_system_defined_wont_do)
@@ -667,6 +668,59 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         expect(described_class.without_current_status).to contain_exactly(
           wi_default_open, wi_default_closed, wi_default_duplicated, wi_no_status
         )
+      end
+    end
+
+    describe '.not_in_statuses' do
+      subject { described_class.not_in_statuses(statuses) }
+
+      context 'with empty statuses' do
+        let(:statuses) { [] }
+
+        it 'returns all work items' do
+          is_expected.to contain_exactly(
+            wi_default_open, wi_default_closed, wi_default_duplicated,
+            wi_system_defined_todo, wi_system_defined_done, wi_system_defined_duplicated, wi_system_defined_wont_do,
+            wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom, wi_no_status
+          )
+        end
+      end
+
+      context 'with system-defined statuses' do
+        let(:statuses) do
+          [
+            system_defined_todo_status, system_defined_done_status,
+            system_defined_duplicate_status, system_defined_wont_do_status
+          ]
+        end
+
+        it 'excludes items with matching current_status or its equivalent fallback status' do
+          is_expected.to contain_exactly(
+            wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom, wi_no_status
+          )
+        end
+      end
+
+      context 'with custom statuses' do
+        context 'with statuses that has system-defined mapping' do
+          let(:statuses) do
+            [lifecycle.default_open_status, lifecycle.default_closed_status, lifecycle.default_duplicate_status]
+          end
+
+          it 'excludes items with custom status and mapped system-defined items' do
+            is_expected.to contain_exactly(
+              wi_system_defined_wont_do, wi_custom, wi_no_status
+            )
+          end
+        end
+
+        context 'with status without system-defined mapping' do
+          let(:statuses) { [custom_status] }
+
+          it 'excludes only items with the custom status' do
+            is_expected.not_to include(wi_custom)
+          end
+        end
       end
     end
   end
