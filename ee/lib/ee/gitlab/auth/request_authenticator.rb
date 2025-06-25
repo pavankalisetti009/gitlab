@@ -15,7 +15,7 @@ module EE
 
         override :graphql_authorization_scopes
         def graphql_authorization_scopes
-          super + [:ai_features]
+          super + [:ai_features, :ai_workflows]
         end
       end
     end

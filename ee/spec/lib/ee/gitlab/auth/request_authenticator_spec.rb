@@ -38,4 +38,16 @@ RSpec.describe EE::Gitlab::Auth::RequestAuthenticator, feature_category: :system
       expect(subject.find_sessionless_user(:graphql_api)).to be_nil
     end
   end
+
+  describe '#graphql_authorization_scopes' do
+    it 'includes :ai_features and :ai_workflows' do
+      scopes = subject.send(:graphql_authorization_scopes)
+      expect(scopes).to include(:ai_features, :ai_workflows)
+    end
+
+    it 'includes base scopes' do
+      scopes = subject.send(:graphql_authorization_scopes)
+      expect(scopes).to include(:api, :read_api)
+    end
+  end
 end

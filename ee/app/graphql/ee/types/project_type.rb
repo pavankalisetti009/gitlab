@@ -27,7 +27,8 @@ module EE
           null: true,
           extras: [:lookahead],
           description: 'Vulnerabilities reported on the project.',
-          resolver: ::Resolvers::VulnerabilitiesResolver
+          resolver: ::Resolvers::VulnerabilitiesResolver,
+          scopes: [:api, :read_api, :ai_workflows]
 
         field :vulnerability_scanners, ::Types::VulnerabilityScannerType.connection_type,
           null: true,
