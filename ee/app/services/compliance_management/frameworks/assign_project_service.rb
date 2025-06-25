@@ -34,6 +34,8 @@ module ComplianceManagement
 
         return error unless framework
 
+        return project_framework_mismatch_error(framework) unless project_framework_same_namespace?(framework)
+
         framework_setting = ComplianceManagement::ComplianceFramework::ProjectSettings
           .find_or_create_by_project(project, framework)
 
@@ -95,6 +97,18 @@ module ComplianceManagement
       def multiple_frameworks_error
         ServiceResponse.error(message: _('You cannot assign or unassign frameworks to a project that has more than ' \
           'one associated framework.'))
+      end
+
+      def project_framework_same_namespace?(framework)
+        project.root_ancestor&.id == framework.namespace_id
+      end
+
+      def project_framework_mismatch_error(framework)
+        ServiceResponse.error(
+          message: format(_('Project %{project_name} and framework %{framework_name} are not from same namespace.'),
+            project_name: project.name, framework_name: framework.name
+          )
+        )
       end
     end
   end

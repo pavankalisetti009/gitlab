@@ -126,6 +126,25 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
           context 'when more than 1 framework is assigned' do
             it_behaves_like 'more than 1 frameworks for project'
           end
+
+          context 'when project and framework belongs to different namespaces' do
+            let_it_be(:other_framework) { create(:compliance_framework) }
+
+            let(:params) { { framework: other_framework.id } }
+
+            it_behaves_like 'no framework update'
+
+            it 'returns an error response' do
+              response = update_framework
+
+              expect(response).to be_error
+              expect(response.message).to eq(
+                format(_('Project %{project_name} and framework %{framework_name} are not from same namespace.'),
+                  project_name: project.name, framework_name: other_framework.name
+                )
+              )
+            end
+          end
         end
 
         context 'when framework param is invalid' do
