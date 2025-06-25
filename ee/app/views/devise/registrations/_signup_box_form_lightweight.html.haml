@@ -47,7 +47,7 @@
   -# This is used for providing entry to Jihu phone verification
   = render_if_exists 'devise/shared/phone_verification', form: f
 
-  .form-group.gl-mb-0
+  .form-group.gl-mt-6.gl-mb-0
     - if arkose_labs_enabled?(user: nil)
       = render_if_exists 'devise/registrations/arkose_labs'
     - elsif show_recaptcha_sign_up?
