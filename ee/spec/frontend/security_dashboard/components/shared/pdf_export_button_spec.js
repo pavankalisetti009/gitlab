@@ -6,7 +6,11 @@ import { createAlert } from '~/alert';
 import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
 import { TEST_HOST } from 'helpers/test_constants';
 import axios from '~/lib/utils/axios_utils';
-import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import {
+  HTTP_STATUS_NOT_FOUND,
+  HTTP_STATUS_OK,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+} from '~/lib/utils/http_status';
 
 jest.mock('~/alert');
 
@@ -102,6 +106,25 @@ describe('PdfExportButton', () => {
 
     expect(createAlert).toHaveBeenCalledWith({
       message: 'There was an error while generating the report.',
+      variant: 'danger',
+      dismissible: true,
+    });
+  });
+
+  it('shows error alert when export is rate limited (HTTP_STATUS_TOO_MANY_REQUESTS)', async () => {
+    const serverMessage =
+      'Export already in progress. Please retry after the current export completes.';
+
+    createWrapper();
+    mockAsyncExportRequest(HTTP_STATUS_TOO_MANY_REQUESTS, {
+      message: serverMessage,
+    });
+
+    findButton().vm.$emit('click');
+    await axios.waitForAll();
+
+    expect(createAlert).toHaveBeenCalledWith({
+      message: serverMessage,
       variant: 'danger',
       dismissible: true,
     });
