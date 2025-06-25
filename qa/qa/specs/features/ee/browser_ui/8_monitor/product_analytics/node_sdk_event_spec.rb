@@ -5,7 +5,7 @@ module QA
     describe(
       'Product Analytics',
       only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"]&.include? "product-analytics" } },
-      product_group: :product_analytics
+      product_group: :platform_insights
     ) do
       let!(:group) { create(:group, name: "product-analytics-g-#{SecureRandom.hex(8)}") }
 
