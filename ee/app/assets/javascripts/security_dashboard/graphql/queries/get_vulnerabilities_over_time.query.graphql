@@ -1,7 +1,7 @@
-query getGroupVulnerabilitiesOverTime($fullPath: ID!) {
+query getGroupVulnerabilitiesOverTime($fullPath: ID!, $projectId: [String]) {
   group(fullPath: $fullPath) {
     id
-    securityMetrics @client {
+    securityMetrics(projectId: $projectId) @client {
       vulnerabilitiesOverTime {
         nodes {
           date

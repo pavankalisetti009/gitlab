@@ -57283,6 +57283,9 @@ msgstr ""
 msgid "SecurityReports|Failed updating vulnerabilities with the following IDs: %{ids}"
 msgstr ""
 
+msgid "SecurityReports|Filter results..."
+msgstr ""
+
 msgid "SecurityReports|GitLab Duo (AI)"
 msgstr ""
 
