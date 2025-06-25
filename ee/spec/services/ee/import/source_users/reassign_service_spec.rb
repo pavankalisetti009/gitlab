@@ -4,8 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importers do
   let_it_be(:group) { create(:group) }
-  let_it_be(:subgroup) { create(:group, parent: group) }
-  let_it_be(:import_source_user) { create(:import_source_user, namespace: subgroup) }
+  let_it_be(:import_source_user) { create(:import_source_user, namespace: group) }
   let_it_be(:current_user) { create(:user) }
   let_it_be(:assignee_user) { create(:user) }
 
@@ -121,6 +120,27 @@ RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importer
 
       context 'when there are no enterprise users' do
         it_behaves_like 'success response'
+      end
+    end
+
+    context 'when enterprise bypass placeholder confirmation is allowed' do
+      before do
+        allow_next_instance_of(Import::UserMapping::EnterpriseBypassAuthorizer, group, assignee_user,
+          current_user) do |authorizer|
+          allow(authorizer).to receive(:allowed?).and_return(true)
+        end
+      end
+
+      it 'bypass confirmation and returns success', :aggregate_failures do
+        expect(Import::ReassignPlaceholderUserRecordsWorker).to receive(:perform_async).with(import_source_user.id)
+
+        result = service.execute
+
+        expect(result).to be_success
+        expect(result.payload.reload).to eq(import_source_user)
+        expect(result.payload.reassign_to_user).to eq(assignee_user)
+        expect(result.payload.reassigned_by_user).to eq(current_user)
+        expect(result.payload.reassignment_in_progress?).to be(true)
       end
     end
   end
