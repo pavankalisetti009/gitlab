@@ -161,7 +161,7 @@ class Projects::CommitController < Projects::ApplicationController
   end
 
   def rapid_diffs
-    return render_404 unless ::Feature.enabled?(:rapid_diffs, current_user, type: :wip) &&
+    return render_404 unless ::Feature.enabled?(:rapid_diffs, current_user, type: :beta) &&
       ::Feature.enabled?(:rapid_diffs_on_commit_show, current_user, type: :wip)
 
     streaming_offset = 5
