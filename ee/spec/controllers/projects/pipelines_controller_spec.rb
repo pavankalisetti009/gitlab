@@ -6,7 +6,7 @@ RSpec.describe Projects::PipelinesController do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: 'master', sha: project.commit.id) }
-  let_it_be(:mit) { create(:software_license, :mit) }
+  let_it_be(:mit_spdx_identifier) { 'MIT' }
 
   before do
     project.add_developer(user)
@@ -150,7 +150,7 @@ RSpec.describe Projects::PipelinesController do
   describe 'GET licenses', feature_category: :software_composition_analysis do
     let(:licenses_with_html) { get :licenses, format: :html, params: { namespace_id: project.namespace, project_id: project, id: pipeline } }
     let(:licenses_with_json) { get :licenses, format: :json, params: { namespace_id: project.namespace, project_id: project, id: pipeline } }
-    let!(:software_license_policy) { create(:software_license_policy, software_license: mit, project: project, software_license_spdx_identifier: mit.spdx_identifier) }
+    let!(:software_license_policy) { create(:software_license_policy, :with_mit_license, project: project) }
 
     let(:payload) { Gitlab::Json.parse(licenses_with_json.body) }
 
@@ -278,7 +278,7 @@ RSpec.describe Projects::PipelinesController do
 
   describe 'GET license_count', :use_clean_rails_memory_store_caching, feature_category: :software_composition_analysis do
     let(:license_count_request) { get :license_count, format: :json, params: { namespace_id: project.namespace, project_id: project, id: pipeline } }
-    let!(:software_license_policy) { create(:software_license_policy, software_license: mit, project: project) }
+    let!(:software_license_policy) { create(:software_license_policy, :with_mit_license, project: project) }
     let(:cache_key) { ['license_count', project.cache_key_with_version, pipeline.cache_key_with_version] }
 
     context 'with a cyclonedx report' do

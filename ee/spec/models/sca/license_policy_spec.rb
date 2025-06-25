@@ -6,8 +6,7 @@ RSpec.describe SCA::LicensePolicy, feature_category: :software_composition_analy
   subject { described_class.new(license, policy, approval_status) }
 
   let(:license) { build(:license_scanning_license, :mit) }
-  let(:policy) { build(:software_license_policy, software_license: software_license) }
-  let(:software_license) { build(:software_license, :mit) }
+  let(:policy) { build(:software_license_policy, :with_mit_license) }
   let(:approval_status) { nil }
 
   describe "#id" do
@@ -24,7 +23,7 @@ RSpec.describe SCA::LicensePolicy, feature_category: :software_composition_analy
 
   describe "#name" do
     context "when a software_policy is provided" do
-      it { expect(subject.name).to eq(policy.software_license.name) }
+      it { expect(subject.name).to eq(policy.name) }
     end
 
     context "when a software_policy is NOT provided" do
@@ -73,13 +72,13 @@ RSpec.describe SCA::LicensePolicy, feature_category: :software_composition_analy
 
   describe "#classification" do
     context "when a allowed software_policy is provided" do
-      let(:policy) { build(:software_license_policy, :allowed, software_license: software_license) }
+      let(:policy) { build(:software_license_policy, :allowed, :with_mit_license) }
 
       it { expect(subject.classification).to eq("allowed") }
     end
 
     context "when a denied software_policy is provided" do
-      let(:policy) { build(:software_license_policy, :denied, software_license: software_license) }
+      let(:policy) { build(:software_license_policy, :denied, :with_mit_license) }
 
       it { expect(subject.classification).to eq("denied") }
     end
@@ -100,7 +99,7 @@ RSpec.describe SCA::LicensePolicy, feature_category: :software_composition_analy
 
   describe "#spdx_identifier" do
     context "when a software_policy is provided" do
-      it { expect(subject.spdx_identifier).to eq(policy.software_license.spdx_identifier) }
+      it { expect(subject.spdx_identifier).to eq(policy.spdx_identifier) }
     end
 
     context "when a software_policy is provided but does not have a SPDX Id" do
@@ -118,7 +117,7 @@ RSpec.describe SCA::LicensePolicy, feature_category: :software_composition_analy
     context "when a reported license is NOT provided" do
       let(:license) { nil }
 
-      let(:policy) { build(:software_license_policy, software_license_spdx_identifier: 'MIT') }
+      let(:policy) { build(:software_license_policy, :with_mit_license) }
 
       it { expect(subject.spdx_identifier).to eq(policy.software_license_spdx_identifier) }
     end

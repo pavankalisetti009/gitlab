@@ -28,7 +28,7 @@ module Security
         if scan_result_policy_read.match_on_inclusion_license
           all_denied_licenses = licenses_from_policy
           policy_denied_license_names = all_denied_licenses & licenses_from_report
-          violates_license_policy = violates_db_licenses?(software_license_policies, license_ids, license_names)
+          violates_license_policy = violates_db_licenses?(software_license_policies, license_ids, license_names.to_set)
         else
           # when match_on_inclusion_license is false, only the licenses mentioned in the policy are allowed
           all_denied_licenses = (licenses_from_report - licenses_from_policy).uniq
@@ -57,18 +57,19 @@ module Security
       def software_license_policies(scan_result_policy_read)
         project
           .software_license_policies
-          .including_license
           .including_custom_license
           .for_scan_result_policy_read(scan_result_policy_read.id)
       end
 
       def violates_db_licenses?(software_license_policies, ids, names)
-        policies_with_matching_license_name = software_license_policies
-                                                .denied
-                                                .with_license_or_custom_license_by_name(names)
-        policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids)
+        spdx_ids_for_license_names = SoftwareLicensePolicy.latest_active_licenses_by_name(names).pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- Not AR object
+        spdx_ids = (ids + spdx_ids_for_license_names).to_set
 
-        policies_with_matching_spdx_id.present? || policies_with_matching_license_name.present?
+        policies = software_license_policies.select do |policy|
+          spdx_ids.include?(policy.spdx_identifier) || names.include?(policy.custom_software_license&.name)
+        end
+
+        policies.present?
       end
 
       def licenses_to_check(scan_result_policy_read)

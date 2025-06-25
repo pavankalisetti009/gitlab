@@ -160,7 +160,11 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
           let(:builds) { [create(:ee_ci_build, :cyclonedx)] }
 
           let!(:mit_policy) { create(:software_license_policy, :denied, software_license_spdx_identifier: mit_spdx_identifier, project: project) }
-          let!(:other_license_policy) { create(:software_license_policy, :allowed, custom_software_license: create(:custom_software_license, name: 'SOFTWARE-LICENSE'), project: project) }
+          let!(:other_license_policy) do
+            create(:software_license_policy, :allowed,
+              custom_software_license: create(:custom_software_license, name: 'SOFTWARE-LICENSE'),
+              software_license_spdx_identifier: nil, project: project)
+          end
 
           it 'includes a policy for each detected license and classified license' do
             expect(policies.count).to eq(4)
@@ -205,7 +209,7 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
     context "with license_scanning report" do
       let!(:pipeline) { create(:ci_pipeline, :success, project: project, builds: [create(:ee_ci_build, :success, :license_scan_v2_1)]) }
       let!(:mit_policy) { create(:software_license_policy, :denied, software_license_spdx_identifier: mit_spdx_identifier, project: project) }
-      let!(:other_license_policy) { create(:software_license_policy, :allowed, custom_software_license: create(:custom_software_license, name: 'SOFTWARE-LICENSE'), project: project) }
+      let!(:other_license_policy) { create(:software_license_policy, :allowed, custom_software_license: create(:custom_software_license, name: 'SOFTWARE-LICENSE'), software_license_spdx_identifier: nil, project: project) }
       let(:results) { license_compliance.find_policies(detected_only: true) }
 
       it 'does not process the report' do
@@ -293,7 +297,10 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
         context "with denied license without spdx identifier" do
           let!(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, project: project) }
           let_it_be(:custom_denied_license) { create(:custom_software_license, name: 'CUSTOM_DENIED_LICENSE') }
-          let!(:custom_license_policy) { create(:software_license_policy, :denied, custom_software_license: custom_denied_license, project: project) }
+          let!(:custom_license_policy) do
+            create(:software_license_policy, :denied, custom_software_license: custom_denied_license,
+              software_license_spdx_identifier: nil, project: project)
+          end
 
           let(:results) { license_compliance.find_policies(detected_only: true) }
 
@@ -484,7 +491,7 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
 
             create(:software_license_policy, :denied,
               project: project,
-              software_license: nil,
+              software_license_spdx_identifier: nil,
               custom_software_license: custom_license,
               scan_result_policy_read: create(:scan_result_policy_read, match_on_inclusion_license: true)
             )

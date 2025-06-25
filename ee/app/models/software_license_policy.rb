@@ -8,11 +8,12 @@ class SoftwareLicensePolicy < ApplicationRecord
   include EachBatch
   include FromUnion
 
+  ignore_column :software_license_id, remove_with: '18.4', remove_after: '2025-08-21'
+
   # Only allows modification of the approval status
   FORM_EDITABLE = %i[approval_status].freeze
 
   belongs_to :project, inverse_of: :software_license_policies
-  belongs_to :software_license, -> { readonly }
   belongs_to :custom_software_license, class_name: 'Security::CustomSoftwareLicense'
   belongs_to :scan_result_policy_read,
     class_name: 'Security::ScanResultPolicyRead',
@@ -21,7 +22,7 @@ class SoftwareLicensePolicy < ApplicationRecord
 
   belongs_to :approval_policy_rule, class_name: 'Security::ApprovalPolicyRule', optional: true
 
-  attr_readonly :software_license, :custom_software_license
+  attr_readonly :custom_software_license
 
   enum :classification, {
     denied: 0,
@@ -30,18 +31,14 @@ class SoftwareLicensePolicy < ApplicationRecord
   validates_presence_of :project
   validates :classification, presence: true
 
-  validates :software_license, presence: true, unless: :custom_software_license
-  validates :custom_software_license, presence: true, unless: :software_license
+  validates :custom_software_license, presence: true, unless: :software_license_spdx_identifier
+  validates :software_license_spdx_identifier, presence: true, unless: :custom_software_license
 
-  # A license is unique for its project since it can't be approved and denied.
-  validates :software_license, uniqueness: { scope: [:project_id, :scan_result_policy_id] }, allow_blank: true
   validates :custom_software_license, uniqueness: { scope: [:project_id, :scan_result_policy_id] }, allow_blank: true
   validates :software_license_spdx_identifier, length: { maximum: 255 }
 
   scope :for_project, ->(project) { where(project: project) }
   scope :for_scan_result_policy_read, ->(scan_result_policy_id) { where(scan_result_policy_id: scan_result_policy_id) }
-  scope :with_license, -> { joins(:software_license) }
-  scope :including_license, -> { includes(:software_license) }
   scope :including_custom_license, -> { includes(:custom_software_license) }
   scope :including_scan_result_policy_read, -> { includes(:scan_result_policy_read) }
   scope :unreachable_limit, -> { limit(1_000) }
@@ -50,23 +47,6 @@ class SoftwareLicensePolicy < ApplicationRecord
   scope :exclusion_allowed, -> do
     joins(:scan_result_policy_read)
       .where(scan_result_policy_read: { match_on_inclusion_license: false })
-  end
-
-  scope :with_license_by_name, ->(license_name) do
-    license_names = Array.wrap(license_name).map(&:downcase)
-    related_spdx_identifiers = latest_active_licenses_by_name(license_names).map(&:id)
-    with_license.where(software_license_spdx_identifier: related_spdx_identifiers)
-  end
-
-  scope :with_license_or_custom_license_by_name, ->(license_names) do
-    software_licenses = with_license_by_name(license_names)
-
-    license_names = Array(license_names).map(&:downcase)
-
-    custom_software_licenses = joins(:custom_software_license)
-      .where(Security::CustomSoftwareLicense.arel_table[:name].lower.in(license_names))
-
-    SoftwareLicensePolicy.from_union([software_licenses, custom_software_licenses])
   end
 
   scope :by_spdx, ->(spdx_identifier) do
@@ -100,8 +80,6 @@ class SoftwareLicensePolicy < ApplicationRecord
       self.class.latest_active_licenses_by_spdx(software_license_spdx_identifier)&.first&.name
     elsif custom_software_license
       custom_software_license&.name
-    else
-      software_license&.name
     end
   end
 

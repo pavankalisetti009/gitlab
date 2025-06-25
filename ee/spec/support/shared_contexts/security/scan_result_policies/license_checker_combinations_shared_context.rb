@@ -39,6 +39,6 @@ RSpec.shared_context 'for license_checker' do
     ref(:case4) | ref(:case5) | ['detected'] | [nil, 'MIT License'] | :allowed | ref(:violation2)
     ref(:case4) | ref(:case5) | %w[newly_detected detected] | ['MIT', 'MIT License'] | :allowed | ref(:violation4)
 
-    ref(:case2) | ref(:case2) | ['detected'] | [nil, 'GPL v3'] | :allowed | nil
+    ref(:case2) | ref(:case2) | ['detected'] | [nil, 'GNU 3'] | :allowed | nil
   end
 end

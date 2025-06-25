@@ -186,9 +186,8 @@ RSpec.describe Ci::SyncReportsToApprovalRulesService, '#execute', feature_catego
 
   context "license compliance policy" do
     let(:pipeline) { create(:ci_pipeline, :running, project: project, merge_requests_as_head_pipeline: [merge_request]) }
-    let!(:software_license_policy) { create(:software_license_policy, :denied, project: project, software_license: denied_license) }
+    let!(:software_license_policy) { create(:software_license_policy, :denied, project: project) }
     let!(:license_compliance_rule) { create(:report_approver_rule, :license_scanning, merge_request: merge_request, approvals_required: 1) }
-    let!(:denied_license) { create(:software_license) }
 
     specify { expect { subject }.not_to change { license_compliance_rule.reload.approvals_required } }
     specify { expect(subject[:status]).to be(:success) }

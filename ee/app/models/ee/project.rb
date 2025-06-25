@@ -128,7 +128,6 @@ module EE
 
       has_many :protected_environments
       has_many :software_license_policies, inverse_of: :project, class_name: 'SoftwareLicensePolicy'
-      has_many :software_licenses, through: :software_license_policies
       has_many :custom_software_licenses, through: :software_license_policies
       accepts_nested_attributes_for :software_license_policies, allow_destroy: true
       # We should consider avoiding direct use of this relation and instead rely on MergeTrains::Train
