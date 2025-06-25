@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { parseBoolean, convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import DependenciesApp from './components/app.vue';
 import createStore from './store';
 import apolloProvider from './graphql/provider';
@@ -17,7 +17,6 @@ export default (namespaceType) => {
     exportEndpoint,
     vulnerabilitiesEndpoint,
     locationsEndpoint,
-    pageInfo,
     sbomReportsErrors,
     latestSuccessfulScanPath,
     scanFinishedAt,
@@ -36,7 +35,6 @@ export default (namespaceType) => {
     exportEndpoint,
     vulnerabilitiesEndpoint,
     namespaceType,
-    pageInfo: pageInfo ? convertObjectPropsToCamelCase(JSON.parse(pageInfo)) : {},
     latestSuccessfulScanPath,
     scanFinishedAt,
     groupFullPath,
