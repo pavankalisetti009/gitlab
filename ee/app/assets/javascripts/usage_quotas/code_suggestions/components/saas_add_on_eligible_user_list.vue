@@ -46,7 +46,7 @@ export default {
       type: String,
       required: true,
     },
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
@@ -135,7 +135,7 @@ export default {
     addOnEligibleUsersQueryVariables() {
       return {
         fullPath: this.fullPath,
-        addOnType: this.duoTier,
+        addOnType: this.activeDuoTier,
         addOnPurchaseIds: [this.addOnPurchaseId],
         sort: this.sort,
         ...this.filterOptions,
@@ -224,7 +224,7 @@ export default {
     :page-info="pageInfo"
     :page-size="pageSize"
     :search="filterOptions.search"
-    :duo-tier="duoTier"
+    :active-duo-tier="activeDuoTier"
     :hide-add-button-seat-on-error-message="hideAddButtonSeatOnErrorMessage"
     @next="handleNext"
     @prev="handlePrev"

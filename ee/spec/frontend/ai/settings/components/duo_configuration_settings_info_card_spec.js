@@ -41,7 +41,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
         areDuoCoreFeaturesEnabled,
       },
       propsData: {
-        duoTier: DUO_ENTERPRISE,
+        activeDuoTier: DUO_ENTERPRISE,
         ...props,
       },
     });
@@ -151,15 +151,15 @@ describe('DuoConfigurationSettingsInfoCard', () => {
 
     describe('with Duo Core', () => {
       it('renders the title correctly', () => {
-        createComponent({}, { duoTier: DUO_CORE });
+        createComponent({}, { activeDuoTier: DUO_CORE });
         expect(findDuoConfigurationSettingsInfo().text()).toBe('GitLab Duo Core');
       });
 
       it('renders add-on activation status', () => {
-        createComponent({ areDuoCoreFeaturesEnabled: true }, { duoTier: DUO_CORE });
+        createComponent({ areDuoCoreFeaturesEnabled: true }, { activeDuoTier: DUO_CORE });
         expect(findConfigurationStatus().text()).toContain('Enabled');
 
-        createComponent({ areDuoCoreFeaturesEnabled: false }, { duoTier: DUO_CORE });
+        createComponent({ areDuoCoreFeaturesEnabled: false }, { activeDuoTier: DUO_CORE });
         expect(findConfigurationStatus().text()).toContain('Not enabled');
       });
     });
@@ -167,7 +167,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
 
   describe('with Duo Core', () => {
     it('hides Duo Core settings row', () => {
-      createComponent({ isSaaS: true }, { duoTier: DUO_CORE });
+      createComponent({ isSaaS: true }, { activeDuoTier: DUO_CORE });
 
       expect(findDuoConfigurationRows()).toHaveLength(1);
       expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');

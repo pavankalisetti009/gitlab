@@ -14,7 +14,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
   const createComponent = (props) => {
     wrapper = shallowMountExtended(CodeSuggestionsUsageStatisticsCard, {
       propsData: {
-        duoTier: DUO_PRO,
+        activeDuoTier: DUO_PRO,
         ...props,
       },
       stubs: {
@@ -36,7 +36,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
 
   describe('with purchased Duo Pro Add-ons', () => {
     beforeEach(() => {
-      return createComponent({ usageValue: 0, totalValue: 20, duoTier: DUO_PRO });
+      return createComponent({ usageValue: 0, totalValue: 20, activeDuoTier: DUO_PRO });
     });
 
     it('renders the description text', () => {
@@ -60,7 +60,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
 
   describe('with purchased Duo Enterprise Add-ons', () => {
     beforeEach(() => {
-      return createComponent({ usageValue: 0, totalValue: 20, duoTier: DUO_ENTERPRISE });
+      return createComponent({ usageValue: 0, totalValue: 20, activeDuoTier: DUO_ENTERPRISE });
     });
 
     it('renders the description text', () => {
@@ -84,7 +84,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
 
   describe('with purchased Duo with Amazon Q Add-ons', () => {
     beforeEach(() => {
-      return createComponent({ usageValue: 0, totalValue: 20, duoTier: DUO_AMAZON_Q });
+      return createComponent({ usageValue: 0, totalValue: 20, activeDuoTier: DUO_AMAZON_Q });
     });
 
     it('renders the description text', () => {

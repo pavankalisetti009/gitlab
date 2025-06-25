@@ -72,7 +72,7 @@ export default {
       required: false,
       default: null,
     },
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
@@ -119,13 +119,13 @@ export default {
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
     isDuoEnterprise() {
-      return this.duoTier === DUO_ENTERPRISE;
+      return this.activeDuoTier === DUO_ENTERPRISE;
     },
     isDuoPro() {
-      return this.duoTier === DUO_PRO;
+      return this.activeDuoTier === DUO_PRO;
     },
     duoIdentifier() {
-      return DUO_CSS_IDENTIFIERS[this.duoTier];
+      return DUO_CSS_IDENTIFIERS[this.activeDuoTier];
     },
     pageViewLabel() {
       return this.duoAddOnIsTrial

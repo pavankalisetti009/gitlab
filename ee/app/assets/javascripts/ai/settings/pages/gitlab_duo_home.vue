@@ -101,7 +101,7 @@ export default {
             :active-duo-tier="activeDuoTier"
             :add-on-purchases="addOnPurchases"
           />
-          <duo-configuration-settings-info-card :duo-tier="activeDuoTier" />
+          <duo-configuration-settings-info-card :active-duo-tier="activeDuoTier" />
         </section>
         <duo-models-configuration-info-card
           v-if="isModelSwitchingEnabled || isSelfHostedModelsEnabled"

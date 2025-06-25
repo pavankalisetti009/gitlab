@@ -106,7 +106,7 @@ export default {
       required: false,
       default: '',
     },
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
@@ -159,7 +159,7 @@ export default {
       return s__('Billing|No users to display.');
     },
     duoAddOn() {
-      return DUO_ADD_ONS[this.duoTier];
+      return DUO_ADD_ONS[this.activeDuoTier];
     },
     tableFieldsConfiguration() {
       let fieldConfig = [
@@ -510,7 +510,7 @@ export default {
           :user-id="item.id"
           :add-on-assignments="item.addOnAssignments"
           :add-on-purchase-id="addOnPurchaseId"
-          :duo-tier="duoTier"
+          :active-duo-tier="activeDuoTier"
           @handleError="handleError"
           @clearError="clearAlerts"
         />

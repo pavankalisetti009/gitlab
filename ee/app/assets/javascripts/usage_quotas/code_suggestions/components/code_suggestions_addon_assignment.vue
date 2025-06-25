@@ -35,7 +35,7 @@ export default {
       type: String,
       required: true,
     },
-    duoTier: {
+    activeDuoTier: {
       type: String,
       required: true,
       validator: (value) => DUO_IDENTIFIERS.includes(value),
@@ -51,7 +51,7 @@ export default {
     isAssigned() {
       return Boolean(
         this.addOnAssignments?.find(
-          (assignment) => assignment.addOnPurchase?.name === this.duoTier,
+          (assignment) => assignment.addOnPurchase?.name === this.activeDuoTier,
         ),
       );
     },
@@ -63,7 +63,7 @@ export default {
     },
     toggleLabel() {
       return sprintf(s__('CodeSuggestions|%{addOnName} status'), {
-        addOnName: DUO_TITLES[this.duoTier],
+        addOnName: DUO_TITLES[this.activeDuoTier],
       });
     },
   },
