@@ -6,7 +6,7 @@ import {
   FILTER_OPTIONS,
 } from 'ee/geo_replicable/constants';
 import buildReplicableTypeQuery from 'ee/geo_replicable/graphql/replicable_type_query_builder';
-import replicableTypeUpdateMutation from 'ee/geo_replicable/graphql/replicable_type_update_mutation.graphql';
+import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
 import replicableTypeBulkUpdateMutation from 'ee/geo_replicable/graphql/replicable_type_bulk_update_mutation.graphql';
 import * as actions from 'ee/geo_replicable/store/actions';
 import * as types from 'ee/geo_replicable/store/mutation_types';

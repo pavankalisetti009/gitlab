@@ -2,7 +2,10 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
+import { ACTION_TYPES } from 'ee/geo_shared/constants';
+import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
+import toast from '~/vue_shared/plugins/global_toast';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import buildReplicableItemQuery from '../graphql/replicable_item_query_builder';
 import GeoFeedbackBanner from '../../geo_replicable/components/geo_feedback_banner.vue';
@@ -69,6 +72,31 @@ export default {
       return this.$apollo.queries.replicableItem.loading;
     },
   },
+  methods: {
+    async reverify() {
+      try {
+        await this.$apollo.mutate({
+          mutation: replicableTypeUpdateMutation,
+          variables: {
+            action: ACTION_TYPES.REVERIFY,
+            registryId: convertToGraphQLId(
+              this.replicableClass.graphqlRegistryClass,
+              this.replicableItemId,
+            ),
+          },
+        });
+
+        toast(s__('Geo|Reverification was scheduled successfully'));
+        this.$apollo.queries.replicableItem.refetch();
+      } catch (error) {
+        createAlert({
+          message: s__('Geo|There was an error reverifying this replicable'),
+          error,
+          captureError: true,
+        });
+      }
+    },
+  },
 };
 </script>
 
@@ -85,6 +113,7 @@ export default {
           <geo-replicable-item-verification-info
             v-if="replicableClass.verificationEnabled"
             :replicable-item="replicableItem"
+            @reverify="reverify"
           />
         </div>
 
