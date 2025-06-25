@@ -8,7 +8,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
   let_it_be(:user) { create(:user) }
   let_it_be(:job) { create(:ci_build, :running, namespace: namespace, user: user) }
   let_it_be(:sub_job) { create(:ci_build, :running, namespace: sub_namespace, user: user) }
-  let_it_be(:code_suggestion_add_on) { create(:gitlab_subscription_add_on) }
+  let_it_be(:code_suggestion_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
   let_it_be(:cloud_connector_keys) { create(:cloud_connector_keys) }
 
   let(:ai_gateway_token) { 'ai gateway token' }
@@ -22,6 +22,9 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
   before do
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(instance_uuid)
+    allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name)
+      .with(:complete_code)
+      .and_return(build(:cloud_connector_unit_primitive, :complete_code))
   end
 
   describe 'POST /internal/jobs/:id/x_ray/scan' do
