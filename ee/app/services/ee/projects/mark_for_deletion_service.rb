@@ -34,7 +34,12 @@ module EE
           author: current_user,
           scope: project,
           target: project,
-          message: 'Project marked for deletion'
+          message: 'Project marked for deletion',
+          additional_details: {
+            project_id: project.id,
+            namespace_id: project.namespace_id,
+            root_namespace_id: project.root_namespace.id
+          }
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
