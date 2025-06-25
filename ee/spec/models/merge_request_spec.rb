@@ -2304,6 +2304,33 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
+  describe '#policy_bot_comment' do
+    subject { merge_request.policy_bot_comment }
+
+    let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
+
+    context 'without any comments' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'with a policy violation comment from the security bot' do
+      include Security::PolicyBotCommentHelpers
+
+      let!(:policy_bot_comment) { create_policy_bot_comment(merge_request) }
+
+      it { is_expected.to eq policy_bot_comment }
+    end
+
+    context 'with another comment from the security bot' do
+      before do
+        create(:note, project: merge_request.project, noteable: merge_request, author: Users::Internal.security_bot,
+          note: 'Other note')
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#reset_required_approvals' do
     subject(:execute) { merge_request.reset_required_approvals(approval_rules) }
 

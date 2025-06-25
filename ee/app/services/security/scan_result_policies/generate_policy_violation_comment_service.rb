@@ -66,9 +66,7 @@ module Security
       strong_memoize_attr :scan_result_policy_rules
 
       def existing_comment
-        @existing_comment ||= merge_request.notes
-                                           .authored_by(bot_user)
-                                           .note_starting_with(PolicyViolationComment::MESSAGE_HEADER).first
+        @existing_comment ||= merge_request.policy_bot_comment
       end
 
       def bot_user
