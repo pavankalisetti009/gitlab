@@ -8,14 +8,16 @@ module AuditEvents
         return false if group.nil?
         return false unless group.licensed_feature_available?(:external_audit_events)
 
-        group.amazon_s3_configurations.exists?
+        group.amazon_s3_configurations.active.exists?
       end
 
       private
 
       def destinations
         group = audit_event.root_group_entity
-        group.present? ? group.amazon_s3_configurations.to_a : []
+        return [] unless group.present?
+
+        group.amazon_s3_configurations.active.limit(5)
       end
     end
   end

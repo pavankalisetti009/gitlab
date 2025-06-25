@@ -5,13 +5,13 @@ module AuditEvents
     class InstanceExternalDestinationStrategy < ExternalDestinationStrategy
       def streamable?
         ::License.feature_available?(:external_audit_events) &&
-          ::AuditEvents::InstanceExternalAuditEventDestination.exists?
+          AuditEvents::InstanceExternalAuditEventDestination.active.exists?
       end
 
       private
 
       def destinations
-        AuditEvents::InstanceExternalAuditEventDestination.all
+        AuditEvents::InstanceExternalAuditEventDestination.active.limit(5)
       end
     end
   end

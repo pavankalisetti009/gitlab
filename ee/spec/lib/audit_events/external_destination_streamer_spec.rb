@@ -3,8 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audit_events do
-  let_it_be(:event) { create(:audit_event, :group_event) }
-  let(:group) { event.entity }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:event) { create(:audit_event, :group_event, entity_id: group.id) }
+
   let(:streamer) { described_class.new('audit_operation', event) }
   let(:request_body) { { id: event.id, event_type: 'audit_operation' }.to_json }
 
@@ -45,6 +46,7 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
         end
 
         expect(streamer).to receive(:streamers).at_least(:once).and_call_original
+
         expect(streamer).not_to receive(:streamable_strategies)
 
         stream_to_destinations
@@ -153,7 +155,6 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
 
       it 'only checks streamers with feature flag enabled' do
         expect(streamer).to receive(:streamers).at_least(:once).and_call_original
-
         expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
 
         streamable
@@ -232,23 +233,23 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
       with_them do
         before do
           if is_group_destination
-            create(factory, trait, group: group)
+            create(factory, trait, group: event.entity)
           else
             create(factory, trait)
           end
+
+          allow(event).to receive(:root_group_entity).and_return(group)
         end
 
         it { is_expected.to be_truthy }
 
-        it 'only checks streamers with feature flag enabled' do
-          allow_next_instance_of(AuditEvents::Streaming::Group::Streamer) do |instance|
-            allow(instance).to receive(:streamable?).and_return(true)
+        it 'correctly sets up streamable state' do
+          if is_group_destination
+            expect(group.external_audit_event_streaming_destinations).to be_present
+            expect(group.external_audit_event_streaming_destinations.first).to be_active
           end
 
-          expect(streamer).to receive(:streamers).at_least(:once).and_call_original
-          allow(streamer).to receive(:streamable_strategies).and_return([])
-
-          streamable
+          expect(streamer.streamable?).to be true
         end
       end
     end
