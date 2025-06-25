@@ -114,7 +114,7 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
           )
 
           expect(custom_lifecycle).to be_invalid
-          expect(custom_lifecycle.errors[:default_closed_status]).to include(/must be of category done or cancelled/)
+          expect(custom_lifecycle.errors[:default_closed_status]).to include(/must be of category done or canceled/)
         end
 
         it 'is invalid when default_duplicate_status has wrong category' do
@@ -126,7 +126,7 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
           )
 
           expect(custom_lifecycle).to be_invalid
-          expect(custom_lifecycle.errors[:default_duplicate_status]).to include(/must be of category done or cancelled/)
+          expect(custom_lifecycle.errors[:default_duplicate_status]).to include(/must be of category done or canceled/)
         end
       end
     end
@@ -203,7 +203,7 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
         duplicate_status.name
       ])
 
-      expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done cancelled])
+      expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done canceled])
     end
   end
 

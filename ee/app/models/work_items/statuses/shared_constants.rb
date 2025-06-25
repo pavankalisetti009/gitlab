@@ -8,7 +8,7 @@ module WorkItems
         to_do: 2,
         in_progress: 3,
         done: 4,
-        cancelled: 5
+        canceled: 5
       }.freeze
 
       CATEGORY_ICONS = {
@@ -16,18 +16,18 @@ module WorkItems
         to_do: 'status-waiting',
         in_progress: 'status-running',
         done: 'status-success',
-        cancelled: 'status-cancelled'
+        canceled: 'status-cancelled'
       }.freeze
 
       DEFAULT_STATUS_CATEGORIES = {
         default_open_status: [:triage, :to_do, :in_progress],
-        default_closed_status: [:done, :cancelled],
-        default_duplicate_status: [:done, :cancelled]
+        default_closed_status: [:done, :canceled],
+        default_duplicate_status: [:done, :canceled]
       }.freeze
 
       CATEGORIES_STATE = {
         open: [:triage, :to_do, :in_progress],
-        closed: [:done, :cancelled]
+        closed: [:done, :canceled]
       }.freeze
     end
   end
