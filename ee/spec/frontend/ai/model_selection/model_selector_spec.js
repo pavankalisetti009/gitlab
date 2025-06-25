@@ -7,6 +7,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import updateAiNamespaceFeatureSettingsMutation from 'ee/ai/model_selection/graphql/update_ai_namespace_feature_settings.mutation.graphql';
+import getAiNamespaceFeatureSettingsQuery from 'ee/ai/model_selection/graphql/get_ai_namepace_feature_settings.query.graphql';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { mockDuoChatFeatureSettings } from '../shared/feature_settings/mock_data';
 
@@ -20,6 +21,7 @@ describe('ModelSelector', () => {
   const aiFeatureSetting = mockDuoChatFeatureSettings[0];
   const groupId = 'gid://gitlab/Group/1';
   const mockToastShow = jest.fn();
+
   const updateAiNamespaceFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiModelSelectionNamespaceUpdate: {
@@ -28,9 +30,18 @@ describe('ModelSelector', () => {
     },
   });
 
+  const getAiNamespaceFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiModelSelectionNamespaceSettings: {
+        nodes: mockDuoChatFeatureSettings,
+      },
+    },
+  });
+
   const createComponent = ({
     apolloHandlers = [
       [updateAiNamespaceFeatureSettingsMutation, updateAiNamespaceFeatureSettingsSuccessHandler],
+      [getAiNamespaceFeatureSettingsQuery, getAiNamespaceFeatureSettingsSuccessHandler],
     ],
     props = {},
   } = {}) => {
@@ -41,6 +52,7 @@ describe('ModelSelector', () => {
         apolloProvider: mockApollo,
         propsData: {
           aiFeatureSetting,
+          batchUpdateIsSaving: false,
           ...props,
         },
         provide: {
@@ -62,6 +74,22 @@ describe('ModelSelector', () => {
     createComponent();
 
     expect(findModelSelector().exists()).toBe(true);
+  });
+
+  describe('loading state', () => {
+    it('passes corect loading state to `ModelSelectDropdown` while saving', async () => {
+      createComponent();
+
+      await findModelSelectDropdown().vm.$emit('select', 'claude_3_5_sonnet_20240620');
+
+      expect(findModelSelectDropdown().props('isLoading')).toBe(true);
+    });
+
+    it('passes corect loading state to `ModelSelectDropdown` while batch saving', () => {
+      createComponent({ props: { batchUpdateIsSaving: true } });
+
+      expect(findModelSelectDropdown().props('isLoading')).toBe(true);
+    });
   });
 
   describe('.listItems', () => {
@@ -117,10 +145,25 @@ describe('ModelSelector', () => {
         modelSelectionDropdown.vm.$emit('select', mockSelectedModelId);
         await waitForPromises();
 
+        await wrapper.setProps({
+          aiFeatureSetting: {
+            ...aiFeatureSetting,
+            selectedModel: { ref: mockSelectedModelId },
+          },
+        });
+
         expect(modelSelectionDropdown.props('selectedOption')).toStrictEqual({
           value: mockSelectedModelId,
           text: 'Claude Sonnet 3.5 - Anthropic',
         });
+      });
+
+      it('refetches namespace feature settings data', async () => {
+        findModelSelectDropdown().vm.$emit('select', 'claude_3_5_sonnet_20240620');
+
+        await waitForPromises();
+
+        expect(getAiNamespaceFeatureSettingsSuccessHandler).toHaveBeenCalled();
       });
     });
 
@@ -128,6 +171,7 @@ describe('ModelSelector', () => {
       const updateAiNamespaceFeatureSettingsErrorHandler = jest.fn().mockResolvedValue({
         data: {
           aiModelSelectionNamespaceUpdate: {
+            aiFeatureSettings: null,
             errors: ['Model selection not available'],
           },
         },
@@ -140,6 +184,7 @@ describe('ModelSelector', () => {
               updateAiNamespaceFeatureSettingsMutation,
               updateAiNamespaceFeatureSettingsErrorHandler,
             ],
+            [getAiNamespaceFeatureSettingsQuery, getAiNamespaceFeatureSettingsSuccessHandler],
           ],
         });
       });

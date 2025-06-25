@@ -2,6 +2,7 @@
 import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
+import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/model_selection_batch_settings_updater.vue';
 
 export default {
   name: 'FeatureSettingsTableRows',
@@ -9,6 +10,7 @@ export default {
     GlTableLite,
     GlSkeletonLoader,
     ModelSelector,
+    ModelSelectionBatchSettingsUpdater,
   },
   props: {
     aiFeatureSettings: {
@@ -42,40 +44,34 @@ export default {
   ],
   data() {
     return {
-      featureSettings: this.aiFeatureSettings,
+      batchUpdateIsSaving: false,
     };
   },
-  computed: {
-    loaderItems() {
-      return [
-        {
-          loaderWidth: {
-            subFeature: '200',
-            modelName: '440',
-          },
-        },
-        {
-          loaderWidth: {
-            subFeature: '80',
-            modelName: '440',
-          },
-        },
-        {
-          loaderWidth: {
-            subFeature: '150',
-            modelName: '440',
-          },
-        },
-      ];
+  methods: {
+    updateBatchSavingState(state) {
+      this.batchUpdateIsSaving = state;
     },
   },
-  watch: {
-    aiFeatureSettings: {
-      handler(newValue) {
-        this.featureSettings = newValue;
+  loaderItems: [
+    {
+      loaderWidth: {
+        subFeature: '200',
+        modelName: '440',
       },
     },
-  },
+    {
+      loaderWidth: {
+        subFeature: '80',
+        modelName: '440',
+      },
+    },
+    {
+      loaderWidth: {
+        subFeature: '150',
+        modelName: '440',
+      },
+    },
+  ],
 };
 </script>
 <template>
@@ -83,7 +79,7 @@ export default {
     thead-class="gl-hidden"
     class="gl-mb-0"
     :fields="$options.fields"
-    :items="isLoading ? loaderItems : featureSettings"
+    :items="isLoading ? $options.loaderItems : aiFeatureSettings"
     stacked="md"
     fixed
   >
@@ -103,6 +99,16 @@ export default {
         v-else
         class="gl-float-right gl-w-full gl-max-w-[440px]"
         :ai-feature-setting="item"
+        :batch-update-is-saving="batchUpdateIsSaving"
+      />
+    </template>
+    <template #cell(batch_model_update)="{ item }">
+      <model-selection-batch-settings-updater
+        v-if="!isLoading"
+        class="gl-float-right"
+        :ai-feature-settings="aiFeatureSettings"
+        :selected-feature-setting="item"
+        @update-batch-saving-state="updateBatchSavingState"
       />
     </template>
   </gl-table-lite>
