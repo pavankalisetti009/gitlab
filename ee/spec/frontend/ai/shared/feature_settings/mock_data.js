@@ -4,8 +4,8 @@ export const mockCodeSuggestionsFeatureSettings = [
     title: 'Code Completion',
     mainFeature: 'Code Suggestions',
     selectedModel: {
-      ref: 'gitlab',
-      name: 'GitLab Default',
+      ref: 'claude_sonnet_3_7_20250219',
+      name: 'Claude Sonnet 3.7 - Anthropic',
     },
     selectableModels: [
       {
@@ -27,7 +27,7 @@ export const mockCodeSuggestionsFeatureSettings = [
     title: 'Code Generation',
     mainFeature: 'Code Suggestions',
     selectedModel: {
-      ref: 'gitlab',
+      ref: '',
       name: 'GitLab Default',
     },
     selectableModels: [

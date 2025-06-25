@@ -3,6 +3,7 @@ import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import ModelSelectDropdown from '../shared/feature_settings/model_select_dropdown.vue';
 import updateAiNamespaceFeatureSettingsMutation from './graphql/update_ai_namespace_feature_settings.mutation.graphql';
+import getAiNamespaceFeatureSettingsQuery from './graphql/get_ai_namepace_feature_settings.query.graphql';
 
 export default {
   name: 'ModelSelector',
@@ -15,19 +16,22 @@ export default {
       type: Object,
       required: true,
     },
+    batchUpdateIsSaving: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
-    const { selectableModels, selectedModel } = this.aiFeatureSetting;
-
     return {
-      selectableModels,
-      selectedModel: selectedModel?.ref || '',
       isSaving: false,
     };
   },
   computed: {
+    selectedModel() {
+      return this.aiFeatureSetting.selectedModel?.ref || '';
+    },
     listItems() {
-      const modelOptions = this.selectableModels.map(({ ref, name }) => ({
+      const modelOptions = this.aiFeatureSetting.selectableModels.map(({ ref, name }) => ({
         value: ref,
         text: name,
       }));
@@ -57,6 +61,9 @@ export default {
               offeredModelRef: option,
             },
           },
+          refetchQueries: [
+            { query: getAiNamespaceFeatureSettingsQuery, variables: { groupId: this.groupId } },
+          ],
         });
 
         if (data) {
@@ -66,7 +73,6 @@ export default {
             throw new Error(errors[0]);
           }
 
-          this.selectedModel = option;
           this.$toast.show(this.successMessage(this.aiFeatureSetting));
         }
       } catch (error) {
@@ -100,7 +106,7 @@ export default {
   <model-select-dropdown
     :selected-option="selectedOption"
     :items="listItems"
-    :is-loading="isSaving"
+    :is-loading="isSaving || batchUpdateIsSaving"
     @select="onSelect"
   />
 </template>

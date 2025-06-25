@@ -2,6 +2,7 @@ import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FeatureSettingsTableRows from 'ee/ai/shared/feature_settings/feature_settings_table_rows.vue';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
+import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/model_selection_batch_settings_updater.vue';
 import { mockCodeSuggestionsFeatureSettings } from './mock_data';
 
 describe('FeatureSettingsTableRows', () => {
@@ -25,6 +26,8 @@ describe('FeatureSettingsTableRows', () => {
   const findTableRows = () => findTable().findAllComponents('tbody > tr');
   const findRowFeatureNameByIdx = (idx) => findTableRows().at(idx).findAll('td').at(0);
   const findModelSelectorByIdx = (idx) => findTableRows().at(idx).findComponent(ModelSelector);
+  const findModelBatchSettingsUpdaterByIdx = (idx) =>
+    findTableRows().at(idx).findComponent(ModelSelectionBatchSettingsUpdater);
   const findFeatureSettingsTableRows = () => wrapper.findComponent(FeatureSettingsTableRows);
   const findLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
 
@@ -41,28 +44,43 @@ describe('FeatureSettingsTableRows', () => {
   });
 
   describe('rows', () => {
-    it('renders row data for each feature setting', () => {
+    beforeEach(() => {
       createComponent();
+    });
 
+    it('renders row data for each feature setting', () => {
       expect(findTableRows().length).toBe(mockCodeSuggestionsFeatureSettings.length);
     });
 
     it('renders the feature name', () => {
-      createComponent();
-
       expect(findRowFeatureNameByIdx(0).text()).toBe('Code Completion');
       expect(findRowFeatureNameByIdx(1).text()).toBe('Code Generation');
     });
 
-    it('renders the model select dropdown and passes the correct prop', () => {
-      createComponent();
+    it('renders the model select dropdown and passes the correct props', () => {
+      [0, 1].forEach((idx) => {
+        expect(findModelSelectorByIdx(idx).props()).toEqual({
+          aiFeatureSetting: mockCodeSuggestionsFeatureSettings[idx],
+          batchUpdateIsSaving: false,
+        });
+      });
+    });
 
-      expect(findModelSelectorByIdx(0).props('aiFeatureSetting')).toEqual(
-        mockCodeSuggestionsFeatureSettings[0],
-      );
-      expect(findModelSelectorByIdx(1).props('aiFeatureSetting')).toEqual(
-        mockCodeSuggestionsFeatureSettings[1],
-      );
+    describe('model batch settings updater', () => {
+      it('renders the model batch settings updater', () => {
+        [0, 1].forEach((idx) => {
+          expect(findModelBatchSettingsUpdaterByIdx(idx).props()).toEqual({
+            selectedFeatureSetting: mockCodeSuggestionsFeatureSettings[idx],
+            aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
+          });
+        });
+      });
+
+      it('handles update-batch-saving-state event correctly', () => {
+        findModelBatchSettingsUpdaterByIdx(0).vm.$emit('update-batch-saving-state', true);
+
+        expect(wrapper.vm.batchUpdateIsSaving).toBe(true);
+      });
     });
   });
 });

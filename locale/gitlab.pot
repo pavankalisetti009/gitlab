@@ -4471,6 +4471,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|There was an error saving the self-hosted model. Please try again."
 msgstr ""
 
+msgid "AdminSelfHostedModels|This model cannot be applied to all %{mainFeature} sub-features"
+msgstr ""
+
 msgid "AdminSelfHostedModels|This self-hosted model cannot be deleted"
 msgstr ""
 
@@ -8185,6 +8188,9 @@ msgid "Apply template"
 msgstr ""
 
 msgid "Apply this approval rule to all branches or a specific protected branch."
+msgstr ""
+
+msgid "Apply to all button"
 msgstr ""
 
 msgid "Applying"
@@ -40015,6 +40021,9 @@ msgid "ModelSelection|Model Selection"
 msgstr ""
 
 msgid "ModelSelection|Successfully updated %{mainFeature} / %{title}"
+msgstr ""
+
+msgid "ModelSelection|Successfully updated all %{mainFeature} features"
 msgstr ""
 
 msgid "Modified"
