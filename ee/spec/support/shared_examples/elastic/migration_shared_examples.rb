@@ -294,7 +294,10 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
         ensure_elasticsearch_index!
 
         assert_objects_have_new_schema_version(objects)
-        expect(migration.completed?).to be_truthy
+
+        # if more than 4 objects exist, running 2 batches of 2 records won't finish the migration
+        should_be_completed = objects.size <= 4
+        expect(migration.completed?).to eq(should_be_completed)
       end
     end
 
