@@ -41,8 +41,8 @@ export default (base, props) => {
         name: DETAILS_ROUTE_NAME,
         path: '/:secretName/details',
         component: SecretDetailsWrapper,
-        props: ({ params: { secretName }, name }) => {
-          return { fullPath, secretName, routeName: name };
+        props: ({ params: { secretName } }) => {
+          return { fullPath, secretName };
         },
         meta: {
           getBreadcrumbText: ({ id }) => id,
