@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf, GlBadge, GlCard, GlPopover } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlCard, GlPopover, GlButton } from '@gitlab/ui';
 import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -13,6 +13,7 @@ export default {
     GlBadge,
     GlCard,
     GlPopover,
+    GlButton,
     TimeAgo,
     HelpIcon,
     HelpPageLink,
@@ -29,6 +30,7 @@ export default {
       'Geo|Shows the current replication status of this registry and whether it has encountered any issues during the replication process.',
     ),
     learnMore: __('Learn more'),
+    resync: s__('Geo|Resync'),
     missingOnPrimary: s__('Geo|Missing on Primary!'),
     lastSyncedAt: s__('Geo|Last synced: %{timeAgo}'),
     syncRetryAt: s__(
@@ -69,6 +71,9 @@ export default {
             $options.i18n.learnMore
           }}</help-page-link>
         </gl-popover>
+        <gl-button class="gl-ml-auto" @click="$emit('resync')">{{
+          $options.i18n.resync
+        }}</gl-button>
       </div>
     </template>
 

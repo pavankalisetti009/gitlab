@@ -212,7 +212,7 @@ describe('GeoReplicableItemApp', () => {
       });
 
       it('shows success toast message', () => {
-        expect(toast).toHaveBeenCalledWith('Reverification was scheduled successfully');
+        expect(toast).toHaveBeenCalledWith('Reverify was scheduled successfully');
       });
 
       it('re-fetches the query data', () => {
@@ -237,7 +237,7 @@ describe('GeoReplicableItemApp', () => {
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'There was an error reverifying this replicable',
+          message: 'There was an error executing the Reverify mutation',
           error: expect.any(Error),
           captureError: true,
         });
@@ -257,6 +257,75 @@ describe('GeoReplicableItemApp', () => {
 
       it('does not render verification info component', () => {
         expect(findVerificationInfoComponent().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('resync functionality', () => {
+    const mockMutationHandler = jest.fn().mockResolvedValue({
+      data: {
+        geoRegistriesUpdate: {
+          errors: [],
+        },
+      },
+    });
+
+    beforeEach(async () => {
+      createComponent({
+        mutationHandler: mockMutationHandler,
+      });
+
+      await waitForPromises();
+    });
+
+    describe('when resync is successful', () => {
+      let refetchSpy;
+
+      beforeEach(async () => {
+        refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.replicableItem, 'refetch');
+
+        findReplicationInfoComponent().vm.$emit('resync');
+        await waitForPromises();
+      });
+
+      it('calls the mutation with correct variables', () => {
+        expect(mockMutationHandler).toHaveBeenCalledWith({
+          action: ACTION_TYPES.RESYNC,
+          registryId: MOCK_REPLICABLE_WITH_VERIFICATION.id,
+        });
+      });
+
+      it('shows success toast message', () => {
+        expect(toast).toHaveBeenCalledWith('Resync was scheduled successfully');
+      });
+
+      it('re-fetches the query data', () => {
+        expect(refetchSpy).toHaveBeenCalled();
+      });
+    });
+
+    describe('when resync fails', () => {
+      beforeEach(async () => {
+        const errorMutationHandler = jest.fn().mockRejectedValue(new Error('GraphQL Error'));
+
+        createComponent({
+          mutationHandler: errorMutationHandler,
+        });
+
+        await waitForPromises();
+      });
+
+      it('shows error alert and not toast', async () => {
+        findReplicationInfoComponent().vm.$emit('resync');
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'There was an error executing the Resync mutation',
+          error: expect.any(Error),
+          captureError: true,
+        });
+
+        expect(toast).not.toHaveBeenCalled();
       });
     });
   });

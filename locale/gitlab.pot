@@ -27583,6 +27583,9 @@ msgid_plural "Geo|%d shards selected"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Geo|%{actionName} was scheduled successfully"
+msgstr ""
+
 msgid "Geo|%{label} %{timeAgo}"
 msgstr ""
 
@@ -28021,9 +28024,6 @@ msgstr ""
 msgid "Geo|Resync all %{type}"
 msgstr ""
 
-msgid "Geo|Reverification was scheduled successfully"
-msgstr ""
-
 msgid "Geo|Reverify"
 msgstr ""
 
@@ -28144,6 +28144,9 @@ msgstr ""
 msgid "Geo|There was an error deleting the Geo Site"
 msgstr ""
 
+msgid "Geo|There was an error executing the %{actionName} mutation"
+msgstr ""
+
 msgid "Geo|There was an error fetching the %{replicableType}. The GraphQL API call to the secondary may have failed."
 msgstr ""
 
@@ -28157,9 +28160,6 @@ msgid "Geo|There was an error fetching the Sites's Groups"
 msgstr ""
 
 msgid "Geo|There was an error fetching this replicable's details"
-msgstr ""
-
-msgid "Geo|There was an error reverifying this replicable"
 msgstr ""
 
 msgid "Geo|There was an error saving this Geo Site"

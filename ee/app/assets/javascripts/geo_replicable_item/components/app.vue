@@ -1,9 +1,10 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import { s__ } from '~/locale';
+import { sprintf, s__ } from '~/locale';
 import { ACTION_TYPES } from 'ee/geo_shared/constants';
 import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
+import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import toast from '~/vue_shared/plugins/global_toast';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -73,12 +74,13 @@ export default {
     },
   },
   methods: {
-    async reverify() {
+    async handleMutation(action) {
+      const actionName = capitalizeFirstCharacter(action.toLowerCase());
       try {
         await this.$apollo.mutate({
           mutation: replicableTypeUpdateMutation,
           variables: {
-            action: ACTION_TYPES.REVERIFY,
+            action,
             registryId: convertToGraphQLId(
               this.replicableClass.graphqlRegistryClass,
               this.replicableItemId,
@@ -86,17 +88,20 @@ export default {
           },
         });
 
-        toast(s__('Geo|Reverification was scheduled successfully'));
+        toast(sprintf(s__('Geo|%{actionName} was scheduled successfully'), { actionName }));
         this.$apollo.queries.replicableItem.refetch();
       } catch (error) {
         createAlert({
-          message: s__('Geo|There was an error reverifying this replicable'),
+          message: sprintf(s__('Geo|There was an error executing the %{actionName} mutation'), {
+            actionName,
+          }),
           error,
           captureError: true,
         });
       }
     },
   },
+  ACTION_TYPES,
 };
 </script>
 
@@ -109,11 +114,15 @@ export default {
 
       <div class="gl-flex gl-flex-col-reverse gl-gap-4 md:gl-grid md:gl-grid-cols-2">
         <div>
-          <geo-replicable-item-replication-info :replicable-item="replicableItem" class="gl-mb-4" />
+          <geo-replicable-item-replication-info
+            :replicable-item="replicableItem"
+            class="gl-mb-4"
+            @resync="handleMutation($options.ACTION_TYPES.RESYNC)"
+          />
           <geo-replicable-item-verification-info
             v-if="replicableClass.verificationEnabled"
             :replicable-item="replicableItem"
-            @reverify="reverify"
+            @reverify="handleMutation($options.ACTION_TYPES.REVERIFY)"
           />
         </div>
 
