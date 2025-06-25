@@ -4025,17 +4025,21 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       let_it_be(:project2) { create(:project, namespace: namespace) }
       let_it_be(:project3) { create(:project, namespace: namespace) }
 
-      it 'returns all project IDs under the namespace' do
-        expect(configuration.all_project_ids).to match_array([project1.id, project2.id, project3.id])
-      end
-
-      it 'uses batch processing' do
+      it 'returns all project IDs under the namespace using batch processing' do
         expect(Gitlab::Database::NamespaceEachBatch)
           .to receive(:new)
-          .with(namespace_class: Namespace, cursor: { current_id: namespace.id, depth: [namespace.id] })
-          .and_call_original
+                .with(namespace_class: Namespace, cursor: { current_id: namespace.id, depth: [namespace.id] })
+                .and_call_original
 
-        configuration.all_project_ids
+        expect { |block| configuration.all_project_ids(&block) }
+          .to yield_successive_args([project1.id, project2.id, project3.id])
+      end
+
+      it 'yields in batches of size ALL_PROJECT_IDS_BATCH_SIZE' do
+        stub_const("#{described_class}::ALL_PROJECT_IDS_BATCH_SIZE", 1)
+
+        expect { |block| configuration.all_project_ids(&block) }
+          .to yield_successive_args([project1.id], [project2.id], [project3.id])
       end
 
       context 'when group is a CSP' do
@@ -4048,7 +4052,14 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
 
         it 'returns all project IDs in the instance' do
-          expect(configuration.all_project_ids).to match_array(Project.pluck_primary_key)
+          expect { |block| configuration.all_project_ids(&block) }.to yield_successive_args(Project.pluck_primary_key)
+        end
+
+        it 'yields in batches of size ALL_PROJECT_IDS_BATCH_SIZE' do
+          stub_const("#{described_class}::ALL_PROJECT_IDS_BATCH_SIZE", 1)
+
+          expect { |block| configuration.all_project_ids(&block) }
+            .to yield_successive_args(*Project.pluck_primary_key.map { |id| Array.wrap(id) })
         end
 
         context 'when feature flag "security_policies_csp" is disabled' do
@@ -4057,7 +4068,8 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           end
 
           it 'returns all project IDs under the namespace' do
-            expect(configuration.all_project_ids).to match_array([project1.id, project2.id, project3.id])
+            expect { |block| configuration.all_project_ids(&block) }
+              .to yield_successive_args([project1.id, project2.id, project3.id])
           end
         end
       end
@@ -4069,7 +4081,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
 
       it 'returns single project id' do
-        expect(configuration.all_project_ids).to contain_exactly(project.id)
+        expect { |block| configuration.all_project_ids(&block) }.to yield_successive_args([project.id])
       end
     end
   end

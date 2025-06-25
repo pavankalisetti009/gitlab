@@ -26,7 +26,7 @@ module Security
     POLICY_SCHEMA_JSON = POLICY_SCHEMA.value.except('$id')
     AVAILABLE_POLICY_TYPES = %i[approval_policy scan_execution_policy pipeline_execution_policy pipeline_execution_schedule_policy vulnerability_management_policy].freeze
     JSON_SCHEMA_VALIDATION_TIMEOUT = 5.seconds
-    NAMESPACES_BATCH_SIZE = 1000
+    ALL_PROJECT_IDS_BATCH_SIZE = 1000
 
     belongs_to :project, inverse_of: :security_orchestration_policy_configuration, optional: true
     belongs_to :namespace, inverse_of: :security_orchestration_policy_configuration, optional: true
@@ -215,11 +215,11 @@ module Security
       [new_policies, deleted_policies, policies_changes, rearranged_policies]
     end
 
-    def all_project_ids
-      return Array.wrap(project_id) if project?
-
-      [].tap do |project_ids|
-        collect_all_project_ids_in_batches { |ids| project_ids.concat(ids) }
+    def all_project_ids(&block)
+      if project?
+        yield Array.wrap(project_id)
+      else
+        collect_all_project_ids_in_batches(&block)
       end
     end
 
@@ -320,7 +320,7 @@ module Security
     end
 
     def collect_csp_project_ids_in_batches
-      namespace.all_project_ids_with_csp_in_batches do |batch|
+      namespace.all_project_ids_with_csp_in_batches(of: ALL_PROJECT_IDS_BATCH_SIZE) do |batch|
         yield batch.pluck_primary_key
       end
     end
@@ -329,10 +329,11 @@ module Security
       cursor = { current_id: namespace_id, depth: [namespace_id] }
       iterator = ::Gitlab::Database::NamespaceEachBatch.new(namespace_class: Namespace, cursor: cursor)
 
-      iterator.each_batch(of: NAMESPACES_BATCH_SIZE) do |ids|
+      iterator.each_batch(of: ALL_PROJECT_IDS_BATCH_SIZE) do |ids|
         namespace_ids = Namespaces::ProjectNamespace.where(id: ids)
         # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- IDs will not be used in IN queries
-        yield Project.where(project_namespace_id: namespace_ids).pluck(:id)
+        ids = Project.where(project_namespace_id: namespace_ids).pluck(:id)
+        yield ids if ids.present?
         # rubocop: enable Database/AvoidUsingPluckWithoutLimit
       end
     end
