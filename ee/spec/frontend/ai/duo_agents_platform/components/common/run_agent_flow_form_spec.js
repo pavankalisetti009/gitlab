@@ -86,6 +86,7 @@ describe('RunAgentFlowForm', () => {
         title: 'Start Agent Flow',
         hoverMessage: '',
         goal: '',
+        size: 'small',
         workflowDefinition: 'convert_to_gitlab_ci',
         duoWorkflowInvokePath: '/api/v4/projects/123/duo_workflow/invoke',
         agentPrivileges: [1, 2, 5],
