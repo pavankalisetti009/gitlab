@@ -54,4 +54,32 @@ RSpec.describe PersonalAccessTokenPolicy, feature_category: :permissions do
       end
     end
   end
+
+  context 'for service account token revocation' do
+    let(:group) { create(:group) }
+    let(:service_account) { create(:user, :service_account, provisioned_by_group: group) }
+    let(:token) { create(:personal_access_token, user: service_account) }
+
+    context "with owner", :saas do
+      before do
+        stub_licensed_features(domain_verification: true)
+        group.add_owner(current_user)
+
+        group.add_developer(service_account)
+      end
+
+      it { is_expected.to be_allowed(:revoke_token) }
+    end
+
+    context "with member", :saas do
+      before do
+        stub_licensed_features(domain_verification: true)
+        group.add_member(current_user, :developer)
+
+        group.add_developer(service_account)
+      end
+
+      it { is_expected.not_to be_allowed(:revoke_token) }
+    end
+  end
 end

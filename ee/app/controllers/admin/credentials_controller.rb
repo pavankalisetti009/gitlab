@@ -66,7 +66,7 @@ class Admin::CredentialsController < Admin::ApplicationController
 
   override :users
   def users
-    User.human
+    User.human.or(User.service_account)
   end
 
   override :bot_users

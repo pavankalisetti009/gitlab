@@ -5,10 +5,12 @@ require 'spec_helper'
 RSpec.describe Groups::Security::CredentialsController, :saas, feature_category: :user_management do
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:enterprise_users) { create_list(:enterprise_user, 2, enterprise_group: group) }
+  let_it_be(:service_accounts) { create_list(:service_account, 2, provisioned_by_group: group) }
   let_it_be(:owner) { enterprise_users.first }
   let_it_be(:maintainer) { enterprise_users.last }
   let_it_be(:group_id) { group.to_param }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: maintainer) }
+  let_it_be(:service_account_token) { create(:personal_access_token, user: service_accounts.first) }
 
   before do
     allow_next_instance_of(Gitlab::Auth::GroupSaml::SsoEnforcer) do |sso_enforcer|
@@ -23,8 +25,9 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
 
   describe 'GET #index' do
     let(:filter) {}
+    let(:owner_type) {}
 
-    subject(:get_request) { get group_security_credentials_path(group_id: group_id.to_param, filter: filter) }
+    subject(:get_request) { get group_security_credentials_path(group_id: group_id.to_param, filter: filter, owner_type: owner_type) }
 
     context 'when `credentials_inventory` feature is licensed' do
       before do
@@ -52,32 +55,42 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
             enterprise_users.each do |user|
               create(:personal_access_token, user: user)
             end
-          end
-
-          shared_examples_for 'filtering by `personal_access_tokens`' do
-            it do
-              get_request
-
-              expect(assigns(:credentials)).to match_array(PersonalAccessToken.where(user: enterprise_users))
+            service_accounts.each do |user|
+              create(:personal_access_token, user: user)
             end
           end
 
           context 'no credential type specified' do
             let(:filter) { nil }
 
-            it_behaves_like 'filtering by `personal_access_tokens`'
+            it 'returns all personal access tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where(user: enterprise_users + service_accounts)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
           end
 
           context 'non-existent credential type specified' do
             let(:filter) { 'non_existent_credential_type' }
 
-            it_behaves_like 'filtering by `personal_access_tokens`'
+            it 'returns all personal access tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where(user: enterprise_users + service_accounts)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
           end
 
           context 'credential type specified as `personal_access_tokens`' do
             let(:filter) { 'personal_access_tokens' }
 
-            it_behaves_like 'filtering by `personal_access_tokens`'
+            it 'returns all personal access tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where(user: enterprise_users + service_accounts)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
           end
 
           context 'user scope' do
@@ -88,6 +101,12 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
 
               expect(assigns(:credentials)).not_to include(personal_access_token)
             end
+
+            it 'includes service account tokens in the scope' do
+              get_request
+
+              expect(assigns(:credentials)).to include(service_account_token)
+            end
           end
 
           context 'credential type specified as `ssh_keys`' do
@@ -97,12 +116,15 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
               enterprise_users.each do |user|
                 create(:personal_key, user: user)
               end
+              service_accounts.each do |user|
+                create(:personal_key, user: user)
+              end
             end
 
             it 'filters by ssh keys' do
               get_request
 
-              expect(assigns(:credentials)).to match_array(Key.regular_keys.where(user: enterprise_users))
+              expect(assigns(:credentials)).to match_array(Key.regular_keys.where(user: enterprise_users + service_accounts))
             end
           end
 
@@ -150,6 +172,53 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
               get_request
 
               expect(assigns(:credentials)).to match_array([group_bot_token, subgroup_bot_token, project_bot_token])
+            end
+          end
+        end
+
+        context 'filtering by owner type' do
+          before do
+            enterprise_users.each do |user|
+              create(:personal_access_token, user: user)
+            end
+            service_accounts.each do |user|
+              create(:personal_access_token, user: user)
+            end
+          end
+
+          context 'when owner_type is human' do
+            let(:filter) { 'personal_access_tokens' }
+            let(:owner_type) { 'human' }
+
+            it 'returns only human user tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where(user: enterprise_users)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
+          end
+
+          context 'when owner_type is service_account' do
+            let(:filter) { 'personal_access_tokens' }
+            let(:owner_type) { 'service_account' }
+
+            it 'returns only service account tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where(user: service_accounts)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
+          end
+
+          context 'when owner_type is not specified' do
+            let(:filter) { 'personal_access_tokens' }
+            let(:owner_type) { nil }
+
+            it 'returns all tokens regardless of owner type' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where(user: enterprise_users + service_accounts)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
             end
           end
         end
@@ -269,6 +338,17 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
                 expect(CredentialsInventoryMailer).to receive_message_chain(:personal_access_token_revoked_email, :deliver_later)
 
                 put revoke_group_security_credential_path(group_id: group_id.to_param, id: personal_access_token.id)
+              end
+            end
+
+            context 'service account personal access token' do
+              let_it_be(:token_id) { service_account_token.id }
+
+              it_behaves_like 'displays the flash success message'
+
+              it 'can revoke service account tokens' do
+                expect { put revoke_group_security_credential_path(group_id: group_id.to_param, id: service_account_token.id) }
+                  .to change { service_account_token.reload.revoked? }.from(false).to(true)
               end
             end
           end

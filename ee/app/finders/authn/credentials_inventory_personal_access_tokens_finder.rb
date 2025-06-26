@@ -112,6 +112,7 @@ module Authn
       tokens = by_expires_after(tokens)
       tokens = by_last_used_before(tokens)
       tokens = by_last_used_after(tokens)
+      tokens = by_owner_type(tokens)
 
       by_search(tokens)
     end
@@ -126,7 +127,7 @@ module Authn
 
     def get_credentials_inventory_user_ids
       if enterprise_users?
-        top_level_group.enterprise_user_details.select(:user_id)
+        top_level_group.enterprise_user_details.or(top_level_group.provisioned_user_details).select(:user_id)
       else
         users.select(:id)
       end

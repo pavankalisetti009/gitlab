@@ -6,7 +6,6 @@ module CredentialsInventoryActions
 
   def index
     @credentials = filter_credentials.page(params[:page]).preload_users.without_count.load # rubocop:disable Gitlab/ModuleWithInstanceVariables
-
     respond_to do |format|
       format.html do
         render 'shared/credentials_inventory/index'
@@ -57,7 +56,7 @@ module CredentialsInventoryActions
       ::Authn::CredentialsInventoryPersonalAccessTokensFinder.new(
         pat_params(
           users: users,
-          owner_type: 'human',
+          owner_type: pat_owner_type,
           group: revocable
         )
       ).execute
@@ -66,6 +65,10 @@ module CredentialsInventoryActions
     elsif show_resource_access_tokens?
       ::PersonalAccessTokensFinder.new(pat_params(users: bot_users)).execute.project_access_token
     end
+  end
+
+  def pat_owner_type
+    params[:owner_type]
   end
 
   def pat_params(options)

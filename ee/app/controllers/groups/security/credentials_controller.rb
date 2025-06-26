@@ -63,7 +63,7 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
 
   override :users
   def users
-    group.enterprise_users
+    group.enterprise_users.or(group.service_accounts)
   end
 
   override :bot_users

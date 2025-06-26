@@ -19157,6 +19157,9 @@ msgstr ""
 msgid "CredentialsInventory|No credentials found"
 msgstr ""
 
+msgid "CredentialsInventory|Owner type"
+msgstr ""
+
 msgid "CredentialsInventory|Personal access tokens"
 msgstr ""
 
@@ -31449,6 +31452,9 @@ msgid "How the job limiter handles jobs exceeding the thresholds specified below
 msgstr ""
 
 msgid "HttpDestinationValidator validates only http external audit event destinations."
+msgstr ""
+
+msgid "Human"
 msgstr ""
 
 msgid "I agree that GitLab can contact me by email or telephone about its product, services, or events."
