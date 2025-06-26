@@ -1,4 +1,4 @@
-import { GlIcon } from '@gitlab/ui';
+import { GlIcon, GlTruncate } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 
@@ -19,6 +19,9 @@ describe('WorkItemStatusBadge', () => {
         name,
         iconName,
         color,
+      },
+      stubs: {
+        GlTruncate,
       },
     });
   };
