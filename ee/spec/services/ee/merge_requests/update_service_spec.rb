@@ -425,7 +425,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       it 'updates the tracking when user ids are valid' do
         expect(Gitlab::UsageDataCounters::MergeRequestActivityUniqueCounter)
           .to receive(:track_users_review_requested)
-          .with(users: [user, user2])
+          .with(users: match_array([user, user2]))
 
         update_merge_request(reviewer_ids: [user.id, user2.id])
       end
