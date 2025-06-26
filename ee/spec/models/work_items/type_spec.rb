@@ -62,20 +62,8 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
           end
         end
 
-        context 'when work_item_epic_milestones is enabled' do
-          it 'returns Milestone widget' do
-            expect(returned_widgets.map(&:widget_class)).to include(::WorkItems::Widgets::Milestone)
-          end
-        end
-
-        context 'when work_item_epic_milestones is disabled' do
-          before do
-            stub_feature_flags(work_item_epic_milestones: false)
-          end
-
-          it 'does not return Milestone widget' do
-            expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::Milestone)
-          end
+        it 'returns Milestone widget' do
+          expect(returned_widgets.map(&:widget_class)).to include(::WorkItems::Widgets::Milestone)
         end
       end
 

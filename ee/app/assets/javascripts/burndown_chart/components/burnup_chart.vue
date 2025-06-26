@@ -2,15 +2,13 @@
 import { GlLineChart } from '@gitlab/ui/dist/charts';
 import { merge } from 'lodash';
 import dateFormat from '~/lib/dateformat';
-import { __, n__, sprintf } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { __, sprintf } from '~/locale';
 import commonChartOptions from './common_chart_options';
 
 export default {
   components: {
     GlLineChart,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     startDate: {
       type: String,
@@ -72,7 +70,7 @@ export default {
       return series;
     },
     yAxisTitle() {
-      return this.glFeatures.workItemEpicMilestones ? __('Work items') : __('Issues');
+      return __('Work items');
     },
     options() {
       return merge({}, commonChartOptions, {
@@ -106,17 +104,15 @@ export default {
       const count = total.value[1];
       const completedCount = completed.value[1];
 
-      let totalText = n__('%d issue', '%d issues', count);
-      let completedText = n__('%d completed issue', '%d completed issues', completedCount);
+      let totalText;
+      let completedText;
 
-      if (!this.issuesSelected) {
-        totalText = sprintf(__('%{count} total weight'), { count });
-        completedText = sprintf(__('%{completedCount} completed weight'), { completedCount });
-      }
-
-      if (this.glFeatures.workItemEpicMilestones) {
+      if (this.issuesSelected) {
         totalText = sprintf(__('%{count} total'), { count });
         completedText = sprintf(__('%{completedCount} completed'), { completedCount });
+      } else {
+        totalText = sprintf(__('%{count} total weight'), { count });
+        completedText = sprintf(__('%{completedCount} completed weight'), { completedCount });
       }
 
       this.tooltip.total = totalText;

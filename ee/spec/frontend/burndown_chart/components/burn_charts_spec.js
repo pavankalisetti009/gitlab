@@ -108,8 +108,8 @@ describe('burndown_chart', () => {
     createComponent();
 
     expect(findFilterByControl().props('options')).toEqual([
-      { value: 'issues', text: 'Issue count', props: { 'data-testid': 'issue-button' } },
-      { value: 'issue_weight', text: 'Issue weight', props: { 'data-testid': 'weight-button' } },
+      { value: 'issues', text: 'Count', props: { 'data-testid': 'issue-button' } },
+      { value: 'issue_weight', text: 'Weight', props: { 'data-testid': 'weight-button' } },
     ]);
   });
 
