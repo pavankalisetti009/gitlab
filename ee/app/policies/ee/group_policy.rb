@@ -512,10 +512,7 @@ module EE
       end
 
       rule { can?(:read_work_item) & work_item_statuses_available }.policy do
-        enable :read_lifecycle
-      end
-
-      rule { can?(:read_work_item) & work_item_statuses_available }.policy do
+        enable :read_work_item_lifecycle
         enable :read_work_item_status
       end
 
