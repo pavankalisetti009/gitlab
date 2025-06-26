@@ -12,10 +12,6 @@ module CloudConnector
       false
     end
 
-    def purchased?(_namespace = nil)
-      false
-    end
-
     def access_token(_resource = nil, **)
       nil
     end

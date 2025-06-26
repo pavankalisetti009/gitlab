@@ -9,12 +9,6 @@ RSpec.describe CloudConnector::MissingServiceData, feature_category: :plan_provi
     it { is_expected.to be false }
   end
 
-  describe '#purchased?' do
-    subject(:purchased?) { described_class.new.purchased? }
-
-    it { is_expected.to be false }
-  end
-
   describe '#name' do
     subject(:name) { described_class.new.name }
 

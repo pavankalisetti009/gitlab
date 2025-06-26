@@ -35,24 +35,6 @@ RSpec.describe CloudConnector::BaseAvailableServiceData, feature_category: :plan
     end
   end
 
-  describe '#purchased?' do
-    subject(:purchased) { service_data.purchased?(namespace) }
-
-    context 'when the service has been purchased for the namespace' do
-      before do
-        allow(GitlabSubscriptions::AddOnPurchase).to(
-          receive(:for_active_add_ons).and_return([active_gitlab_purchase])
-        )
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when the service has not been purchased for the namespace' do
-      it { is_expected.to be false }
-    end
-  end
-
   describe '#name' do
     subject(:name) { service_data.name }
 

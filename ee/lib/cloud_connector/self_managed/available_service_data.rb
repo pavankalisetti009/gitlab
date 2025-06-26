@@ -10,11 +10,6 @@ module CloudConnector
         # for SelfManaged instances we are using instance token synced from CustomersDot
         ::CloudConnector::ServiceAccessToken.active.last&.token
       end
-
-      override :purchased?
-      def purchased?(_namespace = nil)
-        super(:instance)
-      end
     end
   end
 end

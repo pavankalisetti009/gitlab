@@ -15,16 +15,6 @@ module CloudConnector
       cut_off_date.nil? || cut_off_date&.future?
     end
 
-    # Returns true if service is purchased.
-    # For provided namespace, it will check if add-on is purchased for the provided group/project or its ancestors.
-    #
-    # For SM, it will check if add-on is purchased, by ignoring namespace as AddOns are not purchased per namespace.
-    #
-    # namespace - Namespace
-    def purchased?(namespace = nil)
-      GitlabSubscriptions::AddOnPurchase.for_active_add_ons(@add_on_names, namespace).any?
-    end
-
     # Returns CloudConnector access JWT token.
     #
     # For Gitlab.com it will self-issue a token with scopes based on provided resource:
