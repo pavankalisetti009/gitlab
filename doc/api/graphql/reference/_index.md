@@ -1175,6 +1175,18 @@ Returns [`Project`](#project).
 | ---- | ---- | ----------- |
 | <a id="queryprojectfullpath"></a>`fullPath` | [`ID!`](#id) | Full path of the project. For example, `gitlab-org/gitlab-foss`. |
 
+### `Query.projectComplianceViolation`
+
+Find a project compliance violation.
+
+Returns [`ProjectComplianceViolation`](#projectcomplianceviolation).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryprojectcomplianceviolationid"></a>`id` | [`ComplianceManagementProjectsComplianceViolationID!`](#compliancemanagementprojectscomplianceviolationid) | Global ID of the project compliance violation. |
+
 ### `Query.projectSecret`
 
 View a specific project secret.
@@ -48073,6 +48085,12 @@ An example `ComplianceManagementComplianceFrameworkComplianceRequirementsControl
 A `ComplianceManagementFrameworkID` is a global ID. It is encoded as a string.
 
 An example `ComplianceManagementFrameworkID` is: `"gid://gitlab/ComplianceManagement::Framework/1"`.
+
+### `ComplianceManagementProjectsComplianceViolationID`
+
+A `ComplianceManagementProjectsComplianceViolationID` is a global ID. It is encoded as a string.
+
+An example `ComplianceManagementProjectsComplianceViolationID` is: `"gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/1"`.
 
 ### `ContainerRegistryProtectionRuleID`
 
