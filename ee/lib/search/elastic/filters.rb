@@ -5,10 +5,15 @@ module Search
     module Filters
       ALLOWED_SEARCH_LEVELS = %i[global group project].freeze
       DEFAULT_RELATED_SIZE = 100
+      PROJECT_ID_FIELD = :project_id
+      PROJECT_VISIBILITY_FIELD = :visibility_level
+      TRAVERSAL_IDS_FIELD = :traversal_ids
 
       class << self
         include ::Elastic::Latest::QueryContext::Aware
         include Search::Elastic::Concerns::FilterUtils
+        include Search::Concerns::FeatureCustomAbilityMap
+
         def by_search_level_and_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
 
@@ -384,7 +389,7 @@ module Search
           return query_hash if user&.can_read_all_resources?
 
           context.name(:filters, :confidentiality, :groups) do
-            traversal_ids_prefix = options.fetch(:traversal_ids_prefix, :traversal_ids)
+            traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
             filter = Search::Elastic::BoolExpr.new
             filter.minimum_should_match = 1
 
@@ -438,7 +443,7 @@ module Search
                 end
               end
 
-              # logged in user, private projects ancestor hierarchy, non-confidential
+              # logged-in user, private projects ancestor hierarchy, non-confidential
               add_filter(filter, :should) do
                 authorized_project_ancestry_namespace_ids = authorized_namespace_ids_for_project_group_ancestry(user)
                 next if authorized_project_ancestry_namespace_ids.empty?
@@ -508,7 +513,7 @@ module Search
                 permissions_filters: permissions_filters)
 
               should = [{ bool: permissions_filters.to_h }]
-              traversal_ids_prefix = options.fetch(:traversal_ids_prefix, :traversal_ids)
+              traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
 
               authorized_traversal_ids = traversal_ids_for_user(user, options)
               unless authorized_traversal_ids.empty?
@@ -627,7 +632,7 @@ module Search
           end
         end
 
-        # deprecated - use by_search_level_and_membership
+        # @deprecated - use by_search_level_and_membership
         def by_project_authorization(query_hash:, options:)
           user = options[:current_user]
           project_ids = options[:project_ids]
@@ -781,7 +786,7 @@ module Search
           authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
           authorized_project_namespaces = Namespace.id_in(authorized_projects.select(:namespace_id))
 
-          # shortcut the filter if the user is authorized to see a namespace in the heirarchy already
+          # shortcut the filter if the user is authorized to see a namespace in the hierarchy already
           return [] unless authorized_project_namespaces.id_not_in(authorized_groups).exists?
 
           authorized_trie = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
@@ -829,20 +834,6 @@ module Search
           authorized_trie = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
 
           namespaces.map(&:traversal_ids).select { |s| authorized_trie.covered?(s) }
-        end
-
-        def visibility_level_for_user(user, visibility_level_field)
-          if user && !user.external?
-            { terms: {
-              _name: context.name(visibility_level_field, :public_and_internal),
-              "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL]
-            } }
-          else
-            { terms: {
-              _name: context.name(visibility_level_field, :public),
-              "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC]
-            } }
-          end
         end
 
         def authorized_project_ids(current_user, scoped_project_ids)
@@ -906,7 +897,7 @@ module Search
           features = options[:features]
           no_join_project = options[:no_join_project]
           project_id_field = options[:project_id_field]
-          project_visibility_level_field = options.fetch(:project_visibility_level_field, :visibility_level)
+          project_visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
 
           scoped_project_ids = scoped_project_ids(user, project_ids)
 
@@ -959,7 +950,7 @@ module Search
           # used from project_id_field with the default value of `project_id`
           # When joining it is just `id`.
           id_field = if no_join_project
-                       project_id_field || :project_id
+                       project_id_field || PROJECT_ID_FIELD
                      else
                        :id
                      end
@@ -1102,7 +1093,7 @@ module Search
               {
                 bool: {
                   should: ancestry_filter(namespace_ancestry,
-                    traversal_id_field: options.fetch(:traversal_ids_prefix, :traversal_ids)),
+                    traversal_id_field: options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)),
                   minimum_should_match: 1
                 }
               }
@@ -1238,13 +1229,11 @@ module Search
                   { _name: context.name,
                     minimum_should_match: 1,
                     should: ancestry_filter(traversal_ids,
-                      traversal_id_field: options.fetch(:traversal_ids_prefix, :traversal_ids)) } }
+                      traversal_id_field: options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)) } }
               when :project
                 raise ArgumentError, 'No project_ids provided for project level search' if project_ids.empty?
 
-                { bool:
-                  { _name: context.name,
-                    must: { terms: { project_id: project_ids } } } }
+                { terms: { _name: context.name, project_id: project_ids } }
               end
             end
           end
@@ -1254,14 +1243,13 @@ module Search
           features = Array.wrap(options[:features])
           user = options[:current_user]
           search_level = options[:search_level].to_sym
-          # legacy query generation does not send this option
-          visibility_level_field = options.fetch(:project_visibility_level_field, :visibility_level)
+          visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
 
           add_filter(query_hash, :query, :bool, :filter) do
             context.name(:filters, :permissions, search_level) do
               permissions_filters = Search::Elastic::BoolExpr.new
               add_visibility_level_filter(permissions_filters:, user:, visibility_level_field:)
-              add_feature_visibility_filter(permissions_filters, features, user)
+              add_project_feature_visibility_filter(permissions_filters:, features:, user:)
 
               membership_filters = build_membership_filters(user, options, features)
 
@@ -1279,15 +1267,31 @@ module Search
           end
         end
 
+        # add visibility level filter for public and internal visibility, does not include group or project membership
+        # admins do not add any filter
+        # logged-in users get PUBLIC and INTERNAL
+        # anonymous and logged in external users only get PUBLIC
         def add_visibility_level_filter(permissions_filters:, user:, visibility_level_field:)
           return if user&.can_read_all_resources?
 
-          add_filter(permissions_filters, :must) do
-            visibility_level_for_user(user, visibility_level_field)
+          add_filter(permissions_filters, :filter) do
+            if user && !user.external?
+              { terms: {
+                _name: context.name(visibility_level_field, :public_and_internal),
+                "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL]
+              } }
+            else
+              { terms: {
+                _name: context.name(visibility_level_field, :public),
+                "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC]
+              } }
+            end
           end
         end
 
-        def add_feature_visibility_filter(permissions_filters, features, user)
+        # add project feature visibility filter, does not include group or project membership
+        # admins get ENABLED and PRIVATE, all other users get ENABLED
+        def add_project_feature_visibility_filter(permissions_filters:, features:, user:)
           return if features.blank?
 
           access_level_allowed = [::ProjectFeature::ENABLED]
@@ -1328,7 +1332,7 @@ module Search
           traversal_ids = traversal_ids_for_user(user, options)
           return false if traversal_ids.blank?
 
-          traversal_id_field_prefix = options.fetch(:traversal_ids_prefix, :traversal_ids)
+          traversal_id_field_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
           membership_filters.minimum_should_match = 1
           # ancestry_filter returns an array so add_filter cannot be used
           membership_filters.should += ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field_prefix)
@@ -1341,7 +1345,7 @@ module Search
           return false if project_ids.blank?
 
           # the builder queries set project_id_field, but legacy class proxy queries do not
-          project_id_field = options.fetch(:project_id_field, :project_id)
+          project_id_field = options.fetch(:project_id_field, PROJECT_ID_FIELD)
           membership_filters.minimum_should_match = 1
           add_filter(membership_filters, :should) do
             {
