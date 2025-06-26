@@ -15,6 +15,7 @@ import HealthStatusDropdown from './components/health_status/health_status_dropd
 import SidebarHealthStatusWidget from './components/health_status/sidebar_health_status_widget.vue';
 import SidebarWeightWidget from './components/weight/sidebar_weight_widget.vue';
 import SidebarEscalationPolicy from './components/incidents/sidebar_escalation_policy.vue';
+import SidebarStatusDropdown from './components/status/sidebar_status_dropdown.vue';
 import {
   healthStatusForRestApi,
   IssuableAttributeType,
@@ -321,6 +322,31 @@ function mountSidebarEscalationPolicy() {
   });
 }
 
+export function mountSidebarCustomStatusWidget() {
+  const el = document.querySelector('.js-custom-status-widget');
+
+  if (!el) {
+    return null;
+  }
+
+  const { fullPath } = el.dataset;
+
+  return new Vue({
+    el,
+    name: 'SidebarStatusWidget',
+    apolloProvider,
+    provide: {
+      fullPath: el.dataset.fullPath,
+    },
+    render: (createElement) =>
+      createElement(SidebarStatusDropdown, {
+        props: {
+          fullPath,
+        },
+      }),
+  });
+}
+
 export const { getSidebarOptions } = CEMountSidebar;
 
 export function mountSidebar(mediator, store, pinia) {
@@ -330,5 +356,6 @@ export function mountSidebar(mediator, store, pinia) {
   mountSidebarEpicWidget();
   mountSidebarIterationWidget();
   mountSidebarEscalationPolicy();
+  mountSidebarCustomStatusWidget();
   mountSidebarCveIdRequest(store, pinia);
 }
