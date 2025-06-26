@@ -21,5 +21,15 @@ FactoryBot.define do
 
   factory :status_list, parent: :list do
     list_type { :status }
+    with_system_defined_status
+
+    trait :with_system_defined_status do
+      association :system_defined_status, factory: :work_item_system_defined_status
+    end
+
+    trait :with_custom_status do
+      system_defined_status { nil }
+      association :custom_status, factory: :work_item_custom_status
+    end
   end
 end
