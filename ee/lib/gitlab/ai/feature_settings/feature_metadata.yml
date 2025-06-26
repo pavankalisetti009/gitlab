@@ -52,6 +52,7 @@ duo_chat:
     - include_local_git_context
     - include_terminal_context
     - include_repository_context
+    - include_user_rule_context
 duo_chat_explain_code:
   title: Code Explanation
   release_state: GA

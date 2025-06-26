@@ -427,6 +427,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           "include_issue_context" => "duo_chat", "include_dependency_context" => "duo_chat",
           "include_local_git_context" => "duo_chat",
           "include_terminal_context" => "duo_chat",
+          "include_user_rule_context" => "duo_chat",
           "include_repository_context" => "duo_chat",
           "explain_code" => "duo_chat_explain_code",
           "write_tests" => "duo_chat_write_tests",

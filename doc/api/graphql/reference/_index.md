@@ -43863,6 +43863,7 @@ The category of the additional context.
 | <a id="aiadditionalcontextcategoryrepository"></a>`REPOSITORY` | Repository content category. |
 | <a id="aiadditionalcontextcategorysnippet"></a>`SNIPPET` | Snippet content category. |
 | <a id="aiadditionalcontextcategoryterminal"></a>`TERMINAL` | Terminal content category. |
+| <a id="aiadditionalcontextcategoryuser_rule"></a>`USER_RULE` | User_rule content category. |
 
 ### `AiCatalogItemType`
 
