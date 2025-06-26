@@ -2,37 +2,6 @@
 
 require 'spec_helper'
 
-RSpec.shared_examples 'tracks successful workspace creation event' do
-  it "tracks creation event" do
-    expect { response }
-      .to trigger_internal_events('create_workspace_result')
-      .with(
-        category: 'RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver',
-        user: user,
-        project: project,
-        additional_properties: { label: 'succeed' }
-      )
-      .and increment_usage_metrics("counts.count_total_succeed_workspaces_created")
-  end
-end
-
-RSpec.shared_examples 'tracks failed workspace creation event' do |error_message|
-  it "tracks failed creation event with proper error details" do
-    expect { response }
-      .to trigger_internal_events('create_workspace_result')
-      .with(
-        category: 'RemoteDevelopment::WorkspaceOperations::Create::WorkspaceErrorsObserver',
-        user: user,
-        project: project,
-        additional_properties: {
-          label: 'failed',
-          property: error_message
-        }
-      )
-      .and increment_usage_metrics("counts.count_total_failed_workspaces_created")
-  end
-end
-
 # NOTE: This spec cannot use let_it_be because, because that doesn't work when using the `custom_repo` trait of
 #       the project factory and subsequently modifying it, because it's a real on-disk repo at `tmp/tests/gitlab-test/`,
 #       and any changes made to it are not reverted by let it be (even with reload). This means we also cannot use
@@ -121,6 +90,37 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       vscode_extension_marketplace_metadata: { enabled: vscode_extension_marketplace_metadata_enabled },
       logger: logger
     }
+  end
+
+  shared_examples 'tracks successful workspace creation event' do
+    it "tracks creation event" do
+      expect { response }
+        .to trigger_internal_events('create_workspace_result')
+        .with(
+          category: 'RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver',
+          user: user,
+          project: project,
+          additional_properties: { label: 'succeed' }
+        )
+        .and increment_usage_metrics("counts.count_total_succeed_workspaces_created")
+    end
+  end
+
+  shared_examples 'tracks failed workspace creation event' do |error_message|
+    it "tracks failed creation event with proper error details" do
+      expect { response }
+        .to trigger_internal_events('create_workspace_result')
+        .with(
+          category: 'RemoteDevelopment::WorkspaceOperations::Create::WorkspaceErrorsObserver',
+          user: user,
+          project: project,
+          additional_properties: {
+            label: 'failed',
+            property: error_message
+          }
+        )
+        .and increment_usage_metrics("counts.count_total_failed_workspaces_created")
+    end
   end
 
   subject(:response) do
