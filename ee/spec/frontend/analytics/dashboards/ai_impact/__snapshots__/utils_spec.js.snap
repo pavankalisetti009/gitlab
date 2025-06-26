@@ -158,6 +158,13 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
     },
   },
   {
+    "invertTrendColor": true,
+    "metric": {
+      "identifier": "median_time_to_merge",
+      "value": "Median time to merge",
+    },
+  },
+  {
     "invertTrendColor": undefined,
     "metric": {
       "identifier": "deployment_frequency",
@@ -172,10 +179,24 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
     },
   },
   {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "merge_request_throughput",
+      "value": "Merge request throughput",
+    },
+  },
+  {
     "invertTrendColor": true,
     "metric": {
       "identifier": "vulnerability_critical",
       "value": "Critical vulnerabilities over time",
+    },
+  },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "contributor_count",
+      "value": "Contributor count",
     },
   },
   {

@@ -186,6 +186,67 @@ exports[`Metric table for the code_suggestions_usage_rate table row when the dat
 }
 `;
 
+exports[`Metric table for the contributor_count table row when the data is loaded renders the metric values 1`] = `
+"Contributor count  
+    Number of monthly unique users with contributions.
+    
+      Go to docs
+      
+        4
+       
+        4
+       
+        4
+       
+        4
+       
+        4
+       
+        4
+       
+      0.0%"
+`;
+
+exports[`Metric table for the contributor_count table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      4,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      4,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      4,
+    ],
+    [
+      "Apr 6 - May 6",
+      4,
+    ],
+    [
+      "May 6 - Jun 6",
+      4,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      4,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "",
+}
+`;
+
 exports[`Metric table for the cycle_time table row when the data is loaded renders the metric values 1`] = `
 "Cycle time  
     Median time between when an issue is first referenced in the commit message of a merge request and when that referenced issue is closed.
@@ -493,6 +554,129 @@ exports[`Metric table for the lead_time table row when the data is loaded render
   "showLastYValue": false,
   "smooth": 0.2,
   "tooltipLabel": "days",
+}
+`;
+
+exports[`Metric table for the median_time_to_merge table row when the data is loaded renders the metric values 1`] = `
+"Median time to merge  
+    Median time between merge request created and merge request merged.
+    
+      Go to docs
+      
+        0.1 d
+       
+        0.2 d
+       
+        0.3 d
+       
+        0.3 d
+       
+        0.2 d
+       
+        0.1 d
+       
+  100.0%
+    days"
+`;
+
+exports[`Metric table for the median_time_to_merge table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      0.1,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      0.2,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      0.3,
+    ],
+    [
+      "Apr 6 - May 6",
+      0.3,
+    ],
+    [
+      "May 6 - Jun 6",
+      0.2,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      0.1,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "days",
+}
+`;
+
+exports[`Metric table for the merge_request_throughput table row when the data is loaded renders the metric values 1`] = `
+"Merge request throughput  
+    Number of merge requests merged by month.
+    
+      Go to docs
+      
+        10
+       
+        10
+       
+        10
+       
+        10
+       
+        10
+       
+        10
+       
+      0.0%"
+`;
+
+exports[`Metric table for the merge_request_throughput table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      10,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      10,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      10,
+    ],
+    [
+      "Apr 6 - May 6",
+      10,
+    ],
+    [
+      "May 6 - Jun 6",
+      10,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      10,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "",
 }
 `;
 

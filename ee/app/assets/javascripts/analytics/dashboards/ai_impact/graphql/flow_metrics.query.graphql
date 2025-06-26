@@ -10,6 +10,9 @@ query aiImpactFlowMetricsQuery($fullPath: ID!, $startDate: Time!, $endDate: Time
       lead_time: leadTime(from: $startDate, to: $endDate) {
         ...FlowMetricItem
       }
+      median_time_to_merge: timeToMerge(from: $startDate, to: $endDate) {
+        ...FlowMetricItem
+      }
     }
   }
   group(fullPath: $fullPath) {
@@ -19,6 +22,9 @@ query aiImpactFlowMetricsQuery($fullPath: ID!, $startDate: Time!, $endDate: Time
         ...FlowMetricItem
       }
       lead_time: leadTime(from: $startDate, to: $endDate) {
+        ...FlowMetricItem
+      }
+      median_time_to_merge: timeToMerge(from: $startDate, to: $endDate) {
         ...FlowMetricItem
       }
     }

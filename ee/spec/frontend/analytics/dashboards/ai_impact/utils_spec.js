@@ -130,7 +130,7 @@ describe('AI impact Dashboard utils', () => {
           ['no error', []],
         ]),
       ).toEqual([
-        `${errors}: Cycle time, Lead time`,
+        `${errors}: Cycle time, Lead time, Median time to merge`,
         `${warnings}: Deployment frequency, Change failure rate`,
       ]);
     });

@@ -6,6 +6,8 @@ import {
   FLOW_METRICS,
   DORA_METRICS,
   VULNERABILITY_METRICS,
+  MERGE_REQUEST_METRICS,
+  CONTRIBUTOR_METRICS,
   AI_METRICS,
 } from '~/analytics/shared/constants';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
@@ -19,18 +21,27 @@ import {
 import FlowMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/dora_metrics.query.graphql';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/ai_impact/graphql/vulnerabilities.query.graphql';
+import MergeRequestsQuery from 'ee/analytics/dashboards/graphql/merge_requests.query.graphql';
+import ContributorCountQuery from 'ee/analytics/dashboards/graphql/contributor_count.query.graphql';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import MetricTable from 'ee/analytics/dashboards/ai_impact/components/metric_table.vue';
 import {
   SUPPORTED_FLOW_METRICS,
   SUPPORTED_DORA_METRICS,
   SUPPORTED_VULNERABILITY_METRICS,
+  SUPPORTED_MERGE_REQUEST_METRICS,
+  SUPPORTED_CONTRIBUTOR_METRICS,
   SUPPORTED_AI_METRICS,
 } from 'ee/analytics/dashboards/ai_impact/constants';
 import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
+import {
+  mockGraphqlMergeRequestsResponse,
+  mockGraphqlContributorCountResponse,
+} from '../../helpers';
+import { mockMergeRequestsResponseData, mockContributorCountResponseData } from '../../mock_data';
 import {
   mockDoraMetricsResponse,
   mockFlowMetricsResponse,
@@ -66,6 +77,10 @@ describe('Metric table', () => {
     flowMetricsRequest = mockFlowMetricsResponse(mockTableAndChartValues),
     doraMetricsRequest = mockDoraMetricsResponse(mockTableAndChartValues),
     vulnerabilityMetricsRequest = mockVulnerabilityMetricsResponse(mockTableAndChartValues),
+    mrMetricsRequest = mockGraphqlMergeRequestsResponse(mockMergeRequestsResponseData),
+    contributorMetricsRequest = mockGraphqlContributorCountResponse(
+      mockContributorCountResponseData,
+    ),
     aiMetricsRequest = mockAiMetricsResponse(mockTableAndChartValues),
   } = {}) => {
     return createMockApollo(
@@ -73,6 +88,8 @@ describe('Metric table', () => {
         [FlowMetricsQuery, flowMetricsRequest],
         [DoraMetricsQuery, doraMetricsRequest],
         [VulnerabilitiesQuery, vulnerabilityMetricsRequest],
+        [MergeRequestsQuery, mrMetricsRequest],
+        [ContributorCountQuery, contributorMetricsRequest],
         [AiMetricsQuery, aiMetricsRequest],
       ],
       {},
@@ -86,6 +103,10 @@ describe('Metric table', () => {
     flowMetricsRequest = mockFlowMetricsResponse(mockTableLargeValues),
     doraMetricsRequest = mockDoraMetricsResponse(mockTableLargeValues),
     vulnerabilityMetricsRequest = mockVulnerabilityMetricsResponse(mockTableLargeValues),
+    mrMetricsRequest = mockGraphqlMergeRequestsResponse(mockMergeRequestsResponseData),
+    contributorMetricsRequest = mockGraphqlContributorCountResponse(
+      mockContributorCountResponseData,
+    ),
     aiMetricsRequest = mockAiMetricsResponse(mockTableLargeValues),
   } = {}) => {
     return createMockApollo(
@@ -93,6 +114,8 @@ describe('Metric table', () => {
         [FlowMetricsQuery, flowMetricsRequest],
         [DoraMetricsQuery, doraMetricsRequest],
         [VulnerabilitiesQuery, vulnerabilityMetricsRequest],
+        [MergeRequestsQuery, mrMetricsRequest],
+        [ContributorCountQuery, contributorMetricsRequest],
         [AiMetricsQuery, aiMetricsRequest],
       ],
       {},
@@ -137,7 +160,10 @@ describe('Metric table', () => {
   const changeFailureRateTestId = 'ai-impact-metric-change-failure-rate';
   const cycleTimeTestId = 'ai-impact-metric-cycle-time';
   const leadTimeTestId = 'ai-impact-metric-lead-time';
+  const medianTimeToMergeTestId = 'ai-impact-metric-median-time-to-merge';
   const vulnerabilityCriticalTestId = 'ai-impact-metric-vulnerability-critical';
+  const mergeRequestThroughputTestId = 'ai-impact-metric-merge-request-throughput';
+  const contributorCountTestId = 'ai-impact-metric-contributor-count';
   const codeSuggestionsUsageRateTestId = 'ai-impact-metric-code-suggestions-usage-rate';
   const codeSuggestionsAcceptanceRateTestId = 'ai-impact-metric-code-suggestions-acceptance-rate';
   const duoChatUsageRateTestId = 'ai-impact-metric-duo-chat-usage-rate';
@@ -171,7 +197,10 @@ describe('Metric table', () => {
     ${DORA_METRICS.CHANGE_FAILURE_RATE}            | ${changeFailureRateTestId}             | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${FLOW_METRICS.CYCLE_TIME}                     | ${cycleTimeTestId}                     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${FLOW_METRICS.LEAD_TIME}                      | ${leadTimeTestId}                      | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.MEDIAN_TIME_TO_MERGE}           | ${medianTimeToMergeTestId}             | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${VULNERABILITY_METRICS.CRITICAL}              | ${vulnerabilityCriticalTestId}         | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${MERGE_REQUEST_METRICS.THROUGHPUT}            | ${mergeRequestThroughputTestId}        | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${CONTRIBUTOR_METRICS.COUNT}                   | ${contributorCountTestId}              | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${codeSuggestionsUsageRateTestId}      | ${''}        | ${''}
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${codeSuggestionsAcceptanceRateTestId} | ${''}        | ${''}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${duoChatUsageRateTestId}              | ${''}        | ${''}
@@ -194,7 +223,10 @@ describe('Metric table', () => {
     ${DORA_METRICS.CHANGE_FAILURE_RATE}            | ${'Change failure rate'}                | ${changeFailureRateTestId}
     ${FLOW_METRICS.CYCLE_TIME}                     | ${'Cycle time'}                         | ${cycleTimeTestId}
     ${FLOW_METRICS.LEAD_TIME}                      | ${'Lead time'}                          | ${leadTimeTestId}
+    ${FLOW_METRICS.MEDIAN_TIME_TO_MERGE}           | ${'Median time to merge'}               | ${medianTimeToMergeTestId}
     ${VULNERABILITY_METRICS.CRITICAL}              | ${'Critical vulnerabilities over time'} | ${vulnerabilityCriticalTestId}
+    ${MERGE_REQUEST_METRICS.THROUGHPUT}            | ${'Merge request throughput'}           | ${mergeRequestThroughputTestId}
+    ${CONTRIBUTOR_METRICS.COUNT}                   | ${'Contributor count'}                  | ${contributorCountTestId}
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions usage'}             | ${codeSuggestionsUsageRateTestId}
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions acceptance rate'}   | ${codeSuggestionsAcceptanceRateTestId}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat: Unique users'}             | ${duoChatUsageRateTestId}
@@ -223,6 +255,8 @@ describe('Metric table', () => {
             flowMetricsRequest: jest.fn().mockRejectedValue({}),
             doraMetricsRequest: jest.fn().mockRejectedValue({}),
             vulnerabilityMetricsRequest: jest.fn().mockRejectedValue({}),
+            mrMetricsRequest: jest.fn().mockRejectedValue({}),
+            contributorMetricsRequest: jest.fn().mockRejectedValue({}),
             aiMetricsRequest: jest.fn().mockRejectedValue({}),
           }),
         });
@@ -380,6 +414,8 @@ describe('Metric table', () => {
     const flowMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     const doraMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     const vulnerabilityMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+    const mrMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+    const contributorMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     const aiMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     let apolloProvider;
 
@@ -388,6 +424,8 @@ describe('Metric table', () => {
         flowMetricsRequest,
         doraMetricsRequest,
         vulnerabilityMetricsRequest,
+        mrMetricsRequest,
+        contributorMetricsRequest,
         aiMetricsRequest,
       });
     });
@@ -402,7 +440,7 @@ describe('Metric table', () => {
       {
         group: 'Flow metrics',
         excludeMetrics: SUPPORTED_FLOW_METRICS,
-        testIds: [cycleTimeTestId, leadTimeTestId],
+        testIds: [cycleTimeTestId, leadTimeTestId, medianTimeToMergeTestId],
         apiRequest: flowMetricsRequest,
       },
       {
@@ -410,6 +448,18 @@ describe('Metric table', () => {
         excludeMetrics: SUPPORTED_VULNERABILITY_METRICS,
         testIds: [vulnerabilityCriticalTestId],
         apiRequest: vulnerabilityMetricsRequest,
+      },
+      {
+        group: 'MR metrics',
+        excludeMetrics: SUPPORTED_MERGE_REQUEST_METRICS,
+        testIds: [mergeRequestThroughputTestId],
+        apiRequest: mrMetricsRequest,
+      },
+      {
+        group: 'Contribution metrics',
+        excludeMetrics: SUPPORTED_CONTRIBUTOR_METRICS,
+        testIds: [contributorCountTestId],
+        apiRequest: contributorMetricsRequest,
       },
       {
         group: 'AI metrics',

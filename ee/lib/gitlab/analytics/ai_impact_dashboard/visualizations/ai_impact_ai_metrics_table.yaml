@@ -11,4 +11,7 @@ data:
         - deployment_frequency
         - change_failure_rate
         - vulnerability_critical
+        - merge_request_throughput
+        - median_time_to_merge
+        - contributor_count
 options: {}

@@ -25,7 +25,7 @@ export const mockDoraMetricsResponse = (values = []) =>
 
 export const mockFlowMetricsResponse = (values = []) =>
   values.reduce(
-    (acc, { cycleTime, leadTime }) =>
+    (acc, { cycleTime, leadTime, medianTimeToMerge }) =>
       acc.mockResolvedValueOnce({
         data: {
           project: null,
@@ -61,6 +61,29 @@ export const mockFlowMetricsResponse = (values = []) =>
                   },
                 ],
                 title: 'Lead time',
+                __typename: 'ValueStreamAnalyticsMetric',
+              },
+              median_time_to_merge: {
+                unit: 'days',
+                value: medianTimeToMerge,
+                identifier: 'median_time_to_merge',
+                links: [
+                  {
+                    label: 'Dashboard',
+                    name: 'Median time to merge',
+                    docsLink: null,
+                    url: '/groups/test-graphql-dora/-/issues_analytics',
+                    __typename: 'ValueStreamMetricLinkType',
+                  },
+                  {
+                    label: 'Go to docs',
+                    name: 'Median time to merge',
+                    docsLink: true,
+                    url: '/help/user/analytics/index#definitions',
+                    __typename: 'ValueStreamMetricLinkType',
+                  },
+                ],
+                title: 'Median time to merge',
                 __typename: 'ValueStreamAnalyticsMetric',
               },
               __typename: 'GroupValueStreamAnalyticsFlowMetrics',
