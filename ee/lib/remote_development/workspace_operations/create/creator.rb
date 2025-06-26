@@ -23,11 +23,18 @@ module RemoteDevelopment
                 .and_then(PersonalAccessTokenCreator.method(:create))
                 .and_then(WorkspaceCreator.method(:create))
                 .and_then(WorkspaceVariablesCreator.method(:create))
+                # NOTE: Even though DesiredConfig::Main is a nested ROP chain, it is namespaced as a peer to
+                #       Creator namespace, to avoid excessive filesystem/namespace nesting.
+                #       We need to call it here after the Workspace record is created, because the desired_config field
+                #       JSON has some attributes which contain the Workspace record ID.
+                .map(DesiredConfig::Main.method(:main))
+                .and_then(WorkspaceAgentkStateCreator.method(:create))
 
             case result
             in { err: PersonalAccessTokenModelCreateFailed |
               WorkspaceModelCreateFailed |
-              WorkspaceVariablesModelCreateFailed => message
+              WorkspaceVariablesModelCreateFailed |
+              WorkspaceAgentkStateCreateFailed => message
             }
               model_errors = message.content[:errors]
               raise ActiveRecord::Rollback

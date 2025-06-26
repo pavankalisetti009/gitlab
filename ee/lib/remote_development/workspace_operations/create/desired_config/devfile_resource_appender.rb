@@ -2,108 +2,54 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module Reconcile
-      module Output
-        # TODO this file is marked for deletion by the end of this epic https://gitlab.com/groups/gitlab-org/-/epics/17483
-        class DesiredConfigGenerator
-          include Create::CreateConstants
-
-          # @param [RemoteDevelopment::Workspace] workspace
-          # @param [Boolean] include_all_resources
-          # @param [RemoteDevelopment::Logger] logger
-          # @return [Array<Hash>]
-          def self.generate_desired_config(workspace:, include_all_resources:, logger:)
-            config_values_extractor_result = Create::DesiredConfig::ConfigValuesExtractor.extract(workspace: workspace)
-            config_values_extractor_result => {
-              allow_privilege_escalation: TrueClass | FalseClass => allow_privilege_escalation,
-              common_annotations: Hash => common_annotations,
-              default_resources_per_workspace_container: Hash => default_resources_per_workspace_container,
-              default_runtime_class: String => default_runtime_class,
-              domain_template: String => domain_template,
-              env_secret_name: String => env_secret_name,
-              file_secret_name: String => file_secret_name,
-              gitlab_workspaces_proxy_namespace: String => gitlab_workspaces_proxy_namespace,
-              image_pull_secrets: Array => image_pull_secrets,
-              labels: Hash => labels,
-              max_resources_per_workspace: Hash => max_resources_per_workspace,
-              network_policy_enabled: TrueClass | FalseClass => network_policy_enabled,
-              network_policy_egress: Array => network_policy_egress,
-              processed_devfile_yaml: String => processed_devfile_yaml,
-              replicas: Integer => replicas,
+    module Create
+      module DesiredConfig
+        class DevfileResourceAppender
+          def self.append(context)
+            context => {
+              desired_config_array: desired_config_array,
+              workspace_name: workspace_name,
+              workspace_namespace: workspace_namespace,
+              labels: labels,
+              workspace_inventory_annotations: workspace_inventory_annotations,
+              common_annotations: common_annotations,
+              workspace_inventory_name: workspace_inventory_name,
+              secrets_inventory_name: secrets_inventory_name,
+              secrets_inventory_annotations: secrets_inventory_annotations,
               scripts_configmap_name: scripts_configmap_name,
-              secrets_inventory_annotations: Hash => secrets_inventory_annotations,
-              secrets_inventory_name: String => secrets_inventory_name,
-              shared_namespace: String => shared_namespace,
-              use_kubernetes_user_namespaces: TrueClass | FalseClass => use_kubernetes_user_namespaces,
-              workspace_inventory_annotations: Hash => workspace_inventory_annotations,
-              workspace_inventory_name: String => workspace_inventory_name,
+              processed_devfile_yaml: processed_devfile_yaml,
+              gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
+              network_policy_enabled: network_policy_enabled,
+              network_policy_egress: network_policy_egress,
+              image_pull_secrets: image_pull_secrets,
+              max_resources_per_workspace: max_resources_per_workspace,
+              shared_namespace: shared_namespace,
+              env_secret_name: env_secret_name,
+              file_secret_name: file_secret_name
             }
-
-            desired_config = []
 
             append_inventory_config_map(
-              desired_config: desired_config,
+              desired_config_array: desired_config_array,
               name: workspace_inventory_name,
-              namespace: workspace.namespace,
+              namespace: workspace_namespace,
               labels: labels,
-              annotations: common_annotations
+              annotations: common_annotations,
+              prepend: true
             )
-
-            if workspace.desired_state_terminated?
-              append_inventory_config_map(
-                desired_config: desired_config,
-                name: secrets_inventory_name,
-                namespace: workspace.namespace,
-                labels: labels,
-                annotations: common_annotations
-              )
-
-              return desired_config
-            end
-
-            devfile_parser_params = {
-              allow_privilege_escalation: allow_privilege_escalation,
-              annotations: workspace_inventory_annotations,
-              default_resources_per_workspace_container: default_resources_per_workspace_container,
-              default_runtime_class: default_runtime_class,
-              domain_template: domain_template,
-              env_secret_names: [env_secret_name],
-              file_secret_names: [file_secret_name],
-              labels: labels,
-              name: workspace.name,
-              namespace: workspace.namespace,
-              replicas: replicas,
-              service_account_name: workspace.name,
-              use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
-            }
-
-            resources_from_devfile_parser = Create::DesiredConfig::DevfileParser.get_all(
-              processed_devfile_yaml: processed_devfile_yaml,
-              params: devfile_parser_params,
-              logger: logger
-            )
-
-            # If we got no resources back from the devfile parser, this indicates some error was encountered in parsing
-            # the processed_devfile. So we return an empty array which will result in no updates being applied by the
-            # agent. We should not continue on and try to add anything else to the resources, as this would result
-            # in an invalid configuration being applied to the cluster.
-            return [] if resources_from_devfile_parser.empty?
-
-            desired_config.append(*resources_from_devfile_parser)
 
             append_image_pull_secrets_service_account(
-              desired_config: desired_config,
-              name: workspace.name,
-              namespace: workspace.namespace,
+              desired_config_array: desired_config_array,
+              name: workspace_name,
+              namespace: workspace_namespace,
               image_pull_secrets: image_pull_secrets,
               labels: labels,
               annotations: workspace_inventory_annotations
             )
 
             append_network_policy(
-              desired_config: desired_config,
-              name: workspace.name,
-              namespace: workspace.namespace,
+              desired_config_array: desired_config_array,
+              name: workspace_name,
+              namespace: workspace_namespace,
               gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
               network_policy_enabled: network_policy_enabled,
               network_policy_egress: network_policy_egress,
@@ -112,28 +58,26 @@ module RemoteDevelopment
             )
 
             append_scripts_resources(
-              desired_config: desired_config,
+              desired_config_array: desired_config_array,
               processed_devfile_yaml: processed_devfile_yaml,
               name: scripts_configmap_name,
-              namespace: workspace.namespace,
+              namespace: workspace_namespace,
               labels: labels,
               annotations: workspace_inventory_annotations
             )
 
-            return desired_config unless include_all_resources
-
             append_inventory_config_map(
-              desired_config: desired_config,
+              desired_config_array: desired_config_array,
               name: secrets_inventory_name,
-              namespace: workspace.namespace,
+              namespace: workspace_namespace,
               labels: labels,
               annotations: common_annotations
             )
 
             append_resource_quota(
-              desired_config: desired_config,
-              name: workspace.name,
-              namespace: workspace.namespace,
+              desired_config_array: desired_config_array,
+              name: workspace_name,
+              namespace: workspace_namespace,
               labels: labels,
               annotations: workspace_inventory_annotations,
               max_resources_per_workspace: max_resources_per_workspace,
@@ -141,54 +85,37 @@ module RemoteDevelopment
             )
 
             append_secret(
-              desired_config: desired_config,
+              desired_config_array: desired_config_array,
               name: env_secret_name,
-              namespace: workspace.namespace,
+              namespace: workspace_namespace,
               labels: labels,
               annotations: secrets_inventory_annotations
-            )
-
-            append_secret_data_from_variables(
-              desired_config: desired_config,
-              secret_name: env_secret_name,
-              variables: workspace.workspace_variables.with_variable_type_environment
             )
 
             append_secret(
-              desired_config: desired_config,
+              desired_config_array: desired_config_array,
               name: file_secret_name,
-              namespace: workspace.namespace,
+              namespace: workspace_namespace,
               labels: labels,
               annotations: secrets_inventory_annotations
             )
 
-            append_secret_data_from_variables(
-              desired_config: desired_config,
-              secret_name: file_secret_name,
-              variables: workspace.workspace_variables.with_variable_type_file
-            )
-
-            append_secret_data(
-              desired_config: desired_config,
-              secret_name: file_secret_name,
-              data: { WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME.to_sym => workspace.actual_state }
-            )
-
-            desired_config
+            context.merge({ desired_config_array: desired_config_array })
           end
 
-          # @param [Array] desired_config
+          # @param [Array] desired_config_array
           # @param [String] name
           # @param [String] namespace
           # @param [Hash<String, String>] labels
           # @param [Hash<String, String>] annotations
           # @return [void]
           def self.append_inventory_config_map(
-            desired_config:,
+            desired_config_array:,
             name:,
             namespace:,
             labels:,
-            annotations:
+            annotations:,
+            prepend: false
           )
             extra_labels = { "cli-utils.sigs.k8s.io/inventory-id": name }
 
@@ -203,18 +130,22 @@ module RemoteDevelopment
               }
             }
 
-            desired_config.append(config_map)
+            if prepend
+              desired_config_array.prepend(config_map)
+            else
+              desired_config_array.append(config_map)
+            end
 
             nil
           end
 
-          # @param [Array] desired_config
+          # @param [Array] desired_config_array
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
           # @param [Hash] annotations
           # @return [void]
-          def self.append_secret(desired_config:, name:, namespace:, labels:, annotations:)
+          def self.append_secret(desired_config_array:, name:, namespace:, labels:, annotations:)
             secret = {
               kind: "Secret",
               apiVersion: "v1",
@@ -227,54 +158,12 @@ module RemoteDevelopment
               data: {}
             }
 
-            desired_config.append(secret)
+            desired_config_array.append(secret)
 
             nil
           end
 
-          # @param [Array] desired_config
-          # @param [String] secret_name
-          # @param [ActiveRecord::Relation<RemoteDevelopment::WorkspaceVariable>] variables
-          # @return [void]
-          def self.append_secret_data_from_variables(desired_config:, secret_name:, variables:)
-            data = variables.each_with_object({}) do |workspace_variable, hash|
-              hash[workspace_variable.key.to_sym] = workspace_variable.value
-            end
-
-            append_secret_data(
-              desired_config: desired_config,
-              secret_name: secret_name,
-              data: data
-            )
-
-            nil
-          end
-
-          # @param [Array] desired_config
-          # @param [String] secret_name
-          # @param [Hash] data
-          # @return [void]
-          # noinspection RubyUnusedLocalVariable -- Rubymine doesn't recognize '^' to use a variable in pattern-matching
-          def self.append_secret_data(desired_config:, secret_name:, data:)
-            desired_config => [
-              *_,
-              {
-                metadata: {
-                  name: ^secret_name
-                },
-                data: secret_data
-              },
-              *_
-            ]
-
-            transformed_data = data.transform_values { |value| Base64.strict_encode64(value) }
-
-            secret_data.merge!(transformed_data)
-
-            nil
-          end
-
-          # @param [Array] desired_config
+          # @param [Array] desired_config_array
           # @param [String] gitlab_workspaces_proxy_namespace
           # @param [String] name
           # @param [String] namespace
@@ -284,7 +173,7 @@ module RemoteDevelopment
           # @param [Hash] annotations
           # @return [void]
           def self.append_network_policy(
-            desired_config:,
+            desired_config_array:,
             name:,
             namespace:,
             gitlab_workspaces_proxy_namespace:,
@@ -355,12 +244,12 @@ module RemoteDevelopment
               }
             }
 
-            desired_config.append(network_policy)
+            desired_config_array.append(network_policy)
 
             nil
           end
 
-          # @param [Array] desired_config
+          # @param [Array] desired_config_array
           # @param [String] processed_devfile_yaml
           # @param [String] name
           # @param [String] namespace
@@ -368,14 +257,14 @@ module RemoteDevelopment
           # @param [Hash] annotations
           # @return [void]
           def self.append_scripts_resources(
-            desired_config:,
+            desired_config_array:,
             processed_devfile_yaml:,
             name:,
             namespace:,
             labels:,
             annotations:
           )
-            desired_config => [
+            desired_config_array => [
               *_,
               {
                 kind: "Deployment",
@@ -402,8 +291,8 @@ module RemoteDevelopment
             #       to restart because the deployment would be updated.
             return unless devfile_events[:postStart].present?
 
-            Create::DesiredConfig::ScriptsConfigmapAppender.append(
-              desired_config: desired_config,
+            ScriptsConfigmapAppender.append(
+              desired_config_array: desired_config_array,
               name: name,
               namespace: namespace,
               labels: labels,
@@ -412,13 +301,13 @@ module RemoteDevelopment
               devfile_events: devfile_events
             )
 
-            Create::DesiredConfig::ScriptsVolumeInserter.insert(
+            ScriptsVolumeInserter.insert(
               configmap_name: name,
               containers: containers,
               volumes: volumes
             )
 
-            Create::DesiredConfig::KubernetesPoststartHookInserter.insert(
+            KubernetesPoststartHookInserter.insert(
               containers: containers,
               devfile_commands: devfile_commands,
               devfile_events: devfile_events
@@ -427,15 +316,16 @@ module RemoteDevelopment
             nil
           end
 
-          # @param [Array] desired_config
+          # @param [Array] desired_config_array
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
           # @param [Hash] annotations
           # @param [Hash] max_resources_per_workspace
+          # @param [String] shared_namespace
           # @return [void]
           def self.append_resource_quota(
-            desired_config:,
+            desired_config_array:,
             name:,
             namespace:,
             labels:,
@@ -476,12 +366,12 @@ module RemoteDevelopment
               }
             }
 
-            desired_config.append(resource_quota)
+            desired_config_array.append(resource_quota)
 
             nil
           end
 
-          # @param [Array] desired_config
+          # @param [Array] desired_config_array
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
@@ -489,7 +379,7 @@ module RemoteDevelopment
           # @param [Array] image_pull_secrets
           # @return [void]
           def self.append_image_pull_secrets_service_account(
-            desired_config:,
+            desired_config_array:,
             name:,
             namespace:,
             labels:,
@@ -511,14 +401,17 @@ module RemoteDevelopment
               imagePullSecrets: image_pull_secrets_names
             }
 
-            desired_config.append(workspace_service_account_definition)
+            desired_config_array.append(workspace_service_account_definition)
 
             nil
           end
 
           private_class_method :append_inventory_config_map,
-            :append_secret, :append_secret_data_from_variables, :append_secret_data,
-            :append_network_policy, :append_resource_quota, :append_image_pull_secrets_service_account
+            :append_secret,
+            :append_network_policy,
+            :append_scripts_resources,
+            :append_resource_quota,
+            :append_image_pull_secrets_service_account
         end
       end
     end

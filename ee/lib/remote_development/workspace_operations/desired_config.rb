@@ -7,6 +7,7 @@ module RemoteDevelopment
       include ActiveModel::Attributes
       include ActiveModel::Validations
       include ActiveModel::Serialization
+      include ActiveModel::Serializers::JSON
 
       # @!attribute [rw] desired_config_array
       #   @return [Array]

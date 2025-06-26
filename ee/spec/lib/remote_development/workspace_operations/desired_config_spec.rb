@@ -64,7 +64,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::DesiredConfig, feature_ca
   describe '#to_json' do
     let(:desired_config_array) { create_desired_config_array }
 
-    it { expect(desired_config.to_json).to be_valid_json }
+    subject(:result) { desired_config.to_json }
+
+    it { expect(result).to be_valid_json }
+    it { expect(Gitlab::Json.parse(result)).to eq({ "desired_config_array" => create_desired_config_array }.as_json) }
   end
 
   describe '#==(other)' do

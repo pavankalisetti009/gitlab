@@ -19,6 +19,7 @@ module RemoteDevelopment
     WorkspaceModelCreateFailed = Class.new(Gitlab::Fp::Message)
     WorkspaceVariablesModelCreateFailed = Class.new(Gitlab::Fp::Message)
     WorkspaceCreateFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceAgentkStateCreateFailed = Class.new(Gitlab::Fp::Message)
 
     # Workspace update errors
     WorkspaceUpdateFailed = Class.new(Gitlab::Fp::Message)

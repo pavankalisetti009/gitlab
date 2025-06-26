@@ -2,13 +2,13 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module Create
-      module DesiredConfig
-        class ScriptsConfigmapAppender
-          include CreateConstants
+    module Reconcile
+      module Output
+        class OldScriptsConfigmapAppender
+          include Create::CreateConstants
           include WorkspaceOperationsConstants
 
-          # @param [Array] desired_config_array
+          # @param [Array] desired_config
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
@@ -16,15 +16,7 @@ module RemoteDevelopment
           # @param [Array<Hash>] devfile_commands
           # @param [Hash] devfile_events
           # @return [void]
-          def self.append(
-            desired_config_array:,
-            name:,
-            namespace:,
-            labels:,
-            annotations:,
-            devfile_commands:,
-            devfile_events:
-          )
+          def self.append(desired_config:, name:, namespace:, labels:, annotations:, devfile_commands:, devfile_events:)
             configmap_data = {}
 
             configmap =
@@ -55,7 +47,7 @@ module RemoteDevelopment
             # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
             configmap[:data] = Gitlab::Utils.deep_sort_hashes(configmap_data).to_h
 
-            desired_config_array.append(configmap)
+            desired_config.append(configmap)
 
             nil
           end

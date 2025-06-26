@@ -12,7 +12,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
       [RemoteDevelopment::WorkspaceOperations::Create::CreatorBootstrapper, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessTokenCreator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreator, :and_then],
-      [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesCreator, :and_then]
+      [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesCreator, :and_then],
+      [RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Main, :map],
+      [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceAgentkStateCreator, :and_then]
     ]
   end
 
@@ -36,6 +38,16 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
   describe "error cases" do
     let(:error_details) { "some error details" }
     let(:err_message_content) { { errors: error_details, context: context_passed_along_steps } }
+    let(:rop_steps) do
+      [
+        [RemoteDevelopment::WorkspaceOperations::Create::CreatorBootstrapper, :map],
+        [RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessTokenCreator, :and_then],
+        [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreator, :and_then],
+        [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesCreator, :and_then],
+        [RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Main, :map],
+        [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceAgentkStateCreator, :and_then]
+      ]
+    end
 
     shared_examples "rop invocation with error response" do
       it "returns expected response" do
@@ -75,6 +87,14 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
           {
             step_class: RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesCreator,
             returned_message: lazy { Messages::WorkspaceVariablesModelCreateFailed.new(err_message_content) }
+          },
+          lazy { Gitlab::Fp::Result.err(Messages::WorkspaceCreateFailed.new(err_message_content)) }
+        ],
+        [
+          "when WorkspaceAgentkState returns WorkspaceAgentkStateCreateFailed",
+          {
+            step_class: RemoteDevelopment::WorkspaceOperations::Create::WorkspaceAgentkStateCreator,
+            returned_message: lazy { Messages::WorkspaceAgentkStateCreateFailed.new(err_message_content) }
           },
           lazy { Gitlab::Fp::Result.err(Messages::WorkspaceCreateFailed.new(err_message_content)) }
         ],

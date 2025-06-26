@@ -7,7 +7,7 @@ require "fast_spec_helper"
 require "hashdiff"
 
 # noinspection RubyLiteralArrayInspection -- Keep original formatting for readability
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGenerator, "Golden Master for desired_config", feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldDesiredConfigGenerator, "Golden Master for desired_config", feature_category: :workspaces do
   # !!!! IMPORTANT NOTE !!!!
   # DO NOT ADD
   # include_context "with constant modules"
@@ -426,9 +426,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     YAML
   end
 
-  # @return [Array]
   # rubocop:disable Layout/LineLength, Style/WordArray -- Keep original formatting for readability
   # noinspection RubyLiteralArrayInspection
+  # @return [Array]
   def golden_master_desired_config_with_desired_state_terminated
     [
       {
