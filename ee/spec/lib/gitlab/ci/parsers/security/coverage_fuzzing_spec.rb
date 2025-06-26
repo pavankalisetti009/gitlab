@@ -15,7 +15,6 @@ RSpec.describe Gitlab::Ci::Parsers::Security::CoverageFuzzing do
 
     it 'parses all identifiers and findings' do
       expect(report.findings.length).to eq(1)
-      expect(report.scanners.length).to eq(1)
     end
 
     it 'generates expected location' do

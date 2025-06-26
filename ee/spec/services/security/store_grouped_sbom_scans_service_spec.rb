@@ -41,14 +41,14 @@ RSpec.describe Security::StoreGroupedSbomScansService, feature_category: :depend
   describe '#execute' do
     let(:service_object) { described_class.new(artifacts, pipeline, report_type) }
     let(:mock_report_1) do
-      instance_double(::Gitlab::Ci::Reports::Security::Report, primary_scanner_order_to: 1, scans: {})
+      instance_double(::Gitlab::Ci::Reports::Security::Report, scanner_order_to: 1, scan: nil)
     end
 
     let(:mock_report_2) do
-      instance_double(::Gitlab::Ci::Reports::Security::Report, primary_scanner_order_to: -1, scans: {})
+      instance_double(::Gitlab::Ci::Reports::Security::Report, scanner_order_to: -1, scan: nil)
     end
 
-    let(:mock_report_3) { instance_double(::Gitlab::Ci::Reports::Security::Report, scans: {}) }
+    let(:mock_report_3) { instance_double(::Gitlab::Ci::Reports::Security::Report, scan: nil) }
     let(:artifacts) { [artifact_1, artifact_2, artifact_3] }
     let(:empty_set) { Set.new }
 

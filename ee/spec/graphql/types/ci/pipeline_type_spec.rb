@@ -61,7 +61,7 @@ RSpec.describe GitlabSchema.types['Pipeline'], feature_category: :vulnerability_
 
     context 'when security findings exist for the pipeline' do
       before_all do
-        scan_object = Gitlab::Ci::Reports::Security::Scan.new(
+        artifact.security_report.scan = Gitlab::Ci::Reports::Security::Scan.new(
           {
             "type" => :sast,
             "start_time" => "20241022T11:56:41",
@@ -69,7 +69,6 @@ RSpec.describe GitlabSchema.types['Pipeline'], feature_category: :vulnerability_
             "status" => "success"
           }
         )
-        artifact.security_report.add_scan(scan_object)
 
         Gitlab::ExclusiveLease.skipping_transaction_check do
           Security::StoreGroupedScansService.new(

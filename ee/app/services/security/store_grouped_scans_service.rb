@@ -51,7 +51,7 @@ module Security
         report_a = a.security_report
         report_b = b.security_report
 
-        report_a.primary_scanner_order_to(report_b)
+        report_a.scanner_order_to(report_b)
       end
     end
 
@@ -67,15 +67,17 @@ module Security
       return if Feature.disabled?(:security_scan_error_rate, Feature.current_request, type: :wip)
 
       sorted_artifacts.each do |artifact|
-        artifact.security_report.scans.each_value do |scan|
-          feature_category = Enums::Vulnerability.report_type_feature_category(scan.type)
+        scan = artifact.security_report&.scan
 
-          Gitlab::Metrics::SecurityScanSlis.error_rate.increment(
-            labels: { scan_type: scan.type, feature_category: feature_category },
-            # https://gitlab.com/gitlab-org/security-products/security-report-schemas/-/blob/941f497a3824d4393eb8a7efced497f738895ab4/src/security-report-format.json#L128
-            error: scan.status != "success"
-          )
-        end
+        next unless scan
+
+        feature_category = Enums::Vulnerability.report_type_feature_category(scan.type)
+
+        Gitlab::Metrics::SecurityScanSlis.error_rate.increment(
+          labels: { scan_type: scan.type, feature_category: feature_category },
+          # https://gitlab.com/gitlab-org/security-products/security-report-schemas/-/blob/941f497a3824d4393eb8a7efced497f738895ab4/src/security-report-format.json#L128
+          error: scan.status != "success"
+        )
       end
     end
   end

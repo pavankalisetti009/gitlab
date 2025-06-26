@@ -187,7 +187,7 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
 
       describe 'executing `StoreFindingsService`' do
         let_it_be(:project) { artifact.project }
-        let_it_be(:security_scanner) { artifact.security_report.primary_scanner }
+        let_it_be(:security_scanner) { artifact.security_report.scanner }
 
         context 'when there is already a vulnerability scanner' do
           let_it_be(:scanner) do
