@@ -1,9 +1,10 @@
 <script>
-import { GlIcon } from '@gitlab/ui';
+import { GlIcon, GlTruncate } from '@gitlab/ui';
 
 export default {
   components: {
     GlIcon,
+    GlTruncate,
   },
   props: {
     name: {
@@ -35,6 +36,8 @@ export default {
     :aria-label="name"
   >
     <gl-icon class="gl-shrink-0" :size="12" :name="iconName" :style="colorStyle" />
-    <span class="gl-ml-2 gl-truncate">{{ name }}</span>
+    <div class="gl-shrink-1 gl-ml-2 gl-min-w-0 gl-overflow-hidden">
+      <gl-truncate :text="name" with-tooltip />
+    </div>
   </div>
 </template>
