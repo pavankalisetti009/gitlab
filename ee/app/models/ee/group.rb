@@ -1041,7 +1041,7 @@ module EE
     end
 
     def code_suggestions_purchased?
-      ::CloudConnector::AvailableServices.find_by_name(:code_suggestions).purchased?(self)
+      ::GitlabSubscriptions::AddOnPurchase.active_duo_add_ons_exist?(self)
     end
 
     def can_manage_extensions_marketplace_for_enterprise_users?

@@ -75,7 +75,6 @@ module Admin
     end
 
     def ai_settings_helper_data
-      code_suggestions_purchased = CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
       disabled_direct_code_suggestions = ::Gitlab::CurrentSettings.disabled_direct_code_suggestions
       beta_self_hosted_models_enabled = ::Ai::TestingTermsAcceptance.has_accepted?
       can_manage_self_hosted_models = can_manage_self_hosted_models?
@@ -88,7 +87,7 @@ module Admin
         enabled_expanded_logging: enabled_expanded_logging.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
         are_prompt_cache_settings_allowed: 'true',
-        duo_pro_visible: code_suggestions_purchased.to_s,
+        duo_pro_visible: duo_purchased?.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled.to_s,
         toggle_beta_models_path: admin_ai_duo_self_hosted_toggle_beta_models_path,
@@ -135,8 +134,12 @@ module Admin
       tag_pair(link_to('', url, target: '_blank', rel: 'noopener noreferrer'), :link_start, :link_end)
     end
 
+    def duo_purchased?
+      ::GitlabSubscriptions::AddOnPurchase.active_duo_add_ons_exist?(:instance)
+    end
+
     def experiments_settings_allowed?
-      CloudConnector::AvailableServices.find_by_name(:anthropic_proxy)&.purchased?
+      duo_purchased?
     end
 
     def direct_code_suggestions_enabled?
