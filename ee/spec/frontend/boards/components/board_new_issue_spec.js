@@ -8,7 +8,12 @@ import currentIterationQuery from 'ee/boards/graphql/board_current_iteration.que
 import BoardNewItem from '~/boards/components/board_new_item.vue';
 import groupBoardQuery from '~/boards/graphql/group_board.query.graphql';
 
-import { mockList, mockGroupProjects, mockGroupBoardResponse } from 'jest/boards/mock_data';
+import {
+  mockList,
+  mockGroupProjects,
+  mockGroupBoardResponse,
+  mockStatusList,
+} from 'jest/boards/mock_data';
 import {
   mockGroupBoardCurrentIterationResponse,
   mockGroupBoardNoIterationResponse,
@@ -33,6 +38,7 @@ const createComponent = ({
   data = { selectedProject: mockGroupProjects[0] },
   provide = {},
   boardQueryHandler = groupBoardQueryHandlerSuccess,
+  list = mockList,
 } = {}) => {
   const mockApollo = createMockApollo([
     [groupBoardQuery, boardQueryHandler],
@@ -41,7 +47,7 @@ const createComponent = ({
   return shallowMount(BoardNewIssue, {
     apolloProvider: mockApollo,
     propsData: {
-      list: mockList,
+      list,
       boardId: 'gid://gitlab/Board/1',
     },
     data: () => data,
@@ -110,6 +116,34 @@ describe('Issue boards new issue form', () => {
           iterationCadenceId: null,
         }),
       ],
+    ]);
+  });
+
+  it('does not add the `statusId` argument to new issue create mutation if not a status list', async () => {
+    wrapper = createComponent();
+
+    await waitForPromises();
+    findBoardNewItem().vm.$emit('form-submit', { title: 'Foo' });
+
+    await waitForPromises();
+    expect(wrapper.emitted('addNewIssue')[0]).not.toEqual([
+      expect.objectContaining({
+        statusId: expect.anything(),
+      }),
+    ]);
+  });
+
+  it('adds the `statusId` argument to new issue create mutation if status list', async () => {
+    wrapper = createComponent({ list: mockStatusList });
+
+    await waitForPromises();
+    findBoardNewItem().vm.$emit('form-submit', { title: 'Foo' });
+
+    await waitForPromises();
+    expect(wrapper.emitted('addNewIssue')[0]).toEqual([
+      expect.objectContaining({
+        statusId: mockStatusList.status.id,
+      }),
     ]);
   });
 });
