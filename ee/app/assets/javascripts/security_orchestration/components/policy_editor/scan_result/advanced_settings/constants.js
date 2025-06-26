@@ -82,11 +82,12 @@ export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   },
 };
 
-export const EXCEPTION_FULL_OPTIONS = Object.entries(EXCEPTIONS_FULL_OPTIONS_MAP).map(
-  ([key, { header, description, example }]) => ({
+export const mapOptions = (options) =>
+  Object.entries(options).map(([key, { header, description, example }]) => ({
     key,
     header,
     description,
     example,
-  }),
-);
+  }));
+
+export const EXCEPTION_FULL_OPTIONS = mapOptions(EXCEPTIONS_FULL_OPTIONS_MAP);

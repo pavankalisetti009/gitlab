@@ -26,6 +26,10 @@ describe('PolicyExceptionsSelectedList', () => {
   const findSelectedItems = () => wrapper.findAllComponents(PolicyExceptionsSelectedItem);
 
   beforeEach(() => {
+    window.gon.features = {
+      securityPoliciesBypassOptionsTokensAccounts: true,
+      securityPoliciesBypassOptionsGroupRoles: true,
+    };
     createComponent();
   });
 
@@ -77,6 +81,32 @@ describe('PolicyExceptionsSelectedList', () => {
       expect(items).toHaveLength(2);
       expect(items.at(0).props('title')).toBe('Roles');
       expect(items.at(1).props('title')).toBe('Source Branch Patterns');
+    });
+  });
+
+  describe('rendering with flags', () => {
+    beforeEach(() => {
+      window.gon.features = {
+        securityPoliciesBypassOptionsTokensAccounts: false,
+        securityPoliciesBypassOptionsGroupRoles: false,
+      };
+    });
+
+    it('filters out invalid exception keys when both flags are disabled', () => {
+      createComponent({
+        selectedExceptions: {
+          roles: ['maintainer'],
+          invalidKey: ['value'],
+          branches: [],
+          tokens: [{ id: 1 }],
+          accounts: [{ account: { username: 'name' } }],
+        },
+      });
+
+      const items = findSelectedItems();
+
+      expect(items).toHaveLength(1);
+      expect(items.at(0).props('title')).toBe('Source Branch Patterns');
     });
   });
 

@@ -15,6 +15,8 @@ module Projects
         push_frontend_feature_flag(:scheduled_pipeline_execution_policies, project)
         push_frontend_feature_flag(:security_policies_optional_variables_control, project)
         push_frontend_feature_flag(:security_policies_bypass_options, project)
+        push_frontend_feature_flag(:security_policies_bypass_options_tokens_accounts, project)
+        push_frontend_feature_flag(:security_policies_bypass_options_group_roles, project)
         push_frontend_feature_flag(:security_policies_split_view, project.group)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, project.group)
         push_frontend_feature_flag(:flexible_scan_execution_policy, project.group)

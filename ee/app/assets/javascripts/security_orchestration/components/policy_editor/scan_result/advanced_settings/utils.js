@@ -1,5 +1,11 @@
 import { uniqueId } from 'lodash';
-import { EXCEPTIONS_FULL_OPTIONS_MAP } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
+import {
+  ACCOUNTS,
+  EXCEPTIONS_FULL_OPTIONS_MAP,
+  GROUPS,
+  ROLES,
+  TOKENS,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
 export const createSourceBranchPatternObject = ({ id = '', source = {}, target = {} } = {}) => ({
   id: id || uniqueId('pattern_'),
@@ -16,12 +22,39 @@ export const removeIds = (items = []) => {
   return items.map(({ id, ...item }) => ({ ...item }));
 };
 
+export const renderOptionsList = ({
+  securityPoliciesBypassOptionsTokensAccounts = false,
+  securityPoliciesBypassOptionsGroupRoles = false,
+}) => {
+  const allOptions = { ...EXCEPTIONS_FULL_OPTIONS_MAP };
+
+  if (!securityPoliciesBypassOptionsTokensAccounts) {
+    delete allOptions[ACCOUNTS];
+    delete allOptions[TOKENS];
+  }
+
+  if (!securityPoliciesBypassOptionsGroupRoles) {
+    delete allOptions[ROLES];
+    delete allOptions[GROUPS];
+  }
+
+  return allOptions;
+};
+
 /**
  * Filter out invalid exceptions keys
  * @param keys
  * @returns {string[]};
  */
 export const onlyValidKeys = (keys) => {
-  const validKeys = Object.keys(EXCEPTIONS_FULL_OPTIONS_MAP);
+  const { securityPoliciesBypassOptionsTokensAccounts, securityPoliciesBypassOptionsGroupRoles } =
+    window.gon?.features || {};
+
+  const validKeys = Object.keys(
+    renderOptionsList({
+      securityPoliciesBypassOptionsTokensAccounts,
+      securityPoliciesBypassOptionsGroupRoles,
+    }),
+  );
   return keys.filter((key) => validKeys.includes(key));
 };
