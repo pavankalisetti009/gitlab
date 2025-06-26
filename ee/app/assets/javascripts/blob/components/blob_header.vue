@@ -87,6 +87,10 @@ export default {
       required: false,
       default: 'confirm',
     },
+    currentRef: {
+      type: String,
+      required: true,
+    },
   },
   apollo: {
     duoWorkflowData: {
@@ -95,6 +99,7 @@ export default {
         return {
           projectPath: this.projectPath,
           filePath: [this.blob.path],
+          ref: this.currentRef,
         };
       },
       skip() {

@@ -33,6 +33,7 @@ describe('EE Blob Header', () => {
     blob: testBlob,
     projectId: 'gid://gitlab/Project/123',
     projectPath: 'group/project',
+    currentRef: 'main',
   };
 
   let mockApolloProvider;
@@ -63,8 +64,8 @@ describe('EE Blob Header', () => {
     });
 
     it('passes all props to CE component', () => {
-      // Exclude projectPath from the CE props comparison
-      const { projectPath, ...propsToCheck } = testProps;
+      // Exclude props from the CE props comparison
+      const { projectPath, currentRef, ...propsToCheck } = testProps;
       expect(findCeBlobHeader().props()).toMatchObject(propsToCheck);
     });
 
