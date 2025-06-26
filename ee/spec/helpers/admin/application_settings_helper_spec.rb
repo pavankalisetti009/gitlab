@@ -12,7 +12,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
   let(:enabled_expanded_logging) { true }
   let(:duo_chat_expiration_column) { 'created_at' }
   let(:duo_chat_expiration_days) { 25 }
-  let(:code_suggestions_service) { instance_double(CloudConnector::AvailableServices) }
 
   before do
     stub_ee_application_setting(duo_availability: duo_availability)
@@ -22,8 +21,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     stub_ee_application_setting(disabled_direct_code_suggestions: disabled_direct_code_suggestions)
     stub_ee_application_setting(duo_chat_expiration_column: duo_chat_expiration_column)
     stub_ee_application_setting(duo_chat_expiration_days: duo_chat_expiration_days)
-    allow(CloudConnector::AvailableServices)
-      .to receive(:find_by_name).with(:code_suggestions).and_return(code_suggestions_service)
   end
 
   describe 'AI-native features settings for Self-Managed instances' do
@@ -76,7 +73,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         true  | true  | false | false | 'true'  | 'true'  | 'false' | 'false'
         true  | true  | false | true  | 'true'  | 'true'  | 'false' | 'false'
         false | false | false | false | 'false' | 'false' | 'false' | 'false'
-        true  | nil   | false | false | ''      | 'false' | 'false' | 'false'
       end
 
       with_them do
@@ -135,7 +131,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
           allow(::Ai::Setting).to receive_message_chain(:instance, :enabled_instance_verbose_ai_logs)
             .and_return(enabled_expanded_logging)
 
-          setup_cloud_connector_services(purchased)
+          allow(::GitlabSubscriptions::AddOnPurchase)
+            .to receive(:active_duo_add_ons_exist?).with(:instance).and_return(purchased)
 
           allow(::Ai::Setting).to receive_message_chain(:instance, :duo_core_features_enabled?)
             .and_return expected_duo_core_features_enabled
@@ -145,21 +142,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
           is_expected.to eq(expected_settings_helper_data)
         end
       end
-
-      def setup_cloud_connector_services(purchased)
-        if purchased.nil?
-          allow(CloudConnector::AvailableServices)
-            .to receive(:find_by_name).with(:code_suggestions).and_return(nil)
-        else
-          allow(CloudConnector::AvailableServices)
-            .to receive(:find_by_name).with(:code_suggestions).and_return(service)
-          allow(service).to receive(:purchased?).and_return(purchased)
-        end
-
-        allow(CloudConnector::AvailableServices)
-          .to receive(:find_by_name).with(:anthropic_proxy).and_return(enterprise_service)
-        allow(enterprise_service).to receive(:purchased?).and_return(true)
-      end
     end
   end
 
@@ -167,9 +149,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     subject { helper.ai_settings_helper_data[:duo_pro_or_duo_enterprise_tier] }
 
     before do
-      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:code_suggestions)
-      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:anthropic_proxy)
-
       allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise)
         .to receive(:any_add_on_purchase)
         .and_return(duo_pro_or_duo_enterprise_add_on_purchase)
@@ -196,9 +175,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     subject { helper.ai_settings_helper_data[:should_show_duo_availability] }
 
     before do
-      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:code_suggestions)
-      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:anthropic_proxy)
-
       allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise)
         .to receive(:any_add_on_purchased_or_trial?)
         .and_return(duo_pro_or_duo_enterprise_add_on_purchase.active?)
