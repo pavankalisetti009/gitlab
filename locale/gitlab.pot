@@ -11500,9 +11500,6 @@ msgstr ""
 msgid "BulkImport|Import without projects"
 msgstr ""
 
-msgid "BulkImport|Importing projects is a %{docsLinkStart}beta%{docsLinkEnd} feature."
-msgstr ""
-
 msgid "BulkImport|Importing the group failed."
 msgstr ""
 
@@ -11548,7 +11545,7 @@ msgstr ""
 msgid "BulkImport|No parent"
 msgstr ""
 
-msgid "BulkImport|Only groups you have the %{role} role for are listed for import."
+msgid "BulkImport|Only groups that you have the %{role} role for from %{source} are listed for import."
 msgstr ""
 
 msgid "BulkImport|Path of the new group"
@@ -11575,19 +11572,13 @@ msgstr ""
 msgid "BulkImport|Select parent group"
 msgstr ""
 
-msgid "BulkImport|Select the groups and projects you want to import."
+msgid "BulkImport|Select the groups you want to import."
 msgstr ""
 
 msgid "BulkImport|Select whether user memberships in groups and projects are imported."
 msgstr ""
 
 msgid "BulkImport|Showing %{start}-%{end} of %{total}"
-msgstr ""
-
-msgid "BulkImport|Showing %{start}-%{end} of %{total} that you own from %{link}"
-msgstr ""
-
-msgid "BulkImport|Showing %{start}-%{end} of %{total} that you own matching filter \"%{filter}\" from %{link}"
 msgstr ""
 
 msgid "BulkImport|Some groups are imported without projects."
