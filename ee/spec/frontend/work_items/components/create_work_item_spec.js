@@ -183,6 +183,13 @@ describe('EE Create work item component', () => {
 
     it('renders the work item parent widget', () => {
       expect(findParentWidget().exists()).toBe(true);
+      expect(findParentWidget().props('allowedParentTypesForNewWorkItem')).toEqual([
+        {
+          id: 'gid://gitlab/WorkItems::Type/8',
+          name: 'Epic',
+          __typename: 'WorkItemType',
+        },
+      ]);
     });
 
     it('renders the work item status widget when flag is true', async () => {
@@ -216,6 +223,11 @@ describe('EE Create work item component', () => {
 
     it('renders the work item parent widget', () => {
       expect(findParentWidget().exists()).toBe(true);
+      expect(findParentWidget().props('allowedParentTypesForNewWorkItem')).toEqual([
+        { __typename: 'WorkItemType', id: 'gid://gitlab/WorkItems::Type/2', name: 'Incident' },
+        { __typename: 'WorkItemType', id: 'gid://gitlab/WorkItems::Type/1', name: 'Issue' },
+        { __typename: 'WorkItemType', id: 'gid://gitlab/WorkItems::Type/9', name: 'Ticket' },
+      ]);
     });
 
     it('does not render the work item status widget when flag is false', async () => {
