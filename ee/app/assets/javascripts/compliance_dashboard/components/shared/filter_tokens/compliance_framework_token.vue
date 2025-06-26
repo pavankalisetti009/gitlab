@@ -43,7 +43,9 @@ export default {
     },
   },
   mounted() {
-    this.fetchFrameworks();
+    if (this.value?.data) {
+      this.fetchFrameworks();
+    }
   },
   methods: {
     fetchComplianceFrameworks() {
