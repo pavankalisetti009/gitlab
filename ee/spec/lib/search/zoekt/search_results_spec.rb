@@ -99,7 +99,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
 
     context 'when user has access to other projects' do
       let_it_be(:project_3) { create(:project, :repository, :private) }
-      let(:limit_projects) { Project.id_in([project_1.id, project_3.id]) }
+      let(:limit_projects) { Project.id_in([project_1.id]) }
       let(:query) { 'project_name_regex' }
 
       before_all do
