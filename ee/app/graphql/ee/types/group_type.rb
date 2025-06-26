@@ -420,6 +420,14 @@ module EE
           authorize: :read_compliance_violations_report,
           experiment: { milestone: '18.1' }
 
+        field :compliance_requirement_coverage,
+          ::Types::ComplianceManagement::ComplianceFramework::RequirementCoverageType,
+          null: true,
+          description: 'Compliance requirement coverage statistics for the group.',
+          resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::RequirementCoverageResolver,
+          authorize: :read_compliance_dashboard,
+          experiment: { milestone: '18.2' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
