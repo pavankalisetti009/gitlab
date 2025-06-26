@@ -1,20 +1,26 @@
 <script>
-import { GlSprintf, GlCard } from '@gitlab/ui';
+import { GlSprintf, GlCard, GlPopover } from '@gitlab/ui';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'GeoReplicableItemRegistryInfo',
   components: {
     GlSprintf,
     GlCard,
+    GlPopover,
     TimeAgo,
     ClipboardButton,
+    HelpIcon,
   },
   i18n: {
     copy: __('Copy'),
     registryInformation: s__('Geo|Registry information'),
+    registryHelpText: s__(
+      'Geo|Shows general information about this registry including the various ways it may be referenced.',
+    ),
     registryId: s__('Geo|Registry ID: %{id}'),
     graphqlID: s__('Geo|GraphQL ID: %{id}'),
     replicableId: s__('Geo|Replicable ID: %{id}'),
@@ -54,7 +60,15 @@ export default {
 <template>
   <gl-card>
     <template #header>
-      <h5 class="gl-my-0">{{ $options.i18n.registryInformation }}</h5>
+      <div class="gl-flex gl-items-center">
+        <h5 class="gl-my-0">{{ $options.i18n.registryInformation }}</h5>
+        <help-icon id="registry-information-help-icon" class="gl-ml-2" />
+        <gl-popover target="registry-information-help-icon" placement="top" triggers="hover focus">
+          <p>
+            {{ $options.i18n.registryHelpText }}
+          </p>
+        </gl-popover>
+      </div>
     </template>
 
     <div class="gl-flex gl-flex-col gl-gap-4">

@@ -1,11 +1,12 @@
-import { GlSprintf } from '@gitlab/ui';
+import { GlSprintf, GlPopover, GlCard } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemRegistryInfo from 'ee/geo_replicable_item/components/geo_replicable_item_registry_info.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { MOCK_REPLICABLE_CLASS, MOCK_REPLICABLE_WITH_VERIFICATION } from '../mock_data';
 
-describe('GeoReplicableItemReplicationInfo', () => {
+describe('GeoReplicableItemRegistryInfo', () => {
   let wrapper;
 
   const defaultProps = {
@@ -23,13 +24,33 @@ describe('GeoReplicableItemReplicationInfo', () => {
       propsData,
       stubs: {
         GlSprintf,
+        GlCard,
       },
     });
   };
 
+  const findHelpIcon = () => wrapper.findComponent(HelpIcon);
+  const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findCopyableRegistryInformation = () =>
     wrapper.findAllByTestId('copyable-registry-information');
   const findRegistryInformationCreatedAt = () => wrapper.findComponent(TimeAgo);
+
+  describe('card header', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders help icon', () => {
+      expect(findHelpIcon().attributes('id')).toBe('registry-information-help-icon');
+    });
+
+    it('renders popover', () => {
+      expect(findGlPopover().props('target')).toBe('registry-information-help-icon');
+      expect(findGlPopover().text()).toBe(
+        'Shows general information about this registry including the various ways it may be referenced.',
+      );
+    });
+  });
 
   describe('registry information', () => {
     beforeEach(() => {
