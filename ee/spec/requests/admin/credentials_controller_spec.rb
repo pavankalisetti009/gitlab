@@ -7,7 +7,9 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
 
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
+  let_it_be(:service_accounts) { create_list(:service_account, 2) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
+  let_it_be(:service_account_token) { create(:personal_access_token, user: service_accounts.first) }
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be(:group) { project.group }
   let_it_be(:project_bot) { create(:user, :project_bot, created_by_id: user.id) }
@@ -56,46 +58,106 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
 
         describe 'filtering by type of credential' do
           let_it_be(:personal_access_tokens) { create_list(:personal_access_token, 2, user: user) }
+          let(:filter) { nil }
+          let(:owner_type) { nil }
 
-          shared_examples_for 'filtering by `personal_access_tokens`' do
-            specify do
-              get admin_credentials_path(filter: filter)
+          subject(:get_request) { get admin_credentials_path(filter: filter, owner_type: owner_type) }
 
-              expect(assigns(:credentials)).to match_array([user.personal_access_tokens].flatten)
+          before do
+            # Create additional tokens for testing
+            service_accounts.each do |sa|
+              create(:personal_access_token, user: sa)
             end
           end
 
           context 'no credential type specified' do
             let(:filter) { nil }
 
-            it_behaves_like 'filtering by `personal_access_tokens`'
+            it 'returns all personal access tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where.not(user: User.project_bot)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
           end
 
           context 'non-existent credential type specified' do
             let(:filter) { 'non_existent_credential_type' }
 
-            it_behaves_like 'filtering by `personal_access_tokens`'
+            it 'returns all personal access tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where.not(user: User.project_bot)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
           end
 
           context 'credential type specified as `personal_access_tokens`' do
             let(:filter) { 'personal_access_tokens' }
 
-            it_behaves_like 'filtering by `personal_access_tokens`'
+            it 'returns all personal access tokens' do
+              get_request
+
+              expected_tokens = PersonalAccessToken.where.not(user: User.project_bot)
+              expect(assigns(:credentials)).to match_array(expected_tokens)
+            end
+          end
+
+          context 'filtering by owner type' do
+            context 'when owner_type is human' do
+              let(:filter) { 'personal_access_tokens' }
+              let(:owner_type) { 'human' }
+
+              it 'returns only human user tokens' do
+                get_request
+
+                expected_tokens = PersonalAccessToken.where(user: User.human)
+                expect(assigns(:credentials)).to match_array(expected_tokens)
+              end
+            end
+
+            context 'when owner_type is service_account' do
+              let(:filter) { 'personal_access_tokens' }
+              let(:owner_type) { 'service_account' }
+
+              it 'returns only service account tokens' do
+                get_request
+
+                expected_tokens = PersonalAccessToken.where(user: User.service_account)
+                expect(assigns(:credentials)).to match_array(expected_tokens)
+              end
+            end
+
+            context 'when owner_type is not specified' do
+              let(:filter) { 'personal_access_tokens' }
+              let(:owner_type) { nil }
+
+              it 'returns all tokens regardless of owner type' do
+                get_request
+
+                expected_tokens = PersonalAccessToken.where.not(user: User.project_bot)
+                expect(assigns(:credentials)).to match_array(expected_tokens)
+              end
+            end
           end
 
           context 'credential type specified as `ssh_keys`' do
+            let(:filter) { 'ssh_keys' }
+
             it 'filters by ssh keys' do
-              ssh_keys = create_list(:personal_key, 2, user: user)
+              create_list(:personal_key, 2, user: user)
 
-              get admin_credentials_path(filter: 'ssh_keys')
+              get_request
 
-              expect(assigns(:credentials)).to match_array(ssh_keys)
+              expect(assigns(:credentials)).to match_array(Key.regular_keys.where(user: [user]))
             end
           end
 
           context 'credential type specified as `resource_access_tokens`' do
+            let(:filter) { 'resource_access_tokens' }
+
             it 'filters by project and group access tokens' do
-              get admin_credentials_path(filter: 'resource_access_tokens')
+              get_request
 
               expect(assigns(:credentials)).to match_array(
                 [project_access_token, group_access_token]
@@ -104,10 +166,12 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
           end
 
           context 'credential type specified as `gpg_keys`' do
+            let(:filter) { 'gpg_keys' }
+
             it 'filters by gpg keys' do
               gpg_key = create(:gpg_key)
 
-              get admin_credentials_path(filter: 'gpg_keys')
+              get_request
 
               expect(assigns(:credentials)).to match_array([gpg_key])
             end
@@ -133,6 +197,14 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
               expect do
                 get admin_credentials_path(filter: 'gpg_keys')
               end.not_to exceed_query_limit(control).with_threshold(1)
+            end
+          end
+
+          context 'user scope' do
+            it 'includes service account tokens in the scope' do
+              get_request
+
+              expect(assigns(:credentials)).to include(service_account_token)
             end
           end
         end
@@ -277,6 +349,17 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
               expect(CredentialsInventoryMailer).to receive_message_chain(:personal_access_token_revoked_email, :deliver_later)
 
               put revoke_admin_credential_path(id: personal_access_token.id)
+            end
+          end
+
+          context 'service account personal access token' do
+            let_it_be(:token_id) { service_account_token.id }
+
+            it_behaves_like 'displays the flash success message'
+
+            it 'can revoke service account tokens' do
+              expect { put revoke_admin_credential_path(id: service_account_token.id) }
+                .to change { service_account_token.reload.revoked? }.from(false).to(true)
             end
           end
         end

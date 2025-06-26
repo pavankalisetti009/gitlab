@@ -22,7 +22,7 @@ module EE
       def revoke_project_access_tokens
         return if new_namespace&.feature_available_non_trial?(:resource_access_token)
 
-        PersonalAccessTokensFinder
+        ::PersonalAccessTokensFinder
           .new(user: project.bots, impersonation: false)
           .execute
           .each_batch(of: BATCH_SIZE) do |personal_access_token_batch|

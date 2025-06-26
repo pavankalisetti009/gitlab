@@ -45,7 +45,7 @@ module CredentialsInventoryHelper
     [
       :state, :revoked,
       :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after,
-      :search, :sort
+      :search, :sort, :owner_type
     ]
   end
 
