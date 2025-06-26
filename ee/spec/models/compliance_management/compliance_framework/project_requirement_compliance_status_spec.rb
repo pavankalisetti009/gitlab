@@ -1036,4 +1036,69 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
       end
     end
   end
+
+  describe '.coverage_statistics' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project1) { create(:project, namespace: namespace) }
+    let_it_be(:project2) { create(:project, namespace: namespace) }
+    let_it_be(:project3) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace, name: "framework 1") }
+    let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework, namespace: namespace) }
+
+    context 'when project_ids is empty' do
+      it 'returns zeros for all counts' do
+        result = described_class.coverage_statistics([])
+
+        expect(result).to eq({ passed: 0, failed: 0, pending: 0 })
+      end
+    end
+
+    context 'when there are requirement statuses' do
+      let_it_be(:passing_status) do
+        create(:project_requirement_compliance_status,
+          project: project1,
+          compliance_requirement: requirement,
+          pass_count: 5,
+          fail_count: 0,
+          pending_count: 0
+        )
+      end
+
+      let_it_be(:failing_status) do
+        create(:project_requirement_compliance_status,
+          project: project2,
+          compliance_requirement: requirement,
+          pass_count: 3,
+          fail_count: 2,
+          pending_count: 0
+        )
+      end
+
+      let_it_be(:pending_status) do
+        create(:project_requirement_compliance_status,
+          project: project3,
+          compliance_requirement: requirement,
+          pass_count: 2,
+          fail_count: 0,
+          pending_count: 3
+        )
+      end
+
+      it 'returns correct counts for specified projects' do
+        result = described_class.coverage_statistics([project1.id, project2.id, project3.id])
+
+        expect(result).to eq({
+          passed: 1,
+          failed: 1,
+          pending: 1
+        })
+      end
+
+      it 'only counts statuses for specified project_ids' do
+        result = described_class.coverage_statistics([project1.id])
+
+        expect(result).to eq({ passed: 1, failed: 0, pending: 0 })
+      end
+    end
+  end
 end

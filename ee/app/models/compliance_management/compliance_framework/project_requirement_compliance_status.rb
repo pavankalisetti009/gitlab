@@ -76,6 +76,23 @@ module ComplianceManagement
         end
       end
 
+      def self.coverage_statistics(project_ids)
+        result = for_projects(project_ids)
+                   .pick(
+                     Arel.sql('COUNT(CASE WHEN pass_count > 0 AND fail_count = 0 AND pending_count = 0 THEN 1 END)'),
+                     Arel.sql('COUNT(CASE WHEN fail_count > 0 THEN 1 END)'),
+                     Arel.sql('COUNT(CASE WHEN pending_count > 0 AND fail_count = 0 THEN 1 END)')
+                   )
+
+        return { passed: 0, failed: 0, pending: 0 } if result.nil?
+
+        {
+          passed: result[0] || 0,
+          failed: result[1] || 0,
+          pending: result[2] || 0
+        }
+      end
+
       def control_status_values
         control_statuses
           .limit(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl::
