@@ -1,8 +1,8 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
-import AiCatalogAgents from '~/ai/catalog/pages/ai_catalog_agents.vue';
-import AiCatalogList from '~/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
+import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 
 describe('AiCatalogAgents', () => {
   let wrapper;
