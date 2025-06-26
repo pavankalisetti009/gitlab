@@ -1,7 +1,9 @@
-import { GlSprintf, GlBadge } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlPopover, GlCard } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemReplicationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_replication_info.vue';
 import { REPLICATION_STATUS_STATES } from 'ee/geo_shared//constants';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { MOCK_REPLICABLE_WITH_VERIFICATION } from '../mock_data';
 
 describe('GeoReplicableItemReplicationInfo', () => {
@@ -21,13 +23,38 @@ describe('GeoReplicableItemReplicationInfo', () => {
       propsData,
       stubs: {
         GlSprintf,
+        GlCard,
       },
     });
   };
 
+  const findHelpIcon = () => wrapper.findComponent(HelpIcon);
+  const findGlPopover = () => wrapper.findComponent(GlPopover);
+  const findHelpPageLink = () => findGlPopover().findComponent(HelpPageLink);
   const findGlBadge = () => wrapper.findComponent(GlBadge);
   const findRetryAt = () => wrapper.findByTestId('retry-at-time-ago');
   const findLastSyncedAt = () => wrapper.findByTestId('last-synced-at-time-ago');
+
+  describe('card header', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders help icon', () => {
+      expect(findHelpIcon().attributes('id')).toBe('replication-information-help-icon');
+    });
+
+    it('renders popover', () => {
+      expect(findGlPopover().props('target')).toBe('replication-information-help-icon');
+      expect(findGlPopover().text()).toContain(
+        'Shows the current replication status of this registry and whether it has encountered any issues during the replication process.',
+      );
+    });
+
+    it('renders help page link in popover', () => {
+      expect(findHelpPageLink().attributes('href')).toBe('administration/geo/setup/database');
+    });
+  });
 
   describe.each`
     state        | badge

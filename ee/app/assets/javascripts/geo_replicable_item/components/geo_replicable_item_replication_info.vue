@@ -1,8 +1,10 @@
 <script>
-import { GlSprintf, GlBadge, GlCard } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlCard, GlPopover } from '@gitlab/ui';
 import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
 export default {
   name: 'GeoReplicableItemReplicationInfo',
@@ -10,7 +12,10 @@ export default {
     GlSprintf,
     GlBadge,
     GlCard,
+    GlPopover,
     TimeAgo,
+    HelpIcon,
+    HelpPageLink,
   },
   props: {
     replicableItem: {
@@ -20,6 +25,10 @@ export default {
   },
   i18n: {
     replicationInformation: s__('Geo|Replication information'),
+    replicationHelpText: s__(
+      'Geo|Shows the current replication status of this registry and whether it has encountered any issues during the replication process.',
+    ),
+    learnMore: __('Learn more'),
     missingOnPrimary: s__('Geo|Missing on Primary!'),
     lastSyncedAt: s__('Geo|Last synced: %{timeAgo}'),
     syncRetryAt: s__(
@@ -45,7 +54,22 @@ export default {
 <template>
   <gl-card>
     <template #header>
-      <h5 class="gl-my-0">{{ $options.i18n.replicationInformation }}</h5>
+      <div class="gl-flex gl-items-center">
+        <h5 class="gl-my-0">{{ $options.i18n.replicationInformation }}</h5>
+        <help-icon id="replication-information-help-icon" class="gl-ml-2" />
+        <gl-popover
+          target="replication-information-help-icon"
+          placement="top"
+          triggers="hover focus"
+        >
+          <p>
+            {{ $options.i18n.replicationHelpText }}
+          </p>
+          <help-page-link href="administration/geo/setup/database">{{
+            $options.i18n.learnMore
+          }}</help-page-link>
+        </gl-popover>
+      </div>
     </template>
 
     <div class="gl-flex gl-flex-col gl-gap-4">

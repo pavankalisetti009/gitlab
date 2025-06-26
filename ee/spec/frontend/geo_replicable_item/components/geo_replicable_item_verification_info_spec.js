@@ -1,9 +1,11 @@
-import { GlSprintf, GlBadge, GlCard, GlButton } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlCard, GlButton, GlPopover } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemVerificationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_verification_info.vue';
 import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared//constants';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { MOCK_REPLICABLE_WITH_VERIFICATION } from '../mock_data';
 
 describe('GeoReplicableItemVerificationInfo', () => {
@@ -28,6 +30,9 @@ describe('GeoReplicableItemVerificationInfo', () => {
     });
   };
 
+  const findHelpIcon = () => wrapper.findComponent(HelpIcon);
+  const findGlPopover = () => wrapper.findComponent(GlPopover);
+  const findHelpPageLink = () => findGlPopover().findComponent(HelpPageLink);
   const findGlBadge = () => wrapper.findComponent(GlBadge);
   const findReverifyButton = () => wrapper.findComponent(GlButton);
   const findRetryAt = () => wrapper.findByTestId('verification-retry-at-time-ago');
@@ -36,6 +41,40 @@ describe('GeoReplicableItemVerificationInfo', () => {
   const findLocalVerificationChecksum = () => wrapper.findByTestId('local-verification-checksum');
   const findExpectedVerificationChecksum = () =>
     wrapper.findByTestId('expected-verification-checksum');
+
+  describe('card header', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders help icon', () => {
+      expect(findHelpIcon().attributes('id')).toBe('verification-information-help-icon');
+    });
+
+    it('renders popover', () => {
+      expect(findGlPopover().props('target')).toBe('verification-information-help-icon');
+      expect(findGlPopover().text()).toContain(
+        'Shows the current verification status between the Primary and Secondary Geo site for this registry and whether it has encountered any issues during the verification process.',
+      );
+    });
+
+    it('renders help page link in popover', () => {
+      expect(findHelpPageLink().attributes('href')).toBe(
+        'administration/geo/disaster_recovery/background_verification',
+      );
+    });
+
+    it('renders the reverify button in the header', () => {
+      expect(findReverifyButton().exists()).toBe(true);
+    });
+
+    it('emits reverify event when reverify button is clicked', async () => {
+      findReverifyButton().vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.emitted('reverify')).toHaveLength(1);
+    });
+  });
 
   describe.each`
     verificationState | badge
@@ -105,23 +144,6 @@ describe('GeoReplicableItemVerificationInfo', () => {
         expect(wrapper.text()).not.toContain('Next verification retry:');
         expect(findRetryAt().exists()).toBe(false);
       });
-    });
-  });
-
-  describe('reverify button', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('renders the reverify button in the header', () => {
-      expect(findReverifyButton().exists()).toBe(true);
-    });
-
-    it('emits reverify event when clicked', async () => {
-      findReverifyButton().vm.$emit('click');
-      await nextTick();
-
-      expect(wrapper.emitted('reverify')).toHaveLength(1);
     });
   });
 
