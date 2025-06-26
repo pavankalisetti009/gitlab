@@ -653,7 +653,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                   "blob_path" => location_bundler[:blob_path],
                   "path" => location_bundler[:path],
                   "top_level" => location_bundler[:top_level],
-                  "dependency_paths" => []
+                  "dependency_paths" => [],
+                  "has_dependency_paths" => false
                 },
                 'project' => {
                   "name" => project.name
@@ -734,6 +735,7 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                 'location' => {
                   "blob_path" => location_bundler[:blob_path],
                   "dependency_paths" => dependency_paths,
+                  "has_dependency_paths" => true,
                   "path" => location_bundler[:path],
                   "top_level" => location_bundler[:top_level]
                 },

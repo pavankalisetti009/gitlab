@@ -65,7 +65,7 @@ export default {
       return this.location.path && this.location.blobPath;
     },
     hasDependencyPaths() {
-      return this.location.dependencyPaths?.length > 0;
+      return this.location.hasDependencyPaths;
     },
   },
   methods: {

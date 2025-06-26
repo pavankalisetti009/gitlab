@@ -7,6 +7,7 @@ module Sbom
     class LocationEntity < Grape::Entity
       expose :blob_path, :path, :top_level
       expose :dependency_paths, using: Sbom::DependencyPathEntity
+      expose :has_dependency_paths
     end
 
     class ProjectEntity < Grape::Entity

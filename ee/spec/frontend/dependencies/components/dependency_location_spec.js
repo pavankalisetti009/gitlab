@@ -49,7 +49,7 @@ describe('Dependency Location component', () => {
     beforeEach(() => {
       createComponent({
         propsData: {
-          location: Paths.dependencyPaths,
+          location: { hasDependencyPaths: true },
         },
       });
     });
@@ -139,7 +139,7 @@ describe('Dependency Location component', () => {
       beforeEach(() => {
         createComponent({
           propsData: {
-            location: Paths.dependencyPaths,
+            location: { hasDependencyPaths: true },
           },
           provide: {
             glFeatures: {

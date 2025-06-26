@@ -225,7 +225,9 @@ describe('Dependency Location Count component', () => {
       const dependencyPathsLocationsData = {
         locations: [
           {
-            location: { dependency_paths: [{ path: [{ name: 'eslint', version: '9.17.0' }] }] },
+            location: {
+              has_dependency_paths: true,
+            },
             project: { name: projectName },
           },
         ],
@@ -263,7 +265,12 @@ describe('Dependency Location Count component', () => {
 
       it('does not show the dependency path button', async () => {
         const noDependencyPathsLocationsData = {
-          locations: [{ location: { dependency_paths: [] }, project: { name: projectName } }],
+          locations: [
+            {
+              location: { has_dependency_paths: false },
+              project: { name: projectName },
+            },
+          ],
         };
 
         mockAxios.onGet(endpoint).reply(HTTP_STATUS_OK, noDependencyPathsLocationsData);
