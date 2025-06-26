@@ -24,7 +24,7 @@ RSpec.describe 'Signup on EE', :with_current_organization, :js, feature_category
 
       select 'Software Developer', from: 'user_onboarding_status_role'
       choose 'user_onboarding_status_setup_for_company_true'
-      choose 'Join a project'
+      choose 'Join an existing project'
       click_button 'Continue'
       user = User.find_by_username(new_user[:username])
 
