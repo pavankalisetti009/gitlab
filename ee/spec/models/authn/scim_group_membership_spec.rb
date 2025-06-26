@@ -15,26 +15,28 @@ RSpec.describe Authn::ScimGroupMembership, type: :model, feature_category: :syst
   end
 
   describe 'scopes' do
+    let_it_be(:scim_group_uid) { SecureRandom.uuid }
+    let_it_be(:another_scim_group_uid) { SecureRandom.uuid }
+    let_it_be(:user1) { create(:user) }
+    let_it_be(:user2) { create(:user) }
+
+    let_it_be(:membership1) { create(:scim_group_membership, user: user1, scim_group_uid: scim_group_uid) }
+    let_it_be(:membership2) { create(:scim_group_membership, user: user2, scim_group_uid: scim_group_uid) }
+    let_it_be(:membership3) { create(:scim_group_membership, user: user1, scim_group_uid: another_scim_group_uid) }
+
     describe '.by_scim_group_uid' do
-      let(:scim_group_uid) { SecureRandom.uuid }
-
-      let!(:matching_membership1) { create(:scim_group_membership, scim_group_uid: scim_group_uid) }
-      let!(:matching_membership2) { create(:scim_group_membership, scim_group_uid: scim_group_uid) }
-
-      before do
-        create(:scim_group_membership, scim_group_uid: SecureRandom.uuid)
-      end
-
-      it 'returns only memberships with the specified scim_group_uid' do
+      it 'returns memberships for the specified SCIM group' do
         result = described_class.by_scim_group_uid(scim_group_uid)
 
-        expect(result).to contain_exactly(matching_membership1, matching_membership2)
+        expect(result).to contain_exactly(membership1, membership2)
       end
+    end
 
-      it 'returns empty relation when no matches found' do
-        result = described_class.by_scim_group_uid(SecureRandom.uuid)
+    describe '.by_user_id' do
+      it 'returns memberships for the specified user' do
+        result = described_class.by_user_id(user1.id)
 
-        expect(result).to be_empty
+        expect(result).to contain_exactly(membership1, membership3)
       end
     end
   end
