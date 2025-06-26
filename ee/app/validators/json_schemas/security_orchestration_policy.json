@@ -1154,43 +1154,11 @@
                           "full_path": {
                             "type": "string",
                             "minLength": 1
-                          },
-                          "source": {
-                            "type": "object",
-                            "properties": {
-                              "name": {
-                                "type": "string"
-                              },
-                              "pattern": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "target": {
-                            "type": "object",
-                            "properties": {
-                              "name": {
-                                "type": "string"
-                              },
-                              "pattern": {
-                                "type": "string"
-                              }
-                            }
                           }
                         },
-                        "oneOf": [
-                          {
-                            "required": [
-                              "name",
-                              "full_path"
-                            ]
-                          },
-                          {
-                            "required": [
-                              "source",
-                              "target"
-                            ]
-                          }
+                        "required": [
+                          "name",
+                          "full_path"
                         ]
                       }
                     ]
@@ -1635,6 +1603,65 @@
                     ]
                   }
                 ]
+              }
+            }
+          },
+          "bypass_settings": {
+            "type": "object",
+            "properties": {
+              "branches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "pattern": {
+                          "type": "string"
+                        }
+                      },
+                      "oneOf": [
+                        {
+                          "required": [
+                            "name"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "pattern"
+                          ]
+                        }
+                      ]
+                    },
+                    "target": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "pattern": {
+                          "type": "string"
+                        }
+                      },
+                      "oneOf": [
+                        {
+                          "required": [
+                            "name"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "pattern"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
               }
             }
           }
