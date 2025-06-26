@@ -621,6 +621,58 @@ If the SBOM report is declared by a CI/CD job on a non-default branch: security 
 and can be seen in the [security tab of the pipeline view](../../vulnerability_report/pipeline.md) and MR security widget.
 This functionality is behind a feature flag and tracked in [Epic 14636](https://gitlab.com/groups/gitlab-org/-/epics/14636).
 
+## Offline support
+
+{{< details >}}
+
+- Tier: Ultimate
+- Offering: GitLab Self-Managed
+
+{{< /details >}}
+
+For instances in an environment with limited, restricted, or intermittent access
+to external resources through the internet, you need to make some adjustments to run dependency scanning jobs successfully.
+For more information, see [offline environments](../../offline_deployments/_index.md).
+
+### Requirements
+
+To run dependency scanning in an offline environment you must have:
+
+- A GitLab Runner with the `docker` or `kubernetes` executor.
+- Local copies of the dependency scanning analyzer images.
+- Access to the [Package Metadata Database](../../../../topics/offline/quick_start_guide.md#enabling-the-package-metadata-database). Required to have license and advisory data for your dependencies.
+
+### Local copies of analyzer images
+
+To use the dependency scanning analyzer:
+
+1. Import the following default dependency scanning analyzer images from `registry.gitlab.com` into
+   your [local Docker container registry](../../../packages/container_registry/_index.md):
+
+   ```plaintext
+   registry.gitlab.com/security-products/dependency-scanning:v0
+   ```
+
+   The process for importing Docker images into a local offline Docker registry depends on
+   **your network security policy**. Consult your IT staff to find an accepted and approved
+   process by which external resources can be imported or temporarily accessed.
+   These scanners are [periodically updated](../../detect/vulnerability_scanner_maintenance.md)
+   with new definitions, and you may want to download them regularly. In case your offline instance
+   has access to the GitLab registry you can use the [Security-Binaries template](../../offline_deployments/_index.md#using-the-official-gitlab-template) to download the latest dependency scanning analyzer image.
+
+1. Configure GitLab CI/CD to use the local analyzers.
+
+   Set the value of the CI/CD variable `SECURE_ANALYZERS_PREFIX` to your local Docker registry - in
+   this example, `docker-registry.example.com`.
+
+   ```yaml
+   include:
+     - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+
+   variables:
+     SECURE_ANALYZERS_PREFIX: "docker-registry.example.com/analyzers"
+   ```
+
 ## Troubleshooting
 
 When working with dependency scanning, you might encounter the following issues.
