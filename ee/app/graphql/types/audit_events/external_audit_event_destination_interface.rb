@@ -24,6 +24,10 @@ module Types
       field :event_type_filters, [GraphQL::Types::String],
         null: false,
         description: 'List of event type filters added for streaming.'
+
+      field :active, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Active status of the destination.'
     end
   end
 end

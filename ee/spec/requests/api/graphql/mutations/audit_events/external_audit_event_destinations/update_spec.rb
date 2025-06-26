@@ -8,25 +8,35 @@ RSpec.describe 'Update an external audit event destination', feature_category: :
   let_it_be(:group) { create(:group) }
   let_it_be(:owner) { create(:user) }
   let_it_be(:destination) { create(:external_audit_event_destination, name: "Old Destination", destination_url: "https://example.com/old", group: group) }
+  let_it_be(:destination_url) { 'https://example.com/new' }
+  let_it_be(:name) { 'New Destination' }
 
   let(:current_user) { owner }
+  let(:destination_id) { GitlabSchema.id_from_object(destination) }
 
   let(:input) do
     {
-      id: GitlabSchema.id_from_object(destination).to_s,
-      destinationUrl: "https://example.com/new",
-      name: "New Destination"
+      id: destination_id,
+      destinationUrl: destination_url,
+      name: name
     }
   end
 
-  let(:mutation) { graphql_mutation(:external_audit_event_destination_update, input) }
-
-  let(:mutation_response) { graphql_mutation_response(:external_audit_event_destination_update) }
+  let(:mutation_name) { :external_audit_event_destination_update }
+  let(:mutation_field) { 'externalAuditEventDestination' }
+  let(:model) { destination }
+  let(:event_name) { 'update_event_streaming_destination' }
+  let(:mutation) { graphql_mutation(mutation_name, input) }
+  let(:mutation_response) { graphql_mutation_response(mutation_name) }
 
   subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
 
+  before do
+    allow(Gitlab::Audit::Auditor).to receive(:audit).and_call_original
+  end
+
   shared_examples 'a mutation that does not update a destination' do
-    it 'does not destroy the destination' do
+    it 'does not update the destination' do
       expect { post_graphql_mutation(mutation, current_user: owner) }
         .not_to change { destination.reload.destination_url }
     end
@@ -70,23 +80,25 @@ RSpec.describe 'Update an external audit event destination', feature_category: :
       it 'updates the destination_url' do
         expect do
           post_graphql_mutation(mutation, current_user: owner)
-        end.to change { destination.reload.destination_url }.to("https://example.com/new")
+        end.to change { destination.reload.destination_url }.to(destination_url)
       end
 
       it 'updates the destination name' do
         expect do
           post_graphql_mutation(mutation, current_user: owner)
-        end.to change { destination.reload.name }.to("New Destination")
+        end.to change { destination.reload.name }.to(name)
       end
 
       it_behaves_like 'audits update to external streaming destination' do
         let_it_be(:current_user) { owner }
       end
 
+      it_behaves_like 'audits legacy active status changes'
+
       context 'when there is no change in values' do
         let(:input) do
           {
-            id: GitlabSchema.id_from_object(destination).to_s,
+            id: destination_id,
             destinationUrl: destination.reload.destination_url
           }
         end
@@ -105,12 +117,12 @@ RSpec.describe 'Update an external audit event destination', feature_category: :
           proc {
             {
               legacy: {
-                "destination_url" => "https://example.com/new",
-                "name" => "New Destination"
+                "destination_url" => destination_url,
+                "name" => name
               },
               streaming: {
-                "url" => "https://example.com/new",
-                "name" => "New Destination"
+                "url" => destination_url,
+                "name" => name
               }
             }
           }

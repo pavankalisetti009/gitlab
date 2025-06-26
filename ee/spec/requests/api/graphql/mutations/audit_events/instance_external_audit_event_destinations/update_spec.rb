@@ -25,7 +25,11 @@ RSpec.describe 'Update an instance external audit event destination', feature_ca
     }
   end
 
+  let(:mutation_name) { :instance_external_audit_event_destination_update }
+  let(:mutation_field) { 'instanceExternalAuditEventDestination' }
+  let(:model) { destination }
   let(:mutation) { graphql_mutation(:instance_external_audit_event_destination_update, input) }
+  let(:event_name) { 'update_instance_event_streaming_destination' }
 
   let(:mutation_response) { graphql_mutation_response(:instance_external_audit_event_destination_update) }
 
@@ -68,6 +72,7 @@ RSpec.describe 'Update an instance external audit event destination', feature_ca
       end
 
       it_behaves_like 'audits update to external streaming destination'
+      it_behaves_like 'audits legacy active status changes'
 
       context 'when destination is same as previous one' do
         let(:input) { super().merge(destinationUrl: old_destination_url) }
