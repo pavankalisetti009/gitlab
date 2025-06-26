@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+module Ai
+  module Catalog
+    class Item < ApplicationRecord
+      self.table_name = "ai_catalog_items"
+
+      validates :organization, :item_type, :description, :name, presence: true
+
+      validates :name, length: { maximum: 255 }
+      validates :description, length: { maximum: 1_024 }
+
+      belongs_to :organization, class_name: 'Organizations::Organization', optional: false
+      belongs_to :project
+
+      enum :item_type, {
+        agent: 1
+      }
+    end
+  end
+end

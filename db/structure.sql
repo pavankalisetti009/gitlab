@@ -8117,6 +8117,28 @@ CREATE SEQUENCE ai_agents_id_seq
 
 ALTER SEQUENCE ai_agents_id_seq OWNED BY ai_agents.id;
 
+CREATE TABLE ai_catalog_items (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    project_id bigint,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    item_type smallint NOT NULL,
+    description text NOT NULL,
+    name text NOT NULL,
+    CONSTRAINT check_7e02a4805b CHECK ((char_length(description) <= 1024)),
+    CONSTRAINT check_edddd6e1fe CHECK ((char_length(name) <= 255))
+);
+
+CREATE SEQUENCE ai_catalog_items_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE ai_catalog_items_id_seq OWNED BY ai_catalog_items.id;
+
 CREATE SEQUENCE ai_code_suggestion_events_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -27188,6 +27210,8 @@ ALTER TABLE ONLY ai_agent_versions ALTER COLUMN id SET DEFAULT nextval('ai_agent
 
 ALTER TABLE ONLY ai_agents ALTER COLUMN id SET DEFAULT nextval('ai_agents_id_seq'::regclass);
 
+ALTER TABLE ONLY ai_catalog_items ALTER COLUMN id SET DEFAULT nextval('ai_catalog_items_id_seq'::regclass);
+
 ALTER TABLE ONLY ai_code_suggestion_events ALTER COLUMN id SET DEFAULT nextval('ai_code_suggestion_events_id_seq'::regclass);
 
 ALTER TABLE ONLY ai_conversation_messages ALTER COLUMN id SET DEFAULT nextval('ai_conversation_messages_id_seq'::regclass);
@@ -29223,6 +29247,9 @@ ALTER TABLE ONLY ai_agent_versions
 
 ALTER TABLE ONLY ai_agents
     ADD CONSTRAINT ai_agents_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY ai_catalog_items
+    ADD CONSTRAINT ai_catalog_items_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ai_code_suggestion_events
     ADD CONSTRAINT ai_code_suggestion_events_pkey PRIMARY KEY (id, "timestamp");
@@ -34232,6 +34259,12 @@ CREATE INDEX index_ai_agent_versions_on_agent_id ON ai_agent_versions USING btre
 CREATE INDEX index_ai_agent_versions_on_project_id ON ai_agent_versions USING btree (project_id);
 
 CREATE UNIQUE INDEX index_ai_agents_on_project_id_and_name ON ai_agents USING btree (project_id, name);
+
+CREATE INDEX index_ai_catalog_items_on_item_type ON ai_catalog_items USING btree (item_type);
+
+CREATE INDEX index_ai_catalog_items_on_organization_id ON ai_catalog_items USING btree (organization_id);
+
+CREATE INDEX index_ai_catalog_items_on_project_id ON ai_catalog_items USING btree (project_id);
 
 CREATE INDEX index_ai_code_suggestion_events_on_organization_id ON ONLY ai_code_suggestion_events USING btree (organization_id);
 
@@ -42164,6 +42197,9 @@ ALTER TABLE ONLY namespace_deletion_schedules
 ALTER TABLE ONLY environments
     ADD CONSTRAINT fk_01a033a308 FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY ai_catalog_items
+    ADD CONSTRAINT fk_01a07cc378 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY agent_user_access_project_authorizations
     ADD CONSTRAINT fk_0250c0ad51 FOREIGN KEY (agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
 
@@ -42346,6 +42382,9 @@ ALTER TABLE ONLY cluster_agent_migrations
 
 ALTER TABLE ONLY namespace_cluster_agent_mappings
     ADD CONSTRAINT fk_124d8167c5 FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY ai_catalog_items
+    ADD CONSTRAINT fk_128a8d1e59 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY cluster_agent_url_configurations
     ADD CONSTRAINT fk_12d4a33b65 FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
