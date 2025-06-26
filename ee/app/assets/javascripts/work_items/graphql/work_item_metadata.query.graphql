@@ -1,4 +1,4 @@
-query workItemMetadata($fullPath: ID!) {
+query workItemMetadataEE($fullPath: ID!) {
   namespace(fullPath: $fullPath) {
     id
     licensedFeatures {
@@ -16,6 +16,9 @@ query workItemMetadata($fullPath: ID!) {
     linkPaths {
       issuesList
       contributionGuidePath
+      epicsList
+      groupIssues
+      labelsFetch
       labelsManage
       newProject
       register
