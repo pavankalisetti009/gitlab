@@ -62,10 +62,6 @@ module EE
             unavailable_widgets << ::WorkItems::Widgets::Assignees
           end
 
-          if epic? && !resource_parent.try(:work_item_epic_milestones_feature_flag_enabled?)
-            unavailable_widgets << ::WorkItems::Widgets::Milestone
-          end
-
           unless resource_parent.root_ancestor.try(:work_item_status_feature_available?)
             unavailable_widgets << ::WorkItems::Widgets::Status
           end

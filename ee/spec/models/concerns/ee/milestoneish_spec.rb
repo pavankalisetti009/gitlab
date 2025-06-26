@@ -29,25 +29,11 @@ RSpec.describe Milestoneish, feature_category: :groups_and_projects do
   end
 
   describe '#sorted_issues' do
-    context 'when work_item_epic_milestones feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_epic_milestones: false)
-      end
-
-      it 'excludes epic work items from return results' do
-        items = milestone.sorted_issues(user)
-        expect(items.length).to eq(1)
-        expect(items.first).to eq(issue)
-      end
-    end
-
-    context 'when work_item_epic_milestones feature flag is enabled' do
-      it 'includes epic work items in return results' do
-        items = milestone.sorted_issues(user)
-        expect(items.first).to eq(issue)
-        expect(items.second).to eq(parent_group_work_item_epic)
-        expect(items.third).to eq(sub_group_work_item_epic)
-      end
+    it 'returns expected results' do
+      items = milestone.sorted_issues(user)
+      expect(items.first).to eq(issue)
+      expect(items.second).to eq(parent_group_work_item_epic)
+      expect(items.third).to eq(sub_group_work_item_epic)
     end
   end
 end

@@ -251,11 +251,6 @@ msgid_plural "%d commits,"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%d completed issue"
-msgid_plural "%d completed issues"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%d contact"
 msgid_plural "%d contacts"
 msgstr[0] ""
@@ -1603,9 +1598,6 @@ msgid "%{totalMemory} (%{freeSpacePercentage}%{percentSymbol} free)"
 msgstr ""
 
 msgid "%{total}"
-msgstr ""
-
-msgid "%{total} remaining issue weight"
 msgstr ""
 
 msgid "%{total} remaining weight"
@@ -33969,9 +33961,6 @@ msgstr ""
 msgid "Issue cannot be found."
 msgstr ""
 
-msgid "Issue count"
-msgstr ""
-
 msgid "Issue created from vulnerability %{vulnerability_link}"
 msgstr ""
 
@@ -39150,9 +39139,6 @@ msgstr ""
 msgid "MilestoneSidebar|From"
 msgstr ""
 
-msgid "MilestoneSidebar|Issues"
-msgstr ""
-
 msgid "MilestoneSidebar|Merge requests"
 msgstr ""
 
@@ -39207,9 +39193,6 @@ msgstr ""
 msgid "Milestones|Completed"
 msgstr ""
 
-msgid "Milestones|Completed Issues (closed)"
-msgstr ""
-
 msgid "Milestones|Create a milestone to better track your issues and merge requests. %{learn_more_link}"
 msgstr ""
 
@@ -39234,9 +39217,6 @@ msgstr ""
 msgid "Milestones|Ongoing"
 msgstr ""
 
-msgid "Milestones|Ongoing Issues (open and assigned)"
-msgstr ""
-
 msgid "Milestones|Organize issues and merge requests into a cohesive group, and set optional start and due dates. %{learn_more_link}"
 msgstr ""
 
@@ -39259,9 +39239,6 @@ msgid "Milestones|This action cannot be reversed."
 msgstr ""
 
 msgid "Milestones|Unstarted"
-msgstr ""
-
-msgid "Milestones|Unstarted Issues (open and unassigned)"
 msgstr ""
 
 msgid "Milestones|Use milestones to track issues and merge requests over a fixed period of time"
@@ -58888,9 +58865,6 @@ msgid_plural "Showing %{count} projects"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Showing %{limit} of %{total_count} issues. "
-msgstr ""
-
 msgid "Showing %{limit} of %{total_count} items. "
 msgstr ""
 
@@ -64987,9 +64961,6 @@ msgstr ""
 msgid "Total cores (CPUs)"
 msgstr ""
 
-msgid "Total issue weight"
-msgstr ""
-
 msgid "Total memory (GB)"
 msgstr ""
 
@@ -68004,9 +67975,6 @@ msgid "View all activity"
 msgstr ""
 
 msgid "View all environments."
-msgstr ""
-
-msgid "View all issues"
 msgstr ""
 
 msgid "View all personal projects"

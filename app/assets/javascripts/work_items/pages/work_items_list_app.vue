@@ -592,9 +592,7 @@ export default {
         hasManualSort: false,
         hasStartDate: true,
         hasPriority: !this.isEpicsList,
-        hasMilestoneDueDate: Boolean(
-          !this.isEpicsList || (this.isEpicsList && this.glFeatures.workItemEpicMilestones),
-        ),
+        hasMilestoneDueDate: true,
         hasLabelPriority: !this.isEpicsList,
         hasWeight: !this.isEpicsList,
       });

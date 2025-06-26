@@ -9,7 +9,6 @@ RSpec.describe 'Milestones on EE', feature_category: :team_planning do
 
   before do
     login_as(user)
-    stub_feature_flags(work_item_epic_milestones: false)
   end
 
   def visit_milestone
@@ -112,7 +111,7 @@ RSpec.describe 'Milestones on EE', feature_category: :team_planning do
       visit_milestone
 
       within '.milestone-sidebar' do
-        expect(page).to have_content 'Total issue weight 4'
+        expect(page).to have_content 'Total weight 4'
       end
     end
 
@@ -123,7 +122,7 @@ RSpec.describe 'Milestones on EE', feature_category: :team_planning do
       visit_milestone
 
       within '.milestone-sidebar' do
-        expect(page).to have_content 'Total issue weight None'
+        expect(page).to have_content 'Total weight None'
       end
     end
   end
