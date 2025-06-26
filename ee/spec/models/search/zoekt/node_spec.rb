@@ -581,22 +581,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     end
   end
 
-  describe '#unclaimed_storage_bytes_deprecated' do
-    let(:test_node) { create(:zoekt_node) }
-
-    it 'uses the old formula for calculating unclaimed storage' do
-      test_node.update!(total_bytes: 1000, used_bytes: 300, indexed_bytes: 200)
-
-      allow(test_node).to receive(:reserved_storage_bytes).and_return(500)
-
-      # The old formula: free_bytes - (reserved_storage_bytes - indexed_bytes)
-      # free_bytes = 1000 - 300 = 700
-      # reserved_storage_bytes - indexed_bytes = 500 - 200 = 300
-      # unclaimed_storage_bytes_deprecated = 700 - 300 = 400
-      expect(test_node.unclaimed_storage_bytes_deprecated).to eq(400)
-    end
-  end
-
   describe '#watermark_exceeded_critical?' do
     it 'returns true when over critical limit' do
       node.used_bytes = 0
