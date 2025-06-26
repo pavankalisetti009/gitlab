@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Keys::DestroyService, feature_category: :source_code_management do
+RSpec.describe Keys::DestroyService, feature_category: :user_profile do
   let_it_be(:user) { create(:user) }
 
   subject { described_class.new(user) }
@@ -35,16 +35,40 @@ RSpec.describe Keys::DestroyService, feature_category: :source_code_management d
         )
       end
 
-      context 'when unlicensed' do
-        before do
-          stub_licensed_features(admin_audit_log: false, audit_events: false, extended_audit_events: false)
-        end
+      context 'when on SaaS', :saas do
+        context 'when user is an Enterprise User', :aggregate_failures do
+          let_it_be(:enterprise_group) { create(:group) }
+          let_it_be(:user) do
+            create(:enterprise_user, :with_namespace, enterprise_group: enterprise_group)
+          end
 
-        it 'does not track audit event' do
-          key = create(:personal_key)
+          it 'creates a group audit event' do
+            key = create(:personal_key, user: user)
+            expect { subject.execute(key) }.to change { AuditEvent.count }.by(1)
 
-          expect { subject.execute(key) }.not_to change { AuditEvent.count }
+            expect(AuditEvent.last).to have_attributes(
+              author: user,
+              entity_type: "Group",
+              entity_id: enterprise_group.id,
+              target_id: key.id,
+              target_type: key.class.name,
+              target_details: key.title,
+              details: include(custom_message: 'Removed SSH key')
+            )
+          end
         end
+      end
+    end
+
+    context 'when unlicensed' do
+      before do
+        stub_licensed_features(admin_audit_log: false, audit_events: false, extended_audit_events: false)
+      end
+
+      it 'does not track audit event' do
+        key = create(:personal_key)
+
+        expect { subject.execute(key) }.not_to change { AuditEvent.count }
       end
     end
   end

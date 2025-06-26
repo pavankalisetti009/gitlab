@@ -18,7 +18,7 @@ module EE
           audit_context = {
             name: 'remove_ssh_key',
             author: user,
-            scope: key.user,
+            scope: key.user&.enterprise_group.presence || key.user,
             target: key,
             message: 'Removed SSH key'
           }
