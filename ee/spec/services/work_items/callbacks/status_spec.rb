@@ -119,8 +119,15 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       it_behaves_like 'does not call services to create current status record'
     end
 
-    context "when current stautus exist and params are empty" do
+    context "when current status exists and params are empty" do
       let!(:current_status) { create(:work_item_current_status, work_item: item) }
+
+      it_behaves_like 'does not call services to create current status record'
+    end
+
+    context 'when work item type does not support statuses' do
+      let(:item) { unsupported_work_item }
+      let(:params) { { status: done_status } }
 
       it_behaves_like 'does not call services to create current status record'
     end
@@ -146,6 +153,18 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
 
           it_behaves_like 'handle status for closed state' do
             let(:status) { done_status }
+          end
+        end
+
+        context 'when feature is not available' do
+          let(:params) { { status: done_status } }
+
+          before do
+            stub_licensed_features(work_item_status: false)
+          end
+
+          it_behaves_like 'handle status for open state' do
+            let(:status) { default_open_status }
           end
         end
       end
@@ -181,6 +200,27 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
 
           it_behaves_like 'handle status for closed state' do
             let(:status) { closed_status }
+          end
+        end
+
+        context "when status is invalid" do
+          let(:status_from_other_group) { create(:work_item_custom_status) }
+          let(:params) { { status: status_from_other_group } }
+
+          it_behaves_like 'handle status for open state' do
+            let(:status) { open_status }
+          end
+        end
+
+        context 'when feature is not available' do
+          let(:params) { { status: closed_status } }
+
+          before do
+            stub_licensed_features(work_item_status: false)
+          end
+
+          it_behaves_like 'handle status for open state' do
+            let(:status) { open_status }
           end
         end
       end

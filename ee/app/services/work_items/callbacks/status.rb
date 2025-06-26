@@ -44,7 +44,11 @@ module WorkItems
       end
 
       def find_target_status
-        return params[:status] if params[:status].present?
+        if params[:status].present? &&
+            root_ancestor&.try(:work_item_status_feature_available?) &&
+            lifecycle&.has_status_id?(params[:status].id)
+          return params[:status]
+        end
 
         # Ensure any supported item has a valid status upon creation
         lifecycle&.default_open_status unless work_item.current_status
