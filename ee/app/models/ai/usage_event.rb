@@ -35,6 +35,8 @@ module Ai
 
     before_validation :floor_timestamp
 
+    scope :with_namespace, -> { includes(:namespace) }
+
     def store_to_pg
       return false unless valid?
 

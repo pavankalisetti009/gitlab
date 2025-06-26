@@ -1,13 +1,19 @@
 # frozen_string_literal: true
 
 module Analytics
-  # Base backfill worker for all Ai::UsageEvent models
-  # deprecated in favor of Analytics::UsageEventsBackfillWorker
-  # rubocop:disable Scalability/IdempotentWorker -- this is abstract worker.
-  class BaseUsageBackfillWorker < ClickHouse::SyncStrategies::BaseSyncStrategy
+  # Backfills usage data to ClickHouse from Postgres when ClickHouse was enabled for analytics
+  class AiUsageEventsBackfillWorker < ClickHouse::SyncStrategies::BaseSyncStrategy
+    include Gitlab::EventStore::Subscriber
+
+    data_consistency :sticky
+    feature_category :value_stream_management
+    urgency :low
+    idempotent!
+    defer_on_database_health_signal :gitlab_main
+
     RESCHEDULING_DELAY = 1.minute
 
-    def execute_with_rescheduling(event)
+    def handle_event(event)
       execute.tap do |result|
         log_extra_metadata_on_done(:result, result)
 
@@ -19,14 +25,18 @@ module Analytics
 
     private
 
+    def model_class
+      ::Ai::UsageEvent
+    end
+
     def projections
       @projections ||= [
         :id,
         "EXTRACT(epoch FROM timestamp) AS casted_timestamp",
         :user_id,
         "event as raw_event",
-        :namespace_path,
-        :payload
+        :namespace_id,
+        :extras
       ]
     end
 
@@ -35,12 +45,20 @@ module Analytics
         user_id: :user_id,
         timestamp: :casted_timestamp,
         event: :raw_event,
-        namespace_path: :namespace_path
+        namespace_path: :namespace_path,
+        extras: :raw_extras
       }
     end
 
     def transform_row(row)
-      row.attributes.merge(row['payload'] || {}).symbolize_keys.slice(*csv_mapping.values)
+      row.attributes.symbolize_keys.slice(*csv_mapping.values).tap do |result|
+        result[:raw_extras] = row['extras'].to_json
+        result[:namespace_path] = row.namespace&.traversal_path
+      end
+    end
+
+    def batching_scope
+      super.with_namespace
     end
 
     def enabled?
@@ -54,5 +72,4 @@ module Analytics
       SQL
     end
   end
-  # rubocop:enable Scalability/IdempotentWorker
 end

@@ -5,6 +5,6 @@ FactoryBot.define do
     event { 'request_duo_chat_response' }
     association :user, :with_namespace
     namespace { user&.namespace }
-    payload { {} }
+    extras { {} }
   end
 end

@@ -2,6 +2,7 @@
 
 module Analytics
   # Backfills usage data to ClickHouse from Postgres when ClickHouse was enabled for analytics
+  # Deprecated in favor of Analytics::AiUsageEventsBackfillWorker
   class CodeSuggestionsEventsBackfillWorker < BaseUsageBackfillWorker
     include Gitlab::EventStore::Subscriber
 
