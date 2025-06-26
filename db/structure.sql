@@ -19887,7 +19887,8 @@ CREATE TABLE packages_package_file_build_infos (
     id bigint NOT NULL,
     package_file_id bigint NOT NULL,
     pipeline_id bigint,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_102fc16781 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE packages_package_file_build_infos_id_seq
