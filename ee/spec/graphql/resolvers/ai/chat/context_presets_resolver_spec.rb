@@ -44,7 +44,7 @@ RSpec.describe Resolvers::Ai::Chat::ContextPresetsResolver, feature_category: :d
             .with(anything, hash_including(resource: kind_of(Ai::AiResource::Issue)))
             .and_call_original
 
-          resolver
+          expect(resolver[:ai_resource_data]).to match(/id.+#{issue.id}/)
         end
       end
 
@@ -57,7 +57,7 @@ RSpec.describe Resolvers::Ai::Chat::ContextPresetsResolver, feature_category: :d
             .with(anything, hash_including(resource: nil))
             .and_call_original
 
-          resolver
+          expect(resolver[:ai_resource_data]).to be_nil
         end
       end
 
@@ -71,7 +71,7 @@ RSpec.describe Resolvers::Ai::Chat::ContextPresetsResolver, feature_category: :d
             .with(anything, hash_including(resource: kind_of(Ai::AiResource::Commit)))
             .and_call_original
 
-          resolver
+          expect(resolver[:ai_resource_data]).to match(/id.+#{commit.id}/)
         end
       end
 
@@ -85,7 +85,7 @@ RSpec.describe Resolvers::Ai::Chat::ContextPresetsResolver, feature_category: :d
             .with(anything, hash_including(resource: nil))
             .and_call_original
 
-          resolver
+          expect(resolver[:ai_resource_data]).to be_nil
         end
       end
     end

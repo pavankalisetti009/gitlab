@@ -27,7 +27,7 @@ export const initDuoAgenticChat = () => {
     });
   }
 
-  const { projectId } = el.dataset;
+  const { projectId, resourceId } = el.dataset;
 
   return new Vue({
     el,
@@ -37,6 +37,7 @@ export const initDuoAgenticChat = () => {
       return createElement(DuoAgenticChatApp, {
         props: {
           projectId,
+          resourceId,
         },
       });
     },

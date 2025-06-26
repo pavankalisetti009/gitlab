@@ -25227,6 +25227,7 @@ Presets for GitLab Duo Chat window based on current context.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="contextpresetairesourcedata"></a>`aiResourceData` | [`String`](#string) | Serialized representation of the AI resource in the current context. |
 | <a id="contextpresetquestions"></a>`questions` | [`[String!]`](#string) | Array of questions that the user can ask GitLab Duo Chat from the current page. |
 
 ### `ContributionAnalyticsContribution`

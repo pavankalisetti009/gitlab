@@ -16,4 +16,10 @@ RSpec.describe Ai::AiResource::BaseAiResource, feature_category: :duo_chat do
         .to raise_error(NotImplementedError)
     end
   end
+
+  describe '#default_content_limit' do
+    it 'returns params to construct prompt' do
+      expect(described_class.new(nil, nil).default_content_limit).to eq(100_000)
+    end
+  end
 end
