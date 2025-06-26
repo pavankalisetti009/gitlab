@@ -3454,6 +3454,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_recreate_orchestration_configuration
+  :worker_name: Security::RecreateOrchestrationConfigurationWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_refresh_compliance_framework_security_policies
   :worker_name: Security::RefreshComplianceFrameworkSecurityPoliciesWorker
   :feature_category: :security_policy_management

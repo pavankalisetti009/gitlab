@@ -13,6 +13,8 @@ module Security
     # A group for managing Centralized Security Policies
     belongs_to :csp_namespace, class_name: 'Group', optional: true
 
+    after_commit :trigger_security_policies_updates, if: :saved_change_to_csp_namespace_id?
+
     def self.csp_enabled?(group)
       return false if GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
 
@@ -30,6 +32,20 @@ module Security
       return if csp_namespace&.group_namespace?
 
       errors.add(:csp_namespace, 'must be a group')
+    end
+
+    def trigger_security_policies_updates
+      old_configuration = Security::OrchestrationPolicyConfiguration
+                            .find_by(namespace_id: csp_namespace_id_previously_was)
+
+      # Recreate the configuration for the previous group to unlink it from all projects and link it to its hierarchy
+      ::Security::RecreateOrchestrationConfigurationWorker.perform_async(old_configuration.id) if old_configuration
+
+      new_configuration = csp_namespace&.security_orchestration_policy_configuration
+      return unless new_configuration
+
+      # Force resync of the policies for all projects for the new CSP configuration
+      Security::SyncScanPoliciesWorker.perform_async(new_configuration.id, { 'force_resync' => true })
     end
   end
 end

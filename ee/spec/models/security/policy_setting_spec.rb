@@ -125,4 +125,125 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
       end
     end
   end
+
+  describe '#trigger_security_policies_updates' do
+    subject(:policy_settings) { create(:security_policy_settings) }
+
+    let_it_be(:old_group) { create(:group) }
+    let_it_be(:new_group) { create(:group) }
+    let_it_be(:old_configuration) do
+      create(:security_orchestration_policy_configuration, :namespace, namespace: old_group)
+    end
+
+    let_it_be(:new_configuration) do
+      create(:security_orchestration_policy_configuration, :namespace, namespace: new_group)
+    end
+
+    context 'when csp_namespace_id changes from nil to a group' do
+      it 'schedules SyncScanPoliciesWorker for the new group' do
+        expect(Security::RecreateOrchestrationConfigurationWorker).not_to receive(:perform_async)
+        expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
+          .with(new_configuration.id, { 'force_resync' => true })
+
+        policy_settings.update!(csp_namespace: new_group)
+      end
+
+      context 'when new group has no security orchestration policy configuration' do
+        let(:group_without_config) { create(:group) }
+
+        it 'does not schedule any workers' do
+          expect(Security::RecreateOrchestrationConfigurationWorker).not_to receive(:perform_async)
+          expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
+
+          policy_settings.update!(csp_namespace: group_without_config)
+        end
+      end
+    end
+
+    context 'when csp_namespace_id changes from one group to another' do
+      before do
+        policy_settings.update!(csp_namespace: old_group)
+      end
+
+      it 'schedules both workers for old and new groups' do
+        expect(Security::RecreateOrchestrationConfigurationWorker).to receive(:perform_async)
+          .with(old_configuration.id)
+        expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
+          .with(new_configuration.id, { 'force_resync' => true })
+
+        policy_settings.update!(csp_namespace: new_group)
+      end
+
+      context 'when old group has no security orchestration policy configuration' do
+        let(:old_group_without_config) { create(:group) }
+
+        before do
+          policy_settings.update!(csp_namespace: old_group_without_config)
+        end
+
+        it 'only schedules SyncScanPoliciesWorker for the new group' do
+          expect(Security::RecreateOrchestrationConfigurationWorker).not_to receive(:perform_async)
+          expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
+            .with(new_configuration.id, { 'force_resync' => true })
+
+          policy_settings.update!(csp_namespace: new_group)
+        end
+      end
+
+      context 'when new group has no security orchestration policy configuration' do
+        let(:new_group_without_config) { create(:group) }
+
+        it 'only schedules RecreateOrchestrationConfigurationWorker for the old group' do
+          expect(Security::RecreateOrchestrationConfigurationWorker).to receive(:perform_async)
+            .with(old_configuration.id)
+          expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
+
+          policy_settings.update!(csp_namespace: new_group_without_config)
+        end
+      end
+    end
+
+    context 'when csp_namespace_id changes from a group to nil' do
+      before do
+        policy_settings.update!(csp_namespace: old_group)
+      end
+
+      it 'only schedules RecreateOrchestrationConfigurationWorker for the old group' do
+        expect(Security::RecreateOrchestrationConfigurationWorker).to receive(:perform_async)
+          .with(old_configuration.id)
+        expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
+
+        policy_settings.update!(csp_namespace: nil)
+      end
+
+      context 'when old group has no security orchestration policy configuration' do
+        let(:old_group_without_config) { create(:group) }
+
+        before do
+          policy_settings.update!(csp_namespace: old_group_without_config)
+        end
+
+        it 'does not schedule any workers' do
+          expect(Security::RecreateOrchestrationConfigurationWorker).not_to receive(:perform_async)
+          expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
+
+          policy_settings.update!(csp_namespace: nil)
+        end
+      end
+    end
+
+    context 'when csp_namespace_id does not change' do
+      before do
+        policy_settings.update!(csp_namespace: old_group)
+      end
+
+      it 'does not schedule any workers when updating other attributes' do
+        expect(Security::RecreateOrchestrationConfigurationWorker).not_to receive(:perform_async)
+        expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
+
+        # Trigger an update without changing csp_namespace_id
+        policy_settings.touch
+      end
+    end
+  end
 end
