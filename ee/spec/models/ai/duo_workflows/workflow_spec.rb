@@ -258,4 +258,69 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
       it { is_expected.to be_falsey }
     end
   end
+
+  describe '#project_level?' do
+    subject { workflow.project_level? }
+
+    context 'when project is present' do
+      let(:workflow) { create(:duo_workflows_workflow, project: create(:project)) }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when namespace is present' do
+      let(:workflow) { build(:duo_workflows_workflow, namespace: create(:group)) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
+  describe '#namespace_level?' do
+    subject { workflow.namespace_level? }
+
+    context 'when project is present' do
+      let(:workflow) { create(:duo_workflows_workflow, project: create(:project)) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when namespace is present' do
+      let(:workflow) { build(:duo_workflows_workflow, namespace: create(:group)) }
+
+      it { is_expected.to be(true) }
+    end
+  end
+
+  describe '#mcp_enabled?' do
+    subject { workflow.mcp_enabled? }
+
+    let_it_be(:ai_settings) { create(:namespace_ai_settings, duo_workflow_mcp_enabled: true) }
+
+    context 'when project is present' do
+      let(:project) { create(:project) }
+      let(:workflow) { create(:duo_workflows_workflow, project: project) }
+
+      it { is_expected.to be(false) }
+
+      context 'when duo_workflow_mcp_enabled is enabled on root ancestor' do
+        let(:group) { create(:group, ai_settings: ai_settings) }
+        let(:project) { create(:project, group: group) }
+
+        it { is_expected.to be(true) }
+      end
+    end
+
+    context 'when namespace is present' do
+      let(:group) { create(:group) }
+      let(:workflow) { create(:duo_workflows_workflow, namespace: group) }
+
+      it { is_expected.to be(false) }
+
+      context 'when duo_workflow_mcp_enabled is enabled on root ancestor' do
+        let(:group) { create(:group, ai_settings: ai_settings) }
+
+        it { is_expected.to be(true) }
+      end
+    end
+  end
 end

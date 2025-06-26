@@ -3,15 +3,11 @@
 module Ai
   module DuoWorkflows
     class CheckpointPolicy < BasePolicy
-      condition(:can_use_duo_workflows_in_project) do
-        can?(:duo_workflow, @subject.project)
+      condition(:can_read_duo_workflow) do
+        can?(:read_duo_workflow, @subject.workflow)
       end
 
-      condition(:is_workflow_owner) do
-        @subject.workflow.user == @user
-      end
-
-      rule { can_use_duo_workflows_in_project & is_workflow_owner }.policy do
+      rule { can_read_duo_workflow }.policy do
         enable :read_duo_workflow_event
       end
     end

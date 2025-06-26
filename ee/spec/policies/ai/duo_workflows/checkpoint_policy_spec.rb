@@ -7,7 +7,8 @@ RSpec.describe Ai::DuoWorkflows::CheckpointPolicy, feature_category: :duo_workfl
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:checkpoint) { create(:duo_workflows_checkpoint, project: project) }
+  let_it_be(:workflow) { create(:duo_workflows_workflow, project: project) }
+  let_it_be(:checkpoint) { create(:duo_workflows_checkpoint, project: project, workflow: workflow) }
   let_it_be(:guest) { create(:user, guest_of: checkpoint.project) }
   let_it_be(:developer) { create(:user, developer_of: checkpoint.project) }
   let(:current_user) { guest }

@@ -5212,36 +5212,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     subject { described_class.new(current_user, project) }
 
-    context 'for all environments' do
+    context 'when on SaaS instance', :saas do
+      include_context 'with duo pro addon'
+
       where(
-        :can_access_duo_chat,
         :duo_agentic_chat_enabled,
         :agentic_chat_allowed,
         :has_pinned_duo_chat_model,
         :amazon_q_enabled,
         :duo_agentic_chat_matcher
       ) do
-        true  | true  | true  | false | false | be_allowed(:access_duo_agentic_chat)
-        true  | true  | true  | false | true  | be_disallowed(:access_duo_agentic_chat)
-        true  | true  | false | false | false | be_disallowed(:access_duo_agentic_chat)
-        true  | false | false | false | false | be_disallowed(:access_duo_agentic_chat)
-        false | false | false | false | false | be_disallowed(:access_duo_agentic_chat)
-        false | false | true  | false | false | be_disallowed(:access_duo_agentic_chat)
-        false | true  | true  | false | false | be_disallowed(:access_duo_agentic_chat)
-        true  | true  | true  | true | false | be_disallowed(:access_duo_agentic_chat)
-        true  | true  | false | true | false | be_disallowed(:access_duo_agentic_chat)
-        true  | false | false | true | false | be_disallowed(:access_duo_agentic_chat)
-        false | false | false | true | false | be_disallowed(:access_duo_agentic_chat)
-        false | false | true  | true | false | be_disallowed(:access_duo_agentic_chat)
-        false | true  | true  | true | false | be_disallowed(:access_duo_agentic_chat)
+        true  | true  | false | false | be_allowed(:access_duo_agentic_chat)
+        true  | true  | false | true  | be_disallowed(:access_duo_agentic_chat)
+        true  | false | false | false | be_disallowed(:access_duo_agentic_chat)
+        false | false | false | false | be_disallowed(:access_duo_agentic_chat)
+        false | true  | false | false | be_disallowed(:access_duo_agentic_chat)
+        true  | true  | true  | false | be_disallowed(:access_duo_agentic_chat)
+        true  | false | true  | false | be_disallowed(:access_duo_agentic_chat)
+        false | false | true  | false | be_disallowed(:access_duo_agentic_chat)
+        false | true  | true  | false | be_disallowed(:access_duo_agentic_chat)
       end
 
       with_them do
         before do
-          allow(subject).to receive(:allowed?).and_call_original
-          allow(subject).to receive(:allowed?).with(:access_duo_chat).and_return(can_access_duo_chat)
           stub_feature_flags(duo_agentic_chat: duo_agentic_chat_enabled)
-          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :agentic_chat).and_return(agentic_chat_allowed)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(agentic_chat_allowed)
           allow(Ai::ModelSelection::NamespaceFeatureSetting).to receive(:any_non_default_for_duo_chat?).and_return(has_pinned_duo_chat_model)
           allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
         end

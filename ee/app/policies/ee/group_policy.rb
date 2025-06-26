@@ -291,8 +291,18 @@ module EE
         ::Gitlab::Llm::StageCheck.available?(@subject, :chat)
       end
 
+      condition(:agentic_chat_allowed_for_group, scope: :subject) do
+        next true unless ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
+
+        ::Gitlab::Llm::StageCheck.available?(@subject, :agentic_chat)
+      end
+
       condition(:chat_available_for_user, scope: :user) do
         Ability.allowed?(@user, :access_duo_chat)
+      end
+
+      condition(:agentic_chat_available_for_user, scope: :user) do
+        Ability.allowed?(@user, :access_duo_agentic_chat)
       end
 
       condition(:duo_features_enabled, scope: :subject) { @subject.namespace_settings&.duo_features_enabled }
@@ -943,6 +953,7 @@ module EE
       rule { guest }.enable :read_limit_alert
 
       rule { can?(:read_group) & chat_allowed_for_group & chat_available_for_user & duo_features_enabled }.enable :access_duo_chat
+      rule { can?(:read_group) & agentic_chat_allowed_for_group & agentic_chat_available_for_user & duo_features_enabled }.enable :access_duo_agentic_chat
 
       rule { can?(:read_group) & duo_features_enabled }.enable :access_duo_features
 

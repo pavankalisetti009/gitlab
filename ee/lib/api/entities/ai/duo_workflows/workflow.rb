@@ -32,9 +32,7 @@ module API
             opts[:workload]
           end
 
-          expose :mcp_enabled do |workflow|
-            workflow.project.root_ancestor.duo_workflow_mcp_enabled
-          end
+          expose :mcp_enabled?, as: :mcp_enabled
 
           expose :gitlab_url do |_|
             Gitlab.config.gitlab.url

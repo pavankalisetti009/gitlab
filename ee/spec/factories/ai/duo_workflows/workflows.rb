@@ -14,5 +14,9 @@ FactoryBot.define do
     trait :agentic_chat do
       workflow_definition { "chat" }
     end
+
+    after(:build) do |workflow, _|
+      workflow.project_id = nil if workflow.namespace_id
+    end
   end
 end
