@@ -468,7 +468,7 @@ module EE
 
         def maven_virtual_registries
           ::VirtualRegistries::Packages::Maven::Registry.for_group(object) if ::Feature.enabled?(
-            :maven_virtual_registry, current_user)
+            :maven_virtual_registry, object)
         end
       end
     end
