@@ -35734,9 +35734,6 @@ msgstr ""
 msgid "KubernetesDashboard|Learn more"
 msgstr ""
 
-msgid "KubernetesDashboard|Logs"
-msgstr ""
-
 msgid "KubernetesDashboard|Name"
 msgstr ""
 
