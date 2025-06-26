@@ -15,10 +15,10 @@
         = _('To personalize your GitLab experience, we\'d like to know a bit more about you. We won\'t share this information with anyone.')
       = gitlab_ui_form_for(current_user,
         url: users_sign_up_welcome_path,
-        html: { class: '!gl-w-full gl-p-5 js-users-signup-welcome',
+        html: { class: '!gl-w-full js-users-signup-welcome',
                 'aria-live' => 'assertive',
                 data: { testid: 'welcome-form' } }) do |f|
-        = render Pajamas::CardComponent.new do |c|
+        = render Pajamas::CardComponent.new( card_options: { class: 'gl-rounded-none' }, body_options: { class: 'gl-bg-default gl-p-6' }) do |c|
           - c.with_body do
             .devise-errors
               = render 'devise/shared/error_messages', resource: current_user

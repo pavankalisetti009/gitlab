@@ -6,11 +6,11 @@
     .gl-flex.gl-flex-col
       .gl-grow.gl-mb-2
         = f.gitlab_ui_radio_component :onboarding_status_joining_project, false, _('Create a new project'),
-          help_text: _('Create a new project on GitLab. Store your files, plan your work, and collaborate on code.'),
+          help_text: _('Build a new repository or import existing work.'),
           radio_options: { required: true, class: 'js-track-error',
             data: { track_action_for_errors: onboarding_status_presenter.tracking_label } },
           label_options: { data: { testid: 'create-a-new-project-radio' } }
       .gl-grow
-        = f.gitlab_ui_radio_component :onboarding_status_joining_project, true, _('Join a project'),
-          help_text: _('Join your team on GitLab and contribute to an existing project.'),
+        = f.gitlab_ui_radio_component :onboarding_status_joining_project, true, _('Join an existing project'),
+        help_text: _('Connect with your team and collaborate on a project.'),
           radio_options: { required: true }

@@ -11386,6 +11386,9 @@ msgstr ""
 msgid "Browse files"
 msgstr ""
 
+msgid "Build a new repository or import existing work."
+msgstr ""
+
 msgid "Build cannot be erased"
 msgstr ""
 
@@ -17213,6 +17216,9 @@ msgstr ""
 msgid "Connect repositories from GitHub"
 msgstr ""
 
+msgid "Connect with your team and collaborate on a project."
+msgstr ""
+
 msgid "Connect your external repositories, and CI/CD pipelines will run for new commits. A GitLab project will be created with only CI/CD features enabled."
 msgstr ""
 
@@ -18711,9 +18717,6 @@ msgid "Create a new issue"
 msgstr ""
 
 msgid "Create a new project"
-msgstr ""
-
-msgid "Create a new project on GitLab. Store your files, plan your work, and collaborate on code."
 msgstr ""
 
 msgid "Create a new release"
@@ -35520,10 +35523,7 @@ msgstr ""
 msgid "Join Zoom meeting"
 msgstr ""
 
-msgid "Join a project"
-msgstr ""
-
-msgid "Join your team on GitLab and contribute to an existing project."
+msgid "Join an existing project"
 msgstr ""
 
 msgid "Joined %{user_created_time}"
