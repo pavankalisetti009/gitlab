@@ -61,8 +61,9 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
       let!(:user_list) { create(:user_list, board: board, position: 2) }
       let!(:milestone_list) { create(:milestone_list, board: board, position: 3, milestone: milestone) }
       let!(:iteration_list) { create(:iteration_list, board: board, position: 4, iteration: iteration) }
-      let(:system_defined_status_list) { create(:status_list, board: board, position: 5, system_defined_status: system_defined_status) }
-      let(:custom_status_list) { create(:status_list, board: board, position: 5, custom_status: custom_status) }
+      let(:system_defined_status_list) { create(:status_list, :with_system_defined_status, board: board, position: 5, system_defined_status: system_defined_status) }
+      let(:custom_status_list) { create(:status_list, :with_custom_status, board: board, position: 5, custom_status: custom_status) }
+
       let!(:backlog)   { board.lists.backlog.first }
       let!(:list1)     { create(:list, board: board, label: development, position: 0) }
       let!(:list2)     { create(:list, board: board, label: testing, position: 1) }
