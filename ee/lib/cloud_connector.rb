@@ -12,12 +12,12 @@ module CloudConnector
 
   def headers(user)
     {
-      'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-      'X-Gitlab-Instance-Id' => Gitlab::GlobalAnonymousId.instance_id,
-      'X-Gitlab-Realm' => ::CloudConnector.gitlab_realm,
-      'X-Gitlab-Version' => Gitlab.version_info.to_s
+      'x-gitlab-host-name' => Gitlab.config.gitlab.host,
+      'x-gitlab-instance-id' => Gitlab::GlobalAnonymousId.instance_id,
+      'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
+      'x-gitlab-version' => Gitlab.version_info.to_s
     }.tap do |result|
-      result['X-Gitlab-Global-User-Id'] = Gitlab::GlobalAnonymousId.user_id(user) if user
+      result['x-gitlab-global-user-id'] = Gitlab::GlobalAnonymousId.user_id(user) if user
     end
   end
 
@@ -29,7 +29,7 @@ module CloudConnector
   #                  This should only be set when the request is made on gitlab.com.
   def ai_headers(user, namespace_ids: [])
     headers(user).merge(
-      'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
+      'x-gitlab-feature-enabled-by-namespace-ids' => namespace_ids.join(',')
     )
   end
 

@@ -38,7 +38,7 @@ module API
         end
       end
 
-      def model_gateway_headers(headers, service)
+      def ai_gateway_headers(headers, service)
         Gitlab::AiGateway.headers(
           user: current_user,
           service: service,
@@ -47,7 +47,7 @@ module API
         ).merge(saas_headers).merge(model_config_headers).transform_values { |v| Array(v) }
       end
 
-      def connector_public_headers(service_name)
+      def ai_gateway_public_headers(service_name)
         Gitlab::AiGateway.public_headers(user: current_user, service_name: service_name)
           .merge(saas_headers)
           .merge(model_config_headers)
@@ -185,7 +185,7 @@ module API
             Gitlab::Workhorse.send_url(
               task.endpoint,
               body: body,
-              headers: model_gateway_headers(headers, service),
+              headers: ai_gateway_headers(headers, service),
               method: "POST",
               timeouts: { read: 55 }
             )
@@ -237,7 +237,7 @@ module API
             # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/429
             token: token[:token],
             expires_at: token[:expires_at],
-            headers: connector_public_headers(completion_model_details.feature_name)
+            headers: ai_gateway_public_headers(completion_model_details.feature_name)
           }.tap do |a|
             a[:model_details] = details_hash unless details_hash.blank?
           end

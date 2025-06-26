@@ -9,11 +9,9 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
 
   let(:plan) { License::ULTIMATE_PLAN }
   let(:license) { build(:license, plan: plan) }
-  let(:instance_uuid) { "uuid-not-set" }
-  let(:global_user_id) { "user-id" }
-  let(:hostname) { "localhost" }
   let(:correlation_id) { 'my-correlation-id' }
   let(:backend) { 'http://gob.local' }
+  let(:cloud_connector_headers) { { 'cloud-connector-header-key' => 'value' } }
 
   let_it_be(:namespace) { create(:group) }
   let_it_be(:group) { create(:group, parent: namespace) }
@@ -25,8 +23,6 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
     stub_licensed_features(observability: true)
 
     allow(License).to receive(:current).and_return(license)
-    allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
-    allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(instance_uuid)
     allow(Labkit::Correlation::CorrelationId).to receive(:current_or_new_id).and_return(correlation_id)
     allow(Gitlab::Observability).to receive(:observability_url).and_return(backend)
     allow(Gitlab::Observability).to receive(:observability_ingest_url).and_return(backend)
@@ -39,6 +35,8 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
 
   shared_examples 'success' do
     it 'returns 200 with expected json' do
+      expect(::CloudConnector).to receive(:headers).with(instance_of(User)).and_return(cloud_connector_headers)
+
       expect_status(:success)
       expect(json_response).to eq('gob' => {
         'backend' => backend,
@@ -46,13 +44,8 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
           'X-GitLab-Namespace-id' => namespace.id.to_s,
           'X-GitLab-Project-id' => project.id.to_s,
           'Authorization' => "Bearer #{gob_token}",
-          'X-Request-ID' => correlation_id,
-          'X-Gitlab-Host-Name' => hostname,
-          'X-Gitlab-Instance-Id' => instance_uuid,
-          'X-Gitlab-Realm' => gitlab_realm,
-          'X-Gitlab-Version' => Gitlab.version_info.to_s,
-          'X-Gitlab-Global-User-Id' => global_user_id
-        }
+          'X-Request-ID' => correlation_id
+        }.merge(cloud_connector_headers)
       })
     end
   end
@@ -71,7 +64,6 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
   with_them do
     describe 'endpoint', :with_cloud_connector do
       let(:headers) { workhorse_internal_api_request_header }
-      let(:gitlab_realm) { 'self-managed' }
       let(:pat) { nil }
 
       def full_path

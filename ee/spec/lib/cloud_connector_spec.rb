@@ -18,10 +18,10 @@ RSpec.describe ::CloudConnector, feature_category: :system_access do
   shared_examples 'building HTTP headers' do
     let(:expected_headers) do
       {
-        'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-        'X-Gitlab-Instance-Id' => an_instance_of(String),
-        'X-Gitlab-Realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
-        'X-Gitlab-Version' => Gitlab.version_info.to_s
+        'x-gitlab-host-name' => Gitlab.config.gitlab.host,
+        'x-gitlab-instance-id' => an_instance_of(String),
+        'x-gitlab-realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
+        'x-gitlab-version' => Gitlab.version_info.to_s
       }
     end
 
@@ -31,7 +31,7 @@ RSpec.describe ::CloudConnector, feature_category: :system_access do
       let(:user) { build(:user, id: 1) }
 
       it 'generates a hash with the required fields based on the user' do
-        expect(headers).to match(expected_headers.merge('X-Gitlab-Global-User-Id' => an_instance_of(String)))
+        expect(headers).to match(expected_headers.merge('x-gitlab-global-user-id' => an_instance_of(String)))
       end
     end
 
