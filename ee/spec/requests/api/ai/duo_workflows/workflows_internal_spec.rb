@@ -359,6 +359,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(json_response['pre_approved_agent_privileges_names']).to eq(["read_write_files"])
       expect(json_response['allow_agent_to_request_user']).to be(true)
       expect(json_response['mcp_enabled']).to be(true)
+      expect(json_response['gitlab_url']).to eq(Gitlab.config.gitlab.url)
       expect(json_response['status']).to eq("created")
       expect(response.headers['X-Gitlab-Enabled-Feature-Flags']).to include('test-feature')
     end

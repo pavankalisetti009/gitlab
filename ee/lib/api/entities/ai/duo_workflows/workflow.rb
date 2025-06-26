@@ -35,6 +35,10 @@ module API
           expose :mcp_enabled do |workflow|
             workflow.project.root_ancestor.duo_workflow_mcp_enabled
           end
+
+          expose :gitlab_url do |_|
+            Gitlab.config.gitlab.url
+          end
         end
       end
     end
