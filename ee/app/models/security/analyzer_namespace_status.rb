@@ -3,6 +3,7 @@
 module Security
   class AnalyzerNamespaceStatus < ::SecApplicationRecord
     include EachBatch
+    include ::Namespaces::Traversal::Traversable
 
     self.table_name = 'analyzer_namespace_statuses'
 

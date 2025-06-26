@@ -62,8 +62,7 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::ProcessGroupDeleteEventsWor
           stub_const("#{described_class}::BATCH_SIZE", 1)
 
           allow(statistic).to receive(:unarchived).and_return(statistic)
-          allow(statistic).to receive(:traversal_ids_gteq).with(traversal_ids).and_return(statistic)
-          allow(statistic).to receive(:traversal_ids_lt).with(next_traversal_ids).and_return(statistic)
+          allow(statistic).to receive(:within).with(traversal_ids).and_return(statistic)
           allow(statistic).to receive(:limit).with(1).and_return(statistic)
           allow(statistic).to receive(:delete_all).and_return(1, 1, 0)
         end

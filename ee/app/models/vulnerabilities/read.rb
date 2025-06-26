@@ -3,6 +3,7 @@
 module Vulnerabilities
   class Read < ::SecApplicationRecord
     extend ::Gitlab::Utils::Override
+    include ::Namespaces::Traversal::Traversable
     include VulnerabilityScopes
     include EachBatch
     include UnnestedInFilters::Dsl
@@ -76,9 +77,7 @@ module Vulnerabilities
     scope :in_parent_group_before_and_including, ->(vulnerability_read) do
       where(arel_grouping_by_traversal_ids_and_vulnerability_id.lteq(vulnerability_read.arel_grouping_by_traversal_ids_and_id))
     end
-    scope :by_group, ->(group) { traversal_ids_gteq(group.traversal_ids).traversal_ids_lt(group.next_traversal_ids) }
-    scope :traversal_ids_gteq, ->(traversal_ids) { where(arel_table[:traversal_ids].gteq(traversal_ids)) }
-    scope :traversal_ids_lt, ->(traversal_ids) { where(arel_table[:traversal_ids].lt(traversal_ids)) }
+    scope :by_group, ->(group) { within(group.traversal_ids) }
     scope :unarchived, -> { where(archived: false) }
     scope :order_traversal_ids_asc, -> do
       reorder(Gitlab::Pagination::Keyset::Order.build([

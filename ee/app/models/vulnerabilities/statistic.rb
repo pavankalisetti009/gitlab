@@ -3,6 +3,7 @@
 module Vulnerabilities
   class Statistic < ::SecApplicationRecord
     include EachBatch
+    include ::Namespaces::Traversal::Traversable
 
     self.table_name = 'vulnerability_statistics'
 
@@ -27,11 +28,7 @@ module Vulnerabilities
     scope :by_grade, ->(grade) { where(letter_grade: grade) }
 
     scope :by_group_excluding_subgroups, ->(group) { where(traversal_ids: group.traversal_ids) }
-    scope :by_group, ->(group) do
-      traversal_ids_gteq(group.traversal_ids).traversal_ids_lt(group.next_traversal_ids)
-    end
-    scope :traversal_ids_gteq, ->(traversal_ids) { where(arel_table[:traversal_ids].gteq(traversal_ids)) }
-    scope :traversal_ids_lt, ->(traversal_ids) { where(arel_table[:traversal_ids].lt(traversal_ids)) }
+    scope :by_group, ->(group) { within(group.traversal_ids) }
     scope :unarchived, -> { where(archived: false) }
 
     class << self
