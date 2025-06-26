@@ -11,6 +11,8 @@ module EE
             UNSUPPORTED_PARAMS_FOR_MERGE_REQUEST = %I[epic_id iteration_id weight].freeze
 
             prepended do
+              include ResolvesIds
+
               argument :epic_id, ::GraphQL::Types::ID,
                 required: false,
                 description: "ID of an epic associated with the issues. \
@@ -35,13 +37,27 @@ module EE
               argument :not, ::Types::Analytics::CycleAnalytics::NegatedIssuableFilterInputType,
                 required: false,
                 description: ::Resolvers::Analytics::CycleAnalytics::BaseIssueResolver.arguments['not'].description
+
+              argument :project_ids, [::Types::GlobalIDType[::Project]],
+                required: false,
+                description: 'Filter for projects. Only available for group value streams.'
             end
 
             private
 
+            def ready?(**args)
+              if !object.value_stream.at_group_level? && args[:project_ids].present?
+                raise ::Gitlab::Graphql::Errors::ArgumentError,
+                  "Project value streams don't support the projectIds filter"
+              end
+
+              super
+            end
+
             def transform_params(args, stage)
               formatted_args = args.to_hash
               formatted_args[:not] = formatted_args[:not].to_hash if formatted_args[:not]
+              formatted_args[:project_ids] = resolve_ids(formatted_args[:project_ids]) if formatted_args[:project_ids]
 
               move_not_param(formatted_args, :assignee_usernames, :assignee_username)
               move_not_param(formatted_args, :label_names, :label_name)
