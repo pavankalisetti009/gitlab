@@ -8,7 +8,8 @@ module Ai
       self.table_name = :duo_workflows_events
 
       belongs_to :workflow, class_name: 'Ai::DuoWorkflows::Workflow'
-      belongs_to :project
+      belongs_to :project, optional: true
+      belongs_to :namespace, optional: true
 
       validates :event_type, presence: true
       validates :event_status, presence: true
