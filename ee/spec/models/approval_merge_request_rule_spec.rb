@@ -684,8 +684,9 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
     end
 
     context 'with approval policy branch exceptions' do
+      let_it_be(:security_policy) { create(:security_policy) }
       let_it_be(:approval_policy_rule) do
-        create(:approval_policy_rule, :scan_finding)
+        create(:approval_policy_rule, :scan_finding, security_policy: security_policy)
       end
 
       let_it_be(:rule) do
@@ -693,9 +694,11 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
       end
 
       before do
-        approval_policy_rule.content[:branch_exceptions] = [{
-          source: { name: merge_request.source_branch }, target: { name: merge_request.target_branch }
-        }]
+        security_policy.content[:bypass_settings] = {
+          branches: [{
+            source: { name: merge_request.source_branch }, target: { name: merge_request.target_branch }
+          }]
+        }
       end
 
       it 'returns false' do

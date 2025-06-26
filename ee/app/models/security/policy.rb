@@ -10,7 +10,7 @@ module Security
     self.inheritance_column = :_type_disabled
 
     POLICY_CONTENT_FIELDS = {
-      approval_policy: %i[actions approval_settings fallback_behavior policy_tuning],
+      approval_policy: %i[actions approval_settings fallback_behavior policy_tuning bypass_settings],
       scan_execution_policy: %i[actions skip_ci],
       pipeline_execution_policy: %i[content pipeline_config_strategy suffix skip_ci variables_override],
       vulnerability_management_policy: %i[actions],

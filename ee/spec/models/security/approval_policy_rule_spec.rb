@@ -269,8 +269,17 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
     let_it_be(:source_branch) { 'feature' }
     let_it_be(:target_branch) { 'main' }
 
-    let_it_be(:approval_policy_rule) do
-      create(:approval_policy_rule, :scan_finding, security_policy_management_project: project)
+    let!(:security_policy) do
+      create(:security_policy, content: {
+        bypass_settings: {
+          branches: [{ source: { name: source_branch }, target: { name: target_branch } }]
+        }
+      })
+    end
+
+    let!(:approval_policy_rule) do
+      create(:approval_policy_rule, :scan_finding, security_policy: security_policy,
+        security_policy_management_project: project)
     end
 
     subject(:branches_exempted_by_policy) do
@@ -284,7 +293,8 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
 
       context 'when branch_exceptions is nil' do
         before do
-          approval_policy_rule.content.delete(:branch_exceptions)
+          security_policy.content = {}
+          security_policy.save!
         end
 
         it { is_expected.to be false }
@@ -292,27 +302,21 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
 
       context 'when branch_exceptions is blank' do
         before do
-          approval_policy_rule.content[:branch_exceptions] = []
+          security_policy.content[:bypass_settings] = { branches: [] }
         end
 
         it { is_expected.to be false }
       end
 
       context 'when branch_exceptions has a matching source and target' do
-        before do
-          approval_policy_rule.content[:branch_exceptions] = [
-            { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'main' } }
-          ]
-        end
-
         it { is_expected.to be true }
       end
 
       context 'when branch_exceptions uses a pattern for source and target' do
         before do
-          approval_policy_rule.content[:branch_exceptions] = [
-            { 'source' => { 'pattern' => 'feat*' }, 'target' => { 'pattern' => 'ma*' } }
-          ]
+          security_policy.content[:bypass_settings] = { branches:
+            [{ 'source' => { 'pattern' => 'feat*' }, 'target' => { 'pattern' => 'ma*' } }] }
+          security_policy.save!
         end
 
         it { is_expected.to be true }
@@ -332,10 +336,10 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
 
       context 'when branch_exceptions does not match source or target' do
         before do
-          approval_policy_rule.content[:branch_exceptions] = [
-            { 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } },
-            { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } }
-          ]
+          security_policy.content[:bypass_settings] = { branches:
+            [{ 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } },
+              { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } }] }
+          security_policy.save!
         end
 
         it { is_expected.to be false }
@@ -343,10 +347,10 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
 
       context 'when branch_exceptions partially matches (only source or only target)' do
         before do
-          approval_policy_rule.content[:branch_exceptions] = [
-            { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } },
-            { 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } }
-          ]
+          security_policy.content[:bypass_settings] = { branches:
+            [{ 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } },
+              { 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } }] }
+          security_policy.save!
         end
 
         it { is_expected.to be false }

@@ -54,12 +54,12 @@ module Security
     def branches_exempted_by_policy?(source_branch, target_branch)
       return false unless Feature.enabled?(:approval_policy_branch_exceptions, security_policy_management_project)
 
-      branch_exceptions = typed_content['branch_exceptions']
+      branch_exceptions = security_policy.policy_content.dig(:bypass_settings, :branches)
       return false if branch_exceptions.blank?
 
       branch_exceptions.any? do |branch_exception|
-        source_branch_exception = branch_exception['source']
-        target_branch_exception = branch_exception['target']
+        source_branch_exception = branch_exception[:source]
+        target_branch_exception = branch_exception[:target]
 
         branch_matches_exception?(source_branch, source_branch_exception) &&
           branch_matches_exception?(target_branch, target_branch_exception)
@@ -83,10 +83,10 @@ module Security
     end
 
     def branch_matches_exception?(branch, exception)
-      if exception['name'].present?
-        branch == exception['name']
-      elsif exception['pattern'].present?
-        RefMatcher.new(exception['pattern']).matches?(branch)
+      if exception[:name].present?
+        branch == exception[:name]
+      elsif exception[:pattern].present?
+        RefMatcher.new(exception[:pattern]).matches?(branch)
       end
     end
   end
