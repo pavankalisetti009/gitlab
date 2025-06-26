@@ -853,6 +853,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
             path: occurrence.input_file_path,
             top_level: false,
             ancestors: [],
+            has_dependency_paths: false,
             dependency_paths: []
           }
         )
@@ -892,6 +893,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
               path: occurrence.input_file_path,
               top_level: false,
               ancestors: [],
+              has_dependency_paths: false,
               dependency_paths: []
             }
           )
@@ -908,6 +910,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
               path: nil,
               top_level: false,
               ancestors: [],
+              has_dependency_paths: false,
               dependency_paths: []
             }
           )

@@ -98,6 +98,7 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
         expect(subject.dig(:location, :blob_path)).to eq(sbom_occurrence.location[:blob_path])
         expect(subject.dig(:location, :path)).to eq(sbom_occurrence.location[:path])
         expect(subject.dig(:location, :ancestors).as_json).to eq([ancestor])
+        expect(subject.dig(:location, :has_dependency_paths)).to be(true)
         expect(subject.dig(:location, :dependency_paths).as_json).to eq(dependency_paths)
         expect(subject.dig(:location, :top_level)).to be false
       end
