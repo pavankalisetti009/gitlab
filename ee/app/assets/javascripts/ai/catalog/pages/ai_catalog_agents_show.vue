@@ -1,16 +1,19 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlModal } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { isNumeric } from '~/lib/utils/number_utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import aiCatalogAgentQuery from '../graphql/ai_catalog_agent.query.graphql';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_RUN_ROUTE } from '../router/constants';
+import AiCatalogAgentCreateEditForm from '../components/ai_catalog_agent_create_edit_form.vue';
 
 export default {
   name: 'AiCatalogAgentsShow',
   components: {
+    AiCatalogAgentCreateEditForm,
     GlButton,
+    GlModal,
     PageHeading,
   },
   beforeRouteEnter(to, _, next) {
@@ -54,6 +57,13 @@ export default {
   data() {
     return {
       aiCatalogAgent: null,
+      isLoading: false,
+      updatedValues: {
+        name: '',
+        description: '',
+        systemPrompt: '',
+        userPrompt: '',
+      },
     };
   },
   computed: {
@@ -77,6 +87,15 @@ export default {
       // run page in drawer or need more sophisticated navigation handling.
       this.$router.back();
     },
+    handleSubmit(formValues) {
+      this.isLoading = true;
+      // TODO: Handle submission, dummy cody here. Replace with real implementation
+      setTimeout(() => {
+        this.updatedValues = formValues;
+        this.$refs.modal.show();
+        this.isLoading = false;
+      }, 1000);
+    },
   },
   runRoute: AI_CATALOG_AGENTS_RUN_ROUTE,
 };
@@ -87,7 +106,6 @@ export default {
     <gl-button @click="onBack">
       {{ __('Go back') }}
     </gl-button>
-
     <page-heading :heading="pageTitle">
       <template #actions>
         <gl-button :to="{ name: $options.runRoute, params: { id: agentId } }">
@@ -95,5 +113,21 @@ export default {
         </gl-button>
       </template>
     </page-heading>
+    <p>
+      {{ s__('AICatalog|Modify the agent settings and configuration.') }}
+    </p>
+    <ai-catalog-agent-create-edit-form
+      v-if="aiCatalogAgent"
+      mode="edit"
+      :name="aiCatalogAgent.name"
+      :description="aiCatalogAgent.description"
+      :system-prompt="aiCatalogAgent.systemPrompt"
+      :user-prompt="aiCatalogAgent.userPrompt"
+      :is-loading="isLoading"
+      @submit="handleSubmit"
+    />
+    <gl-modal ref="modal" modal-id="TEMPORARY-MODAL">
+      <pre>{{ JSON.stringify(updatedValues) }}</pre>
+    </gl-modal>
   </div>
 </template>

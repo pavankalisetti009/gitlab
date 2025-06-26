@@ -37,6 +37,10 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
     verified: true,
     version: 'v4.2',
     releasedAt: new Date(),
+    systemPrompt:
+      'You are a coding assistant focused on clean, efficient code. Provide working examples, explain your reasoning, and suggest best practices. Always include error handling and consider performance implications.',
+    userPrompt:
+      'Create a Vue component that displays a list of users with search functionality and handles loading states.',
   };
 
   const agent2 = {
@@ -48,6 +52,10 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
     verified: true,
     version: 'v4.2',
     releasedAt: new Date(),
+    systemPrompt:
+      'You are a strategic business consultant with expertise in market analysis, competitive intelligence, and strategic planning. Provide comprehensive insights backed by logical reasoning. Consider multiple stakeholders, potential risks, and implementation challenges in your recommendations.',
+    userPrompt:
+      'Our SaaS company is considering expanding into the European market. Analyze the key factors we should evaluate, potential entry strategies, and create a risk assessment framework for this expansion.',
   };
   /* eslint-enable @gitlab/require-i18n-strings */
 
