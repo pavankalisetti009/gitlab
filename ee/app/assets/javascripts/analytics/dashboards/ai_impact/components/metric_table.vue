@@ -21,6 +21,9 @@ import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
 import FlowMetricsQuery from '../graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from '../graphql/dora_metrics.query.graphql';
 import AiMetricsQuery from '../graphql/ai_metrics.query.graphql';
+import MergeRequestsQuery from '../../graphql/merge_requests.query.graphql';
+import ContributorCountQuery from '../../graphql/contributor_count.query.graphql';
+import { MERGE_REQUESTS_STATE_MERGED } from '../../graphql/constants';
 import MetricTableCell from '../../components/metric_table_cell.vue';
 import TrendIndicator from '../../components/trend_indicator.vue';
 import {
@@ -48,7 +51,9 @@ import {
 import {
   SUPPORTED_DORA_METRICS,
   SUPPORTED_FLOW_METRICS,
+  SUPPORTED_MERGE_REQUEST_METRICS,
   SUPPORTED_VULNERABILITY_METRICS,
+  SUPPORTED_CONTRIBUTOR_METRICS,
   SUPPORTED_AI_METRICS,
   HIDE_METRIC_DRILL_DOWN,
   AI_IMPACT_TABLE_METRICS,
@@ -58,6 +63,8 @@ import {
   extractGraphqlVulnerabilitiesData,
   extractGraphqlDoraData,
   extractGraphqlFlowData,
+  extractGraphqlMergeRequestsData,
+  extractGraphqlContributorCountData,
 } from '../../api';
 import { extractGraphqlAiData } from '../api';
 
@@ -110,9 +117,14 @@ export default {
         { metrics: SUPPORTED_DORA_METRICS, queryFn: this.fetchDoraMetricsQuery },
         { metrics: SUPPORTED_FLOW_METRICS, queryFn: this.fetchFlowMetricsQuery },
         { metrics: SUPPORTED_AI_METRICS, queryFn: this.fetchAiMetricsQuery },
+        { metrics: SUPPORTED_MERGE_REQUEST_METRICS, queryFn: this.fetchMergeRequestsMetricsQuery },
         {
           metrics: SUPPORTED_VULNERABILITY_METRICS,
           queryFn: this.fetchVulnerabilitiesMetricsQuery,
+        },
+        {
+          metrics: SUPPORTED_CONTRIBUTOR_METRICS,
+          queryFn: this.fetchContributorsCountQuery,
         },
       ].filter(({ metrics }) => !this.areAllMetricsSkipped(metrics));
     },
@@ -244,6 +256,27 @@ export default {
       };
     },
 
+    async fetchMergeRequestsMetricsQuery({ startDate, endDate }, timePeriod) {
+      const result = await this.$apollo.query({
+        query: MergeRequestsQuery,
+        variables: {
+          fullPath: this.namespace,
+          startDate: toYmd(startDate),
+          endDate: toYmd(endDate),
+          state: MERGE_REQUESTS_STATE_MERGED,
+        },
+      });
+
+      const metrics = extractQueryResponseFromNamespace({
+        result,
+        resultKey: 'mergeRequests',
+      });
+      return {
+        ...timePeriod,
+        ...extractGraphqlMergeRequestsData(metrics || {}),
+      };
+    },
+
     async fetchVulnerabilitiesMetricsQuery({ endDate }, timePeriod) {
       const result = await this.$apollo.query({
         query: VulnerabilitiesQuery,
@@ -266,6 +299,27 @@ export default {
       return {
         ...timePeriod,
         ...extractGraphqlVulnerabilitiesData(responseData?.nodes || []),
+      };
+    },
+
+    async fetchContributorsCountQuery({ startDate, endDate }, timePeriod) {
+      const result = await this.$apollo.query({
+        query: ContributorCountQuery,
+        variables: {
+          fullPath: this.namespace,
+          startDate: toYmd(startDate),
+          endDate: toYmd(endDate),
+        },
+      });
+
+      const responseData = extractQueryResponseFromNamespace({
+        result,
+        resultKey: 'contributors',
+      });
+
+      return {
+        ...timePeriod,
+        ...extractGraphqlContributorCountData(responseData || {}),
       };
     },
 
