@@ -54,6 +54,13 @@ export default {
         weight,
       };
 
+      const statusId = this.list?.status?.id;
+
+      const modifiedIssueInput = { ...issueInput };
+      if (statusId) {
+        modifiedIssueInput.statusId = statusId;
+      }
+
       if (iteration?.id !== IterationIDs.NONE) {
         config.iterationId = iteration?.id || null;
         config.iterationCadenceId = iterationCadence?.id || null;
@@ -64,7 +71,7 @@ export default {
         config.iterationCadenceId = this.currentIteration.iterationCadence.id;
       }
 
-      const input = formatIssueInput(issueInput, config);
+      const input = formatIssueInput(modifiedIssueInput, config);
 
       if (!this.isGroupBoard) {
         input.projectPath = this.fullPath;
