@@ -22,6 +22,8 @@ module Sbom
     def execute
       new_graph = build_dependency_graph
       Sbom::GraphPath.transaction do
+        use_advisory_lock
+
         remove_existing_dependency_graph
         bulk_insert_paths(new_graph)
       end
@@ -30,6 +32,26 @@ module Sbom
     private
 
     attr_reader :project
+
+    # According to the docs
+    # https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
+    # transaction-level locks are automatically released at the end of the transaction
+    # so we don't need to manually release it.
+    #
+    # The lock here is to solve the problem of pipeline B scheduling the recalculation
+    # of the dependency graph before the task created by pipeline A has finished running.
+    #
+    # Another improvement to this will be avoiding recalculations entirely when the
+    # dependency tree has not changed at all
+    # See https://gitlab.com/gitlab-org/gitlab/-/issues/523668
+    def use_advisory_lock
+      Sbom::GraphPath.connection.execute("SELECT pg_advisory_xact_lock(#{build_lock_expression})")
+    end
+
+    def build_lock_expression
+      lock_key = ["build-dependency-graph-for-project_id", Integer(project.id)].join("-")
+      "hashtext(#{Sbom::GraphPath.connection.quote(lock_key)})"
+    end
 
     def remove_existing_dependency_graph
       Sbom::GraphPath.by_projects(project.id).each_batch(of: BATCH_SIZE) do |batch|
