@@ -54,6 +54,10 @@ module EE
             milestone_id: milestone_id
           }
 
+          if moving_to_list.status? || moving_from_list.status?
+            movement_args[:status] = status(issue)
+          end
+
           movement_args[:sprint_id] = iteration_id(issue)
 
           movement_args
@@ -79,6 +83,27 @@ module EE
           assignees -= [moving_from_list.user_id] if both_are_list_type?('assignee') || moving_to_list.backlog?
 
           assignees
+        end
+
+        private
+
+        def status(issue)
+          if moving_to_list.status?
+            moving_to_list.status
+          elsif moving_from_list.status? && (moving_to_list.backlog? || moving_to_list.closed?)
+            default_status_for_list_type(issue)
+          end
+        end
+
+        def default_status_for_list_type(issue)
+          lifecycle = issue.work_item_type.status_lifecycle_for(parent.root_ancestor)
+          return unless lifecycle
+
+          if moving_to_list.backlog?
+            lifecycle.default_open_status
+          elsif moving_to_list.closed?
+            lifecycle.default_closed_status
+          end
         end
       end
     end

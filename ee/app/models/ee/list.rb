@@ -115,6 +115,19 @@ module EE
       )
     end
 
+    def status=(new_status)
+      return unless status?
+
+      case new_status
+      when ::WorkItems::Statuses::SystemDefined::Status
+        self.system_defined_status = new_status
+        self.custom_status = nil
+      when ::WorkItems::Statuses::Custom::Status
+        self.custom_status = new_status
+        self.system_defined_status = nil
+      end
+    end
+
     override :as_json
     def as_json(options = {})
       super.tap do |json|

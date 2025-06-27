@@ -14,11 +14,26 @@ FactoryBot.define do
       converted_from_system_defined_status_identifier { 1 }
     end
 
+    trait :to_do do
+      open
+    end
+
+    trait :in_progress do
+      name { FFaker::Name.unique.name }
+      color { '#1f75cb' }
+      category { :in_progress }
+      converted_from_system_defined_status_identifier { 2 }
+    end
+
     trait :closed do
       name { FFaker::Name.unique.name }
       color { '#108548' }
       category { :done }
       converted_from_system_defined_status_identifier { 3 }
+    end
+
+    trait :done do
+      closed
     end
 
     trait :duplicate do
