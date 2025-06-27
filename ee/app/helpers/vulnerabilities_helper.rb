@@ -146,6 +146,10 @@ module VulnerabilitiesHelper
       data[:finding_token_status] = finding.finding_token_status
     end
 
+    if Feature.enabled?(:validity_checks, finding.project)
+      data[:validity_checks_enabled] = finding.project&.security_setting&.validity_checks_enabled || false
+    end
+
     data
   end
 
