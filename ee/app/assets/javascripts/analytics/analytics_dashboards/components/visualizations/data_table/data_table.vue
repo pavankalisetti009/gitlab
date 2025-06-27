@@ -12,6 +12,7 @@ export default {
     GlIcon,
     GlLink,
     GlTableLite,
+    AssigneeAvatars: () => import('./assignee_avatars.vue'),
     DiffLineChanges: () => import('./diff_line_changes.vue'),
   },
   props: {
