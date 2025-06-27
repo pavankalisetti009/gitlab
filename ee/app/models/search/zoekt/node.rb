@@ -169,10 +169,6 @@ module Search
         usable_storage_bytes - reserved_storage_bytes
       end
 
-      def unclaimed_storage_bytes_deprecated
-        free_bytes - (reserved_storage_bytes - indexed_bytes)
-      end
-
       def free_bytes
         total_bytes - used_bytes
       end
