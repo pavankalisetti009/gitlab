@@ -79,11 +79,7 @@ module Gitlab
       def valid?
         parsed_data
 
-        if project && Feature.enabled?(:accessible_code_owners_validation, project)
-          OwnerValidation::Process.new(project, self).execute
-        else
-          validate_users
-        end
+        OwnerValidation::Process.new(project, self).execute
 
         errors.none?
       end
@@ -92,19 +88,6 @@ module Gitlab
 
       def project
         @blob&.repository&.project
-      end
-
-      def validate_users
-        # Avoids querying the database for users if there are still syntax errors
-        return if errors.present?
-
-        return unless project
-
-        entries = parsed_data.values.flat_map(&:values)
-        validation_errors = UserPermissionCheck.new(project, entries, limit: MAX_REFERENCES).errors
-        validation_errors.each do |e|
-          errors.add(e[:error], e[:line_number])
-        end
       end
 
       def data
