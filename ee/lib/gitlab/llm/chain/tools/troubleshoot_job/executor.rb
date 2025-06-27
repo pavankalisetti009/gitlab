@@ -98,6 +98,8 @@ module Gitlab
 
             override :prompt_version
             def prompt_version
+              return '1.1.0-dev' if Feature.enabled?(:rca_claude_4_upgrade, context.current_user)
+
               DEFAULT_PROMPT_VERSION
             end
 
