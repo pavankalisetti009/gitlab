@@ -41,6 +41,20 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
       expect(result).to eq(ai_feature_setting)
     end
 
+    context 'for duo chat tools' do
+      let!(:duo_chat_feature_setting) do
+        create(:ai_namespace_feature_setting, feature: :duo_chat, offered_model_ref: nil, namespace: group)
+      end
+
+      it 'returns the duo chat feature setting for all duo chat tools' do
+        described_class::DUO_CHAT_TOOLS.each do |feature_sym|
+          result = described_class.find_or_initialize_by_feature(group, feature_sym)
+          expect(result).to eq(duo_chat_feature_setting)
+          expect(result.feature).to eq('duo_chat')
+        end
+      end
+    end
+
     it 'initializes a new setting when none exists for the feature' do
       new_feature = :code_completions
       result = described_class.find_or_initialize_by_feature(group, new_feature_enum)

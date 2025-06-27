@@ -21,7 +21,8 @@ module Ai
         return unless namespace.present? && ::Feature.enabled?(:ai_model_switching, namespace)
         return unless namespace.root?
 
-        find_or_initialize_by(namespace_id: namespace.id, feature: feature)
+        feature_name = get_feature_name(feature)
+        find_or_initialize_by(namespace_id: namespace.id, feature: feature_name)
       end
 
       def self.any_non_default_for_duo_chat?(namespace_id)
