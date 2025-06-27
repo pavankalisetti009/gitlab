@@ -27,6 +27,12 @@ module EE
           project_settings&.secret_push_protection_enabled
         end
 
+        override :validity_checks_available
+        def validity_checks_available
+          ::Feature.enabled?(:validity_checks, project) &&
+            project.licensed_feature_available?(:secret_detection_validity_checks)
+        end
+
         override :validity_checks_enabled
         def validity_checks_enabled
           project_settings&.validity_checks_enabled
