@@ -73,6 +73,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         elasticsearch_max_code_indexing_concurrency: 30,
         elasticsearch_password: nil,
         elasticsearch_pause_indexing: false,
+        elasticsearch_prefix: 'gitlab',
         elasticsearch_requeue_workers: false,
         elasticsearch_retry_on_failure: 0,
         elasticsearch_search: false,
@@ -236,6 +237,30 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value('').for(:elasticsearch_username) }
       it { is_expected.to allow_value('a' * 255).for(:elasticsearch_username) }
       it { is_expected.not_to allow_value('a' * 256).for(:elasticsearch_username) }
+
+      describe 'elasticsearch_prefix validation' do
+        it { is_expected.to allow_value('gitlab').for(:elasticsearch_prefix) }
+        it { is_expected.to allow_value('custom-prefix').for(:elasticsearch_prefix) }
+        it { is_expected.to allow_value('my_prefix').for(:elasticsearch_prefix) }
+        it { is_expected.to allow_value('prefix123').for(:elasticsearch_prefix) }
+        it { is_expected.to allow_value('a').for(:elasticsearch_prefix) }
+        it { is_expected.to allow_value('1').for(:elasticsearch_prefix) }
+        it { is_expected.to allow_value('a1b2c3').for(:elasticsearch_prefix) }
+
+        it { is_expected.not_to allow_value('').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value(nil).for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('Prefix').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('-prefix').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('prefix-').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('_prefix').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('prefix_').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('prefix with spaces').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value(' prefix').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('prefix ').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('prefix@special').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('prefix.dot').for(:elasticsearch_prefix) }
+        it { is_expected.not_to allow_value('a' * 101).for(:elasticsearch_prefix) }
+      end
     end
 
     describe 'security policy settings' do

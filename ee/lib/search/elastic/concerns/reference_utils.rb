@@ -27,7 +27,7 @@ module Search
         end
 
         def environment_specific_index_name(type)
-          [Rails.application.class.module_parent_name.downcase, Rails.env, type].join('-')
+          [Gitlab::CurrentSettings.elasticsearch_prefix, Rails.env, type].join('-')
         end
       end
     end

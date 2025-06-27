@@ -7,7 +7,9 @@ module Elastic
       extend Elasticsearch::Model::Indexing::ClassMethods
       extend Elasticsearch::Model::Naming::ClassMethods
 
-      self.index_name = [Rails.application.class.module_parent_name.downcase, Rails.env].join('-')
+      def self.index_name
+        [Gitlab::CurrentSettings.elasticsearch_prefix, Rails.env].join('-')
+      end
 
       settings \
         index: {
