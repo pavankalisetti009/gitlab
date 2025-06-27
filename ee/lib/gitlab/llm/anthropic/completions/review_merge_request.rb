@@ -9,14 +9,10 @@ module Gitlab
           include Gitlab::InternalEventsTracking
 
           DRAFT_NOTES_COUNT_LIMIT = 50
-          PRIORITY_THRESHOLD = 3
           LINE_MATCH_THRESHOLD = 3
           UNIT_PRIMITIVE = 'review_merge_request'
           COMMENT_METRICS = %i[
             total_comments
-            p1_comments
-            p2_comments
-            p3_comments
             comments_with_valid_path
             comments_with_valid_line
             comments_line_matched_by_content
@@ -89,7 +85,7 @@ module Gitlab
 
           def perform_review
             # Initialize ivar that will be populated as AI review diff hunks
-            @draft_notes_by_priority = []
+            @draft_notes = []
             @comment_metrics = COMMENT_METRICS.index_with(0)
 
             diff_files = merge_request.ai_reviewable_diff_files
@@ -106,7 +102,7 @@ module Gitlab
 
             process_files(diff_files, mr_diff_refs)
 
-            if @draft_notes_by_priority.empty?
+            if @draft_notes.empty?
               update_progress_note(review_summary, with_todo: true)
 
               log_duo_code_review_internal_event('find_no_issues_duo_code_review_after_review')
@@ -139,9 +135,6 @@ module Gitlab
             @review_description = parsed_body.review_description
 
             @comment_metrics[:total_comments] = comments.count
-            comments.each do |comment|
-              @comment_metrics[:"p#{comment.priority}_comments"] += 1 if comment.priority.in?(1..3)
-            end
 
             comments_by_file = comments.group_by(&:file)
             diff_files.each do |diff_file|
@@ -201,7 +194,7 @@ module Gitlab
               draft_note_params = build_draft_note_params(comment.content, diff_file, diff_line, diff_refs)
               next unless draft_note_params.present?
 
-              @draft_notes_by_priority << [comment.priority, draft_note_params]
+              @draft_notes << draft_note_params
             end
           end
 
@@ -421,7 +414,7 @@ module Gitlab
 
           # rubocop: disable CodeReuse/ActiveRecord -- NOT a ActiveRecord object
           def trimmed_draft_note_params
-            @draft_notes_by_priority.take(DRAFT_NOTES_COUNT_LIMIT).map(&:last)
+            @draft_notes.take(DRAFT_NOTES_COUNT_LIMIT)
           end
           # rubocop: enable CodeReuse/ActiveRecord
 

@@ -274,7 +274,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       let(:combined_review_response) do
         <<~RESPONSE
           <review>
-          <comment file="UPDATED.md" priority="3" old_line="" new_line="2">
+          <comment file="UPDATED.md" old_line="" new_line="2">
           First comment with suggestions
           With additional line
           <from>
@@ -287,9 +287,9 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           </to>
           Some more comments
           </comment>
-          <comment file="NEW.md" priority="3" old_line="" new_line="1">Second comment</comment>
-          <comment file="NEW.md" priority="3" old_line="" new_line="2">Third comment</comment>
-          <comment file="NEW.md" priority="2" old_line="" new_line="2">Fourth comment</comment>
+          <comment file="NEW.md" old_line="" new_line="1">Second comment</comment>
+          <comment file="NEW.md" old_line="" new_line="2">Third comment</comment>
+          <comment file="NEW.md" old_line="" new_line="2">Fourth comment</comment>
           </review>
         RESPONSE
       end
@@ -510,11 +510,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         let(:combined_review_response) do
           <<~RESPONSE
             <review>
-            <comment file="UPDATED.md">First comment with no line numbers or priority</comment>
-            <comment file="UPDATED.md" priority="3" old_line="" new_line="2">Second comment</comment>
-            <comment file="NEW.md" priority="" old_line="" new_line="1">Third comment with no priority</comment>
-            <comment file="NEW.md" priority="3" old_line="" new_line="">Fourth comment with missing lines</comment>
-            <comment file="NEW.md" priority="3" old_line="" new_line="10">Fifth comment with invalid line</comment>
+            <comment file="UPDATED.md">First comment with no line numbers</comment>
+            <comment file="UPDATED.md" old_line="" new_line="2">Second comment</comment>
+            <comment file="NEW.md" old_line="" new_line="">Fourth comment with missing lines</comment>
+            <comment file="NEW.md" old_line="" new_line="10">Fifth comment with invalid line</comment>
             </review>
           RESPONSE
         end
@@ -532,7 +531,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           let(:combined_review_response) do
             <<~RESPONSE
             <review>
-            <comment file="UPDATED.md" priority="3" old_line="2" new_line="2">Second comment</comment>
+            <comment file="UPDATED.md" old_line="2" new_line="2">Second comment</comment>
             </review>
             RESPONSE
           end
@@ -552,7 +551,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             let(:combined_review_response) do
               <<~RESPONSE
                 <review>
-                <comment file="UPDATED.md" priority="3" old_line="" new_line="10">A comment with a suggestion
+                <comment file="UPDATED.md" old_line="" new_line="10">A comment with a suggestion
                 <from>
                 existing line 1
                 new line 1
@@ -603,7 +602,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
               let(:combined_review_response) do
                 <<~RESPONSE
                   <review>
-                  <comment file="UPDATED.md" priority="3" old_line="" new_line="10">A comment with a suggestion
+                  <comment file="UPDATED.md" old_line="" new_line="10">A comment with a suggestion
                   <from>
                   existing line 1
                   new line 1
@@ -634,7 +633,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
               let(:combined_review_response) do
                 <<~RESPONSE
                   <review>
-                  <comment file="UPDATED.md" priority="3" old_line="" new_line="2">A comment with a suggestion
+                  <comment file="UPDATED.md" old_line="" new_line="2">A comment with a suggestion
                   <from>
                   existing line 1
                   new line 1
@@ -685,7 +684,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
                 let(:combined_review_response) do
                   <<~RESPONSE
                     <review>
-                    <comment file="UPDATED.md" priority="3" old_line="" new_line="2">A comment with a suggestion
+                    <comment file="UPDATED.md" old_line="" new_line="2">A comment with a suggestion
                     <from>
                     existing line 1
                     new line 1
@@ -722,7 +721,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
                 let(:combined_review_response) do
                   <<~RESPONSE
                     <review>
-                    <comment file="UPDATED.md" priority="3" old_line="" new_line="2">A comment with a suggestion
+                    <comment file="UPDATED.md" old_line="" new_line="2">A comment with a suggestion
                     <from>
                     some random content
                     that do not match
@@ -765,8 +764,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           <<~RESPONSE
             Let me explain how awesome this review is.
             <review>
-            <comment file="UPDATED.md" priority="3" old_line="" new_line="2">First comment</comment>
-            <comment file="NEW.md" priority="3" old_line="" new_line="1">Second comment</comment>
+            <comment file="UPDATED.md" old_line="" new_line="2">First comment</comment>
+            <comment file="NEW.md" old_line="" new_line="1">Second comment</comment>
             </review>
           RESPONSE
         end
@@ -1021,9 +1020,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           unit_primitive: 'review_merge_request',
           merge_request_id: merge_request.id,
           total_comments: 0,
-          p1_comments: 0,
-          p2_comments: 0,
-          p3_comments: 0,
           comments_with_valid_path: 0,
           comments_with_valid_line: 0,
           created_draft_notes: 0
@@ -1039,12 +1035,11 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         let(:combined_review_response) do
           <<~RESPONSE
             <review>
-            <comment file="UPDATED.md" priority="3" old_line="1" new_line="1">first comment</comment>
-            <comment file="UPDATED.md" priority="2" old_line="" new_line="2">second comment</comment>
-            <comment file="NEW.md" priority="1" old_line="" new_line="1">third comment</comment>
-            <comment file="NEW.md" priority="4" old_line="" new_line="2">comment with unknown priority</comment>
-            <comment file="NEW.md" priority="2" old_line="" new_line="3">comment with unknown line</comment>
-            <comment file="SOMETHINGRANDOM" priority="3" old_line="" new_line="3">comment with unknown filename</comment>
+            <comment file="UPDATED.md" old_line="1" new_line="1">first comment</comment>
+            <comment file="UPDATED.md" old_line="" new_line="2">second comment</comment>
+            <comment file="NEW.md" old_line="" new_line="1">third comment</comment>
+            <comment file="NEW.md" old_line="" new_line="3">comment with unknown line</comment>
+            <comment file="SOMETHINGRANDOM" old_line="" new_line="3">comment with unknown filename</comment>
             </review>
           RESPONSE
         end
@@ -1053,13 +1048,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           expect(Gitlab::AppLogger).to receive(:info).with(
             hash_including(
               expected_hash.merge(
-                total_comments: 6,
-                p1_comments: 1,
-                p2_comments: 2,
-                p3_comments: 2,
-                comments_with_valid_path: 5,
-                comments_with_valid_line: 4,
-                created_draft_notes: 4
+                total_comments: 5,
+                comments_with_valid_path: 4,
+                comments_with_valid_line: 3,
+                created_draft_notes: 3
               )
             )
           )
@@ -1142,7 +1134,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       let(:combined_review_response) do
         <<~RESPONSE
           <review>
-          <comment file="UPDATED.md" priority="3" old_line="" new_line="2">First comment</comment>
+          <comment file="UPDATED.md" old_line="" new_line="2">First comment</comment>
           </review>
         RESPONSE
       end
