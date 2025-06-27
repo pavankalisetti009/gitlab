@@ -2,11 +2,42 @@ query getComplianceViolation($id: ID!) {
   complianceViolation(id: $id) @client {
     id
     status
+    createdAt
     project {
       id
       nameWithNamespace
       fullPath
       webUrl
+    }
+    auditEvent {
+      id
+      eventName
+      targetId
+      details
+      ipAddress
+      entityPath
+      entityId
+      entityType
+      author {
+        id
+        name
+      }
+      project {
+        id
+        name
+        fullPath
+        webUrl
+      }
+      group {
+        id
+        name
+        fullPath
+        webUrl
+      }
+      user {
+        id
+        name
+      }
     }
   }
 }

@@ -16845,6 +16845,9 @@ msgstr ""
 msgid "ComplianceViolations|Your Compliance Violations CSV export for the group %{group_link} has been attached to this email."
 msgstr ""
 
+msgid "ComplianceViolation|Audit event captured"
+msgstr ""
+
 msgid "ComplianceViolation|Detected"
 msgstr ""
 
@@ -16852,6 +16855,9 @@ msgid "ComplianceViolation|Dismissed"
 msgstr ""
 
 msgid "ComplianceViolation|In review"
+msgstr ""
+
+msgid "ComplianceViolation|Registered event IP"
 msgstr ""
 
 msgid "ComplianceViolation|Resolved"
