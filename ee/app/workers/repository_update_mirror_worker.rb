@@ -22,7 +22,9 @@ class RepositoryUpdateMirrorWorker
                 .inc_routes
                 .with_group
                 .include_project_feature
-                .find(project_id)
+                .find_by_id(project_id)
+
+    return unless project
 
     @current_user = project.mirror_user || project.creator
 
