@@ -19291,7 +19291,8 @@ CREATE TABLE packages_composer_metadata (
     target_sha bytea NOT NULL,
     composer_json jsonb DEFAULT '{}'::jsonb NOT NULL,
     version_cache_sha bytea,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_250f62a87a CHECK ((project_id IS NOT NULL))
 );
 
 CREATE TABLE packages_packages (
