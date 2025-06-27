@@ -21,7 +21,6 @@ import {
 import SidebarColorView from '~/sidebar/components/sidebar_color_view.vue';
 import SidebarColorPicker from '~/sidebar/components/sidebar_color_picker.vue';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import { findColorWidget, newWorkItemId } from '~/work_items/utils';
 import Tracking from '~/tracking';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
@@ -135,15 +134,10 @@ export default {
       this.isUpdating = true;
 
       if (this.workItemId === newWorkItemId(this.workItemType)) {
-        this.$apollo.mutate({
-          mutation: updateNewWorkItemMutation,
-          variables: {
-            input: {
-              fullPath: this.fullPath,
-              color: this.currentColor,
-              workItemType: this.workItemType,
-            },
-          },
+        this.$emit('updateWidgetDraft', {
+          fullPath: this.fullPath,
+          color: this.currentColor,
+          workItemType: this.workItemType,
         });
         this.isUpdating = false;
         this.isEditing = false;

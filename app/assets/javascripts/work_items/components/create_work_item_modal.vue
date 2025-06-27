@@ -99,7 +99,10 @@ export default {
     },
   },
   data() {
-    const draftWorkItemType = getDraftWorkItemType({ fullPath: this.fullPath })?.name;
+    const draftWorkItemType = getDraftWorkItemType({
+      fullPath: this.fullPath,
+      relatedItemId: this.relatedItem?.id,
+    })?.name;
 
     return {
       isCreateModalVisible: false,

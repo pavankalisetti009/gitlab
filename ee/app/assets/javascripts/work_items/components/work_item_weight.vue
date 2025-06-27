@@ -8,7 +8,6 @@ import {
   NAME_TO_TEXT_LOWERCASE_MAP,
   TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
-import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { newWorkItemId } from '~/work_items/utils';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
@@ -114,17 +113,11 @@ export default {
       this.track('updated_weight');
 
       if (this.createFlow) {
-        this.$apollo.mutate({
-          mutation: updateNewWorkItemMutation,
-          variables: {
-            input: {
-              workItemType: this.workItemType,
-              fullPath: this.fullPath,
-              weight: newWeight,
-            },
-          },
+        this.$emit('updateWidgetDraft', {
+          workItemType: this.workItemType,
+          fullPath: this.fullPath,
+          weight: newWeight,
         });
-
         this.isUpdating = false;
         return;
       }

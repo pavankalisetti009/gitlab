@@ -95,6 +95,26 @@ describe('CreateWorkItemModal', () => {
     expect(findForm().props('preselectedWorkItemType')).toBe(WORK_ITEM_TYPE_NAME_ISSUE);
   });
 
+  it('renders create-work-item component with preselectedWorkItemType prop set from localStorage draft with related item id', async () => {
+    localStorage.setItem(
+      'autosave/new-full-path-related-22-widgets-draft',
+      JSON.stringify({ TYPE: { name: WORK_ITEM_TYPE_NAME_ISSUE } }),
+    );
+
+    createComponent({
+      relatedItem: {
+        id: 'gid://gitlab/WorkItem/22',
+        type: 'Issue',
+        reference: 'full-path#22',
+        webUrl: '/full-path/-/issues/22',
+      },
+    });
+
+    await waitForPromises();
+
+    expect(findForm().props('preselectedWorkItemType')).toBe(WORK_ITEM_TYPE_NAME_ISSUE);
+  });
+
   it('shows toast on workItemCreated', async () => {
     createComponent();
 
