@@ -1,8 +1,8 @@
 import { GlTab, GlTabs } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-import AiCatalogNavTabs from '~/ai/catalog/components/ai_catalog_nav_tabs.vue';
-import { AI_CATALOG_AGENTS_ROUTE } from '~/ai/catalog/router/constants';
+import AiCatalogNavTabs from 'ee/ai/catalog/components/ai_catalog_nav_tabs.vue';
+import { AI_CATALOG_AGENTS_ROUTE } from 'ee/ai/catalog/router/constants';
 
 describe('AiCatalogNavTabs', () => {
   let wrapper;

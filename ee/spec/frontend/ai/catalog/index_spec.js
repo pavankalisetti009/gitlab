@@ -1,8 +1,8 @@
 import { createWrapper } from '@vue/test-utils';
 
-import { initAiCatalog } from '~/ai/catalog/index';
-import AiCatalogApp from '~/ai/catalog/ai_catalog_app.vue';
-import * as Router from '~/ai/catalog/router';
+import { initAiCatalog } from 'ee/ai/catalog/index';
+import AiCatalogApp from 'ee/ai/catalog/ai_catalog_app.vue';
+import * as Router from 'ee/ai/catalog/router';
 
 describe('AI Catalog Index', () => {
   let mockElement;

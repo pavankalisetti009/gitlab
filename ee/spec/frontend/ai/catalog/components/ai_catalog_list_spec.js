@@ -2,8 +2,8 @@ import { GlSkeletonLoader } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-import AiCatalogList from '~/ai/catalog/components/ai_catalog_list.vue';
-import AiCatalogListItem from '~/ai/catalog/components/ai_catalog_list_item.vue';
+import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 
 describe('AiCatalogList', () => {
   let wrapper;

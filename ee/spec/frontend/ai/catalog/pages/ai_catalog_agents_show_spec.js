@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import AiCatalogAgentsShow from '~/ai/catalog/pages/ai_catalog_agents_show.vue';
+import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
 
 describe('AiCatalogAgentsShow', () => {
   let wrapper;
