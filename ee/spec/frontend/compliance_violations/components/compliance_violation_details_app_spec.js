@@ -5,6 +5,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ComplianceViolationDetailsApp from 'ee/compliance_violations/components/compliance_violation_details_app.vue';
+import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 
 Vue.use(VueApollo);
@@ -17,14 +18,40 @@ describe('ComplianceViolationDetailsApp', () => {
   const violationId = '123';
 
   const mockComplianceViolationData = {
-    id: violationId,
-    status: 'in_review',
+    id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
+    status: 'IN_REVIEW',
+    createdAt: '2025-06-16T02:20:41Z',
     project: {
-      id: '2',
+      id: 'gid://gitlab/Project/2',
       nameWithNamespace: 'GitLab.org / GitLab Test',
       fullPath: '/gitlab/org/gitlab-test',
       webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
       __typename: 'Project',
+    },
+    auditEvent: {
+      id: 'gid://gitlab/AuditEvents::ProjectAuditEvent/467',
+      eventName: 'merge_request_merged',
+      targetId: '2',
+      details: '{}',
+      ipAddress: '123.1.1.9',
+      entityPath: 'gitlab-org/gitlab-test',
+      entityId: '2',
+      entityType: 'Project',
+      author: {
+        id: 'gid://gitlab/User/1',
+        name: 'John Doe',
+      },
+      project: {
+        id: 'gid://gitlab/Project/2',
+        name: 'Test project',
+        fullPath: 'gitlab-org/gitlab-test',
+        webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+      },
+      group: null,
+      user: {
+        id: 'gid://gitlab/User/1',
+        name: 'John Doe',
+      },
     },
     __typename: 'ComplianceViolation',
   };
@@ -42,6 +69,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const mockResolvers = ({
     shouldThrowQueryError = false,
     shouldThrowMutationError = false,
+    violationData = mockComplianceViolationData,
   } = {}) => ({
     Query: {
       complianceViolation: () => {
@@ -49,7 +77,7 @@ describe('ComplianceViolationDetailsApp', () => {
           throw new Error('Query error');
         }
 
-        return mockComplianceViolationData;
+        return violationData;
       },
     },
     Mutation: {
@@ -79,6 +107,7 @@ describe('ComplianceViolationDetailsApp', () => {
     wrapper.findByTestId('compliance-violation-details-loading-status');
   const findStatusDropdown = () => wrapper.findComponent(ComplianceViolationStatusDropdown);
   const findViolationDetails = () => wrapper.findByTestId('compliance-violation-details');
+  const findAuditEvent = () => wrapper.findComponent(AuditEvent);
 
   afterEach(() => {
     wrapper?.destroy();
@@ -128,7 +157,7 @@ describe('ComplianceViolationDetailsApp', () => {
 
     it('displays the correct title', () => {
       const title = wrapper.findByTestId('compliance-violation-title');
-      expect(title.text()).toBe(`Details of vio-${mockComplianceViolationData.id}`);
+      expect(title.text()).toBe(`Details of vio-${violationId}`);
     });
 
     it('renders the status dropdown with correct props', () => {
@@ -146,6 +175,26 @@ describe('ComplianceViolationDetailsApp', () => {
       expect(projectLink.exists()).toBe(true);
       expect(projectLink.text()).toBe(project.nameWithNamespace);
       expect(projectLink.attributes('href')).toBe(project.webUrl);
+    });
+
+    describe('when violation has an audit event', () => {
+      it('renders the audit event component with correct props', () => {
+        const auditEventComponent = findAuditEvent();
+        expect(auditEventComponent.exists()).toBe(true);
+        expect(auditEventComponent.props('auditEvent')).toEqual(
+          mockComplianceViolationData.auditEvent,
+        );
+      });
+    });
+
+    describe('when violation does not have an audit event', () => {
+      it('renders the audit event component with correct props', () => {
+        createComponent({
+          resolverOptions: { violationData: { ...mockComplianceViolationData, auditEvent: null } },
+        });
+        const auditEventComponent = findAuditEvent();
+        expect(auditEventComponent.exists()).toBe(false);
+      });
     });
   });
 

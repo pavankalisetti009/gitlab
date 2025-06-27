@@ -9,6 +9,46 @@ describe('GraphQL resolvers', () => {
     cache = new InMemoryCache();
   });
 
+  const createMockComplianceViolation = (violationId, overrides = {}) => ({
+    id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
+    status: 'IN_REVIEW',
+    createdAt: '2025-06-16T02:20:41Z',
+    project: {
+      id: 'gid://gitlab/Project/2',
+      nameWithNamespace: 'GitLab.org / GitLab Test',
+      fullPath: 'gitlab-org/gitlab-test',
+      webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+      __typename: 'Project',
+    },
+    auditEvent: {
+      id: 'gid://gitlab/AuditEvents::ProjectAuditEvent/467',
+      eventName: 'merge_request_merged',
+      targetId: '2',
+      details: '{}',
+      ipAddress: '123.1.1.9',
+      entityPath: 'gitlab-org/gitlab-test',
+      entityId: '2',
+      entityType: 'Project',
+      author: {
+        id: 'gid://gitlab/User/1',
+        name: 'John Doe',
+      },
+      project: {
+        id: 'gid://gitlab/Project/2',
+        name: 'Test project',
+        fullPath: 'gitlab-org/gitlab-test',
+        webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+      },
+      group: null,
+      user: {
+        id: 'gid://gitlab/User/1',
+        name: 'John Doe',
+      },
+    },
+    __typename: 'ComplianceViolation',
+    ...overrides,
+  });
+
   describe('Query resolvers', () => {
     describe('complianceViolation', () => {
       const violationId = 'gid://gitlab/ComplianceViolation/1';
@@ -16,18 +56,7 @@ describe('GraphQL resolvers', () => {
       it('returns mock violation data when not in cache', () => {
         const result = resolvers.Query.complianceViolation(null, { id: violationId }, { cache });
 
-        expect(result).toEqual({
-          id: violationId,
-          status: 'in_review',
-          project: {
-            id: 2,
-            nameWithNamespace: 'GitLab.org / GitLab Test',
-            fullPath: '/gitlab/org/gitlab-test',
-            webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-            __typename: 'Project',
-          },
-          __typename: 'ComplianceViolation',
-        });
+        expect(result).toEqual(createMockComplianceViolation(violationId));
       });
 
       it('writes data to cache after first query', () => {
@@ -38,33 +67,11 @@ describe('GraphQL resolvers', () => {
           variables: { id: violationId },
         });
 
-        expect(cachedData.complianceViolation).toEqual({
-          id: violationId,
-          status: 'in_review',
-          project: {
-            id: 2,
-            nameWithNamespace: 'GitLab.org / GitLab Test',
-            fullPath: '/gitlab/org/gitlab-test',
-            webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-            __typename: 'Project',
-          },
-          __typename: 'ComplianceViolation',
-        });
+        expect(cachedData.complianceViolation).toEqual(createMockComplianceViolation(violationId));
       });
 
       it('returns cached data when available', () => {
-        const cachedViolation = {
-          id: violationId,
-          status: 'resolved',
-          project: {
-            id: 3,
-            nameWithNamespace: 'Cached Project',
-            fullPath: '/cached/project',
-            webUrl: 'https://localhost:3000/cached/project',
-            __typename: 'Project',
-          },
-          __typename: 'ComplianceViolation',
-        };
+        const cachedViolation = createMockComplianceViolation(violationId, { status: 'resolved' });
 
         cache.writeQuery({
           query: complianceViolationQuery,
@@ -87,18 +94,7 @@ describe('GraphQL resolvers', () => {
       beforeEach(() => {
         // Set up initial data in cache
         const initialData = {
-          complianceViolation: {
-            id: violationId,
-            status: 'in_review',
-            project: {
-              id: 2,
-              nameWithNamespace: 'GitLab.org / GitLab Test',
-              fullPath: '/gitlab/org/gitlab-test',
-              webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-              __typename: 'Project',
-            },
-            __typename: 'ComplianceViolation',
-          },
+          complianceViolation: createMockComplianceViolation(violationId),
         };
 
         cache.writeQuery({
@@ -160,18 +156,9 @@ describe('GraphQL resolvers', () => {
           variables: { id: violationId },
         });
 
-        expect(updatedData.complianceViolation).toMatchObject({
-          id: violationId,
-          status: 'resolved', // Updated
-          project: {
-            id: 2,
-            nameWithNamespace: 'GitLab.org / GitLab Test',
-            fullPath: '/gitlab/org/gitlab-test',
-            webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-            __typename: 'Project',
-          },
-          __typename: 'ComplianceViolation',
-        });
+        expect(updatedData.complianceViolation).toMatchObject(
+          createMockComplianceViolation(violationId, { status: 'resolved' }),
+        );
       });
     });
   });

@@ -2,15 +2,18 @@
 import { GlLoadingIcon, GlToast } from '@gitlab/ui';
 import Vue from 'vue';
 import { __, sprintf } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import updateComplianceViolationStatus from '../graphql/mutations/update_compliance_violation_status.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
+import AuditEvent from './audit_event.vue';
 
 Vue.use(GlToast);
 
 export default {
   name: 'ComplianceViolationDetailsApp',
   components: {
+    AuditEvent,
     ComplianceViolationStatusDropdown,
     GlLoadingIcon,
   },
@@ -43,7 +46,7 @@ export default {
     title() {
       if (!this.complianceViolation) return '';
       return sprintf(__('Details of vio-%{violationId}'), {
-        violationId: this.complianceViolation.id,
+        violationId: getIdFromGraphQLId(this.complianceViolation.id),
       });
     },
   },
@@ -90,7 +93,7 @@ export default {
       <span class="gl-font-bold">{{ $options.i18n.status }}:</span>
       <compliance-violation-status-dropdown
         class="gl-ml-3 gl-align-baseline"
-        :value="complianceViolation.status"
+        :value="complianceViolation.status.toLowerCase()"
         :loading="isStatusUpdating"
         @change="handleStatusChange"
       />
@@ -104,5 +107,10 @@ export default {
         {{ complianceViolation.project.nameWithNamespace }}
       </a>
     </div>
+    <audit-event
+      v-if="complianceViolation.auditEvent"
+      class="gl-mt-5"
+      :audit-event="complianceViolation.auditEvent"
+    />
   </div>
 </template>
