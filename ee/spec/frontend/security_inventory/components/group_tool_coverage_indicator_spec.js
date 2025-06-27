@@ -12,6 +12,8 @@ describe('GroupToolCoverageIndicator', () => {
   const findScannerBar = (key) => wrapper.findComponentByTestId(`${key}-${groupPath}-bar`);
   const findScannerLabel = (key) => wrapper.findByTestId(`${key}-${groupPath}-label`).text();
   const findGroupToolCoverageDetails = () => wrapper.findComponent(GroupToolCoverageDetails);
+  const findGroupToolCoverageDetailsAt = (i) =>
+    wrapper.findAllComponents(GroupToolCoverageDetails).at(i);
 
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(GroupToolCoverageIndicator, {
@@ -108,15 +110,23 @@ describe('GroupToolCoverageIndicator', () => {
       expect(scannerLabel).toContain('Tool coverage: 0 of 0');
     });
 
-    it('passes correct data to tool coverage details component', () => {
-      createComponent();
-      expect(findGroupToolCoverageDetails().props('securityScanner')).toStrictEqual({
-        analyzerType: 'DEPENDENCY_SCANNING',
-        failure: 0,
-        notConfigured: 0,
-        success: 0,
-        updatedAt: undefined,
-      });
-    });
+    it.each`
+      index | analyzerType             | expectedCounts
+      ${0}  | ${'DEPENDENCY_SCANNING'} | ${{ failure: 0, notConfigured: 0, success: 0 }}
+      ${1}  | ${'SAST'}                | ${{ failure: 1, notConfigured: 3, success: 0 }}
+      ${2}  | ${'SECRET_DETECTION'}    | ${{ failure: 0, notConfigured: 3, success: 4 }}
+      ${3}  | ${'CONTAINER_SCANNING'}  | ${{ failure: 0, notConfigured: 6, success: 1 }}
+      ${4}  | ${'DAST'}                | ${{ failure: 0, notConfigured: 0, success: 0 }}
+      ${5}  | ${'SAST_IAC'}            | ${{ failure: 0, notConfigured: 3, success: 1 }}
+    `(
+      'passes correct data to tool coverage details component for $analyzerType',
+      ({ index, analyzerType, expectedCounts }) => {
+        createComponent();
+        expect(findGroupToolCoverageDetailsAt(index).props('securityScanner')).toMatchObject({
+          analyzerType,
+          ...expectedCounts,
+        });
+      },
+    );
   });
 });
