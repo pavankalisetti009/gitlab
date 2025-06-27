@@ -1036,7 +1036,7 @@
 
 .db:rules:invalidate-old-pipeline-results:
   rules:
-    - <<: *if-not-canonical-namespace
+    - if: '$GITLABCOM_DATABASE_TESTING_TRIGGER_TOKEN == null'
       when: never
     - <<: *if-merge-request
       changes: *db-patterns
