@@ -17,7 +17,7 @@ query getWorkflows($projectPath: ID!, $after: String, $before: String, $first: I
         id
         humanStatus
         updatedAt
-        goal
+        workflowDefinition
       }
     }
   }

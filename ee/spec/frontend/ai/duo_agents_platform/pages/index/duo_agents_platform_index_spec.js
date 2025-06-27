@@ -204,7 +204,7 @@ describe('AgentsPlatformIndex', () => {
                 id: 'gid://gitlab/DuoWorkflow::Workflow/3',
                 humanStatus: 'pending',
                 updatedAt: '2024-01-03T00:00:00Z',
-                goal: 'Test workflow 3',
+                workflowDefinition: 'software_development',
               },
             },
             {
@@ -212,7 +212,7 @@ describe('AgentsPlatformIndex', () => {
                 id: 'gid://gitlab/DuoWorkflow::Workflow/4',
                 humanStatus: 'failed',
                 updatedAt: '2024-01-04T00:00:00Z',
-                goal: 'Test workflow 4',
+                workflowDefinition: 'convert_to_ci',
               },
             },
           ];

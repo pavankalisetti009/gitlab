@@ -66,12 +66,11 @@ describe('DuoAgentsPlatformShow', () => {
 
     it('passes correct props to WorkflowDetails', () => {
       const workflowDetailsProps = findWorkflowDetails().props();
-      const firstEvent = mockWorkflowEventsResponse.data.duoWorkflowEvents.nodes[0];
 
       expect(workflowDetailsProps).toEqual({
         isLoading: false,
-        status: firstEvent.workflowStatus,
-        workflowDefinition: firstEvent.workflowDefinition,
+        status: 'Running',
+        workflowDefinition: 'Software development',
         workflowEvents: mockWorkflowEventsResponse.data.duoWorkflowEvents.nodes,
       });
     });

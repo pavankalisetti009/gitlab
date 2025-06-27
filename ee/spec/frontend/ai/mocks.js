@@ -4,7 +4,7 @@ export const mockWorkflowEdges = [
       id: 'gid://gitlab/DuoWorkflow::Workflow/1',
       humanStatus: 'completed',
       updatedAt: '2024-01-01T00:00:00Z',
-      goal: 'Test workflow 1',
+      workflowDefinition: 'software_development',
     },
   },
   {
@@ -12,7 +12,7 @@ export const mockWorkflowEdges = [
       id: 'gid://gitlab/DuoWorkflow::Workflow/2',
       humanStatus: 'running',
       updatedAt: '2024-01-02T00:00:00Z',
-      goal: 'Test workflow 2',
+      workflowDefinition: 'convert_to_ci',
     },
   },
 ];

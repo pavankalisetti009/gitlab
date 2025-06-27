@@ -23353,7 +23353,7 @@ msgstr ""
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Agent Flow"
+msgid "DuoAgentsPlatform|Agent flow"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Agents"
@@ -23369,6 +23369,12 @@ msgid "DuoAgentsPlatform|Failed to fetch workflows"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Fetching logs..."
+msgstr ""
+
+msgid "DuoAgentsPlatform|ID"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Name"
 msgstr ""
 
 msgid "DuoAgentsPlatform|New"
@@ -23408,6 +23414,9 @@ msgid "DuoAgentsPlatform|Start Agent Flow"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Status"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Unknown"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Updated"
