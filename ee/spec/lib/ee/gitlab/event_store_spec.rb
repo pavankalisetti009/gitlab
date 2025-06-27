@@ -8,6 +8,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
       instance = described_class.instance
 
       expect(instance.subscriptions.keys).to match_array([
+        Ai::ActiveContext::Code::SaasInitialIndexingEvent,
         ::Ci::JobArtifactsDeletedEvent,
         ::Ci::PipelineCreatedEvent,
         ::Repositories::KeepAroundRefsCreatedEvent,
@@ -95,6 +96,33 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
       expect(described_class.instance).to receive(:publish_group).with(events)
 
       described_class.publish_group(events)
+    end
+  end
+
+  describe 'SaasInitialIndexingEventWorker subscription condition' do
+    let(:instance) { described_class.instance }
+    let(:subscription) do
+      instance.subscriptions.find { |k, _v| k == Ai::ActiveContext::Code::SaasInitialIndexingEvent }.second.first
+    end
+
+    context 'when active_context_code_event_saas_initial_indexing feature flag is enabled' do
+      before do
+        stub_feature_flags(active_context_code_event_saas_initial_indexing: true)
+      end
+
+      it 'returns true' do
+        expect(subscription.condition.call(nil)).to be true
+      end
+    end
+
+    context 'when active_context_code_event_saas_initial_indexing feature flag is disabled' do
+      before do
+        stub_feature_flags(active_context_code_event_saas_initial_indexing: false)
+      end
+
+      it 'returns false' do
+        expect(subscription.condition.call(nil)).to be false
+      end
     end
   end
 end

@@ -7,16 +7,11 @@ module Ai
         include Gitlab::Scheduling::TaskExecutor
 
         TASKS = {
-          # Example task format (no actual tasks yet):
-          # example_task: {
-          #   period: 1.hour,
-          #   if: -> { SomeCondition.met? },
-          #   dispatch: { event: SomeEvent }
-          # },
-          # another_example: {
-          #   if: -> { AnotherCondition.exists? },
-          #   execute: -> { SomeService.execute }
-          # }
+          saas_initial_indexing: {
+            period: 1.hour,
+            if: -> { ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) },
+            dispatch: { event: SaasInitialIndexingEvent }
+          }
         }.freeze
 
         def self.execute(task)
