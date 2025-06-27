@@ -10,13 +10,15 @@ module Types
         authorize :read_duo_workflow_event
 
         def self.authorization_scopes
-          [:api, :read_api, :ai_features]
+          [:api, :read_api, :ai_features, :ai_workflows]
         end
 
         field :checkpoint, Types::JsonStringType,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: 'Checkpoint of the event.'
 
         field :metadata, Types::JsonStringType,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: 'Metadata associated with the event.'
 
         field :workflow_status, Types::Ai::DuoWorkflows::WorkflowStatusEnum,
@@ -27,12 +29,15 @@ module Types
           experiment: { milestone: '17.10' }
 
         field :timestamp, Types::TimeType,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: 'Time of the event.'
 
         field :parent_timestamp, Types::TimeType,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: 'Time of the parent event.'
 
         field :errors, [GraphQL::Types::String],
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
           null: true, description: 'Message errors.'
 
         # rubocop:disable GraphQL/ExtractType -- no need to extract two fields into a separate field
