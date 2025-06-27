@@ -21,8 +21,6 @@ module Gitlab
         end
 
         def complete(prompt:, **options)
-          return unless enabled?
-
           # We do not allow to set `stream` because the separate `#stream` method should be used for streaming.
           # The reason is that streaming the response would not work with the exponential backoff mechanism.
           response = retry_with_exponential_backoff do
@@ -45,8 +43,6 @@ module Gitlab
         end
 
         def stream(prompt:, **options)
-          return unless enabled?
-
           response_body = ""
 
           perform_completion_request(prompt: prompt, options: options.merge(stream: true)) do |parsed_event|
@@ -65,8 +61,6 @@ module Gitlab
         traceable :stream, name: 'Request to Anthropic', run_type: 'llm'
 
         def messages_complete(messages:, **options)
-          return unless enabled?
-
           # We do not allow to set `stream` because the separate `#stream` method should be used for streaming.
           # The reason is that streaming the response would not work with the exponential backoff mechanism.
           response = retry_with_exponential_backoff do
@@ -89,8 +83,6 @@ module Gitlab
         end
 
         def messages_stream(messages:, **options)
-          return unless enabled?
-
           response_body = ""
           perform_messages_request(messages: messages, options: options.merge(stream: true)) do |parsed_event|
             response_body += parsed_event.dig('delta', 'text') if parsed_event.dig('delta', 'text')
@@ -156,10 +148,6 @@ module Gitlab
           raise Gitlab::AiGateway::ForbiddenError if response.forbidden?
 
           response
-        end
-
-        def enabled?
-          api_key.present?
         end
 
         def url

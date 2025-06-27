@@ -216,12 +216,6 @@ RSpec.shared_examples 'anthropic client' do
         expect(complete.parsed_response).to eq(expected_response)
       end
     end
-
-    context 'when the API key is not present' do
-      let(:api_key) { nil }
-
-      it { is_expected.to be_nil }
-    end
   end
 
   describe '#stream' do
@@ -374,22 +368,6 @@ RSpec.shared_examples 'anthropic client' do
             described_class.new(user, unit_primitive: unit_primitive).stream(prompt: 'anything', **options)
           ).to eq("")
         end
-      end
-    end
-
-    context 'when the API key is not present' do
-      let(:api_key) { nil }
-
-      it 'does not provide stream response' do
-        expect do |b|
-          described_class.new(user, unit_primitive: unit_primitive).stream(prompt: 'anything', **options, &b)
-        end.not_to yield_with_args
-      end
-
-      it 'returns nil' do
-        expect(
-          described_class.new(user, unit_primitive: unit_primitive).stream(prompt: 'anything', **options)
-        ).to be_nil
       end
     end
   end
@@ -578,12 +556,6 @@ RSpec.shared_examples 'anthropic client' do
         expect { messages_complete }.to raise_error { Gitlab::AiGateway::ForbiddenError }
       end
     end
-
-    context 'when the API key is not present' do
-      let(:api_key) { nil }
-
-      it { is_expected.to be_nil }
-    end
   end
 
   describe '#messages_stream' do
@@ -755,22 +727,6 @@ RSpec.shared_examples 'anthropic client' do
             described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
           ).to eq("")
         end
-      end
-    end
-
-    context 'when the API key is not present' do
-      let(:api_key) { nil }
-
-      it 'does not provide stream response' do
-        expect do |b|
-          described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options, &b)
-        end.not_to yield_with_args
-      end
-
-      it 'returns nil' do
-        expect(
-          described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
-        ).to be_nil
       end
     end
   end
