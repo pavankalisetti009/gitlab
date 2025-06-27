@@ -3484,6 +3484,9 @@ msgstr ""
 msgid "Active project access tokens"
 msgstr ""
 
+msgid "ActiveSessions|with Step-up Authentication"
+msgstr ""
+
 msgid "Activity"
 msgstr ""
 
