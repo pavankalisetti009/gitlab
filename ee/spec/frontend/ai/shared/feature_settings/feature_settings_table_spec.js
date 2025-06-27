@@ -1,6 +1,7 @@
 import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import FeatureSettingsTable from 'ee/ai/shared/feature_settings/feature_settings_table.vue';
+import FeatureSettingsBlock from 'ee/ai/shared/feature_settings/feature_settings_block.vue';
 import {
   mockCodeSuggestionsFeatureSettings,
   mockDuoChatFeatureSettings,
@@ -26,8 +27,8 @@ describe('FeatureSettingsTable', () => {
   const findDuoChatTableRows = () => wrapper.findByTestId('duo-chat-table-rows');
   const findCodeSuggestionsTableRows = () => wrapper.findByTestId('code-suggestions-table-rows');
   const findOtherDuoFeaturesTableRows = () => wrapper.findByTestId('other-duo-features-table-rows');
-  const findSectionHeaders = () => wrapper.findAll('h2');
-  const findSectionDescriptions = () => wrapper.findAllComponents(GlSprintf);
+  const findAllSettingsBlock = () => wrapper.findAllComponents(FeatureSettingsBlock);
+  const findAllSettingsDescriptions = () => wrapper.findAllComponents(GlSprintf);
 
   it('renders the component', () => {
     createComponent();
@@ -48,8 +49,8 @@ describe('FeatureSettingsTable', () => {
   it('renders Code Suggestions section', () => {
     createComponent();
 
-    expect(findSectionHeaders().at(0).text()).toBe('Code Suggestions');
-    expect(findSectionDescriptions().at(0).attributes('message')).toContain(
+    expect(findAllSettingsBlock().at(0).props('title')).toBe('Code Suggestions');
+    expect(findAllSettingsDescriptions().at(0).attributes('message')).toContain(
       'Assists developers by providing real-time code completions',
     );
     expect(findCodeSuggestionsTableRows().props('aiFeatureSettings')).toEqual(
@@ -60,8 +61,8 @@ describe('FeatureSettingsTable', () => {
   it('renders Duo Chat section', () => {
     createComponent();
 
-    expect(findSectionHeaders().at(1).text()).toBe('GitLab Duo Chat');
-    expect(findSectionDescriptions().at(1).attributes('message')).toContain(
+    expect(findAllSettingsBlock().at(1).props('title')).toBe('GitLab Duo Chat');
+    expect(findAllSettingsDescriptions().at(1).attributes('message')).toContain(
       'An AI assistant that provides real-time guidance',
     );
     expect(findDuoChatTableRows().props('aiFeatureSettings')).toEqual(mockDuoChatFeatureSettings);
@@ -71,8 +72,8 @@ describe('FeatureSettingsTable', () => {
     it('renders section when there are feature settings to show', () => {
       createComponent();
 
-      expect(findSectionHeaders()).toHaveLength(3);
-      expect(findSectionHeaders().at(2).text()).toBe('Other GitLab Duo features');
+      expect(findAllSettingsBlock()).toHaveLength(3);
+      expect(findAllSettingsBlock().at(2).props('title')).toBe('Other GitLab Duo features');
       expect(findOtherDuoFeaturesTableRows().exists()).toBe(true);
       expect(findOtherDuoFeaturesTableRows().props('aiFeatureSettings')).toEqual(
         mockOtherDuoFeaturesSettings,

@@ -2,12 +2,14 @@
 import { GlLink, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import FeatureSettingsTableRows from './feature_settings_table_rows.vue';
+import FeatureSettingsBlock from './feature_settings_block.vue';
 import { DUO_MAIN_FEATURES } from './constants';
 
 export default {
   name: 'FeatureSettingsTable',
   components: {
     FeatureSettingsTableRows,
+    FeatureSettingsBlock,
     GlLink,
     GlSprintf,
   },
@@ -46,9 +48,11 @@ export default {
 </script>
 <template>
   <div>
-    <div class="gl-p-5">
-      <h2 class="gl-heading-2 gl-mb-2">{{ s__('AdminAIPoweredFeatures|Code Suggestions') }}</h2>
-      <p class="gl-mb-0 gl-text-subtle">
+    <feature-settings-block
+      id="code-suggestions"
+      :title="s__('AdminAIPoweredFeatures|Code Suggestions')"
+    >
+      <template #description>
         <gl-sprintf
           :message="
             s__(
@@ -62,16 +66,17 @@ export default {
             }}</gl-link>
           </template>
         </gl-sprintf>
-      </p>
-    </div>
-    <feature-settings-table-rows
-      data-testid="code-suggestions-table-rows"
-      :ai-feature-settings="codeSuggestionsFeatures"
-      :is-loading="isLoading"
-    />
-    <div class="gl-p-5 gl-pt-0 md:gl-p-5">
-      <h2 class="gl-heading-2 gl-mb-2">{{ s__('AdminAIPoweredFeatures|GitLab Duo Chat') }}</h2>
-      <p class="gl-mb-0 gl-text-subtle">
+      </template>
+      <template #content>
+        <feature-settings-table-rows
+          data-testid="code-suggestions-table-rows"
+          :ai-feature-settings="codeSuggestionsFeatures"
+          :is-loading="isLoading"
+        />
+      </template>
+    </feature-settings-block>
+    <feature-settings-block id="duo-chat" :title="s__('AdminAIPoweredFeatures|GitLab Duo Chat')">
+      <template #description>
         <gl-sprintf
           :message="
             s__(
@@ -83,18 +88,20 @@ export default {
             <gl-link :href="$options.duoChatHelpPage" target="_blank">{{ content }}</gl-link>
           </template>
         </gl-sprintf>
-      </p>
-    </div>
-    <feature-settings-table-rows
-      data-testid="duo-chat-table-rows"
-      :ai-feature-settings="duoChatFeatures"
-      :is-loading="isLoading"
-    />
-    <div class="gl-p-5 gl-pt-0 md:gl-p-5">
-      <h2 class="gl-heading-2 gl-mb-2">
-        {{ s__('AdminAIPoweredFeatures|Other GitLab Duo features') }}
-      </h2>
-      <p class="gl-mb-0 gl-text-subtle">
+      </template>
+      <template #content>
+        <feature-settings-table-rows
+          data-testid="duo-chat-table-rows"
+          :ai-feature-settings="duoChatFeatures"
+          :is-loading="isLoading"
+        />
+      </template>
+    </feature-settings-block>
+    <feature-settings-block
+      id="other-duo-features"
+      :title="s__('AdminAIPoweredFeatures|Other GitLab Duo features')"
+    >
+      <template #description>
         <gl-sprintf
           :message="
             s__(
@@ -106,12 +113,14 @@ export default {
             <gl-link :href="$options.otherGitLabDuoHelpPage" target="_blank">{{ content }}</gl-link>
           </template>
         </gl-sprintf>
-      </p>
-    </div>
-    <feature-settings-table-rows
-      data-testid="other-duo-features-table-rows"
-      :ai-feature-settings="otherGitLabDuoFeatures"
-      :is-loading="isLoading"
-    />
+      </template>
+      <template #content>
+        <feature-settings-table-rows
+          data-testid="other-duo-features-table-rows"
+          :ai-feature-settings="otherGitLabDuoFeatures"
+          :is-loading="isLoading"
+        />
+      </template>
+    </feature-settings-block>
   </div>
 </template>
