@@ -55,4 +55,5 @@ export const VERIFICATION_STATUS_STATES = {
 
 export const ACTION_TYPES = {
   REVERIFY: 'REVERIFY',
+  RESYNC: 'RESYNC',
 };

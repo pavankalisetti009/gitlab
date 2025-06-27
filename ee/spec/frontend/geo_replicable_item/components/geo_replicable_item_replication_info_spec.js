@@ -1,4 +1,5 @@
-import { GlSprintf, GlBadge, GlPopover, GlCard } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlPopover, GlCard, GlButton } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemReplicationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_replication_info.vue';
 import { REPLICATION_STATUS_STATES } from 'ee/geo_shared//constants';
@@ -32,6 +33,7 @@ describe('GeoReplicableItemReplicationInfo', () => {
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findHelpPageLink = () => findGlPopover().findComponent(HelpPageLink);
   const findGlBadge = () => wrapper.findComponent(GlBadge);
+  const findResyncButton = () => wrapper.findComponent(GlButton);
   const findRetryAt = () => wrapper.findByTestId('retry-at-time-ago');
   const findLastSyncedAt = () => wrapper.findByTestId('last-synced-at-time-ago');
 
@@ -53,6 +55,17 @@ describe('GeoReplicableItemReplicationInfo', () => {
 
     it('renders help page link in popover', () => {
       expect(findHelpPageLink().attributes('href')).toBe('administration/geo/setup/database');
+    });
+
+    it('renders the resync button', () => {
+      expect(findResyncButton().exists()).toBe(true);
+    });
+
+    it('emits resync event when the resync button is clicked', async () => {
+      findResyncButton().vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.emitted('resync')).toHaveLength(1);
     });
   });
 
