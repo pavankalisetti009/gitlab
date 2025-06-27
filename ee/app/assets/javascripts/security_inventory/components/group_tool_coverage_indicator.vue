@@ -2,7 +2,12 @@
 import { GlPopover } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { itemValidator } from 'ee/security_inventory/utils';
-import { SCANNER_TYPES, SCANNER_POPOVER_GROUPS, SAST_ADVANCED_KEY } from '../constants';
+import {
+  SCANNER_TYPES,
+  SCANNER_POPOVER_GROUPS,
+  SAST_ADVANCED_KEY,
+  CONTAINER_SCANNING_FOR_REGISTRY_KEY,
+} from '../constants';
 import GroupToolCoverageDetails from './group_tool_coverage_details.vue';
 import SegmentedBar from './segmented_bar.vue';
 
@@ -56,6 +61,8 @@ export default {
          * To fix that, we filter out the 'SAST_ADVANCED' type.
          * After merging https://gitlab.com/gitlab-org/gitlab/-/issues/548276, we need to remove this filter. */
         .filter((type) => type !== SAST_ADVANCED_KEY)
+        // Now that container scanning values are backfilled, there's no need to merge them any more
+        .filter((type) => type !== CONTAINER_SCANNING_FOR_REGISTRY_KEY)
         .map((type) => {
           const existingScanner = this.item.analyzerStatuses.find(
             (scanner) => scanner.analyzerType === type,
