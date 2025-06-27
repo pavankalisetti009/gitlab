@@ -24,7 +24,7 @@ describe('WorkflowsList', () => {
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findTable = () => wrapper.findComponent(GlTableLite);
   const findKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
-  const findGoalLinks = () => findTable().findAllComponents(GlLink);
+  const findAgentNameLink = () => findTable().findAllComponents(GlLink);
 
   describe('when component is mounted', () => {
     beforeEach(() => {
@@ -57,7 +57,7 @@ describe('WorkflowsList', () => {
 
       it('passes the correct fields to the table', () => {
         const expectedFields = [
-          { key: 'goal', label: 'Prompt' },
+          { key: 'workflowDefinition', label: 'Name' },
           { key: 'humanStatus', label: 'Status' },
           { key: 'updatedAt', label: 'Updated' },
           { key: 'id', label: 'ID' },
@@ -67,15 +67,20 @@ describe('WorkflowsList', () => {
       });
 
       it('renders workflows as items to the table', () => {
-        expect(findTable().html()).toContain(mockWorkflows[0].goal);
-        expect(findTable().html()).toContain(mockWorkflows[1].goal);
+        expect(findTable().text()).toContain('Software development #1');
+        expect(findTable().text()).toContain('Convert to ci #2');
       });
 
-      describe('goal column', () => {
+      it('renders the status formatted', () => {
+        expect(findTable().text()).toContain('Completed');
+        expect(findTable().text()).toContain('Running');
+      });
+
+      describe('workflowDefinition column', () => {
         it('each goal cell is wrapped in a gl-link', () => {
-          expect(findGoalLinks()).toHaveLength(2); // from mockWorkflows.length
-          expect(findGoalLinks().at(0).props('to').name).toBe('agents_platform_show_route');
-          expect(findGoalLinks().at(0).props('to').params).toEqual({
+          expect(findAgentNameLink()).toHaveLength(2); // from mockWorkflows.length
+          expect(findAgentNameLink().at(0).props('to').name).toBe('agents_platform_show_route');
+          expect(findAgentNameLink().at(0).props('to').params).toEqual({
             id: 1,
           });
         });

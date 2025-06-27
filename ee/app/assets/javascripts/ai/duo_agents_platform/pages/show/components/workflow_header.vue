@@ -1,6 +1,6 @@
 <script>
 import { GlSkeletonLoader } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { formatAgentFlowName } from '../../../utils';
 
 export default {
   components: {
@@ -18,7 +18,7 @@ export default {
   },
   computed: {
     pageTitle() {
-      return `${this.workflowDefinition || s__('DuoAgentsPlatform|Agent Flow')} #${this.$route.params.id}`;
+      return formatAgentFlowName(this.workflowDefinition, this.$route.params.id);
     },
   },
 };

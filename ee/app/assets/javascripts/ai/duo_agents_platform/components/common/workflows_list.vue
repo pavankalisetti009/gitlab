@@ -2,7 +2,9 @@
 import { GlEmptyState, GlKeysetPagination, GlLink, GlTableLite } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { getTimeago } from '~/lib/utils/datetime/timeago_utility';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
+import { formatAgentFlowName, formatAgentStatus } from '../../utils';
 
 export default {
   name: 'AgentWorkflowsList',
@@ -35,13 +37,26 @@ export default {
     formatId(id) {
       return getIdFromGraphQLId(id);
     },
+    formatName({ workflowDefinition, id }) {
+      return formatAgentFlowName(workflowDefinition, this.formatId(id));
+    },
+    formatStatus(status) {
+      return formatAgentStatus(status);
+    },
+    formatUpdatedAt(timestamp) {
+      try {
+        return getTimeago().format(timestamp);
+      } catch {
+        return timestamp || '';
+      }
+    },
   },
   showRoute: AGENTS_PLATFORM_SHOW_ROUTE,
   workflowFields: [
-    { key: 'goal', label: s__('DuoAgentsPlatform|Prompt') },
+    { key: 'workflowDefinition', label: s__('DuoAgentsPlatform|Name') },
     { key: 'humanStatus', label: s__('DuoAgentsPlatform|Status') },
     { key: 'updatedAt', label: s__('DuoAgentsPlatform|Updated') },
-    { key: 'id', label: 'ID' },
+    { key: 'id', label: s__('DuoAgentsPlatform|ID') },
   ],
 };
 </script>
@@ -55,11 +70,13 @@ export default {
     />
     <template v-else>
       <gl-table-lite :fields="$options.workflowFields" :items="workflows">
-        <template #cell(goal)="{ item }">
+        <template #cell(workflowDefinition)="{ item }">
           <gl-link :to="{ name: $options.showRoute, params: { id: formatId(item.id) } }">
-            {{ item.goal }}
+            {{ formatName(item) }}
           </gl-link>
         </template>
+        <template #cell(humanStatus)="{ item }">{{ formatStatus(item.humanStatus) }}</template>
+        <template #cell(updatedAt)="{ item }">{{ formatUpdatedAt(item.updatedAt) }}</template>
         <template #cell(id)="{ item }">
           {{ formatId(item.id) }}
         </template>

@@ -5,6 +5,7 @@ import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { getDuoWorkflowEventsQuery } from '../../graphql/queries/get_duo_workflow_events.query.graphql';
 import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from '../../constants';
+import { formatAgentDefinition, formatAgentStatus } from '../../utils';
 import WorkflowDetails from './components/workflow_details.vue';
 
 export default {
@@ -41,10 +42,10 @@ export default {
       return this.$apollo.queries.workflowEvents.loading;
     },
     status() {
-      return this.workflowEvents[0]?.workflowStatus || '';
+      return formatAgentStatus(this.workflowEvents[0]?.workflowStatus);
     },
     workflowDefinition() {
-      return this.workflowEvents[0]?.workflowDefinition || '';
+      return formatAgentDefinition(this.workflowEvents[0]?.workflowDefinition);
     },
   },
 };
