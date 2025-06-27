@@ -1327,6 +1327,33 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
+  context 'with pipeline triggered via chat command' do
+    let(:source) { :chat }
+    let(:chat_name) { create(:chat_name) }
+    let(:params) do
+      {
+        ref: 'master',
+        chat_data: {
+          chat_name: chat_name,
+          name: 'spinach',
+          arguments: 'foo',
+          command: :project_policy_job,
+          response_url: 'https://example.com'
+        }
+      }
+    end
+
+    it 'creates the pipeline', :aggregate_failures do
+      expect { execute }.to change { Ci::Build.count }.by(1)
+
+      expect(execute).to be_success
+      expect(execute.payload).to be_persisted
+
+      test_stage = execute.payload.stages.find_by(name: 'test')
+      expect(test_stage.builds.map(&:name)).to include('project_policy_job')
+    end
+  end
+
   private
 
   def get_job_variable(job, key)
