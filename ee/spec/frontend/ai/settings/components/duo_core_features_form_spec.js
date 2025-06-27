@@ -63,6 +63,12 @@ describe('DuoCoreFeaturesForm', () => {
     expect(wrapper.findComponent(GlLink).props('href')).toBe(requirementsPath);
   });
 
+  it('renders the description', () => {
+    expect(wrapper.text()).toMatch(
+      'By turning this on, you accept the GitLab AI Functionality Terms unless your organization has a separate agreement with GitLab governing AI feature usage. Check the eligibility requirements',
+    );
+  });
+
   describe('on SaaS', () => {
     beforeEach(() => {
       wrapper = createComponent({ provide: { isSaaS: true } });
@@ -70,10 +76,6 @@ describe('DuoCoreFeaturesForm', () => {
 
     it('renders the namespace description', () => {
       expect(wrapper.text()).toMatch('This setting applies to the whole top-level group.');
-    });
-
-    it('renders the description', () => {
-      expect(wrapper.text()).toMatch('Subgroup and project access controls are coming soon.');
     });
   });
 
@@ -84,10 +86,6 @@ describe('DuoCoreFeaturesForm', () => {
 
     it('renders the instance description', () => {
       expect(wrapper.text()).toMatch('This setting applies to the whole instance.');
-    });
-
-    it('renders the description', () => {
-      expect(wrapper.text()).toMatch('Group and project access controls are coming soon.');
     });
   });
 });
