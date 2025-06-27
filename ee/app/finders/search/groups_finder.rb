@@ -14,13 +14,11 @@
 module Search
   class GroupsFinder
     include Gitlab::Utils::StrongMemoize
+    include Search::Concerns::FeatureCustomAbilityMap
 
     DEFAULT_MIN_ACCESS_LEVEL = ::Gitlab::Access::GUEST
-    FEATURE_TO_ABILITY_MAP = {
-      repository: :read_code
-    }.freeze
 
-    # user - The currently logged in user, if any.
+    # user - The currently logged-in user, if any.
     # params
     #  * features (optional, default GUEST) - Sets minimum access level required to access project features.
     #    Cannot be provided with min_access_level
