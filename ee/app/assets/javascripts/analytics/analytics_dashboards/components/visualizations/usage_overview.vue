@@ -8,6 +8,7 @@ import {
   BACKGROUND_AGGREGATION_WARNING_TITLE,
   ENABLE_BACKGROUND_AGGREGATION_WARNING_TEXT,
 } from 'ee/analytics/dashboards/constants';
+import TooltipOnTruncate from '~/vue_shared/components/tooltip_on_truncate/tooltip_on_truncate.vue';
 import SingleStat from './single_stat.vue';
 
 export default {
@@ -19,6 +20,7 @@ export default {
     GlAvatar,
     GlIcon,
     SingleStat,
+    TooltipOnTruncate,
   },
   inject: {
     overviewCountsAggregationEnabled: {
@@ -89,7 +91,7 @@ export default {
     <div
       v-if="data.namespace"
       data-testid="usage-overview-namespace"
-      class="gl-flex gl-items-center gl-gap-3 gl-pr-9"
+      class="gl-mr-9 gl-flex gl-min-w-34 gl-max-w-75 gl-items-center gl-gap-3"
     >
       <gl-avatar
         shape="rect"
@@ -101,20 +103,26 @@ export default {
         :alt="avatarAltText"
       />
 
-      <div class="gl-leading-20">
+      <div class="gl-min-w-0 gl-leading-24">
         <span class="gl-mb-1 gl-block gl-text-base gl-font-normal gl-text-subtle">{{
           data.namespace.namespaceType
         }}</span>
         <div class="gl-flex gl-items-center gl-gap-2">
-          <span class="gl-truncate-end gl-text-size-h2 gl-font-bold gl-text-strong">{{
-            data.namespace.fullName
-          }}</span>
-          <gl-icon
+          <tooltip-on-truncate
+            :title="data.namespace.fullName"
+            class="gl-truncate gl-text-size-h2 gl-font-bold"
+            boundary="viewport"
+            >{{ data.namespace.fullName }}</tooltip-on-truncate
+          >
+          <button
             v-gl-tooltip.viewport
-            variant="subtle"
-            :name="data.namespace.visibilityLevelIcon"
+            data-testid="namespace-visibility-button"
+            class="gl-min-w-5 gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0"
             :title="data.namespace.visibilityLevelTooltip"
-          />
+            :aria-label="data.namespace.visibilityLevelTooltip"
+          >
+            <gl-icon variant="subtle" :name="data.namespace.visibilityLevelIcon" />
+          </button>
         </div>
       </div>
     </div>
@@ -122,7 +130,7 @@ export default {
     <div
       v-for="metric in data.metrics"
       :key="metric.identifier"
-      class="gl-pr-9"
+      class="gl-flex-shrink-0 gl-pr-9"
       :data-testid="`usage-overview-metric-${metric.identifier}`"
     >
       <single-stat :data="displayValue(metric.value)" :options="metric.options" />
