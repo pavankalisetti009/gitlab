@@ -1,6 +1,7 @@
 <script>
-import { GlIcon, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlIcon, GlLink, GlSprintf, GlExperimentBadge } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { glqlWorkItemsFeatureFlagEnabled } from '~/glql/utils/feature_flags';
 
 export default {
   name: 'GlqlFooter',
@@ -8,8 +9,14 @@ export default {
     GlIcon,
     GlLink,
     GlSprintf,
+    GlExperimentBadge,
   },
   docsPath: `${helpPagePath('user/glql/_index')}#glql-views`,
+  computed: {
+    featureFlagEnabled() {
+      return glqlWorkItemsFeatureFlagEnabled();
+    },
+  },
 };
 </script>
 <template>
@@ -20,5 +27,6 @@ export default {
         <gl-link :href="$options.docsPath" target="_blank">{{ content }}</gl-link>
       </template>
     </gl-sprintf>
+    <gl-experiment-badge v-if="featureFlagEnabled" type="experiment" class="!gl-mx-2" />
   </div>
 </template>
