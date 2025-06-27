@@ -18925,7 +18925,8 @@ CREATE TABLE operations_scopes (
     id bigint NOT NULL,
     strategy_id bigint NOT NULL,
     environment_scope character varying(255) NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_722a570b84 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE operations_scopes_id_seq
