@@ -59,9 +59,6 @@ module Security
     end
 
     def sync_policy_for_projects(policy, event_data = {}, event = nil)
-      project_ids = all_project_ids(policy)
-      return if project_ids.empty?
-
       event_payload = event ? { event: { event_type: event.class.name, data: event.data } } : {}
       config_context = if policy.security_orchestration_policy_configuration.namespace?
                          { namespace: policy.security_orchestration_policy_configuration.namespace }
@@ -69,17 +66,15 @@ module Security
                          { project: policy.security_orchestration_policy_configuration.project }
                        end
 
-      ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
-        project_ids,
-        arguments_proc: ->(project_id) do
-          [project_id, policy.id, event_data, event_payload.deep_stringify_keys]
-        end,
-        context_proc: ->(_) { config_context }
-      )
-    end
-
-    def all_project_ids(policy)
-      policy.security_orchestration_policy_configuration.all_project_ids
+      policy.security_orchestration_policy_configuration.all_project_ids do |project_ids|
+        ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
+          project_ids,
+          arguments_proc: ->(project_id) do
+            [project_id, policy.id, event_data, event_payload.deep_stringify_keys]
+          end,
+          context_proc: ->(_) { config_context }
+        )
+      end
     end
 
     def sync_compliance_frameworks(policy, policy_diff = nil)

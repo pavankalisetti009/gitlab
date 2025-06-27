@@ -28,7 +28,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
         allow(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).to receive(:new)
           .and_return(sync_project_service)
 
-        stub_const("#{described_class}::PROJECTS_BATCH_SIZE", 1)
+        stub_const("Security::OrchestrationPolicyConfiguration::ALL_PROJECT_IDS_BATCH_SIZE", 1)
       end
 
       it 'increases delay by 10 seconds for each batch',
