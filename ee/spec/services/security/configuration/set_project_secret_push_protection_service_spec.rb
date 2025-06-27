@@ -40,6 +40,13 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
         .to change { project_1.reload.security_setting.updated_at }
     end
 
+    it 'schedules an analyzer statuses update worker' do
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+        .to receive(:perform_async).with([project_2.id], :secret_detection)
+
+      execute_service(subject: project_2)
+    end
+
     describe 'auditing' do
       context 'when no excluded_projects ids are provided' do
         it 'audits using the correct properties' do
@@ -93,6 +100,13 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
       it 'does not change the attribute' do
         expect { execute_service(subject: project_2, enable: nil) }
           .not_to change { project_2.reload.security_setting.secret_push_protection_enabled }
+      end
+
+      it 'does not schedule an analyzer statuses update worker' do
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+          .not_to receive(:perform_async)
+
+        execute_service(subject: project_2, enable: nil)
       end
     end
   end

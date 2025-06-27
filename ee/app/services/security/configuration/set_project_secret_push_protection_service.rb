@@ -22,6 +22,11 @@ module Security
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end
+
+      def post_update(project_ids)
+        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker
+          .perform_async(project_ids, :secret_detection)
+      end
     end
   end
 end

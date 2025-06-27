@@ -50,6 +50,11 @@ all of its inherited groups/projects"
 
         message
       end
+
+      def post_update(project_ids)
+        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker
+          .perform_async(project_ids, :secret_detection)
+      end
     end
   end
 end

@@ -46,6 +46,25 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
       }
     end
 
+    it 'schedules the analyzer statuses update worker for all group projects' do
+      expected_project_ids = (projects_to_change + [excluded_project]).map(&:id).sort
+
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+        .to receive(:perform_async) do |project_ids, detection_type|
+        expect(project_ids.sort).to eq(expected_project_ids.sort)
+        expect(detection_type).to eq(:secret_detection)
+      end
+
+      execute_service(subject: top_level_group, excluded_projects_ids: [])
+    end
+
+    it 'schedules worker with correct project ids when excluded projects are provided' do
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+        .to receive(:perform_async).with(projects_to_change.map(&:id), :secret_detection)
+
+      execute_service(subject: top_level_group)
+    end
+
     it 'doesnt change the attribute for projects in excluded list' do
       security_setting = excluded_project.security_setting
       expect { execute_service(subject: top_level_group) }.not_to change {
@@ -154,6 +173,13 @@ groups/projects")
       it 'does not change the attribute' do
         expect { execute_service(subject: top_level_group, enable: nil) }
           .not_to change { top_level_group_project.reload.security_setting.secret_push_protection_enabled }
+      end
+
+      it 'does not schedule the analyzer statuses update worker' do
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+          .not_to receive(:perform_async)
+
+        execute_service(subject: top_level_group, enable: nil)
       end
     end
   end

@@ -5,11 +5,18 @@ module Security
     class SettingsBasedUpdateService
       include ::Security::AnalyzersStatus::AggregatedTypesHandler
 
+      TooManyProjectIdsError = Class.new(StandardError)
+      MAX_PROJECT_IDS = 250
+
       def self.execute(project_ids, analyzer_type)
         new(project_ids, analyzer_type).execute
       end
 
       def initialize(project_ids, analyzer_type)
+        if project_ids && project_ids.size > MAX_PROJECT_IDS
+          raise TooManyProjectIdsError, "Cannot update analyzer statuses of more than #{MAX_PROJECT_IDS} projects"
+        end
+
         @project_ids = project_ids
         @analyzer_type = analyzer_type.to_sym
       end
