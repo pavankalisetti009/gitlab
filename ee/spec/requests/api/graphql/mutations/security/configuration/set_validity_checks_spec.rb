@@ -25,6 +25,7 @@ RSpec.describe 'Setting Validity Checks', feature_category: :secret_detection do
 
     before do
       stub_feature_flags(validity_checks: true)
+      stub_licensed_features(secret_detection_validity_checks: true)
     end
 
     context 'when the user does not have permission' do

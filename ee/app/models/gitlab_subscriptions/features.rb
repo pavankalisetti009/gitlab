@@ -290,6 +290,7 @@ module GitlabSubscriptions
       unique_project_download_limit
       vulnerability_finding_signatures
       container_scanning_for_registry
+      secret_detection_validity_checks
       security_exclusions
       security_scans_api
       observability_alerts

@@ -3199,6 +3199,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             security_on_demand_scans: true,
             coverage_fuzzing: true,
             secret_push_protection: true,
+            secret_detection_validity_checks: true,
             container_scanning_for_registry: true,
             project_level_compliance_dashboard: true }
         end
@@ -4554,9 +4555,27 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       with_them do
         before do
           stub_feature_flags(validity_checks: feature_available)
+          stub_licensed_features(secret_detection_validity_checks: true)
         end
 
         it { is_expected.to match_expected_result }
+      end
+
+      context 'when secret_detection_validity_checks licensed feature is not available' do
+        where(:current_user, :match_expected_result) do
+          ref(:owner)      | be_disallowed(:configure_secret_detection_validity_checks)
+          ref(:maintainer) | be_disallowed(:configure_secret_detection_validity_checks)
+          ref(:developer)  | be_disallowed(:configure_secret_detection_validity_checks)
+          ref(:non_member) | be_disallowed(:configure_secret_detection_validity_checks)
+        end
+
+        with_them do
+          before do
+            stub_licensed_features(secret_detection_validity_checks: false)
+          end
+
+          it { is_expected.to match_expected_result }
+        end
       end
     end
 
