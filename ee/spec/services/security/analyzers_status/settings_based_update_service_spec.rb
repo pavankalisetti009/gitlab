@@ -469,4 +469,24 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
       end
     end
   end
+
+  describe '#initialize' do
+    context 'when project_ids count is within limit' do
+      let(:project_ids) { (1..described_class::MAX_PROJECT_IDS).to_a }
+
+      it 'does not raise an error' do
+        expect { described_class.new(project_ids, analyzer_type) }.not_to raise_error
+      end
+    end
+
+    context 'when project_ids count exceeds maximum limit' do
+      let(:project_ids) { (1..(described_class::MAX_PROJECT_IDS + 1)).to_a }
+
+      it 'raises TooManyProjectIdsError with correct message' do
+        expect { described_class.new(project_ids, analyzer_type) }
+          .to raise_error(Security::AnalyzersStatus::SettingsBasedUpdateService::TooManyProjectIdsError,
+            "Cannot update analyzer statuses of more than #{described_class::MAX_PROJECT_IDS} projects")
+      end
+    end
+  end
 end

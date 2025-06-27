@@ -14,6 +14,10 @@ RSpec.describe Security::Configuration::SetProjectSecuritySettingBaseService, fe
       it 'executes the transaction and returns the enable value' do
         allow(service).to receive_messages(valid_request?: true, subject_project_ids: [project_1.id],
           audit: nil, setting_key: :secret_push_protection_enabled)
+
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+          .not_to receive(:perform_async)
+
         expect { service.execute }.to change {
           project_1.security_setting.reload.secret_push_protection_enabled
         }.from(false).to(true)
@@ -25,11 +29,24 @@ RSpec.describe Security::Configuration::SetProjectSecuritySettingBaseService, fe
       it 'does nothing and returns nil' do
         allow(service).to receive_messages(valid_request?: false, subject_project_ids: [project_1.id],
           audit: nil, setting_key: :secret_push_protection_enabled)
+
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+          .not_to receive(:perform_async)
+
         expect { service.execute }.not_to change {
           project_1.security_setting.reload.secret_push_protection_enabled
         }
         expect(service.execute).to be_nil
       end
+    end
+  end
+
+  describe '#post_update' do
+    it 'is a no-op by default in the base service' do
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+        .not_to receive(:perform_async)
+
+      service.send(:post_update, [project_1.id])
     end
   end
 

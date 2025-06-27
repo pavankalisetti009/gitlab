@@ -9,6 +9,13 @@ class ProjectSecuritySetting < ApplicationRecord
 
   ignore_column :pre_receive_secret_detection_enabled, remove_with: '17.9', remove_after: '2025-02-15'
 
+  # saved_change_to_project_id? will return true on creating a new instance as project_id is the primary key
+  after_commit -> { schedule_analyzer_status_update_worker_for_type(:container_scanning) },
+    if: -> { saved_change_to_container_scanning_for_registry_enabled? || saved_change_to_project_id? }
+
+  after_commit -> { schedule_analyzer_status_update_worker_for_type(:secret_detection) },
+    if: -> { saved_change_to_secret_push_protection_enabled? || saved_change_to_project_id? }
+
   def set_continuous_vulnerability_scans!(enabled:)
     enabled if update!(continuous_vulnerability_scans_enabled: enabled)
   end
@@ -23,5 +30,11 @@ class ProjectSecuritySetting < ApplicationRecord
 
   def set_validity_checks!(enabled:)
     enabled if update!(validity_checks_enabled: enabled)
+  end
+
+  private
+
+  def schedule_analyzer_status_update_worker_for_type(type)
+    Security::AnalyzersStatus::SettingChangedUpdateWorker.perform_async([project_id], type)
   end
 end

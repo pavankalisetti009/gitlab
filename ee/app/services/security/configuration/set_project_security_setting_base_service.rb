@@ -27,6 +27,8 @@ module Security
           audit if any_updated
         end
 
+        post_update(project_ids)
+
         @enable
       end
 
@@ -69,6 +71,10 @@ module Security
           target: @subject,
           message: message
         }
+      end
+
+      def post_update(project_ids)
+        # No-op by default
       end
 
       def audit
