@@ -23416,6 +23416,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Convert Jenkins to CI"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Could not display logs. Please try again"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Enter the path to your Jenkinsfile."
 msgstr ""
 

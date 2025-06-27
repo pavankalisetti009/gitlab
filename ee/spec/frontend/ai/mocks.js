@@ -1,3 +1,5 @@
+import { AGENT_MESSAGE_TYPE, TOOL_MESSAGE_TYPE } from 'ee/ai/duo_agents_platform/constants';
+
 export const mockWorkflowEdges = [
   {
     node: {
@@ -61,3 +63,40 @@ export const mockWorkflowsResponseEmpty = {
     duoWorkflowWorkflows: [],
   },
 };
+
+export const checkpoint1 = JSON.stringify({
+  channel_values: {
+    ui_chat_log: [{ content: 'Starting workflow...', message_type: TOOL_MESSAGE_TYPE }],
+  },
+});
+
+export const checkpoint2 = JSON.stringify({
+  channel_values: {
+    ui_chat_log: [
+      { content: 'Starting workflow...', message_type: TOOL_MESSAGE_TYPE },
+      { content: 'Processing data...', message_type: TOOL_MESSAGE_TYPE },
+    ],
+  },
+});
+
+export const checkpoint3 = JSON.stringify({
+  channel_values: {
+    ui_chat_log: [
+      { content: 'Starting workflow...', message_type: TOOL_MESSAGE_TYPE },
+      { content: 'Processing data...', message_type: TOOL_MESSAGE_TYPE },
+      { content: 'I am done!', message_type: AGENT_MESSAGE_TYPE },
+    ],
+  },
+});
+
+export const mockWorkflowEvents = [
+  {
+    checkpoint: checkpoint1,
+  },
+  {
+    checkpoint: checkpoint2,
+  },
+  {
+    checkpoint: checkpoint3,
+  },
+];
