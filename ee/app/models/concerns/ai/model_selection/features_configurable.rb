@@ -49,6 +49,20 @@ module Ai
         :duo_chat_summarize_comments
       ].freeze
 
+      DUO_CHAT_TOOLS = [
+        :duo_chat_build_reader,
+        :duo_chat_epic_reader,
+        :duo_chat_issue_reader,
+        :duo_chat_merge_request_reader,
+        :duo_chat_commit_reader,
+        :duo_chat_gitlab_documentation
+      ].freeze
+      # Duo chat tools need to be mapped to the base 'duo_chat' feature
+      # to ensure proper model selection when these tools are used.
+      # This prevents bugs when tool-specific features are passed to
+      # Gitlab::Llm::Chain::Requests::AiGateway#namespace_feature_setting
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/551318
+
       included do
         enum :feature, FEATURES, validate: true
 
@@ -76,6 +90,12 @@ module Ai
           FEATURES.except(*disabled_features)
         end
         # rubocop: enable Gitlab/FeatureFlagKeyDynamic
+
+        def self.get_feature_name(feature_name)
+          return "duo_chat" if DUO_CHAT_TOOLS.include?(feature_name.to_sym)
+
+          feature_name
+        end
 
         def model_selection_scope
           raise NotImplementedError, '#model_selection_scope method must be implemented for Model Selection logic'
