@@ -7,6 +7,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { stubComponent } from 'helpers/stub_component';
 import { mockTracking } from 'helpers/tracking_helper';
 import {
+  ROUTE_DASHBOARD,
   ROUTE_STANDARDS_ADHERENCE,
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
@@ -47,6 +48,7 @@ describe('ComplianceReportsApp component', () => {
   const findProjectFrameworksExportButton = () =>
     wrapper.findByText('Export list of project frameworks');
   const findTabs = () => wrapper.findComponent(GlTabs);
+  const findDashboardTab = () => wrapper.findByTestId('dashboard-tab-content');
   const findProjectsTab = () => wrapper.findByTestId('projects-tab-content');
   const findProjectFrameworksTab = () => wrapper.findByTestId('frameworks-tab-content');
   const findViolationsTab = () => wrapper.findByTestId('violations-tab-content');
@@ -71,6 +73,7 @@ describe('ComplianceReportsApp component', () => {
       },
       propsData: {
         availableTabs: [
+          ROUTE_DASHBOARD,
           ROUTE_STANDARDS_ADHERENCE,
           ROUTE_VIOLATIONS,
           ROUTE_PROJECTS,
@@ -262,6 +265,20 @@ describe('ComplianceReportsApp component', () => {
     });
   });
 
+  describe('dashboard', () => {
+    beforeEach(() => {
+      wrapper = createComponent(mountExtended, {
+        $route: {
+          name: ROUTE_DASHBOARD,
+        },
+      });
+    });
+
+    it('renders the dashboard tab', () => {
+      expect(findDashboardTab().exists()).toBe(true);
+    });
+  });
+
   it('does not render export button if no report is available', () => {
     wrapper = createComponent(
       mountExtended,
@@ -281,6 +298,7 @@ describe('ComplianceReportsApp component', () => {
 
   describe.each`
     route                        | finder
+    ${ROUTE_DASHBOARD}           | ${findDashboardTab}
     ${ROUTE_STANDARDS_ADHERENCE} | ${findStandardsAdherenceTab}
     ${ROUTE_VIOLATIONS}          | ${findViolationsTab}
     ${ROUTE_PROJECTS}            | ${findProjectsTab}

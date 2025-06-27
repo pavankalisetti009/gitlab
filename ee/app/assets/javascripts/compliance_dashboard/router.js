@@ -12,10 +12,12 @@ import {
   ROUTE_NEW_FRAMEWORK_SUCCESS,
   ROUTE_BLANK_FRAMEWORK,
   ROUTE_EXPORT_FRAMEWORK,
+  ROUTE_DASHBOARD,
 } from './constants';
 
 import MainLayout from './components/main_layout.vue';
 
+import ComplianceDashboard from './components/dashboard/compliance_dashboard.vue';
 import ViolationsReport from './components/violations_report/violations_report.vue';
 import FrameworksReport from './components/frameworks_report/report.vue';
 import EditFramework from './components/frameworks_report/edit_framework/edit_framework.vue';
@@ -39,6 +41,15 @@ export function createRouter(basePath, props) {
   } = props;
 
   const availableTabRoutes = [
+    {
+      path: ROUTE_DASHBOARD,
+      name: ROUTE_DASHBOARD,
+      component: ComplianceDashboard,
+      props: {
+        groupPath,
+        rootAncestorPath,
+      },
+    },
     {
       path: ROUTE_STANDARDS_ADHERENCE,
       name: ROUTE_STANDARDS_ADHERENCE,
