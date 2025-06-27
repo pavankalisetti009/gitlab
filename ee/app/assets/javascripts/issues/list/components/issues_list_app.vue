@@ -265,7 +265,7 @@ export default {
       />
     </template>
     <template #custom-status="{ issuable }">
-      <li class="gl-max-w-20">
+      <li class="gl-max-w-full">
         <work-item-status-badge
           v-if="hasCustomStatus(issuable)"
           :name="customStatusName(issuable)"
