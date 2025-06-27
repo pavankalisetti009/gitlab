@@ -49,6 +49,7 @@ class GitlabSubscription < ApplicationRecord
   end
 
   scope :preload_for_refresh_seat, -> { preload([{ namespace: :route }, :hosted_plan]) }
+  scope :with_namespace_settings, -> { joins(namespace: :namespace_settings).includes(namespace: :namespace_settings) }
 
   scope :max_seats_used_changed_between, ->(from:, to:) do
     where('max_seats_used_changed_at >= ?', from)

@@ -1363,6 +1363,16 @@
   :idempotent: false
   :tags: []
   :queue_namespace:
+- :name: ai_active_context_code_saas_initial_indexing_event
+  :worker_name: Ai::ActiveContext::Code::SaasInitialIndexingEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_knowledge_graph_indexing_task
   :worker_name: Ai::KnowledgeGraph::IndexingTaskWorker
   :feature_category: :knowledge_graph

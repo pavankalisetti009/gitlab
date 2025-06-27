@@ -8,6 +8,23 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
   let_it_be(:namespace) { create(:group) }
   let_it_be(:connection) { create(:ai_active_context_connection, :inactive) }
 
+  describe 'scopes' do
+    describe '.namespace_id_in' do
+      let_it_be(:namespace1) { create(:group) }
+      let_it_be(:namespace2) { create(:group) }
+      let_it_be(:namespace3) { create(:group) }
+      let_it_be(:enabled_namespace1) { create(:ai_active_context_code_enabled_namespace, namespace: namespace1) }
+      let_it_be(:enabled_namespace2) { create(:ai_active_context_code_enabled_namespace, namespace: namespace2) }
+      let_it_be(:enabled_namespace3) { create(:ai_active_context_code_enabled_namespace, namespace: namespace3) }
+
+      it 'returns enabled namespaces with matching namespace IDs' do
+        result = described_class.namespace_id_in([namespace1.id, namespace2.id])
+
+        expect(result).to contain_exactly(enabled_namespace1, enabled_namespace2)
+      end
+    end
+  end
+
   describe 'validations' do
     subject(:enabled_namespace) do
       create(:ai_active_context_code_enabled_namespace, connection_id: connection.id, namespace: namespace)

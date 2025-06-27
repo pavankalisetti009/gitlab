@@ -46,6 +46,7 @@ module GitlabSubscriptions
         )")
     }
     scope :trial, -> { where(trial: true) }
+    scope :non_trial, -> { where(trial: false) }
     scope :by_add_on_name, ->(name) { joins(:add_on).where(add_on: { name: name }) }
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
     scope :for_self_managed, -> { where(namespace: nil) }

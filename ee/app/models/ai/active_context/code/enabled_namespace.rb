@@ -35,6 +35,8 @@ module Ai
           ready: 10
         }
 
+        scope :namespace_id_in, ->(namespace_ids) { where(namespace_id: namespace_ids) }
+
         private
 
         def valid_namespace

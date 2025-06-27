@@ -207,6 +207,23 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
     end
 
+    describe '.non_trial' do
+      let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
+      let_it_be(:gitlab_duo_pro_purchase_true_trial) do
+        create(:gitlab_subscription_add_on_purchase, trial: true, add_on: add_on)
+      end
+
+      let_it_be(:gitlab_duo_pro_purchase_false_trial) do
+        create(:gitlab_subscription_add_on_purchase, trial: false, add_on: add_on)
+      end
+
+      subject(:non_trials) { described_class.non_trial }
+
+      it 'returns all the purchases that are not expired' do
+        expect(non_trials).to match_array([gitlab_duo_pro_purchase_false_trial])
+      end
+    end
+
     describe '.by_add_on_name' do
       subject(:by_name_purchases) { described_class.by_add_on_name(name) }
 
