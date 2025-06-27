@@ -10,26 +10,12 @@ RSpec.describe ContainerRegistry::Protection::TagRulePolicy, feature_category: :
 
   subject { described_class.new(user, rule) }
 
-  context 'for anonymous users' do
-    let(:user) { nil }
-    let_it_be(:rule) { build(:container_registry_protection_tag_rule) }
-
-    it { expect_disallowed(:destroy_container_registry_protection_tag_rule) }
-  end
-
-  context 'for admin', :enable_admin_mode do
-    let(:user) { build_stubbed(:admin) }
-    let_it_be(:rule) { build(:container_registry_protection_tag_rule) }
-
-    it { expect_allowed(:destroy_container_registry_protection_tag_rule) }
-  end
-
-  context 'for a tag rule' do
-    let_it_be(:rule) { build(:container_registry_protection_tag_rule, project:) }
+  context 'for an immutable tag rule' do
+    let_it_be(:rule) { build(:container_registry_protection_tag_rule, :immutable, project:) }
 
     where(:user_role, :expected_result) do
       :developer   | :be_disallowed
-      :maintainer  | :be_allowed
+      :maintainer  | :be_disallowed
       :owner       | :be_allowed
     end
 
