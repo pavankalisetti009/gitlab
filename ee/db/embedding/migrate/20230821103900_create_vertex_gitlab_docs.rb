@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class CreateVertexGitlabDocs < Gitlab::Database::Migration[2.1]
-  enable_lock_retries!
-
   def up
     create_table :vertex_gitlab_docs do |t|
       t.timestamps_with_timezone null: false

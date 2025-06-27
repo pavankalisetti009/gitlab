@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class DropTanukiBotMvcTable < Gitlab::Database::Migration[2.2]
-  enable_lock_retries!
   milestone '16.6'
 
   def up
