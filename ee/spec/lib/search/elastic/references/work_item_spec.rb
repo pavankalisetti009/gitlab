@@ -207,6 +207,13 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
     it 'returns correct environment based index name from instance method' do
       expect(described_class.new(work_item.id, work_item.es_parent).index_name).to eq('gitlab-test-work_items')
     end
+
+    it 'uses custom elasticsearch_prefix setting' do
+      allow(Gitlab::CurrentSettings).to receive(:elasticsearch_prefix).and_return('custom-prefix')
+
+      expect(described_class.index).to eq('custom-prefix-test-work_items')
+      expect(described_class.new(work_item.id, work_item.es_parent).index_name).to eq('custom-prefix-test-work_items')
+    end
   end
 
   describe '#schema_version' do

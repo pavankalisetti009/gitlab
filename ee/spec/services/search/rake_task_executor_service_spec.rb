@@ -1087,19 +1087,19 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     describe 'index settings' do
       let(:helper) { es_helper }
       let(:setting) do
-        ::Elastic::IndexSetting.new(number_of_replicas: 1, number_of_shards: 8, alias_name: 'gitlab-development')
+        ::Elastic::IndexSetting.new(number_of_replicas: 1, number_of_shards: 8, alias_name: 'gitlab-test')
       end
 
       before do
         allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-        allow(::Elastic::IndexSetting).to receive(:order_by_name).and_return([setting])
+        allow(::Elastic::IndexSetting).to receive(:every_alias).and_return([setting])
         allow(::Elastic::DataMigrationService).to receive(:pending_migrations).and_return([])
       end
 
       it 'outputs failed index setting' do
         allow(helper.client).to receive(:indices).and_raise(Timeout::Error)
 
-        expect(logger).to receive(:error).with(/failed to load indices for gitlab-development/)
+        expect(logger).to receive(:error).with(/failed to load indices for gitlab-test/)
 
         info
       end

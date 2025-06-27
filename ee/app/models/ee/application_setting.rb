@@ -83,7 +83,8 @@ module EE
         elasticsearch_analyzers_kuromoji_enabled: [:boolean, { default: false }],
         elasticsearch_indexed_field_length_limit: [:integer, { default: 0 }],
         elasticsearch_indexed_file_size_limit_kb: [:integer, { default: 1024 }],
-        elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }]
+        elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }],
+        elasticsearch_prefix: [:string, { default: 'gitlab' }]
 
       validates :search, json_schema: { filename: 'application_setting_ee_search' }
       validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
@@ -160,6 +161,17 @@ module EE
 
       validates :elasticsearch_username, length: { maximum: 255 }
       validates :elasticsearch_password, length: { maximum: 255 }
+
+      validates :elasticsearch_prefix,
+        presence: true,
+        length: { minimum: 1, maximum: 100 },
+        format: {
+          with: /\A[a-z0-9]([a-z0-9_-]*[a-z0-9])?\z/,
+          message: 'must contain only lowercase alphanumeric characters, hyphens, ' \
+            'and underscores, and cannot start or end with a hyphen or underscore'
+        }
+
+      validate :elasticsearch_prefix_no_whitespace
 
       validate :check_elasticsearch_url_scheme, if: :elasticsearch_url_changed?
 
@@ -725,6 +737,13 @@ module EE
       ::Gitlab::CIDR.new(globally_allowed_ips)
     rescue ::Gitlab::CIDR::ValidationError => e
       errors.add(:globally_allowed_ips, e.message)
+    end
+
+    def elasticsearch_prefix_no_whitespace
+      return unless elasticsearch_prefix
+      return unless elasticsearch_prefix != elasticsearch_prefix.strip
+
+      errors.add(:elasticsearch_prefix, 'cannot contain leading or trailing whitespace')
     end
 
     def check_elasticsearch_url_scheme

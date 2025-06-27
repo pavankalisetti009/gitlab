@@ -7,7 +7,9 @@ module Elastic
       extend Elasticsearch::Model::Indexing::ClassMethods
       extend Elasticsearch::Model::Naming::ClassMethods
 
-      self.index_name = [Rails.application.class.module_parent_name.downcase, Rails.env, 'notes'].join('-')
+      def self.index_name
+        [Gitlab::CurrentSettings.elasticsearch_prefix, Rails.env, 'notes'].join('-')
+      end
 
       settings Elastic::Latest::Config.settings.to_hash.deep_merge(
         index: {

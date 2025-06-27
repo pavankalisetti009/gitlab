@@ -467,6 +467,7 @@ module Search
         "#{::Elastic::ProcessBookkeepingService.active_number_of_shards}")
       logger.info("Max code indexing concurrency:\t" \
         "#{setting.elasticsearch_max_code_indexing_concurrency}")
+      logger.info("Prefix:\t\t\t\t#{setting.elasticsearch_prefix}")
     end
 
     def display_search_server_info
@@ -521,7 +522,7 @@ module Search
 
     def display_index_settings
       logger.info(Rainbow("\nIndices").yellow)
-      indices = ::Elastic::IndexSetting.order_by_name.pluck(:alias_name) # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- table contains small dataset
+      indices = ::Elastic::IndexSetting.every_alias.map(&:alias_name).sort
       indices.each do |alias_name|
         index_setting = {}
 

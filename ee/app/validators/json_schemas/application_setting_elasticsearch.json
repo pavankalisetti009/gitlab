@@ -108,6 +108,12 @@
     "elasticsearch_max_code_indexing_concurrency": {
       "type": "integer",
       "default": 30
+    },
+    "elasticsearch_prefix": {
+      "type": "string",
+      "default": "gitlab",
+      "minLength": 1,
+      "maxLength": 100
     }
   },
   "additionalProperties": false

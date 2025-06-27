@@ -28,6 +28,8 @@ module Elastic
       end
 
       def every_alias
+        return to_enum(:every_alias) unless block_given?
+
         aliases.each do |alias_name|
           yield self[alias_name]
         end
