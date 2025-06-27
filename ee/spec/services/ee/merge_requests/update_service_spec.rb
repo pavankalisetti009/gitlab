@@ -658,11 +658,12 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       let(:has_jira_key) { true }
       let(:auto_merge_enabled) { true }
       let(:title_regex) { nil }
+      let(:description) { title_regex }
 
       before do
         allow(merge_request).to receive(:has_jira_issue_keys?).and_return(has_jira_key)
         merge_request.update!(auto_merge_enabled: true, merge_user: user) if auto_merge_enabled
-        project.update!(merge_request_title_regex: title_regex)
+        project.update!(merge_request_title_regex_description: description, merge_request_title_regex: title_regex)
       end
 
       context 'when the description changes' do
