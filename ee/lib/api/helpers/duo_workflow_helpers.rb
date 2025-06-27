@@ -13,7 +13,6 @@ module API
 
       def push_feature_flags
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_claude_3_7, current_user)
-        Gitlab::AiGateway.push_feature_flag(:duo_workflow_mcp_support, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_workhorse, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_web_chat_mutation_tools, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_use_handover_summary, current_user)
