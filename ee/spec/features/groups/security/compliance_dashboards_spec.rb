@@ -24,6 +24,8 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
       group_level_compliance_violations_report: true)
     group.add_owner(user)
     sign_in(user)
+
+    stub_feature_flags compliance_violations_report: false
   end
 
   context 'tab selection' do

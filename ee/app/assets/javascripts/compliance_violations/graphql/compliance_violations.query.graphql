@@ -1,0 +1,22 @@
+query groupComplianceViolations($fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    name
+    projectComplianceViolations {
+      nodes {
+        id
+        createdAt
+        project {
+          id
+          name
+          fullPath
+        }
+        complianceControl {
+          id
+          name
+        }
+        status
+      }
+    }
+  }
+}
