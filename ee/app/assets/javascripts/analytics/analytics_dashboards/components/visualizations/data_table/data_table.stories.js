@@ -58,15 +58,6 @@ const defaultArgs = { data };
 export const Default = Template.bind({});
 Default.args = defaultArgs;
 
-// See https://bootstrap-vue.org/docs/components/table#fields-as-an-array-of-objects
-export const CustomFields = Template.bind({});
-CustomFields.args = {
-  ...defaultArgs,
-  options: {
-    fields: [{ key: 'additions', label: 'Lines added' }, { key: 'deletions' }, { key: 'title' }],
-  },
-};
-
 export const InDashboardPanel = WithGridstack.bind({});
 InDashboardPanel.args = {
   ...defaultArgs,
@@ -82,4 +73,41 @@ InDashboardPanel.args = {
       },
     },
   ],
+};
+
+// See https://bootstrap-vue.org/docs/components/table#fields-as-an-array-of-objects
+export const CustomFields = Template.bind({});
+CustomFields.parameters = {
+  docs: {
+    description: {
+      story:
+        'Custom field components may be used to change the render format of a column of the table. The example below uses the `AssigneeAvatars` and `DiffLineChanges` custom field components. Any additional examples can be found within the `data_table/` folder.',
+    },
+  },
+};
+CustomFields.args = {
+  data: data.map(({ title, additions, deletions }) => ({
+    title,
+    assignees: {
+      nodes: [
+        {
+          name: 'Administrator',
+          webUrl: 'https://gitlab.com',
+          avatarUrl:
+            'https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80&d=identicon',
+        },
+      ],
+    },
+    changes: {
+      additions,
+      deletions,
+    },
+  })),
+  options: {
+    fields: [
+      { key: 'title' },
+      { key: 'assignees', label: 'Assignees', component: 'AssigneeAvatars' },
+      { key: 'changes', label: 'Diff', component: 'DiffLineChanges' },
+    ],
+  },
 };
