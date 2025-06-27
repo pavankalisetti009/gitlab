@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class CreateTanukiBotMvc < Gitlab::Database::Migration[2.1]
-  enable_lock_retries!
-
   def up
     create_table :tanuki_bot_mvc do |t|
       t.timestamps_with_timezone null: false

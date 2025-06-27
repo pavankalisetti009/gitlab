@@ -2,7 +2,6 @@
 
 class RemoveProjectWikiRepositoryRegistryForceToRedownloadColumn < Gitlab::Database::Migration[2.2]
   milestone '16.10'
-  enable_lock_retries!
 
   def up
     remove_column :project_wiki_repository_registry, :force_to_redownload, if_exists: true
