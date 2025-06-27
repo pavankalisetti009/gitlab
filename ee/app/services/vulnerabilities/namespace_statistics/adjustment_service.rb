@@ -4,7 +4,6 @@ module Vulnerabilities
   module NamespaceStatistics
     class AdjustmentService
       include Gitlab::InternalEventsTracking
-      include Security::NamespaceTraversalSqlBuilder
 
       TooManyNamespacesError = Class.new(StandardError)
 
@@ -27,7 +26,7 @@ module Vulnerabilities
       SQL
 
       STATS_SQL = <<~SQL
-        WITH namespace_data (namespace_id, traversal_ids) AS (
+        WITH namespace_data (namespace_id, traversal_ids, next_traversal_id) AS (
             %{with_values}
         )
         SELECT
@@ -46,7 +45,7 @@ module Vulnerabilities
         LEFT JOIN vulnerability_statistics
           ON vulnerability_statistics.archived = FALSE
           AND vulnerability_statistics.traversal_ids >= namespace_data.traversal_ids
-          AND vulnerability_statistics.traversal_ids < next_traversal_ids_sibling (namespace_data.traversal_ids)
+          AND vulnerability_statistics.traversal_ids < namespace_data.next_traversal_id
         GROUP BY namespace_data.traversal_ids, namespace_id
       SQL
 
@@ -229,7 +228,19 @@ module Vulnerabilities
 
         return unless namespace_values.present?
 
-        namespaces_and_traversal_ids_query_values(namespace_values)
+        values = namespace_values.map do |row|
+          traversal_ids = row[1]
+          next_traversal_ids = traversal_ids.dup
+          next_traversal_ids[-1] += 1
+
+          [
+            row[0],
+            Arel.sql("ARRAY#{traversal_ids}::bigint[]"),
+            Arel.sql("ARRAY#{next_traversal_ids}::bigint[]")
+          ]
+        end
+
+        Arel::Nodes::ValuesList.new(values).to_sql
       end
 
       def non_zero_diffs(diffs)

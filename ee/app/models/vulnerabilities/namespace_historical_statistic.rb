@@ -2,7 +2,6 @@
 
 module Vulnerabilities
   class NamespaceHistoricalStatistic < ::SecApplicationRecord
-    include ::Namespaces::Traversal::Traversable
     include EachBatch
 
     self.table_name = 'vulnerability_namespace_historical_statistics'
@@ -27,7 +26,8 @@ module Vulnerabilities
     }
 
     scope :for_namespace_and_descendants, ->(namespace) do
-      within(namespace.traversal_ids)
+      where("traversal_ids >= ('{?}')", namespace.traversal_ids)
+        .where("traversal_ids < ('{?}')", namespace.next_traversal_ids)
     end
 
     scope :between_dates, ->(start_date, end_date) { where(date: start_date..end_date) }
