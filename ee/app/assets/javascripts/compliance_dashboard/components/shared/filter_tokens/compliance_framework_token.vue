@@ -1,14 +1,18 @@
 <script>
-import { GlFilteredSearchSuggestion, GlFilteredSearchToken, GlLoadingIcon } from '@gitlab/ui';
+import { GlFilteredSearchSuggestion } from '@gitlab/ui';
+import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { s__ } from '~/locale';
+import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 import { FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK } from '../../../constants';
+import FrameworkBadge from '../framework_badge.vue';
 
 export default {
   components: {
-    GlFilteredSearchToken,
+    BaseToken,
     GlFilteredSearchSuggestion,
-    GlLoadingIcon,
+    FrameworkBadge,
   },
   props: {
     config: {
@@ -19,78 +23,123 @@ export default {
       type: Object,
       required: true,
     },
-  },
-  apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    complianceFrameworks: {
-      query: getComplianceFrameworkQuery,
-      variables() {
-        return {
-          fullPath: this.config.groupPath,
-        };
-      },
-      update(data) {
-        return data.namespace?.complianceFrameworks?.nodes || [];
-      },
-      error(error) {
-        Sentry.captureException(error);
-      },
+    active: {
+      type: Boolean,
+      required: true,
     },
+  },
+  data() {
+    return {
+      complianceFrameworks: [],
+      loading: true,
+    };
   },
   computed: {
-    isLoading() {
-      return Boolean(this.$apollo.queries.complianceFrameworks.loading);
-    },
-    filteredFrameworks() {
-      const searchTerm = this.value?.data || '';
-
-      if (!searchTerm && this.complianceFrameworks) {
+    frameworkSuggestions() {
+      if (this.config.includeNoFramework) {
         return [FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK, ...this.complianceFrameworks];
       }
-
-      const searchTermLower = searchTerm.toLowerCase();
-      return this.complianceFrameworks?.filter((framework) => {
-        return (
-          framework.name.toLowerCase().includes(searchTermLower) ||
-          framework.description?.toLowerCase().includes(searchTermLower)
-        );
-      });
+      return this.complianceFrameworks;
     },
+  },
+  mounted() {
+    if (this.value?.data) {
+      this.fetchFrameworks();
+    }
   },
   methods: {
-    frameworkName(frameworkId) {
-      if (frameworkId === FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK.id)
-        return FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK.name;
-
-      if (this.$apollo.queries.complianceFrameworks.loading) {
-        return frameworkId;
+    fetchComplianceFrameworks() {
+      if (this.config.frameworks) {
+        return Promise.resolve(this.config.frameworks);
       }
+      return this.$apollo
+        .query({
+          query: getComplianceFrameworkQuery,
+          variables: {
+            fullPath: this.config.groupPath,
+          },
+        })
+        .then(({ data }) => data.namespace?.complianceFrameworks?.nodes || []);
+    },
+    fetchFrameworks() {
+      this.loading = true;
+      this.fetchComplianceFrameworks()
+        .then((frameworks) => {
+          this.complianceFrameworks = frameworks;
+        })
+        .catch((error) => {
+          Sentry.captureException(error);
+          createAlert({
+            message: s__('ComplianceReport|There was a problem fetching compliance frameworks.'),
+          });
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    getActiveFramework(frameworks, data) {
+      if (data) {
+        if (data === FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK.id) {
+          return FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK;
+        }
 
-      const framework = this.complianceFrameworks.find(
-        (complianceFramework) => complianceFramework.id === frameworkId,
-      );
-      return framework ? framework.name : frameworkId;
+        if (frameworks.length) {
+          return frameworks.find((framework) => this.getValue(framework) === data);
+        }
+      }
+      return undefined;
+    },
+    getValue(framework) {
+      return framework.id;
+    },
+    displayValue(framework) {
+      return framework.name;
     },
   },
+  FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK,
 };
 </script>
 
 <template>
-  <gl-filtered-search-token :config="config" v-bind="{ ...$props, ...$attrs }" v-on="$listeners">
-    <template #view="{ inputValue }">
-      {{ frameworkName(inputValue) }}
-    </template>
-    <template #suggestions>
-      <gl-loading-icon v-if="isLoading" size="sm" />
+  <base-token
+    :config="config"
+    :value="value"
+    :active="active"
+    :suggestions-loading="loading"
+    :suggestions="frameworkSuggestions"
+    :get-active-token-value="getActiveFramework"
+    :value-identifier="getValue"
+    v-bind="$attrs"
+    search-by="name"
+    @fetch-suggestions="fetchFrameworks"
+    v-on="$listeners"
+  >
+    <template #view="{ viewTokenProps: { inputValue, activeTokenValue } }">
+      <template v-if="activeTokenValue">
+        <template v-if="activeTokenValue.id === $options.FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK.id">
+          {{ displayValue(activeTokenValue) }}
+        </template>
+        <template v-else>
+          <framework-badge :framework="activeTokenValue" popover-mode="hidden" />
+        </template>
+      </template>
       <template v-else>
-        <gl-filtered-search-suggestion
-          v-for="framework in filteredFrameworks"
-          :key="framework.id"
-          :value="framework.id"
-        >
-          {{ framework.name }}
-        </gl-filtered-search-suggestion>
+        {{ inputValue }}
       </template>
     </template>
-  </gl-filtered-search-token>
+    <template #suggestions-list="{ suggestions }">
+      <gl-filtered-search-suggestion
+        v-for="framework in suggestions"
+        :key="framework.id"
+        :value="getValue(framework)"
+      >
+        <framework-badge
+          v-if="framework.id !== $options.FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK.id"
+          :framework="framework"
+          popover-mode="hidden"
+        />
+        <template v-else>{{ framework.name }}</template>
+      </gl-filtered-search-suggestion>
+    </template>
+  </base-token>
 </template>

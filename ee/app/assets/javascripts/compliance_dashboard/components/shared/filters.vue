@@ -47,6 +47,7 @@ export default {
           entityType: 'framework',
           token: ComplianceFrameworkToken,
           groupPath: this.groupPath,
+          includeNoFramework: true,
         },
         {
           unique: true,
