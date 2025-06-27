@@ -39,6 +39,20 @@ module Security
         **ENCRYPTION_CONFIG
       }.freeze
 
+      INCOMING_EMAIL_TOKEN_CONFIG = {
+        insecure: true,
+        model: User,
+        lookup_method: :with_incoming_email_token,
+        token_method: :incoming_email_token
+      }.freeze
+
+      FEED_TOKEN_CONFIG = {
+        insecure: true,
+        model: User,
+        lookup_method: :with_feed_token,
+        token_method: :feed_token
+      }.freeze
+
       # Maps token type IDs (from secret-detection-rules) to their corresponding GitLab model classes
       # and the methods needed to look them up
       TOKEN_TYPE_CONFIG = {
@@ -52,7 +66,9 @@ module Security
         'gitlab_runner_auth_token_routable' => RUNNER_TOKEN_CONFIG,
         'gitlab_kubernetes_agent_token' => CLUSTERS_AGENT_TOKEN_CONFIG,
         'gitlab_scim_oauth_token' => GROUP_SCIM_AUTH_ACCESS_TOKEN_CONFIG,
-        'gitlab_ci_build_token' => CI_BUILD_TOKEN_CONFIG
+        'gitlab_ci_build_token' => CI_BUILD_TOKEN_CONFIG,
+        'gitlab_incoming_email_token' => INCOMING_EMAIL_TOKEN_CONFIG,
+        'gitlab_feed_token_v2' => FEED_TOKEN_CONFIG
       }.freeze
 
       # Checks if a given token type is supported by this service
@@ -70,10 +86,27 @@ module Security
         config = TOKEN_TYPE_CONFIG[token_type]
         return unless config
 
+        if config[:insecure]
+          return insecure_token_lookup(config[:model], config[:lookup_method], config[:token_method],
+            token_values)
+        end
+
         token_lookup(config[:model], config[:lookup_method], config[:token_method], token_values)
       end
 
       private
+
+      # Performs token lookup for insecure tokens that are stored in plain text
+      # @param model_class [Class] The ActiveRecord model class (e.g., User)
+      # @param lookup_method [Symbol] The scope method to use for bulk lookup (e.g., :with_incoming_email_token)
+      # @param token_method [Symbol] The method to call on found records to get their stored token value
+      # @param token_values [Array<String>] Raw token values to search for
+      # @return [Hash<String, ActiveRecord::Base>] Hash mapping raw tokens to their database records
+      def insecure_token_lookup(model_class, lookup_method, token_method, token_values)
+        results = model_class.public_send(lookup_method, token_values) # rubocop:disable GitlabSecurity/PublicSend -- lookup_method is defined in TOKEN_TYPE_CONFIG and cannot be overriden
+
+        results.index_by { |record| record.public_send(token_method) } # rubocop:disable GitlabSecurity/PublicSend -- token_method is defined in TOKEN_TYPE_CONFIG and cannot be overriden
+      end
 
       # Performs the actual token lookup using the appropriate model and methods
       # @param model_class [Class] The ActiveRecord model class (e.g., PersonalAccessToken)
