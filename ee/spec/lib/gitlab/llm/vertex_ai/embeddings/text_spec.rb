@@ -39,7 +39,8 @@ RSpec.describe Gitlab::Llm::VertexAi::Embeddings::Text, feature_category: :ai_ab
       allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
         allow(client).to receive(:text_embeddings).and_return(example_response)
       end
-      allow(example_response).to receive(:success?).and_return(success)
+
+      allow(example_response).to receive_messages(success?: success, bad_request?: false)
     end
 
     it 'passes nil as the model to the client' do
@@ -88,21 +89,33 @@ RSpec.describe Gitlab::Llm::VertexAi::Embeddings::Text, feature_category: :ai_ab
     end
 
     context 'when the API returns an error response' do
-      let(:error_hash) { { error: { message: 'error' } }.to_json }
-
-      before do
-        allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
-          allow(client).to receive(:text_embeddings).and_return(error_hash)
-        end
-      end
+      let(:example_response) { { error: { message: 'error' } }.to_json }
+      let(:success) { false }
 
       it 'raises an error' do
         expect(::Gitlab::Llm::VertexAi::ResponseModifiers::Embeddings)
           .to receive(:new)
-          .with(error_hash)
+          .with(example_response)
           .and_call_original
 
         expect { execute }.to raise_error(StandardError, /error/)
+      end
+
+      context 'when error is about exceeded token limits' do
+        let(:example_response) { { error: { message: error_message } } }
+        let(:error_message) do
+          "Unable to submit request " \
+            "because the input token count is 20001 but the model supports up to 20000. " \
+            "Reduce the input token count and try again."
+        end
+
+        before do
+          allow(example_response).to receive(:bad_request?).and_return(true)
+        end
+
+        it 'raises a TokenLimitExceeded error' do
+          expect { execute }.to raise_error(described_class::TokenLimitExceededError, /#{error_message}/)
+        end
       end
     end
 
