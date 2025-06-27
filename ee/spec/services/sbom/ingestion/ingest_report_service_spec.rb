@@ -56,5 +56,58 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
         execute
       end
     end
+
+    context 'when the same report is ingested again' do
+      let(:graph_cache_key) { instance_double(Sbom::Ingestion::DependencyGraphCacheKey, key: "key_value") }
+
+      it 'only generates the graph once' do
+        expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(pipeline.project_id).once
+        allow(Sbom::Ingestion::DependencyGraphCacheKey)
+          .to receive(:new)
+          .with(pipeline.project, sbom_report)
+          .and_return(graph_cache_key)
+
+        expect(Rails.cache)
+          .to receive(:write)
+          .with("key_value", { pipeline_id: pipeline.id }, expires_in: 24.hours)
+          .once
+
+        execute
+        execute
+      end
+    end
+
+    context 'when two different reports are ingested' do
+      let_it_be(:pipeline_2) { build_stubbed(:ci_pipeline) }
+      let_it_be(:sbom_report_2) { create(:ci_reports_sbom_report, num_components: num_components + 1) }
+
+      let(:graph_cache_key_1) { instance_double(Sbom::Ingestion::DependencyGraphCacheKey, key: "key_value_1") }
+      let(:graph_cache_key_2) { instance_double(Sbom::Ingestion::DependencyGraphCacheKey, key: "key_value_2") }
+
+      it 'builds the graph once for each report' do
+        expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(pipeline.project_id).once
+        allow(Sbom::Ingestion::DependencyGraphCacheKey)
+          .to receive(:new)
+          .with(pipeline.project, sbom_report)
+          .and_return(graph_cache_key_1)
+        expect(Rails.cache)
+          .to receive(:write)
+          .with("key_value_1", { pipeline_id: pipeline.id }, expires_in: 24.hours)
+          .once
+
+        expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(pipeline_2.project_id).once
+        allow(Sbom::Ingestion::DependencyGraphCacheKey)
+          .to receive(:new)
+          .with(pipeline_2.project, sbom_report_2)
+          .and_return(graph_cache_key_2)
+        expect(Rails.cache)
+          .to receive(:write)
+          .with("key_value_2", { pipeline_id: pipeline_2.id }, expires_in: 24.hours)
+          .once
+
+        described_class.execute(pipeline, sbom_report)
+        described_class.execute(pipeline_2, sbom_report_2)
+      end
+    end
   end
 end
