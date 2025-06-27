@@ -1,8 +1,10 @@
 <script>
-import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
 import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/model_selection_batch_settings_updater.vue';
+
+const baseTdClasses = ['gl-content-center', '!gl-border-b-0', '!gl-bg-subtle'];
 
 export default {
   name: 'FeatureSettingsTableRows',
@@ -11,6 +13,10 @@ export default {
     GlSkeletonLoader,
     ModelSelector,
     ModelSelectionBatchSettingsUpdater,
+    GlIcon,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     aiFeatureSettings: {
@@ -25,21 +31,21 @@ export default {
   fields: [
     {
       key: 'sub_feature',
-      label: s__('AdminAIPoweredFeatures|Feature'), // for mobile only
-      thClass: 'gl-w-1/2',
-      tdClass: 'gl-content-center',
+      label: s__('AdminAIPoweredFeatures|Features'),
+      thClass: 'gl-w-1/3',
+      tdClass: baseTdClasses,
     },
     {
       key: 'model_name',
-      label: s__('AdminAIPoweredFeatures|Model'), // for mobile only
-      thClass: 'gl-w-1/2',
-      tdClass: 'gl-content-center',
+      label: s__('AdminAIPoweredFeatures|Model'),
+      thClass: 'gl-w-1/3',
+      tdClass: baseTdClasses,
     },
     {
       key: 'batch_model_update',
-      label: s__('AdminAIPoweredFeatures|Apply to all sub-features'), // for mobile only
-      thClass: 'gl-w-1/2',
-      tdClass: 'gl-content-center',
+      label: s__('AdminAIPoweredFeatures|Apply to all sub-features'),
+      thClass: 'gl-hidden gl-w-1/3',
+      tdClass: baseTdClasses,
     },
   ],
   data() {
@@ -76,13 +82,20 @@ export default {
 </script>
 <template>
   <gl-table-lite
-    thead-class="gl-hidden"
-    class="gl-mb-0"
+    class="gl-border gl-mb-0 gl-rounded-lg gl-border-section gl-bg-section"
     :fields="$options.fields"
     :items="isLoading ? $options.loaderItems : aiFeatureSettings"
-    stacked="md"
-    fixed
+    responsive
+    borderless
   >
+    <template #head(model_name)="{ label }">
+      {{ label }}
+      <gl-icon
+        v-gl-tooltip="s__('AdminAIPoweredFeatures|Select the model for the feature')"
+        variant="info"
+        name="information-o"
+      />
+    </template>
     <template #cell(sub_feature)="{ item }">
       <gl-skeleton-loader v-if="isLoading" :height="38" :width="600">
         <rect y="8" :width="item.loaderWidth.subFeature" height="24" rx="10" />
@@ -93,7 +106,7 @@ export default {
     </template>
     <template #cell(model_name)="{ item }">
       <gl-skeleton-loader v-if="isLoading" :height="38" :width="600">
-        <rect y="8" x="155" :width="item.loaderWidth.modelName" height="24" rx="10" />
+        <rect y="8" x="0" :width="item.loaderWidth.modelName" height="24" rx="10" />
       </gl-skeleton-loader>
       <model-selector
         v-else

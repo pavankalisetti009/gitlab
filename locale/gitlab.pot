@@ -4067,6 +4067,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Feature"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|Features"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|GitLab Default"
 msgstr ""
 
@@ -4080,6 +4083,9 @@ msgid "AdminAIPoweredFeatures|Other GitLab Duo features"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Select a self-hosted model"
+msgstr ""
+
+msgid "AdminAIPoweredFeatures|Select the model for the feature"
 msgstr ""
 
 msgid "AdminAiPoweredFeatures|%{selected_model} is incompatible with the %{title} feature"
