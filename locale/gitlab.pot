@@ -55606,7 +55606,7 @@ msgstr ""
 msgid "SecurityInventory|Load more"
 msgstr ""
 
-msgid "SecurityInventory|Manage security configuration"
+msgid "SecurityInventory|Manage tool coverage"
 msgstr ""
 
 msgid "SecurityInventory|No projects found"
@@ -55648,7 +55648,13 @@ msgstr ""
 msgid "SecurityInventory|Tool coverage: %{coverage}"
 msgstr ""
 
+msgid "SecurityInventory|View project"
+msgstr ""
+
 msgid "SecurityInventory|View security coverage and vulnerabilities for all the projects in this group."
+msgstr ""
+
+msgid "SecurityInventory|View subgroup"
 msgstr ""
 
 msgid "SecurityInventory|View vulnerability report"

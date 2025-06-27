@@ -1,6 +1,12 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlButton } from '@gitlab/ui';
+import { GlDisclosureDropdown } from '@gitlab/ui';
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
+import { isSubGroup } from 'ee/security_inventory/utils';
+import {
+  PROJECT_SECURITY_CONFIGURATION_PATH,
+  PROJECT_VULNERABILITY_REPORT_PATH,
+  GROUP_VULNERABILITY_REPORT_PATH,
+} from 'ee/security_inventory/constants';
 import { subgroupsAndProjects } from '../mock_data';
 
 describe('ActionCell', () => {
@@ -10,7 +16,7 @@ describe('ActionCell', () => {
   const mockGroup = subgroupsAndProjects.data.group.descendantGroups.nodes[0];
 
   const createComponent = (props = {}) => {
-    return shallowMount(ActionCell, {
+    wrapper = shallowMount(ActionCell, {
       propsData: {
         item: {},
         ...props,
@@ -18,33 +24,50 @@ describe('ActionCell', () => {
     });
   };
 
+  const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+
+  const securityConfigPath = (item) => `${item.webUrl}${PROJECT_SECURITY_CONFIGURATION_PATH}`;
+
+  const vulnerabilityPath = (item) =>
+    isSubGroup(item)
+      ? `${item.webUrl}${GROUP_VULNERABILITY_REPORT_PATH}`
+      : `${item.webUrl}${PROJECT_VULNERABILITY_REPORT_PATH}`;
+
   describe.each`
-    scenario         | item           | shouldRenderButton
-    ${'for group'}   | ${mockGroup}   | ${false}
-    ${'for project'} | ${mockProject} | ${true}
-  `('$scenario', ({ item, shouldRenderButton }) => {
+    type         | item           | viewText           | showToolCoverage
+    ${'project'} | ${mockProject} | ${'View project'}  | ${true}
+    ${'group'}   | ${mockGroup}   | ${'View subgroup'} | ${false}
+  `('when rendering $type item', ({ item, viewText, showToolCoverage }) => {
     beforeEach(() => {
-      wrapper = createComponent({ item });
+      createComponent({ item });
     });
 
-    it(`${shouldRenderButton ? 'renders' : 'does not render'} settings button`, () => {
-      expect(wrapper.findComponent(GlButton).exists()).toBe(shouldRenderButton);
-    });
-  });
-
-  describe('settings button', () => {
-    beforeEach(() => {
-      wrapper = createComponent({ item: mockProject });
+    it('renders GlDisclosureDropdown', () => {
+      expect(findDropdown().exists()).toBe(true);
     });
 
-    it('has correct properties', () => {
-      const button = wrapper.findComponent(GlButton);
-      const title = 'Manage security configuration';
+    it('renders correct dropdown items', () => {
+      const items = findDropdown().props('items');
+      const expectedLength = showToolCoverage ? 3 : 2;
 
-      expect(button.props('icon')).toBe('settings');
-      expect(button.attributes('href')).toBe(`${mockProject.webUrl}/-/security/configuration`);
-      expect(button.attributes('aria-label')).toBe(title);
-      expect(button.attributes('title')).toBe(title);
+      expect(items).toHaveLength(expectedLength);
+
+      expect(items[0]).toMatchObject({
+        text: viewText,
+        href: item.webUrl,
+      });
+
+      expect(items[1]).toMatchObject({
+        text: 'View vulnerability report',
+        href: vulnerabilityPath(item),
+      });
+
+      if (showToolCoverage) {
+        expect(items[2]).toMatchObject({
+          text: 'Manage tool coverage',
+          href: securityConfigPath(item),
+        });
+      }
     });
   });
 });
