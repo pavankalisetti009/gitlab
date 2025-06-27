@@ -21,26 +21,28 @@ describe('IssueBoardFilter', () => {
     statusListsAvailable = false,
     hasStatusFeature = false,
     workItemStatusFeatureFlagEnabled = false,
+    workItemsBeta = false,
+    customFieldsData = [
+      {
+        fieldType: 'MULTI_SELECT',
+        id: 'gid://gitlab/CustomField/12345',
+        name: 'Issue only field',
+        workItemTypes: [
+          {
+            id: 'gid://gitlab/WorkItemTypes/1',
+            name: 'Issue',
+          },
+        ],
+      },
+    ],
   } = {}) => {
     const customFieldsQueryHandler = jest.fn().mockResolvedValue({
       data: {
         namespace: {
           id: 'gid://gitlab/Group/1',
           customFields: {
-            count: 2,
-            nodes: [
-              {
-                id: 'gid://gitlab/CustomField/12345',
-                name: 'A multi select thing',
-                fieldType: 'MULTI_SELECT',
-                workItemTypes: [
-                  {
-                    id: 'gid://gitlab/WorkItemTypes/1',
-                    name: 'Issue',
-                  },
-                ],
-              },
-            ],
+            count: customFieldsData.length,
+            nodes: customFieldsData,
           },
         },
       },
@@ -65,6 +67,7 @@ describe('IssueBoardFilter', () => {
         hasStatusFeature,
         glFeatures: {
           workItemStatusFeatureFlag: workItemStatusFeatureFlagEnabled,
+          workItemsBeta,
         },
       },
     });
@@ -155,6 +158,86 @@ describe('IssueBoardFilter', () => {
         expect(wrapper.findComponent(BoardFilteredSearch).props('tokens')).not.toEqual(
           orderBy(tokens, ['title']),
         );
+      });
+    });
+
+    describe('task-only assigned custom field filter', () => {
+      const taskOnlyCustomField = {
+        id: 'gid://gitlab/Issuables::CustomField/55',
+        name: 'Task only field',
+        fieldType: 'SINGLE_SELECT',
+        workItemTypes: [
+          {
+            id: 'gid://gitlab/WorkItemTypes/2',
+            name: 'Task',
+          },
+        ],
+      };
+
+      const issueAndTaskCustomField = {
+        id: 'gid://gitlab/Issuables::CustomField/59',
+        name: 'Issue and Task field',
+        fieldType: 'MULTI_SELECT',
+        workItemTypes: [
+          {
+            id: 'gid://gitlab/WorkItemTypes/1',
+            name: 'Issue',
+          },
+          {
+            id: 'gid://gitlab/WorkItemTypes/2',
+            name: 'Task',
+          },
+        ],
+      };
+
+      it('includes task-only custom field filter when workItemsBeta flag is enabled', async () => {
+        createComponent({
+          hasCustomFieldsFeature: true,
+          workItemsBeta: true,
+          customFieldsData: [taskOnlyCustomField, issueAndTaskCustomField],
+        });
+
+        await waitForPromises();
+
+        const tokens = wrapper.findComponent(BoardFilteredSearch).props('tokens');
+        const customFieldTokens = tokens.filter((token) => token.type.startsWith('custom-field'));
+
+        expect(customFieldTokens).toHaveLength(2);
+        expect(customFieldTokens.map((token) => token.title)).toEqual([
+          'Issue and Task field',
+          'Task only field',
+        ]);
+      });
+
+      it('excludes task-only custom field filter when workItemsBeta flag is disabled', async () => {
+        createComponent({
+          hasCustomFieldsFeature: true,
+          workItemsBeta: false,
+          customFieldsData: [taskOnlyCustomField, issueAndTaskCustomField],
+        });
+
+        await waitForPromises();
+
+        const tokens = wrapper.findComponent(BoardFilteredSearch).props('tokens');
+        const customFieldTokens = tokens.filter((token) => token.type.startsWith('custom-field'));
+
+        expect(customFieldTokens).toHaveLength(1);
+        expect(customFieldTokens[0].title).toBe('Issue and Task field');
+      });
+
+      it('includes issue-only custom fields regardless of workItemsBeta flag', async () => {
+        createComponent({
+          hasCustomFieldsFeature: true,
+          workItemsBeta: false,
+        });
+
+        await waitForPromises();
+
+        const tokens = wrapper.findComponent(BoardFilteredSearch).props('tokens');
+        const customFieldTokens = tokens.filter((token) => token.type.startsWith('custom-field'));
+
+        expect(customFieldTokens).toHaveLength(1);
+        expect(customFieldTokens[0].title).toBe('Issue only field');
       });
     });
   });

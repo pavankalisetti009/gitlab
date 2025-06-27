@@ -222,6 +222,24 @@ export const mockNamespaceCustomFieldsResponse = {
                 name: 'Issue',
                 __typename: 'WorkItemType',
               },
+              {
+                id: 'gid://gitlab/WorkItems::Type/2',
+                name: 'Task',
+                __typename: 'WorkItemType',
+              },
+            ],
+            __typename: 'CustomField',
+          },
+          {
+            id: 'gid://gitlab/Issuables::CustomField/55',
+            name: 'Task only Multi select custom field',
+            fieldType: 'MULTI_SELECT',
+            workItemTypes: [
+              {
+                id: 'gid://gitlab/WorkItems::Type/2',
+                name: 'Task',
+                __typename: 'WorkItemType',
+              },
             ],
             __typename: 'CustomField',
           },
@@ -232,6 +250,53 @@ export const mockNamespaceCustomFieldsResponse = {
             workItemTypes: [],
             __typename: 'CustomField',
           },
+        ],
+        __typename: 'CustomFieldConnection',
+      },
+      __typename: 'Group',
+    },
+  },
+};
+
+export const mockNamespaceCustomFieldsWithTaskResponse = {
+  data: {
+    namespace: {
+      id: 'gid://gitlab/Group/24',
+      customFields: {
+        count: 5,
+        nodes: [
+          {
+            id: 'gid://gitlab/Issuables::CustomField/30',
+            name: 'Task specific field',
+            fieldType: 'SINGLE_SELECT',
+            workItemTypes: [
+              {
+                id: 'gid://gitlab/WorkItems::Type/2',
+                name: 'Task',
+                __typename: 'WorkItemType',
+              },
+            ],
+            __typename: 'CustomField',
+          },
+          {
+            id: 'gid://gitlab/Issuables::CustomField/31',
+            name: 'Issue and Task field',
+            fieldType: 'MULTI_SELECT',
+            workItemTypes: [
+              {
+                id: 'gid://gitlab/WorkItems::Type/1',
+                name: 'Issue',
+                __typename: 'WorkItemType',
+              },
+              {
+                id: 'gid://gitlab/WorkItems::Type/2',
+                name: 'Task',
+                __typename: 'WorkItemType',
+              },
+            ],
+            __typename: 'CustomField',
+          },
+          ...mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes,
         ],
         __typename: 'CustomFieldConnection',
       },
