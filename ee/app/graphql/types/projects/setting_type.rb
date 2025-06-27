@@ -20,6 +20,11 @@ module Types
         Types::ProjectType,
         null: true,
         description: 'Project the settings belong to.'
+
+      field :web_based_commit_signing_enabled,
+        GraphQL::Types::Boolean,
+        null: false,
+        description: 'Indicates whether web-based commit signing is enabled for the project.'
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

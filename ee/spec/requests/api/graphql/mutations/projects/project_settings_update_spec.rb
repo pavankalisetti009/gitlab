@@ -11,15 +11,20 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
   let_it_be(:namespace) { create(:group) }
   let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
-  let_it_be(:project) { create(:project, namespace: namespace) }
   let_it_be(:duo_features_enabled) { true }
+  let_it_be(:web_based_commit_signing_enabled) { true }
+  let_it_be_with_reload(:project) do
+    create(:project, namespace: namespace, duo_features_enabled: !duo_features_enabled,
+      web_based_commit_signing_enabled: !web_based_commit_signing_enabled)
+  end
 
   let(:duo_context_exclusion_settings) { nil }
   let(:mutation) do
     params = {
       full_path: project.full_path,
       duo_features_enabled: duo_features_enabled,
-      duo_context_exclusion_settings: duo_context_exclusion_settings
+      duo_context_exclusion_settings: duo_context_exclusion_settings,
+      web_based_commit_signing_enabled: web_based_commit_signing_enabled
     }.compact
 
     graphql_mutation(:project_settings_update, params) do
@@ -29,6 +34,7 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
           duoContextExclusionSettings {
             exclusionRules
           }
+          webBasedCommitSigningEnabled
         }
         errors
       QL
@@ -45,17 +51,30 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
     end
 
     it 'will update the settings' do
-      post_graphql_mutation(mutation, current_user: user)
+      expect { post_graphql_mutation(mutation, current_user: user) }
+        .to change {
+              [
+                project.reload.duo_features_enabled,
+                project.reload.web_based_commit_signing_enabled
+              ]
+            }
+        .from([!duo_features_enabled, !web_based_commit_signing_enabled])
+        .to([duo_features_enabled, web_based_commit_signing_enabled])
+
       expect(graphql_mutation_response('projectSettingsUpdate')['projectSettings'])
-               .to eq({ 'duoFeaturesEnabled' => duo_features_enabled,
-                        'duoContextExclusionSettings' => { 'exclusionRules' => nil } })
+        .to include({
+          'duoFeaturesEnabled' => duo_features_enabled,
+          'webBasedCommitSigningEnabled' => web_based_commit_signing_enabled
+        })
     end
 
     context 'when updating duo_context_exclusion_settings' do
-      let(:duo_context_exclusion_settings) { { exclusion_rules: ['*.txt', 'node_modules/'] } }
+      let(:duo_context_exclusion_settings) { { "exclusion_rules" => ['*.txt', 'node_modules/'] } }
 
       it 'will update the duo context exclusion settings' do
-        post_graphql_mutation(mutation, current_user: user)
+        expect { post_graphql_mutation(mutation, current_user: user) }
+          .to change { project.project_setting.reload.duo_context_exclusion_settings }
+          .from({}).to(duo_context_exclusion_settings)
 
         expect(graphql_mutation_response('projectSettingsUpdate')['projectSettings']['duoContextExclusionSettings'])
           .to eq({ 'exclusionRules' => ['*.txt', 'node_modules/'] })
