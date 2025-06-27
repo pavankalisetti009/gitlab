@@ -7,6 +7,9 @@ RSpec.describe List do
   let_it_be(:project) { create(:project, :empty_repo, group: group) }
   let_it_be(:board) { create(:board, project: project) }
 
+  let_it_be(:system_defined_status) { build(:work_item_system_defined_status) }
+  let_it_be(:custom_status) { build(:work_item_custom_status) }
+
   describe 'relationships' do
     it { is_expected.to belong_to(:user) }
     it { is_expected.to belong_to(:milestone) }
@@ -94,9 +97,6 @@ RSpec.describe List do
   end
 
   context 'when it is a status type' do
-    let_it_be(:system_defined_status) { build(:work_item_system_defined_status) }
-    let_it_be(:custom_status) { build(:work_item_custom_status) }
-
     subject do
       build(:list, list_type: :status, system_defined_status: system_defined_status, board: board, position: 2)
     end
@@ -298,6 +298,59 @@ RSpec.describe List do
     context 'when no status lists exist' do
       it 'returns empty collection' do
         expect(subject).to be_empty
+      end
+    end
+  end
+
+  describe '#status=' do
+    let(:list) { build(:list, list_type: :status, board: board, position: 2) }
+
+    context 'when setting a system-defined status' do
+      it 'sets the system-defined status and clears custom status' do
+        list.status = system_defined_status
+
+        expect(list.system_defined_status).to eq(system_defined_status)
+        expect(list.custom_status).to be_nil
+      end
+    end
+
+    context 'when setting a custom status' do
+      it 'sets the custom status and clears system-defined status' do
+        list.status = custom_status
+
+        expect(list.custom_status).to eq(custom_status)
+        expect(list.system_defined_status).to be_nil
+      end
+    end
+
+    context 'when setting nil' do
+      it 'does not set any status' do
+        list.status = nil
+
+        expect(list.system_defined_status).to be_nil
+        expect(list.custom_status).to be_nil
+      end
+    end
+
+    context 'when list is not a status type' do
+      let(:list) { build(:list, list_type: :milestone, board: board, milestone: create(:milestone)) }
+
+      context 'when setting a system-defined status' do
+        it 'does not set any status' do
+          list.status = system_defined_status
+
+          expect(list.system_defined_status).to be_nil
+          expect(list.custom_status).to be_nil
+        end
+      end
+
+      context 'when setting a custom status' do
+        it 'does not set any status' do
+          list.status = custom_status
+
+          expect(list.system_defined_status).to be_nil
+          expect(list.custom_status).to be_nil
+        end
       end
     end
   end
