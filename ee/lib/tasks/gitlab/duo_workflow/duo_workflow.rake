@@ -16,8 +16,89 @@ namespace :gitlab do
     # Note: This task cannot be run in production.
     # Note: this current_user_count cannot be greater than total_count
 
+    # Helper method to create workflow checkpoint data structures
+
     task :populate, [:total_count, :current_user_count, :user_id, :project_path] => :environment do |_t, args|
       raise 'This task cannot be run in production' if Rails.env.production?
+
+      # rubocop:disable Rake/TopLevelMethodDefinition -- Instance metods withing task scope do not leak
+      def create_checkpoint_data(workflow_goal, workflow_status, step = 0)
+        # rubocop:enable Rake/TopLevelMethodDefinition
+        timestamp = Time.current.iso8601(6)
+        thread_ts = timestamp
+
+        # Create checkpoint JSONB data
+        checkpoint_data = {
+          "v" => 1,
+          "id" => SecureRandom.uuid,
+          "ts" => timestamp,
+          "pending_sends" => [],
+          "versions_seen" => {
+            "__input__" => {},
+            "__start__" => { "__start__" => 1 }
+          },
+          "channel_values" => {
+            "plan" => { "steps" => [] },
+            "status" => workflow_status,
+            "handover" => [],
+            "ui_chat_log" => [
+              {
+                "status" => "success",
+                "content" => "Starting workflow with goal: #{workflow_goal}",
+                "timestamp" => timestamp,
+                "tool_info" => nil,
+                "message_type" => "tool",
+                "correlation_id" => nil
+              },
+              {
+                "status" => "success",
+                "content" => "Reading files from repo...",
+                "timestamp" => timestamp,
+                "tool_info" => nil,
+                "message_type" => "tool",
+                "correlation_id" => nil
+              },
+              {
+                "status" => "success",
+                "content" => "Awesome work Duo!",
+                "timestamp" => timestamp,
+                "tool_info" => nil,
+                "message_type" => "user",
+                "correlation_id" => nil
+              }
+            ],
+            "last_human_input" => nil,
+            "start:build_context" => "__start__",
+            "conversation_history" => {}
+          },
+          "channel_versions" => {
+            "plan" => 2,
+            "status" => 2,
+            "handover" => 2,
+            "__start__" => 2,
+            "ui_chat_log" => 2,
+            "last_human_input" => 2,
+            "start:build_context" => 2,
+            "conversation_history" => 2
+          }
+        }
+
+        # Create metadata JSONB data
+        metadata = {
+          "step" => step,
+          "source" => "loop",
+          "writes" => nil,
+          "parents" => {},
+          "thread_id" => SecureRandom.random_number(1000000).to_s
+        }
+
+        {
+          thread_ts: thread_ts,
+          parent_ts: step > 0 ? (Time.current - step.minutes).iso8601(6) : nil,
+          checkpoint: checkpoint_data,
+          metadata: metadata
+        }
+      end
 
       # Parse and validate total_count argument
       if args.total_count.blank?
@@ -173,6 +254,7 @@ namespace :gitlab do
       end
 
       workflows_created = 0
+      checkpoints_created = 0
       errors = []
 
       total_count.times do |i|
@@ -198,11 +280,14 @@ namespace :gitlab do
                     users.sample
                   end
 
-        Ai::DuoWorkflows::Workflow.create!(
+        goal = "#{sample_goals.sample} (Workflow ##{i + 1})"
+        workflow_status = statuses.sample
+
+        workflow = Ai::DuoWorkflows::Workflow.create!(
           user_id: user_id,
           project_id: target_project.id,
-          goal: "#{sample_goals.sample} (Workflow ##{i + 1})",
-          status: statuses.sample,
+          goal: goal,
+          status: workflow_status,
           workflow_definition: workflow_definitions.sample,
           agent_privileges: agent_privileges,
           pre_approved_agent_privileges: pre_approved_privileges,
@@ -210,6 +295,51 @@ namespace :gitlab do
         )
 
         workflows_created += 1
+
+        # Create workflow checkpoints based on workflow status
+        # Map workflow status to checkpoint configurations
+        checkpoint_configs = case workflow_status
+                             # created, running
+                             when 0, 1
+                               [
+                                 { workflow_status: 'STARTED' }
+                               ]
+                             # paused, finished, failed
+                             when 2, 3, 4
+                               [
+                                 { workflow_status: 'STARTED' },
+                                 { workflow_status: 'IN_PROGRESS' }
+                               ]
+                             # stopped, input_required, plan_approval_required, tool_call_approval_required
+                             when 5, 6, 7, 8
+                               [
+                                 { workflow_status: 'STARTED' },
+                                 { workflow_status: 'IN_PROGRESS' },
+                                 { workflow_status: 'FINISHED' }
+                               ]
+                             else
+                               # Default case for any unexpected status values
+                               [
+                                 { workflow_status: 'IN_PROGRESS' }
+                               ]
+                             end
+
+        # Create workflow checkpoints
+        checkpoint_configs.each_with_index do |config, checkpoint_index|
+          checkpoint_data = create_checkpoint_data(goal, config[:workflow_status], checkpoint_index)
+
+          Ai::DuoWorkflows::Checkpoint.create!(
+            workflow: workflow,
+            project: target_project,
+            thread_ts: checkpoint_data[:thread_ts],
+            parent_ts: checkpoint_data[:parent_ts],
+            checkpoint: checkpoint_data[:checkpoint],
+            metadata: checkpoint_data[:metadata]
+          )
+
+          checkpoints_created += 1
+        end
+
         print "." if (i + 1) % 10 == 0
 
       rescue StandardError => e
@@ -217,9 +347,11 @@ namespace :gitlab do
       end
 
       puts "\n\nSuccessfully created #{workflows_created} Ai::DuoWorkflows::Workflow entities!"
+      puts "Successfully created #{checkpoints_created} Ai::DuoWorkflows::Checkpoint entities!"
       puts "#{current_user_count} workflows assigned to target user (#{target_user.username})"
       puts "#{workflows_created - current_user_count} workflows assigned to other users"
       puts "Total workflows in database: #{Ai::DuoWorkflows::Workflow.count}"
+      puts "Total workflow checkpoints in database: #{Ai::DuoWorkflows::Checkpoint.count}"
 
       if errors.any?
         puts "\nErrors encountered:"
