@@ -336,6 +336,177 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
     end
   end
 
+  describe '#compare_plans_url' do
+    let(:promo_url) { 'https://about.gitlab.com' }
+
+    before do
+      allow(helper).to receive(:promo_url).and_return(promo_url)
+      allow(helper).to receive(:group_billings_path) { |group| "/groups/#{group.full_path}/-/billings" }
+    end
+
+    context 'when user is nil' do
+      it 'returns promo pricing URL' do
+        result = helper.compare_plans_url(user: nil)
+
+        expect(result).to eq("#{promo_url}/pricing")
+      end
+
+      it 'returns promo pricing URL even when project and group are present' do
+        group = build_stubbed(:group)
+        project = build(:project, namespace: group)
+
+        result = helper.compare_plans_url(user: nil, project: project, group: group)
+
+        expect(result).to eq("#{promo_url}/pricing")
+      end
+    end
+
+    context 'when user is present' do
+      let(:user) { build_stubbed(:user) }
+
+      context 'when group is present and persisted' do
+        let(:group) { build_stubbed(:group) }
+
+        context 'when user can read billing for the group' do
+          before do
+            allow(helper).to receive(:can?).with(user, :read_billing, group).and_return(true)
+          end
+
+          it 'returns group billings path' do
+            result = helper.compare_plans_url(user: user, group: group)
+
+            expect(result).to eq("/groups/#{group.full_path}/-/billings")
+          end
+
+          it 'prioritizes group over project when both are present' do
+            project = build_stubbed(:project)
+
+            result = helper.compare_plans_url(user: user, project: project, group: group)
+
+            expect(result).to eq("/groups/#{group.full_path}/-/billings")
+          end
+        end
+
+        context 'when user cannot read billing for the group' do
+          before do
+            allow(helper).to receive(:can?).with(user, :read_billing, group).and_return(false)
+          end
+
+          it 'returns promo pricing URL' do
+            result = helper.compare_plans_url(user: user, group: group)
+
+            expect(result).to eq("#{promo_url}/pricing")
+          end
+        end
+      end
+
+      context 'when group is not persisted' do
+        let(:group) { build(:group) }
+
+        it 'returns promo pricing URL' do
+          result = helper.compare_plans_url(user: user, group: group)
+
+          expect(result).to eq("#{promo_url}/pricing")
+        end
+      end
+
+      context 'when project is present and persisted with a Group namespace' do
+        let(:group) { build_stubbed(:group) }
+        let(:project) { build_stubbed(:project, namespace: group) }
+
+        context 'when user can read billing for the project namespace' do
+          before do
+            allow(helper).to receive(:can?).with(user, :read_billing, group).and_return(true)
+          end
+
+          it 'returns project namespace billings path' do
+            result = helper.compare_plans_url(user: user, project: project)
+
+            expect(result).to eq("/groups/#{group.full_path}/-/billings")
+          end
+        end
+
+        context 'when user cannot read billing for the project namespace' do
+          before do
+            allow(helper).to receive(:can?).with(user, :read_billing, group).and_return(false)
+          end
+
+          it 'returns promo pricing URL' do
+            result = helper.compare_plans_url(user: user, project: project)
+
+            expect(result).to eq("#{promo_url}/pricing")
+          end
+        end
+      end
+
+      context 'when project is present and persisted with a User namespace' do
+        let(:project_owner_namespace) { build_stubbed(:user_namespace) }
+        let(:project) { build_stubbed(:project, namespace: project_owner_namespace) }
+
+        it 'returns promo pricing URL since user namespaces are not Groups' do
+          result = helper.compare_plans_url(user: user, project: project)
+
+          expect(result).to eq("#{promo_url}/pricing")
+        end
+      end
+
+      context 'when project is not persisted' do
+        let(:project) { build(:project) }
+
+        it 'returns promo pricing URL' do
+          result = helper.compare_plans_url(user: user, project: project)
+
+          expect(result).to eq("#{promo_url}/pricing")
+        end
+      end
+
+      context 'when no group or project is provided' do
+        it 'returns promo pricing URL' do
+          result = helper.compare_plans_url(user: user)
+
+          expect(result).to eq("#{promo_url}/pricing")
+        end
+      end
+
+      context 'when dealing with edge cases' do
+        it 'handles nil values gracefully' do
+          result = helper.compare_plans_url(user: user, project: nil, group: nil)
+
+          expect(result).to eq("#{promo_url}/pricing")
+        end
+
+        it 'handles authorization check with nil target_group' do
+          result = helper.compare_plans_url(user: user)
+
+          expect(result).to eq("#{promo_url}/pricing")
+        end
+      end
+
+      context 'when order priority is important' do
+        let(:group) { build_stubbed(:group) }
+        let(:project_group) { build_stubbed(:group) }
+        let(:project) { build_stubbed(:project, namespace: project_group) }
+
+        before do
+          allow(helper).to receive(:can?).with(user, :read_billing, group).and_return(true)
+          allow(helper).to receive(:can?).with(user, :read_billing, project_group).and_return(true)
+        end
+
+        it 'prioritizes group over project namespace' do
+          result = helper.compare_plans_url(user: user, project: project, group: group)
+
+          expect(result).to eq("/groups/#{group.full_path}/-/billings")
+        end
+
+        it 'uses project namespace when no group is provided' do
+          result = helper.compare_plans_url(user: user, project: project)
+
+          expect(result).to eq("/groups/#{project_group.full_path}/-/billings")
+        end
+      end
+    end
+  end
+
   describe '#project_sidebar_context_data' do
     let(:project) { build(:project) }
     let(:user) { build(:user) }

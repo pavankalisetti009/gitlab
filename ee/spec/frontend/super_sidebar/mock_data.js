@@ -1,3 +1,5 @@
+import { PROMO_URL } from '~/constants';
+
 export const createNewMenuGroups = [
   {
     name: 'This group',
@@ -101,6 +103,7 @@ export const sidebarData = {
   groups_path: 'path/to/groups',
   support_path: '/support',
   docs_path: '/help/docs',
+  compare_plans_url: `${PROMO_URL}/pricing`,
   display_whats_new: true,
   whats_new_most_recent_release_items_count: 5,
   whats_new_version_digest: 1,

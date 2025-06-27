@@ -75,6 +75,20 @@ module EE
       })
     end
 
+    override :compare_plans_url
+    def compare_plans_url(user: nil, project: nil, group: nil)
+      return super unless user
+
+      target_group = group if group&.persisted?
+      target_group ||= project.namespace if project&.persisted? && project.namespace.is_a?(Group)
+
+      if target_group && can?(user, :read_billing, target_group)
+        group_billings_path(target_group)
+      else
+        "#{promo_url}/pricing"
+      end
+    end
+
     private
 
     def super_sidebar_default_pins(panel_type)
