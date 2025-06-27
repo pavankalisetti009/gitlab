@@ -505,7 +505,8 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         cvss: [{
           overall_score: advisory.cvss_v3.overall_score,
           version: advisory.cvss_v3.version
-        }]
+        }],
+        validity_checks_enabled: be_in([true, false])
       )
 
       expect(subject[:location]['blob_path']).to match(kind_of(String))
@@ -595,8 +596,9 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         stub_feature_flags(validity_checks: false)
       end
 
-      it 'does not include finding_token_status in the result' do
+      it 'does not include finding_token_status or validity_checks_enabled in the result' do
         expect(subject).not_to include(:finding_token_status)
+        expect(subject).not_to include(:validity_checks_enabled)
       end
     end
 
@@ -620,8 +622,9 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
           project.security_setting.update!(validity_checks_enabled: true)
         end
 
-        it 'returns finding token status' do
+        it 'returns finding token status and validity_checks_enabled' do
           expect(subject[:finding_token_status]).to eq(finding.finding_token_status)
+          expect(subject[:validity_checks_enabled]).to eq(finding.project.security_setting&.validity_checks_enabled)
         end
       end
     end
