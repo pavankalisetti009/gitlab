@@ -25,6 +25,11 @@ module Mutations
         required: false,
         description: 'Settings for excluding files from Duo context.'
 
+      argument :web_based_commit_signing_enabled,
+        GraphQL::Types::Boolean,
+        required: false,
+        description: 'Indicates whether web-based commit signing is enabled for the project.'
+
       field :project_settings,
         Types::Projects::SettingType,
         null: false,

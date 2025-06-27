@@ -9769,6 +9769,7 @@ Input type: `ProjectSettingsUpdateInput`
 | <a id="mutationprojectsettingsupdateduocontextexclusionsettings"></a>`duoContextExclusionSettings` | [`DuoContextExclusionSettingsInput`](#duocontextexclusionsettingsinput) | Settings for excluding files from Duo context. |
 | <a id="mutationprojectsettingsupdateduofeaturesenabled"></a>`duoFeaturesEnabled` | [`Boolean`](#boolean) | Indicates whether GitLab Duo features are enabled for the project. |
 | <a id="mutationprojectsettingsupdatefullpath"></a>`fullPath` | [`ID!`](#id) | Full Path of the project the settings belong to. |
+| <a id="mutationprojectsettingsupdatewebbasedcommitsigningenabled"></a>`webBasedCommitSigningEnabled` | [`Boolean`](#boolean) | Indicates whether web-based commit signing is enabled for the project. |
 
 #### Fields
 
@@ -38810,6 +38811,7 @@ Represents the source of a security policy belonging to a project.
 | <a id="projectsettingduocontextexclusionsettings"></a>`duoContextExclusionSettings` | [`DuoContextExclusionSettings`](#duocontextexclusionsettings) | Settings for excluding files from Duo context. |
 | <a id="projectsettingduofeaturesenabled"></a>`duoFeaturesEnabled` | [`Boolean`](#boolean) | Indicates whether GitLab Duo features are enabled for the project. |
 | <a id="projectsettingproject"></a>`project` | [`Project`](#project) | Project the settings belong to. |
+| <a id="projectsettingwebbasedcommitsigningenabled"></a>`webBasedCommitSigningEnabled` | [`Boolean!`](#boolean) | Indicates whether web-based commit signing is enabled for the project. |
 
 ### `ProjectStatistics`
 

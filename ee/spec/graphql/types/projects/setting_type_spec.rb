@@ -7,6 +7,7 @@ RSpec.describe GitlabSchema.types['ProjectSetting'], feature_category: :code_sug
     expected_fields = %w[
       duo_features_enabled
       project
+      web_based_commit_signing_enabled
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
