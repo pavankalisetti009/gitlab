@@ -32,7 +32,7 @@ export default {
     },
     releasedTooltipTitle() {
       if (!this.fullDate) return undefined;
-      return sprintf(s__('AiCatalog|Released %{fullDate}'), {
+      return sprintf(s__('AICatalog|Released %{fullDate}'), {
         fullDate: this.fullDate,
       });
     },
