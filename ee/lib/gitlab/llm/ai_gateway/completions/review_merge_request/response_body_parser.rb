@@ -9,7 +9,7 @@ module Gitlab
             include ::Gitlab::Utils::StrongMemoize
 
             class Comment
-              ATTRIBUTES = %w[priority old_line new_line file].freeze
+              ATTRIBUTES = %w[old_line new_line file].freeze
 
               attr_reader :attributes, :content, :from
 
@@ -26,7 +26,7 @@ module Gitlab
               end
 
               def valid?
-                return false if priority.blank? || content.blank?
+                return false if content.blank?
                 return false if old_line.blank? && new_line.blank?
 
                 # Always require the file attribute since we now include it in all cases,

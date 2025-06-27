@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
           <review>
-          <comment file="example.rb" priority="3" old_line="1" new_line="2">
+          <comment file="example.rb" old_line="1" new_line="2">
           First line of comment
           Second line of comment
 
@@ -26,7 +26,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         it 'returns the expected comment' do
           comment = parser.comments.sole
 
-          expect(comment.priority).to eq 3
           expect(comment.old_line).to eq 1
           expect(comment.new_line).to eq 2
           expect(comment.file).to eq "example.rb"
@@ -43,7 +42,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="" new_line="2">
+            <comment file="example.rb" old_line="" new_line="2">
             Example comment
             </comment>
             </review>
@@ -53,7 +52,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         it 'returns the expected comment' do
           comment = parser.comments.sole
 
-          expect(comment.priority).to be 3
           expect(comment.old_line).to be_nil
           expect(comment.new_line).to be 2
           expect(comment.file).to eq "example.rb"
@@ -67,7 +65,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="1" new_line="">
+            <comment file="example.rb" old_line="1" new_line="">
             Example comment
             </comment>
             </review>
@@ -77,7 +75,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         it 'returns the expected comment' do
           comment = parser.comments.sole
 
-          expect(comment.priority).to be 3
           expect(comment.old_line).to be 1
           expect(comment.new_line).to be_nil
           expect(comment.file).to eq "example.rb"
@@ -91,7 +88,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
           <review>
-          <comment file="example.rb" priority="3" old_line="1" new_line="2">
+          <comment file="example.rb" old_line="1" new_line="2">
           First comment with suggestions
           <from>
               first offending line
@@ -121,7 +118,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" old_line="1" new_line="2">
             First comment with suggestions
             <from>    first offending line</from>
             <to>    first improved line</to>
@@ -148,7 +145,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" old_line="1" new_line="2">
             First comment with a suggestion
             <from>
                 first offending line
@@ -187,7 +184,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" old_line="1" new_line="2">
             First comment with a suggestion
             <from>
                 first offending line
@@ -196,7 +193,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
                 first improved line
             </to>
             </comment>
-            <comment file="other.rb" priority="2" old_line="" new_line="5">
+            <comment file="other.rb" old_line="" new_line="5">
             Second comment with a suggestion
             <from>
                 first offending line
@@ -217,7 +214,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
             expect(parser.comments.count).to eq 2
 
             first_comment = parser.comments[0]
-            expect(first_comment.priority).to eq 3
             expect(first_comment.old_line).to eq 1
             expect(first_comment.new_line).to eq 2
             expect(first_comment.file).to eq "example.rb"
@@ -229,7 +225,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
             NOTE_CONTENT
 
             second_comment = parser.comments[1]
-            expect(second_comment.priority).to be 2
             expect(second_comment.old_line).to be_nil
             expect(second_comment.new_line).to be 5
             expect(second_comment.file).to eq "other.rb"
@@ -249,7 +244,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" old_line="1" new_line="2">
             First comment with a suggestion
             <from>
                 first offending line
@@ -298,7 +293,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment file="example.rb" priority="3" old_line="" new_line="2">
+              <comment file="example.rb" old_line="" new_line="2">
               <from>
                   <div>first offending line</div>
                     <p>second offending line</p>
@@ -328,7 +323,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment file="example.rb" priority="3" old_line="" new_line="2">
+              <comment file="example.rb" old_line="" new_line="2">
               <from>
                   <from>first offending line</from>
                   <to>second offending line</to>
@@ -358,7 +353,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment file="example.rb" priority="3" old_line="1" new_line="2">
+              <comment file="example.rb" old_line="1" new_line="2">
               Some comment including a <from> tag
               <from>
                   <from>
@@ -393,7 +388,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" old_line="1" new_line="2">
             First comment with suggestions
             <from>
               a && b
@@ -422,7 +417,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment file="example.rb" priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" old_line="1" new_line="2">
             Please remove extra lines
             <from>
 
@@ -453,7 +448,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment file="example.rb" priority="3" old_line="" new_line="2">
+              <comment file="example.rb" old_line="" new_line="2">
               First comment with suggestions
               <to>
                   something random
@@ -483,7 +478,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
               Let me explain how awesome this review is.
 
               <review>
-              <comment file="example.rb" priority="3" old_line="" new_line="2">
+              <comment file="example.rb" old_line="" new_line="2">
               Example comment
               </comment>
               </review>
@@ -508,7 +503,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
 
           1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
 
-          <comment file="example.rb" priority="3" old_line="1" new_line="2">
+          <comment file="example.rb" old_line="1" new_line="2">
           First comment with suggestions
           <from>
               first offending line
@@ -588,7 +583,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
           <review>
-          <comment file="example.rb" priority="3" old_line="1" new_line="2">
+          <comment file="example.rb" old_line="1" new_line="2">
           First comment with suggestions
           <from>
               first offending line
@@ -657,27 +652,11 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
       end
     end
 
-    context 'when priority attribute is missing' do
-      let(:body) do
-        <<~RESPONSE
-          <review>
-          <comment file="example.rb" old_line="1" new_line="2">
-          Example comment
-          </comment>
-          </review>
-        RESPONSE
-      end
-
-      it 'returns expected output' do
-        expect(parser.comments).to be_empty
-      end
-    end
-
     context 'when line attributes are missing' do
       let(:body) do
         <<~RESPONSE
           <review>
-          <comment file="example.rb" old_line="1">
+          <comment file="example.rb">
           Example comment
           </comment>
           </review>
@@ -693,7 +672,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
       let(:body) do
         <<~RESPONSE
           <review>
-          <comment priority="3" old_line="1" new_line="2">
+          <comment old_line="1" new_line="2">
           Example comment
           </comment>
           </review>
