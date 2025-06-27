@@ -11,16 +11,34 @@ module WorkItems
         true
       end
 
-      def after_save
+      def after_create
+        return unless root_ancestor&.try(:work_item_status_feature_available?)
+
+        update_current_status(status_from_params || default_status)
+      end
+
+      def after_update
         return if excluded_in_new_type?
-        return unless has_permission?(:update_work_item) || has_permission?(:update_issue)
+        return unless root_ancestor&.try(:work_item_status_feature_available?)
 
-        target_status = find_target_status
-
-        update_current_status(target_status)
+        update_current_status(status_from_params)
       end
 
       private
+
+      def status_from_params
+        return unless params[:status].present? && lifecycle&.has_status_id?(params[:status].id)
+        return unless has_permission?(:"set_#{issuable.to_ability_name}_metadata")
+
+        params[:status]
+      end
+
+      def default_status
+        return if work_item.current_status
+
+        # Ensure any supported item has a valid status upon creation
+        lifecycle&.default_open_status
+      end
 
       def update_current_status(status)
         return unless status
@@ -41,17 +59,6 @@ module WorkItems
             ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute
           end
         end
-      end
-
-      def find_target_status
-        if params[:status].present? &&
-            root_ancestor&.try(:work_item_status_feature_available?) &&
-            lifecycle&.has_status_id?(params[:status].id)
-          return params[:status]
-        end
-
-        # Ensure any supported item has a valid status upon creation
-        lifecycle&.default_open_status unless work_item.current_status
       end
 
       def lifecycle

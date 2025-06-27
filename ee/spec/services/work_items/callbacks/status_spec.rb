@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, group: group) }
+  let_it_be(:group) { create(:group, :public) }
+  let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }
   let_it_be_with_reload(:unsupported_work_item) { create(:work_item, :ticket, project: project) }
 
@@ -36,7 +36,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       expect(Issues::CloseService).not_to receive(:new)
       expect(::WorkItems::Widgets::Statuses::UpdateService).not_to receive(:new)
 
-      after_save_callback
+      run_callback
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
         expect(status_update_service).to receive(:execute)
         expect(status.state).to eq(:open)
 
-        after_save_callback
+        run_callback
       end
     end
 
@@ -62,7 +62,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
         expect(Issues::ReopenService).to receive_message_chain(:new, :execute).with(item, status: status)
         expect(status.state).to eq(:open)
 
-        after_save_callback
+        run_callback
       end
     end
   end
@@ -80,7 +80,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
         expect(status_update_service).to receive(:execute)
         expect(status.state).to eq(:closed)
 
-        after_save_callback
+        run_callback
       end
     end
 
@@ -89,7 +89,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
         expect(Issues::CloseService).to receive_message_chain(:new, :execute).with(item, status: status)
         expect(status.state).to eq(:closed)
 
-        after_save_callback
+        run_callback
       end
     end
   end
@@ -100,10 +100,91 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
     end
   end
 
-  describe '#after_save' do
-    subject(:after_save_callback) { callback.after_save }
+  describe '#after_create' do
+    subject(:run_callback) { callback.after_create }
+
+    context 'when feature is not available' do
+      let(:params) { { status: done_status } }
+
+      before do
+        stub_licensed_features(work_item_status: false)
+      end
+
+      it_behaves_like 'does not call services to create current status record'
+    end
+
+    context 'for system defined lifecycle' do
+      context 'when status param is not given' do
+        it_behaves_like 'handle status for open state' do
+          let(:status) { default_open_status }
+        end
+      end
+
+      context 'when status param is given' do
+        let(:params) { { status: in_progress_status } }
+
+        it_behaves_like 'handle status for open state' do
+          let(:status) { in_progress_status }
+        end
+      end
+
+      context 'when user does not have permission to set status' do
+        let(:current_user) { create(:user) }
+
+        it_behaves_like 'handle status for open state' do
+          let(:status) { default_open_status }
+        end
+      end
+    end
+
+    context 'for custom lifecycle' do
+      let!(:status_lifecycle) do
+        create(:work_item_custom_lifecycle, namespace: group).tap do |lifecycle|
+          create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item.work_item_type)
+        end
+      end
+
+      context 'when status param is not given' do
+        it_behaves_like 'handle status for open state' do
+          let(:status) { status_lifecycle.default_open_status }
+        end
+      end
+
+      context 'when status param is given' do
+        let(:params) { { status: status_lifecycle.default_closed_status } }
+
+        it_behaves_like 'handle status for closed state' do
+          let(:status) { status_lifecycle.default_closed_status }
+        end
+      end
+
+      context 'when status is invalid' do
+        let(:status_from_other_group) { create(:work_item_custom_status) }
+        let(:params) { { status: status_from_other_group } }
+
+        it_behaves_like 'handle status for open state' do
+          let(:status) { status_lifecycle.default_open_status }
+        end
+      end
+    end
+  end
+
+  describe '#after_update' do
+    subject(:run_callback) { callback.after_update }
+
+    context 'when feature is not available' do
+      let(:params) { { status: done_status } }
+
+      before do
+        stub_licensed_features(work_item_status: false)
+      end
+
+      it_behaves_like 'does not call services to create current status record'
+    end
 
     context 'when user does not have permission' do
+      let(:params) { { status: done_status } }
+
       before do
         allow(callback).to receive(:has_permission?).and_return(false)
       end
@@ -119,9 +200,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       it_behaves_like 'does not call services to create current status record'
     end
 
-    context "when current status exists and params are empty" do
-      let!(:current_status) { create(:work_item_current_status, work_item: item) }
-
+    context "when params are empty" do
       it_behaves_like 'does not call services to create current status record'
     end
 
@@ -133,39 +212,19 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
     end
 
     context "for system defined lifecycle" do
-      context "when params are empty" do
+      context "when status category has open state" do
+        let(:params) { { status: in_progress_status } }
+
         it_behaves_like 'handle status for open state' do
-          let(:status) { default_open_status }
+          let(:status) { in_progress_status }
         end
       end
 
-      context "when params are present" do
-        context "when status category has open state" do
-          let(:params) { { status: in_progress_status } }
+      context "when status category has closed state" do
+        let(:params) { { status: done_status } }
 
-          it_behaves_like 'handle status for open state' do
-            let(:status) { in_progress_status }
-          end
-        end
-
-        context "when status category has closed state" do
-          let(:params) { { status: done_status } }
-
-          it_behaves_like 'handle status for closed state' do
-            let(:status) { done_status }
-          end
-        end
-
-        context 'when feature is not available' do
-          let(:params) { { status: done_status } }
-
-          before do
-            stub_licensed_features(work_item_status: false)
-          end
-
-          it_behaves_like 'handle status for open state' do
-            let(:status) { default_open_status }
-          end
+        it_behaves_like 'handle status for closed state' do
+          let(:status) { done_status }
         end
       end
     end
@@ -180,49 +239,27 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       let(:open_status) { status_lifecycle.default_open_status }
       let(:closed_status) { status_lifecycle.default_closed_status }
 
-      context "when params are empty" do
+      context "when status category has open state" do
+        let(:params) { { status: open_status } }
+
         it_behaves_like 'handle status for open state' do
           let(:status) { open_status }
         end
       end
 
-      context "when params are present" do
-        context "when status category has open state" do
-          let(:params) { { status: open_status } }
+      context "when status category has closed state" do
+        let(:params) { { status: closed_status } }
 
-          it_behaves_like 'handle status for open state' do
-            let(:status) { open_status }
-          end
+        it_behaves_like 'handle status for closed state' do
+          let(:status) { closed_status }
         end
+      end
 
-        context "when status category has closed state" do
-          let(:params) { { status: closed_status } }
+      context "when status is invalid" do
+        let(:status_from_other_group) { create(:work_item_custom_status) }
+        let(:params) { { status: status_from_other_group } }
 
-          it_behaves_like 'handle status for closed state' do
-            let(:status) { closed_status }
-          end
-        end
-
-        context "when status is invalid" do
-          let(:status_from_other_group) { create(:work_item_custom_status) }
-          let(:params) { { status: status_from_other_group } }
-
-          it_behaves_like 'handle status for open state' do
-            let(:status) { open_status }
-          end
-        end
-
-        context 'when feature is not available' do
-          let(:params) { { status: closed_status } }
-
-          before do
-            stub_licensed_features(work_item_status: false)
-          end
-
-          it_behaves_like 'handle status for open state' do
-            let(:status) { open_status }
-          end
-        end
+        it_behaves_like 'does not call services to create current status record'
       end
     end
   end

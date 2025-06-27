@@ -58,13 +58,15 @@ module EE
       end
 
       def update_status_to_closed(issue, status)
-        status = find_target_status(issue) if status.nil?
+        status = find_default_status(issue) if status.nil?
 
-        ::WorkItems::Widgets::Statuses::UpdateService.new(issue, current_user, status).execute
+        ::WorkItems::Widgets::Statuses::UpdateService.new(issue, current_user, status).execute if status
       end
 
-      def find_target_status(issue)
+      def find_default_status(issue)
         lifecycle = issue.work_item_type.status_lifecycle_for(issue.resource_parent.root_ancestor)
+
+        return unless issue.current_status || lifecycle&.custom?
 
         if issue.duplicated?
           lifecycle&.default_duplicate_status

@@ -4,6 +4,7 @@ module EE
   module Issues
     module ReopenService
       extend ::Gitlab::Utils::Override
+      include ::Gitlab::Utils::StrongMemoize
 
       private
 
@@ -63,13 +64,15 @@ module EE
       end
 
       def update_status_to_open(status)
-        if status.nil?
-          lifecycle = work_item.work_item_type.status_lifecycle_for(work_item.resource_parent.root_ancestor)
-          status = lifecycle&.default_open_status
-        end
+        status = lifecycle&.default_open_status if status.nil? && (work_item.current_status || lifecycle&.custom?)
 
-        ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute
+        ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute if status
       end
+
+      def lifecycle
+        work_item.work_item_type.status_lifecycle_for(work_item.resource_parent.root_ancestor)
+      end
+      strong_memoize_attr :lifecycle
     end
   end
 end
