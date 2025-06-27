@@ -21,6 +21,14 @@ const defaultMocks = {
   },
 };
 
+beforeEach(() => {
+  gon.features = { hideIncidentManagementFeatures: false };
+});
+
+afterEach(() => {
+  window.gon.features = {};
+});
+
 describe('Incident Tabs component', () => {
   let wrapper;
 
