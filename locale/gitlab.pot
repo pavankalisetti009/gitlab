@@ -72860,6 +72860,12 @@ msgstr ""
 msgid "and"
 msgstr ""
 
+msgid "and regex description must be either both set, or neither."
+msgstr ""
+
+msgid "and regex must be either both set, or neither."
+msgstr ""
+
 msgid "any-approver for the group already exists"
 msgstr ""
 
