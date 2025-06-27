@@ -11,8 +11,9 @@ module Types
         field :id, GraphQL::Types::ID,
           null: false, description: 'ID of the framework.'
 
-        field :name, GraphQL::Types::String,
-          null: false, description: 'Name of the framework.'
+        field :framework, ::Types::ComplianceManagement::ComplianceFrameworkType,
+          null: false,
+          description: 'Compliance framework associated with the coverage detail.'
 
         field :covered_count, GraphQL::Types::Int,
           null: false, description: 'Number of projects covered by the framework.'

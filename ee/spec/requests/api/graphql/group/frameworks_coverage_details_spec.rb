@@ -20,7 +20,9 @@ RSpec.describe 'getting the framework coverage details for a group', feature_cat
     <<~GRAPHQL
       nodes {
         id
-        name
+        framework {
+          name
+        }
         coveredCount
       }
     GRAPHQL
@@ -91,10 +93,9 @@ RSpec.describe 'getting the framework coverage details for a group', feature_cat
 
       it 'returns root frameworks with coverage counts for subgroup projects only' do
         post_graphql(query(sub_group.full_path), current_user: current_user)
-
-        expect(framework_details.pluck('name', 'coveredCount')).to contain_exactly(
-          ['SOC2', 2],
-          ['GDPR', 1]
+        expect(framework_details.pluck('framework', 'coveredCount')).to contain_exactly(
+          [{ "name" => "GDPR" }, 1],
+          [{ "name" => "SOC2" }, 2]
         )
       end
 
@@ -103,8 +104,7 @@ RSpec.describe 'getting the framework coverage details for a group', feature_cat
         create(:compliance_framework, namespace: other_root_group, name: 'Other')
 
         post_graphql(query(sub_group.full_path), current_user: current_user)
-
-        framework_names = framework_details.pluck('name')
+        framework_names = framework_details.map { |detail| detail["framework"]["name"] }
         expect(framework_names).not_to include('Other')
       end
     end
@@ -119,9 +119,9 @@ RSpec.describe 'getting the framework coverage details for a group', feature_cat
       it 'returns frameworks with coverage counts for all projects' do
         post_graphql(query(root_group.full_path), current_user: current_user)
 
-        expect(framework_details.pluck('name', 'coveredCount')).to contain_exactly(
-          ['SOC2', 1],
-          ['GDPR', 0]
+        expect(framework_details.pluck('framework', 'coveredCount')).to contain_exactly(
+          [{ "name" => "GDPR" }, 0],
+          [{ "name" => "SOC2" }, 1]
         )
       end
     end
