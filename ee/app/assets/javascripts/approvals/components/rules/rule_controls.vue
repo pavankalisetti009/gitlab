@@ -1,7 +1,7 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapState, mapActions } from 'vuex';
+import { mapActions } from 'vuex';
 import { __, sprintf } from '~/locale';
 
 export default {
@@ -24,7 +24,6 @@ export default {
     },
   },
   computed: {
-    ...mapState(['settings']),
     editAriaLabel() {
       return sprintf(this.$options.i18n.editItemLabel, {
         ruleName: this.rule.name,

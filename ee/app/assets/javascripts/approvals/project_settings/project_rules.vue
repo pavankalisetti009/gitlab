@@ -3,7 +3,7 @@ import { GlButton } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import RuleName from 'ee/approvals/components/rules/rule_name.vue';
-import { n__, s__, sprintf } from '~/locale';
+import { s__ } from '~/locale';
 import UserAvatarList from '~/vue_shared/components/user_avatar/user_avatar_list.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { RULE_TYPE_ANY_APPROVER, RULE_TYPE_REGULAR } from 'ee/approvals/constants';
@@ -55,12 +55,6 @@ export default {
     firstColumnWidth() {
       return this.hasNamedRule ? 'gl-w-1/2' : 'gl-w-full';
     },
-    hasAnyRule() {
-      return (
-        this.settings.allowMultiRule &&
-        !this.rules.some((rule) => rule.ruleType === RULE_TYPE_ANY_APPROVER)
-      );
-    },
     hasPagination() {
       return !this.isBranchRulesEdit && this.pagination.nextPage;
     },
@@ -81,40 +75,6 @@ export default {
   },
   methods: {
     ...mapActions(['addEmptyRule', 'fetchRules']),
-    summaryText(rule) {
-      return this.settings.allowMultiRule
-        ? this.summaryMultipleRulesText(rule)
-        : this.summarySingleRuleText(rule);
-    },
-    membersCountText(rule) {
-      return n__(
-        'ApprovalRuleSummary|%d member',
-        'ApprovalRuleSummary|%d members',
-        rule.approvers.length,
-      );
-    },
-    summarySingleRuleText(rule) {
-      const membersCount = this.membersCountText(rule);
-
-      return sprintf(
-        n__(
-          'ApprovalRuleSummary|%{count} approval required from %{membersCount}',
-          'ApprovalRuleSummary|%{count} approvals required from %{membersCount}',
-          rule.approvalsRequired,
-        ),
-        { membersCount, count: rule.approvalsRequired },
-      );
-    },
-    summaryMultipleRulesText(rule) {
-      return sprintf(
-        n__(
-          '%{count} approval required from %{name}',
-          '%{count} approvals required from %{name}',
-          rule.approvalsRequired,
-        ),
-        { name: rule.name, count: rule.approvalsRequired },
-      );
-    },
     canEdit(rule) {
       const { canEdit, allowMultiRule } = this.settings;
       const canEditRuleCounter = canEdit && (!allowMultiRule || !rule.hasSource);

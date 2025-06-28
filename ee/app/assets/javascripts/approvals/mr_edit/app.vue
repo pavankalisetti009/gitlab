@@ -27,7 +27,6 @@ export default {
   computed: {
     ...mapState({
       rules: (state) => state.approvals.rules,
-      canOverride: (state) => state.settings.canOverride,
       canUpdateApprovers: (state) => state.settings.canUpdateApprovers,
       showCodeOwnerTip: (state) => state.settings.showCodeOwnerTip,
     }),

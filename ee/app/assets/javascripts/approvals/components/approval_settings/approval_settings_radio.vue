@@ -43,6 +43,6 @@ export default {
 <template>
   <gl-form-radio :disabled="locked" :name="name" :value="value" @input="input">
     {{ label }}
-    <approval-settings-locked-icon v-if="locked" :label="label" :locked-text="lockedText" />
+    <approval-settings-locked-icon v-if="locked" :locked-text="lockedText" />
   </gl-form-radio>
 </template>

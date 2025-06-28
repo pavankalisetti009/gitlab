@@ -35,13 +35,6 @@ export default {
     approversCount() {
       return this.rule.eligibleApprovers.length;
     },
-    membersText() {
-      return n__(
-        'ApprovalRuleRemove|%d member',
-        'ApprovalRuleRemove|%d members',
-        this.rule.approvers.length,
-      );
-    },
     modalText() {
       return i18n.removeWarningText(this.approversCount);
     },

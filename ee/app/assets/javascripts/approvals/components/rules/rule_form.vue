@@ -62,7 +62,6 @@ export default {
     return {
       name: this.defaultRuleName,
       approvalsRequired: 1,
-      vulnerabilitiesAllowed: 0,
       minApprovalsRequired: 0,
       approvers: [],
       approversToAdd: [],
@@ -77,10 +76,6 @@ export default {
   },
   computed: {
     ...mapState(['settings']),
-    rule() {
-      // If we are creating a new rule with a suggested approval name
-      return this.defaultRuleName ? null : this.initRule;
-    },
     approversByType() {
       return groupBy(this.approvers, (x) => x.type);
     },
@@ -92,10 +87,6 @@ export default {
     },
     userIds() {
       return this.users.map((x) => x.id);
-    },
-    skipUserIds() {
-      const skipAuthorId = this.isMrEdit && this.settings.authorId ? [this.settings.authorId] : [];
-      return [...this.userIds, ...skipAuthorId];
     },
     groupIds() {
       return this.groups.map((x) => x.id);
@@ -231,9 +222,6 @@ export default {
         protectedBranchIds,
       };
     },
-    isEditing() {
-      return Boolean(this.initRule);
-    },
     selectedBranchNames() {
       return [this.settings.targetBranch];
     },
@@ -248,14 +236,6 @@ export default {
   },
   methods: {
     ...mapActions(['putFallbackRule', 'postRule', 'putRule', 'deleteRule', 'postRegularRule']),
-    addSelection() {
-      if (!this.approversToAdd.length) {
-        return;
-      }
-
-      this.approvers = this.approversToAdd.concat(this.approvers);
-      this.approversToAdd = [];
-    },
     /**
      * Validate and submit the form based on what type it is.
      * - Fallback rule?
