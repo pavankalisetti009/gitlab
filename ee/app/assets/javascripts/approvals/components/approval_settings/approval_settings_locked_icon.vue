@@ -9,10 +9,6 @@ export default {
     GlPopover,
   },
   props: {
-    label: {
-      type: String,
-      required: true,
-    },
     lockedText: {
       type: String,
       required: false,

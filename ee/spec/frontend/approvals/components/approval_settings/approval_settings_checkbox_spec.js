@@ -81,7 +81,6 @@ describe('ApprovalSettingsCheckbox', () => {
       });
 
       it('passes expected props to locked_icon', () => {
-        expect(findLockedIcon().props('label')).toBe(label);
         expect(findLockedIcon().props('lockedText')).toBe(lockedText);
       });
     });
