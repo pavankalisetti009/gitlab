@@ -43,6 +43,7 @@ module WorkItems
         # to be adjusted to compute the uniqueness across hierarchy.
         validates :name, custom_uniqueness: { unique_sql: 'TRIM(BOTH FROM lower(?))', scope: :namespace_id }
         validates :color, presence: true, length: { maximum: 7 }, color: true
+        validates :description, length: { maximum: 128 }, allow_blank: true
         # Update doesn't change the overall status per namespace count
         # because you won't be able to change the namespace through the API.
         validate :validate_statuses_per_namespace_limit, on: :create

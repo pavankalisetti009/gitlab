@@ -37,7 +37,7 @@ module WorkItems
         before_validation :ensure_default_statuses_in_lifecycle
 
         validates :namespace, :default_open_status, :default_closed_status, :default_duplicate_status, presence: true
-        validates :name, presence: true, length: { maximum: 255 }
+        validates :name, presence: true, length: { maximum: 64 }
         validates :name, uniqueness: { scope: :namespace_id }
         validate :validate_default_status_categories
         # Update doesn't change the overall lifecycle per namespace count
