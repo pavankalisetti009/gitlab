@@ -22,6 +22,7 @@ export default {
       const isUserMessage = newMessageData.role.toLowerCase() === GENIE_CHAT_MODEL_ROLES.user;
       const isAssistantMessage =
         newMessageData.role.toLowerCase() === GENIE_CHAT_MODEL_ROLES.assistant;
+      const isToolMessage = newMessageData.role.toLowerCase() === GENIE_CHAT_MODEL_ROLES.tool;
 
       if (isErrorMessage) {
         state.messages.push({ ...newMessageData });
@@ -61,6 +62,18 @@ export default {
             isLastMessage = true;
           }
           state.messages.push({ ...newMessageData, ...extraData });
+        }
+      } else if (isToolMessage) {
+        const toolMessageWithRequestIdIndex = getExistingMessagesIndex(GENIE_CHAT_MODEL_ROLES.tool);
+        const toolMessageExists = toolMessageWithRequestIdIndex > -1;
+
+        if (toolMessageExists) {
+          state.messages.splice(toolMessageWithRequestIdIndex, 1, {
+            ...state.messages[toolMessageWithRequestIdIndex],
+            ...newMessageData,
+          });
+        } else {
+          state.messages.push(newMessageData);
         }
       }
 

@@ -9,7 +9,6 @@ import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
 import { parseGid } from '~/graphql_shared/utils';
 import {
   GENIE_CHAT_RESET_MESSAGE,
-  GENIE_CHAT_MODEL_ROLES,
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
   DUO_WORKFLOW_CHAT_DEFINITION,
@@ -191,7 +190,9 @@ export default {
               return {
                 content: msg.content,
                 requestId,
-                role: GENIE_CHAT_MODEL_ROLES.assistant,
+                message_type: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
+                role: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
+                tool_info: msg.tool_info,
               };
             });
 
@@ -239,7 +240,7 @@ export default {
         }
       }
 
-      const requestId = this.messages?.length || 0;
+      const requestId = `${this.workflowId}-${this.messages?.length || 0}`;
       const userMessage = { content: question, role: 'user', requestId };
 
       this.startWorkflow(question);
