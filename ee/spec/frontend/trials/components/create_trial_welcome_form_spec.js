@@ -38,6 +38,7 @@ describe('CreateTrialWelcomeForm', () => {
     propsData = {},
     countriesLoading = false,
     statesLoading = false,
+    data,
   } = {}) => {
     const mockResolvers = {
       Query: {
@@ -67,6 +68,7 @@ describe('CreateTrialWelcomeForm', () => {
       stubs: {
         GlButton,
       },
+      data,
     });
 
     if (!countriesLoading && !statesLoading) {
@@ -239,12 +241,12 @@ describe('CreateTrialWelcomeForm', () => {
 
       it('always includes group name field', () => {
         expect(fieldsProps()).toHaveProperty('group_name');
-        expect(fieldsProps().group_name.label).toBe('Group name');
+        expect(fieldsProps().group_name.label).toBe(' ');
       });
 
       it('always includes project name field', () => {
         expect(fieldsProps()).toHaveProperty('project_name');
-        expect(fieldsProps().project_name.label).toBe('Project name');
+        expect(fieldsProps().project_name.label).toBe(' ');
       });
     });
   });

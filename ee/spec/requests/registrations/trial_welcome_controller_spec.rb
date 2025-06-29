@@ -24,6 +24,12 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
       end
 
       it { is_expected.to have_gitlab_http_status(:ok) }
+
+      it 'enables dark mode' do
+        get_new
+
+        expect(assigns(:html_class)).to eq('gl-dark')
+      end
     end
   end
 end

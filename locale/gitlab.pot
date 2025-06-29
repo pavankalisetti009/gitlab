@@ -30266,6 +30266,9 @@ msgstr ""
 msgid "Group Git LFS status:"
 msgstr ""
 
+msgid "Group Name"
+msgstr ""
+
 msgid "Group Owner must have signed in with SAML before enabling Group Managed Accounts"
 msgstr ""
 
@@ -30363,9 +30366,6 @@ msgid "Group membership expiration date removed"
 msgstr ""
 
 msgid "Group milestone"
-msgstr ""
-
-msgid "Group name"
 msgstr ""
 
 msgid "Group name (your organization)"
@@ -48317,6 +48317,9 @@ msgid "Project Files"
 msgstr ""
 
 msgid "Project ID"
+msgstr ""
+
+msgid "Project Name"
 msgstr ""
 
 msgid "Project Security Status"
