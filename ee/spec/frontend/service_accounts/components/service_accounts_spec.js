@@ -29,7 +29,7 @@ const findCreateEditServiceAccountModal = () =>
 describe('Service accounts', () => {
   const serviceAccountsPath = `${TEST_HOST}/service_accounts`;
   const serviceAccountsEditPath = `${TEST_HOST}/service_accounts`;
-  const serviceAccountsDeletePath = '/api/v4/users';
+  const serviceAccountsDeletePath = `${TEST_HOST}/api/v4/users`;
   const serviceAccountsDocsPath = `${TEST_HOST}/ee/user/profile/service_accounts.html`;
   const isGroup = false;
 
