@@ -1,30 +1,37 @@
 import { GlFilteredSearch } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import AdminUsersFilterApp from '~/admin/users/components/admin_users_filter_app.vue';
-
-jest.mock('~/lib/utils/url_utility', () => {
-  return {
-    ...jest.requireActual('~/lib/utils/url_utility'),
-    visitUrl: jest.fn(),
-  };
-});
+import { ADMIN_ROLE_TOKEN } from 'ee_jest/admin/users/mock_data';
 
 describe('AdminUsersFilterApp', () => {
   let wrapper;
 
-  const createComponent = () => {
-    wrapper = shallowMount(AdminUsersFilterApp);
+  const createComponent = ({ customRoles = true, customAdminRoles = true }) => {
+    wrapper = shallowMount(AdminUsersFilterApp, {
+      provide: { glFeatures: { customRoles, customAdminRoles } },
+    });
   };
 
-  const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
-  const findAvailableTokens = () => findFilteredSearch().props('availableTokens');
+  const findAvailableTokens = () =>
+    wrapper.findComponent(GlFilteredSearch).props('availableTokens');
 
-  it('includes the auditors option', () => {
-    createComponent();
-    const currentOptions = findAvailableTokens().flatMap(({ options }) =>
-      options.map(({ value }) => value),
-    );
+  it.each`
+    customRoles | customAdminRoles
+    ${false}    | ${false}
+    ${false}    | ${true}
+    ${true}     | ${false}
+  `(
+    'does not include admin role token when customRoles = $customRoles, customAdminRoles = $customAdminRoles',
+    ({ customRoles, customAdminRoles }) => {
+      createComponent({ customRoles, customAdminRoles });
 
-    expect(currentOptions).toContain('auditors');
+      expect(findAvailableTokens()).not.toContainEqual(ADMIN_ROLE_TOKEN);
+    },
+  );
+
+  it(`includes admin role token when customRoles = true, customAdminRoles = true`, () => {
+    createComponent({ customRoles: true, customAdminRoles: true });
+
+    expect(findAvailableTokens()).toContainEqual(ADMIN_ROLE_TOKEN);
   });
 });
