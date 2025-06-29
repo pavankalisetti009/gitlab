@@ -2,7 +2,6 @@ import { defineStore } from 'pinia';
 import axios from '~/lib/utils/axios_utils';
 import { parseIntPagination, normalizeHeaders } from '~/lib/utils/common_utils';
 import { joinPaths } from '~/lib/utils/url_utility';
-import Api from '~/api';
 
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { s__ } from '~/locale';
@@ -73,8 +72,7 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
       this.clearAlert();
 
       try {
-        const href = Api.buildUrl(url);
-        await axios.post(href, values);
+        await axios.post(url, values);
 
         this.alert = createAlert({
           message: s__('ServiceAccounts|The service account was created.'),
@@ -96,7 +94,7 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
       this.clearAlert();
 
       try {
-        const href = Api.buildUrl(joinPaths(url, `${this.serviceAccount.id}`));
+        const href = joinPaths(url, `${this.serviceAccount.id}`);
         if (isGroup) {
           await axios.patch(href, values);
         } else {
@@ -122,7 +120,7 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
       this.clearAlert();
       const serviceAccountId = this.serviceAccount.id;
       try {
-        const href = Api.buildUrl(joinPaths(url, `${serviceAccountId}`));
+        const href = joinPaths(url, `${serviceAccountId}`);
         await axios.delete(href, {
           data: {
             id: serviceAccountId,
