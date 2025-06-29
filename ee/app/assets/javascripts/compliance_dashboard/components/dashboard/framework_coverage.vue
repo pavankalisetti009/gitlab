@@ -1,25 +1,13 @@
 <script>
 import { GlButton, GlEmptyState } from '@gitlab/ui';
 import { GlChart } from '@gitlab/ui/dist/charts';
-import {
-  GL_TEXT_COLOR_DEFAULT,
-  DATA_VIZ_BLUE_500,
-  DATA_VIZ_ORANGE_400,
-  GRAY_900,
-} from '@gitlab/ui/src/tokens/build/js/tokens';
-import {
-  GL_TEXT_COLOR_DEFAULT as GL_TEXT_COLOR_DEFAULT_DARK,
-  GRAY_900 as GRAY_900_DARK,
-} from '@gitlab/ui/src/tokens/build/js/tokens.dark';
 
 import { s__, sprintf } from '~/locale';
-import { getSystemColorScheme } from '~/lib/utils/css_utils';
-import { GL_DARK } from '~/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { sanitize } from '~/lib/dompurify';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-
 import { ROUTE_NEW_FRAMEWORK, ROUTE_PROJECTS, i18n } from '../../constants';
+import { getColors, getLegendConfig, getTooltipConfig } from './utils/chart';
 
 const generateFrameworkChartId = (framework) => `framework_${getIdFromGraphQLId(framework.id)}`;
 
@@ -39,11 +27,10 @@ export default {
       type: Boolean,
       required: true,
     },
-  },
-  data() {
-    return {
-      colorScheme: getSystemColorScheme(),
-    };
+    colorScheme: {
+      type: String,
+      required: true,
+    },
   },
   computed: {
     canAdminComplianceFramework() {
@@ -54,13 +41,7 @@ export default {
         .map(({ framework }) => `{${generateFrameworkChartId(framework)}|${framework.name}}`)
         .reverse();
 
-      const textColor =
-        this.colorScheme === GL_DARK ? GL_TEXT_COLOR_DEFAULT_DARK : GL_TEXT_COLOR_DEFAULT;
-
-      const TOOLTIP_OPTIONS = {
-        padding: 0,
-        borderWidth: 0,
-      };
+      const { textColor, blueDataColor, orangeDataColor, ticksColor } = getColors(this.colorScheme);
 
       const yAxisLabels = Object.fromEntries(
         this.summary.details.map(({ framework }) => [
@@ -94,7 +75,7 @@ export default {
         },
 
         tooltip: {
-          ...TOOLTIP_OPTIONS,
+          ...getTooltipConfig(textColor),
           trigger: 'item',
           formatter: (params) => this.getTooltip(params.dataIndex),
         },
@@ -112,7 +93,7 @@ export default {
           splitLine: {
             show: true,
             lineStyle: {
-              color: this.colorScheme === GL_DARK ? GRAY_900_DARK : GRAY_900,
+              color: ticksColor,
               width: 2,
             },
           },
@@ -128,7 +109,7 @@ export default {
           type: 'category',
           triggerEvent: true,
           tooltip: {
-            ...TOOLTIP_OPTIONS,
+            ...getTooltipConfig(textColor),
             show: true,
             formatter: (params) => this.getTooltip(params.tickIndex),
           },
@@ -159,7 +140,7 @@ export default {
             stack: 'total',
             data: [...percents.map((value) => ({ value })), { value: totalCoveredPercent }],
             itemStyle: {
-              color: DATA_VIZ_BLUE_500,
+              color: blueDataColor,
               borderColor: '#00000000',
               borderWidth: 10,
             },
@@ -174,7 +155,7 @@ export default {
               { value: 100 - totalCoveredPercent },
             ],
             itemStyle: {
-              color: DATA_VIZ_ORANGE_400,
+              color: orangeDataColor,
               borderColor: '#00000000',
               borderWidth: 10,
             },
@@ -186,17 +167,7 @@ export default {
             s__('Compliance report|Projects covered by frameworks'),
             s__('Compliance report|Projects not covered by frameworks'),
           ],
-          top: 0,
-          left: 0,
-          orient: 'vertical',
-          itemWidth: 14,
-          itemHeight: 14,
-          itemGap: 8,
-          textStyle: {
-            fontSize: 12,
-            color: textColor,
-            fontWeight: 'bold',
-          },
+          ...getLegendConfig(),
         },
       };
     },

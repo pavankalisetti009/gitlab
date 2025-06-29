@@ -15599,6 +15599,11 @@ msgstr ""
 msgid "Compliance frameworks"
 msgstr ""
 
+msgid "Compliance report|%{count} control"
+msgid_plural "Compliance report|%{count} controls"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Compliance report|%{count} projects are not covered by %{framework}"
 msgstr ""
 
@@ -15611,16 +15616,45 @@ msgstr ""
 msgid "Compliance report|%{count} projects have no framework at all"
 msgstr ""
 
+msgid "Compliance report|%{count} requirement"
+msgid_plural "Compliance report|%{count} requirements"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Compliance report|%{percent}%% coverage"
 msgstr ""
 
 msgid "Compliance report|%{percent}%% coverage for %{framework}"
 msgstr ""
 
+msgid "Compliance report|%{percent}%% failed"
+msgstr ""
+
+msgid "Compliance report|%{percent}%% passed"
+msgstr ""
+
+msgid "Compliance report|%{percent}%% pending"
+msgstr ""
+
 msgid "Compliance report|All frameworks"
 msgstr ""
 
 msgid "Compliance report|Click to check all projects"
+msgstr ""
+
+msgid "Compliance report|Click to check all requirements"
+msgstr ""
+
+msgid "Compliance report|Failed controls"
+msgstr ""
+
+msgid "Compliance report|Failed requirements"
+msgstr ""
+
+msgid "Compliance report|Pending controls"
+msgstr ""
+
+msgid "Compliance report|Pending requirements"
 msgstr ""
 
 msgid "Compliance report|Projects covered by frameworks"
@@ -15632,7 +15666,25 @@ msgstr ""
 msgid "Compliance report|Start by adding a compliance framework to your group."
 msgstr ""
 
+msgid "Compliance report|Successful controls"
+msgstr ""
+
+msgid "Compliance report|Successful requirements"
+msgstr ""
+
 msgid "Compliance report|There are no compliance frameworks."
+msgstr ""
+
+msgid "Compliance report|There are no controls."
+msgstr ""
+
+msgid "Compliance report|There are no requirements."
+msgstr ""
+
+msgid "Compliance report|You can add controls for requirements inside the compliance framework."
+msgstr ""
+
+msgid "Compliance report|You can add requirements inside the compliance framework."
 msgstr ""
 
 msgid "Compliance requirement control successfully deleted"

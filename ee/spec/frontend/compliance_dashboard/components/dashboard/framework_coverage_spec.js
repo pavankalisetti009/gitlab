@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlEmptyState } from '@gitlab/ui';
 import { GlChart } from '@gitlab/ui/dist/charts';
+import { GL_LIGHT } from '~/constants';
 import FrameworkCoverage from 'ee/compliance_dashboard/components/dashboard/framework_coverage.vue';
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 
@@ -16,6 +17,7 @@ describe('Framework coverage panel', () => {
           coveredCount: 0,
           details,
         },
+        colorScheme: GL_LIGHT,
       },
       mocks: {
         $router: {
