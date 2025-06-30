@@ -58,7 +58,8 @@ export default {
     },
   },
   methods: {
-    onSelect() {
+    onSelect(role) {
+      this.selectedRole = role;
       const { accessLevel, memberRoleId } = this.selectedItem;
 
       this.$emit('onSelect', {
@@ -72,7 +73,7 @@ export default {
 
 <template>
   <gl-collapsible-listbox
-    v-model="selectedRole"
+    :selected="selectedRole"
     block
     :items="accessLevelOptions.formatted"
     :toggle-text="toggleText"
