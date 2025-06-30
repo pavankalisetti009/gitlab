@@ -94,6 +94,12 @@ the feature can use that tool:
      Optional: Enter a rejection reason into the text box and select
      **Submit Rejection**.
 
+## Feedback
+
+Because this is an experimental feature, your feedback is valuable in helping us
+to improve it. Share your experiences, suggestions, or issues in
+[issue 552164](https://gitlab.com/gitlab-org/gitlab/-/issues/552164).
+
 ## Related topics
 
 - [Get started with the Model Context Protocol](https://modelcontextprotocol.io/introduction)
