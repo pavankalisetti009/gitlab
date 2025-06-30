@@ -3,8 +3,6 @@
 module Security
   module SecurityOrchestrationPolicies
     class AnnotatePolicyYamlService
-      include BaseServiceUtility
-
       NOT_FOUND_STRING = 'not_found'
       ANNOTATION_RULES = {
         users: {
@@ -59,7 +57,10 @@ module Security
       def execute
         annotated_yaml = annotate_yaml_inline
 
-        success(annotated_yaml: annotated_yaml)
+        ServiceResponse.success(payload: { annotated_yaml: annotated_yaml })
+      rescue StandardError => e
+        Gitlab::ErrorTracking.track_exception(e, policy_yaml: policy_yaml)
+        ServiceResponse.error(message: "Unexpected error while annotating policy YAML", payload: { exception: e })
       end
 
       private
