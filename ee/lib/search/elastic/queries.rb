@@ -11,6 +11,7 @@ module Search
       DEFAULT_HYBRID_SIMILARITY = 0.6
       DEFAULT_HYBRID_BOOST = 5
       SIMPLE_QUERY_STRING_BOOST = 0.2
+      ALLOWED_SEARCH_CLIENTS = %i[elasticsearch opensearch].freeze
 
       class << self
         include ::Elastic::Latest::QueryContext::Aware
@@ -31,11 +32,10 @@ module Search
         end
 
         def by_full_text(query:, options:)
-          if !ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
-              Feature.enabled?(:search_uses_match_queries, options[:current_user])
-            by_multi_match_query(fields: options[:fields], query: query, options: options)
-          else
+          if ADVANCED_QUERY_SYNTAX_REGEX.match?(query)
             by_simple_query_string(fields: options[:fields], query: query, options: options)
+          else
+            by_multi_match_query(fields: options[:fields], query: query, options: options)
           end
         end
 
@@ -66,8 +66,13 @@ module Search
 
           embedding = get_embedding_for_hybrid_query(query: query, options: options)
           return by_full_text(query: query, options: options) unless embedding
+          raise ArgumentError, 'Invalid search client' if ALLOWED_SEARCH_CLIENTS.exclude?(options[:vectors_supported])
 
-          send(:"build_#{options[:vectors_supported]}_knn_query", query: query, options: options, embedding: embedding) # rubocop:disable GitlabSecurity/PublicSend -- fields are controlled, it is safe
+          if options[:vectors_supported] == :opensearch
+            build_opensearch_knn_query(query: query, options: options, embedding: embedding)
+          else
+            build_elasticsearch_knn_query(query: query, options: options, embedding: embedding)
+          end
         end
 
         private

@@ -10,7 +10,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   describe '#highlight_map' do

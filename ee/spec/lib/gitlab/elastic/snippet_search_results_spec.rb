@@ -2,36 +2,38 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Elastic::SnippetSearchResults, :elastic_clean, :clean_gitlab_redis_shared_state, :sidekiq_might_not_need_inline do
-  let(:snippet) { create(:personal_snippet, title: 'foo', description: 'foo') }
+RSpec.describe Gitlab::Elastic::SnippetSearchResults, :elastic_delete_by_query, :sidekiq_inline,
+  feature_category: :global_search do
+  let_it_be(:snippet) do
+    create(:personal_snippet, title: 'foo bar foo cow foo moon', description: 'foo brown foo dog foo jump')
+  end
+
   let(:results) { described_class.new(snippet.author, 'foo', []) }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
 
-    perform_enqueued_jobs { snippet }
+    Elastic::ProcessInitialBookkeepingService.track!(snippet)
     ensure_elasticsearch_index!
   end
 
   describe 'pagination' do
-    let(:snippet2) { create(:personal_snippet, title: 'foo 2', author: snippet.author) }
+    let_it_be(:snippet2) do
+      create(:personal_snippet, author: snippet.author, title: 'foo once', description: 'content')
+    end
 
     before do
-      perform_enqueued_jobs { snippet2 }
+      Elastic::ProcessInitialBookkeepingService.track!(snippet2)
       ensure_elasticsearch_index!
     end
 
-    it 'returns the correct page of results' do
-      # `snippet` is more relevant than `snippet2` (hence first in order) due
-      # to having a shorter title that exactly matches the query and also due
-      # to having a description that matches the query.
-      expect(results.objects('snippet_titles', page: 1, per_page: 1)).to eq([snippet])
-      expect(results.objects('snippet_titles', page: 2, per_page: 1)).to eq([snippet2])
+    it 'properly paginates results' do
+      expect(results.objects('snippet_titles', page: 1, per_page: 1).size).to eq(1)
+      expect(results.objects('snippet_titles', page: 2, per_page: 1).size).to eq(1)
     end
 
     it 'returns the correct number of results for one page' do
-      expect(results.objects('snippet_titles', page: 1, per_page: 2)).to eq([snippet, snippet2])
+      expect(results.objects('snippet_titles', page: 1, per_page: 2)).to match_array([snippet, snippet2])
     end
   end
 
@@ -63,8 +65,9 @@ RSpec.describe Gitlab::Elastic::SnippetSearchResults, :elastic_clean, :clean_git
 
   describe '#highlight_map' do
     it 'returns the expected highlight map' do
-      expect(results).to receive(:snippet_titles).and_return([{ _source: { id: 1 }, highlight: 'test <span class="gl-text-default gl-font-bold">highlight</span>' }])
-      expect(results.highlight_map('snippet_titles')).to eq({ 1 => 'test <span class="gl-text-default gl-font-bold">highlight</span>' })
+      highlight = 'test <span class="gl-text-default gl-font-bold">highlight</span>'
+      expect(results).to receive(:snippet_titles).and_return([{ _source: { id: 1 }, highlight: highlight }])
+      expect(results.highlight_map('snippet_titles')).to eq({ 1 => highlight })
     end
   end
 
@@ -98,18 +101,13 @@ RSpec.describe Gitlab::Elastic::SnippetSearchResults, :elastic_clean, :clean_git
     let(:user) { create(:admin) }
     let(:results) { described_class.new(user, 'foo', :any) }
 
-    context 'admin mode disabled' do
+    context 'with admin mode disabled' do
       it 'returns nothing' do
         expect(results.snippet_titles_count).to eq(0)
       end
     end
 
-    context 'admin mode enabled' do
-      before do
-        Gitlab::Auth::CurrentUserMode.new(user).request_admin_mode!
-        Gitlab::Auth::CurrentUserMode.new(user).enable_admin_mode!(password: user.password)
-      end
-
+    context 'with admin mode enabled', :enable_admin_mode do
       it 'returns matched snippets' do
         expect(results.snippet_titles_count).to eq(1)
       end

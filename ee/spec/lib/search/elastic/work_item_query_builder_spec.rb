@@ -137,19 +137,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
               work_item:multi_match_phrase:search_terms])
         end
       end
-
-      context 'when search_uses_match_queries is false' do
-        before do
-          stub_feature_flags(search_uses_match_queries: false)
-        end
-
-        it 'returns the expected query' do
-          assert_names_in_query(build,
-            with: %w[work_item:match:search_terms],
-            without: %w[work_item:multi_match:and:search_terms
-              work_item:multi_match_phrase:search_terms])
-        end
-      end
     end
   end
 
@@ -233,8 +220,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
       context 'when embedding_1 field is backfilled' do
         before do
-          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-            .with(:backfill_work_items_embeddings1).and_return(true)
+          set_elasticsearch_migration_to(:backfill_work_items_embeddings1, including: true)
         end
 
         it 'adds a knn query for opensearch on the embedding_1 field using the text-embedding-005 model' do
@@ -257,9 +243,8 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       end
 
       context 'when simple_query_string is used' do
-        before do
-          stub_feature_flags(search_uses_match_queries: false)
-        end
+        # advanced search syntax forces use of simple_query_string
+        let(:query) { 'test with long query and 1*' }
 
         it 'applies boost to the query' do
           query_hash = build
@@ -367,17 +352,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
             work_item:multi_match_phrase:search_terms],
           without: %w[work_item:match:search_terms])
         assert_fields_in_query(build, with: %w[title])
-      end
-
-      context 'when search_uses_match_queries is false' do
-        before do
-          stub_feature_flags(search_uses_match_queries: false)
-        end
-
-        it 'returns the expected query' do
-          assert_names_in_query(build, with: %w[work_item:match:search_terms])
-          assert_fields_in_query(build, with: %w[title], without: %w[iid description])
-        end
       end
     end
   end

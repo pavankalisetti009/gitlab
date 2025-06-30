@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe Elastic::Latest::MergeRequestClassProxy, :elastic, :sidekiq_inline, feature_category: :global_search do
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   subject { described_class.new(MergeRequest, use_separate_indices: true) }
@@ -34,6 +33,17 @@ RSpec.describe Elastic::Latest::MergeRequestClassProxy, :elastic, :sidekiq_inlin
       ensure_elasticsearch_index!
     end
 
+    context 'when advanced search syntax is used' do
+      let_it_be(:query) { "Foo*" }
+
+      it 'uses simple_query_string in the query' do
+        result.response
+
+        assert_named_queries('merge_request:match:search_terms',
+          without: %w[merge_request:multi_match:and:search_terms merge_request:multi_match_phrase:search_terms])
+      end
+    end
+
     context 'when search query is an iid' do
       let_it_be(:query) { "!#{active_user_mr.iid}" }
 
@@ -53,7 +63,8 @@ RSpec.describe Elastic::Latest::MergeRequestClassProxy, :elastic, :sidekiq_inlin
       it 'does not have a filter for archived' do
         result.response
 
-        assert_named_queries('merge_request:match:search_terms', without: ['filters:non_archived'])
+        assert_named_queries('merge_request:multi_match:and:search_terms',
+          'merge_request:multi_match_phrase:search_terms', without: ['filters:non_archived'])
       end
     end
 
@@ -69,7 +80,7 @@ RSpec.describe Elastic::Latest::MergeRequestClassProxy, :elastic, :sidekiq_inlin
           result.response
 
           assert_named_queries(
-            'merge_request:match:search_terms',
+            'merge_request:multi_match:and:search_terms', 'merge_request:multi_match_phrase:search_terms',
             'filters:non_archived'
           )
         end

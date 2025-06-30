@@ -12,7 +12,6 @@ RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_sea
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   describe '#elastic_search', :elastic_delete_by_query do
@@ -53,7 +52,8 @@ RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_sea
         enable_admin_mode!(current_user) if admin_mode
         allow(current_user).to receive(:can_read_all_resources?).and_return(admin_mode)
 
-        expected_queries = %W[project:match:search_terms filters:doc:is_a:project filters:permissions:#{search_level}]
+        expected_queries = %W[project:multi_match:and:search_terms project:multi_match_phrase:search_terms
+          filters:doc:is_a:project filters:permissions:#{search_level}]
 
         expected_queries.concat(%W[filters:level:#{search_level}]) unless search_level == 'global'
         if projects != :any
@@ -67,6 +67,17 @@ RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_sea
         )
       end
 
+      context 'when advanced search syntax is used' do
+        let(:query) { 'test*' }
+
+        it 'uses simple_query_string in query' do
+          result.response
+
+          assert_named_queries('project:match:search_terms',
+            without: %w[project:multi_match:and:search_terms project:multi_match_phrase:search_terms])
+        end
+      end
+
       context 'when include_archived is set' do
         it 'does not have a filter for archived' do
           options[:include_archived] = true
@@ -74,7 +85,7 @@ RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_sea
           result.response
 
           assert_named_queries(
-            'project:match:search_terms',
+            'project:multi_match:and:search_terms', 'project:multi_match_phrase:search_terms',
             'filters:doc:is_a:project',
             without: %w[filters:archived filters:non_archived]
           )

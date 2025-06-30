@@ -10,7 +10,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'visibility_levels', feature_cate
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   describe 'visibility levels', :elastic_delete_by_query, :sidekiq_inline do
@@ -99,14 +98,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'visibility_levels', feature_cate
       end
 
       it_behaves_like 'issues respect visibility'
-
-      context 'when search_uses_match_queries flag is false' do
-        before do
-          stub_feature_flags(search_uses_match_queries: false)
-        end
-
-        it_behaves_like 'issues respect visibility'
-      end
     end
 
     describe 'milestones' do

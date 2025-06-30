@@ -18,7 +18,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     stub_licensed_features(epics: true, group_wikis: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   context 'for issues' do
@@ -31,7 +30,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     let(:scope) { 'issues' }
 
     before do
-      stub_feature_flags(search_uses_match_queries: true)
       ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
       ensure_elasticsearch_index!
     end
@@ -43,19 +41,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       include_examples 'search results filtered by confidential'
       include_examples 'search results filtered by labels'
 
-      it_behaves_like 'namespace ancestry_filter for aggregations' do
-        let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
-      end
-    end
-
-    context 'when search_uses_match_queries flag is false' do
-      before do
-        stub_feature_flags(search_uses_match_queries: false)
-      end
-
-      include_examples 'search results filtered by state'
-      include_examples 'search results filtered by confidential'
-      include_examples 'search results filtered by labels'
       it_behaves_like 'namespace ancestry_filter for aggregations' do
         let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
       end
@@ -300,7 +285,8 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
         expect(epics).not_to include(confidential_child_group_epic)
 
         assert_named_queries(
-          'work_item:match:search_terms',
+          'work_item:multi_match:and:search_terms',
+          'work_item:multi_match_phrase:search_terms',
           'filters:level:group:ancestry_filter:descendants',
           'filters:confidentiality:groups:non_confidential:public',
           'filters:confidentiality:groups:non_confidential:internal',
@@ -323,7 +309,8 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
           expect(epics).not_to include(confidential_child_group_epic)
 
           assert_named_queries(
-            'work_item:match:search_terms',
+            'work_item:multi_match:and:search_terms',
+            'work_item:multi_match_phrase:search_terms',
             'filters:level:group:ancestry_filter:descendants',
             'filters:confidentiality:groups:non_confidential:public',
             'filters:confidentiality:groups:non_confidential:internal',

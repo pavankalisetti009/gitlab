@@ -56,21 +56,6 @@ RSpec.describe ::Search::Elastic::ProjectQueryBuilder, :elastic_helpers, feature
       end
     end
 
-    context 'when search_uses_match_queries feature flag is false' do
-      before do
-        stub_feature_flags(search_uses_match_queries: false)
-      end
-
-      it 'contains all expected filters' do
-        assert_names_in_query(build,
-          with: %w[project:match:search_terms
-            filters:doc:is_a:project
-            filters:non_archived],
-          without: %w[project:multi_match_phrase:search_terms
-            project:multi_match:and:search_terms])
-      end
-    end
-
     describe 'filters' do
       it_behaves_like 'a query filtered by archived'
 

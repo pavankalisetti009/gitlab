@@ -153,7 +153,7 @@ module Elastic
                    ]
                  end
 
-        use_match_queries = use_match_queries?(options)
+        use_match_queries = !query_using_advanced_syntax?(options[:query])
 
         if options[:count_only] && use_match_queries
           filter << { bool: {
@@ -167,8 +167,12 @@ module Elastic
         elsif options[:count_only]
           filter << simple_query_string
         elsif use_match_queries
-          should.push(build_multi_match_query(options, :and),
-            build_match_phrase_query(options))
+          multi_match_bool = ::Search::Elastic::BoolExpr.new
+          multi_match_bool.should << build_multi_match_query(options, :and)
+          multi_match_bool.should << build_match_phrase_query(options)
+          multi_match_bool.minimum_should_match = 1
+
+          must << { bool: multi_match_bool.to_h }
         else
           must << simple_query_string
         end
@@ -186,11 +190,6 @@ module Elastic
         query_hash[:query][:bool][:minimum_should_match] = 1 if !should.empty? && use_match_queries
 
         query_hash
-      end
-
-      def use_match_queries?(options)
-        Feature.enabled?(:search_uses_match_queries,
-          options[:current_user]) && !query_using_advanced_syntax?(options[:query])
       end
 
       def query_using_advanced_syntax?(query_string)

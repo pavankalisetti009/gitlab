@@ -3,14 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search do
-  subject { described_class.new(Epic, use_separate_indices: true) }
+  subject(:proxy) { described_class.new(Epic, use_separate_indices: true) }
 
   let(:query) { 'test' }
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:public_group) { create(:group, :public) }
 
-  let(:elastic_search) { subject.elastic_search(query, options: options) }
+  let(:elastic_search) { proxy.elastic_search(query, options: options) }
   let(:response) do
     Elasticsearch::Model::Response::Response.new(Epic, Elasticsearch::Model::Searching::SearchRequest.new(Epic, '*'))
   end
@@ -18,7 +18,6 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     stub_licensed_features(epics: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   describe '#elastic_search' do
@@ -43,7 +42,21 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
                 { term: { type: hash_including(value: 'epic') } }
               ],
               must: [
-                { simple_query_string: hash_including(fields: ['title^2', 'description'], query: query) }
+                { bool:
+                  { should:
+                    [
+                      {
+                        multi_match: hash_including(
+                          _name: 'epic:multi_match:and:search_terms',
+                          fields: ['title^2', 'description'], operator: :and, lenient: true, query: query
+                        )
+                      },
+                      {
+                        multi_match: hash_including(fields: ['title^2', 'description'], lenient: true,
+                          type: :phrase, query: query)
+                      }
+                    ],
+                    minimum_should_match: 1 } }
               ],
               minimum_should_match: 1,
               should: [
@@ -55,7 +68,7 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
             }
           }
         )
-        expect(subject).to receive(:search).with(query_hash, anything).and_return(response)
+        expect(proxy).to receive(:search).with(query_hash, anything).and_return(response)
         expect(elastic_search).to eq(response)
       end
     end
@@ -71,7 +84,7 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
       end
 
       it 'call match none query' do
-        expect(subject).to receive(:search).with({ query: { match_none: {} }, size: 0 }, anything).and_return(response)
+        expect(proxy).to receive(:search).with({ query: { match_none: {} }, size: 0 }, anything).and_return(response)
         expect(elastic_search).to eq(response)
       end
     end
@@ -102,7 +115,19 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
                 { bool: { should: [{ prefix: { traversal_ids: hash_including(value: "#{group.id}-") } }] } }
               ],
               must: [
-                { simple_query_string: hash_including(fields: ['title^2', 'description'], query: query) }
+                { bool: { should:
+                  [
+                    {
+                      multi_match: hash_including(
+                        fields: ['title^2', 'description'], operator: :and, lenient: true, query: query
+                      )
+                    },
+                    {
+                      multi_match: hash_including(fields: ['title^2', 'description'], lenient: true,
+                        type: :phrase, query: query)
+                    }
+                  ],
+                          minimum_should_match: 1 } }
               ],
               minimum_should_match: 1,
               should: [
@@ -128,7 +153,7 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
           }
         )
 
-        expect(subject).to receive(:search).with(query_hash, anything).and_return(response)
+        expect(proxy).to receive(:search).with(query_hash, anything).and_return(response)
 
         expect(elastic_search).to eq(response)
       end

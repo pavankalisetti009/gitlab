@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe Project, feature_category: :global_search do
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   let(:schema_version) { ::Elastic::Latest::ProjectInstanceProxy::SCHEMA_VERSION }
