@@ -47,12 +47,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       expect(result).to be_nil
     end
 
-    context 'when there is not valid token' do
-      let(:instance_token) { nil }
-
-      it_behaves_like 'error response', "Cloud Connector access token is missing"
-    end
-
     context 'when request raises an error' do
       before do
         stub_request(:post, /#{Gitlab::AiGateway.url}/).to_raise(StandardError.new('an error'))
@@ -180,25 +174,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     end
 
     it { is_expected.to match({ status: :success, token: expected_token, expires_at: expires_at }) }
-
-    context 'when instance token is missing' do
-      before do
-        allow(client).to receive(:access_token).and_return(nil)
-      end
-
-      it { is_expected.to match(a_hash_including(status: :error)) }
-
-      it 'logs the error' do
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          satisfy { |exception|
-            exception.is_a?(described_class::AiGatewayError) &&
-              exception.message == 'Missing instance token'
-          }
-        )
-
-        result
-      end
-    end
 
     context 'when direct access token creation request fails' do
       let(:http_status) { 500 }

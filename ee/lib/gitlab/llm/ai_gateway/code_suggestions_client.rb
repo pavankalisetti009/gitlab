@@ -17,8 +17,6 @@ module Gitlab
         end
 
         def test_completion
-          return 'Cloud Connector access token is missing' unless access_token
-
           response = call_endpoint task.endpoint, task.body
 
           return "AI Gateway returned code #{response.code}: #{response.body}" unless response.code == 200
@@ -31,7 +29,6 @@ module Gitlab
         end
 
         def test_model_connection(self_hosted_model)
-          return 'Cloud Connector access token is missing' unless access_token
           return 'No self-hosted model was provided' unless self_hosted_model
 
           test_task = generate_test_task(self_hosted_model)
@@ -75,8 +72,6 @@ module Gitlab
         end
 
         def direct_access_token
-          raise AiGatewayError, 'Missing instance token' unless access_token
-
           log_info(message: 'Creating user access token',
             event_name: 'user_token_created',
             ai_component: 'code_suggestion'
@@ -120,11 +115,6 @@ module Gitlab
           service_name = ::Ai::Setting.self_hosted? ? :self_hosted_models : :code_suggestions
           ::CloudConnector::AvailableServices.find_by_name(service_name)
         end
-
-        def access_token
-          service.access_token(user)
-        end
-        strong_memoize_attr :access_token
 
         def choice?(response)
           response['choices']&.first&.dig('text').present?

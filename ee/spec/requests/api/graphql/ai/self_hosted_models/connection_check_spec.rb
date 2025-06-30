@@ -45,6 +45,12 @@ RSpec.describe 'Checking a self-hosted model connection', feature_category: :"se
   context 'when user is allowed to write changes' do
     let(:probe_graphql_result) { mutation_response['result'] }
 
+    before do
+      allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
+        allow(client).to receive(:test_model_connection).with(any_args)
+      end
+    end
+
     it_behaves_like 'it calls the manage_self_hosted_models_settings policy'
 
     context 'when there are errors with creating the self-hosted model' do
