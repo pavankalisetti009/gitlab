@@ -35,6 +35,7 @@ module Ai
 
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
       scope :with_environment, ->(environment) { where(environment: environment) }
+      scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment(:web) }
       class AgentPrivileges
         READ_WRITE_FILES  = 1
         READ_ONLY_GITLAB  = 2

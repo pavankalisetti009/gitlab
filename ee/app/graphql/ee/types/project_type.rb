@@ -368,6 +368,11 @@ module EE
           experiment: { milestone: '17.7' },
           description: 'Indicates whether Duo Agent Platform is enabled for the project.'
 
+        field :duo_workflow_workflows, ::Types::Ai::DuoWorkflows::WorkflowType.connection_type,
+          null: true,
+          description: 'GitLab Duo Agent Platform flows for a project, for all users (remote execution only).',
+          resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowsResolver
+
         field :gitlab_subscriptions_preview_billable_user_change,
           ::Types::GitlabSubscriptions::PreviewBillableUserChangeType,
           null: true,
