@@ -297,4 +297,13 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       expect(first_value).not_to eq(second_value)
     end
   end
+
+  describe '#purge_cache!' do
+    it 'enqueues the MarkEntriesForDestructionWorker' do
+      expect(::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker)
+        .to receive(:perform_async).with(upstream.id)
+
+      upstream.purge_cache!
+    end
+  end
 end

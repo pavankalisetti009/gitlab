@@ -81,6 +81,10 @@ module VirtualRegistries
           ).to_s
         end
 
+        def purge_cache!
+          ::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker.perform_async(id)
+        end
+
         private
 
         def reset_credentials
