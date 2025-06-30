@@ -8,7 +8,7 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
   let(:onboarding_status_presenter) do
     instance_double(
       ::Onboarding::StatusPresenter,
-      company_form_type: 'registration',
+      show_company_form_footer?: true,
       show_company_form_side_column?: show_company_form_side_column?,
       tracking_label: 'free_registration'
     )

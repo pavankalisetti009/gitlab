@@ -95,8 +95,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
         company_name: 'GitLab',
         phone_number: '+1 23 456-78-90',
         country: 'US',
-        state: 'CA',
-        website_url: 'gitlab.com'
+        state: 'CA'
       }
     end
 

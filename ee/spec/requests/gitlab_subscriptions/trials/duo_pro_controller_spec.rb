@@ -120,8 +120,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
         last_name: '_last_name_',
         phone_number: '123',
         country: '_country_',
-        state: '_state_',
-        website_url: '_website_url_'
+        state: '_state_'
       }.with_indifferent_access
     end
 

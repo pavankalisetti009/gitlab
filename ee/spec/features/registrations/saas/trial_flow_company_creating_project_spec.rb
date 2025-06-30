@@ -28,7 +28,7 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       expect_to_see_company_form_failure
 
       # success
-      fill_in_company_form(success: true)
+      resubmit_company_form
       click_on 'Continue'
 
       ensure_onboarding { expect_to_see_group_and_project_creation_form }
@@ -69,6 +69,13 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
 
       expect_to_be_in_get_started
     end
+  end
+
+  def resubmit_company_form
+    expect(GitlabSubscriptions::CreateCompanyLeadService).to receive(:new).with(
+      user: user,
+      params: company_params(user)
+    ).and_return(instance_double(GitlabSubscriptions::CreateCompanyLeadService, execute: ServiceResponse.success))
   end
 
   def fills_in_welcome_form
