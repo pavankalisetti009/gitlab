@@ -16,9 +16,11 @@ describe('WorkItemStatusBadge', () => {
   } = {}) => {
     wrapper = shallowMount(WorkItemStatusBadge, {
       propsData: {
-        name,
-        iconName,
-        color,
+        item: {
+          name,
+          iconName,
+          color,
+        },
       },
       stubs: {
         GlTruncate,

@@ -107,15 +107,19 @@ describe('CustomStatusSettings', () => {
       expect(statusBadges).toHaveLength(5); // 3 from first lifecycle + 2 from second
 
       expect(statusBadges.at(0).props()).toMatchObject({
-        name: 'Open',
-        iconName: 'issue-open',
-        color: 'green',
+        item: {
+          name: 'Open',
+          iconName: 'issue-open',
+          color: 'green',
+        },
       });
 
       expect(statusBadges.at(1).props()).toMatchObject({
-        name: 'In Progress',
-        iconName: 'progress',
-        color: 'blue',
+        item: {
+          name: 'In Progress',
+          iconName: 'progress',
+          color: 'blue',
+        },
       });
     });
 
