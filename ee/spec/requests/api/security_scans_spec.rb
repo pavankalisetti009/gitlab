@@ -84,7 +84,7 @@ RSpec.describe API::SecurityScans, feature_category: :static_application_securit
     before do
       allow(::CloudConnector::Tokens).to receive(:get).with(
         unit_primitive: :security_scans,
-        root_group_ids: [project.root_namespace.id]
+        resource: project
       ).and_return(jwt)
     end
 

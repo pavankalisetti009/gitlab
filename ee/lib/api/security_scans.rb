@@ -46,8 +46,7 @@ module API
       post ':id/security_scans/sast/:sast_endpoint', requirements: SAST_ENDPOINT_REQUIREMENTS do
         unauthorized! unless can?(current_user, :access_security_scans_api, user_project)
 
-        token = CloudConnector::Tokens.get(
-          unit_primitive: :security_scans, root_group_ids: [user_project.root_namespace.id])
+        token = CloudConnector::Tokens.get(unit_primitive: :security_scans, resource: user_project)
         unauthorized! if token.nil?
 
         url = construct_scan_url(params[:sast_endpoint])

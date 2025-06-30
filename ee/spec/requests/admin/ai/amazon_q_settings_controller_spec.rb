@@ -51,8 +51,9 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
 
   shared_examples 'success when there is a valid token' do
     before do
-      allow(::CloudConnector::Tokens).to receive(:get).with(unit_primitive: :amazon_q_integration)
-                                                      .and_return(active_token.token)
+      allow(::CloudConnector::Tokens).to receive(:get).with(
+        unit_primitive: :amazon_q_integration,
+        resource: :instance).and_return(active_token.token)
     end
 
     it 'renders the frontend entrypoint with view model' do
@@ -90,7 +91,9 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
 
     context 'when there is a problem retrieving the token' do
       before do
-        allow(::CloudConnector::Tokens).to receive(:get).with(unit_primitive: :amazon_q_integration).and_return(nil)
+        allow(::CloudConnector::Tokens).to receive(:get).with(
+          unit_primitive: :amazon_q_integration,
+          resource: :instance).and_return(nil)
       end
 
       it 'renders alert and empty identityProviderPayload' do

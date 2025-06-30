@@ -21,7 +21,7 @@ module API
         def cc_access_token
           root_group_id = project.root_ancestor.id
           CloudConnector::Tokens.get(
-            root_group_ids: root_group_id,
+            resource: project,
             extra_claims: { gitlab_namespace_id: root_group_id.to_s },
             unit_primitive: :observability_all
           )

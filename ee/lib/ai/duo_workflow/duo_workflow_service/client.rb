@@ -50,7 +50,7 @@ module Ai
         def cloud_connector_token
           CloudConnector::Tokens.get(
             unit_primitive: :duo_workflow_execute_workflow,
-            root_group_ids: current_user.billable_gitlab_duo_pro_root_group_ids
+            resource: current_user
           )
         end
 
