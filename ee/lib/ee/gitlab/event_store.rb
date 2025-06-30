@@ -202,8 +202,7 @@ module EE
 
         def subscribe_to_active_context_code_events(store)
           store.subscribe ::Ai::ActiveContext::Code::SaasInitialIndexingEventWorker,
-            to: ::Ai::ActiveContext::Code::SaasInitialIndexingEvent,
-            if: ->(_) { ::Feature.enabled?(:active_context_code_event_saas_initial_indexing, :instance) }
+            to: ::Ai::ActiveContext::Code::SaasInitialIndexingEvent
         end
 
         def subscribe_to_zoekt_events(store)
