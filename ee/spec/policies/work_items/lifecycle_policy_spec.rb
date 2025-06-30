@@ -14,7 +14,7 @@ RSpec.describe WorkItems::LifecyclePolicy, feature_category: :team_planning do
   end
 
   context 'when user does not have access to the namespace' do
-    it { is_expected.to be_disallowed(:read_lifecycle) }
+    it { is_expected.to be_disallowed(:read_work_item_lifecycle) }
   end
 
   context 'when user has access to the namespace' do
@@ -22,14 +22,14 @@ RSpec.describe WorkItems::LifecyclePolicy, feature_category: :team_planning do
       group.add_guest(user)
     end
 
-    it { is_expected.to be_allowed(:read_lifecycle) }
+    it { is_expected.to be_allowed(:read_work_item_lifecycle) }
 
     context 'when feature is not available' do
       before do
         stub_licensed_features(work_item_status: false)
       end
 
-      it { is_expected.to be_disallowed(:read_lifecycle) }
+      it { is_expected.to be_disallowed(:read_work_item_lifecycle) }
     end
   end
 end

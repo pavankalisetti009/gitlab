@@ -227,20 +227,20 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'when user is a guest' do
       let(:current_user) { guest }
 
-      it { is_expected.to be_allowed(:read_lifecycle, :read_work_item_status) }
+      it { is_expected.to be_allowed(:read_work_item_lifecycle, :read_work_item_status) }
       it { is_expected.to be_disallowed(:admin_work_item_lifecycle) }
     end
 
     context 'when user is a maintainer' do
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_allowed(:read_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
+      it { is_expected.to be_allowed(:read_work_item_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
     end
 
     context 'when user is logged out' do
       let(:current_user) { nil }
 
-      it { is_expected.to be_disallowed(:read_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
+      it { is_expected.to be_disallowed(:read_work_item_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
     end
   end
 
@@ -251,7 +251,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       stub_licensed_features(work_item_status: false)
     end
 
-    it { is_expected.to be_disallowed(:read_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
+    it { is_expected.to be_disallowed(:read_work_item_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
   end
 
   context 'when cluster deployments is available' do

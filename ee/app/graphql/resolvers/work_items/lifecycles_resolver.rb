@@ -6,7 +6,7 @@ module Resolvers
       include ::WorkItems::Lifecycles::LookAheadPreloads
 
       type Types::WorkItems::LifecycleType.connection_type, null: true
-      authorize :read_lifecycle
+      authorize :read_work_item_lifecycle
 
       alias_method :namespace, :object
 
