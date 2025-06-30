@@ -8,7 +8,7 @@ import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_ba
 
 import { isTopLevelGroup } from '../../utils';
 import FrameworkCoverage from './framework_coverage.vue';
-import frameworkCoverageQuery from './graphql/framework_coverage.query.gql';
+import frameworkCoverageQuery from './graphql/framework_coverage.query.graphql';
 
 const MINIMAL_HEIGHT = 2;
 const FRAMEWORKS_PER_UNIT = 7;

@@ -6,7 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import ComplianceDashboard from 'ee/compliance_dashboard/components/dashboard/compliance_dashboard.vue';
 import FrameworkCoverage from 'ee/compliance_dashboard/components/dashboard/framework_coverage.vue';
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
-import frameworkCoverageQuery from 'ee/compliance_dashboard/components/dashboard/graphql/framework_coverage.query.gql';
+import frameworkCoverageQuery from 'ee/compliance_dashboard/components/dashboard/graphql/framework_coverage.query.graphql';
 
 Vue.use(VueApollo);
 
