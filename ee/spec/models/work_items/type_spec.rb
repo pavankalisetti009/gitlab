@@ -46,20 +46,8 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       context 'when type is epic' do
         let_it_be_with_refind(:work_item_type) { create(:work_item_type, :epic) }
 
-        context 'when work_items_beta is enabled' do
-          it 'returns Assignees widget' do
-            expect(returned_widgets.map(&:widget_class)).to include(::WorkItems::Widgets::Assignees)
-          end
-        end
-
-        context 'when work_items_beta is disabled' do
-          before do
-            stub_feature_flags(work_items_beta: false)
-          end
-
-          it 'does not return Assignees widget' do
-            expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::Assignees)
-          end
+        it 'returns Assignees widget' do
+          expect(returned_widgets.map(&:widget_class)).to include(::WorkItems::Widgets::Assignees)
         end
 
         it 'returns Milestone widget' do

@@ -58,10 +58,6 @@ module EE
           namespace = resource_parent.respond_to?(:namespace) ? resource_parent.namespace : resource_parent
           unavailable_widgets += EXCLUDED_USER_NAMESPACE_LICENSED_WIDGETS if namespace.user_namespace?
 
-          if epic? && !resource_parent.try(:work_items_beta_feature_flag_enabled?)
-            unavailable_widgets << ::WorkItems::Widgets::Assignees
-          end
-
           unless resource_parent.root_ancestor.try(:work_item_status_feature_available?)
             unavailable_widgets << ::WorkItems::Widgets::Status
           end
