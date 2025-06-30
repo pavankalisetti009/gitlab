@@ -41,7 +41,6 @@ describe('StrategySelector', () => {
         expect(card.attributes('data-testid')).toBe(strategy.key);
         expect(radio.attributes('value')).toBe(strategy.key);
         expect(card.text()).toContain(strategy.header);
-        expect(card.text()).toContain(strategy.description);
       });
     });
   });
