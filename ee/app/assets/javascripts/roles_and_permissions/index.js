@@ -3,7 +3,6 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
-import { initPlannerRoleBanner } from '~/planner_role_banner';
 import RoleTabs from './components/role_tabs.vue';
 
 Vue.use(GlToast);
@@ -19,8 +18,6 @@ export const initCustomRolesApp = () => {
   if (!el) {
     return null;
   }
-
-  initPlannerRoleBanner();
 
   const {
     groupFullPath,
