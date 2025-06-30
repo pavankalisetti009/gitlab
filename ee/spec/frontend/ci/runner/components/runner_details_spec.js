@@ -16,6 +16,7 @@ describe('RunnerDetails', () => {
   const createComponent = ({ props = {}, mountFn = shallowMountExtended, ...options } = {}) => {
     wrapper = mountFn(RunnerDetails, {
       propsData: {
+        runnerId: mockRunner.id,
         ...props,
       },
       ...options,
