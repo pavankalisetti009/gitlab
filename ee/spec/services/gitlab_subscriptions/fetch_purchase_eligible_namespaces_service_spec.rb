@@ -3,6 +3,48 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::FetchPurchaseEligibleNamespacesService, feature_category: :subscription_management do
+  describe '.eligible?' do
+    let_it_be(:user) { build(:user) }
+    let_it_be(:namespace) { create(:namespace) }
+
+    context 'when supplied an eligible namespace' do
+      it 'returns true for any_self_service_plan' do
+        allow(Gitlab::SubscriptionPortal::Client)
+          .to receive(:filter_purchase_eligible_namespaces)
+          .with(user, [namespace], plan_id: nil, any_self_service_plan: true)
+          .and_return(success: true, data: [{ 'id' => namespace.id, 'accountId' => nil, 'subscription' => nil }])
+
+        result = described_class.eligible?(user: user, namespace: namespace, any_self_service_plan: true)
+
+        expect(result).to be true
+      end
+
+      it 'returns true for a specified plan_id' do
+        allow(Gitlab::SubscriptionPortal::Client)
+          .to receive(:filter_purchase_eligible_namespaces)
+          .with(user, [namespace], plan_id: 'test', any_self_service_plan: nil)
+          .and_return(success: true, data: [{ 'id' => namespace.id, 'accountId' => nil, 'subscription' => nil }])
+
+        result = described_class.eligible?(user: user, namespace: namespace, plan_id: 'test')
+
+        expect(result).to be true
+      end
+    end
+
+    context 'when supplied an ineligible namespace' do
+      it 'returns false' do
+        allow(Gitlab::SubscriptionPortal::Client)
+          .to receive(:filter_purchase_eligible_namespaces)
+          .with(user, [namespace], plan_id: 'test', any_self_service_plan: nil)
+          .and_return(success: true, data: [])
+
+        result = described_class.eligible?(user: user, namespace: namespace, plan_id: 'test')
+
+        expect(result).to be false
+      end
+    end
+  end
+
   describe '#execute' do
     let_it_be(:user) { build(:user) }
     let_it_be(:namespace_1) { create(:namespace) }

@@ -8,7 +8,9 @@ module GitlabSubscriptions
     end
 
     def build(params = {})
-      if namespace.blank?
+      if plan_id.blank?
+        Gitlab::Saas.about_pricing_url
+      elsif namespace.blank?
         Gitlab::Routing.url_helpers.new_gitlab_subscriptions_group_path(plan_id: plan_id)
       else
         query = params.merge({ plan_id: plan_id, gl_namespace_id: namespace.id }).compact

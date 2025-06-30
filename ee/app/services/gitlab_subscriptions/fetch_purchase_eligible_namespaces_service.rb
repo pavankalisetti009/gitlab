@@ -12,6 +12,19 @@ module GitlabSubscriptions
   class FetchPurchaseEligibleNamespacesService
     include ::Gitlab::Utils::StrongMemoize
 
+    def self.eligible?(user:, namespace:, plan_id: nil, any_self_service_plan: nil)
+      result = new(
+        user: user,
+        namespaces: Array(namespace),
+        plan_id: plan_id,
+        any_self_service_plan: any_self_service_plan
+      ).execute
+
+      return false unless result.success? && result.payload.first.present?
+
+      result.payload.first[:namespace].id == namespace.id
+    end
+
     def initialize(user:, namespaces:, plan_id: nil, any_self_service_plan: nil)
       @user = user
       @namespaces = namespaces
