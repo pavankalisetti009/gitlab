@@ -32,15 +32,6 @@ export default {
     };
   },
   computed: {
-    tokenValue() {
-      return {
-        ...this.value,
-        // when the token is active (dropdown is open), we set the value to null to prevent an UX issue
-        // in which only the last selected item is being displayed.
-        // more information: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2381
-        data: this.active ? null : this.selectedSeverities,
-      };
-    },
     toggleText() {
       return getSelectedOptionsText({
         options: this.$options.items,
@@ -50,9 +41,6 @@ export default {
     },
   },
   methods: {
-    resetSelected() {
-      this.selectedSeverities = [ALL_SEVERITIES_VALUE];
-    },
     toggleSelected(selectedValue) {
       const allSeveritiesSelected = selectedValue === ALL_SEVERITIES_VALUE;
 
@@ -92,10 +80,8 @@ export default {
     :config="config"
     v-bind="{ ...$props, ...$attrs }"
     :multi-select-values="selectedSeverities"
-    :value="tokenValue"
     v-on="$listeners"
     @select="toggleSelected"
-    @destroy="resetSelected"
   >
     <template #view>
       <span data-testid="severity-token-placeholder">{{ toggleText }}</span>

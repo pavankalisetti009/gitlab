@@ -62,7 +62,7 @@ describe('Severity Token component', () => {
 
   describe('default view', () => {
     beforeEach(() => {
-      createWrapper();
+      createWrapper({ value: { data: ['ALL'] } });
     });
 
     it('shows the label', () => {
