@@ -165,6 +165,13 @@ module EE
       mentioned_users.include?(duo_code_review_bot)
     end
 
+    override :human_max_access
+    def human_max_access
+      return super unless project.blank? && for_group_wiki?
+
+      ::Gitlab::Access.human_access(namespace.max_member_access_for_user(author))
+    end
+
     private
 
     def update_work_item_for_note!

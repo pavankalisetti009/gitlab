@@ -462,4 +462,22 @@ RSpec.describe Note, feature_category: :team_planning do
       end
     end
   end
+
+  describe '#human_max_access' do
+    let_it_be(:user) { create(:user) }
+
+    subject { note.human_max_access }
+
+    context 'when parent is a group' do
+      let_it_be(:group) { create(:group) }
+      let(:noteable) { create(:wiki_page_meta, container: group) }
+      let(:note) { create(:note, author: user, noteable: noteable, namespace: group, project: nil) }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      it { is_expected.to be('Owner') }
+    end
+  end
 end
