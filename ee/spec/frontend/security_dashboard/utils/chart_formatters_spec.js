@@ -8,25 +8,25 @@ describe('chart_formatters', () => {
       {
         date: '2024-01-01',
         bySeverity: [
-          { severity: 'critical', count: 5 },
-          { severity: 'high', count: 10 },
-          { severity: 'medium', count: 15 },
+          { severity: 'CRITICAL', count: 5 },
+          { severity: 'HIGH', count: 10 },
+          { severity: 'MEDIUM', count: 15 },
         ],
       },
       {
         date: '2024-01-02',
         bySeverity: [
-          { severity: 'critical', count: 3 },
-          { severity: 'high', count: 8 },
-          { severity: 'low', count: 12 },
-          { severity: 'info', count: 2 },
+          { severity: 'CRITICAL', count: 3 },
+          { severity: 'HIGH', count: 8 },
+          { severity: 'LOW', count: 12 },
+          { severity: 'INFO', count: 2 },
         ],
       },
       {
         date: '2024-01-03',
         bySeverity: [
-          { severity: 'unknown', count: 1 },
-          { severity: 'medium', count: 7 },
+          { severity: 'UNKNOWN', count: 1 },
+          { severity: 'MEDIUM', count: 7 },
         ],
       },
     ];
@@ -67,7 +67,7 @@ describe('chart_formatters', () => {
         {
           date: '2024-01-01',
           bySeverity: [
-            { severity: 'critical', count: 5 },
+            { severity: 'CRITICAL', count: 5 },
             { severity: 'nonexistent', count: 3 },
           ],
         },
@@ -91,7 +91,7 @@ describe('chart_formatters', () => {
         },
         {
           date: '2024-01-02',
-          bySeverity: [{ severity: 'high', count: 5 }],
+          bySeverity: [{ severity: 'HIGH', count: 5 }],
         },
       ];
 
@@ -106,8 +106,8 @@ describe('chart_formatters', () => {
         {
           date: '2024-01-01',
           bySeverity: [
-            { severity: 'critical', count: 0 },
-            { severity: 'high', count: 5 },
+            { severity: 'CRITICAL', count: 0 },
+            { severity: 'HIGH', count: 5 },
           ],
         },
       ];

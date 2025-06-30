@@ -26,12 +26,12 @@ export const formatVulnerabilitiesOverTimeData = (vulnerabilitiesOverTime) => {
   }
 
   const chartSeriesData = {
-    critical: { name: s__('severity|Critical'), data: [] },
-    high: { name: s__('severity|High'), data: [] },
-    medium: { name: s__('severity|Medium'), data: [] },
-    low: { name: s__('severity|Low'), data: [] },
-    info: { name: s__('severity|Info'), data: [] },
-    unknown: { name: s__('severity|Unknown'), data: [] },
+    CRITICAL: { name: s__('severity|Critical'), data: [] },
+    HIGH: { name: s__('severity|High'), data: [] },
+    MEDIUM: { name: s__('severity|Medium'), data: [] },
+    LOW: { name: s__('severity|Low'), data: [] },
+    INFO: { name: s__('severity|Info'), data: [] },
+    UNKNOWN: { name: s__('severity|Unknown'), data: [] },
   };
 
   vulnerabilitiesOverTime.forEach((node) => {
@@ -44,5 +44,5 @@ export const formatVulnerabilitiesOverTimeData = (vulnerabilitiesOverTime) => {
     });
   });
 
-  return Object.values(chartSeriesData);
+  return Object.values(chartSeriesData).filter((item) => item.data.length > 0);
 };

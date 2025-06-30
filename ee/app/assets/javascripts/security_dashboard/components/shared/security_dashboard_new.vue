@@ -1,14 +1,11 @@
 <script>
-import { s__, __ } from '~/locale';
+import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
-import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
-import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
-import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
-import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_vulnerabilities_over_time.query.graphql';
-import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_formatters';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
+import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
+import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 
 const PROJECT_TOKEN_DEFINITION = {
   type: 'projectId',
@@ -23,35 +20,10 @@ export default {
   components: {
     DashboardLayout,
     FilteredSearch,
-    PanelsBase,
-    VulnerabilitiesOverTimeChart,
   },
   inject: ['groupFullPath'],
-  apollo: {
-    vulnerabilitiesOverTime: {
-      query: getVulnerabilitiesOverTime,
-      variables() {
-        const { projectId } = this.filters;
-
-        return {
-          fullPath: this.groupFullPath,
-          ...(projectId ? { projectId } : {}),
-        };
-      },
-      update(data) {
-        return data.group?.securityMetrics?.vulnerabilitiesOverTime?.nodes || [];
-      },
-      error() {
-        this.errorStates.vulnerabilitiesOverTime = true;
-      },
-    },
-  },
   data() {
     return {
-      vulnerabilitiesOverTime: [],
-      errorStates: {
-        vulnerabilitiesOverTime: false,
-      },
       filters: {},
     };
   },
@@ -66,13 +38,10 @@ export default {
         panels: [
           {
             id: '1',
-            title: __('Vulnerabilities over time'),
-            component: markRaw(VulnerabilitiesOverTimeChart),
+            component: markRaw(VulnerabilitiesOverTimePanel),
             componentProps: {
-              chartSeries: this.vulnerabilitiesOverTimeSeries,
+              filters: this.filters,
             },
-            loading: this.$apollo.queries.vulnerabilitiesOverTime.loading,
-            showAlertState: this.errorStates.vulnerabilitiesOverTime,
             gridAttributes: {
               width: 6,
               height: 4,
@@ -82,9 +51,6 @@ export default {
           },
         ],
       };
-    },
-    vulnerabilitiesOverTimeSeries() {
-      return formatVulnerabilitiesOverTimeData(this.vulnerabilitiesOverTime);
     },
   },
   methods: {
@@ -106,17 +72,7 @@ export default {
       <filtered-search :tokens="$options.filteredSearchTokens" @filters-changed="updateFilters" />
     </template>
     <template #panel="{ panel }">
-      <panels-base v-bind="panel">
-        <template #body>
-          <component
-            :is="panel.component"
-            v-if="!panel.showAlertState"
-            class="gl-h-full gl-overflow-hidden"
-            v-bind="panel.componentProps"
-          />
-          <p v-else>{{ __('Something went wrong. Please try again.') }}</p>
-        </template>
-      </panels-base>
+      <component :is="panel.component" v-bind="panel.componentProps" />
     </template>
   </dashboard-layout>
 </template>

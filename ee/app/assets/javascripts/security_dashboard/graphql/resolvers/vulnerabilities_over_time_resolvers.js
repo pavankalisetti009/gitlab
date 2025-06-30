@@ -65,32 +65,32 @@ export default {
           bySeverity: [
             {
               __typename: 'VulnerabilitySeverityCount',
-              severity: 'critical',
+              severity: 'CRITICAL',
               count: severityData.critical[index],
             },
             {
               __typename: 'VulnerabilitySeverityCount',
-              severity: 'high',
+              severity: 'HIGH',
               count: severityData.high[index],
             },
             {
               __typename: 'VulnerabilitySeverityCount',
-              severity: 'medium',
+              severity: 'MEDIUM',
               count: severityData.medium[index],
             },
             {
               __typename: 'VulnerabilitySeverityCount',
-              severity: 'low',
+              severity: 'LOW',
               count: severityData.low[index],
             },
             {
               __typename: 'VulnerabilitySeverityCount',
-              severity: 'info',
+              severity: 'INFO',
               count: severityData.info[index],
             },
             {
               __typename: 'VulnerabilitySeverityCount',
-              severity: 'unknown',
+              severity: 'UNKNOWN',
               count: severityData.unknown[index],
             },
           ],
