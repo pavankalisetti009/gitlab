@@ -1,11 +1,12 @@
 <script>
-import { GlFormCheckbox } from '@gitlab/ui';
+import { GlCard, GlFormCheckbox } from '@gitlab/ui';
 import { REPORT_TYPE_DAST } from '~/vue_shared/security_reports/constants';
 import { RULE_MODE_SCANNERS } from '../../constants';
 
 export default {
   name: 'OptimizedScanSelection',
   components: {
+    GlCard,
     GlFormCheckbox,
   },
   props: {
@@ -46,16 +47,18 @@ export default {
 <template>
   <div class="optimized-scan-selection">
     <h5>{{ s__('SecurityOrchestration|Security scans to execute') }}</h5>
-    <gl-form-checkbox
-      v-for="[key, value] in optimizedScanners"
-      :id="key"
-      :key="key"
-      :data-testid="`${key}-checkbox`"
-      :disabled="isDisabled(key)"
-      :checked="isSelected(key)"
-      @change="onScannerChange(key, $event)"
-    >
-      {{ value }}
-    </gl-form-checkbox>
+    <gl-card class="gl-mb-5 gl-bg-white">
+      <gl-form-checkbox
+        v-for="[key, value] in optimizedScanners"
+        :id="key"
+        :key="key"
+        :data-testid="`${key}-checkbox`"
+        :disabled="isDisabled(key)"
+        :checked="isSelected(key)"
+        @change="onScannerChange(key, $event)"
+      >
+        {{ value }}
+      </gl-form-checkbox>
+    </gl-card>
   </div>
 </template>
