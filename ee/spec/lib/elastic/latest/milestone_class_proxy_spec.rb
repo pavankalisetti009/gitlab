@@ -98,10 +98,8 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
         )
       end
 
-      context 'when search_uses_match_queries ff is false' do
-        before do
-          stub_feature_flags(search_uses_match_queries: false)
-        end
+      context 'when advanced search syntax is used in the query' do
+        let_it_be(:query) { 'Foo*' }
 
         it 'has the correct named queries' do
           result.response

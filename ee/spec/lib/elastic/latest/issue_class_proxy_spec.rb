@@ -90,14 +90,6 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, feature_category: :gl
             end
           end
 
-          context 'when search_uses_match_queries feature flag is false' do
-            before do
-              stub_feature_flags(search_uses_match_queries: false)
-            end
-
-            it_behaves_like 'a query that uses simple_query_string'
-          end
-
           context 'when using advanced search syntax' do
             let(:query) { 'test -banner' }
 

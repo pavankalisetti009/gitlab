@@ -11,7 +11,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'merge_requests', feature_categor
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   describe 'merge requests', :elastic_delete_by_query do

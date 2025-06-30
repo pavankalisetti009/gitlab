@@ -7,7 +7,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'projects', feature_category: :gl
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   describe 'projects', :elastic_delete_by_query do

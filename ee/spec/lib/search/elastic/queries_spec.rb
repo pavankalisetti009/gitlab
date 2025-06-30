@@ -27,7 +27,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       described_class.by_full_text(query: query, options: options)
     end
 
-    context 'when advanced query syntax is not matched and feature is enabled' do
+    context 'when advanced query syntax is not matched' do
       it 'calls by_multi_match_query' do
         expect(described_class).to receive(:by_multi_match_query).with(fields: options[:fields], query: query,
           options: options)
@@ -37,18 +37,6 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
 
     context 'when advanced query syntax is matched' do
       let(:query) { 'foo ~bar' }
-
-      it 'calls by_simple_query_string' do
-        expect(described_class).to receive(:by_simple_query_string).with(fields: options[:fields], query: query,
-          options: options)
-        by_full_text
-      end
-    end
-
-    context 'when feature is not enabled' do
-      before do
-        stub_feature_flags(search_uses_match_queries: false)
-      end
 
       it 'calls by_simple_query_string' do
         expect(described_class).to receive(:by_simple_query_string).with(fields: options[:fields], query: query,
@@ -503,6 +491,88 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         expect(Gitlab::ErrorTracking).to receive(:track_exception)
 
         expect(by_knn).not_to have_key(:knn)
+      end
+    end
+
+    context 'when options[:vectors_supported] is falsy' do
+      let(:options) do
+        {
+          current_user: user,
+          embedding_field: :embedding_0,
+          fields: %w[iid^3 title^2 description],
+          vectors_supported: nil
+        }
+      end
+
+      it 'falls back to by_full_text' do
+        expect(described_class).to receive(:by_full_text).with(query: 'test', options: options)
+
+        by_knn
+      end
+    end
+
+    context 'when options[:vectors_supported] is not in ALLOWED_SEARCH_CLIENTS' do
+      let(:options) do
+        {
+          current_user: user,
+          embedding_field: :embedding_0,
+          fields: %w[iid^3 title^2 description],
+          vectors_supported: :invalid_client
+        }
+      end
+
+      it 'raises ArgumentError' do
+        expect { by_knn }.to raise_error(ArgumentError, 'Invalid search client')
+      end
+    end
+
+    context 'when options[:vectors_supported] is opensearch' do
+      let(:options) do
+        {
+          current_user: user,
+          embedding_field: :embedding_0,
+          fields: %w[iid^3 title^2 description],
+          vectors_supported: :opensearch
+        }
+      end
+
+      it 'builds opensearch knn query' do
+        expect(by_knn.dig(:query, :bool, :should))
+          .to include(a_hash_including(knn: { embedding_0: { k: 25, vector: mock_embedding } }))
+      end
+
+      it 'sets simple_query_string_boost and keyword_match_clause options' do
+        expect(described_class).to receive(:by_full_text).with(
+          query: 'test',
+          options: hash_including(
+            simple_query_string_boost: described_class::SIMPLE_QUERY_STRING_BOOST,
+            keyword_match_clause: :should
+          )
+        ).and_call_original
+
+        by_knn
+      end
+    end
+
+    context 'when options[:vectors_supported] is elasticsearch' do
+      let(:options) do
+        {
+          current_user: user,
+          embedding_field: :embedding_0,
+          fields: %w[iid^3 title^2 description],
+          vectors_supported: :elasticsearch
+        }
+      end
+
+      it 'builds elasticsearch knn query' do
+        expect(by_knn[:knn]).to match(a_hash_including(
+          field: 'embedding_0',
+          query_vector: mock_embedding,
+          boost: described_class::DEFAULT_HYBRID_BOOST,
+          k: 25,
+          num_candidates: 100,
+          similarity: described_class::DEFAULT_HYBRID_SIMILARITY
+        ))
       end
     end
   end

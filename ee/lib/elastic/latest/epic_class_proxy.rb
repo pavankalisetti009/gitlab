@@ -45,7 +45,7 @@ module Elastic
         return query_hash if current_user&.can_read_all_resources?
 
         query_hash[:query][:bool][:minimum_should_match] = 1
-        query_hash[:query][:bool][:should] = []
+        query_hash[:query][:bool][:should] ||= []
         query_hash = add_filter(query_hash, :query, :bool, :should) do
           should_query_for_public_epics
         end

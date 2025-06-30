@@ -66,19 +66,6 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
               work_item:multi_match_phrase:search_terms])
         end
       end
-
-      context 'when search_uses_match_queries is false' do
-        before do
-          stub_feature_flags(search_uses_match_queries: false)
-        end
-
-        it 'returns the expected query' do
-          assert_names_in_query(build,
-            with: %w[work_item:match:search_terms],
-            without: %w[work_item:multi_match:and:search_terms
-              work_item:multi_match_phrase:search_terms])
-        end
-      end
     end
   end
 

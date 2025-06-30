@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search do
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-    stub_feature_flags(search_uses_match_queries: false)
   end
 
   subject(:proxy) { described_class.new(Note, use_separate_indices: true) }
@@ -38,7 +37,8 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
     end
 
     let(:options) { base_options }
-    let(:result) { proxy.elastic_search('test', options: options) }
+    let(:query) { 'test' }
+    let(:result) { proxy.elastic_search(query, options: options) }
 
     before_all do
       Elastic::ProcessBookkeepingService.track!(note, note2, note3, archived_note)
@@ -56,13 +56,25 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
 
         it 'returns archived results' do
           expect(elasticsearch_hit_ids(result)).to match_array [note.id, note2.id, note3.id, archived_note.id]
-          assert_named_queries('note:match:search_terms', without: ['note:archived:non_archived'])
+          assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
+            without: ['note:archived:non_archived'])
         end
       end
 
       it 'returns non-archived results by default' do
         expect(elasticsearch_hit_ids(result)).to match_array [note.id, note2.id, note3.id]
-        assert_named_queries('note:match:search_terms', 'note:archived:non_archived')
+        assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
+          'note:archived:non_archived')
+      end
+
+      context 'when advanced search syntax is used' do
+        let(:query) { 'test*' }
+
+        it 'uses simple_query_string in query' do
+          expect(elasticsearch_hit_ids(result)).to match_array [note.id, note2.id, note3.id]
+          assert_named_queries('note:match:search_terms',
+            without: %w[note:multi_match:and:search_terms note:multi_match_phrase:search_terms])
+        end
       end
 
       context 'when options[:noteable_type] is set' do
@@ -71,7 +83,8 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
         it 'filters by noteable_type and returns noteable_id only in the _source array' do
           expect(result.response['hits']['hits'].first['_source'].keys).to contain_exactly('noteable_id')
           expect(result.response['hits']['hits'].map(&:_source).map(&:noteable_id)).to contain_exactly(note.noteable_id)
-          assert_named_queries('note:match:search_terms', 'note:archived:non_archived', 'filters:related:issue')
+          assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
+            'note:archived:non_archived', 'filters:related:issue')
         end
       end
     end
@@ -87,7 +100,19 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
 
       it 'returns results' do
         expect(elasticsearch_hit_ids(result)).to match_array [note.id, note3.id]
-        assert_named_queries('note:match:search_terms', 'note:archived:non_archived')
+        assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
+          'note:archived:non_archived')
+      end
+
+      context 'when advanced search syntax is used' do
+        let(:query) { 'test*' }
+
+        it 'uses simple_query_string in query' do
+          expect(elasticsearch_hit_ids(result)).to match_array [note.id, note3.id]
+
+          assert_named_queries('note:match:search_terms',
+            without: %w[note:multi_match:and:search_terms note:multi_match_phrase:search_terms])
+        end
       end
 
       context 'when options[:noteable_type] is set' do
@@ -96,7 +121,8 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
         it 'filters by noteable_type and returns noteable_id only in the _source array' do
           expect(result.response['hits']['hits'].first['_source'].keys).to contain_exactly('noteable_id')
           expect(result.response['hits']['hits'].map(&:_source).map(&:noteable_id)).to contain_exactly(note.noteable_id)
-          assert_named_queries('note:match:search_terms', 'note:archived:non_archived', 'filters:related:issue')
+          assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
+            'note:archived:non_archived', 'filters:related:issue')
         end
       end
     end
@@ -109,7 +135,19 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
 
       it 'returns results' do
         expect(elasticsearch_hit_ids(result)).to match_array [note.id, note3.id]
-        assert_named_queries('note:match:search_terms', 'note:archived:non_archived')
+        assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
+          'note:archived:non_archived')
+      end
+
+      context 'when advanced search syntax is used' do
+        let(:query) { 'test*' }
+
+        it 'uses simple_query_string in query' do
+          expect(elasticsearch_hit_ids(result)).to match_array [note.id, note3.id]
+
+          assert_named_queries('note:match:search_terms',
+            without: %w[note:multi_match:and:search_terms note:multi_match_phrase:search_terms])
+        end
       end
 
       context 'when options[:noteable_type] is set' do
@@ -119,7 +157,8 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
           hits = result.response['hits']['hits']
           expect(hits.first['_source'].keys).to contain_exactly('noteable_id')
           expect(hits.map(&:_source).map(&:noteable_id)).to contain_exactly(note3.noteable_id)
-          assert_named_queries('note:match:search_terms', 'note:archived:non_archived', 'filters:related:mergerequest')
+          assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
+            'note:archived:non_archived', 'filters:related:mergerequest')
         end
       end
     end

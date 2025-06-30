@@ -35,23 +35,12 @@ RSpec.describe ::Search::Elastic::MilestoneQueryBuilder, :elastic_helpers, featu
     ])
   end
 
-  context 'when search_uses_match_queries feature flag is false' do
-    before do
-      stub_feature_flags(search_uses_match_queries: false)
-    end
+  context 'when advanced query syntax is used' do
+    let(:query) { 'foo -default' }
 
-    it 'contains all expected filters' do
-      assert_names_in_query(build, with: %w[
-        milestone:match:search_terms
-        filters:doc:is_a:milestone
-        filters:project
-        filters:project:visibility:10
-        filters:project:visibility:20
-        filters:project:visibility:20:issues:access_level:enabled
-        filters:project:visibility:20:merge_requests:access_level:enabled
-        filters:project
-        filters:non_archived
-      ])
+    it 'uses simple_query_string in query' do
+      assert_names_in_query(build, with: %w[milestone:match:search_terms],
+        without: %w[milestone:multi_match:and:search_terms milestone:multi_match_phrase:search_terms])
     end
   end
 

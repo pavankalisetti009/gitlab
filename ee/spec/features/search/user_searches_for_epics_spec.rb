@@ -4,13 +4,11 @@ require 'spec_helper'
 
 RSpec.describe 'User searches for epics', :js, :disable_rate_limiter, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group) { create(:group, maintainers: user) }
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(search_uses_match_queries: false)
 
-    group.add_maintainer(user)
     sign_in(user)
 
     visit(search_path(group_id: group.id))
@@ -90,6 +88,19 @@ RSpec.describe 'User searches for epics', :js, :disable_rate_limiter, feature_ca
     end
 
     include_examples 'searches for epics'
+
+    context 'when advanced search syntax used in query' do
+      it 'finds an epic' do
+        submit_search("#{epic1.title}*")
+        select_search_scope('Epics')
+
+        page.within('.results') do
+          expect(page).to have_link(epic1.title)
+          expect(page).to have_text('updated 6 days ago')
+          expect(page).not_to have_link(epic2.title)
+        end
+      end
+    end
   end
 
   context 'when advanced_search is disabled' do
