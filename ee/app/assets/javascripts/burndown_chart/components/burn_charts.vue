@@ -164,12 +164,6 @@ export default {
     parent() {
       return this.iterationId ? 'iteration' : 'milestone';
     },
-    issueButtonCategory() {
-      return this.issuesSelected ? 'primary' : 'secondary';
-    },
-    weightButtonCategory() {
-      return this.issuesSelected ? 'secondary' : 'primary';
-    },
     issuesCount() {
       if (this.useLegacyBurndown) {
         return this.openIssuesCount;

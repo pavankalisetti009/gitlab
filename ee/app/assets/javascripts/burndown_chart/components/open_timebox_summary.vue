@@ -83,12 +83,6 @@ export default {
       return this.issues.open + this.issues.assigned + this.issues.closed;
     },
   },
-  methods: {
-    percent(val) {
-      if (!this.total) return 0;
-      return ((val / this.total) * 100).toFixed(0);
-    },
-  },
   render() {
     return this.$scopedSlots.default({
       columns: this.columns,

@@ -250,8 +250,6 @@ export default {
     'ee/app/assets/javascripts/boards/components/epics_swimlanes.vue',
     'ee/app/assets/javascripts/boards/components/group_select.vue',
     'ee/app/assets/javascripts/boards/components/issue_board_filtered_search.vue',
-    'ee/app/assets/javascripts/burndown_chart/components/burn_charts.vue',
-    'ee/app/assets/javascripts/burndown_chart/components/open_timebox_summary.vue',
     'ee/app/assets/javascripts/ci/job_details/components/job_log_top_bar.vue',
     'ee/app/assets/javascripts/ci/merge_trains/components/merge_trains_table.vue',
     'ee/app/assets/javascripts/ci/runner/components/shared_runner_limit_block.vue',
