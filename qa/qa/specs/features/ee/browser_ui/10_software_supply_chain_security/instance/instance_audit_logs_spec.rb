@@ -2,10 +2,7 @@
 
 module QA
   # Issue to enable this test in live environments: https://gitlab.com/gitlab-org/quality/team-tasks/-/issues/614
-  RSpec.describe 'Software Supply Chain Security', :skip_live_env, product_group: :compliance, quarantine: {
-    type: :flaky,
-    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/546313'
-  } do
+  RSpec.describe 'Software Supply Chain Security', :skip_live_env, product_group: :compliance do
     shared_examples 'audit event' do |expected_events|
       it 'logs audit events for UI operations' do
         sign_in
@@ -132,7 +129,15 @@ module QA
           Page::Main::Menu.perform(&:click_stop_impersonation_link)
         end
 
-        it_behaves_like 'audit event', ["Started Impersonation", "Stopped Impersonation"]
+        it 'logs audit events for impersonation operations' do
+          Page::Main::Menu.perform(&:go_to_admin_area)
+          QA::Page::Admin::Menu.perform(&:go_to_monitoring_audit_events)
+          EE::Page::Admin::Monitoring::AuditLog.perform do |audit_log_page|
+            ["Started Impersonation", "Stopped Impersonation"].each do |expected_event|
+              expect(audit_log_page).to have_audit_log_table_with_text(expected_event)
+            end
+          end
+        end
       end
 
       def sign_in
