@@ -14,9 +14,13 @@ module Security
 
     def perform(pipeline_id)
       pipeline = ::Ci::Pipeline.find_by_id(pipeline_id)
+      return unless pipeline
       # Worker is enqueued in MergeRequests::AfterCreate to unblock merge check if pipeline finishes
       # before MR is created. If pipeline is still running, we exit early
-      return unless pipeline&.complete_or_manual?
+      return unless pipeline.complete_or_manual?
+      # Skip child pipelines to avoid noise and premature approval rule updates.
+      # It's enough to notify when parent finishes because it checks artifacts in all related pipelines for given `sha`.
+      return if pipeline.parent_pipeline?
 
       project = pipeline.project
       return unless project.licensed_feature_available?(:security_orchestration_policies)

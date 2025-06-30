@@ -118,6 +118,14 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
       it_behaves_like 'does not call UnenforceablePolicyRulesNotificationService'
     end
 
+    context 'when pipeline is a child pipeline' do
+      before do
+        pipeline.update!(source: :parent_pipeline)
+      end
+
+      it_behaves_like 'does not call UnenforceablePolicyRulesNotificationService'
+    end
+
     context 'when the pipeline is not the head_pipeline but ran for diff_head_sha of the merge request' do
       let_it_be(:merge_request_pipeline) do
         create(:ci_empty_pipeline, status: :success, ref: merge_request.source_branch,
