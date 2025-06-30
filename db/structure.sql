@@ -19859,6 +19859,7 @@ CREATE TABLE packages_nuget_dependency_link_metadata (
     dependency_link_id bigint NOT NULL,
     target_framework text NOT NULL,
     project_id bigint,
+    CONSTRAINT check_1c3e07cfff CHECK ((project_id IS NOT NULL)),
     CONSTRAINT packages_nuget_dependency_link_metadata_target_framework_constr CHECK ((char_length(target_framework) <= 255))
 );
 
