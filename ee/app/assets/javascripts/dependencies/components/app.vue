@@ -1,7 +1,7 @@
 <script>
 import { GlEmptyState, GlLoadingIcon, GlSprintf, GlLink, GlTooltipDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -48,7 +48,6 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['totals']),
     ...mapState(['pageInfo', 'initialized']),
     shouldFetchDependenciesViaGraphQL() {
       if (this.isOrganizationNamespace) {

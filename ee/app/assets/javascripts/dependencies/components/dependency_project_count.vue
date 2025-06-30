@@ -91,9 +91,6 @@ export default {
     getEntityId(project) {
       return getIdFromGraphQLId(project.id);
     },
-    setSearchTerm(val) {
-      this.searchTerm = val;
-    },
     getUrl(project) {
       return joinPaths(gon.relative_url_root || '', '/', project.fullPath, '-/dependencies');
     },
