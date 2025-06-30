@@ -13,6 +13,8 @@ module Ai
       belongs_to :organization, class_name: 'Organizations::Organization', optional: false
       belongs_to :project
 
+      has_many :versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :ai_catalog_item_id, inverse_of: :item
+
       enum :item_type, {
         agent: 1
       }

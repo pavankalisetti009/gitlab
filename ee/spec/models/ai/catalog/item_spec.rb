@@ -6,6 +6,8 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   describe 'associations' do
     it { is_expected.to belong_to(:organization).required }
     it { is_expected.to belong_to(:project).optional }
+
+    it { is_expected.to have_many(:versions) }
   end
 
   describe 'validations' do
