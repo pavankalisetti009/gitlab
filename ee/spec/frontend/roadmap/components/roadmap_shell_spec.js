@@ -1,4 +1,4 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 
 import { createAlert } from '~/alert';
@@ -71,7 +71,7 @@ describe('RoadmapShell', () => {
 
   it('sets container styles on component mount', async () => {
     createComponent();
-    await nextTick();
+    await waitForPromises();
 
     expect(findRoadmapShellWrapper().attributes('style')).toBe('height: calc(100vh - 0px);');
   });
