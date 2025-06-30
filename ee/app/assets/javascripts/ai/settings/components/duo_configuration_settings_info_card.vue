@@ -1,7 +1,7 @@
 <script>
 import { GlCard, GlButton } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import { DUO_CORE, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
+import { DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
 import { AVAILABILITY_OPTIONS } from '../constants';
 import DuoConfigurationSettingsRow from './duo_configuration_settings_row.vue';
 
@@ -48,13 +48,10 @@ export default {
     },
   },
   computed: {
-    isDuoCoreTier() {
-      return this.activeDuoTier === DUO_CORE;
-    },
-    onSelfManaged() {
+    isSelfManaged() {
       return !this.isSaaS;
     },
-    getAvailabilityStatus() {
+    availabilityStatusText() {
       switch (this.duoAvailability) {
         case AVAILABILITY_OPTIONS.DEFAULT_ON:
           return this.$options.i18n.defaultOnText;
@@ -65,13 +62,6 @@ export default {
         default:
           return null;
       }
-    },
-    activationStatus() {
-      if (this.areDuoCoreFeaturesEnabled) {
-        return this.$options.i18n.enabled;
-      }
-
-      return this.$options.i18n.disabled;
     },
     title() {
       return DUO_TITLES[this.activeDuoTier];
@@ -90,14 +80,11 @@ export default {
         <h2 class="gl-m-0 gl-text-lg" data-testid="duo-configuration-settings-info">
           {{ title }}
         </h2>
-        <p v-if="isDuoCoreTier" class="gl-mb-3 gl-text-size-h-display gl-font-bold">
-          <span data-testid="configuration-status">{{ activationStatus }}</span>
-        </p>
-        <p v-else class="gl-mb-3 gl-text-size-h-display gl-font-bold">
-          <span data-testid="configuration-status">{{ getAvailabilityStatus }}</span>
+        <p class="gl-mb-3 gl-text-size-h-display gl-font-bold">
+          <span data-testid="configuration-status">{{ availabilityStatusText }}</span>
         </p>
       </section>
-      <section v-if="!isDuoCoreTier">
+      <section>
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.duoCoreAvailabilityText"
           :config-value="areDuoCoreFeaturesEnabled"
@@ -109,7 +96,7 @@ export default {
           :config-value="experimentFeaturesEnabled"
         />
       </section>
-      <section v-if="onSelfManaged">
+      <section v-if="isSelfManaged">
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.directConnectionsText"
           :config-value="directCodeSuggestionsEnabled"

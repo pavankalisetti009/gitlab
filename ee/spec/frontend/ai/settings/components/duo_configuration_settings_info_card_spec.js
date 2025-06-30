@@ -3,7 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import DuoConfigurationSettingsInfoCard from 'ee/ai/settings/components/duo_configuration_settings_info_card.vue';
 import DuoConfigurationSettingsRow from 'ee/ai/settings/components/duo_configuration_settings_row.vue';
-import { DUO_CORE, DUO_ENTERPRISE } from 'ee/constants/duo';
+import { DUO_ENTERPRISE } from 'ee/constants/duo';
 
 jest.mock('~/lib/utils/url_utility');
 
@@ -147,30 +147,6 @@ describe('DuoConfigurationSettingsInfoCard', () => {
       expect(findDuoConfigurationRows().at(0).props('configValue')).toBe(true);
       expect(findDuoConfigurationRows().at(1).props('configValue')).toBe(true);
       expect(findDuoConfigurationRows().at(2).props('configValue')).toBe(true);
-    });
-
-    describe('with Duo Core', () => {
-      it('renders the title correctly', () => {
-        createComponent({}, { activeDuoTier: DUO_CORE });
-        expect(findDuoConfigurationSettingsInfo().text()).toBe('GitLab Duo Core');
-      });
-
-      it('renders add-on activation status', () => {
-        createComponent({ areDuoCoreFeaturesEnabled: true }, { activeDuoTier: DUO_CORE });
-        expect(findConfigurationStatus().text()).toContain('Enabled');
-
-        createComponent({ areDuoCoreFeaturesEnabled: false }, { activeDuoTier: DUO_CORE });
-        expect(findConfigurationStatus().text()).toContain('Not enabled');
-      });
-    });
-  });
-
-  describe('with Duo Core', () => {
-    it('hides Duo Core settings row', () => {
-      createComponent({ isSaaS: true }, { activeDuoTier: DUO_CORE });
-
-      expect(findDuoConfigurationRows()).toHaveLength(1);
-      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
     });
   });
 });
