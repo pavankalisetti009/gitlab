@@ -376,4 +376,61 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
     end
   end
+
+  describe 'DELETE /api/v4/virtual_registries/packages/maven/upstreams/:id/cache', :sidekiq_inline do
+    let(:url) { "/virtual_registries/packages/maven/upstreams/#{upstream.id}/cache" }
+
+    subject(:api_request) { delete api(url), headers: headers }
+
+    before_all do
+      create_list(:virtual_registries_packages_maven_cache_entry, 2, upstream:) # 2 default
+      create(:virtual_registries_packages_maven_cache_entry, :pending_destruction, upstream:) # 1 pending destruction
+      create(:virtual_registries_packages_maven_cache_entry) # 1 default in another upstream
+    end
+
+    shared_examples 'successful response' do
+      it 'returns a successful response' do
+        expect { api_request }.to change {
+          ::VirtualRegistries::Packages::Maven::Cache::Entry.pending_destruction.count
+        }.by(3) # 2 created in before_all + 1 from 'for maven virtual registry api setup' shared context
+
+        expect(response).to have_gitlab_http_status(:no_content)
+      end
+    end
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    it_behaves_like 'disabled maven_virtual_registry feature flag'
+    it_behaves_like 'maven virtual registry disabled dependency proxy'
+    it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'maven virtual registry feature not licensed'
+
+    context 'for different user roles' do
+      where(:user_role, :status) do
+        :owner      | :no_content
+        :maintainer | :no_content
+        :developer  | :forbidden
+        :reporter   | :forbidden
+        :guest      | :forbidden
+      end
+
+      with_them do
+        before do
+          group.send(:"add_#{user_role}", user)
+        end
+
+        if params[:status] == :no_content
+          it_behaves_like 'successful response'
+        else
+          it_behaves_like 'returning response status', params[:status]
+        end
+      end
+    end
+
+    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
+      before_all do
+        group.add_maintainer(user)
+      end
+    end
+  end
 end
