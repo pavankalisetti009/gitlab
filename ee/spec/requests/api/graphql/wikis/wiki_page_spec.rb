@@ -102,6 +102,49 @@ RSpec.describe 'getting a wiki page', feature_category: :wiki do
           a_graphql_entity_for(discussion)
         )
       end
+
+      describe 'performance' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group) }
+        let_it_be(:other_user) { create(:user) }
+
+        it 'avoids N+1 queries' do
+          discussion = create(
+            :discussion_note_on_wiki_page,
+            noteable: wiki_page_meta,
+            author: user
+          ).to_discussion
+
+          create(
+            :discussion_note_on_wiki_page,
+            noteable: wiki_page_meta,
+            author: other_user,
+            discussion: discussion
+          )
+
+          control = ActiveRecord::QueryRecorder.new do
+            post_graphql(query, current_user: current_user)
+          end
+
+          5.times do
+            discussion = create(
+              :discussion_note_on_wiki_page,
+              noteable: wiki_page_meta,
+              author: user
+            ).to_discussion
+
+            create(
+              :discussion_note_on_wiki_page,
+              noteable: wiki_page_meta,
+              author: other_user,
+              discussion: discussion
+            )
+          end
+
+          expect { post_graphql(query, current_user: current_user) }
+            .not_to exceed_query_limit(control)
+        end
+      end
     end
   end
 end
