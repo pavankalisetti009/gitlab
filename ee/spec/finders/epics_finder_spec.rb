@@ -122,6 +122,16 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
             expect(epics(author_id: user.id)).to contain_exactly(epic2)
           end
 
+          context 'when filtering by author username' do
+            let_it_be(:issuable_parent) { create(:group) }
+            let_it_be(:issuable_attributes) { { group: issuable_parent } }
+            let_it_be(:issuable_factory) { :epic }
+            let_it_be(:factory_params) { [] }
+            let_it_be(:search_params) { { group_id: issuable_parent.id } }
+
+            it_behaves_like 'filterable by group handle'
+          end
+
           context 'using OR' do
             it 'returns all epics authored by any of the given users' do
               expect(epics(or: { author_username: [epic2.author.username, epic3.author.username] })).to contain_exactly(epic2, epic3)
