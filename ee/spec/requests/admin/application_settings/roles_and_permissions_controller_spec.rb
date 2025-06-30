@@ -156,5 +156,27 @@ RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enabl
 
     it_behaves_like 'access control', [:custom_roles]
     it_behaves_like 'role existence check'
+
+    describe 'Instrumentation' do
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        sign_in(admin)
+      end
+
+      it 'tracks internal event and increments the metrics', :clean_gitlab_redis_shared_state do
+        expect { get_method }.to trigger_internal_events('view_admin_custom_roles_edit_page').with(
+          user: admin,
+          namespace: nil,
+          project: nil
+        ).and increment_usage_metrics(
+          'redis_hll_counters.count_distinct_user_id_from_view_admin_custom_roles_edit_page_monthly',
+          'redis_hll_counters.count_distinct_user_id_from_view_admin_custom_roles_edit_page_weekly',
+          'counts.count_total_view_admin_custom_roles_edit_page_monthly',
+          'counts.count_total_view_admin_custom_roles_edit_page_weekly',
+          'counts.count_total_view_admin_custom_roles_edit_page'
+        )
+      end
+    end
   end
 end
