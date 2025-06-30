@@ -8,9 +8,9 @@ RSpec.describe Dora::BaseMetric do
       expect(described_class.all_metric_classes)
         .to match_array(
           [Dora::DeploymentFrequencyMetric,
-           Dora::LeadTimeForChangesMetric,
-           Dora::TimeToRestoreServiceMetric,
-           Dora::ChangeFailureRateMetric]
+            Dora::LeadTimeForChangesMetric,
+            Dora::TimeToRestoreServiceMetric,
+            Dora::ChangeFailureRateMetric]
         )
     end
   end

@@ -1289,10 +1289,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       it 'includes distinct active users' do
         expect(billed_user_ids[:user_ids]).to match_array([
           group_guest.id,
-                                                            project_guest.id,
-                                                            group_developer.id,
-                                                            project_developer.id,
-                                                            invited_developer.id
+          project_guest.id,
+          group_developer.id,
+          project_developer.id,
+          invited_developer.id
         ])
         expect(billed_user_ids[:group_member_user_ids]).to match_array([group_guest.id, group_developer.id])
         expect(billed_user_ids[:project_member_user_ids]).to match_array([project_guest.id, project_developer.id])
@@ -1654,10 +1654,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.billed_shared_group_users)
           .to match_array([
             invited_guest,
-                            invited_developer,
-                            invited_guest_group_user,
-                            ancestor_invited_developer,
-                            sub_invited_developer
+            invited_developer,
+            invited_guest_group_user,
+            ancestor_invited_developer,
+            sub_invited_developer
           ])
       end
     end
@@ -1732,10 +1732,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.billed_shared_group_members)
           .to match_array([
             invited_guest,
-                            invited_developer,
-                            invited_guest_group_user,
-                            ancestor_invited_developer,
-                            sub_invited_developer
+            invited_developer,
+            invited_guest_group_user,
+            ancestor_invited_developer,
+            sub_invited_developer
           ])
       end
     end
@@ -2012,10 +2012,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.billed_invited_group_to_project_users)
           .to match_array([
             invited_guest,
-                            invited_developer,
-                            invited_guest_group_user,
-                            ancestor_invited_developer,
-                            sub_invited_developer
+            invited_developer,
+            invited_guest_group_user,
+            ancestor_invited_developer,
+            sub_invited_developer
           ])
       end
     end
@@ -2092,10 +2092,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.billed_invited_group_to_project_members)
           .to match_array([
             invited_guest,
-                            invited_developer,
-                            invited_guest_group_user,
-                            ancestor_invited_developer,
-                            sub_invited_developer
+            invited_developer,
+            invited_guest_group_user,
+            ancestor_invited_developer,
+            sub_invited_developer
           ])
       end
     end

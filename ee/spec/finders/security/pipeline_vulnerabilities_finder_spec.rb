@@ -462,9 +462,9 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
                 "name" => "Pretty table",
                 "header" => [{ "type" => "text", "value" => "Number" }, { "type" => "text", "value" => "Address" }],
                 "rows" => [[{ "type" => "text", "value" => "1" },
-                            { "type" => "url", "href" => "http://1.example.com/" }],
-                           [{ "type" => "text", "value" => "2" },
-                            { "type" => "url", "href" => "http://2.example.com/" }]] },
+                  { "type" => "url", "href" => "http://1.example.com/" }],
+                  [{ "type" => "text", "value" => "2" },
+                    { "type" => "url", "href" => "http://2.example.com/" }]] },
             "comments" =>
               { "name" => "Comments",
                 "type" => "named-list",
@@ -478,8 +478,8 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
                     "A list" => { "name" => "resources",
                                   "type" => "list",
                                   "items" => [{ "type" => "value", "value" => "42" },
-                                              { "type" => "value",
-                                                "value" => "Life, the universe and everything" }] } } },
+                                    { "type" => "value",
+                                      "value" => "Life, the universe and everything" }] } } },
             "code" =>
             { "type" => "code", "name" => "code sample", "value" => "<img src=x onerror=alert(1)>", "lang" => "html" },
             "file" =>
@@ -500,8 +500,8 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
              { "name" => "URLs",
                "type" => "list",
                "items" => [{ "type" => "url", "href" => "http://site.com/page/1" },
-                           { "type" => "url", "href" => "http://site.com/page/2" },
-                           { "type" => "url", "href" => "http://site.com/page/3" }] } }
+                 { "type" => "url", "href" => "http://site.com/page/2" },
+                 { "type" => "url", "href" => "http://site.com/page/3" }] } }
         end
 
         it 'filters by all params' do

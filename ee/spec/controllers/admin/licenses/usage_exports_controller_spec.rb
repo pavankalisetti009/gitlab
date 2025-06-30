@@ -106,8 +106,8 @@ RSpec.describe Admin::Licenses::UsageExportsController, feature_category: :consu
 
         expect(CSV.parse(response.body)).to eq([
           ['Date', 'Billable User Count'],
-                                                 %w[2020-08-26 1],
-                                                 %w[2020-08-27 2]
+          %w[2020-08-26 1],
+          %w[2020-08-27 2]
         ])
       end
     end

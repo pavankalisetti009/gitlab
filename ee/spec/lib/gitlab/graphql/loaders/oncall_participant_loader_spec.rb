@@ -19,8 +19,8 @@ RSpec.describe Gitlab::Graphql::Loaders::OncallParticipantLoader do
     it 'includes the user association' do
       expect do
         [described_class.new(participant3.id).find,
-         described_class.new(participant2.id).find,
-         described_class.new(participant1.id).find].map(&:sync).map(&:user)
+          described_class.new(participant2.id).find,
+          described_class.new(participant1.id).find].map(&:sync).map(&:user)
       end.not_to exceed_query_limit(2)
     end
   end

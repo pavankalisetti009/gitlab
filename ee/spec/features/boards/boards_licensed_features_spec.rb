@@ -49,7 +49,7 @@ RSpec.describe 'Boards licensed features', :js, feature_category: :portfolio_man
         allow(License).to receive(:current).and_return(global_license)
         allow(global_license).to receive(:features).and_return([
           :epics,
-                                                                 :iterations
+          :iterations
         ])
       end
 

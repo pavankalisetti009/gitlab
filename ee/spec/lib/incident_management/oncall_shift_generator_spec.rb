@@ -70,8 +70,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
       it_behaves_like 'unsaved shifts',
         '3 shifts of 5 days, all for the same participant',
         [[:participant, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-         [:participant, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-         [:participant, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
+          [:participant, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
+          [:participant, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
 
       context 'when timestamp is at the end of a shift' do
         let(:starts_at) { rotation_start_time + shift_length }
@@ -79,7 +79,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           'the second and third shift',
           [[:participant, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-           [:participant, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
+            [:participant, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
       end
     end
 
@@ -89,8 +89,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
       it_behaves_like 'unsaved shifts',
         'One shift of 5 days long for each participant',
         [[:participant1, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-         [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-         [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
+          [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
+          [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
 
       context 'with shift active period times set' do
         let(:active_period_start) { "08:00" }
@@ -110,15 +110,15 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           '5 shifts for each participant split by each day',
           [[:participant1, '2020-12-08 08:00:00 UTC', '2020-12-08 17:00:00 UTC'],
-           [:participant1, '2020-12-09 08:00:00 UTC', '2020-12-09 17:00:00 UTC'],
-           [:participant1, '2020-12-10 08:00:00 UTC', '2020-12-10 17:00:00 UTC'],
-           [:participant1, '2020-12-11 08:00:00 UTC', '2020-12-11 17:00:00 UTC'],
-           [:participant1, '2020-12-12 08:00:00 UTC', '2020-12-12 17:00:00 UTC'],
-           [:participant2, '2020-12-13 08:00:00 UTC', '2020-12-13 17:00:00 UTC'],
-           [:participant2, '2020-12-14 08:00:00 UTC', '2020-12-14 17:00:00 UTC'],
-           [:participant2, '2020-12-15 08:00:00 UTC', '2020-12-15 17:00:00 UTC'],
-           [:participant2, '2020-12-16 08:00:00 UTC', '2020-12-16 17:00:00 UTC'],
-           [:participant2, '2020-12-17 08:00:00 UTC', '2020-12-17 17:00:00 UTC']]
+            [:participant1, '2020-12-09 08:00:00 UTC', '2020-12-09 17:00:00 UTC'],
+            [:participant1, '2020-12-10 08:00:00 UTC', '2020-12-10 17:00:00 UTC'],
+            [:participant1, '2020-12-11 08:00:00 UTC', '2020-12-11 17:00:00 UTC'],
+            [:participant1, '2020-12-12 08:00:00 UTC', '2020-12-12 17:00:00 UTC'],
+            [:participant2, '2020-12-13 08:00:00 UTC', '2020-12-13 17:00:00 UTC'],
+            [:participant2, '2020-12-14 08:00:00 UTC', '2020-12-14 17:00:00 UTC'],
+            [:participant2, '2020-12-15 08:00:00 UTC', '2020-12-15 17:00:00 UTC'],
+            [:participant2, '2020-12-16 08:00:00 UTC', '2020-12-16 17:00:00 UTC'],
+            [:participant2, '2020-12-17 08:00:00 UTC', '2020-12-17 17:00:00 UTC']]
 
         context 'with week length unit' do
           before do
@@ -135,19 +135,19 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
           it_behaves_like 'unsaved shifts',
             '7 shifts for each participant split by each day',
             [[:participant1, '2020-12-08 08:00:00 UTC', '2020-12-08 17:00:00 UTC'],
-             [:participant1, '2020-12-09 08:00:00 UTC', '2020-12-09 17:00:00 UTC'],
-             [:participant1, '2020-12-10 08:00:00 UTC', '2020-12-10 17:00:00 UTC'],
-             [:participant1, '2020-12-11 08:00:00 UTC', '2020-12-11 17:00:00 UTC'],
-             [:participant1, '2020-12-12 08:00:00 UTC', '2020-12-12 17:00:00 UTC'],
-             [:participant1, '2020-12-13 08:00:00 UTC', '2020-12-13 17:00:00 UTC'],
-             [:participant1, '2020-12-14 08:00:00 UTC', '2020-12-14 17:00:00 UTC'],
-             [:participant2, '2020-12-15 08:00:00 UTC', '2020-12-15 17:00:00 UTC'],
-             [:participant2, '2020-12-16 08:00:00 UTC', '2020-12-16 17:00:00 UTC'],
-             [:participant2, '2020-12-17 08:00:00 UTC', '2020-12-17 17:00:00 UTC'],
-             [:participant2, '2020-12-18 08:00:00 UTC', '2020-12-18 17:00:00 UTC'],
-             [:participant2, '2020-12-19 08:00:00 UTC', '2020-12-19 17:00:00 UTC'],
-             [:participant2, '2020-12-20 08:00:00 UTC', '2020-12-20 17:00:00 UTC'],
-             [:participant2, '2020-12-21 08:00:00 UTC', '2020-12-21 17:00:00 UTC']]
+              [:participant1, '2020-12-09 08:00:00 UTC', '2020-12-09 17:00:00 UTC'],
+              [:participant1, '2020-12-10 08:00:00 UTC', '2020-12-10 17:00:00 UTC'],
+              [:participant1, '2020-12-11 08:00:00 UTC', '2020-12-11 17:00:00 UTC'],
+              [:participant1, '2020-12-12 08:00:00 UTC', '2020-12-12 17:00:00 UTC'],
+              [:participant1, '2020-12-13 08:00:00 UTC', '2020-12-13 17:00:00 UTC'],
+              [:participant1, '2020-12-14 08:00:00 UTC', '2020-12-14 17:00:00 UTC'],
+              [:participant2, '2020-12-15 08:00:00 UTC', '2020-12-15 17:00:00 UTC'],
+              [:participant2, '2020-12-16 08:00:00 UTC', '2020-12-16 17:00:00 UTC'],
+              [:participant2, '2020-12-17 08:00:00 UTC', '2020-12-17 17:00:00 UTC'],
+              [:participant2, '2020-12-18 08:00:00 UTC', '2020-12-18 17:00:00 UTC'],
+              [:participant2, '2020-12-19 08:00:00 UTC', '2020-12-19 17:00:00 UTC'],
+              [:participant2, '2020-12-20 08:00:00 UTC', '2020-12-20 17:00:00 UTC'],
+              [:participant2, '2020-12-21 08:00:00 UTC', '2020-12-21 17:00:00 UTC']]
         end
 
         context 'rotation start time is in middle of active period' do
@@ -158,15 +158,15 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
           it_behaves_like 'unsaved shifts',
             '5 shifts for each participant split by each day',
             [[:participant1, '2020-12-08 10:00:00 UTC', '2020-12-08 17:00:00 UTC'],
-             [:participant1, '2020-12-09 08:00:00 UTC', '2020-12-09 17:00:00 UTC'],
-             [:participant1, '2020-12-10 08:00:00 UTC', '2020-12-10 17:00:00 UTC'],
-             [:participant1, '2020-12-11 08:00:00 UTC', '2020-12-11 17:00:00 UTC'],
-             [:participant1, '2020-12-12 08:00:00 UTC', '2020-12-12 17:00:00 UTC'],
-             [:participant2, '2020-12-13 08:00:00 UTC', '2020-12-13 17:00:00 UTC'],
-             [:participant2, '2020-12-14 08:00:00 UTC', '2020-12-14 17:00:00 UTC'],
-             [:participant2, '2020-12-15 08:00:00 UTC', '2020-12-15 17:00:00 UTC'],
-             [:participant2, '2020-12-16 08:00:00 UTC', '2020-12-16 17:00:00 UTC'],
-             [:participant2, '2020-12-17 08:00:00 UTC', '2020-12-17 17:00:00 UTC']]
+              [:participant1, '2020-12-09 08:00:00 UTC', '2020-12-09 17:00:00 UTC'],
+              [:participant1, '2020-12-10 08:00:00 UTC', '2020-12-10 17:00:00 UTC'],
+              [:participant1, '2020-12-11 08:00:00 UTC', '2020-12-11 17:00:00 UTC'],
+              [:participant1, '2020-12-12 08:00:00 UTC', '2020-12-12 17:00:00 UTC'],
+              [:participant2, '2020-12-13 08:00:00 UTC', '2020-12-13 17:00:00 UTC'],
+              [:participant2, '2020-12-14 08:00:00 UTC', '2020-12-14 17:00:00 UTC'],
+              [:participant2, '2020-12-15 08:00:00 UTC', '2020-12-15 17:00:00 UTC'],
+              [:participant2, '2020-12-16 08:00:00 UTC', '2020-12-16 17:00:00 UTC'],
+              [:participant2, '2020-12-17 08:00:00 UTC', '2020-12-17 17:00:00 UTC']]
         end
 
         context 'active period is overnight' do
@@ -180,15 +180,15 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
           it_behaves_like 'unsaved shifts',
             '5 shifts for each participant with overnight shifts',
             [[:participant1, '2020-12-08 17:00:00 UTC', '2020-12-09 08:00:00 UTC'],
-             [:participant1, '2020-12-09 17:00:00 UTC', '2020-12-10 08:00:00 UTC'],
-             [:participant1, '2020-12-10 17:00:00 UTC', '2020-12-11 08:00:00 UTC'],
-             [:participant1, '2020-12-11 17:00:00 UTC', '2020-12-12 08:00:00 UTC'],
-             [:participant1, '2020-12-12 17:00:00 UTC', '2020-12-13 08:00:00 UTC'],
-             [:participant2, '2020-12-13 17:00:00 UTC', '2020-12-14 08:00:00 UTC'],
-             [:participant2, '2020-12-14 17:00:00 UTC', '2020-12-15 08:00:00 UTC'],
-             [:participant2, '2020-12-15 17:00:00 UTC', '2020-12-16 08:00:00 UTC'],
-             [:participant2, '2020-12-16 17:00:00 UTC', '2020-12-17 08:00:00 UTC'],
-             [:participant2, '2020-12-17 17:00:00 UTC', '2020-12-18 08:00:00 UTC']]
+              [:participant1, '2020-12-09 17:00:00 UTC', '2020-12-10 08:00:00 UTC'],
+              [:participant1, '2020-12-10 17:00:00 UTC', '2020-12-11 08:00:00 UTC'],
+              [:participant1, '2020-12-11 17:00:00 UTC', '2020-12-12 08:00:00 UTC'],
+              [:participant1, '2020-12-12 17:00:00 UTC', '2020-12-13 08:00:00 UTC'],
+              [:participant2, '2020-12-13 17:00:00 UTC', '2020-12-14 08:00:00 UTC'],
+              [:participant2, '2020-12-14 17:00:00 UTC', '2020-12-15 08:00:00 UTC'],
+              [:participant2, '2020-12-15 17:00:00 UTC', '2020-12-16 08:00:00 UTC'],
+              [:participant2, '2020-12-16 17:00:00 UTC', '2020-12-17 08:00:00 UTC'],
+              [:participant2, '2020-12-17 17:00:00 UTC', '2020-12-18 08:00:00 UTC']]
         end
       end
 
@@ -204,7 +204,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           '2 shifts of 5 days starting with first participant at the rotation start time',
           [[:participant1, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-           [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC']]
+            [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC']]
       end
 
       context 'when start time is earlier than the rotation start time' do
@@ -213,7 +213,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           '2 shifts of 5 days starting with the first participant at the rotation start time',
           [[:participant1, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-           [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC']]
+            [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC']]
       end
 
       context 'when start time coincides with a shift change' do
@@ -222,7 +222,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           '2 shifts of 5 days, starting with the second participant and the second shift',
           [[:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-           [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
+            [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
       end
 
       context 'when start time is partway through a shift' do
@@ -231,8 +231,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           '3 shifts of 5 days staring with the first participant which includes the partially completed shift',
           [[:participant1, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-           [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-           [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
+            [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
+            [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
       end
 
       context 'when the rotation has been completed many times over' do
@@ -241,8 +241,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           '3 shifts of 5 days starting with the first participant beginning 7 weeks after rotation start time',
           [[:participant1, '2021-01-22 00:00:00 UTC', '2021-01-27 00:00:00 UTC'],
-           [:participant2, '2021-01-27 00:00:00 UTC', '2021-02-01 00:00:00 UTC'],
-           [:participant3, '2021-02-01 00:00:00 UTC', '2021-02-06 00:00:00 UTC']]
+            [:participant2, '2021-01-27 00:00:00 UTC', '2021-02-01 00:00:00 UTC'],
+            [:participant3, '2021-02-01 00:00:00 UTC', '2021-02-06 00:00:00 UTC']]
       end
 
       context 'when timeframe covers the rotation many times over' do
@@ -251,12 +251,12 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
         it_behaves_like 'unsaved shifts',
           '7 shifts of 5 days starting with the first participant',
           [[:participant1, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-           [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-           [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC'],
-           [:participant1, '2020-12-23 00:00:00 UTC', '2020-12-28 00:00:00 UTC'],
-           [:participant2, '2020-12-28 00:00:00 UTC', '2021-01-02 00:00:00 UTC'],
-           [:participant3, '2021-01-02 00:00:00 UTC', '2021-01-07 00:00:00 UTC'],
-           [:participant1, '2021-01-07 00:00:00 UTC', '2021-01-12 00:00:00 UTC']]
+            [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
+            [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC'],
+            [:participant1, '2020-12-23 00:00:00 UTC', '2020-12-28 00:00:00 UTC'],
+            [:participant2, '2020-12-28 00:00:00 UTC', '2021-01-02 00:00:00 UTC'],
+            [:participant3, '2021-01-02 00:00:00 UTC', '2021-01-07 00:00:00 UTC'],
+            [:participant1, '2021-01-07 00:00:00 UTC', '2021-01-12 00:00:00 UTC']]
       end
 
       context 'with rotation end time' do
@@ -279,8 +279,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '3 shifts of 5 days which ends at the rotation end time',
                 [[:participant1, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-                 [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-                 [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
+                  [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
+                  [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-23 00:00:00 UTC']]
             end
           end
         end
@@ -295,8 +295,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2 shifts of 5 days and one partial shift which ends at the rotation end time',
                 [[:participant1, '2020-12-08 00:00:00 UTC', '2020-12-13 00:00:00 UTC'],
-                 [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
-                 [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-20 12:00:00 UTC']]
+                  [:participant2, '2020-12-13 00:00:00 UTC', '2020-12-18 00:00:00 UTC'],
+                  [:participant3, '2020-12-18 00:00:00 UTC', '2020-12-20 12:00:00 UTC']]
             end
           end
         end
@@ -321,10 +321,10 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which start in NZST(+1200) and switch to NZDT(+1300)',
                 [[:participant1, '2020-09-27 00:00:00 +1200', '2020-09-27 01:00:00 +1200'],
-                 [:participant2, '2020-09-27 01:00:00 +1200', '2020-09-27 02:00:00 +1200'],
-                 [:participant3, '2020-09-27 03:00:00 +1300', '2020-09-27 04:00:00 +1300'],
-                 [:participant1, '2020-09-27 04:00:00 +1300', '2020-09-27 05:00:00 +1300'],
-                 [:participant2, '2020-09-27 05:00:00 +1300', '2020-09-27 06:00:00 +1300']]
+                  [:participant2, '2020-09-27 01:00:00 +1200', '2020-09-27 02:00:00 +1200'],
+                  [:participant3, '2020-09-27 03:00:00 +1300', '2020-09-27 04:00:00 +1300'],
+                  [:participant1, '2020-09-27 04:00:00 +1300', '2020-09-27 05:00:00 +1300'],
+                  [:participant2, '2020-09-27 05:00:00 +1300', '2020-09-27 06:00:00 +1300']]
             end
 
             context 'starting after switch' do
@@ -334,8 +334,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely in NZDT(+1300)',
                 [[:participant2, '2020-09-27 05:00:00 +1300', '2020-09-27 06:00:00 +1300'],
-                 [:participant3, '2020-09-27 06:00:00 +1300', '2020-09-27 07:00:00 +1300'],
-                 [:participant1, '2020-09-27 07:00:00 +1300', '2020-09-27 08:00:00 +1300']]
+                  [:participant3, '2020-09-27 06:00:00 +1300', '2020-09-27 07:00:00 +1300'],
+                  [:participant1, '2020-09-27 07:00:00 +1300', '2020-09-27 08:00:00 +1300']]
             end
 
             context 'starting after multiple switches' do
@@ -345,8 +345,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely back in NZST(+1200) after 2 timezone switches since the rotation start time',
                 [[:participant1, '2021-04-06 00:00:00 +1200', '2021-04-06 01:00:00 +1200'],
-                 [:participant2, '2021-04-06 01:00:00 +1200', '2021-04-06 02:00:00 +1200'],
-                 [:participant3, '2021-04-06 02:00:00 +1200', '2021-04-06 03:00:00 +1200']]
+                  [:participant2, '2021-04-06 01:00:00 +1200', '2021-04-06 02:00:00 +1200'],
+                  [:participant3, '2021-04-06 02:00:00 +1200', '2021-04-06 03:00:00 +1200']]
             end
           end
 
@@ -363,10 +363,10 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which start in NZDT(+1300) and switch to NZST(+1200)',
                 [[:participant1, '2021-04-04 00:00:00 +1300', '2021-04-04 01:00:00 +1300'],
-                 [:participant2, '2021-04-04 01:00:00 +1300', '2021-04-04 02:00:00 +1300'],
-                 [:participant3, '2021-04-04 02:00:00 +1300', '2021-04-04 02:00:00 +1200'],
-                 [:participant1, '2021-04-04 02:00:00 +1200', '2021-04-04 03:00:00 +1200'],
-                 [:participant2, '2021-04-04 03:00:00 +1200', '2021-04-04 04:00:00 +1200']]
+                  [:participant2, '2021-04-04 01:00:00 +1300', '2021-04-04 02:00:00 +1300'],
+                  [:participant3, '2021-04-04 02:00:00 +1300', '2021-04-04 02:00:00 +1200'],
+                  [:participant1, '2021-04-04 02:00:00 +1200', '2021-04-04 03:00:00 +1200'],
+                  [:participant2, '2021-04-04 03:00:00 +1200', '2021-04-04 04:00:00 +1200']]
             end
 
             context 'starting after switch' do
@@ -376,8 +376,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely in NZST(+1200)',
                 [[:participant2, '2021-04-04 03:00:00 +1200', '2021-04-04 04:00:00 +1200'],
-                 [:participant3, '2021-04-04 04:00:00 +1200', '2021-04-04 05:00:00 +1200'],
-                 [:participant1, '2021-04-04 05:00:00 +1200', '2021-04-04 06:00:00 +1200']]
+                  [:participant3, '2021-04-04 04:00:00 +1200', '2021-04-04 05:00:00 +1200'],
+                  [:participant1, '2021-04-04 05:00:00 +1200', '2021-04-04 06:00:00 +1200']]
             end
 
             context 'starting after multiple switches' do
@@ -387,8 +387,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely back in NZST(+1300) after 2 timezone switches since the rotation start time',
                 [[:participant1, '2021-09-27 00:00:00 +1300', '2021-09-27 01:00:00 +1300'],
-                 [:participant2, '2021-09-27 01:00:00 +1300', '2021-09-27 02:00:00 +1300'],
-                 [:participant3, '2021-09-27 02:00:00 +1300', '2021-09-27 03:00:00 +1300']]
+                  [:participant2, '2021-09-27 01:00:00 +1300', '2021-09-27 02:00:00 +1300'],
+                  [:participant3, '2021-09-27 02:00:00 +1300', '2021-09-27 03:00:00 +1300']]
             end
           end
         end
@@ -407,9 +407,9 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which start in NZST(+1200) and switch to NZDT(+1300)',
                 [[:participant1, '2020-09-26 00:00:00 +1200', '2020-09-27 00:00:00 +1200'],
-                 [:participant2, '2020-09-27 00:00:00 +1200', '2020-09-28 00:00:00 +1300'],
-                 [:participant3, '2020-09-28 00:00:00 +1300', '2020-09-29 00:00:00 +1300'],
-                 [:participant1, '2020-09-29 00:00:00 +1300', '2020-09-30 00:00:00 +1300']]
+                  [:participant2, '2020-09-27 00:00:00 +1200', '2020-09-28 00:00:00 +1300'],
+                  [:participant3, '2020-09-28 00:00:00 +1300', '2020-09-29 00:00:00 +1300'],
+                  [:participant1, '2020-09-29 00:00:00 +1300', '2020-09-30 00:00:00 +1300']]
             end
 
             context 'starting after switch' do
@@ -419,8 +419,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely in NZDT(+1300)',
                 [[:participant1, '2020-09-29 00:00:00 +1300', '2020-09-30 00:00:00 +1300'],
-                 [:participant2, '2020-09-30 00:00:00 +1300', '2020-10-01 00:00:00 +1300'],
-                 [:participant3, '2020-10-01 00:00:00 +1300', '2020-10-02 00:00:00 +1300']]
+                  [:participant2, '2020-09-30 00:00:00 +1300', '2020-10-01 00:00:00 +1300'],
+                  [:participant3, '2020-10-01 00:00:00 +1300', '2020-10-02 00:00:00 +1300']]
             end
 
             context 'starting after multiple switches' do
@@ -430,8 +430,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely back in NZST(+1200) after 2 timezone switches since the rotation start time',
                 [[:participant2, '2021-04-07 00:00:00 +1200', '2021-04-08 00:00:00 +1200'],
-                 [:participant3, '2021-04-08 00:00:00 +1200', '2021-04-09 00:00:00 +1200'],
-                 [:participant1, '2021-04-09 00:00:00 +1200', '2021-04-10 00:00:00 +1200']]
+                  [:participant3, '2021-04-08 00:00:00 +1200', '2021-04-09 00:00:00 +1200'],
+                  [:participant1, '2021-04-09 00:00:00 +1200', '2021-04-10 00:00:00 +1200']]
             end
           end
 
@@ -448,9 +448,9 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which start in NZDT(+1300) and switch to NZST(+1200)',
                 [[:participant1, '2021-04-03 00:00:00 +1300', '2021-04-04 00:00:00 +1300'],
-                 [:participant2, '2021-04-04 00:00:00 +1300', '2021-04-05 00:00:00 +1200'],
-                 [:participant3, '2021-04-05 00:00:00 +1200', '2021-04-06 00:00:00 +1200'],
-                 [:participant1, '2021-04-06 00:00:00 +1200', '2021-04-07 00:00:00 +1200']]
+                  [:participant2, '2021-04-04 00:00:00 +1300', '2021-04-05 00:00:00 +1200'],
+                  [:participant3, '2021-04-05 00:00:00 +1200', '2021-04-06 00:00:00 +1200'],
+                  [:participant1, '2021-04-06 00:00:00 +1200', '2021-04-07 00:00:00 +1200']]
             end
 
             context 'starting after switch' do
@@ -460,8 +460,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely in NZST(+1200)',
                 [[:participant1, '2021-04-06 00:00:00 +1200', '2021-04-07 00:00:00 +1200'],
-                 [:participant2, '2021-04-07 00:00:00 +1200', '2021-04-08 00:00:00 +1200'],
-                 [:participant3, '2021-04-08 00:00:00 +1200', '2021-04-09 00:00:00 +1200']]
+                  [:participant2, '2021-04-07 00:00:00 +1200', '2021-04-08 00:00:00 +1200'],
+                  [:participant3, '2021-04-08 00:00:00 +1200', '2021-04-09 00:00:00 +1200']]
             end
 
             context 'starting after multiple switches' do
@@ -471,8 +471,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely back in NZST(+1300) after 2 timezone switches since the rotation start time',
                 [[:participant2, '2021-09-28 00:00:00 +1300', '2021-09-29 00:00:00 +1300'],
-                 [:participant3, '2021-09-29 00:00:00 +1300', '2021-09-30 00:00:00 +1300'],
-                 [:participant1, '2021-09-30 00:00:00 +1300', '2021-10-01 00:00:00 +1300']]
+                  [:participant3, '2021-09-29 00:00:00 +1300', '2021-09-30 00:00:00 +1300'],
+                  [:participant1, '2021-09-30 00:00:00 +1300', '2021-10-01 00:00:00 +1300']]
             end
           end
         end
@@ -491,8 +491,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which start in NZST(+1200) and switch to NZDT(+1300)',
                 [[:participant1, '2020-09-01 12:00:00 +1200', '2020-09-15 12:00:00 +1200'],
-                 [:participant2, '2020-09-15 12:00:00 +1200', '2020-09-29 12:00:00 +1300'],
-                 [:participant3, '2020-09-29 12:00:00 +1300', '2020-10-13 12:00:00 +1300']]
+                  [:participant2, '2020-09-15 12:00:00 +1200', '2020-09-29 12:00:00 +1300'],
+                  [:participant3, '2020-09-29 12:00:00 +1300', '2020-10-13 12:00:00 +1300']]
             end
 
             context 'starting after switch' do
@@ -502,7 +502,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely in NZDT(+1300)',
                 [[:participant3, '2020-09-29 12:00:00 +1300', '2020-10-13 12:00:00 +1300'],
-                 [:participant1, '2020-10-13 12:00:00 +1300', '2020-10-27 12:00:00 +1300']]
+                  [:participant1, '2020-10-13 12:00:00 +1300', '2020-10-27 12:00:00 +1300']]
             end
 
             context 'starting after multiple switches' do
@@ -512,8 +512,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely back in NZST(+1200) after 2 timezone switches since the rotation start time',
                 [[:participant2, '2021-04-13 12:00:00 +1200', '2021-04-27 12:00:00 +1200'],
-                 [:participant3, '2021-04-27 12:00:00 +1200', '2021-05-11 12:00:00 +1200'],
-                 [:participant1, '2021-05-11 12:00:00 +1200', '2021-05-25 12:00:00 +1200']]
+                  [:participant3, '2021-04-27 12:00:00 +1200', '2021-05-11 12:00:00 +1200'],
+                  [:participant1, '2021-05-11 12:00:00 +1200', '2021-05-25 12:00:00 +1200']]
             end
           end
 
@@ -530,8 +530,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which start in NZDT(+1300) and switch to NZST(+1200)',
                 [[:participant1, '2021-03-21 12:00:00 +1300', '2021-04-04 12:00:00 +1200'],
-                 [:participant2, '2021-04-04 12:00:00 +1200', '2021-04-18 12:00:00 +1200'],
-                 [:participant3, '2021-04-18 12:00:00 +1200', '2021-05-02 12:00:00 +1200']]
+                  [:participant2, '2021-04-04 12:00:00 +1200', '2021-04-18 12:00:00 +1200'],
+                  [:participant3, '2021-04-18 12:00:00 +1200', '2021-05-02 12:00:00 +1200']]
             end
 
             context 'starting after switch' do
@@ -541,7 +541,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely in NZST(+1200)',
                 [[:participant3, '2021-04-18 12:00:00 +1200', '2021-05-02 12:00:00 +1200'],
-                 [:participant1, '2021-05-02 12:00:00 +1200', '2021-05-16 12:00:00 +1200']]
+                  [:participant1, '2021-05-02 12:00:00 +1200', '2021-05-16 12:00:00 +1200']]
             end
 
             context 'starting after multiple switches' do
@@ -551,9 +551,9 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely back in NZST(+1200) after 2 timezone switches since the rotation start time',
                 [[:participant2, '2021-09-19 12:00:00 +1200', '2021-10-03 12:00:00 +1300'],
-                 [:participant3, '2021-10-03 12:00:00 +1300', '2021-10-17 12:00:00 +1300'],
-                 [:participant1, '2021-10-17 12:00:00 +1300', '2021-10-31 12:00:00 +1300'],
-                 [:participant2, '2021-10-31 12:00:00 +1300', '2021-11-14 12:00:00 +1300']]
+                  [:participant3, '2021-10-03 12:00:00 +1300', '2021-10-17 12:00:00 +1300'],
+                  [:participant1, '2021-10-17 12:00:00 +1300', '2021-10-31 12:00:00 +1300'],
+                  [:participant2, '2021-10-31 12:00:00 +1300', '2021-11-14 12:00:00 +1300']]
             end
           end
         end
@@ -576,10 +576,10 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which start in EST(-0500) and switch to EDT(-0400)',
                 [[:participant1, '2021-03-14 00:00:00 -0500', '2021-03-14 01:00:00 -0500'],
-                 [:participant2, '2021-03-14 01:00:00 -0500', '2021-03-14 02:00:00 -0500'],
-                 [:participant3, '2021-03-14 03:00:00 -0400', '2021-03-14 04:00:00 -0400'],
-                 [:participant1, '2021-03-14 04:00:00 -0400', '2021-03-14 05:00:00 -0400'],
-                 [:participant2, '2021-03-14 05:00:00 -0400', '2021-03-14 06:00:00 -0400']]
+                  [:participant2, '2021-03-14 01:00:00 -0500', '2021-03-14 02:00:00 -0500'],
+                  [:participant3, '2021-03-14 03:00:00 -0400', '2021-03-14 04:00:00 -0400'],
+                  [:participant1, '2021-03-14 04:00:00 -0400', '2021-03-14 05:00:00 -0400'],
+                  [:participant2, '2021-03-14 05:00:00 -0400', '2021-03-14 06:00:00 -0400']]
             end
 
             context 'starting after switch' do
@@ -589,8 +589,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely in EDT(-0400)',
                 [[:participant2, '2021-03-14 05:00:00 -0400', '2021-03-14 06:00:00 -0400'],
-                 [:participant3, '2021-03-14 06:00:00 -0400', '2021-03-14 07:00:00 -0400'],
-                 [:participant1, '2021-03-14 07:00:00 -0400', '2021-03-14 08:00:00 -0400']]
+                  [:participant3, '2021-03-14 06:00:00 -0400', '2021-03-14 07:00:00 -0400'],
+                  [:participant1, '2021-03-14 07:00:00 -0400', '2021-03-14 08:00:00 -0400']]
             end
 
             context 'starting after multiple switches' do
@@ -600,8 +600,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely back in EST(-0500) after 2 timezone switches since the rotation start time',
                 [[:participant1, '2021-11-08 00:00:00 -0500', '2021-11-08 01:00:00 -0500'],
-                 [:participant2, '2021-11-08 01:00:00 -0500', '2021-11-08 02:00:00 -0500'],
-                 [:participant3, '2021-11-08 02:00:00 -0500', '2021-11-08 03:00:00 -0500']]
+                  [:participant2, '2021-11-08 01:00:00 -0500', '2021-11-08 02:00:00 -0500'],
+                  [:participant3, '2021-11-08 02:00:00 -0500', '2021-11-08 03:00:00 -0500']]
             end
           end
 
@@ -618,10 +618,10 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which start in EDT(-0400) and switch to EST(-0500)',
                 [[:participant1, '2021-11-07 00:00:00 -0400', '2021-11-07 01:00:00 -0400'],
-                 [:participant2, '2021-11-07 01:00:00 -0400', '2021-11-07 02:00:00 -0400'],
-                 [:participant3, '2021-11-07 02:00:00 -0400', '2021-11-07 02:00:00 -0500'],
-                 [:participant1, '2021-11-07 02:00:00 -0500', '2021-11-07 03:00:00 -0500'],
-                 [:participant2, '2021-11-07 03:00:00 -0500', '2021-11-07 04:00:00 -0500']]
+                  [:participant2, '2021-11-07 01:00:00 -0400', '2021-11-07 02:00:00 -0400'],
+                  [:participant3, '2021-11-07 02:00:00 -0400', '2021-11-07 02:00:00 -0500'],
+                  [:participant1, '2021-11-07 02:00:00 -0500', '2021-11-07 03:00:00 -0500'],
+                  [:participant2, '2021-11-07 03:00:00 -0500', '2021-11-07 04:00:00 -0500']]
             end
 
             context 'starting after switch' do
@@ -631,8 +631,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely in EST(-0500)',
                 [[:participant2, '2021-11-07 03:00:00 -0500', '2021-11-07 04:00:00 -0500'],
-                 [:participant3, '2021-11-07 04:00:00 -0500', '2021-11-07 05:00:00 -0500'],
-                 [:participant1, '2021-11-07 05:00:00 -0500', '2021-11-07 06:00:00 -0500']]
+                  [:participant3, '2021-11-07 04:00:00 -0500', '2021-11-07 05:00:00 -0500'],
+                  [:participant1, '2021-11-07 05:00:00 -0500', '2021-11-07 06:00:00 -0500']]
             end
 
             context 'starting after multiple switches' do
@@ -642,8 +642,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'hour-long shifts which are entirely back in EDT(-0400) after 2 timezone switches since the rotation start time',
                 [[:participant1, '2022-03-14 00:00:00 -0400', '2022-03-14 01:00:00 -0400'],
-                 [:participant2, '2022-03-14 01:00:00 -0400', '2022-03-14 02:00:00 -0400'],
-                 [:participant3, '2022-03-14 02:00:00 -0400', '2022-03-14 03:00:00 -0400']]
+                  [:participant2, '2022-03-14 01:00:00 -0400', '2022-03-14 02:00:00 -0400'],
+                  [:participant3, '2022-03-14 02:00:00 -0400', '2022-03-14 03:00:00 -0400']]
             end
           end
         end
@@ -662,9 +662,9 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which start in EST(-0500) and switch to EDT(-0400)',
                 [[:participant1, '2021-03-13 00:00:00 -0500', '2021-03-14 00:00:00 -0500'],
-                 [:participant2, '2021-03-14 00:00:00 -0500', '2021-03-15 00:00:00 -0400'],
-                 [:participant3, '2021-03-15 00:00:00 -0400', '2021-03-16 00:00:00 -0400'],
-                 [:participant1, '2021-03-16 00:00:00 -0400', '2021-03-17 00:00:00 -0400']]
+                  [:participant2, '2021-03-14 00:00:00 -0500', '2021-03-15 00:00:00 -0400'],
+                  [:participant3, '2021-03-15 00:00:00 -0400', '2021-03-16 00:00:00 -0400'],
+                  [:participant1, '2021-03-16 00:00:00 -0400', '2021-03-17 00:00:00 -0400']]
             end
 
             context 'starting after switch' do
@@ -674,8 +674,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely in EDT(-0400)',
                 [[:participant1, '2021-03-16 00:00:00 -0400', '2021-03-17 00:00:00 -0400'],
-                 [:participant2, '2021-03-17 00:00:00 -0400', '2021-03-18 00:00:00 -0400'],
-                 [:participant3, '2021-03-18 00:00:00 -0400', '2021-03-19 00:00:00 -0400']]
+                  [:participant2, '2021-03-17 00:00:00 -0400', '2021-03-18 00:00:00 -0400'],
+                  [:participant3, '2021-03-18 00:00:00 -0400', '2021-03-19 00:00:00 -0400']]
             end
 
             context 'starting after multiple switches' do
@@ -685,8 +685,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely back in EST(-0500) after 2 timezone switches since the rotation start time',
                 [[:participant3, '2021-11-10 00:00:00 -0500', '2021-11-11 00:00:00 -0500'],
-                 [:participant1, '2021-11-11 00:00:00 -0500', '2021-11-12 00:00:00 -0500'],
-                 [:participant2, '2021-11-12 00:00:00 -0500', '2021-11-13 00:00:00 -0500']]
+                  [:participant1, '2021-11-11 00:00:00 -0500', '2021-11-12 00:00:00 -0500'],
+                  [:participant2, '2021-11-12 00:00:00 -0500', '2021-11-13 00:00:00 -0500']]
             end
           end
 
@@ -703,9 +703,9 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which start in EDT(-0400) and switch to EST(-0500)',
                 [[:participant1, '2021-11-06 00:00:00 -0400', '2021-11-07 00:00:00 -0400'],
-                 [:participant2, '2021-11-07 00:00:00 -0400', '2021-11-08 00:00:00 -0500'],
-                 [:participant3, '2021-11-08 00:00:00 -0500', '2021-11-09 00:00:00 -0500'],
-                 [:participant1, '2021-11-09 00:00:00 -0500', '2021-11-10 00:00:00 -0500']]
+                  [:participant2, '2021-11-07 00:00:00 -0400', '2021-11-08 00:00:00 -0500'],
+                  [:participant3, '2021-11-08 00:00:00 -0500', '2021-11-09 00:00:00 -0500'],
+                  [:participant1, '2021-11-09 00:00:00 -0500', '2021-11-10 00:00:00 -0500']]
             end
 
             context 'starting after switch' do
@@ -715,8 +715,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely in EST(-0500)',
                 [[:participant1, '2021-11-09 00:00:00 -0500', '2021-11-10 00:00:00 -0500'],
-                 [:participant2, '2021-11-10 00:00:00 -0500', '2021-11-11 00:00:00 -0500'],
-                 [:participant3, '2021-11-11 00:00:00 -0500', '2021-11-12 00:00:00 -0500']]
+                  [:participant2, '2021-11-10 00:00:00 -0500', '2021-11-11 00:00:00 -0500'],
+                  [:participant3, '2021-11-11 00:00:00 -0500', '2021-11-12 00:00:00 -0500']]
             end
 
             context 'starting after multiple switches' do
@@ -726,8 +726,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 'day-long shifts which are entirely back in EDT(-0400) after 2 timezone switches since the rotation start time',
                 [[:participant1, '2022-03-15 00:00:00 -0400', '2022-03-16 00:00:00 -0400'],
-                 [:participant2, '2022-03-16 00:00:00 -0400', '2022-03-17 00:00:00 -0400'],
-                 [:participant3, '2022-03-17 00:00:00 -0400', '2022-03-18 00:00:00 -0400']]
+                  [:participant2, '2022-03-16 00:00:00 -0400', '2022-03-17 00:00:00 -0400'],
+                  [:participant3, '2022-03-17 00:00:00 -0400', '2022-03-18 00:00:00 -0400']]
             end
           end
         end
@@ -746,8 +746,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which start in EST(-0500) and switch to EDT(-0400)',
                 [[:participant1, '2021-02-25 12:00:00 -0500', '2021-03-11 12:00:00 -0500'],
-                 [:participant2, '2021-03-11 12:00:00 -0500', '2021-03-25 12:00:00 -0400'],
-                 [:participant3, '2021-03-25 12:00:00 -0400', '2021-04-08 12:00:00 -0400']]
+                  [:participant2, '2021-03-11 12:00:00 -0500', '2021-03-25 12:00:00 -0400'],
+                  [:participant3, '2021-03-25 12:00:00 -0400', '2021-04-08 12:00:00 -0400']]
             end
 
             context 'starting after switch' do
@@ -757,7 +757,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely in EDT(-0400)',
                 [[:participant3, '2021-03-25 12:00:00 -0400', '2021-04-08 12:00:00 -0400'],
-                 [:participant1, '2021-04-08 12:00:00 -0400', '2021-04-22 12:00:00 -0400']]
+                  [:participant1, '2021-04-08 12:00:00 -0400', '2021-04-22 12:00:00 -0400']]
             end
 
             context 'starting after multiple switches' do
@@ -767,8 +767,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely back in EST(-0500) after 2 timezone switches since the rotation start time',
                 [[:participant2, '2021-11-18 12:00:00 -0500', '2021-12-02 12:00:00 -0500'],
-                 [:participant3, '2021-12-02 12:00:00 -0500', '2021-12-16 12:00:00 -0500'],
-                 [:participant1, '2021-12-16 12:00:00 -0500', '2021-12-30 12:00:00 -0500']]
+                  [:participant3, '2021-12-02 12:00:00 -0500', '2021-12-16 12:00:00 -0500'],
+                  [:participant1, '2021-12-16 12:00:00 -0500', '2021-12-30 12:00:00 -0500']]
             end
           end
 
@@ -785,8 +785,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which start in EDT(-0400) and switch to EST(-0500)',
                 [[:participant1, '2021-10-26 12:00:00 -0400', '2021-11-09 12:00:00 -0500'],
-                 [:participant2, '2021-11-09 12:00:00 -0500', '2021-11-23 12:00:00 -0500'],
-                 [:participant3, '2021-11-23 12:00:00 -0500', '2021-12-07 12:00:00 -0500']]
+                  [:participant2, '2021-11-09 12:00:00 -0500', '2021-11-23 12:00:00 -0500'],
+                  [:participant3, '2021-11-23 12:00:00 -0500', '2021-12-07 12:00:00 -0500']]
             end
 
             context 'starting after switch' do
@@ -796,7 +796,7 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely in EST(-0500)',
                 [[:participant3, '2021-11-23 12:00:00 -0500', '2021-12-07 12:00:00 -0500'],
-                 [:participant1, '2021-12-07 12:00:00 -0500', '2021-12-21 12:00:00 -0500']]
+                  [:participant1, '2021-12-07 12:00:00 -0500', '2021-12-21 12:00:00 -0500']]
             end
 
             context 'starting after multiple switches' do
@@ -806,8 +806,8 @@ RSpec.describe IncidentManagement::OncallShiftGenerator do
               it_behaves_like 'unsaved shifts',
                 '2-week-long shifts which are entirely back in EDT(-0400) after 2 timezone switches since the rotation start time',
                 [[:participant2, '2022-03-15 12:00:00 -0400', '2022-03-29 12:00:00 -0400'],
-                 [:participant3, '2022-03-29 12:00:00 -0400', '2022-04-12 12:00:00 -0400'],
-                 [:participant1, '2022-04-12 12:00:00 -0400', '2022-04-26 12:00:00 -0400']]
+                  [:participant3, '2022-03-29 12:00:00 -0400', '2022-04-12 12:00:00 -0400'],
+                  [:participant1, '2022-04-12 12:00:00 -0400', '2022-04-26 12:00:00 -0400']]
             end
           end
         end

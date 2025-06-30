@@ -14,16 +14,16 @@ module Gitlab
           # end
 
           ALLOWED_ATTRIBUTES = %w[add_ons
-                                  daily_billable_users_count
-                                  expires_at
-                                  license_id
-                                  plan
-                                  sha256
-                                  subscription_id
-                                  starts_at
-                                  trial?
-                                  trial_ends_on
-                                  user_count].freeze
+            daily_billable_users_count
+            expires_at
+            license_id
+            plan
+            sha256
+            subscription_id
+            starts_at
+            trial?
+            trial_ends_on
+            user_count].freeze
 
           def initialize(metric_definition)
             super

@@ -175,9 +175,9 @@ RSpec.describe Dora::DailyMetrics, type: :model, feature_category: :value_stream
 
         it 'aggregates the rows' do
           is_expected.to eq([{ 'date' => Date.parse('2021-01-01'), metric => 3 },
-                             { 'date' => Date.parse('2021-01-02'), metric => 2 },
-                             { 'date' => Date.parse('2021-01-03'), metric => 1 },
-                             { 'date' => Date.parse('2021-01-04'), metric => nil }])
+            { 'date' => Date.parse('2021-01-02'), metric => 2 },
+            { 'date' => Date.parse('2021-01-03'), metric => 1 },
+            { 'date' => Date.parse('2021-01-04'), metric => nil }])
         end
       end
 
@@ -221,11 +221,11 @@ RSpec.describe Dora::DailyMetrics, type: :model, feature_category: :value_stream
 
         it 'aggregates the rows' do
           is_expected.to eq([{ 'date' => Date.parse('2021-01-01'), metric => 0.75 },
-                             { 'date' => Date.parse('2021-01-02'), metric => 0.0 },
-                             { 'date' => Date.parse('2021-01-03'), metric => nil },
-                             { 'date' => Date.parse('2021-01-04'), metric => 1.0 },
-                             { 'date' => Date.parse('2021-01-05'), metric => nil },
-                             { 'date' => Date.parse('2021-01-06'), metric => 0.0 }])
+            { 'date' => Date.parse('2021-01-02'), metric => 0.0 },
+            { 'date' => Date.parse('2021-01-03'), metric => nil },
+            { 'date' => Date.parse('2021-01-04'), metric => 1.0 },
+            { 'date' => Date.parse('2021-01-05'), metric => nil },
+            { 'date' => Date.parse('2021-01-06'), metric => 0.0 }])
         end
       end
 
@@ -270,10 +270,10 @@ RSpec.describe Dora::DailyMetrics, type: :model, feature_category: :value_stream
 
         it 'calculates the median' do
           is_expected.to eq([{ 'date' => Date.parse('2021-01-01'), metric => 100 },
-                             { 'date' => Date.parse('2021-01-02'), metric => 80 },
-                             { 'date' => Date.parse('2021-01-03'), metric => 60 },
-                             { 'date' => Date.parse('2021-01-04'), metric => 50 },
-                             { 'date' => Date.parse('2021-01-05'), metric => nil }])
+            { 'date' => Date.parse('2021-01-02'), metric => 80 },
+            { 'date' => Date.parse('2021-01-03'), metric => 60 },
+            { 'date' => Date.parse('2021-01-04'), metric => 50 },
+            { 'date' => Date.parse('2021-01-05'), metric => nil }])
         end
       end
 
@@ -330,9 +330,9 @@ RSpec.describe Dora::DailyMetrics, type: :model, feature_category: :value_stream
 
         it 'aggregates the rows' do
           is_expected.to match_array([{ 'date' => Date.parse('2021-01-01'), 'deployment_frequency' => 4, 'change_failure_rate' => be_within(0.005).of(3.0 / 4) },
-                             { 'date' => Date.parse('2021-01-02'), 'deployment_frequency' => 2, 'change_failure_rate' => 0 },
-                             { 'date' => Date.parse('2021-01-03'), 'deployment_frequency' => 0, 'change_failure_rate' => 1 },
-                             { 'date' => Date.parse('2021-01-04'), 'deployment_frequency' => 0, 'change_failure_rate' => 0 }])
+            { 'date' => Date.parse('2021-01-02'), 'deployment_frequency' => 2, 'change_failure_rate' => 0 },
+            { 'date' => Date.parse('2021-01-03'), 'deployment_frequency' => 0, 'change_failure_rate' => 1 },
+            { 'date' => Date.parse('2021-01-04'), 'deployment_frequency' => 0, 'change_failure_rate' => 0 }])
         end
       end
     end
