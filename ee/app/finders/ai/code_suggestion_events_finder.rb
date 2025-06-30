@@ -67,6 +67,7 @@ module Ai
       Event.pushed_action
         .where('created_at >= ?', 1.week.ago.beginning_of_day)
         .where(project_id: Project.for_group_and_its_subgroups(resource))
+        .where(target_type: nil) # Filter for pushed events without targets to optimize index usage
         .select('DISTINCT author_id')
     end
 

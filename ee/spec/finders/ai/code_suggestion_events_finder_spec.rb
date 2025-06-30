@@ -8,6 +8,7 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user_contributor_1) { create(:user) }
   let_it_be(:user_contributor_2) { create(:user) }
+  let_it_be(:user_contributor_3) { create(:user) }
   let_it_be(:user_contributor_only_on_ch) { create(:user) }
   let_it_be(:user_not_contributor) { create(:user) }
   let_it_be(:code_suggestion_event_1) { create(:ai_code_suggestion_event, :shown, user: user_contributor_1) }
@@ -16,6 +17,8 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
   let_it_be(:code_suggestion_event_4) do
     create(:ai_code_suggestion_event, :accepted, user: user_contributor_only_on_ch)
   end
+
+  let_it_be(:code_suggestion_event_5) { create(:ai_code_suggestion_event, :accepted, user: user_contributor_3) }
 
   subject(:results) { described_class.new(user, resource: group).execute }
 
@@ -35,19 +38,25 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
     context 'when user can see code suggestion events' do
       let_it_be(:user) { create(:user, :with_self_managed_duo_enterprise_seat) }
       let_it_be(:event_1) do
-        create(:event, :pushed, project: project, author: user_contributor_1, created_at: 3.days.ago)
+        create(:event, :pushed, project: project, author: user_contributor_1, target: nil, created_at: 3.days.ago)
       end
 
       let_it_be(:event_2) do
-        create(:event, :pushed, project: project, author: user_contributor_2, created_at: 1.day.ago)
+        create(:event, :pushed, project: project, author: user_contributor_2, target: nil, created_at: 1.day.ago)
       end
 
       let_it_be(:event_3) do
-        create(:event, :pushed, project: project, author: user_contributor_only_on_ch, created_at: 1.month.ago)
+        create(:event, :pushed, project: project, author: user_contributor_only_on_ch, target: nil,
+          created_at: 1.month.ago)
       end
 
       let_it_be(:event_4) do
-        create(:event, :created, :for_issue, project: project, author: user_not_contributor, created_at: 1.day.ago)
+        create(:event, :created, :for_issue, project: project, author: user_not_contributor, target: nil,
+          created_at: 1.day.ago)
+      end
+
+      let_it_be(:event_5) do
+        create(:event, :pushed, project: project, author: user_contributor_3, target: project, created_at: 1.day.ago)
       end
 
       before_all do
