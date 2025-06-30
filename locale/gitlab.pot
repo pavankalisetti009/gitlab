@@ -20082,7 +20082,7 @@ msgstr ""
 msgid "DastProfiles|/graphql"
 msgstr ""
 
-msgid "DastProfiles|A URL that is compared to the URL in the browser to determine if authentication has succeeded after the login form is submitted."
+msgid "DastProfiles|A URL that is compared to the URL in the browser to determine if authentication has succeeded after the login form is submitted. Wildcard `*` can be used to match a dynamic URL."
 msgstr ""
 
 msgid "DastProfiles|A comma-separated list of actions to take after login but before login verification. Supports `click` and `select` actions. See [Taking additional actions after submitting the login form](%{documentation_link})."
