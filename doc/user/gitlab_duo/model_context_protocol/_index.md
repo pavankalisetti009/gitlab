@@ -84,6 +84,9 @@ the feature can use that tool:
 
    Review the tool and select **Approve** or **Deny**.
 
+   You must review a tool every time an AI-native feature tries to connect
+   to that tool, even if you have previously reviewed that tool.
+
    - If you approve the tool, the feature connects to the tool and
    generates an answer.
 
