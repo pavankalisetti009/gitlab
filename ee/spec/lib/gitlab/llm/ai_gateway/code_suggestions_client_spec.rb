@@ -176,16 +176,19 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     it { is_expected.to match({ status: :success, token: expected_token, expires_at: expires_at }) }
 
     context 'when direct access token creation request fails' do
-      let(:http_status) { 500 }
+      let(:http_status) { 401 }
+      let(:error_message) { 'No authorization header presented' }
+      let(:response_body) { { detail: error_message }.to_json }
 
       it { is_expected.to match(a_hash_including(status: :error)) }
 
       it 'logs the error' do
         expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          satisfy { |exception|
+          satisfy { |exception, _extra|
             exception.is_a?(described_class::AiGatewayError) &&
               exception.message == 'Token creation failed'
-          }
+          },
+          { ai_gateway_response_code: 401, ai_gateway_error_detail: error_message }
         )
 
         result
@@ -202,7 +205,8 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
           satisfy { |exception|
             exception.is_a?(described_class::AiGatewayError) &&
               exception.message == 'Token is missing in response'
-          }
+          },
+          { ai_gateway_response_code: 200 }
         )
 
         result
