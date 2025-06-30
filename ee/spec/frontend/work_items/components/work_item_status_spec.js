@@ -253,7 +253,7 @@ describe('WorkItemStatus component', () => {
 
       await waitForPromises();
 
-      expect(findWorkItemStatusBadge().props()).toEqual({
+      expect(findWorkItemStatusBadge().props().item).toMatchObject({
         name: mockWorkItemStatus.name,
         iconName: mockWorkItemStatus.iconName,
         color: mockWorkItemStatus.color,
@@ -267,7 +267,7 @@ describe('WorkItemStatus component', () => {
       findSidebarDropdownWidget().vm.$emit('updateValue', firstStatus.id);
       await waitForPromises();
 
-      expect(findWorkItemStatusBadge().props()).toEqual({
+      expect(findWorkItemStatusBadge().props().item).toMatchObject({
         name: firstStatus.name,
         iconName: firstStatus.iconName,
         color: firstStatus.color,

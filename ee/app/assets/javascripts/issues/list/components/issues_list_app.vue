@@ -223,15 +223,6 @@ export default {
     hasCustomStatus(issuable) {
       return issuable.status;
     },
-    customStatusName(issuable) {
-      return issuable.status?.name;
-    },
-    customStatusIconName(issuable) {
-      return issuable.status?.iconName;
-    },
-    customStatusColor(issuable) {
-      return issuable.status?.color;
-    },
     getFilteredEpicId(apiFilterParams) {
       const { epicId } = apiFilterParams;
 
@@ -266,12 +257,7 @@ export default {
     </template>
     <template #custom-status="{ issuable }">
       <li class="gl-max-w-full">
-        <work-item-status-badge
-          v-if="hasCustomStatus(issuable)"
-          :name="customStatusName(issuable)"
-          :icon-name="customStatusIconName(issuable)"
-          :color="customStatusColor(issuable)"
-        />
+        <work-item-status-badge v-if="hasCustomStatus(issuable)" :item="issuable.status" />
       </li>
     </template>
   </issues-list-app>

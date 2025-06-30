@@ -75,15 +75,6 @@ export default {
     hasStatus() {
       return Boolean(this.localStatus?.id);
     },
-    name() {
-      return this.localStatus?.name;
-    },
-    color() {
-      return this.localStatus?.color;
-    },
-    iconName() {
-      return this.localStatus?.iconName;
-    },
     noStatusDefaultText() {
       return this.canUpdate ? this.$options.i18n.statusPlaceholder : this.$options.i18n.none;
     },
@@ -269,7 +260,7 @@ export default {
       </div>
     </template>
     <template #readonly>
-      <work-item-status-badge v-if="hasStatus" :name="name" :icon-name="iconName" :color="color" />
+      <work-item-status-badge v-if="hasStatus" :item="localStatus" />
     </template>
   </work-item-sidebar-dropdown-widget>
 </template>

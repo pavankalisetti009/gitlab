@@ -60,15 +60,6 @@ export default {
     customStatus() {
       return this.metadataWidgets[WIDGET_TYPE_STATUS]?.status;
     },
-    name() {
-      return this.customStatus?.name;
-    },
-    color() {
-      return this.customStatus?.color;
-    },
-    iconName() {
-      return this.customStatus?.iconName;
-    },
   },
 };
 </script>
@@ -86,12 +77,7 @@ export default {
   >
     <template #child-contents>
       <div class="gl-max-w-20">
-        <work-item-status-badge
-          v-if="showCustomStatus"
-          :name="name"
-          :icon-name="iconName"
-          :color="color"
-        />
+        <work-item-status-badge v-if="showCustomStatus" :item="customStatus" />
       </div>
     </template>
   </work-item-link-child-contents>
