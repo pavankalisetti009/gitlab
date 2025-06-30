@@ -154,7 +154,8 @@ module Gitlab
                     checkout_sha: command.checkout_sha,
                     target_sha: command.target_sha,
                     partition_id: partition_id,
-                    variables_attributes: command.variables_attributes)
+                    variables_attributes: command.variables_attributes,
+                    chat_data: command.chat_data)
                   .execute(command.source,
                     content: policy.content,
                     pipeline_policy_context: @context, # propagates parent context inside the policy pipeline creation
