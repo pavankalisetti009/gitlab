@@ -10,6 +10,60 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
   it { is_expected.to validate_uniqueness_of(:feature).ignoring_case_sensitivity }
   it { is_expected.to validate_presence_of(:provider) }
 
+  describe 'when ::Ai::FeatureConfigurable is included' do
+    let(:feature_setting) { create(:ai_feature_setting) }
+
+    it_behaves_like '#metadata is defined for AI configurable features'
+
+    context 'with request model info' do
+      context 'when model info should be resolved' do
+        it_behaves_like 'configurable AI features resolves model info correctly' do
+          # results for #model_metadata_params and #model_request_params
+          # are expected to be different
+          let(:expected_params_for_metadata) do
+            {
+              api_key: "token",
+              endpoint: "http://localhost:11434/v1",
+              identifier: "provider/some-model",
+              name: "mistral",
+              provider: :openai
+            }
+          end
+
+          let(:expected_params_for_request) do
+            {
+              provider: :litellm,
+              model: "mistral",
+              model_endpoint: "http://localhost:11434/v1",
+              model_api_key: "token",
+              model_identifier: "provider/some-model"
+            }
+          end
+        end
+      end
+
+      context 'when the feature setting has no self-hosted model' do
+        it_behaves_like 'configurable AI features resolves model info correctly' do
+          let(:feature_setting) { create(:ai_feature_setting, provider: :disabled, self_hosted_model: nil) }
+          let(:expected_params_for_metadata) { nil }
+          let(:expected_params_for_request) { nil }
+        end
+      end
+
+      context 'when self_hosted? returns false' do
+        before do
+          allow(feature_setting).to receive(:self_hosted?).and_return(false)
+        end
+
+        it_behaves_like 'configurable AI features resolves model info correctly' do
+          let(:feature_setting) { create(:ai_feature_setting) }
+          let(:expected_params_for_metadata) { nil }
+          let(:expected_params_for_request) { nil }
+        end
+      end
+    end
+  end
+
   context 'when feature setting is self hosted' do
     let(:feature_setting) { build(:ai_feature_setting) }
 
@@ -150,47 +204,6 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     end
   end
 
-  describe '#metadata' do
-    let(:feature_setting) { create(:ai_feature_setting) }
-
-    before do
-      allow(Ai::FeatureSetting::FEATURE_METADATA)
-        .to receive(:[]).with(feature_setting.feature.to_s)
-        .and_return(feature_metadata)
-    end
-
-    context 'when feature metadata exists' do
-      let(:feature_metadata) do
-        { 'title' => 'Duo Chat', 'main_feature' => 'duo_chat', 'compatible_llms' => ['codellama'],
-          'release_state' => 'BETA' }
-      end
-
-      it 'returns a FeatureMetadata object with correct attributes' do
-        metadata = feature_setting.metadata
-
-        expect(metadata).to be_an_instance_of(Ai::FeatureSetting::FeatureMetadata)
-        expect(metadata.title).to eq('Duo Chat')
-        expect(metadata.main_feature).to eq('duo_chat')
-        expect(metadata.compatible_llms).to eq(['codellama'])
-        expect(metadata.release_state).to eq('BETA')
-      end
-    end
-
-    context 'when feature metadata does not exist' do
-      let(:feature_metadata) { nil }
-
-      it 'returns a FeatureMetadata object with nil attributes' do
-        metadata = feature_setting.metadata
-
-        expect(metadata).to be_an_instance_of(Ai::FeatureSetting::FeatureMetadata)
-        expect(metadata.title).to be_nil
-        expect(metadata.main_feature).to be_nil
-        expect(metadata.compatible_llms).to be_nil
-        expect(metadata.release_state).to be_nil
-      end
-    end
-  end
-
   describe '#compatible_self_hosted_models' do
     let_it_be(:llm_names) { %w[codegemma deepseekcoder mistral codellama] }
     let_it_be(:models) do
@@ -202,7 +215,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     let(:feature_setting) { create(:ai_feature_setting, feature: :code_generations) }
 
     before do
-      allow(Ai::FeatureSetting::FEATURE_METADATA)
+      allow(::Ai::FeatureConfigurable::FEATURE_METADATA)
         .to receive(:[]).with(feature_setting.feature.to_s)
         .and_return(feature_metadata)
     end
@@ -297,10 +310,10 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     shared_examples_for 'feature metadata validation' do |features, expected_release_states|
       it 'has valid metadata for all features', :aggregate_failures do
         features.each_key do |feature|
-          expect(described_class::FEATURE_METADATA.keys).to include(feature.to_s),
+          expect(::Ai::FeatureConfigurable::FEATURE_METADATA.keys).to include(feature.to_s),
             "Expected #{feature} to have valid metadata in `feature_metadata.yml`, but it does not exist. " \
               "Please add it."
-          metadata = described_class::FEATURE_METADATA.fetch(feature.to_s, {})
+          metadata = ::Ai::FeatureConfigurable::FEATURE_METADATA.fetch(feature.to_s, {})
           expect(metadata).to include('title', 'main_feature', 'compatible_llms', 'release_state')
           expect(metadata.fetch('release_state', 'no value')).to be_in(expected_release_states),
             "Expected #{feature} to have one of #{expected_release_states} release state," \
@@ -348,7 +361,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       let(:features_only_for_model_switching) { %w[review_merge_request] }
 
       it 'includes all features defined in feature_metadata.yml', :aggregate_failures do
-        metadata_features = described_class::FEATURE_METADATA.keys
+        metadata_features = ::Ai::FeatureConfigurable::FEATURE_METADATA.keys
         features_in_code = described_class::FEATURES.keys.map(&:to_s)
 
         metadata_features.each do |feature|

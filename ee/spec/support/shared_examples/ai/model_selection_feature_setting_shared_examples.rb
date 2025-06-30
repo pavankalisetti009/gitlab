@@ -127,9 +127,31 @@ RSpec.shared_examples 'model selection feature setting' do |scope_class_name:|
       end
     end
 
+    describe '#base_url' do
+      let(:url) { "http://localhost:5000" }
+
+      it 'returns Gitlab::AiGateway.url for self hosted features' do
+        expect(Gitlab::AiGateway).to receive(:url).and_return(url)
+
+        expect(ai_feature_setting.base_url).to eq(url)
+      end
+    end
+
+    describe '#self_hosted?' do
+      it 'returns false' do
+        expect(ai_feature_setting.self_hosted?).to be_falsey
+      end
+    end
+
+    describe '#disabled?' do
+      it 'returns false' do
+        expect(ai_feature_setting.disabled?).to be_falsey
+      end
+    end
+
     describe '#metadata' do
-      it 'returns an instance of FeatureMetadata' do
-        expect(ai_feature_setting.metadata).to be_an_instance_of(Ai::FeatureSetting::FeatureMetadata)
+      it_behaves_like '#metadata is defined for AI configurable features' do
+        let(:feature_setting) { ai_feature_setting }
       end
 
       it 'has the title and main_feature methods delegated to' do
