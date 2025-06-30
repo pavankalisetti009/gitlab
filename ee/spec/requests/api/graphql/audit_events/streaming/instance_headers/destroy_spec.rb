@@ -69,8 +69,7 @@ RSpec.describe 'Destroy an external audit event destination header', feature_cat
         end
 
         it 'returns correct error' do
-          expect { subject }
-            .to change { destination.headers.count }.by(0)
+          expect { subject }.to not_change { destination.headers.count }
 
           expect(mutation_response['errors']).to contain_exactly("foo_error")
         end

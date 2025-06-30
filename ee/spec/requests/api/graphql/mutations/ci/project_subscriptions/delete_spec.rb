@@ -52,7 +52,7 @@ RSpec.describe 'Delete action for project subscriptions', feature_category: :con
       let(:subscription_global_id) { 'gid://gitlab/Ci::Subscriptions::Project/-12' }
 
       it 'does not reduce the subscriptions' do
-        expect { subject }.to change { ::Ci::Subscriptions::Project.count }.by(0)
+        expect { subject }.to not_change { ::Ci::Subscriptions::Project.count }
       end
 
       it 'raises an exception' do
@@ -83,7 +83,7 @@ RSpec.describe 'Delete action for project subscriptions', feature_category: :con
 
   context 'when the user is not authorized' do
     it 'does not reduce the subscriptions' do
-      expect { subject }.to change { ::Ci::Subscriptions::Project.count }.by(0)
+      expect { subject }.to not_change { ::Ci::Subscriptions::Project.count }
     end
 
     it 'returns an error' do

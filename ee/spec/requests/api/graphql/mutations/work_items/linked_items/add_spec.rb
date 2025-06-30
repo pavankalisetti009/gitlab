@@ -73,7 +73,7 @@ RSpec.describe "Add linked items to a work item", feature_category: :portfolio_m
       it 'links the work item' do
         expect do
           post_graphql_mutation(mutation, current_user: current_user)
-        end.to change { WorkItems::RelatedWorkItemLink.count }.by(0)
+        end.to not_change { WorkItems::RelatedWorkItemLink.count }
 
         expect(graphql_errors.first['message']).to eq(
           "The resource that you are attempting to access does not exist or you don't have " \

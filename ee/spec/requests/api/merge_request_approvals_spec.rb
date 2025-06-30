@@ -318,10 +318,9 @@ RSpec.describe API::MergeRequestApprovals, :aggregate_failures, feature_category
         let!(:custom_rule) { create(:approval_merge_request_rule, merge_request: merge_request, approvals_required: 2) }
 
         it 'updates any approval rule with required number of approvals' do
-          expect do
-            post api(path, current_user, admin_mode: true), params: params
-          end.to change { any_approver_rule.reload.approvals_required }.from(1).to(5)
-                   .and change { custom_rule.reload.approvals_required }.by(0)
+          expect { post api(path, current_user, admin_mode: true), params: params }
+            .to change { any_approver_rule.reload.approvals_required }.from(1).to(5)
+            .and not_change { custom_rule.reload.approvals_required }
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['approvals_required']).to eq(5)
