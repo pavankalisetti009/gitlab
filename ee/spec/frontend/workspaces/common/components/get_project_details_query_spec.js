@@ -5,7 +5,8 @@ import { cloneDeep } from 'lodash';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import getProjectDetailsQuery from 'ee/workspaces/common/graphql/queries/get_project_details.query.graphql';
-import getRemoteDevelopmentClusterAgentsQuery from 'ee/workspaces/common/graphql/queries/get_remote_development_cluster_agents.query.graphql';
+import getWorkspacesNamespaceClusterAgents from 'ee/workspaces/common/graphql/queries/get_workspaces_namespace_cluster_agents.query.graphql';
+import getWorkspacesOrganizationClusterAgents from 'ee/workspaces/common/graphql/queries/get_workspaces_organization_cluster_agents.query.graphql';
 import GetProjectDetailsQuery from 'ee/workspaces/common/components/get_project_details_query.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -13,8 +14,12 @@ import waitForPromises from 'helpers/wait_for_promises';
 
 import {
   GET_PROJECT_DETAILS_QUERY_RESULT,
-  GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
-  GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
+  TRANSFORMED_GET_WORKSPACES_CLUSTER_AGENTS_QUERY_RESULT_ORG_AND_NAMESPACE_AGENTS,
+  TRANSFORMED_GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+  GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
+  GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+  GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
+  GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
 } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -23,20 +28,30 @@ jest.mock('~/lib/logger');
 
 describe('workspaces/common/components/get_project_details_query', () => {
   let getProjectDetailsQueryHandler;
-  let getRemoteDevelopmentClusterAgentsQueryHandler;
+  let getWorkspacesOrganizationClusterAgentsQueryHandler;
+  let getWorkspacesNamespaceClusterAgentsQueryHandler;
   let wrapper;
   let mockAxios;
 
   const projectFullPathFixture = 'gitlab-org/gitlab';
+  const organizationIdFixture = '1';
 
-  const setupRemoteDevelopmentClusterAgentsQueryHandler = (responses) => {
-    getRemoteDevelopmentClusterAgentsQueryHandler.mockResolvedValueOnce(responses);
+  const setupWorkspacesNamespaceClusterAgentsQueryHandler = (responses) => {
+    getWorkspacesNamespaceClusterAgentsQueryHandler.mockResolvedValueOnce(responses);
   };
 
-  const buildWrapper = async ({ projectFullPath = projectFullPathFixture } = {}) => {
+  const setupWorkspacesOrganizationClusterAgentsQueryHandler = (responses) => {
+    getWorkspacesOrganizationClusterAgentsQueryHandler.mockResolvedValueOnce(responses);
+  };
+
+  const buildWrapper = async ({
+    projectFullPath = projectFullPathFixture,
+    organizationId = organizationIdFixture,
+  } = {}) => {
     const apolloProvider = createMockApollo([
       [getProjectDetailsQuery, getProjectDetailsQueryHandler],
-      [getRemoteDevelopmentClusterAgentsQuery, getRemoteDevelopmentClusterAgentsQueryHandler],
+      [getWorkspacesOrganizationClusterAgents, getWorkspacesOrganizationClusterAgentsQueryHandler],
+      [getWorkspacesNamespaceClusterAgents, getWorkspacesNamespaceClusterAgentsQueryHandler],
     ]);
 
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
@@ -45,24 +60,18 @@ describe('workspaces/common/components/get_project_details_query', () => {
       propsData: {
         projectFullPath,
       },
+      provide: {
+        organizationId,
+      },
     });
 
     await waitForPromises();
   };
 
-  const transformRemoveDevelopmentClusterAgentGraphQLResultToClusterAgents = (
-    clusterAgentsGraphQLResult,
-  ) =>
-    clusterAgentsGraphQLResult.data.namespace.remoteDevelopmentClusterAgents.nodes.map(
-      ({ id, name, project }) => ({
-        text: `${project.nameWithNamespace} / ${name}`,
-        value: id,
-      }),
-    );
-
   beforeEach(() => {
     getProjectDetailsQueryHandler = jest.fn();
-    getRemoteDevelopmentClusterAgentsQueryHandler = jest.fn();
+    getWorkspacesOrganizationClusterAgentsQueryHandler = jest.fn();
+    getWorkspacesNamespaceClusterAgentsQueryHandler = jest.fn();
 
     logError.mockReset();
 
@@ -118,18 +127,26 @@ describe('workspaces/common/components/get_project_details_query', () => {
       await buildWrapper();
     });
 
-    it('executes getRemoteDevelopmentClusterAgents query', () => {
-      expect(getRemoteDevelopmentClusterAgentsQueryHandler).toHaveBeenCalledTimes(1);
-      expect(getRemoteDevelopmentClusterAgentsQueryHandler).toHaveBeenCalledWith({
+    it('executes getWorkspacesClusterAgents query', () => {
+      expect(getWorkspacesNamespaceClusterAgentsQueryHandler).toHaveBeenCalledTimes(1);
+      expect(getWorkspacesOrganizationClusterAgentsQueryHandler).toHaveBeenCalledTimes(1);
+      expect(getWorkspacesNamespaceClusterAgentsQueryHandler).toHaveBeenCalledWith({
         namespace: 'gitlab-org/subgroup',
+      });
+      expect(getWorkspacesOrganizationClusterAgentsQueryHandler).toHaveBeenCalledWith({
+        organizationID: 'gid://gitlab/Organizations::Organization/1',
       });
     });
   });
 
   describe('when the project does not have a repository', () => {
     beforeEach(async () => {
-      setupRemoteDevelopmentClusterAgentsQueryHandler(
-        GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      setupWorkspacesNamespaceClusterAgentsQueryHandler(
+        GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      );
+
+      setupWorkspacesOrganizationClusterAgentsQueryHandler(
+        GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
       );
       const customMockData = cloneDeep(GET_PROJECT_DETAILS_QUERY_RESULT);
       customMockData.data.project.repository = null;
@@ -142,9 +159,7 @@ describe('workspaces/common/components/get_project_details_query', () => {
 
     it('emits result event with rootRef null', () => {
       expect(wrapper.emitted('result')[0][0]).toEqual({
-        clusterAgents: transformRemoveDevelopmentClusterAgentGraphQLResultToClusterAgents(
-          GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
-        ),
+        clusterAgents: TRANSFORMED_GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
         id: GET_PROJECT_DETAILS_QUERY_RESULT.data.project.id,
         rootRef: null,
         nameWithNamespace: GET_PROJECT_DETAILS_QUERY_RESULT.data.project.nameWithNamespace,
@@ -153,10 +168,14 @@ describe('workspaces/common/components/get_project_details_query', () => {
     });
   });
 
-  describe('when getRemoteDevelopmentClusterAgents query contains one or more cluster agents', () => {
+  describe('when a WorkspacesClusterAgents query contains one or more cluster agents', () => {
     beforeEach(async () => {
-      setupRemoteDevelopmentClusterAgentsQueryHandler(
-        GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      setupWorkspacesNamespaceClusterAgentsQueryHandler(
+        GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      );
+
+      setupWorkspacesOrganizationClusterAgentsQueryHandler(
+        GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
       );
       await buildWrapper();
     });
@@ -165,9 +184,7 @@ describe('workspaces/common/components/get_project_details_query', () => {
       await waitForPromises();
 
       expect(wrapper.emitted('result')[0][0]).toEqual({
-        clusterAgents: transformRemoveDevelopmentClusterAgentGraphQLResultToClusterAgents(
-          GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
-        ),
+        clusterAgents: TRANSFORMED_GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
         id: GET_PROJECT_DETAILS_QUERY_RESULT.data.project.id,
         rootRef: GET_PROJECT_DETAILS_QUERY_RESULT.data.project.repository.rootRef,
         fullPath: projectFullPathFixture,
@@ -176,10 +193,40 @@ describe('workspaces/common/components/get_project_details_query', () => {
     });
   });
 
-  describe('when getRemoteDevelopmentClusterAgents query does not contain cluster agents', () => {
+  describe('when getWorkspacesClusterAgents query response contains intersecting organization and namespace agents', () => {
     beforeEach(async () => {
-      setupRemoteDevelopmentClusterAgentsQueryHandler(
-        GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
+      setupWorkspacesNamespaceClusterAgentsQueryHandler(
+        GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      );
+
+      setupWorkspacesOrganizationClusterAgentsQueryHandler(
+        GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      );
+      await buildWrapper();
+    });
+
+    it('emits result event with unique cluster agents from organization and namespace', async () => {
+      await waitForPromises();
+
+      expect(wrapper.emitted('result')[0][0]).toEqual({
+        clusterAgents:
+          TRANSFORMED_GET_WORKSPACES_CLUSTER_AGENTS_QUERY_RESULT_ORG_AND_NAMESPACE_AGENTS,
+        id: GET_PROJECT_DETAILS_QUERY_RESULT.data.project.id,
+        rootRef: GET_PROJECT_DETAILS_QUERY_RESULT.data.project.repository.rootRef,
+        fullPath: projectFullPathFixture,
+        nameWithNamespace: GET_PROJECT_DETAILS_QUERY_RESULT.data.project.nameWithNamespace,
+      });
+    });
+  });
+
+  describe('when getWorkspacesClusterAgents query does not contain cluster agents', () => {
+    beforeEach(async () => {
+      setupWorkspacesNamespaceClusterAgentsQueryHandler(
+        GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
+      );
+
+      setupWorkspacesOrganizationClusterAgentsQueryHandler(
+        GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
       );
       await buildWrapper();
     });
@@ -209,9 +256,10 @@ describe('workspaces/common/components/get_project_details_query', () => {
       await buildWrapper();
     });
 
-    it('does not execute the getRemoteDevelopmentClusterAgents query', () => {
+    it('does not execute any workspaceClusterAgents query', () => {
       expect(getProjectDetailsQueryHandler).toHaveBeenCalled();
-      expect(getRemoteDevelopmentClusterAgentsQueryHandler).not.toHaveBeenCalled();
+      expect(getWorkspacesNamespaceClusterAgentsQueryHandler).not.toHaveBeenCalled();
+      expect(getWorkspacesOrganizationClusterAgentsQueryHandler).not.toHaveBeenCalled();
     });
 
     it('emits result event with the project data', () => {
@@ -227,8 +275,12 @@ describe('workspaces/common/components/get_project_details_query', () => {
 
   describe('when the project full path changes from group to not group', () => {
     beforeEach(async () => {
-      setupRemoteDevelopmentClusterAgentsQueryHandler(
-        GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      setupWorkspacesNamespaceClusterAgentsQueryHandler(
+        GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS,
+      );
+
+      setupWorkspacesOrganizationClusterAgentsQueryHandler(
+        GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
       );
       await waitForPromises();
     });
@@ -238,7 +290,8 @@ describe('workspaces/common/components/get_project_details_query', () => {
 
       await buildWrapper();
 
-      expect(getRemoteDevelopmentClusterAgentsQueryHandler).toHaveBeenCalledTimes(1);
+      expect(getWorkspacesNamespaceClusterAgentsQueryHandler).toHaveBeenCalledTimes(1);
+      expect(getWorkspacesOrganizationClusterAgentsQueryHandler).toHaveBeenCalledTimes(1);
 
       const projectWithoutGroup = cloneDeep(GET_PROJECT_DETAILS_QUERY_RESULT);
       projectWithoutGroup.data.project.group = null;
@@ -265,17 +318,20 @@ describe('workspaces/common/components/get_project_details_query', () => {
   });
 
   describe.each`
-    queryName                                          | queryHandlerFactory
-    ${'getProjectDetailsQuery'}                        | ${() => getProjectDetailsQueryHandler}
-    ${'getRemoteDevelopmentClusterAgentsQueryHandler'} | ${() => getRemoteDevelopmentClusterAgentsQueryHandler}
+    queryName                                               | queryHandlerFactory
+    ${'getProjectDetailsQuery'}                             | ${() => getProjectDetailsQueryHandler}
+    ${'getWorkspacesNamespaceClusterAgentsQueryHandler'}    | ${() => getWorkspacesNamespaceClusterAgentsQueryHandler}
+    ${'getWorkspacesOrganizationClusterAgentsQueryHandler'} | ${() => getWorkspacesOrganizationClusterAgentsQueryHandler}
   `('when the $queryName query fails', ({ queryHandlerFactory }) => {
     const error = new Error();
 
     beforeEach(() => {
-      const mockedClusterAgentResponses = [
-        GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
-      ];
-      setupRemoteDevelopmentClusterAgentsQueryHandler(mockedClusterAgentResponses);
+      setupWorkspacesNamespaceClusterAgentsQueryHandler([
+        GET_WORKSPACES_NAMESPACE_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
+      ]);
+      setupWorkspacesOrganizationClusterAgentsQueryHandler([
+        GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_NO_AGENTS,
+      ]);
 
       const queryHandler = queryHandlerFactory();
 

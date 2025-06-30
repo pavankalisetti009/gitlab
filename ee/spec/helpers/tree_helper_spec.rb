@@ -13,17 +13,20 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
 
   describe '#vue_tree_header_app_data' do
     let(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
+    let(:organization) { build_stubbed(:organization) }
 
     before do
+      Current.organization = organization
       helper.instance_variable_set(:@project, project)
       helper.instance_variable_set(:@ref, sha)
     end
 
     subject { helper.vue_tree_header_app_data(project, repository, sha, pipeline) }
 
-    it 'returns new_workspace_path' do
+    it 'contains workspace data' do
       expect(helper.vue_tree_header_app_data(project, repository, sha, pipeline)).to include(
-        new_workspace_path: new_remote_development_workspace_path
+        new_workspace_path: new_remote_development_workspace_path,
+        organization_id: organization.id
       )
     end
 
@@ -70,17 +73,21 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
   end
 
   describe '#web_ide_button_data' do
+    let(:organization) { build_stubbed(:organization) }
+
     before do
+      Current.organization = organization
       allow(helper).to receive(:project_to_use).and_return(project)
       allow(helper).to receive(:project_ci_pipeline_editor_path).and_return('')
     end
 
-    it 'includes new_workspace_path  and project id properties' do
+    it 'includes workspace data and project id properties' do
       options = {}
 
       expect(helper.web_ide_button_data(options)).to include(
         new_workspace_path: new_remote_development_workspace_path,
-        project_id: project.id
+        project_id: project.id,
+        organization_id: organization.id
       )
     end
   end

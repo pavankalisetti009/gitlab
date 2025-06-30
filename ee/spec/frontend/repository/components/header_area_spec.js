@@ -123,6 +123,7 @@ describe('HeaderArea', () => {
                 directoryCodeDropdownUpdates: true,
               },
               newWorkspacePath: '/workspaces/new',
+              organizationId: '1',
             },
             stubs: {
               CompactCodeDropdown,

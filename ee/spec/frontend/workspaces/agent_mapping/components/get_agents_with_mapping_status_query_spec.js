@@ -89,7 +89,7 @@ describe('workspaces/agent_mapping/components/get_agents_with_mapping_status_que
               agents: [
                 {
                   id: 'gid://gitlab/Clusters::Agent/1',
-                  name: 'rootgroup-agent',
+                  name: 'root-group-agent',
                   project: {
                     id: 'gid://gitlab/Project/101',
                     name: 'GitLab Agent One',
@@ -105,7 +105,7 @@ describe('workspaces/agent_mapping/components/get_agents_with_mapping_status_que
                 },
                 {
                   id: 'gid://gitlab/Clusters::Agent/2',
-                  name: 'rootgroup-agent-2',
+                  name: 'root-group-agent-2',
                   project: {
                     name: 'GitLab Agent Two',
                     id: 'gid://gitlab/Project/102',

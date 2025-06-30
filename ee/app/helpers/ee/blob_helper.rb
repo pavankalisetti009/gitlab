@@ -6,9 +6,7 @@ module EE
 
     override :vue_blob_header_app_data
     def vue_blob_header_app_data(project, blob, ref)
-      super.merge({
-        new_workspace_path: new_remote_development_workspace_path
-      })
+      super.merge(vue_blob_workspace_data)
     end
 
     override :vue_blob_app_data
@@ -21,9 +19,8 @@ module EE
 
     def vue_blob_app_data(project, blob, ref)
       super.merge({
-        explain_code_available: ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: project).to_s,
-        new_workspace_path: new_remote_development_workspace_path
-      })
+        explain_code_available: ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: project).to_s
+      }.merge(vue_blob_workspace_data))
     end
   end
 end

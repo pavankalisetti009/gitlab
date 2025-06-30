@@ -12,6 +12,7 @@ jest.mock('~/lib/utils/url_utility');
 describe('ee_component/vue_shared/components/web_ide_link', () => {
   const projectId = 1;
   const newWorkspacePath = 'workspaces/new';
+  const organizationId = '1';
   const projectPath = 'bar/foo';
   let wrapper;
 
@@ -88,6 +89,7 @@ describe('ee_component/vue_shared/components/web_ide_link', () => {
           props: { projectId, projectPath, gitRef: 'v1.0.0' },
           provide: {
             newWorkspacePath,
+            organizationId,
             glFeatures: {
               remoteDevelopment: true,
             },

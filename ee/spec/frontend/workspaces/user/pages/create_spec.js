@@ -122,6 +122,9 @@ describe('workspaces/user/pages/create.vue', () => {
         GlSprintf,
         GlFormGroup,
       },
+      provide: {
+        organizationId: '1',
+      },
       mocks: {
         $router: mockRouter,
       },
