@@ -11,6 +11,10 @@ RSpec.shared_examples 'a mutation that does not update the google cloud logging 
 end
 
 RSpec.shared_examples 'entity owner updating google cloud logging configuration' do
+  before do
+    config.deactivate!
+  end
+
   it 'updates the configuration' do
     mutate
 
@@ -21,6 +25,7 @@ RSpec.shared_examples 'entity owner updating google cloud logging configuration'
     expect(config.private_key).to eq(updated_private_key)
     expect(config.log_id_name).to eq(updated_log_id_name)
     expect(config.name).to eq(updated_destination_name)
+    expect(config.active).to be(true)
   end
 
   it 'audits the update' do
@@ -50,7 +55,8 @@ RSpec.shared_examples 'entity owner updating google cloud logging configuration'
       {
         id: config_gid,
         googleProjectIdName: config.google_project_id_name,
-        name: config.name
+        name: config.name,
+        active: config.active
       }
     end
 

@@ -19,27 +19,17 @@ module Mutations
           null: true,
           description: 'configuration updated.'
 
-        def resolve(id:, google_project_id_name: nil, client_email: nil, private_key: nil, log_id_name: nil, name: nil)
+        def resolve(
+          id:, google_project_id_name: nil, client_email: nil, private_key: nil, log_id_name: nil, name: nil,
+          active: nil)
           config, errors = update_config(id: id, google_project_id_name: google_project_id_name,
             client_email: client_email, private_key: private_key,
-            log_id_name: log_id_name, name: name)
+            log_id_name: log_id_name, name: name, active: active)
 
           { google_cloud_logging_configuration: config, errors: errors }
         end
 
         private
-
-        def audit_update(config)
-          AUDIT_EVENT_COLUMNS.each do |column|
-            audit_changes(
-              column,
-              as: column.to_s,
-              entity: config.group,
-              model: config,
-              event_type: UPDATE_EVENT_NAME
-            )
-          end
-        end
 
         def find_object(config_gid)
           GitlabSchema.object_from_id(

@@ -21,33 +21,13 @@ module Mutations
             description: 'configuration updated.'
 
           def resolve(
-            id:,
-            google_project_id_name: nil,
-            client_email: nil,
-            private_key: nil,
-            log_id_name: nil,
-            name: nil
-          )
+            id:, google_project_id_name: nil, client_email: nil, private_key: nil, log_id_name: nil, name: nil,
+            active: nil)
             config, errors = update_config(id: id, google_project_id_name: google_project_id_name,
               client_email: client_email, private_key: private_key,
-              log_id_name: log_id_name, name: name)
+              log_id_name: log_id_name, name: name, active: active)
 
             { instance_google_cloud_logging_configuration: config, errors: errors }
-          end
-
-          private
-
-          def audit_update(config)
-            AUDIT_EVENT_COLUMNS.each do |column|
-              audit_changes(
-                column,
-                as: column.to_s,
-                entity: Gitlab::Audit::InstanceScope.new,
-                model: config,
-                event_type: UPDATE_EVENT_NAME,
-                target_details: config.name
-              )
-            end
           end
         end
       end

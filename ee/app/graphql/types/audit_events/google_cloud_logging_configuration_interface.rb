@@ -24,6 +24,10 @@ module Types
       field :name, GraphQL::Types::String,
         null: false,
         description: 'Name of the external destination to send audit events to.'
+
+      field :active, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Active status of the destination.'
     end
   end
 end
