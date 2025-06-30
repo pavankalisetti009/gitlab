@@ -555,5 +555,39 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlServic
 
       it_behaves_like 'annotating the yaml'
     end
+
+    context 'when there is an unexpected error' do
+      let(:exception) { StandardError.new('unexpected error') }
+      let(:policy_yaml) do
+        <<~YAML
+        approval_policy:
+        - name: Framework Policy
+          policy_scope:
+            compliance_frameworks:
+              including:
+                - id: 777
+        YAML
+      end
+
+      before do
+        allow(::ComplianceManagement::FrameworksFinder).to receive(:new).and_raise(exception)
+      end
+
+      it 'wraps StandardError in a ServiceResponse' do
+        response = service.execute
+
+        expect(response[:status]).to eq(:error)
+        expect(response[:message]).to eq('Unexpected error while annotating policy YAML')
+        expect(response[:exception]).to eq(exception)
+      end
+
+      it 'tracks the error in Gitlab Error Tracking' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          exception, policy_yaml: policy_yaml
+        ).and_call_original
+
+        service.execute
+      end
+    end
   end
 end

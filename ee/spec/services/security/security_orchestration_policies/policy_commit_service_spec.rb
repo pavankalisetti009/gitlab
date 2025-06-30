@@ -169,10 +169,32 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
           end
 
           shared_examples 'committing the updated policy yaml without annotations' do
-            it 'does not call the AnnotatePolicyYamlService' do
-              expect(::Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService).not_to receive(:new)
-
-              service.execute
+            let(:updated_policy_yaml) do
+              <<~YAML
+                ---
+                scan_execution_policy:
+                - name: Updated Policy
+                  description: #{policy_hash[:description]}
+                  enabled: true
+                  actions:
+                  - scan: dast
+                    site_profile: Site Profile
+                    scanner_profile: Scanner Profile
+                  rules:
+                  - type: pipeline
+                    branches:
+                    - master
+                  policy_scope: {}
+                  metadata: {}
+                  skip_ci:
+                    allowed: false
+                    allowlist:
+                      users:
+                      - id: #{current_user.id}
+                experiments:
+                  annotate_ids:
+                    enabled: #{annotation_enabled}
+              YAML
             end
 
             it 'commits the updated policy yaml without annotations', :aggregate_failures do
@@ -236,37 +258,48 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
               updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
               expect(updated_policy_blob).to eq(annotated_updated_policy_yaml)
             end
+
+            it 'logs an info message' do
+              expect(::Gitlab::AppJsonLogger)
+              .to receive(:info)
+              .with(hash_including({
+                security_orchestration_policy_configuration_id: policy_configuration.id,
+                security_policy_management_project_id: policy_configuration.security_policy_management_project_id,
+                operation: :replace,
+                user_id: current_user.id,
+                message: 'Successfully annotated policy YAML'
+              }.deep_stringify_keys))
+
+              service.execute
+            end
+
+            context 'when the AnnotatePolicyYamlService fails' do
+              let(:annotation_enabled) { true }
+
+              before do
+                allow_next_instance_of(Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService) do |instance|
+                  allow(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'annotation error'))
+                end
+              end
+
+              it 'calls the AnnotatePolicyYamlService' do
+                expect(::Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService).to receive(:new)
+
+                service.execute
+              end
+
+              it_behaves_like 'committing the updated policy yaml without annotations'
+            end
           end
 
           context 'when the experiment option is disabled' do
             let(:experiments) { { annotate_ids: { enabled: false } } }
+            let(:annotation_enabled) { false }
 
-            let(:updated_policy_yaml) do
-              <<~YAML
-                ---
-                scan_execution_policy:
-                - name: Updated Policy
-                  description: #{policy_hash[:description]}
-                  enabled: true
-                  actions:
-                  - scan: dast
-                    site_profile: Site Profile
-                    scanner_profile: Scanner Profile
-                  rules:
-                  - type: pipeline
-                    branches:
-                    - master
-                  policy_scope: {}
-                  metadata: {}
-                  skip_ci:
-                    allowed: false
-                    allowlist:
-                      users:
-                      - id: #{current_user.id}
-                experiments:
-                  annotate_ids:
-                    enabled: false
-              YAML
+            it 'does not call the AnnotatePolicyYamlService' do
+              expect(::Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService).not_to receive(:new)
+
+              service.execute
             end
 
             it_behaves_like 'committing the updated policy yaml without annotations'

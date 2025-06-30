@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class PolicyCommitService < ::BaseContainerService
+      include Gitlab::Loggable
+
       def execute
         @policy_configuration = container.security_orchestration_policy_configuration
 
@@ -49,17 +51,28 @@ module Security
 
       def commit_policy(policy_hash)
         policy_yaml = YAML.dump(policy_hash.deep_stringify_keys)
-        yaml_to_commit = if policy_yaml_annotation_enabled?(policy_hash)
-                           SecurityOrchestrationPolicies::AnnotatePolicyYamlService.new(current_user, policy_yaml).execute[:annotated_yaml]
-                         else
-                           policy_yaml
-                         end
+        yaml_to_commit = annotate_policy_yaml(policy_yaml, policy_hash)
 
         if policy_configuration.policy_configuration_exists?
           return create_commit(::Files::UpdateService, yaml_to_commit)
         end
 
         create_commit(::Files::CreateService, yaml_to_commit)
+      end
+
+      def annotate_policy_yaml(policy_yaml, policy_hash)
+        return policy_yaml unless policy_yaml_annotation_enabled?(policy_hash)
+
+        response = SecurityOrchestrationPolicies::AnnotatePolicyYamlService.new(
+          current_user, policy_yaml
+        ).execute
+
+        if response.success?
+          log_successful_policy_yaml_annotation
+          response[:annotated_yaml]
+        else
+          policy_yaml
+        end
       end
 
       def policy_yaml_annotation_enabled?(policy_hash)
@@ -88,6 +101,18 @@ module Security
                     end
 
         "#{operation} #{Security::OrchestrationPolicyConfiguration::POLICY_PATH}"
+      end
+
+      def log_successful_policy_yaml_annotation
+        Gitlab::AppJsonLogger.info(
+          build_structured_payload(
+            security_orchestration_policy_configuration_id: policy_configuration.id,
+            security_policy_management_project_id: policy_configuration.security_policy_management_project_id,
+            operation: params[:operation],
+            user_id: current_user.id,
+            message: 'Successfully annotated policy YAML'
+          )
+        )
       end
 
       def branch_name
