@@ -18,15 +18,6 @@
   }
 }
 
-.project-mirror-button {
-  margin-top: 10px;
-
-  @include media-breakpoint-up(sm) {
-    float: right;
-    margin-top: 0;
-  }
-}
-
 .git-clone-holder {
   .btn-geo {
     border-left: 0;

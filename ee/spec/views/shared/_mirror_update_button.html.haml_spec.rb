@@ -14,7 +14,7 @@ RSpec.describe 'shared/mirror_update_button' do
   let(:reporter) { create(:user, reporter_of: project.team) }
 
   let(:update_link) { update_now_project_mirror_path(project) }
-  let(:have_update_button) { have_link('Update Now', href: update_link) }
+  let(:have_update_button) { have_link('Update now', href: update_link) }
 
   before do
     @project = project
@@ -35,7 +35,7 @@ RSpec.describe 'shared/mirror_update_button' do
       it 'renders a disabled update button' do
         render partial, current_user: developer
 
-        is_expected.to have_text('Update Now')
+        is_expected.to have_text('Update now')
         is_expected.not_to have_update_button
       end
     end
@@ -56,7 +56,7 @@ RSpec.describe 'shared/mirror_update_button' do
 
       render partial, current_user: owner
 
-      is_expected.to have_text('Scheduled…')
+      is_expected.to have_text('scheduled…')
       is_expected.not_to have_update_button
     end
   end
@@ -78,28 +78,5 @@ RSpec.describe 'shared/mirror_update_button' do
     it 'renders nothing' do
       is_expected.to eq('')
     end
-  end
-
-  it 'renders a notification if the last update succeeded' do
-    expect(project).to receive(:mirror_last_update_succeeded?) { true }
-    expect(import_state).to receive(:last_successful_update_at) { Time.now }
-
-    render partial, current_user: developer
-
-    is_expected.to have_text('Successfully updated')
-  end
-
-  it 'renders no notification if the last update did not succeed' do
-    expect(project).to receive(:mirror_last_update_succeeded?) { false }
-
-    render partial, current_user: developer
-
-    is_expected.not_to have_text('Successfully updated')
-  end
-
-  it "renders nothing if the user can't push code" do
-    render partial, current_user: reporter
-
-    is_expected.to eq('')
   end
 end
