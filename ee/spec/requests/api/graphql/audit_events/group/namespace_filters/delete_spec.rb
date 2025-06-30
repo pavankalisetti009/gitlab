@@ -58,6 +58,59 @@ RSpec.describe 'Delete a namespace filter for group level external audit event d
         expect(mutation_response['errors']).to be_empty
         expect(mutation_response['namespaceFilter']).to be_nil
       end
+
+      context 'with sync functionality' do
+        let(:legacy_destination) { create(:external_audit_event_destination, group: group) }
+
+        context 'when streaming destination has corresponding legacy destination' do
+          before do
+            destination.update_column(:legacy_destination_ref, legacy_destination.id)
+            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+          end
+
+          it 'calls sync method after successful deletion' do
+            allow_next_instance_of(Mutations::AuditEvents::Group::NamespaceFilters::Delete) do |instance|
+              allow(instance).to receive(:sync_delete_legacy_namespace_filter).and_return(nil)
+            end
+
+            mutate
+
+            expect_graphql_errors_to_be_empty
+            expect(mutation_response['errors']).to be_empty
+          end
+        end
+
+        context 'when streaming destination has no legacy destination' do
+          it 'still calls sync method but it does nothing' do
+            allow_next_instance_of(Mutations::AuditEvents::Group::NamespaceFilters::Delete) do |instance|
+              allow(instance).to receive(:sync_delete_legacy_namespace_filter).and_return(nil)
+            end
+
+            mutate
+
+            expect_graphql_errors_to_be_empty
+            expect(mutation_response['errors']).to be_empty
+          end
+        end
+
+        context 'when sync functionality is disabled' do
+          before do
+            destination.update_column(:legacy_destination_ref, legacy_destination.id)
+            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+          end
+
+          it 'still calls sync method but it does nothing due to feature flag' do
+            allow_next_instance_of(Mutations::AuditEvents::Group::NamespaceFilters::Delete) do |instance|
+              allow(instance).to receive(:sync_delete_legacy_namespace_filter).and_return(nil)
+            end
+
+            mutate
+
+            expect_graphql_errors_to_be_empty
+            expect(mutation_response['errors']).to be_empty
+          end
+        end
+      end
     end
 
     context 'when current user is a group maintainer' do

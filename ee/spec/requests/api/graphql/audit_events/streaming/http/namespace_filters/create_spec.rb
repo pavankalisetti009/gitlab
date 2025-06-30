@@ -11,13 +11,13 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
   let(:mutation) { graphql_mutation(:audit_events_streaming_http_namespace_filters_add, input) }
   let(:mutation_response) { graphql_mutation_response(:audit_events_streaming_http_namespace_filters_add) }
 
-  subject { post_graphql_mutation(mutation, current_user: current_user) }
+  subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
 
   shared_examples 'does not create namespace filter' do
     it do
       expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
-      expect { subject }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
+      expect { mutate }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
 
       expect(graphql_errors).to include(a_hash_including('message' => error_message))
       expect(mutation_response).to eq(nil)
@@ -52,7 +52,7 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
               message: "Create namespace filter for http audit event streaming destination #{destination.name} " \
                        "and namespace #{namespace.full_path}")).once.and_call_original
 
-            expect { subject }
+            expect { mutate }
               .to change { AuditEvent.count }.by(1)
 
             namespace_filter = destination.namespace_filter
@@ -75,7 +75,7 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
             end
 
             it 'returns error' do
-              expect { subject }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
+              expect { mutate }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
 
               expect(mutation_response['errors'])
                 .to match_array(['External audit event destination has already been taken'])
@@ -92,7 +92,7 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
             end
 
             it 'returns error' do
-              expect { subject }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
+              expect { mutate }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
 
               expect(mutation_response['errors']).to match_array(['Namespace has already been taken'])
               expect(mutation_response['namespaceFilter']).to be_nil
@@ -111,7 +111,7 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
           it 'returns error' do
             expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
-            expect { subject }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
+            expect { mutate }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
 
             expect(mutation_response).to include(
               'errors' => ['External audit event destination does not belong to the top-level group of the namespace.']
@@ -131,7 +131,7 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
           it 'returns error' do
             expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
-            expect { subject }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
+            expect { mutate }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
 
             expect(graphql_errors).to include(a_hash_including('message' => "#{namespace_path} is invalid"))
             expect(mutation_response).to eq(nil)
@@ -183,6 +183,35 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
         let(:error_message) { 'One and only one of [groupPath, projectPath] arguments is required.' }
 
         it_behaves_like 'does not create namespace filter'
+      end
+
+      context 'with sync functionality' do
+        let(:namespace_path) { "group_path" }
+        let_it_be(:namespace) { create(:group, parent: group) }
+
+        let(:stream_destination) { create(:audit_events_group_external_streaming_destination, group: group) }
+        let(:input) do
+          {
+            destinationId: destination.to_gid,
+            "#{namespace_path.camelize(:lower)}": namespace.full_path
+          }
+        end
+
+        context 'when legacy destination has corresponding streaming destination' do
+          before do
+            destination.update_column(:stream_destination_id, stream_destination.id)
+            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+          end
+
+          it 'calls sync method after successful operation' do
+            allow_next_instance_of(Mutations::AuditEvents::Streaming::HTTP::NamespaceFilters::Create) do |instance|
+              allow(instance).to receive(:sync_stream_namespace_filter).and_return(nil)
+            end
+
+            mutate
+            expect_graphql_errors_to_be_empty
+          end
+        end
       end
     end
 

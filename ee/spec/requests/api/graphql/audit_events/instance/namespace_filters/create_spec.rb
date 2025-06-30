@@ -91,6 +91,34 @@ RSpec.describe 'Create a namespace filter for instance level external audit even
             expect(mutation_response).to eq(nil)
           end
         end
+
+        context 'with sync functionality' do
+          let_it_be(:legacy_destination) { create(:instance_external_audit_event_destination) }
+          let(:input) do
+            {
+              destinationId: destination.to_gid,
+              namespacePath: namespace.full_path
+            }
+          end
+
+          context 'when streaming destination has corresponding legacy destination' do
+            before do
+              destination.update_column(:legacy_destination_ref, legacy_destination.id)
+              legacy_destination.update_column(:stream_destination_id, destination.id)
+              stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+            end
+
+            it 'calls sync method after successful operation' do
+              expect_next_instance_of(Mutations::AuditEvents::Instance::NamespaceFilters::Create) do |instance|
+                expect(instance).to receive(:sync_legacy_namespace_filter)
+                                .with(destination, namespace)
+              end
+
+              subject
+              expect_graphql_errors_to_be_empty
+            end
+          end
+        end
       end
 
       context 'when group_path is passed in params' do
