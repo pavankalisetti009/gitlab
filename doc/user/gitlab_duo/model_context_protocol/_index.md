@@ -42,8 +42,8 @@ To use a GitLab Duo AI-native feature with MCP:
 
 Before you can use an AI-native feature with MCP, you must:
 
-- [Install Visual Studio Code](https://code.visualstudio.com/download) (VS Code).
-- [Set up the GitLab Workflow extension for VS Code](https://marketplace.visualstudio.com/items?itemName=GitLab.gitlab-workflow#setup).
+- Install [Visual Studio Code](https://code.visualstudio.com/download) (VS Code).
+- Set up the [GitLab Workflow extension for VS Code](https://marketplace.visualstudio.com/items?itemName=GitLab.gitlab-workflow#setup). MCP requires version 6.28.2 and later.
 - Meet the following AI-native feature prerequisites:
   - [Agentic Chat prerequisites](../../gitlab_duo_chat/agentic_chat.md#use-agentic-chat-in-vs-code).
 
