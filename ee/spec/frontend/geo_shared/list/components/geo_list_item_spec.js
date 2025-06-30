@@ -4,7 +4,8 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import GeoListItemTimeAgo from 'ee/geo_shared/list/components/geo_list_item_time_ago.vue';
 import GeoListItemStatus from 'ee/geo_shared/list/components/geo_list_item_status.vue';
-import { MOCK_STATUSES, MOCK_TIME_AGO, MOCK_BULK_ACTIONS } from '../mock_data';
+import GeoListItemErrors from 'ee/geo_shared/list/components/geo_list_item_errors.vue';
+import { MOCK_STATUSES, MOCK_TIME_AGO, MOCK_BULK_ACTIONS, MOCK_ERRORS } from '../mock_data';
 
 describe('GeoListItem', () => {
   let wrapper;
@@ -15,6 +16,7 @@ describe('GeoListItem', () => {
     statusArray: MOCK_STATUSES,
     timeAgoArray: MOCK_TIME_AGO,
     actionsArray: MOCK_BULK_ACTIONS,
+    errorsArray: [],
   };
 
   const createComponent = ({ props, extraDetails } = {}) => {
@@ -32,6 +34,7 @@ describe('GeoListItem', () => {
   const findStatus = () => wrapper.findComponent(GeoListItemStatus);
   const findActions = () => wrapper.findAllComponents(GlButton);
   const findTimeAgos = () => wrapper.findAllComponents(GeoListItemTimeAgo);
+  const findErrors = () => wrapper.findComponent(GeoListItemErrors);
   const findExtraDetails = () => wrapper.findByTestId('extra-details');
 
   describe('list item status', () => {
@@ -125,6 +128,28 @@ describe('GeoListItem', () => {
       ];
 
       expect(expectedProps).toStrictEqual(mockProps);
+    });
+  });
+
+  describe('errors', () => {
+    describe('with no errors present', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('does not render the errors component', () => {
+        expect(findErrors().exists()).toBe(false);
+      });
+    });
+
+    describe('with errors present', () => {
+      beforeEach(() => {
+        createComponent({ props: { errorsArray: MOCK_ERRORS } });
+      });
+
+      it('renders the errors component with correct errorsArray', () => {
+        expect(findErrors().props('errorsArray')).toStrictEqual(MOCK_ERRORS);
+      });
     });
   });
 });

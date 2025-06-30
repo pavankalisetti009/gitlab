@@ -21,6 +21,8 @@ export default {
     modelRecordId: s__('Geo|Model record: %{modelRecordId}'),
     replicationStatus: s__('Geo|Replication: %{status}'),
     verificationStatus: s__('Geo|Verification: %{status}'),
+    replicationFailure: s__('Geo|Replication failure'),
+    verificationFailure: s__('Geo|Verification failure'),
   },
   components: {
     GeoListItem,
@@ -53,6 +55,16 @@ export default {
       default: '',
     },
     lastVerified: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    lastSyncFailure: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    verificationFailure: {
       type: String,
       required: false,
       default: '',
@@ -137,6 +149,25 @@ export default {
 
       return actions;
     },
+    errorsArray() {
+      const errors = [];
+
+      if (this.lastSyncFailure) {
+        errors.push({
+          label: this.$options.i18n.replicationFailure,
+          message: this.lastSyncFailure,
+        });
+      }
+
+      if (this.verificationFailure) {
+        errors.push({
+          label: this.$options.i18n.verificationFailure,
+          message: this.verificationFailure,
+        });
+      }
+
+      return errors;
+    },
   },
   methods: {
     ...mapActions(['initiateReplicableAction']),
@@ -158,6 +189,7 @@ export default {
     :status-array="statusArray"
     :time-ago-array="timeAgoArray"
     :actions-array="actionsArray"
+    :errors-array="errorsArray"
     @actionClicked="handleActionClicked"
   >
     <template #extra-details>

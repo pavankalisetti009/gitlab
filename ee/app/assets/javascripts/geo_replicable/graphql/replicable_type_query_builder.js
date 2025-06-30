@@ -20,6 +20,7 @@ export default (graphQlFieldName, verificationEnabled) => {
             modelRecordId
             verifiedAt @include (if: ${verificationEnabled})
             verificationState @include (if: ${verificationEnabled})
+            verificationFailure @include (if: ${verificationEnabled})
             createdAt
           }
         }

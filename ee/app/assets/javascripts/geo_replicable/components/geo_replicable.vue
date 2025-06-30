@@ -33,6 +33,8 @@ export default {
       :verification-state="item.verificationState"
       :last-synced="item.lastSyncedAt"
       :last-verified="item.verifiedAt"
+      :last-sync-failure="item.lastSyncFailure"
+      :verification-failure="item.verificationFailure"
     />
     <div class="gl-mt-6 gl-flex gl-justify-center">
       <gl-keyset-pagination

@@ -95,3 +95,14 @@ export const MOCK_EMPTY_STATE = {
   helpLink: '/help/link',
   hasFilters: false,
 };
+
+export const MOCK_ERRORS = [
+  {
+    label: 'Error type A',
+    message: 'There was an error',
+  },
+  {
+    label: 'Error type B',
+    message: 'There was another error',
+  },
+];

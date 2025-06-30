@@ -2,12 +2,14 @@
 import { GlLink, GlButton } from '@gitlab/ui';
 import GeoListItemStatus from './geo_list_item_status.vue';
 import GeoListItemTimeAgo from './geo_list_item_time_ago.vue';
+import GeoListItemErrors from './geo_list_item_errors.vue';
 
 export default {
   components: {
     GlLink,
     GeoListItemTimeAgo,
     GeoListItemStatus,
+    GeoListItemErrors,
     GlButton,
   },
   props: {
@@ -31,6 +33,11 @@ export default {
       default: () => [],
     },
     actionsArray: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+    errorsArray: {
       type: Array,
       required: false,
       default: () => [],
@@ -78,5 +85,6 @@ export default {
         :show-divider="index < timeAgoArray.length - 1"
       />
     </div>
+    <geo-list-item-errors v-if="errorsArray.length" :errors-array="errorsArray" class="gl-pl-2" />
   </div>
 </template>

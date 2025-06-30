@@ -36,6 +36,8 @@ describe('GeoReplicableItem', () => {
     verificationState: mockReplicable.verificationState,
     lastSynced: mockReplicable.lastSyncedAt,
     lastVerified: mockReplicable.verifiedAt,
+    lastSyncFailure: mockReplicable.lastSyncFailure,
+    verificationFailure: mockReplicable.verificationFailure,
   };
 
   const createComponent = ({ props, state, featureFlags } = {}) => {
@@ -240,6 +242,29 @@ describe('GeoReplicableItem', () => {
       expect(findReplicableItemModelRecordId().attributes('message')).toBe(
         'Model record: %{modelRecordId}',
       );
+    });
+  });
+
+  describe.each`
+    lastSyncFailure         | verificationFailure    | expectedErrors
+    ${null}                 | ${null}                | ${[]}
+    ${'Connection timeout'} | ${null}                | ${[{ label: 'Replication failure', message: 'Connection timeout' }]}
+    ${null}                 | ${'Checksum mismatch'} | ${[{ label: 'Verification failure', message: 'Checksum mismatch' }]}
+    ${'Connection timeout'} | ${'Checksum mismatch'} | ${[{ label: 'Replication failure', message: 'Connection timeout' }, { label: 'Verification failure', message: 'Checksum mismatch' }]}
+  `('error handling', ({ lastSyncFailure, verificationFailure, expectedErrors }) => {
+    describe(`when lastSyncFailure is "${lastSyncFailure}" and verificationFailure is "${verificationFailure}"`, () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            lastSyncFailure,
+            verificationFailure,
+          },
+        });
+      });
+
+      it(`renders GeoListItem with correct errors array`, () => {
+        expect(findGeoListItem().props('errorsArray')).toStrictEqual(expectedErrors);
+      });
     });
   });
 });
