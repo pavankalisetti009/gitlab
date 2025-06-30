@@ -8,6 +8,10 @@ module Security
       def execute(delete_bot: true)
         return error(_('Policy project doesn\'t exist')) unless security_orchestration_policy_configuration
 
+        if container.designated_as_csp?
+          return error(_("You cannot unassign security policy project for group designated as CSP."))
+        end
+
         old_policy_project = security_orchestration_policy_configuration.security_policy_management_project
 
         remove_bot if delete_bot

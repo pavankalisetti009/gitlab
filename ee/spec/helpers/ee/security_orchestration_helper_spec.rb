@@ -19,9 +19,26 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       expect(helper.can_update_security_orchestration_policy_project?(project)).to eq false
     end
 
-    it 'returns true when user can update security orchestration policy project' do
-      allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project, project) { true }
-      expect(helper.can_update_security_orchestration_policy_project?(project)).to eq true
+    context 'when user can update security orchestration policy project' do
+      it 'returns true for project' do
+        allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project, project) { true }
+        expect(helper.can_update_security_orchestration_policy_project?(project)).to eq true
+      end
+
+      context 'for namespace' do
+        before do
+          allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project, namespace) { true }
+        end
+
+        it 'returns true' do
+          expect(helper.can_update_security_orchestration_policy_project?(namespace)).to eq true
+        end
+
+        it 'returns false when designated as CSP' do
+          allow(namespace).to receive(:designated_as_csp?).and_return(true)
+          expect(helper.can_update_security_orchestration_policy_project?(namespace)).to eq false
+        end
+      end
     end
   end
 

@@ -2,7 +2,7 @@
 
 module EE::SecurityOrchestrationHelper
   def can_update_security_orchestration_policy_project?(container)
-    can?(current_user, :update_security_orchestration_policy_project, container)
+    can?(current_user, :update_security_orchestration_policy_project, container) && !container.designated_as_csp?
   end
 
   def can_modify_security_policy?(container)

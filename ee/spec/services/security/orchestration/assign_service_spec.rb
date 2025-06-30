@@ -17,12 +17,24 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
   let(:another_container) { another_project }
 
   describe '#execute' do
+    let(:params) { { policy_project_id: policy_project.id } }
+
     subject(:service) do
-      described_class.new(container: container, current_user: current_user, params: { policy_project_id: policy_project.id }).execute
+      described_class.new(container: container, current_user: current_user, params: params).execute
     end
 
     before do
       stub_licensed_features(security_orchestration_policies: true)
+    end
+
+    shared_examples_for 'assigns the policy project' do
+      it 'can assign a policy project and logs audit event', :aggregate_failures do
+        expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
+        expect(service).to be_success
+        expect(
+          container.security_orchestration_policy_configuration.security_policy_management_project_id
+        ).to eq(policy_project.id)
+      end
     end
 
     shared_context 'when policy project is already inherited' do
@@ -73,7 +85,9 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
         end
 
         context 'when policy project is assigned' do
-          it 'assigns policy project to container and logs audit event' do
+          it_behaves_like 'assigns the policy project'
+
+          it 'logs audit event' do
             audit_context = {
               name: "policy_project_updated",
               author: current_user,
@@ -82,13 +96,8 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
               message: "Linked #{policy_project.name} as the security policy project"
             }
             expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context)
-            expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
 
-            expect(service).to be_success
-
-            expect(
-              container.security_orchestration_policy_configuration.security_policy_management_project_id
-            ).to eq(policy_project.id)
+            service
           end
 
           it 'assigns same policy to different container' do
@@ -200,7 +209,8 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
                 'Security::OrchestrationPolicyConfiguration',
                 security_orchestration_policy_configuration: dbl_error,
                 all_security_orchestration_policy_configurations: [],
-                id: non_existing_record_id
+                id: non_existing_record_id,
+                designated_as_csp?: false
               )
 
             allow(current_user).to receive(:can?).with(:update_security_orchestration_policy_project, dbl).and_return(true)
@@ -300,6 +310,45 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
           expect(::Security::UnassignRedundantPolicyConfigurationsWorker).to receive(:perform_async).with(container.id, policy_project.id, current_user.id)
 
           service
+        end
+      end
+
+      describe 'CSP validation' do
+        include Security::PolicyCspHelpers
+
+        let_it_be_with_refind(:csp_group) { create(:group) }
+        let(:container) { csp_group }
+
+        before do
+          container.add_owner(current_user)
+          stub_csp_group(csp_group)
+        end
+
+        context 'when the policy project is not yet assigned' do
+          it_behaves_like 'assigns the policy project'
+        end
+
+        context 'when the policy project is already assigned' do
+          let_it_be(:csp_policy_project) { create(:project, group: csp_group) }
+          let_it_be(:csp_security_orchestration_policy_configuration) do
+            create(:security_orchestration_policy_configuration, :namespace, namespace: csp_group,
+              security_policy_management_project: csp_policy_project)
+          end
+
+          it 'can not reassign a policy project', :aggregate_failures do
+            expect { service }.not_to change { container.reload.security_orchestration_policy_configuration }
+                                        .from(csp_security_orchestration_policy_configuration)
+            expect(service).to be_error
+            expect(service.message).to eq("You cannot modify security policy project for group designated as CSP.")
+          end
+
+          context 'with feature flag "security_policies_csp" disabled' do
+            before do
+              stub_feature_flags(security_policies_csp: false)
+            end
+
+            it_behaves_like 'assigns the policy project'
+          end
         end
       end
     end

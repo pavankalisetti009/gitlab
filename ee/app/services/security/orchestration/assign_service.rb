@@ -8,6 +8,10 @@ module Security
 
         return error(_("Security policy project is already assigned.")) if policy_project_assigned?
 
+        if csp_group_with_existing_policy?
+          return error(_("You cannot modify security policy project for group designated as CSP."))
+        end
+
         if policy_project_inherited?
           return error(_("You don't need to link the security policy projects from the group. " \
                          "All policies in the security policy projects are inherited already."))
@@ -134,6 +138,10 @@ module Security
         # rubocop:disable CodeReuse/ActiveRecord -- Not suitable for a scope
         Security::OrchestrationPolicyConfiguration.exists?(attrs)
         # rubocop:enable CodeReuse/ActiveRecord
+      end
+
+      def csp_group_with_existing_policy?
+        container.designated_as_csp? && has_existing_policy?
       end
 
       def policy_project_inherited?

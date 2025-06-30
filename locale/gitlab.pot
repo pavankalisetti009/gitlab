@@ -71757,6 +71757,9 @@ msgstr ""
 msgid "You cannot invite a new member to %{strong_start}%{project_name}%{strong_end}. User invitations are disabled by the %{actor}."
 msgstr ""
 
+msgid "You cannot modify security policy project for group designated as CSP."
+msgstr ""
+
 msgid "You cannot play this scheduled pipeline at the moment. Please wait a minute."
 msgstr ""
 
@@ -71764,6 +71767,9 @@ msgid "You cannot rename an environment after it's created."
 msgstr ""
 
 msgid "You cannot set yourself to awaiting"
+msgstr ""
+
+msgid "You cannot unassign security policy project for group designated as CSP."
 msgstr ""
 
 msgid "You cannot verify %{value} because it is a popular public email domain."
