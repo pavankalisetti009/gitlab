@@ -1,18 +1,14 @@
 import Vue, { nextTick } from 'vue';
 import { createTestingPinia } from '@pinia/testing';
 import { PiniaVuePlugin } from 'pinia';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import CommentTemperature from 'ee_component/ai/components/comment_temperature.vue';
 import MarkdownEditor from '~/vue_shared/components/markdown/markdown_editor.vue';
 import NoteForm from '~/notes/components/note_form.vue';
-import createStore from '~/notes/stores';
 import { globalAccessorPlugin } from '~/pinia/plugins';
 import { useNotes } from '~/notes/store/legacy_notes';
 import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 import { useBatchComments } from '~/batch_comments/store';
-import mrNotesStore from '~/mr_notes/stores/modules';
 import {
   notesDataMock,
   noteableDataMock,
@@ -41,20 +37,15 @@ describe('issue_comment_form component', () => {
     noteableType = 'Issue',
     abilities = {},
     stubs = {},
-    store = createStore(),
   } = {}) => {
-    store.registerModule('page', new Vuex.Store(mrNotesStore));
-    // eslint-disable-next-line no-param-reassign
-    store.state.page.activeTab = 'diffs';
-    store.dispatch('setNoteableData', {
+    useNotes().noteableData = {
       ...noteableDataMock,
       noteableType,
-    });
-    store.dispatch('setNotesData', notesDataMock);
-    store.dispatch('setUserData', userDataMock);
+    };
+    useNotes().notesData = notesDataMock;
+    useNotes().userData = userDataMock;
 
     wrapper = mountExtended(NoteForm, {
-      store,
       pinia,
       propsData: {
         isEditing: false,
@@ -214,7 +205,6 @@ describe('issue_comment_form component', () => {
 
           beforeEach(() => {
             bootstrapFn = (updatedNoteBody = badNote) => {
-              const store = createStore();
               createComponentWrapper({
                 noteableType,
                 initialData: { updatedNoteBody },
@@ -228,7 +218,6 @@ describe('issue_comment_form component', () => {
                 stubs: {
                   CommentTemperature,
                 },
-                store,
               });
               findCommentTemperature().vm.measureCommentTemperature = measureCommentTemperatureMock;
             };

@@ -1,16 +1,23 @@
 import { mount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
 import waitForPromises from 'helpers/wait_for_promises';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK, HTTP_STATUS_SERVICE_UNAVAILABLE } from '~/lib/utils/http_status';
-import createStore from '~/notes/stores';
 import IssueSystemNote from '~/vue_shared/components/notes/system_note.vue';
+import { useNotes } from '~/notes/store/legacy_notes';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+
+Vue.use(PiniaVuePlugin);
 
 describe('system note component', () => {
   let wrapper;
   let props;
   let mock;
+  let pinia;
 
   const diffData = '<span class="idiff">Description</span><span class="idiff addition">Diff</span>';
   const multilinbeDiffData = `<span class="idiff">some  text
@@ -41,6 +48,7 @@ describe('system note component', () => {
     wrapper.find('[data-testid="delete-description-version-button"]');
 
   beforeEach(() => {
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin], stubActions: false });
     props = {
       note: {
         id: '1424',
@@ -63,13 +71,13 @@ describe('system note component', () => {
       },
     };
 
-    const store = createStore();
-    store.dispatch('setTargetNoteHash', `note_${props.note.id}`);
+    useLegacyDiffs();
+    useNotes().setTargetNoteHash(`note_${props.note.id}`);
 
     mock = new MockAdapter(axios);
 
     wrapper = mount(IssueSystemNote, {
-      store,
+      pinia,
       propsData: props,
       provide: {
         glFeatures: { saveDescriptionVersions: true, descriptionDiffs: true },

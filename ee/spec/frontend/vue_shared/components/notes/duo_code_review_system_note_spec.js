@@ -1,21 +1,31 @@
+import Vue from 'vue';
 import { mount } from '@vue/test-utils';
-import createStore from '~/notes/stores';
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
 import DuoCodeReviewSystemNote from 'ee/vue_shared/components/notes/duo_code_review_system_note.vue';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useNotes } from '~/notes/store/legacy_notes';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+
+Vue.use(PiniaVuePlugin);
 
 describe('Duo code review system note component', () => {
+  let pinia;
   let vm;
 
   function createComponent(propsData = {}) {
-    const store = createStore();
-    store.dispatch('setTargetNoteHash', `note_${propsData.note.id}`);
+    useNotes().setTargetNoteHash(`note_${propsData.note.id}`);
 
     vm = mount(DuoCodeReviewSystemNote, {
-      store,
+      pinia,
       propsData,
     });
   }
 
   beforeEach(() => {
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin], stubActions: false });
+    useLegacyDiffs();
+    useNotes();
     createComponent({
       note: {
         id: '1424',
