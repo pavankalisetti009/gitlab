@@ -12953,9 +12953,12 @@ Input type: `WorkItemBulkUpdateInput`
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mutationworkitembulkupdateassigneeswidget"></a>`assigneesWidget` {{< icon name="warning-solid" >}} | [`WorkItemWidgetAssigneesInput`](#workitemwidgetassigneesinput) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitembulkupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitembulkupdateconfidential"></a>`confidential` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitembulkupdateids"></a>`ids` | [`[WorkItemID!]!`](#workitemid) | Global ID array of the issues that will be updated. IDs that the user can't update will be ignored. A max of 100 can be provided. |
 | <a id="mutationworkitembulkupdatelabelswidget"></a>`labelsWidget` | [`WorkItemWidgetLabelsUpdateInput`](#workitemwidgetlabelsupdateinput) | Input for labels widget. |
+| <a id="mutationworkitembulkupdatemilestonewidget"></a>`milestoneWidget` {{< icon name="warning-solid" >}} | [`WorkItemWidgetMilestoneInput`](#workitemwidgetmilestoneinput) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitembulkupdateparentid"></a>`parentId` | [`WorkItemsParentID!`](#workitemsparentid) | Global ID of the parent to which the bulk update will be scoped. The parent can be a project. The parent can also be a group (Premium and Ultimate only). Example `WorkItemsParentID` are `"gid://gitlab/Project/1"` and `"gid://gitlab/Group/1"`. |
 
 #### Fields

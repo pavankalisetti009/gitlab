@@ -17,11 +17,17 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
   let_it_be_with_reload(:work_item2) { create(:work_item, project: project, labels: [label1]) }
   let_it_be_with_reload(:work_item3) { create(:work_item, :group_level, namespace: parent_group, labels: [label1]) }
   let_it_be_with_reload(:work_item4) { create(:work_item, :group_level, namespace: private_group, labels: [label3]) }
+  let_it_be_with_reload(:epic) { create(:work_item, :epic, namespace: group, labels: [label1]) }
 
   let(:mutation) { graphql_mutation(:work_item_bulk_update, base_arguments.merge(widget_arguments)) }
   let(:mutation_response) { graphql_mutation_response(:work_item_bulk_update) }
   let(:current_user) { developer }
-  let(:work_item_ids) { [work_item1, work_item2, work_item3, work_item4].map { |work_item| work_item.to_gid.to_s } }
+  let(:work_item_ids) do
+    [work_item1, work_item2, work_item3, work_item4, epic].map do |work_item|
+      work_item.to_gid.to_s
+    end
+  end
+
   let(:base_arguments) { { parent_id: parent.to_gid.to_s, ids: work_item_ids } }
 
   let(:widget_arguments) do
@@ -47,8 +53,13 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
             post_graphql_mutation(mutation, current_user: current_user)
           end.to change { work_item1.reload.label_ids }.from([label1.id]).to([label2.id])
             .and change { work_item2.reload.label_ids }.from([label1.id]).to([label2.id])
+            .and change { epic.reload.label_ids }.from([label1.id]).to([label2.id])
             .and not_change { work_item3.reload.label_ids }.from([label1.id])
             .and not_change { work_item4.reload.label_ids }.from([label3.id])
+
+          expect(mutation_response).to include(
+            'updatedWorkItemCount' => 3
+          )
         end
 
         context 'when current user cannot read the specified group' do
@@ -60,6 +71,103 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
             expect_graphql_errors_to_include(
               "The resource that you are attempting to access does not exist or you don't have " \
                 'permission to perform this action'
+            )
+          end
+        end
+
+        context 'when updating confidentiality' do
+          let(:widget_arguments) do
+            {
+              confidential: true
+            }
+          end
+
+          it 'updates confidentiality for work items in the group hierarchy' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.reload.confidential }.from(false).to(true)
+              .and change { work_item2.reload.confidential }.from(false).to(true)
+              .and change { epic.reload.confidential }.from(false).to(true)
+              .and not_change { work_item3.reload.confidential }.from(false)
+              .and not_change { work_item4.reload.confidential }.from(false)
+
+            expect(mutation_response).to include(
+              'updatedWorkItemCount' => 3
+            )
+          end
+
+          context 'when epic has non-confidential children' do
+            let_it_be(:child_issue) { create(:work_item, project: project, confidential: false) }
+
+            before do
+              create(:parent_link, work_item_parent: epic, work_item: child_issue)
+            end
+
+            it 'does not update the epic confidentiality and continues with other work items' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change { work_item1.reload.confidential }.from(false).to(true)
+                .and change { work_item2.reload.confidential }.from(false).to(true)
+                .and not_change { epic.reload.confidential }.from(false) # Epic fails to update
+                .and not_change { work_item3.reload.confidential }.from(false)
+                .and not_change { work_item4.reload.confidential }.from(false)
+
+              expect(mutation_response).to include(
+                'updatedWorkItemCount' => 2 # Only 2 items updated instead of 3
+              )
+            end
+          end
+        end
+
+        context 'when updating assignees widget' do
+          let_it_be(:assignee1) { create(:user, developer_of: group) }
+          let_it_be(:assignee2) { create(:user, developer_of: group) }
+
+          let(:widget_arguments) do
+            {
+              assignees_widget: {
+                assignee_ids: [assignee1.to_gid.to_s, assignee2.to_gid.to_s]
+              }
+            }
+          end
+
+          it 'updates assignees for work items in the group hierarchy' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.reload.assignee_ids.sort }.from([]).to([assignee1.id, assignee2.id])
+              .and change { work_item2.reload.assignee_ids.sort }.from([]).to([assignee1.id, assignee2.id])
+              .and change { epic.reload.assignee_ids.sort }.from([]).to([assignee1.id, assignee2.id])
+              .and not_change { work_item3.reload.assignee_ids }.from([])
+              .and not_change { work_item4.reload.assignee_ids }.from([])
+
+            expect(mutation_response).to include(
+              'updatedWorkItemCount' => 3
+            )
+          end
+        end
+
+        context 'when updating milestone widget' do
+          let_it_be(:group_milestone) { create(:milestone, group: group) }
+
+          let(:widget_arguments) do
+            {
+              milestone_widget: {
+                milestone_id: group_milestone.to_gid.to_s
+              }
+            }
+          end
+
+          it 'updates milestone for work items in the group hierarchy' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.reload.milestone_id }.from(nil).to(group_milestone.id)
+              .and change { work_item2.reload.milestone_id }.from(nil).to(group_milestone.id)
+              .and change { epic.reload.milestone_id }.from(nil).to(group_milestone.id)
+              .and not_change { work_item3.reload.milestone_id }.from(nil)
+              .and not_change { work_item4.reload.milestone_id }.from(nil)
+
+            expect(mutation_response).to include(
+              'updatedWorkItemCount' => 3
             )
           end
         end
