@@ -18,6 +18,11 @@ RSpec.describe 'Update Instance Google Cloud logging configuration', feature_cat
   let(:current_user) { admin }
   let(:mutation) { graphql_mutation(:instance_google_cloud_logging_configuration_update, input) }
   let(:mutation_response) { graphql_mutation_response(:instance_google_cloud_logging_configuration_update) }
+  let(:mutation_name) { :instance_google_cloud_logging_configuration_update }
+  let(:mutation_field) { 'instanceGoogleCloudLoggingConfiguration' }
+  let(:event_name) { 'instance_google_cloud_logging_configuration_updated' }
+
+  let(:model) { config }
 
   let(:input) do
     {
@@ -26,7 +31,8 @@ RSpec.describe 'Update Instance Google Cloud logging configuration', feature_cat
       clientEmail: updated_client_email,
       privateKey: updated_private_key,
       logIdName: updated_log_id_name,
-      name: updated_destination_name
+      name: updated_destination_name,
+      active: true
     }
   end
 
@@ -87,6 +93,8 @@ RSpec.describe 'Update Instance Google Cloud logging configuration', feature_cat
           create(:audit_events_instance_external_streaming_destination, :gcp,
             legacy_destination_ref: config.id)
         end
+
+        it_behaves_like 'audits legacy active status changes'
 
         it_behaves_like 'updates a streaming destination',
           :config,
