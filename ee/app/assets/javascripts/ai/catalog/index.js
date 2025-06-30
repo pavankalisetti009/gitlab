@@ -7,6 +7,7 @@ import AiCatalogApp from './ai_catalog_app.vue';
 import { createRouter } from './router';
 
 import aiCatalogAgentsQuery from './graphql/ai_catalog_agents.query.graphql';
+import aiCatalogAgentQuery from './graphql/ai_catalog_agent.query.graphql';
 
 export const initAiCatalog = (selector = '#js-ai-catalog') => {
   const el = document.querySelector(selector);
@@ -25,36 +26,53 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
   });
 
   /* eslint-disable @gitlab/require-i18n-strings */
+  const agent1 = {
+    id: 1,
+    type: 'agent',
+    name: 'Claude Sonnet 4',
+    description: 'Smart, efficient model for everyday user',
+    model: 'claude-sonnet-4-20250514',
+    verified: true,
+    version: 'v4.2',
+    releasedAt: new Date(),
+  };
+
+  const agent2 = {
+    id: 2,
+    type: 'agent',
+    name: 'Claude Opus 4',
+    description: 'Powerful, large model for complex challenges',
+    model: 'claude-opus-4-20250514',
+    verified: true,
+    version: 'v4.2',
+    releasedAt: new Date(),
+  };
+  /* eslint-enable @gitlab/require-i18n-strings */
+
   apolloProvider.clients.defaultClient.cache.writeQuery({
     query: aiCatalogAgentsQuery,
     data: {
       aiCatalogAgents: {
-        nodes: [
-          {
-            id: 1,
-            type: 'agent',
-            name: 'Claude Sonnet 4',
-            description: 'Smart, efficient model for everyday user',
-            model: 'claude-sonnet-4-20250514',
-            verified: true,
-            version: 'v4.2',
-            releasedAt: new Date(),
-          },
-          {
-            id: 2,
-            type: 'agent',
-            name: 'Claude Opus 4',
-            description: 'Powerful, large model for complex challenges',
-            model: 'claude-opus-4-20250514',
-            verified: true,
-            version: 'v4.2',
-            releasedAt: new Date(),
-          },
-        ],
+        nodes: [agent1, agent2],
       },
     },
   });
-  /* eslint-enable @gitlab/require-i18n-strings */
+
+  apolloProvider.clients.defaultClient.cache.writeQuery({
+    query: aiCatalogAgentQuery,
+    variables: { id: '1' },
+    data: {
+      aiCatalogAgent: agent1,
+    },
+  });
+
+  apolloProvider.clients.defaultClient.cache.writeQuery({
+    query: aiCatalogAgentQuery,
+    variables: { id: '2' },
+    data: {
+      aiCatalogAgent: agent2,
+    },
+  });
 
   return new Vue({
     el,
