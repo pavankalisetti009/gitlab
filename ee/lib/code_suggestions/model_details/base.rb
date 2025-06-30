@@ -19,11 +19,7 @@ module CodeSuggestions
       strong_memoize_attr :feature_setting
 
       def base_url
-        if namespace_feature_setting?
-          Gitlab::AiGateway.url
-        else
-          feature_setting&.base_url || Gitlab::AiGateway.url
-        end
+        feature_setting&.base_url || Gitlab::AiGateway.url
       end
 
       def feature_name
@@ -40,8 +36,6 @@ module CodeSuggestions
       end
 
       def feature_disabled?
-        return false if namespace_feature_setting?
-
         # In case the code suggestions feature is being used via self-hosted models,
         # it can also be disabled completely. In such cases, this check
         # can be used to prevent exposing the feature via UI/API.
@@ -49,8 +43,6 @@ module CodeSuggestions
       end
 
       def self_hosted?
-        return false if namespace_feature_setting?
-
         !!feature_setting&.self_hosted?
       end
 

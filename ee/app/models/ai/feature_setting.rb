@@ -2,6 +2,8 @@
 
 module Ai
   class FeatureSetting < ApplicationRecord
+    include ::Ai::FeatureConfigurable
+
     self.table_name = "ai_feature_settings"
 
     STABLE_FEATURES = {
@@ -26,18 +28,6 @@ module Ai
     }.freeze
 
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)
-
-    FEATURE_METADATA_PATH = Rails.root.join('ee/lib/gitlab/ai/feature_settings/feature_metadata.yml')
-    FEATURE_METADATA = YAML.load_file(FEATURE_METADATA_PATH)
-
-    FeatureMetadata = Struct.new(
-      :title,
-      :main_feature,
-      :compatible_llms,
-      :release_state,
-      :unit_primitives,
-      keyword_init: true
-    )
 
     belongs_to :self_hosted_model, foreign_key: :ai_self_hosted_model_id, inverse_of: :feature_settings
 
@@ -106,7 +96,7 @@ module Ai
       end
 
       def unit_primitive_to_feature_name_map
-        FEATURE_METADATA.each_with_object({}) do |(feature_name, metadata), result|
+        ::Ai::FeatureConfigurable::FEATURE_METADATA.each_with_object({}) do |(feature_name, metadata), result|
           metadata['unit_primitives'].each do |unit_primitive|
             result[unit_primitive] = feature_name
           end
@@ -124,12 +114,6 @@ module Ai
 
     def base_url
       Gitlab::AiGateway.url if self_hosted?
-    end
-
-    def metadata
-      feature_metadata = FEATURE_METADATA[feature.to_s] || {}
-
-      FeatureMetadata.new(feature_metadata)
     end
 
     def compatible_self_hosted_models
@@ -152,6 +136,34 @@ module Ai
         selected_model: selected_model.capitalize,
         title: title)
       errors.add(:base, message)
+    end
+
+    def ready_for_request?
+      self_hosted? && self_hosted_model
+    end
+
+    def model_metadata_params
+      return unless ready_for_request?
+
+      {
+        provider: self_hosted_model.provider,
+        name: self_hosted_model.model,
+        endpoint: self_hosted_model.endpoint,
+        api_key: self_hosted_model.api_token,
+        identifier: self_hosted_model.identifier
+      }
+    end
+
+    def model_request_params
+      return unless ready_for_request?
+
+      {
+        provider: :litellm,
+        model: self_hosted_model.model,
+        model_endpoint: self_hosted_model.endpoint,
+        model_api_key: self_hosted_model.api_token,
+        model_identifier: self_hosted_model.identifier
+      }
     end
   end
 end

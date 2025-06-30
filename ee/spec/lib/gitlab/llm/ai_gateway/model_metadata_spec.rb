@@ -75,36 +75,4 @@ RSpec.describe Gitlab::Llm::AiGateway::ModelMetadata, feature_category: :ai_abst
       end
     end
   end
-
-  describe '#self_hosted_params' do
-    let(:model_metadata) { described_class.new(feature_setting: feature_setting) }
-
-    subject(:self_hosted_params) { model_metadata.self_hosted_params }
-
-    context 'when feature is nil' do
-      let(:feature_setting) { nil }
-
-      it { is_expected.to be_nil }
-    end
-
-    context 'when feature is not self_hosted' do
-      before do
-        allow(feature_setting).to receive(:self_hosted_model).and_return(nil)
-      end
-
-      it { is_expected.to be_nil }
-    end
-
-    context 'when feature is self_hosted' do
-      it 'returns model configuration' do
-        is_expected.to eq({
-          api_key: "token",
-          endpoint: "http://localhost:11434/v1",
-          identifier: "provider/some-model",
-          name: "mistral",
-          provider: :openai
-        })
-      end
-    end
-  end
 end

@@ -4,6 +4,7 @@ module Ai
   module ModelSelection
     module FeaturesConfigurable
       extend ActiveSupport::Concern
+      include Ai::FeatureConfigurable
 
       MODEL_PROVIDER = "gitlab"
 
@@ -63,6 +64,10 @@ module Ai
       # Gitlab::Llm::Chain::Requests::AiGateway#namespace_feature_setting
       # See https://gitlab.com/gitlab-org/gitlab/-/issues/551318
 
+      def model_selection_scope
+        raise NotImplementedError, '#model_selection_scope method must be implemented for Model Selection logic'
+      end
+
       included do
         enum :feature, FEATURES, validate: true
 
@@ -97,18 +102,32 @@ module Ai
           feature_name
         end
 
-        def model_selection_scope
-          raise NotImplementedError, '#model_selection_scope method must be implemented for Model Selection logic'
+        def self_hosted?
+          false
         end
 
-        def metadata
-          feature_metadata = Ai::FeatureSetting::FEATURE_METADATA[feature.to_s] || {}
-
-          Ai::FeatureSetting::FeatureMetadata.new(feature_metadata)
+        def disabled?
+          false
         end
 
         def provider
           MODEL_PROVIDER
+        end
+
+        def base_url
+          Gitlab::AiGateway.url
+        end
+
+        def model_metadata_params
+          {
+            provider: provider,
+            feature_setting: feature,
+            identifier: offered_model_ref
+          }
+        end
+
+        def model_request_params
+          model_metadata_params
         end
 
         private

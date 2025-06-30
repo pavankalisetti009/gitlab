@@ -24,6 +24,41 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
     it { is_expected.to validate_uniqueness_of(:feature).scoped_to(:namespace_id).ignoring_case_sensitivity }
   end
 
+  describe 'when ::Ai::FeatureConfigurable is included' do
+    context 'with request model info' do
+      let(:feature_setting) { create(:ai_namespace_feature_setting) }
+
+      # results for #model_metadata_params and #model_request_params
+      # are expected to be the same
+      let(:expected_params_for_request) { expected_params_for_metadata }
+
+      context 'when model info should be resolved' do
+        it_behaves_like 'configurable AI features resolves model info correctly' do
+          let(:expected_params_for_metadata) do
+            {
+              feature_setting: "code_completions",
+              identifier: "claude_sonnet_3_7",
+              provider: "gitlab"
+            }
+          end
+        end
+      end
+
+      context 'when the feature setting is default' do
+        it_behaves_like 'configurable AI features resolves model info correctly' do
+          let(:feature_setting) { create(:ai_namespace_feature_setting, offered_model_ref: nil) }
+          let(:expected_params_for_metadata) do
+            {
+              feature_setting: "code_completions",
+              identifier: nil,
+              provider: "gitlab"
+            }
+          end
+        end
+      end
+    end
+  end
+
   describe '.find_or_initialize_by_feature' do
     let(:existing_feature) { ai_feature_setting.feature.to_sym }
     let(:new_feature_enum) { :code_completions }

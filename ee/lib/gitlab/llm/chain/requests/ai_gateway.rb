@@ -7,6 +7,7 @@ module Gitlab
         class AiGateway < Base
           extend ::Gitlab::Utils::Override
 
+          include ::Gitlab::Utils::StrongMemoize
           include ::Gitlab::Llm::Concerns::AvailableModels
           include ::Gitlab::Llm::Concerns::AllowedParams
           include ::Gitlab::Llm::Concerns::EventTracking
@@ -93,8 +94,7 @@ module Gitlab
                 ENDPOINT
               end
 
-            base_url =
-              chat_feature_setting(unit_primitive: unit_primitive)&.base_url || ::Gitlab::AiGateway.url
+            base_url = feature_setting(unit_primitive)&.base_url || ::Gitlab::AiGateway.url
 
             "#{base_url}#{path}"
           end
@@ -130,8 +130,7 @@ module Gitlab
               inputs: inputs
             }
 
-            feature_setting = namespace_feature_setting(unit_primitive) ||
-              chat_feature_setting(unit_primitive: unit_primitive)
+            feature_setting = feature_setting(unit_primitive)
 
             model_metadata = model_metadata(feature_setting)
             params[:model_metadata] = model_metadata if model_metadata.present?
@@ -139,7 +138,7 @@ module Gitlab
             model_family = model_metadata && model_metadata[:name]
             default_version = ::Gitlab::Llm::PromptVersions.version_for_prompt("chat/#{unit_primitive}", model_family)
 
-            is_self_hosted = feature_setting.is_a?(::Ai::FeatureSetting) && feature_setting.self_hosted?
+            is_self_hosted = feature_setting&.self_hosted? || false
             params[:prompt_version] = if is_self_hosted || ::Ai::AmazonQ.connected?
                                         default_version
                                       else
@@ -160,36 +159,23 @@ module Gitlab
 
           def model_params(options, unit_primitive = nil)
             unit_primitive ||= options[:unit_primitive]
-            feature_setting = namespace_feature_setting(unit_primitive) ||
-              chat_feature_setting(unit_primitive: unit_primitive)
+            feature_setting = feature_setting(unit_primitive)
 
-            # Handle self-hosted model settings
-            if feature_setting.is_a?(::Ai::FeatureSetting) && feature_setting.self_hosted?
-              self_hosted_model = feature_setting.self_hosted_model
-              return {
-                provider: :litellm,
-                model: self_hosted_model.model,
-                model_endpoint: self_hosted_model.endpoint,
-                model_api_key: self_hosted_model.api_token,
-                model_identifier: self_hosted_model.identifier
-              }
-            end
+            model_info = feature_setting&.model_request_params
 
-            # Handle namespace feature settings
-            if feature_setting.is_a?(::Ai::ModelSelection::NamespaceFeatureSetting)
-              return {
-                provider: feature_setting.provider,
-                feature_setting: feature_setting.feature,
-                identifier: feature_setting.offered_model_ref
-              }
-
-            end
+            return model_info if model_info
 
             # Default model parameters
             {
               provider: provider(options),
               model: model(options)
             }
+          end
+
+          def feature_setting(unit_primitive)
+            strong_memoize_with(:feature_setting, unit_primitive) do
+              namespace_feature_setting(unit_primitive) || chat_feature_setting(unit_primitive: unit_primitive)
+            end
           end
 
           def payload_params(options)
