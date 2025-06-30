@@ -53223,6 +53223,9 @@ msgstr ""
 msgid "Runners|No project runners found"
 msgstr ""
 
+msgid "Runners|No runners managers found"
+msgstr ""
+
 msgid "Runners|No spot. Default choice for Windows Shell executor."
 msgstr ""
 
@@ -53404,6 +53407,9 @@ msgstr ""
 msgid "Runners|Runner"
 msgstr ""
 
+msgid "Runners|Runner %{name}"
+msgstr ""
+
 msgid "Runners|Runner %{name} was assigned to this project."
 msgstr ""
 
@@ -53468,6 +53474,9 @@ msgid "Runners|Runner is stale; it has never contacted this instance"
 msgstr ""
 
 msgid "Runners|Runner is stale; last contact was %{runner_contact} ago"
+msgstr ""
+
+msgid "Runners|Runner managers registered under this configuration are listed here. Register and start at least one runner manager."
 msgstr ""
 
 msgid "Runners|Runner performance insights"
