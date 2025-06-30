@@ -6,7 +6,13 @@ module Ai
       class Code
         include ::ActiveContext::Concerns::Collection
 
-        MODELS = { 1 => { field: :embeddings_v1, model: 'text-embedding-005' } }.freeze
+        MODELS = {
+          1 => {
+            field: :embeddings_v1,
+            model: 'text-embedding-005',
+            class: Ai::ActiveContext::Embeddings::Code::VertexText
+          }
+        }.freeze
 
         def self.collection_name
           'gitlab_active_context_code'

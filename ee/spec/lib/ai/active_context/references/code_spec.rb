@@ -6,12 +6,16 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
   let(:identifier) { 'hash1' }
   let(:unit_primitive) { described_class::UNIT_PRIMITIVE }
   let(:routing) { 1 }
-  let_it_be(:collection) { create(:ai_active_context_collection, include_ref_fields: false) }
-  let(:reference) { described_class.new(collection_id: collection.id, routing: routing, args: identifier) }
 
-  before do
-    allow(ActiveContext::CollectionCache).to receive(:fetch).and_return(collection)
+  let_it_be(:collection) do
+    create(
+      :ai_active_context_collection,
+      :code_embeddings_with_versions,
+      include_ref_fields: false
+    )
   end
+
+  let(:reference) { described_class.new(collection_id: collection.id, routing: routing, args: identifier) }
 
   describe '#serialize' do
     it 'serializes correctly' do
@@ -53,19 +57,15 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
     let(:embedding_1) { [1, 2, 3] }
     let(:embedding_2) { [4, 5, 6] }
 
-    let(:embedding_versions) { [{ model: 'mock_embedding_model', field: 'embeddings_v1' }] }
+    let(:embedding_versions) { [{ model: 'text-embedding-005', field: 'embeddings_v1' }] }
 
     before do
       # mock the call to the vector store
       allow(::ActiveContext).to receive_message_chain(:adapter, :client, :search).and_return(search_response)
       # mock the call to embeddings generation which calls AIGW
-      allow(ActiveContext::Embeddings).to receive(:generate_embeddings)
-        .with(%w[content_1 content_2], model: 'mock_embedding_model', unit_primitive: unit_primitive)
+      allow(Ai::ActiveContext::Embeddings::Code::VertexText).to receive(:generate_embeddings)
+        .with(%w[content_1 content_2], model: 'text-embedding-005', unit_primitive: unit_primitive)
         .and_return([embedding_1, embedding_2])
-
-      # mock the ref embedding versions
-      allow(reference).to receive(:embedding_versions).and_return(embedding_versions)
-      allow(reference_2).to receive(:embedding_versions).and_return(embedding_versions)
 
       allow(described_class).to receive(:fetch_content).and_call_original
       allow(described_class).to receive(:apply_embeddings).and_call_original
@@ -109,7 +109,7 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
           {
             content: 'content_1',
             unique_identifier: identifier,
-            'embeddings_v1' => embedding_1
+            embeddings_v1: embedding_1
           }
         ]
       )
@@ -118,7 +118,7 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
           {
             content: 'content_2',
             unique_identifier: identifier_2,
-            'embeddings_v1' => embedding_2
+            embeddings_v1: embedding_2
           }
         ]
       )
@@ -132,8 +132,8 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
       end
 
       before do
-        allow(ActiveContext::Embeddings).to receive(:generate_embeddings)
-          .with(%w[content_1], model: 'mock_embedding_model', unit_primitive: unit_primitive).and_return([embedding_1])
+        allow(Ai::ActiveContext::Embeddings::Code::VertexText).to receive(:generate_embeddings)
+          .with(%w[content_1], model: 'text-embedding-005', unit_primitive: unit_primitive).and_return([embedding_1])
       end
 
       it 'puts the refs in the correct groups' do
@@ -149,7 +149,7 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
             {
               content: 'content_1',
               unique_identifier: identifier,
-              'embeddings_v1' => embedding_1
+              embeddings_v1: embedding_1
             }
           ]
         )
@@ -170,7 +170,7 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
       end
 
       it 'does not generate embeddings' do
-        expect(ActiveContext::Embeddings).not_to receive(:generate_embeddings)
+        expect(Ai::ActiveContext::Embeddings::Code::VertexText).not_to receive(:generate_embeddings)
 
         result = described_class.preprocess_references(refs)
         successful_refs = result[:successful]
@@ -200,7 +200,8 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
 
     context 'when generate_embeddings raises an error' do
       before do
-        allow(ActiveContext::Embeddings).to receive(:generate_embeddings).and_raise(StandardError, 'Failure')
+        allow(Ai::ActiveContext::Embeddings::Code::VertexText).to receive(
+          :generate_embeddings).and_raise(StandardError, 'Failure')
       end
 
       it 'puts the refs in the correct groups' do
