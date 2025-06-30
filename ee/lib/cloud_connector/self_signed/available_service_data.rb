@@ -19,28 +19,20 @@ module CloudConnector
       def access_token(resource = nil, extra_claims: {})
         jwk = @key_loader.private_jwk
 
-        token_counter.increment(kid: jwk.kid)
-
-        ::Gitlab::CloudConnector::JsonWebToken.new(
-          issuer: Doorkeeper::OpenidConnect.configuration.issuer,
-          audience: backend,
-          subject: Gitlab::CurrentSettings.uuid,
-          realm: ::CloudConnector.gitlab_realm,
-          scopes: scopes_for(resource),
-          ttl: 1.hour,
-          extra_claims: extra_claims
-        ).encode(jwk)
+        CloudConnector::TokenInstrumentation.instrument(jwk: jwk, operation_type: 'legacy', service_name: name.to_s) do
+          ::Gitlab::CloudConnector::JsonWebToken.new(
+            issuer: Doorkeeper::OpenidConnect.configuration.issuer,
+            audience: backend,
+            subject: Gitlab::CurrentSettings.uuid,
+            realm: ::CloudConnector.gitlab_realm,
+            scopes: scopes_for(resource),
+            ttl: 1.hour,
+            extra_claims: extra_claims
+          ).encode(jwk)
+        end
       end
 
       private
-
-      def token_counter
-        ::Gitlab::Metrics.counter(
-          :cloud_connector_tokens_issued_total,
-          'Total number of Cloud Connector tokens issued',
-          worker_id: ::Prometheus::PidProvider.worker_id
-        )
-      end
 
       def gitlab_org_group
         @gitlab_org_group ||= Group.find_by_path_or_name('gitlab-org')

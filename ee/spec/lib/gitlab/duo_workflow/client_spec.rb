@@ -92,7 +92,7 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
     it 'gets token with correct parameters' do
       expect(::CloudConnector::Tokens).to receive(:get).with(
         unit_primitive: :duo_workflow_execute_workflow,
-        root_group_ids: [group.id]
+        resource: user
       )
 
       expect(described_class.cloud_connector_token(user: user)).to eq(token)

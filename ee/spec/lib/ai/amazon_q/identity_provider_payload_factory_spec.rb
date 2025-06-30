@@ -31,7 +31,9 @@ RSpec.describe Ai::AmazonQ::IdentityProviderPayloadFactory, feature_category: :a
 
     with_them do
       before do
-        allow(::CloudConnector::Tokens).to receive(:get).with(unit_primitive: :amazon_q_integration).and_return(token)
+        allow(::CloudConnector::Tokens).to receive(:get).with(
+          unit_primitive: :amazon_q_integration,
+          resource: :instance).and_return(token)
       end
 
       it { expect(execution.to_h).to include(expectation) }

@@ -26,23 +26,37 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_
     let(:instance_id) { 'instance-uuid' }
     let(:gitlab_realm) { 'saas' }
     let(:ttl) { 1.hour }
+    let(:exp) { 1.hour.from_now }
+    let(:scopes) { [] }
     let(:extra_claims) { {} }
+
+    let(:payload) do
+      {
+        sub: instance_id,
+        iss: issuer,
+        realm: gitlab_realm,
+        aud: backend,
+        exp: exp,
+        scopes: scopes
+      }
+    end
+
+    let(:expected_token) do
+      instance_double('Gitlab::CloudConnector::JsonWebToken', encode: encoded_token_string, payload: payload)
+    end
 
     subject(:access_token) { available_service_data.access_token(resource) }
 
+    before do
+      allow(Doorkeeper::OpenidConnect.configuration).to receive(:issuer).and_return(issuer)
+      allow(Gitlab::CurrentSettings).to receive(:uuid).and_return(instance_id)
+      allow(::CloudConnector).to receive(:gitlab_realm).and_return(gitlab_realm)
+      allow(Gitlab::CloudConnector::JsonWebToken).to receive(:new).and_return(expected_token)
+      # Ensure we do not write metrics to the file system
+      allow(::Gitlab::Metrics).to receive(:counter).and_return(Gitlab::Metrics::NullMetric.instance)
+    end
+
     shared_examples 'issue a token with scopes' do
-      let(:expected_token) do
-        instance_double('Gitlab::CloudConnector::JsonWebToken')
-      end
-
-      before do
-        allow(Doorkeeper::OpenidConnect.configuration).to receive(:issuer).and_return(issuer)
-        allow(Gitlab::CurrentSettings).to receive(:uuid).and_return(instance_id)
-        allow(::CloudConnector).to receive(:gitlab_realm).and_return(gitlab_realm)
-        # Ensure we do not write metrics to the file system
-        allow(::Gitlab::Metrics).to receive(:counter).and_return(Gitlab::Metrics::NullMetric.instance)
-      end
-
       it 'returns the encoded token' do
         expect(Gitlab::CloudConnector::JsonWebToken).to receive(:new).with(
           issuer: issuer,
@@ -67,11 +81,18 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_
       end
 
       it 'logs the key load event once' do
-        expect(::Gitlab::AppLogger).to receive(:info)
-          .at_most(:once)
-          .with(message: /Cloud Connector key loaded/, cc_kid: cc_key.to_jwk.kid)
+        CloudConnector::CachingKeyLoader.instance_variable_set(:@jwk, nil)
+
+        allow(::Gitlab::AppLogger).to receive(:info)
 
         3.times { described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token }
+
+        expect(::Gitlab::AppLogger).to have_received(:info).with(
+          hash_including(
+            message: /Cloud Connector key loaded/,
+            cc_kid: cc_key.to_jwk.kid
+          )
+        ).once
       end
 
       it 'increments the token counter metric' do
@@ -79,7 +100,13 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_
         expect(::Gitlab::Metrics).to receive(:counter)
           .with(:cloud_connector_tokens_issued_total, instance_of(String), worker_id: instance_of(String))
           .and_return(token_counter)
-        expect(token_counter).to receive(:increment).with(kid: cc_key.to_jwk.kid)
+        expect(token_counter).to receive(:increment).with(
+          a_hash_including(
+            kid: cc_key.to_jwk.kid,
+            operation_type: 'legacy',
+            service_name: "duo_chat"
+          )
+        )
 
         access_token
       end
