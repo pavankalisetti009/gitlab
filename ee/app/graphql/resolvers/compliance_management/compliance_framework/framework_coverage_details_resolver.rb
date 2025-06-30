@@ -25,7 +25,13 @@ module Resolvers
 
           frameworks = root_group.compliance_management_frameworks.with_project_coverage_for(project_ids)
 
-          offset_pagination(frameworks)
+          paginated_data = offset_pagination(frameworks)
+
+          paginated_data.map do |framework|
+            ::ComplianceManagement::FrameworkCoverageDetails.new(
+              framework
+            )
+          end
         end
       end
     end

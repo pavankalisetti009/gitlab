@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['ComplianceFrameworkCoverageDetail'], feature_category: :compliance_management do
   let(:fields) do
-    %i[id name covered_count]
+    %i[id framework covered_count]
   end
 
   specify { expect(described_class.graphql_name).to eq('ComplianceFrameworkCoverageDetail') }

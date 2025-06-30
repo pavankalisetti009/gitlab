@@ -7,6 +7,7 @@ import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
 import ComplianceDashboardBreadcrumbs from './components/compliance_dashboard_breadcrumbs.vue';
 import { createRouter } from './router';
 import {
+  ROUTE_DASHBOARD,
   ROUTE_FRAMEWORKS,
   ROUTE_STANDARDS_ADHERENCE,
   ROUTE_VIOLATIONS,
@@ -48,6 +49,7 @@ export default () => {
     featureSecurityPoliciesEnabled,
     adherenceV2Enabled,
     violationsV2Enabled,
+    groupDashboardEnabled,
     policyDisplayLimit,
     activeComplianceFrameworks,
   } = el.dataset;
@@ -56,6 +58,7 @@ export default () => {
   Vue.use(VueRouter);
 
   const routes = Object.entries({
+    [ROUTE_DASHBOARD]: parseBoolean(groupDashboardEnabled) && !projectId,
     [ROUTE_STANDARDS_ADHERENCE]: parseBoolean(featureAdherenceReportEnabled),
     [ROUTE_VIOLATIONS]: parseBoolean(featureViolationsReportEnabled),
     [ROUTE_FRAMEWORKS]: true,

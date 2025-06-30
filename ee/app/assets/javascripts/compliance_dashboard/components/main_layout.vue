@@ -5,8 +5,8 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import Tracking from '~/tracking';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { isTopLevelGroup } from '../utils';
-
 import {
+  ROUTE_DASHBOARD,
   ROUTE_STANDARDS_ADHERENCE,
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
@@ -75,6 +75,10 @@ export default {
     },
     tabs() {
       const tabConfigs = {
+        [ROUTE_DASHBOARD]: {
+          testId: 'dashboard-tab',
+          title: i18n.dashboardTab,
+        },
         [ROUTE_STANDARDS_ADHERENCE]: {
           testId: 'standards-adherence-tab',
           title: i18n.standardsAdherenceTab,

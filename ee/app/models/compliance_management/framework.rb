@@ -88,7 +88,7 @@ module ComplianceManagement
         ), 0) AS covered_count
       SQL
 
-      select(:id, :name, sanitize_sql_array([subquery_sql, project_ids]))
+      select('*', sanitize_sql_array([subquery_sql, project_ids]))
     end
 
     def self.search(query)

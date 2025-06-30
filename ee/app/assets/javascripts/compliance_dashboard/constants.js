@@ -36,6 +36,7 @@ export const BRANCH_FILTER_OPTIONS = {
   allProtectedBranches: __('All protected branches'),
 };
 
+export const ROUTE_DASHBOARD = 'dashboard';
 export const ROUTE_STANDARDS_ADHERENCE = 'standards_adherence';
 export const ROUTE_VIOLATIONS = 'violations';
 export const ROUTE_PROJECTS = 'projects';
@@ -73,6 +74,7 @@ export const i18n = {
   subheading: s__(
     'Compliance Center|Report and manage compliance status, violations, and compliance frameworks for the group. %{linkStart}Learn more%{linkEnd}.',
   ),
+  dashboardTab: s__('Compliance Center|Dashboard'),
   frameworksTab: s__('Compliance Center|Frameworks'),
   projectsTab: __('Projects'),
   projectTab: __('Project'),
