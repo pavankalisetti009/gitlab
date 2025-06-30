@@ -113,7 +113,7 @@ export const STRATEGIES = [
     key: 'release',
     header: s__('SecurityOrchestration|Merge Release Security'),
     description: s__(
-      'SecurityOrchestration|Runs comprehensive scans during release processes and when merging to main/production branches',
+      'SecurityOrchestration|Runs comprehensive scans for `release/*` branches and when merging to main/production branches',
     ),
     rules: [
       { type: 'pipeline', branches: ['release/*'] },
