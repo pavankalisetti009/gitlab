@@ -684,13 +684,13 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
     end
 
     context 'with approval policy branch exceptions' do
-      let_it_be(:security_policy) { create(:security_policy) }
+      let_it_be(:security_policy) { build(:security_policy) }
       let_it_be(:approval_policy_rule) do
-        create(:approval_policy_rule, :scan_finding, security_policy: security_policy)
+        build(:approval_policy_rule, :scan_finding, security_policy: security_policy)
       end
 
       let_it_be(:rule) do
-        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule)
+        build(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule)
       end
 
       before do

@@ -265,101 +265,97 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
   end
 
   describe '#branches_exempted_by_policy?' do
-    let_it_be(:project) { create(:project) }
-    let_it_be(:source_branch) { 'feature' }
-    let_it_be(:target_branch) { 'main' }
+    let(:source_branch) { 'feature' }
+    let(:target_branch) { 'main' }
 
-    let!(:security_policy) do
-      create(:security_policy, content: {
-        bypass_settings: {
-          branches: [{ source: { name: source_branch }, target: { name: target_branch } }]
-        }
-      })
-    end
+    let(:bypass_settings) { {} }
+    let(:content) { { bypass_settings: bypass_settings } }
 
-    let!(:approval_policy_rule) do
-      create(:approval_policy_rule, :scan_finding, security_policy: security_policy,
-        security_policy_management_project: project)
+    let(:security_policy) { build(:security_policy, content: content) }
+
+    let(:approval_policy_rule) do
+      build(:approval_policy_rule, :scan_finding, security_policy: security_policy)
     end
 
     subject(:branches_exempted_by_policy) do
       approval_policy_rule.branches_exempted_by_policy?(source_branch, target_branch)
     end
 
-    context 'when the feature flag is enabled' do
-      before do
-        stub_feature_flags(approval_policy_branch_exceptions: project)
-      end
+    context 'when content is empty' do
+      let(:content) { {} }
 
-      context 'when branch_exceptions is nil' do
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass_settings is empty' do
+      let(:bypass_settings) { {} }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass_settings branches is empty' do
+      let(:bypass_settings) { { branches: [] } }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass_settings has a matching source and target branches' do
+      let(:bypass_settings) { { branches: [{ source: { name: source_branch }, target: { name: target_branch } }] } }
+
+      it { is_expected.to be true }
+
+      context 'when the feature flag is disabled' do
         before do
-          security_policy.content = {}
-          security_policy.save!
-        end
-
-        it { is_expected.to be false }
-      end
-
-      context 'when branch_exceptions is blank' do
-        before do
-          security_policy.content[:bypass_settings] = { branches: [] }
-        end
-
-        it { is_expected.to be false }
-      end
-
-      context 'when branch_exceptions has a matching source and target' do
-        it { is_expected.to be true }
-      end
-
-      context 'when branch_exceptions uses a pattern for source and target' do
-        before do
-          security_policy.content[:bypass_settings] = { branches:
-            [{ 'source' => { 'pattern' => 'feat*' }, 'target' => { 'pattern' => 'ma*' } }] }
-          security_policy.save!
-        end
-
-        it { is_expected.to be true }
-
-        context 'when source does not match the pattern' do
-          let_it_be(:source_branch) { 'bugfix' }
-
-          it { is_expected.to be false }
-        end
-
-        context 'when target does not match the pattern' do
-          let_it_be(:target_branch) { 'develop' }
-
-          it { is_expected.to be false }
-        end
-      end
-
-      context 'when branch_exceptions does not match source or target' do
-        before do
-          security_policy.content[:bypass_settings] = { branches:
-            [{ 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } },
-              { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } }] }
-          security_policy.save!
-        end
-
-        it { is_expected.to be false }
-      end
-
-      context 'when branch_exceptions partially matches (only source or only target)' do
-        before do
-          security_policy.content[:bypass_settings] = { branches:
-            [{ 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } },
-              { 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } }] }
-          security_policy.save!
+          stub_feature_flags(approval_policy_branch_exceptions: false)
         end
 
         it { is_expected.to be false }
       end
     end
 
-    context 'when the feature flag is disabled' do
-      before do
-        stub_feature_flags(approval_policy_branch_exceptions: false)
+    context 'when bypass_settings uses a pattern for source and target branches' do
+      let(:bypass_settings) do
+        { branches: [{ 'source' => { 'pattern' => 'feat*' }, 'target' => { 'pattern' => 'ma*' } }] }
+      end
+
+      it { is_expected.to be true }
+
+      context 'when the feature flag is disabled' do
+        before do
+          stub_feature_flags(approval_policy_branch_exceptions: false)
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when source does not match the pattern' do
+        let(:source_branch) { 'bugfix' }
+
+        it { is_expected.to be false }
+      end
+
+      context 'when target does not match the pattern' do
+        let(:target_branch) { 'develop' }
+
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'when bypass_settings branches does not match source or target' do
+      let(:bypass_settings) do
+        { branches:
+          [{ 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } },
+            { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } }] }
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass_settings branches partially matches (only source or only target)' do
+      let(:bypass_settings) do
+        { branches:
+          [{ 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } },
+            { 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } }] }
       end
 
       it { is_expected.to be false }
