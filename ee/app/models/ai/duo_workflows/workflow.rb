@@ -25,12 +25,15 @@ module Ai
       validate :only_known_pre_approved_agent_privileges
       validate :pre_approved_privileges_included_in_agent_privileges, on: :create
 
+      enum :environment, { ide: 1, web: 2 }
+
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
       scope :for_user, ->(user_id) { where(user_id: user_id) }
       scope :for_project, ->(project) { where(project: project) }
       scope :stale_since, ->(time) { where(updated_at: ...time).order(updated_at: :asc, id: :asc) }
 
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
+      scope :with_environment, ->(environment) { where(environment: environment) }
       class AgentPrivileges
         READ_WRITE_FILES  = 1
         READ_ONLY_GITLAB  = 2

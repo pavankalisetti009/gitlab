@@ -40,6 +40,19 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
     end
   end
 
+  describe '.with_environment' do
+    let_it_be(:ide_workflow) { create(:duo_workflows_workflow, environment: :ide) }
+    let_it_be(:web_workflow) { create(:duo_workflows_workflow, environment: :web) }
+
+    it 'finds the local workflows when environment is ide' do
+      expect(described_class.with_environment(:ide)).to eq([ide_workflow])
+    end
+
+    it 'finds the remote workflows when environment is web' do
+      expect(described_class.with_environment(:web)).to eq([web_workflow])
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_length_of(:goal).is_at_most(16_384) }
@@ -51,13 +64,14 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
           agent_privileges: [
             Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES
           ],
-          pre_approved_agent_privileges: []
+          pre_approved_agent_privileges: [],
+          environment: :ide
         )
         expect(workflow).to be_valid
       end
 
       it 'is invalid with an invalid privilege' do
-        workflow = described_class.new(agent_privileges: [999])
+        workflow = described_class.new(agent_privileges: [999], environment: :ide)
         expect(workflow).not_to be_valid
         expect(workflow.errors[:agent_privileges]).to include("contains an invalid value 999")
       end
@@ -84,7 +98,8 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
       subject(:workflow) do
         described_class.new(
           agent_privileges: agent_privileges,
-          pre_approved_agent_privileges: pre_approved_agent_privileges
+          pre_approved_agent_privileges: pre_approved_agent_privileges,
+          environment: :ide
         )
       end
 
@@ -129,7 +144,8 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
           workflow = described_class
                        .new(
                          agent_privileges: agent_privileges,
-                         pre_approved_agent_privileges: pre_approved
+                         pre_approved_agent_privileges: pre_approved,
+                         environment: :ide
                        )
 
           expect(workflow.valid?).to eq(valid)
@@ -145,7 +161,8 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
           Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
           Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB
         ],
-        pre_approved_agent_privileges: []
+        pre_approved_agent_privileges: [],
+        environment: :ide
       )
 
       # Validation triggers setting the default
@@ -158,7 +175,7 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
     end
 
     it 'replaces with DEFAULT_PRIVILEGES when set to nil' do
-      workflow = described_class.new(agent_privileges: nil)
+      workflow = described_class.new(agent_privileges: nil, environment: :ide)
 
       # Validation triggers setting the default
       expect(workflow).to be_valid
@@ -170,7 +187,7 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
     end
 
     it 'replaces with DEFAULT_PRIVILEGES when not set' do
-      workflow = described_class.new
+      workflow = described_class.new(environment: :ide)
 
       # Validation triggers setting the default
       expect(workflow).to be_valid
