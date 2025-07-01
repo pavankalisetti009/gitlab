@@ -314,6 +314,52 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
         expect(::Users::GroupCallout.count).to eq(0)
       end
     end
+
+    describe "user's Authz::UserGroupMemberRole records" do
+      let_it_be(:member_role) { create(:member_role, namespace: group) }
+
+      shared_examples 'does not enqueue a DestroyForGroupWorker job' do
+        it 'does not enqueue a ::Authz::UserGroupMemberRoles::DestroyForGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::DestroyForGroupWorker).not_to receive(:perform_async)
+
+          destroy_service.execute(member)
+        end
+      end
+
+      context 'when membership has no member role assigned' do
+        it_behaves_like 'does not enqueue a DestroyForGroupWorker job'
+      end
+
+      context 'when membership has a member role assigned' do
+        before do
+          member.update!(member_role: member_role)
+        end
+
+        it 'enqueues a ::Authz::UserGroupMemberRoles::DestroyForGroupWorker job' do
+          allow(::Authz::UserGroupMemberRoles::DestroyForGroupWorker).to receive(:perform_async)
+
+          destroy_service.execute(member)
+
+          expect(::Authz::UserGroupMemberRoles::DestroyForGroupWorker)
+            .to have_received(:perform_async).with(member.user_id, member.source_id)
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(cache_user_group_member_roles: false)
+          end
+
+          it_behaves_like 'does not enqueue a DestroyForGroupWorker job'
+        end
+
+        context 'with project membership' do
+          let_it_be(:project) { create(:project, group: group) }
+          let(:member) { create(:project_member, :developer, user: member_user, project: project) }
+
+          it_behaves_like 'does not enqueue a DestroyForGroupWorker job'
+        end
+      end
+    end
   end
 
   context 'when current user is not present' do # ie, when the system initiates the destroy
