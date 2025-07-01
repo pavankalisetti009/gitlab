@@ -1594,7 +1594,7 @@ GEM
       rake-compiler-dock (= 1.9.1)
     rbs (3.6.1)
       logger
-    rbtrace (0.5.1)
+    rbtrace (0.5.2)
       ffi (>= 1.0.6)
       msgpack (>= 0.4.3)
       optimist (>= 3.0.0)
