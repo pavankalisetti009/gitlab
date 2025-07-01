@@ -48,14 +48,6 @@ RSpec.describe ComplianceManagement::Pipl::DeleteNonCompliantUserService,
             "perform this action or this feature is disabled"
         end
 
-        context 'when the feature flag delete_pipl_non_compliant_users' do
-          before do
-            stub_feature_flags(delete_pipl_non_compliant_users: false)
-          end
-
-          it_behaves_like 'does not delete the user'
-        end
-
         context 'when the pipl_user is not blocked' do
           before do
             pipl_user.user.update!(state: :active)

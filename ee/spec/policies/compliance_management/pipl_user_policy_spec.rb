@@ -24,15 +24,6 @@ RSpec.describe ComplianceManagement::PiplUserPolicy, feature_category: :complian
         it { is_expected.to be_disallowed(:block_pipl_user) }
         it { is_expected.to be_disallowed(:delete_pipl_user) }
       end
-
-      context 'when the delete_pipl_non_compliant_users is disabled' do
-        before do
-          stub_feature_flags(delete_pipl_non_compliant_users: false)
-        end
-
-        it { is_expected.to be_allowed(:block_pipl_user) }
-        it { is_expected.to be_disallowed(:delete_pipl_user) }
-      end
     end
 
     context 'when the user is not an admin' do

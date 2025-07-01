@@ -1,9 +1,0 @@
----
-name: delete_pipl_non_compliant_users
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/520158
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181930
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/520463
-milestone: '17.10'
-group: group::authentication
-type: gitlab_com_derisk
-default_enabled: false
