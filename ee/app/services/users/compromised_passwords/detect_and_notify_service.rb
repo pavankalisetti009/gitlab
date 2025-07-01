@@ -29,7 +29,6 @@ module Users
       end
 
       def user_needs_notification?
-        return false unless ::Feature.enabled?(:notify_compromised_passwords, user)
         return false unless ::Gitlab::Saas.feature_available?(:notify_compromised_passwords)
         return false if user.password_based_omniauth_user?
         return false if user.access_locked?

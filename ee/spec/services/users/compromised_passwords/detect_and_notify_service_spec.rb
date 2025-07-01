@@ -15,18 +15,6 @@ RSpec.describe Users::CompromisedPasswords::DetectAndNotifyService, :aggregate_f
     allow(Gitlab::Metrics).to receive(:counter).and_call_original
   end
 
-  shared_context 'when feature flag is enabled' do
-    before do
-      stub_feature_flags(notify_compromised_passwords: true)
-    end
-  end
-
-  shared_context 'when feature flag is not enabled' do
-    before do
-      stub_feature_flags(notify_compromised_passwords: false)
-    end
-  end
-
   shared_examples 'record needed' do
     it 'creates a CompromisedPasswordDetection, increments metric, and emails user' do
       expect(Gitlab::Metrics).to receive(:counter)
@@ -63,108 +51,88 @@ RSpec.describe Users::CompromisedPasswords::DetectAndNotifyService, :aggregate_f
   end
 
   context 'when SaaS', :saas do
-    context 'when feature flag is enabled' do
-      include_context 'when feature flag is enabled'
+    context 'when user does not have a CompromisedPasswordDetection' do
+      it_behaves_like 'record needed'
 
-      context 'when user does not have a CompromisedPasswordDetection' do
-        it_behaves_like 'record needed'
-
-        context 'when an error occurs creating detection' do
-          before do
-            allow_next_instance_of(Users::CompromisedPasswordDetection) do |instance|
-              allow(instance)
-                .to receive(:persisted?)
-                .and_return(false)
-            end
+      context 'when an error occurs creating detection' do
+        before do
+          allow_next_instance_of(Users::CompromisedPasswordDetection) do |instance|
+            allow(instance)
+              .to receive(:persisted?)
+              .and_return(false)
           end
+        end
 
-          it 'logs the ActiveRecord error' do
-            expect(Gitlab::AppLogger).to receive(:error)
-              .with(
-                hash_including(
-                  {
-                    message: "Failed to create CompromisedPasswordDetection",
-                    errors: [],
-                    user_id: user.id
-                  }
-                )
+        it 'logs the ActiveRecord error' do
+          expect(Gitlab::AppLogger).to receive(:error)
+            .with(
+              hash_including(
+                {
+                  message: "Failed to create CompromisedPasswordDetection",
+                  errors: [],
+                  user_id: user.id
+                }
               )
-              .and_call_original
+            )
+            .and_call_original
 
-            execute
-          end
-        end
-
-        context 'when password for user is incorrect' do
-          let(:request_password) { '11111' }
-
-          it_behaves_like 'record not needed'
-        end
-
-        context 'when no compromised credential is detected' do
-          let(:check_result) { nil }
-
-          it_behaves_like 'record not needed'
-        end
-
-        context 'when exact username only is detected' do
-          let(:check_result) { '2' }
-
-          it_behaves_like 'record not needed'
-        end
-
-        context 'when user does not use local database password for auth' do
-          before do
-            allow(user).to receive(:password_based_omniauth_user?).and_return(true)
-          end
-
-          it_behaves_like 'record not needed'
-        end
-
-        context 'when user is locked' do
-          let_it_be(:user) { create(:user, :locked) }
-
-          it_behaves_like 'record not needed'
+          execute
         end
       end
 
-      context 'when user has a CompromisedPasswordDetection' do
+      context 'when password for user is incorrect' do
+        let(:request_password) { '11111' }
+
+        it_behaves_like 'record not needed'
+      end
+
+      context 'when no compromised credential is detected' do
+        let(:check_result) { nil }
+
+        it_behaves_like 'record not needed'
+      end
+
+      context 'when exact username only is detected' do
+        let(:check_result) { '2' }
+
+        it_behaves_like 'record not needed'
+      end
+
+      context 'when user does not use local database password for auth' do
         before do
-          create(:compromised_password_detection, user: user, resolved_at: resolved_at)
+          allow(user).to receive(:password_based_omniauth_user?).and_return(true)
         end
 
-        context 'when detection has been resolved' do
-          let(:resolved_at) { 1.month.ago }
+        it_behaves_like 'record not needed'
+      end
 
-          it_behaves_like 'record needed'
-        end
+      context 'when user is locked' do
+        let_it_be(:user) { create(:user, :locked) }
 
-        context 'when detection has not yet been resolved' do
-          let(:resolved_at) { nil }
-
-          it_behaves_like 'record not needed'
-        end
+        it_behaves_like 'record not needed'
       end
     end
 
-    context 'when feature flag is not enabled' do
-      include_context 'when feature flag is not enabled'
+    context 'when user has a CompromisedPasswordDetection' do
+      before do
+        create(:compromised_password_detection, user: user, resolved_at: resolved_at)
+      end
 
-      it_behaves_like 'record not needed'
+      context 'when detection has been resolved' do
+        let(:resolved_at) { 1.month.ago }
+
+        it_behaves_like 'record needed'
+      end
+
+      context 'when detection has not yet been resolved' do
+        let(:resolved_at) { nil }
+
+        it_behaves_like 'record not needed'
+      end
     end
   end
 
   context 'when self-managed' do
-    context 'when feature flag is enabled' do
-      include_context 'when feature flag is enabled'
-
-      it_behaves_like 'record not needed'
-    end
-
-    context 'when feature flag is not enabled' do
-      include_context 'when feature flag is not enabled'
-
-      it_behaves_like 'record not needed'
-    end
+    it_behaves_like 'record not needed'
   end
 end
