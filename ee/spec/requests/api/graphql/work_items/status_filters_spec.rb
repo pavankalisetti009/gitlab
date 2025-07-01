@@ -71,6 +71,12 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
       it_behaves_like 'an unfiltered list'
     end
+
+    context 'when status param is not given' do
+      let(:params) { {} }
+
+      it_behaves_like 'an unfiltered list'
+    end
   end
 
   shared_examples 'supports filtering by status name' do
@@ -83,7 +89,15 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
     context 'when filtering by invalid name' do
       let(:params) { { status: { name: 'invalid' } } }
 
-      it_behaves_like 'an unfiltered list'
+      it 'returns an empty result' do
+        post_graphql(query, current_user: current_user)
+
+        expect_graphql_errors_to_be_empty
+
+        model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+        expect(model_ids).to be_empty
+      end
     end
 
     context 'when work_item_status_feature_flag feature flag is disabled' do
