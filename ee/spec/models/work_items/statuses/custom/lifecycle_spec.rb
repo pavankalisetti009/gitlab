@@ -37,7 +37,7 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
     it { is_expected.to be_valid }
     it { is_expected.to validate_presence_of(:namespace) }
     it { is_expected.to validate_presence_of(:name) }
-    it { is_expected.to validate_length_of(:name).is_at_most(255) }
+    it { is_expected.to validate_length_of(:name).is_at_most(64) }
     it { is_expected.to validate_presence_of(:default_open_status) }
     it { is_expected.to validate_presence_of(:default_closed_status) }
     it { is_expected.to validate_presence_of(:default_duplicate_status) }

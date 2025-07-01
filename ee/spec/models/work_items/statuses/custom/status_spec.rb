@@ -92,6 +92,7 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     it { is_expected.to validate_presence_of(:color) }
     it { is_expected.to validate_length_of(:color).is_at_most(7) }
     it { is_expected.to validate_presence_of(:category) }
+    it { is_expected.to validate_length_of(:description).is_at_most(128).allow_blank }
 
     context 'with name uniqueness' do
       it 'validates uniqueness with a custom validator' do
