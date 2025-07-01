@@ -2,17 +2,17 @@
 import { GlExperimentBadge, GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { RELEASE_STATES } from '../../constants';
-import FeatureSettingsModelSelector from './feature_settings_model_selector.vue';
-import FeatureSettingsBatchAssignmentButton from './feature_settings_batch_assignment_button.vue';
+import ModelSelector from './model_selector.vue';
+import BatchSettingsUpdater from './batch_settings_updater.vue';
 
 export default {
   name: 'FeatureSettingsTableRows',
   components: {
     GlExperimentBadge,
-    GlTableLite,
-    FeatureSettingsBatchAssignmentButton,
-    FeatureSettingsModelSelector,
     GlSkeletonLoader,
+    GlTableLite,
+    BatchSettingsUpdater,
+    ModelSelector,
   },
   i18n: {
     errorMessage: s__(
@@ -51,9 +51,7 @@ export default {
   ],
   data() {
     return {
-      featureSettings: this.aiFeatureSettings,
       batchUpdateIsSaving: false,
-      renderKey: 0,
     };
   },
   computed: {
@@ -80,27 +78,12 @@ export default {
       ];
     },
   },
-  watch: {
-    aiFeatureSettings: {
-      handler(newValue) {
-        this.featureSettings = newValue;
-      },
-    },
-  },
   methods: {
     isBetaFeature(releaseState) {
       return releaseState === RELEASE_STATES.BETA;
     },
     isExperimentFeature(releaseState) {
       return releaseState === RELEASE_STATES.EXPERIMENT;
-    },
-    updateFeatureSettings(updatedSettings) {
-      this.featureSettings = updatedSettings;
-
-      // Vue reactivity is having trouble picking up the data update to
-      // this.featureSettings (maybe due to the nesting). Hence renderKey
-      // is also needed for triggering a re-render to freshen the UI.
-      this.renderKey += 1;
     },
     updateBatchSavingState(state) {
       this.batchUpdateIsSaving = state;
@@ -110,11 +93,10 @@ export default {
 </script>
 <template>
   <gl-table-lite
-    :key="renderKey"
     thead-class="gl-hidden"
     class="gl-mb-0"
     :fields="$options.fields"
-    :items="isLoading ? loaderItems : featureSettings"
+    :items="isLoading ? loaderItems : aiFeatureSettings"
     stacked="md"
     fixed
   >
@@ -142,7 +124,7 @@ export default {
       <gl-skeleton-loader v-if="isLoading" :height="38" :width="600">
         <rect y="8" x="155" :width="item.loaderWidth.modelName" height="24" rx="10" />
       </gl-skeleton-loader>
-      <feature-settings-model-selector
+      <model-selector
         v-else
         :batch-update-is-saving="batchUpdateIsSaving"
         class="gl-float-right gl-w-full gl-max-w-[440px]"
@@ -150,13 +132,12 @@ export default {
       />
     </template>
     <template #cell(batch_model_update)="{ item }">
-      <feature-settings-batch-assignment-button
+      <batch-settings-updater
         v-if="!isLoading"
         class="gl-float-right"
-        :ai-feature-settings="featureSettings"
-        :current-feature-setting="item"
+        :ai-feature-settings="aiFeatureSettings"
+        :selected-feature-setting="item"
         @update-batch-saving-state="updateBatchSavingState"
-        @update-feature-settings="updateFeatureSettings"
       />
     </template>
   </gl-table-lite>

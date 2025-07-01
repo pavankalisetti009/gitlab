@@ -4,7 +4,7 @@ import { GlToast } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import FeatureSettingsModelSelector from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_model_selector.vue';
+import ModelSelector from 'ee/ai/duo_self_hosted/feature_settings/components/model_selector.vue';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import updateAiFeatureSetting from 'ee/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
@@ -18,7 +18,7 @@ Vue.use(GlToast);
 
 jest.mock('~/alert');
 
-describe('FeatureSettingsModelSelector', () => {
+describe('ModelSelector', () => {
   let wrapper;
 
   const mockAiFeatureSetting = mockAiFeatureSettings[0];
@@ -59,7 +59,7 @@ describe('FeatureSettingsModelSelector', () => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
     wrapper = extendedWrapper(
-      shallowMount(FeatureSettingsModelSelector, {
+      shallowMount(ModelSelector, {
         apolloProvider: mockApollo,
         propsData: {
           aiFeatureSetting: mockAiFeatureSetting,
@@ -75,14 +75,13 @@ describe('FeatureSettingsModelSelector', () => {
     );
   };
 
-  const findFeatureSettingsModelSelector = () =>
-    wrapper.findComponent(FeatureSettingsModelSelector);
+  const findModelSelector = () => wrapper.findComponent(ModelSelector);
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
 
   it('renders the component', () => {
     createComponent();
 
-    expect(findFeatureSettingsModelSelector().exists()).toBe(true);
+    expect(findModelSelector().exists()).toBe(true);
   });
 
   describe('.listItems', () => {
@@ -181,6 +180,14 @@ describe('FeatureSettingsModelSelector', () => {
         modelSelectDropdown.vm.$emit('select', 'disabled');
         await waitForPromises();
 
+        await wrapper.setProps({
+          aiFeatureSetting: {
+            ...mockAiFeatureSetting,
+            provider: 'disabled',
+            selfHostedModel: null,
+          },
+        });
+
         expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
           value: 'disabled',
           text: 'Disabled',
@@ -195,6 +202,14 @@ describe('FeatureSettingsModelSelector', () => {
 
         modelSelectDropdown.vm.$emit('select', selectedModel.id);
         await waitForPromises();
+
+        await wrapper.setProps({
+          aiFeatureSetting: {
+            ...mockAiFeatureSetting,
+            provider: 'self_hosted',
+            selfHostedModel: { id: selectedModel.id },
+          },
+        });
 
         expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
           value: selectedModel.id,

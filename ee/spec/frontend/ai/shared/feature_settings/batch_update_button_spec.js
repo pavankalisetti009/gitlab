@@ -1,17 +1,16 @@
 import { GlButton } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import BatchUpdateButton from 'ee/ai/shared/feature_settings/batch_update_button.vue';
-import { DUO_MAIN_FEATURES } from 'ee/ai/duo_self_hosted/constants';
 
 describe('BatchUpdateButton', () => {
   let wrapper;
 
-  const mainFeature = DUO_MAIN_FEATURES.CODE_SUGGESTIONS;
+  const tooltipTitle = 'Apply to all Code Suggestions sub-features';
 
   const createComponent = (props = {}) => {
     wrapper = mountExtended(BatchUpdateButton, {
       propsData: {
-        mainFeature,
+        tooltipTitle,
         ...props,
       },
     });
@@ -26,7 +25,7 @@ describe('BatchUpdateButton', () => {
 
   it('renders the component', () => {
     expect(findBatchUpdateButton().props()).toMatchObject({
-      mainFeature,
+      tooltipTitle,
       disabled: false,
     });
   });
@@ -37,23 +36,13 @@ describe('BatchUpdateButton', () => {
     );
   });
 
-  describe('when the button is disabled', () => {
-    beforeEach(() => {
-      createComponent({ disabled: true });
-    });
+  it('does not emit batch update event when button is disabled', () => {
+    createComponent({ disabled: true });
 
-    it('displays a disabled tooltip', () => {
-      expect(findBatchUpdateButtonTooltip().attributes('title')).toBe(
-        'This model cannot be applied to all Code Suggestions sub-features',
-      );
-    });
+    const button = findBatchUpdateButton().findComponent(GlButton);
+    button.trigger('click');
 
-    it('does not emit batch update event', () => {
-      const button = findBatchUpdateButton().findComponent(GlButton);
-      button.trigger('click');
-
-      expect(wrapper.emitted('batch-update')).toBeUndefined();
-    });
+    expect(wrapper.emitted('batch-update')).toBeUndefined();
   });
 
   it('triggers onClick callback when the button is clicked', () => {
