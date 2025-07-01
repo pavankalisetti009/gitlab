@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Admin::Security::PolicySettings, feature_category: :security_policy_management do
+RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category: :security_policy_management do
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -53,8 +53,8 @@ RSpec.describe API::Admin::Security::PolicySettings, feature_category: :security
     end
   end
 
-  describe 'GET /admin/security/policy_settings' do
-    let(:path) { '/admin/security/policy_settings' }
+  describe 'GET /admin/security/compliance_policy_settings' do
+    let(:path) { '/admin/security/compliance_policy_settings' }
 
     before do
       stub_licensed_features(security_orchestration_policies: true)
@@ -98,8 +98,8 @@ RSpec.describe API::Admin::Security::PolicySettings, feature_category: :security
     end
   end
 
-  describe 'PUT /admin/security/policy_settings' do
-    let(:path) { '/admin/security/policy_settings' }
+  describe 'PUT /admin/security/compliance_policy_settings' do
+    let(:path) { '/admin/security/compliance_policy_settings' }
 
     before do
       stub_licensed_features(security_orchestration_policies: true)
