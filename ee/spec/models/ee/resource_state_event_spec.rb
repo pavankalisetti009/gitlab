@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe ResourceStateEvent do
+  let_it_be(:group) { create(:group) }
+
   subject { build(:resource_state_event) }
 
   it { is_expected.to belong_to(:epic) }
@@ -10,13 +12,17 @@ RSpec.describe ResourceStateEvent do
   describe 'validations' do
     describe 'Issuable validation' do
       it 'is valid if only epic is set' do
-        subject.attributes = { epic: build_stubbed(:epic), issue: nil, merge_request: nil }
+        subject.attributes = { epic: build_stubbed(:epic, group: group), issue: nil, merge_request: nil }
 
         expect(subject).to be_valid
       end
 
       it 'is invalid if an epic and an issue is set' do
-        subject.attributes = { epic: build_stubbed(:epic), issue: build_stubbed(:issue), merge_request: nil }
+        subject.attributes = {
+          epic: build_stubbed(:epic, group: group),
+          issue: build_stubbed(:issue),
+          merge_request: nil
+        }
 
         expect(subject).not_to be_valid
       end
@@ -37,6 +43,21 @@ RSpec.describe ResourceStateEvent do
         expect(scope.value).to eq(issue.state_id)
         expect(scope.action).to eq(nil)
         expect(scope.created_at).to eq(event.created_at)
+      end
+    end
+  end
+
+  describe 'ensure_namespace_id' do
+    context 'when version belongs to an epic' do
+      let(:epic) { create(:epic, group: group) }
+      let(:state_event) { described_class.new(epic: epic) }
+
+      it 'sets the namespace id from the epic group' do
+        expect(state_event.namespace_id).to be_nil
+
+        state_event.valid?
+
+        expect(state_event.namespace_id).to eq(epic.group_id)
       end
     end
   end

@@ -23,5 +23,13 @@ module EE
     def issuable
       epic || super
     end
+
+    override :parent_namespace_id
+    def parent_namespace_id
+      super || case issuable
+               when Epic
+                 issuable.group_id
+               end
+    end
   end
 end
