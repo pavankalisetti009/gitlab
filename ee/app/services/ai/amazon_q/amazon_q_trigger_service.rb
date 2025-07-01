@@ -175,7 +175,7 @@ module Ai
       end
 
       def add_service_account_to_project
-        ::Ai::AmazonQ::ServiceAccountMemberAddService.new(source.project).execute
+        ::Ai::ServiceAccountMemberAddService.new(source.project, amazon_q_service_account).execute
       end
 
       def search_comments_by_service_account(keywords = nil)

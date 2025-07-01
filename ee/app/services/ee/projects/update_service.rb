@@ -55,6 +55,7 @@ module EE
           project.import_state.force_import_job! if params[:mirror].present? && project.mirror?
           project.remove_import_data if project.previous_changes.include?('mirror') && !project.mirror?
           update_amazon_q_service_account!
+          update_duo_workflow_service_account!
 
           suggested_reviewers_already_enabled ? trigger_project_deregistration : trigger_project_registration
         end
@@ -241,13 +242,8 @@ module EE
 
         return unless duo_features_enabled.present? && ::Ai::AmazonQ.connected?
 
-        service = if duo_features_enabled == 'true'
-                    ::Ai::AmazonQ::ServiceAccountMemberAddService.new(project)
-                  else
-                    ::Ai::AmazonQ::ServiceAccountMemberRemoveService.new(current_user, project)
-                  end
-
-        service.execute
+        amazon_q_service_account_user = ::Ai::Setting.instance.amazon_q_service_account_user
+        update_service_account(amazon_q_service_account_user)
 
         integration_params =
           if duo_features_enabled == 'true'
@@ -257,6 +253,27 @@ module EE
           end
 
         project.amazon_q_integration.update(integration_params.compact)
+      end
+
+      def update_duo_workflow_service_account!
+        return unless ::Ai::DuoWorkflow.connected?
+
+        duo_workflow_service_account_user = ::Ai::Setting.instance.duo_workflow_service_account_user
+        update_service_account(duo_workflow_service_account_user)
+      end
+
+      def update_service_account(service_account_user)
+        duo_features_enabled = params.dig(:project_setting_attributes, :duo_features_enabled)
+
+        return unless duo_features_enabled.present?
+
+        service = if duo_features_enabled == 'true'
+                    ::Ai::ServiceAccountMemberAddService.new(project, service_account_user)
+                  else
+                    ::Ai::ServiceAccountMemberRemoveService.new(current_user, project, service_account_user)
+                  end
+
+        service.execute
       end
 
       def non_assignable_project_params

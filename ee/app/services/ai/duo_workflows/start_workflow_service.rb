@@ -96,7 +96,7 @@ module Ai
       end
 
       def add_service_account_to_project
-        ::Ai::DuoWorkflows::ServiceAccountMemberAddService.new(@project).execute
+        ::Ai::ServiceAccountMemberAddService.new(@project, duo_workflow_service_account).execute
       end
 
       def link_composite_identity

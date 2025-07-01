@@ -651,6 +651,7 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
   context 'when updating duo_availability' do
     let_it_be(:group) { create(:group, :public) }
+    let_it_be(:service_account) { create(:user) }
     let_it_be_with_refind(:integration) { create(:amazon_q_integration, instance: false, group: group) }
 
     using RSpec::Parameterized::TableSyntax
@@ -667,15 +668,16 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
       before do
         allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
+        ::Ai::Setting.instance.update!(amazon_q_service_account_user_id: service_account.id)
       end
 
       it 'calls the service when conditions are met' do
         if expected_result
-          expect_next_instance_of(::Ai::AmazonQ::ServiceAccountMemberRemoveService, user, group) do |service|
+          expect_next_instance_of(::Ai::ServiceAccountMemberRemoveService, user, group, service_account) do |service|
             expect(service).to receive(:execute)
           end
         else
-          expect(::Ai::AmazonQ::ServiceAccountMemberRemoveService).not_to receive(:new)
+          expect(::Ai::ServiceAccountMemberRemoveService).not_to receive(:new)
         end
 
         update_group(group, user, params)
@@ -712,6 +714,36 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
               group.amazon_q_integration.reload.auto_review_enabled
             }
           end
+        end
+      end
+    end
+
+    context 'for duo workflow group authorization' do
+      before do
+        allow(::Ai::DuoWorkflow).to receive(:connected?).and_return(duo_workflow_connected)
+        Ai::Setting.instance.update!(duo_workflow_service_account_user_id: service_account.id)
+      end
+
+      where(:duo_availability, :duo_workflow_connected, :expected_result) do
+        'never_on'    | true  | true
+        'never_on'    | false | false
+        'default_off' | true  | false
+        'default_off' | false | false
+      end
+
+      with_them do
+        let(:params) { { duo_availability: duo_availability } }
+
+        it 'calls the service when conditions are met' do
+          if expected_result
+            expect_next_instance_of(::Ai::ServiceAccountMemberRemoveService, user, group, service_account) do |service|
+              expect(service).to receive(:execute)
+            end
+          else
+            expect(::Ai::ServiceAccountMemberRemoveService).not_to receive(:new)
+          end
+
+          update_group(group, user, params)
         end
       end
     end
