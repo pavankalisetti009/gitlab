@@ -128,6 +128,10 @@ module API
             optional :source_branch, type: String,
               desc: 'Source branch for the CI pipeline. Uses default branch when not specified.',
               documentation: { example: 'main' }
+            optional :environment, type: String,
+              values: ::Ai::DuoWorkflows::Workflow.environments.keys.map(&:to_s),
+              desc: 'Environment for the workflow.',
+              documentation: { example: 'web' }
           end
         end
 

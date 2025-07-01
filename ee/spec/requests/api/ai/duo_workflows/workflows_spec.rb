@@ -336,6 +336,28 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
           expect(response).to have_gitlab_http_status(:created)
         end
       end
+
+      context 'when environment is provided' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'Print hello world',
+            environment: 'web'
+          }
+        end
+
+        it 'passes environment to StartWorkflowService' do
+          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).with(
+            params: anything,
+            workflow: have_attributes(environment: 'web')
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
     end
   end
 
