@@ -28,10 +28,10 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     context 'when duo chat is self-hosted' do
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted) }
 
-      it 'creates ai gateway client with self-hosted-models service name' do
+      it 'creates ai gateway client with duo_chat service name' do
         expect(::Gitlab::Llm::AiGateway::Client).to receive(:new).with(
           user,
-          service_name: :self_hosted_models,
+          service_name: :duo_chat,
           tracking_context: tracking_context
         )
 

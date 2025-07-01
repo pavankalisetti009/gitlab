@@ -51,10 +51,7 @@ module Gitlab
         end
 
         def service
-          chat_feature_setting = ::Ai::FeatureSetting.find_by_feature(:duo_chat)
-          feature_name = chat_feature_setting&.self_hosted? ? :self_hosted_models : :duo_chat
-
-          ::CloudConnector::AvailableServices.find_by_name(feature_name)
+          ::CloudConnector::AvailableServices.find_by_name(:duo_chat)
         end
         strong_memoize_attr :service
 

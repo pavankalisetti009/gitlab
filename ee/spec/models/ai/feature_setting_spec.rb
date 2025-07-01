@@ -417,6 +417,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       expect(described_class.unit_primitive_to_feature_name_map).to eq(
         {
           "complete_code" => "code_completions",
+          "code_suggestions" => "code_completions",
           "generate_code" => "code_generations",
           "duo_chat" => "duo_chat",
           "chat" => "duo_chat",

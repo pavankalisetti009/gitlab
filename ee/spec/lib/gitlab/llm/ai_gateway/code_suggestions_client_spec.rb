@@ -131,7 +131,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
         "your AI Gateway URL is configured correctly."
     end
 
-    include_examples 'with tests requests', :self_hosted_models
+    include_examples 'with tests requests', :code_suggestions
   end
 
   describe '#direct_access_token', :with_cloud_connector do
