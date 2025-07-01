@@ -83,6 +83,14 @@ module EE
                     forbidden!('"remote_development" licensed feature is not available')
                   end
 
+                  unless agent.unversioned_latest_workspaces_agent_config
+                    render_api_error!(
+                      'The remote development workspaces config for the agent is invalid. ' \
+                        'Please see https://docs.gitlab.com/user/workspace/settings/#configuration-reference',
+                      406
+                    )
+                  end
+
                   domain_main_class_args = {
                     agent: agent
                   }

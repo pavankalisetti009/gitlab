@@ -145,6 +145,9 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
 
     before do
       stub_licensed_features(remote_development: true)
+      # rubocop:disable RSpec/AnyInstanceOf -- It's NOT the next instance...
+      allow_any_instance_of(Clusters::Agent).to receive(:unversioned_latest_workspaces_agent_config).and_return(true)
+      # rubocop:enable RSpec/AnyInstanceOf
     end
 
     include_examples 'authorization'
@@ -176,6 +179,22 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
         send_request
 
         expect(response).to have_gitlab_http_status(:internal_server_error)
+      end
+    end
+
+    context 'when agent config not found' do
+      before do
+        # rubocop:disable RSpec/AnyInstanceOf -- It's NOT the next instance...
+        allow_any_instance_of(Clusters::Agent).to receive(:unversioned_latest_workspaces_agent_config).and_return(nil)
+        # rubocop:enable RSpec/AnyInstanceOf
+      end
+
+      it 'returns service response with error 406' do
+        expect(RemoteDevelopment::CommonService).not_to receive(:execute)
+
+        send_request
+
+        expect(response).to have_gitlab_http_status(:not_acceptable)
       end
     end
 
