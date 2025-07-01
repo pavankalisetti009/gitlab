@@ -2,14 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, feature_category: :duo_chat do
-  let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group_with_plan, :public, plan: :ultimate_plan) }
-  let_it_be(:project) { create(:project, :public, group: group) }
+RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_current_organization, feature_category: :duo_chat do
+  let_it_be(:user) { create(:user, organizations: [current_organization]) }
+  let_it_be(:group) { create(:group_with_plan, :public, plan: :ultimate_plan, organization: current_organization) }
+  let_it_be(:project) { create(:project, :public, group: group, organization: current_organization) }
   let_it_be(:thread) do
-    create(:ai_conversation_thread, user: user).tap do |thread|
-      create(:ai_conversation_message, content: 'Chat Message', role: :user, thread: thread)
-      create(:ai_conversation_message, content: 'Response', role: :assistant, thread: thread)
+    create(:ai_conversation_thread, user: user, organization: current_organization).tap do |thread|
+      create(:ai_conversation_message, content: 'Chat Message', role: :user, thread: thread,
+        organization: current_organization)
+      create(:ai_conversation_message, content: 'Response', role: :assistant, thread: thread,
+        organization: current_organization)
     end
   end
 
