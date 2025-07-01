@@ -28,6 +28,7 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
       subscription_history
       custom_fields
       statuses
+      plan
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)

@@ -189,6 +189,14 @@ module EE
           experiment: { milestone: '18.1' },
           resolver: ::Resolvers::WorkItems::StatusesResolver
 
+        field :plan,
+          ::Types::Namespaces::PlanType,
+          null: true,
+          description: 'Subscription plan associated with the namespace.',
+          method: :actual_plan,
+          authorize: :admin_namespace,
+          experiment: { milestone: '18.2' }
+
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end

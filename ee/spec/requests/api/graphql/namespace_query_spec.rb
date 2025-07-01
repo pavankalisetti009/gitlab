@@ -62,5 +62,31 @@ RSpec.describe 'Query', :saas, feature_category: :groups_and_projects do
         end
       end
     end
+
+    describe 'plan field' do
+      context 'when user has admin ability' do
+        before_all do
+          target_namespace.add_owner(user)
+        end
+
+        it 'returns plan field' do
+          expect(query_result['plan']).to include({
+            'isPaid' => true,
+            'name' => 'premium',
+            'title' => 'Premium'
+          })
+        end
+      end
+
+      context 'when user does not have admin ability' do
+        before_all do
+          target_namespace.add_developer(user)
+        end
+
+        it 'returns plan field as nil' do
+          expect(query_result['plan']).to be_nil
+        end
+      end
+    end
   end
 end
