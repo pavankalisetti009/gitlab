@@ -99,30 +99,4 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
       described_class.publish_group(events)
     end
   end
-
-  describe 'ProcessPendingEnabledNamespaceEventWorker subscription condition' do
-    let(:instance) { described_class.instance }
-    let(:event) { Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent }
-    let(:subscription) { instance.subscriptions.find { |k, _| k == event }.second.first }
-
-    context 'when active_context_code_event_process_pending_enabled_namespace feature flag is enabled' do
-      before do
-        stub_feature_flags(active_context_code_event_process_pending_enabled_namespace: true)
-      end
-
-      it 'returns true' do
-        expect(subscription.condition.call(nil)).to be true
-      end
-    end
-
-    context 'when active_context_code_event_process_pending_enabled_namespace feature flag is disabled' do
-      before do
-        stub_feature_flags(active_context_code_event_process_pending_enabled_namespace: false)
-      end
-
-      it 'returns false' do
-        expect(subscription.condition.call(nil)).to be false
-      end
-    end
-  end
 end
