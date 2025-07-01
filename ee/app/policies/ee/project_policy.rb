@@ -258,9 +258,11 @@ module EE
         @subject.custom_roles_enabled?
       end
 
+      # score needs to be higher than reporter / developer / maintainer_access
+      # so access_level condition is evaluated before any custom_role conditions
       MemberRole.all_customizable_project_permissions.each do |ability|
         desc "Custom role on project that enables #{ability.to_s.tr('_', ' ')}"
-        condition(:"custom_role_enables_#{ability}") do
+        condition(:"custom_role_enables_#{ability}", score: 210) do
           custom_role_ability(@user, @subject).allowed?(ability)
         end
       end
@@ -451,6 +453,8 @@ module EE
         enable :read_security_settings
         enable :read_vulnerability_statistics
         enable :read_secret_detection_validity_checks_status
+        enable :read_security_resource
+        enable :read_vulnerability
       end
 
       rule { can?(:push_code) }.policy do
@@ -499,8 +503,10 @@ module EE
         enable :access_security_and_compliance
       end
 
-      rule { security_dashboard_enabled & can?(:developer_access) }.policy do
-        enable :read_security_resource
+      rule { ~security_dashboard_enabled }.policy do
+        prevent :read_security_resource
+        prevent :read_vulnerability
+        prevent :admin_vulnerability
       end
 
       rule { security_scans_api_enabled & can?(:developer_access) }.policy do
@@ -538,7 +544,7 @@ module EE
         enable :read_security_configuration
         enable :read_project_security_dashboard
         enable :read_security_resource
-
+        enable :read_vulnerability
         # create scanner configuration
         enable :push_code
         enable :download_code
@@ -604,14 +610,6 @@ module EE
         enable :admin_vulnerability_external_issue_link
       end
 
-      rule { can?(:read_security_resource) }.policy do
-        enable :read_vulnerability
-      end
-
-      rule { can?(:read_security_resource) & can?(:maintainer_access) }.policy do
-        enable :admin_vulnerability
-      end
-
       rule { can?(:admin_vulnerability) }.policy do
         enable :read_vulnerability
         enable :create_vulnerability_feedback
@@ -669,10 +667,6 @@ module EE
         prevent :destroy_iteration
       end
 
-      rule { repository_disabled }.policy do
-        prevent :read_code
-      end
-
       rule { dependency_scanning_enabled & can?(:download_code) }.enable :read_dependency
 
       rule { license_scanning_enabled & can?(:download_code) }.enable :read_licenses
@@ -697,6 +691,7 @@ module EE
         enable :read_project_security_exclusions
         enable :manage_security_settings
         enable :configure_secret_detection_validity_checks
+        enable :admin_vulnerability
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -726,19 +721,15 @@ module EE
         enable :read_project_runners
         enable :read_project_security_exclusions
         enable :read_security_settings
+
+        enable :access_security_and_compliance
+        enable :read_security_resource
+        enable :read_vulnerability
       end
 
       rule { auditor & ~guest & private_project }.policy do
         prevent :fork_project
         prevent :create_merge_request_in
-      end
-
-      rule { auditor }.policy do
-        enable :access_security_and_compliance
-      end
-
-      rule { auditor & security_dashboard_enabled }.policy do
-        enable :read_security_resource
       end
 
       rule { auditor & oncall_schedules_available }.policy do
@@ -941,6 +932,7 @@ module EE
       rule { google_cloud_support_available & can?(:maintainer_access) }.enable :admin_google_cloud_artifact_registry
 
       rule { hidden }.policy do
+        prevent :read_code
         prevent :download_code
         prevent :build_download_code
       end
@@ -985,6 +977,7 @@ module EE
 
       rule { custom_role_enables_admin_vulnerability }.policy do
         enable :admin_vulnerability
+        enable :read_vulnerability
       end
 
       rule { custom_role_enables_read_dependency & dependency_scanning_enabled }.policy do

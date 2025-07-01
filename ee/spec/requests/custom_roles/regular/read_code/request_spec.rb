@@ -3,20 +3,20 @@
 require 'spec_helper'
 
 RSpec.describe 'User with read_code custom role', feature_category: :permissions do
-  let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, :small_repo, :in_group) }
+  let_it_be(:user) { create(:user, :with_namespace) }
+  let_it_be(:project) { create(:project, :small_repo, :private, :in_group) }
+
   let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: project.group) }
   let_it_be(:member) { create(:group_member, :guest, member_role: role, user: user, source: project.group) }
 
+  let(:current_user) { user }
+
   before do
     stub_licensed_features(custom_roles: true)
+    sign_in(current_user)
   end
 
   describe SearchController do
-    before do
-      sign_in(user)
-    end
-
     describe '#show' do
       context 'with elasticsearch', :elastic, :sidekiq_inline do
         before do
@@ -76,6 +76,31 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
             expect(response.body).to include('test.txt#L1')
           end
         end
+      end
+    end
+  end
+
+  describe Projects::TreeController do
+    describe '#show' do
+      subject(:get_project_tree) { get project_tree_path(project) }
+
+      it 'user has access via a custom role' do
+        get_project_tree
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template(:show)
+      end
+
+      context 'when user is a maintainer' do
+        let(:current_user) { create(:user, :with_namespace, maintainer_of: project) }
+
+        it_behaves_like 'does not call custom role query'
+      end
+
+      context 'when user is an owner' do
+        let(:current_user) { create(:user, :with_namespace, owner_of: project) }
+
+        it_behaves_like 'does not call custom role query'
       end
     end
   end

@@ -244,3 +244,19 @@ RSpec.shared_examples 'deleting a role' do
     end
   end
 end
+
+RSpec.shared_examples 'does not call custom role query' do
+  it 'detects zero queries to projects preloader' do
+    recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { subject }
+    method_invocations = recorder.find_query(/.*user_member_roles_in_projects_preloader.rb.*/, 0)
+
+    expect(method_invocations).to be_empty
+  end
+
+  it 'detects zero queries to groups preloader' do
+    recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { subject }
+    method_invocations = recorder.find_query(/.*user_member_roles_in_groups_preloader.rb.*/, 0)
+
+    expect(method_invocations).to be_empty
+  end
+end
