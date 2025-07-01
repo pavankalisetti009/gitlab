@@ -23,6 +23,24 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
         expect(result).to contain_exactly(enabled_namespace1, enabled_namespace2)
       end
     end
+
+    describe '.with_active_connection' do
+      let_it_be(:active_connection) { create(:ai_active_context_connection) }
+      let_it_be(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
+      let_it_be(:namespace_with_active_connection) do
+        create(:ai_active_context_code_enabled_namespace, active_context_connection: active_connection)
+      end
+
+      let_it_be(:namespace_with_inactive_connection) do
+        create(:ai_active_context_code_enabled_namespace, active_context_connection: inactive_connection)
+      end
+
+      it 'returns enabled namespaces with active connections' do
+        result = described_class.with_active_connection
+
+        expect(result).to contain_exactly(namespace_with_active_connection)
+      end
+    end
   end
 
   describe 'validations' do

@@ -7,6 +7,11 @@ module Ai
         include Gitlab::Scheduling::TaskExecutor
 
         TASKS = {
+          process_pending_enabled_namespace: {
+            period: 30.minutes,
+            if: -> { ActiveContext::Code::EnabledNamespace.pending.with_active_connection.exists? },
+            dispatch: { event: ProcessPendingEnabledNamespaceEvent }
+          },
           index_repository: {
             period: 1.hour,
             if: -> { ::Ai::ActiveContext::Code::Repository.pending_with_active_connection.exists? },

@@ -42,6 +42,9 @@ module Ai
           failed: 255
         }
 
+        scope :for_connection_and_enabled_namespace, ->(connection, enabled_namespace) {
+          where(connection_id: connection.id, enabled_namespace_id: enabled_namespace.id)
+        }
         scope :by_state, ->(state) { where(state: state) }
         scope :with_active_connection, -> {
           joins(:active_context_connection).where(active_context_connection: { active: true })

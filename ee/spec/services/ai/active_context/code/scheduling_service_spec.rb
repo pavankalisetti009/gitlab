@@ -232,6 +232,39 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
   end
 
   describe 'tasks' do
+    describe 'process_pending_enabled_namespace' do
+      before do
+        allow(Gitlab::EventStore).to receive(:publish)
+      end
+
+      context 'when there are pending namespaces to process' do
+        before do
+          allow(Ai::ActiveContext::Code::EnabledNamespace)
+            .to receive_message_chain(:with_active_connection, :exists?).and_return(true)
+        end
+
+        it 'publishes ProcessPendingEnabledNamespaceEvent' do
+          described_class.new(:process_pending_enabled_namespace).execute
+
+          expect(Gitlab::EventStore).to have_received(:publish)
+            .with(an_instance_of(Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent))
+        end
+      end
+
+      context 'when there are no pending namespaces to process' do
+        before do
+          allow(Ai::ActiveContext::Code::EnabledNamespace)
+            .to receive_message_chain(:with_active_connection, :exists?).and_return(false)
+        end
+
+        it 'does not publish the event' do
+          described_class.new(:process_pending_enabled_namespace).execute
+
+          expect(Gitlab::EventStore).not_to have_received(:publish)
+        end
+      end
+    end
+
     describe 'index_repository' do
       context 'when there are repositories to process' do
         before do
