@@ -18,11 +18,12 @@ RSpec.describe 'Getting a project compliance violation', feature_category: :comp
     create(:compliance_requirements_control, :project_visibility_not_internal, compliance_requirement: requirement)
   end
 
-  let_it_be(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
+  let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: project.id) }
+  let_it_be(:audit_event2) { create(:audit_events_group_audit_event, group_id: group.id) }
 
   let_it_be(:violation1) do
     create(:project_compliance_violation, namespace: group, project: project,
-      audit_event_id: audit_event.id,
+      audit_event_id: audit_event1.id,
       audit_event_table_name: :project_audit_events,
       compliance_control: control1,
       status: 0
@@ -31,8 +32,8 @@ RSpec.describe 'Getting a project compliance violation', feature_category: :comp
 
   let_it_be(:violation2) do
     create(:project_compliance_violation, namespace: group, project: project,
-      audit_event_id: audit_event.id,
-      audit_event_table_name: :project_audit_events,
+      audit_event_id: audit_event2.id,
+      audit_event_table_name: :group_audit_events,
       compliance_control: control2,
       status: 1
     )
@@ -50,6 +51,34 @@ RSpec.describe 'Getting a project compliance violation', feature_category: :comp
       project {
         id
         name
+      }
+      auditEvent {
+        id
+        eventName
+        targetId
+        targetDetails
+        targetType
+        details
+        ipAddress
+        entityPath
+        entityId
+        entityType
+        author {
+          id
+          name
+        }
+        project {
+          id
+          name
+        }
+        group {
+          id
+          name
+        }
+        user {
+          id
+          name
+        }
       }
     GRAPHQL
   end
@@ -70,8 +99,48 @@ RSpec.describe 'Getting a project compliance violation', feature_category: :comp
       'complianceControl' => {
         'id' => violation.compliance_control.to_global_id.to_s,
         'name' => violation.compliance_control.name
+      },
+      'auditEvent' => get_audit_event_output(violation.audit_event)
+    }
+  end
+
+  def get_audit_event_output(audit_event)
+    output = {
+      'id' => audit_event.to_global_id.to_s,
+      'eventName' => audit_event.event_name,
+      'targetId' => audit_event.target_id.to_s,
+      'targetDetails' => audit_event.target_details,
+      'targetType' => audit_event.target_type,
+      'details' => audit_event.details.to_s,
+      'ipAddress' => audit_event.ip_address,
+      'entityPath' => audit_event.entity_path,
+      'entityId' => audit_event.entity_id.to_s,
+      'entityType' => audit_event.entity_type,
+      'author' => {
+        'id' => audit_event.author.to_global_id.to_s,
+        'name' => audit_event.author.name
+      },
+      'user' => {
+        'id' => audit_event.user.to_global_id.to_s,
+        'name' => audit_event.user.name
       }
     }
+
+    output["project"] = if audit_event.respond_to?(:project)
+                          {
+                            'id' => audit_event.project.to_global_id.to_s,
+                            'name' => audit_event.project.name
+                          }
+                        end
+
+    output["group"] = if audit_event.respond_to?(:group)
+                        {
+                          'id' => audit_event.group.to_global_id.to_s,
+                          'name' => audit_event.group.name
+                        }
+                      end
+
+    output
   end
 
   context 'when the feature is licensed' do
