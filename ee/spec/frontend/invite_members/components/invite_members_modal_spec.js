@@ -37,6 +37,7 @@ describe('EEInviteMembersModal', () => {
         newProjectPath,
         name: propsData.name,
         overageMembersModalAvailable: true,
+        rootGroupPath: 'root-group',
       },
       propsData: {
         usersLimitDataset: {},

@@ -12,7 +12,7 @@ export function membersProvideData(el) {
 
   return {
     ...result,
-    groupName: el.dataset.groupName,
+    rootGroupPath: el.dataset.rootGroupPath,
   };
 }
 
@@ -25,6 +25,6 @@ export function groupsProvideData(el) {
 
   return {
     ...result,
-    groupName: el.dataset.groupName,
+    rootGroupPath: el.dataset.rootGroupPath,
   };
 }

@@ -32,6 +32,22 @@ RSpec.describe ProjectLinksHelper, feature_category: :system_access do
       end
     end
 
-    it { is_expected.to be(false) }
+    context 'when on self-managed' do
+      context 'when custom roles feature is available' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when custom roles feature is not available' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
   end
 end

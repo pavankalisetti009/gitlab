@@ -44,9 +44,7 @@ export default {
     inviteWithCustomRoleEnabled: {
       default: false,
     },
-    groupName: {
-      default: '',
-    },
+    rootGroupPath: {}, // required
   },
   inheritAttrs: false,
   props: {
@@ -152,6 +150,7 @@ export default {
   data() {
     return {
       willIncreaseOverage: false,
+      rootGroupName: '',
       totalUserCount: null,
       subscriptionSeats: 0,
       namespaceId: parseInt(this.rootGroupId, 10),
@@ -193,7 +192,7 @@ export default {
     modalInfo() {
       if (this.totalUserCount) {
         const infoText = overageModalInfoText(this.subscriptionSeats);
-        const infoWarning = overageModalInfoWarning(this.totalUserCount, this.groupName);
+        const infoWarning = overageModalInfoWarning(this.totalUserCount, this.rootGroupName);
 
         return `${infoText} ${infoWarning}`;
       }
@@ -307,6 +306,7 @@ export default {
         const billingDetails = data.group.gitlabSubscriptionsPreviewBillableUserChange;
         this.willIncreaseOverage = billingDetails.willIncreaseOverage;
         if (this.willIncreaseOverage) {
+          this.rootGroupName = data.group.name;
           this.totalUserCount = billingDetails.newBillableUserCount;
           this.subscriptionSeats = billingDetails.seatsInSubscription;
         } else {
@@ -336,7 +336,7 @@ export default {
       const addGroupId = this.newGroupToInvite;
 
       return {
-        fullPath: this.fullPath,
+        fullPath: this.rootGroupPath,
         addGroupId,
         addUserEmails: usersToInviteByEmail,
         addUserIds: usersToAddById,
