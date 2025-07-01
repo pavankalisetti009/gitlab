@@ -14,6 +14,7 @@ export const GENIE_CHAT_MODEL_ROLES = {
   user: 'user',
   system: 'system',
   assistant: 'assistant',
+  tool: 'tool',
 };
 
 export const CHAT_MESSAGE_TYPES = {

@@ -14,6 +14,14 @@ describe('GitLab Duo Chat Store Mutations', () => {
     const requestId = '123';
     const userMessageWithRequestId = { ...MOCK_USER_MESSAGE, requestId };
 
+    // Mock tool message for testing the new tool role handling
+    const MOCK_TOOL_MESSAGE = {
+      content: 'Using tool to search issues',
+      role: GENIE_CHAT_MODEL_ROLES.tool,
+      tool_info: { name: 'search_issues' },
+      requestId,
+    };
+
     describe('system message', () => {
       it.each(['system', 'SYSTEM'])(
         'ignores the messages with role="%s" and does not populate the state',
@@ -33,6 +41,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
         messageData                                                                              | expectedState
         ${MOCK_USER_MESSAGE}                                                                     | ${[MOCK_USER_MESSAGE]}
         ${MOCK_FAILING_USER_MESSAGE}                                                             | ${[MOCK_FAILING_USER_MESSAGE]}
+        ${MOCK_TOOL_MESSAGE}                                                                     | ${[MOCK_TOOL_MESSAGE]}
         ${{ content: 'foo', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: undefined }}        | ${[{ content: 'foo', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: undefined }]}
         ${{ content: 'foo', source: 'bar', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: 1 }} | ${[{ content: 'foo', source: 'bar', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: 1 }]}
         ${{}}                                                                                    | ${[]}
@@ -45,6 +54,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
 
     describe('when there is a message with the same requestId', () => {
       const updatedContent = 'Updated content';
+
       it('updates the correct message based on the role', () => {
         state.messages.push(
           {
@@ -74,6 +84,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
           },
         ]);
       });
+
       describe('when the message is of the same role', () => {
         it('updates the message object if it is of exactly the same role', () => {
           state.messages.push({ ...MOCK_USER_MESSAGE, requestId });
@@ -91,6 +102,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
             },
           ]);
         });
+
         it('still updates despite the capitalization differences in the role', () => {
           state.messages.push({
             ...MOCK_USER_MESSAGE,
@@ -113,6 +125,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
           ]);
         });
       });
+
       it('correctly injects a new ASSISTANT message right after the corresponding USER message', () => {
         const promptRequestId = '456';
         const userPrompt = {
@@ -133,20 +146,40 @@ describe('GitLab Duo Chat Store Mutations', () => {
           userMessageWithRequestId,
         ]);
       });
+
+      it('updates an existing tool message with the same requestId', () => {
+        state.messages.push({ ...MOCK_TOOL_MESSAGE });
+
+        const updatedToolMessage = {
+          ...MOCK_TOOL_MESSAGE,
+          content: 'Updated tool message',
+          tool_info: {
+            name: 'search_issues',
+            result: 'Found 5 issues',
+          },
+        };
+
+        mutations[types.ADD_MESSAGE](state, updatedToolMessage);
+
+        expect(state.messages.length).toBe(1);
+        expect(state.messages[0]).toEqual(updatedToolMessage);
+      });
     });
 
     it.each`
-      initState                                                                        | newMessageData                              | expectedLoadingState
-      ${[]}                                                                            | ${MOCK_USER_MESSAGE}                        | ${true}
-      ${[MOCK_USER_MESSAGE]}                                                           | ${{ ...MOCK_USER_MESSAGE, content: 'foo' }} | ${true}
-      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${{ ...MOCK_USER_MESSAGE, requestId }}      | ${true}
-      ${[{ ...MOCK_USER_MESSAGE, requestId }, MOCK_TANUKI_MESSAGE, MOCK_USER_MESSAGE]} | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}    | ${true}
-      ${[MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE, { ...MOCK_USER_MESSAGE, requestId }]} | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}    | ${false}
-      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}    | ${false}
-      ${[MOCK_USER_MESSAGE]}                                                           | ${MOCK_TANUKI_MESSAGE}                      | ${false}
-      ${[]}                                                                            | ${MOCK_FAILING_USER_MESSAGE}                | ${false}
-      ${[{ MOCK_FAILING_USER_MESSAGE, requestId: 'faux-id' }]}                         | ${MOCK_FAILING_USER_MESSAGE}                | ${false}
-      ${[MOCK_USER_MESSAGE]}                                                           | ${MOCK_FAILING_USER_MESSAGE}                | ${false}
+      initState                                                                        | newMessageData                                               | expectedLoadingState
+      ${[]}                                                                            | ${MOCK_USER_MESSAGE}                                         | ${true}
+      ${[MOCK_USER_MESSAGE]}                                                           | ${{ ...MOCK_USER_MESSAGE, content: 'foo' }}                  | ${true}
+      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${{ ...MOCK_USER_MESSAGE, requestId }}                       | ${true}
+      ${[{ ...MOCK_USER_MESSAGE, requestId }, MOCK_TANUKI_MESSAGE, MOCK_USER_MESSAGE]} | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}                     | ${true}
+      ${[MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE, { ...MOCK_USER_MESSAGE, requestId }]} | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}                     | ${false}
+      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}                     | ${false}
+      ${[MOCK_USER_MESSAGE]}                                                           | ${MOCK_TANUKI_MESSAGE}                                       | ${false}
+      ${[]}                                                                            | ${MOCK_FAILING_USER_MESSAGE}                                 | ${false}
+      ${[{ MOCK_FAILING_USER_MESSAGE, requestId: 'faux-id' }]}                         | ${MOCK_FAILING_USER_MESSAGE}                                 | ${false}
+      ${[MOCK_USER_MESSAGE]}                                                           | ${MOCK_FAILING_USER_MESSAGE}                                 | ${false}
+      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${MOCK_TOOL_MESSAGE}                                         | ${true}
+      ${[MOCK_TOOL_MESSAGE]}                                                           | ${{ ...MOCK_TOOL_MESSAGE, content: 'Updated tool content' }} | ${true}
     `(
       'correctly manages the loading state when initial state is "$initState" and new message is "$newMessageData"',
       ({ initState, newMessageData, expectedLoadingState }) => {
@@ -156,6 +189,54 @@ describe('GitLab Duo Chat Store Mutations', () => {
         expect(state.loading).toBe(expectedLoadingState);
       },
     );
+
+    describe('tool messages', () => {
+      it('adds a new tool message to the state', () => {
+        mutations[types.ADD_MESSAGE](state, MOCK_TOOL_MESSAGE);
+
+        expect(state.messages.length).toBe(1);
+        expect(state.messages[0]).toEqual(MOCK_TOOL_MESSAGE);
+      });
+
+      it('preserves tool_info when updating an existing tool message', () => {
+        const initialToolMessage = {
+          ...MOCK_TOOL_MESSAGE,
+          tool_info: { name: 'search_issues' },
+        };
+
+        state.messages.push(initialToolMessage);
+
+        const updatedToolMessage = {
+          ...MOCK_TOOL_MESSAGE,
+          content: 'Updated tool content',
+          tool_info: {
+            name: 'search_issues',
+            result: 'Found 5 issues',
+          },
+        };
+
+        mutations[types.ADD_MESSAGE](state, updatedToolMessage);
+
+        expect(state.messages.length).toBe(1);
+        expect(state.messages[0].content).toBe('Updated tool content');
+        expect(state.messages[0].tool_info).toEqual({
+          name: 'search_issues',
+          result: 'Found 5 issues',
+        });
+      });
+
+      it('adds a tool message with message_type property', () => {
+        const toolMessageWithType = {
+          ...MOCK_TOOL_MESSAGE,
+          message_type: 'tool',
+        };
+
+        mutations[types.ADD_MESSAGE](state, toolMessageWithType);
+
+        expect(state.messages.length).toBe(1);
+        expect(state.messages[0].message_type).toBe('tool');
+      });
+    });
   });
 
   describe('SET_LOADING', () => {

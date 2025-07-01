@@ -22,7 +22,7 @@ const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflow/456';
 const MOCK_USER_MESSAGE = {
   content: 'How can I optimize my CI pipeline?',
   role: 'user',
-  requestId: 0,
+  requestId: `${MOCK_WORKFLOW_ID}-0`,
 };
 const MOCK_CONTEXT_PRESETS_RESPONSE = {
   data: {
@@ -240,6 +240,7 @@ describe('Duo Agentic Chat', () => {
           expect.objectContaining({
             content: MOCK_USER_MESSAGE.content,
             role: 'user',
+            requestId: expect.stringContaining('-'),
           }),
         );
       });
@@ -294,8 +295,11 @@ describe('Duo Agentic Chat', () => {
             checkpoint: JSON.stringify({
               channel_values: {
                 ui_chat_log: [
-                  { content: 'Hello, how can I help?', role: 'assistant' },
-                  { content: 'I can assist with optimizing your CI pipeline.', role: 'assistant' },
+                  { content: 'Hello, how can I help?', message_type: 'agent' },
+                  {
+                    content: 'I can assist with optimizing your CI pipeline.',
+                    message_type: 'agent',
+                  },
                 ],
               },
             }),
@@ -310,11 +314,13 @@ describe('Duo Agentic Chat', () => {
           expect.arrayContaining([
             expect.objectContaining({
               content: 'Hello, how can I help?',
+              message_type: 'assistant',
               role: 'assistant',
               requestId: '456-0',
             }),
             expect.objectContaining({
               content: 'I can assist with optimizing your CI pipeline.',
+              message_type: 'assistant',
               role: 'assistant',
               requestId: '456-1',
             }),
@@ -323,6 +329,41 @@ describe('Duo Agentic Chat', () => {
 
         expect(mockWebSocket.lastSentData).toBe(
           JSON.stringify({ actionResponse: { requestID: 'request-id-1' } }),
+        );
+      });
+
+      it('handles tool messages in the chat log', async () => {
+        const mockCheckpointData = {
+          requestID: 'request-id-2',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'Using tool to search issues',
+                    message_type: 'tool',
+                    tool_info: { name: 'search_issues' },
+                  },
+                ],
+              },
+            }),
+          },
+        };
+
+        mockWebSocket.mockReceiveMessage(JSON.stringify(mockCheckpointData));
+        await waitForPromises();
+
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.arrayContaining([
+            expect.objectContaining({
+              content: 'Using tool to search issues',
+              message_type: 'tool',
+              role: 'tool',
+              tool_info: { name: 'search_issues' },
+              requestId: '456-0',
+            }),
+          ]),
         );
       });
 
