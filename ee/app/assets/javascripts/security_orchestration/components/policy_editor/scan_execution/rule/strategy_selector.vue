@@ -33,7 +33,7 @@ export default {
         v-for="selected in $options.STRATEGIES"
         :key="selected.key"
         :data-testid="selected.key"
-        class="gl-mb-5"
+        class="gl-mb-5 gl-bg-white"
       >
         <gl-form-radio
           :value="selected.key"
