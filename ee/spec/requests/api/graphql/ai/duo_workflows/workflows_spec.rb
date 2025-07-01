@@ -9,7 +9,19 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
   let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:project_2) { create(:project, :public, group: group) }
   let_it_be(:user) { create(:user, developer_of: group) }
-  let_it_be(:workflows) { create_list(:duo_workflows_workflow, 3, project: project, user: user, created_at: 1.day.ago) }
+  let_it_be(:workflow_without_environment) do
+    create(:duo_workflows_workflow, project: project, user: user, created_at: 1.day.ago)
+  end
+
+  let_it_be(:workflow_with_ide_environment) do
+    create(:duo_workflows_workflow, environment: :ide, project: project, user: user, created_at: 1.day.ago)
+  end
+
+  let_it_be(:workflow_with_web_environment) do
+    create(:duo_workflows_workflow, environment: :web, project: project, user: user, created_at: 1.day.ago)
+  end
+
+  let_it_be(:workflows) { [workflow_without_environment, workflow_with_ide_environment, workflow_with_web_environment] }
   let_it_be(:workflows_project_2) { create_list(:duo_workflows_workflow, 2, project: project_2, user: user) }
   let_it_be(:workflows_for_different_user) { create_list(:duo_workflows_workflow, 4, project: project) }
   let(:all_project_workflows) { workflows + workflows_project_2 }
@@ -23,6 +35,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
         humanStatus,
         goal,
         workflowDefinition,
+        environment,
         createdAt,
         updatedAt
       }
@@ -109,6 +122,37 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
           expect(returned_workflows.length).to eq(workflows.length)
           returned_workflows.each do |returned_workflow|
             expect(returned_workflow['userId']).to eq(user.to_global_id.to_s)
+          end
+        end
+      end
+
+      context 'with the environment argument' do
+        context 'when environment argument is web' do
+          let(:variables) { { environment: :WEB } }
+
+          it 'returns only workflows with web environment', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            expect(returned_workflows.length).to eq(1)
+            returned_workflows.each do |returned_workflow|
+              expect(returned_workflow['environment']).to eq("WEB")
+            end
+          end
+        end
+
+        context 'when environment argument is not given' do
+          let(:variables) { {} }
+
+          it 'returns workflows independent of environment', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            expect(returned_workflows.length).to eq(all_project_workflows.length)
           end
         end
       end

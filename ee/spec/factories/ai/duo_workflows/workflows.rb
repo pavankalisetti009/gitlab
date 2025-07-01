@@ -9,6 +9,7 @@ FactoryBot.define do
     pre_approved_agent_privileges { [] }
     workflow_definition { "software_development" }
     image { "registry.gitlab.com/gitlab-org/duo-workflow/test-image:latest" }
+    environment { :ide }
 
     trait :agentic_chat do
       workflow_definition { "chat" }

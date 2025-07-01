@@ -39,6 +39,9 @@ module Types
 
         field :workflow_definition, GraphQL::Types::String,
           description: 'Duo Workflow type based on its capabilities.'
+
+        field :environment, Types::Ai::DuoWorkflows::WorkflowEnvironmentEnum,
+          description: 'Environment, e.g., ide or web.'
       end
     end
   end
