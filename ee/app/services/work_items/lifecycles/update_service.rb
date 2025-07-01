@@ -40,6 +40,7 @@ module WorkItems
           if @processed_statuses.present?
             update_lifecycle_status_positions!
             lifecycle.assign_attributes(default_statuses_for_lifecycle(@processed_statuses, params))
+            lifecycle.validate!
           end
 
           lifecycle.updated_by = current_user if lifecycle.changed?

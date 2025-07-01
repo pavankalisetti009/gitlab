@@ -94,6 +94,40 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           expect(result.message).to match(/Cannot delete status 'In progress' during the lifecycle conversion/)
         end
       end
+
+      context 'when attempting to exceed status limit' do
+        let(:params) do
+          statuses_array = [
+            status_params_for(system_defined_lifecycle.default_open_status),
+            status_params_for(system_defined_in_progress_status),
+            status_params_for(system_defined_lifecycle.default_closed_status),
+            status_params_for(system_defined_wont_do_status),
+            status_params_for(system_defined_lifecycle.default_duplicate_status)
+          ]
+
+          26.times do |i|
+            statuses_array << {
+              name: "Custom To Do #{i + 1}",
+              color: '#737278',
+              description: nil,
+              category: 'to_do'
+            }
+          end
+
+          {
+            id: system_defined_lifecycle.to_gid,
+            statuses: statuses_array,
+            default_open_status_index: 0,
+            default_closed_status_index: 1,
+            default_duplicate_status_index: 2
+          }
+        end
+
+        it 'returns validation error' do
+          expect(result).to be_error
+          expect(result.message).to include('Lifecycle can only have a maximum of 30 statuses')
+        end
+      end
     end
 
     context 'when custom lifecycle exists' do
@@ -379,6 +413,38 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               custom_lifecycle.default_closed_status.name,
               custom_lifecycle.default_duplicate_status.name
             ])
+          end
+        end
+
+        context 'when attempting to exceed status limit' do
+          let(:params) do
+            statuses_array = [
+              status_params_for(custom_lifecycle.default_open_status),
+              status_params_for(custom_lifecycle.default_closed_status),
+              status_params_for(custom_lifecycle.default_duplicate_status)
+            ]
+
+            28.times do |i|
+              statuses_array << {
+                name: "Custom To Do #{i + 1}",
+                color: '#737278',
+                description: nil,
+                category: 'to_do'
+              }
+            end
+
+            {
+              id: custom_lifecycle.to_gid,
+              statuses: statuses_array,
+              default_open_status_index: 0,
+              default_closed_status_index: 1,
+              default_duplicate_status_index: 2
+            }
+          end
+
+          it 'returns validation error' do
+            expect(result).to be_error
+            expect(result.message).to include('Lifecycle can only have a maximum of 30 statuses')
           end
         end
       end
