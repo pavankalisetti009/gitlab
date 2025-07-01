@@ -65,6 +65,10 @@ RSpec.describe MergeRequests::ReopenService, feature_category: :code_review_work
       end
     end
 
+    it_behaves_like 'audits security policy branch bypass' do
+      let(:execute) { merge_request_reopen_service }
+    end
+
     describe '#resync_policies' do
       let(:feature_licensed) { true }
       let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }

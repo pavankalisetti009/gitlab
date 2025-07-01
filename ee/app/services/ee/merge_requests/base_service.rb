@@ -139,6 +139,22 @@ module EE
           .perform_async(merge_request.id, suggested_reviewer_ids)
       end
 
+      def audit_security_policy_branch_bypass(merge_request)
+        matching_policies = merge_request.security_policies_with_branch_exceptions
+
+        return if matching_policies.empty?
+
+        matching_policies.each do |policy|
+          next unless ::Feature.enabled?(:approval_policy_branch_exceptions, policy.security_policy_management_project)
+
+          log_audit_event(
+            merge_request,
+            'merge_request_branch_bypassed_by_security_policy',
+            "Approvals bypassed by security policy #{policy.name}"
+          )
+        end
+      end
+
       def log_audit_event(merge_request, event_name, message)
         audit_context = {
           name: event_name,

@@ -19,6 +19,7 @@ module Security
     APPROVAL_MERGE_REQUEST_RULES_BATCH_SIZE = 5000
 
     belongs_to :security_orchestration_policy_configuration, class_name: 'Security::OrchestrationPolicyConfiguration'
+    belongs_to :security_policy_management_project, class_name: 'Project'
     has_many :approval_policy_rules, class_name: 'Security::ApprovalPolicyRule', foreign_key: 'security_policy_id',
       inverse_of: :security_policy
     has_many :scan_execution_policy_rules, class_name: 'Security::ScanExecutionPolicyRule',

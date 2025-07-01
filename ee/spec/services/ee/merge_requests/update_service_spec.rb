@@ -286,6 +286,14 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
         it_behaves_like 'reset all approvals'
       end
+
+      it_behaves_like 'audits security policy branch bypass' do
+        before do
+          merge_request.update!(target_branch: 'master')
+        end
+
+        let(:execute) { update_merge_request(target_branch: 'main') }
+      end
     end
 
     context 'updating blocking merge requests' do

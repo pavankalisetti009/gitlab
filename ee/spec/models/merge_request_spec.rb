@@ -3414,4 +3414,43 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     it_behaves_like 'synchronizes policies for a merge request'
   end
+
+  describe '#security_policies_with_branch_exceptions' do
+    let_it_be(:security_policy) do
+      create(:security_policy, content: {
+        bypass_settings: {
+          branches: [
+            { source: { name: 'feature' }, target: { name: 'main' } }
+          ]
+        }
+      })
+    end
+
+    let_it_be(:approval_policy_rule) do
+      create(:approval_policy_rule, security_policy: security_policy)
+    end
+
+    let_it_be_with_refind(:merge_request) { create(:merge_request, source_branch: 'feature', target_branch: 'main') }
+
+    context 'when merge_request has approval rule with security policy' do
+      let_it_be(:approval_rule) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule)
+      end
+
+      it 'returns the security policy that exempts the branch' do
+        expect(merge_request.security_policies_with_branch_exceptions).to contain_exactly(security_policy)
+      end
+
+      it 'returns empty if no rules exempt the branch' do
+        merge_request.update!(source_branch: 'other', target_branch: 'main')
+        expect(merge_request.security_policies_with_branch_exceptions).to be_empty
+      end
+    end
+
+    context 'when merge_request does not have approval rule with security policy' do
+      it 'returns empty' do
+        expect(merge_request.security_policies_with_branch_exceptions).to be_empty
+      end
+    end
+  end
 end
