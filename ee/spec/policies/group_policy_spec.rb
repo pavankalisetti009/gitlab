@@ -574,6 +574,28 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it_behaves_like 'ai permission to', :read_enterprise_ai_analytics
     end
+
+    context 'when Amazon Q is enabled' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:role, :amazon_q_enabled, :allow_policy) do
+        :guest    | true  | be_disallowed(:read_enterprise_ai_analytics)
+        :reporter | true  | be_allowed(:read_enterprise_ai_analytics)
+        :reporter | false | be_disallowed(:read_enterprise_ai_analytics)
+        :reporter | true  | be_allowed(:read_pro_ai_analytics)
+        :reporter | false | be_disallowed(:read_pro_ai_analytics)
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
+        end
+
+        it { is_expected.to allow_policy }
+      end
+    end
   end
 
   describe ':read_pro_ai_analytics' do
