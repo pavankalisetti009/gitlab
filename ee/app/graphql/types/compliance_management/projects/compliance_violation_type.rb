@@ -23,6 +23,9 @@ module Types
 
         field :status, ::Types::ComplianceManagement::Projects::ComplianceViolationStatusEnum,
           null: false, description: 'Compliance violation status of the project.'
+
+        field :audit_event, Types::AuditEvents::AuditEventType,
+          null: false, description: 'Audit event related to the violation.'
       end
     end
   end
