@@ -98,7 +98,7 @@ module Gitlab
       namespace_ids = auth_response&.namespace_ids || []
 
       {
-        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
+        'x-gitlab-feature-enablement-type' => enablement_type,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
         'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs
       }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))

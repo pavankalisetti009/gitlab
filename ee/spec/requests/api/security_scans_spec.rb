@@ -143,7 +143,7 @@ RSpec.describe API::SecurityScans, feature_category: :static_application_securit
           'ResponseHeaderTimeout' => '55s'
         )
         expect(params['Header']).to include(
-          'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
+          'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
           'Authorization' => ["Bearer #{jwt}"],
           'Content-Type' => ['application/json'],
           'User-Agent' => ['Super Awesome Browser 43.144.12']

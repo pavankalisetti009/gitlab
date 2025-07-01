@@ -107,12 +107,12 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     let(:is_team_member) { false }
     let(:cloud_connector_headers) do
       {
-        'X-Gitlab-Host-Name' => 'hostname',
-        'X-Gitlab-Instance-Id' => 'ABCDEF',
-        'X-Gitlab-Global-User-Id' => '123ABC',
-        'X-Gitlab-Realm' => 'self-managed',
-        'X-Gitlab-Version' => '17.1.0',
-        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
+        'x-gitlab-host-name' => 'hostname',
+        'x-gitlab-instance-id' => 'ABCDEF',
+        'x-gitlab-global-User-Id' => '123ABC',
+        'x-gitlab-realm' => 'self-managed',
+        'x-gitlab-bersion' => '17.1.0',
+        'x-gitlab-feature-enabled-by-namespace-ids' => namespace_ids.join(',')
       }
     end
 
@@ -120,8 +120,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{token}",
-        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(','),
+        'x-gitlab-feature-enablement-type' => enablement_type,
+        'x-gitlab-feature-enabled-by-namespace-ids' => namespace_ids.join(','),
         'Content-Type' => 'application/json',
         'X-Gitlab-Is-Team-Member' => is_team_member.to_s,
         'X-Request-ID' => an_instance_of(String),
@@ -210,7 +210,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       let(:namespace_ids) { [] }
       let(:enablement_type) { '' }
 
-      it { is_expected.to match(expected_headers.merge('X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '')) }
+      it { is_expected.to match(expected_headers.merge('x-gitlab-feature-enabled-by-namespace-ids' => '')) }
     end
 
     context 'when user is a GitLab team member' do
@@ -224,7 +224,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     let(:user) { build(:user, id: 1) }
     let(:service_name) { :test }
     let(:enabled_feature_flags) { %w[feature_a feature_b] }
-    let(:ai_headers) { { 'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '' } }
+    let(:ai_headers) { { 'x-gitlab-feature-enabled-by-namespace-ids' => '' } }
 
     subject(:public_headers) { described_class.public_headers(user: user, service_name: service_name) }
 
@@ -247,8 +247,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
     it 'returns headers with enabled feature flags and AI headers' do
       expected_headers = {
-        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
+        'x-gitlab-feature-enablement-type' => enablement_type,
+        'x-gitlab-feature-enabled-by-namespace-ids' => '',
         'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
         'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
       }
@@ -261,8 +261,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
       it 'returns headers with empty feature flags string' do
         expected_headers = {
-          'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
+          'x-gitlab-feature-enablement-type' => enablement_type,
+          'x-gitlab-feature-enabled-by-namespace-ids' => '',
           'x-gitlab-enabled-feature-flags' => '',
           'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
         }
@@ -276,8 +276,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
       it 'returns headers with unique feature flags' do
         expected_headers = {
-          'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
+          'x-gitlab-feature-enablement-type' => enablement_type,
+          'x-gitlab-feature-enabled-by-namespace-ids' => '',
           'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
           'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
         }

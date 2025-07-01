@@ -297,12 +297,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           )
           expect(params['Header']).to include(
             'X-Gitlab-Authentication-Type' => ['oidc'],
-            'X-Gitlab-Instance-Id' => [global_instance_id],
-            'X-Gitlab-Global-User-Id' => [global_user_id],
-            'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
-            'X-Gitlab-Realm' => [gitlab_realm],
+            'x-gitlab-instance-id' => [global_instance_id],
+            'x-gitlab-global-user-id' => [global_user_id],
+            'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
+            'x-gitlab-realm' => [gitlab_realm],
             'Authorization' => ["Bearer #{token}"],
-            'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
+            'x-gitlab-feature-enabled-by-namespace-ids' => [""],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12'],
             "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
@@ -374,12 +374,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             )
             expect(params['Header']).to include(
               'X-Gitlab-Authentication-Type' => ['oidc'],
-              'X-Gitlab-Instance-Id' => [global_instance_id],
-              'X-Gitlab-Global-User-Id' => [global_user_id],
-              'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
-              'X-Gitlab-Realm' => [gitlab_realm],
+              'x-gitlab-instance-id' => [global_instance_id],
+              'x-gitlab-global-user-id' => [global_user_id],
+              'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
+              'x-gitlab-realm' => [gitlab_realm],
               'Authorization' => ["Bearer #{token}"],
-              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
+              'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
               'User-Agent' => ['Super Awesome Browser 43.144.12'],
               "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
@@ -423,12 +423,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(params['Header']).to include({
               'X-Gitlab-Authentication-Type' => ['oidc'],
               'Authorization' => ["Bearer #{token}"],
-              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
+              'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
-              'X-Gitlab-Instance-Id' => [global_instance_id],
-              'X-Gitlab-Global-User-Id' => [global_user_id],
-              'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
-              'X-Gitlab-Realm' => [gitlab_realm],
+              'x-gitlab-instance-id' => [global_instance_id],
+              'x-gitlab-global-user-id' => [global_user_id],
+              'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
+              'x-gitlab-realm' => [gitlab_realm],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
               'User-Agent' => ['Super Cool Browser 14.5.2'],
               "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
@@ -1026,14 +1026,14 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       let(:base_headers) do
         {
-          'X-Gitlab-Global-User-Id' => global_user_id,
-          'X-Gitlab-Instance-Id' => global_instance_id,
-          'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-          'X-Gitlab-Realm' => gitlab_realm,
-          'X-Gitlab-Version' => Gitlab.version_info.to_s,
+          'x-gitlab-global-user-id' => global_user_id,
+          'x-gitlab-instance-id' => global_instance_id,
+          'x-gitlab-host-name' => Gitlab.config.gitlab.host,
+          'x-gitlab-realm' => gitlab_realm,
+          'x-gitlab-version' => Gitlab.version_info.to_s,
           'X-Gitlab-Authentication-Type' => 'oidc',
-          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(','),
-          "X-Gitlab-Feature-Enablement-Type" => enablement_type,
+          'x-gitlab-feature-enabled-by-namespace-ids' => enabled_by_namespace_ids.join(','),
+          "x-gitlab-feature-enablement-type" => enablement_type,
           'x-gitlab-enabled-feature-flags' => '',
           "x-gitlab-enabled-instance-verbose-ai-logs" => 'false',
           "X-Gitlab-Model-Prompt-Cache-Enabled" => "true"
