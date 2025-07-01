@@ -54,7 +54,7 @@ module EE
       end
 
       scope :glql_from_es_results, ->(results) do
-        id_in(results.map(&:id)).order(id: :desc)
+        id_in(results.map(&:id)).order(created_at: :desc, id: :desc)
       end
     end
 

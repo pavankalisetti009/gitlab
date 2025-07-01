@@ -527,6 +527,119 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+
+    describe 'label names' do
+      before do
+        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
+      end
+
+      it 'does not apply label filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:label_names
+            filters:not_label_names
+            filters:or_label_names
+            filters:none_label_names
+            filters:any_label_names
+          ])
+      end
+
+      context 'when label_names option is provided' do
+        let(:options) { base_options.merge(label_names: ['workflow::*', 'backend']) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:label_names])
+        end
+      end
+
+      context 'when not_label_names option is provided' do
+        let(:options) { base_options.merge(not_label_names: ['workflow::in dev', 'group::*']) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_label_names])
+        end
+      end
+
+      context 'when or_label_names option is provided' do
+        let(:options) { base_options.merge(or_label_names: ['workflow::*', 'group::knowledge']) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:or_label_names])
+        end
+      end
+
+      context 'when none_label_names option is provided' do
+        let(:options) { base_options.merge(none_label_names: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:none_label_names])
+        end
+      end
+
+      context 'when any_label_names option is provided' do
+        let(:options) { base_options.merge(any_label_names: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:any_label_names])
+        end
+      end
+
+      context 'when multiple label options are provided' do
+        let(:options) do
+          base_options.merge(
+            label_names: ['workflow::complete'],
+            not_label_names: ['group::*'],
+            or_label_names: %w[backend frontend],
+            none_label_names: false,
+            any_label_names: false
+          )
+        end
+
+        it 'applies all provided label filters' do
+          assert_names_in_query(build, with: %w[
+            filters:label_names
+            filters:not_label_names
+            filters:or_label_names
+          ])
+        end
+      end
+
+      context 'when mixed ANY with nested filters' do
+        let(:options) do
+          base_options.merge(
+            any_label_names: true,
+            not_label_names: ['workflow::in dev'],
+            or_label_names: %w[frontend backend]
+          )
+        end
+
+        it 'applies all provided label filters' do
+          assert_names_in_query(build, with: %w[
+            filters:any_label_names
+            filters:not_label_names
+            filters:or_label_names
+          ])
+        end
+      end
+
+      context 'when mixed NONE with nested filters' do
+        let(:options) do
+          base_options.merge(
+            none_label_names: true,
+            not_label_names: ['group::*'],
+            or_label_names: %w[frontend backend]
+          )
+        end
+
+        it 'applies all provided label filters' do
+          assert_names_in_query(build, with: %w[
+            filters:none_label_names
+            filters:not_label_names
+            filters:or_label_names
+          ])
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'

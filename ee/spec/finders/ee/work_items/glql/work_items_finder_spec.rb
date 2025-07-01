@@ -195,7 +195,11 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
       {
         source: described_class::GLQL_SOURCE,
         confidential: false,
-        label_name: ['test-label'],
+        label_names: ['test-label'],
+        or_label_names: nil,
+        not_label_names: nil,
+        any_label_names: false,
+        none_label_names: false,
         per_page: 100,
         search: '*',
         sort: 'created_desc',
@@ -331,6 +335,155 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         before do
           params[:assignee_wildcard_id] = described_class::FILTER_NONE
           search_params.merge!(none_assignees: true)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when label_names param provided' do
+        before do
+          params[:label_name] = ['workflow::complete', 'backend']
+          search_params.merge!(label_names: ['workflow::complete', 'backend'])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when label_names param with wildcard provided' do
+        before do
+          params[:label_name] = ['workflow::*', 'frontend']
+          search_params.merge!(label_names: ['workflow::*', 'frontend'])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when not_label_names param provided' do
+        before do
+          params[:not][:label_name] = ['workflow::in dev']
+          search_params.merge!(not_label_names: ['workflow::in dev'])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when not_label_names param with wildcard provided' do
+        before do
+          params[:not][:label_name] = ['group::*']
+          search_params.merge!(not_label_names: ['group::*'])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when or_label_names param provided' do
+        before do
+          params[:or] = { label_names: ['workflow::complete', 'group::knowledge'] }
+          search_params.merge!(or_label_names: ['workflow::complete', 'group::knowledge'])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when or_label_names param with wildcard provided' do
+        before do
+          params[:or] = { label_names: ['workflow::*', 'backend'] }
+          search_params.merge!(or_label_names: ['workflow::*', 'backend'])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when any_label_names param provided (label wildcard)' do
+        before do
+          params[:label_name] = [described_class::FILTER_ANY]
+          search_params.merge!(
+            label_names: nil,
+            any_label_names: true
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when none_label_names param provided (label wildcard)' do
+        before do
+          params[:label_name] = [described_class::FILTER_NONE]
+          search_params.merge!(
+            label_names: nil,
+            none_label_names: true
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when mixed NONE with nested NOT label provided' do
+        before do
+          params[:label_name] = [described_class::FILTER_NONE]
+          params[:not][:label_name] = ['workflow::in dev']
+          search_params.merge!(
+            label_names: nil,
+            none_label_names: true,
+            not_label_names: ['workflow::in dev']
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when mixed NONE with OR labels provided' do
+        before do
+          params[:label_name] = [described_class::FILTER_NONE]
+          params[:or] = { label_names: %w[frontend backend] }
+          search_params.merge!(
+            label_names: nil,
+            none_label_names: true,
+            or_label_names: %w[frontend backend]
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when mixed ANY with nested NOT label provided' do
+        before do
+          params[:label_name] = [described_class::FILTER_ANY]
+          params[:not][:label_name] = ['workflow::in dev']
+          search_params.merge!(
+            label_names: nil,
+            any_label_names: true,
+            not_label_names: ['workflow::in dev']
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when mixed ANY with OR labels provided' do
+        before do
+          params[:label_name] = [described_class::FILTER_ANY]
+          params[:or] = { label_names: %w[frontend backend] }
+          search_params.merge!(
+            label_names: nil,
+            any_label_names: true,
+            or_label_names: %w[frontend backend]
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when complex label filtering with wildcards provided' do
+        before do
+          params[:label_name] = ['workflow::complete']
+          params[:not][:label_name] = ['group::*']
+          params[:or] = { label_names: ['workflow::*', 'frontend'] }
+          search_params.merge!(
+            label_names: ['workflow::complete'],
+            not_label_names: ['group::*'],
+            or_label_names: ['workflow::*', 'frontend']
+          )
         end
 
         it_behaves_like 'executes ES search with expected params'

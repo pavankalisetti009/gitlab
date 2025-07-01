@@ -11,9 +11,17 @@
 #     state        - String with possible values of 'opened', 'closed', or 'all'
 #     group_id     - ActiveRecord Group instance
 #     project_id   - ActiveRecord Project instance
-#     label_name   - Array of strings
+#     label_name   - Array of strings, can also accept wildcard values of "NONE" or "ANY"
 #     sort         - Symbol with possible values of :created_desc or :created_asc
 #     confidential - Boolean
+#     author_username - String
+#     milestone_title:       - Array of strings (cannot be simultaneously used with milestone_wildcard_id)
+#     milestone_wildcard_id: - String with possible values of  'none', 'any'
+#                              (cannot be simultaneously used with milestone_title)
+#     assignee_usernames:    - Array of strings
+#     assignee_wildcard_id:  - String with possible values of  'none', 'any'
+#     not                    - Hash with keys that can be negated
+#     or                     - Hash with keys that can be combined using OR logic
 
 module EE
   module WorkItems
@@ -27,8 +35,8 @@ module EE
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
           :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or
         ].freeze
-        NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames].freeze
-        OR_FILTERS = [:assignee_usernames].freeze
+        NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name].freeze
+        OR_FILTERS = [:assignee_usernames, :label_names].freeze
 
         FILTER_NONE = 'none'
         FILTER_ANY = 'any'
@@ -86,7 +94,11 @@ module EE
             source: GLQL_SOURCE,
             search: '*',
             per_page: 100,
-            label_name: params[:label_name],
+            label_names: label_names(params[:label_name]),
+            not_label_names: label_names(params.dig(:not, :label_name)),
+            or_label_names: label_names(params.dig(:or, :label_names)),
+            none_label_names: none_labels?(params[:label_name]),
+            any_label_names: any_labels?(params[:label_name]),
             sort: 'created_desc',
             state: params[:state],
             confidential: params[:confidential],
@@ -201,6 +213,21 @@ module EE
           return unless assignee_usernames.present?
 
           ::User.by_username(assignee_usernames).pluck_primary_key
+        end
+
+        def any_labels?(names)
+          Array(names).any? { |label| label.to_s.downcase == FILTER_ANY }
+        end
+
+        def none_labels?(names)
+          Array(names).any? { |label| label.to_s.downcase == FILTER_NONE }
+        end
+
+        def label_names(names)
+          return unless names.present?
+          return if any_labels?(names) || none_labels?(names)
+
+          names
         end
       end
     end
