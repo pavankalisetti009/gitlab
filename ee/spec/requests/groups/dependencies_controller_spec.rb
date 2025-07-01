@@ -658,7 +658,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                 },
                 'project' => {
                   "name" => project.name
-                }
+                },
+                'occurrence_id' => occurrence_bundler.id
               }
             ]
           end
@@ -741,7 +742,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                 },
                 'project' => {
                   "name" => project.name
-                }
+                },
+                'occurrence_id' => occurrence.id
               }
             ]
           end

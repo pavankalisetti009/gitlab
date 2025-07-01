@@ -16,5 +16,6 @@ module Sbom
 
     expose :location, using: LocationEntity
     expose :project, using: ProjectEntity
+    expose :id, as: :occurrence_id
   end
 end
