@@ -239,7 +239,7 @@ RSpec.describe ProjectMember, feature_category: :groups_and_projects do
         end
 
         expect { member.destroy! }
-          .to change { ProtectedBranch::MergeAccessLevel.count }.by(0)
+          .not_to change { ProtectedBranch::MergeAccessLevel.count }
       end
 
       it 'does not delete associated push_access_levels in the project' do
@@ -248,7 +248,7 @@ RSpec.describe ProjectMember, feature_category: :groups_and_projects do
         end
 
         expect { member.destroy! }
-          .to change { ProtectedBranch::PushAccessLevel.count }.by(0)
+          .not_to change { ProtectedBranch::PushAccessLevel.count }
       end
     end
   end

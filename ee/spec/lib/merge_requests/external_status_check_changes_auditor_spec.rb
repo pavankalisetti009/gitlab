@@ -81,7 +81,7 @@ RSpec.describe MergeRequests::ExternalStatusCheckChangesAuditor, feature_categor
         )
 
         expect { external_status_check_changes_auditor.execute }
-          .to change { AuditEvent.count }.by(0)
+          .not_to change { AuditEvent.count }
       end
     end
   end

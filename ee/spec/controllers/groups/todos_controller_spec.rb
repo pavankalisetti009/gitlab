@@ -22,7 +22,7 @@ RSpec.describe Groups::TodosController, feature_category: :portfolio_management 
 
         expect do
           post_create
-        end.to change { user.todos.count }.by(0)
+        end.not_to change { user.todos.count }
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
