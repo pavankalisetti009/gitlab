@@ -22,6 +22,7 @@ module EE
         schedule_approval_notifications(merge_request)
         schedule_duo_code_review(merge_request)
         track_usage_event if merge_request.project.scan_result_policy_reads.any?
+        audit_security_policy_branch_bypass(merge_request)
         publish_event(merge_request)
       end
 

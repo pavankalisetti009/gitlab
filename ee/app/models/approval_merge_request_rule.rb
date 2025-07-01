@@ -139,6 +139,11 @@ class ApprovalMergeRequestRule < ApplicationRecord
     self.approval_project_rule.applies_to_branch?(branch)
   end
 
+  def branches_exempted_by_policy?
+    approval_policy_rule.present? &&
+      approval_policy_rule.branches_exempted_by_policy?(merge_request.source_branch, merge_request.target_branch)
+  end
+
   def sync_approved_approvers
     # Before being merged, approved_approvers are dynamically calculated in
     #   ApprovalWrappedRule instead of being persisted.
@@ -236,10 +241,5 @@ class ApprovalMergeRequestRule < ApplicationRecord
     return true unless approval_policy_rule
 
     approval_policy_rule.policy_applies_to_target_branch?(branch, project.default_branch)
-  end
-
-  def branches_exempted_by_policy?
-    approval_policy_rule.present? &&
-      approval_policy_rule.branches_exempted_by_policy?(merge_request.source_branch, merge_request.target_branch)
   end
 end

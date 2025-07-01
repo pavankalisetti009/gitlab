@@ -63,6 +63,7 @@ module EE
         delete_approvals(merge_request) if reset_approvals?(merge_request, nil)
         sync_any_merge_request_approval_rules(merge_request)
         notify_for_policy_violations(merge_request)
+        audit_security_policy_branch_bypass(merge_request)
       end
 
       def reset_approval_rules(merge_request)

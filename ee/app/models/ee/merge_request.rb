@@ -467,6 +467,16 @@ module EE
       end
     end
 
+    def security_policies_with_branch_exceptions
+      approval_rules
+        .includes(approval_policy_rule: :security_policy)
+        .select(&:branches_exempted_by_policy?)
+        .map(&:approval_policy_rule)
+        .map(&:security_policy)
+        .uniq
+    end
+    strong_memoize_attr :security_policies_with_branch_exceptions
+
     # TODO: Will be removed with https://gitlab.com/gitlab-org/gitlab/-/issues/504296
     def sync_project_approval_rules_for_policy_configuration(configuration_id)
       return if merged?

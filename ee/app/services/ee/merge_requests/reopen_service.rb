@@ -10,6 +10,7 @@ module EE
         super.tap do
           delete_approvals(merge_request)
           resync_policies(merge_request)
+          audit_security_policy_branch_bypass(merge_request)
 
           if current_user.project_bot?
             log_audit_event(merge_request, 'merge_request_reopened_by_project_bot',

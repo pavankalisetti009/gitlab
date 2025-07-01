@@ -36,6 +36,8 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
       it_behaves_like 'synchronizes policies for a merge request'
     end
 
+    it_behaves_like 'audits security policy branch bypass'
+
     describe 'suggested reviewers' do
       before do
         allow(MergeRequests::FetchSuggestedReviewersWorker).to receive(:perform_async)
