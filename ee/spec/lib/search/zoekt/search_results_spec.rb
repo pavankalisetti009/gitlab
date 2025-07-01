@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global_search do
+RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_settings_enabled, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
   let_it_be(:project_1) { create(:project, :public, :repository) }
   let_it_be(:project_2) { create(:project, :public, :repository) }
@@ -17,7 +17,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
       multi_match_enabled: multi_match_enabled, modes: { regex: true })
   end
 
-  before do
+  before_all do
     zoekt_ensure_project_indexed!(project_1)
     zoekt_ensure_project_indexed!(project_2)
   end
