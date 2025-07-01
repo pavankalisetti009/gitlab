@@ -109,7 +109,7 @@ module BillingPlansHelper
 
   def add_namespace_plan_to_group_instructions
     link_end = '</a>'.html_safe
-    move_link_url = help_page_path 'user/project/settings/migrate_projects.md', anchor: "transfer-a-project-to-another-namespace"
+    move_link_url = help_page_path 'user/project/working_with_projects.md', anchor: "transfer-a-project"
     move_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: move_link_url }
 
     if current_user.owned_or_maintainers_groups.any?
