@@ -151,7 +151,14 @@ export default {
     },
     toggleDrawerGroup(item, emittedItem) {
       const { name, version, occurrenceId: drawerId } = item;
-      const drawerItem = { component: { name, version }, locations: emittedItem };
+      const dropdownItems = emittedItem
+        .filter((dropdownItem) => dropdownItem.location.has_dependency_paths)
+        .map(({ project, occurrence_id: occurrenceId }) => ({
+          value: occurrenceId,
+          text: project.name,
+          fullPath: project.full_path,
+        }));
+      const drawerItem = { component: { name, version }, dropdownItems };
       this.toggleDrawer(drawerId, drawerItem);
     },
     openDrawer(drawerId, drawerItem) {
@@ -186,7 +193,7 @@ export default {
       v-if="showDrawer"
       :occurrence-id="drawerId"
       :component="drawerDependency.component"
-      :locations="drawerDependency.locations"
+      :dropdown-items="drawerDependency.dropdownItems"
       :show-drawer="showDrawer"
       @close="closeDrawer"
     />

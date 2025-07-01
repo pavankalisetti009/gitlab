@@ -44,14 +44,14 @@ export default {
       required: false,
       default: null,
     },
-    dependencyPaths: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
     component: {
       type: Object,
       required: true,
+    },
+    dropdownItems: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
     limitExceeded: {
       type: Boolean,
@@ -63,7 +63,7 @@ export default {
       required: false,
       default: false,
     },
-    locations: {
+    dependencyPaths: {
       type: Array,
       required: false,
       default: () => [],
@@ -72,7 +72,7 @@ export default {
   data() {
     return {
       localDependencyPaths: this.dependencyPaths,
-      selectedProject: null,
+      selectedItem: null,
       pageInfo: {},
       cursor: {
         after: null,
@@ -85,7 +85,7 @@ export default {
       query: getDependencyPaths,
       variables() {
         return {
-          occurrence: convertToGraphQLId(TYPENAME_SBOM_OCCURRENCE, this.occurrence),
+          occurrence: convertToGraphQLId(TYPENAME_SBOM_OCCURRENCE, this.selectedOccurrenceId),
           fullPath: this.fullPath,
           ...this.cursor,
         };
@@ -94,9 +94,10 @@ export default {
         return !this.fullPath || !this.occurrenceId;
       },
       update({ project }) {
-        const { pageInfo = {}, nodes = [] } = project?.dependencyPaths || {};
-        this.pageInfo = pageInfo;
-        return nodes;
+        return project?.dependencyPaths?.nodes || [];
+      },
+      result({ data }) {
+        this.pageInfo = data.project?.dependencyPaths?.pageInfo || {};
       },
     },
   },
@@ -104,31 +105,18 @@ export default {
     isLoading() {
       return this.$apollo?.queries.localDependencyPaths.loading;
     },
-    isProject() {
-      return this.namespaceType === NAMESPACE_PROJECT;
-    },
-    selectedProjectOccurrence() {
-      return this.projectItems.find((project) => project.value === this.selectedProject)
-        ?.occurrenceId;
-    },
-    occurrence() {
-      return this.isProject ? this.occurrenceId : this.selectedProjectOccurrence;
+    selectedOccurrenceId() {
+      return this.selectedItemValue || this.occurrenceId;
     },
     fullPath() {
       if (this.namespaceType === NAMESPACE_PROJECT) return this.projectFullPath;
-      return this.selectedProject;
+      return this.selectedItem?.fullPath;
     },
-    showProjectDropdown() {
-      return this.locations?.length > 0;
+    selectedItemValue() {
+      return this.selectedItem?.value;
     },
-    projectItems() {
-      return this.locations
-        .filter((item) => item.location.has_dependency_paths)
-        .map(({ project, occurrence_id: occurrenceId }) => ({
-          value: project.full_path,
-          text: project.name,
-          occurrenceId,
-        }));
+    showDropdown() {
+      return this.dropdownItems.length > 0;
     },
     showPagination() {
       return this.pageInfo?.hasPreviousPage || this.pageInfo?.hasNextPage;
@@ -138,9 +126,9 @@ export default {
     occurrenceId() {
       this.resetPagination();
     },
-    locations: {
+    dropdownItems: {
       handler() {
-        this.selectedProject = this.projectItems[0]?.value ?? null;
+        this.selectedItem = this.dropdownItems[0] ?? null;
       },
       immediate: true,
     },
@@ -153,9 +141,9 @@ export default {
         before: null,
       };
     },
-    handleProjectSelect(project) {
+    handleSelect(value) {
       this.resetPagination();
-      this.selectedProject = project;
+      this.selectedItem = this.dropdownItems.find((item) => item.value === value);
     },
     formatPath(paths) {
       return paths.map((path) => `${path.name} @${path.version}`).join(' / ');
@@ -210,12 +198,12 @@ export default {
         <span>{{ component.version }}</span>
       </div>
       <gl-collapsible-listbox
-        v-if="showProjectDropdown"
-        :selected="selectedProject"
-        :items="projectItems"
+        v-if="showDropdown"
+        :selected="selectedItemValue"
+        :items="dropdownItems"
         block
         class="gl-mt-5"
-        @select="handleProjectSelect"
+        @select="handleSelect"
       >
         <template #list-item="{ item }">
           {{ item.text }}
