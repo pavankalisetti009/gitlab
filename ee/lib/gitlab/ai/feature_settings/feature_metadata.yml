@@ -30,6 +30,7 @@ code_completions:
     - gpt
   unit_primitives:
     - complete_code
+    - code_suggestions
 duo_chat:
   title: General Chat
   release_state: GA

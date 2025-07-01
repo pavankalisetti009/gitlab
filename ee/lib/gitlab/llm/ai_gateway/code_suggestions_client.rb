@@ -118,8 +118,7 @@ module Gitlab
         end
 
         def service
-          service_name = ::Ai::Setting.self_hosted? ? :self_hosted_models : :code_suggestions
-          ::CloudConnector::AvailableServices.find_by_name(service_name)
+          ::CloudConnector::AvailableServices.find_by_name(:code_suggestions)
         end
 
         def choice?(response)
