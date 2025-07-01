@@ -9,9 +9,8 @@ import FailedRequirements from 'ee/compliance_dashboard/components/dashboard/fai
 import FailedControls from 'ee/compliance_dashboard/components/dashboard/failed_controls.vue';
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import frameworkCoverageQuery from 'ee/compliance_dashboard/components/dashboard/graphql/framework_coverage.query.graphql';
-import frameworkCoverageQuery from 'ee/compliance_dashboard/components/dashboard/graphql/framework_coverage.query.gql';
-import failedRequirementsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_requirements.query.gql';
-import failedControlsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_controls.query.gql';
+import failedRequirementsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_requirements.query.graphql';
+import failedControlsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_controls.query.graphql';
 
 Vue.use(VueApollo);
 

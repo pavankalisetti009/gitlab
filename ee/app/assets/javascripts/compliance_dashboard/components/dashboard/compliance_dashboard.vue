@@ -9,16 +9,12 @@ import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboa
 
 import { isTopLevelGroup } from '../../utils';
 import FrameworkCoverage from './framework_coverage.vue';
-<<<<<<< HEAD
-import frameworkCoverageQuery from './graphql/framework_coverage.query.graphql';
-=======
 import FailedRequirements from './failed_requirements.vue';
 import FailedControls from './failed_controls.vue';
 
-import frameworkCoverageQuery from './graphql/framework_coverage.query.gql';
-import failedRequirementsQuery from './graphql/failed_requirements.query.gql';
-import failedControlsQuery from './graphql/failed_controls.query.gql';
->>>>>>> 5c3229d56a10 (Implement failed controls & failed requirements panels)
+import frameworkCoverageQuery from './graphql/framework_coverage.query.graphql';
+import failedRequirementsQuery from './graphql/failed_requirements.query.graphql';
+import failedControlsQuery from './graphql/failed_controls.query.graphql';
 
 const MINIMAL_HEIGHT = 2;
 const FRAMEWORKS_PER_UNIT = 7;
