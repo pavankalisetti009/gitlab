@@ -424,8 +424,12 @@ module EE
         @user.assigned_to_duo_pro?(@subject)
       end
 
-      rule { can?(:read_product_analytics) & assigned_to_duo_pro }.enable :read_pro_ai_analytics
-      rule { can?(:read_product_analytics) & assigned_to_duo_enterprise }.enable :read_enterprise_ai_analytics
+      condition(:amazon_q_enabled) do
+        ::Ai::AmazonQ.enabled?
+      end
+
+      rule { can?(:read_product_analytics) & (amazon_q_enabled | assigned_to_duo_pro) }.enable :read_pro_ai_analytics
+      rule { can?(:read_product_analytics) & (amazon_q_enabled | assigned_to_duo_enterprise) }.enable :read_enterprise_ai_analytics
 
       rule { reporter & group_repository_analytics_available }
         .enable :read_group_repository_analytics
