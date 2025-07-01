@@ -7,6 +7,11 @@ module Ai
         include Gitlab::Scheduling::TaskExecutor
 
         TASKS = {
+          index_repository: {
+            period: 1.hour,
+            if: -> { ::Ai::ActiveContext::Code::Repository.pending_with_active_connection.exists? },
+            execute: -> { RepositoryIndexService.enqueue_pending_jobs }
+          },
           saas_initial_indexing: {
             period: 1.hour,
             if: -> { ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) },

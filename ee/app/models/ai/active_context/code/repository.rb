@@ -10,6 +10,7 @@ module Ai
         METADATA_SIZE_LIMIT = 64.kilobytes
 
         self.table_name = 'p_ai_active_context_code_repositories'
+        self.primary_key = :id
 
         partitioned_by :project_id, strategy: :int_range, partition_size: PARTITION_SIZE
 
@@ -40,6 +41,12 @@ module Ai
           deleted: 250,
           failed: 255
         }
+
+        scope :by_state, ->(state) { where(state: state) }
+        scope :with_active_connection, -> {
+          joins(:active_context_connection).where(active_context_connection: { active: true })
+        }
+        scope :pending_with_active_connection, -> { by_state(:pending).with_active_connection }
 
         private
 
