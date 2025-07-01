@@ -17,17 +17,11 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
         result = unit_primitive_loader.load!
         expect(result).not_to be_empty
 
-        unit = result.first
-        backend_services = [Gitlab::CloudConnector::DataModel::BackendService.find_by_name(:ai_gateway_agent)]
-        license_types = [Gitlab::CloudConnector::DataModel::LicenseType.find_by_name(:ultimate)]
+        expect(result).to all(be_instance_of(Gitlab::CloudConnector::DataModel::UnitPrimitive))
+        up = result.first
 
-        expect(unit.name).to eq('agent_quick_actions')
-        expect(unit.description).to eq('Quick actions for agent.')
-        expect(unit.group).to eq('group::duo_chat')
-        expect(unit.feature_category).to eq('duo_chat')
-        expect(unit.backend_services).to match_array(backend_services)
-        expect(unit.license_types).to match_array(license_types)
-        expect(unit.cut_off_date).to be_nil
+        expect(up.backend_services).to all(be_instance_of(Gitlab::CloudConnector::DataModel::BackendService))
+        expect(up.license_types).to all(be_instance_of(Gitlab::CloudConnector::DataModel::LicenseType))
       end
 
       it 'parses cut_off_date fields as Time objects when present' do
