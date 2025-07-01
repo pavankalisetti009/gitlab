@@ -13,8 +13,12 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
   let_it_be(:label1) { create(:group_label, group: parent_group) }
   let_it_be(:label2) { create(:group_label, group: parent_group) }
   let_it_be(:label3) { create(:group_label, group: private_group) }
+  let_it_be(:iteration) { create(:iteration) }
   let_it_be_with_reload(:work_item1) { create(:work_item, :group_level, namespace: group, labels: [label1]) }
-  let_it_be_with_reload(:work_item2) { create(:work_item, project: project, labels: [label1]) }
+  let_it_be_with_reload(:work_item2) do
+    create(:work_item, project: project, labels: [label1], health_status: :at_risk, iteration: iteration)
+  end
+
   let_it_be_with_reload(:work_item3) { create(:work_item, :group_level, namespace: parent_group, labels: [label1]) }
   let_it_be_with_reload(:work_item4) { create(:work_item, :group_level, namespace: private_group, labels: [label3]) }
   let_it_be_with_reload(:epic) { create(:work_item, :epic, namespace: group, labels: [label1]) }
@@ -184,6 +188,65 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
           expect_graphql_errors_to_include(
             _('Group work item bulk edit is a licensed feature not available for this group.')
           )
+        end
+      end
+
+      context 'when updating health status' do
+        let(:widget_arguments) { { health_status_widget: { health_status: :onTrack } } }
+
+        context 'when issuable_health_status feature is disabled' do
+          before do
+            stub_licensed_features(epics: true, group_bulk_edit: true, issuable_health_status: false)
+          end
+
+          it 'does not set the health status of the related work items' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to not_change { work_item1.reload.health_status }.and not_change { work_item2.reload.health_status }
+          end
+        end
+
+        context 'when issuable_health_status feature is enabled' do
+          before do
+            stub_licensed_features(epics: true, group_bulk_edit: true, issuable_health_status: true)
+          end
+
+          it 'sets the health status of the related work items' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.reload.health_status }.from(nil).to('on_track')
+              .and change { work_item2.reload.health_status }.from('at_risk').to('on_track')
+          end
+        end
+      end
+
+      context 'when updating iteration' do
+        let(:new_iteration) { create(:iteration, group: group) }
+        let(:widget_arguments) { { iteration_widget: { iteration_id: new_iteration.to_gid } } }
+
+        context 'when iterations feature is disabled' do
+          before do
+            stub_licensed_features(epics: true, group_bulk_edit: true, iterations: false)
+          end
+
+          it 'does not set the iteration of the related work items' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to not_change { work_item1.reload.iteration }.and not_change { work_item2.reload.iteration }
+          end
+        end
+
+        context 'when iterations feature is enabled' do
+          before do
+            stub_licensed_features(epics: true, group_bulk_edit: true, iterations: true)
+          end
+
+          it 'sets the iteration of the related work items' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.reload.iteration }.from(nil).to(new_iteration)
+              .and change { work_item2.reload.iteration }.from(iteration).to(new_iteration)
+          end
         end
       end
     end
