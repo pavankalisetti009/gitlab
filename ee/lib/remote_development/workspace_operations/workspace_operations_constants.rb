@@ -27,7 +27,9 @@ module RemoteDevelopment
       WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME = "gl_workspace_reconciled_actual_state.txt"
       WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH =
         "#{VARIABLES_VOLUME_PATH}/#{WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}".freeze
-      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:16.0.0"
+      # Image digest used to avoid arm64 compatibility issues in local development
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/550128 for tracking arm64 support
+      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/gitlab-build-images:20250627091546-workspaces-tools@sha256:9bf96edd6a7e64ee898d774f55e153f78b85e2a911e565158e374efdd2def2c5" # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective -- Docker image should not be in multi-lines
     end
   end
 end
