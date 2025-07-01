@@ -40,6 +40,7 @@ module EE
         update_cascading_settings
         handle_pending_members
         update_amazon_q!
+        update_duo_workflow!
         publish_ai_settings_changed_event
         schedule_remove_dormant_users
       end
@@ -193,7 +194,15 @@ module EE
 
         return unless params[:duo_availability] == 'never_on'
 
-        ::Ai::AmazonQ::ServiceAccountMemberRemoveService.new(current_user, group).execute
+        amazon_q_service_account_user = ::Ai::Setting.instance.amazon_q_service_account_user
+        ::Ai::ServiceAccountMemberRemoveService.new(current_user, group, amazon_q_service_account_user).execute
+      end
+
+      def update_duo_workflow!
+        return unless ::Ai::DuoWorkflow.connected? && params[:duo_availability] == 'never_on'
+
+        duo_workflow_service_account_user = ::Ai::Setting.instance.duo_workflow_service_account_user
+        ::Ai::ServiceAccountMemberRemoveService.new(current_user, group, duo_workflow_service_account_user).execute
       end
 
       def publish_ai_settings_changed_event
