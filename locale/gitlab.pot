@@ -70809,6 +70809,9 @@ msgstr ""
 msgid "WorkItem|Pink"
 msgstr ""
 
+msgid "WorkItem|Please review the %{linkStart}contribution guidelines%{linkEnd} for this project."
+msgstr ""
+
 msgid "WorkItem|Progress"
 msgstr ""
 

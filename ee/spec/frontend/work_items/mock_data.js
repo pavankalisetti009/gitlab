@@ -354,7 +354,9 @@ export const namespaceWorkItemsWithoutEpicSupport = {
             __typename: 'WorkItemType',
           },
         ],
+        __typename: 'WorkItemTypeConnection',
       },
+      __typename: 'Namespace',
     },
   },
 };
