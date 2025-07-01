@@ -305,6 +305,62 @@ describe('Api', () => {
     });
   });
 
+  describe('updatePolicySettings', () => {
+    it('updates policy settings', async () => {
+      const settings = { csp_namespace_id: 123 };
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/admin/security/policy_settings`;
+      const expectedResponse = { success: true };
+
+      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      const { data } = await Api.updatePolicySettings(settings);
+
+      expect(data).toEqual(expectedResponse);
+      expect(mock.history.put).toContainEqual(
+        expect.objectContaining({
+          url: expectedUrl,
+          data: JSON.stringify(settings),
+        }),
+      );
+    });
+
+    it('handles null csp_namespace_id', async () => {
+      const settings = { csp_namespace_id: null };
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/admin/security/policy_settings`;
+      const expectedResponse = { success: true };
+
+      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      const { data } = await Api.updatePolicySettings(settings);
+
+      expect(data).toEqual(expectedResponse);
+      expect(mock.history.put).toContainEqual(
+        expect.objectContaining({
+          url: expectedUrl,
+          data: JSON.stringify(settings),
+        }),
+      );
+    });
+
+    it('handles empty settings object', async () => {
+      const settings = {};
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/admin/security/policy_settings`;
+      const expectedResponse = { success: true };
+
+      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      const { data } = await Api.updatePolicySettings(settings);
+
+      expect(data).toEqual(expectedResponse);
+      expect(mock.history.put).toContainEqual(
+        expect.objectContaining({
+          url: expectedUrl,
+          data: JSON.stringify(settings),
+        }),
+      );
+    });
+  });
+
   describe('protectedEnvironments', () => {
     it('fetches all protected environments for projects', () => {
       const response = [{ name: 'staging ' }];
