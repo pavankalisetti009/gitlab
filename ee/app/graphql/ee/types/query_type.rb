@@ -11,6 +11,10 @@ module EE
           description: 'Retrieve all active add-on purchases. ' \
                        'This query can be used in GitLab.com and self-managed environments.',
           resolver: ::Resolvers::GitlabSubscriptions::AddOnPurchasesResolver
+        field :ai_catalog_item,
+          resolver: ::Resolvers::Ai::Catalog::ItemResolver,
+          null: true,
+          experiment: { milestone: '18.2' }
         field :ai_catalog_items,
           ::Types::Ai::Catalog::ItemType.connection_type,
           null: false,

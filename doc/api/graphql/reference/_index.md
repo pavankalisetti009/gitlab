@@ -151,6 +151,23 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryadminmemberrolesorderby"></a>`orderBy` | [`MemberRolesOrderBy`](#memberrolesorderby) | Ordering column. Default is NAME. |
 | <a id="queryadminmemberrolessort"></a>`sort` | [`SortDirectionEnum`](#sortdirectionenum) | Ordering column. Default is ASC. |
 
+### `Query.aiCatalogItem`
+
+Find an AI Catalog item.
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Returns [`AiCatalogItem`](#aicatalogitem).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaicatalogitemid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog item to find. |
+
 ### `Query.aiCatalogItems`
 
 List of AI Catalog items.
@@ -47858,6 +47875,12 @@ An example `AiAgentID` is: `"gid://gitlab/Ai::Agent/1"`.
 A `AiAgentVersionID` is a global ID. It is encoded as a string.
 
 An example `AiAgentVersionID` is: `"gid://gitlab/Ai::AgentVersion/1"`.
+
+### `AiCatalogItemID`
+
+A `AiCatalogItemID` is a global ID. It is encoded as a string.
+
+An example `AiCatalogItemID` is: `"gid://gitlab/Ai::Catalog::Item/1"`.
 
 ### `AiConversationThreadID`
 
