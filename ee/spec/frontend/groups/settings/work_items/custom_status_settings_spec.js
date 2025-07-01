@@ -25,9 +25,9 @@ const mockLifecycles = [
       { id: 'gid://gitlab/WorkItems::Type/2', name: 'Task', iconName: 'issue-type-task' },
     ],
     statuses: [
-      { id: '1', name: 'Open', iconName: 'issue-open', color: 'green' },
-      { id: '2', name: 'In Progress', iconName: 'progress', color: 'blue' },
-      { id: '3', name: 'Closed', iconName: 'issue-closed', color: 'gray' },
+      { id: '1', name: 'Open', iconName: 'issue-open', color: 'green', description: '' },
+      { id: '2', name: 'In Progress', iconName: 'progress', color: 'blue', description: '' },
+      { id: '3', name: 'Closed', iconName: 'issue-closed', color: 'gray', description: '' },
     ],
   },
   {
@@ -40,8 +40,8 @@ const mockLifecycles = [
       { id: 'gid://gitlab/WorkItems::Type/3', name: 'Incident', iconName: 'issue-type-incident' },
     ],
     statuses: [
-      { id: '4', name: 'New', iconName: 'issue-new', color: 'red' },
-      { id: '5', name: 'Resolved', iconName: 'check', color: 'green' },
+      { id: '4', name: 'New', iconName: 'issue-new', color: 'red', description: '' },
+      { id: '5', name: 'Resolved', iconName: 'check', color: 'green', description: '' },
     ],
   },
 ];
