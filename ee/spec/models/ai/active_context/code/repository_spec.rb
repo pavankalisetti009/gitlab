@@ -88,6 +88,39 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
       end
     end
 
+    describe '.for_connection_and_enabled_namespace' do
+      let_it_be(:connection1) { create(:ai_active_context_connection) }
+      let_it_be(:connection2) { create(:ai_active_context_connection, :inactive) }
+      let_it_be(:enabled_namespace1) do
+        create(:ai_active_context_code_enabled_namespace, active_context_connection: connection1)
+      end
+
+      let_it_be(:enabled_namespace2) do
+        create(:ai_active_context_code_enabled_namespace, active_context_connection: connection2)
+      end
+
+      let_it_be(:repository1) do
+        create(:ai_active_context_code_repository, enabled_namespace: enabled_namespace1,
+          active_context_connection: connection1)
+      end
+
+      let_it_be(:repository2) do
+        create(:ai_active_context_code_repository, enabled_namespace: enabled_namespace2,
+          active_context_connection: connection2)
+      end
+
+      let_it_be(:repository3) do
+        create(:ai_active_context_code_repository, enabled_namespace: enabled_namespace1,
+          active_context_connection: connection1)
+      end
+
+      it 'returns repositories for the specified connection and enabled namespace' do
+        result = described_class.for_connection_and_enabled_namespace(connection1, enabled_namespace1)
+
+        expect(result).to contain_exactly(repository1, repository3)
+      end
+    end
+
     describe '.with_active_connection' do
       let_it_be(:active_connection) { create(:ai_active_context_connection) }
       let_it_be(:inactive_connection) { create(:ai_active_context_connection, :inactive) }

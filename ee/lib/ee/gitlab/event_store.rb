@@ -201,6 +201,10 @@ module EE
         end
 
         def subscribe_to_active_context_code_events(store)
+          store.subscribe ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorker,
+            to: ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent,
+            if: ->(_) { ::Feature.enabled?(:active_context_code_event_process_pending_enabled_namespace, :instance) }
+
           store.subscribe ::Ai::ActiveContext::Code::SaasInitialIndexingEventWorker,
             to: ::Ai::ActiveContext::Code::SaasInitialIndexingEvent
         end

@@ -37,6 +37,9 @@ module Ai
         }
 
         scope :namespace_id_in, ->(namespace_ids) { where(namespace_id: namespace_ids) }
+        scope :with_active_connection, -> {
+          joins(:active_context_connection).where(active_context_connection: { active: true })
+        }
 
         private
 
