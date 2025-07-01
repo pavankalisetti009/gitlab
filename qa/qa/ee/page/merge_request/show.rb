@@ -113,7 +113,7 @@ module QA
 
           def expand_vulnerability_report
             within_element('vulnerability-report-grouped') do
-              click_element('toggle-button') if has_element?('chevron-lg-down-icon')
+              click_element('toggle-button') if has_element?('toggle-button')
             end
           end
 
