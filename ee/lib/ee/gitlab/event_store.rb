@@ -316,6 +316,10 @@ module EE
           store.subscribe ::Analytics::CodeSuggestionsEventsBackfillWorker,
             to: ::Analytics::ClickHouseForAnalyticsEnabledEvent,
             if: ->(_) { ::Feature.enabled?(:ai_events_backfill_to_ch, :instance) }
+
+          store.subscribe ::Analytics::AiUsageEventsBackfillWorker,
+            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent,
+            if: ->(_) { ::Feature.enabled?(:ai_events_backfill_to_ch, :instance) }
         end
       end
     end

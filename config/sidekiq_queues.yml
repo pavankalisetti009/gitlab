@@ -39,6 +39,8 @@
   - 1
 - - ai_repository_xray_scan_dependencies
   - 1
+- - analytics_ai_usage_events_backfill
+  - 1
 - - analytics_code_review_metrics
   - 1
 - - analytics_code_suggestions_events_backfill
