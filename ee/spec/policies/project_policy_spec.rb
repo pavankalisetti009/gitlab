@@ -2908,6 +2908,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for a member role with read_vulnerability true' do
         let(:member_role_abilities) { { read_vulnerability: true } }
+        let(:licensed_features) { { security_dashboard: true } }
         let(:allowed_abilities) do
           [
             :access_security_and_compliance,
@@ -2936,6 +2937,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for a member role with admin_vulnerability true' do
         let(:member_role_abilities) { { read_vulnerability: true, admin_vulnerability: true } }
+        let(:licensed_features) { { security_dashboard: true } }
         let(:allowed_abilities) do
           [
             :admin_vulnerability,
