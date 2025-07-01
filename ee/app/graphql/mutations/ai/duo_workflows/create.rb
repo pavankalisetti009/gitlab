@@ -37,6 +37,10 @@ module Mutations
           required: false,
           description: 'When enabled, Duo Workflow may stop to ask the user questions before proceeding.'
 
+        argument :environment, Types::Ai::DuoWorkflows::WorkflowEnvironmentEnum,
+          required: false,
+          description: 'Environment for the workflow.'
+
         field :workflow, Types::Ai::DuoWorkflows::WorkflowType,
           null: true,
           description: 'Created workflow.'
@@ -56,7 +60,8 @@ module Mutations
             agent_privileges: args[:agent_privileges],
             pre_approved_agent_privileges: args[:pre_approved_agent_privileges],
             workflow_definition: args[:workflow_definition],
-            allow_agent_to_request_user: args[:allow_agent_to_request_user]
+            allow_agent_to_request_user: args[:allow_agent_to_request_user],
+            environment: args[:environment]
           }.compact
 
           service = ::Ai::DuoWorkflows::CreateWorkflowService.new(

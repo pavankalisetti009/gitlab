@@ -25,7 +25,8 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
       agent_privileges: [1, 2, 3],
       pre_approved_agent_privileges: [1],
       workflow_definition: workflow_type,
-      allow_agent_to_request_user: true
+      allow_agent_to_request_user: true,
+      environment: 'WEB'
     }
   end
 
@@ -65,7 +66,8 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
             agent_privileges: [1, 2, 3],
             pre_approved_agent_privileges: [1],
             workflow_definition: workflow_type,
-            allow_agent_to_request_user: true
+            allow_agent_to_request_user: true,
+            environment: 'web'
           }
         ).and_call_original
 
