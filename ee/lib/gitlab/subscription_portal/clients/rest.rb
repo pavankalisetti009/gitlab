@@ -31,14 +31,6 @@ module Gitlab
             http_post("api/marketo_leads/opt_in", admin_headers, params)
           end
 
-          def create_customer(params)
-            http_post("api/customers", admin_headers, params)
-          end
-
-          def create_subscription(params, email, token)
-            http_post("subscriptions", customer_headers(email, token), params)
-          end
-
           def payment_form_params(payment_type, user_id)
             http_get("payment_forms/#{payment_type}", admin_headers, { user_id: user_id }.compact)
           end
@@ -49,10 +41,6 @@ module Gitlab
 
           def validate_payment_method(id, params)
             http_post("api/payment_methods/#{id}/validate", admin_headers, params)
-          end
-
-          def customers_oauth_app_uid
-            http_get("api/v1/oauth_app_id", admin_headers)
           end
 
           def create_seat_link(seat_link)

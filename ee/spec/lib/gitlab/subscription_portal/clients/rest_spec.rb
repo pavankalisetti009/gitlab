@@ -206,42 +206,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when http call raises an exception'
   end
 
-  describe '#create_subscription' do
-    subject do
-      client.create_subscription({}, 'customer@example.com', 'token')
-    end
-
-    let(:route_path) { 'subscriptions' }
-    let(:headers) do
-      {
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-        'X-Customer-Email' => 'customer@example.com',
-        'X-Customer-Token' => 'token'
-      }
-    end
-
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
-
-  describe '#create_customer' do
-    subject do
-      client.create_customer({})
-    end
-
-    let(:route_path) { 'api/customers' }
-
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
-
   describe '#payment_form_params' do
     subject do
       client.payment_form_params('cc', 123)
@@ -279,21 +243,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
 
     let(:http_method) { :post }
     let(:route_path) { 'api/payment_methods/test_payment_method_id/validate' }
-
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
-
-  describe '#customers_oauth_app_uid' do
-    subject do
-      client.customers_oauth_app_uid
-    end
-
-    let(:http_method) { :get }
-    let(:route_path) { 'api/v1/oauth_app_id' }
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
