@@ -10,6 +10,7 @@ module Ai
         METADATA_SIZE_LIMIT = 64.kilobytes
 
         self.table_name = 'p_ai_active_context_code_enabled_namespaces'
+        self.primary_key = :id
 
         partitioned_by :namespace_id, strategy: :int_range, partition_size: PARTITION_SIZE
 

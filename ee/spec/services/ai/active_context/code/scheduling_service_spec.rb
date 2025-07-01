@@ -115,6 +115,74 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
     end
   end
 
+  describe 'index_repository task' do
+    subject(:execute) { described_class.new(:index_repository).execute }
+
+    before do
+      allow(Gitlab::Utils::RedisThrottle).to receive(:execute_every).and_yield
+    end
+
+    context 'when there are pending repositories with active connections' do
+      let_it_be(:active_connection) { create(:ai_active_context_connection, active: true) }
+      let_it_be(:enabled_namespace) do
+        create(:ai_active_context_code_enabled_namespace, connection_id: active_connection.id)
+      end
+
+      let_it_be(:pending_repository) do
+        create(:ai_active_context_code_repository,
+          state: :pending,
+          enabled_namespace: enabled_namespace,
+          connection_id: active_connection.id)
+      end
+
+      it 'processes pending repositories' do
+        expect(Ai::ActiveContext::Code::RepositoryIndexService).to receive(:enqueue_pending_jobs)
+
+        execute
+      end
+    end
+
+    context 'when there are no pending repositories with active connections' do
+      let_it_be(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
+      let_it_be(:enabled_namespace) do
+        create(:ai_active_context_code_enabled_namespace, connection_id: inactive_connection.id)
+      end
+
+      let_it_be(:repository_with_inactive_connection) do
+        create(:ai_active_context_code_repository,
+          state: :pending,
+          enabled_namespace: enabled_namespace,
+          connection_id: inactive_connection.id)
+      end
+
+      it 'does not process repositories' do
+        expect(Ai::ActiveContext::Code::RepositoryIndexService).not_to receive(:enqueue_pending_jobs)
+
+        execute
+      end
+    end
+
+    context 'when repositories exist but are not in pending state' do
+      let_it_be(:active_connection) { create(:ai_active_context_connection, active: true) }
+      let_it_be(:enabled_namespace) do
+        create(:ai_active_context_code_enabled_namespace, connection_id: active_connection.id)
+      end
+
+      let_it_be(:ready_repository) do
+        create(:ai_active_context_code_repository,
+          state: :ready,
+          enabled_namespace: enabled_namespace,
+          connection_id: active_connection.id)
+      end
+
+      it 'does not process non-pending repositories' do
+        expect(Ai::ActiveContext::Code::RepositoryIndexService).not_to receive(:enqueue_pending_jobs)
+
+        execute
+      end
+    end
+  end
+
   describe '#cache_period' do
     let(:service) { described_class.new(:example_task) }
 
@@ -164,6 +232,34 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
   end
 
   describe 'tasks' do
+    describe 'index_repository' do
+      context 'when there are repositories to process' do
+        before do
+          allow(::Ai::ActiveContext::Code::Repository)
+            .to receive_message_chain(:pending_with_active_connection, :exists?).and_return(true)
+        end
+
+        it 'enqueues jobs via RepositoryIndexService' do
+          expect(::Ai::ActiveContext::Code::RepositoryIndexService).to receive(:enqueue_pending_jobs)
+
+          described_class.new(:index_repository).execute
+        end
+      end
+
+      context 'when there are no repositories to process' do
+        before do
+          allow(::Ai::ActiveContext::Code::Repository)
+            .to receive_message_chain(:pending_with_active_connection, :exists?).and_return(false)
+        end
+
+        it 'does not enqueue jobs via RepositoryIndexService' do
+          expect(::Ai::ActiveContext::Code::RepositoryIndexService).not_to receive(:enqueue_pending_jobs)
+
+          described_class.new(:index_repository).execute
+        end
+      end
+    end
+
     describe 'saas_initial_indexing' do
       before do
         allow(Gitlab::EventStore).to receive(:publish)
