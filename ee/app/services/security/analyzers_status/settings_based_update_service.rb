@@ -6,7 +6,7 @@ module Security
       include ::Security::AnalyzersStatus::AggregatedTypesHandler
 
       TooManyProjectIdsError = Class.new(StandardError)
-      MAX_PROJECT_IDS = 250
+      MAX_PROJECT_IDS = Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker::BATCH_SIZE
 
       def self.execute(project_ids, analyzer_type)
         new(project_ids, analyzer_type).execute
