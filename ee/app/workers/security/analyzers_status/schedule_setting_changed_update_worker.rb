@@ -9,7 +9,7 @@ module Security
       data_consistency :sticky
       feature_category :security_asset_inventories
 
-      BATCH_SIZE = 250
+      BATCH_SIZE = 100
 
       def perform(project_ids, analyzer_type)
         return unless project_ids.present? && analyzer_type.present?
