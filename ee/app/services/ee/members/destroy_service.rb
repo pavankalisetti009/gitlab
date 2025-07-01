@@ -19,6 +19,7 @@ module EE
         cleanup_oncall_rotations(member)
         cleanup_escalation_rules(member) if member.user
         reset_seats_usage_callouts(member)
+        destroy_user_group_member_roles(member)
       end
 
       private
@@ -145,6 +146,14 @@ module EE
         member.run_after_commit_or_now do
           ::Groups::ResetSeatCalloutsWorker.perform_async(namespace.id)
         end
+      end
+
+      def destroy_user_group_member_roles(member)
+        return unless member.source.is_a?(Group)
+        return unless ::Feature.enabled?(:cache_user_group_member_roles, member.source.root_ancestor)
+        return unless member.member_role_id
+
+        ::Authz::UserGroupMemberRoles::DestroyForGroupWorker.perform_async(member.user_id, member.source_id)
       end
     end
   end
