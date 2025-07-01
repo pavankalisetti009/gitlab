@@ -22,6 +22,8 @@ import ScopeSectionAlert from './scope_section_alert.vue';
 import ScopeGroupSelector from './scope_group_selector.vue';
 import ScopeProjectSelector from './scope_project_selector.vue';
 import {
+  CSP_SCOPE_TYPE_LISTBOX_ITEMS,
+  CSP_SCOPE_TYPE_TEXTS,
   PROJECTS_WITH_FRAMEWORK,
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
   PROJECT_SCOPE_TYPE_TEXTS,
@@ -41,7 +43,6 @@ import {
 export default {
   COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/group/compliance_frameworks.md'),
   SCOPE_HELP_PATH: helpPagePath('user/application_security/policies/_index.md'),
-  PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   i18n: {
     policyScopeLoadingText: s__('SecurityOrchestration|Fetching the scope information.'),
@@ -124,10 +125,11 @@ export default {
   },
   inject: [
     'assignedPolicyProject',
+    'designatedAsCsp',
     'existingPolicy',
     'namespacePath',
-    'rootNamespacePath',
     'namespaceType',
+    'rootNamespacePath',
   ],
   props: {
     policyScope: {
@@ -192,6 +194,9 @@ export default {
     isProjectLevel() {
       return isProject(this.namespaceType);
     },
+    isAllProjects() {
+      return this.selectedProjectScopeType === ALL_PROJECTS_IN_GROUP;
+    },
     hasMultipleProjectsLinked() {
       return this.linkedSppItems.length > 1;
     },
@@ -237,19 +242,21 @@ export default {
       return frameworks?.map(({ id }) => id) || [];
     },
     selectedProjectScopeText() {
-      return PROJECT_SCOPE_TYPE_TEXTS[this.selectedProjectScopeType];
+      return this.designatedAsCsp
+        ? CSP_SCOPE_TYPE_TEXTS[this.selectedProjectScopeType]
+        : PROJECT_SCOPE_TYPE_TEXTS[this.selectedProjectScopeType];
     },
     showScopeSelector() {
       return this.isGroupLevel || this.hasMultipleProjectsLinked;
     },
     showExceptionTypeDropdown() {
-      return this.selectedProjectScopeType === ALL_PROJECTS_IN_GROUP;
+      return this.isAllProjects;
     },
     showGroupProjectsDropdown() {
       return (
         (this.showExceptionTypeDropdown && this.selectedExceptionType === EXCEPT_PROJECTS) ||
         this.selectedProjectScopeType === SPECIFIC_PROJECTS ||
-        this.selectedProjectScopeType === ALL_PROJECTS_IN_GROUP
+        this.isAllProjects
       );
     },
     payloadKey() {
@@ -286,6 +293,9 @@ export default {
     complianceFrameworksValidState() {
       return this.complianceFrameworksEmpty && this.isFormDirty;
     },
+    scopeDropdownItems() {
+      return this.designatedAsCsp ? CSP_SCOPE_TYPE_LISTBOX_ITEMS : PROJECT_SCOPE_TYPE_LISTBOX_ITEMS;
+    },
   },
   methods: {
     resetPolicyScope() {
@@ -301,8 +311,7 @@ export default {
       this.isFormDirty = false;
 
       this.selectedProjectScopeType = scopeType;
-      this.projectsPayloadKey =
-        this.selectedProjectScopeType === ALL_PROJECTS_IN_GROUP ? EXCLUDING : INCLUDING;
+      this.projectsPayloadKey = this.isAllProjects ? EXCLUDING : INCLUDING;
       this.resetPolicyScope();
     },
     selectExceptionType(type) {
@@ -389,7 +398,7 @@ export default {
                 }"
                 fluid-width
                 data-testid="project-scope-type"
-                :items="$options.PROJECT_SCOPE_TYPE_LISTBOX_ITEMS"
+                :items="scopeDropdownItems"
                 :selected="selectedProjectScopeType"
                 :toggle-text="selectedProjectScopeText"
                 :disabled="disableScopeSelector"

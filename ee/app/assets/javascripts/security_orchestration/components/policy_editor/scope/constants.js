@@ -13,7 +13,15 @@ export const PROJECT_SCOPE_TYPE_TEXTS = {
   [ALL_PROJECTS_IN_LINKED_GROUPS]: s__('SecurityOrchestration|all projects in the linked groups'),
 };
 
+export const CSP_SCOPE_TYPE_TEXTS = {
+  [ALL_PROJECTS_IN_GROUP]: s__('SecurityOrchestration|all projects in this instance'),
+  [SPECIFIC_PROJECTS]: s__('SecurityOrchestration|specific projects'),
+  [ALL_PROJECTS_IN_LINKED_GROUPS]: s__('SecurityOrchestration|all projects in the groups'),
+};
+
 export const PROJECT_SCOPE_TYPE_LISTBOX_ITEMS = mapToListboxItems(PROJECT_SCOPE_TYPE_TEXTS);
+
+export const CSP_SCOPE_TYPE_LISTBOX_ITEMS = mapToListboxItems(CSP_SCOPE_TYPE_TEXTS);
 
 export const WITHOUT_EXCEPTIONS = 'without_exceptions';
 export const EXCEPT_PROJECTS = 'except_projects';
