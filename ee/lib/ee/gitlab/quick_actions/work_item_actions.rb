@@ -41,10 +41,8 @@ module EE
               current_user.can?(:"update_#{quick_action_target.to_ability_name}", quick_action_target)
           end
           parse_params do |status_name|
-            status = ::WorkItems::Statuses::SystemDefined::Status.find_by_work_item_and_name(
-              quick_action_target,
-              status_name
-            )
+            namespace = quick_action_target.resource_parent&.root_ancestor
+            status = ::WorkItems::Statuses::Finder.new(namespace, { 'name' => status_name }).execute
             [status, status_name]
           end
           command :status do |status, status_name|
