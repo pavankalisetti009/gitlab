@@ -4097,4 +4097,264 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it_behaves_like 'adds filter to query_hash'
     end
   end
+
+  describe '.by_label_names' do
+    subject(:by_label_names) { described_class.by_label_names(query_hash: query_hash, options: options) }
+
+    context 'when all label name options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:label_names] is provided' do
+      let(:options) { { label_names: ['workflow::complete', 'backend'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:label_names',
+            must: [
+              { term: { label_names: 'workflow::complete' } },
+              { term: { label_names: 'backend' } }
+            ]
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:label_names] with wildcard is provided' do
+      let(:options) { { label_names: ['workflow::*', 'frontend'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:label_names',
+            must: [
+              { prefix: { label_names: 'workflow::' } },
+              { term: { label_names: 'frontend' } }
+            ]
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:not_label_names] is provided' do
+      let(:options) { { not_label_names: ['workflow::in dev'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:not_label_names',
+            must_not: [
+              { term: { label_names: 'workflow::in dev' } }
+            ]
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:not_label_names] with wildcard is provided' do
+      let(:options) { { not_label_names: ['group::*'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:not_label_names',
+            must_not: [
+              { prefix: { label_names: 'group::' } }
+            ]
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:or_label_names] is provided' do
+      let(:options) { { or_label_names: ['workflow::complete', 'group::knowledge'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:or_label_names',
+            should: [
+              { term: { label_names: 'workflow::complete' } },
+              { term: { label_names: 'group::knowledge' } }
+            ],
+            minimum_should_match: 1
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:or_label_names] with wildcard is provided' do
+      let(:options) { { or_label_names: ['workflow::*', 'backend'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:or_label_names',
+            should: [
+              { prefix: { label_names: 'workflow::' } },
+              { term: { label_names: 'backend' } }
+            ],
+            minimum_should_match: 1
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:any_label_names] is provided' do
+      let(:options) { { any_label_names: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:any_label_names',
+            must: { exists: { field: 'label_names' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:none_label_names] is provided' do
+      let(:options) { { none_label_names: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:none_label_names',
+            must_not: { exists: { field: 'label_names' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:label_names] and options[:not_label_names] are both provided' do
+      let(:options) { { label_names: ['workflow::complete'], not_label_names: ['group::*'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:label_names',
+            must: [
+              { term: { label_names: 'workflow::complete' } }
+            ]
+          }
+        }, {
+          bool: {
+            _name: 'filters:not_label_names',
+            must_not: [
+              { prefix: { label_names: 'group::' } }
+            ]
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when complex mixed options are provided' do
+      let(:options) do
+        {
+          label_names: ['workflow::complete'],
+          not_label_names: ['group::*'],
+          or_label_names: ['workflow::*', 'frontend'],
+          any_label_names: false,
+          none_label_names: false
+        }
+      end
+
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:label_names',
+            must: [
+              { term: { label_names: 'workflow::complete' } }
+            ]
+          }
+        }, {
+          bool: {
+            _name: 'filters:not_label_names',
+            must_not: [
+              { prefix: { label_names: 'group::' } }
+            ]
+          }
+        }, {
+          bool: {
+            _name: 'filters:or_label_names',
+            should: [
+              { prefix: { label_names: 'workflow::' } },
+              { term: { label_names: 'frontend' } }
+            ],
+            minimum_should_match: 1
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when mixed ANY with other filters is provided' do
+      let(:options) do
+        {
+          any_label_names: true,
+          not_label_names: ['workflow::in dev'],
+          or_label_names: %w[frontend backend]
+        }
+      end
+
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:not_label_names',
+            must_not: [
+              { term: { label_names: 'workflow::in dev' } }
+            ]
+          }
+        }, {
+          bool: {
+            _name: 'filters:or_label_names',
+            should: [
+              { term: { label_names: 'frontend' } },
+              { term: { label_names: 'backend' } }
+            ],
+            minimum_should_match: 1
+          }
+        }, {
+          bool: {
+            _name: 'filters:any_label_names',
+            must: { exists: { field: 'label_names' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when label_names with incorrect wildcard patterns are provided' do
+      let(:options) { { label_names: ['workflow*', 'backend::', '*workflow', '::workflow'] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:label_names',
+            must: [
+              { term: { label_names: 'workflow*' } },
+              { term: { label_names: 'backend::' } },
+              { term: { label_names: '*workflow' } },
+              { term: { label_names: '::workflow' } }
+            ]
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
 end

@@ -32,6 +32,11 @@ module Search
           confidential
           state
           label_name
+          label_names
+          not_label_names
+          or_label_names
+          none_label_names
+          any_label_names
           include_archived
           fields
           author_username

@@ -39,6 +39,10 @@ module Search
           query_hash = ::Search::Elastic::Filters.by_milestone(query_hash: query_hash, options: options)
         end
 
+        if ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
+          query_hash = ::Search::Elastic::Filters.by_label_names(query_hash: query_hash, options: options)
+        end
+
         if hybrid_work_item_search?
           query_hash = ::Search::Elastic::Filters.by_knn(query_hash: query_hash, options: options)
         end

@@ -350,6 +350,7 @@ module Search
           end
         end
 
+        # @deprecated - all new label filters should use by_label_names
         def by_label_ids(query_hash:, options:)
           return query_hash if options[:count_only] || options[:aggregation]
 
@@ -373,6 +374,78 @@ module Search
           add_filter(query_hash, :query, :bool, :filter) do
             { bool: must_query }
           end
+        end
+
+        def by_label_names(query_hash:, options:)
+          label_names = options[:label_names]
+          not_label_names = options[:not_label_names]
+          or_label_names = options[:or_label_names]
+          none_label_names = options[:none_label_names]
+          any_label_names = options[:any_label_names]
+
+          unless label_names || not_label_names || or_label_names || none_label_names || any_label_names
+            return query_hash
+          end
+
+          context.name(:filters) do
+            if label_names
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:label_names),
+                    must: build_label_queries(label_names)
+                  }
+                }
+              end
+            end
+
+            if not_label_names
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:not_label_names),
+                    must_not: build_label_queries(not_label_names)
+                  }
+                }
+              end
+            end
+
+            if or_label_names
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:or_label_names),
+                    should: build_label_queries(or_label_names),
+                    minimum_should_match: 1
+                  }
+                }
+              end
+            end
+
+            if none_label_names
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:none_label_names),
+                    must_not: { exists: { field: 'label_names' } }
+                  }
+                }
+              end
+            end
+
+            if any_label_names
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:any_label_names),
+                    must: { exists: { field: 'label_names' } }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
         end
 
         def by_knn(query_hash:, options:)
@@ -1377,6 +1450,45 @@ module Search
           add_filter(membership_filters, :filter) do
             { bool: feature_access_level_filter.to_h }
           end
+        end
+
+        # Builds ES queries for label filtering with wildcard support for scoped labels.
+        #
+        # Supports both exact matching for regular labels
+        # and wildcard prefix matching for scoped labels like:
+        # - "advanced search" (exact match)
+        # - "workflow::complete" (exact match)
+        # - "workflow::in dev" (exact match)
+        # - "workflow::*" (prefix match for all labels starting with "workflow::")
+        #
+        # For now, it uses `prefix` queries for wildcard matching as they provide optimal performance
+        # for keyword fields when doing "starts with" operations.
+        #
+        # This implementation follows the same pattern as the PostgreSQL version in
+        # ee/app/finders/ee/issuables/label_filter.rb
+        def build_label_queries(label_names)
+          label_names.map do |label_name|
+            if scoped_label_wildcard?(label_name)
+              prefix = label_name[0...-1]
+              {
+                prefix: {
+                  label_names: prefix
+                }
+              }
+            else
+              {
+                term: {
+                  label_names: label_name
+                }
+              }
+            end
+          end
+        end
+
+        def scoped_label_wildcard?(label_name)
+          # Follows the existing pattern of SCOPED_LABEL_SEPARATOR in ee/app/models/ee/label.rb
+          # and SCOPED_LABEL_WILDCARD in ee/app/finders/ee/issuables/label_filter.rb#extract_scoped_label_wildcards
+          label_name.end_with?('::*')
         end
       end
     end
