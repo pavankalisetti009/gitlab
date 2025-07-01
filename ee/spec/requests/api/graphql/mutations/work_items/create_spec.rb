@@ -91,7 +91,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
           it 'returns nil' do
             expect do
               post_graphql_mutation(mutation, current_user: current_user)
-            end.to change { WorkItem.count }.by(0)
+            end.to not_change { WorkItem.count }
 
             expect(mutation_response).to be_nil
           end
@@ -591,7 +591,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
           it 'returns an error' do
             expect do
               post_graphql_mutation(mutation, current_user: current_user)
-            end.to change { WorkItem.count }.by(0)
+            end.to not_change { WorkItem.count }
 
             expect(mutation_response).to be_nil
             expect(graphql_errors).to include(a_hash_including(
@@ -655,7 +655,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
           it 'returns an error' do
             expect do
               post_graphql_mutation(mutation, current_user: current_user)
-            end.to change { WorkItem.count }.by(0)
+            end.to not_change { WorkItem.count }
 
             expect(mutation_response).to be_nil
             expect(graphql_errors).to include(a_hash_including(

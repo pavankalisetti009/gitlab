@@ -256,7 +256,8 @@ RSpec.describe API::Admin::Search::Zoekt, :zoekt, :zoekt_settings_enabled, featu
 
       it 'creates only Search::Zoekt::EnabledNamespace with search enabled for the namespace' do
         expect { put api(path, admin, admin_mode: true) }
-          .to change { Search::Zoekt::EnabledNamespace.count }.by(1).and change { Search::Zoekt::Index.count }.by(0)
+          .to change { Search::Zoekt::EnabledNamespace.count }.by(1)
+          .and not_change { Search::Zoekt::Index.count }
         expect(response).to have_gitlab_http_status(:ok)
         np = Search::Zoekt::EnabledNamespace.find_by(namespace: namespace)
         expect(json_response['id']).to eq(np.id)

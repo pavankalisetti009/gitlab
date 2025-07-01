@@ -86,7 +86,7 @@ RSpec.describe 'Deleting a MergeTrain Car', feature_category: :merge_trains do
         errors: ["Can't cancel the automatic merge"]
 
       it 'does not change the record count' do
-        expect { post_mutation }.to change { MergeTrains::Car.count }.by(0)
+        expect { post_mutation }.to not_change { MergeTrains::Car.count }
       end
     end
 

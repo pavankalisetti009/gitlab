@@ -92,7 +92,7 @@ RSpec.describe 'Deleting a ProjectSecurityExclusion', feature_category: :secret_
 
     it 'does not destroy the project security exclusion' do
       expect { post_graphql_mutation(mutation, current_user: current_user) }
-        .to change { project.security_exclusions.reload.count }.by(0)
+        .to not_change { project.security_exclusions.reload.count }
     end
   end
 

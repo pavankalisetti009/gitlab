@@ -70,7 +70,7 @@ RSpec.describe 'Destroy an instance external audit event destination', feature_c
 
         it 'does not destroy the destination' do
           expect { post_graphql_mutation(mutation, current_user: admin) }
-            .to change { AuditEvents::InstanceExternalAuditEventDestination.count }.by(0)
+            .to not_change { AuditEvents::InstanceExternalAuditEventDestination.count }
         end
 
         it_behaves_like 'a mutation that returns top-level errors',

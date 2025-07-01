@@ -21,7 +21,7 @@ RSpec.describe 'Create an external status check', feature_category: :source_code
 
   shared_examples 'it expects value not to be null' do
     it 'returns error' do
-      expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(0)
+      expect { mutation_request }.to not_change { MergeRequests::ExternalStatusCheck.count }
 
       error_message = graphql_errors[0]["extensions"]["problems"][0]["explanation"]
       expect(error_message).to eq('Expected value to not be null')
@@ -41,7 +41,7 @@ RSpec.describe 'Create an external status check', feature_category: :source_code
       let(:global_id_error) { a_hash_including('message' => a_string_including(error_message)) }
 
       it 'returns an error' do
-        expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(0)
+        expect { mutation_request }.to not_change { MergeRequests::ExternalStatusCheck.count }
 
         expect(graphql_errors).to include(global_id_error)
       end
@@ -63,7 +63,7 @@ RSpec.describe 'Create an external status check', feature_category: :source_code
   context 'with valid params' do
     context 'when user is not authorized' do
       it 'returns error' do
-        expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(0)
+        expect { mutation_request }.to not_change { MergeRequests::ExternalStatusCheck.count }
 
         expected_message = "you don't have permission to perform this action"
         expect(graphql_errors).to include(a_hash_including('message' => a_string_including(expected_message)))
@@ -91,7 +91,7 @@ RSpec.describe 'Create an external status check', feature_category: :source_code
         end
 
         it 'returns an error' do
-          expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(0)
+          expect { mutation_request }.to not_change { MergeRequests::ExternalStatusCheck.count }
 
           expect(graphql_errors).to include(a_hash_including('message' => a_string_including('Error!')))
         end
@@ -113,7 +113,7 @@ RSpec.describe 'Create an external status check', feature_category: :source_code
         let(:branch_rule) { ::Projects::AllProtectedBranchesRule.new(project) }
 
         it 'returns an error' do
-          expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(0)
+          expect { mutation_request }.to not_change { MergeRequests::ExternalStatusCheck.count }
 
           expect(mutation_response['errors']).to include('All protected branches not allowed')
           expect(graphql_errors).to be_nil
