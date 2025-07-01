@@ -4374,6 +4374,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Apply to all %{mainFeature} sub-features"
 msgstr ""
 
+msgid "AdminSelfHostedModels|Assign a model to %{subFeature} before applying to all"
+msgstr ""
+
 msgid "AdminSelfHostedModels|Assign a model to enable this feature"
 msgstr ""
 
@@ -4477,6 +4480,9 @@ msgid "AdminSelfHostedModels|Successfully connected to the self-hosted model"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Successfully updated all %{mainFeature} features"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Test connection"

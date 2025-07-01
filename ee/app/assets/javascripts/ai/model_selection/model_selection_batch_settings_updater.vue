@@ -35,6 +35,15 @@ export default {
         return selectableModelRefs.includes(this.selectedModelRef);
       });
     },
+    tooltipTitle() {
+      const tooltipText = this.canBatchUpdate
+        ? s__('AdminSelfHostedModels|Apply to all %{mainFeature} sub-features')
+        : s__(
+            'AdminSelfHostedModels|This model cannot be applied to all %{mainFeature} sub-features',
+          );
+
+      return sprintf(tooltipText, { mainFeature: this.selectedFeatureSetting.mainFeature });
+    },
     successMessage() {
       return sprintf(s__('ModelSelection|Successfully updated all %{mainFeature} features'), {
         mainFeature: this.aiFeatureSettings[0].mainFeature,
@@ -95,6 +104,7 @@ export default {
 <template>
   <batch-update-button
     :main-feature="selectedFeatureSetting.mainFeature"
+    :tooltip-title="tooltipTitle"
     :disabled="!canBatchUpdate"
     @batch-update="onClick"
   />

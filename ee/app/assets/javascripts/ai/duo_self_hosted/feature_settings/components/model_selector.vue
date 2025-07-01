@@ -9,7 +9,7 @@ import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/g
 import { PROVIDERS } from '../constants';
 
 export default {
-  name: 'FeatureSettingsModelSelector',
+  name: 'ModelSelector',
   components: {
     ModelSelectDropdown,
   },
@@ -30,24 +30,22 @@ export default {
     successMessage: s__('AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}'),
   },
   data() {
-    const { provider, selfHostedModel, validModels } = this.aiFeatureSetting;
-
-    const selectedOption = provider === PROVIDERS.SELF_HOSTED ? selfHostedModel?.id : provider;
-
     return {
-      provider,
-      selfHostedModelId: selfHostedModel?.id,
-      compatibleModels: validModels?.nodes,
-      selectedOption,
       isSaving: false,
     };
   },
   computed: {
+    selectedOption() {
+      const { provider, selfHostedModel } = this.aiFeatureSetting;
+
+      const selected = provider === PROVIDERS.DISABLED ? PROVIDERS.DISABLED : selfHostedModel?.id;
+
+      return this.listItems.find((item) => item.value === selected);
+    },
     listItems() {
-      const gaModels = this.compatibleModels.filter(
-        ({ releaseState }) => releaseState === RELEASE_STATES.GA,
-      );
-      const betaModels = this.compatibleModels.filter(
+      const validModels = this.aiFeatureSetting.validModels?.nodes || [];
+      const gaModels = validModels.filter(({ releaseState }) => releaseState === RELEASE_STATES.GA);
+      const betaModels = validModels.filter(
         ({ releaseState }) => releaseState === RELEASE_STATES.BETA,
       );
 
@@ -60,7 +58,6 @@ export default {
         }),
       );
 
-      // Add an option to disable the feature
       const disableOption = {
         value: PROVIDERS.DISABLED,
         text: s__('AdminAIPoweredFeatures|Disabled'),
@@ -68,30 +65,23 @@ export default {
 
       return [...modelOptions, disableOption];
     },
-    selectedOptionItem() {
-      return this.listItems.find((item) => item.value === this.selectedOption);
-    },
   },
   methods: {
-    async onSelect(option) {
+    async onSelect(selectedOption) {
       this.isSaving = true;
 
       try {
-        const isDisabledOption = option === PROVIDERS.DISABLED;
-
-        const selectedOption = {
-          option,
-          provider: isDisabledOption ? option : PROVIDERS.SELF_HOSTED,
-          selfHostedModelId: isDisabledOption ? null : option,
-        };
+        const isDisabled = selectedOption === PROVIDERS.DISABLED;
+        const provider = isDisabled ? PROVIDERS.DISABLED : PROVIDERS.SELF_HOSTED;
+        const aiSelfHostedModelId = isDisabled ? null : selectedOption;
 
         const { data } = await this.$apollo.mutate({
           mutation: updateAiFeatureSetting,
           variables: {
             input: {
               features: [this.aiFeatureSetting.feature.toUpperCase()],
-              provider: selectedOption.provider.toUpperCase(),
-              aiSelfHostedModelId: selectedOption.selfHostedModelId,
+              provider: provider.toUpperCase(),
+              aiSelfHostedModelId,
             },
           },
           refetchQueries: [
@@ -107,8 +97,6 @@ export default {
             throw new Error(errors[0]);
           }
 
-          this.updateSelection(selectedOption);
-          this.isSaving = false;
           this.$toast.show(this.successMessage(this.aiFeatureSetting));
         }
       } catch (error) {
@@ -117,13 +105,9 @@ export default {
           error,
           captureError: true,
         });
+      } finally {
         this.isSaving = false;
       }
-    },
-    updateSelection(selectedOption) {
-      this.selectedOption = selectedOption.option;
-      this.provider = selectedOption.provider;
-      this.selfHostedModelId = selectedOption.selfHostedModelId;
     },
     errorMessage(error) {
       return error.message || this.$options.i18n.defaultErrorMessage;
@@ -139,7 +123,7 @@ export default {
 </script>
 <template>
   <model-select-dropdown
-    :selected-option="selectedOptionItem"
+    :selected-option="selectedOption"
     :items="listItems"
     :placeholder-dropdown-text="s__('AdminAIPoweredFeatures|Select a self-hosted model')"
     :is-loading="isSaving || batchUpdateIsSaving"

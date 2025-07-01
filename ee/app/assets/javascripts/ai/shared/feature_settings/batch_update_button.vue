@@ -1,6 +1,5 @@
 <script>
 import { GlButton, GlTooltip } from '@gitlab/ui';
-import { s__, sprintf } from '~/locale';
 
 export default {
   name: 'BatchUpdateButton',
@@ -9,7 +8,7 @@ export default {
     GlTooltip,
   },
   props: {
-    mainFeature: {
+    tooltipTitle: {
       type: String,
       required: true,
     },
@@ -17,17 +16,6 @@ export default {
       type: Boolean,
       required: false,
       default: false,
-    },
-  },
-  computed: {
-    tooltipTitle() {
-      const tooltipText = this.disabled
-        ? s__(
-            'AdminSelfHostedModels|This model cannot be applied to all %{mainFeature} sub-features',
-          )
-        : s__('AdminSelfHostedModels|Apply to all %{mainFeature} sub-features');
-
-      return sprintf(tooltipText, { mainFeature: this.mainFeature });
     },
   },
 };

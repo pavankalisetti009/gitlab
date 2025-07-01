@@ -1,8 +1,8 @@
 import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FeatureSettingsTableRows from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_table_rows.vue';
-import FeatureSettingsModelSelector from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_model_selector.vue';
-import FeatureSettingsBatchAssignmentButton from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_batch_assignment_button.vue';
+import ModelSelector from 'ee/ai/duo_self_hosted/feature_settings/components/model_selector.vue';
+import BatchSettingsUpdater from 'ee/ai/duo_self_hosted/feature_settings/components/batch_settings_updater.vue';
 import { DUO_MAIN_FEATURES } from 'ee/ai/duo_self_hosted/constants';
 import { mockAiFeatureSettings } from './mock_data';
 
@@ -26,10 +26,9 @@ describe('FeatureSettingsTableRows', () => {
   const findTable = () => wrapper.findComponent(GlTableLite);
   const findTableRows = () => findTable().findAllComponents('tbody > tr');
   const findRowFeatureNameByIdx = (idx) => findTableRows().at(idx).findAll('td').at(0);
-  const findModelSelectorByIdx = (idx) =>
-    findTableRows().at(idx).findComponent(FeatureSettingsModelSelector);
-  const findBatchAssignmentButtonByIdx = (idx) =>
-    findTableRows().at(idx).findComponent(FeatureSettingsBatchAssignmentButton);
+  const findModelSelectorByIdx = (idx) => findTableRows().at(idx).findComponent(ModelSelector);
+  const findBatchSettingsUpdaterByIdx = (idx) =>
+    findTableRows().at(idx).findComponent(BatchSettingsUpdater);
   const findFeatureSettingsTableRows = () => wrapper.findComponent(FeatureSettingsTableRows);
   const findLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
   const findBetaBadges = () => wrapper.findAllByTestId('feature-beta-badge');
@@ -105,12 +104,12 @@ describe('FeatureSettingsTableRows', () => {
     it('renders the batch assignment button and passes the correct props', () => {
       createComponent();
 
-      expect(findBatchAssignmentButtonByIdx(0).props()).toMatchObject({
-        currentFeatureSetting: mockCodeSuggestionsFeatureSettings[0],
+      expect(findBatchSettingsUpdaterByIdx(0).props()).toMatchObject({
+        selectedFeatureSetting: mockCodeSuggestionsFeatureSettings[0],
         aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
       });
-      expect(findBatchAssignmentButtonByIdx(1).props()).toMatchObject({
-        currentFeatureSetting: mockCodeSuggestionsFeatureSettings[1],
+      expect(findBatchSettingsUpdaterByIdx(1).props()).toMatchObject({
+        selectedFeatureSetting: mockCodeSuggestionsFeatureSettings[1],
         aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
       });
     });

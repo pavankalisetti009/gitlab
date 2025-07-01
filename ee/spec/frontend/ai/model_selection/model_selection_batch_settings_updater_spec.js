@@ -67,7 +67,7 @@ describe('ModelSelectionBatchSettingsUpdater', () => {
     createComponent();
 
     expect(findBatchUpdateButton().props()).toEqual({
-      mainFeature: selectedFeatureSetting.mainFeature,
+      tooltipTitle: 'Apply to all Code Suggestions sub-features',
       disabled: false,
     });
   });
@@ -88,7 +88,10 @@ describe('ModelSelectionBatchSettingsUpdater', () => {
 
     createComponent({ props: { aiFeatureSettings } });
 
-    expect(findBatchUpdateButton().props('disabled')).toBe(true);
+    expect(findBatchUpdateButton().props()).toEqual({
+      tooltipTitle: 'This model cannot be applied to all Code Suggestions sub-features',
+      disabled: true,
+    });
   });
 
   describe('onClick', () => {
