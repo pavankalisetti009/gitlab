@@ -15,7 +15,7 @@ module Gitlab
         DOWNLOAD_URL = 'https://gitlab.com/gitlab-org/ai-powered/datasets/-/package_files/135727282/download'
         GROUP_IMPORT_URL = '/api/v4/groups/import'
         PROJECT_IMPORT_URL = '/api/v4/projects/import'
-        TIME_LIMIT = 180
+        TIME_LIMIT = 360
 
         def initialize(args)
           @main_group = ensure_group(args[:root_group_path])

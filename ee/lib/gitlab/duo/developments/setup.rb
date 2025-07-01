@@ -223,6 +223,7 @@ module Gitlab
 
           Gitlab::Duo::Developments::FeatureFlagEnabler.execute
           ::Feature.enable(:enable_hamilton_in_user_preferences)
+          ::Feature.enable(:allow_organization_creation)
 
           # this feature flag is for making staging-ref act like a self-managed instance.
           # when enabled, it makes SaaS mode like Self-Managed mode when it comes to
