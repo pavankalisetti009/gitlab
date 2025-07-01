@@ -2397,7 +2397,19 @@ msgstr ""
 msgid "AICatalog|Edit agent"
 msgstr ""
 
+msgid "AICatalog|Failed to run agent."
+msgstr ""
+
+msgid "AICatalog|Prompt"
+msgstr ""
+
 msgid "AICatalog|Released %{fullDate}"
+msgstr ""
+
+msgid "AICatalog|Run"
+msgstr ""
+
+msgid "AICatalog|Run agent"
 msgstr ""
 
 msgid "AISummary|Generates a summary of this issue"

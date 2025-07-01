@@ -2,10 +2,12 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import AiCatalogAgents from '../pages/ai_catalog_agents.vue';
 import AiCatalogAgentsShow from '../pages/ai_catalog_agents_show.vue';
+import AiCatalogAgentsRun from '../pages/ai_catalog_agents_run.vue';
 import {
   AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_SHOW_ROUTE,
+  AI_CATALOG_AGENTS_RUN_ROUTE,
 } from './constants';
 
 Vue.use(VueRouter);
@@ -29,6 +31,11 @@ export const createRouter = (base) => {
         name: AI_CATALOG_AGENTS_SHOW_ROUTE,
         path: '/agents/:id',
         component: AiCatalogAgentsShow,
+      },
+      {
+        name: AI_CATALOG_AGENTS_RUN_ROUTE,
+        path: '/agents/:id/run',
+        component: AiCatalogAgentsRun,
       },
     ],
   });
