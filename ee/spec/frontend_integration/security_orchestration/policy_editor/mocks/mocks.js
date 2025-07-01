@@ -1,6 +1,7 @@
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 export const DEFAULT_PROVIDE = {
+  designatedAsCsp: false,
   disableScanPolicyUpdate: false,
   disableSecurityPolicyProject: false,
   policyEditorEmptyStateSvgPath: 'path/to/svg',

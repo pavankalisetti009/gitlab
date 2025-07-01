@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlSprintf, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -13,8 +13,9 @@ import ScopeSectionAlert from 'ee/security_orchestration/components/policy_edito
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
-  PROJECTS_WITH_FRAMEWORK,
   ALL_PROJECTS_IN_GROUP,
+  CSP_SCOPE_TYPE_LISTBOX_ITEMS,
+  PROJECTS_WITH_FRAMEWORK,
   SPECIFIC_PROJECTS,
   EXCEPT_PROJECTS,
   WITHOUT_EXCEPTIONS,
@@ -67,11 +68,12 @@ describe('PolicyScope', () => {
         ...propsData,
       },
       provide: {
-        existingPolicy: null,
-        namespaceType: NAMESPACE_TYPES.GROUP,
-        namespacePath: 'gitlab-org',
-        rootNamespacePath: 'gitlab-org-root',
         assignedPolicyProject: defaultAssignedPolicyProject,
+        designatedAsCsp: false,
+        existingPolicy: null,
+        namespacePath: 'gitlab-org',
+        namespaceType: NAMESPACE_TYPES.GROUP,
+        rootNamespacePath: 'gitlab-org-root',
         ...provide,
       },
       stubs: {
@@ -776,6 +778,51 @@ describe('PolicyScope', () => {
 
         expect(findScopeGroupSelector().exists()).toBe(true);
         expect(findScopeProjectSelector().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('global compliance security policies group', () => {
+    describe('scope type selection', () => {
+      beforeEach(() => {
+        createComponent({ provide: { designatedAsCsp: true } });
+      });
+
+      it('renders CSP scope dropdown items', () => {
+        expect(findProjectScopeTypeDropdown().props('items')).toEqual(CSP_SCOPE_TYPE_LISTBOX_ITEMS);
+      });
+
+      it('displays CSP scope text as toggle text', () => {
+        expect(findProjectScopeTypeDropdown().props('toggleText')).toBe(
+          'all projects in this instance',
+        );
+      });
+
+      it('renders ALL_PROJECTS_IN_GROUP as default selected value', () => {
+        expect(findProjectScopeTypeDropdown().props('selected')).toBe(ALL_PROJECTS_IN_GROUP);
+      });
+
+      it('displays exception dropdown by default', () => {
+        expect(findScopeProjectSelector().exists()).toBe(true);
+      });
+    });
+
+    describe('scope selection behavior', () => {
+      it('renders exception dropdown when CSP instance scope is selected', () => {
+        createComponent({ provide: { designatedAsCsp: true } });
+
+        findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_GROUP);
+
+        expect(findScopeProjectSelector().exists()).toBe(true);
+      });
+
+      it('updates toggle text when scope changes in CSP context', async () => {
+        createComponent({ provide: { designatedAsCsp: true } });
+
+        findProjectScopeTypeDropdown().vm.$emit('select', SPECIFIC_PROJECTS);
+        await nextTick();
+
+        expect(findProjectScopeTypeDropdown().props('toggleText')).toBe('specific projects');
       });
     });
   });

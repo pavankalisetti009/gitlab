@@ -10,6 +10,7 @@ export default (el, namespaceType) => {
   const {
     accessTokens,
     assignedPolicyProject,
+    designatedAsCsp,
     disableScanPolicyUpdate,
     createAgentHelpPath,
     enabledExperiments,
@@ -79,6 +80,7 @@ export default (el, namespaceType) => {
     provide: {
       accessTokens: parsedAccessTokens,
       createAgentHelpPath,
+      designatedAsCsp: parseBoolean(designatedAsCsp),
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),
       enabledExperiments,
       globalGroupApproversEnabled: parseBoolean(globalGroupApproversEnabled),
