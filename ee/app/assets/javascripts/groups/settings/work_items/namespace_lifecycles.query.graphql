@@ -27,6 +27,7 @@ query getNamespaceLifecycles($fullPath: ID!) {
           name
           iconName
           color
+          description
         }
       }
     }

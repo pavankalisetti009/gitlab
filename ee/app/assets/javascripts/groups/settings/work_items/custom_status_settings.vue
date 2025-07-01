@@ -3,10 +3,11 @@ import { GlAlert, GlButton, GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
+import StatusModal from './status_modal.vue';
 import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
 
 export default {
-  components: { GlAlert, GlButton, GlIcon, WorkItemStatusBadge },
+  components: { GlAlert, GlButton, GlIcon, StatusModal, WorkItemStatusBadge },
   props: {
     fullPath: {
       type: String,
@@ -18,6 +19,7 @@ export default {
       lifecycles: [],
       errorText: '',
       errorDetail: '',
+      selectedLifecycleId: null,
     };
   },
   apollo: {
@@ -38,10 +40,24 @@ export default {
       },
     },
   },
+  computed: {
+    selectedLifecycle() {
+      return this.lifecycles.find((lifecycle) => lifecycle.id === this.selectedLifecycleId);
+    },
+  },
   methods: {
     dismissAlert() {
       this.errorText = '';
       this.errorDetail = '';
+    },
+    openStatusModal(lifecycleId) {
+      this.selectedLifecycleId = lifecycleId;
+    },
+    closeModal() {
+      this.selectedLifecycleId = null;
+    },
+    handleLifecycleUpdate() {
+      this.$apollo.queries.lifecycles.refetch();
     },
   },
 };
@@ -94,7 +110,19 @@ export default {
           <work-item-status-badge :key="status.id" :item="status" />
         </div>
       </div>
-      <gl-button size="small">{{ s__('WorkItem|Edit statuses') }}</gl-button>
+
+      <gl-button size="small" @click="openStatusModal(lifecycle.id)">{{
+        s__('WorkItem|Edit statuses')
+      }}</gl-button>
     </div>
+
+    <status-modal
+      v-if="selectedLifecycle"
+      :visible="Boolean(selectedLifecycleId)"
+      :lifecycle="selectedLifecycle"
+      :full-path="fullPath"
+      @close="closeModal"
+      @lifecycle-updated="handleLifecycleUpdate"
+    />
   </div>
 </template>
