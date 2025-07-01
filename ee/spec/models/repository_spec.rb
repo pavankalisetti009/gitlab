@@ -215,8 +215,8 @@ RSpec.describe Repository, feature_category: :source_code_management do
     it 'requests the CODOWNER blobs in batch in the correct order' do
       expect(repository).to receive(:blobs_at)
                               .with([%w[master CODEOWNERS],
-                                     %w[master docs/CODEOWNERS],
-                                     %w[master .gitlab/CODEOWNERS]])
+                                %w[master docs/CODEOWNERS],
+                                %w[master .gitlab/CODEOWNERS]])
                               .and_call_original
 
       repository.code_owners_blob(ref: 'master')
@@ -432,17 +432,17 @@ RSpec.describe Repository, feature_category: :source_code_management do
     let(:expected_params) do
       [
         user, # user
-       'master', # branch_name
-       'commit message', # commit_message
-       [], # actions
-       'author email', # author_email
-       'author name', # author_name
-       nil, # start_branch_name
-       nil, # start_repository
-       true, # force
-       nil, # start_sha
-       expected_sign, # sign
-       target_sha # target_sha
+        'master', # branch_name
+        'commit message', # commit_message
+        [], # actions
+        'author email', # author_email
+        'author name', # author_name
+        nil, # start_branch_name
+        nil, # start_repository
+        true, # force
+        nil, # start_sha
+        expected_sign, # sign
+        target_sha # target_sha
       ]
     end
 

@@ -3587,14 +3587,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
       it 'returns the projects matching the paths' do
         projects = described_class.where_full_path_in([project1.full_path,
-                                                       project2.full_path])
+          project2.full_path])
 
         expect(projects).to contain_exactly(project1, project2)
       end
 
       it 'returns projects regardless of the casing of paths' do
         projects = described_class.where_full_path_in([project1.full_path.upcase,
-                                                       project2.full_path.upcase])
+          project2.full_path.upcase])
 
         expect(projects).to contain_exactly(project1, project2)
       end

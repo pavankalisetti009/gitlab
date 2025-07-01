@@ -51,17 +51,17 @@ RSpec.describe Resolvers::Analytics::ContributionAnalytics::ContributionsResolve
               push: 1,
               total_events: 2
             },
-                                        {
-                                          user: another_user,
-                                          issues_closed: 0,
-                                          issues_created: 0,
-                                          merge_requests_approved: 0,
-                                          merge_requests_closed: 0,
-                                          merge_requests_created: 0,
-                                          merge_requests_merged: 0,
-                                          push: 1,
-                                          total_events: 1
-                                        }
+            {
+              user: another_user,
+              issues_closed: 0,
+              issues_created: 0,
+              merge_requests_approved: 0,
+              merge_requests_closed: 0,
+              merge_requests_created: 0,
+              merge_requests_merged: 0,
+              push: 1,
+              total_events: 1
+            }
           ])
         end
 

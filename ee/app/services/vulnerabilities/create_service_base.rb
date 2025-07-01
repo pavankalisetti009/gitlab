@@ -44,12 +44,12 @@ module Vulnerabilities
       attributes = vulnerability_hash
         .slice(*%i[
           description
-                 state
-                 severity
-                 detected_at
-                 confirmed_at
-                 resolved_at
-                 dismissed_at
+          state
+          severity
+          detected_at
+          confirmed_at
+          resolved_at
+          dismissed_at
         ])
         .merge(
           project: @project,

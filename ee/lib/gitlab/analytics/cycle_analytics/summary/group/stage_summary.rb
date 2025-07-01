@@ -16,8 +16,8 @@ module Gitlab
 
             def data
               [issue_stats,
-               deploy_stats,
-               deployment_frequency_stats]
+                deploy_stats,
+                deployment_frequency_stats]
             end
 
             private

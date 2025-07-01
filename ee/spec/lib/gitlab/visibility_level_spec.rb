@@ -9,8 +9,8 @@ RSpec.describe Gitlab::VisibilityLevel do
 
       expect(described_class.levels_for_user(user))
         .to eq([Gitlab::VisibilityLevel::PRIVATE,
-                Gitlab::VisibilityLevel::INTERNAL,
-                Gitlab::VisibilityLevel::PUBLIC])
+          Gitlab::VisibilityLevel::INTERNAL,
+          Gitlab::VisibilityLevel::PUBLIC])
     end
   end
 end
