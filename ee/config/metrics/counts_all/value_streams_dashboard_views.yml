@@ -1,12 +1,14 @@
 ---
-key_path: analytics_counts_visits.value_streams_dashboard_views_weekly
-description: 'Total number of weekly visits to value stream dashboards page'
+key_path: analytics_counts_visits.value_streams_dashboard_views
+description: Total number of visits to value stream dashboards page
 product_group: optimize
 value_type: number
 status: removed
 milestone: "16.0"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119807
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis
 data_category: optional
 instrumentation_class: RedisMetric
