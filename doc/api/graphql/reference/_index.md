@@ -12191,6 +12191,31 @@ Input type: `UpdatePackagesProtectionRuleInput`
 | <a id="mutationupdatepackagesprotectionruleerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationupdatepackagesprotectionrulepackageprotectionrule"></a>`packageProtectionRule` | [`PackagesProtectionRule`](#packagesprotectionrule) | Packages protection rule after mutation. |
 
+### `Mutation.updateProjectComplianceViolation`
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `UpdateProjectComplianceViolationInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationupdateprojectcomplianceviolationclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationupdateprojectcomplianceviolationid"></a>`id` | [`ComplianceManagementProjectsComplianceViolationID!`](#compliancemanagementprojectscomplianceviolationid) | Global ID of the project compliance violation to update. |
+| <a id="mutationupdateprojectcomplianceviolationstatus"></a>`status` | [`ComplianceViolationStatus!`](#complianceviolationstatus) | New status for the project compliance violation. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationupdateprojectcomplianceviolationclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationupdateprojectcomplianceviolationcomplianceviolation"></a>`complianceViolation` | [`ProjectComplianceViolation`](#projectcomplianceviolation) | Compliance violation after status update. |
+| <a id="mutationupdateprojectcomplianceviolationerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+
 ### `Mutation.updateRequirement`
 
 Input type: `UpdateRequirementInput`
