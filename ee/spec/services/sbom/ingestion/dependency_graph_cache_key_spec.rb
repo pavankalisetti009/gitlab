@@ -12,10 +12,10 @@ RSpec.describe Sbom::Ingestion::DependencyGraphCacheKey, feature_category: :depe
     let(:expected_cache_key) do
       components = sbom_report.components
         .sort_by(&:ref)
-        .map { |c| c.ref.to_s + c.ancestors.reject(&:empty?).map { |a| a[:name] + a[:version] }.join }
+        .map(&:ref)
         .join
 
-      OpenSSL::Digest::SHA256.hexdigest(project.id.to_s + components)
+      "dependency-graph_#{project.id}_#{OpenSSL::Digest::SHA256.hexdigest(components)}"
     end
 
     it 'generates a cache key based on project ID and sorted components' do
@@ -24,10 +24,6 @@ RSpec.describe Sbom::Ingestion::DependencyGraphCacheKey, feature_category: :depe
 
     it 'returns a string' do
       expect(cache_key_service.key).to be_a(String)
-    end
-
-    it 'returns a 64-character hexadecimal string (SHA256)' do
-      expect(cache_key_service.key).to match(/\A[a-f0-9]{64}\z/)
     end
 
     context 'with memoization' do
@@ -70,76 +66,6 @@ RSpec.describe Sbom::Ingestion::DependencyGraphCacheKey, feature_category: :depe
 
       it 'generates the same cache key for identical inputs' do
         expect(cache_key_service.key).to eq(duplicate_cache_key_service.key)
-      end
-    end
-
-    context 'when only the ancestors differ' do
-      let_it_be(:component1) do
-        build(:ci_reports_sbom_component,
-          ref: 'component-with-deps',
-          name: 'test-component',
-          version: '1.0.0',
-          ancestors: [
-            { name: 'parent1', version: '2.0.0' },
-            { name: 'parent2', version: '3.0.0' }
-          ])
-      end
-
-      let_it_be(:component2) do
-        build(:ci_reports_sbom_component,
-          ref: 'component-with-deps',
-          name: 'test-component',
-          version: '1.0.0',
-          ancestors: [
-            { name: 'parent3', version: '4.0.0' },
-            { name: 'parent4', version: '5.0.0' }
-          ])
-      end
-
-      let_it_be(:report1) do
-        report = create(:ci_reports_sbom_report, num_components: 0)
-        report.add_component(component1)
-        report
-      end
-
-      let_it_be(:report2) do
-        report = create(:ci_reports_sbom_report, num_components: 0)
-        report.add_component(component2)
-        report
-      end
-
-      it 'generates the same cache keys' do
-        service1 = described_class.new(project, report1)
-        service2 = described_class.new(project, report2)
-        expect(service1.key).to eq(service2.key)
-      end
-    end
-
-    context 'when only the version differs' do
-      let_it_be(:component1) do
-        build(:ci_reports_sbom_component, ref: 'component-with-deps', name: 'test-component', version: '1.0.0')
-      end
-
-      let_it_be(:component2) do
-        build(:ci_reports_sbom_component, ref: 'component-with-deps', name: 'test-component', version: '2.0.0')
-      end
-
-      let_it_be(:report1) do
-        report = create(:ci_reports_sbom_report, num_components: 0)
-        report.add_component(component1)
-        report
-      end
-
-      let_it_be(:report2) do
-        report = create(:ci_reports_sbom_report, num_components: 0)
-        report.add_component(component2)
-        report
-      end
-
-      it 'generates the same cache keys' do
-        service1 = described_class.new(project, report1)
-        service2 = described_class.new(project, report2)
-        expect(service1.key).to eq(service2.key)
       end
     end
 

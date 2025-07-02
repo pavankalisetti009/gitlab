@@ -4,7 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependency_management do
   let_it_be(:num_components) { 283 }
-  let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :public, group: group) }
+  let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
   let_it_be(:sbom_report) { create(:ci_reports_sbom_report, num_components: num_components) }
 
   let(:sequencer) { ::Ingestion::Sequencer.new }
@@ -57,56 +59,81 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
       end
     end
 
-    context 'when the same report is ingested again' do
+    context 'when this report has already been ingested' do
       let(:graph_cache_key) { instance_double(Sbom::Ingestion::DependencyGraphCacheKey, key: "key_value") }
 
-      it 'only generates the graph once' do
-        expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(pipeline.project_id).once
+      before do
+        allow(Rails.cache)
+          .to receive(:read)
+          .with("key_value")
+          .and_return({ pipeline_id: pipeline.id })
+
         allow(Sbom::Ingestion::DependencyGraphCacheKey)
           .to receive(:new)
           .with(pipeline.project, sbom_report)
           .and_return(graph_cache_key)
+      end
 
-        expect(Rails.cache)
-          .to receive(:write)
-          .with("key_value", { pipeline_id: pipeline.id }, expires_in: 24.hours)
-          .once
-
+      it 'does not recreate the graph' do
+        expect(::Sbom::BuildDependencyGraphWorker).not_to receive(:perform_async)
         execute
+      end
+
+      it 'does not update the cache' do
+        expect(Rails.cache).not_to receive(:write)
+        execute
+      end
+
+      it 'logs the expected message' do
+        expect(::Gitlab::AppLogger).to receive(:info).with(
+          message: "Graph already built",
+          project: project.name,
+          project_id: project.id,
+          namespace: project.group.name,
+          namespace_id: project.group.id,
+          cache_key: graph_cache_key.key
+        )
         execute
       end
     end
 
-    context 'when two different reports are ingested' do
-      let_it_be(:pipeline_2) { build_stubbed(:ci_pipeline) }
-      let_it_be(:sbom_report_2) { create(:ci_reports_sbom_report, num_components: num_components + 1) }
+    context 'when this report has not been ingested' do
+      let(:graph_cache_key) { instance_double(Sbom::Ingestion::DependencyGraphCacheKey, key: "key_value") }
 
-      let(:graph_cache_key_1) { instance_double(Sbom::Ingestion::DependencyGraphCacheKey, key: "key_value_1") }
-      let(:graph_cache_key_2) { instance_double(Sbom::Ingestion::DependencyGraphCacheKey, key: "key_value_2") }
+      before do
+        allow(Rails.cache)
+          .to receive(:read)
+          .with("key_value")
+          .and_return(nil)
 
-      it 'builds the graph once for each report' do
-        expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(pipeline.project_id).once
         allow(Sbom::Ingestion::DependencyGraphCacheKey)
           .to receive(:new)
           .with(pipeline.project, sbom_report)
-          .and_return(graph_cache_key_1)
+          .and_return(graph_cache_key)
+      end
+
+      it 'recreates the graph' do
+        expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(project.id)
+        execute
+      end
+
+      it 'updates the cache' do
         expect(Rails.cache)
           .to receive(:write)
-          .with("key_value_1", { pipeline_id: pipeline.id }, expires_in: 24.hours)
-          .once
+          .with(graph_cache_key.key, { pipeline_id: pipeline.id }, expires_in: described_class::CACHE_EXPIRATION_TIME)
+        execute
+      end
 
-        expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(pipeline_2.project_id).once
-        allow(Sbom::Ingestion::DependencyGraphCacheKey)
-          .to receive(:new)
-          .with(pipeline_2.project, sbom_report_2)
-          .and_return(graph_cache_key_2)
-        expect(Rails.cache)
-          .to receive(:write)
-          .with("key_value_2", { pipeline_id: pipeline_2.id }, expires_in: 24.hours)
-          .once
-
-        described_class.execute(pipeline, sbom_report)
-        described_class.execute(pipeline_2, sbom_report_2)
+      it 'logs the expected message' do
+        expect(::Gitlab::AppLogger).to receive(:info).with(
+          message: "Building dependency graph",
+          project: project.name,
+          project_id: project.id,
+          namespace: project.group.name,
+          namespace_id: project.group.id,
+          cache_key: graph_cache_key.key
+        )
+        execute
       end
     end
   end

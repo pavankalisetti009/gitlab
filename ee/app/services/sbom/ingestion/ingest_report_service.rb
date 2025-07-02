@@ -40,16 +40,39 @@ module Sbom
       def build_dependency_graph
         return unless Feature.enabled?(:dependency_paths, project.group)
 
+        if graph_needs_update?
+          log_info("Building dependency graph")
+
+          record_graph_updated
+
+          ::Sbom::BuildDependencyGraphWorker.perform_async(project.id)
+        else
+          log_info("Graph already built")
+        end
+      end
+
+      def graph_needs_update?
         # The cache key contains a hash of the report contents. If the cache key is present
         # in the store, we skip building the dependency graph since it has already been built
         # (or is currently being built by another process)
-        return if Rails.cache.read(cache_key)
+        Rails.cache.read(cache_key).nil?
+      end
 
+      def record_graph_updated
         # Write cache key before processing the graph so that we stop other graph builds
         # from starting in parallel before this one completes.
         Rails.cache.write(cache_key, { pipeline_id: pipeline.id }, expires_in: CACHE_EXPIRATION_TIME)
+      end
 
-        ::Sbom::BuildDependencyGraphWorker.perform_async(project.id)
+      def log_info(message)
+        ::Gitlab::AppLogger.info(
+          message: message,
+          project: project.name,
+          project_id: project.id,
+          namespace: project.group.name,
+          namespace_id: project.group.id,
+          cache_key: cache_key.to_s
+        )
       end
 
       def cache_key

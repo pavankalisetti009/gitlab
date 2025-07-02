@@ -15,9 +15,10 @@ module Sbom
 
         components = sbom_report.components
           .sort_by(&:ref)
-          .reduce("") { |agg, component| agg + component.ref }
+          .map(&:ref)
+          .join
 
-        @cache_key ||= OpenSSL::Digest::SHA256.hexdigest(project.id.to_s + components)
+        @cache_key ||= "dependency-graph_#{project.id}_#{OpenSSL::Digest::SHA256.hexdigest(components)}"
       end
     end
   end

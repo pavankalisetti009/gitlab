@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :dependency_management do
-  let_it_be(:pipeline) { create(:ci_pipeline) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :public, group: group) }
+  let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
   let_it_be(:reports) { create_list(:ci_reports_sbom_report, 4) }
 
   let(:wrapper) { instance_double('Gitlab::Ci::Reports::Sbom::Reports') }
