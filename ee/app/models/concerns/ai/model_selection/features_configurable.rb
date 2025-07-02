@@ -32,8 +32,7 @@ module Ai
 
       FEATURES_UNDER_FLAGS = {
         summarize_review: :summarize_my_code_review,
-        summarize_new_merge_request: :add_ai_summary_for_new_mr,
-        review_merge_request: :prompt_migration_review_merge_request
+        summarize_new_merge_request: :add_ai_summary_for_new_mr
       }.freeze
       # Keys are :feature enum values
       # Values are the names of the Feature Flags used to enable the features
