@@ -33,7 +33,7 @@ export default {
   protectedEnvironmentsPath: '/api/:version/:entity_type/:id/protected_environments/',
   mrStatusCheckRetryPath:
     '/api/:version/projects/:id/merge_requests/:merge_request_iid/status_checks/:external_status_check_id/retry',
-  policySettings: '/api/:version/admin/security/policy_settings',
+  compliancePolicySettings: '/api/:version/admin/security/compliance_policy_settings',
   protectedEnvironmentPath: '/api/:version/:entity_type/:id/protected_environments/:name',
   aiCompletionsPath: '/api/:version/ai/experimentation/openai/completions',
   aiEmbeddingsPath: '/api/:version/ai/experimentation/openai/embeddings',
@@ -254,8 +254,8 @@ export default {
     return this.deploymentApproval({ id, deploymentId, approve: false, representedAs, comment });
   },
 
-  updatePolicySettings(settings) {
-    const url = Api.buildUrl(this.policySettings);
+  updateCompliancePolicySettings(settings) {
+    const url = Api.buildUrl(this.compliancePolicySettings);
     return axios.put(url, settings);
   },
 

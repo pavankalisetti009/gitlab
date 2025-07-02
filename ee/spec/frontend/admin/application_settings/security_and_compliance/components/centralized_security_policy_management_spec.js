@@ -76,7 +76,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
   });
 
   afterEach(() => {
-    Api.updatePolicySettings.mockReset();
+    Api.updateCompliancePolicySettings.mockReset();
   });
 
   describe('rendering', () => {
@@ -210,7 +210,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
 
   describe('save functionality', () => {
     beforeEach(() => {
-      Api.updatePolicySettings.mockResolvedValue({});
+      Api.updateCompliancePolicySettings.mockResolvedValue({});
     });
 
     it('calls API and submits form when save button is clicked with selected group', async () => {
@@ -224,7 +224,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
       findSaveButton().vm.$emit('click');
       await nextTick();
 
-      expect(Api.updatePolicySettings).toHaveBeenCalledWith({
+      expect(Api.updateCompliancePolicySettings).toHaveBeenCalledWith({
         csp_namespace_id: 1,
       });
     });
@@ -238,7 +238,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
       await nextTick();
 
       // Mock a pending API call
-      Api.updatePolicySettings.mockImplementation(() => new Promise(() => {}));
+      Api.updateCompliancePolicySettings.mockImplementation(() => new Promise(() => {}));
 
       findSaveButton().vm.$emit('click');
       await nextTick();
@@ -250,7 +250,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
 
   describe('unassign functionality', () => {
     beforeEach(() => {
-      Api.updatePolicySettings.mockResolvedValue({});
+      Api.updateCompliancePolicySettings.mockResolvedValue({});
     });
 
     it('calls API with null when unassign button is clicked', async () => {
@@ -260,7 +260,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
       findUnassignButton().vm.$emit('click');
       await nextTick();
 
-      expect(Api.updatePolicySettings).toHaveBeenCalledWith({
+      expect(Api.updateCompliancePolicySettings).toHaveBeenCalledWith({
         csp_namespace_id: null,
       });
     });

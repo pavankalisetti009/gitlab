@@ -127,7 +127,7 @@ export default {
     async assignGroup(groupId) {
       this.saving = true;
       try {
-        await Api.updatePolicySettings({
+        await Api.updateCompliancePolicySettings({
           csp_namespace_id: groupId,
         });
         document.getElementById(this.formId).submit();
