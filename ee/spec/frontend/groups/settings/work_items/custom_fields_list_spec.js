@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 import { GlBadge } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
 import CustomFieldsTable from 'ee/groups/settings/work_items/custom_fields_list.vue';
@@ -62,6 +63,7 @@ describe('CustomFieldsTable', () => {
     },
   });
 
+  const findHelpLink = () => wrapper.findComponent(HelpPageLink);
   const findTableItems = () => wrapper.findAll('tbody tr');
   const findEditButton = () => wrapper.find('[data-testid="editButton"]');
   const findArchiveButton = () => wrapper.find('[data-testid="archiveButton"]');
@@ -109,6 +111,14 @@ describe('CustomFieldsTable', () => {
       stubs: { GlIntersperse: true },
     });
   };
+
+  it('renders title and help link', () => {
+    createComponent();
+
+    expect(wrapper.find('h2').text()).toBe('Custom fields');
+    expect(findHelpLink().props('href')).toBe('user/work_items/custom_fields');
+    expect(findHelpLink().text()).toBe('How do I use custom fields?');
+  });
 
   describe('fields loaded', () => {
     beforeEach(() => {
