@@ -320,6 +320,8 @@ module EE
         mount_mutation ::Mutations::WorkItems::Lifecycles::Update, experiment: { milestone: '18.1' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreateMutation,
           experiment: { milestone: '18.2' }
+        mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::Update,
+          experiment: { milestone: '18.2' }
 
         prepend(Types::DeprecatedMutations)
       end
