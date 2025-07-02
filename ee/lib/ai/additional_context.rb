@@ -28,6 +28,7 @@ module Ai
       dependency: 'dependency',
       local_git: 'local_git',
       terminal: 'terminal',
+      user_rule: 'user_rule',
       repository: 'repository'
     }.freeze
 
