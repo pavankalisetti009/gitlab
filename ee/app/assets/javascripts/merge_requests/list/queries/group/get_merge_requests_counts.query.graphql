@@ -1,6 +1,7 @@
 query getGroupMergeRequestsCountEE(
   $fullPath: ID!
   $search: String
+  $in: [IssuableSearchableField!]
   $approvedBy: [String!]
   $approver: [String!]
   $assigneeUsernames: String
@@ -28,6 +29,7 @@ query getGroupMergeRequestsCountEE(
     openedMergeRequests: mergeRequests(
       state: opened
       search: $search
+      in: $in
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
@@ -56,6 +58,7 @@ query getGroupMergeRequestsCountEE(
     mergedMergeRequests: mergeRequests(
       state: merged
       search: $search
+      in: $in
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
@@ -84,6 +87,7 @@ query getGroupMergeRequestsCountEE(
     closedMergeRequests: mergeRequests(
       state: closed
       search: $search
+      in: $in
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
@@ -112,6 +116,7 @@ query getGroupMergeRequestsCountEE(
     allMergeRequests: mergeRequests(
       state: all
       search: $search
+      in: $in
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames

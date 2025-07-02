@@ -8,6 +8,7 @@ query getProjectMergeRequestsEE(
   $sort: MergeRequestSort
   $state: MergeRequestState
   $search: String
+  $in: [IssuableSearchableField!]
   $approvedBy: [String!]
   $approver: [String!]
   $assigneeUsernames: String
@@ -40,6 +41,7 @@ query getProjectMergeRequestsEE(
       sort: $sort
       state: $state
       search: $search
+      in: $in
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
