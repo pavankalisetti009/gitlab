@@ -22,7 +22,11 @@ class Groups::SsoController < Groups::ApplicationController
   urgency :low
 
   def saml
-    @redirect_path = safe_redirect_path(params[:redirect]) || group_path(unauthenticated_group)
+    session_redirect = if ::Feature.enabled?(:ff_oauth_redirect_to_sso_login, group.root_ancestor)
+                         session[:user_return_to]
+                       end
+
+    @redirect_path = session_redirect || safe_redirect_path(params[:redirect]) || group_path(unauthenticated_group)
     @group_path = unauthenticated_group.path
     @group_name = unauthenticated_group.full_name
     @group_saml_identity = linked_identity
