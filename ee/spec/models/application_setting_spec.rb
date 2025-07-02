@@ -673,6 +673,42 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           expect(setting.valid?).to eq(is_valid)
         end
       end
+
+      context 'when outbound requests are blocked except for allowlist' do
+        let(:blocked_domain_url) { 'http://blocked-domain.com' }
+        let(:allowed_domain_url) { 'http://allowed-domain.com' }
+        let(:allow_list) { ['allowed-domain.com'] }
+
+        before do
+          stub_application_setting(outbound_local_requests_whitelist: allow_list)
+          stub_application_setting(diagramsnet_enabled: false)
+          stub_application_setting(update_runner_versions_enabled: false)
+          stub_application_setting(help_page_documentation_base_url: '')
+          stub_application_setting(deny_all_requests_except_allowed: true)
+        end
+
+        it 'fails validation when elasticsearch_url is not in the outbound local requests allowlist' do
+          setting.elasticsearch_url = blocked_domain_url
+
+          expect(setting).not_to be_valid
+          expect(setting.errors[:elasticsearch_url]).to include('only supports valid HTTP(S) URLs.')
+        end
+
+        it 'passes validation when elasticsearch_url is in the outbound local requests allowlist' do
+          setting.elasticsearch_url = allowed_domain_url
+
+          expect(setting).to be_valid
+        end
+
+        it 'verifies that UrlBlocker.validate! is called with the correct allowlist parameter' do
+          setting.elasticsearch_url = allowed_domain_url
+          expect(Gitlab::HTTP_V2::UrlBlocker)
+            .to receive(:validate!)
+            .with(URI.parse(allowed_domain_url), anything)
+
+          setting.validate
+        end
+      end
     end
 
     context 'for Sentry', feature_category: :observability do

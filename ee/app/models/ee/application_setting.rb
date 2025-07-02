@@ -754,7 +754,8 @@ module EE
           schemes: %w[http https],
           allow_localhost: true,
           dns_rebind_protection: false,
-          deny_all_requests_except_allowed: deny_all_requests_except_allowed?)
+          deny_all_requests_except_allowed: deny_all_requests_except_allowed?,
+          outbound_local_requests_allowlist: outbound_local_requests_whitelist) # rubocop:disable Naming/InclusiveLanguage -- existing setting
       end
     rescue ::Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError
       errors.add(:elasticsearch_url, "only supports valid HTTP(S) URLs.")
