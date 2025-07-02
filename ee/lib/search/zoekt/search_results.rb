@@ -13,16 +13,17 @@ module Search
 
       attr_accessor :file_count
 
-      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes,
+      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes, :source,
         :search_level, :projects, :node_id, :multi_match
 
       # rubocop: disable Metrics/ParameterLists -- Might consider to refactor later
       def initialize(
-        current_user, query, projects, search_level:, node_id: nil, order_by: nil, sort: nil,
-        multi_match_enabled: false, chunk_count: nil, filters: {}, modes: {})
+        current_user, query, projects, search_level:, multi_match_enabled: false, node_id: nil, source: nil,
+        order_by: nil, sort: nil, chunk_count: nil, filters: {}, modes: {})
         @current_user = current_user
         @query = query
         @search_level = search_level
+        @source = source&.to_sym
         @filters = filters
         @projects = filtered_projects(projects)
         @node_id = node_id
@@ -155,7 +156,8 @@ module Search
                        num: ZOEKT_COUNT_LIMIT,
                        node_id: node_id,
                        project_ids: limit_project_ids,
-                       search_mode: search_mode
+                       search_mode: search_mode,
+                       source: source
                      )
                    else
                      ::Gitlab::Search::Zoekt::Client.search_zoekt_proxy(
@@ -163,7 +165,8 @@ module Search
                        num: ZOEKT_COUNT_LIMIT,
                        targets: zoekt_targets,
                        search_mode: search_mode,
-                       current_user: current_user
+                       current_user: current_user,
+                       source: source
                      )
                    end
 
@@ -282,6 +285,8 @@ module Search
       end
 
       def search_mode
+        return :regex if modes[:regex].nil? && source == :api
+
         Gitlab::Utils.to_boolean(modes[:regex]) ? :regex : :exact
       end
 

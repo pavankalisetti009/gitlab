@@ -540,20 +540,9 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           zoekt_ensure_project_indexed!(project)
         end
 
-        context 'when all the replicas are in ready state' do
+        it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 9 do
           before do
-            group.zoekt_enabled_namespace.replicas.update_all(state: :ready)
-          end
-
-          it 'sets group search information for logging' do
-            expect(Gitlab::Instrumentation::GlobalSearchApi).to receive(:set_information).with(
-              type: 'zoekt',
-              level: 'group',
-              scope: 'blobs',
-              search_duration_s: a_kind_of(Numeric)
-            )
-
-            get api(endpoint, user), params: { scope: 'blobs', search: 'folder' }
+            get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
           end
         end
 
@@ -561,11 +550,11 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           before do
             project.repository.index_commits_and_blobs
             ensure_elasticsearch_index!
+            stub_feature_flags(zoekt_search_api: false)
           end
 
           it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 3 do
             before do
-              stub_feature_flags(zoekt_search_api: false) # We will decide for APIs later during rolling out
               get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
             end
           end

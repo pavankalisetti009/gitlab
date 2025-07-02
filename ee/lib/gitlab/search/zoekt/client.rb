@@ -18,15 +18,16 @@ module Gitlab
           delegate :search, :search_zoekt_proxy, to: :instance
         end
 
-        def search(query, num:, project_ids:, node_id:, search_mode:)
+        def search(query, num:, project_ids:, node_id:, search_mode:, source: nil)
           start = Time.current
 
-          # Safety net because Zoekt will match all projects if you provide
-          # an empty array.
+          # Safety net because Zoekt will match all projects if you provide an empty array.
           raise 'Not possible to search without at least one project specified' if project_ids.blank?
           raise 'Global search is not supported' if project_ids == :any
 
-          payload = build_search_payload(query, num: num, search_mode: search_mode, project_ids: project_ids)
+          payload = build_search_payload(
+            query, source: source, num: num, search_mode: search_mode, project_ids: project_ids
+          )
 
           path = '/api/search'
           target_node = node(node_id)
@@ -41,18 +42,17 @@ module Gitlab
           add_request_details(start_time: start, path: path, body: payload)
         end
 
-        def search_zoekt_proxy(query, num:, targets:, search_mode:, current_user: nil)
+        def search_zoekt_proxy(query, num:, targets:, search_mode:, source: nil, current_user: nil)
           start = Time.current
-
           if use_ast_search_payload?(current_user)
             payload = ::Search::Zoekt::SearchRequest.new(
-              query: format_query(query, search_mode: search_mode),
+              query: format_query(query, source: source, search_mode: search_mode),
               targets: targets,
               num_context_lines: CONTEXT_LINES_COUNT,
               max_line_match_results: num
             ).as_json
           else
-            payload = build_search_payload(query, num: num, search_mode: search_mode)
+            payload = build_search_payload(query, source: source, num: num, search_mode: search_mode)
             payload[:ForwardTo] = targets.map do |node_id, project_ids|
               target_node = node(node_id)
               { Endpoint: target_node.search_base_url, RepoIds: project_ids }
@@ -103,9 +103,9 @@ module Gitlab
           }.compact
         end
 
-        def build_search_payload(query, num:, search_mode:, project_ids: nil)
+        def build_search_payload(query, num:, search_mode:, source:, project_ids: nil)
           {
-            Q: format_query(query, search_mode: search_mode),
+            Q: format_query(query, source: source, search_mode: search_mode),
             Opts: {
               TotalMaxMatchCount: num,
               NumContextLines: CONTEXT_LINES_COUNT
@@ -184,15 +184,8 @@ module Gitlab
           Gitlab.dev_or_test_env? && Gitlab::Utils.to_boolean(ENV['ZOEKT_CLIENT_DEBUG'])
         end
 
-        def format_query(query, search_mode:)
-          case search_mode.to_sym
-          when :exact
-            ::Search::Zoekt::Query.new(query).exact_search_query
-          when :regex
-            query
-          else
-            raise ArgumentError, 'Not a valid search_mode'
-          end
+        def format_query(query, source:, search_mode:)
+          ::Search::Zoekt::Query.new(query, source: source).formatted_query(search_mode)
         end
 
         def use_ast_search_payload?(current_user)

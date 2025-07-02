@@ -65,6 +65,7 @@ module Search
         params[:search],
         zoekt_projects,
         search_level: search_level,
+        source: params[:source],
         node_id: zoekt_node_id,
         order_by: params[:order_by],
         sort: params[:sort],
