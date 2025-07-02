@@ -123,6 +123,87 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
           end
         end
 
+        context 'when updating status' do
+          let(:widget_arguments) do
+            {
+              'stateEvent' => 'CLOSE'
+            }
+          end
+
+          it 'closes all work items' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.reload.state }.from("opened").to("closed")
+                .and change { work_item2.reload.state }.from("opened").to("closed")
+                .and change { epic.reload.state }.from("opened").to("closed")
+                .and not_change { work_item3.reload.state }.from("opened")
+                .and not_change { work_item4.reload.state }.from("opened")
+
+            expect(mutation_response).to include(
+              'updatedWorkItemCount' => 3
+            )
+          end
+        end
+
+        context "when updating subscription" do
+          let(:widget_arguments) do
+            {
+              'subscriptionEvent' => 'SUBSCRIBE'
+            }
+          end
+
+          it 'subscribes current user to all work items in the group hierarchy' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.subscriptions.where(user: current_user, subscribed: true).count }.by(1)
+              .and change { work_item2.subscriptions.where(user: current_user, subscribed: true).count }.by(1)
+              .and change { epic.subscriptions.where(user: current_user, subscribed: true).count }.by(1)
+
+            expect(mutation_response).to include(
+              'updatedWorkItemCount' => 3
+            )
+
+            expect(work_item3.reload.subscriptions.where(user: current_user, subscribed: true)).not_to exist
+            expect(work_item4.reload.subscriptions.where(user: current_user, subscribed: true)).not_to exist
+          end
+
+          context 'when unsubscribing' do
+            before do
+              work_item1.subscribe(current_user, project)
+              work_item2.subscribe(current_user, project)
+              epic.subscribe(current_user, project)
+            end
+
+            let(:widget_arguments) do
+              {
+                'subscriptionEvent' => 'UNSUBSCRIBE'
+              }
+            end
+
+            it 'unsubscribes current user from all work items in the group hierarchy' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change {
+                       work_item1.subscriptions.where(user: current_user, subscribed: true).exists?
+                     }.from(true).to(false)
+                .and change {
+                       work_item2.subscriptions.where(user: current_user, subscribed: true).exists?
+                     }.from(true).to(false)
+                .and change {
+                       epic.subscriptions.where(user: current_user, subscribed: true).exists?
+                     }.from(true).to(false)
+
+              expect(mutation_response).to include(
+                'updatedWorkItemCount' => 3
+              )
+
+              # Verify that work items outside the group hierarchy are not affected
+              expect(work_item3.reload.subscriptions.where(user: current_user, subscribed: true)).not_to exist
+              expect(work_item4.reload.subscriptions.where(user: current_user, subscribed: true)).not_to exist
+            end
+          end
+        end
+
         context 'when updating assignees widget' do
           let_it_be(:assignee1) { create(:user, developer_of: group) }
           let_it_be(:assignee2) { create(:user, developer_of: group) }
