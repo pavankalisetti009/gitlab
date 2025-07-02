@@ -167,6 +167,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyBranchesService, f
 
   describe '#scan_execution_branches' do
     let_it_be(:service) { described_class.new(project: project) }
+    let(:source_branch) { nil }
 
     subject(:scan_execution_branches) { service.scan_execution_branches(rules, source_branch) }
 
@@ -293,6 +294,32 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyBranchesService, f
         context 'when there is no merge request created from that branch' do
           it { is_expected.to be_empty }
         end
+      end
+    end
+
+    where(:branch_type, :tracked_branch_type) do
+      'target_default'   | 'target_default'
+      'target_protected' | 'target_protected'
+      'default'          | 'default'
+      'protected'        | 'protected'
+      'all'              | 'all'
+      nil                | 'custom'
+      ''                 | 'custom'
+    end
+
+    with_them do
+      let(:rules) { [{ branch_type: branch_type }] }
+
+      it "triggers trigger_scan_execution_policy_by_branch_type event" do
+        expect { scan_execution_branches }
+          .to trigger_internal_events('trigger_scan_execution_policy_by_branch_type')
+          .with(
+            namespace: project.namespace,
+            project: project,
+            additional_properties: {
+              label: tracked_branch_type
+            }
+          )
       end
     end
   end

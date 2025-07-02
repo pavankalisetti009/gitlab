@@ -4,8 +4,10 @@ module Security
   module SecurityOrchestrationPolicies
     class PolicyBranchesService < BaseProjectService
       include Gitlab::Utils::StrongMemoize
+      include Gitlab::InternalEventsTracking
 
       def scan_execution_branches(rules, source_branch = nil)
+        track_branch_type_for_scan_execution_policies(rules)
         execute(:scan_execution, rules, source_branch)
       end
 
@@ -20,6 +22,19 @@ module Security
       private
 
       delegate :default_branch, to: :project
+
+      def track_branch_type_for_scan_execution_policies(rules)
+        rules.each do |rule|
+          branch_type = rule[:branch_type].presence || 'custom'
+
+          track_internal_event(
+            'trigger_scan_execution_policy_by_branch_type',
+            project: project,
+            additional_properties: {
+              label: branch_type # Branch type setting defined in policy rule
+            })
+        end
+      end
 
       def execute(policy_type, rules, source_branch = nil)
         included_branches(policy_type, rules, source_branch) - excluded_branches(rules)
