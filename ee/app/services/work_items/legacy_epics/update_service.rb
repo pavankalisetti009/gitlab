@@ -18,26 +18,18 @@ module WorkItems
 
         return epic unless can_perform_update?(epic)
 
-        if Feature.enabled?(:epic_update_via_work_item, group)
-          transformed_params, widget_params =
-            ::Gitlab::WorkItems::LegacyEpics::WidgetParamsExtractor.new(params).extract
+        transformed_params, widget_params =
+          ::Gitlab::WorkItems::LegacyEpics::WidgetParamsExtractor.new(params).extract
 
-          service = ::WorkItems::UpdateService.new(
-            container: group,
-            perform_spam_check: perform_spam_check,
-            current_user: current_user,
-            params: transformed_params,
-            widget_params: widget_params
-          )
+        service = ::WorkItems::UpdateService.new(
+          container: group,
+          perform_spam_check: perform_spam_check,
+          current_user: current_user,
+          params: transformed_params,
+          widget_params: widget_params
+        )
 
-          transform_result(service.execute(epic.issue))
-        else
-          ::Epics::UpdateService.new(
-            group: group,
-            current_user: current_user,
-            params: params
-          ).execute(epic)
-        end
+        transform_result(service.execute(epic.issue))
       end
 
       private
