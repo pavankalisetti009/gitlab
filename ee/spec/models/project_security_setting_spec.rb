@@ -51,7 +51,7 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
 
       it 'schedules analyzer status update worker when value changes' do
         expect(Security::AnalyzersStatus::SettingChangedUpdateWorker)
-          .to receive(:perform_async).with([setting.project_id], :container_scanning)
+          .to receive(:perform_async).with([setting.project_id], 'container_scanning')
 
         setting.set_container_scanning_for_registry!(enabled: true)
       end
@@ -91,7 +91,7 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
 
       it 'schedules analyzer status update worker when value changes' do
         expect(Security::AnalyzersStatus::SettingChangedUpdateWorker)
-          .to receive(:perform_async).with([setting.project_id], :secret_detection)
+          .to receive(:perform_async).with([setting.project_id], 'secret_detection')
 
         setting.set_secret_push_protection!(enabled: true)
       end
@@ -129,14 +129,14 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
 
   describe 'after_commit hooks' do
     where(:field, :value_before, :update_value, :worker_scheduled, :type) do
-      :container_scanning_for_registry_enabled | false | true  | true  | :container_scanning
-      :container_scanning_for_registry_enabled | true  | false | true  | :container_scanning
-      :container_scanning_for_registry_enabled | false | false | false | :container_scanning
-      :container_scanning_for_registry_enabled | true  | true  | false | :container_scanning
-      :secret_push_protection_enabled          | false | true  | true  | :secret_detection
-      :secret_push_protection_enabled          | true  | false | true  | :secret_detection
-      :secret_push_protection_enabled          | false | false | false | :secret_detection
-      :secret_push_protection_enabled          | true  | true  | false | :secret_detection
+      :container_scanning_for_registry_enabled | false | true  | true  | 'container_scanning'
+      :container_scanning_for_registry_enabled | true  | false | true  | 'container_scanning'
+      :container_scanning_for_registry_enabled | false | false | false | 'container_scanning'
+      :container_scanning_for_registry_enabled | true  | true  | false | 'container_scanning'
+      :secret_push_protection_enabled          | false | true  | true  | 'secret_detection'
+      :secret_push_protection_enabled          | true  | false | true  | 'secret_detection'
+      :secret_push_protection_enabled          | false | false | false | 'secret_detection'
+      :secret_push_protection_enabled          | true  | true  | false | 'secret_detection'
       # Different field not covered by the hook:
       :validity_checks_enabled                 | true  | false | false | nil
     end
@@ -160,10 +160,10 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
     describe 'when creating a new project' do
       it 'schedules SettingChangedUpdateWorker worker for each analyzer status related type' do
         expect(Security::AnalyzersStatus::SettingChangedUpdateWorker)
-          .to receive(:perform_async).with(anything, :container_scanning)
+          .to receive(:perform_async).with(anything, 'container_scanning')
 
         expect(Security::AnalyzersStatus::SettingChangedUpdateWorker)
-          .to receive(:perform_async).with(anything, :secret_detection)
+          .to receive(:perform_async).with(anything, 'secret_detection')
 
         create(:project)
       end
