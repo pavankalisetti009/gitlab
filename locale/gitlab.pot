@@ -70422,6 +70422,9 @@ msgstr ""
 msgid "WorkItem|An error occurred while getting work item counts."
 msgstr ""
 
+msgid "WorkItem|An error occurred while making status default."
+msgstr ""
+
 msgid "WorkItem|An error occurred while removing the status."
 msgstr ""
 
@@ -70785,6 +70788,9 @@ msgid "WorkItem|Load more"
 msgstr ""
 
 msgid "WorkItem|Magenta"
+msgstr ""
+
+msgid "WorkItem|Make default for %{defaultState} issues"
 msgstr ""
 
 msgid "WorkItem|Mark as done"

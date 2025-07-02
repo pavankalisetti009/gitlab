@@ -1,7 +1,8 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import Draggable from 'vuedraggable';
-import { GlModal, GlSprintf } from '@gitlab/ui';
+import { GlModal, GlSprintf, GlDisclosureDropdown } from '@gitlab/ui';
+import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -113,6 +114,14 @@ describe('StatusLifecycleModal', () => {
   const findEditStatusButton = (statusId) => wrapper.findByTestId(`edit-status-${statusId}`);
   const findErrorMessage = () => wrapper.findByTestId('error-alert');
   const findDraggable = () => wrapper.findComponent(Draggable);
+  const findAllDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
+  const defaultOpenStatus = mockLifecycle.statuses[0]; // Open (default)
+  const findDefaultOpenDropdownItem = () =>
+    wrapper.find(`[data-testid="make-default-${defaultOpenStatus.id}"]`);
+
+  const nonDefaultStatus = mockLifecycle.statuses[1]; // In progress
+  const findNonDefaultDropdownItem = () =>
+    wrapper.find(`[data-testid="make-default-${nonDefaultStatus.id}"]`);
 
   const updateLifecycleHandler = jest.fn().mockResolvedValue(mockUpdateResponse);
 
@@ -157,6 +166,11 @@ describe('StatusLifecycleModal', () => {
       stubs: {
         GlModal,
         GlSprintf,
+        GlDisclosureDropdown: stubComponent(GlDisclosureDropdown, {
+          methods: {
+            close: jest.fn(),
+          },
+        }),
       },
     });
   };
@@ -698,6 +712,38 @@ describe('StatusLifecycleModal', () => {
       await waitForPromises();
 
       expect(findErrorMessage().exists()).toBe(true);
+    });
+  });
+
+  describe('Status dropdown options', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('all statuses of the lifecycle have the three dot options', () => {
+      expect(findAllDropdowns().length).toBe(mockLifecycle.statuses.length);
+    });
+
+    describe('Default action', () => {
+      it('shows make default option for non-default statuses', () => {
+        expect(findNonDefaultDropdownItem().exists()).toBe(true);
+      });
+
+      it('does not show make default option for default statuses', () => {
+        expect(findDefaultOpenDropdownItem().exists()).toBe(false);
+      });
+
+      it('calls `updateLifecycle` with correct default status', async () => {
+        findNonDefaultDropdownItem().vm.$emit('action', nonDefaultStatus, 'open');
+        await waitForPromises();
+
+        expect(updateLifecycleHandler).toHaveBeenCalled();
+        expect(updateLifecycleHandler).toHaveBeenCalledWith({
+          input: expect.objectContaining({
+            defaultOpenStatusIndex: 1,
+          }),
+        });
+      });
     });
   });
 });
