@@ -27,15 +27,27 @@ RSpec.describe API::Ci::JobArtifacts, feature_category: :job_artifacts do
 
   describe 'GET /projects/:id/jobs/:job_id/artifacts' do
     context 'with job artifacts' do
+      let(:job) { create(:ci_build, :artifacts, pipeline: pipeline, project: project) }
+
+      subject(:request_artifact) { get api("/projects/#{project.id}/jobs/#{job.id}/artifacts", api_user) }
+
+      context 'with missing artifacts file', :aggregate_failures do
+        let(:job_without_artifacts) { create(:ci_build, pipeline: pipeline, project: project) }
+
+        it 'returns not_found and does not audit' do
+          expect(::Ci::ArtifactDownloadAuditor).not_to receive(:new)
+
+          get api("/projects/#{project.id}/jobs/#{job_without_artifacts.id}/artifacts", api_user)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
       context 'with audit events enabled', :aggregate_failures do
         before do
           project.group.root_ancestor.external_audit_event_destinations.create!(destination_url: 'http://example.com')
           stub_licensed_features(admin_audit_log: true, extended_audit_events: true, external_audit_events: true)
         end
-
-        let(:job) { create(:ci_build, :artifacts, pipeline: pipeline, project: project) }
-
-        subject(:request_artifact) { get api("/projects/#{project.id}/jobs/#{job.id}/artifacts", api_user) }
 
         it 'audits downloads' do
           expect(::Gitlab::Audit::Auditor).to(
