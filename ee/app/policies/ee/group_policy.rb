@@ -381,7 +381,7 @@ module EE
         enable :read_billable_member
 
         enable :read_group_all_available_runners
-        enable :read_group_runners
+        enable :read_runners
       end
 
       rule { auditor & group_ci_cd_analytics_available }.policy do
@@ -780,7 +780,7 @@ module EE
       end
 
       rule { custom_role_enables_read_runners }.policy do
-        enable :read_group_runners
+        enable :read_runners
       end
 
       rule { can?(:admin_group) | can?(:admin_compliance_framework) | can?(:manage_deploy_tokens) | can?(:manage_merge_request_settings) }.policy do
@@ -825,7 +825,7 @@ module EE
         enable :admin_runners
         enable :create_runners
         enable :read_group_all_available_runners
-        enable :read_group_runners
+        enable :read_runners
       end
 
       rule { admin | owner }.policy do

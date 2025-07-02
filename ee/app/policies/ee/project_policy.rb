@@ -368,10 +368,7 @@ module EE
 
       rule { can?(:admin_runners) }.enable :read_runners
 
-      rule { custom_role_enables_read_runners }.policy do
-        enable :read_project_runners
-        enable :read_runners
-      end
+      rule { custom_role_enables_read_runners }.enable :read_runners
 
       rule { admin_custom_role_enables_read_admin_cicd }.policy do
         enable :read_project_metadata
@@ -589,7 +586,7 @@ module EE
         enable :create_on_demand_dast_scan
         enable :edit_on_demand_dast_scan
 
-        enable :read_project_runners # read runner tags when creating scan
+        enable :read_runners # read runner tags when creating scan
         enable :create_pipeline # run a scan
       end
 
@@ -728,7 +725,7 @@ module EE
         enable :read_approvers
         enable :read_on_demand_dast_scan
 
-        enable :read_project_runners
+        enable :read_runners
         enable :read_project_security_exclusions
         enable :read_security_settings
 

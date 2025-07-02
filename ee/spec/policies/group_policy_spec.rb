@@ -28,7 +28,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       read_group
       read_group_security_dashboard
       read_cluster
-      read_group_runners
+      read_runners
       read_billing
       read_container_image
       read_confidential_issues
@@ -3617,7 +3617,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'auditor' do
       let(:current_user) { auditor }
 
-      it { is_expected.to be_allowed(:read_group_runners) }
+      it { is_expected.to be_allowed(:read_runners) }
       it { is_expected.to be_allowed(:read_group_all_available_runners) }
       it { is_expected.to be_disallowed(:register_group_runners) }
       it { is_expected.to be_disallowed(:create_runners) }
@@ -4464,7 +4464,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           :admin_runners,
           :create_runners,
           :read_group_all_available_runners,
-          :read_group_runners
+          :read_runners
         ]
       end
 
@@ -4490,7 +4490,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'for a member role with read_runners true' do
       let(:member_role_abilities) { { read_runners: true } }
-      let(:allowed_abilities) { [:read_group_runners] }
+      let(:allowed_abilities) { [:read_runners] }
 
       it_behaves_like 'custom roles abilities'
     end
