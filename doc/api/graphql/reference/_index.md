@@ -13386,6 +13386,31 @@ Input type: `WorkItemsCsvExportInput`
 | <a id="mutationworkitemscsvexporterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationworkitemscsvexportmessage"></a>`message` | [`String`](#string) | Export request result message. |
 
+### `Mutation.workItemsCsvImport`
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `WorkItemsCsvImportInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationworkitemscsvimportclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitemscsvimportfile"></a>`file` | [`Upload!`](#upload) | CSV file to import work items from. |
+| <a id="mutationworkitemscsvimportprojectpath"></a>`projectPath` | [`ID!`](#id) | Full project path. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationworkitemscsvimportclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitemscsvimporterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationworkitemscsvimportmessage"></a>`message` | [`String`](#string) | Import request result message. |
+
 ### `Mutation.workItemsHierarchyReorder`
 
 Reorder a work item in the hierarchy tree.
