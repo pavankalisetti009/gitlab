@@ -9,10 +9,6 @@ module RemoteDevelopment
     include RemoteDevelopment::WorkspaceStateHelpers
     include ::Gitlab::InternalEventsTracking
     include ::Gitlab::Utils::StrongMemoize
-    include SafelyChangeColumnDefault
-
-    columns_changing_default :desired_config_generator_version
-    columns_changing_default :actual_state_updated_at
 
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
