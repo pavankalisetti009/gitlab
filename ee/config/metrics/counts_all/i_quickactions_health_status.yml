@@ -1,12 +1,14 @@
 ---
-key_path: redis_hll_counters.quickactions.i_quickactions_health_status_weekly
-description: Count of WAU using the `/health_status` quick action
+key_path: redis_hll_counters.quickactions.i_quickactions_health_status
+description: Count of unique active users using the `/health_status` quick action
 product_group: project_management
 value_type: number
 status: active
 milestone: "14.7"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/77215
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 data_category: optional
 instrumentation_class: RedisHLLMetric
