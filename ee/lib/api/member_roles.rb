@@ -6,6 +6,8 @@ module API
 
     feature_category :system_access
 
+    helpers ::API::Helpers::MemberRolesHelpers
+
     helpers do
       include ::Gitlab::Utils::StrongMemoize
 
@@ -32,19 +34,6 @@ module API
         ::MemberRoles::RolesFinder.new(current_user, filter_params).execute
       end
 
-      def member_role
-        return group.member_roles.find_by_id(params[:member_role_id]) if group
-
-        MemberRole.find_by_id(params[:member_role_id])
-      end
-      strong_memoize_attr :member_role
-
-      def get_roles
-        authorize_access_roles!
-
-        present member_roles, with: EE::API::Entities::MemberRole
-      end
-
       params :create_role_params do
         requires 'base_access_level', type: Integer, values: Gitlab::Access.all_values,
           desc: 'Base Access Level for the configured role', documentation: { example: 10 }
@@ -54,36 +43,6 @@ module API
 
         ::MemberRole.all_customizable_permissions.each do |permission_name, permission_params|
           optional permission_name.to_s, type: Boolean, desc: permission_params[:description], default: false
-        end
-      end
-
-      def create_role
-        authorize_access_roles!
-
-        name = member_role_name
-        create_params = declared_params.merge(name: name, namespace: group)
-
-        service = ::MemberRoles::CreateService.new(current_user, create_params)
-        response = service.execute
-
-        if response.success?
-          present response.payload, with: EE::API::Entities::MemberRole
-        else
-          render_api_error!(response.message, 400)
-        end
-      end
-
-      def delete_role
-        authorize_access_roles!
-
-        not_found!('Member Role') unless member_role
-
-        response = ::MemberRoles::DeleteService.new(current_user).execute(member_role)
-
-        if response.success?
-          no_content!
-        else
-          render_api_error!(response.message, 400)
         end
       end
 
