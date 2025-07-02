@@ -100,6 +100,11 @@ module Resolvers
       required: false,
       description: 'Returns only the vulnerabilities which have remediations.'
 
+    argument :reachability, ::Types::Sbom::ReachabilityEnum,
+      required: false,
+      experiment: { milestone: '18.2' },
+      description: 'Filter vulnerabilities by reachability.'
+
     def resolve_with_lookahead(**args)
       return Vulnerability.none unless vulnerable&.feature_available?(:security_dashboard)
 

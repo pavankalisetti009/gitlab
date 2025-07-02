@@ -460,6 +460,63 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
         context 'when owasp_top_ten_2021 includes "none" and other values' do
           it_behaves_like 'validates owasp_top_ten_2021 filter', :params
         end
+
+        context 'with reachability as parameter' do
+          using RSpec::Parameterized::TableSyntax
+
+          let_it_be(:vuln_read_without_occurrences) do
+            [
+              low_vulnerability.vulnerability_read,
+              critical_vulnerability.vulnerability_read,
+              high_vulnerability.vulnerability_read,
+              vuln_read_with_owasp_top_10_first,
+              vuln_read_with_owasp_top_10_second
+            ]
+          end
+
+          let_it_be(:vuln_read_in_use) do
+            sbom_occurrence_in_use = create(:sbom_occurrence, reachability: :in_use)
+            vuln_read = create(:vulnerability_read, report_type: :dependency_scanning, project: project)
+            create(:sbom_occurrences_vulnerability, occurrence: sbom_occurrence_in_use, vulnerability: vuln_read.vulnerability)
+
+            vuln_read
+          end
+
+          let_it_be(:vuln_read_not_found) do
+            sbom_occurrence_not_found = create(:sbom_occurrence, reachability: :not_found)
+            vuln_read = create(:vulnerability_read, report_type: :dependency_scanning, project: project)
+            create(:sbom_occurrences_vulnerability, occurrence: sbom_occurrence_not_found, vulnerability: vuln_read.vulnerability)
+
+            vuln_read
+          end
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              vuln_read_in_use,
+              vuln_read_not_found
+            )
+            ensure_elasticsearch_index!
+          end
+
+          where(:reachability, :expected_result) do
+            :in_use | [ref(:vuln_read_in_use)]
+            :not_found | [ref(:vuln_read_not_found)]
+            :unknown | ref(:vuln_read_without_occurrences)
+          end
+
+          with_them do
+            let(:params) { { reachability: reachability } }
+
+            it 'only returns vulnerabilities with matching reachability values' do
+              expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+              results = resolved.to_a
+
+              expect(results).to match_array(
+                expected_result.map(&:vulnerability))
+            end
+          end
+        end
       end
     end
 
@@ -537,6 +594,14 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           it 'only returns vulnerabilities with matching identifier_name alone' do
             is_expected.to contain_exactly(vuln_read_with_identifier_name_first.vulnerability)
           end
+        end
+
+        context 'with access advanced vulnerability management enabled' do
+          before do
+            allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
+          end
+
+          it_behaves_like 'vulnerability filterable', :params
         end
       end
     end
