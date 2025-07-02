@@ -255,8 +255,6 @@ export default {
     'ee/app/assets/javascripts/ci/secrets/components/secret_details/secret_details.vue',
     'ee/app/assets/javascripts/ci/secrets/components/secret_details/secret_details_wrapper.vue',
     'ee/app/assets/javascripts/ci/secrets/components/secret_form/secret_form.vue',
-    'ee/app/assets/javascripts/dependencies/components/app.vue',
-    'ee/app/assets/javascripts/dependencies/components/dependency_project_count.vue',
     'ee/app/assets/javascripts/environments_dashboard/components/dashboard/dashboard.vue',
     'ee/app/assets/javascripts/environments_dashboard/components/dashboard/environment.vue',
     'ee/app/assets/javascripts/geo_sites/components/header/geo_site_last_updated.vue',
