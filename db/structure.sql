@@ -22607,7 +22607,8 @@ CREATE TABLE required_code_owners_sections (
     name text NOT NULL,
     protected_branch_project_id bigint,
     protected_branch_namespace_id bigint,
-    CONSTRAINT check_e58d53741e CHECK ((char_length(name) <= 1024))
+    CONSTRAINT check_e58d53741e CHECK ((char_length(name) <= 1024)),
+    CONSTRAINT check_e7c067043a CHECK ((num_nonnulls(protected_branch_namespace_id, protected_branch_project_id) = 1))
 );
 
 CREATE SEQUENCE required_code_owners_sections_id_seq
