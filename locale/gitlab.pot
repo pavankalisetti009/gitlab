@@ -49765,6 +49765,9 @@ msgstr ""
 msgid "Projects|Delete %{nameWithNamespace}"
 msgstr ""
 
+msgid "Projects|No projects found."
+msgstr ""
+
 msgid "Projects|Projects that are archived or pending deletion will appear here."
 msgstr ""
 
