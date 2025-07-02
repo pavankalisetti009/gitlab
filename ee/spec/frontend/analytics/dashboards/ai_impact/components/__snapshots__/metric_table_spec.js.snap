@@ -1,25 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Metric table for the change_failure_rate table row when the data is loaded renders the metric values 1`] = `
-"Change failure rate  
-    Percentage of deployments that cause an incident in production.
-    
-      Go to docs
-      
-        20.0%
-       
-        40.0%
-       
-        60.0%
-       
-        20.0%
-       
-        40.0%
-       
-        60.0%
-       
-  100.0%
-    %"
+[
+  "20.0%",
+  "40.0%",
+  "60.0%",
+  "20.0%",
+  "40.0%",
+  "60.0%",
+]
 `;
 
 exports[`Metric table for the change_failure_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -63,25 +52,14 @@ exports[`Metric table for the change_failure_rate table row when the data is loa
 `;
 
 exports[`Metric table for the code_suggestions_acceptance_rate table row when the data is loaded renders the metric values 1`] = `
-"Code Suggestions acceptance rate  
-    Monthly GitLab Duo Code Suggestions accepted / total Code Suggestions generated.
-    
-      Go to docs
-      
-        20.0%
-       3/15
-        42.9%
-       3/7
-        66.7%
-       10/15
-        50.0%
-       9/18
-        17.6%
-       3/17
-        33.3%
-       4/12
-  11.8%
-    %"
+[
+  "20.0% 3/15",
+  "42.9% 3/7",
+  "66.7% 10/15",
+  "50.0% 9/18",
+  "17.6% 3/17",
+  "33.3% 4/12",
+]
 `;
 
 exports[`Metric table for the code_suggestions_acceptance_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -125,25 +103,14 @@ exports[`Metric table for the code_suggestions_acceptance_rate table row when th
 `;
 
 exports[`Metric table for the code_suggestions_usage_rate table row when the data is loaded renders the metric values 1`] = `
-"Code Suggestions usage  
-    Monthly user engagement with GitLab Duo Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors.
-    
-      Go to docs
-      
-        5.0%
-       The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
-        10.0%
-       The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
-        25.0%
-       The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
-        5.0%
-       The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
-        10.0%
-       The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
-        25.0%
-       The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
-  100.0%
-    %"
+[
+  "5.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "10.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "25.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "5.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "10.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "25.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+]
 `;
 
 exports[`Metric table for the code_suggestions_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -187,24 +154,14 @@ exports[`Metric table for the code_suggestions_usage_rate table row when the dat
 `;
 
 exports[`Metric table for the contributor_count table row when the data is loaded renders the metric values 1`] = `
-"Contributor count  
-    Number of monthly unique users with contributions.
-    
-      Go to docs
-      
-        4
-       
-        4
-       
-        4
-       
-        4
-       
-        4
-       
-        4
-       
-      0.0%"
+[
+  "4",
+  "4",
+  "4",
+  "4",
+  "4",
+  "4",
+]
 `;
 
 exports[`Metric table for the contributor_count table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -248,25 +205,14 @@ exports[`Metric table for the contributor_count table row when the data is loade
 `;
 
 exports[`Metric table for the cycle_time table row when the data is loaded renders the metric values 1`] = `
-"Cycle time  
-    Median time between when an issue is first referenced in the commit message of a merge request and when that referenced issue is closed.
-    
-      Go to docs
-      
-        1.0 d
-       
-        2.0 d
-       
-        4.0 d
-       
-        1.0 d
-       
-        2.0 d
-       
-        4.0 d
-       
-  100.0%
-    days"
+[
+  "1.0 d",
+  "2.0 d",
+  "4.0 d",
+  "1.0 d",
+  "2.0 d",
+  "4.0 d",
+]
 `;
 
 exports[`Metric table for the cycle_time table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -310,25 +256,14 @@ exports[`Metric table for the cycle_time table row when the data is loaded rende
 `;
 
 exports[`Metric table for the deployment_frequency table row when the data is loaded renders the metric values 1`] = `
-"Deployment frequency  
-    Average number of deployments to production per day. This metric measures how often value is delivered to end users.
-    
-      Go to docs
-      
-        10.0/d
-       
-        20.0/d
-       
-        40.0/d
-       
-        10.0/d
-       
-        20.0/d
-       
-        40.0/d
-       
-  100.0%
-    /day"
+[
+  "10.0/d",
+  "20.0/d",
+  "40.0/d",
+  "10.0/d",
+  "20.0/d",
+  "40.0/d",
+]
 `;
 
 exports[`Metric table for the deployment_frequency table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -372,25 +307,14 @@ exports[`Metric table for the deployment_frequency table row when the data is lo
 `;
 
 exports[`Metric table for the duo_chat_usage_rate table row when the data is loaded renders the metric values 1`] = `
-"Duo Chat: Unique users  
-    Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors.
-    
-      Go to docs
-      
-        20.0%
-       3/15
-        42.9%
-       3/7
-        66.7%
-       10/15
-        50.0%
-       9/18
-        17.6%
-       3/17
-        33.3%
-       4/12
-  11.8%
-    %"
+[
+  "20.0% 3/15",
+  "42.9% 3/7",
+  "66.7% 10/15",
+  "50.0% 9/18",
+  "17.6% 3/17",
+  "33.3% 4/12",
+]
 `;
 
 exports[`Metric table for the duo_chat_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -434,25 +358,14 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
 `;
 
 exports[`Metric table for the duo_rca_usage_rate table row when the data is loaded renders the metric values 1`] = `
-"Duo RCA: Unique users  
-    Monthly user engagement with Duo Root Cause Analysis. Percentage ratio calculated as total monthly unique Duo Root Cause Analysis users / monthly unique Duo Chat users.
-    
-      Go to docs
-      
-        33.3%
-       5/15
-        85.7%
-       6/7
-        73.3%
-       11/15
-        66.7%
-       12/18
-        41.2%
-       7/17
-        50.0%
-       6/12
-  23.5%
-    %"
+[
+  "33.3% 5/15",
+  "85.7% 6/7",
+  "73.3% 11/15",
+  "66.7% 12/18",
+  "41.2% 7/17",
+  "50.0% 6/12",
+]
 `;
 
 exports[`Metric table for the duo_rca_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -496,25 +409,14 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
 `;
 
 exports[`Metric table for the lead_time table row when the data is loaded renders the metric values 1`] = `
-"Lead time  
-    Median time from issue created to issue closed.
-    
-      Go to docs
-      
-        1.0 d
-       
-        2.0 d
-       
-        4.0 d
-       
-        1.0 d
-       
-        2.0 d
-       
-        4.0 d
-       
-  100.0%
-    days"
+[
+  "1.0 d",
+  "2.0 d",
+  "4.0 d",
+  "1.0 d",
+  "2.0 d",
+  "4.0 d",
+]
 `;
 
 exports[`Metric table for the lead_time table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -558,25 +460,14 @@ exports[`Metric table for the lead_time table row when the data is loaded render
 `;
 
 exports[`Metric table for the median_time_to_merge table row when the data is loaded renders the metric values 1`] = `
-"Median time to merge  
-    Median time between merge request created and merge request merged.
-    
-      Go to docs
-      
-        0.1 d
-       
-        0.2 d
-       
-        0.3 d
-       
-        0.3 d
-       
-        0.2 d
-       
-        0.1 d
-       
-  100.0%
-    days"
+[
+  "0.1 d",
+  "0.2 d",
+  "0.3 d",
+  "0.3 d",
+  "0.2 d",
+  "0.1 d",
+]
 `;
 
 exports[`Metric table for the median_time_to_merge table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -620,24 +511,14 @@ exports[`Metric table for the median_time_to_merge table row when the data is lo
 `;
 
 exports[`Metric table for the merge_request_throughput table row when the data is loaded renders the metric values 1`] = `
-"Merge request throughput  
-    Number of merge requests merged by month.
-    
-      Go to docs
-      
-        10
-       
-        10
-       
-        10
-       
-        10
-       
-        10
-       
-        10
-       
-      0.0%"
+[
+  "10",
+  "10",
+  "10",
+  "10",
+  "10",
+  "10",
+]
 `;
 
 exports[`Metric table for the merge_request_throughput table row when the data is loaded renders the sparkline chart with expected props 1`] = `
@@ -681,24 +562,14 @@ exports[`Metric table for the merge_request_throughput table row when the data i
 `;
 
 exports[`Metric table for the vulnerability_critical table row when the data is loaded renders the metric values 1`] = `
-"Critical vulnerabilities over time  
-    Number of critical vulnerabilities identified per month.
-    
-      Go to docs
-      
-        40
-       
-        20
-       
-        10
-       
-        40
-       
-        20
-       
-        10
-       
-  50.0%"
+[
+  "40",
+  "20",
+  "10",
+  "40",
+  "20",
+  "10",
+]
 `;
 
 exports[`Metric table for the vulnerability_critical table row when the data is loaded renders the sparkline chart with expected props 1`] = `
