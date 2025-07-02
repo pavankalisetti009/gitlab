@@ -129,7 +129,11 @@ module QA
           Page::Main::Menu.perform(&:click_stop_impersonation_link)
         end
 
-        it 'logs audit events for impersonation operations' do
+        it 'logs audit events for impersonation operations',
+          quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/553039',
+            type: :flaky
+          } do
           Page::Main::Menu.perform(&:go_to_admin_area)
           QA::Page::Admin::Menu.perform(&:go_to_monitoring_audit_events)
           EE::Page::Admin::Monitoring::AuditLog.perform do |audit_log_page|
