@@ -657,7 +657,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                   "has_dependency_paths" => false
                 },
                 'project' => {
-                  "name" => project.name
+                  "name" => project.name,
+                  "full_path" => project.full_path
                 },
                 'occurrence_id' => occurrence_bundler.id
               }
@@ -741,7 +742,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                   "top_level" => location_bundler[:top_level]
                 },
                 'project' => {
-                  "name" => project.name
+                  "name" => project.name,
+                  "full_path" => project.full_path
                 },
                 'occurrence_id' => occurrence.id
               }

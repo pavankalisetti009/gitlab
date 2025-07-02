@@ -8,6 +8,7 @@ import {
 import { __, sprintf } from '~/locale';
 import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_SBOM_OCCURRENCE } from 'ee/graphql_shared/constants';
 import { OPERATOR_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import projectDependencies from '../graphql/project_dependencies.query.graphql';
 import groupDependencies from '../graphql/group_dependencies.query.graphql';
@@ -361,7 +362,7 @@ export const fetchVulnerabilitiesViaGraphQL = ({ commit }, { item }) => {
     .query({
       query: dependencyVulnerabilities,
       variables: {
-        occurrenceId: convertToGraphQLId('Sbom::Occurrence', occurrenceId),
+        occurrenceId: convertToGraphQLId(TYPENAME_SBOM_OCCURRENCE, occurrenceId),
       },
     })
     .then(({ data }) => {
