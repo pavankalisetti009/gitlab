@@ -259,6 +259,10 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
                 factory: [:user],
                 model_token_method: :feed_token,
                 identifier: 'gitlab_feed_token_v2'
+              },
+              {
+                factory: [:ci_trigger],
+                identifier: 'gitlab_pipeline_trigger_token'
               }
             ]
           end
