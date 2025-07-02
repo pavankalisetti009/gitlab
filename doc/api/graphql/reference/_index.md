@@ -28477,6 +28477,7 @@ GPG signature for a signed commit.
 | <a id="groupid"></a>`id` | [`ID`](#id) | ID of the group. |
 | <a id="groupislinkedtosubscription"></a>`isLinkedToSubscription` | [`Boolean`](#boolean) | Indicates if group is linked to a subscription. |
 | <a id="groupisselfdeletioninprogress"></a>`isSelfDeletionInProgress` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.2. **Status**: Experiment. Indicates if group deletion is in progress. |
+| <a id="groupisselfdeletionscheduled"></a>`isSelfDeletionScheduled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.2. **Status**: Experiment. Indicates if group deletion is scheduled. |
 | <a id="grouplfsenabled"></a>`lfsEnabled` | [`Boolean`](#boolean) | Indicates if Large File Storage (LFS) is enabled for namespace. |
 | <a id="grouplicensedfeatures"></a>`licensedFeatures` {{< icon name="warning-solid" >}} | [`NamespaceLicensedFeatures!`](#namespacelicensedfeatures) | **Introduced** in GitLab 18.1. **Status**: Experiment. Licensed features available on the namespace. |
 | <a id="grouplifecycles"></a>`lifecycles` {{< icon name="warning-solid" >}} | [`WorkItemLifecycleConnection`](#workitemlifecycleconnection) | **Introduced** in GitLab 18.1. **Status**: Experiment. Lifecycles of work items available to the namespace. |
