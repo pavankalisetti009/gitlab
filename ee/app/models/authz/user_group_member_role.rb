@@ -15,5 +15,9 @@ module Authz
       where(user: user)
         .where('group_id = ? OR shared_with_group_id = ?', group.id, group.id)
     end
+
+    def self.in_shared_group(shared_group, shared_with_group)
+      where(group: shared_group, shared_with_group: shared_with_group)
+    end
   end
 end

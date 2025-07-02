@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Groups::GroupLinks::DestroyService, '#execute', feature_category: :groups_and_projects do
-  subject { described_class.new(shared_group, owner) }
+  subject(:service) { described_class.new(shared_group, owner) }
 
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:shared_group) { create(:group, :private) }
@@ -50,6 +50,45 @@ RSpec.describe Groups::GroupLinks::DestroyService, '#execute', feature_category:
           expect(worker).to receive(:perform_async).with(sub_group_shared.root_ancestor.id)
 
           subject.execute(link)
+        end
+      end
+    end
+
+    describe "shared_with_group's members' ::Authz::UserGroupMemberRole records" do
+      shared_examples 'does not enqueue a DestroyForSharedGroupWorker job' do
+        it 'does not enqueue a ::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker).not_to receive(:perform_async)
+
+          service.execute(link)
+        end
+      end
+
+      context 'when link has no member role assigned' do
+        it_behaves_like 'does not enqueue a DestroyForSharedGroupWorker job'
+      end
+
+      context 'when link has a member role assigned' do
+        let_it_be(:member_role) { create(:member_role, namespace: shared_group) }
+
+        before do
+          link.update!(member_role: member_role)
+        end
+
+        it 'enqueues a ::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker job' do
+          allow(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker).to receive(:perform_async)
+
+          service.execute(link)
+
+          expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker)
+            .to have_received(:perform_async).with(link.shared_group_id, link.shared_with_group_id)
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(cache_user_group_member_roles: false)
+          end
+
+          it_behaves_like 'does not enqueue a DestroyForSharedGroupWorker job'
         end
       end
     end

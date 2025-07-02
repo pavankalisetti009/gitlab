@@ -40,4 +40,39 @@ RSpec.describe Authz::UserGroupMemberRole, feature_category: :permissions do
       expect(results).to match_array([user_in_group, user_in_shared_with_group])
     end
   end
+
+  describe '.in_shared_group' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:user2) { create(:user) }
+
+    let_it_be(:shared_group) { create(:group) }
+    let_it_be(:shared_with_group) { create(:group) }
+
+    let_it_be(:other_shared_group) { create(:group) }
+    let_it_be(:other_shared_with_group) { create(:group) }
+
+    # target records
+    let_it_be(:user_in_shared_group) do
+      create(:user_group_member_role, user: user, group: shared_group, shared_with_group: shared_with_group)
+    end
+
+    let_it_be(:user2_in_shared_group) do
+      create(:user_group_member_role, user: user2, group: shared_group, shared_with_group: shared_with_group)
+    end
+
+    # non-target records
+    let_it_be(:user_in_other_shared_group) do
+      create(:user_group_member_role, user: user, group: other_shared_group, shared_with_group: shared_with_group)
+    end
+
+    let_it_be(:user2_in_shared_group2) do
+      create(:user_group_member_role, user: user2, group: shared_group, shared_with_group: other_shared_with_group)
+    end
+
+    subject(:results) { described_class.in_shared_group(shared_group, shared_with_group) }
+
+    it 'returns only records that match the given shared_group and shared_with_group' do
+      expect(results).to match_array([user_in_shared_group, user2_in_shared_group])
+    end
+  end
 end

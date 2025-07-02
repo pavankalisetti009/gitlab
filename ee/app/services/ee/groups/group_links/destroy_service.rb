@@ -22,6 +22,7 @@ module EE
           links.each do |link|
             log_audit_event(link.shared_group, link.shared_with_group)
             enqueue_refresh_add_on_assignments_worker(link)
+            destroy_user_group_member_roles(link)
           end
         end
 
@@ -46,6 +47,14 @@ module EE
 
           GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker
             .perform_async(namespace.id)
+        end
+
+        def destroy_user_group_member_roles(link)
+          return unless ::Feature.enabled?(:cache_user_group_member_roles, link.shared_group.root_ancestor)
+          return unless link.member_role_id
+
+          ::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker
+            .perform_async(link.shared_group_id, link.shared_with_group_id)
         end
       end
     end
