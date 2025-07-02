@@ -30,7 +30,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Ultimate::TrialFormComponent 
           country: '',
           state: ''
         },
-        submitPath: trials_path(step: 'full', glm_source: 'some-source', glm_content: 'some-content', namespace_id: 1),
+        submitPath: trials_path(step: 'full', glm_source: 'some-source', glm_content: 'some-content'),
         gtmSubmitEventLabel: 'saasTrialSubmit'
       }.with_indifferent_access
     end
@@ -72,7 +72,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Ultimate::TrialFormComponent 
   context 'when glm_params are not provided' do
     let(:form_params) { super().except(:glm_source, :glm_content) }
     let(:expected_form_data_attributes) do
-      { submitPath: trials_path(step: 'full', namespace_id: 1) }.with_indifferent_access
+      { submitPath: trials_path(step: 'full') }.with_indifferent_access
     end
 
     it 'renders form with correct attributes' do

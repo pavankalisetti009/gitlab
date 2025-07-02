@@ -43,7 +43,7 @@ module GitlabSubscriptions
         def submit_path
           trials_path(
             step: GitlabSubscriptions::Trials::UltimateCreateService::FULL,
-            **params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id)
+            **params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS)
           )
         end
 

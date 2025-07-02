@@ -44,6 +44,26 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
         expect_to_be_on_gitlab_duo_page
       end
+
+      it 'fills out form, has the existing namespace preselected, and creates a new group instead' do
+        glm_params = { glm_source: '_glm_source_', glm_content: '_glm_content_' }
+
+        sign_in(user)
+
+        stub_cdot_namespace_eligible_trials
+        visit new_trial_path(namespace_id: group.id, **glm_params)
+
+        fill_in_company_information
+
+        group_path = 'gitlab1'
+
+        select_create_from_listbox 'Create group', from: group.name
+        fill_in_trial_form_for_new_group name: group.name
+
+        submit_new_group_trial_form(glm: glm_params, extra_params: new_group_attrs(path: group_path))
+
+        expect_to_be_on_gitlab_duo_page(path: group_path)
+      end
     end
 
     context 'when part of the discover security flow' do
