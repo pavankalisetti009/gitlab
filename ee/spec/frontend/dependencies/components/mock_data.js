@@ -33,3 +33,32 @@ export const topLevelPath = {
   blobPath: 'test.link',
   path: 'package.json',
 };
+
+export const defaultDependencyPaths = {
+  nodes: [
+    {
+      isCyclic: false,
+      path: [
+        { name: 'eslint', version: '9.17.0', __typename: 'DependencyPathPartial' },
+        { name: 'optionator', version: '0.9.3', __typename: 'DependencyPathPartial' },
+      ],
+      __typename: 'DependencyPath',
+    },
+  ],
+  pageInfo: {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null,
+  },
+};
+
+export const getDependencyPathsResponse = (dependencyPaths = defaultDependencyPaths) => ({
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      dependencyPaths,
+      __typename: 'Project',
+    },
+  },
+});

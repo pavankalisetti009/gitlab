@@ -69100,9 +69100,6 @@ msgstr ""
 msgid "Vulnerability|Possibly active secret"
 msgstr ""
 
-msgid "Vulnerability|Project"
-msgstr ""
-
 msgid "Vulnerability|Project:"
 msgstr ""
 

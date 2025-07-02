@@ -6,10 +6,15 @@ import {
   GlAlert,
   GlCollapsibleListbox,
   GlSkeletonLoader,
+  GlKeysetPagination,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import { TYPENAME_SBOM_OCCURRENCE } from 'ee/graphql_shared/constants';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import getDependencyPaths from '../graphql/dependency_paths.query.graphql';
+import { NAMESPACE_PROJECT } from '../constants';
 
 export default {
   name: 'DependencyPathDrawer',
@@ -20,8 +25,25 @@ export default {
     GlAlert,
     GlCollapsibleListbox,
     GlSkeletonLoader,
+    GlKeysetPagination,
+  },
+  inject: {
+    namespaceType: {
+      default: NAMESPACE_PROJECT,
+    },
+    projectFullPath: {
+      default: '',
+    },
+    groupFullPath: {
+      default: '',
+    },
   },
   props: {
+    occurrenceId: {
+      type: Number,
+      required: false,
+      default: null,
+    },
     dependencyPaths: {
       type: Array,
       required: false,
@@ -49,67 +71,110 @@ export default {
   },
   data() {
     return {
+      localDependencyPaths: this.dependencyPaths,
       selectedProject: null,
-      isLoading: false,
-      loadingTimeout: null,
+      pageInfo: {},
+      cursor: {
+        after: null,
+        before: null,
+      },
     };
   },
+  apollo: {
+    localDependencyPaths: {
+      query: getDependencyPaths,
+      variables() {
+        return {
+          occurrence: convertToGraphQLId(TYPENAME_SBOM_OCCURRENCE, this.occurrence),
+          fullPath: this.fullPath,
+          ...this.cursor,
+        };
+      },
+      skip() {
+        return !this.fullPath || !this.occurrenceId;
+      },
+      update({ project }) {
+        const { pageInfo = {}, nodes = [] } = project?.dependencyPaths || {};
+        this.pageInfo = pageInfo;
+        return nodes;
+      },
+    },
+  },
   computed: {
+    isLoading() {
+      return this.$apollo?.queries.localDependencyPaths.loading;
+    },
+    isProject() {
+      return this.namespaceType === NAMESPACE_PROJECT;
+    },
+    selectedProjectOccurrence() {
+      return this.projectItems.find((project) => project.value === this.selectedProject)
+        ?.occurrenceId;
+    },
+    occurrence() {
+      return this.isProject ? this.occurrenceId : this.selectedProjectOccurrence;
+    },
+    fullPath() {
+      if (this.namespaceType === NAMESPACE_PROJECT) return this.projectFullPath;
+      return this.selectedProject;
+    },
     showProjectDropdown() {
       return this.locations?.length > 0;
     },
-    dependencyPathsList() {
-      if (!this.showProjectDropdown) {
-        return this.dependencyPaths;
-      }
-
-      if (this.isLoading) return [];
-      return this.dropdownData.dependencyPathsLookup[this.selectedProject];
+    projectItems() {
+      return this.locations
+        .filter((item) => item.location.has_dependency_paths)
+        .map(({ project, occurrence_id: occurrenceId }) => ({
+          value: project.full_path,
+          text: project.name,
+          occurrenceId,
+        }));
     },
-    dropdownData() {
-      const projectDropdown = [];
-      const dependencyPathsLookup = {};
-
-      this.locations.forEach((item) => {
-        if (item.location.dependency_paths?.length > 0) {
-          projectDropdown.push({
-            value: item.value,
-            text: item.project.name,
-          });
-
-          dependencyPathsLookup[item.value] = item.location.dependency_paths;
-        }
-      });
-
-      return { projectDropdown, dependencyPathsLookup };
+    showPagination() {
+      return this.pageInfo?.hasPreviousPage || this.pageInfo?.hasNextPage;
     },
   },
-  created() {
-    this.selectedProject = this.dropdownData.projectDropdown[0]?.value ?? null;
-  },
-  beforeDestroy() {
-    if (this.loadingTimeout) {
-      clearTimeout(this.loadingTimeout);
-      this.loadingTimeout = null;
-    }
+  watch: {
+    occurrenceId() {
+      this.resetPagination();
+    },
+    locations: {
+      handler() {
+        this.selectedProject = this.projectItems[0]?.value ?? null;
+      },
+      immediate: true,
+    },
   },
   methods: {
+    resetPagination() {
+      this.pageInfo = {};
+      this.cursor = {
+        after: null,
+        before: null,
+      };
+    },
+    handleProjectSelect(project) {
+      this.resetPagination();
+      this.selectedProject = project;
+    },
     formatPath(paths) {
       return paths.map((path) => `${path.name} @${path.version}`).join(' / ');
     },
-    handleSelect(value) {
-      this.isLoading = true;
-      this.selectedProject = value;
-
-      // Mimic loading time to help with visual feedback
-      this.loadingTimeout = setTimeout(() => {
-        this.isLoading = false;
-      }, 300);
+    nextPage(item) {
+      this.cursor = {
+        after: item,
+        before: null,
+      };
+    },
+    prevPage(item) {
+      this.cursor = {
+        after: null,
+        before: item,
+      };
     },
   },
   i18n: {
     drawerTitle: s__('Vulnerability|Dependency paths'),
-    projectTitle: s__('Vulnerability|Project'),
     componentTitle: s__('Vulnerability|Component'),
     circularDependencyBadgeText: s__('Vulnerability|circular dependency'),
     maxDepthWarning: s__(
@@ -130,6 +195,7 @@ export default {
     :open="showDrawer"
     :title="$options.i18n.drawerTitle"
     :z-index="$options.DRAWER_Z_INDEX"
+    header-sticky
     @close="$emit('close')"
   >
     <template #title>
@@ -143,38 +209,49 @@ export default {
         <span>{{ component.name }}</span>
         <span>{{ component.version }}</span>
       </div>
-    </template>
-    <gl-collapsible-listbox
-      v-if="showProjectDropdown"
-      :items="dropdownData.projectDropdown"
-      :selected="selectedProject"
-      block
-      @select="handleSelect"
-    >
-      <template #list-item="{ item }">
-        {{ item.text }}
-      </template>
-    </gl-collapsible-listbox>
-    <gl-skeleton-loader v-if="isLoading" />
-    <ul v-else class="gl-list-none gl-p-2">
-      <li
-        v-for="(dependencyPath, index) in dependencyPathsList"
-        :key="index"
-        class="gl-border-b gl-py-5 first:!gl-pt-0"
+      <gl-collapsible-listbox
+        v-if="showProjectDropdown"
+        :selected="selectedProject"
+        :items="projectItems"
+        block
+        class="gl-mt-5"
+        @select="handleProjectSelect"
       >
-        <gl-badge v-if="dependencyPath.isCyclic" variant="warning" class="mb-2">{{
-          $options.i18n.circularDependencyBadgeText
-        }}</gl-badge>
-        <gl-truncate-text
-          :toggle-button-props="$options.truncateToggleButtonProps"
-          :mobile-lines="3"
+        <template #list-item="{ item }">
+          {{ item.text }}
+        </template>
+      </gl-collapsible-listbox>
+    </template>
+    <gl-skeleton-loader v-if="isLoading" />
+    <div v-else>
+      <ul class="gl-list-none gl-p-2">
+        <li
+          v-for="(dependencyPath, index) in localDependencyPaths"
+          :key="index"
+          class="gl-border-b gl-py-5 first:!gl-pt-0"
         >
-          <div class="gl-leading-20">
-            {{ formatPath(dependencyPath.path) }}
-          </div>
-        </gl-truncate-text>
-      </li>
-    </ul>
+          <gl-badge v-if="dependencyPath.isCyclic" variant="warning" class="mb-2">{{
+            $options.i18n.circularDependencyBadgeText
+          }}</gl-badge>
+          <gl-truncate-text
+            :toggle-button-props="$options.truncateToggleButtonProps"
+            :mobile-lines="3"
+          >
+            <div class="gl-leading-20">
+              {{ formatPath(dependencyPath.path) }}
+            </div>
+          </gl-truncate-text>
+        </li>
+      </ul>
+      <div class="gl-mb-5 gl-flex gl-justify-center">
+        <gl-keyset-pagination
+          v-if="showPagination"
+          v-bind="pageInfo"
+          @prev="prevPage"
+          @next="nextPage"
+        />
+      </div>
+    </div>
     <template #footer>
       <gl-alert v-if="limitExceeded" :dismissible="false" variant="warning">
         {{ $options.i18n.maxDepthWarning }}

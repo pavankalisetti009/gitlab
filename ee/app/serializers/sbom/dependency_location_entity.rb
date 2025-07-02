@@ -12,6 +12,7 @@ module Sbom
 
     class ProjectEntity < Grape::Entity
       expose :name
+      expose :full_path
     end
 
     expose :location, using: LocationEntity

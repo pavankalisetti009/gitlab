@@ -143,15 +143,10 @@ export default {
       }
     },
     toggleDrawerProject(item) {
-      const {
-        name,
-        version,
-        occurrenceId,
-        location: { dependencyPaths },
-      } = item;
+      const { name, version, occurrenceId } = item;
 
       const drawerId = occurrenceId;
-      const drawerItem = { dependencyPaths, component: { name, version } };
+      const drawerItem = { component: { name, version } };
       this.toggleDrawer(drawerId, drawerItem);
     },
     toggleDrawerGroup(item, emittedItem) {
@@ -189,8 +184,8 @@ export default {
   <div>
     <dependency-path-drawer
       v-if="showDrawer"
+      :occurrence-id="drawerId"
       :component="drawerDependency.component"
-      :dependency-paths="drawerDependency.dependencyPaths"
       :locations="drawerDependency.locations"
       :show-drawer="showDrawer"
       @close="closeDrawer"

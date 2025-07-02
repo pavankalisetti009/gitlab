@@ -438,7 +438,10 @@ describe('DependenciesTable component', () => {
     const dependencyPathsData = [{ path: [{ name: 'eslint', version: '9.17.0' }] }];
 
     describe('for project level when there is location data', () => {
-      const dependency = makeDependency({ location: { dependencyPaths: dependencyPathsData } });
+      const dependency = makeDependency({
+        occurrenceId: 1,
+        location: { dependencyPaths: dependencyPathsData },
+      });
 
       beforeEach(() => {
         createComponent({
@@ -459,7 +462,7 @@ describe('DependenciesTable component', () => {
         expect(findDependencyPathDrawer().props()).toMatchObject({
           showDrawer: true,
           component: { name, version },
-          dependencyPaths: dependency.location.dependencyPaths,
+          occurrenceId: 1,
         });
       });
     });
@@ -468,6 +471,7 @@ describe('DependenciesTable component', () => {
       const dependency = makeDependency({
         componentId: 1,
         occurrenceCount: 2,
+        occurrenceId: 1,
         project: { full_path: 'full_path', name: 'name' },
       });
 
@@ -499,6 +503,7 @@ describe('DependenciesTable component', () => {
           showDrawer: true,
           component: { name, version },
           locations: emittedItem,
+          occurrenceId: 1,
         });
       });
     });
