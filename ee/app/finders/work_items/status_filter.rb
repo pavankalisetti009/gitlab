@@ -18,7 +18,7 @@ module WorkItems
     private
 
     def status_param_present?
-      params.key?(:status) && (params[:status][:id].present? || params[:status][:name].present?)
+      params[:status].to_h&.slice(:id, :name).present?
     end
 
     def find_status_by_name(name)
