@@ -21331,6 +21331,9 @@ msgstr ""
 msgid "Delete image"
 msgstr ""
 
+msgid "Delete immediately"
+msgstr ""
+
 msgid "Delete internal note"
 msgstr ""
 
