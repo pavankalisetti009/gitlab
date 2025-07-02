@@ -25792,12 +25792,9 @@ ALTER SEQUENCE security_policy_requirements_id_seq OWNED BY security_policy_requ
 CREATE TABLE security_policy_settings (
     id bigint NOT NULL,
     csp_namespace_id bigint,
-    singleton boolean DEFAULT true NOT NULL,
     organization_id bigint NOT NULL,
     csp_namespace_locked_until timestamp with time zone
 );
-
-COMMENT ON COLUMN security_policy_settings.singleton IS 'Always true, used for singleton enforcement';
 
 CREATE SEQUENCE security_policy_settings_id_seq
     START WITH 1
