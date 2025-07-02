@@ -5,23 +5,45 @@ module Search
     class Query
       include Gitlab::Utils::StrongMemoize
 
-      SUPPORTED_SYNTAX_FILTERS = %w[case f file lang sym].freeze
+      ADVANCED_SYNTAX_FILTERS = %w[extension filename path].freeze
+      EXACT_SYNTAX_FILTERS = %w[c case f file lang sym].freeze
+      SUPPORTED_SYNTAX_FILTERS = EXACT_SYNTAX_FILTERS + ADVANCED_SYNTAX_FILTERS
 
-      attr_reader :query
+      attr_reader :query, :source
 
-      def initialize(query)
+      def initialize(query, source: nil)
         raise ArgumentError, 'query argument can not be nil' unless query
 
+        @source = source&.to_sym
         @query = query
       end
 
-      def exact_search_query
-        return query if keyword.blank?
+      def formatted_query(search_mode)
+        term = case search_mode.to_sym
+               when :exact
+                 RE2::Regexp.escape(keyword)
+               when :regex
+                 keyword
+               else
+                 raise ArgumentError, 'Not a valid search_mode'
+               end
+        return term if filters.empty?
 
-        exact_search_query = RE2::Regexp.escape(keyword)
-        return exact_search_query if filters.empty?
+        if source == :api && Feature.enabled?(:zoekt_syntax_transpile, Feature.current_request)
+          filters.each do |filter|
+            filter_name = filter[%r{^-?(\w+):}, 1]
+            next if ADVANCED_SYNTAX_FILTERS.exclude?(filter_name)
 
-        "#{exact_search_query} #{filters.join(' ')}"
+            zoekt_syntax = case filter_name
+                           when 'extension' then '\1file:\.\2$'
+                           when 'filename' then '\1file:/([^/]*\2[^/]*)$'
+                           when 'path' then '\1file:(?:^|/)\2'
+                           end
+            filter.gsub!(%r{^(-?)#{filter_name}:\s*(.+)}, zoekt_syntax)
+          end
+        end
+
+        term.present? ? "#{term} #{filters.join(' ')}" : filters.join(' ')
       end
 
       private

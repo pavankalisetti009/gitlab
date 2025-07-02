@@ -126,12 +126,17 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
     end
 
     describe 'regex mode' do
-      where(:param_regex_mode, :search_mode_sent_to_client) do
-        nil | :exact
-        true | :regex
-        false | :exact
-        'true' | :regex
-        'false' | :exact
+      where(:param_regex_mode, :source, :search_mode_sent_to_client) do
+        nil     | :api  | :regex
+        nil     | :web  | :exact
+        true    | :api  | :regex
+        true    | :web  | :regex
+        false   | :api  | :exact
+        false   | :web  | :exact
+        'true'  | :api  | :regex
+        'true'  | :web  | :regex
+        'false' | :api  | :exact
+        'false' | :web  | :exact
       end
 
       with_them do
@@ -141,29 +146,27 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             num: described_class::ZOEKT_COUNT_LIMIT,
             project_ids: [project_1.id],
             node_id: node_id,
-            search_mode: search_mode_sent_to_client
+            search_mode: search_mode_sent_to_client,
+            source: source
           ).and_call_original
 
-          described_class.new(user, query, limit_projects, search_level: :group, node_id: node_id,
+          described_class.new(user, query, limit_projects, search_level: :group, node_id: node_id, source: source,
             modes: { regex: param_regex_mode }).objects('blobs')
         end
 
         context 'when a node id is not specified' do
-          let(:stubbed_response) do
-            instance_double(Gitlab::Search::Zoekt::Response, error_message: 'noop', failure?: true)
-          end
-
           it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
             expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
               query,
               hash_including(
                 num: described_class::ZOEKT_COUNT_LIMIT,
                 search_mode: search_mode_sent_to_client,
-                targets: ::Search::Zoekt::RoutingService.execute(limit_projects)
+                targets: ::Search::Zoekt::RoutingService.execute(limit_projects),
+                source: source
               )
-            ).and_return(stubbed_response)
+            ).and_call_original
 
-            described_class.new(user, query, limit_projects, search_level: :group,
+            described_class.new(user, query, limit_projects, search_level: :group, source: source,
               modes: { regex: param_regex_mode }).objects('blobs')
           end
         end
@@ -176,7 +179,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             num: described_class::ZOEKT_COUNT_LIMIT,
             project_ids: [project_1.id],
             node_id: node_id,
-            search_mode: :exact
+            search_mode: :exact,
+            source: nil
           ).and_call_original
           described_class.new(user, query, limit_projects, search_level: :group, node_id: node_id).objects('blobs')
         end
@@ -295,7 +299,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             num: described_class::ZOEKT_COUNT_LIMIT,
             project_ids: non_archived_project_ids,
             node_id: node_id,
-            search_mode: :exact
+            search_mode: :exact,
+            source: nil
           ).and_call_original
 
           search
@@ -332,7 +337,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             num: described_class::ZOEKT_COUNT_LIMIT,
             project_ids: non_archived_project_ids,
             node_id: node_id,
-            search_mode: :exact
+            search_mode: :exact,
+            source: nil
           ).and_call_original
 
           search
@@ -366,7 +372,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
               num: described_class::ZOEKT_COUNT_LIMIT,
               project_ids: [project_1.id],
               node_id: node_id,
-              search_mode: :exact
+              search_mode: :exact,
+              source: nil
             ).and_call_original
 
             expect(search).not_to be_empty
@@ -390,7 +397,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
               num: described_class::ZOEKT_COUNT_LIMIT,
               project_ids: non_archived_project_ids,
               node_id: node_id,
-              search_mode: :exact
+              search_mode: :exact,
+              source: nil
             ).and_call_original
 
             search
@@ -426,7 +434,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
               num: described_class::ZOEKT_COUNT_LIMIT,
               project_ids: expected_project_ids,
               node_id: node_id,
-              search_mode: :exact
+              search_mode: :exact,
+              source: nil
             ).and_call_original
 
             search
