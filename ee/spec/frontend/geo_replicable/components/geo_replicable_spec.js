@@ -64,9 +64,13 @@ describe('GeoReplicable', () => {
       const replicableItems = [...store.state.replicableItems];
 
       for (let i = 0; i < replicableItemWrappers.length; i += 1) {
-        expect(replicableItemWrappers.at(i).props().registryId).toBe(replicableItems[i].id);
-        expect(replicableItemWrappers.at(i).props().modelRecordId).toBe(
-          replicableItems[i].modelRecordId,
+        expect(replicableItemWrappers.at(i).props()).toEqual(
+          expect.objectContaining({
+            registryId: replicableItems[i].id,
+            modelRecordId: replicableItems[i].modelRecordId,
+            syncStatus: replicableItems[i].state,
+            verificationState: replicableItems[i].verificationState,
+          }),
         );
       }
     });

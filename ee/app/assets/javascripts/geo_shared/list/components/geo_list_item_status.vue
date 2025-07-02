@@ -27,7 +27,7 @@ export default {
       :title="status.tooltip"
       :name="status.icon"
       :variant="status.variant"
-      class="gl-cursor-pointer"
+      class="gl-mx-1 gl-cursor-pointer"
     />
   </div>
 </template>

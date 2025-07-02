@@ -4,7 +4,8 @@ import Vuex from 'vuex';
 import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { REPLICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
+import { REPLICATION_STATUS_STATES, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import { ACTION_TYPES } from 'ee/geo_replicable/constants';
@@ -32,6 +33,7 @@ describe('GeoReplicableItem', () => {
     registryId: mockReplicable.id,
     modelRecordId: 11,
     syncStatus: mockReplicable.state,
+    verificationState: mockReplicable.verificationState,
     lastSynced: mockReplicable.lastSyncedAt,
     lastVerified: mockReplicable.verifiedAt,
   };
@@ -87,27 +89,51 @@ describe('GeoReplicableItem', () => {
   });
 
   describe('replicable item status', () => {
-    beforeEach(() => {
-      createComponent();
-    });
+    const EXPECTED_REPLICATION_STATUS = {
+      tooltip: `Replication: ${REPLICATION_STATUS_STATES.PENDING.title}`,
+      icon: REPLICATION_STATUS_STATES.PENDING.icon,
+      variant: REPLICATION_STATUS_STATES.PENDING.variant,
+    };
 
-    it('renders GeoListItem with correct statusArray prop', () => {
-      const expectedState = REPLICATION_STATUS_STATES.PENDING;
+    const EXPECTED_VERIFICATION_STATUS = {
+      tooltip: `Verification: ${VERIFICATION_STATUS_STATES.SUCCEEDED.title}`,
+      icon: VERIFICATION_STATUS_STATES.SUCCEEDED.icon,
+      variant: VERIFICATION_STATUS_STATES.SUCCEEDED.variant,
+    };
 
-      expect(findGeoListItem().props('statusArray')).toStrictEqual([
-        {
-          tooltip: `Replication: ${expectedState.title}`,
-          icon: expectedState.icon,
-          variant: expectedState.variant,
-        },
-      ]);
-    });
+    const EXPECTED_UNKNOWN_VERIFICATION_STATUS = {
+      tooltip: `Verification: ${VERIFICATION_STATUS_STATES.UNKNOWN.title}`,
+      icon: VERIFICATION_STATUS_STATES.UNKNOWN.icon,
+      variant: VERIFICATION_STATUS_STATES.UNKNOWN.variant,
+    };
+
+    describe.each`
+      verificationEnabled | verificationState                   | expectedStatusArray
+      ${false}            | ${mockReplicable.verificationState} | ${[EXPECTED_REPLICATION_STATUS]}
+      ${true}             | ${mockReplicable.verificationState} | ${[EXPECTED_REPLICATION_STATUS, EXPECTED_VERIFICATION_STATUS]}
+      ${true}             | ${null}                             | ${[EXPECTED_REPLICATION_STATUS, EXPECTED_UNKNOWN_VERIFICATION_STATUS]}
+      ${true}             | ${'invalid_state'}                  | ${[EXPECTED_REPLICATION_STATUS, EXPECTED_UNKNOWN_VERIFICATION_STATUS]}
+    `(
+      'when verificationEnabled is $verificationEnabled and verificationState is $verificationState',
+      ({ verificationEnabled, verificationState, expectedStatusArray }) => {
+        beforeEach(() => {
+          createComponent({
+            props: { verificationState },
+            state: { verificationEnabled },
+          });
+        });
+
+        it('renders GeoListItem with correct statusArray', () => {
+          expect(findGeoListItem().props('statusArray')).toStrictEqual(expectedStatusArray);
+        });
+      },
+    );
   });
 
   describe("replicable item's time ago data", () => {
     const BASE_TIME_AGO = [
       {
-        label: mockReplicable.state,
+        label: capitalizeFirstCharacter(mockReplicable.state.toLowerCase()),
         dateString: mockReplicable.lastSyncedAt,
         defaultText: 'Unknown',
       },
