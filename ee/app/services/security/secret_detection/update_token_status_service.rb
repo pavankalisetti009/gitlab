@@ -5,20 +5,39 @@ module Security
     class UpdateTokenStatusService
       DEFAULT_BATCH_SIZE = 100
 
+      attr_reader :project
+
       def initialize(token_lookup_service = TokenLookupService.new)
         @token_lookup_service = token_lookup_service
       end
 
       def execute_for_pipeline(pipeline_id)
         @pipeline = Ci::Pipeline.find_by_id(pipeline_id)
-
-        return unless @pipeline && can_run?(@pipeline.project)
+        @project = @pipeline&.project
+        return unless @pipeline && can_run?(project)
 
         relation = Vulnerabilities::Finding.report_type('secret_detection').by_latest_pipeline(pipeline_id)
 
         relation.each_batch(of: DEFAULT_BATCH_SIZE) do |batch|
           process_findings_batch(batch)
         end
+      end
+
+      # Updates the token status for a single finding, identified by its ID.
+      #
+      # @param [Integer] finding_id The ID of the Vulnerabilities::Finding to update
+      def execute_for_finding(finding_id)
+        return unless finding_id
+
+        finding = Vulnerabilities::Finding.find_by_id(finding_id)
+        return unless finding
+
+        @project = finding.project
+        return unless can_run?(project)
+
+        @pipeline = Ci::Pipeline.find_by_id(finding.latest_pipeline_id)
+
+        process_findings_batch([finding])
       end
 
       private
@@ -57,8 +76,8 @@ module Security
         rescue StandardError => e
           Gitlab::ErrorTracking.track_exception(
             e,
-            pipeline_id: @pipeline.id,
-            project_id: @pipeline.project_id,
+            pipeline_id: @pipeline&.id,
+            project_id: project.id,
             finding_count: attributes_to_upsert.size
           )
 
@@ -67,7 +86,7 @@ module Security
             exception: e.class.name,
             exception_message: e.message,
             pipeline_id: @pipeline&.id,
-            project_id: @pipeline.project_id,
+            project_id: project.id,
             finding_count: attributes_to_upsert.size
           )
 

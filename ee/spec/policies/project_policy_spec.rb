@@ -3251,7 +3251,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :download_code,
             :read_project_runners,
             :read_secret_push_protection_info,
-            :read_secret_detection_validity_checks_status
+            :update_secret_detection_validity_checks_status
           ]
         end
 
@@ -4566,40 +4566,82 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'configure_secret_detection_validity_checks' do
-      where(:current_user, :feature_available, :match_expected_result) do
-        ref(:owner)      | true  | be_allowed(:configure_secret_detection_validity_checks)
-        ref(:maintainer) | true  | be_allowed(:configure_secret_detection_validity_checks)
-        ref(:developer)  | true  | be_disallowed(:configure_secret_detection_validity_checks)
-        ref(:owner)      | false | be_disallowed(:configure_secret_detection_validity_checks)
-        ref(:maintainer) | false | be_disallowed(:configure_secret_detection_validity_checks)
-        ref(:developer)  | false | be_disallowed(:configure_secret_detection_validity_checks)
-      end
+    describe 'secret_detection_validity_checks' do
+      shared_examples 'disallows all users from using secret detection validity checks' do
+        where(permission: %i[
+          configure_secret_detection_validity_checks
+          update_secret_detection_validity_checks_status
+        ])
 
-      with_them do
-        before do
-          stub_feature_flags(validity_checks: feature_available)
-          stub_licensed_features(secret_detection_validity_checks: true)
+        with_them do
+          %w[owner maintainer developer].each do |role|
+            context "with #{role}" do
+              let(:current_user) { send(role) }
+
+              it { is_expected.to be_disallowed(permission) }
+            end
+          end
         end
-
-        it { is_expected.to match_expected_result }
       end
 
-      context 'when secret_detection_validity_checks licensed feature is not available' do
+      before do
+        stub_feature_flags(validity_checks: true)
+        stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
+        stub_licensed_features(secret_detection_validity_checks: true)
+      end
+
+      describe 'configure_secret_detection_validity_checks' do
         where(:current_user, :match_expected_result) do
-          ref(:owner)      | be_disallowed(:configure_secret_detection_validity_checks)
-          ref(:maintainer) | be_disallowed(:configure_secret_detection_validity_checks)
+          ref(:owner)      | be_allowed(:configure_secret_detection_validity_checks)
+          ref(:maintainer) | be_allowed(:configure_secret_detection_validity_checks)
           ref(:developer)  | be_disallowed(:configure_secret_detection_validity_checks)
-          ref(:non_member) | be_disallowed(:configure_secret_detection_validity_checks)
         end
 
         with_them do
-          before do
-            stub_licensed_features(secret_detection_validity_checks: false)
-          end
-
           it { is_expected.to match_expected_result }
         end
+      end
+
+      describe 'update_secret_detection_validity_checks_status' do
+        where(:current_user, :match_expected_result) do
+          ref(:owner)      | be_allowed(:update_secret_detection_validity_checks_status)
+          ref(:maintainer) | be_allowed(:update_secret_detection_validity_checks_status)
+          ref(:developer)  | be_allowed(:update_secret_detection_validity_checks_status)
+        end
+
+        with_them do
+          it { is_expected.to match_expected_result }
+        end
+      end
+
+      context 'when secret_detection_validity_checks licensed feature is not available' do
+        before do
+          stub_feature_flags(validity_checks: true)
+          stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
+          stub_licensed_features(secret_detection_validity_checks: false)
+        end
+
+        it_behaves_like 'disallows all users from using secret detection validity checks'
+      end
+
+      context 'when validity_checks feature flag is disabled' do
+        before do
+          stub_feature_flags(validity_checks: false)
+          stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
+          stub_licensed_features(secret_detection_validity_checks: true)
+        end
+
+        it_behaves_like 'disallows all users from using secret detection validity checks'
+      end
+
+      context 'when secret_detection_validity_checks_refresh_token feature flag is disabled' do
+        before do
+          stub_feature_flags(validity_checks: true)
+          stub_feature_flags(secret_detection_validity_checks_refresh_token: false)
+          stub_licensed_features(secret_detection_validity_checks: true)
+        end
+
+        it_behaves_like 'disallows all users from using secret detection validity checks'
       end
     end
 
