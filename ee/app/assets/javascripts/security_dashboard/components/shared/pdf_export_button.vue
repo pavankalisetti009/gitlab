@@ -3,6 +3,7 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert, VARIANT_INFO, VARIANT_DANGER } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
+import { PdfExportError } from 'ee/security_dashboard/helpers';
 
 export default {
   name: 'PdfExportButton',
@@ -35,7 +36,8 @@ export default {
       });
     },
     notifyUserOfExportError(error) {
-      const message = error.response?.data?.message;
+      const message =
+        error instanceof PdfExportError ? error.message : error.response?.data?.message;
 
       createAlert({
         message: message || s__('SecurityReports|There was an error while generating the report.'),

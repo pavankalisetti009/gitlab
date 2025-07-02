@@ -1,6 +1,7 @@
 import {
   getFormattedSummary,
   limitVulnerabilityGradeProjects,
+  PdfExportError,
 } from 'ee/security_dashboard/helpers';
 
 describe('getFormattedSummary', () => {
@@ -109,5 +110,16 @@ describe('limitVulnerabilityGradeProjects', () => {
 
       expect(result[0]).toBe(gradeWithUndefinedProjects);
     });
+  });
+});
+
+describe('PdfExportError', () => {
+  it('creates a proper custom error', () => {
+    const message = 'Charts are still loading. Please wait and try again.';
+    const error = new PdfExportError(message);
+
+    expect(error).toBeInstanceOf(PdfExportError);
+    expect(error.message).toBe(message);
+    expect(error.name).toBe('PdfExportError');
   });
 });
