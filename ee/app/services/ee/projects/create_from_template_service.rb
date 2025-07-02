@@ -25,7 +25,7 @@ module EE
         override_params = params.dup
         params[:custom_template] = template_project if template_project
 
-        ::Projects::GitlabProjectsImportService.new(current_user, params, override_params).execute
+        ::Projects::GitlabProjectsImportService.new(current_user, params, override_params, import_type: 'gitlab_custom_project_template').execute
       end
 
       private

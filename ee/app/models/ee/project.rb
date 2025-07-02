@@ -1132,11 +1132,6 @@ module EE
       namespace.elastic_namespace_ancestry + "p#{id}-"
     end
 
-    override :import?
-    def import?
-      super || gitlab_custom_project_template_import?
-    end
-
     def notify_project_import_complete?
       return false if gitlab_custom_project_template_import?
 

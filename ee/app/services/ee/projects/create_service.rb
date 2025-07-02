@@ -62,13 +62,6 @@ module EE
         params.delete(:repository_size_limit) unless current_user&.can_admin_all_resources?
       end
 
-      override :validate_import_permissions
-      def validate_import_permissions
-        return if project.gitlab_custom_project_template_import?
-
-        super
-      end
-
       override :after_create_actions
       def after_create_actions
         super do
