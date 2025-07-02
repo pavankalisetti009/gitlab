@@ -111,6 +111,7 @@ query getIssuesCountEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
       status: { name: $status }
     ) {
       count
@@ -149,6 +150,7 @@ query getIssuesCountEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
       status: { name: $status }
     ) {
       count
@@ -191,6 +193,7 @@ query getIssuesCountEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
       status: { name: $status }
     ) {
       count
@@ -230,6 +233,7 @@ query getIssuesCountEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
       status: { name: $status }
     ) {
       count
@@ -269,6 +273,7 @@ query getIssuesCountEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
       status: { name: $status }
     ) {
       count
