@@ -1,12 +1,9 @@
 query aiCatalogAgent($id: ID!) {
   aiCatalogAgent(id: $id) @client {
     id
-    type
     name
     description
-    model
-    verified
-    version
-    releasedAt
+    systemPrompt
+    userPrompt
   }
 }
