@@ -3,7 +3,7 @@
 module API
   module Admin
     module Security
-      class PolicySettings < ::API::Base
+      class CompliancePolicySettings < ::API::Base
         before { authenticated_as_admin! }
 
         feature_category :security_policy_management
@@ -29,7 +29,7 @@ module API
 
         namespace 'admin' do
           namespace 'security' do
-            resource :policy_settings do
+            resource :compliance_policy_settings do
               desc 'Get security policy settings' do
                 detail 'Retrieve the current security policy settings'
                 success ::API::Entities::Admin::Security::PolicySetting
@@ -59,7 +59,7 @@ module API
               params do
                 requires :csp_namespace_id,
                   type: Integer,
-                  desc: 'ID of the group designated to centrally manage security policies.'
+                  desc: 'ID of the group designated to centrally manage security policies and compliance frameworks.'
               end
               put do
                 ensure_licensed!
