@@ -7,13 +7,16 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
 
   subject(:get_index) { get admin_gitlab_duo_configuration_index_path }
 
-  describe 'GET /code_suggestions', :with_cloud_connector do
+  describe 'GET /admin/gitlab_duo/configuration' do
     let(:plan) { License::STARTER_PLAN }
     let(:license) { build(:license, plan: plan) }
 
+    let!(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed, :active) }
+
     before do
       allow(License).to receive(:current).and_return(license)
-      allow(::Gitlab::Saas).to receive(:feature_available?).and_return(false)
+
+      stub_saas_features(gitlab_com_subscriptions: false)
     end
 
     shared_examples 'redirects configuration path' do
@@ -26,25 +29,17 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
     end
 
     shared_examples 'renders duo settings form' do
-      context 'when duo pro addon is purchased' do
-        let_it_be(:add_on_purchase) do
-          create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed, :active)
-        end
+      it 'renders duo settings form' do
+        get_index
 
-        it 'renders duo settings form' do
-          get_index
-
-          expect(response).to render_template(:index)
-          expect(response.body).to include('js-ai-settings')
-        end
+        expect(response).to render_template(:index)
+        expect(response.body).to include('js-ai-settings')
       end
     end
 
     context 'when the user is not admin' do
-      let_it_be(:user) { create(:user) }
-
       before do
-        sign_in(user)
+        sign_in create(:user)
       end
 
       it 'returns 404' do
@@ -63,38 +58,18 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
         enable_admin_mode!(admin)
       end
 
-      context 'when instance is self-managed' do
-        before do
-          allow(Gitlab).to receive(:com?).and_return(false)
-        end
-
-        context 'with a paid license' do
-          it_behaves_like 'renders duo settings form'
-        end
-      end
+      it_behaves_like 'renders duo settings form'
 
       context 'when instance is SaaS' do
         before do
-          allow(Gitlab).to receive(:com?).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         it_behaves_like 'redirects configuration path'
       end
 
-      context 'when the instance does not have duo chat availabile' do
-        before do
-          allow(controller).to receive_messages(admin_display_ai_powered_chat_settings?: true,
-            admin_display_duo_addon_settings?: false)
-        end
-
-        it_behaves_like 'redirects configuration path'
-      end
-
-      context 'when the instance does not have duo pro availabile' do
-        before do
-          allow(controller).to receive_messages(admin_display_ai_powered_chat_settings?: false,
-            admin_display_duo_addon_settings?: true)
-        end
+      context 'when the instance does not have a Duo add-on purchase' do
+        let(:add_on_purchase) { nil }
 
         it_behaves_like 'redirects configuration path'
       end
