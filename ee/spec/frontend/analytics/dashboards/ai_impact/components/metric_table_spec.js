@@ -285,16 +285,15 @@ describe('Metric table', () => {
         return createWrapper();
       });
 
-      it('does not render the loading skeleton', () => {
+      it('does not render loading skeletons', () => {
         expect(findSkeletonLoaders(testId).length).toBe(0);
+
+        expect(findChartSkeletonLoader(testId).exists()).toBe(false);
       });
 
       it('renders the metric values', () => {
-        expect(findTableRow(testId).text()).toMatchSnapshot();
-      });
-
-      it('does not render the chart skeleton loader', () => {
-        expect(findChartSkeletonLoader(testId).exists()).toBe(false);
+        const metricCells = findValueTableCells(testId).wrappers;
+        expect(metricCells.map((w) => w.text().replace(/\s+/g, ' '))).toMatchSnapshot();
       });
 
       it('renders the sparkline chart with expected props', () => {
