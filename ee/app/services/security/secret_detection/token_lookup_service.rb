@@ -53,6 +53,13 @@ module Security
         token_method: :feed_token
       }.freeze
 
+      PIPELINE_TRIGGER_CONFIG = {
+        insecure: true,
+        model: Ci::Trigger,
+        lookup_method: :with_token,
+        token_method: :token
+      }.freeze
+
       # Maps token type IDs (from secret-detection-rules) to their corresponding GitLab model classes
       # and the methods needed to look them up
       TOKEN_TYPE_CONFIG = {
@@ -68,7 +75,8 @@ module Security
         'gitlab_scim_oauth_token' => GROUP_SCIM_AUTH_ACCESS_TOKEN_CONFIG,
         'gitlab_ci_build_token' => CI_BUILD_TOKEN_CONFIG,
         'gitlab_incoming_email_token' => INCOMING_EMAIL_TOKEN_CONFIG,
-        'gitlab_feed_token_v2' => FEED_TOKEN_CONFIG
+        'gitlab_feed_token_v2' => FEED_TOKEN_CONFIG,
+        'gitlab_pipeline_trigger_token' => PIPELINE_TRIGGER_CONFIG
       }.freeze
 
       # Checks if a given token type is supported by this service
