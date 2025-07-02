@@ -35,5 +35,9 @@ module GitlabSubscriptions
       GitlabSubscriptions::NamespaceAddOnPurchasesFinder
         .new(namespace, add_on: :duo, only_active: false).execute.first
     end
+
+    def self.active_self_managed_duo_core_pro_or_enterprise?
+      GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core_pro_or_enterprise.active.any?
+    end
   end
 end
