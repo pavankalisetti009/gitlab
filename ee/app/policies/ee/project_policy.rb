@@ -452,9 +452,9 @@ module EE
         enable :read_project_security_exclusions
         enable :read_security_settings
         enable :read_vulnerability_statistics
-        enable :read_secret_detection_validity_checks_status
         enable :read_security_resource
         enable :read_vulnerability
+        enable :update_secret_detection_validity_checks_status
       end
 
       rule { can?(:push_code) }.policy do
@@ -536,7 +536,7 @@ module EE
       rule { custom_role_enables_admin_security_testing }.policy do
         enable :admin_security_testing
         enable :configure_secret_detection_validity_checks
-        enable :read_secret_detection_validity_checks_status
+        enable :update_secret_detection_validity_checks_status
       end
 
       rule { security_dashboard_enabled & can?(:admin_security_testing) }.policy do
@@ -559,7 +559,7 @@ module EE
       end
 
       rule { ~validity_checks_available }.policy do
-        prevent :read_secret_detection_validity_checks_status
+        prevent :update_secret_detection_validity_checks_status
         prevent :configure_secret_detection_validity_checks
       end
 
@@ -1179,8 +1179,9 @@ module EE
         enable :enable_secret_push_protection
       end
 
-      condition(:validity_checks_available) do
+      condition(:validity_checks_available, scope: :subject) do
         ::Feature.enabled?(:validity_checks, @subject) &&
+          ::Feature.enabled?(:secret_detection_validity_checks_refresh_token, @subject) &&
           @subject.licensed_feature_available?(:secret_detection_validity_checks)
       end
 
