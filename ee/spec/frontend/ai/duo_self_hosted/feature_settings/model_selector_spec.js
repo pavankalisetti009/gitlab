@@ -26,7 +26,6 @@ describe('ModelSelector', () => {
   const updateFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiFeatureSettingUpdate: {
-        aiFeatureSettings: [mockAiFeatureSetting],
         errors: [],
       },
     },
@@ -225,7 +224,6 @@ describe('ModelSelector', () => {
     const updateFeatureSettingsErrorHandler = jest.fn().mockResolvedValue({
       data: {
         aiFeatureSettingUpdate: {
-          aiFeatureSettings: null,
           errors: ['Codegemma is incompatible with the Duo Chat feature'],
         },
       },
