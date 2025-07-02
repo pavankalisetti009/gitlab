@@ -225,6 +225,8 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :so
           'new DS analyzer - Javascript npm-shrinkwrap.json' | ['npm-shrinkwrap.json']          | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
           'new DS analyzer - Multiple languages'             | ['pom.xml', 'package-lock.json'] | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
           'new DS analyzer - NuGet'                          | ['packages.lock.json']           | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - NuGet (csproj)'                 | ['my.csproj']                    | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - NuGet (vbproj)'                 | ['my.vbproj']                    | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
           'new DS analyzer - Conan'                          | ['conan.lock']                   | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
           'new DS analyzer - PHP'                            | ['composer.lock']                | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
           'new DS analyzer - Python requirements.txt'        | ['requirements.txt']             | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
