@@ -56652,13 +56652,13 @@ msgstr ""
 msgid "SecurityOrchestration|Run a %{scannerStart}%{scanner}%{scannerEnd} scan with the following options:"
 msgstr ""
 
+msgid "SecurityOrchestration|Run scans for merge request pipelines targeting default branches and on default branches. Optimized for MR approval policy compatibility"
+msgstr ""
+
 msgid "SecurityOrchestration|Runs comprehensive scans for `release/*` branches and when merging to main/production branches"
 msgstr ""
 
 msgid "SecurityOrchestration|Runs scans on a schedule for maintenance and continuous monitoring of protected branches"
-msgstr ""
-
-msgid "SecurityOrchestration|Runs scans on source branches targeting protected branches. Optimized for MR approval policy compatibility"
 msgstr ""
 
 msgid "SecurityOrchestration|Save allowlist"

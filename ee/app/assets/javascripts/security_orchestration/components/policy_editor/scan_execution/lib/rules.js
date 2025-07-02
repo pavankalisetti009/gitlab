@@ -82,7 +82,7 @@ export const STRATEGIES = [
     key: DEFAULT_CONDITION_STRATEGY,
     header: s__('SecurityOrchestration|Merge Request Security'),
     description: s__(
-      'SecurityOrchestration|Runs scans on source branches targeting protected branches. Optimized for MR approval policy compatibility',
+      'SecurityOrchestration|Run scans for merge request pipelines targeting default branches and on default branches. Optimized for MR approval policy compatibility',
     ),
     rules: [
       { type: 'pipeline', branch_type: 'default' },
