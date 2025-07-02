@@ -23,7 +23,6 @@ describe('BatchSettingsUpdater', () => {
   const updateFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiFeatureSettingUpdate: {
-        aiFeatureSettings: mockDuoChatFeatureSettings,
         errors: [],
       },
     },

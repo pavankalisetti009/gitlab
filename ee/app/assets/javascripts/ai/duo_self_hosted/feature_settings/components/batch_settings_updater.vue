@@ -110,7 +110,7 @@ export default {
   <div :class="{ 'gl-flex gl-w-full gl-justify-between': selectedFeatureSettingUnassigned }">
     <div v-if="selectedFeatureSettingUnassigned" ref="unAssignedFeatureWarning">
       <div
-        class="align-items-center gl-flex gl-h-7 gl-w-7 gl-justify-center gl-rounded-base gl-bg-orange-50"
+        class="gl-flex gl-h-7 gl-w-7 gl-items-center gl-justify-center gl-rounded-base gl-bg-orange-50"
       >
         <gl-icon
           data-testid="warning-icon"
