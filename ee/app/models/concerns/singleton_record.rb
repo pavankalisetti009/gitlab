@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# DEPRECATED, do not use.
+# Singletons no longer make sense in a Cells architecture.
+# Consider moving the scope of the feature to be at Organization level,
+# or lower.
 module SingletonRecord
   extend ActiveSupport::Concern
 
