@@ -87,29 +87,48 @@ export default {
   },
   fields: {
     name: {
-      label: `${__('Name')} *`,
+      label: __('Name'),
       validators: [
-        formValidators.required(`${__("Name can't be blank")}.`),
+        formValidators.required(s__('AICatalog|Name is required.')),
         createLengthValidator(MAX_LENGTH_NAME),
       ],
       inputAttrs: {
         'data-testid': 'agent-form-input-name',
+        placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
+      },
+      groupAttrs: {
+        labelDescription: s__('AICatalog|Choose a memorable name for your AI agent.'),
       },
     },
     description: {
-      label: `${__('Description')} *`,
+      label: __('Description'),
       validators: [
-        formValidators.required(s__("AICatalog|Description can't be blank.")),
+        formValidators.required(s__('AICatalog|Description is required.')),
         createLengthValidator(MAX_LENGTH_DESCRIPTION),
       ],
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
+        ),
+      },
     },
     systemPrompt: {
-      label: s__('AICatalog|System Prompt'),
+      label: s__('AICatalog|System Prompt (optional)'),
       validators: [createLengthValidator(MAX_LENGTH_PROMPT)],
+      groupAttrs: {
+        labelDescription: s__(
+          "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
+        ),
+      },
     },
     userPrompt: {
-      label: s__('AICatalog|User Prompt'),
+      label: s__('AICatalog|User Prompt (optional)'),
       validators: [createLengthValidator(MAX_LENGTH_PROMPT)],
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Provide default instructions or context that will be included with every user interaction.',
+        ),
+      },
     },
   },
 };
@@ -126,6 +145,9 @@ export default {
         <gl-form-textarea
           :id="id"
           :no-resize="false"
+          :placeholder="
+            s__('AICatalog|This agent specializes in... It can help you with... Best suited for...')
+          "
           :state="validation.state"
           :value="value"
           data-testid="agent-form-textarea-description"
@@ -137,6 +159,11 @@ export default {
         <gl-form-textarea
           :id="id"
           :no-resize="false"
+          :placeholder="
+            s__(
+              'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
+            )
+          "
           :value="value"
           data-testid="agent-form-textarea-system-prompt"
           @blur="blur"
@@ -147,6 +174,12 @@ export default {
         <gl-form-textarea
           :id="id"
           :no-resize="false"
+          :placeholder="
+            s__(
+              'AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include...',
+            )
+          "
+          :rows="10"
           :value="value"
           data-testid="agent-form-textarea-user-prompt"
           @blur="blur"

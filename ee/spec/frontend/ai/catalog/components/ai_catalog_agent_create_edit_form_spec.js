@@ -71,7 +71,7 @@ describe('AiCatalogAgentForm', () => {
       expect(findSubmitButton().props('loading')).toBe(true);
     });
 
-    it('does not show the button with loading icon when the loading property is true', () => {
+    it('does not show the button with loading icon when the loading property is false', () => {
       createWrapper({ isLoading: false });
 
       expect(findSubmitButton().props('loading')).toBe(false);
