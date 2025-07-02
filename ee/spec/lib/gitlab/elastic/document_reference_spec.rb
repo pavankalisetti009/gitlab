@@ -134,14 +134,14 @@ RSpec.describe Gitlab::Elastic::DocumentReference, feature_category: :global_sea
 
       database_records = nil
       expect do
-        database_records = described_class.preload_indexing_data(refs).map { |ref| ref.database_record }
+        database_records = described_class.preload_indexing_data(refs).map(&:database_record)
       end.not_to exceed_query_limit(control)
 
       expect(database_records[0]).to eq(issue1)
       expect(database_records[1]).to eq(note1)
       expect(database_records[2]).to eq(issue2)
       expect(database_records[3]).to eq(note2)
-      expect(database_records[4]).to eq(nil) # Deleted database record will be nil
+      expect(database_records[4]).to be_nil # Deleted database record will be nil
     end
   end
 
@@ -159,7 +159,7 @@ RSpec.describe Gitlab::Elastic::DocumentReference, feature_category: :global_sea
     let(:subclass) { Class.new(described_class) }
 
     it 'is equal to itself' do
-      expect(issue_as_ref).to eq(issue_as_ref)
+      expect(issue_as_ref).to eq(issue_as_ref) # rubocop:disable RSpec/IdenticalEqualityAssertion -- testing reflexivity
     end
 
     it 'is equal to another ref when all elements match' do
