@@ -28,6 +28,45 @@ RSpec.describe Groups::SsoController, feature_category: :system_access do
       expect(assigns[:redirect_path]).to eq(group_path(group))
     end
 
+    context 'when user_return_to is set in session' do
+      let(:oauth_redirect_url) { '/oauth/authorize?client_id=test-app' }
+
+      it 'redirect_path is taken from session instead of group_path' do
+        session[:user_return_to] = oauth_redirect_url
+
+        get :saml, params: { group_id: group }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(assigns[:redirect_path]).to eq(oauth_redirect_url)
+      end
+
+      it 'session takes precedence over redirect parameter' do
+        session[:user_return_to] = oauth_redirect_url
+
+        get :saml, params: { group_id: group, redirect: '/some-other-path' }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(assigns[:redirect_path]).to eq(oauth_redirect_url)
+      end
+    end
+
+    context 'when feature flag ff_oauth_redirect_to_sso_login is disabled' do
+      let(:oauth_redirect_url) { '/oauth/authorize?client_id=test-app' }
+
+      before do
+        stub_feature_flags(ff_oauth_redirect_to_sso_login: false)
+      end
+
+      it 'redirect_path is taken as group_path and not from session' do
+        session[:user_return_to] = oauth_redirect_url
+
+        get :saml, params: { group_id: group }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(assigns[:redirect_path]).to eq(group_path(group))
+      end
+    end
+
     it 'passes group name to the view' do
       get :saml, params: { group_id: group }
 
