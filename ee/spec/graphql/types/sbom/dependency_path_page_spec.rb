@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::Sbom::DependencyPathType, feature_category: :dependency_management do
+RSpec.describe Types::Sbom::DependencyPathPage, feature_category: :dependency_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
-  let(:dependency_paths) { graphql_response.dig('data', 'project', 'dependencyPaths', 'nodes') }
+  let(:dependency_paths) { graphql_response.dig('data', 'project', 'dependencyPaths') }
   let(:query) do
     %(
       query {
@@ -18,13 +18,31 @@ RSpec.describe Types::Sbom::DependencyPathType, feature_category: :dependency_ma
               }
               isCyclic
             }
+
+            edges {
+              node {
+                path {
+                  name
+                  version
+                }
+                isCyclic
+              }
+              cursor
+            }
+
+            pageInfo {
+              hasPreviousPage
+              hasNextPage
+              startCursor
+              endCursor
+            }
           }
         }
       }
     )
   end
 
-  let_it_be(:fields) { %i[path isCyclic] }
+  let_it_be(:fields) { %i[nodes edges pageInfo] }
 
   before_all do
     project.add_developer(user)
@@ -38,7 +56,7 @@ RSpec.describe Types::Sbom::DependencyPathType, feature_category: :dependency_ma
 
   it { expect(described_class).to have_graphql_fields(fields) }
 
-  describe "path parsing" do
+  describe "data parsing" do
     let_it_be(:sbom_occurrence_1) do
       create(:sbom_occurrence, component_name: 'component-1', project: project)
     end
@@ -61,23 +79,54 @@ RSpec.describe Types::Sbom::DependencyPathType, feature_category: :dependency_ma
         }],
         has_next_page: false,
         has_previous_page: false
+
       }
     end
 
-    let_it_be(:expected_response) do
-      [{
+    let_it_be(:cursor) do
+      cursor_for([sbom_occurrence_1.id, sbom_component_2.id, sbom_occurrence_3.id])
+    end
+
+    let_it_be(:path) do
+      {
         path: [
           { name: sbom_occurrence_1.component_name, version: sbom_occurrence_1.version },
           { name: sbom_component_2.component_name, version: sbom_component_2.version },
           { name: sbom_occurrence_3.component_name, version: sbom_occurrence_3.version }
         ],
         isCyclic: false
-      }].as_json
+      }
     end
 
-    it "parses the sbom path provided" do
+    let_it_be(:expected_response) do
+      {
+        nodes: [
+          path
+        ],
+        edges: [
+          {
+            node: path,
+            cursor: cursor
+          }
+        ],
+        pageInfo: {
+          hasPreviousPage: false,
+          hasNextPage: false,
+          startCursor: cursor,
+          endCursor: cursor
+        }
+      }.as_json
+    end
+
+    it 'prases the data from the Sbom::PathFinder and adds appropriate cursors' do
       expect(::Sbom::PathFinder).to receive(:execute).and_return(paths)
       expect(dependency_paths).to match_array(expected_response)
     end
+  end
+
+  private
+
+  def cursor_for(ids)
+    Base64.encode64(ids.to_json).strip
   end
 end

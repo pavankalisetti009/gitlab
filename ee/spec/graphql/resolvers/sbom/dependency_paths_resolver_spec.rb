@@ -15,7 +15,7 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
       input_file_path: ancestor.input_file_path, project: project)
   end
 
-  subject(:get_paths) { sync(resolve_dependency_paths(args: args)) }
+  subject(:dependency_paths) { sync(resolve_dependency_paths(args: args)) }
 
   before do
     stub_licensed_features(security_dashboard: true, dependency_scanning: true)
@@ -48,20 +48,79 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
       end
 
       let(:result) do
-        [
-          {
-            path: [descendant],
-            is_cyclic: false
-          },
-          {
-            path: [ancestor, descendant],
-            is_cyclic: false
-          }
-        ]
+        {
+          paths: [
+            { path: [descendant], is_cyclic: false },
+            { path: [ancestor, descendant], is_cyclic: false }
+          ],
+          has_previous_page: false,
+          has_next_page: false
+        }
       end
 
-      it 'returns dependency path data' do
-        is_expected.to match_array(result)
+      it 'returns dependency path data along with page info' do
+        is_expected.to eq result
+      end
+
+      context 'with pagination params', :aggregate_failures do
+        context 'when fetching with after cursor' do
+          let(:args) do
+            {
+              occurrence: descendant.to_gid,
+              after: encode_cursor([descendant].map(&:id)),
+              limit: 1
+            }
+          end
+
+          it "calls dependency paths finder with after cursor parameter" do
+            expect(Sbom::PathFinder).to receive(:execute).with(
+              descendant,
+              after_graph_ids: [descendant.id],
+              before_graph_ids: nil,
+              limit: 1
+            ).and_call_original
+
+            dependency_paths
+          end
+        end
+
+        context 'when fetching with before cursor' do
+          let(:args) do
+            {
+              occurrence: descendant.to_gid,
+              before: encode_cursor([ancestor, descendant].map(&:id)),
+              limit: 1
+            }
+          end
+
+          it "calls dependency paths finder with after cursor parameter" do
+            expect(Sbom::PathFinder).to receive(:execute).with(
+              descendant,
+              before_graph_ids: [ancestor.id, descendant.id],
+              after_graph_ids: nil,
+              limit: 1
+            ).and_call_original
+
+            dependency_paths
+          end
+        end
+
+        context "with invalid cursor" do
+          let(:args) do
+            {
+              occurrence: descendant.to_gid,
+              before: Base64.encode64("invalid cursor").strip,
+              limit: 1
+            }
+          end
+
+          it "returns a GraphQL::ExecutionError" do
+            result = dependency_paths
+
+            expect(result).to be_a(GraphQL::ExecutionError)
+            expect(result.message).to match(/Invalid cursor format/)
+          end
+        end
       end
     end
   end
@@ -75,5 +134,9 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
       args: args,
       ctx: { current_user: user }
     )
+  end
+
+  def encode_cursor(path_ids)
+    Base64.encode64(path_ids.to_json).strip
   end
 end

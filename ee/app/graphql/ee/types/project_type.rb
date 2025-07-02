@@ -417,7 +417,7 @@ module EE
           resolver: ::Resolvers::Sbom::DependenciesResolver
 
         field :dependency_paths,
-          [::Types::Sbom::DependencyPathType],
+          ::Types::Sbom::DependencyPathPage,
           null: true,
           authorize: :read_dependency,
           description: 'Ancestor dependency paths for a dependency used by the project. \
