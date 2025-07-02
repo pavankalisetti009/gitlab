@@ -7,6 +7,7 @@ RSpec.describe 'Work Items List', :js, feature_category: :team_planning do
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
+  let_it_be(:group_internal) { create(:group, :internal) }
 
   context 'when user is signed in as owner' do
     before_all do
@@ -21,9 +22,7 @@ RSpec.describe 'Work Items List', :js, feature_category: :team_planning do
       wait_for_all_requests
     end
 
-    it 'shows message when there are no items in the list' do
-      expect(page).to have_content("No results found")
-    end
+    it_behaves_like 'no work items in the list'
 
     context 'when the group work items list page renders' do
       let_it_be(:epic) { create(:work_item, :epic, namespace: group, title: 'Epic 1') }
@@ -31,12 +30,6 @@ RSpec.describe 'Work Items List', :js, feature_category: :team_planning do
       it 'shows actions based on user permissions' do
         expect(page).to have_link('New item')
         expect(page).to have_button('Bulk edit')
-      end
-
-      it 'shows epic in the list' do
-        within('.issuable-list') do
-          expect(page).to have_link(epic.title)
-        end
       end
 
       context 'when work item is an issue' do
@@ -84,14 +77,43 @@ RSpec.describe 'Work Items List', :js, feature_category: :team_planning do
         let_it_be(:award_emoji_upvote) { create(:award_emoji, :upvote, user: user, awardable: epic_with_metadata) }
         let_it_be(:award_emoji_downvote) { create(:award_emoji, :downvote, user: user, awardable: epic_with_metadata) }
 
+        it_behaves_like 'dates on the work items list' do
+          let(:date) { 'May 1 – Dec 31, 2025' }
+        end
+
         it 'display epic related metadata' do
           within(all('[data-testid="issuable-container"]')[0]) do
             expect(page).to have_link(label.name)
             expect(page).to have_text(%r{created .* by #{epic_with_metadata.author.name}})
             expect(page).to have_link(user.name, href: user_path(user))
-            expect(find_by_testid('issuable-due-date-title').text).to have_text('May 1 – Dec 31, 2025')
           end
         end
+      end
+    end
+  end
+
+  context 'with internal group visibility level' do
+    let_it_be(:open_work_item) { create(:work_item, :epic, namespace: group_internal, title: 'Open epic') }
+
+    let_it_be(:closed_work_item) do
+      create(:work_item, :epic, :closed, namespace: group_internal, title: 'Closed epic')
+    end
+
+    context 'when a member views all work items' do
+      before_all do
+        group_internal.add_developer(user)
+      end
+
+      before do
+        stub_licensed_features(epics: true)
+        sign_in(user)
+        visit group_work_items_path(group_internal, state: :all)
+        wait_for_all_requests
+      end
+
+      it_behaves_like 'shows all items in the list' do
+        let(:open_item) { open_work_item }
+        let(:closed_item) { closed_work_item }
       end
     end
   end
