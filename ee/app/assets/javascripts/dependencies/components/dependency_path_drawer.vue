@@ -63,15 +63,10 @@ export default {
       required: false,
       default: false,
     },
-    dependencyPaths: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
   },
   data() {
     return {
-      localDependencyPaths: this.dependencyPaths,
+      dependencyPaths: [],
       selectedItem: null,
       pageInfo: {},
       cursor: {
@@ -81,7 +76,7 @@ export default {
     };
   },
   apollo: {
-    localDependencyPaths: {
+    dependencyPaths: {
       query: getDependencyPaths,
       variables() {
         return {
@@ -91,26 +86,29 @@ export default {
         };
       },
       skip() {
-        return !this.fullPath || !this.occurrenceId;
+        return !this.showDrawer;
       },
       update({ project }) {
-        return project?.dependencyPaths?.nodes || [];
+        const { nodes = [] } = project?.dependencyPaths || {};
+        return nodes;
       },
       result({ data }) {
-        this.pageInfo = data.project?.dependencyPaths?.pageInfo || {};
+        const { pageInfo = {} } = data.project?.dependencyPaths || {};
+        this.pageInfo = pageInfo;
       },
     },
   },
   computed: {
     isLoading() {
-      return this.$apollo?.queries.localDependencyPaths.loading;
+      return this.$apollo?.queries.dependencyPaths.loading;
     },
     selectedOccurrenceId() {
       return this.selectedItemValue || this.occurrenceId;
     },
     fullPath() {
-      if (this.namespaceType === NAMESPACE_PROJECT) return this.projectFullPath;
-      return this.selectedItem?.fullPath;
+      return this.namespaceType === NAMESPACE_PROJECT
+        ? this.projectFullPath
+        : this.selectedItem?.fullPath;
     },
     selectedItemValue() {
       return this.selectedItem?.value;
@@ -184,6 +182,7 @@ export default {
     :title="$options.i18n.drawerTitle"
     :z-index="$options.DRAWER_Z_INDEX"
     header-sticky
+    class="dependency-path-drawer"
     @close="$emit('close')"
   >
     <template #title>
@@ -214,7 +213,7 @@ export default {
     <div v-else>
       <ul class="gl-list-none gl-p-2">
         <li
-          v-for="(dependencyPath, index) in localDependencyPaths"
+          v-for="(dependencyPath, index) in dependencyPaths"
           :key="index"
           class="gl-border-b gl-py-5 first:!gl-pt-0"
         >
@@ -247,3 +246,14 @@ export default {
     </template>
   </gl-drawer>
 </template>
+
+<!-- A bugfix for gitlab-ui also introduced a problem with the stickness of the footer. 
+See https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/merge_requests/4512#note_2593807401
+Until it's fixed, this line fixes it for this drawer specifically.  -->
+<style>
+.dependency-path-drawer {
+  .gl-drawer-body {
+    min-height: auto;
+  }
+}
+</style>

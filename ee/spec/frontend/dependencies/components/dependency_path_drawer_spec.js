@@ -30,10 +30,8 @@ describe('DependencyPathDrawer component', () => {
   let responseHandler;
 
   const defaultProps = {
-    component: {
-      name: 'activerecord',
-      version: '5.0.0',
-    },
+    showDrawer: true,
+    component: { name: 'activerecord', version: '5.0.0' },
     occurrenceId: 1,
   };
   const defaultGroup = 'some-group';
@@ -49,10 +47,7 @@ describe('DependencyPathDrawer component', () => {
 
     wrapper = shallowMountExtended(DependencyPathDrawer, {
       apolloProvider: mockApollo,
-      propsData: {
-        ...defaultProps,
-        ...props,
-      },
+      propsData: { ...defaultProps, ...props },
       stubs: {
         GlDrawer: stubComponent(GlDrawer, { template: RENDER_ALL_SLOTS_TEMPLATE }),
       },
@@ -70,7 +65,7 @@ describe('DependencyPathDrawer component', () => {
   const findTitle = () => wrapper.findByTestId('dependency-path-drawer-title');
   const findHeader = () => wrapper.findByTestId('dependency-path-drawer-header');
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findProjectList = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findAllListItem = () => wrapper.findAll('li');
   const getTruncateText = (index) => findAllListItem().at(index).findComponent(GlTruncateText);
   const getBadge = (index) => findAllListItem().at(index).findComponent(GlBadge);
@@ -194,9 +189,9 @@ describe('DependencyPathDrawer component', () => {
       });
     });
 
-    it('skips query when occurrenceId is not available', async () => {
+    it('skips query when showDrawer is false', async () => {
       await createComponent({
-        props: { occurrenceId: null },
+        props: { showDrawer: false },
         resolver: jest.fn().mockResolvedValue(getDependencyPathsResponse()),
       });
 
@@ -334,19 +329,16 @@ describe('DependencyPathDrawer component', () => {
       {
         name: 'Project 1',
         full_path: 'group-1/project-1',
-        has_dependency_paths: true,
         occurrence_id: 1,
       },
       {
         name: 'Project 2',
         full_path: 'group-1/project-2',
-        has_dependency_paths: true,
         occurrence_id: 2,
       },
       {
         name: 'Project 3',
         full_path: 'group-1/group-child/project-3',
-        has_dependency_paths: true,
         occurrence_id: 3,
       },
     ];
@@ -361,7 +353,6 @@ describe('DependencyPathDrawer component', () => {
     beforeEach(async () => {
       await createComponent({
         props: {
-          showDrawer: true,
           dropdownItems: createDropdownItems(items),
         },
         namespaceType: NAMESPACE_GROUP,
@@ -372,7 +363,7 @@ describe('DependencyPathDrawer component', () => {
       const firstLocation = items[0];
       const { occurrence_id } = firstLocation;
 
-      expect(findProjectList().props('selected')).toBe(occurrence_id);
+      expect(findDropdown().props('selected')).toBe(occurrence_id);
     });
 
     it('resets selected item in dropdown when dropdownItems change', async () => {
@@ -387,7 +378,7 @@ describe('DependencyPathDrawer component', () => {
       wrapper.setProps({ dropdownItems: newItems });
       await nextTick();
 
-      expect(findProjectList().props('items')[0].value).toBe(newItems[0].value);
+      expect(findDropdown().props('items')[0].value).toBe(newItems[0].value);
     });
 
     describe('query', () => {
@@ -403,7 +394,7 @@ describe('DependencyPathDrawer component', () => {
 
       it('queries again when selected item changes', async () => {
         const secondItem = items[1];
-        findProjectList().vm.$emit('select', secondItem.occurrence_id);
+        findDropdown().vm.$emit('select', secondItem.occurrence_id);
         await waitForPromises();
         expect(responseHandler).toHaveBeenCalledTimes(2);
         expect(responseHandler).toHaveBeenCalledWith({

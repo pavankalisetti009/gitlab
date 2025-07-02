@@ -37,6 +37,7 @@ export const topLevelPath = {
 export const defaultDependencyPaths = {
   nodes: [
     {
+      id: 1,
       isCyclic: false,
       path: [
         { name: 'eslint', version: '9.17.0', __typename: 'DependencyPathPartial' },
