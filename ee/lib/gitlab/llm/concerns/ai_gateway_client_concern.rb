@@ -34,8 +34,7 @@ module Gitlab
         end
 
         def prompt_version_or_default
-          feature_setting = selected_feature_setting
-          is_self_hosted = feature_setting.is_a?(::Ai::FeatureSetting) && feature_setting.self_hosted?
+          is_self_hosted = feature_setting&.self_hosted? || false
 
           return prompt_version if prompt_version && (!is_self_hosted && !::Ai::AmazonQ.connected?)
 
@@ -47,11 +46,7 @@ module Gitlab
         end
 
         def base_url_from_feature_setting
-          if selected_feature_setting.is_a?(::Ai::FeatureSetting)
-            selected_feature_setting.base_url || ::Gitlab::AiGateway.url
-          else
-            ::Gitlab::AiGateway.url
-          end
+          selected_feature_setting&.base_url || ::Gitlab::AiGateway.url
         end
 
         def selected_feature_setting
