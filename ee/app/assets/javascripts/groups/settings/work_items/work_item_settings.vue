@@ -25,7 +25,7 @@ export default {
 
 <template>
   <div>
-    <custom-fields-list :full-path="fullPath" />
     <custom-status-settings v-if="workItemStatusFeatureFlagEnabled" :full-path="fullPath" />
+    <custom-fields-list :full-path="fullPath" />
   </div>
 </template>

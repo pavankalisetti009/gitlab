@@ -10,6 +10,7 @@ import {
   GlTable,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { humanize } from '~/lib/utils/text_utility';
 import { __, n__, s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -30,6 +31,7 @@ export default {
     GlLoadingIcon,
     GlSprintf,
     GlTable,
+    HelpPageLink,
     TimeagoTooltip,
   },
   directives: {
@@ -256,6 +258,18 @@ export default {
 
 <template>
   <div>
+    <h2 class="settings-title gl-heading-3 gl-mb-1 gl-mt-5">{{ s__('WorkItem|Custom fields') }}</h2>
+    <p class="gl-mb-3 gl-text-subtle">
+      {{
+        s__(
+          'WorkItem|Custom fields extend work items to track additional data. Fields will appear in alphanumeric order. All fields apply to all subgroups and projects.',
+        )
+      }}
+      <help-page-link href="user/work_items/custom_fields" target="_blank">
+        {{ s__('WorkItem|How do I use custom fields?') }}
+      </help-page-link>
+    </p>
+
     <gl-alert
       v-if="errorText"
       variant="danger"
