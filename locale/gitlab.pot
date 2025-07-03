@@ -54228,7 +54228,7 @@ msgstr ""
 msgid "ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{branchExceptions} %{agents} %{namespaces}"
 msgstr ""
 
-msgid "ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{sources} %{branchExceptions} %{agents} %{namespaces}"
+msgid "ScanExecutionPolicy|%{rules} every time a pipeline runs that %{scopes} %{branches} using %{sources} %{branchExceptions} %{agents} %{namespaces}"
 msgstr ""
 
 msgid "ScanExecutionPolicy|%{strategySelector} pipeline file to run from %{projectSelector}"
@@ -56062,6 +56062,9 @@ msgstr ""
 msgid "SecurityOrchestration|After this merge request is merged, go to [%{framework}](%{link}) and remove the compliance pipeline so that the new pipeline execution policy can take precedence."
 msgstr ""
 
+msgid "SecurityOrchestration|All pipeline sources"
+msgstr ""
+
 msgid "SecurityOrchestration|All projects in linked groups"
 msgstr ""
 
@@ -56827,9 +56830,6 @@ msgid "SecurityOrchestration|Select security policy project"
 msgstr ""
 
 msgid "SecurityOrchestration|Select suffix"
-msgstr ""
-
-msgid "SecurityOrchestration|Select the source"
 msgstr ""
 
 msgid "SecurityOrchestration|Selecting this will disconnect your top level compliance and security policy (CSP) group from all the other top level groups. All frameworks shared by the top level CSP group will also be disconnected due to this action."
@@ -75420,13 +75420,13 @@ msgstr ""
 msgid "target all default branches"
 msgstr ""
 
-msgid "target all protected branches"
-msgstr ""
-
-msgid "target default branch"
-msgstr ""
-
 msgid "targeting "
+msgstr ""
+
+msgid "targets all protected branches"
+msgstr ""
+
+msgid "targets default branch"
 msgstr ""
 
 msgid "task"

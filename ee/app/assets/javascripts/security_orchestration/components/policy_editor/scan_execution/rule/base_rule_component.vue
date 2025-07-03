@@ -17,15 +17,6 @@ import PipelineSourceSelector from './pipeline_source_selector.vue';
 export default {
   SCAN_EXECUTION_RULES_LABELS,
   i18n: {
-    pipelineRule: s__(
-      'ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{branchExceptions} %{agents} %{namespaces}',
-    ),
-    pipelineSourceRule: s__(
-      'ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{sources} %{branchExceptions} %{agents} %{namespaces}',
-    ),
-    scheduleRule: s__(
-      'ScanExecutionPolicy|%{rules} actions for %{scopes} %{branches} %{agents} %{branchExceptions} %{namespaces} %{period}',
-    ),
     selectedBranchesPlaceholder: s__('ScanExecutionPolicy|Select branches'),
   },
   name: 'BaseRuleComponent',
@@ -103,16 +94,26 @@ export default {
         : this.initRule.branches?.filter((element) => element?.trim()).join(',');
     },
     message() {
+      // Handle non-pipeline rules first
       if (this.initRule.type !== SCAN_EXECUTION_RULES_PIPELINE_KEY) {
-        return this.$options.i18n.scheduleRule;
+        return s__(
+          'ScanExecutionPolicy|%{rules} actions for %{scopes} %{branches} %{agents} %{branchExceptions} %{namespaces} %{period}',
+        );
       }
 
-      return this.hasFlexibleScanExecutionPolicyFeatureFlag
-        ? this.$options.i18n.pipelineSourceRule
-        : this.$options.i18n.pipelineRule;
-    },
-    showPipelineSourcesDropdown() {
-      return TARGET_BRANCHES.includes(this.selectedBranchType);
+      // Handle flexible scan execution policy with target branches
+      const hasFlexiblePolicy = this.hasFlexibleScanExecutionPolicyFeatureFlag;
+
+      if (hasFlexiblePolicy) {
+        return s__(
+          'ScanExecutionPolicy|%{rules} every time a pipeline runs that %{scopes} %{branches} using %{sources} %{branchExceptions} %{agents} %{namespaces}',
+        );
+      }
+
+      // Default pipeline rule
+      return s__(
+        'ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{branchExceptions} %{agents} %{namespaces}',
+      );
     },
   },
   methods: {
@@ -198,11 +199,7 @@ export default {
           </template>
 
           <template #sources>
-            <pipeline-source-selector
-              v-if="showPipelineSourcesDropdown"
-              :pipeline-sources="pipelineSources"
-              @select="updateRule"
-            />
+            <pipeline-source-selector :pipeline-sources="pipelineSources" @select="updateRule" />
           </template>
 
           <template #branchExceptions>
