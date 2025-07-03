@@ -100,4 +100,30 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
         .and have_attributes(errors: hash_including(group: ['1 registries is the maximum allowed per group.']))
     end
   end
+
+  describe '#exclusive_upstreams' do
+    let_it_be(:registry1) { create(:virtual_registries_packages_maven_registry) }
+    let_it_be(:registry2) { create(:virtual_registries_packages_maven_registry) }
+    let_it_be(:upstream1) { create(:virtual_registries_packages_maven_upstream, registries: [registry1, registry2]) }
+    let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registries: [registry1]) }
+
+    subject { registry1.exclusive_upstreams }
+
+    it { is_expected.to eq([upstream2]) }
+  end
+
+  describe '#purge_cache!' do
+    let_it_be(:registry1) { create(:virtual_registries_packages_maven_registry) }
+    let_it_be(:registry2) { create(:virtual_registries_packages_maven_registry) }
+    let_it_be(:upstream1) { create(:virtual_registries_packages_maven_upstream, registries: [registry1, registry2]) }
+    let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registries: [registry1]) }
+
+    it 'bulk enqueues the MarkEntriesForDestructionWorker' do
+      expect(::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker)
+        .to receive(:bulk_perform_async_with_contexts)
+        .with([upstream2], arguments_proc: kind_of(Proc), context_proc: kind_of(Proc))
+
+      registry1.purge_cache!
+    end
+  end
 end
