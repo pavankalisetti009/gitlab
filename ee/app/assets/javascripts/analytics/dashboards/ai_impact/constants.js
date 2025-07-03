@@ -91,7 +91,7 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
   },
   [AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|%{codeSuggestionsAcceptedCount} out of %{codeSuggestionsShownCount} code suggestions were accepted in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|Percentage ratio of total number of code suggestions generated / code suggestions accepted. %{linkStart}Learn more%{linkEnd}.',
     ),
     descriptionLink: helpPagePath('user/project/repository/code_suggestions/_index', {
       anchor: 'use-code-suggestions',
@@ -99,13 +99,13 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
   },
   [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|%{duoChatContributorsCount} out of %{duoAssignedUsersCount} GitLab Duo users interacted with Duo Chat in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|Percentage ratio of total Duo seats assigned / Duo seats assigned that interacted with Duo Chat. %{linkStart}Learn more%{linkEnd}.',
     ),
     descriptionLink: helpPagePath('user/gitlab_duo_chat/_index'),
   },
   [AI_METRICS.DUO_USAGE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|%{duoUsedCount} out of %{duoAssignedUsersCount} GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|Percentage ratio of total Duo seats assigned / Duo seats assigned that used at least one Duo feature. %{linkStart}Learn more%{linkEnd}.',
     ),
     descriptionLink: helpPagePath('subscriptions/subscription-add-ons', {
       anchor: 'assign-gitlab-duo-seats',

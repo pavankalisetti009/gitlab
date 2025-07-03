@@ -6,9 +6,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Percentage ratio of total number of code suggestions generated / code suggestions accepted. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },
     },
@@ -22,9 +22,8 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "2 out of 5 code suggestions were accepted in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
+          "description": "Percentage ratio of total number of code suggestions generated / code suggestions accepted. %{linkStart}Learn more%{linkEnd}.",
           "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },
@@ -39,9 +38,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Percentage ratio of total number of code suggestions generated / code suggestions accepted. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },
     },
@@ -55,9 +54,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },
     },
@@ -71,7 +70,6 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
           "description": "Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
           "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
@@ -88,9 +86,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },
     },
@@ -104,9 +102,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Percentage ratio of total Duo seats assigned / Duo seats assigned that interacted with Duo Chat. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/user/gitlab_duo_chat/_index",
         },
       },
     },
@@ -120,9 +118,8 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "5 out of 10 GitLab Duo users interacted with Duo Chat in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
+          "description": "Percentage ratio of total Duo seats assigned / Duo seats assigned that interacted with Duo Chat. %{linkStart}Learn more%{linkEnd}.",
           "descriptionLink": "/help/user/gitlab_duo_chat/_index",
         },
       },
@@ -137,9 +134,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Percentage ratio of total Duo seats assigned / Duo seats assigned that interacted with Duo Chat. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/user/gitlab_duo_chat/_index",
         },
       },
     },
@@ -153,9 +150,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Percentage ratio of total Duo seats assigned / Duo seats assigned that used at least one Duo feature. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats",
         },
       },
     },
@@ -169,9 +166,8 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "3 out of 10 GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
+          "description": "Percentage ratio of total Duo seats assigned / Duo seats assigned that used at least one Duo feature. %{linkStart}Learn more%{linkEnd}.",
           "descriptionLink": "/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats",
         },
       },
@@ -186,9 +182,9 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
     {
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
-        "titleIcon": "clock",
         "tooltip": {
-          "description": "No usage data for the selected time range.",
+          "description": "Percentage ratio of total Duo seats assigned / Duo seats assigned that used at least one Duo feature. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats",
         },
       },
     },

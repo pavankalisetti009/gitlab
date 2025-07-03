@@ -1,4 +1,4 @@
-import { __, s__, sprintf } from '~/locale';
+import { __, sprintf } from '~/locale';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import {
   AI_IMPACT_OVER_TIME_METRICS,
@@ -24,7 +24,6 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
   });
 
   const tooltip = AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS[metric];
-  const { description: tooltipDescription } = tooltip || {};
 
   switch (metric) {
     case AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE: {
@@ -45,13 +44,7 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
           numerator: codeSuggestionsAcceptedCount,
           denominator: codeSuggestionsShownCount,
         }),
-        tooltip: {
-          ...tooltip,
-          description: sprintf(tooltipDescription, {
-            codeSuggestionsAcceptedCount,
-            codeSuggestionsShownCount,
-          }),
-        },
+        tooltip,
       };
     }
 
@@ -62,13 +55,7 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
           numerator: duoChatContributorsCount,
           denominator: duoAssignedUsersCount,
         }),
-        tooltip: {
-          ...tooltip,
-          description: sprintf(tooltipDescription, {
-            duoChatContributorsCount,
-            duoAssignedUsersCount,
-          }),
-        },
+        tooltip,
       };
     }
 
@@ -79,13 +66,7 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
           numerator: duoUsedCount,
           denominator: duoAssignedUsersCount,
         }),
-        tooltip: {
-          ...tooltip,
-          description: sprintf(tooltipDescription, {
-            duoUsedCount,
-            duoAssignedUsersCount,
-          }),
-        },
+        tooltip,
       };
     }
 
@@ -109,7 +90,7 @@ const fetchAiImpactQuery = async ({ metric, namespace, startDate, endDate }) => 
   if (rate === null)
     return {
       rate: '-',
-      tooltip: { description: s__('AiImpactAnalytics|No usage data for the selected time range.') },
+      tooltip,
     };
 
   const { units } = AI_IMPACT_OVER_TIME_METRICS[metric];
@@ -146,7 +127,6 @@ export default async function fetch({
 
   const visualizationOptionOverrides = {
     ...(DATE_RANGE_TITLES[dateRangeKey] && {
-      titleIcon: 'clock',
       title: DATE_RANGE_TITLES[dateRangeKey],
     }),
     tooltip,
