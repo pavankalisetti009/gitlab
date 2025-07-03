@@ -519,6 +519,12 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
       end
     end
 
+    shared_examples 'an empty collection' do
+      it 'returns an empty result' do
+        expect(results).to be_empty
+      end
+    end
+
     context 'when filtering by status id' do
       let(:params) { { project_id: project.id, status: { id: status } } }
 
@@ -534,7 +540,7 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
         context 'when status is not found' do
           let(:status) { nil }
 
-          it_behaves_like 'an unfiltered collection'
+          it_behaves_like 'an empty collection'
         end
 
         context 'when work_item_status_feature_flag feature flag is disabled' do
@@ -563,7 +569,7 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
         context 'when status is not found' do
           let(:status_name) { 'invalid' }
 
-          it_behaves_like 'an unfiltered collection'
+          it_behaves_like 'an empty collection'
         end
 
         context 'when work_item_status_feature_flag feature flag is disabled' do
