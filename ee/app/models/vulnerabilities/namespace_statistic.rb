@@ -2,6 +2,7 @@
 
 module Vulnerabilities
   class NamespaceStatistic < ::SecApplicationRecord
+    include ::Namespaces::Traversal::Traversable
     include EachBatch
 
     self.table_name = 'vulnerability_namespace_statistics'

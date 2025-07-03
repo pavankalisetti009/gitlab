@@ -3,6 +3,8 @@
 module Security
   module AnalyzerNamespaceStatuses
     class FindNamespacesWithAnalyzerStatusesService
+      include Security::NamespaceTraversalSqlBuilder
+
       NAMESPACES_WITH_ANALYZER_STATUSES_SQL = <<~SQL
         WITH namespace_data (id, traversal_ids, next_traversal_ids) AS (
           %{with_values}
@@ -47,23 +49,8 @@ module Security
       end
 
       def namespaces_with_analyzer_statuses_sql
-        format(NAMESPACES_WITH_ANALYZER_STATUSES_SQL, with_values: namespace_query_values)
-      end
-
-      def namespace_query_values
-        values = namespace_values.map do |row|
-          traversal_ids = row[1]
-          next_traversal_ids = traversal_ids.dup
-          next_traversal_ids[-1] += 1
-
-          [
-            row[0],
-            Arel.sql("ARRAY#{traversal_ids}::bigint[]"),
-            Arel.sql("ARRAY#{next_traversal_ids}::bigint[]")
-          ]
-        end
-
-        Arel::Nodes::ValuesList.new(values).to_sql
+        format(NAMESPACES_WITH_ANALYZER_STATUSES_SQL,
+          with_values: namespaces_and_traversal_ids_query_values(namespace_values))
       end
     end
   end

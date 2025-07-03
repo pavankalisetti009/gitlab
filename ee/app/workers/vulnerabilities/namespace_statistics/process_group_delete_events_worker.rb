@@ -32,9 +32,8 @@ module Vulnerabilities
       def group_projects_statistics(parent_group, deleted_group_id)
         @statistics_relation ||= begin
           traversal_ids = parent_group.traversal_ids + [deleted_group_id]
-          next_traversal_ids = parent_group.traversal_ids + [deleted_group_id + 1]
 
-          Statistic.unarchived.traversal_ids_gteq(traversal_ids).traversal_ids_lt(next_traversal_ids)
+          Statistic.unarchived.within(traversal_ids)
         end
       end
     end

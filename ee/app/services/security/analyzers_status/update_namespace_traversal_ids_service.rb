@@ -30,19 +30,11 @@ module Security
       end
 
       def analyzer_statuses
-        # rubocop:disable CodeReuse/ActiveRecord -- can't use scope with group as its traversal ids are already modified
-        Security::AnalyzerNamespaceStatus
-          .where("traversal_ids >= ARRAY[?]::bigint[]", previous_traversal_ids)
-          .where("traversal_ids < ARRAY[?]::bigint[]", next_previous_traversal_ids)
-        # rubocop:enable CodeReuse/ActiveRecord
+        Security::AnalyzerNamespaceStatus.within(previous_traversal_ids)
       end
 
       def previous_traversal_ids
         @previous_traversal_ids ||= group.analyzer_group_statuses[0]&.traversal_ids
-      end
-
-      def next_previous_traversal_ids
-        previous_traversal_ids.dup.tap { |ids| ids[-1] += 1 }
       end
 
       def update_statement

@@ -4,6 +4,7 @@ module Sbom
   class Occurrence < ::SecApplicationRecord
     LICENSE_COLUMNS = [:spdx_identifier, :name, :url].freeze
     include EachBatch
+    include ::Namespaces::Traversal::Traversable
 
     belongs_to :component, optional: false, inverse_of: :occurrences
     belongs_to :component_version, inverse_of: :occurrences
@@ -90,10 +91,7 @@ module Sbom
       where(project_id: project_ids)
     end
     scope :by_uuids, ->(uuids) { where(uuid: uuids) }
-    scope :for_namespace_and_descendants, ->(namespace) do
-      where("traversal_ids >= ('{?}')", namespace.traversal_ids)
-        .where("traversal_ids < ('{?}')", namespace.next_traversal_ids)
-    end
+    scope :for_namespace_and_descendants, ->(namespace) { within(namespace.traversal_ids) }
 
     scope :filter_by_package_managers, ->(package_managers) do
       where(package_manager: package_managers)
