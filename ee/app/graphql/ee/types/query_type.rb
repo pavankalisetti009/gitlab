@@ -159,6 +159,7 @@ module EE
 
         field :duo_workflow_workflows, ::Types::Ai::DuoWorkflows::WorkflowType.connection_type,
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowsResolver,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
           experiment: { milestone: '17.2' },
           description: 'List the workflows owned by the current user.'
 

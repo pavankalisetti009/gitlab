@@ -25,19 +25,34 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
   let_it_be(:workflows_project_2) { create_list(:duo_workflows_workflow, 2, project: project_2, user: user) }
   let_it_be(:workflows_for_different_user) { create_list(:duo_workflows_workflow, 4, project: project) }
   let(:all_project_workflows) { workflows + workflows_project_2 }
-
   let(:fields) do
     <<~GRAPHQL
       nodes {
         id,
         userId,
         projectId,
+        project {
+          id
+          name
+        },
         humanStatus,
         goal,
         workflowDefinition,
         environment,
         createdAt,
-        updatedAt
+        updatedAt,
+        status,
+        statusName,
+        agentPrivilegesNames,
+        preApprovedAgentPrivilegesNames,
+        mcpEnabled
+        allowAgentToRequestUser
+        firstCheckpoint {
+          checkpoint
+          metadata
+          timestamp
+          workflowStatus
+        }
       }
     GRAPHQL
   end
@@ -46,12 +61,27 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
   let(:current_user) { user }
   let(:query) { graphql_query_for('duoWorkflowWorkflows', variables, fields) }
 
+  # Create a checkpoint for the first workflow to test the firstCheckpoint field
+  let_it_be(:checkpoint) do
+    workflow = workflows.first
+    create(:duo_workflows_checkpoint, workflow: workflow, project: workflow.project)
+  end
+
+  before do
+    # Set up MCP enabled for testing
+    allow_next_instance_of(Namespace) do |instance|
+      allow(instance).to receive(:duo_workflow_mcp_enabled).and_return(true)
+    end
+
+    # Allow StageCheck for any project
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(any_args).and_return(false)
+  end
+
   subject(:returned_workflows) { graphql_data.dig('duoWorkflowWorkflows', 'nodes') }
 
   context 'when duo workflow is not available' do
     before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project_2, :duo_workflow).and_return(false)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(any_args).and_return(false)
     end
 
     it 'returns an empty array' do
@@ -63,8 +93,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
 
   context 'when duo workflow is available' do
     before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project_2, :duo_workflow).and_return(true)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(any_args).and_return(true)
     end
 
     context 'when user is not logged in' do
@@ -102,11 +131,22 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
           expect(matching_workflow).not_to be_nil
           expect(returned_workflow['userId']).to eq(user.to_global_id.to_s)
           expect(returned_workflow['projectId']).to eq(matching_workflow.project.to_global_id.to_s)
+          expect(returned_workflow['project']['id']).to eq(matching_workflow.project.to_global_id.to_s)
+          expect(returned_workflow['project']['name']).to eq(matching_workflow.project.name)
           expect(returned_workflow['humanStatus']).to eq(matching_workflow.human_status_name)
           expect(returned_workflow['createdAt']).to eq(matching_workflow.created_at.iso8601)
           expect(returned_workflow['updatedAt']).to eq(matching_workflow.updated_at.iso8601)
           expect(returned_workflow['goal']).to eq("Fix pipeline")
           expect(returned_workflow['workflowDefinition']).to eq("software_development")
+          expect(returned_workflow['status']).to eq("CREATED")
+          expect(returned_workflow['statusName']).to eq(matching_workflow.status_name.to_s)
+          expect(returned_workflow['agentPrivilegesNames']).to eq(["read_write_files"])
+          expect(returned_workflow['preApprovedAgentPrivilegesNames']).to eq([])
+          expect(returned_workflow['mcpEnabled']).to eq(
+            matching_workflow.project.root_ancestor.duo_workflow_mcp_enabled)
+          expect(returned_workflow['allowAgentToRequestUser']).to eq(matching_workflow.allow_agent_to_request_user)
+
+          expect(returned_workflow).to have_key('firstCheckpoint')
         end
       end
 
@@ -153,6 +193,68 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
             expect(graphql_errors).to be_nil
 
             expect(returned_workflows.length).to eq(all_project_workflows.length)
+          end
+        end
+      end
+
+      context 'with the workflow_id argument' do
+        let(:specific_workflow) { workflows.first }
+        let(:variables) { { workflow_id: specific_workflow.to_global_id.to_s } }
+
+        before do
+          # Ensure the checkpoint is associated with the specific workflow
+          specific_workflow.reload
+        end
+
+        it 'returns only the specified workflow', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows.length).to eq(1)
+          expect(returned_workflows.first['id']).to eq(specific_workflow.to_global_id.to_s)
+          expect(returned_workflows.first['userId']).to eq(user.to_global_id.to_s)
+          expect(returned_workflows.first['projectId']).to eq(specific_workflow.project.to_global_id.to_s)
+          expect(returned_workflows.first['project']['id']).to eq(specific_workflow.project.to_global_id.to_s)
+          expect(returned_workflows.first['project']['name']).to eq(specific_workflow.project.name)
+          expect(returned_workflows.first['goal']).to eq("Fix pipeline")
+          expect(returned_workflows.first['workflowDefinition']).to eq("software_development")
+          expect(returned_workflows.first['status']).to eq("CREATED")
+          expect(returned_workflows.first['statusName']).to eq(specific_workflow.status_name.to_s)
+          expect(returned_workflows.first['agentPrivilegesNames']).to eq(["read_write_files"])
+          expect(returned_workflows.first['preApprovedAgentPrivilegesNames']).to eq([])
+          expect(returned_workflows.first['mcpEnabled']).to eq(
+            specific_workflow.project.root_ancestor.duo_workflow_mcp_enabled)
+          expect(returned_workflows.first['allowAgentToRequestUser']).to eq(
+            specific_workflow.allow_agent_to_request_user
+          )
+          expect(returned_workflows.first).to have_key('firstCheckpoint')
+        end
+
+        context 'when the user does not have access to the workflow' do
+          let(:specific_workflow) { workflows_for_different_user.first }
+          let(:current_user) { create(:user) }
+
+          it 'returns a permission error', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            error_message = json_response['errors'].first['message']
+            expect(error_message).to eq("You don't have permission to access this workflow")
+          end
+        end
+
+        context 'when the workflow does not exist' do
+          let(:variables) { { workflow_id: "gid://gitlab/Ai::DuoWorkflows::Workflow/#{non_existent_record_id}" } }
+          let(:non_existent_record_id) { 999999 }
+
+          it 'returns a resource not available error', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            error_message = json_response['errors'].first['message']
+            expect(error_message).to eq('Workflow not found')
           end
         end
       end
