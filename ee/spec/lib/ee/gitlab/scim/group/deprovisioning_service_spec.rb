@@ -84,7 +84,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::DeprovisioningService, feature_categor
         end
 
         it 'preserves the saml identity' do
-          expect { service.execute }.to change { user.reload.identities.count }.by(0)
+          expect { service.execute }.not_to change { user.reload.identities.count }
         end
       end
     end
