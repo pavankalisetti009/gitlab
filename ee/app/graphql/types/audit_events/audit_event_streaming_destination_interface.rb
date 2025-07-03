@@ -29,6 +29,10 @@ module Types
         null: false,
         description: 'Secret token for the destination, will be non-empty value only for http category.'
 
+      field :active, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Active status of the destination.'
+
       def secret_token
         return object.secret_token if object.http?
 
