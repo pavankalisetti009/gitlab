@@ -54,7 +54,6 @@ module Arkose
     end
 
     def allowlisted?
-      telltale_list = response&.dig('session_details', 'telltale_list') || []
       telltale_list.include?(ALLOWLIST_TELLTALE)
     end
 
@@ -70,24 +69,50 @@ module Arkose
       response&.dig('session_risk', 'risk_band') || 'Unavailable'
     end
 
+    def risk_category
+      response&.dig('session_risk', 'risk_category') || 'Unavailable'
+    end
+
     def session_id
       response&.dig('session_details', 'session') || 'Unavailable'
+    end
+
+    def session_created_at
+      Time.iso8601(response&.dig('session_details', 'session_created'))
+    rescue StandardError
+      nil
+    end
+
+    def checked_answer_at
+      Time.iso8601(response&.dig('session_details', 'check_answer'))
+    rescue StandardError
+      nil
+    end
+
+    def verified_at
+      Time.iso8601(response&.dig('session_details', 'verified'))
+    rescue StandardError
+      nil
     end
 
     def device_id
       response&.dig('session_details', 'device_id')
     end
 
-    def risk_category
-      response&.dig('session_risk', 'risk_category') || 'Unavailable'
+    def telltale_user
+      response&.dig('session_details', 'telltale_user')
+    end
+
+    def telltale_list
+      response&.dig('session_details', 'telltale_list') || []
     end
 
     def global_telltale_list
-      response&.dig('session_risk', 'global', 'telltales') || 'Unavailable'
+      response&.dig('session_risk', 'global', 'telltales') || []
     end
 
     def custom_telltale_list
-      response&.dig('session_risk', 'custom', 'telltales') || 'Unavailable'
+      response&.dig('session_risk', 'custom', 'telltales') || []
     end
 
     def data_exchange_blob_received?
@@ -106,12 +131,48 @@ module Arkose
       response&.dig('session_details', 'session_is_legit')
     end
 
+    def user_agent
+      response&.dig('session_details', 'ua')
+    end
+
+    def user_language_shown
+      response&.dig('session_details', 'user_language_shown')
+    end
+
+    def user_ip
+      response&.dig('ip_intelligence', 'user_ip')
+    end
+
     def country
       response&.dig('ip_intelligence', 'country')
     end
 
+    def region
+      response&.dig('ip_intelligence', 'region')
+    end
+
+    def city
+      response&.dig('ip_intelligence', 'city')
+    end
+
+    def isp
+      response&.dig('ip_intelligence', 'isp')
+    end
+
+    def connection_type
+      response&.dig('ip_intelligence', 'connection_type')
+    end
+
+    def is_tor # rubocop:disable Naming/PredicateName -- Match field name. Can also return nil if Arkose returns unexpected response
+      response&.dig('ip_intelligence', 'is_tor')
+    end
+
     def is_vpn # rubocop:disable Naming/PredicateName -- Match field name. Can also return nil if Arkose returns unexpected response
       response&.dig('ip_intelligence', 'is_vpn')
+    end
+
+    def is_proxy # rubocop:disable Naming/PredicateName -- Match field name. Can also return nil if Arkose returns unexpected response
+      response&.dig('ip_intelligence', 'is_proxy')
     end
 
     def is_bot # rubocop:disable Naming/PredicateName -- Match field name. Can also return nil if Arkose returns unexpected response
