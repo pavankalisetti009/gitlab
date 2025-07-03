@@ -2,7 +2,7 @@
 import { GlTableLite, GlSkeletonLoader, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
-import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/model_selection_batch_settings_updater.vue';
+import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/batch_settings_updater.vue';
 
 const baseTdClasses = ['gl-content-center', '!gl-border-b-0', '!gl-bg-subtle'];
 

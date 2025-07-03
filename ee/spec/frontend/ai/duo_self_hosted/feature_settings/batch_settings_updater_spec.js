@@ -6,14 +6,14 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import updateAiFeatureSettings from 'ee/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
-import BatchSettingsUpdater from 'ee/ai/duo_self_hosted/feature_settings/components/batch_settings_updater.vue';
+import DuoSelfHostedBatchSettingsUpdater from 'ee/ai/duo_self_hosted/feature_settings/components/batch_settings_updater.vue';
 import BatchUpdateButton from 'ee/ai/shared/feature_settings/batch_update_button.vue';
 import { mockDuoChatFeatureSettings } from './mock_data';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
-describe('BatchSettingsUpdater', () => {
+describe('DuoSelfHostedBatchSettingsUpdater', () => {
   let wrapper;
   let mockApollo;
 
@@ -44,7 +44,7 @@ describe('BatchSettingsUpdater', () => {
     props = {},
   } = {}) => {
     mockApollo = createMockApollo([...apolloHandlers]);
-    wrapper = mountExtended(BatchSettingsUpdater, {
+    wrapper = mountExtended(DuoSelfHostedBatchSettingsUpdater, {
       apolloProvider: mockApollo,
       propsData: {
         selectedFeatureSetting,
