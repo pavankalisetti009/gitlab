@@ -66293,12 +66293,6 @@ msgstr ""
 msgid "Update %{sourcePath} file"
 msgstr ""
 
-msgid "Update Now"
-msgstr ""
-
-msgid "Update Scheduled…"
-msgstr ""
-
 msgid "Update appearance settings"
 msgstr ""
 
@@ -66318,6 +66312,9 @@ msgid "Update password"
 msgstr ""
 
 msgid "Update password for %{current_name}"
+msgstr ""
+
+msgid "Update scheduled…"
 msgstr ""
 
 msgid "Update selected"
