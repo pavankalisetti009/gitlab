@@ -8,7 +8,7 @@ import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_setting
 import { PROVIDERS } from '../constants';
 
 export default {
-  name: 'BatchSettingsUpdater',
+  name: 'DuoSelfHostedBatchSettingsUpdater',
   components: {
     BatchUpdateButton,
     GlIcon,

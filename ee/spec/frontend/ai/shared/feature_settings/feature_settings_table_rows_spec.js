@@ -2,7 +2,7 @@ import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FeatureSettingsTableRows from 'ee/ai/shared/feature_settings/feature_settings_table_rows.vue';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
-import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/model_selection_batch_settings_updater.vue';
+import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/batch_settings_updater.vue';
 import { mockCodeSuggestionsFeatureSettings } from './mock_data';
 
 describe('FeatureSettingsTableRows', () => {
