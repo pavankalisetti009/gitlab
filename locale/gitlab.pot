@@ -69486,6 +69486,9 @@ msgstr ""
 msgid "Webhooks|A merge request is created, updated, or merged."
 msgstr ""
 
+msgid "Webhooks|A milestone is created, closed, reopened, or deleted."
+msgstr ""
+
 msgid "Webhooks|A new tag is pushed to the repository."
 msgstr ""
 
