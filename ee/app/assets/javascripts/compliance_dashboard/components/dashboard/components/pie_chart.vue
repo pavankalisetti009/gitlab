@@ -23,6 +23,13 @@ function distributePercentages(values, total) {
   return result;
 }
 
+const COMPLIANCE_FIELDS = ['passed', 'pending', 'failed'];
+const CHART_COLORS = {
+  passed: 'blueDataColor',
+  pending: 'magentaDataColor',
+  failed: 'orangeDataColor',
+};
+
 export default {
   components: {
     GlChart,
@@ -61,32 +68,24 @@ export default {
         failed: failedPct,
       };
     },
+    colors() {
+      return getColors(this.colorScheme);
+    },
+    chartData() {
+      return COMPLIANCE_FIELDS.map((field) =>
+        this.generateDataEntry({
+          field,
+          color: this.colors[CHART_COLORS[field]],
+          message: this.getFieldMessage(field),
+        }),
+      ).filter(Boolean);
+    },
     chartConfig() {
-      const { textColor, blueDataColor, orangeDataColor, magentaDataColor } = getColors(
-        this.colorScheme,
-      );
-
-      const data = [
-        this.generateDataEntry({
-          field: 'passed',
-          color: blueDataColor,
-          message: s__('Compliance report|%{percent}%% passed'),
-        }),
-        this.generateDataEntry({
-          field: 'pending',
-          color: magentaDataColor,
-          message: s__('Compliance report|%{percent}%% pending'),
-        }),
-        this.generateDataEntry({
-          field: 'failed',
-          color: orangeDataColor,
-          message: s__('Compliance report|%{percent}%% failed'),
-        }),
-      ].filter(Boolean);
+      const { textColor } = this.colors;
 
       return {
         legend: {
-          data: data.map((e) => e.name),
+          data: this.chartData.map((e) => e.name),
           ...getLegendConfig(textColor),
         },
         tooltip: {
@@ -105,20 +104,40 @@ export default {
             radius: ['0%', '60%'],
             center: ['50%', '60%'],
             startAngle: 0,
-            data,
+            data: this.chartData,
           },
         ],
       };
     },
   },
   methods: {
+    getFieldMessage(field) {
+      const messages = {
+        passed: s__('Compliance report|%{percent}%% passed'),
+        pending: s__('Compliance report|%{percent}%% pending'),
+        failed: s__('Compliance report|%{percent}%% failed'),
+      };
+      return messages[field];
+    },
     getTooltip({ field, message }) {
-      return `<div class="gl-text-default gl-text-sm gl-bg-default gl-p-3">
-        <h4 class="gl-font-bold gl-text-sm gl-m-0 gl-mb-2">${sprintf(message, {
-          percent: this.percentages[field],
-        })} (${sprintf(this.itemFormatter(this.data[field]), { count: this.data[field] })})</h4>
-        <p class="gl-font-bold gl-mt-2 gl-mb-0">${s__('Compliance report|Click to check all requirements')}</p>
-      </div>`;
+      const percentText = sprintf(message, { percent: this.percentages[field] });
+      const countText = sprintf(this.itemFormatter(this.data[field]), { count: this.data[field] });
+
+      return `
+    <div class="gl-text-default gl-text-sm gl-bg-default gl-p-3">
+      <div class="gl-font-bold gl-text-sm gl-mb-2">
+        ${percentText} (${countText})
+      </div>
+      <div class="gl-font-bold gl-mt-2">
+        ${s__('Compliance report|Click to check all requirements')}
+      </div>
+    </div>
+  `;
+    },
+    formatLabel({ message, percent, count }) {
+      return [sprintf(message, { percent }), sprintf(this.itemFormatter(count), { count })].join(
+        '\n',
+      );
     },
 
     generateDataEntry({ message, field, color }) {
@@ -130,7 +149,7 @@ export default {
         return null;
       }
 
-      const { textColor } = getColors(this.colorScheme);
+      const { textColor } = this.colors;
       return {
         value: count,
         field,
@@ -140,12 +159,7 @@ export default {
         label: {
           show: true,
           position: 'outside',
-          formatter: [
-            sprintf(message, {
-              percent,
-            }),
-            sprintf(this.itemFormatter(count), { count }),
-          ].join('\n'),
+          formatter: this.formatLabel({ message, percent, count }),
           fontSize: 12,
           fontWeight: 'bold',
           color: textColor,

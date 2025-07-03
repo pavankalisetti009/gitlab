@@ -22,9 +22,8 @@ export default {
   },
   computed: {
     isEmpty() {
-      return (
-        this.failedControls.passed + this.failedControls.failed + this.failedControls.pending === 0
-      );
+      const { passed, failed, pending } = this.failedControls;
+      return passed + failed + pending === 0;
     },
   },
   legend: {

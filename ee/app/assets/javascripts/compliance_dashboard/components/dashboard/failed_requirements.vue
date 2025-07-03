@@ -22,12 +22,8 @@ export default {
   },
   computed: {
     isEmpty() {
-      return (
-        this.failedRequirements.passed +
-          this.failedRequirements.failed +
-          this.failedRequirements.pending ===
-        0
-      );
+      const { passed, failed, pending } = this.failedRequirements;
+      return passed + failed + pending === 0;
     },
   },
   legend: {

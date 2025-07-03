@@ -6,16 +6,18 @@ import PieChart from 'ee/compliance_dashboard/components/dashboard/components/pi
 
 describe('Failed controls panel', () => {
   let wrapper;
+  let controlsProp;
 
   function createComponent(controls) {
+    controlsProp = {
+      passed: 1,
+      pending: 1,
+      failed: 1,
+      ...controls,
+    };
     wrapper = shallowMount(FailedControls, {
       propsData: {
-        failedControls: {
-          passed: 1,
-          pending: 1,
-          failed: 1,
-          ...controls,
-        },
+        failedControls: controlsProp,
         colorScheme: GL_LIGHT,
       },
     });
@@ -26,8 +28,17 @@ describe('Failed controls panel', () => {
     expect(wrapper.findComponent(GlEmptyState).exists()).toBe(true);
   });
 
-  it('renders chart when controls are available', () => {
+  it('renders chart with correct props when controls are available', () => {
     createComponent();
-    expect(wrapper.findComponent(PieChart).exists()).toBe(true);
+    const chartProps = wrapper.findComponent(PieChart).props();
+    expect(chartProps).toStrictEqual(
+      expect.objectContaining({
+        colorScheme: GL_LIGHT,
+        legend: FailedControls.legend,
+        itemFormatter: FailedControls.itemFormatter,
+        path: FailedControls.ROUTE_STANDARDS_ADHERENCE,
+        data: controlsProp,
+      }),
+    );
   });
 });

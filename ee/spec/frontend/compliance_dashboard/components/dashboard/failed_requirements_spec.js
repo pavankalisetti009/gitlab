@@ -6,16 +6,19 @@ import PieChart from 'ee/compliance_dashboard/components/dashboard/components/pi
 
 describe('Failed requirements panel', () => {
   let wrapper;
+  let requirementsProp;
 
   function createComponent(requirements) {
+    requirementsProp = {
+      passed: 1,
+      pending: 1,
+      failed: 1,
+      ...requirements,
+    };
+
     wrapper = shallowMount(FailedRequirements, {
       propsData: {
-        failedRequirements: {
-          passed: 1,
-          pending: 1,
-          failed: 1,
-          ...requirements,
-        },
+        failedRequirements: requirementsProp,
         colorScheme: GL_LIGHT,
       },
     });
@@ -26,8 +29,17 @@ describe('Failed requirements panel', () => {
     expect(wrapper.findComponent(GlEmptyState).exists()).toBe(true);
   });
 
-  it('renders chart when requirements are available', () => {
+  it('renders chart with correct props when requirements are available', () => {
     createComponent();
-    expect(wrapper.findComponent(PieChart).exists()).toBe(true);
+    const chartProps = wrapper.findComponent(PieChart).props();
+    expect(chartProps).toStrictEqual(
+      expect.objectContaining({
+        colorScheme: GL_LIGHT,
+        legend: FailedRequirements.legend,
+        itemFormatter: FailedRequirements.itemFormatter,
+        path: FailedRequirements.ROUTE_STANDARDS_ADHERENCE,
+        data: requirementsProp,
+      }),
+    );
   });
 });

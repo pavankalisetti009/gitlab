@@ -13,13 +13,14 @@ import {
 import { GL_DARK } from '~/constants';
 
 export function getColors(colorScheme) {
-  const textColor = colorScheme === GL_DARK ? GL_TEXT_COLOR_DEFAULT_DARK : GL_TEXT_COLOR_DEFAULT;
+  const isDark = colorScheme === GL_DARK;
+
   return {
-    textColor,
+    textColor: isDark ? GL_TEXT_COLOR_DEFAULT_DARK : GL_TEXT_COLOR_DEFAULT,
     blueDataColor: DATA_VIZ_BLUE_500,
     orangeDataColor: DATA_VIZ_ORANGE_400,
     magentaDataColor: DATA_VIZ_MAGENTA_500,
-    ticksColor: colorScheme === GL_DARK ? GRAY_900_DARK : GRAY_900,
+    ticksColor: isDark ? GRAY_900_DARK : GRAY_900,
   };
 }
 
