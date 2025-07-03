@@ -49872,28 +49872,16 @@ msgstr ""
 msgid "PrometheusService|Active"
 msgstr ""
 
-msgid "PrometheusService|IAP_CLIENT_ID.apps.googleusercontent.com"
-msgstr ""
-
 msgid "PrometheusService|Monitor application health with Prometheus metrics and dashboards"
 msgstr ""
 
 msgid "PrometheusService|Select this checkbox to override the auto configuration settings with your own settings."
 msgstr ""
 
-msgid "PrometheusService|The ID of the IAP-secured resource."
-msgstr ""
-
 msgid "PrometheusService|The Prometheus API base URL."
 msgstr ""
 
-msgid "PrometheusService|The contents of the credentials.json file of your service account."
-msgstr ""
-
 msgid "PrometheusService|https://prometheus.example.com/"
-msgstr ""
-
-msgid "PrometheusService|{ \"type\": \"service_account\", \"project_id\": ... }"
 msgstr ""
 
 msgid "Promote"
