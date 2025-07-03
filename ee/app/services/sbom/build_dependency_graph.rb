@@ -4,6 +4,8 @@ module Sbom
   class BuildDependencyGraph
     include Gitlab::Utils::StrongMemoize
 
+    CouldNotAcquireAdvisoryLock = Class.new(StandardError)
+
     BATCH_SIZE = 250
 
     def self.execute(project)
@@ -22,9 +24,16 @@ module Sbom
     def execute
       new_graph = build_dependency_graph
       Sbom::GraphPath.transaction do
-        use_advisory_lock
+        # We want to retry at some later point, if the dependency tree didn't change then we won't be doing any work
+        # anyway.
+        raise CouldNotAcquireAdvisoryLock unless use_advisory_lock
 
         remove_existing_dependency_graph
+        # This can raise ActiveRecord::RecordInvalid because another Ci::Pipeline can start removing Sbom::Occurrence
+        # rows which will prevent this job from finishing successfully.
+        #
+        # This actually works in our favour since it's a clear indication we can leave the graph processing to the
+        # newest job
         bulk_insert_paths(new_graph)
       end
     end
@@ -37,15 +46,9 @@ module Sbom
     # https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
     # transaction-level locks are automatically released at the end of the transaction
     # so we don't need to manually release it.
-    #
-    # The lock here is to solve the problem of pipeline B scheduling the recalculation
-    # of the dependency graph before the task created by pipeline A has finished running.
-    #
-    # Another improvement to this will be avoiding recalculations entirely when the
-    # dependency tree has not changed at all
-    # See https://gitlab.com/gitlab-org/gitlab/-/issues/523668
     def use_advisory_lock
-      Sbom::GraphPath.connection.execute("SELECT pg_advisory_xact_lock(#{build_lock_expression})")
+      result = Sbom::GraphPath.connection.execute("SELECT pg_try_advisory_xact_lock(#{build_lock_expression})")
+      result.field_values("pg_try_advisory_xact_lock").first
     end
 
     def build_lock_expression
