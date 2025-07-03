@@ -120,7 +120,7 @@ describe('DuoAgentsPlatformShow', () => {
         });
 
         it('calls createAlert with the error message', () => {
-          expect(createAlert).toHaveBeenCalledWith(errorMessage);
+          expect(createAlert).toHaveBeenCalledWith({ message: errorMessage });
         });
       });
 
@@ -131,9 +131,9 @@ describe('DuoAgentsPlatformShow', () => {
         });
 
         it('calls createAlert with default error message', () => {
-          expect(createAlert).toHaveBeenCalledWith(
-            'Something went wrong while fetching Agent Flows',
-          );
+          expect(createAlert).toHaveBeenCalledWith({
+            message: 'Something went wrong while fetching Agent Flows',
+          });
         });
       });
 
