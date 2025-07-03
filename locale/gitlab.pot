@@ -70620,6 +70620,9 @@ msgstr ""
 msgid "WorkItem|Discard changes"
 msgstr ""
 
+msgid "WorkItem|Done"
+msgstr ""
+
 msgid "WorkItem|Due"
 msgstr ""
 
