@@ -2614,6 +2614,7 @@ Input type: `AuditEventsAmazonS3ConfigurationUpdateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationauditeventsamazons3configurationupdateaccesskeyxid"></a>`accessKeyXid` | [`String`](#string) | Access key ID of the Amazon S3 account. |
+| <a id="mutationauditeventsamazons3configurationupdateactive"></a>`active` | [`Boolean`](#boolean) | Active status of the destination. |
 | <a id="mutationauditeventsamazons3configurationupdateawsregion"></a>`awsRegion` | [`String`](#string) | AWS region where the bucket is created. |
 | <a id="mutationauditeventsamazons3configurationupdatebucketname"></a>`bucketName` | [`String`](#string) | Name of the bucket where the audit events would be logged. |
 | <a id="mutationauditeventsamazons3configurationupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
@@ -2776,6 +2777,7 @@ Input type: `AuditEventsInstanceAmazonS3ConfigurationUpdateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationauditeventsinstanceamazons3configurationupdateaccesskeyxid"></a>`accessKeyXid` | [`String`](#string) | Access key ID of the Amazon S3 account. |
+| <a id="mutationauditeventsinstanceamazons3configurationupdateactive"></a>`active` | [`Boolean`](#boolean) | Active status of the destination. |
 | <a id="mutationauditeventsinstanceamazons3configurationupdateawsregion"></a>`awsRegion` | [`String`](#string) | AWS region where the bucket is created. |
 | <a id="mutationauditeventsinstanceamazons3configurationupdatebucketname"></a>`bucketName` | [`String`](#string) | Name of the bucket where the audit events would be logged. |
 | <a id="mutationauditeventsinstanceamazons3configurationupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
@@ -22066,6 +22068,7 @@ Stores Amazon S3 configurations for audit event streaming.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="amazons3configurationtypeaccesskeyxid"></a>`accessKeyXid` | [`String!`](#string) | Access key ID of the Amazon S3 account. |
+| <a id="amazons3configurationtypeactive"></a>`active` | [`Boolean!`](#boolean) | Active status of the destination. |
 | <a id="amazons3configurationtypeawsregion"></a>`awsRegion` | [`String!`](#string) | AWS region where the bucket is created. |
 | <a id="amazons3configurationtypebucketname"></a>`bucketName` | [`String!`](#string) | Name of the bucket where the audit events would be logged. |
 | <a id="amazons3configurationtypegroup"></a>`group` | [`Group!`](#group) | Group the configuration belongs to. |
@@ -31021,6 +31024,7 @@ Stores instance level Amazon S3 configurations for audit event streaming.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="instanceamazons3configurationtypeaccesskeyxid"></a>`accessKeyXid` | [`String!`](#string) | Access key ID of the Amazon S3 account. |
+| <a id="instanceamazons3configurationtypeactive"></a>`active` | [`Boolean!`](#boolean) | Active status of the destination. |
 | <a id="instanceamazons3configurationtypeawsregion"></a>`awsRegion` | [`String!`](#string) | AWS region where the bucket is created. |
 | <a id="instanceamazons3configurationtypebucketname"></a>`bucketName` | [`String!`](#string) | Name of the bucket where the audit events would be logged. |
 | <a id="instanceamazons3configurationtypeid"></a>`id` | [`ID!`](#id) | ID of the configuration. |
@@ -49586,6 +49590,7 @@ Implementations:
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="amazons3configurationinterfaceaccesskeyxid"></a>`accessKeyXid` | [`String!`](#string) | Access key ID of the Amazon S3 account. |
+| <a id="amazons3configurationinterfaceactive"></a>`active` | [`Boolean!`](#boolean) | Active status of the destination. |
 | <a id="amazons3configurationinterfaceawsregion"></a>`awsRegion` | [`String!`](#string) | AWS region where the bucket is created. |
 | <a id="amazons3configurationinterfacebucketname"></a>`bucketName` | [`String!`](#string) | Name of the bucket where the audit events would be logged. |
 | <a id="amazons3configurationinterfaceid"></a>`id` | [`ID!`](#id) | ID of the configuration. |
