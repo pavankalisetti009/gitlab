@@ -17,14 +17,14 @@ export const initDetailsApp = () => {
     return false;
   }
 
-  const { violationId } = el.dataset;
+  const { violationId, complianceCenterPath } = el.dataset;
 
   return new Vue({
     el,
     name: 'ComplianceViolationDetailsRoot',
     apolloProvider,
     render(createElement) {
-      return createElement(ViolationDetailsApp, { props: { violationId } });
+      return createElement(ViolationDetailsApp, { props: { violationId, complianceCenterPath } });
     },
   });
 };
