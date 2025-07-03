@@ -264,6 +264,16 @@ describe('newWorkItemPath', () => {
       '/foobar/project/-/work_items/new?foo=bar',
     );
   });
+
+  it('returns `work_items` path for group issues', () => {
+    expect(
+      newWorkItemPath({
+        fullPath: 'my-group',
+        isGroup: true,
+        workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+      }),
+    ).toBe('/foobar/groups/my-group/-/work_items/new');
+  });
 });
 
 describe('convertTypeEnumToName', () => {

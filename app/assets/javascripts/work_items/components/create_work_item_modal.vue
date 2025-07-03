@@ -175,6 +175,11 @@ export default {
       this.isCreateModalVisible = false;
     },
     showCreateModal(event) {
+      if (!gon?.current_user_id) {
+        // If user is signed out, don't show modal, but allow them to click on the button to sign in
+        return;
+      }
+
       if (Boolean(event) && isMetaClick(event)) {
         // opening in a new tab
         return;

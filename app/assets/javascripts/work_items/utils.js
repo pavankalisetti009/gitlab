@@ -36,6 +36,7 @@ import {
   WIDGET_TYPE_TIME_TRACKING,
   WIDGET_TYPE_VULNERABILITIES,
   WIDGET_TYPE_WEIGHT,
+  WORK_ITEM_TYPE_NAME_ISSUE,
   WORK_ITEM_TYPE_ROUTE_WORK_ITEM,
 } from './constants';
 
@@ -284,7 +285,12 @@ export const markdownPreviewPath = ({ fullPath, iid, isGroup = false }) => {
 export const newWorkItemPath = ({ fullPath, isGroup = false, workItemType, query = '' }) => {
   const domain = gon.relative_url_root || '';
   const basePath = isGroup ? `groups/${fullPath}` : fullPath;
-  const type = NAME_TO_ROUTE_MAP[workItemType] || WORK_ITEM_TYPE_ROUTE_WORK_ITEM;
+  // We have a special case to redirect to /groups/my-group/-/work_items/new
+  // instead of /groups/my-group/-/issues/new
+  const type =
+    isGroup && workItemType === WORK_ITEM_TYPE_NAME_ISSUE
+      ? WORK_ITEM_TYPE_ROUTE_WORK_ITEM
+      : NAME_TO_ROUTE_MAP[workItemType] || WORK_ITEM_TYPE_ROUTE_WORK_ITEM;
   return `${domain}/${basePath}/-/${type}/new${query}`;
 };
 

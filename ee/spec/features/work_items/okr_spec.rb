@@ -38,10 +38,10 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
       visit project_issues_path(project)
     end
 
-    it 'creates an objective from the "New issue" toggle button' do
-      click_button _('Issue type')
-      click_link s_('OKR|New objective')
-      send_keys 'I object!'
+    it 'creates an objective from the "New item" toggle button' do
+      click_link 'New item'
+      select 'Objective', from: 'Type'
+      fill_in 'Title', with: 'I object!'
       click_button 'Create objective'
 
       expect(page).to have_link 'I object!'

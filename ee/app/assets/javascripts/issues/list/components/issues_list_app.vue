@@ -192,8 +192,8 @@ export default {
     searchedByEpic() {
       return Boolean(this.filterParams?.epicId);
     },
-    issuesListClass() {
-      return this.groupPath ? 'js-issues-group-list-app' : 'js-issues-list-app';
+    showNewIssueDropdown() {
+      return this.isOkrsEnabled && this.isProject && !this.glFeatures.issuesListCreateModal;
     },
   },
   methods: {
@@ -239,12 +239,11 @@ export default {
 <template>
   <issues-list-app
     ref="issuesListApp"
-    :class="issuesListClass"
     :ee-search-tokens="searchTokens"
     :searched-by-epic="searchedByEpic"
     @updateFilterParams="filterParams = $event"
   >
-    <template v-if="isOkrsEnabled" #new-issuable-button>
+    <template v-if="showNewIssueDropdown" #new-issuable-button>
       <new-issue-dropdown :full-path="fullPath" @workItemCreated="refetchIssuables" />
     </template>
     <template #title-icons="{ issuable, apiFilterParams }">

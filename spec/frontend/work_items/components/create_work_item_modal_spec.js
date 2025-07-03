@@ -78,6 +78,10 @@ describe('CreateWorkItemModal', () => {
     });
   };
 
+  beforeEach(() => {
+    gon.current_user_id = 1;
+  });
+
   afterEach(() => {
     localStorage.clear();
   });
@@ -128,6 +132,19 @@ describe('CreateWorkItemModal', () => {
       const mockEvent = { preventDefault: jest.fn(), ctrlKey: true };
       findTrigger().vm.$emit('click', mockEvent);
 
+      await nextTick();
+
+      expect(findCreateModal().props('visible')).toBe(false);
+      expect(mockEvent.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it('does not open modal or prevent link default when user is signed out', async () => {
+      window.gon = { current_user_id: undefined };
+      createComponent();
+      await waitForPromises();
+
+      const mockEvent = { preventDefault: jest.fn(), ctrlKey: true };
+      findTrigger().vm.$emit('click', mockEvent);
       await nextTick();
 
       expect(findCreateModal().props('visible')).toBe(false);
