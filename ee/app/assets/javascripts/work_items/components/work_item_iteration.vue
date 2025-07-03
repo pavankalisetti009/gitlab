@@ -17,7 +17,6 @@ import {
   TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 
 export default {
   i18n: {
@@ -166,15 +165,10 @@ export default {
 
       try {
         if (this.workItemId === newWorkItemId(this.workItemType)) {
-          this.$apollo.mutate({
-            mutation: updateNewWorkItemMutation,
-            variables: {
-              input: {
-                workItemType: this.workItemType,
-                fullPath: this.fullPath,
-                iteration: this.localIteration,
-              },
-            },
+          this.$emit('updateWidgetDraft', {
+            workItemType: this.workItemType,
+            fullPath: this.fullPath,
+            iteration: this.localIteration,
           });
 
           this.updateInProgress = false;

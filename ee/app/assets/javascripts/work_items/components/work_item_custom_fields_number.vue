@@ -9,7 +9,6 @@ import {
   NAME_TO_TEXT_LOWERCASE_MAP,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
-import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import { sprintf } from '~/locale';
 
@@ -104,17 +103,12 @@ export default {
 
       // Create work item flow
       if (this.workItemId === newWorkItemId(this.workItemType)) {
-        await this.$apollo.mutate({
-          mutation: updateNewWorkItemMutation,
-          variables: {
-            input: {
-              workItemType: this.workItemType,
-              fullPath: this.fullPath,
-              customField: {
-                id: this.customFieldId,
-                numberValue,
-              },
-            },
+        this.$emit('updateWidgetDraft', {
+          workItemType: this.workItemType,
+          fullPath: this.fullPath,
+          customField: {
+            id: this.customFieldId,
+            numberValue,
           },
         });
 

@@ -425,26 +425,41 @@ export const getAutosaveKeyQueryParamString = () => {
   return queryParams.toString();
 };
 
-export const getNewWorkItemAutoSaveKey = ({ fullPath, workItemType }) => {
+export const getNewWorkItemAutoSaveKey = ({ fullPath, workItemType, relatedItemId }) => {
   if (!workItemType || !fullPath) return '';
 
+  const relatedId = getIdFromGraphQLId(relatedItemId);
   const queryParamString = getAutosaveKeyQueryParamString();
+  let initialKey = `new-${fullPath}-${workItemType.toLowerCase()}`;
+
+  if (relatedId) {
+    initialKey = `${initialKey}-related-${relatedId}`;
+  }
 
   if (queryParamString) {
-    return `new-${fullPath}-${workItemType.toLowerCase()}-${queryParamString}-draft`;
+    initialKey = `${initialKey}-${queryParamString}`;
   }
-  return `new-${fullPath}-${workItemType.toLowerCase()}-draft`;
+
+  // eslint-disable-next-line @gitlab/require-i18n-strings
+  return `${initialKey}-draft`;
 };
 
-export const getNewWorkItemWidgetsAutoSaveKey = ({ fullPath }) => {
+export const getNewWorkItemWidgetsAutoSaveKey = ({ fullPath, relatedItemId }) => {
   if (!fullPath) return '';
 
+  const relatedId = getIdFromGraphQLId(relatedItemId);
   const queryParamString = getAutosaveKeyQueryParamString();
+  let initialKey = `new-${fullPath}`;
+
+  if (relatedId) {
+    initialKey = `${initialKey}-related-${relatedId}`;
+  }
 
   if (queryParamString) {
-    return `new-${fullPath}-widgets-${queryParamString}-draft`;
+    initialKey = `${initialKey}-${queryParamString}`;
   }
-  return `new-${fullPath}-widgets-draft`;
+
+  return `${initialKey}-widgets-draft`;
 };
 
 export const getWorkItemWidgets = (draftData) => {
@@ -462,18 +477,20 @@ export const getWorkItemWidgets = (draftData) => {
   return widgets;
 };
 
-export const updateDraftWorkItemType = ({ fullPath, workItemType }) => {
+export const updateDraftWorkItemType = ({ fullPath, workItemType, relatedItemId }) => {
   const widgetsAutosaveKey = getNewWorkItemWidgetsAutoSaveKey({
     fullPath,
+    relatedItemId,
   });
   const sharedCacheWidgets = JSON.parse(getDraft(widgetsAutosaveKey)) || {};
   sharedCacheWidgets.TYPE = workItemType;
   updateDraft(widgetsAutosaveKey, JSON.stringify(sharedCacheWidgets));
 };
 
-export const getDraftWorkItemType = ({ fullPath }) => {
+export const getDraftWorkItemType = ({ fullPath, relatedItemId }) => {
   const widgetsAutosaveKey = getNewWorkItemWidgetsAutoSaveKey({
     fullPath,
+    relatedItemId,
   });
   const sharedCacheWidgets = JSON.parse(getDraft(widgetsAutosaveKey)) || {};
   return sharedCacheWidgets.TYPE;

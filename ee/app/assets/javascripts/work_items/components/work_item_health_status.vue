@@ -15,7 +15,6 @@ import {
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import { newWorkItemId, newWorkItemFullPath, findHealthStatusWidget } from '~/work_items/utils';
 import Tracking from '~/tracking';
 import { sprintf } from '~/locale';
@@ -112,15 +111,10 @@ export default {
       this.updateInProgress = true;
 
       if (this.createFlow) {
-        this.$apollo.mutate({
-          mutation: updateNewWorkItemMutation,
-          variables: {
-            input: {
-              fullPath: this.fullPath,
-              healthStatus,
-              workItemType: this.workItemType,
-            },
-          },
+        this.$emit('updateWidgetDraft', {
+          fullPath: this.fullPath,
+          healthStatus,
+          workItemType: this.workItemType,
         });
         this.updateInProgress = false;
         return;

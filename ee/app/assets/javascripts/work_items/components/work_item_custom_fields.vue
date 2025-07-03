@@ -80,6 +80,7 @@ export default {
       :can-update="canUpdate"
       :work-item-type="workItemType"
       :full-path="fullPath"
+      @updateWidgetDraft="$emit('updateWidgetDraft', $event)"
       @error="$emit('error', $event)"
     />
   </div>

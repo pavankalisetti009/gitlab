@@ -11,7 +11,6 @@ import {
   NAME_TO_TEXT_LOWERCASE_MAP,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
-import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import customFieldSelectOptionsQuery from 'ee/work_items/graphql/work_item_custom_field_select_options.query.graphql';
 
@@ -175,30 +174,15 @@ export default {
           ? { id: this.selectedOption.value, value: this.selectedOption.text }
           : null;
 
-        await this.$apollo
-          .mutate({
-            mutation: updateNewWorkItemMutation,
-            variables: {
-              input: {
-                workItemType: this.workItemType,
-                fullPath: this.fullPath,
-                customField: {
-                  id: this.customFieldId,
-                  selectedOptions: selectedOption ? [selectedOption] : [],
-                },
-              },
-            },
-          })
-          .catch((error) => {
-            const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
-              workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
-            });
-            this.$emit('error', msg);
-            Sentry.captureException(error);
-          })
-          .finally(() => {
-            this.isUpdating = false;
-          });
+        this.$emit('updateWidgetDraft', {
+          workItemType: this.workItemType,
+          fullPath: this.fullPath,
+          customField: {
+            id: this.customFieldId,
+            selectedOptions: selectedOption ? [selectedOption] : [],
+          },
+        });
+        this.isUpdating = false;
 
         return;
       }
