@@ -61,3 +61,12 @@ export default {
     </div>
   </div>
 </template>
+<style scoped>
+/* FIXME: This is temporary. Since we may well get rid of AgentMessage component,
+* we want to fix the styling only here and not upstream in the component.
+* https://gitlab.com/gitlab-org/gitlab/-/issues/553412
+*/
+.duo-chat-message .gl-markdown {
+  color: var(--white, #ffffff);
+}
+</style>
