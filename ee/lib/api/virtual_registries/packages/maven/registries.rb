@@ -166,6 +166,26 @@ module API
 
                 destroy_conditionally!(registry)
               end
+
+              desc 'Purge cache for a maven virtual registry' do
+                detail 'This feature was introduced in GitLab 18.2. \
+                        This feature is currently in experiment state. \
+                        This feature is behind the `maven_virtual_registry` feature flag.'
+                success code: 204
+                failure [
+                  { code: 400, message: 'Bad Request' },
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 403, message: 'Forbidden' },
+                  { code: 404, message: 'Not found' }
+                ]
+                tags %w[maven_virtual_registries]
+                hidden true
+              end
+              delete :cache do
+                authorize! :destroy_virtual_registry, registry
+
+                destroy_conditionally!(registry) { registry.purge_cache! }
+              end
             end
           end
         end

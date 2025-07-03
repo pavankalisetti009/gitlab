@@ -26,6 +26,24 @@ module VirtualRegistries
 
         before_destroy :delete_upstreams
 
+        def exclusive_upstreams
+          subquery = RegistryUpstream
+            .where(RegistryUpstream.arel_table[:upstream_id].eq(Upstream.arel_table[:id]))
+            .where.not(registry_id: id)
+
+          Upstream
+            .primary_key_in(registry_upstreams.select(:upstream_id).unscope(:order))
+            .where_not_exists(subquery)
+        end
+
+        def purge_cache!
+          ::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker.bulk_perform_async_with_contexts(
+            exclusive_upstreams,
+            arguments_proc: ->(upstream) { [upstream.id] },
+            context_proc: ->(upstream) { { namespace: upstream.group } }
+          )
+        end
+
         private
 
         def max_per_group
@@ -38,14 +56,7 @@ module VirtualRegistries
         end
 
         def delete_upstreams
-          subquery = RegistryUpstream
-            .where(RegistryUpstream.arel_table[:upstream_id].eq(Upstream.arel_table[:id]))
-            .where.not(registry_id: id)
-
-          Upstream
-            .primary_key_in(registry_upstreams.select(:upstream_id).unscope(:order))
-            .where_not_exists(subquery)
-            .delete_all
+          exclusive_upstreams.delete_all
         end
       end
     end
