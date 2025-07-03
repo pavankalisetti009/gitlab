@@ -3,7 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { AgentMessage, SystemMessage } from '@gitlab/duo-ui';
 import { createAlert } from '~/alert';
 import WorkflowLogs from 'ee/ai/duo_agents_platform/pages/show/components/workflow_logs.vue';
-import { mockWorkflowEvents } from '../../../../mocks';
+import { mockWorkflowEvents, checkpoint1 } from '../../../../mocks';
 
 jest.mock('~/alert');
 
@@ -59,11 +59,21 @@ describe('WorkflowLogs', () => {
     });
 
     it('displays all messages in the ui_chat_log', () => {
-      expect(findAllToolMessages()).toHaveLength(2);
-      expect(findAllAgentMessages()).toHaveLength(1);
+      // There are 4 tool calls in the mocks
+      expect(findAllToolMessages()).toHaveLength(4);
+      // There are 2 agents calls in the mocks
+      expect(findAllAgentMessages()).toHaveLength(2);
       expect(findAllAgentMessages().at(0).props().message).toEqual({
-        content: 'I am done!',
+        additional_context: null,
+        content:
+          'I\'ll help you explore the GitLab project to understand the context for "Hello world in JS". Let me start by checking the current working directory and gathering information about the project structure.',
+        context_elements: null,
+        correlation_id: null,
+        message_sub_type: null,
         message_type: 'agent',
+        status: 'success',
+        timestamp: '2025-07-03T13:24:18.019182+00:00',
+        tool_info: null,
       });
     });
 
@@ -74,7 +84,7 @@ describe('WorkflowLogs', () => {
 
   describe('with single workflow event', () => {
     beforeEach(() => {
-      createComponent({ workflowEvents: [mockWorkflowEvents[0]] });
+      createComponent({ workflowEvents: [{ checkpoint: checkpoint1 }] });
     });
 
     it('displays the single checkpoint', () => {
@@ -93,7 +103,9 @@ describe('WorkflowLogs', () => {
     });
 
     it('shows error message', () => {
-      expect(createAlert).toHaveBeenCalled();
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Could not display logs. Please try again.',
+      });
     });
   });
 

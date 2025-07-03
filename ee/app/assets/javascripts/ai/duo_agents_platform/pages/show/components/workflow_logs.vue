@@ -22,24 +22,22 @@ export default {
       return this.logs?.length > 0;
     },
     lastWorkflowEvent() {
-      return this.workflowEvents?.length > 0
-        ? this.workflowEvents[this.workflowEvents.length - 1]
-        : null;
+      return this.workflowEvents?.length > 0 ? this.workflowEvents[0] : null;
     },
     lastWorkflowCheckpoint() {
-      return this.lastWorkflowEvent?.checkpoint;
+      if (!this.lastWorkflowEvent) return null;
+
+      try {
+        return JSON.parse(this.lastWorkflowEvent?.checkpoint);
+      } catch (err) {
+        createAlert({
+          message: s__('DuoAgentsPlatform|Could not display logs. Please try again.'),
+        });
+        return null;
+      }
     },
     logs() {
-      try {
-        if (this.lastWorkflowCheckpoint) {
-          return JSON.parse(this.lastWorkflowCheckpoint)?.channel_values?.ui_chat_log;
-        }
-
-        return [];
-      } catch (err) {
-        createAlert(s__('DuoAgentsPlatform|Could not display logs. Please try again'));
-        return [];
-      }
+      return this.lastWorkflowCheckpoint?.channel_values?.ui_chat_log || [];
     },
   },
   methods: {

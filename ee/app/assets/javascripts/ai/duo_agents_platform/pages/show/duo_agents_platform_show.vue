@@ -29,11 +29,11 @@ export default {
         return data?.duoWorkflowEvents?.nodes || [];
       },
       error(err) {
-        createAlert(
-          err?.message
-            ? err.message
-            : s__('DuoAgentsPlatform|Something went wrong while fetching Agent Flows'),
-        );
+        createAlert({
+          message:
+            err?.message ||
+            s__('DuoAgentsPlatform|Something went wrong while fetching Agent Flows'),
+        });
       },
     },
   },
