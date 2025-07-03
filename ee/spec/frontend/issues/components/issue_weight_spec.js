@@ -30,11 +30,11 @@ describe('IssueWeight', () => {
     });
   });
 
-  it('renders a div', () => {
+  it('renders a button', () => {
     wrapper = mountIssueWeight({
       weight: 2,
     });
 
-    expect(findWorkItemAttribute().props('wrapperComponent')).toBe('div');
+    expect(findWorkItemAttribute().props('wrapperComponent')).toBe('button');
   });
 });
