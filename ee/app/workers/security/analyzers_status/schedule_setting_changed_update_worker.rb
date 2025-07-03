@@ -10,12 +10,13 @@ module Security
       feature_category :security_asset_inventories
 
       BATCH_SIZE = 100
+      DELAY = 30.seconds.to_i
 
       def perform(project_ids, analyzer_type)
         return unless project_ids.present? && analyzer_type.present?
 
-        project_ids.each_slice(BATCH_SIZE) do |projects_slice|
-          SettingChangedUpdateWorker.perform_async(projects_slice, analyzer_type)
+        project_ids.each_slice(BATCH_SIZE).each_with_index do |projects_slice, index|
+          SettingChangedUpdateWorker.perform_in(DELAY * index, projects_slice, analyzer_type)
         end
       end
     end
