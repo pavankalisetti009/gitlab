@@ -29,10 +29,10 @@ RSpec.describe MergeRequests::PolicyViolationsResolvedAuditEventService, feature
       {
         name: 'policy_violations_resolved',
         author: merge_request.author,
-        scope: policy_project,
+        scope: project,
         target: merge_request,
         message: "All merge request approval policy violation(s) resolved in merge request " \
-          "with title 'Test MR' in 'SP Test' project",
+          "with title 'Test MR'",
         additional_details: {
           merge_request_title: merge_request.title,
           merge_request_id: merge_request.id,
@@ -41,8 +41,7 @@ RSpec.describe MergeRequests::PolicyViolationsResolvedAuditEventService, feature
           target_branch: merge_request.target_branch,
           project_id: project.id,
           project_name: project.name,
-          project_full_path: project.full_path,
-          security_policy_management_project_id: policy_project.id
+          project_full_path: project.full_path
         }
       }
     end

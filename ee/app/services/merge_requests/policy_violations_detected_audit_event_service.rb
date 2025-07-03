@@ -23,23 +23,21 @@ module MergeRequests
     end
     strong_memoize_attr :violations
 
-    def policy_configuration
-      merge_request.project.security_orchestration_policy_configuration
+    def target_project
+      @_target_project ||= merge_request.project
     end
-    strong_memoize_attr :policy_configuration
 
     def details
-      ::Security::ScanResultPolicies::PolicyViolationDetails.new(merge_request)
+      @_details ||= ::Security::ScanResultPolicies::PolicyViolationDetails.new(merge_request)
     end
-    strong_memoize_attr :details
 
     def audit_context
       {
         name: 'policy_violations_detected',
         message: "#{violations.count} merge request approval policy violation(s) detected in merge request " \
-          "with title '#{merge_request.title}' in '#{merge_request.project.name}' project",
+          "with title '#{merge_request.title}'",
         author: merge_request.author,
-        scope: policy_configuration.security_policy_management_project,
+        scope: target_project,
         target: merge_request,
         additional_details: additional_details
       }
@@ -52,12 +50,11 @@ module MergeRequests
         merge_request_iid: merge_request.iid,
         source_branch: merge_request.source_branch,
         target_branch: merge_request.target_branch,
-        project_id: merge_request.project.id,
-        project_name: merge_request.project.name,
-        project_full_path: merge_request.project.full_path,
+        project_id: target_project.id,
+        project_name: target_project.name,
+        project_full_path: target_project.full_path,
         violated_policies: violated_policies,
-        violation_details: violation_details,
-        security_policy_management_project_id: policy_configuration.security_policy_management_project_id
+        violation_details: violation_details
       }
     end
 
@@ -76,11 +73,18 @@ module MergeRequests
     end
 
     def violated_policies
-      violations.map do |violation|
+      violations.filter_map do |violation|
         security_policy = violation.security_policy
+        next unless security_policy
+
+        policy_configuration = security_policy.security_orchestration_policy_configuration
+
         {
-          policy_name: security_policy&.name,
-          policy_type: security_policy&.type
+          policy_id: security_policy.id,
+          policy_name: security_policy.name,
+          policy_type: security_policy.type,
+          security_orchestration_policy_configuration_id: policy_configuration.id,
+          security_policy_management_project_id: policy_configuration.security_policy_management_project_id
         }
       end
     end
