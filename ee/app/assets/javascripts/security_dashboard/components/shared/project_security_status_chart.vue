@@ -18,6 +18,7 @@ import {
 import { Accordion, AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
 import { s__, n__, sprintf } from '~/locale';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import { limitVulnerabilityGradeProjects } from 'ee/security_dashboard/helpers';
 import SecurityDashboardCard from './security_dashboard_card.vue';
 
 const SEVERITY_LEVELS_ORDERED_BY_SEVERITY = [
@@ -66,6 +67,8 @@ export default {
     return {
       vulnerabilityGrades: {},
       errorLoadingVulnerabilitiesGrades: false,
+      expandedGrade: SEVERITY_GROUP_F,
+      limitedVulnerabilityGrades: [],
     };
   },
   apollo: {
@@ -83,12 +86,17 @@ export default {
           ? results.group
           : results.instanceSecurityDashboard;
 
+        this.limitedVulnerabilityGrades = limitVulnerabilityGradeProjects(vulnerabilityGrades);
+
         // This will convert the results array into an object where the key is the grade property:
         // {
         //    A: { grade: 'A', count: 1, projects: { nodes: [ ... ] },
         //    B: { grade: 'B', count: 2, projects: { nodes: [ ... ] }
         // }
         return keyBy(vulnerabilityGrades, 'grade');
+      },
+      result() {
+        this.$emit('chart-report-data-registered', this.getChartReportData);
       },
       error() {
         this.errorLoadingVulnerabilitiesGrades = true;
@@ -161,6 +169,15 @@ export default {
         ? sprintf(s__('SecurityReports|%{count}+ projects'), { count: projects.length })
         : n__('%d project', '%d projects', count);
     },
+    onAccordionInput(grade) {
+      this.expandedGrade = grade;
+    },
+    getChartReportData() {
+      return {
+        vulnerability_grades: this.limitedVulnerabilityGrades,
+        expanded_grade: this.expandedGrade,
+      };
+    },
   },
 };
 </script>
@@ -195,6 +212,7 @@ export default {
           :disabled="shouldAccordionItemBeDisabled(severityGroup)"
           :max-height="$options.accordionItemsContentMaxHeight"
           class="gl-flex gl-grow gl-flex-col gl-justify-center"
+          @input="onAccordionInput(severityGroup.type)"
         >
           <template #title="{ isExpanded, isDisabled }">
             <h5
