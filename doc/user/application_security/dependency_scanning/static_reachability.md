@@ -120,6 +120,13 @@ For Python `pipenv`, static reachability doesn't support `Pipfile.lock` files. S
 
 If a package manager without dependency graph support is used, all indirect dependencies are marked as not in use.
 
+Because of a [known issue](dependency_scanning_sbom/_index.md#pip) in Dependency Scanning with `pipdeptree`,
+[optional dependencies](https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies)
+are marked as direct dependencies instead of as transitive dependencies. Static Reachability might not
+identify those packages as in use.
+
+For example, requiring `passlib[bcrypt]` may result in `passlib` being marked as `in_use` whilst `bcrypt` is marked as `not_found`.
+
 ## Running SRA in an offline environment
 
 To use the dependency scanning component in an offline environment, you must first
