@@ -18,7 +18,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
   describe '#execute' do
     before do
       stub_feature_flags(ai_model_switching: false)
-      stub_feature_flags(summarize_new_merge_request_claude_4_0_rollout: false)
     end
 
     shared_examples 'makes AI request and publishes response' do
@@ -87,45 +86,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
 
       it_behaves_like 'makes AI request and publishes response'
     end
-
-    context 'with feature flag summarize_new_merge_request_claude_4_0_rollout enabled' do
-      let(:options) do
-        {
-          source_branch: 'feature',
-          target_branch: project.default_branch,
-          source_project: project
-        }
-      end
-
-      before do
-        stub_feature_flags(summarize_new_merge_request_claude_4_0_rollout: true)
-      end
-
-      it 'includes prompt_version 2.1.0 in the request' do
-        extracted_diff = Gitlab::Llm::Utils::MergeRequestTool.extract_diff(
-          source_project: project,
-          source_branch: 'feature',
-          target_project: project,
-          target_branch: project.default_branch,
-          character_limit: described_class::CHARACTER_LIMIT
-        )
-
-        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
-          expect(client)
-            .to receive(:complete_prompt)
-            .with(
-              base_url: Gitlab::AiGateway.url,
-              prompt_name: :summarize_new_merge_request,
-              inputs: { extracted_diff: extracted_diff },
-              model_metadata: nil,
-              prompt_version: "2.1.0-dev"
-            )
-            .and_return(example_response)
-        end
-
-        summarize_new_merge_request
-      end
-    end
   end
 
   describe '#root_namespace' do
@@ -181,7 +141,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
 
     before do
       stub_feature_flags(ai_model_switching: true)
-      stub_feature_flags(summarize_new_merge_request_claude_4_0_rollout: false)
     end
 
     context 'when namespace has specific feature settings' do

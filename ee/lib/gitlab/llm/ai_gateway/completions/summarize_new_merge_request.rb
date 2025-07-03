@@ -40,8 +40,6 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            return '2.1.0-dev' if Feature.enabled?(:summarize_new_merge_request_claude_4_0_rollout, user)
-
             '^2.0.0'
           end
 
