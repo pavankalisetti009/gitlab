@@ -1373,35 +1373,56 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
             'project_user_defined_variables_restricted_to_maintainers')).to be false
         end
 
-        it 'returns false when user defined variables are not restricted' do
+        it 'returns true when restrict_user_defined_variables? is true' do
+          allow(project).to receive(:restrict_user_defined_variables?).and_return(true)
+
+          expect(described_class.map_field(project,
+            'project_user_defined_variables_restricted_to_maintainers')).to be true
+        end
+
+        it 'returns false when restrict_user_defined_variables? is false' do
           allow(project).to receive(:restrict_user_defined_variables?).and_return(false)
+
           expect(described_class.map_field(project,
             'project_user_defined_variables_restricted_to_maintainers')).to be false
         end
 
-        it 'returns true when variables are restricted to maintainers or owners' do
-          allow(project).to receive_messages(
-            restrict_user_defined_variables?: true,
-            ci_pipeline_variables_minimum_override_role: 'maintainer'
-          )
-          expect(described_class.map_field(project,
-            'project_user_defined_variables_restricted_to_maintainers')).to be true
+        context 'when integrated with actual restrict_user_defined_variables? behavior' do
+          it 'returns false when restrict_user_defined_variables? returns false (role is developer)' do
+            allow(project).to receive_messages(
+              restrict_user_defined_variables?: false,
+              ci_pipeline_variables_minimum_override_role: 'developer'
+            )
+            expect(described_class.map_field(project,
+              'project_user_defined_variables_restricted_to_maintainers')).to be false
+          end
 
-          allow(project).to receive_messages(
-            restrict_user_defined_variables?: true,
-            ci_pipeline_variables_minimum_override_role: 'owner'
-          )
-          expect(described_class.map_field(project,
-            'project_user_defined_variables_restricted_to_maintainers')).to be true
-        end
+          it 'returns true when restrict_user_defined_variables? returns true (role is maintainer)' do
+            allow(project).to receive_messages(
+              restrict_user_defined_variables?: true,
+              ci_pipeline_variables_minimum_override_role: 'maintainer'
+            )
+            expect(described_class.map_field(project,
+              'project_user_defined_variables_restricted_to_maintainers')).to be true
+          end
 
-        it 'returns false when variables are restricted to developers' do
-          allow(project).to receive_messages(
-            restrict_user_defined_variables?: true,
-            ci_pipeline_variables_minimum_override_role: 'developer'
-          )
-          expect(described_class.map_field(project,
-            'project_user_defined_variables_restricted_to_maintainers')).to be false
+          it 'returns true when restrict_user_defined_variables? returns true (role is owner)' do
+            allow(project).to receive_messages(
+              restrict_user_defined_variables?: true,
+              ci_pipeline_variables_minimum_override_role: 'owner'
+            )
+            expect(described_class.map_field(project,
+              'project_user_defined_variables_restricted_to_maintainers')).to be true
+          end
+
+          it 'returns true when restrict_user_defined_variables? returns true (role is no_one_allowed)' do
+            allow(project).to receive_messages(
+              restrict_user_defined_variables?: true,
+              ci_pipeline_variables_minimum_override_role: 'no_one_allowed'
+            )
+            expect(described_class.map_field(project,
+              'project_user_defined_variables_restricted_to_maintainers')).to be true
+          end
         end
       end
 
