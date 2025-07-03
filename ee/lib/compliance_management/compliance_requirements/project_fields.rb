@@ -387,8 +387,7 @@ module ComplianceManagement
         def project_user_defined_variables_restricted_to_maintainers?(project, _context = {})
           return false unless project&.ci_cd_settings
 
-          project.restrict_user_defined_variables? &&
-            %w[maintainer owner].include?(project.ci_pipeline_variables_minimum_override_role)
+          project.restrict_user_defined_variables?
         end
 
         def merge_requests_require_code_owner_approval?(project, _context = {})
