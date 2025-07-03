@@ -87,8 +87,13 @@ describe('ListComponentScope', () => {
       expect(findComplianceFrameworksToggleList().exists()).toBe(false);
       expect(findScopeDefaultLabel().exists()).toBe(false);
 
-      expect(findProjectsToggleList().props('including')).toBe(false);
-      expect(findProjectsToggleList().props('projects')).toEqual([{ id: 1 }]);
+      expect(findProjectsToggleList().exists()).toBe(true);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          including: false,
+          projects: [{ id: 1 }],
+        }),
+      );
     });
 
     it('renders excluding project text for multiple project exception', () => {
@@ -100,9 +105,29 @@ describe('ListComponentScope', () => {
         },
       });
 
-      expect(findProjectsToggleList().props('including')).toBe(false);
-      expect(findProjectsToggleList().props('projects')).toEqual([{ id: 1 }, { id: 2 }]);
-      expect(findProjectsToggleList().props('projectsToShow')).toBe(2);
+      expect(findProjectsToggleList().exists()).toBe(true);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          including: false,
+          projects: [{ id: 1 }, { id: 2 }],
+          projectsToShow: 2,
+        }),
+      );
+    });
+
+    it('renders instance-level policy', () => {
+      createComponent({
+        propsData: {
+          isInstanceLevel: true,
+          policyScope: {
+            excludingProjects: { nodes: [{ id: 1 }, { id: 2 }] },
+          },
+        },
+      });
+      expect(findProjectsToggleList().exists()).toBe(true);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({ isInstanceLevel: true }),
+      );
     });
   });
 
@@ -137,8 +162,12 @@ describe('ListComponentScope', () => {
       expect(findScopeDefaultLabel().exists()).toBe(false);
 
       expect(findProjectsToggleList().exists()).toBe(true);
-      expect(findProjectsToggleList().props('including')).toBe(true);
-      expect(findProjectsToggleList().props('projects')).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          including: true,
+          projects: [{ id: 1 }, { id: 2 }, { id: 3 }],
+        }),
+      );
     });
   });
 
@@ -341,11 +370,17 @@ describe('ListComponentScope', () => {
       });
 
       expect(findComplianceFrameworksToggleList().exists()).toBe(false);
-      expect(findProjectsToggleList().props('projects')).toEqual([{ id: 1 }]);
-      expect(findProjectsToggleList().exists()).toBe(true);
-      expect(findProjectsToggleList().props('including')).toBe(true);
       expect(findScopeDefaultLabel().exists()).toBe(false);
       expect(findDefaultText().exists()).toBe(false);
+
+      expect(findProjectsToggleList().exists()).toBe(true);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          projects: [{ id: 1 }],
+          including: true,
+          isInstanceLevel: false,
+        }),
+      );
     });
 
     it('renders project list for a policy with multiple linked SPP and excluding projects item on project level', () => {
@@ -364,11 +399,16 @@ describe('ListComponentScope', () => {
       });
 
       expect(findComplianceFrameworksToggleList().exists()).toBe(false);
-      expect(findProjectsToggleList().props('projects')).toEqual([{ id: 1 }]);
-      expect(findProjectsToggleList().props('including')).toBe(false);
-      expect(findProjectsToggleList().exists()).toBe(true);
       expect(findScopeDefaultLabel().exists()).toBe(false);
       expect(findDefaultText().exists()).toBe(false);
+
+      expect(findProjectsToggleList().exists()).toBe(true);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          projects: [{ id: 1 }],
+          including: false,
+        }),
+      );
     });
 
     it('renders group policy scope when ff is enabled', () => {

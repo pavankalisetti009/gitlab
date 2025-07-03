@@ -425,6 +425,11 @@ describe('List component', () => {
           mountWrapper({ provide: { namespaceType } });
           expect(findScopeCells()).toHaveLength(4);
           expect(findListComponentScope().exists()).toBe(true);
+          expect(findListComponentScope().props()).toEqual({
+            isInstanceLevel: false,
+            linkedSppItems: [],
+            policyScope: expect.objectContaining({ __typename: 'PolicyScope' }),
+          });
         },
       );
     });

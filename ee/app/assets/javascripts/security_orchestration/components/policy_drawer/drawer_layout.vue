@@ -74,6 +74,9 @@ export default {
     isInherited() {
       return isPolicyInherited(this.policy?.source);
     },
+    isInstanceLevel() {
+      return this.policy?.csp;
+    },
     policyHasNamespace() {
       return policyHasNamespace(this.policy?.source);
     },
@@ -113,7 +116,11 @@ export default {
       </div>
     </info-row>
 
-    <scope-info-row v-if="showPolicyScope" :policy-scope="policyScope" />
+    <scope-info-row
+      v-if="showPolicyScope"
+      :is-instance-level="isInstanceLevel"
+      :policy-scope="policyScope"
+    />
 
     <info-row :label="$options.i18n.sourceTitle">
       <div data-testid="policy-source">

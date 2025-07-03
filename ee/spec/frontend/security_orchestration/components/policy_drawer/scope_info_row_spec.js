@@ -86,7 +86,7 @@ describe('ScopeInfoRow', () => {
       projectType
       ${'includingProjects'}
       ${'excludingProjects'}
-    `('renders policy scope for projects', ({ projectType }) => {
+    `('renders policy scope for projects with $projectType', ({ projectType }) => {
       createComponent({
         propsData: {
           policyScope: {
@@ -99,7 +99,14 @@ describe('ScopeInfoRow', () => {
 
       expect(findComplianceFrameworksToggleList().exists()).toBe(false);
       expect(findProjectsToggleList().exists()).toBe(true);
-      expect(findProjectsToggleList().props('projects')).toEqual([{ id: 1 }, { id: 2 }]);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          isGroup: true,
+          isInstanceLevel: false,
+          including: projectType === 'includingProjects',
+          projects: [{ id: 1 }, { id: 2 }],
+        }),
+      );
     });
 
     it.each`
@@ -117,7 +124,7 @@ describe('ScopeInfoRow', () => {
       ${{ includingProjects: { nodes: null } }}                                                                      | ${NAMESPACE_TYPES.GROUP} | ${'This policy is applied to current project.'}
       ${{ excludingProjects: { nodes: null } }}                                                                      | ${NAMESPACE_TYPES.GROUP} | ${'This policy is applied to current project.'}
       ${{ includingProjects: { nodes: [] }, excludingProjects: { nodes: [] }, complianceFrameworks: { nodes: [] } }} | ${NAMESPACE_TYPES.GROUP} | ${'Default mode'}
-    `('renders fallback ui', ({ policyScope, namespaceType, expectedText }) => {
+    `('renders for policyScope of $policyScope', ({ policyScope, namespaceType, expectedText }) => {
       createComponent({
         propsData: {
           policyScope,
