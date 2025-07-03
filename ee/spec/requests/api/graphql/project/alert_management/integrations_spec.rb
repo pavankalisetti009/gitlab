@@ -7,11 +7,10 @@ RSpec.describe 'getting Alert Management Integrations', feature_category: :incid
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:prometheus_integration) { create(:prometheus_integration, project: project) }
   let_it_be(:active_http_integration) { create(:alert_management_http_integration, project: project) }
   let_it_be(:inactive_http_integration) { create(:alert_management_http_integration, :inactive, project: project) }
-  let_it_be(:project_alerting_setting) { create(:project_alerting_setting, project: project) }
   let_it_be(:other_project_http_integration) { create(:alert_management_http_integration) }
+  let_it_be(:prometheus_integration) { create(:alert_management_prometheus_integration, :legacy, project: project) }
 
   let(:fields) do
     <<~QUERY
@@ -80,10 +79,10 @@ RSpec.describe 'getting Alert Management Integrations', feature_category: :incid
             'id' => GitlabSchema.id_from_object(prometheus_integration).to_s,
             'type' => 'PROMETHEUS',
             'name' => 'Prometheus',
-            'active' => prometheus_integration.manual_configuration?,
-            'token' => project_alerting_setting.token,
+            'active' => prometheus_integration.active,
+            'token' => prometheus_integration.token,
             'url' => "http://localhost/#{project.full_path}/prometheus/alerts/notify.json",
-            'apiUrl' => prometheus_integration.api_url
+            'apiUrl' => nil
           }
         )
       end

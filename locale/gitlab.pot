@@ -40189,9 +40189,6 @@ msgstr ""
 msgid "Multiple IP address ranges are supported. Does not affect access to the group's settings."
 msgstr ""
 
-msgid "Multiple Prometheus integrations are not supported"
-msgstr ""
-
 msgid "Multiple components '%{name}' have '%{attribute}' attribute"
 msgstr ""
 
