@@ -2,6 +2,8 @@
 
 module Security
   class AnalyzerProjectStatus < ::SecApplicationRecord
+    include ::Namespaces::Traversal::Traversable
+
     self.table_name = 'analyzer_project_statuses'
 
     belongs_to :project

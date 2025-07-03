@@ -40,19 +40,11 @@ module Vulnerabilities
       end
 
       def namespace_statistics
-        # rubocop:disable CodeReuse/ActiveRecord -- can't use scope with group as its traversal ids are already modified
-        Vulnerabilities::NamespaceStatistic
-          .where("traversal_ids >= ARRAY[?]::bigint[]", previous_traversal_ids)
-          .where("traversal_ids < ARRAY[?]::bigint[]", next_previous_traversal_ids)
-        # rubocop:enable CodeReuse/ActiveRecord
+        Vulnerabilities::NamespaceStatistic.within(previous_traversal_ids)
       end
 
       def previous_traversal_ids
         @previous_traversal_ids ||= Vulnerabilities::NamespaceStatistic.by_namespace(group)[0]&.traversal_ids
-      end
-
-      def next_previous_traversal_ids
-        previous_traversal_ids.dup.tap { |ids| ids[-1] += 1 }
       end
 
       def update_statement

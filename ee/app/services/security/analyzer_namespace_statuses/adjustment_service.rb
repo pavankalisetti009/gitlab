@@ -3,6 +3,8 @@
 module Security
   module AnalyzerNamespaceStatuses
     class AdjustmentService
+      include Security::NamespaceTraversalSqlBuilder
+
       TooManyNamespacesError = Class.new(StandardError)
 
       UPSERT_SQL = <<~SQL
@@ -167,19 +169,7 @@ module Security
 
         return unless namespace_values.present?
 
-        values = namespace_values.map do |row|
-          traversal_ids = row[1]
-          next_traversal_ids = traversal_ids.dup
-          next_traversal_ids[-1] += 1
-
-          [
-            row[0],
-            Arel.sql("ARRAY#{traversal_ids}::bigint[]"),
-            Arel.sql("ARRAY#{next_traversal_ids}::bigint[]")
-          ]
-        end
-
-        Arel::Nodes::ValuesList.new(values).to_sql
+        namespaces_and_traversal_ids_query_values(namespace_values)
       end
 
       def non_zero_diffs(diffs)
