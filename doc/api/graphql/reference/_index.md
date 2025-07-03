@@ -10016,6 +10016,11 @@ Input type: `ProjectUpdateComplianceFrameworksInput`
 
 ### `Mutation.prometheusIntegrationCreate`
 
+{{< details >}}
+**Deprecated** in GitLab 18.2.
+Use HttpIntegrationCreate.
+{{< /details >}}
+
 Input type: `PrometheusIntegrationCreateInput`
 
 #### Arguments
@@ -10023,9 +10028,13 @@ Input type: `PrometheusIntegrationCreateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationprometheusintegrationcreateactive"></a>`active` | [`Boolean!`](#boolean) | Whether the integration is receiving alerts. |
-| <a id="mutationprometheusintegrationcreateapiurl"></a>`apiUrl` | [`String`](#string) | Endpoint at which Prometheus can be queried. |
+| <a id="mutationprometheusintegrationcreateapiurl"></a>`apiUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated**: Feature removed in 16.0. Deprecated in GitLab 18.2. |
 | <a id="mutationprometheusintegrationcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationprometheusintegrationcreatename"></a>`name` | [`String`](#string) | Name of the integration. |
+| <a id="mutationprometheusintegrationcreatepayloadattributemappings"></a>`payloadAttributeMappings` | [`[AlertManagementPayloadAlertFieldInput!]`](#alertmanagementpayloadalertfieldinput) | Custom mapping of GitLab alert attributes to fields from the payload example. |
+| <a id="mutationprometheusintegrationcreatepayloadexample"></a>`payloadExample` | [`JsonString`](#jsonstring) | Example of an alert payload. |
 | <a id="mutationprometheusintegrationcreateprojectpath"></a>`projectPath` | [`ID!`](#id) | Project to create the integration in. |
+| <a id="mutationprometheusintegrationcreatetype"></a>`type` | [`AlertManagementIntegrationType`](#alertmanagementintegrationtype) | Type of integration to create. Cannot be changed after creation. |
 
 #### Fields
 
@@ -10036,6 +10045,11 @@ Input type: `PrometheusIntegrationCreateInput`
 | <a id="mutationprometheusintegrationcreateintegration"></a>`integration` | [`AlertManagementPrometheusIntegration`](#alertmanagementprometheusintegration) | Newly created integration. |
 
 ### `Mutation.prometheusIntegrationResetToken`
+
+{{< details >}}
+**Deprecated** in GitLab 18.2.
+Use HttpIntegrationResetToken.
+{{< /details >}}
 
 Input type: `PrometheusIntegrationResetTokenInput`
 
@@ -10052,9 +10066,14 @@ Input type: `PrometheusIntegrationResetTokenInput`
 | ---- | ---- | ----------- |
 | <a id="mutationprometheusintegrationresettokenclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationprometheusintegrationresettokenerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationprometheusintegrationresettokenintegration"></a>`integration` | [`AlertManagementPrometheusIntegration`](#alertmanagementprometheusintegration) | Newly created integration. |
+| <a id="mutationprometheusintegrationresettokenintegration"></a>`integration` | [`AlertManagementPrometheusIntegration`](#alertmanagementprometheusintegration) | Updated integration. |
 
 ### `Mutation.prometheusIntegrationUpdate`
+
+{{< details >}}
+**Deprecated** in GitLab 18.2.
+Use HttpIntegrationUpdate.
+{{< /details >}}
 
 Input type: `PrometheusIntegrationUpdateInput`
 
@@ -10063,9 +10082,12 @@ Input type: `PrometheusIntegrationUpdateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationprometheusintegrationupdateactive"></a>`active` | [`Boolean`](#boolean) | Whether the integration is receiving alerts. |
-| <a id="mutationprometheusintegrationupdateapiurl"></a>`apiUrl` | [`String`](#string) | Endpoint at which Prometheus can be queried. |
+| <a id="mutationprometheusintegrationupdateapiurl"></a>`apiUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated**: Feature removed in 16.0. Deprecated in GitLab 18.2. |
 | <a id="mutationprometheusintegrationupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationprometheusintegrationupdateid"></a>`id` | [`IntegrationsPrometheusID!`](#integrationsprometheusid) | ID of the integration to mutate. |
+| <a id="mutationprometheusintegrationupdatename"></a>`name` | [`String`](#string) | Name of the integration. |
+| <a id="mutationprometheusintegrationupdatepayloadattributemappings"></a>`payloadAttributeMappings` | [`[AlertManagementPayloadAlertFieldInput!]`](#alertmanagementpayloadalertfieldinput) | Custom mapping of GitLab alert attributes to fields from the payload example. |
+| <a id="mutationprometheusintegrationupdatepayloadexample"></a>`payloadExample` | [`JsonString`](#jsonstring) | Example of an alert payload. |
 
 #### Fields
 
@@ -10073,7 +10095,7 @@ Input type: `PrometheusIntegrationUpdateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationprometheusintegrationupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationprometheusintegrationupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationprometheusintegrationupdateintegration"></a>`integration` | [`AlertManagementPrometheusIntegration`](#alertmanagementprometheusintegration) | Newly created integration. |
+| <a id="mutationprometheusintegrationupdateintegration"></a>`integration` | [`AlertManagementPrometheusIntegration`](#alertmanagementprometheusintegration) | Updated integration. |
 
 ### `Mutation.promoteToEpic`
 
@@ -22008,7 +22030,7 @@ An endpoint and credentials used to accept alerts for a project.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="alertmanagementhttpintegrationactive"></a>`active` | [`Boolean`](#boolean) | Whether the endpoint is currently accepting alerts. |
-| <a id="alertmanagementhttpintegrationapiurl"></a>`apiUrl` | [`String`](#string) | URL at which Prometheus metrics can be queried to populate the metrics dashboard. |
+| <a id="alertmanagementhttpintegrationapiurl"></a>`apiUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.2. Feature removed in 16.0. |
 | <a id="alertmanagementhttpintegrationid"></a>`id` | [`ID!`](#id) | ID of the integration. |
 | <a id="alertmanagementhttpintegrationname"></a>`name` | [`String`](#string) | Name of the integration. |
 | <a id="alertmanagementhttpintegrationpayloadalertfields"></a>`payloadAlertFields` | [`[AlertManagementPayloadAlertField!]`](#alertmanagementpayloadalertfield) | Extract alert fields from payload example for custom mapping. |
@@ -22045,14 +22067,14 @@ Parsed field (with its name) from an alert used for custom mappings.
 
 ### `AlertManagementPrometheusIntegration`
 
-An endpoint and credentials used to accept Prometheus alerts for a project.
+**DEPRECATED - Use AlertManagementHttpIntegration directly** An endpoint and credentials used to accept Prometheus alerts for a project.
 
 #### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="alertmanagementprometheusintegrationactive"></a>`active` | [`Boolean`](#boolean) | Whether the endpoint is currently accepting alerts. |
-| <a id="alertmanagementprometheusintegrationapiurl"></a>`apiUrl` | [`String`](#string) | URL at which Prometheus metrics can be queried to populate the metrics dashboard. |
+| <a id="alertmanagementprometheusintegrationapiurl"></a>`apiUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.2. Feature removed in 16.0. |
 | <a id="alertmanagementprometheusintegrationid"></a>`id` | [`ID!`](#id) | ID of the integration. |
 | <a id="alertmanagementprometheusintegrationname"></a>`name` | [`String`](#string) | Name of the integration. |
 | <a id="alertmanagementprometheusintegrationtoken"></a>`token` | [`String`](#string) | Token used to authenticate alert notification requests. |
@@ -36588,6 +36610,11 @@ four standard [pagination arguments](#pagination-arguments):
 
 Integrations which can receive alerts for the project.
 
+{{< details >}}
+**Deprecated** in GitLab 18.2.
+Use `alertManagementHttpIntegrations`.
+{{< /details >}}
+
 Returns [`AlertManagementIntegrationConnection`](#alertmanagementintegrationconnection).
 
 This field returns a [connection](#connections). It accepts the
@@ -49571,7 +49598,7 @@ Implementations:
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="alertmanagementintegrationactive"></a>`active` | [`Boolean`](#boolean) | Whether the endpoint is currently accepting alerts. |
-| <a id="alertmanagementintegrationapiurl"></a>`apiUrl` | [`String`](#string) | URL at which Prometheus metrics can be queried to populate the metrics dashboard. |
+| <a id="alertmanagementintegrationapiurl"></a>`apiUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.2. Feature removed in 16.0. |
 | <a id="alertmanagementintegrationid"></a>`id` | [`ID!`](#id) | ID of the integration. |
 | <a id="alertmanagementintegrationname"></a>`name` | [`String`](#string) | Name of the integration. |
 | <a id="alertmanagementintegrationtoken"></a>`token` | [`String`](#string) | Token used to authenticate alert notification requests. |
