@@ -174,8 +174,8 @@ export default {
           </gl-disclosure-dropdown>
         </div>
         <div
-          class="gl-flex gl-grow gl-flex-wrap gl-gap-4 gl-gap-y-3"
-          :class="{ 'gl-flex-col': showDescriptionField }"
+          class="gl-flex gl-grow gl-flex-wrap gl-items-start gl-gap-4 gl-gap-y-3"
+          :class="{ 'gl-flex-col gl-items-stretch': showDescriptionField }"
         >
           <gl-form-group
             :label="s__('WorkItem|Title')"
@@ -221,7 +221,7 @@ export default {
                 id="status-description"
                 ref="description"
                 :value="formData.description"
-                maxlength="255"
+                maxlength="128"
                 data-testid="status-description-input"
                 @input="updateFormData('description', $event)"
               />
