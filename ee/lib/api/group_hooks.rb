@@ -7,6 +7,7 @@ module API
     group_hooks_tags = %w[group_hooks]
 
     feature_category :webhooks
+    urgency :low
 
     before { authenticate! }
     before do
