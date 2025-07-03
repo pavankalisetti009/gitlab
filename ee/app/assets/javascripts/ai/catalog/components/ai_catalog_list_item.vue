@@ -1,23 +1,13 @@
 <script>
-import {
-  GlButton,
-  GlIcon,
-  GlBadge,
-  GlMarkdown,
-  GlLink,
-  GlAvatar,
-  GlTooltipDirective,
-} from '@gitlab/ui';
+import { GlButton, GlBadge, GlMarkdown, GlLink, GlAvatar, GlTooltipDirective } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { sprintf, s__ } from '~/locale';
-import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE, AI_CATALOG_AGENTS_RUN_ROUTE } from '../router/constants';
+import { ENUM_TO_NAME_MAP } from '../constants';
 
 export default {
   name: 'AiCatalogListItem',
   components: {
     GlButton,
-    GlIcon,
     GlBadge,
     GlMarkdown,
     GlLink,
@@ -32,20 +22,6 @@ export default {
       required: true,
     },
   },
-  computed: {
-    fullDate() {
-      if (!this.item.releasedAt) return undefined;
-      const date = new Date(this.item.releasedAt);
-      if (Number.isNaN(date.getTime())) return undefined;
-      return formatDate(date);
-    },
-    releasedTooltipTitle() {
-      if (!this.fullDate) return undefined;
-      return sprintf(s__('AICatalog|Released %{fullDate}'), {
-        fullDate: this.fullDate,
-      });
-    },
-  },
   methods: {
     formatId(id) {
       return getIdFromGraphQLId(id);
@@ -55,6 +31,7 @@ export default {
     show: AI_CATALOG_AGENTS_SHOW_ROUTE,
     run: AI_CATALOG_AGENTS_RUN_ROUTE,
   },
+  ENUM_TO_NAME_MAP,
 };
 </script>
 
@@ -71,24 +48,12 @@ export default {
         class="gl-mr-4 gl-self-start"
       />
       <div class="gl-flex gl-grow gl-flex-col gl-gap-1">
-        <div>
-          <span class="gl-text-sm">{{ item.model }}</span>
-          <gl-icon
-            v-if="item.verified"
-            name="tanuki-verified"
-            class="gl-ml-1 gl-text-status-info"
-            :size="16"
-            data-testid="tanuki-verified-icon"
-          />
-        </div>
-
         <div class="gl-mb-1 gl-flex gl-flex-wrap gl-items-center gl-gap-2">
           <gl-link :to="{ name: $options.routes.show, params: { id: formatId(item.id) } }">
             {{ item.name }}
           </gl-link>
-          <gl-badge variant="neutral" class="gl-self-center">{{ item.type }}</gl-badge>
-          <gl-badge v-gl-tooltip="releasedTooltipTitle" variant="info" class="gl-self-center">
-            {{ item.version }}
+          <gl-badge variant="neutral" class="gl-self-center">
+            {{ $options.ENUM_TO_NAME_MAP[item.itemType] }}
           </gl-badge>
         </div>
 

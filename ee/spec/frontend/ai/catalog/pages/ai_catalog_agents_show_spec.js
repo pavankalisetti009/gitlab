@@ -1,135 +1,83 @@
+import VueApollo from 'vue-apollo';
+import Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
+import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/ai_catalog_agent.query.graphql';
+import AiCatalogAgentCreateEditForm from 'ee/ai/catalog/components/ai_catalog_agent_create_edit_form.vue';
 import { AI_CATALOG_AGENTS_ROUTE } from 'ee/ai/catalog/router/constants';
+import { mockCatalogItemResponse, mockCatalogItemNullResponse, mockAgent } from '../mock_data';
 
-jest.mock('~/sentry/sentry_browser_wrapper', () => ({
-  captureException: jest.fn(),
-}));
+Vue.use(VueApollo);
 
 describe('AiCatalogAgentsShow', () => {
   let wrapper;
-  let mockApolloClient;
-  let mockRouter;
-  const agentId = 732;
-
-  const mockAgent = {
-    id: agentId,
-    name: 'Claude Sonnet 4',
-    description: 'Smart, efficient model for everyday user',
-    model: 'claude-sonnet-4-20250514',
+  let mockApollo;
+  const agentId = 1;
+  const routeParams = { id: agentId };
+  const mockRouter = {
+    push: jest.fn(),
   };
 
-  beforeEach(() => {
-    mockApolloClient = {
-      cache: {
-        readQuery: jest.fn(),
-      },
-    };
+  const mockCatalogItemQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemResponse);
+  const mockCatalogItemNullQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemNullResponse);
 
-    mockRouter = {
-      push: jest.fn(),
-    };
+  const createComponent = ({ catalogItemQueryHandler = mockCatalogItemQueryHandler } = {}) => {
+    mockApollo = createMockApollo([[aiCatalogAgentQuery, catalogItemQueryHandler]]);
 
-    jest.clearAllMocks();
-  });
-
-  const createComponent = (routeParams = { id: agentId }, apolloData = mockAgent) => {
     wrapper = shallowMount(AiCatalogAgentsShow, {
+      apolloProvider: mockApollo,
       mocks: {
         $route: {
           params: routeParams,
         },
         $router: mockRouter,
-        $apollo: {
-          provider: {
-            clients: {
-              defaultClient: mockApolloClient,
-            },
-          },
-        },
-      },
-      data() {
-        return {
-          aiCatalogAgent: apolloData,
-        };
       },
     });
   };
 
   const findHeader = () => wrapper.findComponent(PageHeading);
+  const findCatalogItemForm = () => wrapper.findComponent(AiCatalogAgentCreateEditForm);
 
   describe('component rendering', () => {
-    it('renders the page heading with the agent name', async () => {
+    beforeEach(async () => {
       await createComponent();
+    });
 
+    it('renders the page heading with the agent name', () => {
       expect(findHeader().props('heading')).toBe(`Edit agent: ${mockAgent.name}`);
     });
   });
 
-  describe('beforeRouteEnter hook', () => {
-    const invalidId = '1';
-
-    let component;
-    let mockNext;
-    let mockVm;
-
-    beforeEach(() => {
-      component = AiCatalogAgentsShow;
-      mockNext = jest.fn();
-      mockVm = {
-        $apollo: {
-          provider: {
-            clients: {
-              defaultClient: mockApolloClient,
-            },
-          },
-        },
-        $router: mockRouter,
-      };
+  describe('with agent data', () => {
+    beforeEach(async () => {
+      await createComponent();
     });
 
-    it('redirects when agent is not found in cache', () => {
-      const to = { params: { id: invalidId } };
-      mockApolloClient.cache.readQuery.mockReturnValue({
-        aiCatalogAgent: null,
-      });
-
-      component.beforeRouteEnter(to, {}, mockNext);
-
-      const callback = mockNext.mock.calls[0][0];
-      callback(mockVm);
-
-      expect(mockRouter.push).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE });
+    it('fetches item data', () => {
+      expect(mockCatalogItemQueryHandler).toHaveBeenCalled();
     });
 
-    it('redirects when the id is not a number', () => {
-      const to = { params: { id: 'invalidId' } };
+    it('render edit form', () => {
+      expect(findCatalogItemForm().exists()).toBe(true);
+    });
+  });
 
-      component.beforeRouteEnter(to, {}, mockNext);
-
-      expect(mockNext).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE });
+  describe('without agent data', () => {
+    beforeEach(async () => {
+      await createComponent({ catalogItemQueryHandler: mockCatalogItemNullQueryHandler });
     });
 
-    it('calls Sentry when cache query fails', () => {
-      const to = { params: { id: invalidId } };
-      const cacheError = new Error('Cache read failed');
-      mockApolloClient.cache.readQuery.mockImplementation(() => {
-        throw cacheError;
-      });
+    it('fetches list data', () => {
+      expect(mockCatalogItemNullQueryHandler).toHaveBeenCalled();
+    });
 
-      component.beforeRouteEnter(to, {}, mockNext);
+    it('does not render edit form', () => {
+      expect(findCatalogItemForm().exists()).toBe(false);
+    });
 
-      const callback = mockNext.mock.calls[0][0];
-      callback(mockVm);
-
-      expect(Sentry.captureException).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: `Agent not found: Failed to query agent with ID ${invalidId}`,
-          cause: cacheError,
-        }),
-      );
+    it('redirect to the agents list page', () => {
       expect(mockRouter.push).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE });
     });
   });

@@ -2433,9 +2433,6 @@ msgstr ""
 msgid "AICatalog|Provide default instructions or context that will be included with every user interaction."
 msgstr ""
 
-msgid "AICatalog|Released %{fullDate}"
-msgstr ""
-
 msgid "AICatalog|Run"
 msgstr ""
 
@@ -73059,6 +73056,9 @@ msgid "added a %{link_type} link"
 msgstr ""
 
 msgid "added a Zoom call to this issue"
+msgstr ""
+
+msgid "agent"
 msgstr ""
 
 msgid "agents"
