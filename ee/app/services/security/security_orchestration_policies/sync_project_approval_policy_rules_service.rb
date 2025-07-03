@@ -11,22 +11,16 @@ module Security
       end
 
       def create_rules(approval_policy_rules = security_policy.approval_policy_rules.undeleted)
-        return unless use_approval_policy_rules_for_approval_rules_enabled?
-
         create_approval_rules(approval_policy_rules)
         sync_merge_request_rules
       end
 
       def update_rules(approval_policy_rules = security_policy.approval_policy_rules.undeleted)
-        return unless use_approval_policy_rules_for_approval_rules_enabled?
-
         update_approval_rules(approval_policy_rules)
         sync_merge_request_rules
       end
 
       def delete_rules(approval_policy_rules = security_policy.approval_policy_rules)
-        return unless use_approval_policy_rules_for_approval_rules_enabled?
-
         delete_approval_rules(approval_policy_rules)
         sync_merge_request_rules
       end
@@ -34,8 +28,6 @@ module Security
       def sync_policy_diff(policy_diff)
         created_rules, deleted_rules = find_changed_rules(policy_diff)
         security_policy.update_project_approval_policy_rule_links(project, created_rules, deleted_rules)
-
-        return unless use_approval_policy_rules_for_approval_rules_enabled?
 
         # When a security policy's approval actions are modified (added or removed),
         # we perform a complete refresh of the associated rules
@@ -79,11 +71,6 @@ module Security
 
         [created_rules, deleted_rules]
       end
-
-      def use_approval_policy_rules_for_approval_rules_enabled?
-        Feature.enabled?(:use_approval_policy_rules_for_approval_rules, project)
-      end
-      strong_memoize_attr :use_approval_policy_rules_for_approval_rules_enabled?
 
       def sync_merge_request_rules
         Security::SecurityOrchestrationPolicies::SyncMergeRequestsService.new(

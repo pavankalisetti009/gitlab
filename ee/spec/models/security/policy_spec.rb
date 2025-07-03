@@ -1194,6 +1194,10 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     subject(:upsert!) { policy.upsert_rule(rule_index, rule_hash) }
 
     context 'when rule does not exist' do
+      before do
+        Security::ApprovalPolicyRule.delete_all
+      end
+
       it 'creates a new rule' do
         expect { upsert! }.to change { Security::ApprovalPolicyRule.count }.by(1)
         expect(upsert!).to have_attributes(security_policy_id: policy.id, rule_index: rule_index, type: 'scan_finding')
@@ -1201,13 +1205,9 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
 
     context 'when rule exists' do
-      let_it_be(:existing_rule) do
-        create(:approval_policy_rule, :scan_finding, security_policy: policy, rule_index: rule_index)
-      end
-
       it 'updates the existing rule' do
         expect { upsert! }.not_to change { Security::ApprovalPolicyRule.count }
-        expect(upsert!).to have_attributes(id: existing_rule.id, security_policy_id: policy.id, rule_index: rule_index)
+        expect(upsert!).to have_attributes(security_policy_id: policy.id, rule_index: rule_index)
       end
     end
   end

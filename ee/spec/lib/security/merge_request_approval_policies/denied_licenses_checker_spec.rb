@@ -125,16 +125,6 @@ RSpec.describe Security::MergeRequestApprovalPolicies::DeniedLicensesChecker, fe
       end
     end
 
-    context 'when the `use_approval_policy_rules_for_approval_rules` feature flag is disabled' do
-      before do
-        stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
-      end
-
-      it_behaves_like 'with package exceptions'
-    end
-
-    context 'when the `use_approval_policy_rules_for_approval_rules` feature flag is enabled' do
-      it_behaves_like 'with package exceptions'
-    end
+    it_behaves_like 'with package exceptions'
   end
 end

@@ -53,16 +53,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
               .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
           end
         end
-
-        context 'when use_approval_policy_rules_for_approval_rules is disabled' do
-          before do
-            stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
-          end
-
-          it 'does not create project approval_rules' do
-            expect { service.execute }.not_to change { project.approval_rules.count }
-          end
-        end
       end
     end
 
@@ -78,16 +68,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
 
         it 'deletes project approval_rules' do
           expect { service.execute }.to change { project.approval_rules.count }.by(-1)
-        end
-
-        context 'when use_approval_policy_rules_for_approval_rules is disabled' do
-          before do
-            stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
-          end
-
-          it 'does not delete project approval_rules' do
-            expect { service.execute }.not_to change { project.approval_rules.count }
-          end
         end
       end
 
@@ -204,18 +184,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
               it 'does not link the policy and rules' do
                 expect { service.execute }.to not_change { Security::PolicyProjectLink.count }
                   .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
-              end
-            end
-
-            context 'when use_approval_policy_rules_for_approval_rules is disabled' do
-              before do
-                stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
-              end
-
-              it 'does not update project approval_rules' do
-                service.execute
-
-                expect(project_approval_rule.reload.scanners).not_to contain_exactly('dependency_scanning')
               end
             end
           end

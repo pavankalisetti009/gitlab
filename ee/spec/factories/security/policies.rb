@@ -87,7 +87,33 @@ FactoryBot.define do
       content { { approval_settings: { prevent_approval_by_author: true } } }
     end
 
-    trait :approval_policy
+    trait :approval_policy do
+      transient do
+        approval_policy_rules_data do
+          [
+            {
+              type: :scan_finding,
+              content: {
+                type: 'scan_finding',
+                branches: [],
+                scanners: %w[container_scanning],
+                vulnerabilities_allowed: 0,
+                severity_levels: %w[critical],
+                vulnerability_states: %w[detected]
+              }
+            }
+          ]
+        end
+      end
+
+      after(:create) do |policy, evaluator|
+        evaluator.approval_policy_rules_data.each_with_index do |rule_data, idx|
+          create(:approval_policy_rule, rule_data[:type], security_policy: policy, rule_index: idx,
+            content: rule_data[:content])
+        end
+      end
+    end
+
     trait :scan_execution_policy do
       type { Security::Policy.types[:scan_execution_policy] }
       content { { actions: [{ scan: 'secret_detection' }], skip_ci: { allowed: true } } }

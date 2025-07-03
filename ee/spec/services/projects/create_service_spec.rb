@@ -625,6 +625,11 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
         end
 
         before do
+          create(:security_policy, :approval_policy,
+            security_orchestration_policy_configuration: group_configuration)
+          create(:security_policy, :approval_policy,
+            security_orchestration_policy_configuration: sub_group_configuration)
+
           allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
             allow(configuration).to receive(:policy_last_updated_by).and_return(user)
           end
@@ -632,8 +637,6 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           allow_next_instance_of(Repository) do |repository|
             allow(repository).to receive(:blob_data_at).and_return({ approval_policy: [policy] }.to_yaml)
           end
-
-          stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
         end
 
         it 'invokes workers', :sidekiq_inline do

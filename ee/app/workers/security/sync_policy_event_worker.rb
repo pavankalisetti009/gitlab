@@ -11,11 +11,6 @@ module Security
 
     feature_category :security_policy_management
 
-    # We need to add a delay for batch of projects for groups with
-    # a huge number of projects to reduce the pressure on sidekiq.
-    PROJECTS_BATCH_SYNC_DELAY = 10.seconds
-    SYNC_SERVICE_DELAY_INTERVAL = 1.minute
-
     def handle_event(event)
       case event
       when ::Repositories::ProtectedBranchCreatedEvent, ::Repositories::ProtectedBranchDestroyedEvent
@@ -38,9 +33,8 @@ module Security
 
       return unless project
       return unless project.licensed_feature_available?(:security_orchestration_policies)
-      return unless use_approval_policy_rules_for_approval_rules(project)
 
-      sync_rules_for_project_from_read_model(project, event)
+      sync_rules_for_project(project, event)
     end
 
     def sync_rules_for_protected_branch_event(event)
@@ -49,12 +43,10 @@ module Security
       return unless project_or_group
       return unless project_or_group.licensed_feature_available?(:security_orchestration_policies)
 
-      project_or_group.all_security_orchestration_policy_configurations.each do |configuration|
-        if project_or_group.is_a?(Group)
-          sync_rules_for_group(configuration, project_or_group, event)
-        else
-          sync_rules_for_project(configuration, project_or_group, event, SYNC_SERVICE_DELAY_INTERVAL)
-        end
+      if project_or_group.is_a?(Group)
+        sync_rules_for_group(project_or_group, event)
+      else
+        sync_rules_for_project(project_or_group, event)
       end
     end
 
@@ -78,44 +70,17 @@ module Security
         end
     end
 
-    def sync_rules_for_group(configuration, group, event)
-      delay = 0
+    def sync_rules_for_group(group, event)
       group.all_project_ids_with_csp_in_batches do |projects|
         projects.each do |project|
-          sync_rules_for_project(configuration, project, event, delay)
-        end
-
-        delay += PROJECTS_BATCH_SYNC_DELAY
-      end
-    end
-
-    def sync_rules_for_project(configuration, project, event, delay)
-      if use_approval_policy_rules_for_approval_rules(project)
-        sync_rules_for_project_from_read_model(project, event)
-      else
-        sync_rules_for_project_from_yaml(configuration, project, delay)
-      end
-    end
-
-    def sync_rules_for_project_from_yaml(configuration, project, delay)
-      Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService
-        .new(configuration)
-        .execute(project.id, { delay: delay })
-    end
-
-    def sync_rules_for_project_from_read_model(project, event)
-      # A project can have multiple inherited security policy project. But we want to
-      # sync from read only once as we already store inherited security policies.
-      strong_memoize_with(:sync_rules_for_project_from_read_model, project, event) do
-        project.approval_policies.undeleted.pluck_primary_key.each do |security_policy_id|
-          sync_project_policy(project, security_policy_id, event)
+          sync_rules_for_project(project, event)
         end
       end
     end
 
-    def use_approval_policy_rules_for_approval_rules(project)
-      strong_memoize_with(:use_approval_policy_rules_for_approval_rules, project) do
-        Feature.enabled?(:use_approval_policy_rules_for_approval_rules, project)
+    def sync_rules_for_project(project, event)
+      project.approval_policies.undeleted.pluck_primary_key.each do |security_policy_id|
+        sync_project_policy(project, security_policy_id, event)
       end
     end
 

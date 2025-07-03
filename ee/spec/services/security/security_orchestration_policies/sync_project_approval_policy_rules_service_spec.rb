@@ -841,18 +841,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
         security_policy.update!(content: { actions: new_actions })
       end
 
-      context 'when use_approval_policy_rules_for_approval_rules is disabled' do
-        before do
-          stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
-        end
-
-        it 'does not update approval rules', :aggregate_failures do
-          expect { sync_policy_diff }
-            .to not_change { ApprovalProjectRule.count }
-            .and not_change { Security::ScanResultPolicyRead.count }
-        end
-      end
-
       it_behaves_like 'calls sync_merge_requests' do
         let(:action) { sync_policy_diff }
       end

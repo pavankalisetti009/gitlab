@@ -37,18 +37,13 @@ module Security
       attr_reader :project, :report, :target_branch_report, :scan_result_policy_read, :approval_policy_rule
 
       def policy_licenses
-        if read_model_enabled && approval_policy_rule&.licenses.present?
+        if approval_policy_rule&.licenses.present?
           approval_policy_rule.licenses
         else
           scan_result_policy_read&.licenses
         end
       end
       strong_memoize_attr :policy_licenses
-
-      def read_model_enabled
-        Feature.enabled?(:use_approval_policy_rules_for_approval_rules, project)
-      end
-      strong_memoize_attr :read_model_enabled
 
       def license_dependencies_map(licenses_violating_policy)
         licenses_violating_policy_map = Hash.new(Set.new)
@@ -196,7 +191,7 @@ module Security
       end
 
       def license_states
-        if read_model_enabled && approval_policy_rule&.license_states.present?
+        if approval_policy_rule&.license_states.present?
           approval_policy_rule.license_states
         else
           scan_result_policy_read.license_states
