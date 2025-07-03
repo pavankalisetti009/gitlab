@@ -24,7 +24,7 @@ class ApprovalWrappedRule
   def_delegators(
     :@approval_rule,
     :regular?, :any_approver?, :code_owner?, :report_approver?,
-    :overridden?, :id, :users, :groups, :code_owner,
+    :overridden?, :id, :users, :groups, :code_owner, :from_scan_result_policy?,
     :source_rule, :rule_type, :report_type, :approvals_required, :section, :to_global_id
   )
 
@@ -99,7 +99,7 @@ class ApprovalWrappedRule
   def allow_merge_when_invalid?
     return true if fail_open?
 
-    !approval_rule.from_scan_result_policy? ||
+    !from_scan_result_policy? ||
       Security::OrchestrationPolicyConfiguration.policy_management_project?(project)
   end
 
@@ -143,7 +143,7 @@ class ApprovalWrappedRule
   end
 
   def name
-    return approval_rule.name unless approval_rule.from_scan_result_policy?
+    return approval_rule.name unless from_scan_result_policy?
 
     if policy_has_multiple_actions?
       "#{approval_rule.policy_name} - Action #{approval_rule.approval_policy_action_idx + 1}"
@@ -152,11 +152,11 @@ class ApprovalWrappedRule
     end
   end
 
-  private
-
   def fail_open?
     approval_rule.scan_result_policy_read&.fail_open? || false
   end
+
+  private
 
   def filter_approvers(approvers)
     filtered_approvers =

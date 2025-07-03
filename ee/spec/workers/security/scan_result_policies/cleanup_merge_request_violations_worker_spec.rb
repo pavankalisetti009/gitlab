@@ -59,6 +59,22 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
     end
   end
 
+  shared_examples_for 'not logging running violations' do
+    it 'does not log running violations' do
+      expect(Gitlab::AppJsonLogger).not_to receive(:info)
+
+      perform
+    end
+  end
+
+  shared_examples_for 'not recording audit event for violations' do
+    it 'does not record merged with policy violations audit event' do
+      expect(MergeRequests::MergedWithPolicyViolationsAuditEventService).not_to receive(:new)
+
+      perform
+    end
+  end
+
   context 'with existing merge request' do
     context 'when event is MergedEvent' do
       let(:event) { merge_request_merged_event }
@@ -77,16 +93,37 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
         perform
       end
 
+      it 'records merged with policy violations audit event' do
+        allow_next_instance_of(::MergeRequests::MergedWithPolicyViolationsAuditEventService) do |audit_event_service|
+          expect(audit_event_service).to receive(:execute)
+        end
+
+        perform
+      end
+
+      context 'when there is no merge_request scan result policy violations' do
+        before do
+          merge_request_violation.update!(merge_request_id: unrelated_merge_request_violation.merge_request_id)
+        end
+
+        it_behaves_like 'not logging running violations'
+        it_behaves_like 'not recording audit event for violations'
+      end
+
+      context 'when the collect merged with policy violations audit event feature is disabled' do
+        before do
+          stub_feature_flags(collect_merge_request_merged_with_policy_violations_audit_events: false)
+        end
+
+        it_behaves_like 'not recording audit event for violations'
+      end
+
       context 'when there are no running violations' do
         before do
           merge_request_violation.update!(status: :failed)
         end
 
-        it 'does not log running violations' do
-          expect(Gitlab::AppJsonLogger).not_to receive(:info)
-
-          perform
-        end
+        it_behaves_like 'not logging running violations'
       end
     end
 
@@ -96,11 +133,7 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
       it_behaves_like 'an idempotent worker'
       it_behaves_like 'deletes approval policy violations'
 
-      it 'does not log running violations' do
-        expect(Gitlab::AppJsonLogger).not_to receive(:info)
-
-        perform
-      end
+      it_behaves_like 'not logging running violations'
     end
 
     context 'when feature is not licensed' do
