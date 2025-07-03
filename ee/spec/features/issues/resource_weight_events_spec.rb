@@ -13,16 +13,14 @@ RSpec.describe 'issue resource weight events', :js, feature_category: :team_plan
     let!(:event2) { create(:resource_weight_event, issue: issue, weight: 5) }
 
     before do
+      stub_feature_flags(work_item_view_for_issues: true)
       visit project_issue_path(project, issue)
-      wait_for_all_requests
     end
 
     it 'shows both notes and resource weight event synthetic notes' do
-      page.within('#notes') do
-        expect(find("#note_#{note.id}")).to have_content 'some note'
-        expect(find("#note_#{event1.discussion_id}")).to have_content 'set weight to 1', count: 1
-        expect(find("#note_#{event2.discussion_id}")).to have_content 'set weight to 5', count: 1
-      end
+      expect(find("#note_#{note.id}")).to have_content 'some note'
+      expect(page).to have_content 'set weight to 1', count: 1
+      expect(page).to have_content 'set weight to 5', count: 1
     end
   end
 end

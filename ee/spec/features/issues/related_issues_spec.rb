@@ -16,116 +16,77 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
 
   context 'when user has permission to manage related issues' do
     before do
+      stub_feature_flags(work_item_view_for_issues: true)
       project.add_maintainer(user)
       project_b.add_maintainer(user)
       sign_in(user)
     end
 
-    context 'with "Relates to", "Blocks", "Is blocked by" groupings' do
-      def add_linked_issue(issue, radio_input_value)
-        click_button 'Add a related issue'
-        fill_in 'Enter issue URL', with: "#{issue.to_reference(project)} "
-        find("input[name=\"linked-issue-type-radio\"][value=\"#{radio_input_value}\"]").click
-        within_testid('crud-form') do
+    context 'with "Related to", "Blocking", "Blocked by" groupings' do
+      def add_linked_issue(issue, radio_input)
+        click_button 'Add'
+        fill_in 'Search existing items', with: issue.title
+        click_button issue.title
+        choose radio_input
+        within_testid('link-work-item-form') do
           click_button 'Add'
         end
-
-        wait_for_requests
       end
 
       before do
         visit project_issue_path(project, issue_a)
-        wait_for_requests
       end
 
-      context 'when adding a "relates_to" issue' do
-        before do
-          add_linked_issue(issue_b, "relates_to")
-        end
+      context 'when adding a "Related to" issue' do
+        it 'shows the added issue with a "Related to" heading' do
+          within_testid('work-item-relationships') do
+            add_linked_issue(issue_b, "relates to")
 
-        it 'shows "Relates to" heading' do
-          headings = all('[data-testid="crud-body"] h4')
-
-          expect(headings.count).to eq(1)
-          expect(headings[0].text).to eq("Relates to")
-        end
-
-        it 'shows the added issue' do
-          items = all('.item-title a')
-
-          expect(items[0].text).to eq(issue_b.title)
-
-          within_testid('related-issues-block') do
-            expect(find_by_testid('crud-count')).to have_content('1')
+            expect(page).to have_css('h3', text: 'Related to')
+            expect(page).to have_link(issue_b.title)
+            expect(page).to have_css('[data-testid="linked-items-count-bage"]', text: '1')
           end
         end
       end
 
-      context 'when adding a "blocks" issue' do
-        before do
-          add_linked_issue(issue_b, "blocks")
-        end
+      context 'when adding a "Blocking" issue' do
+        it 'shows the added issue with a "Blocking" heading' do
+          within_testid('work-item-relationships') do
+            add_linked_issue(issue_b, "blocks")
 
-        it 'shows "Blocks" heading' do
-          headings = all('[data-testid="crud-body"] h4')
-
-          expect(headings.count).to eq(1)
-          expect(headings[0].text).to eq("Blocks")
-        end
-
-        it 'shows the added issue' do
-          items = all('.item-title a')
-
-          expect(items[0].text).to eq(issue_b.title)
-
-          within_testid('related-issues-block') do
-            expect(find_by_testid('crud-count')).to have_content('1')
+            expect(page).to have_css('h3', text: 'Blocking')
+            expect(page).to have_link(issue_b.title)
+            expect(page).to have_css('[data-testid="linked-items-count-bage"]', text: '1')
           end
         end
       end
 
-      context 'when adding an "is_blocked_by" issue' do
-        before do
-          add_linked_issue(issue_b, "is_blocked_by")
-        end
+      context 'when adding an "Blocked by" issue' do
+        it 'shows the added issue with a "Blocked by" heading' do
+          within_testid('work-item-relationships') do
+            add_linked_issue(issue_b, "is blocked by")
 
-        it 'shows "Is blocked by" heading' do
-          headings = all('[data-testid="crud-body"] h4')
-
-          expect(headings.count).to eq(1)
-          expect(headings[0].text).to eq("Is blocked by")
-        end
-
-        it 'shows the added issue' do
-          items = all('.item-title a')
-
-          expect(items[0].text).to eq(issue_b.title)
-
-          within_testid('related-issues-block') do
-            expect(find_by_testid('crud-count')).to have_content('1')
+            expect(page).to have_css('h3', text: 'Blocked by')
+            expect(page).to have_link(issue_b.title)
+            expect(page).to have_css('[data-testid="linked-items-count-bage"]', text: '1')
           end
         end
 
         context 'when clicking the top `Close issue` button in the issue header', :aggregate_failures do
           it 'shows a modal to confirm closing the issue' do
-            # Workaround for modal not showing when issue is first added
-            visit project_issue_path(project, issue_a)
-
-            wait_for_requests
-
-            within('.detail-page-description') do
-              find('#new-actions-header-dropdown').click
-              click_button 'Close issue'
+            within_testid('work-item-relationships') do
+              add_linked_issue(issue_b, "is blocked by")
             end
 
+            click_button 'More actions', match: :first
+            click_button 'Close issue', match: :first
+
             within('.modal-content', visible: true) do
-              expect(page).to have_text 'Are you sure you want to close this blocked issue?'
-              expect(page).to have_link("##{issue_b.iid}", href: project_issue_path(project, issue_b))
+              expect(page).to have_css('h2', text: 'Are you sure you want to close this blocked issue?')
+              expect(page).to have_link("##{issue_b.iid}")
 
               click_button 'Yes, close issue'
             end
-
-            wait_for_requests
 
             expect(page).not_to have_selector('.modal-content', visible: true)
             expect(page).to have_css('.gl-badge', text: 'Closed')
@@ -134,23 +95,18 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
 
         context 'when clicking the bottom `Close issue` button below the comment textarea', :aggregate_failures do
           it 'shows a modal to confirm closing the issue' do
-            # Workaround for modal not showing when issue is first added
-            visit project_issue_path(project, issue_a)
-
-            wait_for_requests
-
-            within('.new-note') do
-              click_button 'Close issue'
+            within_testid('work-item-relationships') do
+              add_linked_issue(issue_b, "is blocked by")
             end
 
+            click_button 'Close issue'
+
             within('.modal-content', visible: true) do
-              expect(page).to have_text 'Are you sure you want to close this blocked issue?'
-              expect(page).to have_link("##{issue_b.iid}", href: project_issue_path(project, issue_b))
+              expect(page).to have_css('h2', text: 'Are you sure you want to close this blocked issue?')
+              expect(page).to have_link("##{issue_b.iid}")
 
               click_button 'Yes, close issue'
             end
-
-            wait_for_requests
 
             expect(page).not_to have_selector('.modal-content', visible: true)
             expect(page).to have_css('.gl-badge', text: 'Closed')
@@ -158,30 +114,27 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
         end
       end
 
-      context 'when adding "relates_to", "blocks", and "is_blocked_by" issues' do
-        before do
-          add_linked_issue(issue_b, "relates_to")
-          add_linked_issue(issue_c, "blocks")
-          add_linked_issue(issue_d, "is_blocked_by")
-        end
-
-        it 'shows "Blocks", "Is blocked by", and "Relates to" headings' do
-          headings = all('[data-testid="crud-body"] h4')
-
-          expect(headings.count).to eq(3)
-          expect(headings[0].text).to eq("Blocks")
-          expect(headings[1].text).to eq("Is blocked by")
-          expect(headings[2].text).to eq("Relates to")
-        end
-
-        it 'shows all added issues' do
-          items = all('.item-title a')
-
-          expect(items.count).to eq(3)
-
-          within_testid('related-issues-block') do
-            expect(find_by_testid('crud-count')).to have_content('3')
+      context 'when adding "Related to", "Blocking", and "Blocked by" issues' do
+        it 'shows all added issues and headings' do
+          within_testid('work-item-relationships') do
+            add_linked_issue(issue_b, "relates to")
+            add_linked_issue(issue_c, "blocks")
+            add_linked_issue(issue_d, "is blocked by")
           end
+
+          within('[data-testid="work-item-linked-items-list"]:nth-child(1)') do
+            expect(page).to have_css('h3', text: 'Blocking')
+            expect(page).to have_link(issue_c.title)
+          end
+          within('[data-testid="work-item-linked-items-list"]:nth-child(2)') do
+            expect(page).to have_css('h3', text: 'Blocked by')
+            expect(page).to have_link(issue_d.title)
+          end
+          within('[data-testid="work-item-linked-items-list"]:nth-child(3)') do
+            expect(page).to have_css('h3', text: 'Related to')
+            expect(page).to have_link(issue_b.title)
+          end
+          expect(page).to have_css('[data-testid="linked-items-count-bage"]', text: '3')
         end
       end
     end
