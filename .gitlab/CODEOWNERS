@@ -43,6 +43,7 @@
 /doc-locale/ @gitlab-com/localization/maintainers
 /doc/development/i18n/proofreader.md @gitlab-com/localization/maintainers
 /argo_translation.yml @gitlab-com/localization/maintainers
+/doc-locale/.markdownlint/ @gitlab-com/localization/maintainers
 
 config/bounded_contexts.yml @fabiopitino @grzesiek @stanhu @cwoolley-gitlab @tkuah
 
