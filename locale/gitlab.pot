@@ -16896,10 +16896,16 @@ msgstr ""
 msgid "ComplianceViolation|Audit event captured"
 msgstr ""
 
+msgid "ComplianceViolation|Control"
+msgstr ""
+
 msgid "ComplianceViolation|Detected"
 msgstr ""
 
 msgid "ComplianceViolation|Dismissed"
+msgstr ""
+
+msgid "ComplianceViolation|Framework"
 msgstr ""
 
 msgid "ComplianceViolation|In review"
@@ -16908,7 +16914,13 @@ msgstr ""
 msgid "ComplianceViolation|Registered event IP"
 msgstr ""
 
+msgid "ComplianceViolation|Requirement"
+msgstr ""
+
 msgid "ComplianceViolation|Resolved"
+msgstr ""
+
+msgid "ComplianceViolation|Violation created based on associated framework"
 msgstr ""
 
 msgid "Compliance|Framework deleted successfully"

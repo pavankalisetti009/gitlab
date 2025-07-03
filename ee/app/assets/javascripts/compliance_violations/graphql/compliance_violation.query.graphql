@@ -3,6 +3,19 @@ query getComplianceViolation($id: ID!) {
     id
     status
     createdAt
+    complianceControl {
+      name
+      complianceRequirement {
+        name
+        framework {
+          id
+          color
+          default
+          name
+          description
+        }
+      }
+    }
     project {
       id
       nameWithNamespace

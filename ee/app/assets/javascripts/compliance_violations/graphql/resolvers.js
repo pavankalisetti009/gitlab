@@ -7,6 +7,19 @@ const getMockViolationData = (id) => ({
   id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${id}`,
   status: 'IN_REVIEW',
   createdAt: '2025-06-16T02:20:41Z',
+  complianceControl: {
+    name: 'Merge request controls',
+    complianceRequirement: {
+      name: 'basic code regulation',
+      framework: {
+        id: 'gid://gitlab/ComplianceManagement::Framework/3',
+        color: '#cd5b45',
+        default: false,
+        name: 'SOC 2',
+        description: 'SOC 2 description',
+      },
+    },
+  },
   project: {
     id: 'gid://gitlab/Project/2',
     nameWithNamespace: 'GitLab.org / GitLab Test',

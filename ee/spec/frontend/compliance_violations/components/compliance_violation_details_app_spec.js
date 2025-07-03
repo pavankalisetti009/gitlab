@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ComplianceViolationDetailsApp from 'ee/compliance_violations/components/compliance_violation_details_app.vue';
 import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
+import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 
 Vue.use(VueApollo);
@@ -16,11 +17,25 @@ describe('ComplianceViolationDetailsApp', () => {
   let mockApollo;
 
   const violationId = '123';
+  const complianceCenterPath = 'mock/compliance-center';
 
   const mockComplianceViolationData = {
     id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
     status: 'IN_REVIEW',
     createdAt: '2025-06-16T02:20:41Z',
+    complianceControl: {
+      name: 'Merge request controls',
+      complianceRequirement: {
+        name: 'basic code regulation',
+        framework: {
+          id: 'gid://gitlab/ComplianceManagement::Framework/3',
+          color: '#cd5b45',
+          default: false,
+          name: 'SOC 2',
+          description: 'SOC 2 description',
+        },
+      },
+    },
     project: {
       id: 'gid://gitlab/Project/2',
       nameWithNamespace: 'GitLab.org / GitLab Test',
@@ -98,6 +113,7 @@ describe('ComplianceViolationDetailsApp', () => {
       apolloProvider: mockApollo,
       propsData: {
         violationId,
+        complianceCenterPath,
         ...props,
       },
     });
@@ -108,6 +124,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const findStatusDropdown = () => wrapper.findComponent(ComplianceViolationStatusDropdown);
   const findViolationDetails = () => wrapper.findByTestId('compliance-violation-details');
   const findAuditEvent = () => wrapper.findComponent(AuditEvent);
+  const findViolationSection = () => wrapper.findComponent(ViolationSection);
 
   afterEach(() => {
     wrapper?.destroy();
@@ -175,6 +192,15 @@ describe('ComplianceViolationDetailsApp', () => {
       expect(projectLink.exists()).toBe(true);
       expect(projectLink.text()).toBe(project.nameWithNamespace);
       expect(projectLink.attributes('href')).toBe(project.webUrl);
+    });
+
+    it('renders the violation section', () => {
+      const violationSectionComponent = findViolationSection();
+      expect(violationSectionComponent.exists()).toBe(true);
+      expect(violationSectionComponent.props('control')).toEqual(
+        mockComplianceViolationData.complianceControl,
+      );
+      expect(violationSectionComponent.props('complianceCenterPath')).toBe(complianceCenterPath);
     });
 
     describe('when violation has an audit event', () => {
