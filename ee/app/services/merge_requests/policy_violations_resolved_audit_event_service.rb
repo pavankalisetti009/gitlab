@@ -2,14 +2,12 @@
 
 module MergeRequests
   class PolicyViolationsResolvedAuditEventService
-    include Gitlab::Utils::StrongMemoize
-
     def initialize(merge_request)
       @merge_request = merge_request
     end
 
     def execute
-      return if violations.any?
+      return if merge_request.scan_result_policy_violations.any?
 
       ::Gitlab::Audit::Auditor.audit(audit_context)
     end
@@ -18,28 +16,17 @@ module MergeRequests
 
     attr_reader :merge_request
 
-    def violations
-      merge_request.scan_result_policy_violations
+    def target_project
+      @_target_project ||= merge_request.project
     end
-    strong_memoize_attr :violations
-
-    def merge_request_project
-      merge_request.project
-    end
-    strong_memoize_attr :merge_request_project
-
-    def policy_configuration
-      merge_request_project.security_orchestration_policy_configuration
-    end
-    strong_memoize_attr :policy_configuration
 
     def audit_context
       {
         name: 'policy_violations_resolved',
         message: "All merge request approval policy violation(s) resolved " \
-          "in merge request with title '#{merge_request.title}' in '#{merge_request_project.name}' project",
+          "in merge request with title '#{merge_request.title}'",
         author: merge_request.author,
-        scope: policy_configuration&.security_policy_management_project,
+        scope: target_project,
         target: merge_request,
         additional_details: additional_details
       }
@@ -52,10 +39,9 @@ module MergeRequests
         merge_request_iid: merge_request.iid,
         source_branch: merge_request.source_branch,
         target_branch: merge_request.target_branch,
-        project_id: merge_request_project.id,
-        project_name: merge_request_project.name,
-        project_full_path: merge_request_project.full_path,
-        security_policy_management_project_id: policy_configuration&.security_policy_management_project_id
+        project_id: target_project.id,
+        project_name: target_project.name,
+        project_full_path: target_project.full_path
       }
     end
   end

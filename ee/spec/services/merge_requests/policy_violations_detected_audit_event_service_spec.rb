@@ -42,10 +42,10 @@ RSpec.describe MergeRequests::PolicyViolationsDetectedAuditEventService, feature
       {
         name: 'policy_violations_detected',
         author: merge_request.author,
-        scope: policy_project,
+        scope: project,
         target: merge_request,
         message: "#{violations_count} merge request approval policy violation(s) detected in merge request " \
-          "with title 'Test MR' in '#{project.name}' project",
+          "with title 'Test MR'",
         additional_details: {
           merge_request_title: merge_request.title,
           merge_request_id: merge_request.id,
@@ -57,12 +57,14 @@ RSpec.describe MergeRequests::PolicyViolationsDetectedAuditEventService, feature
           project_full_path: project.full_path,
           violated_policies: [
             {
+              policy_id: security_policy.id,
               policy_name: 'Test Policy',
-              policy_type: 'approval_policy'
+              policy_type: 'approval_policy',
+              security_orchestration_policy_configuration_id: policy_configuration.id,
+              security_policy_management_project_id: policy_configuration.security_policy_management_project_id
             }
           ],
-          violation_details: violation_details,
-          security_policy_management_project_id: policy_project.id
+          violation_details: violation_details
         }
       }
     end
