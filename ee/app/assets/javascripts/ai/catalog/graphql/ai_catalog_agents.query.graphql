@@ -1,14 +1,9 @@
+#import "./ai_catalog_item.fragment.graphql"
+
 query aiCatalogAgents {
-  aiCatalogAgents @client {
+  aiCatalogItems {
     nodes {
-      id
-      type
-      name
-      description
-      model
-      verified
-      version
-      releasedAt
+      ...BaseAiCatalogItem
     }
   }
 }

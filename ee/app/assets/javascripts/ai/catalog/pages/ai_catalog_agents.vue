@@ -10,7 +10,7 @@ export default {
   apollo: {
     aiCatalogAgents: {
       query: aiCatalogAgentsQuery,
-      update: (data) => data.aiCatalogAgents.nodes,
+      update: (data) => data.aiCatalogItems.nodes,
     },
   },
   data() {

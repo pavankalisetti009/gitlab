@@ -1,12 +1,14 @@
 <script>
 import { GlButton, GlModal } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { isNumeric } from '~/lib/utils/number_utils';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import aiCatalogAgentQuery from '../graphql/ai_catalog_agent.query.graphql';
-import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_RUN_ROUTE } from '../router/constants';
+import { AI_CATALOG_AGENTS_RUN_ROUTE, AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import AiCatalogAgentCreateEditForm from '../components/ai_catalog_agent_create_edit_form.vue';
+import { TYPENAME_AI_CATALOG_ITEM } from '../constants';
 
 export default {
   name: 'AiCatalogAgentsShow',
@@ -16,47 +18,22 @@ export default {
     GlModal,
     PageHeading,
   },
-  beforeRouteEnter(to, _, next) {
-    if (!isNumeric(to.params.id)) {
-      next({ name: AI_CATALOG_AGENTS_ROUTE });
-      return;
-    }
-    next((vm) => {
-      try {
-        const result = vm.$apollo.provider.clients.defaultClient.cache.readQuery({
-          query: aiCatalogAgentQuery,
-          variables: { id: String(to.params.id) },
-        });
-
-        if (!result.aiCatalogAgent) {
-          // Agent not found, redirect
-          vm.$router.push({ name: AI_CATALOG_AGENTS_ROUTE });
-        }
-      } catch (error) {
-        const queryError = new Error(
-          `Agent not found: Failed to query agent with ID ${to.params.id}`,
-          {
-            cause: error,
-          },
-        );
-        Sentry.captureException(queryError);
-        vm.$router.push({ name: AI_CATALOG_AGENTS_ROUTE });
-      }
-    });
-  },
   apollo: {
-    aiCatalogAgent: {
+    aiCatalogItem: {
       query: aiCatalogAgentQuery,
       variables() {
         return {
-          id: this.$route.params.id.toString(),
+          id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
         };
+      },
+      result(res) {
+        this.onAgentQueryResult(res);
       },
     },
   },
   data() {
     return {
-      aiCatalogAgent: null,
+      aiCatalogItem: null,
       isLoading: false,
       updatedValues: {
         name: '',
@@ -68,10 +45,10 @@ export default {
   },
   computed: {
     agentId() {
-      return this.aiCatalogAgent?.id || this.$route.params.id;
+      return this.aiCatalogItem?.id || this.$route.params.id;
     },
     agentName() {
-      return this.aiCatalogAgent?.name || '';
+      return this.aiCatalogItem?.name || '';
     },
     pageTitle() {
       return `${s__('AICatalog|Edit agent')}: ${this.agentName}`;
@@ -86,6 +63,15 @@ export default {
       // For now, keeping this approach but may need to revisit if we implement
       // run page in drawer or need more sophisticated navigation handling.
       this.$router.back();
+    },
+    onAgentQueryResult({ data }) {
+      if (!data || !data.aiCatalogItem) {
+        const queryError = new Error(
+          `Agent not found: Failed to query agent with ID ${this.$route.params.id}`,
+        );
+        Sentry.captureException(queryError);
+        this.$router.push({ name: AI_CATALOG_AGENTS_ROUTE });
+      }
     },
     handleSubmit(formValues) {
       this.isLoading = true;
@@ -102,7 +88,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div v-if="aiCatalogItem">
     <gl-button @click="onBack">
       {{ __('Go back') }}
     </gl-button>
@@ -117,12 +103,12 @@ export default {
       {{ s__('AICatalog|Modify the agent settings and configuration.') }}
     </p>
     <ai-catalog-agent-create-edit-form
-      v-if="aiCatalogAgent"
+      v-if="aiCatalogItem"
       mode="edit"
-      :name="aiCatalogAgent.name"
-      :description="aiCatalogAgent.description"
-      :system-prompt="aiCatalogAgent.systemPrompt"
-      :user-prompt="aiCatalogAgent.userPrompt"
+      :name="aiCatalogItem.name"
+      :description="aiCatalogItem.description"
+      :system-prompt="aiCatalogItem.systemPrompt"
+      :user-prompt="aiCatalogItem.userPrompt"
       :is-loading="isLoading"
       @submit="handleSubmit"
     />

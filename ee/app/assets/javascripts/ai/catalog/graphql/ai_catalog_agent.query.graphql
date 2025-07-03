@@ -1,9 +1,7 @@
-query aiCatalogAgent($id: ID!) {
-  aiCatalogAgent(id: $id) @client {
-    id
-    name
-    description
-    systemPrompt
-    userPrompt
+#import "./ai_catalog_item.fragment.graphql"
+
+query aiCatalogAgent($id: AiCatalogItemID!) {
+  aiCatalogItem(id: $id) {
+    ...BaseAiCatalogItem
   }
 }

@@ -1,4 +1,4 @@
-import { GlBadge, GlMarkdown, GlLink, GlAvatar } from '@gitlab/ui';
+import { GlButton, GlBadge, GlMarkdown, GlLink, GlAvatar } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -8,29 +8,24 @@ describe('AiCatalogListItem', () => {
   let wrapper;
 
   const mockItem = {
-    id: 1,
+    id: 'gid://gitlab/Ai::Catalog::Item/1',
     name: 'Test AI Agent',
-    model: 'gpt-4',
-    type: 'Assistant',
-    version: 'v1.2.0',
+    itemType: 'AGENT',
     description: 'A helpful AI assistant for testing purposes',
-    releasedAt: '2024-01-15T10:30:00Z',
-    verified: true,
-  };
-
-  const mockItemWithoutOptionalFields = {
-    id: 2,
-    name: 'Basic Agent',
-    model: 'claude-3',
-    type: 'Chatbot',
-    version: 'v1.0.0',
-    verified: false,
   };
 
   const createComponent = (item = mockItem) => {
     wrapper = shallowMountExtended(AiCatalogListItem, {
       propsData: {
         item,
+      },
+      mocks: {
+        $options: {
+          routes: {
+            show: '/agents/:id',
+            run: '/agents/:id/run',
+          },
+        },
       },
     });
   };
@@ -39,9 +34,8 @@ describe('AiCatalogListItem', () => {
   const findLink = () => wrapper.findComponent(GlLink);
   const findBadges = () => wrapper.findAllComponents(GlBadge);
   const findTypeBadge = () => findBadges().at(0);
-  const findVersionBadge = () => findBadges().at(1);
   const findMarkdown = () => wrapper.findComponent(GlMarkdown);
-  const findVerifiedIcon = () => wrapper.findByTestId('tanuki-verified-icon');
+  const findRunButton = () => wrapper.findComponent(GlButton);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -64,15 +58,15 @@ describe('AiCatalogListItem', () => {
       expect(avatar.props('size')).toBe(48);
     });
 
-    it('displays the model name', () => {
-      expect(wrapper.text()).toContain('gpt-4');
-    });
-
-    it('displays the agent name as a button', () => {
+    it('displays the agent name as a link', () => {
       const link = findLink();
 
       expect(link.exists()).toBe(true);
       expect(link.text()).toBe('Test AI Agent');
+      expect(link.props('to')).toEqual({
+        name: '/agents/:id',
+        params: { id: 1 },
+      });
     });
 
     it('displays type badge with correct variant and text', () => {
@@ -80,55 +74,26 @@ describe('AiCatalogListItem', () => {
 
       expect(typeBadge.exists()).toBe(true);
       expect(typeBadge.props('variant')).toBe('neutral');
-      expect(typeBadge.text()).toBe('Assistant');
+      expect(typeBadge.text()).toBe('agent');
     });
 
-    it('displays version badge with correct variant and text', () => {
-      const versionBadge = findVersionBadge();
+    it('displays run button with correct props', () => {
+      const runButton = findRunButton();
 
-      expect(versionBadge.exists()).toBe(true);
-      expect(versionBadge.props('variant')).toBe('info');
-      expect(versionBadge.text()).toBe('v1.2.0');
+      expect(runButton.exists()).toBe(true);
+      expect(runButton.text()).toBe('Run');
+      expect(runButton.props('to')).toEqual({
+        name: '/agents/:id/run',
+        params: { id: 1 },
+      });
     });
 
-    it('displays description when provided', () => {
+    it('displays description', () => {
       const markdown = findMarkdown();
 
       expect(markdown.exists()).toBe(true);
       expect(markdown.text()).toBe('A helpful AI assistant for testing purposes');
       expect(markdown.props('compact')).toBe(true);
-    });
-  });
-
-  describe('verified icon', () => {
-    it('shows verified icon when item is verified', () => {
-      createComponent();
-
-      const verifiedIcon = findVerifiedIcon();
-      expect(verifiedIcon.exists()).toBe(true);
-      expect(verifiedIcon.props('name')).toBe('tanuki-verified');
-      expect(verifiedIcon.props('size')).toBe(16);
-    });
-
-    it('does not show verified icon when item is not verified', () => {
-      createComponent(mockItemWithoutOptionalFields);
-
-      const verifiedIcon = findVerifiedIcon();
-      expect(verifiedIcon.exists()).toBe(false);
-    });
-  });
-
-  describe('description handling', () => {
-    it('shows description when provided', () => {
-      createComponent();
-
-      expect(findMarkdown().exists()).toBe(true);
-    });
-
-    it('does not show description when not provided', () => {
-      createComponent(mockItemWithoutOptionalFields);
-
-      expect(findMarkdown().exists()).toBe(false);
     });
   });
 });
