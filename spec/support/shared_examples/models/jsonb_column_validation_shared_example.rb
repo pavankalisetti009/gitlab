@@ -17,6 +17,10 @@ end
 
 # Checks whether JSONB columns are validated via JsonSchemaValidator.
 #
+# These checks are skipped in FOSS specs because they produce false positives,
+# as the models are missing their EE extensions, including their validations.
+# See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/195456#note_2601197778
+#
 # See https://docs.gitlab.com/development/migration_style_guide/#storing-json-in-database
 #
 # Parameter:
