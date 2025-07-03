@@ -215,10 +215,25 @@ module EE
         super.preload(
           :blocking_merge_requests, :scan_result_policy_reads_through_violations,
           :scan_result_policy_reads_through_approval_rules,
-          :approval_rules, :running_scan_result_policy_violations, :requested_changes,
+          :running_scan_result_policy_violations, :requested_changes,
+          :approvals, :approved_by_users, :scan_result_policy_violations,
+          applicable_post_merge_approval_rules: [
+            :approved_approvers, :group_users, :users, :approval_policy_rule,
+            { approval_project_rule: [:protected_branches, :group_users, :users] }
+          ],
+          approval_rules: [
+            :group_users, :users,
+            { approval_project_rule: [:group_users, :users] }
+          ],
           target_project: [
             :regular_or_any_approver_approval_rules,
+            {
+              regular_or_any_approver_approval_rules: [
+                :group_users, :users
+              ]
+            },
             :protected_branches,
+            { protected_branches: [:squash_option] },
             { group: :saml_provider }
           ]
         )

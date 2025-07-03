@@ -16,6 +16,148 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
   let(:base_time)        { Time.now }
   let!(:merge_request)   { create(:merge_request, :simple, milestone: milestone1, author: user, assignees: [user, user2], source_project: project, target_project: project, title: "Test", created_at: base_time) }
 
+  shared_examples_for 'avoids N+1 queries' do
+    specify do
+      control = ActiveRecord::QueryRecorder.new { get api(endpoint_path), params: params }
+
+      create_additional_resources
+
+      # An extra 2 queries get executed for the diff committers, the preloading
+      # of this will be done separately
+      expect { get api(endpoint_path), params: params }.not_to exceed_query_limit(control).with_threshold(2)
+    end
+  end
+
+  shared_examples_for 'list merge requests API endpoint with approval rules' do
+    let_it_be(:user) { project.owner }
+    let_it_be(:users) { create_list(:user, 2) }
+    let_it_be(:groups) { create_list(:group, 2) }
+
+    let_it_be(:merge_request) do
+      create(
+        :merge_request,
+        source_project: project,
+        source_branch: 'source-branch-1'
+      )
+    end
+
+    let_it_be(:protected_branches) { create_list(:protected_branch, 2, project: project) }
+
+    let_it_be(:approval_project_rule_1) do
+      create(
+        :approval_project_rule,
+        project: project,
+        users: users,
+        groups: groups
+      )
+    end
+
+    let_it_be(:approval_project_rule_2) do
+      create(
+        :approval_project_rule,
+        project: project,
+        users: users,
+        groups: groups
+      )
+    end
+
+    let_it_be(:approval_project_rule_3) do
+      create(
+        :approval_project_rule,
+        project: project,
+        users: users,
+        groups: groups,
+        protected_branches: protected_branches
+      )
+    end
+
+    let_it_be(:approval_project_rule_4) do
+      create(
+        :approval_project_rule,
+        project: project,
+        users: users,
+        groups: groups,
+        protected_branches: protected_branches
+      )
+    end
+
+    before_all do
+      users.each do |user|
+        project.add_maintainer(user)
+      end
+
+      groups.each do |group|
+        users = create_list(:user, 2)
+
+        group.add_members(users, GroupMember::MAINTAINER)
+      end
+
+      setup_approval_rules(merge_request)
+    end
+
+    before do
+      stub_licensed_features(merge_request_approvers: true, multiple_approval_rules: true)
+    end
+
+    shared_examples_for 'avoids N+1 queries related to approval rules' do
+      it_behaves_like 'avoids N+1 queries' do
+        let(:create_additional_resources) do
+          mr_1 = create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-2'
+          )
+
+          create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-3'
+          )
+
+          mr_3 = create(
+            :merge_request,
+            source_project: project
+          )
+
+          setup_approval_rules(mr_1)
+          setup_approval_rules(mr_3)
+
+          # Simulate a merged MR
+          mr_3.mark_as_merged!
+        end
+      end
+    end
+
+    context 'when overriding approvers is disabled' do
+      before do
+        project.update!(disable_overriding_approvers_per_merge_request: true)
+      end
+
+      it_behaves_like 'avoids N+1 queries related to approval rules'
+    end
+
+    context 'when overriding approvers is enabled' do
+      before do
+        project.update!(disable_overriding_approvers_per_merge_request: false)
+      end
+
+      it_behaves_like 'avoids N+1 queries related to approval rules'
+    end
+
+    def setup_approval_rules(merge_request)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_1, users: users, groups: groups)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_2, users: users, groups: groups)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_3, users: users, groups: groups)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_4, users: users, groups: groups)
+      create(:any_approver_rule, merge_request: merge_request)
+      create(:code_owner_rule, merge_request: merge_request, users: users, groups: groups)
+      create(:report_approver_rule, merge_request: merge_request, users: users, groups: groups)
+
+      create(:approval, merge_request: merge_request, user: users.last)
+      create(:approval, merge_request: merge_request, user: groups.last.members.last.user)
+    end
+  end
+
   describe 'PUT /projects/:id/merge_requests' do
     def update_merge_request(params)
       put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", user), params: params
@@ -565,7 +707,30 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
   describe 'GET /projects/:id/merge_requests' do
     let(:endpoint_path) { "/projects/#{project.id}/merge_requests" }
     let(:params) { { with_labels_details: true } } # With this param we skip caching the response
-    let(:another_mr) { create(:merge_request, source_project: project, target_project: project) }
+    let(:another_mr) { create(:merge_request, source_project: project, target_project: project, target_branch: 'feature') }
+
+    it_behaves_like 'list merge requests API endpoint with approval rules'
+
+    context 'with protected branch squash option' do
+      before do
+        stub_licensed_features(branch_rule_squash_options: true)
+
+        protected_branch = create(:protected_branch, name: merge_request.target_branch, project_id: project.id)
+        create(:branch_rule_squash_option, squash_option: 'always', protected_branch: protected_branch, project: project)
+      end
+
+      it 'does not have N+1 issues' do
+        get api(endpoint_path), params: params # Warmup the cache for the mergability checks
+
+        control = ActiveRecord::QueryRecorder.new { get api(endpoint_path), params: params }
+
+        protected_branch = create(:protected_branch, name: another_mr.target_branch, project_id: project.id)
+        create(:branch_rule_squash_option, squash_option: 'always', protected_branch: protected_branch, project: project)
+
+        # An extra query for LFS file locks happens due to the order of the merge checks
+        expect { get api(endpoint_path), params: params }.not_to exceed_query_limit(control).with_threshold(1)
+      end
+    end
 
     context 'when multiple MRs have requested changes' do
       before do
