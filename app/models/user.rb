@@ -2899,9 +2899,7 @@ class User < ApplicationRecord
   def ci_owned_project_runners_from_project_members
     project_ids = ci_project_ids_for_project_members(Gitlab::Access::MAINTAINER)
 
-    Ci::Runner
-      .joins(:runner_projects)
-      .where(runner_projects: { project: project_ids })
+    Ci::Runner.belonging_to_project(project_ids)
   end
 
   def ci_owned_project_runners_from_group_members
