@@ -1,13 +1,5 @@
 <script>
-import {
-  GlForm,
-  GlButton,
-  GlFormInput,
-  GlSprintf,
-  GlLink,
-  GlFormFields,
-  GlFormSelect,
-} from '@gitlab/ui';
+import { GlForm, GlButton, GlSprintf, GlLink, GlFormFields, GlFormInput } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/dist/utils';
 import csrf from '~/lib/utils/csrf';
 import { __, s__ } from '~/locale';
@@ -48,7 +40,6 @@ export default {
     GlSprintf,
     GlLink,
     GlFormFields,
-    GlFormSelect,
   },
   directives: {
     autofocusonshow,
@@ -105,29 +96,11 @@ export default {
     showCreateGroupButton() {
       return this.selectedGroup !== CREATE_GROUP_OPTION_VALUE;
     },
-    countryOptionsWithDefault() {
-      return [
-        {
-          name: LEADS_COUNTRY_PROMPT,
-          id: '',
-        },
-        ...this.countries,
-      ];
-    },
     stateRequired() {
       return COUNTRIES_WITH_STATES_ALLOWED.includes(this.selectedCountry);
     },
     showState() {
       return !this.$apollo.queries.states.loading && this.selectedCountry && this.stateRequired;
-    },
-    stateOptionsWithDefault() {
-      return [
-        {
-          name: TRIAL_STATE_PROMPT,
-          id: '',
-        },
-        ...this.states,
-      ];
     },
     groupOptions() {
       return [
@@ -278,9 +251,21 @@ export default {
   apollo: {
     countries: {
       query: countriesQuery,
+      update(data) {
+        return data.countries.map((country) => ({
+          value: country.id,
+          text: country.name,
+        }));
+      },
     },
     states: {
       query: statesQuery,
+      update(data) {
+        return data.states.map((state) => ({
+          value: state.id,
+          text: state.name,
+        }));
+      },
       skip() {
         return !this.selectedCountry;
       },
@@ -297,6 +282,8 @@ export default {
     companyNameLabel: LEADS_COMPANY_NAME_LABEL,
     phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
     phoneNumberDescription: TRIAL_PHONE_DESCRIPTION,
+    countryPrompt: LEADS_COUNTRY_PROMPT,
+    statePrompt: TRIAL_STATE_PROMPT,
     buttonText: s__('Trial|Activate my trial'),
     termsText: TRIAL_TERMS_TEXT,
     gitlabSubscription: TRIAL_GITLAB_SUBSCRIPTION_AGREEMENT,
@@ -328,7 +315,6 @@ export default {
     >
       <template #input(group)>
         <listbox-input
-          ref="namespaceListbox"
           v-model="selectedGroup"
           name="namespace_id"
           label-for="namespace_id"
@@ -336,6 +322,8 @@ export default {
           :default-toggle-text="__('Select a group')"
           :block="true"
           :fluid-width="true"
+          :aria-label="__('Select a group')"
+          data-testid="namespace-dropdown"
         >
           <template v-if="showCreateGroupButton" #footer="{ onSelect }">
             <div
@@ -380,25 +368,25 @@ export default {
         />
       </template>
       <template #input(country)>
-        <gl-form-select
-          id="country"
+        <listbox-input
           v-model="selectedCountry"
           name="country"
-          :options="countryOptionsWithDefault"
-          value-field="id"
-          text-field="name"
+          :items="countries"
+          :default-toggle-text="$options.i18n.countryPrompt"
+          :block="true"
+          :aria-label="$options.i18n.countryPrompt"
           data-testid="country-dropdown"
-          @change="resetSelectedState"
+          @select="resetSelectedState"
         />
       </template>
       <template #input(state)>
-        <gl-form-select
-          id="state"
+        <listbox-input
           v-model="selectedState"
           name="state"
-          :options="stateOptionsWithDefault"
-          value-field="id"
-          text-field="name"
+          :items="states"
+          :default-toggle-text="$options.i18n.statePrompt"
+          :block="true"
+          :aria-label="$options.i18n.statePrompt"
           data-testid="state-dropdown"
         />
       </template>

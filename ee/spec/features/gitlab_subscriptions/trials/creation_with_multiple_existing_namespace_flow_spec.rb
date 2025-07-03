@@ -20,7 +20,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       fill_in_trial_selection_form
 
       submit_trial_form
@@ -37,7 +37,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
         stub_cdot_namespace_eligible_trials
         visit new_trial_path(namespace_id: group.id, **glm_params)
 
-        fill_in_company_information
+        fill_in_company_information_single_step
         fill_in_trial_selection_form(from: group.name)
 
         submit_trial_form(glm: glm_params)
@@ -53,7 +53,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
         stub_cdot_namespace_eligible_trials
         visit new_trial_path(namespace_id: group.id, **glm_params)
 
-        fill_in_company_information
+        fill_in_company_information_single_step
 
         group_path = 'gitlab1'
 
@@ -73,7 +73,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
         stub_cdot_namespace_eligible_trials
         visit new_trial_path(glm_content: 'discover-group-security')
 
-        fill_in_company_information
+        fill_in_company_information_single_step
         fill_in_trial_selection_form
 
         submit_trial_form(glm: { glm_content: 'discover-group-security' })
@@ -90,7 +90,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       select_create_from_listbox 'Create group', from: 'Select a group'
       wait_for_requests
 
@@ -111,7 +111,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       select_create_from_listbox 'Create group', from: 'Select a group'
       wait_for_requests
 
@@ -141,7 +141,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       fill_in_trial_selection_form
 
       # lead failure
@@ -164,7 +164,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       fill_in_trial_selection_form
 
       # trial failure

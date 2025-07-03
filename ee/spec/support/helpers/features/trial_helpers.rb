@@ -109,9 +109,21 @@ module Features
       select form_data.dig(:state, :name), from: 'state'
     end
 
+    def fill_in_company_information_single_step
+      fill_in 'company_name', with: form_data[:company_name]
+      fill_in 'phone_number', with: form_data[:phone_number]
+      select_from_listbox form_data.dig(:country, :name), from: 'Select a country or region'
+      select_from_listbox form_data.dig(:state, :name), from: 'Select state or province'
+    end
+
     def fill_in_company_information_with_last_name(last_name)
       fill_in 'last_name', with: last_name
       fill_in_company_information
+    end
+
+    def fill_in_company_information_single_step_with_last_name(last_name)
+      fill_in 'last_name', with: last_name
+      fill_in_company_information_single_step
     end
 
     def resubmit_full_request(

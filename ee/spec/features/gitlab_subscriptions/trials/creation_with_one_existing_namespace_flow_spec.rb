@@ -17,7 +17,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
 
       submit_single_namespace_trial_form
 
@@ -35,7 +35,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         expect_to_be_on_trial_form_with_name_fields
 
-        fill_in_company_information_with_last_name('Smith')
+        fill_in_company_information_single_step_with_last_name('Smith')
 
         submit_single_namespace_trial_form(last_name: 'Smith')
 
@@ -52,7 +52,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
         stub_cdot_namespace_eligible_trials
         visit new_trial_path
 
-        fill_in_company_information
+        fill_in_company_information_single_step
 
         submit_single_namespace_trial_form
 
@@ -73,7 +73,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
         stub_cdot_namespace_eligible_trials
         visit new_trial_path
 
-        fill_in_company_information
+        fill_in_company_information_single_step
 
         submit_single_namespace_trial_form
 
@@ -95,7 +95,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
         stub_cdot_namespace_eligible_trials
         visit new_trial_path
 
-        fill_in_company_information
+        fill_in_company_information_single_step
 
         submit_single_namespace_trial_form
 
@@ -110,7 +110,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
         stub_cdot_namespace_eligible_trials
         visit new_trial_path(glm_content: 'discover-group-security')
 
-        fill_in_company_information
+        fill_in_company_information_single_step
 
         submit_single_namespace_trial_form(glm: { glm_content: 'discover-group-security' })
 
@@ -127,7 +127,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
 
       # lead failure
       submit_single_namespace_trial_form(lead_result: lead_failure)
@@ -149,7 +149,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
 
       # trial failure
       submit_single_namespace_trial_form(trial_result: trial_failure)
