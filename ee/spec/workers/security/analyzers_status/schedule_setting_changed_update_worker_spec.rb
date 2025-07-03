@@ -8,7 +8,7 @@ RSpec.describe Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker, fe
   let(:update_worker) { Security::AnalyzersStatus::SettingChangedUpdateWorker }
 
   before do
-    allow(update_worker).to receive(:perform_async)
+    allow(update_worker).to receive(:perform_in)
   end
 
   describe '#perform' do
@@ -17,7 +17,7 @@ RSpec.describe Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker, fe
 
       it 'doesnt schedule any SettingChangedUpdateWorker jobs' do
         worker.perform(project_ids, analyzer_type)
-        expect(update_worker).not_to have_received(:perform_async)
+        expect(update_worker).not_to have_received(:perform_in)
       end
     end
 
@@ -26,7 +26,7 @@ RSpec.describe Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker, fe
 
       it 'doesnt schedule any SettingChangedUpdateWorker jobs' do
         worker.perform(project_ids, analyzer_type)
-        expect(update_worker).not_to have_received(:perform_async)
+        expect(update_worker).not_to have_received(:perform_in)
       end
     end
 
@@ -36,7 +36,7 @@ RSpec.describe Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker, fe
 
       it 'doesnt schedule any SettingChangedUpdateWorker jobs' do
         worker.perform(project_ids, analyzer_type)
-        expect(update_worker).not_to have_received(:perform_async)
+        expect(update_worker).not_to have_received(:perform_in)
       end
     end
 
@@ -46,7 +46,7 @@ RSpec.describe Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker, fe
 
       it 'doesnt schedule any SettingChangedUpdateWorker jobs' do
         worker.perform(project_ids, analyzer_type)
-        expect(update_worker).not_to have_received(:perform_async)
+        expect(update_worker).not_to have_received(:perform_in)
       end
     end
 
@@ -57,13 +57,13 @@ RSpec.describe Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker, fe
         stub_const("#{described_class}::BATCH_SIZE", 2)
       end
 
-      it 'schedules multiple SettingChangedUpdateWorker jobs with correct batches' do
+      it 'schedules multiple SettingChangedUpdateWorker jobs with correct batches and delays' do
         worker.perform(project_ids, analyzer_type)
 
-        expect(update_worker).to have_received(:perform_async).exactly(3).times
-        expect(update_worker).to have_received(:perform_async).with([1, 2], analyzer_type)
-        expect(update_worker).to have_received(:perform_async).with([3, 4], analyzer_type)
-        expect(update_worker).to have_received(:perform_async).with([5], analyzer_type)
+        expect(update_worker).to have_received(:perform_in).exactly(3).times
+        expect(update_worker).to have_received(:perform_in).with(described_class::DELAY * 0, [1, 2], analyzer_type)
+        expect(update_worker).to have_received(:perform_in).with(described_class::DELAY * 1, [3, 4], analyzer_type)
+        expect(update_worker).to have_received(:perform_in).with(described_class::DELAY * 2, [5], analyzer_type)
       end
     end
   end
