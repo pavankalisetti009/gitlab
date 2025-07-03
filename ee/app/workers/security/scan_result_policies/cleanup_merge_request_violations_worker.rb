@@ -15,7 +15,12 @@ module Security
         project = merge_request.project
         return unless project.licensed_feature_available?(:security_orchestration_policies)
 
-        log_running_violations_after_merge(merge_request) if event.is_a?(::MergeRequests::MergedEvent)
+        return if merge_request.scan_result_policy_violations.none?
+
+        if event.is_a?(::MergeRequests::MergedEvent)
+          log_running_violations_after_merge(merge_request)
+          audit_merged_with_policy_violations(merge_request)
+        end
 
         merge_request.scan_result_policy_violations.delete_all(:delete_all)
       end
@@ -35,6 +40,13 @@ module Security
           scan_result_policy_ids: running_violations.filter_map(&:scan_result_policy_id),
           approval_policy_rule_ids: running_violations.filter_map(&:approval_policy_rule_id)
         )
+      end
+
+      def audit_merged_with_policy_violations(merge_request)
+        return unless Feature.enabled?(:collect_merge_request_merged_with_policy_violations_audit_events,
+          merge_request.project)
+
+        MergeRequests::MergedWithPolicyViolationsAuditEventService.new(merge_request).execute
       end
     end
   end

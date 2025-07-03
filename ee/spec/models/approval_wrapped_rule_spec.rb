@@ -507,4 +507,56 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
       end
     end
   end
+
+  describe '#fail_open?' do
+    subject { approval_wrapped_rule.fail_open? }
+
+    context 'when rule has a linked scan_result_policy_read' do
+      before do
+        rule.update!(scan_result_policy_read: scan_result_policy_read)
+      end
+
+      context 'when rule is fail open' do
+        let(:scan_result_policy_read) { build(:scan_result_policy_read, :fail_open) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when rule is not fail closed' do
+        let(:scan_result_policy_read) { build(:scan_result_policy_read, :fail_closed) }
+
+        it { is_expected.to eq(false) }
+      end
+    end
+
+    context 'when rule has no linked scan_result_policy_read' do
+      it { is_expected.to eq(false) }
+    end
+  end
+
+  describe "#from_scan_result_policy?" do
+    subject { approval_wrapped_rule.from_scan_result_policy? }
+
+    it 'delegates from_scan_result_policy to approval_rule' do
+      expect(rule).to receive(:from_scan_result_policy?)
+
+      subject
+    end
+
+    context 'when the approval rule is from a scan result policy' do
+      before do
+        rule.update!(report_type: :scan_finding)
+      end
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when the approval rule is not from a scan result policy' do
+      before do
+        rule.update!(report_type: :code_coverage)
+      end
+
+      it { is_expected.to eq(false) }
+    end
+  end
 end
