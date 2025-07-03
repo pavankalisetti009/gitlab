@@ -26533,6 +26533,9 @@ msgstr ""
 msgid "Failed to load groups, users and deploy keys."
 msgstr ""
 
+msgid "Failed to load iterations. Please try again."
+msgstr ""
+
 msgid "Failed to load labels. Please try again."
 msgstr ""
 
