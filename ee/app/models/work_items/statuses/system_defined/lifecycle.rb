@@ -68,6 +68,10 @@ module WorkItems
         def default_duplicate_status
           Status.find(default_duplicate_status_id)
         end
+
+        def custom?
+          false
+        end
       end
     end
   end

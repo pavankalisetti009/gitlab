@@ -11,7 +11,7 @@ module WorkItems
         end
 
         def execute
-          return unless feature_available? && work_item.get_widget(:status) && has_correct_type?
+          return unless has_correct_type?
           return if work_item.current_status&.status == status
 
           update_work_item_status
@@ -46,10 +46,6 @@ module WorkItems
             container: work_item.namespace,
             author: current_user
           ).change_work_item_status(work_item.current_status.status)
-        end
-
-        def feature_available?
-          root_ancestor&.try(:work_item_status_feature_available?)
         end
 
         def root_ancestor

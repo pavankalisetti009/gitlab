@@ -195,7 +195,8 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
     context "for current_status" do
       let_it_be(:current_user) { create(:user) }
       let_it_be(:group) { create(:group) }
-      let_it_be_with_reload(:work_item) { create(:work_item, :task, namespace: group) }
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }
 
       let(:closed_status) { build(:work_item_system_defined_status, :done) }
       let(:duplicated_status) { build(:work_item_system_defined_status, :duplicate) }
@@ -207,6 +208,10 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
 
       before_all do
         group.add_developer(current_user)
+      end
+
+      before do
+        stub_licensed_features(work_item_status: true)
       end
 
       context "when status is present" do
@@ -225,31 +230,81 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
       context "when the status is nil" do
         let(:status) { nil }
 
-        context "when the issues is not duplicated" do
-          it "calls the status update service" do
-            expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
-              .with(work_item, current_user, closed_status)
-              .and_return(status_update_service)
-            expect(status_update_service).to receive(:execute)
+        it 'does not call the status update service' do
+          expect(::WorkItems::Widgets::Statuses::UpdateService).not_to receive(:new)
 
-            execute
+          execute
+        end
+
+        context 'when issue has an existing current status record' do
+          before do
+            create(
+              :work_item_current_status,
+              work_item_id: work_item.id,
+              system_defined_status_id: build(:work_item_system_defined_status, :to_do).id
+            )
+          end
+
+          context "when the issues is not duplicated" do
+            it "calls the status update service" do
+              expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+                .with(work_item, current_user, closed_status)
+                .and_return(status_update_service)
+              expect(status_update_service).to receive(:execute)
+
+              execute
+            end
+          end
+
+          context "when the issue is duplicated" do
+            let(:duplicated_work_item) { create(:work_item, :task, namespace: group) }
+
+            before do
+              work_item.update!(duplicated_to_id: duplicated_work_item.id)
+            end
+
+            it "calls the status update service" do
+              expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+                .with(work_item, current_user, duplicated_status)
+                .and_return(status_update_service)
+              expect(status_update_service).to receive(:execute)
+
+              execute
+            end
           end
         end
 
-        context "when the issue is duplicated" do
-          let(:duplicated_work_item) { create(:work_item, :task, namespace: group) }
-
-          before do
-            work_item.update!(duplicated_to_id: duplicated_work_item.id)
+        context 'when namespace has a custom lifecycle' do
+          let(:custom_lifecycle) do
+            create(:work_item_custom_lifecycle, namespace: group).tap do |lifecycle|
+              create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item.work_item_type)
+            end
           end
 
           it "calls the status update service" do
             expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
-              .with(work_item, current_user, duplicated_status)
+              .with(work_item, current_user, custom_lifecycle.default_closed_status)
               .and_return(status_update_service)
             expect(status_update_service).to receive(:execute)
 
             execute
+          end
+
+          context 'when feature becomes unlicensed' do
+            before do
+              custom_lifecycle
+
+              stub_licensed_features(work_item_status: false)
+            end
+
+            it "calls the status update service with the default open status" do
+              expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+                .with(work_item, current_user, custom_lifecycle.default_closed_status)
+                .and_return(status_update_service)
+              expect(status_update_service).to receive(:execute)
+
+              execute
+            end
           end
         end
       end

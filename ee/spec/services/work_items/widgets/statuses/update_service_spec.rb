@@ -42,28 +42,6 @@ RSpec.describe WorkItems::Widgets::Statuses::UpdateService, feature_category: :t
   end
 
   describe '#execute' do
-    context 'when feature is not available' do
-      before do
-        allow(group).to receive(:work_item_status_feature_available?).and_return(false)
-      end
-
-      it 'returns nil without updating status' do
-        expect(service.execute).to be_nil
-        expect(work_item_status).to be_nil
-      end
-    end
-
-    context 'when work item does not have status widget' do
-      before do
-        allow(work_item).to receive(:get_widget).with(:status).and_return(nil)
-      end
-
-      it 'returns nil without updating status' do
-        expect(service.execute).to be_nil
-        expect(work_item_status).to be_nil
-      end
-    end
-
     context 'when status is nil' do
       let(:service) { described_class.new(work_item, user, nil) }
 

@@ -57,6 +57,10 @@ module WorkItems
           [default_open_status, default_closed_status, default_duplicate_status].compact
         end
 
+        def custom?
+          true
+        end
+
         private
 
         def ensure_default_statuses_in_lifecycle
