@@ -70,6 +70,8 @@ describe('GeoReplicable', () => {
             modelRecordId: replicableItems[i].modelRecordId,
             syncStatus: replicableItems[i].state,
             verificationState: replicableItems[i].verificationState,
+            lastSyncFailure: replicableItems[i].lastSyncFailure,
+            verificationFailure: replicableItems[i].verificationFailure,
           }),
         );
       }

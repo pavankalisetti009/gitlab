@@ -35,6 +35,8 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
     verificationState: 'SUCCEEDED',
     lastSyncedAt: new Date().toString(),
     verifiedAt: new Date().toString(),
+    lastSyncFailure: null,
+    verificationFailure: null,
   },
   {
     id: 'gid://gitlab/Geo::MockRegistry/2',
@@ -43,6 +45,18 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
     verificationState: 'FAILED',
     lastSyncedAt: null,
     verifiedAt: null,
+    lastSyncFailure: null,
+    verificationFailure: null,
+  },
+  {
+    id: 'gid://gitlab/Geo::MockRegistry/3',
+    modelRecordId: 3,
+    state: 'FAILED',
+    verificationState: 'FAILED',
+    lastSyncedAt: new Date().toString(),
+    verifiedAt: new Date().toString(),
+    lastSyncFailure: 'There was a sync failure',
+    verificationFailure: 'There was a verification failure',
   },
 ];
 

@@ -28172,6 +28172,9 @@ msgstr ""
 msgid "Geo|Replication Details"
 msgstr ""
 
+msgid "Geo|Replication failure"
+msgstr ""
+
 msgid "Geo|Replication information"
 msgstr ""
 
@@ -28389,6 +28392,9 @@ msgid "Geo|Verification"
 msgstr ""
 
 msgid "Geo|Verification concurrency limit"
+msgstr ""
+
+msgid "Geo|Verification failure"
 msgstr ""
 
 msgid "Geo|Verification information"
@@ -31543,6 +31549,9 @@ msgid "Hide comments on this file"
 msgstr ""
 
 msgid "Hide details"
+msgstr ""
+
+msgid "Hide errors"
 msgstr ""
 
 msgid "Hide file browser"
@@ -59019,6 +59028,9 @@ msgid "Show details"
 msgstr ""
 
 msgid "Show epics in global search results"
+msgstr ""
+
+msgid "Show errors"
 msgstr ""
 
 msgid "Show file browser"
