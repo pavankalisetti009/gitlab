@@ -58,7 +58,7 @@ describe('EpicBoardContentSidebar', () => {
         glFeatures,
       },
       stubs: {
-        MountingPortal: stubComponent(MountingPortal),
+        MountingPortal: stubComponent(MountingPortal, { name: 'MountingPortal' }),
         GlDrawer: stubComponent(GlDrawer, {
           template: '<div><slot name="header"></slot><slot></slot></div>',
         }),

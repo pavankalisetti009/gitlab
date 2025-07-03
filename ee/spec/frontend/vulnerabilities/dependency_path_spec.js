@@ -29,7 +29,7 @@ describe('Dependency paths drawer component', () => {
       },
       stubs: {
         GlDrawer: stubComponent(DependencyPathDrawer, { template: RENDER_ALL_SLOTS_TEMPLATE }),
-        MountingPortal: stubComponent(MountingPortal),
+        MountingPortal: stubComponent(MountingPortal, { name: 'MountingPortal' }),
       },
     });
   };
