@@ -15,7 +15,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
 
       click_button 'Activate my trial'
 
@@ -53,7 +53,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         visit new_trial_path(glm_content: 'discover-group-security')
 
-        fill_in_company_information
+        fill_in_company_information_single_step
         fill_in_trial_form_for_new_group
 
         submit_new_group_trial_form(glm: { glm_content: 'discover-group-security' }, extra_params: new_group_attrs)
@@ -70,7 +70,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       fill_in_trial_form_for_new_group
 
       # lead failure
@@ -92,7 +92,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       fill_in_trial_form_for_new_group
 
       # trial failure
@@ -118,7 +118,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       visit new_trial_path
 
-      fill_in_company_information
+      fill_in_company_information_single_step
       fill_in_trial_form_for_new_group
 
       click_button 'Activate my trial'

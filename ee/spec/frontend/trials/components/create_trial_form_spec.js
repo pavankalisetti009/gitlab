@@ -4,6 +4,7 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import CreateTrialForm from 'ee/trials/components/create_trial_form.vue';
+import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';
 import {
   COUNTRIES,
@@ -13,7 +14,6 @@ import {
 } from 'ee_jest/hand_raise_leads/components/mock_data';
 import { TRIAL_PHONE_DESCRIPTION } from 'ee/trials/constants';
 import waitForPromises from 'helpers/wait_for_promises';
-import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 
 jest.mock('ee/google_tag_manager', () => ({
   trackSaasTrialLeadSubmit: jest.fn(),
@@ -94,8 +94,8 @@ describe('CreateTrialForm', () => {
   };
 
   const findForm = () => wrapper.findComponent(GlForm);
-  const findGroupListboxInput = () => wrapper.findComponent(ListboxInput);
   const findCreateGroupButton = () => wrapper.findByTestId('footer-bottom-button');
+  const findGroupListboxInput = () => wrapper.findByTestId('namespace-dropdown');
   const findCountrySelect = () => wrapper.findByTestId('country-dropdown');
   const findStateSelect = () => wrapper.findByTestId('state-dropdown');
   const findFormFields = () => wrapper.findComponent(GlFormFields);
@@ -513,20 +513,20 @@ describe('CreateTrialForm', () => {
       wrapper = await createComponent();
       await nextTick();
 
-      expect(findCountrySelect().attributes('options').length).toBeGreaterThan(1);
-      expect(findStateSelect().attributes('options').length).toBeGreaterThan(1);
+      expect(findCountrySelect().props('items').length).toBeGreaterThan(1);
+      expect(findStateSelect().props('items').length).toBeGreaterThan(1);
     });
 
     it('has the proper state show and hide logic based on the selected country', async () => {
       wrapper = await createComponent();
       await nextTick();
 
-      await findCountrySelect().vm.$emit('input', 'NL');
+      await findCountrySelect().vm.$emit('select', 'NL');
       await nextTick();
 
       expect(fieldsProps()).not.toHaveProperty('state');
 
-      await findCountrySelect().vm.$emit('input', COUNTRY_WITH_STATES);
+      await findCountrySelect().vm.$emit('select', COUNTRY_WITH_STATES);
       await nextTick();
 
       expect(fieldsProps()).toHaveProperty('state');
