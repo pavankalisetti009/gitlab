@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-#
+
 class ProjectSecuritySetting < ApplicationRecord
   self.primary_key = :project_id
 
