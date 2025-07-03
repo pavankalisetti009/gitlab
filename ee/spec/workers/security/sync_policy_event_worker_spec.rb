@@ -26,10 +26,12 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         })
       end
 
+      let(:security_policy) do
+        create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
+      end
+
       before do
-        allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
-          allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
-        end
+        create(:security_policy_project_link, project: project, security_policy: security_policy)
       end
 
       context 'when security orchestration policies feature is not available' do
@@ -45,46 +47,13 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         end
       end
 
-      context 'with yaml model' do
-        let(:sync_service) do
-          instance_double(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService)
-        end
+      it 'executes the sync service for each security policy' do
+        expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+          project.id, security_policy.id, {},
+          { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
+        )
 
-        before do
-          stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
-          allow(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService)
-            .to receive(:new)
-            .with(policy_configuration)
-            .and_return(sync_service)
-        end
-
-        it 'calls sync service with correct parameters' do
-          expect(sync_service).to receive(:execute).with(project.id,
-            { delay: described_class::SYNC_SERVICE_DELAY_INTERVAL })
-
-          handle_event
-        end
-      end
-
-      context 'with read model' do
-        let(:security_policy) do
-          create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
-        end
-
-        before do
-          stub_feature_flags(use_approval_policy_rules_for_approval_rules: true)
-
-          create(:security_policy_project_link, project: project, security_policy: security_policy)
-        end
-
-        it 'executes the sync service for each security policy' do
-          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-            project.id, security_policy.id, {},
-            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
-          )
-
-          handle_event
-        end
+        handle_event
       end
     end
 
@@ -110,104 +79,63 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
 
       let_it_be(:protected_branch) { create(:protected_branch) }
 
-      before do
-        allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
-          allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
-        end
+      let(:security_policy) do
+        create(:security_policy,
+          security_orchestration_policy_configuration: policy_configuration,
+          linked_projects: [project_1, project_2, project_3]
+        )
       end
 
-      context 'with yaml model' do
-        let(:sync_service) do
-          instance_double(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService)
-        end
+      it 'executes the sync service for each security policy' do
+        expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+          project_1.id, security_policy.id, {}, { event:
+            { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
+        )
+        expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+          project_2.id, security_policy.id, {}, { event:
+            { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
+        )
+        expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+          project_3.id, security_policy.id, {}, { event:
+            { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
+        )
 
-        before do
-          stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
-          allow(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService)
-            .to receive(:new)
-            .with(policy_configuration)
-            .and_return(sync_service)
-        end
-
-        it 'calls sync_rules_for_group for each project' do
-          expect(sync_service).to receive(:execute).with(project_1.id, { delay: 0 })
-          expect(sync_service).to receive(:execute).with(project_2.id, { delay: 0 })
-          expect(sync_service).to receive(:execute).with(project_3.id, { delay: 0 })
-
-          handle_event
-        end
-
-        context 'when group is designated as a CSP group' do
-          include Security::PolicyCspHelpers
-
-          before do
-            stub_csp_group(group)
-          end
-
-          it 'calls sync_rules_for_group for all projects on the instance' do
-            Project.pluck_primary_key.each do |id|
-              expect(sync_service).to receive(:execute).with(id, { delay: 0 })
-            end
-
-            handle_event
-          end
-
-          context 'when feature flag "security_policies_csp" is disabled' do
-            before do
-              stub_feature_flags(security_policies_csp: false)
-            end
-
-            it 'calls sync_rules_for_group for each project of the group' do
-              expect(sync_service).to receive(:execute).with(project_1.id, { delay: 0 })
-              expect(sync_service).to receive(:execute).with(project_2.id, { delay: 0 })
-              expect(sync_service).to receive(:execute).with(project_3.id, { delay: 0 })
-
-              handle_event
-            end
-          end
-        end
+        handle_event
       end
 
-      context 'with read model' do
-        let(:security_policy) do
-          create(:security_policy,
-            security_orchestration_policy_configuration: policy_configuration,
-            linked_projects: [project_1, project_2, project_3]
-          )
-        end
+      context 'when group is designated as a CSP group' do
+        include Security::PolicyCspHelpers
+
+        let_it_be(:other_project) { create(:project) }
+        let(:other_security_policy) { create(:security_policy, linked_projects: [other_project]) }
 
         before do
-          stub_feature_flags(use_approval_policy_rules_for_approval_rules: true)
+          stub_csp_group(group)
         end
 
-        it 'executes the sync service for each security policy' do
+        it 'calls sync_rules_for_group for all security policies on the instance' do
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
             project_1.id, security_policy.id, {}, { event:
-              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
-          )
+              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
             project_2.id, security_policy.id, {}, { event:
-              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
-          )
+              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
           expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
             project_3.id, security_policy.id, {}, { event:
-              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys
-          )
+              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            other_project.id, other_security_policy.id, {}, { event:
+              { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
 
           handle_event
         end
 
-        context 'when group is designated as a CSP group' do
-          include Security::PolicyCspHelpers
-
-          let_it_be(:other_project) { create(:project) }
-          let(:other_security_policy) { create(:security_policy, linked_projects: [other_project]) }
-
+        context 'when feature flag "security_policies_csp" is disabled' do
           before do
-            stub_csp_group(group)
+            stub_feature_flags(security_policies_csp: false)
           end
 
-          it 'calls sync_rules_for_group for all security policies on the instance' do
+          it 'calls sync_rules_for_group for each security policy' do
             expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
               project_1.id, security_policy.id, {}, { event:
                 { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
@@ -217,31 +145,8 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
             expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
               project_3.id, security_policy.id, {}, { event:
                 { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
-            expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-              other_project.id, other_security_policy.id, {}, { event:
-                { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
 
             handle_event
-          end
-
-          context 'when feature flag "security_policies_csp" is disabled' do
-            before do
-              stub_feature_flags(security_policies_csp: false)
-            end
-
-            it 'calls sync_rules_for_group for each security policy' do
-              expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-                project_1.id, security_policy.id, {}, { event:
-                  { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
-              expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-                project_2.id, security_policy.id, {}, { event:
-                  { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
-              expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-                project_3.id, security_policy.id, {}, { event:
-                  { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
-
-              handle_event
-            end
           end
         end
       end
@@ -299,14 +204,6 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
             container_id: project.id,
             container_type: 'Group'
           })
-        end
-
-        it_behaves_like 'does not sync rules'
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
         end
 
         it_behaves_like 'does not sync rules'
