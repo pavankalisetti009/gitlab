@@ -133,7 +133,7 @@ describe('PdfExportButton', () => {
   });
 
   it('shows error alert when charts are still loading', async () => {
-    const errorMessage = 'Chart is still loading. Please try again in a few minutes.';
+    const errorMessage = 'Chart is still loading. Please try again after all data has loaded.';
 
     createWrapper({
       getReportData: jest.fn().mockImplementation(() => {
