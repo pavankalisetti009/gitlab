@@ -11646,7 +11646,7 @@ msgstr ""
 msgid "BulkImport|Select whether user memberships in groups and projects are imported."
 msgstr ""
 
-msgid "BulkImport|Showing %{start}-%{end} of %{total}"
+msgid "BulkImport|Showing %{start} - %{end} of %{total}"
 msgstr ""
 
 msgid "BulkImport|Some groups are imported without projects."
