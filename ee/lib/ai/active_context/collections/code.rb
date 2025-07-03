@@ -26,6 +26,14 @@ module Ai
           References::Code
         end
 
+        def self.partition_name
+          collection_record.name
+        end
+
+        def self.partition_number(project_id)
+          collection_record.partition_for(project_id)
+        end
+
         def self.routing(object)
           object[:routing]
         end

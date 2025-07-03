@@ -132,4 +132,18 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
       end
     end
   end
+
+  describe '.partition_name' do
+    it 'is the collection name' do
+      expect(described_class.partition_name).to eq(collection.name)
+    end
+  end
+
+  describe '.partition_number' do
+    it 'is calculated from collection.partition_for' do
+      expect(collection).to receive(:partition_for).with('something')
+
+      described_class.partition_number('something')
+    end
+  end
 end

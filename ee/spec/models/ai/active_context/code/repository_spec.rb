@@ -38,6 +38,21 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
         repository.metadata = { key: 'value' }
         expect(repository).not_to be_valid
       end
+
+      it 'is valid with last_error' do
+        repository.metadata = { last_error: 'Something went wrong' }
+        expect(repository).to be_valid
+      end
+
+      it 'is valid with null last_error' do
+        repository.metadata = { last_error: nil }
+        expect(repository).to be_valid
+      end
+
+      it 'is invalid with wrong type for last_error' do
+        repository.metadata = { last_error: 123 }
+        expect(repository).not_to be_valid
+      end
     end
 
     describe 'connection_id uniqueness' do

@@ -1,6 +1,14 @@
 {
   "description": "AI ActiveContext Code Repository metadata",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "last_error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Most recent error"
+    }
+  },
   "additionalProperties": false
 }
