@@ -1231,6 +1231,7 @@ module EE
 
       rule { can?(:owner_access) }.policy do
         enable :admin_project_secrets_manager
+        enable :create_container_registry_protection_immutable_tag_rule
       end
 
       condition(:ai_review_mr_enabled) do
@@ -1265,6 +1266,10 @@ module EE
 
       rule { ai_catalog_enabled & can?(:duo_workflow) & can?(:maintainer_access) }.policy do
         enable :admin_ai_catalog_item
+      end
+
+      rule { container_registry_disabled }.policy do
+        prevent :create_container_registry_protection_immutable_tag_rule
       end
     end
 
