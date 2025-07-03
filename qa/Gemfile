@@ -32,7 +32,7 @@ gem 'fog-google', '~> 1.25', require: false
 gem "warning", "~> 1.5"
 
 # dependencies for jenkins client
-gem 'nokogiri', '~> 1.18', '>= 1.18.1'
+gem 'nokogiri', '~> 1.18', '>= 1.18.8'
 
 gem 'deprecation_toolkit', '~> 2.2.3', require: false
 
