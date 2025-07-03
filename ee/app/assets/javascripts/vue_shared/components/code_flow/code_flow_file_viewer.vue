@@ -59,9 +59,6 @@ export default {
     };
   },
   computed: {
-    userColorScheme() {
-      return gon.user_color_scheme;
-    },
     totalLines() {
       return this.content?.split('\n').length;
     },
@@ -197,8 +194,7 @@ export default {
 
       <div
         v-if="expanded"
-        class="file-content code js-syntax-highlight blob-content blob-viewer gl-flex gl-w-full gl-flex-col gl-overflow-auto"
-        :class="userColorScheme"
+        class="file-content code code-syntax-highlight-theme js-syntax-highlight blob-content blob-viewer gl-flex gl-w-full gl-flex-col gl-overflow-auto"
         data-type="simple"
         data-testid="file-content"
       >

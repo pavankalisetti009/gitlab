@@ -72,7 +72,6 @@ export default {
       this.view = viewType;
     },
   },
-  userColorScheme: window.gon?.user_color_scheme,
 };
 </script>
 
@@ -103,7 +102,7 @@ export default {
         </gl-button>
       </gl-button-group>
     </div>
-    <table class="code" :class="$options.userColorScheme">
+    <table class="code code-syntax-highlight-theme">
       <tr
         v-for="(line, idx) in visibleDiffData"
         :key="idx"
