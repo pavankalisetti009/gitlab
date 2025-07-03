@@ -186,23 +186,46 @@ RSpec.describe Arkose::VerifyResponse, feature_category: :instance_resiliency do
         ]
       end
 
+      let(:telltale_list) do
+        [
+          "eng-1362",
+          "eng-1362-game3-py-0."
+        ]
+      end
+
+      # rubocop:disable Layout/LineLength -- user agent full value is long
       where(:method, :expected_value) do
         :custom_score                  | "100"
         :global_score                  | "15"
         :risk_band                     | "High"
         :session_id                    | "22612c147bb418c8.2570749403"
         :risk_category                 | "BOT-STD"
+        :telltale_user                 | "eng-1362-game3-py-0."
+        :telltale_list                 | lazy { telltale_list }
         :global_telltale_list          | lazy { global_telltale_list }
         :custom_telltale_list          | lazy { custom_telltale_list }
+        :session_created_at            | lazy { Time.iso8601("2021-08-29T23:13:03+00:00") }
+        :checked_answer_at             | lazy { Time.iso8601("2021-08-29T23:13:16+00:00") }
+        :verified_at                   | lazy { Time.iso8601("2021-08-30T00:19:32+00:00") }
         :device_id                     | "gaFCZkxoGZYW6"
         :data_exchange_blob_received?  | true
         :data_exchange_blob_decrypted? | true
         :challenge_type                | 'visual'
         :session_is_legit              | false
+        :user_agent                    | "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
+        :user_language_shown           | 'en'
+        :user_ip                       | '10.211.121.196'
         :country                       | 'AU'
-        :is_bot                        | true
+        :region                        | 'New South Wales'
+        :city                          | 'Sydney'
+        :isp                           | 'Amazon.com'
+        :connection_type               | 'Data Center'
+        :is_tor                        | false
         :is_vpn                        | true
+        :is_proxy                      | true
+        :is_bot                        | true
       end
+      # rubocop:enable Layout/LineLength
 
       with_them do
         let(:json_response) { high_risk_response }
@@ -220,8 +243,8 @@ RSpec.describe Arkose::VerifyResponse, feature_category: :instance_resiliency do
         :risk_band            | 'Unavailable'
         :session_id           | 'Unavailable'
         :risk_category        | 'Unavailable'
-        :global_telltale_list | 'Unavailable'
-        :custom_telltale_list | 'Unavailable'
+        :global_telltale_list | []
+        :custom_telltale_list | []
         :device_id            | nil
       end
 

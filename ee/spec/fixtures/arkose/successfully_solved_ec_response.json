@@ -27,7 +27,9 @@
       "eng-1362",
       "eng-1362-game3-py-0."
     ],
-    "optional": null,
+    "optional": {
+      "blob": null
+    },
     "challenge_type": "visual"
   },
   "fingerprint": {
@@ -81,15 +83,11 @@
     "risk_band": "Low",
     "global": {
       "score": "0",
-      "telltales": [
-
-      ]
+      "telltales": []
     },
     "custom": {
       "score": "0",
-      "telltales": [
-
-      ]
+      "telltales": []
     }
   }
 }

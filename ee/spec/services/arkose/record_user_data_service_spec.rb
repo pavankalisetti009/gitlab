@@ -54,6 +54,28 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
       expect(service.execute).to be_success
     end
 
+    context 'when store_arkose_session feature flag is enabled' do
+      before do
+        stub_feature_flags(store_arkose_session: true)
+      end
+
+      it 'creates a Users::ArkoseSession for the user with relevant data' do
+        expect { service.execute }.to change { user.arkose_sessions.count }.by(1)
+
+        expect(user.arkose_sessions.last.session_xid).to eq(response.session_id)
+      end
+    end
+
+    context 'when store_arkose_session feature flag is disabled' do
+      before do
+        stub_feature_flags(store_arkose_session: false)
+      end
+
+      it 'does not create a Users::ArkoseSession for the user' do
+        expect { service.execute }.not_to change { user.arkose_sessions.count }
+      end
+    end
+
     context 'when response is from failed verification' do
       let(:arkose_verify_response) do
         Gitlab::Json.parse(File.read(Rails.root.join('ee/spec/fixtures/arkose/invalid_token.json')))
@@ -74,6 +96,10 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
         # and remain as the initial scores
         expect(user_scores.arkose_global_score).to eq(13.0)
         expect(user_scores.arkose_custom_score).to eq(11.0)
+      end
+
+      it 'does not create a Users::ArkoseSession for the user' do
+        expect { service.execute }.not_to change { user.arkose_sessions.count }
       end
 
       it 'returns an error response' do

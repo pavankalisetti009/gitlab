@@ -14,6 +14,7 @@ module Arkose
       return ServiceResponse.error(message: 'Invalid Arkose Labs token') if response.invalid_token?
 
       add_or_update_arkose_attributes
+      store_arkose_session
 
       # Store risk scores as abuse trust scores
       store_risk_scores
@@ -29,6 +30,24 @@ module Arkose
       return if Gitlab::Database.read_only?
 
       UserCustomAttribute.upsert_custom_attributes(custom_attributes)
+    end
+
+    def store_arkose_session
+      return unless Feature.enabled?(:store_arkose_session, user)
+
+      session = Users::ArkoseSession.create_for_user_from_verify_response(
+        user,
+        response
+      )
+
+      return session if session.persisted?
+
+      ::Gitlab::AppLogger.error(
+        message: 'Failed to save Users::ArkoseSession',
+        user_id: user.id,
+        session_xid: response.session_id,
+        errors: session.errors.full_messages
+      )
     end
 
     def custom_attributes
