@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { cloneDeep } from 'lodash';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import VueRouter from 'vue-router';
 import getIssuesQuery from 'ee_else_ce/issues/list/queries/get_issues.query.graphql';
 import getIssuesCountsQuery from 'ee_else_ce/issues/list/queries/get_issues_counts.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -53,6 +54,7 @@ describe('EE IssuesListApp component', () => {
   let wrapper;
 
   Vue.use(VueApollo);
+  Vue.use(VueRouter);
 
   const defaultProvide = {
     autocompleteAwardEmojisPath: 'autocomplete/award/emojis/path',
@@ -120,6 +122,7 @@ describe('EE IssuesListApp component', () => {
   const mountComponent = ({
     noStatus = false,
     provide = {},
+    issuesListCreateModal = false,
     okrsMvc = false,
     workItemStatusFeatureFlag = true,
     issuesQueryResponse = jest.fn().mockResolvedValue(defaultQueryResponse),
@@ -138,33 +141,20 @@ describe('EE IssuesListApp component', () => {
       ]),
       provide: {
         glFeatures: {
+          issuesListCreateModal,
           okrsMvc,
           workItemStatusFeatureFlag,
         },
         ...defaultProvide,
         ...provide,
       },
+      router: new VueRouter({ mode: 'history' }),
       stubs: {
+        CreateWorkItemModal: true,
         NewIssueDropdown: true,
       },
     });
   };
-
-  it.each`
-    namespace    | groupPath       | className
-    ${'project'} | ${''}           | ${'js-issues-list-app'}
-    ${'group'}   | ${'group/path'} | ${'js-issues-group-list-app'}
-  `(
-    'applies the appropriate class name if the list is at a $namespace level',
-    async ({ groupPath, className }) => {
-      wrapper = mountComponent({
-        provide: { groupPath },
-      });
-      await waitForPromises();
-
-      expect(findIssuesListAppCE().attributes('class')).toContain(className);
-    },
-  );
 
   describe('template', () => {
     beforeEach(async () => {
@@ -307,36 +297,45 @@ describe('EE IssuesListApp component', () => {
   });
 
   describe('NewIssueDropdown component', () => {
-    describe('when okrs is enabled', () => {
-      beforeEach(() => {
-        wrapper = mountComponent({
-          provide: { hasOkrsFeature: true },
-          okrsMvc: true,
-        });
-      });
+    it('renders when okrs is enabled', async () => {
+      wrapper = mountComponent({ provide: { hasOkrsFeature: true }, okrsMvc: true });
+      await waitForPromises();
 
-      it('renders', () => {
-        expect(findNewIssueDropdown().exists()).toBe(true);
-      });
+      expect(findNewIssueDropdown().exists()).toBe(true);
     });
 
-    describe('when okrs is disabled', () => {
-      beforeEach(() => {
-        wrapper = mountComponent({
-          provide: { hasOkrsFeature: false },
-          okrsMvc: false,
-        });
-      });
+    it('does not render when okrs is disabled', async () => {
+      wrapper = mountComponent({ provide: { hasOkrsFeature: false }, okrsMvc: false });
+      await waitForPromises();
 
-      it('does not render', () => {
-        expect(findNewIssueDropdown().exists()).toBe(false);
+      expect(findNewIssueDropdown().exists()).toBe(false);
+    });
+
+    it('does not render when group', async () => {
+      wrapper = mountComponent({
+        provide: { hasOkrsFeature: true, isProject: false },
+        okrsMvc: true,
       });
+      await waitForPromises();
+
+      expect(findNewIssueDropdown().exists()).toBe(false);
+    });
+
+    it('does not render when issuesListCreateModal is enabled', async () => {
+      wrapper = mountComponent({
+        issuesListCreateModal: true,
+        provide: { hasOkrsFeature: true },
+        okrsMvc: true,
+      });
+      await waitForPromises();
+
+      expect(findNewIssueDropdown().exists()).toBe(false);
     });
   });
 
   describe('ChildEpicIssueIndicator component', () => {
     it('renders ChildEpicIssueIndicator when there is filtered epic id', async () => {
-      setWindowLocation('http://127.0.0.1:3000/gitlab-org/gitlab-test/-/issues/?&epic_id=1');
+      setWindowLocation('?&epic_id=1');
 
       wrapper = await mountComponent();
 
@@ -346,7 +345,7 @@ describe('EE IssuesListApp component', () => {
     });
 
     it('does not render ChildEpicIssueIndicator when the filtered epic id is not present', async () => {
-      setWindowLocation('http://127.0.0.1:3000/gitlab-org/gitlab-test/-/issues/');
+      setWindowLocation('');
 
       wrapper = await mountComponent();
 
@@ -376,9 +375,9 @@ describe('EE IssuesListApp component', () => {
 
   describe('when searched by epics', () => {
     it.each`
-      context                   | location                                                                | searchedByEpic
-      ${'has epicId'}           | ${'http://127.0.0.1:3000/gitlab-org/gitlab-test/-/issues/?&epic_id=12'} | ${true}
-      ${'does not have epicId'} | ${'http://127.0.0.1:3000/gitlab-org/gitlab-test/-/issues/?&state=open'} | ${false}
+      context                   | location          | searchedByEpic
+      ${'has epicId'}           | ${'?&epic_id=12'} | ${true}
+      ${'does not have epicId'} | ${'?&state=open'} | ${false}
     `(
       'pass `searchedByEpic` as $searchedByEpic to the `IssuesListAppCE` in case URL $context',
       async ({ location, searchedByEpic }) => {
