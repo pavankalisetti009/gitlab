@@ -58,9 +58,9 @@ export default {
         v-if="showWeight"
         anchor-id="issuable-weight-content"
         data-testid="weight-attribute"
-        wrapper-component-class="issuable-weight"
+        wrapper-component="button"
+        wrapper-component-class="issuable-weight gl-text-subtle gl-bg-transparent gl-border-0 gl-p-0 focus-visible:gl-focus-inset"
         :title="`${weight}`"
-        title-component-class="gl-mr-3"
         :tooltip-text="__('Weight')"
         tooltip-placement="top"
       >
