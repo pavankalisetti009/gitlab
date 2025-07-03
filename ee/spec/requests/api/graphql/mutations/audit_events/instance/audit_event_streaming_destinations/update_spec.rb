@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Update instance level external audit event destination', feature_category: :audit_events do
   include GraphqlHelpers
 
-  let_it_be_with_reload(:destination) { create(:audit_events_instance_external_streaming_destination) }
+  let_it_be_with_reload(:destination) { create(:audit_events_instance_external_streaming_destination, :aws) }
   let_it_be(:current_user) { create(:admin) }
   let_it_be(:updated_config) do
     {
@@ -22,6 +22,10 @@ RSpec.describe 'Update instance level external audit event destination', feature
 
   let(:mutation) { graphql_mutation(:instance_audit_event_streaming_destinations_update, input) }
   let(:mutation_response) { graphql_mutation_response(:instance_audit_event_streaming_destinations_update) }
+  let(:mutation_name) { :instance_audit_event_streaming_destinations_update }
+  let(:mutation_field) { 'externalAuditEventDestination' }
+  let(:model) { destination }
+  let(:event_name) { 'updated_instance_audit_event_streaming_destination' }
 
   let(:input) do
     {
@@ -29,7 +33,8 @@ RSpec.describe 'Update instance level external audit event destination', feature
       config: updated_config,
       name: updated_destination_name,
       category: updated_category,
-      secret_token: updated_secret_token
+      secret_token: updated_secret_token,
+      active: true
     }
   end
 
@@ -52,6 +57,10 @@ RSpec.describe 'Update instance level external audit event destination', feature
     end
 
     context 'when current user is instance admin' do
+      before_all do
+        destination.deactivate!
+      end
+
       before do
         allow(Gitlab::Audit::Auditor).to receive(:audit)
       end
@@ -65,14 +74,21 @@ RSpec.describe 'Update instance level external audit event destination', feature
         expect(destination.name).to eq(updated_destination_name)
         expect(destination.category).to eq(updated_category)
         expect(destination.secret_token).to eq(updated_secret_token)
+        expect(destination.active).to be(true)
       end
 
       it 'audits the update' do
         Mutations::AuditEvents::Instance::AuditEventStreamingDestinations::Update::AUDIT_EVENT_COLUMNS.each do |column|
+          current_value = destination[column]
+          new_value = input[column.to_s.camelize(:lower).to_sym]
+
+          next if column == :active && current_value == new_value
+          next if new_value.nil? || current_value == new_value
+
           message = if column == :secret_token
                       "Changed #{column}"
                     else
-                      "Changed #{column} from #{destination[column]} to #{input[column.to_s.camelize(:lower).to_sym]}"
+                      "Changed #{column} from #{current_value} to #{new_value}"
                     end
 
           expected_hash = {
@@ -100,7 +116,6 @@ RSpec.describe 'Update instance level external audit event destination', feature
 
         it 'does not audit the event' do
           expect(Gitlab::Audit::Auditor).not_to receive(:audit)
-
           mutate
         end
       end
@@ -128,7 +143,7 @@ RSpec.describe 'Update instance level external audit event destination', feature
           allow(destination).to receive(:errors).and_return(errors)
         end
 
-        it 'does not update the destinationuration and returns the error' do
+        it 'does not update the destination and returns the error' do
           mutate
 
           expect(mutation_response).to include(
@@ -140,6 +155,12 @@ RSpec.describe 'Update instance level external audit event destination', feature
 
       context 'when destination is updated' do
         let(:legacy_destination) { create(:instance_amazon_s3_configuration, stream_destination_id: destination.id) }
+
+        before do
+          destination.activate!
+        end
+
+        it_behaves_like 'audits streaming active status changes'
 
         it_behaves_like 'updates a legacy destination', :destination,
           proc {
@@ -158,6 +179,62 @@ RSpec.describe 'Update instance level external audit event destination', feature
               }
             }
           }
+      end
+
+      context 'when only specific fields are updated' do
+        before do
+          allow(Gitlab::Audit::Auditor).to receive(:audit)
+        end
+
+        let(:input) do
+          {
+            id: destination_gid,
+            config: updated_config,
+            name: updated_destination_name
+          }
+        end
+
+        it 'only audits the changed attributes' do
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: Mutations::AuditEvents::Instance::AuditEventStreamingDestinations::Update::UPDATE_EVENT_NAME,
+              author: current_user,
+              scope: an_instance_of(Gitlab::Audit::InstanceScope),
+              target: destination,
+              message: "Changed config from #{destination.config} to #{updated_config}"
+            )
+          ).once
+
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: Mutations::AuditEvents::Instance::AuditEventStreamingDestinations::Update::UPDATE_EVENT_NAME,
+              author: current_user,
+              scope: an_instance_of(Gitlab::Audit::InstanceScope),
+              target: destination,
+              message: "Changed name from #{destination.name} to #{updated_destination_name}"
+            )
+          ).once
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed category/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed secret_token/)
+          )
+
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(message: /Changed active/)
+          )
+
+          mutate
+
+          destination.reload
+          expect(destination.config).to eq(updated_config)
+          expect(destination.name).to eq(updated_destination_name)
+          expect(destination.category).to eq('aws')
+          expect(destination.secret_token).not_to eq(updated_secret_token)
+        end
       end
     end
 

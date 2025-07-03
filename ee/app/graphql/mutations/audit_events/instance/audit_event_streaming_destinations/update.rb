@@ -11,7 +11,7 @@ module Mutations
           include ::AuditEvents::StreamDestinationSyncHelper
 
           UPDATE_EVENT_NAME = 'updated_instance_audit_event_streaming_destination'
-          AUDIT_EVENT_COLUMNS = [:config, :name, :category, :secret_token].freeze
+          AUDIT_EVENT_COLUMNS = [:config, :name, :category, :secret_token, :active].freeze
 
           argument :id, ::Types::GlobalIDType[::AuditEvents::Instance::ExternalStreamingDestination],
             required: true,
@@ -33,19 +33,18 @@ module Mutations
             required: false,
             description: 'Secret token.'
 
+          argument :active, GraphQL::Types::Boolean,
+            required: false,
+            description: 'Active status of the destination.'
+
           field :external_audit_event_destination, ::Types::AuditEvents::Instance::StreamingDestinationType,
             null: true,
             description: 'Updated destination.'
 
-          def resolve(id:, config: nil, name: nil, category: nil, secret_token: nil)
+          def resolve(id:, config: nil, name: nil, category: nil, secret_token: nil, active: nil)
             destination = authorized_find!(id: id)
 
-            destination_attributes = {
-              config: config,
-              name: name,
-              category: category,
-              secret_token: secret_token
-            }.compact
+            destination_attributes = build_attributes(config, name, category, secret_token, active)
 
             if destination.update(destination_attributes)
               audit_update(destination)
@@ -62,8 +61,20 @@ module Mutations
 
           private
 
+          def build_attributes(config, name, category, secret_token, active)
+            {
+              config: config,
+              name: name,
+              category: category,
+              secret_token: secret_token,
+              active: active
+            }.compact
+          end
+
           def audit_update(destination)
             AUDIT_EVENT_COLUMNS.each do |column|
+              next unless destination.saved_change_to_attribute?(column)
+
               audit_changes(
                 column,
                 as: column.to_s,
