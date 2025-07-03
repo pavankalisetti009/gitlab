@@ -10,6 +10,7 @@ module Admin
       feature_category :user_management
 
       track_internal_event :new, name: 'view_admin_custom_roles_create_page', category: name
+      track_internal_event :edit, name: 'view_admin_custom_roles_edit_page', category: name
 
       before_action :authorize_admin_member_roles!, except: [:index, :show]
       before_action :authorize_view_member_roles!, only: [:index, :show]
