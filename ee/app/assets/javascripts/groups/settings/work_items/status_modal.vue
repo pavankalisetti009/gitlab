@@ -56,6 +56,8 @@ const CATEGORY_MAP = {
 
 const CATEGORY_ORDER = Object.keys(CATEGORY_MAP);
 
+const STATUS_MAX_LIMIT = 30;
+
 export default {
   components: {
     GlAlert,
@@ -252,7 +254,7 @@ export default {
                 id: this.lifecycle.id,
                 name: this.lifecycle.name,
                 statuses: statuses.map((status) => ({
-                  __typename: 'WorkItems::Status',
+                  __typename: 'WorkItemStatus',
                   id: status.id || null,
                   name: status.name,
                   iconName: status.category ? CATEGORY_MAP[status.category].icon : 'status-waiting',
@@ -293,6 +295,16 @@ export default {
         category: this.getCategoryFromStatus(status.id),
         description: status.description,
       }));
+
+      if (currentStatuses.length >= STATUS_MAX_LIMIT) {
+        this.errorMessage = sprintf(
+          s__('WorkItem|Maximum %{maxLimit} statuses reached. Remove a status to add more.'),
+          {
+            maxLimit: STATUS_MAX_LIMIT,
+          },
+        );
+        return;
+      }
 
       if (this.isEditing) {
         const statusIndex = currentStatuses.findIndex((s) => s.id === this.editingStatusId);

@@ -70758,6 +70758,9 @@ msgstr ""
 msgid "WorkItem|Mark this item as related to: %{workItemType} %{workItemReference}"
 msgstr ""
 
+msgid "WorkItem|Maximum %{maxLimit} statuses reached. Remove a status to add more."
+msgstr ""
+
 msgid "WorkItem|Merged"
 msgstr ""
 

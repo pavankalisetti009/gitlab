@@ -17,9 +17,20 @@ describe('StatusLifecycleModal', () => {
 
   const mockLifecycle = {
     id: 'gid://gitlab/WorkItems::Lifecycle/1',
+    name: 'Lifecycle 1',
     workItemTypes: [
-      { id: 'gid://gitlab/WorkItems::Type/1', name: 'Issue' },
-      { id: 'gid://gitlab/WorkItems::Type/2', name: 'Task' },
+      {
+        id: 'gid://gitlab/WorkItems::Type/1',
+        name: 'Issue',
+        iconName: 'issue-type-issue',
+        __typename: 'WorkItemType',
+      },
+      {
+        id: 'gid://gitlab/WorkItems::Type/2',
+        name: 'Task',
+        iconName: 'issue-type-task',
+        __typename: 'WorkItemType',
+      },
     ],
     statuses: [
       {
@@ -28,6 +39,7 @@ describe('StatusLifecycleModal', () => {
         color: '#1f75cb',
         iconName: 'status-waiting',
         description: 'New issues',
+        __typename: 'WorkItemStatus',
       },
       {
         id: 'status-2',
@@ -35,6 +47,7 @@ describe('StatusLifecycleModal', () => {
         color: '#1f75cb',
         iconName: 'status-running',
         description: '',
+        __typename: 'WorkItemStatus',
       },
       {
         id: 'status-3',
@@ -42,6 +55,7 @@ describe('StatusLifecycleModal', () => {
         color: '#108548',
         iconName: 'status-success',
         description: 'Completed work',
+        __typename: 'WorkItemStatus',
       },
     ],
     defaultOpenStatus: {
@@ -70,12 +84,22 @@ describe('StatusLifecycleModal', () => {
               name: 'New Status',
               color: '#ff0000',
               iconName: 'status-neutral',
+              description: '',
+              __typename: 'WorkItemStatus',
             },
           ],
+          __typename: 'WorkItemLifecycle',
         },
+        __typename: 'LifecycleUpdatePayload',
         errors: [],
       },
     },
+  };
+
+  const newFormData = {
+    name: 'Updated Name',
+    color: '#00ff00',
+    description: 'Updated description',
   };
 
   const findModal = () => wrapper.findComponent(GlModal);
@@ -85,10 +109,27 @@ describe('StatusLifecycleModal', () => {
   const findDefaultStatusBadges = () => wrapper.findAllByTestId('default-status-badge');
   const findStatusForm = () => wrapper.findComponent(StatusForm);
   const findEditStatusButton = (statusId) => wrapper.findByTestId(`edit-status-${statusId}`);
+  const findErrorMessage = () => wrapper.findByTestId('error-alert');
+
+  const updateLifecycleHandler = jest.fn().mockResolvedValue(mockUpdateResponse);
+
+  const addStatus = async (save = true) => {
+    const addButton = findCategorySection('triage').find('[data-testid="add-status-button"]');
+    addButton.vm.$emit('click');
+    await nextTick();
+
+    findStatusForm().vm.$emit('update', newFormData);
+    await nextTick();
+
+    if (save) {
+      findStatusForm().vm.$emit('save');
+    }
+  };
 
   const createComponent = ({
     props = {},
-    updateHandler = jest.fn().mockResolvedValue(mockUpdateResponse),
+    lifecycle = mockLifecycle,
+    updateHandler = updateLifecycleHandler,
   } = {}) => {
     mockApollo = createMockApollo([[lifecycleUpdateMutation, updateHandler]]);
 
@@ -96,7 +137,7 @@ describe('StatusLifecycleModal', () => {
       apolloProvider: mockApollo,
       propsData: {
         visible: true,
-        lifecycle: mockLifecycle,
+        lifecycle,
         fullPath: 'group/project',
         ...props,
       },
@@ -253,20 +294,58 @@ describe('StatusLifecycleModal', () => {
     });
 
     it('updates form data when inline form emits update event', async () => {
-      const addButton = findCategorySection('triage').find('[data-testid="add-status-button"]');
-      addButton.vm.$emit('click');
-      await nextTick();
-
-      const newFormData = {
-        name: 'Updated Name',
-        color: '#00ff00',
-        description: 'Updated description',
-      };
-
-      findStatusForm().vm.$emit('update', newFormData);
-      await nextTick();
+      await addStatus(false);
 
       expect(findStatusForm().props().formData).toEqual(newFormData);
+    });
+
+    it('calls the update handler when adding status', async () => {
+      await addStatus();
+      expect(updateLifecycleHandler).toHaveBeenCalled();
+    });
+
+    it('does not call the update handler when adding more than 30 statuses and shows error', async () => {
+      const limitStatuses = [];
+
+      for (let i = 0; i < 30; i += 1) {
+        limitStatuses.push({
+          id: `status-${i + 1}`,
+          name: `Status-${i}`,
+          color: '#ff0000',
+          iconName: 'status-neutral',
+          description: '',
+          __typename: 'WorkItemStatus',
+        });
+      }
+
+      const mockLimitLifecycle = {
+        ...mockLifecycle,
+        statuses: limitStatuses,
+      };
+
+      const mockLimitStatusResponse = {
+        data: {
+          lifecycleUpdate: {
+            lifecycle: {
+              ...mockLimitLifecycle,
+              __typename: 'WorkItemLifecycle',
+            },
+            __typename: 'LifecycleUpdatePayload',
+            errors: [],
+          },
+        },
+      };
+
+      const limitReachedHandler = jest.fn().mockResolvedValue(mockLimitStatusResponse);
+
+      createComponent({ updateHandler: limitReachedHandler, lifecycle: mockLimitLifecycle });
+
+      expect(findErrorMessage().exists()).toBe(false);
+
+      await addStatus();
+
+      expect(updateLifecycleHandler).not.toHaveBeenCalled();
+      expect(findErrorMessage().exists()).toBe(true);
     });
   });
 });
