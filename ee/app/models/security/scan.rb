@@ -15,6 +15,7 @@ module Security
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
 
     has_many :findings, inverse_of: :scan
+    has_one :partial_scan, class_name: 'Vulnerabilities::PartialScan'
 
     enum :scan_type, {
       sast: 1,
@@ -44,6 +45,7 @@ module Security
     scope :not_in_terminal_state, -> { where.not(status: Security::ScanStatusEnum::TERMINAL_STATUSES) }
 
     delegate :name, to: :build
+    delegate :mode, to: :partial_scan, prefix: true, allow_nil: true
     alias_attribute :type, :scan_type
 
     before_save :ensure_project_id_pipeline_id

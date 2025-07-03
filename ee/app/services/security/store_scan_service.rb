@@ -28,6 +28,9 @@ module Security
       override_finding_uuids! if override_uuids?
       set_security_scan_non_latest! if job.retried?
 
+      store_security_scan
+      store_partial_scan
+
       return deduplicate if !security_scan.latest? || security_scan.report_error? || security_scan.job_failed?
 
       store_findings
@@ -58,6 +61,20 @@ module Security
         scan.processing_warnings = security_report.warnings.map(&:stringify_keys) if security_report.warnings?
         scan.status = initial_scan_status
         scan.findings_partition_number = security_findings_partition_number
+      end
+    end
+    alias_method :store_security_scan, :security_scan
+
+    def store_partial_scan
+      return unless ::Feature.enabled?(:vulnerability_partial_scans, project)
+
+      # If we have a dependency scanning report then `scan` will return nil
+      mode = security_report.scan&.partial_scan_mode
+
+      return unless mode
+
+      Vulnerabilities::PartialScan.safe_find_or_create_by!(scan: security_scan) do |partial_scan|
+        partial_scan.mode = mode
       end
     end
 
