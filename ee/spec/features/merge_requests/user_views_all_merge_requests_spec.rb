@@ -17,20 +17,20 @@ RSpec.describe 'User views all merge requests', :js, feature_category: :code_rev
 
     it 'shows generic approvals tooltip' do
       visit(project_merge_requests_path(project, state: :all))
-      expect(page.all('[data-testid="mr-appovals"]').any? { |item| item["aria-label"] == "Required approvals (0 of 2 given)" }).to be true
+      expect(page.all('[data-testid="mr-approvals"]').any? { |item| item["aria-label"] == "Required approvals (0 of 2 given)" }).to be true
     end
 
     it 'shows custom tooltip after a different user has approved' do
       merge_request.approvals.create!(user: another_user)
       visit(project_merge_requests_path(project, state: :all))
-      expect(page.all('[data-testid="mr-appovals"]').any? { |item| item["aria-label"] == "Required approvals (1 of 2 given)" }).to be true
+      expect(page.all('[data-testid="mr-approvals"]').any? { |item| item["aria-label"] == "Required approvals (1 of 2 given)" }).to be true
     end
 
     it 'shows custom tooltip after self has approved' do
       merge_request.approvals.create!(user: user)
       sign_in(user)
       visit(project_merge_requests_path(project, state: :all))
-      expect(page.all('[data-testid="mr-appovals"]').any? { |item| item["aria-label"] == "Required approvals (1 of 2 given, you've approved)" }).to be true
+      expect(page.all('[data-testid="mr-approvals"]').any? { |item| item["aria-label"] == "Required approvals (1 of 2 given, you've approved)" }).to be true
     end
   end
 end
