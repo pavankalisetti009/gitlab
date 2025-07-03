@@ -1144,6 +1144,8 @@ Settings.cell.topology_service_client['address'] ||= 'topology-service.example.c
 Settings.cell.topology_service_client['ca_file'] ||= nil
 Settings.cell.topology_service_client['certificate_file'] ||= nil
 Settings.cell.topology_service_client['private_key_file'] ||= nil
+Settings.cell.topology_service_client['tls'] ||= {}
+Settings.cell.topology_service_client['tls']['enabled'] = true if Settings.cell.topology_service_client['tls']['enabled'].nil?
 
 #
 # GitLab KAS
