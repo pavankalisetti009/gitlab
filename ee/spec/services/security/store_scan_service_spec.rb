@@ -109,6 +109,84 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
       end
     end
 
+    describe 'setting partial scan mode' do
+      let(:security_scan) { Security::Scan.last }
+
+      subject(:scan_mode) { security_scan.partial_scan_mode }
+
+      it 'does not create partial scan record' do
+        store_scan
+
+        expect(security_scan.partial_scan).to be_nil
+      end
+
+      context 'with differential scan' do
+        let_it_be(:artifact) { create(:ee_ci_job_artifact, :sast_differential_scan) }
+
+        it 'sets partial_scan_mode to differential' do
+          store_scan
+
+          expect(scan_mode).to eq('differential')
+        end
+
+        context 'when vulnerability_partial_scans feature flag is disabled' do
+          before do
+            stub_feature_flags(vulnerability_partial_scans: false)
+          end
+
+          it 'does not create partial scan record' do
+            store_scan
+
+            expect(security_scan.partial_scan).to be_nil
+          end
+        end
+
+        context 'when there is an existing security scan' do
+          let_it_be(:existing_scan) do
+            create(:security_scan, build: artifact.job, scan_type: artifact.security_report.type)
+          end
+
+          it 'sets partial_scan_mode to differential' do
+            store_scan
+
+            expect(scan_mode).to eq('differential')
+          end
+
+          context 'when there is an existing partial scan' do
+            let_it_be(:existing_partial_scan) { create(:vulnerabilities_partial_scan, scan: existing_scan) }
+
+            it 'does not error' do
+              store_scan
+
+              expect(scan_mode).to eq('differential')
+            end
+          end
+        end
+
+        context 'when the report has some errors' do
+          before do
+            artifact.security_report.errors << { 'type' => 'foo', 'message' => 'bar' }
+          end
+
+          it 'still sets partial_scan_mode' do
+            store_scan
+
+            expect(scan_mode).to eq('differential')
+          end
+        end
+      end
+
+      context 'with cyclonedx artifact' do
+        let_it_be(:artifact) { create(:ee_ci_job_artifact, :cyclonedx) }
+
+        it 'does not create partial scan record' do
+          store_scan
+
+          expect(security_scan.partial_scan).to be_nil
+        end
+      end
+    end
+
     context 'when the `vulnerability_finding_signatures` licensed feature is not available' do
       before do
         stub_licensed_features(vulnerability_finding_signatures: false)
