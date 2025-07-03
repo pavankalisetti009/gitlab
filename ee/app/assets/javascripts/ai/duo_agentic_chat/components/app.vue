@@ -1,7 +1,7 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import { AgenticDuoChat } from '@gitlab/duo-ui';
+import { AgenticDuoChat, AgenticToolApprovalFlow } from '@gitlab/duo-ui';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands } from 'ee/ai/utils';
@@ -15,14 +15,17 @@ import {
   DUO_WORKFLOW_CLIENT_VERSION,
   DUO_WORKFLOW_AGENT_PRIVILEGES,
   DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
+  DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
+import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
 import { WIDTH_OFFSET } from '../../tanuki_bot/constants';
 
 export default {
   name: 'DuoAgenticChatApp',
   components: {
     AgenticDuoChat,
+    AgenticToolApprovalFlow,
   },
   provide() {
     return {
@@ -70,8 +73,10 @@ export default {
       maxHeight: null,
       maxWidth: null,
       contextPresets: [],
-      socket: null,
+      socketManager: null,
       workflowId: null,
+      workflowStatus: null,
+      pendingToolCall: null,
     };
   },
   computed: {
@@ -90,6 +95,9 @@ export default {
     },
     predefinedPrompts() {
       return this.contextPresets;
+    },
+    showToolApprovalModal() {
+      return this.workflowStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED;
     },
   },
   watch: {
@@ -110,9 +118,26 @@ export default {
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
     window.removeEventListener('resize', this.onWindowResize);
+    this.cleanupSocket();
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
+
+    cleanupSocket() {
+      if (this.socketManager) {
+        closeSocket(this.socketManager);
+        this.socketManager = null;
+      }
+    },
+
+    cleanupState() {
+      this.setLoading(false);
+      this.cleanupSocket();
+      this.workflowId = null;
+      this.workflowStatus = null;
+      this.pendingToolCall = null;
+    },
+
     setDimensions() {
       this.updateDimensions();
     },
@@ -139,72 +164,90 @@ export default {
     onNewChat() {
       clearDuoChatCommands();
       this.setMessages([]);
-      this.setLoading(false);
-      this.workflowId = null;
+      this.cleanupState();
     },
     onChatCancel() {
-      // pushing last requestId of messages to canceled Request Id's
-      this.setLoading(false);
-      this.socket?.close();
-      this.workflowId = null;
+      this.cleanupState();
     },
-    startWorkflow(goal) {
-      if (this.socket) {
-        this.socket.close();
-      }
 
-      this.socket = new WebSocket(`/api/v4/ai/duo_workflows/ws`);
-      this.socket.onopen = () => {
-        const startRequest = {
-          startRequest: {
-            workflowID: this.workflowId,
-            clientVersion: DUO_WORKFLOW_CLIENT_VERSION,
-            workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
-            goal,
-          },
-        };
+    startWorkflow(goal, approval = {}) {
+      this.cleanupSocket();
 
-        this.socket.send(JSON.stringify(startRequest));
+      const startRequest = {
+        startRequest: {
+          workflowID: this.workflowId,
+          clientVersion: DUO_WORKFLOW_CLIENT_VERSION,
+          workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
+          goal,
+          approval,
+        },
       };
 
-      this.socket.onclose = this.onSocketClose;
-      this.socket.onerror = this.onError;
-      this.socket.onmessage = this.onMessageReceived;
-    },
-    onSocketClose() {
-      this.socket = null;
-      this.setLoading(false);
-    },
-    onMessageReceived(event) {
-      event.data
-        .text()
-        .then((data) => {
-          const action = JSON.parse(data);
-
-          if (action.newCheckpoint) {
-            const messages = JSON.parse(
-              action.newCheckpoint.checkpoint,
-            ).channel_values.ui_chat_log.map((msg, i) => {
-              const requestId = `${this.workflowId}-${i}`;
-
-              return {
-                content: msg.content,
-                requestId,
-                message_type: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
-                role: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
-                tool_info: msg.tool_info,
-              };
-            });
-
-            this.setMessages(messages);
-
-            this.socket.send(JSON.stringify({ actionResponse: { requestID: action.requestID } }));
+      this.socketManager = createWebSocket('/api/v4/ai/duo_workflows/ws', {
+        onMessage: this.onMessageReceived,
+        onError: () => {
+          // eslint-disable-next-line @gitlab/require-i18n-strings
+          this.onError(new Error('Unable to connect to workflow service. Please try again.'));
+        },
+        onClose: () => {
+          // Only set loading to false if we're not waiting for tool approval
+          // and we don't have a pending workflow that will create a new connection
+          if (this.workflowStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
+            this.setLoading(false);
           }
-        })
-        .catch((err) => {
-          this.onError(err);
-        });
+        },
+      });
+
+      this.socketManager.connect(startRequest);
     },
+
+    async onMessageReceived(event) {
+      try {
+        const action = await parseMessage(event);
+
+        if (!action || !action.newCheckpoint) {
+          return; // No checkpoint to process
+        }
+
+        const checkpoint = JSON.parse(action.newCheckpoint.checkpoint);
+        const messages = checkpoint.channel_values.ui_chat_log.map((msg, i) => {
+          const requestId = `${this.workflowId}-${i}`;
+
+          return {
+            content: msg.content,
+            requestId,
+            tool_info: msg.tool_info,
+            message_type: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
+            role: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
+          };
+        });
+
+        this.setMessages(messages);
+
+        // Update workflow status and pending tool call
+        this.workflowStatus = action.newCheckpoint.status;
+
+        // Check if we need to show tool approval modal
+        if (this.workflowStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
+          const lastMessage = messages[messages.length - 1];
+          if (lastMessage && lastMessage.tool_info) {
+            this.pendingToolCall = {
+              name: lastMessage.tool_info.name,
+              parameters: lastMessage.tool_info.args || {},
+            };
+          }
+          // DON'T send actionResponse - wait for user approval
+        } else {
+          this.pendingToolCall = null;
+
+          // Only send actionResponse when NOT waiting for approval
+          this.socketManager?.send({ actionResponse: { requestID: action.requestID } });
+        }
+      } catch (err) {
+        this.onError(err);
+      }
+    },
+
     async onSendChatPrompt(question) {
       if (this.shouldStartNewChat(question)) {
         this.onNewChat();
@@ -237,21 +280,30 @@ export default {
           this.workflowId = parseGid(workflow.id).id;
         } catch (err) {
           this.onError(err);
+          return;
         }
       }
 
       const requestId = `${this.workflowId}-${this.messages?.length || 0}`;
       const userMessage = { content: question, role: 'user', requestId };
+      this.addDuoChatMessage(userMessage);
 
       this.startWorkflow(question);
-
-      this.addDuoChatMessage(userMessage);
     },
     onChatClose() {
       this.duoChatGlobalState.isAgenticChatShown = false;
     },
     onError(err) {
       this.addDuoChatMessage({ errors: [err.toString()] });
+    },
+    handleApproveToolCall() {
+      this.startWorkflow('', { approval: {} });
+    },
+    handleDenyToolCall(message) {
+      this.startWorkflow('', {
+        approval: undefined,
+        rejection: { message },
+      });
     },
   },
 };
@@ -276,6 +328,13 @@ export default {
         @chat-cancel="onChatCancel"
         @chat-hidden="onChatClose"
         @chat-resize="onChatResize"
+      />
+
+      <agentic-tool-approval-flow
+        :visible="showToolApprovalModal"
+        :tool-details="pendingToolCall"
+        @approve="handleApproveToolCall"
+        @deny="handleDenyToolCall"
       />
     </div>
   </div>

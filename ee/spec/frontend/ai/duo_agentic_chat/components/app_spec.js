@@ -1,4 +1,4 @@
-import { AgenticDuoChat } from '@gitlab/duo-ui';
+import { AgenticDuoChat, AgenticToolApprovalFlow } from '@gitlab/duo-ui';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
@@ -14,8 +14,28 @@ import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
+  DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
+import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
+
+// Mock the WebSocket utils - completely isolated
+const mockSocketManager = {
+  connect: jest.fn(),
+  send: jest.fn(),
+  close: jest.fn(),
+  isConnected: jest.fn().mockReturnValue(true),
+  getState: jest.fn().mockReturnValue('OPEN'),
+};
+
+jest.mock('~/lib/utils/websocket_utils', () => ({
+  createWebSocket: jest.fn(() => mockSocketManager),
+  parseMessage: jest.fn(async (event) => {
+    const data = typeof event.data === 'string' ? event.data : await event.data.text();
+    return JSON.parse(data);
+  }),
+  closeSocket: jest.fn(),
+}));
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
 const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflow/456';
@@ -47,49 +67,11 @@ const MOCK_WORKFLOW_MUTATION_RESPONSE = {
   },
 };
 
-class MockWebSocket {
-  constructor() {
-    this.onopen = null;
-    this.onclose = null;
-    this.onmessage = null;
-    this.onerror = null;
-    this.readyState = WebSocket.OPEN;
-  }
-
-  send(data) {
-    this.lastSentData = data;
-  }
-
-  close() {
-    if (this.onclose) {
-      this.onclose();
-    }
-  }
-
-  mockReceiveMessage(data) {
-    if (this.onmessage) {
-      const messageEvent = {
-        data: {
-          text: () => Promise.resolve(data),
-        },
-      };
-      this.onmessage(messageEvent);
-    }
-  }
-
-  mockError(error) {
-    if (this.onerror) {
-      this.onerror(error);
-    }
-  }
-}
-
 Vue.use(Vuex);
 Vue.use(VueApollo);
 
 describe('Duo Agentic Chat', () => {
   let wrapper;
-  let mockWebSocket;
 
   const actionSpies = {
     addDuoChatMessage: jest.fn(),
@@ -103,11 +85,11 @@ describe('Duo Agentic Chat', () => {
   const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
 
   const findDuoChat = () => wrapper.findComponent(AgenticDuoChat);
-
-  global.WebSocket = jest.fn().mockImplementation(() => {
-    mockWebSocket = new MockWebSocket();
-    return mockWebSocket;
-  });
+  const findToolApprovalFlow = () => wrapper.findComponent(AgenticToolApprovalFlow);
+  const getLastSocketCall = () => {
+    const [, socketCallbacks] = createWebSocket.mock.calls[0];
+    return socketCallbacks;
+  };
 
   const createComponent = ({
     initialState = {},
@@ -140,6 +122,10 @@ describe('Duo Agentic Chat', () => {
     });
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
     duoChatGlobalState.isAgenticChatShown = false;
@@ -154,6 +140,10 @@ describe('Duo Agentic Chat', () => {
 
       it('renders the AgenticDuoChat component', () => {
         expect(findDuoChat().exists()).toBe(true);
+      });
+
+      it('renders the AgenticToolApprovalFlow component', () => {
+        expect(findToolApprovalFlow().exists()).toBe(true);
       });
 
       it('calls the context presets GraphQL query when component loads', () => {
@@ -230,11 +220,16 @@ describe('Duo Agentic Chat', () => {
           projectId: MOCK_PROJECT_ID,
           goal: MOCK_USER_MESSAGE.content,
           workflowDefinition: 'chat',
-          agentPrivileges: [3],
-          preApprovedAgentPrivileges: [3],
+          agentPrivileges: [2, 3],
+          preApprovedAgentPrivileges: [2],
         });
 
-        expect(global.WebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws');
+        expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
+          onMessage: expect.any(Function),
+          onError: expect.any(Function),
+          onClose: expect.any(Function),
+        });
+
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
           expect.anything(),
           expect.objectContaining({
@@ -259,14 +254,15 @@ describe('Duo Agentic Chat', () => {
         await waitForPromises();
 
         expect(duoWorkflowMutationHandlerMock).not.toHaveBeenCalled();
-        expect(global.WebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws');
+        expect(createWebSocket).toHaveBeenCalledWith(
+          '/api/v4/ai/duo_workflows/ws',
+          expect.any(Object),
+        );
       });
 
-      it('sends the correct start request to WebSocket when open', async () => {
+      it('sends the correct start request to WebSocket when connected', async () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
-
-        mockWebSocket.onopen();
 
         const expectedStartRequest = {
           startRequest: {
@@ -274,18 +270,22 @@ describe('Duo Agentic Chat', () => {
             clientVersion: '1.0',
             workflowDefinition: 'chat',
             goal: MOCK_USER_MESSAGE.content,
+            approval: {},
           },
         };
 
-        expect(mockWebSocket.lastSentData).toBe(JSON.stringify(expectedStartRequest));
+        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
       });
     });
 
     describe('WebSocket message handling', () => {
+      let socketCall;
+
       beforeEach(async () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
         wrapper.vm.workflowId = '456';
+        socketCall = getLastSocketCall();
       });
 
       it('processes messages from the WebSocket and updates the UI', async () => {
@@ -303,11 +303,15 @@ describe('Duo Agentic Chat', () => {
                 ],
               },
             }),
+            status: 'completed',
           },
         };
 
-        mockWebSocket.mockReceiveMessage(JSON.stringify(mockCheckpointData));
-        await waitForPromises();
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
+          },
+        });
 
         expect(actionSpies.setMessages).toHaveBeenCalledWith(
           expect.anything(),
@@ -327,9 +331,49 @@ describe('Duo Agentic Chat', () => {
           ]),
         );
 
-        expect(mockWebSocket.lastSentData).toBe(
-          JSON.stringify({ actionResponse: { requestID: 'request-id-1' } }),
-        );
+        expect(mockSocketManager.send).toHaveBeenCalledWith({
+          actionResponse: { requestID: 'request-id-1' },
+        });
+      });
+
+      it('handles tool approval flow', async () => {
+        const mockCheckpointData = {
+          requestID: 'request-id-1',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'I need to run a command.',
+                    role: 'assistant',
+                    tool_info: {
+                      name: 'run_command',
+                      args: { command: 'ls -la' },
+                    },
+                  },
+                ],
+              },
+            }),
+            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+          },
+        };
+
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
+          },
+        });
+
+        expect(findToolApprovalFlow().props('visible')).toBe(true);
+        expect(findToolApprovalFlow().props('toolDetails')).toEqual({
+          name: 'run_command',
+          parameters: { command: 'ls -la' },
+        });
+
+        // Should NOT send actionResponse when waiting for approval
+        expect(mockSocketManager.send).not.toHaveBeenCalledWith({
+          actionResponse: { requestID: 'request-id-1' },
+        });
       });
 
       it('handles tool messages in the chat log', async () => {
@@ -350,8 +394,11 @@ describe('Duo Agentic Chat', () => {
           },
         };
 
-        mockWebSocket.mockReceiveMessage(JSON.stringify(mockCheckpointData));
-        await waitForPromises();
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
+          },
+        });
 
         expect(actionSpies.setMessages).toHaveBeenCalledWith(
           expect.anything(),
@@ -365,16 +412,19 @@ describe('Duo Agentic Chat', () => {
             }),
           ]),
         );
+
+        expect(mockSocketManager.send).toHaveBeenCalledWith({
+          actionResponse: { requestID: 'request-id-2' },
+        });
       });
 
       it('handles errors from WebSocket', () => {
-        const error = new Error('WebSocket error');
-        mockWebSocket.mockError(error);
+        socketCall.onError();
 
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
           expect.anything(),
           expect.objectContaining({
-            errors: [error.toString()],
+            errors: ['Error: Unable to connect to workflow service. Please try again.'],
           }),
         );
       });
@@ -383,22 +433,22 @@ describe('Duo Agentic Chat', () => {
     describe('@chat-cancel', () => {
       it('cancels the active connection and resets state', async () => {
         wrapper.vm.workflowId = '456';
-        wrapper.vm.socket = mockWebSocket;
-
-        const socketCloseSpy = jest.spyOn(mockWebSocket, 'close');
+        wrapper.vm.socketManager = mockSocketManager;
 
         findDuoChat().vm.$emit('chat-cancel');
         await nextTick();
 
-        expect(socketCloseSpy).toHaveBeenCalled();
+        expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
         expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
         expect(wrapper.vm.workflowId).toBe(null);
+        expect(wrapper.vm.socketManager).toBe(null);
       });
     });
 
     describe('@new-chat', () => {
       it('resets chat state for new conversation', async () => {
         wrapper.vm.workflowId = '456';
+        wrapper.vm.socketManager = mockSocketManager;
 
         findDuoChat().vm.$emit('new-chat');
         await nextTick();
@@ -406,6 +456,83 @@ describe('Duo Agentic Chat', () => {
         expect(wrapper.vm.workflowId).toBe(null);
         expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
         expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+        expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
+      });
+    });
+
+    describe('tool approval flow', () => {
+      let socketCall;
+
+      beforeEach(async () => {
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+        socketCall = getLastSocketCall();
+
+        // Set up pending tool call by simulating a message that requires approval
+        const mockCheckpointData = {
+          requestID: 'request-id-1',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'I need to run a command.',
+                    role: 'assistant',
+                    tool_info: {
+                      name: 'run_command',
+                      args: { command: 'ls -la' },
+                    },
+                  },
+                ],
+              },
+            }),
+            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+          },
+        };
+
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
+          },
+        });
+      });
+
+      it('handles tool approval', async () => {
+        findToolApprovalFlow().vm.$emit('approve');
+        await nextTick();
+
+        const expectedStartRequest = {
+          startRequest: {
+            workflowID: '456',
+            clientVersion: '1.0',
+            workflowDefinition: 'chat',
+            goal: '',
+            approval: { approval: {} },
+          },
+        };
+
+        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
+      });
+
+      it('handles tool denial', async () => {
+        const denyMessage = 'I do not approve this action';
+        findToolApprovalFlow().vm.$emit('deny', denyMessage);
+        await nextTick();
+
+        const expectedStartRequest = {
+          startRequest: {
+            workflowID: '456',
+            clientVersion: '1.0',
+            workflowDefinition: 'chat',
+            goal: '',
+            approval: {
+              approval: undefined,
+              rejection: { message: denyMessage },
+            },
+          },
+        };
+
+        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
       });
     });
   });
@@ -524,6 +651,21 @@ describe('Duo Agentic Chat', () => {
 
         expect(onNewChatSpy).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('Socket cleanup', () => {
+    beforeEach(() => {
+      createComponent();
+      duoChatGlobalState.isAgenticChatShown = true;
+    });
+
+    it('cleans up socket on component destroy', () => {
+      wrapper.vm.socketManager = mockSocketManager;
+
+      wrapper.destroy();
+
+      expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
     });
   });
 });
