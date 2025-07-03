@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { isExperimentVariant } from '~/experimentation/utils';
 import SignUpArkoseApp from './components/sign_up_arkose_app.vue';
 import IdentityVerificationArkoseApp from './components/identity_verification_arkose_app.vue';
 
@@ -13,6 +14,8 @@ export const setupArkoseLabsForSignup = () => {
 
   const { apiKey, domain, dataExchangePayload } = el.dataset;
 
+  const isLWRExperimentCandidate = isExperimentVariant('lightweight_trial_registration_redesign');
+
   return new Vue({
     el,
     render(h) {
@@ -22,6 +25,7 @@ export const setupArkoseLabsForSignup = () => {
           publicKey: apiKey,
           domain,
           dataExchangePayload,
+          isLWRExperimentCandidate,
         },
       });
     },

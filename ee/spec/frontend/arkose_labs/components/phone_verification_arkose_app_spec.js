@@ -28,7 +28,7 @@ describe('PhoneVerificationArkoseApp', () => {
 
   const findChallengeContainer = () => wrapper.findByTestId('arkose-labs-challenge');
 
-  const createComponent = () => {
+  const createComponent = ({ provide } = { provide: {} }) => {
     wrapper = mountExtended(PhoneVerificationArkoseApp, {
       provide: {
         arkoseConfiguration: {
@@ -37,6 +37,7 @@ describe('PhoneVerificationArkoseApp', () => {
           dataExchangePayloadPath: MOCK_DATA_EXCHANGE_PAYLOAD_PATH,
         },
         arkoseDataExchangePayload: MOCK_DATA_EXCHANGE_PAYLOAD,
+        ...provide,
       },
       propsData: { resetSession: false },
     });
@@ -55,6 +56,22 @@ describe('PhoneVerificationArkoseApp', () => {
       config: expect.objectContaining({
         onShown: expect.any(Function),
         onCompleted: expect.any(Function),
+      }),
+    });
+  });
+
+  it('should initialise arkose labs in dark theme for lightweight_trial_registration_redesign experiment candidate', () => {
+    createComponent({ provide: { isLWRExperimentCandidate: true } });
+
+    expect(initArkoseLabsChallenge).toHaveBeenCalledWith({
+      publicKey: MOCK_PUBLIC_KEY,
+      domain: MOCK_DOMAIN,
+      dataExchangePayload: MOCK_DATA_EXCHANGE_PAYLOAD,
+      dataExchangePayloadPath: MOCK_DATA_EXCHANGE_PAYLOAD_PATH,
+      config: expect.objectContaining({
+        onShown: expect.any(Function),
+        onCompleted: expect.any(Function),
+        styleTheme: 'dark',
       }),
     });
   });
