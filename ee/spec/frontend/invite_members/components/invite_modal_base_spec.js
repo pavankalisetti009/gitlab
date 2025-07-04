@@ -38,6 +38,7 @@ describe('EEInviteModalBase', () => {
     data: {
       group: {
         id: 12345,
+        name: 'Root Group',
         gitlabSubscriptionsPreviewBillableUserChange: {
           willIncreaseOverage: true,
           newBillableUserCount: 2,
@@ -57,7 +58,6 @@ describe('EEInviteModalBase', () => {
     queryHandler = defaultReconciliationMock,
     getBillableUserCountChangesQueryHandler = defaultBillableMock,
     showModal = true,
-    groupName = '',
   } = {}) => {
     const mockCustomersDotClient = createMockClient([[getReconciliationStatus, queryHandler]]);
     const mockGitlabClient = createMockClient([
@@ -81,7 +81,7 @@ describe('EEInviteModalBase', () => {
       provide: {
         overageMembersModalAvailable,
         inviteWithCustomRoleEnabled,
-        groupName,
+        rootGroupPath: 'root-group',
       },
       stubs: {
         GlSprintf,
@@ -341,7 +341,7 @@ describe('EEInviteModalBase', () => {
 
       it('calls graphql API and passes correct parameters', () => {
         expect(defaultBillableMock).toHaveBeenCalledWith({
-          fullPath: 'mygroup',
+          fullPath: 'root-group',
           addGroupId: 123,
           addUserEmails: [],
           addUserIds: [],
@@ -409,7 +409,6 @@ describe('EEInviteModalBase', () => {
       createComponent({
         props: { newUsersToInvite: [123] },
         overageMembersModalAvailable: true,
-        groupName: 'groupName',
       });
       clickInviteButton();
       await waitForPromises();
@@ -441,7 +440,7 @@ describe('EEInviteModalBase', () => {
 
     it('shows the info text', () => {
       expect(findModal().text()).toContain(
-        'Your subscription includes 1 seat. If you continue, the groupName group will have 2 seats in use and will be billed for the overage.',
+        'Your subscription includes 1 seat. If you continue, the Root Group group will have 2 seats in use and will be billed for the overage.',
       );
     });
 

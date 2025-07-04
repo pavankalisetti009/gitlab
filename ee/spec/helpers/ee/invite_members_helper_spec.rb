@@ -17,7 +17,7 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
 
     it 'has expected common attributes' do
       expect(helper.common_invite_group_modal_data(project, ProjectMember))
-        .to include({ free_user_cap_enabled: 'true', free_users_limit: 5 })
+        .to include({ free_user_cap_enabled: 'true', free_users_limit: 5, root_group_path: group.full_path })
     end
 
     describe 'invite_with_custom_role_enabled' do

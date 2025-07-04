@@ -14,8 +14,7 @@ module EE
         overage_members_modal_available: overage_members_modal_available.to_s,
         has_gitlab_subscription: gitlab_com_subscription?.to_s,
         invite_with_custom_role_enabled: custom_roles_enabled?(source).to_s,
-        full_path: source.root_ancestor.full_path,
-        group_name: source.root_ancestor.name
+        root_group_path: source.root_ancestor.full_path
       )
     end
 
@@ -50,8 +49,7 @@ module EE
       dataset[:manage_member_roles_path] = manage_member_roles_path(source)
       dataset[:overage_members_modal_available] = overage_members_modal_available.to_s
       dataset[:has_gitlab_subscription] = gitlab_com_subscription?.to_s
-      dataset[:full_path] = source.root_ancestor.full_path
-      dataset[:group_name] = source.root_ancestor.name
+      dataset[:root_group_path] = source.root_ancestor.full_path
 
       dataset
     end
