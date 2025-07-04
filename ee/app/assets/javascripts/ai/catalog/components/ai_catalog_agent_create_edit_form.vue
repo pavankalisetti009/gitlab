@@ -9,13 +9,19 @@ import {
 } from 'ee/ai/catalog/constants/constants';
 import { __, s__, sprintf } from '~/locale';
 
-const createLengthValidator = (maxLength) => {
-  return formValidators.factory(
-    sprintf(s__('AICatalog|Input cannot exceed %{value} characters. Please shorten your input.'), {
-      value: maxLength,
-    }),
-    (value) => value.length <= maxLength,
-  );
+const createValidators = (requiredLabel, maxLength) => {
+  return [
+    formValidators.required(requiredLabel),
+    formValidators.factory(
+      sprintf(
+        s__('AICatalog|Input cannot exceed %{value} characters. Please shorten your input.'),
+        {
+          value: maxLength,
+        },
+      ),
+      (value) => value.length <= maxLength,
+    ),
+  ];
 };
 
 export default {
@@ -88,10 +94,7 @@ export default {
   fields: {
     name: {
       label: __('Name'),
-      validators: [
-        formValidators.required(s__('AICatalog|Name is required.')),
-        createLengthValidator(MAX_LENGTH_NAME),
-      ],
+      validators: createValidators(s__('AICatalog|Name is required.'), MAX_LENGTH_NAME),
       inputAttrs: {
         'data-testid': 'agent-form-input-name',
         placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
@@ -102,10 +105,10 @@ export default {
     },
     description: {
       label: __('Description'),
-      validators: [
-        formValidators.required(s__('AICatalog|Description is required.')),
-        createLengthValidator(MAX_LENGTH_DESCRIPTION),
-      ],
+      validators: createValidators(
+        s__('AICatalog|Description is required.'),
+        MAX_LENGTH_DESCRIPTION,
+      ),
       groupAttrs: {
         labelDescription: s__(
           'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
@@ -113,8 +116,8 @@ export default {
       },
     },
     systemPrompt: {
-      label: s__('AICatalog|System Prompt (optional)'),
-      validators: [createLengthValidator(MAX_LENGTH_PROMPT)],
+      label: s__('AICatalog|System Prompt'),
+      validators: createValidators(s__('AICatalog|System Prompt is required.'), MAX_LENGTH_PROMPT),
       groupAttrs: {
         labelDescription: s__(
           "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
@@ -122,8 +125,8 @@ export default {
       },
     },
     userPrompt: {
-      label: s__('AICatalog|User Prompt (optional)'),
-      validators: [createLengthValidator(MAX_LENGTH_PROMPT)],
+      label: s__('AICatalog|User Prompt'),
+      validators: createValidators(s__('AICatalog|User Prompt is required.'), MAX_LENGTH_PROMPT),
       groupAttrs: {
         labelDescription: s__(
           'AICatalog|Provide default instructions or context that will be included with every user interaction.',
@@ -155,7 +158,7 @@ export default {
           @update="input"
         />
       </template>
-      <template #input(systemPrompt)="{ id, input, value, blur }">
+      <template #input(systemPrompt)="{ id, input, value, blur, validation }">
         <gl-form-textarea
           :id="id"
           :no-resize="false"
@@ -164,13 +167,14 @@ export default {
               'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
             )
           "
+          :state="validation.state"
           :value="value"
           data-testid="agent-form-textarea-system-prompt"
           @blur="blur"
           @update="input"
         />
       </template>
-      <template #input(userPrompt)="{ id, input, value, blur }">
+      <template #input(userPrompt)="{ id, input, value, blur, validation }">
         <gl-form-textarea
           :id="id"
           :no-resize="false"
@@ -180,6 +184,7 @@ export default {
             )
           "
           :rows="10"
+          :state="validation.state"
           :value="value"
           data-testid="agent-form-textarea-user-prompt"
           @blur="blur"
