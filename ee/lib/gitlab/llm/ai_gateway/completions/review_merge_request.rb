@@ -17,6 +17,7 @@ module Gitlab
             total_comments
             comments_with_valid_path
             comments_with_valid_line
+            comments_with_custom_instructions
             comments_line_matched_by_content
             created_draft_notes
           ].freeze
@@ -224,6 +225,10 @@ module Gitlab
               next unless diff_line.present?
 
               @comment_metrics[:comments_with_valid_line] += 1
+
+              if comment.content.match?(/^According to custom instructions in .+?:/)
+                @comment_metrics[:comments_with_custom_instructions] += 1
+              end
 
               draft_note_params = build_draft_note_params(comment.content, diff_file, diff_line, diff_refs)
               next unless draft_note_params.present?

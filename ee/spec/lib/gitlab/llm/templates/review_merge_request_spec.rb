@@ -219,6 +219,14 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
           Focus on security vulnerabilities and data validation
 
           IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
+
+          FORMATTING REQUIREMENT: When generating a comment based on a custom instruction, you MUST format it as follows:
+          "According to custom instructions in '[instruction_name]': [your comment here]"
+
+          For example:
+          "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
+
+          This formatting is ONLY required for comments that are triggered by custom instructions. Regular review comments based on standard review criteria should NOT include this prefix.
           </custom_instructions>
         SECTION
       end
@@ -252,6 +260,14 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
             Check for performance optimizations and memory leaks
 
             IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
+
+            FORMATTING REQUIREMENT: When generating a comment based on a custom instruction, you MUST format it as follows:
+            "According to custom instructions in '[instruction_name]': [your comment here]"
+
+            For example:
+            "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
+
+            This formatting is ONLY required for comments that are triggered by custom instructions. Regular review comments based on standard review criteria should NOT include this prefix.
             </custom_instructions>
           SECTION
         end
