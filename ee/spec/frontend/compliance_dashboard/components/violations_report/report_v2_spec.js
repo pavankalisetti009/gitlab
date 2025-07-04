@@ -1,9 +1,11 @@
-import { GlAlert, GlLoadingIcon, GlTable } from '@gitlab/ui';
+import { GlAlert, GlLoadingIcon, GlTable, GlKeysetPagination } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import ComplianceViolationsReportV2 from 'ee/compliance_dashboard/components/violations_report/report_v2.vue';
+import ComplianceViolationsReportV2, {
+  VIOLATION_PAGE_SIZE,
+} from 'ee/compliance_dashboard/components/violations_report/report_v2.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -44,6 +46,61 @@ describe('ComplianceViolationsReportV2 component', () => {
               },
             },
           ],
+          pageInfo: {
+            hasNextPage: false,
+            hasPreviousPage: false,
+            startCursor: 'cursor1',
+            endCursor: 'cursor1',
+          },
+        },
+      },
+    },
+  };
+
+  const mockViolationsResponseWithPagination = {
+    data: {
+      group: {
+        id: 'gid://gitlab/Group/1',
+        name: 'Test Group',
+        projectComplianceViolations: {
+          nodes: [
+            {
+              id: 'gid://gitlab/ComplianceViolation/1',
+              createdAt: '2025-06-08T10:00:00Z',
+              status: 'detected',
+              linkedAuditEventId: 'audit_event_1',
+              project: {
+                id: 'gid://gitlab/Project/1',
+                name: 'Frontend Project',
+                fullPath: 'foo/bar',
+              },
+              complianceControl: {
+                id: 'gid://gitlab/ComplianceControl/1',
+                name: 'SOX - Code Review Required',
+              },
+            },
+            {
+              id: 'gid://gitlab/ComplianceViolation/2',
+              createdAt: '2025-06-09T10:00:00Z',
+              status: 'resolved',
+              linkedAuditEventId: 'audit_event_2',
+              project: {
+                id: 'gid://gitlab/Project/2',
+                name: 'Backend Project',
+                fullPath: 'foo/baz',
+              },
+              complianceControl: {
+                id: 'gid://gitlab/ComplianceControl/2',
+                name: 'SOX - Approval Required',
+              },
+            },
+          ],
+          pageInfo: {
+            hasNextPage: true,
+            hasPreviousPage: false,
+            startCursor: 'cursor1',
+            endCursor: 'cursor2',
+          },
         },
       },
     },
@@ -57,6 +114,7 @@ describe('ComplianceViolationsReportV2 component', () => {
   const findViolationsTable = () => wrapper.findComponent(GlTable);
   const findTableLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findStatusDropdown = () => wrapper.findComponent(ComplianceViolationStatusDropdown);
+  const findPagination = () => wrapper.findComponent(GlKeysetPagination);
 
   const createMockApolloProvider = (resolverMock = mockGraphQlLoading) => {
     return createMockApollo([[groupComplianceViolationsQuery, resolverMock]]);
@@ -109,6 +167,9 @@ describe('ComplianceViolationsReportV2 component', () => {
       expect(mockGraphQlLoading).toHaveBeenCalledTimes(1);
       expect(mockGraphQlLoading).toHaveBeenCalledWith({
         fullPath: groupPath,
+        first: VIOLATION_PAGE_SIZE,
+        after: null,
+        before: null,
       });
     });
   });
@@ -165,6 +226,12 @@ describe('ComplianceViolationsReportV2 component', () => {
             name: 'Test Group',
             projectComplianceViolations: {
               nodes: [],
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: false,
+                startCursor: null,
+                endCursor: null,
+              },
             },
           },
         },
@@ -176,6 +243,65 @@ describe('ComplianceViolationsReportV2 component', () => {
 
     it('renders the empty table message', () => {
       expect(findViolationsTable().text()).toContain('No violations found');
+    });
+  });
+
+  describe('pagination', () => {
+    const paginationTestCases = {
+      initial: {
+        hasNextPage: true,
+        hasPreviousPage: false,
+        startCursor: 'cursor1',
+        endCursor: 'cursor2',
+      },
+      afterNext: {
+        expectedCursor: { after: 'cursor2', before: null },
+      },
+      afterPrevious: {
+        expectedCursor: { before: 'cursor1', after: null },
+      },
+    };
+
+    const expectPaginationProps = (expectedProps) => {
+      const pagination = findPagination();
+      Object.entries(expectedProps).forEach(([prop, value]) => {
+        expect(pagination.props(prop)).toBe(value);
+      });
+    };
+
+    const expectCursorState = (expectedCursor) => {
+      Object.entries(expectedCursor).forEach(([key, value]) => {
+        expect(wrapper.vm.cursor[key]).toBe(value);
+      });
+    };
+
+    const triggerPaginationEvent = async (event) => {
+      const pagination = findPagination();
+      pagination.vm.$emit(event);
+      await nextTick();
+    };
+
+    beforeEach(async () => {
+      const mockResolver = jest.fn().mockResolvedValue(mockViolationsResponseWithPagination);
+      wrapper = createComponent(mount, {}, mockResolver);
+      await waitForPromises();
+    });
+
+    it('renders pagination component with correct initial state', () => {
+      expect(findPagination().exists()).toBe(true);
+      expectPaginationProps(paginationTestCases.initial);
+    });
+
+    describe('navigation', () => {
+      it('handles next page navigation correctly', async () => {
+        await triggerPaginationEvent('next');
+        expectCursorState(paginationTestCases.afterNext.expectedCursor);
+      });
+
+      it('handles previous page navigation correctly', async () => {
+        await triggerPaginationEvent('prev');
+        expectCursorState(paginationTestCases.afterPrevious.expectedCursor);
+      });
     });
   });
 
