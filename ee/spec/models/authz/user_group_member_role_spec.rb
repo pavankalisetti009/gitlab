@@ -16,7 +16,33 @@ RSpec.describe Authz::UserGroupMemberRole, feature_category: :permissions do
     it { is_expected.to validate_presence_of(:user) }
     it { is_expected.to validate_presence_of(:group) }
     it { is_expected.to validate_presence_of(:member_role) }
-    it { is_expected.to validate_uniqueness_of(:user).scoped_to(%i[group_id shared_with_group_id member_role_id]) }
+    it { is_expected.to validate_uniqueness_of(:user).scoped_to(%i[group_id shared_with_group_id]) }
+  end
+
+  describe 'uniqueness constraints' do
+    let_it_be(:role) { create(:member_role) }
+
+    it 'is unique by user_id and group_id when shared_with_group_id is nil' do
+      existing = create(:user_group_member_role)
+      unique_attrs = %w[user_id group_id]
+
+      attrs = existing.attributes.slice(*unique_attrs)
+      attrs["member_role_id"] = role.id
+
+      expect { described_class.upsert(attrs, unique_by: unique_attrs) }.not_to change { described_class.count }
+      expect(existing.reload.member_role_id).to eq role.id
+    end
+
+    it 'is unique by user_id, group_id and shared_with_group_id' do
+      unique_attrs = %w[user_id group_id shared_with_group_id]
+      existing = create(:user_group_member_role, shared_with_group: create(:group))
+
+      attrs = existing.attributes.slice(*unique_attrs)
+      attrs["member_role_id"] = role.id
+
+      expect { described_class.upsert(attrs, unique_by: unique_attrs) }.not_to change { described_class.count }
+      expect(existing.reload.member_role_id).to eq role.id
+    end
   end
 
   describe '.for_user_in_group_and_shared_groups' do
