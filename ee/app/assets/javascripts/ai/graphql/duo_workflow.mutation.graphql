@@ -9,6 +9,7 @@ mutation createAiDuoWorkflow(
   aiDuoWorkflowCreate(
     input: {
       projectId: $projectId
+      environment: WEB
       goal: $goal
       workflowDefinition: $workflowDefinition
       agentPrivileges: $agentPrivileges

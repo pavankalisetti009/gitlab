@@ -69,6 +69,7 @@ describe('DuoWorkflowAction component', () => {
     const expectedRequestData = {
       project_id: projectId,
       start_workflow: true,
+      environment: 'web',
       goal: defaultProps.goal,
       workflow_definition: defaultProps.workflowDefinition,
       agent_privileges: defaultProps.agentPrivileges,
