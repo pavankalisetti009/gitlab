@@ -4363,6 +4363,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it_behaves_like 'custom roles abilities'
     end
+
+    context 'for a member role with admin_security_labels true' do
+      let(:member_role_abilities) { { admin_security_labels: true } }
+      let(:allowed_abilities) { [:admin_security_labels] }
+
+      it_behaves_like 'custom roles abilities'
+    end
   end
 
   describe ':destroy_group policy' do
@@ -4963,6 +4970,26 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         let(:current_user) { developer }
 
         it { is_expected.to be_disallowed(:read_security_inventory) }
+      end
+    end
+  end
+
+  describe 'security labels' do
+    context 'when security labels are available' do
+      before do
+        stub_licensed_features(security_labels: true)
+      end
+
+      context 'when user is maintainer' do
+        let(:current_user) { maintainer }
+
+        it { is_expected.to be_allowed(:admin_security_labels) }
+      end
+
+      context 'when user is developer' do
+        let(:current_user) { developer }
+
+        it { is_expected.to be_disallowed(:admin_security_labels) }
       end
     end
   end

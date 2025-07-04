@@ -14,6 +14,7 @@ module Sidebars
           add_item(credentials_menu_item)
           add_item(scan_policies_menu_item)
           add_item(audit_events_menu_item)
+          add_item(configuration_menu_item)
 
           true
         end
@@ -179,6 +180,20 @@ module Sidebars
           )
         end
 
+        def configuration_menu_item
+          unless can_access_group_security_configuration?
+            return ::Sidebars::NilMenuItem.new(item_id: :configuration)
+          end
+
+          ::Sidebars::MenuItem.new(
+            title: _('Security configuration'),
+            link: group_security_configuration_path(context.group),
+            super_sidebar_parent: ::Sidebars::Groups::SuperSidebarMenus::SecureMenu,
+            active_routes: { controller: ['groups/security/configuration'] },
+            item_id: :configuration
+          )
+        end
+
         def group_level_audit_events_available?
           context.group.licensed_feature_available?(:audit_events) &&
             can?(context.current_user, :read_group_audit_events, context.group)
@@ -196,6 +211,12 @@ module Sidebars
 
         def can_access_security_inventory_dashboard?
           can?(context.current_user, :read_security_inventory, context.group)
+        end
+
+        def can_access_group_security_configuration?
+          can?(context.current_user, :admin_security_labels, context.group) &&
+            Feature.enabled?(:security_context_labels, context.group.root_ancestor) &&
+            context.group.licensed_feature_available?(:security_labels)
         end
       end
     end
