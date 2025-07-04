@@ -1,11 +1,13 @@
 ---
 data_category: optional
 key_path: compliance_unique_visits.compliance_unique_visits_for_any_target
-description: Removed as duplicate of redis_hll_counters.compliance.compliance_total_unique_counts_weekly
+description: Removed as duplicate of redis_hll_counters.compliance.compliance_total_unique_counts
 product_group: compliance
 value_type: number
 status: removed
-time_frame: 7d
+time_frame:
+- 28d
+- 7d
 data_source: redis_hll
 instrumentation_class: RedisHLLMetric
 events:
