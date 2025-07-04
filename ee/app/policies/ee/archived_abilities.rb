@@ -7,6 +7,7 @@ module EE
     ARCHIVED_ABILITIES_EE = %i[
       admin_software_license_policy
       create_test_case
+      admin_ai_catalog_item
     ].freeze
 
     ARCHIVED_FEATURES_EE = %i[

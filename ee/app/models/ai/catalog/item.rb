@@ -15,8 +15,10 @@ module Ai
 
       has_many :versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
+      AGENT_TYPE = :agent
+
       enum :item_type, {
-        agent: 1
+        AGENT_TYPE => 1
       }
     end
   end

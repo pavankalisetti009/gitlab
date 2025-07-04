@@ -18,6 +18,7 @@ module Types
           null: false,
           description: 'Type of the item.'
         field :name, GraphQL::Types::String, null: false, description: 'Name of the item.'
+        field :project, ::Types::ProjectType, null: true, description: 'Project for the item.'
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end

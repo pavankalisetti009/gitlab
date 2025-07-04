@@ -10,6 +10,7 @@ module EE
           super + [:ai_features]
         end
 
+        mount_mutation ::Mutations::Ai::Catalog::Agent::Create, experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::Ci::Catalog::VerifiedNamespace::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Delete
