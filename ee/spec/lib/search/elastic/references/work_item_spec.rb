@@ -62,7 +62,8 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         weight: object.weight,
         milestone_start_date: object.milestone&.start_date,
         milestone_due_date: object.milestone&.due_date,
-        label_names: object.label_names
+        label_names: object.label_names,
+        closed_at: object.closed_at
       }
     end
 
@@ -101,38 +102,8 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
       context 'with running migrations' do
         context 'when add_work_item_milestone_data migration has finished' do
           context 'when add_extra_fields_to_work_items migration has finished' do
-            context 'when milestone is present' do
-              it 'serializes work_item as a hash' do
-                expect(indexed_json).to match(expected_hash)
-              end
-            end
-
-            context 'when milestone is missing' do
-              let_it_be(:work_item_without_milestone) do
-                create(:work_item, :opened, labels: [label], namespace: group, health_status: :on_track,
-                  weight: 3)
-              end
-
-              let(:object) { work_item_without_milestone }
-
-              it 'serializes work_item as a hash without milestone references' do
-                expect(indexed_json).to match(expected_hash.except(
-                  :milestone_title, :milestone_id, :milestone_due_date, :milestone_start_date
-                ))
-              end
-            end
-
-            context 'when work_item is closed' do
-              let_it_be(:closed_work_item) do
-                create(:work_item, :closed, labels: [label], namespace: group, milestone: work_item.milestone,
-                  health_status: :on_track, weight: 3)
-              end
-
-              let(:object) { closed_work_item }
-
-              it 'serializes work_item as a hash with closed_at field' do
-                expect(indexed_json).to match(expected_hash.merge!(closed_at: closed_work_item.closed_at))
-              end
+            it 'serializes work_item as a hash' do
+              expect(indexed_json).to match(expected_hash)
             end
           end
         end

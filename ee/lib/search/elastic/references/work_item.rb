@@ -11,7 +11,7 @@ module Search
         # Only applies after migration completes to prevent indexing documents
         # with new schema before data migration finishes, which would result in
         # documents not being indexed properly and missing data.
-        SCHEMA_VERSION = 25_23
+        SCHEMA_VERSION = 25_27
         DEFAULT_INDEX_ATTRIBUTES = %i[
           id
           iid
@@ -158,10 +158,10 @@ module Search
             return extra_data
           end
 
-          extra_data['closed_at'] = target.closed_at if target.closed_at.present?
-          extra_data['weight'] = target.weight if target.weight.present?
-          extra_data['health_status'] = target.health_status_for_database if target.health_status.present?
-          extra_data['label_names'] = target.label_names if target.labels.present?
+          extra_data['closed_at'] = target.closed_at
+          extra_data['weight'] = target.weight
+          extra_data['health_status'] = target.health_status_for_database
+          extra_data['label_names'] = target.labels&.map(&:title)
 
           extra_data
         end
@@ -188,8 +188,6 @@ module Search
         def build_milestone_data(target)
           milestone_data = {}
 
-          return milestone_data unless target.milestone.present?
-
           if ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_milestone_data)
             milestone_data.merge!({
               milestone_title: target.milestone&.title,
@@ -201,9 +199,8 @@ module Search
             return milestone_data
           end
 
-          milestone_data['milestone_start_date'] = target.milestone.start_date if target.milestone.start_date.present?
-          milestone_data['milestone_due_date'] = target.milestone.due_date if target.milestone.due_date.present?
-
+          milestone_data['milestone_start_date'] = target.milestone&.start_date
+          milestone_data['milestone_due_date'] = target.milestone&.due_date
           milestone_data
         end
       end
