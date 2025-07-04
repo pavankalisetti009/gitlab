@@ -106,7 +106,7 @@ module Admin
       return false if gitlab_dedicated_instance?
 
       has_required_license = ::License.feature_available?(:self_hosted_models)
-      has_duo_enterprise = GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchased_or_trial?
+      has_duo_enterprise = ::GitlabSubscriptions::DuoEnterprise.active_add_on_purchase_for_self_managed?
 
       has_required_license && has_duo_enterprise
     end
@@ -140,7 +140,7 @@ module Admin
     strong_memoize_attr :ai_settings
 
     def duo_pro_or_duo_enterprise_add_on_purchase
-      GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchase
+      ::GitlabSubscriptions::Duo.active_self_managed_duo_pro_or_enterprise
     end
     strong_memoize_attr :duo_pro_or_duo_enterprise_add_on_purchase
   end

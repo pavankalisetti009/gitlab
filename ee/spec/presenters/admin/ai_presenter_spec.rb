@@ -50,7 +50,8 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:ai_settings) { instance_double(Ai::Setting, **ai_settings_attributes) }
     let(:amazon_q_available?) { true }
     let(:any_add_on_purchase) { build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :active) }
-    let(:any_add_on_purchased_or_trial?) { true }
+    let(:active_add_on_purchase_for_self_managed?) { true }
+    let(:active_self_managed_duo_pro_or_enterprise) { any_add_on_purchase }
     let(:auto_review_enabled) { true }
     let(:beta_self_hosted_models_enabled) { true }
     let(:duo_workflow_enabled) { true }
@@ -83,9 +84,12 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
           slack_app_enabled: true
         )
 
-      allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise).to receive_messages(
-        any_add_on_purchased_or_trial?: any_add_on_purchased_or_trial?,
-        any_add_on_purchase: any_add_on_purchase
+      allow(GitlabSubscriptions::DuoEnterprise).to receive_messages(
+        active_add_on_purchase_for_self_managed?: active_add_on_purchase_for_self_managed?
+      )
+
+      allow(GitlabSubscriptions::Duo).to receive_messages(
+        active_self_managed_duo_pro_or_enterprise: active_self_managed_duo_pro_or_enterprise
       )
 
       allow(Ai::DuoWorkflow).to receive(:available?).and_return duo_workflow_enabled
@@ -200,9 +204,15 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     end
 
     context 'without add-on purchase for Duo Enterprise' do
-      let(:any_add_on_purchased_or_trial?) { false }
+      let(:active_add_on_purchase_for_self_managed?) { false }
 
       it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
+    end
+
+    context 'without add-on purchase for Duo Pro or Duo Enterprise' do
+      let(:active_self_managed_duo_pro_or_enterprise) { nil }
+
+      it { expect(settings).to include(duo_add_on_end_date: nil, duo_add_on_start_date: nil) }
     end
 
     context 'with disabled direct code suggestions' do

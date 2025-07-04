@@ -41,10 +41,9 @@ export const initAiSettings = (id, component) => {
     enabledExpandedLogging,
     duoChatExpirationDays,
     duoChatExpirationColumn,
-    duoProOrDuoEnterpriseTier,
-    shouldShowDuoAvailability,
     duoWorkflowMcpEnabled,
     duoWorkflowAvailable,
+    isSaas,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -83,8 +82,7 @@ export const initAiSettings = (id, component) => {
       arePromptCacheSettingsAllowed: parseBoolean(arePromptCacheSettingsAllowed),
       duoChatExpirationDays: parseInt(duoChatExpirationDays, 10),
       duoChatExpirationColumn,
-      duoProOrDuoEnterpriseTier,
-      shouldShowDuoAvailability: parseBoolean(shouldShowDuoAvailability),
+      isSaaS: parseBoolean(isSaas),
     },
     render: (createElement) =>
       createElement(component, {

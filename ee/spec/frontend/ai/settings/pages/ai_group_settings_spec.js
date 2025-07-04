@@ -32,7 +32,6 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
       onGeneralSettingsPage: false,
       duoWorkflowAvailable: true,
       duoWorkflowMcpEnabled: false,
-      isSaaS: true,
       ...provide,
     },
   });

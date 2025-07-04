@@ -27,9 +27,6 @@ export default {
     'duoWorkflowAvailable',
     'duoWorkflowMcpEnabled',
   ],
-  provide: {
-    isSaaS: true,
-  },
   props: {
     redirectPath: {
       type: String,

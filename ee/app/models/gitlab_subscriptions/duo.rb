@@ -22,6 +22,12 @@ module GitlabSubscriptions
       ).execute.first
     end
 
+    def self.duo_settings_available?(namespace)
+      GitlabSubscriptions::AddOnPurchase
+        .for_active_add_ons(%i[duo_core code_suggestions duo_enterprise], namespace)
+        .exists?
+    end
+
     def self.no_add_on_purchase_for_namespace?(namespace)
       GitlabSubscriptions::NamespaceAddOnPurchasesFinder
         .new(namespace, add_on: :duo, only_active: false).execute.none?
@@ -38,6 +44,10 @@ module GitlabSubscriptions
 
     def self.active_self_managed_duo_core_pro_or_enterprise?
       GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core_pro_or_enterprise.active.any?
+    end
+
+    def self.active_self_managed_duo_pro_or_enterprise
+      GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.active.first
     end
   end
 end
