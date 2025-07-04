@@ -8,12 +8,14 @@ import {
   GlDropdownDivider,
   GlDropdownItem,
 } from '@gitlab/ui';
+import { visitUrl } from '~/lib/utils/url_utility';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { s__ } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import Api from 'ee/api';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
+import UnassignGroupModal from './unassign_modal.vue';
 
 export default {
   name: 'CentralizedSecurityPolicyManagement',
@@ -43,11 +45,13 @@ export default {
         this.pageInfo = data.groups?.pageInfo || {};
 
         // If not searching, select existing group if it exists
-        if (!this.searchValue && this.selectedGroupId) {
-          this.selectedGroup = this.groups.find((group) => group.id === this.selectedGroupId);
+        if (!this.searchValue && this.initialSelectedGroupId) {
+          this.selectedGroup = this.groups.find(
+            (group) => group.id === this.initialSelectedGroupId,
+          );
 
           if (!this.selectedGroup) {
-            this.loadMoreGroups(this.selectedGroupId);
+            this.loadMoreGroups(this.initialSelectedGroupId);
           }
         }
       },
@@ -59,16 +63,21 @@ export default {
     GlCollapsibleListbox,
     GlDropdownDivider,
     GlDropdownItem,
+    UnassignGroupModal,
   },
   props: {
     formId: {
       type: String,
       required: true,
     },
-    selectedGroupId: {
+    initialSelectedGroupId: {
       type: Number,
       required: false,
       default: null,
+    },
+    newGroupPath: {
+      type: String,
+      required: true,
     },
   },
   data() {
@@ -77,7 +86,7 @@ export default {
       pageInfo: {},
       saving: false,
       searchValue: '',
-      selectedGroup: { id: '' },
+      selectedGroup: null,
     };
   },
   computed: {
@@ -87,8 +96,14 @@ export default {
     loading() {
       return this.$apollo.queries.groups.loading || this.saving;
     },
+    selectedGroupId() {
+      return this.selectedGroup?.id;
+    },
+    selectedGroupName() {
+      return this.selectedGroup?.fullName;
+    },
     toggleText() {
-      return this.selectedGroup.fullName || s__('SecurityOrchestration|Select a group');
+      return this.selectedGroup?.fullName || s__('SecurityOrchestration|Select a group');
     },
   },
   created() {
@@ -98,6 +113,9 @@ export default {
     this.handleSearch.cancel();
   },
   methods: {
+    handleCreateGroup() {
+      visitUrl(this.newGroupPath);
+    },
     async loadMoreGroups(id) {
       if (!this.hasNextPage) return [];
 
@@ -138,6 +156,9 @@ export default {
     handleSelect(groupId) {
       this.selectedGroup = this.groups.find((group) => group.id === groupId);
     },
+    showModalWindow() {
+      this.$refs.modal.showModalWindow();
+    },
   },
 };
 </script>
@@ -148,12 +169,15 @@ export default {
       data-testid="exceptions-selector"
       is-check-centered
       searchable
+      :header-text="__('Select group')"
       :items="groups"
       :infinite-scroll="hasNextPage"
       :loading="loading"
-      :selected="selectedGroup.id"
+      :reset-button-label="__('Clear')"
+      :selected="selectedGroupId"
       :toggle-text="toggleText"
       @bottom-reached="loadMoreGroups"
+      @reset="showModalWindow"
       @search="handleSearch"
       @select="handleSelect"
     >
@@ -170,12 +194,11 @@ export default {
       <template #footer>
         <gl-dropdown-divider />
         <gl-dropdown-item
+          data-testid="create-group-button"
           class="gl-list-none"
-          data-testid="unassign-button"
-          :disabled="loading || !selectedGroupId"
-          @click="assignGroup(null)"
+          @click="handleCreateGroup"
         >
-          {{ s__('SecurityOrchestration|Unassign group') }}
+          {{ __('New group') }}
         </gl-dropdown-item>
       </template>
     </gl-collapsible-listbox>
@@ -186,10 +209,15 @@ export default {
         category="primary"
         variant="confirm"
         :disabled="loading"
-        @click="assignGroup(selectedGroup.id)"
+        @click="assignGroup(selectedGroupId)"
       >
         {{ s__('SecurityOrchestration|Save changes') }}
       </gl-button>
     </div>
+    <unassign-group-modal
+      ref="modal"
+      :group-name="selectedGroupName"
+      @unassign="assignGroup(null)"
+    />
   </div>
 </template>

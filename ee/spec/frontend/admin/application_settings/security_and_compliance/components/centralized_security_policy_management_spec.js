@@ -1,14 +1,21 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CentralizedSecurityPolicyManagement from 'ee/admin/application_settings/security_and_compliance/components/centralized_security_policy_management.vue';
-import Api from 'ee/api';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { stubComponent } from 'helpers/stub_component';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import { visitUrl } from '~/lib/utils/url_utility';
+import Api from 'ee/api';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
+import CentralizedSecurityPolicyManagement from 'ee/admin/application_settings/security_and_compliance/components/centralized_security_policy_management.vue';
+import UnassignGroupModal from 'ee/admin/application_settings/security_and_compliance/components/unassign_modal.vue';
 
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn().mockName('visitUrlMock'),
+}));
 jest.mock('ee/api');
 
 const mockGroupsResponse = {
@@ -41,6 +48,8 @@ const mockGroupsResponse = {
   },
 };
 
+const newGroupPath = 'path/to/groups/new';
+
 describe('CentralizedSecurityPolicyManagement', () => {
   let wrapper;
   let requestHandler;
@@ -54,19 +63,23 @@ describe('CentralizedSecurityPolicyManagement', () => {
   const createComponent = ({
     props = {},
     handler = jest.fn().mockResolvedValue(mockGroupsResponse),
+    stubs = {},
   } = {}) => {
     wrapper = shallowMountExtended(CentralizedSecurityPolicyManagement, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         formId: 'test-form',
+        newGroupPath,
         ...props,
       },
+      stubs,
     });
   };
 
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findModal = () => wrapper.findComponent('unassign-group-modal-stub');
   const findSaveButton = () => wrapper.findByTestId('save-button');
-  const findUnassignButton = () => wrapper.findByTestId('unassign-button');
+  const findCreateGroupButton = () => wrapper.findByTestId('create-group-button');
 
   beforeEach(() => {
     // Mock DOM element for form submission
@@ -248,21 +261,12 @@ describe('CentralizedSecurityPolicyManagement', () => {
     });
   });
 
-  describe('unassign functionality', () => {
-    beforeEach(() => {
-      Api.updateCompliancePolicySettings.mockResolvedValue({});
-    });
-
-    it('calls API with null when unassign button is clicked', async () => {
-      createComponent({ props: { selectedGroupId: 1 } });
+  describe('creating a new group', () => {
+    it('navigates to the new group page when the footer is clicked', async () => {
+      createComponent();
       await waitForPromises();
-
-      findUnassignButton().vm.$emit('click');
-      await nextTick();
-
-      expect(Api.updateCompliancePolicySettings).toHaveBeenCalledWith({
-        csp_namespace_id: null,
-      });
+      await findCreateGroupButton().vm.$emit('click');
+      expect(visitUrl).toHaveBeenCalledWith(newGroupPath);
     });
   });
 
@@ -278,6 +282,48 @@ describe('CentralizedSecurityPolicyManagement', () => {
       wrapper.destroy();
 
       expect(cancelSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('modal', () => {
+    it('renders the modal component', async () => {
+      createComponent({ props: { initialSelectedGroupId: 1 } });
+      await waitForPromises();
+      expect(findModal().props('groupName')).toBe('Group 1');
+    });
+
+    it('shows the modal when clear button is clicked', async () => {
+      const showModalWindowSpy = jest.fn();
+      createComponent({
+        props: { initialSelectedGroupId: 1 },
+        stubs: {
+          UnassignGroupModal: stubComponent(UnassignGroupModal, {
+            methods: {
+              showModalWindow: showModalWindowSpy,
+            },
+          }),
+        },
+      });
+      await waitForPromises();
+      await findListbox().vm.$emit('reset');
+      expect(showModalWindowSpy).toHaveBeenCalled();
+    });
+
+    describe('unassign functionality', () => {
+      beforeEach(() => {
+        Api.updateCompliancePolicySettings.mockResolvedValue({});
+      });
+
+      it('calls API with null when unassign button is clicked', async () => {
+        createComponent({ props: { initialSelectedGroupId: 1 } });
+        await waitForPromises();
+        findModal().vm.$emit('unassign');
+        await nextTick();
+
+        expect(Api.updateCompliancePolicySettings).toHaveBeenCalledWith({
+          csp_namespace_id: null,
+        });
+      });
     });
   });
 });
