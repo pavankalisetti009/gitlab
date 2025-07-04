@@ -12,6 +12,7 @@ import {
   GlSprintf,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import VueDraggable from 'vuedraggable';
 import { s__, __, sprintf } from '~/locale';
 import { validateHexColor } from '~/lib/utils/color_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -71,6 +72,7 @@ export default {
     GlLoadingIcon,
     GlSprintf,
     StatusForm,
+    VueDraggable,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -136,6 +138,9 @@ export default {
     },
   },
   methods: {
+    canReorderStatuses(category) {
+      return this.statusesByCategory[category].length >= 2;
+    },
     getCategoryFromIconName(iconName) {
       return (
         Object.keys(CATEGORY_MAP).find((category) => CATEGORY_MAP[category].icon === iconName) ||
@@ -222,7 +227,6 @@ export default {
       statuses,
       errorMessage = s__('WorkItem|An error occurred while updating the status.'),
     ) {
-      this.loading = true;
       this.errorMessage = '';
 
       try {
@@ -265,8 +269,10 @@ export default {
                 defaultClosedStatus: this.lifecycle.defaultClosedStatus,
                 defaultDuplicateStatus: this.lifecycle.defaultDuplicateStatus,
                 workItemTypes: this.lifecycle.workItemTypes,
+                __typename: 'WorkItemLifecycle',
               },
               errors: [],
+              __typename: 'LifecycleUpdatePayload',
             },
           },
         });
@@ -279,9 +285,32 @@ export default {
       } catch (error) {
         Sentry.captureException(error);
         this.errorMessage = error.message || errorMessage;
-      } finally {
-        this.loading = false;
       }
+    },
+    async onStatusReorder({ oldIndex, newIndex }) {
+      if (oldIndex === newIndex) {
+        return;
+      }
+
+      const allStatuses = [];
+
+      this.$options.CATEGORY_ORDER.forEach((cat) => {
+        const categoryStatuses = this.statusesByCategory[cat];
+        allStatuses.push(...categoryStatuses);
+      });
+
+      const statusesForUpdate = allStatuses.map((status) => ({
+        id: status.id,
+        name: status.name,
+        color: status.color,
+        category: this.getCategoryFromStatus(status.id),
+        description: status.description,
+      }));
+
+      await this.updateLifecycle(
+        statusesForUpdate,
+        s__('WorkItem|An error occurred while reordering statuses.'),
+      );
     },
     async saveStatus() {
       if (!this.validateForm()) {
@@ -451,78 +480,97 @@ export default {
           </div>
 
           <div>
-            <div
-              v-for="status in statusesByCategory[category]"
-              :key="status.id"
-              class="gl-border-b"
-              data-testid="status-badge"
+            <vue-draggable
+              :list="statusesByCategory[category]"
+              :disabled="!canReorderStatuses(category)"
+              :animation="0"
+              handle=".js-drag-handle"
+              ghost-class="gl-opacity-5"
+              @end="onStatusReorder($event)"
             >
               <div
-                v-if="editingStatusId !== status.id"
-                class="gl-items-flex-start gl-flex gl-gap-2 gl-px-3 gl-py-4"
+                v-for="status in statusesByCategory[category]"
+                :key="status.id"
+                class="gl-border-b"
+                data-testid="status-badge"
               >
-                <gl-icon
-                  :size="12"
-                  :name="status.iconName"
-                  :style="{ color: status.color }"
-                  class="gl-ml-2 gl-mr-1 gl-mt-2"
-                />
-                <div>
-                  <span>{{ status.name }}</span>
-                  <gl-badge
-                    v-if="isDefaultStatus(status)"
-                    size="sm"
-                    class="gl-ml-2"
-                    data-testid="default-status-badge"
-                  >
-                    {{ getDefaultStatusType(status) }}
-                  </gl-badge>
-                  <div v-if="status.description" class="gl-mt-2 gl-text-subtle">
-                    {{ status.description }}
-                  </div>
-                </div>
-                <gl-disclosure-dropdown
-                  class="gl-ml-auto"
-                  text-sr-only
-                  :toggle-text="__('More actions')"
-                  no-caret
-                  category="tertiary"
-                  icon="ellipsis_v"
-                  placement="bottom-end"
-                  size="small"
+                <div
+                  v-if="editingStatusId !== status.id"
+                  class="gl-items-flex-start gl-flex gl-gap-2 gl-px-3 gl-py-4"
                 >
-                  <gl-disclosure-dropdown-item
-                    :data-testid="`edit-status-${status.id}`"
-                    @action="startEditingStatus(status)"
+                  <gl-icon
+                    name="grip"
+                    :size="12"
+                    class="js-drag-handle gl-mt-2"
+                    :class="{
+                      'gl-cursor-grabbing': false,
+                      'gl-cursor-grab': canReorderStatuses(category),
+                    }"
+                    data-testid="drag-handle"
+                  />
+                  <gl-icon
+                    :size="12"
+                    :name="status.iconName"
+                    :style="{ color: status.color }"
+                    class="gl-mr-1 gl-mt-2"
+                  />
+                  <div>
+                    <span>{{ status.name }}</span>
+                    <gl-badge
+                      v-if="isDefaultStatus(status)"
+                      size="sm"
+                      class="gl-ml-2"
+                      data-testid="default-status-badge"
+                    >
+                      {{ getDefaultStatusType(status) }}
+                    </gl-badge>
+                    <div v-if="status.description" class="gl-mt-2 gl-text-subtle">
+                      {{ status.description }}
+                    </div>
+                  </div>
+                  <gl-disclosure-dropdown
+                    class="gl-ml-auto"
+                    text-sr-only
+                    :toggle-text="__('More actions')"
+                    no-caret
+                    category="tertiary"
+                    icon="ellipsis_v"
+                    placement="bottom-end"
+                    size="small"
                   >
-                    <template #list-item>
-                      {{ s__('WorkItem|Edit status') }}
-                    </template>
-                  </gl-disclosure-dropdown-item>
+                    <gl-disclosure-dropdown-item
+                      :data-testid="`edit-status-${status.id}`"
+                      @action="startEditingStatus(status)"
+                    >
+                      <template #list-item>
+                        {{ s__('WorkItem|Edit status') }}
+                      </template>
+                    </gl-disclosure-dropdown-item>
 
-                  <gl-disclosure-dropdown-item
-                    :data-testid="`remove-status-${status.id}`"
-                    @action="startRemovingStatus(status)"
-                  >
-                    <template #list-item>
-                      {{ s__('WorkItem|Remove status') }}
-                    </template>
-                  </gl-disclosure-dropdown-item>
-                </gl-disclosure-dropdown>
+                    <gl-disclosure-dropdown-item
+                      :data-testid="`remove-status-${status.id}`"
+                      @action="startRemovingStatus(status)"
+                    >
+                      <template #list-item>
+                        {{ s__('WorkItem|Remove status') }}
+                      </template>
+                    </gl-disclosure-dropdown-item>
+                  </gl-disclosure-dropdown>
+                </div>
+
+                <status-form
+                  v-else
+                  :category-icon="$options.CATEGORY_MAP[category].icon"
+                  :form-data="formData"
+                  :form-errors="formErrors"
+                  is-editing
+                  @update="formData = $event"
+                  @validate="validateForm"
+                  @save="saveStatus"
+                  @cancel="cancelForm"
+                />
               </div>
-
-              <status-form
-                v-else
-                :category-icon="$options.CATEGORY_MAP[category].icon"
-                :form-data="formData"
-                :form-errors="formErrors"
-                is-editing
-                @update="formData = $event"
-                @validate="validateForm"
-                @save="saveStatus"
-                @cancel="cancelForm"
-              />
-            </div>
+            </vue-draggable>
           </div>
           <gl-button
             v-if="addingToCategory !== category"
