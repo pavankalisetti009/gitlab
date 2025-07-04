@@ -39,5 +39,36 @@ RSpec.describe Authn::ScimGroupMembership, type: :model, feature_category: :syst
         expect(result).to contain_exactly(membership1, membership3)
       end
     end
+
+    describe '.excluding_scim_group_uid' do
+      it 'returns memberships excluding the specified SCIM group' do
+        result = described_class.excluding_scim_group_uid(scim_group_uid)
+
+        expect(result).to contain_exactly(membership3)
+      end
+    end
+  end
+
+  describe 'class methods' do
+    let(:scim_group_uid) { SecureRandom.uuid }
+
+    describe '.user_ids_to_remove_for_replace' do
+      let(:user1) { create(:user) }
+      let(:user2) { create(:user) }
+      let(:user3) { create(:user) }
+
+      before do
+        create(:scim_group_membership, user: user1, scim_group_uid: scim_group_uid)
+        create(:scim_group_membership, user: user2, scim_group_uid: scim_group_uid)
+      end
+
+      it 'returns subquery for user IDs that are in the SCIM group but not in target list' do
+        target_user_ids = [user2.id, user3.id]
+        result = described_class.user_ids_to_remove_for_replace(scim_group_uid, target_user_ids)
+
+        expect(result).to be_a(ActiveRecord::Relation)
+        expect(result.to_a.map(&:user_id)).to match_array([user1.id])
+      end
+    end
   end
 end

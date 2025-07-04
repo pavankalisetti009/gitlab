@@ -1273,9 +1273,9 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           expect(json_response['displayName']).to eq('engineering')
         end
 
-        it 'enqueues a job to add the user to the group' do
+        it 'enqueues a job to replace group members' do
           expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-            .with(scim_group_uid, [identity.user.id], 'add')
+            .with(scim_group_uid, [identity.user.id], 'replace')
             .once
 
           api_request
@@ -1298,13 +1298,9 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
             saml_group_link.group.add_member(other_user, Gitlab::Access::DEVELOPER)
           end
 
-          it 'enqueues a job to remove existing members not in the request' do
+          it 'enqueues a job to replace members (removing existing, adding new)' do
             expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-              .with(scim_group_uid, [other_user.id], 'remove')
-              .once
-
-            expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-              .with(scim_group_uid, [identity.user.id], 'add')
+              .with(scim_group_uid, [identity.user.id], 'replace')
               .once
 
             api_request
@@ -1322,7 +1318,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
           it 'enqueues a single job that will handle all linked groups' do
             expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-              .with(scim_group_uid, [identity.user.id], 'add')
+              .with(scim_group_uid, [identity.user.id], 'replace')
               .once
 
             api_request
@@ -1336,13 +1332,10 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
             saml_group_link.group.add_member(regular_user, Gitlab::Access::DEVELOPER)
           end
 
-          it 'does not enqueue a job to remove non-SCIM members' do
+          it 'enqueues a job to replace SCIM members (non-SCIM members handled by worker)' do
             expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-              .with(scim_group_uid, [identity.user.id], 'add')
+              .with(scim_group_uid, [identity.user.id], 'replace')
               .once
-
-            expect(::Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
-              .with(scim_group_uid, [regular_user.id], 'remove')
 
             api_request
           end
@@ -1363,9 +1356,9 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           create(:identity, user: identity.user, provider: 'scim', saml_provider: nil)
         end
 
-        it 'enqueues a job to remove all SCIM members from the group' do
+        it 'enqueues a job to replace with empty members (removes all SCIM members)' do
           expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-            .with(scim_group_uid, [identity.user.id], 'remove')
+            .with(scim_group_uid, [], 'replace')
             .once
 
           api_request
@@ -1418,9 +1411,10 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           expect(response).to have_gitlab_http_status(:ok)
         end
 
-        it 'does not enqueue a job to add users' do
-          expect(::Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
-            .with(scim_group_uid, anything, 'add')
+        it 'enqueues a job to replace with empty user list' do
+          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [], 'replace')
+            .once
 
           api_request
         end

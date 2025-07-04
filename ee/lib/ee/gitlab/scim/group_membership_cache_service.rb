@@ -29,29 +29,26 @@ module EE
           Authn::ScimGroupMembership.bulk_upsert!(
             memberships,
             unique_by: [:user_id, :scim_group_uid],
-            batch_size: BATCH_SIZE
+            batch_size: BATCH_SIZE,
+            validate: false
           )
         end
 
         def remove_users(user_ids)
           return if user_ids.empty?
 
-          Authn::ScimGroupMembership.transaction do
-            Authn::ScimGroupMembership.by_scim_group_uid(scim_group_uid).by_user_id(user_ids)
-              .each_batch(of: BATCH_SIZE) do |batch|
-              batch.delete_all
-            end
+          Authn::ScimGroupMembership.by_scim_group_uid(scim_group_uid).by_user_id(user_ids)
+            .each_batch(of: BATCH_SIZE) do |batch|
+            batch.delete_all
           end
         end
 
         def replace_users(user_ids)
-          Authn::ScimGroupMembership.transaction do
-            Authn::ScimGroupMembership.by_scim_group_uid(scim_group_uid).each_batch(of: BATCH_SIZE) do |batch|
-              batch.delete_all
-            end
-
-            add_users(user_ids)
+          Authn::ScimGroupMembership.by_scim_group_uid(scim_group_uid).each_batch(of: BATCH_SIZE) do |batch|
+            batch.delete_all
           end
+
+          add_users(user_ids)
         end
       end
       # rubocop:enable Gitlab/EeOnlyClass
