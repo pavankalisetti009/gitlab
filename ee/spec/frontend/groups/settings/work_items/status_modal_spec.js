@@ -1,7 +1,9 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import Draggable from 'vuedraggable';
 import { GlModal, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import StatusLifecycleModal from 'ee/groups/settings/work_items/status_modal.vue';
 import StatusForm from 'ee/groups/settings/work_items/status_form.vue';
@@ -110,6 +112,7 @@ describe('StatusLifecycleModal', () => {
   const findStatusForm = () => wrapper.findComponent(StatusForm);
   const findEditStatusButton = (statusId) => wrapper.findByTestId(`edit-status-${statusId}`);
   const findErrorMessage = () => wrapper.findByTestId('error-alert');
+  const findDraggable = () => wrapper.findComponent(Draggable);
 
   const updateLifecycleHandler = jest.fn().mockResolvedValue(mockUpdateResponse);
 
@@ -124,6 +127,16 @@ describe('StatusLifecycleModal', () => {
     if (save) {
       findStatusForm().vm.$emit('save');
     }
+  };
+
+  const emitDragEnd = async (oldIndex, newIndex) => {
+    await findDraggable().vm.$emit('end', {
+      oldIndex,
+      newIndex,
+      item: document.createElement('div'),
+      from: document.createElement('div'),
+      to: document.createElement('div'),
+    });
   };
 
   const createComponent = ({
@@ -345,6 +358,345 @@ describe('StatusLifecycleModal', () => {
       await addStatus();
 
       expect(updateLifecycleHandler).not.toHaveBeenCalled();
+      expect(findErrorMessage().exists()).toBe(true);
+    });
+  });
+
+  describe('Reordering status', () => {
+    it('can reorder within category when it has atleast 2 statuses', async () => {
+      const lifecycle = {
+        id: 'gid://gitlab/WorkItems::Statuses::Custom::Lifecycle/20',
+        name: 'Default',
+        defaultOpenStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/165',
+          name: 'To do',
+          __typename: 'WorkItemStatus',
+        },
+        defaultClosedStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/167',
+          name: 'Done',
+          __typename: 'WorkItemStatus',
+        },
+        defaultDuplicateStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/169',
+          name: 'Duplicate',
+          __typename: 'WorkItemStatus',
+        },
+        workItemTypes: [
+          {
+            id: 'gid://gitlab/WorkItems::Type/1',
+            name: 'Issue',
+            iconName: 'issue-type-issue',
+            __typename: 'WorkItemType',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Type/5',
+            name: 'Task',
+            iconName: 'issue-type-task',
+            __typename: 'WorkItemType',
+          },
+        ],
+        statuses: [
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/171',
+            name: 'Triage 2',
+            iconName: 'status-neutral',
+            color: '#4c4f52',
+            description: '',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/172',
+            name: 'Triage 3',
+            iconName: 'status-neutral',
+            color: '#4c4f52',
+            description: '',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/170',
+            name: 'Triage',
+            iconName: 'status-neutral',
+            color: '#4c4f52',
+            description: '',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/165',
+            name: 'To do',
+            iconName: 'status-waiting',
+            color: '#737278',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/166',
+            name: 'In progress',
+            iconName: 'status-running',
+            color: '#1f75cb',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/167',
+            name: 'Done',
+            iconName: 'status-success',
+            color: '#108548',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/168',
+            name: "Won't do",
+            iconName: 'status-cancelled',
+            color: '#DD2B0E',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/169',
+            name: 'Duplicate',
+            iconName: 'status-cancelled',
+            color: '#DD2B0E',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+        ],
+        __typename: 'WorkItemLifecycle',
+      };
+
+      const response = {
+        data: {
+          namespace: {
+            id: 'gid://gitlab/Group/24',
+            lifecycles: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/WorkItems::Statuses::Custom::Lifecycle/20',
+                  name: 'Default',
+                  defaultOpenStatus: {
+                    id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/165',
+                    name: 'To do',
+                    __typename: 'WorkItemStatus',
+                  },
+                  defaultClosedStatus: {
+                    id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/167',
+                    name: 'Done',
+                    __typename: 'WorkItemStatus',
+                  },
+                  defaultDuplicateStatus: {
+                    id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/169',
+                    name: 'Duplicate',
+                    __typename: 'WorkItemStatus',
+                  },
+                  workItemTypes: [
+                    {
+                      id: 'gid://gitlab/WorkItems::Type/1',
+                      name: 'Issue',
+                      iconName: 'issue-type-issue',
+                      __typename: 'WorkItemType',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Type/5',
+                      name: 'Task',
+                      iconName: 'issue-type-task',
+                      __typename: 'WorkItemType',
+                    },
+                  ],
+                  statuses: [
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/172',
+                      name: 'Triage 3',
+                      iconName: 'status-neutral',
+                      color: '#4c4f52',
+                      description: '',
+                      __typename: 'WorkItemStatus',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/171',
+                      name: 'Triage 2',
+                      iconName: 'status-neutral',
+                      color: '#4c4f52',
+                      description: '',
+                      __typename: 'WorkItemStatus',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/170',
+                      name: 'Triage',
+                      iconName: 'status-neutral',
+                      color: '#4c4f52',
+                      description: '',
+                      __typename: 'WorkItemStatus',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/165',
+                      name: 'To do',
+                      iconName: 'status-waiting',
+                      color: '#737278',
+                      description: null,
+                      __typename: 'WorkItemStatus',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/166',
+                      name: 'In progress',
+                      iconName: 'status-running',
+                      color: '#1f75cb',
+                      description: null,
+                      __typename: 'WorkItemStatus',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/167',
+                      name: 'Done',
+                      iconName: 'status-success',
+                      color: '#108548',
+                      description: null,
+                      __typename: 'WorkItemStatus',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/168',
+                      name: "Won't do",
+                      iconName: 'status-cancelled',
+                      color: '#DD2B0E',
+                      description: null,
+                      __typename: 'WorkItemStatus',
+                    },
+                    {
+                      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/169',
+                      name: 'Duplicate',
+                      iconName: 'status-cancelled',
+                      color: '#DD2B0E',
+                      description: null,
+                      __typename: 'WorkItemStatus',
+                    },
+                  ],
+                  __typename: 'WorkItemLifecycle',
+                },
+              ],
+              __typename: 'WorkItemLifecycleConnection',
+            },
+            __typename: 'Namespace',
+          },
+        },
+      };
+
+      const lifecycleUpdateHandler = jest.fn().mockResolvedValue(response);
+
+      createComponent({ updateHandler: lifecycleUpdateHandler, lifecycle });
+
+      // Make sure the draggable is not disabled
+      expect(findDraggable().exists()).toBe(true);
+      expect(findDraggable().attributes('disabled')).toBeUndefined();
+
+      await emitDragEnd(0, 2);
+
+      await waitForPromises();
+
+      expect(lifecycleUpdateHandler).toHaveBeenCalled();
+    });
+
+    it('cannot reorder within category when it has 1 status', () => {
+      const lifecycle = {
+        id: 'gid://gitlab/WorkItems::Statuses::Custom::Lifecycle/20',
+        name: 'Default',
+        defaultOpenStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/165',
+          name: 'To do',
+          __typename: 'WorkItemStatus',
+        },
+        defaultClosedStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/167',
+          name: 'Done',
+          __typename: 'WorkItemStatus',
+        },
+        defaultDuplicateStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/169',
+          name: 'Duplicate',
+          __typename: 'WorkItemStatus',
+        },
+        workItemTypes: [
+          {
+            id: 'gid://gitlab/WorkItems::Type/1',
+            name: 'Issue',
+            iconName: 'issue-type-issue',
+            __typename: 'WorkItemType',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Type/5',
+            name: 'Task',
+            iconName: 'issue-type-task',
+            __typename: 'WorkItemType',
+          },
+        ],
+        statuses: [
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/165',
+            name: 'To do',
+            iconName: 'status-waiting',
+            color: '#737278',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/167',
+            name: 'Done',
+            iconName: 'status-success',
+            color: '#108548',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/169',
+            name: 'Duplicate',
+            iconName: 'status-cancelled',
+            color: '#DD2B0E',
+            description: null,
+            __typename: 'WorkItemStatus',
+          },
+        ],
+        __typename: 'WorkItemLifecycle',
+      };
+
+      createComponent({ lifecycle });
+
+      // draggable exists but is disabled
+      expect(findDraggable().exists()).toBe(true);
+      expect(findDraggable().attributes('disabled')).toBeDefined();
+    });
+
+    it('network error handling', async () => {
+      const updateHandler = jest.fn().mockRejectedValue('Ooopsie, error');
+
+      createComponent({ updateHandler });
+
+      expect(findErrorMessage().exists()).toBe(false);
+
+      await emitDragEnd(0, 1);
+
+      await waitForPromises();
+
+      expect(findErrorMessage().exists()).toBe(true);
+    });
+
+    it('GraphQL error handling', async () => {
+      const updateHandler = jest.fn().mockResolvedValue({
+        data: {
+          lifecycleUpdate: {
+            lifecycle: null,
+            __typename: 'WorkItemLifecycle',
+          },
+          __typename: 'LifecycleUpdatePayload',
+          errors: ['Reorder failed'],
+        },
+      });
+
+      createComponent({ updateHandler });
+
+      expect(findErrorMessage().exists()).toBe(false);
+
+      await emitDragEnd(0, 1);
+
+      await waitForPromises();
+
       expect(findErrorMessage().exists()).toBe(true);
     });
   });
