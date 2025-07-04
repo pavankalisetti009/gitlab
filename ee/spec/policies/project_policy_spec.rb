@@ -42,6 +42,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       %i[push_code_to_protected_branches]
     end
 
+    let(:additional_owner_permissions) do
+      %i[create_container_registry_protection_immutable_tag_rule]
+    end
+
     let(:auditor_permissions) do
       %i[
         download_code download_wiki_code read_project read_project_metadata read_issue_board read_issue_board_list
@@ -5264,6 +5268,51 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:duo_workflow) { false }
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+    end
+  end
+
+  context 'deploy token access' do
+    subject { described_class.new(deploy_token, project) }
+
+    context 'private project' do
+      let(:project) { private_project }
+
+      context 'a deploy token with read_registry scope' do
+        let(:deploy_token) { create(:deploy_token, read_registry: true, write_registry: false, projects: [project]) }
+
+        context 'with registry disabled' do
+          include_context 'registry disabled via project features'
+
+          it { is_expected.to be_disallowed(:create_container_registry_protection_immutable_tag_rule) }
+        end
+      end
+    end
+  end
+
+  describe 'creating container registry protection immutable tag rules' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:user_role, :expected_result) do
+      :admin      | :be_allowed
+      :owner      | :be_allowed
+      :maintainer | :be_disallowed
+      :developer  | :be_disallowed
+      :reporter   | :be_disallowed
+      :planner    | :be_disallowed
+      :guest      | :be_disallowed
+      :anonymous  | :be_disallowed
+    end
+
+    with_them do
+      let(:current_user) do
+        public_send(user_role)
+      end
+
+      before do
+        enable_admin_mode!(current_user) if user_role == :admin
+      end
+
+      it { is_expected.to send(expected_result, :create_container_registry_protection_immutable_tag_rule) }
     end
   end
 end
