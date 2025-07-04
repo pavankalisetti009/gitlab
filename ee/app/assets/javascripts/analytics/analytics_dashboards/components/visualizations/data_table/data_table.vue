@@ -1,5 +1,5 @@
 <script>
-import { GlIcon, GlLink, GlTableLite } from '@gitlab/ui';
+import { GlIcon, GlLink, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
 
 import { __ } from '~/locale';
 import { isExternal } from '~/lib/utils/url_utility';
@@ -12,14 +12,15 @@ export default {
     GlIcon,
     GlLink,
     GlTableLite,
+    GlKeysetPagination,
     AssigneeAvatars: () => import('./assignee_avatars.vue'),
     DiffLineChanges: () => import('./diff_line_changes.vue'),
   },
   props: {
     data: {
-      type: Array,
+      type: Object,
       required: false,
-      default: () => [],
+      default: () => ({}),
     },
     options: {
       type: Object,
@@ -28,20 +29,29 @@ export default {
     },
   },
   computed: {
+    nodes() {
+      return this.data.nodes || [];
+    },
+    pageInfo() {
+      return this.data.pageInfo || {};
+    },
     derivedFields() {
       // NOTE: we derive the field names from the keys in the first row of data
       // unless a custom field config is passed in the visualization options
-      if (this.data.length < 1) {
+      if (this.nodes.length < 1) {
         return null;
       }
 
-      return Object.keys(this.data[0]).map((key) => ({
+      return Object.keys(this.nodes[0]).map((key) => ({
         key,
         tdClass: 'gl-truncate gl-max-w-0',
       }));
     },
     fields() {
       return this.options.fields || this.derivedFields;
+    },
+    showPaginationControls() {
+      return Boolean(this.pageInfo.hasPreviousPage || this.pageInfo.hasNextPage);
     },
   },
   methods: {
@@ -52,6 +62,22 @@ export default {
       return isExternal(href);
     },
     formatVisualizationValue,
+    nextPage() {
+      const { endCursor } = this.pageInfo;
+      this.$emit('updateQuery', {
+        pagination: {
+          nextPageCursor: endCursor,
+        },
+      });
+    },
+    prevPage() {
+      const { startCursor } = this.pageInfo;
+      this.$emit('updateQuery', {
+        pagination: {
+          prevPageCursor: startCursor,
+        },
+      });
+    },
   },
   i18n: {
     externalLink: __('external link'),
@@ -61,7 +87,7 @@ export default {
 
 <template>
   <div>
-    <gl-table-lite :fields="fields" :items="data" hover responsive class="gl-mt-4">
+    <gl-table-lite :fields="fields" :items="nodes" hover responsive class="gl-mt-4">
       <template #cell()="{ value, field }">
         <component :is="field.component" v-if="field.component" v-bind="value" />
         <gl-link v-else-if="isLink(value)" :href="value.href"
@@ -79,5 +105,12 @@ export default {
         </template>
       </template>
     </gl-table-lite>
+    <gl-keyset-pagination
+      v-if="showPaginationControls"
+      class="gl-m-3 gl-flex gl-items-center gl-justify-center"
+      v-bind="pageInfo"
+      @prev="prevPage"
+      @next="nextPage"
+    />
   </div>
 </template>

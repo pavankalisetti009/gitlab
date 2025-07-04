@@ -136,12 +136,12 @@ describe('Cube Analytics Data Source', () => {
 
     describe('data tables', () => {
       it('returns the expected data format', async () => {
-        const result = await fetch({
+        const { nodes } = await fetch({
           visualizationType: 'DataTable',
           query,
         });
 
-        expect(result[0]).toMatchObject({
+        expect(nodes[0]).toMatchObject({
           count: '55',
           event_type: 'pageview',
           utc_time: '2022-11-09T00:00:00.000',
@@ -152,7 +152,7 @@ describe('Cube Analytics Data Source', () => {
         beforeEach(() => mockLoad.mockResolvedValue(mockTableWithLinksResultSet));
 
         it('returns the expected data format when href is a single dimension', async () => {
-          const result = await fetch({
+          const { nodes } = await fetch({
             visualizationType: 'DataTable',
             query: {
               measures: ['TrackedEvents.pageViewsCount'],
@@ -168,7 +168,7 @@ describe('Cube Analytics Data Source', () => {
             },
           });
 
-          expect(result[0]).toMatchObject({
+          expect(nodes[0]).toMatchObject({
             page_views_count: '1',
             doc_path: {
               text: '/foo',
@@ -178,7 +178,7 @@ describe('Cube Analytics Data Source', () => {
         });
 
         it('returns the expected data format when href is an array of dimensions', async () => {
-          const result = await fetch({
+          const { nodes } = await fetch({
             visualizationType: 'DataTable',
             query: {
               measures: ['TrackedEvents.pageViewsCount'],
@@ -194,7 +194,7 @@ describe('Cube Analytics Data Source', () => {
             },
           });
 
-          expect(result[0]).toMatchObject({
+          expect(nodes[0]).toMatchObject({
             page_views_count: '1',
             doc_path: {
               text: '/foo',

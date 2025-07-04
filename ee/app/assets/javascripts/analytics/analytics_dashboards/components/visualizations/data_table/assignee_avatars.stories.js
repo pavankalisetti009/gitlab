@@ -42,20 +42,22 @@ Default.args = { nodes };
 
 export const InTable = TableTemplate.bind({});
 InTable.args = {
-  data: [
-    {
-      title: 'No assignees',
-      assignees: { nodes: [] },
-    },
-    {
-      title: 'Single assignee',
-      assignees: { nodes: nodes.slice(0, 1) },
-    },
-    {
-      title: 'Multiple assignee',
-      assignees: { nodes },
-    },
-  ],
+  data: {
+    nodes: [
+      {
+        title: 'No assignees',
+        assignees: { nodes: [] },
+      },
+      {
+        title: 'Single assignee',
+        assignees: { nodes: nodes.slice(0, 1) },
+      },
+      {
+        title: 'Multiple assignee',
+        assignees: { nodes },
+      },
+    ],
+  },
   options: {
     fields: [
       { key: 'title' },

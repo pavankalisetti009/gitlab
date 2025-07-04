@@ -23,30 +23,32 @@ Default.args = { additions: 10, deletions: 10 };
 
 export const InTable = TableTemplate.bind({});
 InTable.args = {
-  data: [
-    { title: 'No changes' },
-    {
-      title: 'Small change',
-      changes: {
-        additions: 10,
-        deletions: 10,
+  data: {
+    nodes: [
+      { title: 'No changes' },
+      {
+        title: 'Small change',
+        changes: {
+          additions: 10,
+          deletions: 10,
+        },
       },
-    },
-    {
-      title: 'Medium change',
-      changes: {
-        additions: 100,
-        deletions: 200,
+      {
+        title: 'Medium change',
+        changes: {
+          additions: 100,
+          deletions: 200,
+        },
       },
-    },
-    {
-      title: 'Large change',
-      changes: {
-        additions: 10000,
-        deletions: 500,
+      {
+        title: 'Large change',
+        changes: {
+          additions: 10000,
+          deletions: 500,
+        },
       },
-    },
-  ],
+    ],
+  },
   options: {
     fields: [
       { key: 'title' },

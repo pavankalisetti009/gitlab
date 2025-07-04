@@ -22,41 +22,53 @@ const WithGridstack = (args, { argTypes }) => ({
       </gridstack-dashboard>`,
 });
 
-const data = [
-  {
-    title: 'MR 0',
-    additions: 1,
-    deletions: 0,
-    commitCount: 1,
-    userNotesCount: 1,
-  },
-  {
-    title: 'MR 1',
-    additions: 1,
-    deletions: 0,
-    commitCount: 1,
-    userNotesCount: 1,
-  },
-  {
-    title: 'MR 2',
-    additions: 4,
-    deletions: 3,
-    commitCount: 10,
-    userNotesCount: 1,
-  },
-  {
-    title: 'MR 3',
-    additions: 20,
-    deletions: 4,
-    commitCount: 40,
-    userNotesCount: 1,
-  },
-];
+const data = {
+  nodes: [
+    {
+      title: 'MR 0',
+      additions: 1,
+      deletions: 0,
+      commitCount: 1,
+      userNotesCount: 1,
+    },
+    {
+      title: 'MR 1',
+      additions: 1,
+      deletions: 0,
+      commitCount: 1,
+      userNotesCount: 1,
+    },
+    {
+      title: 'MR 2',
+      additions: 4,
+      deletions: 3,
+      commitCount: 10,
+      userNotesCount: 1,
+    },
+    {
+      title: 'MR 3',
+      additions: 20,
+      deletions: 4,
+      commitCount: 40,
+      userNotesCount: 1,
+    },
+  ],
+};
 
 const defaultArgs = { data };
 
 export const Default = Template.bind({});
 Default.args = defaultArgs;
+
+export const WithPagination = Template.bind({});
+WithPagination.args = {
+  data: {
+    ...data,
+    pageInfo: {
+      hasNextPage: true,
+    },
+  },
+};
 
 export const InDashboardPanel = WithGridstack.bind({});
 InDashboardPanel.args = {
@@ -86,23 +98,25 @@ CustomFields.parameters = {
   },
 };
 CustomFields.args = {
-  data: data.map(({ title, additions, deletions }) => ({
-    title,
-    assignees: {
-      nodes: [
-        {
-          name: 'Administrator',
-          webUrl: 'https://gitlab.com',
-          avatarUrl:
-            'https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80&d=identicon',
-        },
-      ],
-    },
-    changes: {
-      additions,
-      deletions,
-    },
-  })),
+  data: {
+    nodes: data.nodes.map(({ title, additions, deletions }) => ({
+      title,
+      assignees: {
+        nodes: [
+          {
+            name: 'Administrator',
+            webUrl: 'https://gitlab.com',
+            avatarUrl:
+              'https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80&d=identicon',
+          },
+        ],
+      },
+      changes: {
+        additions,
+        deletions,
+      },
+    })),
+  },
   options: {
     fields: [
       { key: 'title' },
