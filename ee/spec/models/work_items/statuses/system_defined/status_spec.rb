@@ -125,6 +125,43 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     end
   end
 
+  describe '#in_use_in_namespace?' do
+    let_it_be_with_reload(:group) { create(:group) }
+    let_it_be_with_reload(:project) { create(:project, group: group) }
+    let(:namespace) { group }
+
+    context 'when system-defined status is in use' do
+      context 'with group-level current status' do
+        let(:work_item) { create(:work_item, namespace: group) }
+        let!(:current_status) do
+          create(:work_item_current_status, system_defined_status: status, work_item: work_item, namespace: group)
+        end
+
+        it 'returns true' do
+          expect(status.in_use_in_namespace?(namespace)).to be_truthy
+        end
+      end
+
+      context 'with project-level current status' do
+        let(:work_item) { create(:work_item, project: project) }
+        let!(:current_status) do
+          create(:work_item_current_status, system_defined_status: status, work_item: work_item,
+            namespace: project.namespace)
+        end
+
+        it 'returns true' do
+          expect(status.in_use_in_namespace?(namespace)).to be_truthy
+        end
+      end
+    end
+
+    context 'when system-defined status is not in use' do
+      it 'returns false' do
+        expect(status.in_use_in_namespace?(namespace)).to be_falsy
+      end
+    end
+  end
+
   it 'has the correct attributes' do
     is_expected.to have_attributes(
       id: 1,

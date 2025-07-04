@@ -34,19 +34,63 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
     stub_licensed_features(work_item_status: true)
   end
 
+  RSpec.shared_examples 'creates custom lifecycle' do
+    it 'creates custom lifecycle' do
+      expect { result }.to change { WorkItems::Statuses::Custom::Lifecycle.count }.by(1)
+
+      expect(lifecycle).to have_attributes(
+        name: 'Default',
+        namespace: group,
+        created_by: user
+      )
+    end
+  end
+
+  RSpec.shared_examples 'does not create custom lifecycle' do
+    it 'does not create custom lifecycle' do
+      expect { result }.not_to change { WorkItems::Statuses::Custom::Lifecycle.count }
+    end
+  end
+
+  RSpec.shared_examples 'sets default statuses correctly' do
+    it 'sets default statuses correctly' do
+      expect(lifecycle.default_open_status.name).to eq(system_defined_lifecycle.default_open_status.name)
+      expect(lifecycle.default_closed_status.name).to eq(system_defined_lifecycle.default_closed_status.name)
+      expect(lifecycle.default_duplicate_status.name).to eq(system_defined_lifecycle.default_duplicate_status.name)
+    end
+  end
+
+  RSpec.shared_examples 'removes custom statuses' do
+    it 'removes custom statuses' do
+      expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(-1)
+      expect(lifecycle.statuses.pluck(:name)).not_to include(custom_status.name)
+      expect(lifecycle.statuses.count).to eq(3)
+    end
+  end
+
+  RSpec.shared_examples 'reorders custom statuses' do
+    it 'reorders custom statuses' do
+      expect(lifecycle.ordered_statuses.pluck(:name)).to eq([
+        custom_lifecycle.default_open_status.name,
+        custom_lifecycle.default_closed_status.name,
+        custom_lifecycle.default_duplicate_status.name
+      ])
+    end
+  end
+
+  RSpec.shared_examples 'returns validation error' do
+    it 'returns validation error' do
+      expect(result).to be_error
+      expect(result.message).to eq(expected_error_message)
+    end
+  end
+
   describe '#execute' do
     let(:lifecycle) { result.payload[:lifecycle] }
 
     context 'when custom lifecycle does not exist' do
-      it 'creates a custom lifecycle' do
-        expect { result }.to change { WorkItems::Statuses::Custom::Lifecycle.count }.by(1)
-
-        expect(lifecycle).to have_attributes(
-          name: 'Default',
-          namespace: group,
-          created_by: user
-        )
-      end
+      it_behaves_like 'creates custom lifecycle'
+      it_behaves_like 'sets default statuses correctly'
 
       it 'creates custom statuses from system-defined statuses' do
         expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(5)
@@ -66,13 +110,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           .to contain_exactly(1, 2, 3, 4, 5)
       end
 
-      it 'sets default statuses correctly' do
-        expect(lifecycle.default_open_status.name).to eq(system_defined_lifecycle.default_open_status.name)
-        expect(lifecycle.default_closed_status.name).to eq(system_defined_lifecycle.default_closed_status.name)
-        expect(lifecycle.default_duplicate_status.name).to eq(system_defined_lifecycle.default_duplicate_status.name)
-      end
-
-      context 'when trying to delete statuses during system to custom conversion' do
+      context 'when only some of the system-defined statuses are provided' do
         let(:params) do
           {
             id: system_defined_lifecycle.to_gid,
@@ -87,11 +125,58 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           }
         end
 
-        it 'raises an error' do
-          expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+        it_behaves_like 'creates custom lifecycle'
+        it_behaves_like 'sets default statuses correctly'
 
-          expect(result).to be_error
-          expect(result.message).to match(/Cannot delete status 'In progress' during the lifecycle conversion/)
+        it 'creates custom statuses from system-defined statuses' do
+          expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(3)
+
+          expect(lifecycle.statuses.pluck(:name)).to contain_exactly(
+            system_defined_lifecycle.default_open_status.name,
+            system_defined_lifecycle.default_closed_status.name,
+            system_defined_lifecycle.default_duplicate_status.name
+          )
+          expect(lifecycle.statuses.count).to eq(3)
+        end
+
+        it 'preserves the status mapping' do
+          expect(lifecycle.statuses.pluck(:converted_from_system_defined_status_identifier))
+            .to contain_exactly(1, 3, 5)
+        end
+
+        context 'when trying to exclude a status in use' do
+          let(:work_item) { create(:work_item, namespace: group) }
+          let!(:current_status) do
+            create(:work_item_current_status, work_item: work_item,
+              system_defined_status: system_defined_in_progress_status)
+          end
+
+          let(:expected_error_message) do
+            "Cannot delete status '#{system_defined_in_progress_status.name}' because it is in use"
+          end
+
+          it_behaves_like 'does not create custom lifecycle'
+          it_behaves_like 'returns validation error'
+        end
+
+        context 'when trying to exclude a default status' do
+          let(:params) do
+            {
+              id: system_defined_lifecycle.to_gid,
+              statuses: [
+                status_params_for(system_defined_lifecycle.default_closed_status),
+                status_params_for(system_defined_lifecycle.default_duplicate_status)
+              ]
+            }
+          end
+
+          let(:expected_error_message) do
+            "Cannot delete status '#{system_defined_lifecycle.default_open_status.name}' " \
+              "because it is marked as a default status"
+          end
+
+          it_behaves_like 'does not create custom lifecycle'
+          it_behaves_like 'returns validation error'
         end
       end
 
@@ -118,8 +203,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             id: system_defined_lifecycle.to_gid,
             statuses: statuses_array,
             default_open_status_index: 0,
-            default_closed_status_index: 1,
-            default_duplicate_status_index: 2
+            default_closed_status_index: 2,
+            default_duplicate_status_index: 4
           }
         end
 
@@ -136,6 +221,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
       end
 
       context 'when system-defined lifecycle is provided' do
+        it_behaves_like 'does not create custom lifecycle'
+
         it 'returns an error' do
           expect(result).to be_error
           expect(result.message).to eq('Invalid lifecycle type. Custom lifecycle already exists.')
@@ -278,10 +365,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
         end
 
         context 'when statuses are removed' do
-          let(:custom_status) do
-            create(:work_item_custom_status, :without_mapping, name: 'Ready for development', namespace: group)
-          end
-
           let!(:custom_lifecycle_status) do
             create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: custom_status,
               namespace: group)
@@ -301,64 +384,108 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             }
           end
 
-          it 'removes custom statuses' do
-            expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(-1)
-
-            expect(lifecycle.statuses.pluck(:name)).not_to include('Ready for development')
-
-            expect(lifecycle.statuses.count).to eq(3)
-          end
-
-          it 'reorders statuses correctly' do
-            expect(lifecycle.ordered_statuses.pluck(:name)).to eq([
-              custom_lifecycle.default_open_status.name,
-              custom_lifecycle.default_closed_status.name,
-              custom_lifecycle.default_duplicate_status.name
-            ])
-          end
-
-          context 'when trying to remove a mapped status' do
+          context 'when removing status without mapping' do
             let(:custom_status) do
-              create(:work_item_custom_status, name: 'Ready for development', namespace: group)
+              create(:work_item_custom_status, :without_mapping, name: 'Ready for development', namespace: group)
             end
 
-            it 'returns an error' do
-              expect(result).to be_error
-              expect(result.message).to eq("Cannot delete status '#{custom_status.name}' because it is in use")
-              expect(custom_status.reload).to be_persisted
+            it_behaves_like 'removes custom statuses'
+            it_behaves_like 'reorders custom statuses'
+
+            context 'when trying to remove a status in use' do
+              let(:work_item) { create(:work_item, namespace: group) }
+              let!(:current_status) do
+                create(:work_item_current_status, work_item: work_item, custom_status: custom_status)
+              end
+
+              let(:expected_error_message) do
+                "Cannot delete status '#{custom_status.name}' because it is in use"
+              end
+
+              it_behaves_like 'returns validation error'
+            end
+
+            context 'when trying to remove a default status' do
+              let(:params) do
+                {
+                  id: custom_lifecycle.to_gid.to_s,
+                  statuses: [
+                    status_params_for(custom_lifecycle.default_closed_status),
+                    status_params_for(custom_lifecycle.default_duplicate_status)
+                  ]
+                }
+              end
+
+              it 'returns an error' do
+                custom_lifecycle_status.destroy!
+                custom_lifecycle.update!(default_open_status: custom_status)
+
+                expect(result).to be_error
+                expect(result.message).to eq(
+                  "Cannot delete status '#{custom_status.name}' " \
+                    "because it is marked as a default status"
+                )
+              end
             end
           end
 
-          context 'when trying to remove a status in use' do
-            let(:work_item) { create(:work_item, namespace: group) }
-            let!(:current_status) do
-              create(:work_item_current_status, work_item: work_item, custom_status: custom_status)
+          context 'when removing status with mapping' do
+            let(:custom_status) do
+              create(:work_item_custom_status, :in_progress, name: 'Ready for dev', namespace: group)
             end
 
-            it 'returns an error' do
-              expect(result).to be_error
-              expect(result.message).to eq("Cannot delete status '#{custom_status.name}' because it is in use")
-              expect(custom_status.reload).to be_persisted
-            end
-          end
+            it_behaves_like 'removes custom statuses'
+            it_behaves_like 'reorders custom statuses'
 
-          context 'when trying to remove a default status' do
-            let(:params) do
-              {
-                id: custom_lifecycle.to_gid.to_s,
-                statuses: [
-                  status_params_for(custom_lifecycle.default_open_status),
-                  status_params_for(custom_lifecycle.default_closed_status)
-                ]
-              }
+            context 'when trying to remove a status in explicit use' do
+              let(:work_item) { create(:work_item, namespace: group) }
+              let!(:current_status) do
+                create(:work_item_current_status, work_item: work_item, custom_status: custom_status)
+              end
+
+              let(:expected_error_message) do
+                "Cannot delete status '#{custom_status.name}' because it is in use"
+              end
+
+              it_behaves_like 'returns validation error'
             end
 
-            it 'returns an error' do
-              expect(result).to be_error
-              expect(result.message).to eq(
-                "Cannot delete status '#{custom_lifecycle.default_duplicate_status.name}' " \
-                  "because it is marked as a default status"
-              )
+            context 'when trying to remove a status in implicit use' do
+              let!(:work_item) { create(:work_item, namespace: group) }
+              let(:new_default_status) { create(:work_item_custom_status, :triage, namespace: group) }
+              let(:expected_error_message) do
+                "Cannot delete status 'To do' because it is in use"
+              end
+
+              before do
+                custom_lifecycle.default_open_status.update!(name: "To do")
+                custom_lifecycle.update!(default_open_status: new_default_status)
+              end
+
+              it_behaves_like 'returns validation error'
+            end
+
+            context 'when trying to remove a default status' do
+              let(:params) do
+                {
+                  id: custom_lifecycle.to_gid.to_s,
+                  statuses: [
+                    status_params_for(custom_lifecycle.default_closed_status),
+                    status_params_for(custom_lifecycle.default_duplicate_status)
+                  ]
+                }
+              end
+
+              it 'returns an error' do
+                custom_lifecycle_status.destroy!
+                custom_lifecycle.update!(default_open_status: custom_status)
+
+                expect(result).to be_error
+                expect(result.message).to eq(
+                  "Cannot delete status '#{custom_status.name}' " \
+                    "because it is marked as a default status"
+                )
+              end
             end
           end
         end

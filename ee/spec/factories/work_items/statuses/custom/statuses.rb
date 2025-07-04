@@ -7,6 +7,13 @@ FactoryBot.define do
     association :namespace
     open
 
+    trait :triage do
+      name { FFaker::Name.unique.name }
+      color { '#4c4f52' }
+      category { :triage }
+      converted_from_system_defined_status_identifier { nil }
+    end
+
     trait :open do
       name { FFaker::Name.unique.name }
       color { '#737278' }

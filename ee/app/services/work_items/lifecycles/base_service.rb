@@ -100,35 +100,36 @@ module WorkItems
         end
       end
 
+      def validate_status_removal_constraints
+        return unless @statuses_to_remove&.any?
+
+        validate_default_status_constraints
+        validate_status_usage
+      end
+
       def handle_deferred_status_removal
         return unless @statuses_to_remove&.any?
 
-        validate_system_to_custom_conversion
-
         status_ids = @statuses_to_remove.map(&:id)
-
-        validate_default_status_constraints(status_ids)
-        validate_usage_and_mapping_constraints
-        ::WorkItems::Statuses::Custom::Status.where(id: status_ids).delete_all # rubocop:disable CodeReuse/ActiveRecord -- skip
+        ::WorkItems::Statuses::Custom::Status.id_in(status_ids).delete_all
       end
 
-      def validate_system_to_custom_conversion
-        return unless system_defined_lifecycle? && @statuses_to_remove.any?
-
-        raise StandardError,
-          "Cannot delete status '#{@statuses_to_remove.first.name}' during the lifecycle conversion"
-      end
-
-      def validate_usage_and_mapping_constraints
-        mapped_status = @statuses_to_remove.find(&:converted_from_system_defined_status_identifier?)
-        raise StandardError, "Cannot delete status '#{mapped_status.name}' because it is in use" if mapped_status
-
+      def validate_status_usage
         @statuses_to_remove.each do |status|
-          raise StandardError, "Cannot delete status '#{status.name}' because it is in use" if status.in_use?
+          in_use = case status
+                   when ::WorkItems::Statuses::SystemDefined::Status
+                     status.in_use_in_namespace?(group)
+                   when ::WorkItems::Statuses::Custom::Status
+                     status.in_use?
+                   end
+
+          raise StandardError, "Cannot delete status '#{status.name}' because it is in use" if in_use
         end
       end
 
-      def validate_default_status_constraints(status_ids)
+      def validate_default_status_constraints
+        status_ids = @statuses_to_remove.map(&:id)
+
         default_status_ids = lifecycle.default_statuses.map(&:id)
         conflicting_ids = status_ids & default_status_ids
 

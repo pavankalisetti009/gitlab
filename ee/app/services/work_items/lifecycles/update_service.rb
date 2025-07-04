@@ -38,6 +38,7 @@ module WorkItems
           apply_status_changes
 
           if @processed_statuses.present?
+            validate_status_removal_constraints
             update_lifecycle_status_positions!
             lifecycle.assign_attributes(default_statuses_for_lifecycle(@processed_statuses, params))
             lifecycle.validate!
@@ -54,7 +55,8 @@ module WorkItems
       def create_custom_lifecycle!
         ApplicationRecord.transaction do
           apply_status_changes
-          handle_deferred_status_removal
+
+          validate_status_removal_constraints
 
           statuses = @processed_statuses
           default_statuses = default_statuses_for_lifecycle(statuses, params)

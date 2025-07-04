@@ -58,7 +58,10 @@ module WorkItems
         end
 
         def in_use?
-          ::WorkItems::Statuses::CurrentStatus.exists?(custom_status: self)
+          return true if direct_usage_exists?
+          return false unless has_system_defined_mapping?
+
+          system_defined_usage_exists?
         end
 
         private
@@ -70,6 +73,22 @@ module WorkItems
           errors.add(:namespace,
             format(_('can only have a maximum of %{limit} statuses.'), limit: MAX_STATUSES_PER_NAMESPACE)
           )
+        end
+
+        def direct_usage_exists?
+          ::WorkItems::Statuses::CurrentStatus.exists?(custom_status: self)
+        end
+
+        def has_system_defined_mapping?
+          converted_from_system_defined_status_identifier.present?
+        end
+
+        def system_defined_usage_exists?
+          system_defined_status = ::WorkItems::Statuses::SystemDefined::Status.find(
+            converted_from_system_defined_status_identifier
+          )
+
+          system_defined_status.in_use_in_namespace?(namespace)
         end
       end
     end

@@ -95,6 +95,16 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
     end
   end
 
+  describe '#default_statuses' do
+    it 'returns an array of default statuses' do
+      expect(lifecycle.default_statuses).to contain_exactly(
+        lifecycle.default_open_status,
+        lifecycle.default_closed_status,
+        lifecycle.default_duplicate_status
+      )
+    end
+  end
+
   it 'has the correct attributes' do
     is_expected.to have_attributes(
       id: 1,
