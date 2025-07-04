@@ -32,26 +32,31 @@ const CATEGORY_MAP = {
     icon: 'status-neutral',
     color: '#4c4f52',
     label: s__('WorkItem|Triage'),
+    defaultState: 'open',
   },
   [STATUS_CATEGORIES.TO_DO]: {
     icon: 'status-waiting',
     color: '#737278',
     label: s__('WorkItem|To do'),
+    defaultState: 'open',
   },
   [STATUS_CATEGORIES.IN_PROGRESS]: {
     icon: 'status-running',
     color: '#1f75cb',
     label: s__('WorkItem|In progress'),
+    defaultState: 'open',
   },
   [STATUS_CATEGORIES.DONE]: {
     icon: 'status-success',
     color: '#108548',
     label: s__('WorkItem|Done'),
+    defaultState: 'closed',
   },
   [STATUS_CATEGORIES.CANCELLED]: {
     icon: 'status-cancelled',
     color: '#dd2b0e',
     label: s__('WorkItem|Canceled'),
+    defaultState: 'duplicate',
   },
 };
 
@@ -150,6 +155,9 @@ export default {
     getCategoryLabel(category) {
       return CATEGORY_MAP[category].label || category;
     },
+    getCategoryDefaultState(category) {
+      return CATEGORY_MAP[category].defaultState || '';
+    },
     startAddingStatus(category) {
       this.cancelForm();
       this.addingToCategory = category;
@@ -170,6 +178,46 @@ export default {
       this.removingStatusId = status.id;
       this.showRemoveConfirmation = true;
     },
+    async startDefaultingStatus(status, defaultState) {
+      if (!status?.id || !defaultState) {
+        return;
+      }
+
+      try {
+        const defaultStatus = {};
+
+        defaultStatus[defaultState] = {
+          id: status.id,
+          name: status.name,
+          __typename: 'WorkItemStatus',
+        };
+        const allStatuses = [];
+
+        this.$options.CATEGORY_ORDER.forEach((cat) => {
+          const categoryStatuses = this.statusesByCategory[cat];
+          allStatuses.push(...categoryStatuses);
+        });
+
+        const statusesForUpdate = allStatuses.map((statusValue) => ({
+          id: statusValue.id,
+          name: statusValue.name,
+          color: statusValue.color,
+          category: this.getCategoryFromStatus(statusValue.id),
+          description: statusValue.description,
+        }));
+
+        this.$refs[status.name][0]?.close();
+
+        await this.updateLifecycle(
+          statusesForUpdate,
+          s__('WorkItem|An error occurred while making status default.'),
+          defaultStatus,
+        );
+      } catch (error) {
+        this.errorMessage = s__('WorkItem|An error occurred while making status default.');
+      }
+    },
+
     confirmRemoveStatus() {
       if (this.removingStatusId) {
         this.removeStatus(this.removingStatusId);
@@ -226,19 +274,27 @@ export default {
     async updateLifecycle(
       statuses,
       errorMessage = s__('WorkItem|An error occurred while updating the status.'),
+      defaultStatus = {},
     ) {
       this.errorMessage = '';
+      const { open, closed, duplicate } = defaultStatus;
+
+      const defaultOpenStatusId = open ? open.id : this.lifecycle.defaultOpenStatus?.id;
+      const defaultClosedStatusId = closed ? closed.id : this.lifecycle.defaultClosedStatus?.id;
+      const defaultDuplicateStatusId = duplicate
+        ? duplicate.id
+        : this.lifecycle.defaultDuplicateStatus?.id;
 
       try {
-        const defaultOpenStatusIndex = statuses.findIndex(
-          (s) => s.id === this.lifecycle.defaultOpenStatus?.id,
-        );
-        const defaultClosedStatusIndex = statuses.findIndex(
-          (s) => s.id === this.lifecycle.defaultClosedStatus?.id,
-        );
+        const defaultOpenStatusIndex = statuses.findIndex((s) => s.id === defaultOpenStatusId);
+        const defaultClosedStatusIndex = statuses.findIndex((s) => s.id === defaultClosedStatusId);
         const defaultDuplicateStatusIndex = statuses.findIndex(
-          (s) => s.id === this.lifecycle.defaultDuplicateStatus?.id,
+          (s) => s.id === defaultDuplicateStatusId,
         );
+
+        const defaultOpenStatus = open || this.lifecycle.defaultOpenStatus;
+        const defaultClosedStatus = closed || this.lifecycle.defaultClosedStatus;
+        const defaultDuplicateStatus = duplicate || this.lifecycle.defaultDuplicateStatus;
 
         const { data } = await this.$apollo.mutate({
           mutation: lifecycleUpdateMutation,
@@ -265,9 +321,9 @@ export default {
                   color: status.color,
                   description: status.description,
                 })),
-                defaultOpenStatus: this.lifecycle.defaultOpenStatus,
-                defaultClosedStatus: this.lifecycle.defaultClosedStatus,
-                defaultDuplicateStatus: this.lifecycle.defaultDuplicateStatus,
+                defaultOpenStatus,
+                defaultClosedStatus,
+                defaultDuplicateStatus,
                 workItemTypes: this.lifecycle.workItemTypes,
                 __typename: 'WorkItemLifecycle',
               },
@@ -389,7 +445,6 @@ export default {
         status.id === this.lifecycle.defaultDuplicateStatus?.id
       );
     },
-
     getDefaultStatusType(status) {
       if (status.id === this.lifecycle.defaultOpenStatus?.id) {
         return s__('WorkItem|Open default');
@@ -401,6 +456,11 @@ export default {
         return s__('WorkItem|Duplicate default');
       }
       return null;
+    },
+    getDefaultDropdownTextForStatus(defaultState) {
+      return sprintf(s__('WorkItem|Make default for %{defaultState} issues'), {
+        defaultState,
+      });
     },
     closeModal() {
       this.cancelForm();
@@ -529,6 +589,7 @@ export default {
                     </div>
                   </div>
                   <gl-disclosure-dropdown
+                    :ref="status.name"
                     class="gl-ml-auto"
                     text-sr-only
                     :toggle-text="__('More actions')"
@@ -544,6 +605,16 @@ export default {
                     >
                       <template #list-item>
                         {{ s__('WorkItem|Edit status') }}
+                      </template>
+                    </gl-disclosure-dropdown-item>
+
+                    <gl-disclosure-dropdown-item
+                      v-if="!isDefaultStatus(status) && getCategoryDefaultState(category)"
+                      :data-testid="`make-default-${status.id}`"
+                      @action="startDefaultingStatus(status, getCategoryDefaultState(category))"
+                    >
+                      <template #list-item>
+                        {{ getDefaultDropdownTextForStatus(getCategoryDefaultState(category)) }}
                       </template>
                     </gl-disclosure-dropdown-item>
 
