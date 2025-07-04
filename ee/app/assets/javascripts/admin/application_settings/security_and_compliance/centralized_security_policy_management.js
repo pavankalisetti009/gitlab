@@ -7,7 +7,7 @@ export const initCentralizedSecurityPolicyManagement = () => {
 
   if (!el) return false;
 
-  const { centralizedSecurityPolicyGroupId, formId } = el.dataset;
+  const { centralizedSecurityPolicyGroupId, formId, newGroupPath } = el.dataset;
 
   return new Vue({
     apolloProvider,
@@ -17,7 +17,8 @@ export const initCentralizedSecurityPolicyManagement = () => {
       return createElement(CentralizedSecurityPolicyManagement, {
         props: {
           formId,
-          selectedGroupId: parseInt(centralizedSecurityPolicyGroupId, 10),
+          initialSelectedGroupId: parseInt(centralizedSecurityPolicyGroupId, 10),
+          newGroupPath,
         },
       });
     },
