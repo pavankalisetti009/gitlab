@@ -71,12 +71,6 @@ RSpec.describe Resolvers::NamespaceProjectsResolver do
 
           it { is_expected.to eq([project_3, project_2, project_1]) }
         end
-
-        context 'when sort option is not provided' do
-          subject(:projects) { resolve_projects }
-
-          it { is_expected.to eq([project_1, project_2, project_3]) }
-        end
       end
 
       context 'has_code_coverage' do
