@@ -46,7 +46,7 @@ const CATEGORY_MAP = {
   [STATUS_CATEGORIES.DONE]: {
     icon: 'status-success',
     color: '#108548',
-    label: s__('WorkItem|Closed'),
+    label: s__('WorkItem|Done'),
   },
   [STATUS_CATEGORIES.CANCELLED]: {
     icon: 'status-cancelled',
@@ -438,7 +438,7 @@ export default {
       <gl-loading-icon v-if="loading" size="lg" class="gl-my-7" />
 
       <template v-else>
-        <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-3" data-testid="status-info-alert">
+        <div class="gl-mb-5 gl-rounded-base gl-bg-strong gl-p-3" data-testid="status-info-alert">
           <gl-sprintf
             class="gl-flex gl-items-center gl-gap-2"
             :message="
