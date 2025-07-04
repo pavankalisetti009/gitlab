@@ -14,6 +14,7 @@ jest.mock('~/alert');
 jest.mock('~/lib/utils/url_utility', () => ({
   visitUrl: jest.fn().mockName('visitUrlMock'),
   joinPaths: jest.fn(),
+  isAbsolute: jest.requireActual('~/lib/utils/url_utility').isAbsolute,
 }));
 
 describe('GeoSiteForm Store Actions', () => {
