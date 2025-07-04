@@ -20,9 +20,16 @@ module Gitlab
     private
 
     def parse_cidrs(values)
-      values.to_s.split(',').map do |value|
+      base = values.to_s.split(',').map do |value|
         ::IPAddr.new(value.strip)
       end
+
+      # Add compatible addresses to match IPv4 allow list entries against IPv4 request IPs
+      # that were mapped to IPv6 addresses on the kernel level.
+      # https://docs.kernel.org/networking/ip-sysctl.html#proc-sys-net-ipv6-variables
+      compats = base.select(&:ipv4?).map(&:ipv4_mapped)
+
+      base + compats
     rescue StandardError => e
       raise ValidationError, e.message
     end
