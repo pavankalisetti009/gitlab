@@ -32,7 +32,10 @@ module Resolvers
           questions = ::Gitlab::Duo::Chat::DefaultQuestions.new(current_user, url: url, resource: ai_resource)
                         .execute
 
-          { questions: questions.sample(question_count) }
+          {
+            questions: questions.sample(question_count),
+            ai_resource_data: ai_resource&.serialize_for_ai&.to_json
+          }
         end
 
         private

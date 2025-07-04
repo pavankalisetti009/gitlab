@@ -12,6 +12,11 @@ module Types
           [GraphQL::Types::String],
           null: true,
           description: "Array of questions that the user can ask GitLab Duo Chat from the current page."
+
+        field :ai_resource_data,
+          String,
+          null: true,
+          description: "Serialized representation of the AI resource in the current context."
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end

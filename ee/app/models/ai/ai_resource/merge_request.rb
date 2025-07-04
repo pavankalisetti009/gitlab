@@ -14,7 +14,7 @@ module Ai
 
       CHAT_UNIT_PRIMITIVE = :ask_merge_request
 
-      def serialize_for_ai(content_limit:)
+      def serialize_for_ai(content_limit: default_content_limit)
         ::MergeRequestSerializer.new(current_user: current_user) # rubocop: disable CodeReuse/Serializer -- existing serializer
                         .represent(resource, {
                           user: current_user,

@@ -5,6 +5,6 @@
 - chat_title = ::Ai::AmazonQ.enabled? ? s_('GitLab Duo Chat with Amazon Q') : s_('GitLab Duo Chat')
 
 - if Feature.enabled?(:duo_workflow_workhorse, current_user) && project_id.present?
-  #js-duo-agentic-chat-app{ data: { project_id: project_id } }
+  #js-duo-agentic-chat-app{ data: { project_id: project_id, resource_id: resource_id } }
 
 #js-tanuki-bot-chat-app{ data: { user_id: current_user.to_global_id, resource_id: resource_id, project_id: project_id, root_namespace_id: root_namespace_id, chat_title: chat_title } }

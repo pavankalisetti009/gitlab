@@ -171,6 +171,11 @@ export const MOCK_THREADS_RESPONSE = {
   },
 };
 
+export const MOCK_AI_RESOURCE_DATA = JSON.stringify({
+  type: 'issue',
+  id: 789,
+  title: 'Test Issue',
+});
 export const MOCK_CONTEXT_PRESETS_RESPONSE = {
   data: {
     aiChatContextPresets: {
@@ -180,6 +185,7 @@ export const MOCK_CONTEXT_PRESETS_RESPONSE = {
         'What concerns remain unresolved in this MR?',
         'What changed in this diff?',
       ],
+      aiResourceData: MOCK_AI_RESOURCE_DATA,
     },
   },
 };

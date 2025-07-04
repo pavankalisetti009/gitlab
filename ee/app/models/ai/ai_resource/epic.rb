@@ -14,7 +14,7 @@ module Ai
 
       CHAT_UNIT_PRIMITIVE = :ask_epic
 
-      def serialize_for_ai(content_limit:)
+      def serialize_for_ai(content_limit: default_content_limit)
         ::EpicSerializer.new(current_user: current_user) # rubocop: disable CodeReuse/Serializer
                         .represent(resource, {
                           user: current_user,

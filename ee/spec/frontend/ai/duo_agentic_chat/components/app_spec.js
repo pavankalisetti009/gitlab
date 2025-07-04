@@ -15,6 +15,7 @@ import {
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+  DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
@@ -38,12 +39,14 @@ jest.mock('~/lib/utils/websocket_utils', () => ({
 }));
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
+const MOCK_RESOURCE_ID = 'gid://gitlab/Resource/789';
 const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflow/456';
 const MOCK_USER_MESSAGE = {
   content: 'How can I optimize my CI pipeline?',
   role: 'user',
   requestId: `${MOCK_WORKFLOW_ID}-0`,
 };
+const MOCK_AI_RESOURCE_DATA = JSON.stringify({ type: 'issue', id: 789, title: 'Test Issue' });
 const MOCK_CONTEXT_PRESETS_RESPONSE = {
   data: {
     aiChatContextPresets: {
@@ -53,6 +56,7 @@ const MOCK_CONTEXT_PRESETS_RESPONSE = {
         'How do I set up a workflow for my project?',
         'What are the advantages of using GitLab CI/CD?',
       ],
+      aiResourceData: MOCK_AI_RESOURCE_DATA,
     },
   },
 };
@@ -66,6 +70,14 @@ const MOCK_WORKFLOW_MUTATION_RESPONSE = {
     },
   },
 };
+
+const expectedAdditionalContext = [
+  {
+    content: MOCK_AI_RESOURCE_DATA,
+    category: DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
+    metadata: JSON.stringify({}),
+  },
+];
 
 Vue.use(Vuex);
 Vue.use(VueApollo);
@@ -93,7 +105,7 @@ describe('Duo Agentic Chat', () => {
 
   const createComponent = ({
     initialState = {},
-    propsData = { projectId: MOCK_PROJECT_ID },
+    propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
     data = {},
   } = {}) => {
     const store = new Vuex.Store({
@@ -149,6 +161,7 @@ describe('Duo Agentic Chat', () => {
       it('calls the context presets GraphQL query when component loads', () => {
         expect(contextPresetsQueryHandlerMock).toHaveBeenCalledWith({
           projectId: MOCK_PROJECT_ID,
+          resourceId: MOCK_RESOURCE_ID,
           url: 'http://test.host/',
           questionCount: 4,
         });
@@ -271,6 +284,7 @@ describe('Duo Agentic Chat', () => {
             workflowDefinition: 'chat',
             goal: MOCK_USER_MESSAGE.content,
             approval: {},
+            additionalContext: expectedAdditionalContext,
           },
         };
 
@@ -508,6 +522,7 @@ describe('Duo Agentic Chat', () => {
             workflowDefinition: 'chat',
             goal: '',
             approval: { approval: {} },
+            additionalContext: expectedAdditionalContext,
           },
         };
 
@@ -529,6 +544,7 @@ describe('Duo Agentic Chat', () => {
               approval: undefined,
               rejection: { message: denyMessage },
             },
+            additionalContext: expectedAdditionalContext,
           },
         };
 

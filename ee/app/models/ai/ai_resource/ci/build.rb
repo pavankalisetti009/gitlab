@@ -15,7 +15,7 @@ module Ai
 
         CHAT_UNIT_PRIMITIVE = :ask_build
 
-        def serialize_for_ai(content_limit:)
+        def serialize_for_ai(content_limit: default_content_limit)
           ::Ci::JobSerializer # rubocop: disable CodeReuse/Serializer -- existing serializer
             .new(current_user: current_user)
             .represent(resource, {

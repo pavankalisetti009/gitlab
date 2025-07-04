@@ -16,6 +16,7 @@ import {
   DUO_WORKFLOW_AGENT_PRIVILEGES,
   DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+  DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
@@ -38,6 +39,11 @@ export default {
       required: false,
       default: null,
     },
+    resourceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   apollo: {
     contextPresets: {
@@ -47,13 +53,14 @@ export default {
       },
       variables() {
         return {
+          resourceId: this.resourceId,
           projectId: this.projectId,
           url: typeof window !== 'undefined' && window.location ? window.location.href : '',
           questionCount: 4,
         };
       },
       update(data) {
-        return data?.aiChatContextPresets?.questions || [];
+        return data?.aiChatContextPresets || {};
       },
       error(err) {
         this.onError(err);
@@ -94,7 +101,23 @@ export default {
       };
     },
     predefinedPrompts() {
-      return this.contextPresets;
+      return this.contextPresets.questions || [];
+    },
+    additionalContext() {
+      if (!this.contextPresets.aiResourceData) {
+        return null;
+      }
+
+      return [
+        {
+          content: this.contextPresets.aiResourceData,
+          // This field depends on INCLUDE_{CATEGORY}_CONTEXT unit primitive:
+          // https://gitlab.com/gitlab-org/cloud-connector/gitlab-cloud-connector/-/blob/main/src/python/gitlab_cloud_connector/data_model/gitlab_unit_primitives.py?ref_type=heads#L37-47
+          // Since there is no unit primitives for all resource types and there is no a general one, let's use the one for repository
+          category: DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
+          metadata: JSON.stringify({}), // This field is expected to be non-null json object
+        },
+      ];
     },
     showToolApprovalModal() {
       return this.workflowStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED;
@@ -169,8 +192,7 @@ export default {
     onChatCancel() {
       this.cleanupState();
     },
-
-    startWorkflow(goal, approval = {}) {
+    startWorkflow(goal, approval = {}, additionalContext) {
       this.cleanupSocket();
 
       const startRequest = {
@@ -182,6 +204,10 @@ export default {
           approval,
         },
       };
+
+      if (additionalContext) {
+        startRequest.startRequest.additionalContext = additionalContext;
+      }
 
       this.socketManager = createWebSocket('/api/v4/ai/duo_workflows/ws', {
         onMessage: this.onMessageReceived,
@@ -286,9 +312,9 @@ export default {
 
       const requestId = `${this.workflowId}-${this.messages?.length || 0}`;
       const userMessage = { content: question, role: 'user', requestId };
-      this.addDuoChatMessage(userMessage);
 
-      this.startWorkflow(question);
+      this.startWorkflow(question, {}, this.additionalContext);
+      this.addDuoChatMessage(userMessage);
     },
     onChatClose() {
       this.duoChatGlobalState.isAgenticChatShown = false;
@@ -297,13 +323,17 @@ export default {
       this.addDuoChatMessage({ errors: [err.toString()] });
     },
     handleApproveToolCall() {
-      this.startWorkflow('', { approval: {} });
+      this.startWorkflow('', { approval: {} }, this.additionalContext);
     },
     handleDenyToolCall(message) {
-      this.startWorkflow('', {
-        approval: undefined,
-        rejection: { message },
-      });
+      this.startWorkflow(
+        '',
+        {
+          approval: undefined,
+          rejection: { message },
+        },
+        this.additionalContext,
+      );
     },
   },
 };
