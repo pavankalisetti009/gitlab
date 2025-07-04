@@ -87,7 +87,7 @@ RSpec.describe Repositories::GitHttpController, type: :request, feature_category
         "GL_ID" => "user-#{user.id}",
         "GL_REPOSITORY" => "project-#{project.id}",
         "GL_USERNAME" => user.username,
-        "NeedAudit" => false,
+        "NeedAudit" => true,
         "ShowAllRefs" => true
       )
     end
@@ -157,7 +157,7 @@ RSpec.describe Repositories::GitHttpController, type: :request, feature_category
         "GL_ID" => "user-#{user.id}",
         "GL_REPOSITORY" => "project-#{project.id}",
         "GL_USERNAME" => user.username,
-        "NeedAudit" => false,
+        "NeedAudit" => true,
         "ShowAllRefs" => true
       )
     end
