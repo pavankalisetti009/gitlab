@@ -119,6 +119,83 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         expect(described_class.for_framework(framework_3.id)).to be_empty
       end
     end
+
+    describe '.for_projects' do
+      let_it_be(:project_1) { create(:project) }
+      let_it_be(:project_2) { create(:project) }
+      let_it_be(:project_3) { create(:project) }
+
+      let_it_be(:framework_1) { create(:compliance_framework, projects: [project_1]) }
+      let_it_be(:framework_2) { create(:compliance_framework, projects: [project_2]) }
+      let_it_be(:framework_3) { create(:compliance_framework, projects: [project_3]) }
+
+      let_it_be(:requirement_1) { create(:compliance_requirement, framework: framework_1) }
+      let_it_be(:requirement_2) { create(:compliance_requirement, framework: framework_2) }
+
+      let_it_be(:internal_control_1) { create(:compliance_requirements_control, compliance_requirement: requirement_1) }
+      let_it_be(:external_control_1) do
+        create(:compliance_requirements_control, :external, compliance_requirement: requirement_1)
+      end
+
+      let_it_be(:internal_control_2) { create(:compliance_requirements_control, compliance_requirement: requirement_2) }
+
+      it 'returns all controls for the specified projects' do
+        result = described_class.for_projects([project_1.id, project_2.id])
+
+        expect(result).to contain_exactly(internal_control_1, external_control_1, internal_control_2)
+      end
+
+      it 'includes project_id as an attribute for each control' do
+        result = described_class.for_projects([project_1.id])
+
+        expect(result.first.project_id).to eq(project_1.id)
+      end
+
+      it 'returns an empty relation when projects have no controls' do
+        expect(described_class.for_projects([project_3.id])).to be_empty
+      end
+    end
+
+    describe '.grouped_by_project' do
+      let_it_be(:project_1) { create(:project) }
+      let_it_be(:project_2) { create(:project) }
+      let_it_be(:project_3) { create(:project) }
+
+      let_it_be(:framework_1) { create(:compliance_framework, projects: [project_1]) }
+      let_it_be(:framework_2) { create(:compliance_framework, projects: [project_2]) }
+      let_it_be(:framework_3) { create(:compliance_framework, projects: [project_3]) }
+
+      let_it_be(:requirement_1) { create(:compliance_requirement, framework: framework_1) }
+      let_it_be(:requirement_2) { create(:compliance_requirement, framework: framework_2) }
+
+      let_it_be(:internal_control_1) { create(:compliance_requirements_control, compliance_requirement: requirement_1) }
+      let_it_be(:external_control_1) do
+        create(:compliance_requirements_control, :external, compliance_requirement: requirement_1)
+      end
+
+      let_it_be(:internal_control_2) { create(:compliance_requirements_control, compliance_requirement: requirement_2) }
+
+      it 'returns controls grouped by project_id' do
+        result = described_class.grouped_by_project([project_1.id, project_2.id, project_3.id])
+
+        expect(result).to be_a(Hash)
+        expect(result.keys).to contain_exactly(project_1.id, project_2.id)
+        expect(result[project_1.id]).to contain_exactly(internal_control_1, external_control_1)
+        expect(result[project_2.id]).to contain_exactly(internal_control_2)
+      end
+
+      it 'returns empty hash when projects have no controls' do
+        result = described_class.grouped_by_project([project_3.id])
+
+        expect(result).to eq({})
+      end
+
+      it 'handles empty project_ids array' do
+        result = described_class.grouped_by_project([])
+
+        expect(result).to eq({})
+      end
+    end
   end
 
   describe 'enums' do

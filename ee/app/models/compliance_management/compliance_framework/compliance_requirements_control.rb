@@ -60,6 +60,16 @@ module ComplianceManagement
           .where(compliance_management_frameworks: { id: framework_id })
       }
 
+      scope :for_projects, ->(project_ids) {
+        joins(compliance_requirement: { framework: :projects })
+          .where(projects: { id: project_ids })
+          .select('compliance_requirements_controls.*, projects.id as project_id')
+      }
+
+      def self.grouped_by_project(project_ids)
+        for_projects(project_ids).group_by(&:project_id)
+      end
+
       def expression_as_hash(symbolize_names: false)
         ::Gitlab::Json.parse(expression, symbolize_names: symbolize_names)
       rescue JSON::ParserError

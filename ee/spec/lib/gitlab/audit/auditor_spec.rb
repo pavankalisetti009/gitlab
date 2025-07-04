@@ -747,5 +747,17 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
         expect(result).not_to include(instance_audit_event)
       end
     end
+
+    context 'for AuditEvents::ComplianceViolationScheduler' do
+      before do
+        allow(auditor).to receive(:log_to_new_tables).and_call_original
+      end
+
+      it 'calls AuditEvents::ComplianceViolationScheduler' do
+        expect(AuditEvents::ComplianceViolationScheduler).to receive(:new).and_call_original
+
+        auditor.log_events_and_stream(events)
+      end
+    end
   end
 end

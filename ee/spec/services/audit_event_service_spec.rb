@@ -758,6 +758,18 @@ RSpec.describe AuditEventService, :request_store, feature_category: :audit_event
 
         service.unauth_security_event
       end
+
+      context 'for AuditEvents::ComplianceViolationScheduler' do
+        before do
+          allow(service).to receive(:log_to_new_tables).and_call_original
+        end
+
+        it 'calls AuditEvents::ComplianceViolationScheduler' do
+          expect(AuditEvents::ComplianceViolationScheduler).to receive(:new).and_call_original
+
+          service.unauth_security_event
+        end
+      end
     end
 
     context 'when the feature flag is disabled' do
