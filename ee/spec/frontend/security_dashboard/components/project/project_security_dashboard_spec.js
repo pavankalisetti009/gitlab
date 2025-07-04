@@ -39,12 +39,7 @@ describe('Project Security Dashboard component', () => {
     shouldShowPromoBanner: false,
   };
 
-  const createWrapper = ({
-    historyQueryData,
-    severitiesCountQueryData,
-    props = {},
-    vulnerabilitiesPdfExport = true,
-  } = {}) => {
+  const createWrapper = ({ historyQueryData, severitiesCountQueryData, props = {} } = {}) => {
     severitiesCountQueryHandler = jest.fn().mockResolvedValue(severitiesCountQueryData);
 
     wrapper = shallowMountExtended(ProjectSecurityDashboard, {
@@ -59,11 +54,6 @@ describe('Project Security Dashboard component', () => {
       stubs: {
         GlSprintf,
         PageHeading,
-      },
-      provide: {
-        glFeatures: {
-          vulnerabilitiesPdfExport,
-        },
       },
     });
   };
@@ -222,15 +212,6 @@ describe('Project Security Dashboard component', () => {
           new PdfExportError('Chart failed to initialize. Please refresh the page and try again.'),
         );
       });
-    });
-  });
-
-  describe('when vulnerabilitiesPdfExport is false', () => {
-    it('should not display the export button', () => {
-      createWrapper({
-        vulnerabilitiesPdfExport: false,
-      });
-      expect(findExportButton().exists()).toBe(false);
     });
   });
 });
