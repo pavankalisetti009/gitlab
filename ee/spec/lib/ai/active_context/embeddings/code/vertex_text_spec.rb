@@ -50,7 +50,7 @@ RSpec.describe Ai::ActiveContext::Embeddings::Code::VertexText, feature_category
       expect(generate_embeddings).to eq embeddings
     end
 
-    context 'when running into token limits exceeded error' do
+    describe 'handling token limits exceeded errors' do
       before do
         allow(llm_class).to receive(:new) do |arg_contents|
           if arg_contents.length >= 3
@@ -142,6 +142,132 @@ RSpec.describe Ai::ActiveContext::Embeddings::Code::VertexText, feature_category
             StandardError,
             "Token limit exceeded for single content input: \"some error\""
           )
+        end
+      end
+
+      # We anticipate this to be a possible scenario where we have explicitly set the batch size,
+      # but we are still getting a "token limits exceeded" error. We need to make sure that the
+      # expected behavior happens.
+      context 'when combined with explicit batch_size' do
+        subject(:generate_embeddings) do
+          described_class.generate_embeddings(
+            contents,
+            unit_primitive: unit_primitive,
+            model: model,
+            user: user,
+            batch_size: batch_size
+          )
+        end
+
+        let(:batch_size) { 3 }
+
+        it 'recursively splits the batch size and eventually succeeds' do
+          # the processing flow here is:
+          # - call `generate_embeddings` with input %w[content-1 content-2 content-3 content-4 content-5]
+          # - the original input is split by the specified batch_size=3
+          #   - batch %w[content-1 content-2 content-3]
+          #     - embeddings generation for this batch throws a "token limits exceeded" error
+          #     - this batch is further split in 2
+          #       - %w[content-1 content-2] - embeddings generation OK
+          #       - %w[content-3]           - embeddings generation OK
+          #   - batch %w[content-4 content-5] - embeddings generation OK
+
+          # for %w[content-1 content-2 content-3 content-4 content-5]
+          # it does not try to generate embeddings for the entire `contents` input (size = 5)
+          # because the specified batch_size is 3
+          expect(llm_class).not_to receive(:new).with(contents_batch_size_5, anything)
+
+          # for %w[content-1 content-2 content-3] - this is the batch that throws a "token limits exceeded" error
+          expect(llm_class).to receive(:new).with(contents_batch_size_3, anything).ordered
+
+          # processing for:
+          #   - %w[content-1 content-2]
+          #   - %w[content-3]
+          #   - %w[content-4 content-5]
+          expect(llm_class).to receive(:new).with(contents_1_2, anything).ordered
+          expect(llm_class).to receive(:new).with(contents_3, anything).ordered
+          expect(llm_class).to receive(:new).with(contents_4_5, anything).ordered
+
+          # after the explicit batch splitting due to batch_size +
+          #      + the automatic batch splitting due to "token limits exceeded" error
+          # we still expect the call to `generate_embeddings` to
+          # return the embeddings for *all* the contents of the original batch
+          expect(generate_embeddings).to eq embeddings
+        end
+      end
+    end
+
+    describe 'batching by batch_size parameter' do
+      before do
+        allow(llm_class).to receive(:new) do |arg_contents|
+          if arg_contents == contents_batch_1
+            embeddings_model_for_batch_1
+          elsif arg_contents == contents_batch_2
+            embeddings_model_for_batch_2
+          end
+        end
+      end
+
+      let(:embeddings_model_for_batch_1) do
+        instance_double(llm_class, execute: [[1, 1], [2, 2], [3, 3]])
+      end
+
+      let(:embeddings_model_for_batch_2) do
+        instance_double(llm_class, execute: [[4, 4], [5, 5]])
+      end
+
+      let(:contents_batch_1) { %w[content-1 content-2 content-3] }
+      let(:contents_batch_2) { %w[content-4 content-5] }
+
+      let(:batch_size) { 3 }
+
+      subject(:generate_embeddings) do
+        described_class.generate_embeddings(
+          contents,
+          unit_primitive: unit_primitive,
+          model: model,
+          user: user,
+          batch_size: batch_size
+        )
+      end
+
+      context 'when the input contents count is greater than the batch size' do
+        it 'generates embeddings in batches' do
+          # the `contents` input is batched
+          expect(llm_class).to receive(:new).with(contents_batch_1, anything).ordered
+          expect(llm_class).to receive(:new).with(contents_batch_2, anything).ordered
+
+          # we still expect the call to `generate_embeddings` to
+          # return the embeddings for *all* the contents of the original batch
+          expect(generate_embeddings).to eq embeddings
+        end
+      end
+
+      context 'when the caller explicitly specifies a `nil` batch_size' do
+        before do
+          # we are stubbing `DEFAULT_BATCH_SIZE` to 3
+          # since we've already setup the mocks for it
+          stub_const("#{described_class}::DEFAULT_BATCH_SIZE", 3)
+        end
+
+        subject(:generate_embeddings) do
+          described_class.generate_embeddings(
+            contents,
+            unit_primitive: unit_primitive,
+            model: model,
+            user: user,
+            batch_size: nil
+          )
+        end
+
+        it 'uses the default batch size' do
+          # the `contents` input is batched
+          expect(llm_class).to receive(:new).with(contents_batch_1, anything).ordered
+          expect(llm_class).to receive(:new).with(contents_batch_2, anything).ordered
+
+          # we still expect the call to `generate_embeddings` to
+          # return the embeddings for *all* the contents of the original batch
+          expect(generate_embeddings).to eq embeddings
         end
       end
     end

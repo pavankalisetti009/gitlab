@@ -6,11 +6,19 @@ module Ai
       class Code
         include ::ActiveContext::Concerns::Collection
 
+        # We have calculated an average about 500 tokens per chunk
+        # Vertex AI API limits 20,000 tokens per request
+        # Each embeddings generation request should have a batch size of:
+        # 20,000 / 50 = 40
+        # Details: https://gitlab.com/gitlab-org/gitlab/-/issues/551002#note_2595329124
+        EMBEDDINGS_V1_BATCH_SIZE = 40
+
         MODELS = {
           1 => {
             field: :embeddings_v1,
             model: 'text-embedding-005',
-            class: Ai::ActiveContext::Embeddings::Code::VertexText
+            class: Ai::ActiveContext::Embeddings::Code::VertexText,
+            batch_size: EMBEDDINGS_V1_BATCH_SIZE
           }
         }.freeze
 
