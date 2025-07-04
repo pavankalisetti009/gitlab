@@ -18,7 +18,7 @@ describe('ComplianceDashboardBreadcrumbs', () => {
   const breadcrumbItemsDictionary = {
     [ROUTE_STANDARDS_ADHERENCE]: [
       { text: 'Compliance center', to: '/' },
-      { text: 'Compliance status', to: { name: 'standards_adherence' } },
+      { text: 'Status', to: { name: 'standards_adherence' } },
     ],
     [ROUTE_VIOLATIONS]: [
       { text: 'Compliance center', to: '/' },
