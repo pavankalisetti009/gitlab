@@ -258,17 +258,55 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
         end
       end
 
-      context 'when group_bulk_edit feature is not available' do
+      context 'when updating parent' do
         before do
-          stub_licensed_features(epics: true, group_bulk_edit: false)
+          stub_licensed_features(group_bulk_edit: true)
         end
 
-        it 'returns a resource not available message' do
-          post_graphql_mutation(mutation, current_user: current_user)
+        context 'when epics are enabled' do
+          before do
+            stub_licensed_features(epics: true)
+          end
 
-          expect_graphql_errors_to_include(
-            _('Group work item bulk edit is a licensed feature not available for this group.')
-          )
+          context 'when the parent is a valid target for the work item' do
+            let_it_be(:parent_work_item) { create(:work_item, :epic, :group_level, namespace: group) }
+            let(:widget_arguments) { { hierarchy_widget: { parent_id: parent_work_item.to_gid } } }
+
+            it 'sets the parent of the work item' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change { work_item1.reload.work_item_parent }.from(nil).to(parent_work_item)
+                .and change { work_item2.reload.work_item_parent }.from(nil).to(parent_work_item)
+            end
+          end
+
+          context 'when the parent type is incompatible with the work item' do
+            let_it_be(:parent_work_item) { create(:work_item, :task, project: project) }
+            let(:widget_arguments) { { hierarchy_widget: { parent_id: parent_work_item.to_gid } } }
+
+            it 'does not set the parent of the work item' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to not_change { work_item1.reload.work_item_parent }.from(nil)
+                .and not_change { work_item2.reload.work_item_parent }.from(nil)
+            end
+          end
+        end
+
+        context 'when epics are disabled' do
+          before do
+            stub_licensed_features(epics: false)
+          end
+
+          let_it_be(:parent_work_item) { create(:work_item, :epic, :group_level, namespace: group) }
+          let(:widget_arguments) { { hierarchy_widget: { parent_id: parent_work_item.to_gid } } }
+
+          it 'does not set the parent of the work item' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to not_change { work_item1.reload.work_item_parent }.from(nil)
+              .and not_change { work_item2.reload.work_item_parent }.from(nil)
+          end
         end
       end
 
@@ -297,6 +335,20 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
               post_graphql_mutation(mutation, current_user: current_user)
             end.to change { work_item1.reload.health_status }.from(nil).to('on_track')
               .and change { work_item2.reload.health_status }.from('at_risk').to('on_track')
+          end
+
+          context 'when the work item type does not support health_status' do
+            # Tasks do not support health status
+            let_it_be(:task_work_item) { create(:work_item, :task, project: project) }
+            let(:work_item_ids) { [task_work_item.to_gid.to_s] }
+
+            it 'does not set the health status and fails gracefully' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.not_to change { task_work_item.reload.health_status }
+
+              expect_graphql_errors_to_be_empty
+            end
           end
         end
       end
@@ -328,6 +380,20 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
             end.to change { work_item1.reload.iteration }.from(nil).to(new_iteration)
               .and change { work_item2.reload.iteration }.from(iteration).to(new_iteration)
           end
+        end
+      end
+
+      context 'when group_bulk_edit feature is not available' do
+        before do
+          stub_licensed_features(epics: true, group_bulk_edit: false)
+        end
+
+        it 'returns a resource not available message' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect_graphql_errors_to_include(
+            _('Group work item bulk edit is a licensed feature not available for this group.')
+          )
         end
       end
     end
