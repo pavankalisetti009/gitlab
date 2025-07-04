@@ -20,8 +20,7 @@ describe('ExportApp component', () => {
   const findProjectFrameworksButton = () => wrapper.findByText('Export list of project frameworks');
   const findStandardsAdherenceReportButton = () =>
     wrapper.findByText('Export standards adherence report');
-  const findComplianceStatusReportButton = () =>
-    wrapper.findByText('Export compliance status report');
+  const findComplianceStatusReportButton = () => wrapper.findByText('Export status report');
   const findChainOfCustodyReportButton = () => wrapper.findByText('Export chain of custody report');
   const findCustodyReportByCommmitButton = () =>
     wrapper.findByText('Export custody report of a specific commit');
@@ -82,7 +81,7 @@ describe('ExportApp component', () => {
 
   describe.each`
     props                                                   | tooltipText                                                                               | tooltipIndex
-    ${{ complianceStatusReportExportPath: 'example-path' }} | ${'Export contents of the compliance status report as a CSV file.'}                       | ${0}
+    ${{ complianceStatusReportExportPath: 'example-path' }} | ${'Export contents of the status report as a CSV file.'}                                  | ${0}
     ${{ adherencesCsvExportPath: 'example-path' }}          | ${'Export contents of the standards adherence report as a CSV file.'}                     | ${0}
     ${{ violationsCsvExportPath: 'example-path' }}          | ${'Export merge request violations as a CSV file.'}                                       | ${0}
     ${{ frameworksCsvExportPath: 'example-path' }}          | ${'Export contents of the compliance frameworks report as a CSV file.'}                   | ${0}

@@ -77,7 +77,7 @@ export default {
       const tabConfigs = {
         [ROUTE_DASHBOARD]: {
           testId: 'dashboard-tab',
-          title: i18n.dashboardTab,
+          title: i18n.overviewTab,
         },
         [ROUTE_STANDARDS_ADHERENCE]: {
           testId: 'standards-adherence-tab',

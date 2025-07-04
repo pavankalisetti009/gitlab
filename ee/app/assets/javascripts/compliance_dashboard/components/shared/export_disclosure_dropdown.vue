@@ -183,9 +183,7 @@ export default {
     adherencesExportTitle: s__('Compliance Center Export|Export standards adherence report'),
     frameworksExportTitle: s__('Compliance Center Export|Export frameworks report'),
     violationsExportTitle: s__('Compliance Center Export|Export violations report'),
-    complianceStatusReportExportTitle: s__(
-      'Compliance Center Export|Export compliance status report',
-    ),
+    complianceStatusReportExportTitle: s__('Compliance Center Export|Export status report'),
     projectFrameworksExportTitle: s__('Compliance Center Export|Export list of project frameworks'),
     custodyCommitsExportTitle: s__('Compliance Center Export|Export chain of custody report'),
     custodyCommitExportTitle: s__(
@@ -203,7 +201,7 @@ export default {
         'Compliance Center Export|Export contents of the compliance frameworks report as a CSV file.',
       ),
       complianceStatusReport: s__(
-        'Compliance Center Export|Export contents of the compliance status report as a CSV file.',
+        'Compliance Center Export|Export contents of the status report as a CSV file.',
       ),
       projectFrameworks: s__(
         'Compliance Center Export|Export a list of compliance frameworks for a project as a CSV file.',

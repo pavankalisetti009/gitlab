@@ -36,9 +36,9 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
       wait_for_all_requests
     end
 
-    it 'has the `Compliance status` tab selected by default' do
+    it 'has the `Status` tab selected by default' do
       page.within('.gl-tabs') do
-        expect(find('[aria-selected="true"]').text).to eq('Compliance status')
+        expect(find('[aria-selected="true"]').text).to eq('Status')
       end
     end
 
@@ -95,14 +95,14 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
     end
   end
 
-  context 'compliance status tab' do
+  context 'status tab' do
     let(:expected_path) { group_security_compliance_dashboard_path(group, vueroute: :standards_adherence) }
 
     before do
       visit group_security_compliance_dashboard_path(group)
     end
 
-    it 'shows the compliance status tab by default' do
+    it 'shows the status tab by default' do
       expect(page).to have_current_path(expected_path)
     end
   end

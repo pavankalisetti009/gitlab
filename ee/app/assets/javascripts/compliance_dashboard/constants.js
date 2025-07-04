@@ -74,11 +74,11 @@ export const i18n = {
   subheading: s__(
     'Compliance Center|Report and manage compliance status, violations, and compliance frameworks for the group. %{linkStart}Learn more%{linkEnd}.',
   ),
-  dashboardTab: s__('Compliance Center|Dashboard'),
+  overviewTab: s__('Compliance Center|Overview'),
   frameworksTab: s__('Compliance Center|Frameworks'),
   projectsTab: __('Projects'),
   projectTab: __('Project'),
-  standardsAdherenceTab: s__('Compliance Center|Compliance status'),
+  standardsAdherenceTab: s__('Compliance Center|Status'),
   violationsTab: s__('Compliance Center|Violations'),
 };
 
