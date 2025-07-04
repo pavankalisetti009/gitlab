@@ -28,17 +28,10 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
 
     let(:ai_settings) { instance_double(Ai::Setting, **ai_settings_attributes) }
     let(:any_add_on_purchase) { build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :active) }
-    let(:any_add_on_purchased_or_trial?) { true }
+    let(:active_add_on_purchase_for_self_managed?) { true }
     let(:application_settings) { instance_double(ApplicationSetting, **application_setting_attributes) }
-    let(:are_experiment_settings_allowed) { true }
-    let(:are_prompt_cache_settings_allowed) { true }
     let(:beta_self_hosted_models_enabled) { true }
-    let(:duo_pro_or_duo_enterprise_tier) { 'DUO_ENTERPRISE' }
-    let(:duo_pro_visible) { true }
-    let(:redirect_path) { '/admin/gitlab_duo' }
     let(:self_hosted_models) { true }
-    let(:should_show_duo_availability) { true }
-    let(:toggle_beta_models_path) { '/admin/ai/duo_self_hosted/toggle_beta_models' }
     let(:active_duo_add_ons_exist?) { true }
 
     before do
@@ -57,9 +50,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
 
       allow(Gitlab::CurrentSettings).to receive(:current_application_settings).and_return application_settings
 
-      allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise).to receive_messages(
-        any_add_on_purchased_or_trial?: any_add_on_purchased_or_trial?,
-        any_add_on_purchase: any_add_on_purchase
+      allow(GitlabSubscriptions::DuoEnterprise).to receive_messages(
+        active_add_on_purchase_for_self_managed?: active_add_on_purchase_for_self_managed?
       )
     end
 
@@ -75,14 +67,12 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: '30',
         duo_core_features_enabled: 'true',
-        duo_pro_or_duo_enterprise_tier: 'DUO_ENTERPRISE',
         duo_pro_visible: 'true',
         enabled_expanded_logging: 'true',
         experiment_features_enabled: 'true',
         on_general_settings_page: 'false',
         prompt_cache_enabled: 'true',
         redirect_path: '/admin/gitlab_duo',
-        should_show_duo_availability: 'true',
         toggle_beta_models_path: '/admin/ai/duo_self_hosted/toggle_beta_models'
       )
     end
@@ -119,7 +109,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     end
 
     context 'without add-on purchase for Duo Enterprise' do
-      let(:any_add_on_purchased_or_trial?) { false }
+      let(:active_add_on_purchase_for_self_managed?) { false }
 
       it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
     end
@@ -154,12 +144,6 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       it { expect(settings).to include(duo_core_features_enabled: 'false') }
     end
 
-    context 'without Duo Pro or Duo Enterprise add-on' do
-      let(:any_add_on_purchase) { nil }
-
-      it { expect(settings).to include(duo_pro_or_duo_enterprise_tier: '') }
-    end
-
     context 'without expanded logging' do
       let(:application_setting_attributes) { super().merge(enabled_expanded_logging: false) }
 
@@ -176,12 +160,6 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       let(:application_setting_attributes) { super().merge(model_prompt_cache_enabled?: false) }
 
       it { expect(settings).to include(prompt_cache_enabled: 'false') }
-    end
-
-    context 'without Duo Pro or Duo Enterprise' do
-      let(:any_add_on_purchased_or_trial?) { false }
-
-      it { expect(settings).to include(should_show_duo_availability: 'false') }
     end
   end
 end

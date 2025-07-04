@@ -31,7 +31,7 @@ export default {
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
     gitlabDuoHomeSubtitle: s__(
-      'AiPowered|Monitor, manage, and customize AI features to ensure efficient utilization and alignment.',
+      'AiPowered|Monitor, manage, and customize AI-powered features to ensure efficient utilization and alignment.',
     ),
   },
   computed: {

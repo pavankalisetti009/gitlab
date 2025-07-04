@@ -77,7 +77,7 @@ describe('GitLab Duo Home', () => {
       expect(findCodeSuggestionsUsage().props()).toMatchObject({
         title: 'GitLab Duo',
         subtitle:
-          'Monitor, manage, and customize AI features to ensure efficient utilization and alignment.',
+          'Monitor, manage, and customize AI-powered features to ensure efficient utilization and alignment.',
         forceHideTitle: false,
       });
     });
@@ -164,7 +164,7 @@ describe('GitLab Duo Home', () => {
       it('passes the correct props to DuoWorkflowSettings', () => {
         expect(findDuoWorkflowSettings().props('title')).toBe('GitLab Duo');
         expect(findDuoWorkflowSettings().props('subtitle')).toBe(
-          'Monitor, manage, and customize AI features to ensure efficient utilization and alignment.',
+          'Monitor, manage, and customize AI-powered features to ensure efficient utilization and alignment.',
         );
       });
     });

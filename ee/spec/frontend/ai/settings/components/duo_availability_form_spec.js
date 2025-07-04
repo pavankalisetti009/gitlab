@@ -1,15 +1,18 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlFormRadio } from '@gitlab/ui';
+import { GlFormRadio, GlFormGroup, GlSprintf } from '@gitlab/ui';
 import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form.vue';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
-import { DUO_PRO, DUO_ENTERPRISE } from 'ee/constants/duo';
 
 describe('DuoAvailabilityForm', () => {
   let wrapper;
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     return shallowMount(DuoAvailabilityForm, {
+      stubs: {
+        'gl-form-radio': GlFormRadio,
+        'gl-sprintf': GlSprintf,
+      },
       propsData: {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         ...props,
@@ -21,15 +24,21 @@ describe('DuoAvailabilityForm', () => {
           lockedByApplicationSetting: false,
           ancestorNamespace: null,
         },
-        duoProOrDuoEnterpriseTier: DUO_ENTERPRISE,
+        isSaaS: true,
         ...provide,
       },
     });
   };
 
   const findFormRadioButtons = () => wrapper.findAllComponents(GlFormRadio);
+  const findRadioButtonDescriptions = () => wrapper.findAll('.help-text');
   const findCascadingLockIcon = () => wrapper.findComponent(CascadingLockIcon);
-  const findTitleText = () => wrapper.find('h5').text();
+  const findFormGroup = () => wrapper.findComponent(GlFormGroup);
+
+  it('displays title', () => {
+    wrapper = createComponent();
+    expect(findFormGroup().attributes('label')).toContain('GitLab Duo availability');
+  });
 
   it('renders radio buttons with correct labels', () => {
     wrapper = createComponent();
@@ -37,6 +46,50 @@ describe('DuoAvailabilityForm', () => {
     expect(findFormRadioButtons().at(0).text()).toContain('On by default');
     expect(findFormRadioButtons().at(1).text()).toContain('Off by default');
     expect(findFormRadioButtons().at(2).text()).toContain('Always off');
+  });
+
+  describe('with GitLab.com', () => {
+    it('displays correct subtitle', () => {
+      wrapper = createComponent({ provide: { isSaaS: true } });
+      expect(findFormGroup().attributes('labeldescription')).toContain(
+        'Control whether GitLab can process your code and project data to provide context to AI-powered features.',
+      );
+    });
+
+    it('renders radio buttons with correct descriptions', () => {
+      wrapper = createComponent({ provide: { isSaaS: true } });
+      expect(findRadioButtonDescriptions().at(0).text()).toContain(
+        'Allow GitLab to process your code and project data for AI-powered features throughout this namespace. Your data will be sent to GitLab Duo for processing. Groups, subgroups, and projects can individually opt out if needed.',
+      );
+      expect(findRadioButtonDescriptions().at(1).text()).toContain(
+        'Block GitLab from processing your code and project data for AI-powered features by default. Your data stays private unless subgroups or projects individually opt in.',
+      );
+      expect(findRadioButtonDescriptions().at(2).text()).toContain(
+        'Never allow GitLab to process your code and project data for AI-powered features. Your data will not be sent to GitLab Duo anywhere in this namespace.',
+      );
+    });
+  });
+
+  describe('with Self-Managed', () => {
+    it('displays correct subtitle', () => {
+      wrapper = createComponent({ provide: { isSaaS: false } });
+      expect(findFormGroup().attributes('labeldescription')).toContain(
+        'Control whether AI-powered features are available.',
+      );
+    });
+
+    it('renders radio buttons with correct descriptions', () => {
+      wrapper = createComponent({ provide: { isSaaS: false } });
+      expect(findRadioButtonDescriptions().at(0).text()).toContain(
+        'Features are available. However, any group, subgroup, or project can turn them off.',
+      );
+      expect(findRadioButtonDescriptions().at(1).text()).toContain(
+        'Features are not available. However, any group, subgroup, or project can turn them on.',
+      );
+      expect(findRadioButtonDescriptions().at(2).text()).toContain(
+        'Features are not available and cannot be turned on for any group, subgroup, or project.',
+      );
+    });
   });
 
   it('emits change event when radio button is selected', () => {
@@ -96,30 +149,6 @@ describe('DuoAvailabilityForm', () => {
     it('does not show CascadingLockIcon', () => {
       wrapper = createComponent();
       expect(findCascadingLockIcon().exists()).toBe(false);
-    });
-  });
-
-  describe('without Duo Pro or Duo Enterprise', () => {
-    it('displays generic title', () => {
-      wrapper = createComponent({ provide: { duoProOrDuoEnterpriseTier: null } });
-
-      expect(findTitleText()).toBe('Availability');
-    });
-  });
-
-  describe('with Duo Pro', () => {
-    it('displays Duo Pro title', () => {
-      wrapper = createComponent({ provide: { duoProOrDuoEnterpriseTier: DUO_PRO } });
-
-      expect(findTitleText()).toBe('GitLab Duo Pro availability');
-    });
-  });
-
-  describe('with Duo Enterprise', () => {
-    it('displays Duo Enterprise title', () => {
-      wrapper = createComponent({ provide: { duoProOrDuoEnterpriseTier: DUO_ENTERPRISE } });
-
-      expect(findTitleText()).toBe('GitLab Duo Enterprise availability');
     });
   });
 });

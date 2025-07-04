@@ -252,4 +252,50 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
       it { expect(described_class).not_to be_active_self_managed_duo_core_pro_or_enterprise }
     end
   end
+
+  describe '.active_self_managed_duo_pro_or_enterprise' do
+    subject(:result) { described_class.active_self_managed_duo_pro_or_enterprise }
+
+    let!(:add_on_purchase) do
+      create(
+        :gitlab_subscription_add_on_purchase,
+        namespace: namespace,
+        add_on: add_on,
+        started_at: started_at,
+        expires_on: expires_on
+      )
+    end
+
+    let(:started_at) { 1.day.ago.to_date }
+    let(:expires_on) { 1.year.from_now.to_date }
+    let(:namespace) { nil } # self-managed
+    let(:add_on) { build(:gitlab_subscription_add_on, :duo_pro) }
+
+    it { expect(result).to eq add_on_purchase }
+
+    context 'with Duo Enterprise' do
+      let(:add_on) { build(:gitlab_subscription_add_on, :duo_enterprise) }
+
+      it { expect(result).to eq add_on_purchase }
+    end
+
+    context 'with other add-on' do
+      let(:add_on) { build(:gitlab_subscription_add_on, :duo_core) }
+
+      it { expect(result).not_to eq add_on_purchase }
+    end
+
+    context 'with inactive add-on' do
+      let(:started_at) { 1.year.ago.to_date }
+      let(:expires_on) { 1.month.ago.to_date }
+
+      it { expect(result).not_to eq add_on_purchase }
+    end
+
+    context 'with GitLab.com add-on' do
+      let(:namespace) { build(:namespace) }
+
+      it { expect(result).not_to eq add_on_purchase }
+    end
+  end
 end

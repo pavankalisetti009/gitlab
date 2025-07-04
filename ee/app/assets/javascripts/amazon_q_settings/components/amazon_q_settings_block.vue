@@ -29,6 +29,9 @@ export default {
     ),
   },
   inject: ['areDuoSettingsLocked'],
+  provide: {
+    isSaaS: false,
+  },
   props: {
     initAvailability: {
       type: String,

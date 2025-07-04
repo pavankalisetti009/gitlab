@@ -30,14 +30,12 @@ module Admin
         duo_chat_expiration_column: duo_chat_expiration_column,
         duo_chat_expiration_days: duo_chat_expiration_days,
         duo_core_features_enabled: duo_core_features_enabled?,
-        duo_pro_or_duo_enterprise_tier: duo_pro_or_duo_enterprise_tier,
         duo_pro_visible: active_duo_add_ons_exist?,
         enabled_expanded_logging: enabled_expanded_logging,
         experiment_features_enabled: instance_level_ai_beta_features_enabled,
         on_general_settings_page: false,
         prompt_cache_enabled: model_prompt_cache_enabled?,
         redirect_path: url_helpers.admin_gitlab_duo_path,
-        should_show_duo_availability: show_duo_availability?,
         toggle_beta_models_path: url_helpers.admin_ai_duo_self_hosted_toggle_beta_models_path
       }.transform_values(&:to_s)
     end
@@ -56,17 +54,9 @@ module Admin
       return false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
 
       has_required_license = ::License.feature_available?(:self_hosted_models)
-      has_duo_enterprise = GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchased_or_trial?
+      has_duo_enterprise = ::GitlabSubscriptions::DuoEnterprise.active_add_on_purchase_for_self_managed?
 
       has_required_license && has_duo_enterprise
-    end
-
-    def show_duo_availability?
-      GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchased_or_trial?
-    end
-
-    def duo_pro_or_duo_enterprise_tier
-      GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchase&.add_on&.name&.upcase
     end
 
     def url_helpers
