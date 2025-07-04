@@ -357,6 +357,12 @@ module EE
       override :defaults
       def defaults
         super.merge(
+          # As an exception, we need Elasticsearch default settings with jsonb accessor
+          # because they are needed for the E2E specs, contrary to the docs:
+          # https://docs.gitlab.com/development/application_settings/#default-values
+          # Please follow https://gitlab.com/gitlab-org/gitlab/-/issues/553575 for updates
+          jsonb_defaults_mapping_for_elasticsearch.transform_keys(&:to_sym)
+        ).merge(
           allow_group_owners_to_manage_ldap: true,
           automatic_purchased_storage_allocation: false,
           custom_project_templates_group_id: nil,
@@ -365,9 +371,6 @@ module EE
           default_project_deletion_protection: false,
           disable_personal_access_tokens: false,
           elasticsearch_url: ENV['ELASTIC_URL'] || 'http://localhost:9200',
-          elasticsearch_client_request_timeout: 0,
-          elasticsearch_max_bulk_size_mb: 10,
-          elasticsearch_worker_number_of_shards: 2,
           email_additional_text: nil,
           enforce_namespace_storage_limit: false,
           future_subscriptions: [],

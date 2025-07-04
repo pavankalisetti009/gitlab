@@ -29,6 +29,22 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { expect(setting.elasticsearch_url).to eq([URI.parse(elastic_url)]) }
     end
 
+    describe 'elasticsearch jsonb_accessor fields with defaults' do
+      it 'ensures all elasticsearch fields with defaults are included in .defaults', :aggregate_failures do
+        # Get elasticsearch jsonb_accessor fields
+        elasticsearch_fields_with_defaults = described_class.jsonb_defaults_mapping_for_elasticsearch
+
+        defaults = described_class.defaults
+
+        # Check that each elasticsearch field with a default is included in ApplicationSetting.defaults
+        elasticsearch_fields_with_defaults.each do |field, expected_default|
+          field_symbol = field.to_sym
+          expect(defaults[field_symbol]).to eq(expected_default),
+            "Expected '#{field}' default to be #{expected_default} but got #{defaults[field_symbol].inspect}"
+        end
+      end
+    end
+
     it 'has correct default values' do
       is_expected.to have_attributes(
         allow_all_integrations: true,
