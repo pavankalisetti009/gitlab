@@ -355,7 +355,7 @@ describe('DevopsAdoptionApp', () => {
       });
 
       it('clears pollTableData interval when destroying', () => {
-        wrapper.vm.$destroy();
+        wrapper.destroy();
 
         expect(window.clearInterval).toHaveBeenCalledWith(mockIntervalId);
       });
