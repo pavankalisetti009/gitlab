@@ -44,10 +44,10 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
       expect(find_autocomplete_menu).to be_visible
     end
 
-    context 'issuables' do
+    describe 'issuables' do
       let(:project) { create(:project, :repository, namespace: group) }
 
-      context 'issues' do
+      describe 'issues' do
         it 'shows issues of group' do
           issue_1 = create(:issue, project: project)
           issue_2 = create(:issue, project: project)
@@ -58,7 +58,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         end
       end
 
-      context 'merge requests' do
+      describe 'merge requests' do
         it 'shows merge requests of group' do
           mr_1 = create(:merge_request, source_project: project)
           mr_2 = create(:merge_request, source_project: project, source_branch: 'other-branch')
@@ -70,7 +70,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
       end
     end
 
-    context 'epics' do
+    describe 'epics' do
       let!(:epic2) { create(:epic, group: group, title: 'make tea') }
 
       it 'shows epics' do
@@ -80,7 +80,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
       end
     end
 
-    context 'milestone' do
+    describe 'milestone' do
       it 'shows group milestones' do
         project = create(:project, namespace: group)
         milestone_1 = create(:milestone, title: 'milestone_1', group: group)
@@ -93,7 +93,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
       end
     end
 
-    context 'labels' do
+    describe 'labels' do
       let_it_be(:backend) { create(:group_label, group: group, title: 'backend') }
       let_it_be(:bug) { create(:group_label, group: group, title: 'bug') }
       let_it_be(:feature_proposal) { create(:group_label, group: group, title: 'feature proposal') }
@@ -212,6 +212,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
   private
 
   def expect_resources(shown: nil, not_shown: nil)
+    # rubocop: disable RSpec/AvoidConditionalStatements -- needs refactoring into separate methods
     page.within('.atwho-container') do
       if shown
         expect(page).to have_selector('.atwho-view li', count: shown.size)
@@ -223,5 +224,6 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
         not_shown.each { |resource| expect(page).not_to have_content(resource.title) }
       end
     end
+    # rubocop: enable RSpec/AvoidConditionalStatements
   end
 end

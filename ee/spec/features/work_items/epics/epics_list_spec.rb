@@ -20,17 +20,26 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
     sign_in(user)
   end
 
-  context 'epics list' do
+  describe 'epics list' do
     available_tokens = ['Author', 'Label', 'My reaction']
     default_sort_option = 'Created date'
     available_sort_options = [default_sort_option, 'Updated date', 'Start date', 'Due date', 'Title']
 
     describe 'within a group' do
-      let_it_be(:epic1) { create(:epic, group: group, start_date: '2020-12-15', end_date: '2021-1-15', labels: [docs_label]) }
-      let_it_be(:epic2) { create(:epic, group: group, start_date: '2020-12-15', labels: [docs_label, enhancement_label]) }
+      let_it_be(:epic1) do
+        create(:epic, group: group, start_date: '2020-12-15', end_date: '2021-1-15', labels: [docs_label])
+      end
+
+      let_it_be(:epic2) do
+        create(:epic, group: group, start_date: '2020-12-15', labels: [docs_label, enhancement_label])
+      end
+
       let_it_be(:epic3) { create(:epic, group: group, end_date: '2021-1-15', labels: [enhancement_label]) }
       let_it_be(:blocked_epic) { create(:epic, group: group, end_date: '2022-1-15') }
-      let_it_be(:epic_link) { create(:related_epic_link, source: epic2, target: blocked_epic, link_type: IssuableLink::TYPE_BLOCKS) }
+      let_it_be(:epic_link) do
+        create(:related_epic_link, source: epic2, target: blocked_epic, link_type: IssuableLink::TYPE_BLOCKS)
+      end
+
       let_it_be(:award_emoji_star) { create(:award_emoji, name: 'star', user: user, awardable: epic1) }
       let_it_be(:award_emoji_upvote) { create(:award_emoji, :upvote, user: user, awardable: epic1) }
       let_it_be(:award_emoji_downvote) { create(:award_emoji, :downvote, user: user, awardable: epic2) }
@@ -100,7 +109,8 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
 
           page.within('.issuable-list-container .issuable-list') do
             expect(page).to have_selector('li.issue', count: 1)
-            expect(page.find('li.issue .issuable-info')).not_to have_selector('.gl-label', text: enhancement_label.title)
+            expect(page.find('li.issue .issuable-info')).not_to have_selector('.gl-label',
+              text: enhancement_label.title)
           end
         end
 
@@ -164,7 +174,8 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
           allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(175)
 
           # Verify that label `Bug` is not applied already
-          expect(find('.issuable-list li.issue .issuable-info', match: :first)).not_to have_selector('.gl-label', text: bug_label.title)
+          expect(find('.issuable-list li.issue .issuable-info',
+            match: :first)).not_to have_selector('.gl-label', text: bug_label.title)
 
           # Bulk edit all epics to apply label
           page.within('.issuable-list-container') do
@@ -185,7 +196,8 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
           end
 
           # Verify that label is applied
-          expect(find('.issuable-list li.issue .issuable-info', match: :first)).to have_selector('.gl-label', text: bug_label.title)
+          expect(find('.issuable-list li.issue .issuable-info',
+            match: :first)).to have_selector('.gl-label', text: bug_label.title)
         end
       end
 
