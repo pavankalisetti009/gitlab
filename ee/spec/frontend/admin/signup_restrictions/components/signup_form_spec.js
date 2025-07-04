@@ -24,7 +24,8 @@ describe('SignUpRestrictionsApp', () => {
   const mountComponent = ({ provide = {} } = {}) => {
     wrapper = mountExtended(SignupForm, {
       provide: {
-        glFeatures: { passwordComplexity: true, seatControl: true },
+        glFeatures: { passwordComplexity: true },
+        glLicensedFeatures: { seatControl: true },
         ...mockData,
         ...provide,
       },

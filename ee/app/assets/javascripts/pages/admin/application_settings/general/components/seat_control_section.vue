@@ -1,7 +1,7 @@
 <script>
 import { GlFormGroup, GlFormRadio, GlFormRadioGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_feature_mixin';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 import BeforeSubmitUserCapOverLicensedUsersModal from 'ee_component/pages/admin/application_settings/general/components/before_submit_user_cap_over_licensed_users_modal.vue';
 import SeatControlMemberPromotionManagement from 'ee_component/pages/admin/application_settings/general/components/seat_control_member_promotion_management.vue';
@@ -18,7 +18,7 @@ export default {
     HelpPageLink,
     SeatControlMemberPromotionManagement,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   provide() {
     return {
       beforeSubmitHookContexts: {
@@ -98,8 +98,7 @@ export default {
       return 'before-submit-user-cap-over-licensed-users-modal';
     },
     shouldShowSeatControlSection() {
-      // This actually refers to a licensed feature. See https://gitlab.com/gitlab-org/gitlab/-/issues/322460
-      return Boolean(this.glFeatures.seatControl);
+      return Boolean(this.glLicensedFeatures.seatControl);
     },
     shouldShowUserCapModal() {
       if (this.pendingUserCount > 0) return false;
