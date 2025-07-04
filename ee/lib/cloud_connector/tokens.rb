@@ -8,7 +8,7 @@ module CloudConnector
     @key_loader = CachingKeyLoader.new
 
     # Unit primitives that are fully migrated to the new token path
-    ROLLED_OUT_UNIT_PRIMITIVES = %i[observability_all duo_workflow_execute_workflow duo_chat
+    ROLLED_OUT_UNIT_PRIMITIVES = %i[observability_all duo_workflow_execute_workflow security_scans
       amazon_q_integration].freeze
 
     # Retrieves a token for the specified unit primitive

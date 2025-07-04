@@ -85,7 +85,7 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
     end
 
     context 'when self_hosted model is configured for the feature' do
-      let(:unit_primitive) { :duo_chat }
+      let(:unit_primitive) { :observability_all }
 
       before do
         feature_obj = instance_double(Ai::FeatureSetting, self_hosted?: true)
@@ -96,7 +96,7 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
     end
 
     context 'when environment variable is set' do
-      let(:unit_primitive) { :duo_chat }
+      let(:unit_primitive) { :observability_all }
 
       before do
         stub_env('CLOUD_CONNECTOR_SELF_SIGN_TOKENS', 'true')
@@ -107,7 +107,7 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
 
     context 'when none of the self-signing conditions are met' do
       context 'and feature_for_unit_primitive returns nil' do
-        let(:unit_primitive) { :duo_chat }
+        let(:unit_primitive) { :observability_all }
 
         before do
           allow(Ai::FeatureSetting).to receive(:feature_for_unit_primitive).with(unit_primitive).and_return(nil)
