@@ -488,7 +488,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     end
   end
 
-  context 'when assigning a member role' do
+  context 'when assigning a member role', feature_category: :permissions do
     let_it_be(:member_role) { create(:member_role, :guest, namespace: root_ancestor) }
 
     before do
@@ -507,6 +507,75 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
         expect(member.member_role).to eq(member_role)
         expect(member.access_level).to eq(Member::GUEST)
+      end
+
+      context 'when source is a project' do
+        it 'does not enqueue UpdateForGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).not_to receive(:perform_async)
+
+          execute_service
+        end
+      end
+
+      context 'when source is a group' do
+        let_it_be(:group) { root_ancestor }
+        let_it_be(:new_user) { create(:user) }
+
+        let(:params) do
+          {
+            user_id: new_user.id,
+            access_level: Gitlab::Access::GUEST,
+            source: group,
+            member_role_id: member_role.id,
+            invite_source: '_invite_source_'
+          }
+        end
+
+        subject(:execute_service) { described_class.new(user, params).execute }
+
+        before do
+          group.add_owner(user)
+
+          stub_feature_flags(cache_user_group_member_roles: group)
+        end
+
+        shared_examples 'does not enqueue UpdateForGroupWorker job' do
+          it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
+            expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).not_to receive(:perform_async)
+
+            execute_service
+
+            member = Member.last
+            expect(member.user_id).to eq(new_user.id)
+          end
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(cache_user_group_member_roles: false)
+          end
+
+          it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+        end
+
+        context 'when no member role was assigned' do
+          before do
+            params[:member_role_id] = nil
+          end
+
+          it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+        end
+
+        it 'enqueues a ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
+          allow(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to receive(:perform_async)
+
+          execute_service
+
+          member = Member.last
+
+          expect(member.user_id).to eq(new_user.id)
+          expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to have_received(:perform_async).with(member.id)
+        end
       end
     end
 
