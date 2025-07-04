@@ -70,6 +70,21 @@ describe('SignUpArkoseApp', () => {
     });
   });
 
+  it('initialize Arkose Labs challenge with dark theme for lightweight_trial_registration_redesign experiment candidate', () => {
+    createComponent({ props: { isLWRExperimentCandidate: true } });
+
+    expect(initArkoseLabsChallenge).toHaveBeenCalledWith({
+      publicKey: MOCK_PUBLIC_KEY,
+      domain: MOCK_DOMAIN,
+      dataExchangePayload: mockDataExchangePayload,
+      config: expect.objectContaining({
+        onShown: expect.any(Function),
+        onCompleted: expect.any(Function),
+        styleTheme: 'dark',
+      }),
+    });
+  });
+
   it('creates a hidden input for the verification token', () => {
     const input = findArkoseLabsVerificationTokenInput();
 

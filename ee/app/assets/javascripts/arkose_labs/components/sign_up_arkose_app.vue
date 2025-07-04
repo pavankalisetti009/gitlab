@@ -34,6 +34,11 @@ export default {
       required: false,
       default: undefined,
     },
+    isLWRExperimentCandidate: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -55,6 +60,7 @@ export default {
           onShown: this.onArkoseLabsIframeShown,
           onCompleted: this.passArkoseLabsChallenge,
           onError: this.bypassArkoseOnFailure,
+          styleTheme: this.isLWRExperimentCandidate ? 'dark' : null,
         },
       });
     } catch (error) {

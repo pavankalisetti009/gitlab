@@ -6,7 +6,17 @@ import { CHALLENGE_CONTAINER_CLASS } from '../constants';
 
 export default {
   name: 'PhoneVerificationArkoseApp',
-  inject: ['arkoseConfiguration', 'arkoseDataExchangePayload'],
+  inject: {
+    arkoseConfiguration: {
+      default: null,
+    },
+    arkoseDataExchangePayload: {
+      default: null,
+    },
+    isLWRExperimentCandidate: {
+      default: false,
+    },
+  },
   props: {
     resetSession: {
       type: Boolean,
@@ -46,6 +56,7 @@ export default {
           selector: `.${this.arkoseLabsContainerClass}`,
           onShown: this.onArkoseLabsIframeShown,
           onCompleted: this.passArkoseLabsChallenge,
+          styleTheme: this.isLWRExperimentCandidate ? 'dark' : null,
         },
       });
     } catch (error) {
