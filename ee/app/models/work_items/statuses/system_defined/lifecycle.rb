@@ -69,6 +69,10 @@ module WorkItems
           Status.find(default_duplicate_status_id)
         end
 
+        def default_statuses
+          [default_open_status, default_closed_status, default_duplicate_status].compact
+        end
+
         def custom?
           false
         end
