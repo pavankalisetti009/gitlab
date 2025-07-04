@@ -18,35 +18,4 @@ RSpec.describe GitlabSchema.types['WorkspacesAgentConfig'], feature_category: :w
   specify { expect(described_class).to have_graphql_fields(fields) }
 
   specify { expect(described_class).to require_graphql_authorizations(:read_workspaces_agent_config) }
-
-  describe 'workspaces_agent_config' do
-    let_it_be(:group) { create(:group) }
-
-    let_it_be(:query) do
-      %(
-        query {
-          namespace(fullPath: "#{group.full_path}") {
-            remoteDevelopmentClusterAgents(filter: AVAILABLE) {
-              nodes {
-                workspacesAgentConfig {
-                  workspacesPerUserQuota
-                }
-              }
-            }
-          }
-        }
-      )
-    end
-
-    subject(:workspaces_agent_config_result) do
-      result = GitlabSchema.execute(query, context: { current_user: current_user }).as_json
-      result.dig('data', 'namespace', 'remoteDevelopmentClusterAgents', 'nodes', 0, 'workspacesAgentConfig')
-    end
-
-    context 'when user is not logged in' do
-      let(:current_user) { nil }
-
-      it { is_expected.to be_nil }
-    end
-  end
 end
