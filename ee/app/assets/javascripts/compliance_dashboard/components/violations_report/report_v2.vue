@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlLoadingIcon, GlTable, GlLink, GlToast } from '@gitlab/ui';
+import { GlAlert, GlLoadingIcon, GlTable, GlLink, GlToast, GlKeysetPagination } from '@gitlab/ui';
 import Vue from 'vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__ } from '~/locale';
@@ -12,6 +12,8 @@ import updateComplianceViolationStatus from 'ee/compliance_violations/graphql/mu
 
 Vue.use(GlToast);
 
+export const VIOLATION_PAGE_SIZE = 20;
+
 export default {
   name: 'ComplianceViolationsReportV2',
   components: {
@@ -19,6 +21,7 @@ export default {
     GlLoadingIcon,
     GlTable,
     GlLink,
+    GlKeysetPagination,
     ComplianceViolationStatusDropdown,
   },
   props: {
@@ -30,8 +33,12 @@ export default {
   data() {
     return {
       queryError: false,
-      violations: [],
+      violations: { nodes: [] },
       isStatusUpdating: false,
+      cursor: {
+        before: null,
+        after: null,
+      },
     };
   },
   computed: {
@@ -43,6 +50,20 @@ export default {
     },
   },
   methods: {
+    onPrevPage() {
+      this.cursor = {
+        before: this.violations.pageInfo.startCursor,
+        after: null,
+      };
+    },
+
+    onNextPage() {
+      this.cursor = {
+        after: this.violations.pageInfo.endCursor,
+        before: null,
+      };
+    },
+
     async handleStatusChange(newStatus, violation) {
       this.isStatusUpdating = true;
       try {
@@ -98,10 +119,12 @@ export default {
       variables() {
         return {
           fullPath: this.groupPath,
+          ...this.cursor,
+          [this.cursor.before ? 'last' : 'first']: VIOLATION_PAGE_SIZE,
         };
       },
       update(data) {
-        return data?.group?.projectComplianceViolations?.nodes || [];
+        return data?.group?.projectComplianceViolations;
       },
       error(e) {
         Sentry.captureException(e);
@@ -166,7 +189,7 @@ export default {
 </script>
 
 <template>
-  <section>
+  <section class="gl-flex gl-flex-col">
     <gl-alert v-if="queryError" variant="danger" class="gl-mt-3" :dismissible="false">
       {{ $options.i18n.queryError }}
     </gl-alert>
@@ -174,7 +197,7 @@ export default {
     <gl-table
       ref="table"
       :fields="$options.fields"
-      :items="violations"
+      :items="violations.nodes"
       :busy="isLoading"
       :empty-text="emptyText"
       show-empty
@@ -224,5 +247,12 @@ export default {
         <gl-loading-icon size="lg" color="dark" class="gl-my-5" />
       </template>
     </gl-table>
+
+    <gl-keyset-pagination
+      v-bind="violations.pageInfo"
+      class="gl-mt-7 gl-self-center"
+      @prev="onPrevPage"
+      @next="onNextPage"
+    />
   </section>
 </template>

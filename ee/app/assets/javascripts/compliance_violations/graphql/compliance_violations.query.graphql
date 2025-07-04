@@ -1,8 +1,14 @@
-query groupComplianceViolations($fullPath: ID!) {
+query groupComplianceViolations(
+  $fullPath: ID!
+  $first: Int
+  $after: String
+  $last: Int
+  $before: String
+) {
   group(fullPath: $fullPath) {
     id
     name
-    projectComplianceViolations {
+    projectComplianceViolations(first: $first, after: $after, last: $last, before: $before) {
       nodes {
         id
         createdAt
@@ -16,6 +22,12 @@ query groupComplianceViolations($fullPath: ID!) {
           name
         }
         status
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
       }
     }
   }
