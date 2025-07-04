@@ -157,7 +157,8 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :so
             new_ds_build = pipeline.builds.find { |b| b.name == 'dependency-scanning' }
             expect(String(new_ds_build.variables.to_hash['DS_EXCLUDED_PATHS']))
               .to eql(
-                'spec, test, tests, tmp, **/build.gradle, **/build.gradle.kts, **/build.sbt, **/pom.xml, ' \
+                'spec, test, tests, tmp, node_modules, ' \
+                  '**/build.gradle, **/build.gradle.kts, **/build.sbt, **/pom.xml, ' \
                   '**/requirements.txt, **/requirements.pip, **/Pipfile, **/Pipfile.lock, **/requires.txt, ' \
                   '**/setup.py, **/poetry.lock, **/uv.lock, **/packages.lock.json, **/conan.lock, ' \
                   '**/package-lock.json, **/npm-shrinkwrap.json, **/pnpm-lock.yaml, **/yarn.lock, **/composer.lock, ' \
@@ -171,7 +172,8 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :so
 
           it "scans all supported files" do
             new_ds_build = pipeline.builds.find { |b| b.name == 'dependency-scanning' }
-            expect(String(new_ds_build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp')
+            expect(String(new_ds_build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql(
+              'spec, test, tests, tmp, node_modules')
           end
         end
       end
