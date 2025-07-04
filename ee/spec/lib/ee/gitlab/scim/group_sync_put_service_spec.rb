@@ -3,188 +3,115 @@
 require 'spec_helper'
 
 RSpec.describe EE::Gitlab::Scim::GroupSyncPutService, feature_category: :system_access do
-  let_it_be(:scim_group_uid) { SecureRandom.uuid }
-  let_it_be(:group) { create(:group) }
-  let_it_be(:another_group) { create(:group) }
-  let_it_be(:user1) { create(:user) }
-  let_it_be(:user2) { create(:user) }
-  let_it_be(:user3) { create(:user) }
-  let_it_be(:regular_user) { create(:user) }
-  let_it_be(:identity1) { create(:scim_identity, user: user1, extern_uid: 'scim-user1', group: nil) }
-  let_it_be(:identity2) { create(:scim_identity, user: user2, extern_uid: 'scim-user2', group: nil) }
-  let_it_be(:identity3) { create(:scim_identity, user: user3, extern_uid: 'scim-user3', group: nil) }
-
-  let!(:saml_group_link) do
-    create(:saml_group_link, group: group, saml_group_name: 'engineering', scim_group_uid: scim_group_uid)
-  end
-
-  let!(:another_group_link) do
-    create(:saml_group_link, group: another_group, saml_group_name: 'engineering', scim_group_uid: scim_group_uid)
-  end
-
-  let(:members) { [] }
-  let(:display_name) { 'Engineering' }
-
-  subject(:service) do
+  let(:scim_group_uid) { SecureRandom.uuid }
+  let(:service) do
     described_class.new(
       scim_group_uid: scim_group_uid,
       members: members,
-      display_name: display_name
+      display_name: 'Engineering'
     )
   end
 
   describe '#execute' do
-    context 'with empty members list' do
-      it 'returns a success response' do
-        result = service.execute
-
-        expect(result).to be_success
-      end
-
-      context 'when groups have existing SCIM members' do
-        before do
-          group.add_member(user1, Gitlab::Access::DEVELOPER)
-          another_group.add_member(user1, Gitlab::Access::DEVELOPER)
-
-          create(:identity, user: user1, provider: 'scim', saml_provider: nil)
-        end
-
-        it 'enqueues removal jobs for SCIM members' do
-          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-            .with(scim_group_uid, [user1.id], 'remove')
-            .once
-
-          service.execute
-        end
-      end
-
-      context 'when groups have non-SCIM members' do
-        before do
-          group.add_member(regular_user, Gitlab::Access::DEVELOPER)
-        end
-
-        it 'does not enqueue a job for non-SCIM members' do
-          expect(::Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
-            .with(scim_group_uid, [regular_user.id], 'remove')
-
-          service.execute
-        end
-      end
-    end
-
-    context 'with members list' do
+    context 'with valid members' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:identity) { create(:scim_identity, user: user, group: nil) }
       let(:members) do
         [
-          { value: identity1.extern_uid },
-          { value: identity2.extern_uid }
+          { value: identity.extern_uid, display: user.name }
         ]
       end
 
-      it 'enqueues a job to add the members' do
-        expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-          .with(scim_group_uid, [user1.id, user2.id], 'add')
-          .once
+      it 'schedules the worker to replace members' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [user.id], 'replace')
 
         service.execute
       end
 
-      it 'returns a success response' do
+      it 'returns success' do
+        allow(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+
         result = service.execute
 
         expect(result).to be_success
       end
+    end
 
-      context 'with existing SCIM members not in the provided list' do
-        before do
-          group.add_member(user3, Gitlab::Access::DEVELOPER)
-          another_group.add_member(user3, Gitlab::Access::DEVELOPER)
+    context 'with empty members array' do
+      let(:members) { [] }
 
-          create(:identity, user: user3, provider: 'scim', saml_provider: nil)
-        end
+      it 'schedules the worker with empty user IDs' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [], 'replace')
 
-        it 'enqueues a job to remove members not in the list' do
-          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-            .with(scim_group_uid, [user3.id], 'remove')
-            .once
+        service.execute
+      end
+    end
 
-          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-            .with(scim_group_uid, [user1.id, user2.id], 'add')
-            .once
-
-          service.execute
-        end
+    context 'with non-existent user identities' do
+      let(:members) do
+        [
+          { value: 'non-existent-identity' }
+        ]
       end
 
-      context 'with non-existent user identity values' do
-        let(:members) do
-          [
-            { value: 'non-existent-identity-1' },
-            { value: 'non-existent-identity-2' }
-          ]
-        end
+      it 'schedules the worker with empty user IDs' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [], 'replace')
 
-        context 'with existing SCIM members in the group' do
-          before do
-            group.add_member(user1, Gitlab::Access::DEVELOPER)
+        service.execute
+      end
+    end
 
-            create(:identity, user: user1, provider: 'scim', saml_provider: nil)
-          end
-
-          it 'enqueues a job to remove existing members' do
-            expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-              .with(scim_group_uid, [user1.id], 'remove')
-              .once
-
-            service.execute
-          end
-        end
-
-        it 'does not enqueue a job to add members when no matches found' do
-          expect(::Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
-            .with(scim_group_uid, anything, 'add')
-
-          service.execute
-        end
-
-        it 'returns a success response' do
-          result = service.execute
-
-          expect(result).to be_success
-        end
+    context 'with mixed valid and invalid identities' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:identity) { create(:scim_identity, user: user, group: nil) }
+      let(:members) do
+        [
+          { value: identity.extern_uid },
+          { value: 'non-existent-identity' }
+        ]
       end
 
-      context 'with case-insensitive extern_uid values' do
-        let(:members) do
-          [
-            { value: identity1.extern_uid.upcase },
-            { value: identity2.extern_uid.downcase }
-          ]
-        end
+      it 'schedules the worker with only valid user IDs' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [user.id], 'replace')
 
-        it 'enqueues a job with all matching user IDs' do
-          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-            .with(scim_group_uid, [user1.id, user2.id], 'add')
-            .once
+        service.execute
+      end
+    end
 
-          service.execute
-        end
+    context 'with nil members' do
+      let(:members) { nil }
+
+      it 'does not schedule the worker' do
+        expect(Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
+
+        service.execute
       end
 
-      context 'with members missing the value attribute' do
-        let(:members) do
-          [
-            { display: 'Missing' }, # Missing `value`
-            { value: identity1.extern_uid, display: 'User 1' }
-          ]
-        end
+      it 'returns success' do
+        result = service.execute
 
-        it 'enqueues a job with only valid member IDs' do
-          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
-            .with(scim_group_uid, [user1.id], 'add')
-            .once
+        expect(result).to be_success
+      end
+    end
 
-          service.execute
-        end
+    context 'with blank members' do
+      let(:members) do
+        [
+          { value: '' },
+          { value: nil },
+          {}
+        ]
+      end
+
+      it 'schedules the worker with empty user IDs after filtering blanks' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [], 'replace')
+
+        service.execute
       end
     end
   end

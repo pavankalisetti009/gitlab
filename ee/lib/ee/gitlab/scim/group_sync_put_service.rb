@@ -29,26 +29,7 @@ module EE
           normalized_members = members.reject(&:blank?)
           target_user_ids = fetch_target_user_ids(normalized_members)
 
-          group_links = SamlGroupLink.by_scim_group_uid(scim_group_uid)
-          users_to_remove = group_links.flat_map do |saml_group_link|
-            find_users_to_remove(saml_group_link, target_user_ids)
-          end.uniq
-
-          if users_to_remove.any?
-            ::Authn::SyncScimGroupMembersWorker.perform_async(
-              scim_group_uid,
-              users_to_remove,
-              'remove'
-            )
-          end
-
-          return unless target_user_ids.any?
-
-          ::Authn::SyncScimGroupMembersWorker.perform_async(
-            scim_group_uid,
-            target_user_ids,
-            'add'
-          )
+          ::Authn::SyncScimGroupMembersWorker.perform_async(scim_group_uid, target_user_ids, 'replace')
         end
 
         def fetch_target_user_ids(normalized_members)
@@ -57,22 +38,6 @@ module EE
 
           scim_identities = ScimIdentity.for_instance.with_extern_uid(extern_uids)
           scim_identities.map(&:user_id)
-        end
-
-        def find_users_to_remove(saml_group_link, target_user_ids)
-          current_scim_user_ids = find_current_scim_user_ids(saml_group_link.group)
-
-          # Calculate the difference between current SCIM users in this group and the target users
-          # from the SCIM request. This identifies users who were previously provisioned via SCIM
-          # but are no longer included in the PUT request's member list. These users need to be
-          # removed from the group as part of the synchronization process.
-          current_scim_user_ids - target_user_ids
-        end
-
-        def find_current_scim_user_ids(group)
-          group_user_ids = group.user_ids
-
-          ScimIdentity.for_instance.with_user_ids(group_user_ids).map(&:user_id)
         end
       end
       # rubocop:enable Gitlab/EeOnlyClass
