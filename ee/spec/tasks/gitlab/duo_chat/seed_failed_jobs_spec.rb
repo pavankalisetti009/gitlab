@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'gitlab:duo_chat:seed:failed_ci_jobs', :silence_stdout, type: :task, feature_category: :duo_chat do
   let(:langchain_endpoint) { 'https://api.smith.langchain.com' }
-  let(:dataset_id) { 'b377dad3-5e3b-48b7-b16a-a5fb947f3b94' }
+  let(:dataset_version) { '1' }
   let(:langchain_api_key) { 'test_api_key' }
   let(:jsonl_response) do
     <<~JSONL
@@ -23,13 +23,24 @@ RSpec.describe 'gitlab:duo_chat:seed:failed_ci_jobs', :silence_stdout, type: :ta
   before do
     Rake.application.rake_require 'tasks/gitlab/duo_chat/seed_failed_ci_jobs'
     stub_env('LANGCHAIN_ENDPOINT', langchain_endpoint)
-    stub_env('DATASET_ID', dataset_id)
+    stub_env('RCA_DATASET_VERSION', dataset_version)
     stub_env('LANGCHAIN_API_KEY', langchain_api_key)
   end
 
+  context 'when an unknown dataset version is provided' do
+    let(:dataset_version) { '999' } # Unknown version
+
+    it 'prints an error message about unknown version and does not proceed' do
+      expect { run }.to output(/Unknown dataset version: 999. Available versions: 1/).to_stdout
+    end
+  end
+
   context 'when the API request fails' do
+    let(:dataset_version) { '1' }
+    let(:expected_dataset_id) { 'cdba1bb8-8234-4a70-8524-c33dee5a1570' }
+
     before do
-      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{dataset_id}/jsonl")
+      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{expected_dataset_id}/jsonl")
         .with(headers: { 'X-API-Key' => langchain_api_key })
         .to_return(status: 401, body: 'Unauthorized')
     end
@@ -50,8 +61,11 @@ RSpec.describe 'gitlab:duo_chat:seed:failed_ci_jobs', :silence_stdout, type: :ta
   end
 
   context 'when the dataset response is malformed JSON' do
+    let(:dataset_version) { '1' }
+    let(:expected_dataset_id) { 'cdba1bb8-8234-4a70-8524-c33dee5a1570' }
+
     before do
-      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{dataset_id}/jsonl")
+      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{expected_dataset_id}/jsonl")
         .with(headers: { 'X-API-Key' => langchain_api_key })
         .to_return(status: 200, body: "invalid_json")
     end
@@ -72,8 +86,11 @@ RSpec.describe 'gitlab:duo_chat:seed:failed_ci_jobs', :silence_stdout, type: :ta
   end
 
   context 'when the dataset is empty' do
+    let(:dataset_version) { '1' }
+    let(:expected_dataset_id) { 'cdba1bb8-8234-4a70-8524-c33dee5a1570' }
+
     before do
-      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{dataset_id}/jsonl")
+      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{expected_dataset_id}/jsonl")
         .with(headers: { 'X-API-Key' => langchain_api_key })
         .to_return(status: 200, body: "")
     end
@@ -84,8 +101,11 @@ RSpec.describe 'gitlab:duo_chat:seed:failed_ci_jobs', :silence_stdout, type: :ta
   end
 
   context 'when the dataset contains failed jobs' do
+    let(:dataset_version) { '1' }
+    let(:expected_dataset_id) { 'cdba1bb8-8234-4a70-8524-c33dee5a1570' }
+
     before do
-      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{dataset_id}/jsonl")
+      stub_request(:get, "#{langchain_endpoint}/api/v1/datasets/#{expected_dataset_id}/jsonl")
         .with(headers: { 'X-API-Key' => langchain_api_key })
         .to_return(status: 200, body: jsonl_response)
     end

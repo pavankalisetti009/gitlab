@@ -7,11 +7,23 @@ namespace :gitlab do
       task failed_ci_jobs: :environment do
         def fetch_dataset_from_langsmith
           langchain_endpoint = ENV['LANGCHAIN_ENDPOINT'] || 'https://api.smith.langchain.com'
-          dataset_id = ENV['DATASET_ID'] || 'b377dad3-5e3b-48b7-b16a-a5fb947f3b94'
+          dataset_version = ENV['RCA_DATASET_VERSION'] || '1'
           langchain_api_key = ENV['LANGCHAIN_API_KEY']
 
           unless langchain_api_key
             puts "Missing LANGCHAIN_API_KEY environment variable!"
+            return []
+          end
+
+          version_to_id_mapping = {
+            '1' => 'cdba1bb8-8234-4a70-8524-c33dee5a1570'
+          }
+
+          dataset_id = version_to_id_mapping[dataset_version]
+
+          unless dataset_id
+            available_versions = version_to_id_mapping.keys.join(', ')
+            puts "Unknown dataset version: #{dataset_version}. Available versions: #{available_versions}"
             return []
           end
 
