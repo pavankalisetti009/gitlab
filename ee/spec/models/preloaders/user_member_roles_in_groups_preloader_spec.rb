@@ -63,7 +63,8 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
               expect(Gitlab::AppLogger).to receive(:info).with({
                 class: described_class.name,
                 user_id: user.id,
-                groups_count: 2
+                groups_count: 2,
+                group_ids: groups_list.map(&:id).first(10)
               })
 
               result

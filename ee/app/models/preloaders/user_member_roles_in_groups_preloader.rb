@@ -126,7 +126,8 @@ module Preloaders
       ::Gitlab::AppLogger.info(
         class: self.class.name,
         user_id: user.id,
-        groups_count: group_ids.length
+        groups_count: group_ids.length,
+        group_ids: group_ids.first(10)
       )
     end
   end
