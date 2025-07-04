@@ -34,6 +34,21 @@ describe('EpicsSwimlanes', () => {
   const findLoadingSkeleton = () => wrapper.findComponent(SwimlanesLoadingSkeleton);
   const findIntersectionObserver = () => wrapper.findComponent(GlIntersectionObserver);
 
+  // Workaround for Vue 3. For some reason, @vue/test-utils@2's
+  // `VueWrapper#props()` method doesn't return any values for
+  // vue-virtual-scroll-list.
+  // See also https://github.com/vuejs/test-utils/issues/2151
+  const receivedProps = (wrapperInstance) => {
+    if (Vue.version.startsWith(2)) {
+      return wrapperInstance.props();
+    }
+
+    return {
+      ...wrapperInstance.vm.$attrs,
+      ...wrapperInstance.vm.$props,
+    };
+  };
+
   const epicsSwimlanesQueryHandlerSuccess = jest
     .fn()
     .mockResolvedValue(mockEpicSwimlanesResponse());
@@ -129,19 +144,20 @@ describe('EpicsSwimlanes', () => {
     });
 
     it('renders virtual-list', () => {
-      const virtualList = wrapper.findComponent(VirtualList);
       const scrollableContainer = wrapper.findComponent({ ref: 'scrollableContainer' }).element;
 
       expect(BoardUtils.calculateSwimlanesBufferSize).toHaveBeenCalledWith(
         wrapper.element.offsetTop,
       );
-      expect(virtualList.props()).toMatchObject({
+
+      const virtualListProps = receivedProps(wrapper.findComponent(VirtualList));
+      expect(virtualListProps).toMatchObject({
         remain: bufferSize,
         bench: bufferSize,
         size: EPIC_LANE_BASE_HEIGHT,
       });
 
-      expect(virtualList.props().scrollelement).toBe(scrollableContainer);
+      expect(virtualListProps.scrollelement).toBe(scrollableContainer);
     });
 
     it('renders epic lanes', () => {
