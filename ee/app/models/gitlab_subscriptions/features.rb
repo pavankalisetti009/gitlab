@@ -277,6 +277,7 @@ module GitlabSubscriptions
       security_configuration_in_ui
       security_dashboard
       security_inventory
+      security_labels
       security_on_demand_scans
       security_orchestration_policies
       security_training

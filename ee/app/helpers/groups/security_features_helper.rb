@@ -50,4 +50,10 @@ module Groups::SecurityFeaturesHelper
       }
     }
   end
+
+  def group_security_configuration_data(group)
+    {
+      group_full_path: group.full_path
+    }
+  end
 end

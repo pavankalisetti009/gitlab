@@ -625,6 +625,12 @@ module EE
         enable :admin_vulnerability
       end
 
+      rule { can?(:maintainer_access) }.policy do
+        enable :admin_security_labels
+      end
+
+      rule { custom_role_enables_admin_security_labels }.enable(:admin_security_labels)
+
       rule { ~security_inventory_available }.prevent :read_security_inventory
 
       rule { custom_role_enables_read_dependency }.policy do

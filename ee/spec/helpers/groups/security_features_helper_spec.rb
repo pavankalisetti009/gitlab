@@ -169,4 +169,18 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
       expect(group_security_discover_data).to eq(expected_group_security_discover_data)
     end
   end
+
+  describe '#group_security_configuration_data' do
+    let_it_be(:group) { create(:group) }
+
+    subject(:group_security_configuration_data) do
+      helper.group_security_configuration_data(group)
+    end
+
+    it 'builds correct hash' do
+      expect(group_security_configuration_data).to eq({
+        group_full_path: group.full_path
+      })
+    end
+  end
 end
