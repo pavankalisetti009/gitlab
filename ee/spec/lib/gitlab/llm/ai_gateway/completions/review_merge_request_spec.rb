@@ -1022,6 +1022,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           total_comments: 0,
           comments_with_valid_path: 0,
           comments_with_valid_line: 0,
+          comments_with_custom_instructions: 0,
+          comments_line_matched_by_content: 0,
           created_draft_notes: 0
         }
       end
@@ -1051,12 +1053,44 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
                 total_comments: 5,
                 comments_with_valid_path: 4,
                 comments_with_valid_line: 3,
+                comments_with_custom_instructions: 0,
+                comments_line_matched_by_content: 0,
                 created_draft_notes: 3
               )
             )
           )
 
           completion.execute
+        end
+
+        context 'when response contains comments from custom instructions' do
+          let(:combined_review_response) do
+            <<~RESPONSE
+          <review>
+          <comment file="UPDATED.md" old_line="1" new_line="1">According to custom instructions in Ruby Style Guide: first comment</comment>
+          <comment file="UPDATED.md" old_line="" new_line="2">second comment</comment>
+          <comment file="NEW.md" old_line="" new_line="1">According to custom instructions in Markdown Standards: third comment</comment>
+          <comment file="NEW.md" old_line="" new_line="3">regular comment</comment>
+          </review>
+            RESPONSE
+          end
+
+          it 'logs expected comment metrics with custom instructions count' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                expected_hash.merge(
+                  total_comments: 4,
+                  comments_with_valid_path: 4,
+                  comments_with_valid_line: 3,
+                  comments_with_custom_instructions: 2,
+                  comments_line_matched_by_content: 0,
+                  created_draft_notes: 3
+                )
+              )
+            )
+
+            completion.execute
+          end
         end
 
         context 'when duo_code_review_response_logging feature flag is disabled' do
