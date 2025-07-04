@@ -25,8 +25,7 @@ describe('SeatControlSection', () => {
         pendingUserCount: 0,
         promotionManagementAvailable: false,
         seatControl: SEAT_CONTROL.OFF,
-        // This actually refers to a licensed feature. See https://gitlab.com/gitlab-org/gitlab/-/issues/322460
-        glFeatures: { seatControl: true },
+        glLicensedFeatures: { seatControl: true },
         ...provide,
       },
       stubs: { GlSprintf },
