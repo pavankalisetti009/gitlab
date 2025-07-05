@@ -36,12 +36,4 @@ export const STATUS_TITLE = s__('SecurityOrchestration|Status');
 export const SUMMARY_TITLE = s__('SecurityOrchestration|Summary');
 export const CONFIGURATION_TITLE = s__('SecurityOrchestration|Configuration');
 
-export const INHERITED_LABEL = s__(
-  'SecurityOrchestration|This policy is inherited from %{namespace}',
-);
-
 export const INHERITED_SHORT_LABEL = s__('SecurityOrchestration|This policy is inherited');
-
-export const GROUP_TYPE_LABEL = s__('SecurityOrchestration|This is a group-level policy');
-
-export const PROJECT_TYPE_LABEL = s__('SecurityOrchestration|This is a project-level policy');

@@ -5,9 +5,7 @@ import DrawerLayout from 'ee/security_orchestration/components/policy_drawer/dra
 import {
   DEFAULT_DESCRIPTION_LABEL,
   ENABLED_LABEL,
-  GROUP_TYPE_LABEL,
   NOT_ENABLED_LABEL,
-  PROJECT_TYPE_LABEL,
 } from 'ee/security_orchestration/components/policy_drawer/constants';
 import ScopeInfoRow from 'ee/security_orchestration/components/policy_drawer/scope_info_row.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
@@ -82,18 +80,7 @@ describe('DrawerLayout component', () => {
   describe('source field', () => {
     it('displays correctly for a project-level policy being displayed on a project', () => {
       factory({ propsData: { policy: mockProjectScanExecutionPolicy } });
-      expect(findSourceSection().text()).toBe(PROJECT_TYPE_LABEL);
-    });
-
-    it('displays correctly for a group-level policy being displayed on a project', () => {
-      factory({ propsData: { policy: mockGroupScanExecutionPolicy } });
-      expect(trimText(findSourceSection().text())).toBe(
-        'This policy is inherited from parent-group-name',
-      );
-      expect(findLink().text()).toBe('parent-group-name');
-      expect(findLink().attributes('href')).toBe(
-        'http://test.host/groups/parent-group-path/-/security/policies',
-      );
+      expect(findSourceSection().text()).toBe('This is a project-level policy');
     });
 
     it('displays correctly for a group-level policy being displayed on a group', () => {
@@ -101,7 +88,38 @@ describe('DrawerLayout component', () => {
         propsData: { policy: mockProjectScanExecutionPolicy },
         provide: { namespaceType: NAMESPACE_TYPES.GROUP },
       });
-      expect(findSourceSection().text()).toBe(GROUP_TYPE_LABEL);
+      expect(findSourceSection().text()).toBe('This is a group-level policy');
+    });
+
+    it('displays correctly for a instance policy being displayed on a group', () => {
+      factory({
+        propsData: { policy: { ...mockProjectScanExecutionPolicy, csp: true } },
+        provide: { namespaceType: NAMESPACE_TYPES.GROUP },
+      });
+      expect(findSourceSection().text()).toBe('This is an instance policy');
+    });
+
+    describe('inherited', () => {
+      it('displays correctly for a group-level policy being displayed on a project', () => {
+        factory({ propsData: { policy: mockGroupScanExecutionPolicy } });
+        expect(trimText(findSourceSection().text())).toBe(
+          'This policy is inherited from parent-group-name',
+        );
+        expect(findLink().text()).toBe('parent-group-name');
+        expect(findLink().attributes('href')).toBe(
+          'http://test.host/groups/parent-group-path/-/security/policies',
+        );
+      });
+
+      it('displays correctly for a instance policy', () => {
+        factory({
+          propsData: { policy: { ...mockGroupScanExecutionPolicy, csp: true } },
+          provide: { namespaceType: NAMESPACE_TYPES.GROUP },
+        });
+        expect(trimText(findSourceSection().text())).toBe(
+          'This instance policy is inherited from parent-group-name',
+        );
+      });
     });
   });
 

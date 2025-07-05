@@ -56946,10 +56946,16 @@ msgstr ""
 msgid "SecurityOrchestration|This group"
 msgstr ""
 
+msgid "SecurityOrchestration|This instance policy is inherited from %{namespace}"
+msgstr ""
+
 msgid "SecurityOrchestration|This is a group-level policy"
 msgstr ""
 
 msgid "SecurityOrchestration|This is a project-level policy"
+msgstr ""
+
+msgid "SecurityOrchestration|This is an instance policy"
 msgstr ""
 
 msgid "SecurityOrchestration|This merge request approval policy targets the default branch, but the default branch is not protected in this project. To set up this policy, the default branch must be protected."
