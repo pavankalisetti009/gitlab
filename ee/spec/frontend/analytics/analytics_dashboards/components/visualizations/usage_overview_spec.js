@@ -3,6 +3,7 @@ import { GlSingleStat } from '@gitlab/ui/dist/charts';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import UsageOverview from 'ee/analytics/analytics_dashboards/components/visualizations/usage_overview.vue';
+import TooltipOnTruncate from '~/vue_shared/components/tooltip_on_truncate/tooltip_on_truncate.vue';
 import {
   mockGroupUsageOverviewData,
   mockGroupUsageMetrics,
@@ -16,7 +17,10 @@ describe('Usage Overview Visualization', () => {
 
   const findNamespaceTile = () => wrapper.findByTestId('usage-overview-namespace');
   const findNamespaceAvatar = () => findNamespaceTile().findComponent(GlAvatar);
-  const findNamespaceVisibilityIcon = () => findNamespaceTile().findComponent(GlIcon);
+  const findNamespaceVisibilityButton = () => wrapper.findByTestId('namespace-visibility-button');
+  const findNamespaceVisibilityButtonIcon = () =>
+    findNamespaceVisibilityButton().findComponent(GlIcon);
+  const findTooltipOnTruncate = () => wrapper.findComponent(TooltipOnTruncate);
 
   const findMetrics = () => wrapper.findAllComponents(GlSingleStat);
 
@@ -47,8 +51,12 @@ describe('Usage Overview Visualization', () => {
     });
 
     describe('namespace', () => {
-      it("should render namespace's full name", () => {
-        expect(wrapper.findByText('GitLab Org').exists()).toBe(true);
+      it("should render namespace's truncated full name", () => {
+        expect(findTooltipOnTruncate().text()).toBe('GitLab Org');
+        expect(findTooltipOnTruncate().props()).toMatchObject({
+          title: 'GitLab Org',
+          boundary: 'viewport',
+        });
       });
 
       it('should render namespace type', () => {
@@ -66,15 +74,21 @@ describe('Usage Overview Visualization', () => {
         });
       });
 
-      it('should render visibility level icon', () => {
-        const tooltip = getBinding(findNamespaceVisibilityIcon().element, 'gl-tooltip');
+      it('should render accessible visibility level icon', () => {
+        const tooltip = getBinding(findNamespaceVisibilityButton().element, 'gl-tooltip');
 
-        expect(findNamespaceVisibilityIcon().exists()).toBe(true);
         expect(tooltip).toBeDefined();
-        expect(findNamespaceVisibilityIcon().props('name')).toBe('earth');
-        expect(findNamespaceVisibilityIcon().attributes('title')).toBe(
-          'Public - The group and any public projects can be viewed without any authentication.',
-        );
+
+        expect(findNamespaceVisibilityButton().attributes()).toMatchObject({
+          title:
+            'Public - The group and any public projects can be viewed without any authentication.',
+          'aria-label':
+            'Public - The group and any public projects can be viewed without any authentication.',
+        });
+        expect(findNamespaceVisibilityButtonIcon().props()).toMatchObject({
+          name: 'earth',
+          variant: 'subtle',
+        });
       });
 
       it('does not emit `set-alerts', () => {
