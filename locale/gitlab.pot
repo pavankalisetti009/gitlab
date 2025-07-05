@@ -56146,6 +56146,9 @@ msgstr ""
 msgid "SecurityOrchestration|Code push"
 msgstr ""
 
+msgid "SecurityOrchestration|Compliance and security policy group"
+msgstr ""
+
 msgid "SecurityOrchestration|Compliance framework has no projects"
 msgstr ""
 
@@ -56270,6 +56273,9 @@ msgid "SecurityOrchestration|Empty policy name"
 msgstr ""
 
 msgid "SecurityOrchestration|Enabled"
+msgstr ""
+
+msgid "SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for all groups within your instance."
 msgstr ""
 
 msgid "SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for all projects in this group."
@@ -56462,6 +56468,9 @@ msgid "SecurityOrchestration|Merge request pipeline"
 msgstr ""
 
 msgid "SecurityOrchestration|Never"
+msgstr ""
+
+msgid "SecurityOrchestration|New compliance and security policy group"
 msgstr ""
 
 msgid "SecurityOrchestration|New merge request approval policy"
@@ -56986,6 +56995,9 @@ msgid "SecurityOrchestration|Use default mode for scoping"
 msgstr ""
 
 msgid "SecurityOrchestration|Use the format %{schemaStart}path-to-package@package-version%{schemaEnd}. For multiple packages, separate paths with commas. For example: npm/lodash@4.17.21, maven/org.apache.commons/commons-lang3@3.12.0, pypi/requests"
+msgstr ""
+
+msgid "SecurityOrchestration|Use this compliance and security policy group to create security policies. Do not create new projects in this group."
 msgstr ""
 
 msgid "SecurityOrchestration|Users can skip pipelines"

@@ -25,6 +25,7 @@ export default (el, namespaceType) => {
 
   const {
     assignedPolicyProject,
+    designatedAsCsp,
     disableSecurityPolicyProject,
     disableScanPolicyUpdate,
     emptyFilterSvgPath,
@@ -64,6 +65,7 @@ export default (el, namespaceType) => {
     name: 'PoliciesAppRoot',
     provide: {
       assignedPolicyProject: parsedAssignedPolicyProject,
+      designatedAsCsp: parseBoolean(designatedAsCsp),
       disableSecurityPolicyProject: parseBoolean(disableSecurityPolicyProject),
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),
       documentationPath,

@@ -1,7 +1,7 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import BreakingChangesBanner from 'ee/security_orchestration/components/policies/banners/breaking_changes_banner.vue';
+import CspBanner from 'ee/security_orchestration/components/policies/banners/csp_banner.vue';
 import DeprecatedCustomScanBanner from 'ee/security_orchestration/components/policies/banners/deprecated_custom_scan_banner.vue';
 import ExceedingActionsBanner from 'ee/security_orchestration/components/policies/banners/exceeding_actions_banner.vue';
 import ExceedingScheduledRulesBanner from 'ee/security_orchestration/components/policies/banners/exceeding_scheduled_rules_banner.vue';
@@ -19,6 +19,7 @@ describe('List Header Component', () => {
   const newPolicyPath = '/path/to/new/policy/page';
   const projectLinkSuccessText = 'Project was linked successfully.';
 
+  const findCspBadge = () => wrapper.findByTestId('csp-badge');
   const findErrorAlert = () => wrapper.findByTestId('error-alert');
   const findScanNewPolicyModal = () => wrapper.findComponent(ProjectModal);
   const findHeader = () => wrapper.findByRole('heading');
@@ -27,7 +28,7 @@ describe('List Header Component', () => {
   const findViewPolicyProjectButton = () => wrapper.findByTestId('view-project-policy-button');
   const findNewPolicyButton = () => wrapper.findByTestId('new-policy-button');
   const findPageDescription = () => wrapper.findByTestId('page-heading-description');
-  const findBreakingChangesBanner = () => wrapper.findComponent(BreakingChangesBanner);
+  const findCspBanner = () => wrapper.findComponent(CspBanner);
   const findInvalidPoliciesBanner = () => wrapper.findComponent(InvalidPoliciesBanner);
   const findExceedingActionsBanner = () => wrapper.findComponent(ExceedingActionsBanner);
   const findDeprecatedCustomScanBanner = () => wrapper.findComponent(DeprecatedCustomScanBanner);
@@ -58,6 +59,7 @@ describe('List Header Component', () => {
         disableScanPolicyUpdate: false,
         disableSecurityPolicyProject: false,
         namespaceType: NAMESPACE_TYPES.PROJECT,
+        designatedAsCsp: false,
         ...provide,
       },
       stubs: {
@@ -87,6 +89,8 @@ describe('List Header Component', () => {
       ${'does not'} | ${'alert component'}            | ${findErrorAlert}              | ${false}
       ${'does'}     | ${'header'}                     | ${findHeader}                  | ${true}
       ${'does not'} | ${'invalid policies banner'}    | ${findInvalidPoliciesBanner}   | ${false}
+      ${'does not'} | ${'csp banner'}                 | ${findCspBanner}               | ${false}
+      ${'does not'} | ${'csp badge'}                  | ${findCspBadge}                | ${false}
     `('$status display the $component', ({ findFn, exists }) => {
       expect(findFn().exists()).toBe(exists);
     });
@@ -128,22 +132,21 @@ describe('List Header Component', () => {
 
   describe('description', () => {
     it.each`
-      namespaceType              | expectedText
-      ${NAMESPACE_TYPES.GROUP}   | ${'Enforce security policies for all projects in this group.'}
-      ${NAMESPACE_TYPES.PROJECT} | ${'Enforce security policies for this project.'}
-    `('displays the desciption for $namespaceType', ({ namespaceType, expectedText }) => {
-      createWrapper({ provide: { namespaceType } });
-      expect(findPageDescription().text()).toMatchInterpolatedText(expectedText);
-      expect(findMoreInformationLink().attributes('href')).toBe(documentationPath);
-    });
+      namespaceType              | designatedAsCsp | expectedText
+      ${NAMESPACE_TYPES.GROUP}   | ${false}        | ${'Enforce security policies for all projects in this group.'}
+      ${NAMESPACE_TYPES.GROUP}   | ${true}         | ${'Enforce security policies for all groups within your instance.'}
+      ${NAMESPACE_TYPES.PROJECT} | ${false}        | ${'Enforce security policies for this project.'}
+    `(
+      'displays the description for $namespaceType and designatedAsCsp as $designatedAsCsp',
+      ({ designatedAsCsp, expectedText, namespaceType }) => {
+        createWrapper({ provide: { designatedAsCsp, namespaceType } });
+        expect(findPageDescription().text()).toMatchInterpolatedText(expectedText);
+        expect(findMoreInformationLink().attributes('href')).toBe(documentationPath);
+      },
+    );
   });
 
   describe('alerts', () => {
-    it('hides breaking change alert by default', () => {
-      createWrapper();
-      expect(findBreakingChangesBanner().exists()).toBe(false);
-    });
-
     it('displays the "deprecated-custom-scan-banner" when there are deprecated scans', () => {
       createWrapper({ props: { hasDeprecatedCustomScanPolicies: true } });
       expect(findDeprecatedCustomScanBanner().exists()).toBe(true);
@@ -222,6 +225,18 @@ describe('List Header Component', () => {
       });
 
       expect(findExceedingScheduledRulesBanner().exists()).toBe(true);
+    });
+  });
+
+  describe('CSP group', () => {
+    it('displays the csp badge', () => {
+      createWrapper({ provide: { designatedAsCsp: true } });
+      expect(findCspBadge().exists()).toBe(true);
+    });
+
+    it('displays the CSP banner', () => {
+      createWrapper({ provide: { designatedAsCsp: true } });
+      expect(findCspBanner().exists()).toBe(true);
     });
   });
 });
