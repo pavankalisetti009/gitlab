@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::PipelinePresenter do
+RSpec.describe Ci::PipelinePresenter, feature_category: :continuous_integration do
   let_it_be(:project, reload: true) { create(:project) }
   let_it_be(:pipeline, reload: true) { create(:ee_ci_pipeline, project: project) }
 
@@ -61,11 +61,6 @@ RSpec.describe Ci::PipelinePresenter do
 
           it { is_expected.to be_falsey }
         end
-
-        it 'calls latest_report_artifacts once' do
-          expect(pipeline).to receive(:latest_report_artifacts).once.and_call_original
-          subject
-        end
       end
 
       context 'when all features are available' do
@@ -91,11 +86,6 @@ RSpec.describe Ci::PipelinePresenter do
           expect(all_features_query_count).to eq(less_features_query_count)
         end
 
-        it 'calls latest_report_artifacts once' do
-          expect(pipeline).to receive(:latest_report_artifacts).once.and_call_original
-          subject
-        end
-
         context 'with cyclonedx artifacts' do
           let!(:build) { create(:ee_ci_build, :cyclonedx, pipeline: pipeline) }
 
@@ -106,6 +96,38 @@ RSpec.describe Ci::PipelinePresenter do
       context 'when features are disabled' do
         context 'when there is an artifact of a right type' do
           let!(:build) { create(:ee_ci_build, :dependency_scanning, pipeline: pipeline) }
+
+          it { is_expected.to be_falsey }
+        end
+      end
+
+      context 'with child pipelines' do
+        let(:child_pipeline) { create(:ee_ci_pipeline, child_of: pipeline) }
+
+        before do
+          stub_licensed_features(dependency_scanning: true, license_scanning: true, security_dashboard: true)
+        end
+
+        context 'when the report is present on the child job' do
+          let!(:build) { create(:ee_ci_build, :dependency_scanning, pipeline: child_pipeline) }
+
+          it { is_expected.to be_truthy }
+        end
+
+        context 'when the feature is disabled' do
+          let!(:build) { create(:ee_ci_build, :dependency_scanning, pipeline: child_pipeline) }
+
+          before do
+            stub_licensed_features(security_dashboard: false)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+
+        context 'with FF show_child_reports_in_mr_page disabled' do
+          before do
+            stub_feature_flags(show_child_reports_in_mr_page: false)
+          end
 
           it { is_expected.to be_falsey }
         end
