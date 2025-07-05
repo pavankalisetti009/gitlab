@@ -1,10 +1,11 @@
 <script>
-import { GlAlert, GlButton, GlIcon, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlBadge, GlButton, GlIcon, GlSprintf } from '@gitlab/ui';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
+import CspBanner from './banners/csp_banner.vue';
 import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
 import ExceedingActionsBanner from './banners/exceeding_actions_banner.vue';
 import DeprecatedCustomScanBanner from './banners/deprecated_custom_scan_banner.vue';
@@ -14,19 +15,22 @@ import ProjectModal from './project_modal.vue';
 export default {
   BANNER_STORAGE_KEY: 'security_policies_scan_result_name_change',
   components: {
+    CspBanner,
     DeprecatedCustomScanBanner,
     ExceedingActionsBanner,
     ExceedingScheduledRulesBanner,
     GlAlert,
+    GlBadge,
     GlButton,
     GlIcon,
     GlSprintf,
     InvalidPoliciesBanner,
-    ProjectModal,
     PageHeading,
+    ProjectModal,
   },
   inject: [
     'assignedPolicyProject',
+    'designatedAsCsp',
     'disableSecurityPolicyProject',
     'disableScanPolicyUpdate',
     'documentationPath',
@@ -52,15 +56,6 @@ export default {
     },
   },
   i18n: {
-    title: s__('SecurityOrchestration|Policies'),
-    subtitle: {
-      [NAMESPACE_TYPES.GROUP]: s__(
-        'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for all projects in this group.',
-      ),
-      [NAMESPACE_TYPES.PROJECT]: s__(
-        'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for this project.',
-      ),
-    },
     newPolicyButtonText: NEW_POLICY_BUTTON_TEXT,
     editPolicyProjectButtonText: s__('SecurityOrchestration|Edit policy project'),
     viewPolicyProjectButtonText: s__('SecurityOrchestration|View policy project'),
@@ -80,6 +75,23 @@ export default {
     },
     securityPolicyProjectPath() {
       return joinPaths('/', this.assignedPolicyProject?.fullPath);
+    },
+    subtitle() {
+      if (this.namespaceType === NAMESPACE_TYPES.PROJECT) {
+        return s__(
+          'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for this project.',
+        );
+      }
+
+      if (this.designatedAsCsp) {
+        return s__(
+          'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for all groups within your instance.',
+        );
+      }
+
+      return s__(
+        'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for all projects in this group.',
+      );
     },
   },
   methods: {
@@ -121,9 +133,17 @@ export default {
       {{ alertText }}
     </gl-alert>
 
-    <page-heading :heading="$options.i18n.title">
+    <page-heading>
+      <template #heading>
+        <div class="gl-flex gl-items-center">
+          <span>{{ s__('SecurityOrchestration|Policies') }}</span>
+          <gl-badge v-if="designatedAsCsp" class="gl-ml-2" data-testid="csp-badge">
+            {{ s__('SecurityOrchestration|Compliance and security policy group') }}
+          </gl-badge>
+        </div>
+      </template>
       <template #description>
-        <gl-sprintf :message="$options.i18n.subtitle[namespaceType]">
+        <gl-sprintf :message="subtitle">
           <template #link="{ content }">
             <gl-button
               class="!gl-pb-1"
@@ -174,7 +194,8 @@ export default {
       @updating-project="isUpdatingProject"
     />
 
-    <!-- <breaking-changes-banner class="gl-mt-3 gl-mb-6" /> -->
+    <csp-banner v-if="designatedAsCsp" class="gl-mb-6 gl-mt-3" />
+
     <deprecated-custom-scan-banner v-if="hasDeprecatedCustomScanPolicies" class="gl-mb-6 gl-mt-3" />
 
     <invalid-policies-banner v-if="hasInvalidPolicies" />

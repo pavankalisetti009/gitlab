@@ -2,6 +2,7 @@ import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 export const DEFAULT_PROVIDE = {
   assignedPolicyProject: null,
+  designatedAsCsp: false,
   disableSecurityPolicyProject: false,
   disableScanPolicyUpdate: false,
   documentationPath: 'path/to/docs',
