@@ -58,6 +58,33 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
       execute_service(subject: top_level_group, excluded_projects_ids: [])
     end
 
+    it 'schedules worker only for projects that were actually updated' do
+      top_level_group_project.security_setting.update!(secret_push_protection_enabled: true)
+      mid_level_group_project.security_setting.update!(secret_push_protection_enabled: false)
+      bottom_level_group_project.security_setting.update!(secret_push_protection_enabled: false)
+
+      expected_updated_project_ids = [mid_level_group_project.id, bottom_level_group_project.id]
+
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+        .to receive(:perform_async) do |project_ids, detection_type|
+        expect(project_ids).to match_array(expected_updated_project_ids)
+        expect(detection_type).to eq(:secret_detection)
+      end
+
+      execute_service(subject: top_level_group, enable: true, excluded_projects_ids: [excluded_project.id])
+    end
+
+    it 'does not schedule worker when no projects need updating' do
+      projects_to_change.each do |project|
+        project.security_setting.update!(secret_push_protection_enabled: true)
+      end
+
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+        .not_to receive(:perform_async)
+
+      execute_service(subject: top_level_group, enable: true, excluded_projects_ids: [excluded_project.id])
+    end
+
     it 'schedules worker with correct project ids when excluded projects are provided' do
       expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
         .to receive(:perform_async).with(projects_to_change.map(&:id), :secret_detection)
