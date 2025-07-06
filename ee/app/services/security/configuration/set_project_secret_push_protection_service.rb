@@ -24,8 +24,9 @@ module Security
       end
 
       def post_update(project_ids)
-        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker
-          .perform_async(project_ids, :secret_detection)
+        return unless project_ids.present?
+
+        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker.perform_async(project_ids, :secret_detection)
       end
     end
   end

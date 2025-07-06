@@ -3,7 +3,11 @@
 module Security
   module Configuration
     class SetProjectSecuritySettingBaseService
+      include ::Gitlab::ExclusiveLeaseHelpers
+
       PROJECTS_BATCH_SIZE = 100
+      LEASE_TTL = 30.minutes
+      LEASE_TRY_AFTER = 3.seconds
 
       def initialize(
         subject:, enable:, current_user:, excluded_projects_ids: [])
@@ -17,22 +21,27 @@ module Security
       def execute
         return unless valid_request?
 
-        any_updated = false
+        updated_project_ids = []
         project_ids = subject_project_ids
-        ApplicationRecord.transaction do
+        in_lock(lease_key, ttl: LEASE_TTL, sleep_sec: LEASE_TRY_AFTER) do
           project_ids.each_slice(PROJECTS_BATCH_SIZE) do |project_ids_batch|
-            updated_count = update_security_setting(project_ids_batch)
-            any_updated ||= updated_count > 0
+            batch_updated_ids = update_security_setting(project_ids_batch)
+            updated_project_ids.concat(batch_updated_ids)
           end
-          audit if any_updated
         end
 
-        post_update(project_ids)
+        post_update(updated_project_ids)
 
         @enable
+      ensure
+        audit if updated_project_ids.present?
       end
 
       protected
+
+      def lease_key
+        "set_project_security_settings:#{@subject}"
+      end
 
       def valid_request?
         @subject.present? && @current_user.present? && [true, false].include?(@enable)
@@ -40,27 +49,32 @@ module Security
 
       def update_security_setting(project_ids)
         # rubocop:disable CodeReuse/ActiveRecord -- Specific use-case for this service
-        updated_records = ProjectSecuritySetting
-                            .for_projects(project_ids)
-                            .where(setting_key => !@enable)
-                            .update_all(setting_key => @enable, updated_at: Time.current)
+        settings_to_update = ProjectSecuritySetting.for_projects(project_ids).where(setting_key => !@enable)
+        updated_project_ids = settings_to_update.limit(PROJECTS_BATCH_SIZE).pluck(:project_id)
         # rubocop:enable CodeReuse/ActiveRecord
 
-        create_missing_security_setting(project_ids) + updated_records
+        settings_to_update.update_all(setting_key => @enable, updated_at: Time.current) if updated_project_ids.any?
+
+        updated_project_ids + create_missing_security_setting(project_ids)
       end
 
       def create_missing_security_setting(project_ids)
         projects_without_security_setting = Project.id_in(project_ids).without_security_setting
+        return [] unless projects_without_security_setting.any?
+
+        project_ids_to_create = []
         security_setting_attributes = projects_without_security_setting.map do |project|
+          project_id = project.id
+          project_ids_to_create << project_id
           {
-            project_id: project.id,
+            project_id: project_id,
             setting_key => @enable,
             updated_at: Time.current
           }
         end
-        return 0 unless security_setting_attributes.any?
 
-        ProjectSecuritySetting.upsert_all(security_setting_attributes).length
+        ProjectSecuritySetting.upsert_all(security_setting_attributes)
+        project_ids_to_create
       end
 
       def build_audit_context(name:, message:)

@@ -47,6 +47,14 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
       execute_service(subject: project_2)
     end
 
+    it 'schedules worker only when project is actually updated' do
+      project_1.security_setting.update!(secret_push_protection_enabled: true)
+
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).not_to receive(:perform_async)
+
+      execute_service(subject: project_1, enable: true, excluded_projects_ids: [])
+    end
+
     describe 'auditing' do
       context 'when no excluded_projects ids are provided' do
         it 'audits using the correct properties' do
