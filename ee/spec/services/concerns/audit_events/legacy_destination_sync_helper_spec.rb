@@ -50,10 +50,6 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
               expect(destination.category).to eq('http')
               expect(destination.config['url']).to eq(source.destination_url)
               expect(destination.config['headers']).to include(
-                'X-Gitlab-Event-Streaming-Token' => {
-                  'value' => source.verification_token,
-                  'active' => true
-                },
                 'Custom-Header' => {
                   'value' => 'test-value',
                   'active' => true
@@ -111,10 +107,6 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
                 expect(destination.group).to eq(group)
                 expect(destination.config['url']).to eq(source.destination_url)
                 expect(destination.config['headers']).to include(
-                  'X-Gitlab-Event-Streaming-Token' => {
-                    'value' => source.verification_token,
-                    'active' => true
-                  },
                   'Custom-Header' => {
                     'value' => 'test-value',
                     'active' => true
@@ -351,7 +343,7 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
             expect(updated_destination.name).to eq('updated-stream_destination')
             expect(updated_destination.category).to eq('http')
             expect(updated_destination.config['url']).to eq(legacy_destination.destination_url)
-            expect(updated_destination.config['headers']).to include(
+            expect(updated_destination.config['headers']).not_to include(
               'X-Gitlab-Event-Streaming-Token' => {
                 'value' => legacy_destination.verification_token,
                 'active' => true

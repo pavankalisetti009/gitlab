@@ -15,6 +15,7 @@ module AuditEvents
       before_validation :assign_default_name
       before_validation :assign_secret_token_for_http
       before_validation :assign_default_log_id, if: :gcp?
+      before_validation :remove_empty_headers_from_config
       before_validation :ensure_protected_header_not_modified
 
       enum :category, {
@@ -135,6 +136,13 @@ module AuditEvents
         return if sync_helper?
 
         errors.add(:config, "headers cannot contain #{STREAMING_TOKEN_HEADER_KEY}")
+      end
+
+      def remove_empty_headers_from_config
+        return unless http?
+        return unless config.is_a?(Hash)
+
+        config.delete('headers') if config['headers'] == {}
       end
     end
   end

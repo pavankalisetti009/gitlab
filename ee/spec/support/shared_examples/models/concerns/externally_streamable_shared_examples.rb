@@ -158,7 +158,7 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
           'http://example.com'  | ref(:header_with_large_valid_value)                   | true
           'http://example.com'  | ref(:header_with_too_large_value)                     | false
           'http://example.com'  | { key1: { value: 'value1', active: false } }          | true
-          'http://example.com'  | {}                                                    | false
+          'http://example.com'  | {}                                                    | true
           'http://example.com'  | ref(:header_hash1)                                    | true
           'http://example.com'  | { key1: 'value1' }                                    | false
           'http://example.com'  | ref(:header_hash2)                                    | true
@@ -172,6 +172,45 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
           it do
             expect(destination.valid?).to eq(is_valid)
           end
+        end
+      end
+
+      describe 'empty headers handling' do
+        it 'removes empty headers object before validation' do
+          destination = build(model_factory_name, config: { url: 'https://example.com', headers: {} })
+
+          expect(destination).to be_valid
+          expect(destination.config).to eq({ 'url' => 'https://example.com' })
+          expect(destination.config).not_to have_key('headers')
+        end
+
+        it 'does not affect non-empty headers' do
+          config_with_headers = {
+            url: 'https://example.com',
+            headers: { 'X-Custom' => { value: 'test', active: true } }
+          }
+          destination = build(model_factory_name, config: config_with_headers)
+
+          expect(destination).to be_valid
+          expect(destination.config['headers']).to be_present
+          expect(destination.config['headers']['X-Custom']['value']).to eq('test')
+        end
+
+        it 'handles updates that result in empty headers' do
+          destination = create(model_factory_name,
+            config: {
+              url: 'https://example.com',
+              headers: { 'X-Custom' => { value: 'test', active: true } }
+            }
+          )
+
+          destination.config = { url: 'https://example.com', headers: {} }
+
+          expect(destination).to be_valid
+          expect(destination.save).to be true
+
+          destination.reload
+          expect(destination.config).to eq({ 'url' => 'https://example.com' })
         end
       end
     end

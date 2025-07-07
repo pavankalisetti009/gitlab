@@ -29,7 +29,7 @@ module AuditEvents
 
         destination.save!
 
-        sync_legacy_headers(stream_destination_model, destination) if stream_destination_model.http?
+        sync_http_destination(stream_destination_model, destination) if stream_destination_model.http?
 
         stream_destination_model.update_column(:legacy_destination_ref, destination.id)
 
@@ -53,7 +53,7 @@ module AuditEvents
           **extract_legacy_attributes(stream_destination_model)
         )
 
-        sync_legacy_headers(stream_destination_model, destination) if stream_destination_model.http?
+        sync_http_destination(stream_destination_model, destination) if stream_destination_model.http?
 
         destination
       end
