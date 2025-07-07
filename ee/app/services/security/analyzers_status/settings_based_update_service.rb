@@ -83,7 +83,7 @@ module Security
         # Validate the feature flag once per root ancestor
         projects
           .group_by(&:root_ancestor)
-          .select { |root_ancestor, _| Feature.enabled?(:post_pipeline_analyzer_status_updates, root_ancestor) }
+          .select { |root_ancestor, _| Feature.enabled?(:group_settings_based_update_worker, root_ancestor) }
           .values.flatten
       end
     end
