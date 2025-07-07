@@ -40242,21 +40242,6 @@ msgstr ""
 msgid "MrReports|Reports"
 msgstr ""
 
-msgid "MrSurvey|By continuing, you acknowledge that responses will be used to improve GitLab and in accordance with the %{linkStart}GitLab Privacy Policy%{linkEnd}."
-msgstr ""
-
-msgid "MrSurvey|How satisfied are you with %{strongStart}speed/performance%{strongEnd} of merge requests?"
-msgstr ""
-
-msgid "MrSurvey|Merge request experience survey"
-msgstr ""
-
-msgid "MrSurvey|Overall, how satisfied are you with merge requests?"
-msgstr ""
-
-msgid "MrSurvey|Thank you for your feedback!"
-msgstr ""
-
 msgid "Multi-project"
 msgstr ""
 
@@ -61237,21 +61222,6 @@ msgid "Support for custom certificates is disabled. Ask your system's administra
 msgstr ""
 
 msgid "Support page URL"
-msgstr ""
-
-msgid "Surveys|Delighted"
-msgstr ""
-
-msgid "Surveys|Happy"
-msgstr ""
-
-msgid "Surveys|Neutral"
-msgstr ""
-
-msgid "Surveys|Sad"
-msgstr ""
-
-msgid "Surveys|Unhappy"
 msgstr ""
 
 msgid "Switch Branches"
