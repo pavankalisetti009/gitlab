@@ -4,7 +4,7 @@ import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
-import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/ai_catalog_agent.query.graphql';
+import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import AiCatalogAgentCreateEditForm from 'ee/ai/catalog/components/ai_catalog_agent_create_edit_form.vue';
 import { AI_CATALOG_AGENTS_ROUTE } from 'ee/ai/catalog/router/constants';
 import { mockCatalogItemResponse, mockCatalogItemNullResponse, mockAgent } from '../mock_data';
