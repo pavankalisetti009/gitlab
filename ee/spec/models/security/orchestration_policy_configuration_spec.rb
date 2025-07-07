@@ -124,6 +124,13 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe 'delegations' do
+    it { is_expected.to delegate_method(:designated_as_csp?).to(:source) }
+    it { is_expected.to delegate_method(:actual_limits).to(:source) }
+    it { is_expected.to delegate_method(:actual_plan_name).to(:source) }
+    it { is_expected.to delegate_method(:actual_plan).to(:source) }
+  end
+
   describe '.for_project' do
     let_it_be(:security_orchestration_policy_configuration_1) { create(:security_orchestration_policy_configuration) }
     let_it_be(:security_orchestration_policy_configuration_2) { create(:security_orchestration_policy_configuration) }

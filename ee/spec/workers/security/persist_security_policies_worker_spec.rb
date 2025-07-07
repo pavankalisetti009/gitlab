@@ -139,5 +139,25 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
         perform
       end
     end
+
+    describe 'CSP usage tracking' do
+      subject(:perform) { described_class.new.perform(policy_configuration.id) }
+
+      context 'when configuration does not belongs to a CSP group' do
+        it_behaves_like 'internal event not tracked'
+      end
+
+      context 'when configuration belongs to a CSP group' do
+        include_context 'with csp group configuration'
+
+        let(:policy_configuration) { csp_security_orchestration_policy_configuration }
+
+        it_behaves_like 'internal event tracking' do
+          let(:category) { described_class }
+          let(:event) { 'sync_csp_configuration' }
+          let(:namespace) { csp_group }
+        end
+      end
+    end
   end
 end
