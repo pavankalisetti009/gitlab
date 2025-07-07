@@ -91,7 +91,7 @@ module EE
             action = route_hash[:action]
 
             if ALLOWLISTED_GEO_ROUTES[controller]&.include?(action)
-              ::ApplicationRecord.database.db_read_write?
+              ::ApplicationRecord.database.primary?
             else
               ALLOWLISTED_GEO_ROUTES_TRACKING_DB[controller]&.include?(action)
             end
