@@ -12,6 +12,7 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
   let_it_be(:docs_label) { create(:group_label, group: group, title: 'Documentation') }
   let_it_be(:enhancement_label) { create(:group_label, group: group, title: 'Enhancement') }
   let_it_be(:critical_label) { create(:group_label, group: group, title: 'Critical') }
+  let_it_be(:group_internal) { create(:group, :internal, name: 'group internal') }
 
   before do
     stub_licensed_features(epics: true)
@@ -215,6 +216,52 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
       end
 
       it_behaves_like 'filtered search bar', available_tokens, available_sort_options, default_sort_option
+    end
+
+    context 'with pagination' do
+      let(:issuable_container) { '[data-testid="issuable-container"]' }
+      let_it_be(:work_items) do
+        create_list(:work_item, 10, :epic, namespace: group)
+        create_list(:work_item, 10, :epic, namespace: group)
+        create_list(:work_item, 5, :epic, namespace: group)
+      end
+
+      before do
+        visit group_epics_path(group)
+      end
+
+      it_behaves_like 'pagination on the work items list page'
+
+      it 'respects per_page parameter in URL' do
+        visit group_epics_path(group, first_page_size: 50)
+
+        expect(page).to have_selector(issuable_container, count: 25)
+      end
+    end
+
+    context 'with internal group visibility level' do
+      let_it_be(:open_work_item) { create(:work_item, :epic, namespace: group_internal, title: 'Open epic') }
+
+      let_it_be(:closed_work_item) do
+        create(:work_item, :epic, :closed, namespace: group_internal, title: 'Closed epic')
+      end
+
+      context 'when a member views all work items' do
+        before_all do
+          group_internal.add_developer(user)
+        end
+
+        before do
+          sign_in(user)
+          visit group_epics_path(group_internal, state: :all)
+          wait_for_all_requests
+        end
+
+        it_behaves_like 'shows all items in the list' do
+          let(:open_item) { open_work_item }
+          let(:closed_item) { closed_work_item }
+        end
+      end
     end
   end
 end
