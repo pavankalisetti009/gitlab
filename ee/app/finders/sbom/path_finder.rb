@@ -2,6 +2,8 @@
 
 module Sbom
   class PathFinder
+    include Gitlab::Utils::StrongMemoize
+
     attr_reader :occurrence, :after_graph_ids, :before_graph_ids, :limit
     attr_accessor :mode, :collector
 
@@ -41,7 +43,9 @@ module Sbom
     def build_parent_mapping(project_id)
       parents = {}
 
-      Sbom::GraphPath.by_projects(project_id).by_path_length(1).each_batch(of: 1000) do |batch|
+      Sbom::GraphPath
+        .adjacency_matrix_for_project_and_timestamp(project_id, latest_timestamp)
+        .each_batch(of: 1000) do |batch|
         batch.each do |path|
           parents[path.descendant_id] ||= []
           parents[path.descendant_id] << path.ancestor_id
@@ -50,6 +54,11 @@ module Sbom
 
       parents
     end
+
+    def latest_timestamp
+      Sbom::GraphPath.by_projects(occurrence.project_id).maximum(:created_at)
+    end
+    strong_memoize_attr :latest_timestamp
 
     def find_all_id_paths(target_id, parents)
       root_nodes = find_root_nodes(parents)
