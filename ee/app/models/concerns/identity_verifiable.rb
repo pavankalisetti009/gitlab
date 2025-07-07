@@ -19,6 +19,7 @@ module IdentityVerifiable
   LOW_RISK_USER_METHODS = %w[email].freeze
   ACTIVE_USER_METHODS = %w[phone].freeze
   IDENTITY_VERIFICATION_RELEASE_DATE = Date.new(2024, 5, 30)
+  IDENTITY_VERIFICATION_FOR_OSS_FROM_DATE = Date.new(2025, 7, 1)
 
   def signup_identity_verification_enabled?
     return false unless ::Gitlab::Saas.feature_available?(:identity_verification)
@@ -116,7 +117,11 @@ module IdentityVerifiable
   def identity_verification_exempt?
     return true if risk_profile.identity_verification_exempt?
     return true if enterprise_user?
-    return true if belongs_to_paid_namespace?(exclude_trials: true)
+
+    # We need identity check for OSS plans to prevent abuse.
+    plans = ::Plan::PAID_HOSTED_PLANS
+    plans = plans.without(::Plan::OPEN_SOURCE) if id_check_for_oss_enabled?
+    return true if belongs_to_paid_namespace?(plans: plans, exclude_trials: true)
 
     false
   end
@@ -263,6 +268,14 @@ module IdentityVerifiable
 
   def created_after_require_identity_verification_release_day?
     created_at >= IDENTITY_VERIFICATION_RELEASE_DATE
+  end
+
+  def id_check_for_oss_enabled?
+    Feature.enabled?(:id_check_for_oss, self) && created_after_require_identity_verification_for_oss?
+  end
+
+  def created_after_require_identity_verification_for_oss?
+    created_at >= IDENTITY_VERIFICATION_FOR_OSS_FROM_DATE
   end
 
   def bot_identity_verified?
