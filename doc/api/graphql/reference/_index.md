@@ -8849,6 +8849,30 @@ Input type: `NamespaceSettingsUpdateInput`
 | <a id="mutationnamespacesettingsupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationnamespacesettingsupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 
+### `Mutation.namespacesRegenerateNewWorkItemEmailAddress`
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `NamespacesRegenerateNewWorkItemEmailAddressInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationnamespacesregeneratenewworkitememailaddressclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationnamespacesregeneratenewworkitememailaddressfullpath"></a>`fullPath` | [`ID!`](#id) | Full path of the namespace to regenerate the new work item email address for. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationnamespacesregeneratenewworkitememailaddressclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationnamespacesregeneratenewworkitememailaddresserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationnamespacesregeneratenewworkitememailaddressnamespace"></a>`namespace` | [`Namespace`](#namespace) | Namespace after regenerating the new work item email address. |
+
 ### `Mutation.noteConvertToThread`
 
 Convert a standard comment to a resolvable thread.
