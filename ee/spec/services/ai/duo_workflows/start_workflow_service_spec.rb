@@ -32,6 +32,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
 
       workload_id = execute.payload[:workload_id]
       expect(workload_id).not_to be_nil
+      expect(workflow.workflows_workloads.first).to have_attributes(project_id: project.id, workload_id: workload_id)
 
       workload = Ci::Workloads::Workload.find_by_id([workload_id])
       expect(workload.branch_name).to start_with('workloads/')
