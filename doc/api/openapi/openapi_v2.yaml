@@ -45200,6 +45200,9 @@ definitions:
         type: string
         format: date-time
         example: '2013-09-30T13:46:02Z'
+      visibility:
+        type: string
+        example: public
       namespace:
         "$ref": "#/definitions/API_Entities_NamespaceBasic"
       custom_attributes:
@@ -45249,9 +45252,6 @@ definitions:
         type: boolean
       archived:
         type: boolean
-      visibility:
-        type: string
-        example: public
       owner:
         "$ref": "#/definitions/API_Entities_UserBasic"
       resolve_outdated_diff_discussions:
@@ -45646,6 +45646,9 @@ definitions:
         type: string
         format: date-time
         example: '2013-09-30T13:46:02Z'
+      visibility:
+        type: string
+        example: public
       namespace:
         "$ref": "#/definitions/API_Entities_NamespaceBasic"
       custom_attributes:
@@ -60888,6 +60891,9 @@ definitions:
         type: string
         format: date-time
         example: '2013-09-30T13:46:02Z'
+      visibility:
+        type: string
+        example: public
       namespace:
         "$ref": "#/definitions/API_Entities_NamespaceBasic"
       custom_attributes:
@@ -60937,9 +60943,6 @@ definitions:
         type: boolean
       archived:
         type: boolean
-      visibility:
-        type: string
-        example: public
       owner:
         "$ref": "#/definitions/API_Entities_UserBasic"
       resolve_outdated_diff_discussions:
