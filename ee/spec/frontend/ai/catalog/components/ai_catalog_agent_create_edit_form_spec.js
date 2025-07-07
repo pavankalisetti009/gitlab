@@ -5,7 +5,7 @@ import {
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
   MAX_LENGTH_PROMPT,
-} from 'ee/ai/catalog/constants/constants';
+} from 'ee/ai/catalog/constants';
 
 describe('AiCatalogAgentForm', () => {
   let wrapper;
