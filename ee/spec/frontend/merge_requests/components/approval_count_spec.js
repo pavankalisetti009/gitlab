@@ -17,7 +17,14 @@ function createComponent(propsData = {}) {
 
 const findFossApprovalCount = () => wrapper.findComponent(ApprovalCountFOSS);
 const findBadge = () => wrapper.findComponent(GlBadge);
-const findTooltip = () => getBinding(findBadge().element, 'gl-tooltip');
+const findButton = () => wrapper.find('button');
+const findTooltip = () => {
+  const button = findButton();
+  if (button.exists()) {
+    return getBinding(button.element, 'gl-tooltip');
+  }
+  return null;
+};
 
 describe('Merge request dashboard approval count FOSS component', () => {
   describe('when approvals are not required', () => {
@@ -55,7 +62,9 @@ describe('Merge request dashboard approval count FOSS component', () => {
           mergeRequest: { approved, approvalsRequired, approvalsLeft },
         });
 
-        expect(findTooltip().value).toBe(tooltipTitle);
+        const tooltip = findTooltip();
+        expect(tooltip).not.toBeNull();
+        expect(tooltip.value).toBe(tooltipTitle);
       },
     );
 

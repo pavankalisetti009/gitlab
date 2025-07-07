@@ -73,16 +73,21 @@ export default {
 </script>
 
 <template>
-  <gl-badge
+  <button
     v-if="mergeRequest.approvalsRequired"
     v-gl-tooltip.viewport.top="tooltipTitle"
     :aria-label="tooltipTitle"
-    :icon="badgeIcon"
-    :icon-optically-aligned="badgeIcon !== 'approval-solid'"
-    :variant="badgeVariant"
-    data-testid="mr-appovals"
+    class="!gl-cursor-default gl-rounded-pill gl-border-none gl-bg-transparent gl-p-0"
+    data-testid="mr-approvals"
   >
-    {{ approvalText }}
-  </gl-badge>
+    <gl-badge
+      :icon="badgeIcon"
+      :icon-optically-aligned="badgeIcon !== 'approval-solid'"
+      :variant="badgeVariant"
+    >
+      {{ approvalText }}
+    </gl-badge>
+  </button>
+
   <approvals-count-ce v-else :merge-request="mergeRequest" :full-text="fullText" />
 </template>
