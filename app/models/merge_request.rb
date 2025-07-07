@@ -2169,12 +2169,11 @@ class MergeRequest < ApplicationRecord
   # Note that this could also return SHA from now dangling commits
   #
   def all_commit_shas
-    @all_commit_shas ||= begin
-      return commit_shas unless persisted?
+    return commit_shas unless persisted?
 
-      all_commits.pluck(:sha).uniq
-    end
+    all_commits.pluck(:sha).uniq
   end
+  strong_memoize_attr :all_commit_shas
 
   def merge_commit
     @merge_commit ||= project.commit(merge_commit_sha) if merge_commit_sha
