@@ -9,6 +9,28 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
     allow(described_class).to receive(:collection_record).and_return(collection)
   end
 
+  describe '.indexing?' do
+    it 'returns false when indexing is disabled' do
+      allow(ActiveContext).to receive(:indexing?).and_return(false)
+
+      expect(described_class.indexing?).to be(false)
+    end
+
+    it 'returns false when ActiveContext migration is not complete' do
+      allow(ActiveContext).to receive(:indexing?).and_return(true)
+      allow(Ai::ActiveContext::Migration).to receive(:complete?).and_return(false)
+
+      expect(described_class.indexing?).to be(false)
+    end
+
+    it 'returns true when indexing is enabled and migration is complete' do
+      allow(ActiveContext).to receive(:indexing?).and_return(true)
+      allow(Ai::ActiveContext::Migration).to receive(:complete?).and_return(true)
+
+      expect(described_class.indexing?).to be(true)
+    end
+  end
+
   describe '.track_refs!' do
     it 'tracks each hash with the routing' do
       routing = '123'

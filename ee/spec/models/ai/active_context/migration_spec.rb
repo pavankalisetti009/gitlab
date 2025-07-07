@@ -224,4 +224,114 @@ RSpec.describe Ai::ActiveContext::Migration, feature_category: :global_search do
       end
     end
   end
+
+  describe '.complete?' do
+    let(:version) { '20250212093911' }
+
+    before do
+      allow(Rails.cache).to receive(:fetch).and_yield
+    end
+
+    it 'calls check_complete_uncached with the given identifier' do
+      expect(described_class).to receive(:check_complete_uncached).with(version).and_return(true)
+
+      expect(described_class.complete?(version)).to be true
+    end
+
+    it 'caches the result with the correct key and timeout' do
+      allow(described_class).to receive(:check_complete_uncached).with(version).and_return(true)
+
+      expect(Rails.cache).to receive(:fetch).with([:ai_active_context_migration_completed, version],
+        expires_in: described_class::CACHE_TIMEOUT)
+
+      described_class.complete?(version)
+    end
+  end
+
+  describe '.check_complete_uncached' do
+    subject(:check_complete_uncached) { described_class.send(:check_complete_uncached, identifier) }
+
+    let_it_be(:inactive_connection) { create(:ai_active_context_connection, active: false) }
+    let(:version) { '20250212093911' }
+    let(:identifier) { version }
+
+    context 'with a numeric version identifier' do
+      context 'when no completed migration exists for the version' do
+        it 'returns false' do
+          expect(check_complete_uncached).to be false
+        end
+      end
+
+      context 'when a completed migration exists but connection is inactive' do
+        before do
+          create(:ai_active_context_migration, connection: inactive_connection, version: version, status: :completed)
+        end
+
+        it 'returns false' do
+          expect(check_complete_uncached).to be false
+        end
+      end
+
+      context 'when a completed migration exists with active connection' do
+        before do
+          create(:ai_active_context_migration, connection: connection, version: version, status: :completed)
+        end
+
+        it 'returns true' do
+          expect(check_complete_uncached).to be true
+        end
+      end
+
+      context 'when migration exists but is not completed' do
+        before do
+          create(:ai_active_context_migration, connection: connection, version: version, status: :pending)
+        end
+
+        it 'returns false' do
+          expect(check_complete_uncached).to be false
+        end
+      end
+    end
+
+    context 'with a class name identifier' do
+      let(:class_name) { 'SomeMigrationClass' }
+      let(:identifier) { class_name }
+
+      context 'when the class name exists in the dictionary' do
+        before do
+          dictionary_instance = instance_double(::ActiveContext::Migration::Dictionary)
+          allow(::ActiveContext::Migration::Dictionary).to receive(:instance).and_return(dictionary_instance)
+          allow(dictionary_instance).to receive(:find_version_by_class_name).with(class_name).and_return(version)
+        end
+
+        context 'when no completed migration exists for the version' do
+          it 'returns false' do
+            expect(check_complete_uncached).to be false
+          end
+        end
+
+        context 'when a completed migration exists with active connection' do
+          before do
+            create(:ai_active_context_migration, connection: connection, version: version, status: :completed)
+          end
+
+          it 'returns true' do
+            expect(check_complete_uncached).to be true
+          end
+        end
+      end
+
+      context 'when the class name does not exist in the dictionary' do
+        before do
+          dictionary_instance = instance_double(::ActiveContext::Migration::Dictionary)
+          allow(::ActiveContext::Migration::Dictionary).to receive(:instance).and_return(dictionary_instance)
+          allow(dictionary_instance).to receive(:find_version_by_class_name).with(class_name).and_return(nil)
+        end
+
+        it 'returns false' do
+          expect(check_complete_uncached).to be false
+        end
+      end
+    end
+  end
 end
