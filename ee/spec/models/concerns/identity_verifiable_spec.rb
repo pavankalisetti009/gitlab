@@ -659,6 +659,32 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
       it { is_expected.to be_falsy }
     end
 
+    context 'when a user is a member of an open source plan namespace' do
+      let(:group_oss) { create(:group_with_plan, :public, plan: :opensource_plan) }
+      let(:id_check_for_oss_feature_flag) { true }
+
+      before do
+        stub_feature_flags(id_check_for_oss: id_check_for_oss_feature_flag)
+        create(:group_member, :developer, source: group_oss, user: user)
+      end
+
+      it { is_expected.to be false }
+
+      context 'with id_check_for_oss feature flag is disabled' do
+        let(:id_check_for_oss_feature_flag) { false }
+
+        it { is_expected.to be true }
+      end
+
+      context 'with user created before ID check become required for OSS' do
+        before do
+          user.created_at = described_class::IDENTITY_VERIFICATION_FOR_OSS_FROM_DATE - 1.day
+        end
+
+        it { is_expected.to be true }
+      end
+    end
+
     context 'when a user is not an enterprise user, a paid namespace member or exempted' do
       it { is_expected.to be_falsy }
     end
