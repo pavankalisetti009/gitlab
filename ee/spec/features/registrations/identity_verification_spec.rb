@@ -373,18 +373,23 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
       end
 
       context 'when invite is from a paid namespace', :saas do
-        let_it_be(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
+        let(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
 
         let(:invitation) do
           create(:group_member, :invited, :developer, invite_email: user_email, group: ultimate_group)
         end
 
-        before do
+        it 'does not require identity verification' do
           sign_up(flow: :invite, arkose: { risk: :medium })
+
+          expect_to_see_dashboard_page
         end
 
-        it 'does not require identity verification' do
-          expect_to_see_dashboard_page
+        context 'when paid group is under OSS license' do
+          let(:ultimate_group) { create(:group_with_plan, plan: :opensource_plan) }
+
+          it_behaves_like 'registering a medium risk user with identity verification',
+            flow: :invite, skip_email_validation: true
         end
       end
     end
