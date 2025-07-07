@@ -391,7 +391,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
   describe '#available_for?' do
     subject { service.available_for?(merge_request) }
 
-    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false) }
+    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false, success?: true) }
 
     before do
       allow(merge_request).to receive_messages(mergeable_state?: true, for_fork?: false)
@@ -447,7 +447,8 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
 
     context 'when the head pipeline of the merge request has not finished and is not blocked' do
       before do
-        allow(pipeline).to receive_messages(complete?: false, active?: true, blocked?: false, canceling?: false)
+        allow(pipeline).to receive_messages(complete?: false, active?: true, blocked?: false, canceling?: false,
+          success?: false)
       end
 
       it { is_expected.to be false }
@@ -456,7 +457,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
     context 'when the head pipeline of the pipeline is blocked' do
       before do
         allow(pipeline).to receive_messages(active?: false, created?: false, complete?: false, blocked?: true,
-          canceling?: false)
+          canceling?: false, success?: false)
       end
 
       it { is_expected.to be true }
@@ -491,7 +492,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
   describe '#availability_details' do
     subject(:availability_check) { service.availability_details(merge_request) }
 
-    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false) }
+    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false, success?: true) }
 
     before do
       allow(merge_request).to receive_messages(mergeable_state?: true, for_fork?: false)
@@ -574,7 +575,8 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
 
     context 'when the head pipeline of the merge request has not finished and is not blocked' do
       before do
-        allow(pipeline).to receive_messages(complete?: false, active?: true, blocked?: false, canceling?: false)
+        allow(pipeline).to receive_messages(complete?: false, active?: true, blocked?: false, canceling?: false,
+          success?: false)
       end
 
       it 'is unavailable and returns the correct reason' do
@@ -588,7 +590,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
     context 'when the head pipeline of the pipeline is blocked' do
       before do
         allow(pipeline).to receive_messages(active?: false, created?: false, complete?: false, blocked?: true,
-          canceling?: false)
+          canceling?: false, success?: false)
       end
 
       it 'is available and has no unavailable reason' do
@@ -606,7 +608,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         it 'is unavailable and returns the correct reason' do
           aggregate_failures do
             expect(availability_check.available?).to be false
-            expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
+            expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
           end
         end
       end
@@ -615,7 +617,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
     context 'when the head pipeline of the pipeline is canceling' do
       before do
         allow(pipeline).to receive_messages(active?: false, created?: false, complete?: false, blocked?: false,
-          canceling?: true)
+          canceling?: true, success?: false)
       end
 
       it 'is available and has no unavailable reason' do
@@ -633,7 +635,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         it 'is unavailable and returns the correct reason' do
           aggregate_failures do
             expect(availability_check.available?).to be false
-            expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
+            expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
           end
         end
       end
