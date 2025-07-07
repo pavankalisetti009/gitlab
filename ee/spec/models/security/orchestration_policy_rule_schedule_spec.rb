@@ -222,7 +222,7 @@ RSpec.describe Security::OrchestrationPolicyRuleSchedule, feature_category: :sec
     let(:policy) do
       build(:scan_execution_policy, rules: [
         { type: 'schedule', agents: agents, cadence: '*/20 * * * *' },
-              { type: 'pipeline', branches: ['main'] }
+        { type: 'pipeline', branches: ['main'] }
       ])
     end
 
@@ -264,7 +264,7 @@ RSpec.describe Security::OrchestrationPolicyRuleSchedule, feature_category: :sec
     let(:policy) do
       build(:scan_execution_policy, rules: [
         { type: 'schedule', agents: agents, cadence: '*/20 * * * *' },
-              { type: 'pipeline', branches: ['main'] }
+        { type: 'pipeline', branches: ['main'] }
       ])
     end
 

@@ -19,8 +19,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
   let(:epic_rules) do
     %i[read_epic create_epic admin_epic destroy_epic read_confidential_epic
-       read_epic_board read_epic_board_list admin_epic_board
-       admin_epic_board_list]
+      read_epic_board read_epic_board_list admin_epic_board
+      admin_epic_board_list]
   end
 
   let(:auditor_permissions) do
@@ -4078,7 +4078,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:member_role_abilities) { { manage_group_access_tokens: true } }
       let(:allowed_abilities) do
         [:read_resource_access_tokens, :destroy_resource_access_tokens,
-         :create_resource_access_tokens, :manage_resource_access_tokens]
+          :create_resource_access_tokens, :manage_resource_access_tokens]
       end
 
       it_behaves_like 'custom roles abilities'
@@ -4281,7 +4281,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       let(:allowed_abilities) do
         [:read_security_orchestration_policies, :read_security_orchestration_policy_project,
-         :update_security_orchestration_policy_project]
+          :update_security_orchestration_policy_project]
       end
 
       let(:disallowed_abilities) do

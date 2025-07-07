@@ -67,7 +67,7 @@ RSpec.describe 'Getting ancestors of an epic', feature_category: :portfolio_mana
         expect(epic_node_array('ancestors')).to include(
           { 'edges' =>
             [{ 'node' => { 'iid' => ancestor_b.iid.to_s } },
-             { 'node' => { 'iid' => ancestor_a.iid.to_s } }] }
+              { 'node' => { 'iid' => ancestor_a.iid.to_s } }] }
         )
       end
     end

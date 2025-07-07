@@ -64,7 +64,7 @@ RSpec.describe 'Getting children of an epic', feature_category: :portfolio_manag
       expect(epic_node_array('children'))
         .to include({ 'edges' =>
           [{ 'node' => { 'id' => descendant_group_child.to_gid.to_s } },
-           { 'node' => { 'id' => group_child.to_gid.to_s } }] })
+            { 'node' => { 'id' => group_child.to_gid.to_s } }] })
     end
 
     context 'when user has access to all children groups' do
@@ -80,9 +80,9 @@ RSpec.describe 'Getting children of an epic', feature_category: :portfolio_manag
         expect(epic_node_array('children')).to include(
           { 'edges' =>
             [{ 'node' => { 'id' => descendant_group_child.to_gid.to_s } },
-             { 'node' => { 'id' => ancestor_group_child.to_gid.to_s } },
-             { 'node' => { 'id' => other_group_child.to_gid.to_s } },
-             { 'node' => { 'id' => group_child.to_gid.to_s } }] })
+              { 'node' => { 'id' => ancestor_group_child.to_gid.to_s } },
+              { 'node' => { 'id' => other_group_child.to_gid.to_s } },
+              { 'node' => { 'id' => group_child.to_gid.to_s } }] })
       end
 
       context 'when include_ancestor_groups is `false`' do
@@ -95,8 +95,8 @@ RSpec.describe 'Getting children of an epic', feature_category: :portfolio_manag
           expect(epic_node_array('children')).to include(
             { 'edges' =>
               [{ 'node' => { 'id' => descendant_group_child.to_gid.to_s } },
-               { 'node' => { 'id' => other_group_child.to_gid.to_s } },
-               { 'node' => { 'id' => group_child.to_gid.to_s } }] })
+                { 'node' => { 'id' => other_group_child.to_gid.to_s } },
+                { 'node' => { 'id' => group_child.to_gid.to_s } }] })
         end
       end
 
@@ -109,8 +109,8 @@ RSpec.describe 'Getting children of an epic', feature_category: :portfolio_manag
           expect(epic_node_array('children')).to include(
             { 'edges' =>
              [{ 'node' => { 'id' => ancestor_group_child.to_gid.to_s } },
-              { 'node' => { 'id' => other_group_child.to_gid.to_s } },
-              { 'node' => { 'id' => group_child.to_gid.to_s } }] })
+               { 'node' => { 'id' => other_group_child.to_gid.to_s } },
+               { 'node' => { 'id' => group_child.to_gid.to_s } }] })
         end
       end
 
@@ -124,7 +124,7 @@ RSpec.describe 'Getting children of an epic', feature_category: :portfolio_manag
           expect(epic_node_array('children')).to include(
             { 'edges' =>
              [{ 'node' => { 'id' => other_group_child.to_gid.to_s } },
-              { 'node' => { 'id' => group_child.to_gid.to_s } }] })
+               { 'node' => { 'id' => group_child.to_gid.to_s } }] })
         end
       end
 
