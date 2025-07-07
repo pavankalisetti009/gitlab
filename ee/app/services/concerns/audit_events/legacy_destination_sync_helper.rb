@@ -27,6 +27,8 @@ module AuditEvents
 
         destination.save!
 
+        cleanup_streaming_token_header(legacy_destination_model) if category == :http
+
         legacy_destination_model.update!(stream_destination_id: destination.id)
         destination
       end
@@ -47,12 +49,21 @@ module AuditEvents
       category = stream_destination.category.to_sym
 
       ApplicationRecord.transaction do
+        new_config = build_streaming_config(legacy_destination_model, category)
+
+        if category == :http
+          new_config['headers']&.delete(STREAMING_TOKEN_HEADER_KEY)
+          new_config.delete('headers') if new_config['headers'] && new_config['headers'].empty?
+        end
+
         stream_destination.update!(
           name: legacy_destination_model.name,
           category: category,
-          config: build_streaming_config(legacy_destination_model, category),
+          config: new_config,
           secret_token: secret_token(legacy_destination_model, category)
         )
+
+        cleanup_streaming_token_header(legacy_destination_model) if category == :http
 
         stream_destination
       end
@@ -68,13 +79,10 @@ module AuditEvents
       when :http
         all_headers = {}
 
-        all_headers[STREAMING_TOKEN_HEADER_KEY] = {
-          'value' => legacy_destination_model.verification_token,
-          'active' => true
-        }
-
         if legacy_destination_model.respond_to?(:headers)
           legacy_destination_model.headers.each do |header|
+            next if header.key == STREAMING_TOKEN_HEADER_KEY
+
             all_headers[header.key] = {
               'value' => header.value,
               'active' => header.active
@@ -82,10 +90,9 @@ module AuditEvents
           end
         end
 
-        {
-          'url' => legacy_destination_model.destination_url,
-          'headers' => all_headers
-        }
+        config = { 'url' => legacy_destination_model.destination_url }
+        config['headers'] = all_headers unless all_headers.empty?
+        config
       when :aws
         {
           'accessKeyXid' => legacy_destination_model.access_key_xid,
@@ -107,6 +114,12 @@ module AuditEvents
       when :aws then model.secret_access_key
       when :gcp then model.private_key
       end
+    end
+
+    def cleanup_streaming_token_header(legacy_destination_model)
+      return unless legacy_destination_model.respond_to?(:headers)
+
+      legacy_destination_model.headers.where(key: STREAMING_TOKEN_HEADER_KEY).delete_all # rubocop:disable CodeReuse/ActiveRecord -- Delete headers bypass model validation
     end
   end
 end

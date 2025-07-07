@@ -4,6 +4,8 @@ module AuditEvents
   module HeadersSyncHelper
     include AuditEvents::DestinationSyncValidator
 
+    STREAMING_TOKEN_HEADER_KEY = 'X-Gitlab-Event-Streaming-Token'
+
     def sync_legacy_headers(stream_destination_model, legacy_destination)
       return unless stream_destination_model.config['headers'].present?
 
@@ -19,6 +21,8 @@ module AuditEvents
         header_class.where(foreign_key => legacy_destination.id).delete_all # rubocop:disable CodeReuse/ActiveRecord -- Syncing delete
 
         stream_destination_model.config['headers'].each do |key, header_data|
+          next if key == STREAMING_TOKEN_HEADER_KEY
+
           attrs = {
             foreign_key => legacy_destination.id,
             :key => key,
@@ -39,6 +43,8 @@ module AuditEvents
 
     def sync_header_to_streaming_destination(destination, header, old_key = nil)
       return unless should_sync_http?(destination)
+
+      return if header.key == STREAMING_TOKEN_HEADER_KEY
 
       stream_destination = destination.stream_destination
 
@@ -82,6 +88,31 @@ module AuditEvents
         header_key: header_key
       )
       nil
+    end
+
+    def sync_http_destination(stream_destination_model, destination)
+      remove_streaming_token_from_headers(stream_destination_model)
+      sync_legacy_headers(stream_destination_model, destination)
+      remove_legacy_streaming_token_headers(destination)
+    end
+
+    def remove_streaming_token_from_headers(stream_destination_model)
+      config = stream_destination_model.config.deep_dup
+      headers = config['headers']
+
+      return unless headers&.delete(STREAMING_TOKEN_HEADER_KEY)
+
+      config.delete('headers') if headers.empty?
+
+      stream_destination_model.update!(config: config)
+    end
+
+    def remove_legacy_streaming_token_headers(destination)
+      return unless destination.respond_to?(:headers)
+
+      destination.headers
+        .where(key: STREAMING_TOKEN_HEADER_KEY) # rubocop:disable CodeReuse/ActiveRecord -- Find and delete protected header set
+        .delete_all
     end
   end
 end
