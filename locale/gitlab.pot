@@ -69909,6 +69909,9 @@ msgstr ""
 msgid "What's new"
 msgstr ""
 
+msgid "What's new moved to Help."
+msgstr ""
+
 msgid "When a deployment job is successful, prevent older deployment jobs that are still pending."
 msgstr ""
 
