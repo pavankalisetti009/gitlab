@@ -1,5 +1,5 @@
 <script>
-import aiCatalogAgentsQuery from '../graphql/ai_catalog_agents.query.graphql';
+import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 
 export default {
