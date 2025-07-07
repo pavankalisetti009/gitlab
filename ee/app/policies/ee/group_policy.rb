@@ -228,9 +228,11 @@ module EE
         ::Gitlab::CurrentSettings.current_application_settings.allow_top_level_group_owners_to_create_service_accounts?
       end
 
+      # score needs to be higher than reporter / developer / maintainer_access
+      # so access_level condition is evaluated before any custom_role conditions
       MemberRole.all_customizable_group_permissions.each do |ability|
         desc "Custom role on group that enables #{ability.to_s.tr('_', ' ')}"
-        condition(:"custom_role_enables_#{ability}") do
+        condition(:"custom_role_enables_#{ability}", score: 65) do
           custom_role_ability(@user, @subject).allowed?(ability)
         end
       end
@@ -395,6 +397,8 @@ module EE
       end
 
       rule { can?(:owner_access) }.policy do
+        enable :admin_compliance_framework
+        enable :manage_deploy_tokens
         enable :set_epic_created_at
         enable :set_epic_updated_at
       end
@@ -940,7 +944,6 @@ module EE
       end
 
       rule { can?(:owner_access) & group_membership_export_available }.enable :export_group_memberships
-      rule { can?(:owner_access) & compliance_framework_available }.enable :admin_compliance_framework
       rule { can?(:owner_access) & group_level_compliance_pipeline_available }.enable :admin_compliance_pipeline_configuration
       rule { can?(:owner_access) & external_audit_events_available }.policy do
         enable :admin_external_audit_events

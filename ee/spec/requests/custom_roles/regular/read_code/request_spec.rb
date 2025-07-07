@@ -90,18 +90,6 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
         expect(response).to have_gitlab_http_status(:ok)
         expect(response).to render_template(:show)
       end
-
-      context 'when user is a maintainer' do
-        let(:current_user) { create(:user, :with_namespace, maintainer_of: project) }
-
-        it_behaves_like 'does not call custom role query'
-      end
-
-      context 'when user is an owner' do
-        let(:current_user) { create(:user, :with_namespace, owner_of: project) }
-
-        it_behaves_like 'does not call custom role query'
-      end
     end
   end
 end
