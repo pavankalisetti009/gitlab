@@ -146,6 +146,8 @@ describe('WorkItemBulkEditSidebar component', () => {
           findHealthStatusComponent().vm.$emit('input', 'on_track');
           findConfidentialityComponent().vm.$emit('input', 'true');
           findMilestoneComponent().vm.$emit('input', 'gid://gitlab/Milestone/30');
+          findSubscriptionComponent().vm.$emit('input', 'unsubscribe');
+          findStateComponent().vm.$emit('input', 'reopen');
           findForm().vm.$emit('submit', { preventDefault: () => {} });
 
           expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
@@ -166,6 +168,8 @@ describe('WorkItemBulkEditSidebar component', () => {
               milestoneWidget: {
                 milestoneId: 'gid://gitlab/Milestone/30',
               },
+              subscriptionEvent: 'UNSUBSCRIBE',
+              stateEvent: 'REOPEN',
             },
           });
           expect(findAddLabelsComponent().props('selectedLabelsIds')).toEqual([]);
