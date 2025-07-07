@@ -50,14 +50,6 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, :with_current_organization, 
 
         it_behaves_like 'message response'
 
-        context 'when duo_chat_early_thread_creation is disabled' do
-          before do
-            stub_feature_flags(duo_chat_early_thread_creation: false)
-          end
-
-          it_behaves_like 'message response'
-        end
-
         context 'when thread is not found' do
           let!(:thread) { create(:ai_conversation_thread, user: another_user) }
 
@@ -74,14 +66,6 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, :with_current_organization, 
         let(:args) { { conversation_type: 'duo_chat_legacy' } }
 
         it_behaves_like 'message response'
-
-        context 'when duo_chat_early_thread_creation is disabled' do
-          before do
-            stub_feature_flags(duo_chat_early_thread_creation: false)
-          end
-
-          it_behaves_like 'message response'
-        end
 
         context 'when duo_chat_legacy thread is not found' do
           let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat) }
