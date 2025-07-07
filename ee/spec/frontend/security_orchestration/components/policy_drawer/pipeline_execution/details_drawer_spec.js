@@ -178,25 +178,17 @@ describe('PipelineExecutionDrawer', () => {
   });
 
   describe('variables override', () => {
-    it('does not render override list when ff is set to false', () => {
-      createComponent({ propsData: { policy: mockProjectPipelineExecutionPolicy } });
-
-      expect(findVariablesOverrideConfiguration().exists()).toBe(false);
-    });
-
-    it('does not render override list when ff is set to true but there is variables overwrite', () => {
+    it('does not render override list when there is no variables_override', () => {
       createComponent({
         propsData: { policy: mockProjectPipelineExecutionPolicy },
-        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
       });
 
       expect(findVariablesOverrideConfiguration().exists()).toBe(false);
     });
 
-    it('renders override list when ff is set to true', () => {
+    it('renders override list when it is present in the policy', () => {
       createComponent({
         propsData: { policy: mockProjectPipelineExecutionWithVariablesOverride },
-        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
       });
       expect(findVariablesOverrideConfiguration().exists()).toBe(true);
       expect(findVariablesOverrideConfiguration().props('variablesOverride')).toEqual({

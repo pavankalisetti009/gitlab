@@ -21,12 +21,7 @@ import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
 import { createPolicyObject, getInitialPolicy, updatePolicyStrategy } from './utils';
-import {
-  CONDITIONS_LABEL,
-  DEFAULT_PIPELINE_EXECUTION_POLICY,
-  DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES,
-  SCHEDULE,
-} from './constants';
+import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY, SCHEDULE } from './constants';
 
 export default {
   ACTION: 'actions',
@@ -87,13 +82,11 @@ export default {
       type = this.existingPolicy.type;
       yamlEditorValue = policyToYaml(this.existingPolicy, type);
     } else {
-      const hasVariablesControl = this.glFeatures.securityPoliciesOptionalVariablesControl;
-      const manifest = hasVariablesControl
-        ? DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES
-        : DEFAULT_PIPELINE_EXECUTION_POLICY;
-
       type = this.selectedPolicyType;
-      yamlEditorValue = getInitialPolicy(manifest, queryToObject(window.location.search));
+      yamlEditorValue = getInitialPolicy(
+        DEFAULT_PIPELINE_EXECUTION_POLICY,
+        queryToObject(window.location.search),
+      );
     }
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue, type);
@@ -257,7 +250,6 @@ export default {
         <action-section
           class="security-policies-bg-subtle gl-mb-4 gl-rounded-base gl-p-5"
           :action="content"
-          :is-new-policy="!isEditing"
           :does-file-exist="!disableSubmit"
           :strategy="strategy"
           :suffix="policy.suffix"

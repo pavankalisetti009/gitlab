@@ -10,6 +10,7 @@ import {
   DEPRECATED_INJECT,
   INJECT,
   OVERRIDE,
+  SCHEDULE,
   SUFFIX_NEVER,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { mockWithoutRefPipelineExecutionObject } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
@@ -78,7 +79,7 @@ describe('ActionSection', () => {
       await nextTick();
 
       expect(findCodeBlockFilePath().exists()).toBe(true);
-      expect(findVariablesOverrideList().exists()).toBe(false);
+      expect(findVariablesOverrideList().exists()).toBe(true);
       expect(requestHandler).toHaveBeenCalledWith({ fullPath });
 
       expect(findCodeBlockFilePath().props()).toEqual(
@@ -192,7 +193,7 @@ describe('ActionSection', () => {
     const variablesOverride = { allowed: true, exceptions: ['test'] };
 
     it('renders override list option', () => {
-      factory({ provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } } });
+      factory();
 
       expect(findVariablesOverrideList().exists()).toBe(true);
     });
@@ -200,28 +201,26 @@ describe('ActionSection', () => {
     it('renders existing override variables options', () => {
       factory({
         propsData: { variablesOverride },
-        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
       });
 
       expect(findVariablesOverrideList().props('variablesOverride')).toEqual(variablesOverride);
     });
 
     it('emits variables override change', async () => {
-      factory({ provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } } });
+      factory();
       await findVariablesOverrideList().vm.$emit('select', variablesOverride);
 
       expect(wrapper.emitted('changed')).toEqual([['variables_override', variablesOverride]]);
     });
   });
 
-  describe('new policy', () => {
-    it('marks variables list for new policies', () => {
+  describe('scheduled policy', () => {
+    it('does not render variables override', () => {
       factory({
-        propsData: { isNewPolicy: false },
-        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
+        propsData: { strategy: SCHEDULE },
       });
 
-      expect(findVariablesOverrideList().props('isNewPolicy')).toBe(false);
+      expect(findVariablesOverrideList().exists()).toBe(false);
     });
   });
 });

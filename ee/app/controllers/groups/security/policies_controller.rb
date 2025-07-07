@@ -12,7 +12,6 @@ module Groups
       before_action :validate_policy_configuration, only: :edit
 
       before_action do
-        push_frontend_feature_flag(:security_policies_optional_variables_control, group)
         push_frontend_feature_flag(:security_policies_bypass_options, group)
         push_frontend_feature_flag(:security_policies_split_view, group)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, group)
