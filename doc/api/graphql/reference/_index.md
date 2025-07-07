@@ -28677,6 +28677,7 @@ GPG signature for a signed commit.
 | <a id="groupproductanalyticsstoredeventslimit"></a>`productAnalyticsStoredEventsLimit` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 16.9. **Status**: Experiment. Number of product analytics events namespace is permitted to store per cycle. |
 | <a id="groupprojectcomplianceviolations"></a>`projectComplianceViolations` {{< icon name="warning-solid" >}} | [`ProjectComplianceViolationConnection`](#projectcomplianceviolationconnection) | **Introduced** in GitLab 18.1. **Status**: Experiment. Compliance violations for the projects in a group and its subgroups. |
 | <a id="groupprojectcreationlevel"></a>`projectCreationLevel` | [`String`](#string) | Permission level required to create projects in the group. |
+| <a id="groupprojectstatistics"></a>`projectStatistics` {{< icon name="warning-solid" >}} | [`NamespaceProjectStatistics`](#namespaceprojectstatistics) | **Introduced** in GitLab 18.2. **Status**: Experiment. Statistics of the projects in the group. Only available from [Query.groups](#querygroups). |
 | <a id="groupprojectscount"></a>`projectsCount` | [`Int!`](#int) | Count of direct projects in the group. |
 | <a id="grouprecentissueboards"></a>`recentIssueBoards` | [`BoardConnection`](#boardconnection) | List of recently visited boards of the group. Maximum size is 4. (see [Connections](#connections)) |
 | <a id="grouprepositorysizeexcessprojectcount"></a>`repositorySizeExcessProjectCount` | [`Int`](#int) | Number of projects in the root namespace where the repository size exceeds the limit. This only applies to namespaces under Project limit enforcement. |
@@ -34880,6 +34881,22 @@ Represents a subscription plan.
 | <a id="namespaceplanispaid"></a>`isPaid` | [`Boolean`](#boolean) | True if plan is paid. |
 | <a id="namespaceplanname"></a>`name` | [`String`](#string) | Name of the plan. |
 | <a id="namespaceplantitle"></a>`title` | [`String`](#string) | Title of the plan. |
+
+### `NamespaceProjectStatistics`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="namespaceprojectstatisticsbuildartifactssize"></a>`buildArtifactsSize` | [`Float`](#float) | Build artifacts size of the project in bytes. |
+| <a id="namespaceprojectstatisticslfsobjectssize"></a>`lfsObjectsSize` | [`Float`](#float) | Large File Storage (LFS) object size of the project in bytes. |
+| <a id="namespaceprojectstatisticspackagessize"></a>`packagesSize` | [`Float`](#float) | Packages size of the project in bytes. |
+| <a id="namespaceprojectstatisticspipelineartifactssize"></a>`pipelineArtifactsSize` | [`Float`](#float) | CI/CD Pipeline artifacts size in bytes. |
+| <a id="namespaceprojectstatisticsrepositorysize"></a>`repositorySize` | [`Float`](#float) | Repository size of the project in bytes. |
+| <a id="namespaceprojectstatisticssnippetssize"></a>`snippetsSize` | [`Float`](#float) | Snippets size of the project in bytes. |
+| <a id="namespaceprojectstatisticsstoragesize"></a>`storageSize` | [`Float`](#float) | Storage size of the project in bytes. |
+| <a id="namespaceprojectstatisticsuploadssize"></a>`uploadsSize` | [`Float`](#float) | Uploads size of the project in bytes. |
+| <a id="namespaceprojectstatisticswikisize"></a>`wikiSize` | [`Float`](#float) | Wiki size of the project in bytes. |
 
 ### `NamespaceSidebar`
 
