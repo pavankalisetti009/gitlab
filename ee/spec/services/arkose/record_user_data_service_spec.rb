@@ -54,26 +54,10 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
       expect(service.execute).to be_success
     end
 
-    context 'when store_arkose_session feature flag is enabled' do
-      before do
-        stub_feature_flags(store_arkose_session: true)
-      end
+    it 'creates a Users::ArkoseSession for the user with relevant data' do
+      expect { service.execute }.to change { user.arkose_sessions.count }.by(1)
 
-      it 'creates a Users::ArkoseSession for the user with relevant data' do
-        expect { service.execute }.to change { user.arkose_sessions.count }.by(1)
-
-        expect(user.arkose_sessions.last.session_xid).to eq(response.session_id)
-      end
-    end
-
-    context 'when store_arkose_session feature flag is disabled' do
-      before do
-        stub_feature_flags(store_arkose_session: false)
-      end
-
-      it 'does not create a Users::ArkoseSession for the user' do
-        expect { service.execute }.not_to change { user.arkose_sessions.count }
-      end
+      expect(user.arkose_sessions.last.session_xid).to eq(response.session_id)
     end
 
     context 'when response is from failed verification' do

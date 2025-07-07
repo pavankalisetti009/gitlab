@@ -33,8 +33,6 @@ module Arkose
     end
 
     def store_arkose_session
-      return unless Feature.enabled?(:store_arkose_session, user)
-
       session = Users::ArkoseSession.create_for_user_from_verify_response(
         user,
         response
