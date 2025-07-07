@@ -15,15 +15,10 @@ module QA
 
         def register_for_trial(group: nil)
           EE::Page::Trials::New.perform do |new|
+            new.trial_for = group.path if group.present?
             new.fill_in_customer_trial_info(CUSTOMER_TRIAL_INFO)
-            new.click_continue_button
-          end
 
-          return unless group
-
-          EE::Page::Trials::Select.perform do |select|
-            select.trial_for = group.path
-            select.click_start_your_free_trial_button
+            new.click_submit_trial_button
           end
         end
       end

@@ -3521,9 +3521,6 @@ msgstr ""
 msgid "Activate Service Desk"
 msgstr ""
 
-msgid "Activate my trial"
-msgstr ""
-
 msgid "Activated"
 msgstr ""
 
@@ -65535,22 +65532,10 @@ msgstr ""
 msgid "TrialWidget|Your trial of Ultimate with GitLab Duo Enterprise has ended"
 msgstr ""
 
-msgid "Trials|Create a new group and start your free trial."
-msgstr ""
-
-msgid "Trials|You can apply your free trial to a group."
-msgstr ""
-
 msgid "Trial|Activate my trial"
 msgstr ""
 
 msgid "Trial|Allowed characters: +, 0-9, -, and spaces."
-msgstr ""
-
-msgid "Trial|Apply your trial to a new group"
-msgstr ""
-
-msgid "Trial|Apply your trial to a new or existing group"
 msgstr ""
 
 msgid "Trial|By clicking \"%{buttonText}\" you accept the %{gitlabSubscriptionAgreement} and acknowledge the %{privacyStatement} and %{cookiePolicy}"
@@ -65581,9 +65566,6 @@ msgid "Trial|Start your free Ultimate and GitLab Duo Enterprise trial"
 msgstr ""
 
 msgid "Trial|Start your free trial"
-msgstr ""
-
-msgid "Trial|Start your free trial on %{group_name}"
 msgstr ""
 
 msgid "Trial|State or province"

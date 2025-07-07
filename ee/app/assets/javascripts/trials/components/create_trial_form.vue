@@ -117,6 +117,7 @@ export default {
           groupAttrs: {
             labelDescription: __('Your trial will be applied to this group.'),
             class: 'gl-col-span-12',
+            'data-testid': 'group-dropdown-container',
           },
           validators: [
             formValidators.factory(__('Please select a group for your trial.'), () => {
@@ -175,6 +176,7 @@ export default {
           },
           inputAttrs: {
             name: 'company_name',
+            'data-testid': 'company-name-field',
           },
           validators: [formValidators.required(__('Company name is required.'))],
         },
@@ -185,6 +187,7 @@ export default {
           label: LEADS_COUNTRY_LABEL,
           groupAttrs: {
             class: 'gl-col-span-12',
+            'data-testid': 'country-dropdown-container',
           },
           validators: [
             formValidators.factory(__('Country or region is required.'), () => {
@@ -198,6 +201,7 @@ export default {
             label: TRIAL_STATE_LABEL,
             groupAttrs: {
               class: 'gl-col-span-12',
+              'data-testid': 'state-dropdown-container',
             },
             validators: [
               formValidators.factory(__('State or province is required.'), () => {
@@ -216,6 +220,7 @@ export default {
         },
         inputAttrs: {
           name: 'phone_number',
+          'data-testid': 'phone-number-field',
         },
         validators: [
           formValidators.factory(TRIAL_PHONE_DESCRIPTION, (val) => {
@@ -394,7 +399,7 @@ export default {
     <gl-button
       type="submit"
       variant="confirm"
-      data-testid="continue-button"
+      data-testid="submit-button"
       class="js-no-auto-disable gl-w-full"
     >
       {{ $options.i18n.buttonText }}
