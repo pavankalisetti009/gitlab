@@ -212,5 +212,36 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
         result
       end
     end
+
+    context 'when returning a string error' do
+      let(:http_status) { 503 }
+
+      before do
+        stub_request(:post, Gitlab::AiGateway.access_token_url)
+          .with(
+            body: nil,
+            headers: expected_request_headers
+          )
+          .to_return(
+            status: http_status,
+            body: 'Service Unavailable',
+            headers: { 'Content-Type' => 'text/plain' }
+          )
+      end
+
+      it { is_expected.to match(a_hash_including(status: :error)) }
+
+      it 'logs the error' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          satisfy { |exception|
+            exception.is_a?(described_class::AiGatewayError) &&
+              exception.message == 'Token creation failed'
+          },
+          { ai_gateway_response_code: 503, ai_gateway_error_detail: 'Service Unavailable' }
+        )
+
+        result
+      end
+    end
   end
 end
