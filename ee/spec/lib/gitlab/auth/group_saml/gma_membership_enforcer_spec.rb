@@ -85,6 +85,8 @@ RSpec.describe Gitlab::Auth::GroupSaml::GmaMembershipEnforcer do
     subject { described_class.new(forked_project) }
 
     before do
+      group.saml_provider.update!(prohibited_outer_forks: false)
+
       project.add_developer(managed_user_for_project)
       fork_project(project, managed_user_for_project, namespace: group, target_project: forked_project)
     end

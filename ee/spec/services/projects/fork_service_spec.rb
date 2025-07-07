@@ -88,5 +88,45 @@ RSpec.describe Projects::ForkService, feature_category: :source_code_management 
         end
       end
     end
+
+    describe '#link_existing_project' do
+      let_it_be(:outside_user) { create(:user) }
+      let_it_be(:outside_project) { create(:project, namespace: outside_user.namespace) }
+
+      let_it_be(:protected_group) do
+        create(:group).tap do |g|
+          g.namespace_settings.update!(prevent_forking_outside_group: true)
+        end
+      end
+
+      let_it_be(:protected_project) { create(:project, :repository, namespace: protected_group) }
+
+      before do
+        stub_licensed_features(group_forking_protection: true)
+      end
+
+      context "when the target project’s root group forbids forks from outside the group" do
+        before_all do
+          protected_group.add_maintainer(outside_user)
+          protected_project.add_owner(outside_user)
+        end
+
+        it 'blocks linking an external upstream' do
+          response = described_class.new(outside_project, outside_user).execute(protected_project)
+
+          expect(response).to be_error
+          expect(response.reason).to eq(:outside_group)
+        end
+
+        it 'still allows a fork link within the same protected group' do
+          inside_project = create(:project, namespace: protected_group)
+
+          response = described_class.new(inside_project, outside_user).execute(protected_project)
+
+          expect(response).to be_success
+          expect(protected_project.reload.forked_from_project).to eq(inside_project)
+        end
+      end
+    end
   end
 end
