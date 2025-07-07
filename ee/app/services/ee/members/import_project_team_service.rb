@@ -21,6 +21,15 @@ module EE
         raise ::Members::ImportProjectTeamService::SeatLimitExceededError, error_message
       end
 
+      override :check_user_permissions!
+      def check_user_permissions!
+        super
+
+        return if can?(current_user, :invite_project_members, target_project)
+
+        raise ::Members::ImportProjectTeamService::ImportProjectTeamForbiddenError, 'Forbidden'
+      end
+
       private
 
       def error_message

@@ -161,5 +161,76 @@ RSpec.describe Members::ImportProjectTeamService, feature_category: :groups_and_
         end
       end
     end
+
+    context 'with the licensed feature for disable_invite_members' do
+      shared_examples 'successful import' do
+        it 'imports the members' do
+          result = import.execute
+
+          expect(result.success?).to be(true)
+        end
+      end
+
+      shared_examples 'failed import' do
+        it 'does not import the members' do
+          result = import.execute
+
+          expect(result.success?).to be(false)
+          expect(result.message).to eq('Forbidden')
+        end
+      end
+
+      context 'when the user is a project maintainer' do
+        context 'and the licensed feature is available' do
+          before do
+            stub_licensed_features(disable_invite_members: true)
+          end
+
+          context 'and the setting disable_invite_members is ON' do
+            before do
+              stub_application_setting(disable_invite_members: true)
+            end
+
+            it_behaves_like 'failed import'
+          end
+
+          context 'and the setting disable_invite_members is OFF' do
+            before do
+              stub_application_setting(disable_invite_members: false)
+            end
+
+            it_behaves_like 'successful import'
+          end
+        end
+
+        context 'and the licensed feature is unavailable' do
+          before do
+            stub_licensed_features(disable_invite_members: false)
+            stub_application_setting(disable_invite_members: true)
+          end
+
+          it_behaves_like 'successful import'
+        end
+      end
+
+      context 'when the user is an admin and the setting disable_invite_members is ON' do
+        let_it_be(:user) { create(:admin) }
+
+        before do
+          stub_licensed_features(disable_invite_members: true)
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        context 'with admin mode enabled', :enable_admin_mode do
+          before do
+            target_project.add_maintainer(user)
+          end
+
+          it_behaves_like 'successful import'
+        end
+
+        it_behaves_like 'failed import'
+      end
+    end
   end
 end
