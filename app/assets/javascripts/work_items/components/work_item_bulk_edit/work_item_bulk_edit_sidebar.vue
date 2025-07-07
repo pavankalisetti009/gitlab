@@ -12,6 +12,7 @@ import workItemParent from '../../graphql/list/work_item_parent.query.graphql';
 import WorkItemBulkEditAssignee from './work_item_bulk_edit_assignee.vue';
 import WorkItemBulkEditDropdown from './work_item_bulk_edit_dropdown.vue';
 import WorkItemBulkEditLabels from './work_item_bulk_edit_labels.vue';
+import WorkItemBulkEditMilestone from './work_item_bulk_edit_milestone.vue';
 
 const WorkItemBulkEditIteration = () =>
   import('ee_component/work_items/components/list/work_item_bulk_edit_iteration.vue');
@@ -41,6 +42,7 @@ export default {
     WorkItemBulkEditDropdown,
     WorkItemBulkEditLabels,
     WorkItemBulkEditIteration,
+    WorkItemBulkEditMilestone,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: ['hasIssuableHealthStatusFeature', 'hasIterationsFeature'],
@@ -75,6 +77,7 @@ export default {
       state: undefined,
       subscription: undefined,
       iteration: undefined,
+      milestone: undefined,
     };
   },
   apollo: {
@@ -161,6 +164,7 @@ export default {
                 }
               : undefined,
             iterationWidget: this.iteration ? { iterationId: this.iteration } : undefined,
+            milestoneWidget: this.milestone ? { milestoneId: this.milestone } : undefined,
           },
         },
       });
@@ -248,6 +252,12 @@ export default {
     <work-item-bulk-edit-iteration
       v-if="shouldUseGraphQLBulkEdit && !isEpicsList && hasIterationsFeature"
       v-model="iteration"
+      :full-path="fullPath"
+      :is-group="isGroup"
+    />
+    <work-item-bulk-edit-milestone
+      v-if="shouldUseGraphQLBulkEdit && !isEpicsList"
+      v-model="milestone"
       :full-path="fullPath"
       :is-group="isGroup"
     />
