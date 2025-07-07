@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Growth', :requires_admin, only: { subdomain: :staging },
-    feature_flag: { name: 'ultimate_trial_single_form', scope: :user }, product_group: :acquisition do
+  RSpec.describe 'Growth', :requires_admin, only: { subdomain: :staging }, product_group: :acquisition do
     describe 'SaaS trials' do
       let(:api_client) { Runtime::API::Client.as_admin }
       let(:user) do
@@ -17,7 +16,6 @@ module QA
       end
 
       before do
-        Runtime::Feature.disable(:ultimate_trial_single_form, user: user)
         Flow::Login.sign_in(as: user)
         group_for_trial.visit!
       end
@@ -40,32 +38,6 @@ module QA
             testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347671'
           ) do
             EE::Flow::Trial.register_for_trial(group: group_for_trial)
-
-            Page::Group::Show.perform do |group|
-              expect(group).to have_notice('You have successfully started an Ultimate and GitLab Duo Enterprise trial')
-            end
-
-            Page::Group::Menu.perform(&:go_to_billing)
-
-            QA::EE::Page::Group::Settings::Billing.perform do |billing|
-              expect do
-                billing.billing_plan_header
-              end.to eventually_include("#{group_for_trial.path} is currently using the Ultimate SaaS Trial Plan")
-                       .within(max_duration: 120, max_attempts: 60, reload_page: page)
-            end
-          end
-        end
-
-        context 'when on billing page with only one eligible namespace' do
-          before do
-            group_for_trial.visit!
-            Page::Group::Menu.perform(&:go_to_billing)
-          end
-
-          it 'registers for a new trial',
-            testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/349163' do
-            QA::EE::Page::Group::Settings::Billing.perform(&:click_start_your_free_trial)
-            EE::Flow::Trial.register_for_trial
 
             Page::Group::Show.perform do |group|
               expect(group).to have_notice('You have successfully started an Ultimate and GitLab Duo Enterprise trial')

@@ -11,7 +11,7 @@
   %p
     = content
 
-  = form_tag submit_path, method: :post, class: 'js-saas-trial-group', data: { testid: 'trial-form' } do
+  = form_tag submit_path, method: :post, data: { testid: 'trial-form' } do
     - hidden_fields.each do |field, value|
       = hidden_field_tag(field, value)
 

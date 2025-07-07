@@ -5,17 +5,17 @@ module QA
     module Page
       module Trials
         class New < QA::Page::Base
-          view 'ee/app/assets/javascripts/trials/components/trial_create_lead_form.vue' do
+          include QA::Page::Component::Dropdown
+
+          view 'ee/app/assets/javascripts/trials/components/create_trial_form.vue' do
+            element 'trial-form'
             element 'first-name-field'
             element 'last-name-field'
             element 'company-name-field'
-            element 'phone-number-field'
-            element 'continue-button'
-          end
-
-          view 'ee/app/assets/javascripts/trials/components/country_or_region_selector.vue' do
             element 'country-dropdown'
             element 'state-dropdown'
+            element 'phone-number-field'
+            element 'submit-button'
           end
 
           def self.path
@@ -30,13 +30,29 @@ module QA
           # @option customer [String] :state The state of the company
           def fill_in_customer_trial_info(customer)
             fill_element('company-name-field', customer[:company_name])
-            select_element('country-dropdown', customer[:country])
+
+            within_element('country-dropdown-container') do
+              expand_select_list
+              select_item(customer[:country])
+            end
+
             fill_element('phone-number-field', customer[:phone_number])
-            select_element('state-dropdown', customer[:state])
+
+            within_element('state-dropdown-container') do
+              expand_select_list
+              select_item(customer[:state])
+            end
           end
 
-          def click_continue_button
-            click_element('continue-button')
+          def trial_for=(group)
+            within_element('group-dropdown-container') do
+              expand_select_list
+              select_item(group)
+            end
+          end
+
+          def click_submit_trial_button
+            click_element('submit-button')
           end
         end
       end
