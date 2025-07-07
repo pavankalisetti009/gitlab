@@ -35,7 +35,7 @@ module Mutations
 
         argument :allow_agent_to_request_user, GraphQL::Types::Boolean,
           required: false,
-          description: 'When enabled, Duo Workflow may stop to ask the user questions before proceeding.'
+          description: 'When enabled, Duo Agent Platform may stop to ask the user questions before proceeding.'
 
         argument :environment, Types::Ai::DuoWorkflows::WorkflowEnvironmentEnum,
           required: false,
