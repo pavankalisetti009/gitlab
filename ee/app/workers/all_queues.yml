@@ -1273,6 +1273,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :sbom_graphs
+- :name: sbom_graphs:sbom_remove_old_dependency_graphs
+  :worker_name: Sbom::RemoveOldDependencyGraphsWorker
+  :feature_category: :dependency_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :sbom_graphs
 - :name: sbom_reports:sbom_ingest_reports
   :worker_name: Sbom::IngestReportsWorker
   :feature_category: :dependency_management

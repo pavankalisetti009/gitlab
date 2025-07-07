@@ -12,6 +12,7 @@ module Sbom
     validates :path_length, presence: true
 
     scope :by_projects, ->(values) { where(project_id: values) }
+    scope :older_than, ->(timestamp) { where(created_at: ...timestamp) }
     scope :by_path_length, ->(path_length) { where(path_length: path_length) }
   end
 end
