@@ -435,12 +435,9 @@ describe('DependenciesTable component', () => {
   });
 
   describe('dependency paths', () => {
-    const dependencyPathsData = [{ path: [{ name: 'eslint', version: '9.17.0' }] }];
-
     describe('for project level when there is location data', () => {
       const dependency = makeDependency({
         occurrenceId: 1,
-        location: { dependencyPaths: dependencyPathsData },
       });
 
       beforeEach(() => {
@@ -488,12 +485,20 @@ describe('DependenciesTable component', () => {
         expect(findDependencyPathButtons().length).toBe(0);
       });
 
-      it('passes the correct prop to the DependencyPathDrawer component when triggered', async () => {
+      it('passes the correct props and only locations with dependency paths to the DependencyPathDrawer component when triggered', async () => {
         const { name, version } = dependency;
-        const emittedItem = {
-          location: { dependency_paths: dependencyPathsData },
-          project: { name: 'emitted-project' },
-        };
+        const emittedItem = [
+          {
+            location: { has_dependency_paths: true },
+            project: { name: 'emitted-project', full_path: 'group-1/emitted-project' },
+            occurrence_id: 1,
+          },
+          {
+            location: { has_dependency_paths: false },
+            project: { name: 'emitted-project-2', full_path: 'group-1/emitted-project-2' },
+            occurrence_id: 2,
+          },
+        ];
 
         findDependencyLocationCount().vm.$emit('click-dependency-path', emittedItem);
 
@@ -502,7 +507,9 @@ describe('DependenciesTable component', () => {
         expect(findDependencyPathDrawer().props()).toMatchObject({
           showDrawer: true,
           component: { name, version },
-          locations: emittedItem,
+          dropdownItems: [
+            { value: 1, text: 'emitted-project', fullPath: 'group-1/emitted-project' },
+          ],
           occurrenceId: 1,
         });
       });

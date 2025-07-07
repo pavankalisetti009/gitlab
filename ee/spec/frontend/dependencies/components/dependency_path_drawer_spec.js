@@ -329,12 +329,12 @@ describe('DependencyPathDrawer component', () => {
     });
   });
 
-  describe('with project dropdown', () => {
-    const locations = [
+  describe('with dropdown', () => {
+    const items = [
       {
         name: 'Project 1',
         full_path: 'group-1/project-1',
-        has_dependency_paths: false,
+        has_dependency_paths: true,
         occurrence_id: 1,
       },
       {
@@ -351,75 +351,64 @@ describe('DependencyPathDrawer component', () => {
       },
     ];
 
-    const createLocations = (locationsData) =>
-      locationsData.map(({ name, full_path, has_dependency_paths, occurrence_id }) => ({
-        project: { name, full_path },
-        location: {
-          has_dependency_paths,
-        },
-        occurrence_id,
+    const createDropdownItems = (item) =>
+      item.map(({ name, full_path: fullPath, occurrence_id: value }) => ({
+        value,
+        text: name,
+        fullPath,
       }));
-
-    const getLocationsWithDependencyPaths = () =>
-      locations.filter((location) => location.has_dependency_paths);
 
     beforeEach(async () => {
       await createComponent({
         props: {
           showDrawer: true,
-          locations: createLocations(locations),
+          dropdownItems: createDropdownItems(items),
         },
         namespaceType: NAMESPACE_GROUP,
       });
     });
 
-    it('renders the first project with dependency paths and its path', () => {
-      const firstLocationWithDependencyPaths = getLocationsWithDependencyPaths()[0];
-      const { full_path } = firstLocationWithDependencyPaths;
+    it('renders the first item and its path', () => {
+      const firstLocation = items[0];
+      const { occurrence_id } = firstLocation;
 
-      expect(findProjectList().props('selected')).toBe(full_path);
+      expect(findProjectList().props('selected')).toBe(occurrence_id);
     });
 
-    it('does not render for projects with empty dependency paths', () => {
-      expect(findProjectList().props('items')).toHaveLength(
-        getLocationsWithDependencyPaths().length,
-      );
-    });
-
-    it('resets selected project in dropdown when locations change', async () => {
-      const newLocations = [
+    it('resets selected item in dropdown when dropdownItems change', async () => {
+      const newItems = [
         {
-          project: { name: 'Project 5', full_path: 'group-1/project-5' },
-          location: { has_dependency_paths: true },
-          occurrence_id: 5,
+          value: 5,
+          text: 'Project 5',
+          fullPath: 'group-1/project-5',
         },
       ];
 
-      wrapper.setProps({ locations: newLocations });
+      wrapper.setProps({ dropdownItems: newItems });
       await nextTick();
 
-      expect(findProjectList().props('items')[0].value).toBe(newLocations[0].project.full_path);
+      expect(findProjectList().props('items')[0].value).toBe(newItems[0].value);
     });
 
     describe('query', () => {
-      it('passes group path, occurrence, and selected projected', () => {
-        const firstLocationWithDependencyPaths = getLocationsWithDependencyPaths()[0];
+      it('passes full path and occurrence of selected item', () => {
+        const firstItem = items[0];
         expect(responseHandler).toHaveBeenCalledWith({
-          fullPath: firstLocationWithDependencyPaths.full_path,
-          occurrence: `gid://gitlab/Sbom::Occurrence/${firstLocationWithDependencyPaths.occurrence_id}`,
+          fullPath: firstItem.full_path,
+          occurrence: `gid://gitlab/Sbom::Occurrence/${firstItem.occurrence_id}`,
           before: null,
           after: null,
         });
       });
 
-      it('queries again when selected project changes', async () => {
-        const secondLocationWithDependencyPaths = getLocationsWithDependencyPaths()[1];
-        findProjectList().vm.$emit('select', secondLocationWithDependencyPaths.full_path);
+      it('queries again when selected item changes', async () => {
+        const secondItem = items[1];
+        findProjectList().vm.$emit('select', secondItem.occurrence_id);
         await waitForPromises();
         expect(responseHandler).toHaveBeenCalledTimes(2);
         expect(responseHandler).toHaveBeenCalledWith({
-          fullPath: secondLocationWithDependencyPaths.full_path,
-          occurrence: `gid://gitlab/Sbom::Occurrence/${secondLocationWithDependencyPaths.occurrence_id}`,
+          fullPath: secondItem.full_path,
+          occurrence: `gid://gitlab/Sbom::Occurrence/${secondItem.occurrence_id}`,
           before: null,
           after: null,
         });
