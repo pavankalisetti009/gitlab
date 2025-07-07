@@ -4,7 +4,7 @@ import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
-import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
+import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 
 import { isTopLevelGroup } from '../../utils';
 import FrameworkCoverage from './framework_coverage.vue';
@@ -21,7 +21,7 @@ const DummyComponent = {
 export default {
   components: {
     DashboardLayout,
-    PanelsBase,
+    ExtendedDashboardPanel,
     FrameworkCoverage,
   },
   props: {
@@ -80,7 +80,7 @@ export default {
         panels: [
           {
             id: '1',
-            panelsBaseProps: {
+            extendedDashboardPanelProps: {
               title: s__('ComplianceReport|Compliance framework coverage'),
               loading: this.$apollo.queries.summary.loading,
             },
@@ -98,7 +98,7 @@ export default {
           },
           {
             id: '2',
-            panelsBaseProps: {
+            extendedDashboardPanelProps: {
               title: s__('ComplianceReport|Failed requirements'),
             },
             component: DummyComponent,
@@ -111,7 +111,7 @@ export default {
           },
           {
             id: '3',
-            panelsBaseProps: {
+            extendedDashboardPanelProps: {
               title: s__('ComplianceReport|Failed controls'),
             },
             component: DummyComponent,
@@ -124,7 +124,7 @@ export default {
           },
           {
             id: '4',
-            panelsBaseProps: {
+            extendedDashboardPanelProps: {
               title: s__('ComplianceReport|Frameworks needs attention'),
             },
             component: DummyComponent,
@@ -145,7 +145,7 @@ export default {
 <template>
   <dashboard-layout :config="dashboardConfig">
     <template #panel="{ panel }">
-      <panels-base v-bind="panel.panelsBaseProps">
+      <extended-dashboard-panel v-bind="panel.extendedDashboardPanelProps">
         <template #body>
           <component
             :is="panel.component"
@@ -153,7 +153,7 @@ export default {
             v-bind="panel.componentProps"
           />
         </template>
-      </panels-base>
+      </extended-dashboard-panel>
     </template>
   </dashboard-layout>
 </template>
