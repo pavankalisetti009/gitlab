@@ -37,7 +37,7 @@ RSpec.describe Gitlab::Geo::HealthCheck, :geo, feature_category: :geo_replicatio
         before do
           allow(Gitlab::Geo).to receive(:secondary?).and_return(true)
           allow(Gitlab::Geo).to receive(:geo_database_configured?) { geo_database_configured }
-          allow(ApplicationRecord.database).to receive(:db_read_only?) { db_read_only }
+          allow(ApplicationRecord.database).to receive(:recovery?) { db_read_only }
         end
 
         after do
