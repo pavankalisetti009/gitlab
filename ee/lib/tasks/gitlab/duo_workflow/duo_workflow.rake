@@ -54,16 +54,48 @@ namespace :gitlab do
                 "status" => "success",
                 "content" => "Reading files from repo...",
                 "timestamp" => timestamp,
-                "tool_info" => nil,
+                "tool_info" => { name: 'read_file' },
                 "message_type" => "tool",
                 "correlation_id" => nil
               },
               {
                 "status" => "success",
-                "content" => "Awesome work Duo!",
+                "content" => "Read issue #123",
+                "timestamp" => timestamp,
+                "tool_info" => { name: 'get_issue' },
+                "message_type" => "tool",
+                "correlation_id" => nil
+              },
+              {
+                "status" => "success",
+                "content" => "Can you tell me more about your project?",
+                "timestamp" => timestamp,
+                "tool_info" => nil,
+                "message_type" => "request",
+                "correlation_id" => nil
+              },
+              {
+                "status" => "success",
+                "content" => "Yes, please add test coverage please.",
                 "timestamp" => timestamp,
                 "tool_info" => nil,
                 "message_type" => "user",
+                "correlation_id" => nil
+              },
+              {
+                "status" => "success",
+                "content" => "I've successfully done all that you asked me and more! Please like and subscribe!",
+                "timestamp" => timestamp,
+                "tool_info" => nil,
+                "message_type" => "agent",
+                "correlation_id" => nil
+              },
+              {
+                "status" => "success",
+                "content" => "Summary of my task and other really cool insights.",
+                "timestamp" => timestamp,
+                "tool_info" => nil,
+                "message_type" => "workflow_end",
                 "correlation_id" => nil
               }
             ],

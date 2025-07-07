@@ -162,12 +162,16 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
         ui_chat_log = checkpoint.checkpoint['channel_values']['ui_chat_log']
 
         expect(ui_chat_log).to be_an(Array)
-        expect(ui_chat_log.length).to eq(3)
+        expect(ui_chat_log.length).to eq(7)
 
         # Verify specific message types
         expect(ui_chat_log[0]['message_type']).to eq('tool')
         expect(ui_chat_log[1]['message_type']).to eq('tool')
-        expect(ui_chat_log[2]['message_type']).to eq('user')
+        expect(ui_chat_log[2]['message_type']).to eq('tool')
+        expect(ui_chat_log[3]['message_type']).to eq('request')
+        expect(ui_chat_log[4]['message_type']).to eq('user')
+        expect(ui_chat_log[5]['message_type']).to eq('agent')
+        expect(ui_chat_log[6]['message_type']).to eq('workflow_end')
       end
 
       it 'creates checkpoints with workflow goal referenced in chat log' do
