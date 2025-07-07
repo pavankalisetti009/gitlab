@@ -3,6 +3,7 @@
 module Gitlab
   class SeatLinkData
     include Gitlab::Utils::StrongMemoize
+    include GitlabSubscriptions::AddOnMetrics
 
     attr_reader :timestamp, :key, :max_users, :billable_users_count, :refresh_token
 
@@ -42,7 +43,7 @@ module Gitlab
         hostname: Gitlab.config.gitlab.host,
         instance_id: Gitlab::CurrentSettings.uuid,
         unique_instance_id: Gitlab::GlobalAnonymousId.instance_uuid,
-        add_on_metrics: add_on_metrics
+        add_on_metrics: generate_add_on_metrics
       }
     end
 
@@ -72,28 +73,6 @@ module Gitlab
 
     def default_billable_users_count
       historical_data&.active_user_count
-    end
-
-    def add_on_metrics
-      add_on_purchases = GitlabSubscriptions::AddOnPurchase
-        .active
-        .by_namespace(nil)
-        .eager_load(:add_on)
-        .left_joins(:assigned_users)
-        .select(
-          :quantity,
-          :subscription_add_on_id,
-          'COUNT(subscription_user_add_on_assignments.id) AS assigned_users_count'
-        )
-        .group(:id, 'subscription_add_ons.id')
-
-      add_on_purchases.map do |purchase|
-        {
-          add_on_type: purchase.add_on.name,
-          purchased_seats: purchase.quantity,
-          assigned_seats: purchase.assigned_users_count
-        }
-      end
     end
   end
 end
