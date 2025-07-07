@@ -7,7 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
-import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/ai_catalog_agents.query.graphql';
+import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
 
 import { mockCatalogItemsResponse, mockAgents } from '../mock_data';
 

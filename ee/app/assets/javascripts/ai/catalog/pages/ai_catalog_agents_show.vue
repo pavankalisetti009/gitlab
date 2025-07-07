@@ -5,7 +5,7 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import aiCatalogAgentQuery from '../graphql/ai_catalog_agent.query.graphql';
+import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import { AI_CATALOG_AGENTS_RUN_ROUTE, AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import AiCatalogAgentCreateEditForm from '../components/ai_catalog_agent_create_edit_form.vue';
 import { TYPENAME_AI_CATALOG_ITEM } from '../constants';

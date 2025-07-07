@@ -170,6 +170,25 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
           end
         end
 
+        context 'when issue has resource label events' do
+          let!(:label_event1) { create(:resource_label_event, label: label1, issue: issue, user: user) }
+          let!(:label_event2) { create(:resource_label_event, label: label2, issue: issue, user: user) }
+
+          it 'creates new label events on the epic that do not reference the original issue' do
+            expect do
+              subject.execute(issue)
+              # 2 copied and 1 created automatically when an Epic work item is created on the background
+            end.to change { ResourceLabelEvent.count }.by(3)
+
+            expect(issue.resource_label_events.count).to eq(2)
+            # Not using resource_label_events association because of WorkItems::UnifiedAssociations
+            expect(ResourceLabelEvent.where(epic: epic).count).to eq(2)
+            expect(
+              ResourceLabelEvent.where(epic: epic).pluck(:epic_id, :issue_id)
+            ).to contain_exactly([epic.id, nil], [epic.id, nil])
+          end
+        end
+
         context 'when issue has resource state event' do
           let_it_be(:issue_event) { create(:resource_state_event, issue: issue) }
 
