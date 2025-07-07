@@ -73,14 +73,14 @@ describe('ExcludedNamespaces', () => {
       axiosMock.onGet(listExclusionsEndpoint).replyOnce(HTTP_STATUS_OK, mockData);
       createComponent();
       await waitForPromises();
-      expect(axiosMock.history.get.length).toBe(1);
+      expect(axiosMock.history.get).toHaveLength(1);
     });
 
     it('renders an error if there is a problem fetching the list', async () => {
       axiosMock.onGet(listExclusionsEndpoint).replyOnce(HTTP_STATUS_BAD_REQUEST);
       createComponent();
       await waitForPromises();
-      expect(axiosMock.history.get.length).toBe(1);
+      expect(axiosMock.history.get).toHaveLength(1);
       expect(findAlert().exists()).toBe(true);
       expect(findAlert().text()).toEqual(exclusionListFetchError);
     });
@@ -122,7 +122,7 @@ describe('ExcludedNamespaces', () => {
     it('sends deletion request to the backend when deletion modal is confirmed', async () => {
       findModal().vm.$emit('primary');
       await waitForPromises();
-      expect(axiosMock.history.delete.length).toBe(1);
+      expect(axiosMock.history.delete).toHaveLength(1);
     });
   });
 });

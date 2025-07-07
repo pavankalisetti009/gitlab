@@ -279,7 +279,7 @@ describe('BoardAddNewColumn', () => {
         it('shows list of status', () => {
           const statusList = wrapper.findAllByTestId('status-list-item');
 
-          expect(statusList.length).toBe(allowedStatus.length);
+          expect(statusList).toHaveLength(allowedStatus.length);
           expect(statusList.at(0).text()).toContain(allowedStatus[0].name);
         });
 
@@ -290,7 +290,7 @@ describe('BoardAddNewColumn', () => {
 
           const statusList = wrapper.findAllByTestId('status-list-item');
 
-          expect(statusList.length).toBe(1);
+          expect(statusList).toHaveLength(1);
           expect(statusList.at(0).text()).toContain('To do');
         });
 

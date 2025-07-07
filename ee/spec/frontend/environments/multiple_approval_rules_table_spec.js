@@ -37,7 +37,7 @@ describe('ee/environments/components/multiple_approval_rules_table.vue', () => {
     it('should show a row for each rule', () => {
       const rows = findDataRows();
 
-      expect(rows.length).toBe(rules.length);
+      expect(rows).toHaveLength(rules.length);
     });
 
     it('should link to group via name', () => {

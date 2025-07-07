@@ -491,8 +491,8 @@ describe('FrameworkInfoDrawer component', () => {
     });
 
     it('displays internal controls correctly', () => {
-      expect(findExternalControlBadges().length).toBe(1);
-      expect(findCopyControlIdButton().length).toBe(1);
+      expect(findExternalControlBadges()).toHaveLength(1);
+      expect(findCopyControlIdButton()).toHaveLength(1);
     });
   });
 

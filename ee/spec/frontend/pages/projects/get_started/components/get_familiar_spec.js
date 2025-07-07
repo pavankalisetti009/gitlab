@@ -34,7 +34,7 @@ describe('Get Familiar component', () => {
 
   it('displays all four feature list items', () => {
     const listItems = wrapper.findAll('ul li');
-    expect(listItems.length).toBe(4);
+    expect(listItems).toHaveLength(4);
 
     expect(listItems.at(0).text()).toContain('Code completion:');
     expect(listItems.at(1).text()).toContain('Code generation:');

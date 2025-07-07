@@ -241,7 +241,7 @@ describe('GroupedLoader', () => {
 
       const result = await loader.loadPage({});
       expect(result.data).toHaveLength(2);
-      expect(loader.processedEntities.length).toBe(2);
+      expect(loader.processedEntities).toHaveLength(2);
     });
 
     it('correctly extracts remaining data from page', async () => {

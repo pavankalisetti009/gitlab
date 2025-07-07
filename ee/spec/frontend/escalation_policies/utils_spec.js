@@ -78,7 +78,7 @@ describe('Escalation policies utility functions', () => {
         },
       ];
 
-      expect(participantsWithTokenStyles.length).toBe(
+      expect(participantsWithTokenStyles).toHaveLength(
         rulesMock.filter((rule) => rule.user || rule.username).length,
       );
       participantsWithTokenStyles.forEach((participant, index) => {

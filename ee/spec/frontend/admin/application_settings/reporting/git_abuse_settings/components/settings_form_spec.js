@@ -54,7 +54,7 @@ describe('Git abuse rate limit settings form component', () => {
 
     const submitEvents = wrapper.emitted().submit;
 
-    expect(submitEvents.length).toEqual(1);
+    expect(submitEvents).toHaveLength(1);
     expect(submitEvents[0][0]).toMatchObject(object);
   };
 

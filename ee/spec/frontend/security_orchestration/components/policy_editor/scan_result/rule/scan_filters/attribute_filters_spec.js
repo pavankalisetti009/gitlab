@@ -42,7 +42,7 @@ describe('AttributeFilters', () => {
 
       const allFilters = findAttributeFilters();
 
-      expect(allFilters.length).toEqual(Object.keys(selected).length);
+      expect(allFilters).toHaveLength(Object.keys(selected).length);
 
       for (let i = 0; i < allFilters.length; i += 1) {
         expect(allFilters.at(i).props('disabled')).toEqual(disabled);

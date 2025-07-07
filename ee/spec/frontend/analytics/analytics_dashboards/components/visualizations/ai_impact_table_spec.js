@@ -84,7 +84,7 @@ describe('AI Impact Table Visualization', () => {
       const payload = { errors: ['one', 'two'] };
       findMetricTable().vm.$emit('set-alerts', payload);
 
-      expect(wrapper.emitted('set-alerts').length).toBe(1);
+      expect(wrapper.emitted('set-alerts')).toHaveLength(1);
       expect(wrapper.emitted('set-alerts')[0][0]).toEqual(payload);
     });
   });

@@ -36,14 +36,14 @@ describe('Comparison chart labels', () => {
     });
 
     it('renders a maximum of 2 labels on the page', () => {
-      expect(findPrimaryLabels().length).toBe(2);
+      expect(findPrimaryLabels()).toHaveLength(2);
       [0, 1].forEach((index) =>
         expect(findPrimaryLabels().at(index).props()).toEqual(expectLabel(MOCK_LABELS[index])),
       );
     });
 
     it('renders all labels in the popover', () => {
-      expect(findPopoverLabels().length).toBe(3);
+      expect(findPopoverLabels()).toHaveLength(3);
       [0, 1, 2].forEach((index) =>
         expect(findPopoverLabels().at(index).props()).toEqual(expectLabel(MOCK_LABELS[index])),
       );

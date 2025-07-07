@@ -67,7 +67,7 @@ describe('RotationsListSectionComponent', () => {
 
     it('renders timeline cell items based on timeframe data', () => {
       const mockTimelineCellWidth = 1;
-      expect(findTimelineCells().length).toBe(mockTimelineCellWidth);
+      expect(findTimelineCells()).toHaveLength(mockTimelineCellWidth);
     });
 
     it('renders current day indicator in the first timeline cell', () => {

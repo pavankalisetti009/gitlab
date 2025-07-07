@@ -31,7 +31,7 @@ describe('TracingChart', () => {
 
   it('renders a TracingDetailsSpansChart for each root', () => {
     const charts = getTracingDetailsSpansCharts();
-    expect(charts.length).toBe(2);
+    expect(charts).toHaveLength(2);
     expect(charts.at(0).props('spans')).toEqual([mockTrace.spans[0]]);
     expect(charts.at(1).props('spans')).toEqual([mockTrace.spans[1]]);
   });

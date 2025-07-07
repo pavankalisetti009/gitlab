@@ -17,7 +17,7 @@ describe('SegmentedBar', () => {
 
       const segmentClasses = findSegmentAt(0).classes();
 
-      expect(findAllSegments().length).toBe(1);
+      expect(findAllSegments()).toHaveLength(1);
       expect(segmentClasses).toContain('gl-bg-neutral-200');
       expect(segmentClasses).toContain('gl-w-full');
     });
@@ -33,7 +33,7 @@ describe('SegmentedBar', () => {
         ],
       });
 
-      expect(findAllSegments().length).toBe(3);
+      expect(findAllSegments()).toHaveLength(3);
 
       expect(findSegmentAt(0).attributes('style')).toBe('width: 50%;');
       expect(findSegmentAt(1).attributes('style')).toBe('width: 30%;');

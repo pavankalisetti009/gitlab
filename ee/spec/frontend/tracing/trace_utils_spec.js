@@ -276,8 +276,8 @@ describe('trace_utils', () => {
       const { roots, pruned } = mapTraceToSpanTrees(trace);
 
       expect(pruned).toBe(true);
-      expect(roots.length).toBe(1);
-      expect(roots[0].children.length).toBe(SPANS_LIMIT - 1);
+      expect(roots).toHaveLength(1);
+      expect(roots[0].children).toHaveLength(SPANS_LIMIT - 1);
     });
   });
 });

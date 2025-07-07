@@ -96,7 +96,7 @@ describe('sortCodeBlocks', () => {
       { blockStartLine: 4, blockEndLine: 6, highlightInfo: [{ id: 2 }] },
     ];
     const result = sortCodeBlocks(input);
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
     expect(result[0].blockEndLine).toBe(6);
     expect(result[0].highlightInfo).toEqual([{ id: 1 }, { id: 2 }]);
   });
@@ -107,7 +107,7 @@ describe('sortCodeBlocks', () => {
       { blockStartLine: 3, blockEndLine: 6, highlightInfo: [{ id: 2 }] },
     ];
     const result = sortCodeBlocks(input);
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
     expect(result[0].blockStartLine).toBe(1);
     expect(result[0].blockEndLine).toBe(6);
     expect(result[0].highlightInfo).toEqual([{ id: 1 }, { id: 2 }]);
@@ -119,7 +119,7 @@ describe('sortCodeBlocks', () => {
       { blockStartLine: 5, blockEndLine: 7, highlightInfo: [{ id: 2 }] },
     ];
     const result = sortCodeBlocks(input);
-    expect(result.length).toBe(2);
+    expect(result).toHaveLength(2);
   });
 });
 

@@ -240,7 +240,7 @@ describe('Metric table', () => {
       it('renders a skeleton loader in each cell', () => {
         // Metric count + 1 for the trend indicator
         const loadingCellCount = Object.keys(mockTableValues).length + 1;
-        expect(findSkeletonLoaders(testId).length).toBe(loadingCellCount);
+        expect(findSkeletonLoaders(testId)).toHaveLength(loadingCellCount);
       });
 
       it('renders a skeleton loader for the sparkline chart', () => {
@@ -286,7 +286,7 @@ describe('Metric table', () => {
       });
 
       it('does not render loading skeletons', () => {
-        expect(findSkeletonLoaders(testId).length).toBe(0);
+        expect(findSkeletonLoaders(testId)).toHaveLength(0);
 
         expect(findChartSkeletonLoader(testId).exists()).toBe(false);
       });
@@ -398,7 +398,7 @@ describe('Metric table', () => {
     );
 
     it('emits `set-alerts` warning with the restricted metrics', () => {
-      expect(wrapper.emitted('set-alerts').length).toBe(1);
+      expect(wrapper.emitted('set-alerts')).toHaveLength(1);
       expect(wrapper.emitted('set-alerts')[0][0]).toEqual({
         canRetry: false,
         warnings: [],

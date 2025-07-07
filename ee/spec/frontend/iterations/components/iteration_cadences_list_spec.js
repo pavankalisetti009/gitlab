@@ -257,14 +257,14 @@ describe('Iteration cadences list', () => {
         await waitForPromises();
 
         // 3 cadences * 3 tabs, so 9 in total
-        expect(wrapper.findAllComponents(IterationCadenceListItem).length).toBe(9);
+        expect(wrapper.findAllComponents(IterationCadenceListItem)).toHaveLength(9);
         expect(wrapper.text()).toContain(cadences[0].title);
 
         wrapper.findComponent(IterationCadenceListItem).vm.$emit('delete-cadence', cadences[0].id);
 
         await waitForPromises();
 
-        expect(wrapper.findAllComponents(IterationCadenceListItem).length).toBe(6);
+        expect(wrapper.findAllComponents(IterationCadenceListItem)).toHaveLength(6);
         expect(wrapper.text()).not.toContain(cadences[0].title);
       });
     });

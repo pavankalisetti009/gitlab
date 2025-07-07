@@ -64,7 +64,7 @@ describe('Dependency Location component', () => {
     it('emits event on click', () => {
       expect(wrapper.emitted('click-dependency-path')).toBeUndefined();
       findButton().vm.$emit('click');
-      expect(wrapper.emitted('click-dependency-path').length).toBe(1);
+      expect(wrapper.emitted('click-dependency-path')).toHaveLength(1);
     });
   });
 

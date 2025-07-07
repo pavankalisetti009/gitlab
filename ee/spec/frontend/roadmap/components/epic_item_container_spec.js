@@ -39,7 +39,7 @@ describe('EpicItemContainer', () => {
       });
 
       expect(wrapper.findComponent(EpicItem).exists()).toBe(true);
-      expect(wrapper.findAllComponents(EpicItem).length).toBe(1);
+      expect(wrapper.findAllComponents(EpicItem)).toHaveLength(1);
     });
   });
 });

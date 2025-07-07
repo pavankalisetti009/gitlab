@@ -66,7 +66,7 @@ describe('UserFeedback', () => {
     it('renders the thank you text instead of a button', async () => {
       findModal().vm.$emit('feedback-submitted', passedfeedback);
       await nextTick();
-      expect(findButtons().length).toBe(0);
+      expect(findButtons()).toHaveLength(0);
       expect(wrapper.text()).toContain(i18n.GENIE_CHAT_FEEDBACK_THANKS);
     });
 

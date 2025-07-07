@@ -161,7 +161,7 @@ describe('RequirementStatusWithTooltip', () => {
 
     it('displays external control labels for external controls', () => {
       const badges = findBadges();
-      expect(badges.length).toBe(2);
+      expect(badges).toHaveLength(2);
       badges.wrappers.forEach((badge) => {
         expect(badge.text()).toBe(EXTERNAL_CONTROL_LABEL);
       });
@@ -239,7 +239,7 @@ describe('RequirementStatusWithTooltip', () => {
 
     it('displays badges for external controls', () => {
       const badges = findBadges();
-      expect(badges.length).toBe(2); // Two external controls
+      expect(badges).toHaveLength(2); // Two external controls
       badges.wrappers.forEach((badge) => {
         expect(badge.text()).toBe(EXTERNAL_CONTROL_LABEL);
       });

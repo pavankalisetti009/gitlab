@@ -65,7 +65,7 @@ describe('CloudLicenseApp', () => {
     });
 
     it('passes on the event to the parent component', () => {
-      expect(wrapper.emitted(SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT).length).toBe(1);
+      expect(wrapper.emitted(SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT)).toHaveLength(1);
       expect(wrapper.emitted(SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT)[0]).toEqual([license.ULTIMATE]);
     });
   });

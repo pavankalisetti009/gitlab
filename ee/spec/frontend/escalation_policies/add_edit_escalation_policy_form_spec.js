@@ -82,7 +82,7 @@ describe('AddEscalationPolicyForm', () => {
       findAddRuleLink().vm.$emit('click');
       await nextTick();
       const rules = findRules();
-      expect(rules.length).toBe(2);
+      expect(rules).toHaveLength(2);
       expect(rules.at(1).props('rule')).toMatchObject(DEFAULT_ESCALATION_RULE);
     });
 

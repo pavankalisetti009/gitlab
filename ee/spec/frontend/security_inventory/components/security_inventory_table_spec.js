@@ -74,7 +74,7 @@ describe('SecurityInventoryTable', () => {
     it('shows skeleton loaders for each column in a row', () => {
       const firstRow = findNthTableRow(0);
       const firstRowLoaders = firstRow.findAllComponents(GlSkeletonLoader);
-      expect(firstRowLoaders.length).toBe(4);
+      expect(firstRowLoaders).toHaveLength(4);
     });
   });
 

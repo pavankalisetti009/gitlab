@@ -49,7 +49,7 @@ describe('FeatureSettingsTableRows', () => {
     });
 
     it('renders row data for each feature setting', () => {
-      expect(findTableRows().length).toBe(mockCodeSuggestionsFeatureSettings.length);
+      expect(findTableRows()).toHaveLength(mockCodeSuggestionsFeatureSettings.length);
     });
 
     it('renders the feature name', () => {

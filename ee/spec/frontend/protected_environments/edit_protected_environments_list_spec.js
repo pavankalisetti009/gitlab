@@ -435,7 +435,7 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
         await waitForPromises();
 
-        expect(mock.history.put.length).toBe(1);
+        expect(mock.history.put).toHaveLength(1);
         const [{ data }] = mock.history.put;
         expect(JSON.parse(data)).toMatchObject({
           name: environment.name,
@@ -470,7 +470,7 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
         await waitForPromises();
 
-        expect(mock.history.put.length).toBe(1);
+        expect(mock.history.put).toHaveLength(1);
         const [{ data }] = mock.history.put;
         expect(JSON.parse(data)).toMatchObject({
           name: environment.name,
@@ -687,7 +687,7 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
         await waitForPromises();
 
-        expect(mock.history.put.length).toBe(1);
+        expect(mock.history.put).toHaveLength(1);
         expect(mock.history.put[0].url).toBe(
           `/api/v4/groups/8/protected_environments/${environment.name}`,
         );

@@ -159,7 +159,7 @@ describe('FilterableComparisonChart', () => {
         });
 
         it('removes duplicates result', () => {
-          expect(findComparisonChart().props('filterLabels').length).toBe(2);
+          expect(findComparisonChart().props('filterLabels')).toHaveLength(2);
         });
       });
     });

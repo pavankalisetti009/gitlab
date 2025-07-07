@@ -81,11 +81,11 @@ describe('EscalationPolicy', () => {
   describe('User tokens', () => {
     it('do not render when escalation rule has no assigned users', () => {
       createComponent(escalationPolicyWithoutUsers);
-      expect(findGlTokens().length).toBe(0);
+      expect(findGlTokens()).toHaveLength(0);
     });
 
     it('render for all mapped participants', () => {
-      expect(findGlTokens().length).toEqual(wrapper.vm.mappedParticipants.length);
+      expect(findGlTokens()).toHaveLength(wrapper.vm.mappedParticipants.length);
     });
 
     it('have assigned style and class attributes from mapped participants', () => {

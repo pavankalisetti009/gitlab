@@ -46,7 +46,7 @@ describe('ComplianceFrameworksFilters', () => {
     it('includes all expected token types in the available tokens', () => {
       const availableTokens = findAvailableTokens();
 
-      expect(availableTokens.length).toBe(4);
+      expect(availableTokens).toHaveLength(4);
       expect(findTokenByType(FRAMEWORKS_FILTER_TYPE_FRAMEWORK)).toBeDefined();
       expect(findTokenByType(FRAMEWORKS_FILTER_TYPE_PROJECT)).toBeDefined();
       expect(findTokenByType(FRAMEWORKS_FILTER_TYPE_GROUP)).toBeDefined();

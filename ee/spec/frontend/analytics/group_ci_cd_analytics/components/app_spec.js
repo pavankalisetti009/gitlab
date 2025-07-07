@@ -115,7 +115,9 @@ describe('ee/analytics/group_ci_cd_analytics/components/app.vue', () => {
           'Time to restore service',
           'Change failure rate',
         ])('does not render a tab for %s', (title) => {
-          expect(findAllGlTabs().filter((tab) => tab.attributes('title') === title).length).toBe(0);
+          expect(findAllGlTabs().filter((tab) => tab.attributes('title') === title)).toHaveLength(
+            0,
+          );
         });
 
         it('shows migration alert', () => {

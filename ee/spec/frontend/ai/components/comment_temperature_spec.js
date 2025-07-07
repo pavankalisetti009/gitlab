@@ -169,7 +169,7 @@ describe('AiCommentTemperature', () => {
 
       it('resets the comment temperature issues', () => {
         findCommentAnywayButton().vm.$emit('click');
-        expect(findIssues().length).toEqual(2);
+        expect(findIssues()).toHaveLength(2);
       });
 
       it('logs the correct event', () => {
@@ -215,7 +215,7 @@ describe('AiCommentTemperature', () => {
         });
         await nextTick();
         expect(findAlert().exists()).toBe(true);
-        expect(findIssues().length).toBe(issues.length);
+        expect(findIssues()).toHaveLength(issues.length);
       });
     });
 

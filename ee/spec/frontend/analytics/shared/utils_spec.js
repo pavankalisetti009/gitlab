@@ -426,13 +426,13 @@ describe('linearRegression', () => {
     });
 
     it('will forecast 30 days in the future by default', () => {
-      expect(lrResult.length).toBe(30);
+      expect(lrResult).toHaveLength(30);
     });
 
     it('can specify the number of days to forecast', () => {
       lrResult = linearRegression(mockTimeSeries, 5);
 
-      expect(lrResult.length).toBe(mockSmallResult.length);
+      expect(lrResult).toHaveLength(mockSmallResult.length);
       expect(lrResult).toEqual(mockSmallResult);
     });
 

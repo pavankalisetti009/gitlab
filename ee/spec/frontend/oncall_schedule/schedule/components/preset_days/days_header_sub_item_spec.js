@@ -37,7 +37,7 @@ describe('ee/oncall_schedules/components/schedule/components/preset_days/days_he
     });
 
     it('renders sub item elements for all items in HOURS_IN_DAY', () => {
-      expect(findSublabels().length).toBe(HOURS_IN_DAY);
+      expect(findSublabels()).toHaveLength(HOURS_IN_DAY);
     });
 
     it('renders time indicator and bolded dark label when the hour matches current time', () => {

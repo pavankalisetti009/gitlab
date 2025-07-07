@@ -36,12 +36,12 @@ describe('Filter project topics badges', () => {
     });
 
     it('renders a maximum of 2 badges on the page', () => {
-      expect(findPrimaryBadges().length).toBe(2);
+      expect(findPrimaryBadges()).toHaveLength(2);
       [0, 1].forEach((index) => expectBadge(findPrimaryBadges().at(index), mockTopics[index]));
     });
 
     it('renders all badges in the popover', () => {
-      expect(findPopoverBadges().length).toBe(3);
+      expect(findPopoverBadges()).toHaveLength(3);
       [0, 1, 2].forEach((index) => expectBadge(findPopoverBadges().at(index), mockTopics[index]));
     });
   });

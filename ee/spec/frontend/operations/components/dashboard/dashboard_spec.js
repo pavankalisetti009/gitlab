@@ -156,7 +156,7 @@ describe('dashboard component', () => {
           findRemoveProjectButton().vm.$emit('click');
           await waitForPromises();
 
-          expect(wrapper.findAllComponents(Project).length).toEqual(0);
+          expect(wrapper.findAllComponents(Project)).toHaveLength(0);
         });
       });
     });
@@ -205,8 +205,8 @@ describe('dashboard component', () => {
 
         await nextTick();
 
-        expect(store.state.projectSearchResults.length).not.toBe(0);
-        expect(store.state.selectedProjects.length).not.toBe(0);
+        expect(store.state.projectSearchResults).not.toHaveLength(0);
+        expect(store.state.selectedProjects).not.toHaveLength(0);
 
         findModal().vm.$emit('primary');
         await waitForPromises();

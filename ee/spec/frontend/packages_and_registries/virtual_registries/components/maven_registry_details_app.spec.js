@@ -104,7 +104,7 @@ describe('MavenRegistryDetailsApp', () => {
     it('renders the upstreams and passes correct props to each', () => {
       const upstreams = findUpstreams();
 
-      expect(upstreams.length).toBe(defaultProps.upstreams.count);
+      expect(upstreams).toHaveLength(defaultProps.upstreams.count);
       expect(upstreams.at(0).props()).toMatchObject({
         upstream: defaultProps.upstreams.nodes[0],
       });

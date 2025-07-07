@@ -71,7 +71,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
           role: MOCK_TANUKI_MESSAGE.role,
           content: updatedContent,
         });
-        expect(state.messages.length).toBe(2);
+        expect(state.messages).toHaveLength(2);
         expect(state.messages).toStrictEqual([
           {
             ...MOCK_USER_MESSAGE,
@@ -93,7 +93,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
             requestId,
             content: updatedContent,
           });
-          expect(state.messages.length).toBe(1);
+          expect(state.messages).toHaveLength(1);
           expect(state.messages).toStrictEqual([
             {
               ...MOCK_USER_MESSAGE,
@@ -114,7 +114,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
             role: MOCK_USER_MESSAGE.role.toUpperCase(),
             content: updatedContent,
           });
-          expect(state.messages.length).toBe(1);
+          expect(state.messages).toHaveLength(1);
           expect(state.messages).toStrictEqual([
             {
               ...MOCK_USER_MESSAGE,
@@ -139,7 +139,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
         state.messages.push(userPrompt, userMessageWithRequestId);
 
         mutations[types.ADD_MESSAGE](state, responseToPrompt);
-        expect(state.messages.length).toBe(3);
+        expect(state.messages).toHaveLength(3);
         expect(state.messages).toStrictEqual([
           userPrompt,
           expect.objectContaining(responseToPrompt),
@@ -161,7 +161,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
 
         mutations[types.ADD_MESSAGE](state, updatedToolMessage);
 
-        expect(state.messages.length).toBe(1);
+        expect(state.messages).toHaveLength(1);
         expect(state.messages[0]).toEqual(updatedToolMessage);
       });
     });
@@ -194,7 +194,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
       it('adds a new tool message to the state', () => {
         mutations[types.ADD_MESSAGE](state, MOCK_TOOL_MESSAGE);
 
-        expect(state.messages.length).toBe(1);
+        expect(state.messages).toHaveLength(1);
         expect(state.messages[0]).toEqual(MOCK_TOOL_MESSAGE);
       });
 
@@ -217,7 +217,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
 
         mutations[types.ADD_MESSAGE](state, updatedToolMessage);
 
-        expect(state.messages.length).toBe(1);
+        expect(state.messages).toHaveLength(1);
         expect(state.messages[0].content).toBe('Updated tool content');
         expect(state.messages[0].tool_info).toEqual({
           name: 'search_issues',
@@ -233,7 +233,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
 
         mutations[types.ADD_MESSAGE](state, toolMessageWithType);
 
-        expect(state.messages.length).toBe(1);
+        expect(state.messages).toHaveLength(1);
         expect(state.messages[0].message_type).toBe('tool');
       });
     });

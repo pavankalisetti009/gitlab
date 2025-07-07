@@ -20,8 +20,8 @@ describe('ProviderSettingsPreview', () => {
   it('renders the component with the correct settings', () => {
     createComponent();
 
-    expect(wrapper.findAll('dt').length).toBe(4);
-    expect(wrapper.findAll('dd').length).toBe(4);
+    expect(wrapper.findAll('dt')).toHaveLength(4);
+    expect(wrapper.findAll('dd')).toHaveLength(4);
 
     expect(wrapper.findAll('dt').at(0).text()).toBe('Snowplow configurator connection string');
     expect(wrapper.findAll('dd').at(0).text()).toBe('****************');
@@ -44,8 +44,8 @@ describe('ProviderSettingsPreview', () => {
       cubeApiKey: '',
     });
 
-    expect(wrapper.findAll('dt').length).toBe(0);
-    expect(wrapper.findAll('dd').length).toBe(0);
+    expect(wrapper.findAll('dt')).toHaveLength(0);
+    expect(wrapper.findAll('dd')).toHaveLength(0);
   });
 
   it('masks sensitive values with asterisks', () => {
@@ -64,7 +64,7 @@ describe('ProviderSettingsPreview', () => {
       cubeApiKey: 'a-very-long-sensitive-api-key',
     });
 
-    expect(wrapper.findAll('dd').at(0).text().length).toBe(16);
-    expect(wrapper.findAll('dd').at(3).text().length).toBe(16);
+    expect(wrapper.findAll('dd').at(0).text()).toHaveLength(16);
+    expect(wrapper.findAll('dd').at(3).text()).toHaveLength(16);
   });
 });

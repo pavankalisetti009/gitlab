@@ -400,7 +400,7 @@ describe('compliance report utils', () => {
 
       const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
 
-      expect(result.length).toBe(2);
+      expect(result).toHaveLength(2);
       expect(result[0].name).toBe('control1');
       expect(result[1].name).toBe('control3');
     });
@@ -463,7 +463,7 @@ describe('compliance report utils', () => {
 
       const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
 
-      expect(result.length).toBe(3);
+      expect(result).toHaveLength(3);
       expect(result[0].displayValue).toBe(internalControlName);
       expect(result[1].displayValue).toBe(externalControlName);
       expect(result[2].displayValue).toBe('Unknown');

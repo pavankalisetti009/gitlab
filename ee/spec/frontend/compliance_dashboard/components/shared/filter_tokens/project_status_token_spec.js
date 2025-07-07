@@ -41,7 +41,7 @@ describe('ProjectStatusToken', () => {
   it('displays the correct number of suggestions', () => {
     createComponent();
 
-    expect(findAllFilteredSearchSuggestions().length).toBe(3);
+    expect(findAllFilteredSearchSuggestions()).toHaveLength(3);
     expect(findAllFilteredSearchSuggestions().at(0).text()).toBe('All');
     expect(findAllFilteredSearchSuggestions().at(1).text()).toBe('Archived');
     expect(findAllFilteredSearchSuggestions().at(2).text()).toBe('Non-archived');

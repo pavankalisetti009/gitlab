@@ -30,7 +30,7 @@ describe('PromotionRequestsTable', () => {
     it('renders the table with rows corresponding to the mocked data', () => {
       expect(findTable().exists()).toBe(true);
 
-      expect(findTable().findAll('tbody > tr').length).toEqual(list.length);
+      expect(findTable().findAll('tbody > tr')).toHaveLength(list.length);
     });
 
     it('renders promotions requests inside the table', () => {

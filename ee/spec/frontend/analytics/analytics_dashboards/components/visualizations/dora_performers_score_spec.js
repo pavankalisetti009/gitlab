@@ -72,7 +72,7 @@ describe('DoraPerformersScore Visualization', () => {
       const payload = { errors: ['error message'] };
       findChart().vm.$emit('error', payload.errors[0]);
 
-      expect(wrapper.emitted('set-alerts').length).toBe(1);
+      expect(wrapper.emitted('set-alerts')).toHaveLength(1);
       expect(wrapper.emitted('set-alerts')[0][0]).toEqual(payload);
     });
   });
