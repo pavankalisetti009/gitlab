@@ -175,7 +175,6 @@ describe('Add On Eligible User List', () => {
   let mockApolloClient;
 
   const createComponent = ({
-    enableAddOnUsersFiltering = false,
     enableAddOnUsersPagesizeSelection = false,
     isBulkAddOnAssignmentEnabled = false,
     addOnAssignmentBulkCreateHandler = bulkAssignAddOnHandler,
@@ -204,7 +203,6 @@ describe('Add On Eligible User List', () => {
         provide: {
           addDuoProHref,
           glFeatures: {
-            enableAddOnUsersFiltering,
             enableAddOnUsersPagesizeSelection,
           },
           isBulkAddOnAssignmentEnabled,
@@ -429,9 +427,12 @@ describe('Add On Eligible User List', () => {
       });
     });
 
-    describe('with enableAddOnUsersFiltering enabled', () => {
+    describe('when eligible users have maxRole field', () => {
       beforeEach(() => {
-        return createComponent({ enableAddOnUsersFiltering: true });
+        return createComponent({
+          mountFn: mount,
+          props: { users: eligibleUsersWithMaxRole },
+        });
       });
 
       it('passes the correct fields configuration', () => {
@@ -439,107 +440,69 @@ describe('Add On Eligible User List', () => {
           'user',
           'codeSuggestionsAddon',
           'email',
+          'maxRole',
           'lastActivityTime',
           'lastDuoActivityTime',
         ]);
       });
 
-      describe('when eligible users have maxRole field', () => {
-        beforeEach(() => {
-          return createComponent({
-            mountFn: mount,
-            enableAddOnUsersFiltering: true,
-            props: { users: eligibleUsersWithMaxRole },
-          });
-        });
-
-        it('passes the correct fields configuration', () => {
-          expect(findTableKeys()).toEqual([
-            'user',
-            'codeSuggestionsAddon',
-            'email',
-            'maxRole',
-            'lastActivityTime',
-            'lastDuoActivityTime',
-          ]);
-        });
-
-        it('renders the correct table data', () => {
-          const expectedUserListData = [
-            {
-              email: 'Private',
-              lastActivityOn: '2023-08-25',
-              lastDuoActivityOn: '2023-08-25',
-              maxRole: 'developer',
-              tooltip: 'An email address is only visible for users with public emails.',
-              user: {
-                avatarLabeled: {
-                  size: '32',
-                  src: 'path/to/img_userone',
-                  text: 'User One  @userone',
-                },
-                avatarLink: { alt: 'User One', href: 'path/to/userone' },
+      it('renders the correct table data', () => {
+        const expectedUserListData = [
+          {
+            email: 'Private',
+            lastActivityOn: '2023-08-25',
+            lastDuoActivityOn: '2023-08-25',
+            maxRole: 'developer',
+            tooltip: 'An email address is only visible for users with public emails.',
+            user: {
+              avatarLabeled: {
+                size: '32',
+                src: 'path/to/img_userone',
+                text: 'User One  @userone',
               },
+              avatarLink: { alt: 'User One', href: 'path/to/userone' },
             },
-            {
-              email: 'Private',
-              lastActivityOn: '2023-08-22',
-              lastDuoActivityOn: 'Never',
-              maxRole: 'developer',
-              tooltip: 'An email address is only visible for users with public emails.',
-              user: {
-                avatarLabeled: {
-                  size: '32',
-                  src: 'path/to/img_usertwo',
-                  text: 'User Two  @usertwo',
-                },
-                avatarLink: { alt: 'User Two', href: 'path/to/usertwo' },
+          },
+          {
+            email: 'Private',
+            lastActivityOn: '2023-08-22',
+            lastDuoActivityOn: 'Never',
+            maxRole: 'developer',
+            tooltip: 'An email address is only visible for users with public emails.',
+            user: {
+              avatarLabeled: {
+                size: '32',
+                src: 'path/to/img_usertwo',
+                text: 'User Two  @usertwo',
               },
+              avatarLink: { alt: 'User Two', href: 'path/to/usertwo' },
             },
-            {
-              email: 'Private',
-              lastActivityOn: '2023-03-19',
-              lastDuoActivityOn: '2023-01-20',
-              maxRole: 'developer',
-              tooltip: 'An email address is only visible for users with public emails.',
-              user: {
-                avatarLabeled: {
-                  size: '32',
-                  src: 'path/to/img_userthree',
-                  text: 'User Three  @userthree',
-                },
-                avatarLink: { alt: 'User Three', href: 'path/to/userthree' },
+          },
+          {
+            email: 'Private',
+            lastActivityOn: '2023-03-19',
+            lastDuoActivityOn: '2023-01-20',
+            maxRole: 'developer',
+            tooltip: 'An email address is only visible for users with public emails.',
+            user: {
+              avatarLabeled: {
+                size: '32',
+                src: 'path/to/img_userthree',
+                text: 'User Three  @userthree',
               },
+              avatarLink: { alt: 'User Three', href: 'path/to/userthree' },
             },
-          ];
-          const actualUserListData = findSerializedTable(findTable());
+          },
+        ];
+        const actualUserListData = findSerializedTable(findTable());
 
-          expect(actualUserListData).toStrictEqual(expectedUserListData);
-        });
+        expect(actualUserListData).toStrictEqual(expectedUserListData);
       });
     });
 
     describe('with isBulkAddOnAssignmentEnabled enabled', () => {
       beforeEach(() => {
-        return createComponent({ isBulkAddOnAssignmentEnabled: true });
-      });
-
-      it('passes the correct fields configuration', () => {
-        expect(findTableKeys()).toEqual([
-          'checkbox',
-          'user',
-          'codeSuggestionsAddon',
-          'email',
-          'lastActivityTime',
-          'lastDuoActivityTime',
-        ]);
-      });
-    });
-
-    describe('with enableAddOnUsersFiltering and isBulkAddOnAssignmentEnabled enabled', () => {
-      beforeEach(() => {
         return createComponent({
-          enableAddOnUsersFiltering: true,
           isBulkAddOnAssignmentEnabled: true,
         });
       });
@@ -559,7 +522,6 @@ describe('Add On Eligible User List', () => {
         beforeEach(() => {
           return createComponent({
             mountFn: mount,
-            enableAddOnUsersFiltering: true,
             isBulkAddOnAssignmentEnabled: true,
             props: { users: eligibleUsersWithMaxRole },
           });

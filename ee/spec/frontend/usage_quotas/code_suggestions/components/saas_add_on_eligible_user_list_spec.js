@@ -33,7 +33,6 @@ Vue.use(VueApollo);
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('Add On Eligible User List', () => {
-  let enableAddOnUsersFiltering = false;
   let enableAddOnUsersPagesizeSelection = false;
   let wrapper;
 
@@ -115,7 +114,6 @@ describe('Add On Eligible User List', () => {
       provide: {
         fullPath,
         glFeatures: {
-          enableAddOnUsersFiltering,
           enableAddOnUsersPagesizeSelection,
         },
         addDuoProHref: 'http://customers.gitlab.com/namespaces/0/duo_pro_seats',
@@ -171,10 +169,6 @@ describe('Add On Eligible User List', () => {
       });
     });
 
-    it('passes the correct sort options to <search-and-sort-bar>', () => {
-      expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual([]);
-    });
-
     it('does not the membership type badge', () => {
       expect(findMembershipTypeBadge().exists()).toBe(false);
     });
@@ -190,32 +184,25 @@ describe('Add On Eligible User List', () => {
       });
     });
 
-    describe('when enableAddOnUsersFiltering is enabled', () => {
-      beforeEach(() => {
-        enableAddOnUsersFiltering = true;
-        return createComponent();
-      });
+    it('passes the correct sort options to <search-and-sort-bar>', () => {
+      expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual(SORT_OPTIONS);
+    });
 
-      it('passes the correct sort options to <search-and-sort-bar>', () => {
-        expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual(SORT_OPTIONS);
-      });
-
-      it('passes the correct tokens to <search-and-sort-bar>', () => {
-        expect(findSearchAndSortBar().props('tokens')).toStrictEqual([
-          {
-            options: [
-              { value: 'true', title: 'Yes' },
-              { value: 'false', title: 'No' },
-            ],
-            icon: 'user',
-            operators: OPERATORS_IS,
-            title: TOKEN_TITLE_ASSIGNED_SEAT,
-            token: BaseToken,
-            type: TOKEN_TYPE_ASSIGNED_SEAT,
-            unique: true,
-          },
-        ]);
-      });
+    it('passes the correct tokens to <search-and-sort-bar>', () => {
+      expect(findSearchAndSortBar().props('tokens')).toStrictEqual([
+        {
+          options: [
+            { value: 'true', title: 'Yes' },
+            { value: 'false', title: 'No' },
+          ],
+          icon: 'user',
+          operators: OPERATORS_IS,
+          title: TOKEN_TITLE_ASSIGNED_SEAT,
+          token: BaseToken,
+          type: TOKEN_TYPE_ASSIGNED_SEAT,
+          unique: true,
+        },
+      ]);
     });
 
     describe('when there is an error fetching add on eligible users', () => {
