@@ -25,38 +25,20 @@ RSpec.describe Sbom::BuildDependencyGraph, feature_category: :dependency_managem
       {}], input_file_path: grandgrandchild.input_file_path, project: project)
   end
 
-  let(:connection) { SecApplicationRecord.connection }
-
   subject(:service) { described_class.new(project) }
 
   it "builds a dependency tree", :aggregate_failures do
-    expect { service.execute }.to change { Sbom::GraphPath.by_projects(project).count }.from(0)
+    expect { service.execute }.to change { Sbom::GraphPath.by_projects(project).count }.from(0).to(6)
   end
 
-  it 'acquires an advisory lock' do
-    lock_key = ["build-dependency-graph-for-project_id", Integer(project.id)].join("-")
-
-    expect(Sbom::GraphPath).to receive(:connection).twice.and_return(connection)
-    expect(connection).to receive(:quote).with(lock_key).and_call_original
-    expect(connection).to receive(:execute).with(/SELECT pg_try_advisory_xact_lock/).and_call_original
-
-    result = service.send(:use_advisory_lock)
-    expect(result).to be_truthy
+  it "sets the created_at timestamp of all new records to the same timestamp", :freeze_time do
+    service.execute
+    now = service.timestamp
+    expect(Sbom::GraphPath.by_projects(project).pluck(:created_at)).to match_array([now, now, now, now, now, now])
   end
 
-  it 'raises when advisory lock cannot be acquired' do
-    expect(service).to receive(:use_advisory_lock).and_return(false)
-
-    expect { service.execute }.to raise_error(Sbom::BuildDependencyGraph::CouldNotAcquireAdvisoryLock)
-  end
-
-  context "when a dependency tree already exists" do
-    before do
-      create(:sbom_graph_path, project: project)
-    end
-
-    it "clears existing paths" do
-      expect { service.execute }.to change { Sbom::GraphPath.count }.from(1).to(6)
-    end
+  it "invokes the remove job after building the tree" do
+    expect(Sbom::RemoveOldDependencyGraphsWorker).to receive(:perform_async).with(project.id)
+    service.execute
   end
 end

@@ -4,8 +4,6 @@ module Sbom
   class BuildDependencyGraph
     include Gitlab::Utils::StrongMemoize
 
-    CouldNotAcquireAdvisoryLock = Class.new(StandardError)
-
     BATCH_SIZE = 250
 
     def self.execute(project)
@@ -24,43 +22,21 @@ module Sbom
     def execute
       new_graph = build_dependency_graph
       Sbom::GraphPath.transaction do
-        # We want to retry at some later point, if the dependency tree didn't change then we won't be doing any work
-        # anyway.
-        raise CouldNotAcquireAdvisoryLock unless use_advisory_lock
-
-        remove_existing_dependency_graph
         # This can raise ActiveRecord::RecordInvalid because another Ci::Pipeline can start removing Sbom::Occurrence
         # rows which will prevent this job from finishing successfully.
         #
         # This actually works in our favour since it's a clear indication we can leave the graph processing to the
-        # newest job
+        # newest job.
         bulk_insert_paths(new_graph)
       end
+
+      # Schedule removal, this job is idempotent and deduplicated so we can schedule it many times
+      Sbom::RemoveOldDependencyGraphsWorker.perform_async(project.id)
     end
 
     private
 
     attr_reader :project
-
-    # According to the docs
-    # https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
-    # transaction-level locks are automatically released at the end of the transaction
-    # so we don't need to manually release it.
-    def use_advisory_lock
-      result = Sbom::GraphPath.connection.execute("SELECT pg_try_advisory_xact_lock(#{build_lock_expression})")
-      result.field_values("pg_try_advisory_xact_lock").first
-    end
-
-    def build_lock_expression
-      lock_key = ["build-dependency-graph-for-project_id", Integer(project.id)].join("-")
-      "hashtext(#{Sbom::GraphPath.connection.quote(lock_key)})"
-    end
-
-    def remove_existing_dependency_graph
-      Sbom::GraphPath.by_projects(project.id).each_batch(of: BATCH_SIZE) do |batch|
-        batch.delete_all
-      end
-    end
 
     def build_dependency_graph
       direct_dependencies = sbom_occurrences.select(&:top_level?)
