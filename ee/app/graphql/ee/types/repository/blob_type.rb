@@ -14,10 +14,10 @@ module EE
             calls_gitaly: true
 
           field :show_duo_workflow_action, GraphQL::Types::Boolean, null: true,
-            description: 'Indicator to show Duo Workflow action.'
+            description: 'Indicator to show Duo Agent Platform action.'
 
           field :duo_workflow_invoke_path, GraphQL::Types::String, null: true,
-            description: 'Path to invoke Duo Workflow.'
+            description: 'Path to invoke Duo Agent Platform.'
         end
 
         def show_duo_workflow_action

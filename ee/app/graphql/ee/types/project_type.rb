@@ -362,7 +362,7 @@ module EE
         field :duo_workflow_status_check, ::Types::Ai::DuoWorkflows::EnablementType,
           null: true,
           experiment: { milestone: '17.7' },
-          description: 'Indicates whether GitLab Duo Workflow is enabled for the project.'
+          description: 'Indicates whether Duo Agent Platform is enabled for the project.'
 
         field :gitlab_subscriptions_preview_billable_user_change,
           ::Types::GitlabSubscriptions::PreviewBillableUserChangeType,

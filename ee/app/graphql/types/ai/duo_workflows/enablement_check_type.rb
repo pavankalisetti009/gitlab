@@ -5,7 +5,7 @@ module Types
     module DuoWorkflows
       class EnablementCheckType < Types::BaseObject # rubocop:disable Graphql/AuthorizeTypes -- parent is already authorized
         graphql_name 'DuoWorkflowEnablementCheck'
-        description "Represents single Duo Workflow enablement check."
+        description "Represents single Duo Agent Platform enablement check."
 
         field :name, GraphQL::Types::String,
           null: false,

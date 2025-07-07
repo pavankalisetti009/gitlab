@@ -5,7 +5,7 @@ module Types
     module DuoWorkflows
       class WorkflowType < Types::BaseObject
         graphql_name 'DuoWorkflow'
-        description 'A Duo Workflow'
+        description 'GitLab Duo Agent Platform session'
         present_using ::Ai::DuoWorkflows::WorkflowPresenter
         authorize :read_duo_workflow
 
@@ -15,7 +15,7 @@ module Types
 
         field :id, type: GraphQL::Types::ID,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          null: false, description: 'ID of the workflow.'
+          null: false, description: 'ID of the session.'
 
         # The user id will always be the current_user.id as
         # only workflow owners can read a workflow
@@ -29,39 +29,39 @@ module Types
 
         field :project, Types::ProjectType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          null: false, description: "Project that the workflow is in."
+          null: false, description: "Project that the session is in."
 
         field :human_status, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          null: false, description: 'Human-readable status of the workflow.'
+          null: false, description: 'Human-readable status of the session.'
 
         field :created_at, Types::TimeType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          null: false, description: 'Timestamp of when the workflow was created.'
+          null: false, description: 'Timestamp of when the session was created.'
 
         field :updated_at, Types::TimeType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          null: false, description: 'Timestamp of when the workflow was last updated.'
+          null: false, description: 'Timestamp of when the session was last updated.'
 
         field :goal, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Goal of the workflow.'
+          description: 'Goal of the session.'
 
         field :workflow_definition, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Duo Workflow type based on its capabilities.'
+          description: 'GitLab Duo Agent Platform flow type based on its capabilities.'
 
         field :environment, Types::Ai::DuoWorkflows::WorkflowEnvironmentEnum,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Environment, e.g., ide or web.'
+          description: 'Environment, like IDE or web.'
 
         field :agent_privileges_names, [GraphQL::Types::String],
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Privileges granted to the agent during workflow execution.'
+          description: 'Privileges granted to the agent during execution.'
 
         field :pre_approved_agent_privileges_names, [GraphQL::Types::String],
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Privileges pre-approved for the agent during workflow execution.'
+          description: 'Privileges pre-approved for the agent during execution.'
 
         field :mcp_enabled, GraphQL::Types::Boolean,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
@@ -73,15 +73,15 @@ module Types
 
         field :status, Types::Ai::DuoWorkflows::WorkflowStatusEnum,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Status of the workflow.'
+          description: 'Status of the session.'
 
         field :status_name, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Status Name of the workflow.'
+          description: 'Status name of the session.'
 
         field :first_checkpoint, Types::Ai::DuoWorkflows::WorkflowEventType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: "First checkpoint of the workflow."
+          description: "First checkpoint of the session."
       end
     end
   end

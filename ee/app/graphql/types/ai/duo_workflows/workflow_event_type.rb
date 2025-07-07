@@ -5,7 +5,7 @@ module Types
     module DuoWorkflows
       class WorkflowEventType < Types::BaseObject
         graphql_name 'DuoWorkflowEvent'
-        description "Events that describe the history and progress of a Duo Workflow"
+        description "Events that describe the history and progress of a GitLab Duo Agent Platform session"
         present_using ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter
         authorize :read_duo_workflow_event
 
@@ -22,10 +22,10 @@ module Types
           description: 'Metadata associated with the event.'
 
         field :workflow_status, Types::Ai::DuoWorkflows::WorkflowStatusEnum,
-          description: 'Status of the workflow.'
+          description: 'Status of the session.'
 
         field :execution_status, GraphQL::Types::String,
-          null: false, description: 'Granular status of workflow execution.',
+          null: false, description: "Granular status of the session's execution.",
           experiment: { milestone: '17.10' }
 
         field :timestamp, Types::TimeType,
@@ -42,10 +42,10 @@ module Types
 
         # rubocop:disable GraphQL/ExtractType -- no need to extract two fields into a separate field
         field :workflow_goal, GraphQL::Types::String,
-          description: 'Goal of the workflow.'
+          description: 'Goal of the session.'
 
         field :workflow_definition, GraphQL::Types::String,
-          description: 'Duo Workflow type based on its capabilities.'
+          description: 'GitLab Duo Agent Platform flow type based on its capabilities.'
         # rubocop:enable GraphQL/ExtractType -- we want to keep this way for backwards compatibility
       end
     end
