@@ -32,6 +32,11 @@ module Types
         type: GraphQL::Types::String,
         null: false,
         description: 'Branches that can access the secret.'
+
+      field :metadata_version,
+        type: GraphQL::Types::Int,
+        null: true,
+        description: 'Current metadata version of the project secret.'
     end
   end
 end

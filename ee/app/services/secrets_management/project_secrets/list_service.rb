@@ -19,7 +19,8 @@ module SecretsManagement
             project: project,
             description: custom_metadata["description"],
             environment: custom_metadata["environment"],
-            branch: custom_metadata["branch"]
+            branch: custom_metadata["branch"],
+            metadata_version: data.dig("metadata", "current_metadata_version")
           )
         end
 

@@ -392,13 +392,13 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     let(:mount_path) { existing_mount_path }
     let(:secret_path) { 'DBPASS' }
     let(:value) { 'somevalue' }
-    let(:version) { 0 }
+    let(:cas) { 0 }
 
     before do
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
     end
 
-    subject(:call_api) { client.update_kv_secret(mount_path, secret_path, value, version: version) }
+    subject(:call_api) { client.update_kv_secret(mount_path, secret_path, value, cas: cas) }
 
     context 'when the mount path exists' do
       context 'when the given secret path does not exist' do
@@ -418,12 +418,12 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
           client.update_kv_secret(mount_path, secret_path, 'someexistingvalue')
         end
 
-        context 'and given version is 0' do
+        context 'and given cas is 0' do
           it_behaves_like 'making an invalid API request'
         end
 
-        context 'and given version is not equal to the current version of the secret' do
-          let(:version) { 3 }
+        context 'and given cas is not equal to the current version of the secret' do
+          let(:cas) { 3 }
 
           it_behaves_like 'making an invalid API request'
         end
@@ -436,14 +436,14 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
           end
         end
 
-        context 'and given version is equal to the current version of the secret' do
-          let(:version) { 1 }
+        context 'and given cas is equal to the current version of the secret' do
+          let(:cas) { 1 }
 
           it_behaves_like 'successful update'
         end
 
-        context 'and version is not given' do
-          let(:version) { nil }
+        context 'and cas is not given' do
+          let(:cas) { nil }
 
           it_behaves_like 'successful update'
         end
@@ -461,6 +461,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     let(:existing_mount_path) { 'some/test/path' }
     let(:mount_path) { existing_mount_path }
     let(:secret_path) { 'DBPASS' }
+    let(:cas) { 0 }
 
     let(:custom_metadata) do
       {
@@ -472,7 +473,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
     end
 
-    subject(:call_api) { client.update_kv_secret_metadata(mount_path, secret_path, custom_metadata) }
+    subject(:call_api) { client.update_kv_secret_metadata(mount_path, secret_path, custom_metadata, metadata_cas: cas) }
 
     context 'when the mount path exists' do
       context 'when the given secret path does not exist' do
@@ -488,10 +489,28 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
           client.update_kv_secret_metadata(mount_path, secret_path, { environment: 'prod' })
         end
 
-        it 'updates the secret and the custom metadata' do
-          call_api
+        shared_examples_for 'updating custom metadata' do
+          it 'updates the custom metadata' do
+            call_api
 
-          expect_kv_secret_to_have_custom_metadata(mount_path, secret_path, custom_metadata.stringify_keys)
+            expect_kv_secret_to_have_custom_metadata(mount_path, secret_path, custom_metadata.stringify_keys)
+          end
+        end
+
+        context 'and the given metadata_cas matches the current version' do
+          let(:cas) { 1 }
+
+          it_behaves_like 'updating custom metadata'
+        end
+
+        context 'and no metadata_cas is given' do
+          let(:cas) { nil }
+
+          it_behaves_like 'updating custom metadata'
+        end
+
+        context 'and the given metadata_version does not match the current version' do
+          it_behaves_like 'making an invalid API request'
         end
       end
     end

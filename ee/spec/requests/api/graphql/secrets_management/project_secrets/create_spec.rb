@@ -69,7 +69,8 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
           name: params[:name],
           description: params[:description],
           branch: params[:branch],
-          environment: params[:environment]
+          environment: params[:environment],
+          metadata_version: 1
         ))
     end
 

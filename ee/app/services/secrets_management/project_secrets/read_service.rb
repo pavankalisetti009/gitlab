@@ -29,7 +29,8 @@ module SecretsManagement
           project: project,
           description: secret_metadata["custom_metadata"]["description"],
           environment: secret_metadata["custom_metadata"]["environment"],
-          branch: secret_metadata["custom_metadata"]["branch"]
+          branch: secret_metadata["custom_metadata"]["branch"],
+          metadata_version: secret_metadata["current_metadata_version"]
         )
 
         ServiceResponse.success(payload: { project_secret: project_secret })

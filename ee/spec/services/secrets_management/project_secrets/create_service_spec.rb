@@ -33,6 +33,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         expect(secret.name).to eq(name)
         expect(secret.description).to eq(description)
         expect(secret.project).to eq(project)
+        expect(secret.metadata_version).to eq(1)
 
         expect_kv_secret_to_have_value(
           project.secrets_manager.ci_secrets_mount_path,

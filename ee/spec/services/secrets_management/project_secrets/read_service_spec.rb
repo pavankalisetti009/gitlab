@@ -45,6 +45,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
             expect(project_secret.description).to eq(description)
             expect(project_secret.branch).to eq(branch)
             expect(project_secret.environment).to eq(environment)
+            expect(project_secret.metadata_version).to eq(1)
             expect(project_secret.project).to eq(project)
           end
         end

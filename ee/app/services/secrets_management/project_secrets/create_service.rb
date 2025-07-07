@@ -49,6 +49,8 @@ module SecretsManagement
 
         refresh_secret_ci_policies(project_secret)
 
+        project_secret.metadata_version = 1
+
         ServiceResponse.success(payload: { project_secret: project_secret })
       rescue SecretsManagerClient::ApiError => e
         raise e unless e.message.include?('check-and-set parameter did not match the current version')
@@ -66,7 +68,7 @@ module SecretsManagement
           secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(project_secret.name),
           value,
-          version: 0
+          cas: 0
         )
 
         custom_metadata = {
@@ -78,7 +80,8 @@ module SecretsManagement
         user_client.update_kv_secret_metadata(
           secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(project_secret.name),
-          custom_metadata
+          custom_metadata,
+          metadata_cas: 0
         )
       end
 

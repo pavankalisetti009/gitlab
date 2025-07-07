@@ -28,7 +28,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
       name: project_secret_attributes[:name],
       description: 'updated description',
       branch: 'feature',
-      environment: 'staging'
+      environment: 'staging',
+      metadata_cas: 1
     }
   end
 
@@ -87,7 +88,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
           name: project_secret_attributes[:name],
           description: 'updated description',
           branch: 'feature',
-          environment: 'staging'
+          environment: 'staging',
+          metadata_version: 2
         ))
     end
 
@@ -96,7 +98,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
         {
           project_path: project.full_path,
           name: project_secret_attributes[:name],
-          description: 'updated description'
+          description: 'updated description',
+          metadata_cas: 1
         }
       end
 
@@ -111,7 +114,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
             name: project_secret_attributes[:name],
             description: 'updated description',
             branch: project_secret_attributes[:branch],
-            environment: project_secret_attributes[:environment]
+            environment: project_secret_attributes[:environment],
+            metadata_version: 2
           ))
 
         # Can't check the value directly in GraphQL response, but we can verify it was updated
@@ -129,7 +133,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
         {
           project_path: project.full_path,
           name: project_secret_attributes[:name],
-          secret: 'new-secret-value'
+          secret: 'new-secret-value',
+          metadata_cas: 1
         }
       end
 
@@ -138,6 +143,11 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
 
         expect(response).to have_gitlab_http_status(:success)
         expect(mutation_response['errors']).to be_empty
+
+        expect(graphql_data_at(mutation_name, :project_secret))
+          .to match(a_graphql_entity_for(
+            metadata_version: 2
+          ))
 
         # Can't check the value directly in GraphQL response, but we can verify it was updated
         secret_path = secrets_manager.ci_data_path(project_secret_attributes[:name])
@@ -149,12 +159,42 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
       end
     end
 
+    context 'when metadata_cas is not provided' do
+      let(:params) do
+        {
+          project_path: project.full_path,
+          name: project_secret_attributes[:name],
+          description: 'updated description',
+          branch: 'feature',
+          environment: 'staging'
+        }
+      end
+
+      it 'updates the project secret', :aggregate_failures do
+        post_mutation
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(mutation_response['errors']).to be_empty
+
+        expect(graphql_data_at(mutation_name, :project_secret))
+          .to match(a_graphql_entity_for(
+            project: a_graphql_entity_for(project),
+            name: project_secret_attributes[:name],
+            description: 'updated description',
+            branch: 'feature',
+            environment: 'staging',
+            metadata_version: nil
+          ))
+      end
+    end
+
     context 'when secret does not exist' do
       let(:params) do
         {
           project_path: project.full_path,
           name: 'NON_EXISTENT_SECRET',
-          description: 'updated description'
+          description: 'updated description',
+          metadata_cas: 1
         }
       end
 
