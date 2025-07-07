@@ -9,7 +9,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import waitForPromises from 'helpers/wait_for_promises';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
-import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
+import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import { mockPanel, invalidVisualization } from '../mock_data';
 
 const mockFetch = jest.fn().mockResolvedValue([]);
@@ -21,7 +21,7 @@ describe('AnalyticsDashboardPanel', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
-  const findPanelsBase = () => wrapper.findComponent(PanelsBase);
+  const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
   const findPanelRetryButton = () => wrapper.findComponent(GlButton);
   const findAlertMessages = () => wrapper.findByTestId('alert-messages').findAll('li');
   const findAlertDescriptionLink = () => wrapper.findComponent(GlLink);
@@ -48,7 +48,7 @@ describe('AnalyticsDashboardPanel', () => {
         ...props,
       },
       stubs: {
-        PanelsBase,
+        ExtendedDashboardPanel,
         GlSprintf,
         LineChart,
       },
@@ -58,14 +58,14 @@ describe('AnalyticsDashboardPanel', () => {
   afterEach(() => mockFetch.mockReset());
 
   const expectPanelLoaded = () => {
-    expect(findPanelsBase().props()).toMatchObject({
+    expect(findExtendedDashboardPanel().props()).toMatchObject({
       loading: false,
       showAlertState: false,
     });
   };
 
   const expectPanelErrored = () => {
-    expect(findPanelsBase().props()).toMatchObject({
+    expect(findExtendedDashboardPanel().props()).toMatchObject({
       loading: false,
       showAlertState: true,
       alertPopoverTitle: 'Failed to fetch data',
@@ -78,7 +78,7 @@ describe('AnalyticsDashboardPanel', () => {
     });
 
     it('renders the panel base component', () => {
-      expect(findPanelsBase().props()).toMatchObject({
+      expect(findExtendedDashboardPanel().props()).toMatchObject({
         title: mockPanel.title,
         tooltip: null,
         loading: true,
@@ -125,7 +125,7 @@ describe('AnalyticsDashboardPanel', () => {
     });
 
     it('sets editing to true on the panels base', () => {
-      expect(findPanelsBase().props()).toMatchObject({
+      expect(findExtendedDashboardPanel().props()).toMatchObject({
         editing: true,
       });
     });
@@ -139,7 +139,7 @@ describe('AnalyticsDashboardPanel', () => {
     });
 
     it('sets the error state on the panels base component', () => {
-      expect(findPanelsBase().props()).toMatchObject({
+      expect(findExtendedDashboardPanel().props()).toMatchObject({
         loading: false,
         showAlertState: true,
         alertPopoverTitle: 'Invalid visualization configuration',
@@ -179,7 +179,7 @@ describe('AnalyticsDashboardPanel', () => {
       createWrapper();
       await waitForPromises();
 
-      expect(findPanelsBase().props()).toMatchObject({
+      expect(findExtendedDashboardPanel().props()).toMatchObject({
         loading: true,
         loadingDelayed: false,
         showAlertState: false,
@@ -193,7 +193,7 @@ describe('AnalyticsDashboardPanel', () => {
       await nextTick();
       await nextTick();
 
-      expect(findPanelsBase().props()).toMatchObject({
+      expect(findExtendedDashboardPanel().props()).toMatchObject({
         loading: true,
         loadingDelayed: true,
         showAlertState: false,
@@ -230,7 +230,7 @@ describe('AnalyticsDashboardPanel', () => {
         });
 
         it('sets the tooltip on the panels base component', () => {
-          expect(findPanelsBase().props('tooltip')).toBe(tooltip);
+          expect(findExtendedDashboardPanel().props('tooltip')).toBe(tooltip);
         });
 
         describe('and the visualization emits an error', () => {
@@ -256,7 +256,7 @@ describe('AnalyticsDashboardPanel', () => {
             });
 
             it('sets the error state on the panels base component', () => {
-              expect(findPanelsBase().props()).toMatchObject({
+              expect(findExtendedDashboardPanel().props()).toMatchObject({
                 loading: false,
                 showAlertState: true,
                 alertVariant: VARIANT_DANGER,
@@ -286,7 +286,7 @@ describe('AnalyticsDashboardPanel', () => {
             });
 
             it('sets the error state on the panels base component', () => {
-              expect(findPanelsBase().props()).toMatchObject({
+              expect(findExtendedDashboardPanel().props()).toMatchObject({
                 loading: false,
                 showAlertState: true,
                 alertVariant: VARIANT_WARNING,
@@ -315,7 +315,7 @@ describe('AnalyticsDashboardPanel', () => {
             });
 
             it('sets the alert state on the panels base component', () => {
-              expect(findPanelsBase().props()).toMatchObject({
+              expect(findExtendedDashboardPanel().props()).toMatchObject({
                 loading: false,
                 showAlertState: true,
                 alertVariant: VARIANT_INFO,
@@ -343,7 +343,7 @@ describe('AnalyticsDashboardPanel', () => {
             });
 
             it('sets the alert state on the panels base component', () => {
-              expect(findPanelsBase().props()).toMatchObject({
+              expect(findExtendedDashboardPanel().props()).toMatchObject({
                 loading: false,
                 showAlertState: true,
                 alertVariant: VARIANT_INFO,
@@ -611,7 +611,7 @@ describe('AnalyticsDashboardPanel', () => {
       ${'title for %{rootNamespaceFullPath}'} | ${'title for namespace'}
     `('renders $renderedTitle for $inputTitle', ({ inputTitle, renderedTitle }) => {
       createWrapper({ props: { title: inputTitle } });
-      expect(findPanelsBase().props('title')).toBe(renderedTitle);
+      expect(findExtendedDashboardPanel().props('title')).toBe(renderedTitle);
     });
 
     it.each`
@@ -622,7 +622,7 @@ describe('AnalyticsDashboardPanel', () => {
       'renders $renderedTitle for namespaceType when isProject is $isProject',
       ({ isProject, renderedTitle }) => {
         createWrapper({ props: { title: 'title for %{namespaceType}' }, provide: { isProject } });
-        expect(findPanelsBase().props('title')).toBe(renderedTitle);
+        expect(findExtendedDashboardPanel().props('title')).toBe(renderedTitle);
       },
     );
   });

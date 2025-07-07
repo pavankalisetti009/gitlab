@@ -7,14 +7,14 @@ import { isEmptyPanelData } from '~/vue_shared/components/customizable_dashboard
 import { VARIANT_DANGER, VARIANT_INFO, VARIANT_WARNING } from '~/alert';
 import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import { __, s__, sprintf } from '~/locale';
-import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
+import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import dataSources from '../data_sources';
 import { PANEL_TROUBLESHOOTING_URL } from '../constants';
 
 export default {
   name: 'AnalyticsDashboardPanel',
   components: {
-    PanelsBase,
+    ExtendedDashboardPanel,
     GlLink,
     GlSprintf,
     GlButton,
@@ -308,7 +308,7 @@ export default {
 </script>
 
 <template>
-  <panels-base
+  <extended-dashboard-panel
     :title="panelTitle"
     :tooltip="tooltip"
     :loading="loading"
@@ -362,5 +362,5 @@ export default {
         __('Retry')
       }}</gl-button>
     </template>
-  </panels-base>
+  </extended-dashboard-panel>
 </template>

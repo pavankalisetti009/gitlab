@@ -1,5 +1,5 @@
 <script>
-import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
+import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_formatters';
@@ -7,7 +7,7 @@ import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/c
 export default {
   name: 'VulnerabilitiesOverTimePanel',
   components: {
-    PanelsBase,
+    ExtendedDashboardPanel,
     VulnerabilitiesOverTimeChart,
   },
   inject: ['groupFullPath'],
@@ -47,7 +47,7 @@ export default {
 </script>
 
 <template>
-  <panels-base
+  <extended-dashboard-panel
     :title="__('Vulnerabilities over time')"
     :loading="$apollo.queries.vulnerabilitiesOverTime.loading"
     :show-alert-state="fetchError"
@@ -60,5 +60,5 @@ export default {
       />
       <p v-else>{{ __('Something went wrong. Please try again.') }}</p>
     </template>
-  </panels-base>
+  </extended-dashboard-panel>
 </template>

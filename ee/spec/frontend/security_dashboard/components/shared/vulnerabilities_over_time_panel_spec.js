@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
+import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_vulnerabilities_over_time.query.graphql';
@@ -72,7 +72,7 @@ describe('VulnerabilitiesOverTimePanel', () => {
     return { vulnerabilitiesOverTimeHandler };
   };
 
-  const findPanelsBase = () => wrapper.findComponent(PanelsBase);
+  const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
   const findVulnerabilitiesOverTimeChart = () =>
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
 
@@ -82,7 +82,7 @@ describe('VulnerabilitiesOverTimePanel', () => {
 
   describe('component rendering', () => {
     it('passes the correct title to the panels base', () => {
-      expect(findPanelsBase().props('title')).toBe('Vulnerabilities over time');
+      expect(findExtendedDashboardPanel().props('title')).toBe('Vulnerabilities over time');
     });
 
     it('renders the vulnerabilities over time chart', () => {
@@ -193,11 +193,11 @@ describe('VulnerabilitiesOverTimePanel', () => {
     it('passes loading state to panels base', async () => {
       createComponent();
 
-      expect(findPanelsBase().props('loading')).toBe(true);
+      expect(findExtendedDashboardPanel().props('loading')).toBe(true);
 
       await waitForPromises();
 
-      expect(findPanelsBase().props('loading')).toBe(false);
+      expect(findExtendedDashboardPanel().props('loading')).toBe(false);
     });
   });
 
@@ -216,7 +216,7 @@ describe('VulnerabilitiesOverTimePanel', () => {
       });
 
       it('sets the panel alert state', () => {
-        expect(findPanelsBase().props('showAlertState')).toBe(true);
+        expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
       });
 
       it('does not render the chart component', () => {
