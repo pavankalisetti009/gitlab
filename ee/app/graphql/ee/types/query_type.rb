@@ -110,6 +110,7 @@ module EE
         field :vulnerability,
           ::Types::VulnerabilityType,
           null: true,
+          scopes: [:api, :read_api, :ai_workflows],
           description: "Find a vulnerability." do
           argument :id, ::Types::GlobalIDType[::Vulnerability],
             required: true,

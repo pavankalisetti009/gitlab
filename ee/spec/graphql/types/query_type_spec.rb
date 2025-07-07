@@ -86,4 +86,21 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       is_expected.to have_graphql_resolver(Resolvers::Boards::EpicListResolver)
     end
   end
+
+  describe '.authorization_scopes' do
+    it 'includes :ai_workflows' do
+      expect(described_class.authorization_scopes).to include(:ai_workflows)
+    end
+  end
+
+  describe 'field scopes' do
+    {
+      'vulnerabilities' => %i[api read_api ai_workflows],
+      'vulnerability' => %i[api read_api ai_workflows]
+    }.each do |field, scopes|
+      it "includes the correct scopes for #{field}" do
+        expect(described_class.fields[field].instance_variable_get(:@scopes)).to include(*scopes)
+      end
+    end
+  end
 end
