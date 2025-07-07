@@ -182,21 +182,21 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
     let(:size) { 10.bytes }
 
     subject(:create_or_update) do
-      with_threads do
-        Tempfile.create('test.txt') do |file|
-          file.write('test')
-          described_class.create_or_update_by!(
-            upstream: upstream,
-            group_id: upstream.group_id,
-            relative_path: '/test',
-            updates: { file: file, size: size, file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f95' }
-          )
-        end
+      Tempfile.create('test.txt') do |file|
+        file.write('test')
+        described_class.create_or_update_by!(
+          upstream: upstream,
+          group_id: upstream.group_id,
+          relative_path: '/test',
+          updates: { file: file, size: size, file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f95' }
+        )
       end
     end
 
-    it 'creates or update the existing record' do
-      expect { create_or_update }.to change { described_class.count }.by(1)
+    context 'with parallel execution' do
+      it 'creates or update the existing record' do
+        expect { with_threads { create_or_update } }.to change { described_class.count }.by(1)
+      end
     end
 
     context 'with invalid updates' do
