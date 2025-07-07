@@ -5,23 +5,77 @@ import PolicyExceptionsSelector from 'ee/security_orchestration/components/polic
 describe('PolicyExceptionsSelector', () => {
   let wrapper;
 
-  const createComponent = () => {
-    wrapper = shallowMountExtended(PolicyExceptionsSelector);
+  const createComponent = ({ glFeatures = {} } = {}) => {
+    wrapper = shallowMountExtended(PolicyExceptionsSelector, {
+      provide: {
+        glFeatures: {
+          securityPoliciesBypassOptionsGroupRoles: true,
+          securityPoliciesBypassOptionsTokensAccounts: true,
+          ...glFeatures,
+        },
+      },
+    });
   };
 
   const findPolicyExceptionSelectors = () => wrapper.findAllByTestId('exception-type');
+  const findHeaders = () => wrapper.findAllByTestId('exception-type-header');
 
-  beforeEach(() => {
-    createComponent();
+  describe('all features', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders policy exceptions options', () => {
+      expect(findPolicyExceptionSelectors()).toHaveLength(5);
+    });
+
+    it('selects policy exceptions option', () => {
+      findPolicyExceptionSelectors().at(1).findComponent(GlButton).vm.$emit('click');
+
+      expect(wrapper.emitted('select')).toEqual([['groups']]);
+    });
   });
 
-  it('renders policy exceptions options', () => {
-    expect(findPolicyExceptionSelectors()).toHaveLength(5);
-  });
+  describe('reduced number of features', () => {
+    it('renders partial options list when securityPoliciesBypassOptionsGroupRoles is disabled', () => {
+      createComponent({
+        glFeatures: {
+          securityPoliciesBypassOptionsGroupRoles: false,
+        },
+      });
 
-  it('selects policy exceptions option', () => {
-    findPolicyExceptionSelectors().at(1).findComponent(GlButton).vm.$emit('click');
+      const headers = findHeaders();
+      expect(findPolicyExceptionSelectors()).toHaveLength(3);
+      expect(headers.at(0).text()).toBe('Service Account');
+      expect(headers.at(1).text()).toBe('Access Token');
+      expect(headers.at(2).text()).toBe('Source Branch Patterns');
+    });
 
-    expect(wrapper.emitted('select')).toEqual([['groups']]);
+    it('renders partial options list when securityPoliciesBypassOptionsTokensAccounts is disabled', () => {
+      createComponent({
+        glFeatures: {
+          securityPoliciesBypassOptionsTokensAccounts: false,
+        },
+      });
+
+      const headers = findHeaders();
+      expect(findPolicyExceptionSelectors()).toHaveLength(3);
+      expect(headers.at(0).text()).toBe('Roles');
+      expect(headers.at(1).text()).toBe('Groups');
+      expect(headers.at(2).text()).toBe('Source Branch Patterns');
+    });
+
+    it('renders one option when both flags are disabled', () => {
+      createComponent({
+        glFeatures: {
+          securityPoliciesBypassOptionsTokensAccounts: false,
+          securityPoliciesBypassOptionsGroupRoles: false,
+        },
+      });
+
+      const headers = findHeaders();
+      expect(findPolicyExceptionSelectors()).toHaveLength(1);
+      expect(headers.at(0).text()).toBe('Source Branch Patterns');
+    });
   });
 });

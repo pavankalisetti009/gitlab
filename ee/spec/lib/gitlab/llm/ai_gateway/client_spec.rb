@@ -192,11 +192,30 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
         'prompt_version' => '5.0.0',
         'model_metadata' => { name: 'mistral' }
       }
-      expected_url = "#{::Gitlab::AiGateway.url}/v1/prompts/test_prompt_name"
+      expected_url = "#{::Gitlab::AiGateway.url}/v2/prompts/test_prompt_name"
 
       expect(ai_client).to receive(:complete).with(url: expected_url, body: expected_body, timeout: 10)
 
       complete_prompt
+    end
+
+    context 'when ai_prompts_v2 is disabled' do
+      before do
+        stub_feature_flags(ai_prompts_v2: false)
+      end
+
+      it 'completes with the correct values' do
+        expected_body = {
+          'inputs' => { 'test' => 'Hello' },
+          'prompt_version' => '5.0.0',
+          'model_metadata' => { name: 'mistral' }
+        }
+        expected_url = "#{::Gitlab::AiGateway.url}/v1/prompts/test_prompt_name"
+
+        expect(ai_client).to receive(:complete).with(url: expected_url, body: expected_body, timeout: 10)
+
+        complete_prompt
+      end
     end
   end
 

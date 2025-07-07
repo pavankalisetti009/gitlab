@@ -36,8 +36,7 @@ module Gitlab
           def request!
             response = perform_ai_gateway_request!(user: user, tracking_context: tracking_context)
 
-            return if response&.body.blank?
-            return Gitlab::Json.parse(response.body) if response&.success?
+            return response if response.present?
 
             { 'detail' => DEFAULT_ERROR }
           rescue ArgumentError => e
