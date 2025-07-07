@@ -4,6 +4,8 @@ import { __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 
+const FLOW_WEB_ENVIRONMENT = 'web';
+
 export default {
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -71,6 +73,7 @@ export default {
         project_id: this.projectId,
         start_workflow: true,
         goal: this.goal,
+        environment: FLOW_WEB_ENVIRONMENT,
         workflow_definition: this.workflowDefinition,
         agent_privileges: this.agentPrivileges,
       };

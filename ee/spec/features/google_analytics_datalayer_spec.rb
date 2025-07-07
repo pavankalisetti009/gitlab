@@ -51,23 +51,6 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
     end
   end
 
-  context 'on trial group select page' do
-    it 'tracks create group events' do
-      sign_in user
-      visit new_trial_path(step: GitlabSubscriptions::Trials::CreateService::TRIAL)
-
-      prevent_submit_for('.js-saas-trial-group')
-
-      fill_in 'new_group_name', with: group.name
-      click_button 'Activate my trial'
-
-      data_layer = execute_script('return window.dataLayer')
-      last_event_in_data_layer = data_layer[-1]
-
-      expect(last_event_in_data_layer["event"]).to eq("saasTrialGroup")
-    end
-  end
-
   context 'on duo pro trial group select page' do
     include ListboxHelpers
 

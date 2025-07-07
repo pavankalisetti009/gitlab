@@ -66,7 +66,13 @@ export default {
 * we want to fix the styling only here and not upstream in the component.
 * https://gitlab.com/gitlab-org/gitlab/-/issues/553412
 */
-.duo-chat-message .gl-markdown {
+
+.duo-chat-message {
   color: var(--white, #ffffff);
+  --gl-text-color-heading: var(--white, #ffffff);
+}
+
+.duo-chat-message pre {
+  color: var(--black, #000000);
 }
 </style>
