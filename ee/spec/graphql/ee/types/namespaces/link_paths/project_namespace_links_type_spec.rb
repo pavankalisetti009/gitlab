@@ -10,7 +10,9 @@ RSpec.describe Types::Namespaces::LinkPaths::ProjectNamespaceLinksType, feature_
 
   subject(:type) { described_class.resolve_type(namespace, {}) }
 
-  it_behaves_like "expose all link paths fields for the namespace"
+  it_behaves_like "expose all link paths fields for the namespace" do
+    let(:type_specific_fields) { %i[newWorkItemEmailAddress] }
+  end
 
   shared_examples "project namespace link paths values" do
     it_behaves_like "common namespace link paths values"
