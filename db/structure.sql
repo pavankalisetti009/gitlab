@@ -13352,6 +13352,7 @@ CREATE TABLE dast_pre_scan_verification_steps (
     verification_errors text[] DEFAULT '{}'::text[] NOT NULL,
     check_type smallint DEFAULT 0 NOT NULL,
     project_id bigint,
+    CONSTRAINT check_2cf67eeb54 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_cd216b95e4 CHECK ((char_length(name) <= 255))
 );
 
