@@ -17,12 +17,9 @@ module EE
 
           private
 
-          override :blocked_state_event_attributes
-          def blocked_state_event_attributes
-            # this is needed when copying resource events for an issue that is promoted to epic
-            # in that case we need to nullify previous `issue_id` value and set new `epic_id` value on copied
-            # resource event
-            super.push('issue_id')
+          override :blocked_resource_event_attributes
+          def blocked_resource_event_attributes
+            super.push('epic_id')
           end
 
           def copy_resource_weight_events
