@@ -22,6 +22,10 @@ module Ai
           }
         }.freeze
 
+        def self.indexing?
+          ::ActiveContext.indexing? && Ai::ActiveContext::Migration.complete?('SetCodeIndexingVersions')
+        end
+
         def self.collection_name
           'gitlab_active_context_code'
         end
