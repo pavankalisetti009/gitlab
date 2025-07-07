@@ -62,11 +62,13 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
           expect(secret1.description).to eq('First secret')
           expect(secret1.branch).to eq('main')
           expect(secret1.environment).to eq('production')
+          expect(secret1.metadata_version).to eq(1)
 
           secret2 = secrets.find { |s| s.name == 'SECRET2' }
           expect(secret2.description).to eq('Second secret')
           expect(secret2.branch).to eq('staging')
           expect(secret2.environment).to eq('staging')
+          expect(secret2.metadata_version).to eq(1)
         end
       end
     end

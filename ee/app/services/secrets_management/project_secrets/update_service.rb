@@ -8,22 +8,10 @@ module SecretsManagement
       include CiPolicies::SecretRefresherHelper
       include Helpers::UserClientHelper
 
-      # NOTE: There is a potential race condition with secret updates because OpenBao
-      # currently doesn't support versioning for metadata operations. This means that
-      # concurrent metadata-only updates may overwrite each other without warning.
-      #
-      # When updating the value, OpenBao does support check-and-set (CAS) versioning,
-      # but we're not currently using it since we can't ensure the same protection for
-      # metadata-only updates, which would create inconsistent behavior.
-      #
-      # Future versions of OpenBao are expected to add versioning support for metadata
-      # operations, at which point we should implement optimistic concurrency control
-      # for all update operations.
-      def execute(name:, value: nil, description: nil, environment: nil, branch: nil)
+      def execute(name:, metadata_cas: nil, value: nil, description: nil, environment: nil, branch: nil)
         return inactive_response unless project.secrets_manager&.active?
 
-        read_service = ProjectSecrets::ReadService.new(project, current_user)
-        read_result = read_service.execute(name)
+        read_result = read_project_secret(name)
 
         return read_result unless read_result.success?
 
@@ -34,14 +22,14 @@ module SecretsManagement
         project_secret.branch = branch unless branch.nil?
 
         # Update the secret
-        update_secret(project_secret, value)
+        update_secret(project_secret, value, metadata_cas)
       end
 
       private
 
       delegate :secrets_manager, to: :project
 
-      def update_secret(project_secret, value)
+      def update_secret(project_secret, value, metadata_cas)
         return error_response(project_secret) unless project_secret.valid?
 
         custom_metadata = {
@@ -55,6 +43,14 @@ module SecretsManagement
         # before calling this service. However, the metadata update and policy management will still be handled
         # in this Rails backend service, as they contain essential information for access control.
 
+        # We need to do the metadata update first just in case the metadata_cas does not match
+        user_client.update_kv_secret_metadata(
+          secrets_manager.ci_secrets_mount_path,
+          secrets_manager.ci_data_path(project_secret.name),
+          custom_metadata,
+          metadata_cas: metadata_cas
+        )
+
         if value
           user_client.update_kv_secret(
             secrets_manager.ci_secrets_mount_path,
@@ -63,15 +59,21 @@ module SecretsManagement
           )
         end
 
-        user_client.update_kv_secret_metadata(
-          secrets_manager.ci_secrets_mount_path,
-          secrets_manager.ci_data_path(project_secret.name),
-          custom_metadata
-        )
-
         refresh_secret_ci_policies(project_secret)
 
+        project_secret.metadata_version = metadata_cas ? metadata_cas + 1 : nil
+
         ServiceResponse.success(payload: { project_secret: project_secret })
+      rescue SecretsManagerClient::ApiError => e
+        raise e unless e.message.include?('metadata check-and-set parameter does not match the current version')
+
+        project_secret.errors.add(:base, e.message)
+        error_response(project_secret)
+      end
+
+      def read_project_secret(name)
+        read_service = ProjectSecrets::ReadService.new(project, current_user)
+        read_service.execute(name)
       end
 
       def error_response(project_secret)

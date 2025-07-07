@@ -25,6 +25,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
   let(:value) { nil }
   let(:branch) { nil }
   let(:environment) { nil }
+  let(:metadata_cas) { 1 }
 
   describe '#execute', :aggregate_failures do
     context 'when the project secrets manager is active' do
@@ -34,7 +35,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           description: description,
           value: value,
           branch: branch,
-          environment: environment
+          environment: environment,
+          metadata_cas: metadata_cas
         )
       end
 
@@ -59,6 +61,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         it 'updates the description only' do
           expect(result).to be_success
           expect(result.payload[:project_secret].description).to eq(new_description)
+          expect(result.payload[:project_secret].metadata_version).to eq(2)
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
@@ -86,6 +89,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
         it 'updates the value' do
           expect(result).to be_success
+          expect(result.payload[:project_secret].metadata_version).to eq(2)
 
           # Verify the value was updated
           expect_kv_secret_to_have_value(
@@ -111,6 +115,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         it 'updates the environment and policies' do
           expect(result).to be_success
           expect(result.payload[:project_secret].environment).to eq(new_environment)
+          expect(result.payload[:project_secret].metadata_version).to eq(2)
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
@@ -153,6 +158,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         it 'updates the branch and policies' do
           expect(result).to be_success
           expect(result.payload[:project_secret].branch).to eq(new_branch)
+          expect(result.payload[:project_secret].metadata_version).to eq(2)
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
@@ -186,6 +192,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(result.payload[:project_secret].description).to eq(new_description)
           expect(result.payload[:project_secret].branch).to eq(new_branch)
           expect(result.payload[:project_secret].environment).to eq(new_environment)
+          expect(result.payload[:project_secret].metadata_version).to eq(2)
 
           # Verify value was updated
           expect_kv_secret_to_have_value(
@@ -314,11 +321,72 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         end
       end
 
+      context 'when metadata_cas is not given' do
+        let(:description) { new_description }
+        let(:value) { new_value }
+        let(:branch) { new_branch }
+        let(:environment) { new_environment }
+        let(:metadata_cas) { nil }
+
+        it 'updates the secret' do
+          expect(result).to be_success
+          expect(result.payload[:project_secret].description).to eq(new_description)
+          expect(result.payload[:project_secret].branch).to eq(new_branch)
+          expect(result.payload[:project_secret].environment).to eq(new_environment)
+          expect(result.payload[:project_secret].metadata_version).to be_nil
+
+          # Verify value was updated
+          expect_kv_secret_to_have_value(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            new_value
+          )
+
+          # Verify metadata was updated
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "description" => new_description,
+            "environment" => new_environment,
+            "branch" => new_branch
+          )
+        end
+      end
+
+      context 'when given metadata_cas does not match the metadata version' do
+        let(:description) { new_description }
+        let(:value) { new_value }
+        let(:branch) { new_branch }
+        let(:environment) { new_environment }
+        let(:metadata_cas) { 2 }
+
+        it 'returns an error' do
+          expect(result).not_to be_success
+          expect(result.message).to eq('metadata check-and-set parameter does not match the current version')
+
+          # Verify value was not updated
+          expect_kv_secret_to_have_value(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            original_value
+          )
+
+          # Verify metadata is unchanged
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "description" => original_description,
+            "environment" => original_environment,
+            "branch" => original_branch
+          )
+        end
+      end
+
       context 'when the secret does not exist' do
         let(:nonexistent_name) { 'NONEXISTENT_SECRET' }
 
         subject(:nonexistent_result) do
-          service.execute(name: nonexistent_name)
+          service.execute(name: nonexistent_name, metadata_cas: 1)
         end
 
         it 'returns an error' do
@@ -377,7 +445,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           description: description,
           value: value,
           branch: branch,
-          environment: environment
+          environment: environment,
+          metadata_cas: metadata_cas
         )
       end
 
@@ -396,7 +465,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           description: description,
           value: value,
           branch: branch,
-          environment: environment
+          environment: environment,
+          metadata_cas: metadata_cas
         )
       end
 

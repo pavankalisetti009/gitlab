@@ -13,6 +13,7 @@ module SecretsManagement
     attribute :description, :string
     attribute :branch, :string
     attribute :environment, :string
+    attribute :metadata_version, :integer, default: 0
 
     # We only track changes for environment and branch for policy updates
     define_attribute_methods :branch, :environment

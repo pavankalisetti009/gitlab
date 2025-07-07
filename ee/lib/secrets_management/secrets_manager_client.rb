@@ -101,18 +101,19 @@ module SecretsManagement
       result["data"]
     end
 
-    def update_kv_secret_metadata(mount_path, secret_path, custom_metadata)
+    def update_kv_secret_metadata(mount_path, secret_path, custom_metadata, metadata_cas: nil)
+      payload = { custom_metadata: custom_metadata }
+      payload[:metadata_cas] = metadata_cas if metadata_cas
+
       make_request(
         :post,
         "#{mount_path}/metadata/#{secret_path}",
-        {
-          custom_metadata: custom_metadata
-        }
+        payload
       )
     end
 
-    def update_kv_secret(mount_path, secret_path, value, version: nil)
-      options = { cas: version } if version
+    def update_kv_secret(mount_path, secret_path, value, cas: nil)
+      options = { cas: cas } if cas
 
       make_request(
         :post,

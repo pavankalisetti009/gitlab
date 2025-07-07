@@ -146,14 +146,16 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
               name: secret_1.name,
               description: secret_1.description,
               branch: secret_1.branch,
-              environment: secret_1.environment
+              environment: secret_1.environment,
+              metadata_version: 1
             ),
             a_graphql_entity_for(
               project: a_graphql_entity_for(project),
               name: secret_2.name,
               description: secret_2.description,
               branch: secret_2.branch,
-              environment: secret_2.environment
+              environment: secret_2.environment,
+              metadata_version: 1
             )
           )
       end
@@ -171,7 +173,8 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
                 name: secret_1.name,
                 description: secret_1.description,
                 branch: secret_1.branch,
-                environment: secret_1.environment
+                environment: secret_1.environment,
+                metadata_version: 1
               )
             )
         end
