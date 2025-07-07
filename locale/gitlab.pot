@@ -5844,19 +5844,19 @@ msgstr ""
 msgid "AiAnalytics|the ClickHouse data store is not available"
 msgstr ""
 
-msgid "AiImpactAnalytics|Code Suggestions acceptance rate"
+msgid "AiImpactAnalytics|Assigned Duo seat engagement"
 msgstr ""
 
-msgid "AiImpactAnalytics|Code Suggestions usage"
+msgid "AiImpactAnalytics|Code Suggestions: Acceptance rate"
 msgstr ""
 
-msgid "AiImpactAnalytics|Duo Chat: Unique users"
+msgid "AiImpactAnalytics|Code Suggestions: Usage"
 msgstr ""
 
-msgid "AiImpactAnalytics|Duo RCA: Unique users"
+msgid "AiImpactAnalytics|Duo Chat: Usage"
 msgstr ""
 
-msgid "AiImpactAnalytics|Duo seats: Assigned and used"
+msgid "AiImpactAnalytics|Duo RCA: Usage"
 msgstr ""
 
 msgid "AiImpactAnalytics|Monthly GitLab Duo Code Suggestions accepted / total Code Suggestions generated."
