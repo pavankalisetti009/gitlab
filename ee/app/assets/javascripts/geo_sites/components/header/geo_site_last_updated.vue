@@ -29,11 +29,6 @@ export default {
       type: Number,
       required: true,
     },
-    primary: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   computed: {
     isSyncStale() {
