@@ -14,6 +14,11 @@ module EE
           super
         end
 
+        override :valid_to_create?
+        def valid_to_create?
+          super && can?(current_user, :invite_project_members, project)
+        end
+
         private
 
         def after_successful_save

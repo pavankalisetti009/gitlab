@@ -252,6 +252,74 @@ RSpec.describe Projects::GroupLinks::CreateService, '#execute', feature_category
     end
   end
 
+  context 'with the licensed feature for disable_invite_members' do
+    shared_examples 'successful group link creation' do
+      it 'creates a group link' do
+        result = described_class.new(project, group, user, opts).execute
+        expect(result[:status]).to eq(:success)
+      end
+    end
+
+    shared_examples 'failed group link creation' do
+      it 'does not create a group link' do
+        result = described_class.new(project, group, user, opts).execute
+        expect(result[:status]).to eq(:error)
+      end
+    end
+
+    context 'when the user is a project maintainer' do
+      before_all do
+        group.add_developer(user)
+      end
+
+      context 'and the licensed feature is available' do
+        before do
+          stub_licensed_features(disable_invite_members: true)
+        end
+
+        context 'and the setting disable_invite_members is ON' do
+          before do
+            stub_application_setting(disable_invite_members: true)
+          end
+
+          it_behaves_like 'failed group link creation'
+        end
+
+        context 'and the setting disable_invite_members is OFF' do
+          before do
+            stub_application_setting(disable_invite_members: false)
+          end
+
+          it_behaves_like 'successful group link creation'
+        end
+      end
+
+      context 'and the licensed feature is unavailable' do
+        before do
+          stub_licensed_features(disable_invite_members: false)
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        it_behaves_like 'successful group link creation'
+      end
+    end
+
+    context 'when the user is an admin and the setting disable_invite_members is ON' do
+      let_it_be(:user) { create(:admin) }
+
+      before do
+        stub_licensed_features(disable_invite_members: true)
+        stub_application_setting(disable_invite_members: true)
+      end
+
+      context 'with admin mode enabled', :enable_admin_mode do
+        it_behaves_like 'successful group link creation'
+      end
+
+      it_behaves_like 'failed group link creation'
+    end
+  end
+
   def create_group_link(user, project, group, opts)
     group.add_developer(user)
     described_class.new(project, group, user, opts).execute
