@@ -32,8 +32,10 @@ module Gitlab
 
           body['model_metadata'] = model_metadata if model_metadata.present?
 
+          endpoint_version = Feature.enabled?(:ai_prompts_v2, user) ? 'v2' : 'v1'
+
           complete(
-            url: "#{base_url}/v1/prompts/#{prompt_name}",
+            url: "#{base_url}/#{endpoint_version}/prompts/#{prompt_name}",
             body: body,
             timeout: timeout
           )

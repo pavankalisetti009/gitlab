@@ -23,14 +23,25 @@ module Gitlab
         private
 
         def perform_ai_gateway_request!(user:, tracking_context: {})
-          ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name, tracking_context: tracking_context)
-            .complete_prompt(
-              base_url: base_url_from_feature_setting,
-              prompt_name: prompt_name,
-              inputs: inputs,
-              prompt_version: prompt_version_or_default,
-              model_metadata: model_metadata
-            )
+          client = ::Gitlab::Llm::AiGateway::Client.new(
+            user,
+            service_name: service_name,
+            tracking_context: tracking_context
+          )
+
+          response = client.complete_prompt(
+            base_url: base_url_from_feature_setting,
+            prompt_name: prompt_name,
+            inputs: inputs,
+            prompt_version: prompt_version_or_default,
+            model_metadata: model_metadata
+          )
+
+          return unless response && response.body.present? && response.success?
+
+          body = Gitlab::Json.parse(response.body)
+
+          body.is_a?(String) ? body : body["content"]
         end
 
         def prompt_version_or_default
