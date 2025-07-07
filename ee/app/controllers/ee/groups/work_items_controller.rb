@@ -9,6 +9,7 @@ module EE
 
       prepended do
         before_action :authorize_read_work_item!, only: [:description_diff, :delete_description_version]
+        before_action :set_application_context!, only: [:show]
 
         include DescriptionDiffActions
       end
@@ -33,6 +34,10 @@ module EE
 
       def authorize_read_work_item!
         access_denied! unless can?(current_user, :read_work_item, issuable)
+      end
+
+      def set_application_context!
+        ::Gitlab::ApplicationContext.push(ai_resource: issuable.try(:to_global_id))
       end
     end
   end

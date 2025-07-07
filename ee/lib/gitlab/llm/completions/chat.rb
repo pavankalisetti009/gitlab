@@ -15,7 +15,8 @@ module Gitlab
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
           ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
-          ::Gitlab::Llm::Chain::Tools::CommitReader
+          ::Gitlab::Llm::Chain::Tools::CommitReader,
+          ::Gitlab::Llm::Chain::Tools::WorkItemReader
         ].freeze
 
         COMMAND_TOOLS = TOOLS + [

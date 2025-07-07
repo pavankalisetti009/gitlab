@@ -13,6 +13,13 @@ module EE
           push_force_frontend_feature_flag(:okrs_mvc, !!project&.okrs_mvc_feature_flag_enabled?)
           push_force_frontend_feature_flag(:okr_automatic_rollups, !!project&.okr_automatic_rollups_enabled?)
         end
+        before_action :set_application_context!, only: [:show]
+      end
+
+      private
+
+      def set_application_context!
+        ::Gitlab::ApplicationContext.push(ai_resource: issuable.try(:to_global_id))
       end
     end
   end

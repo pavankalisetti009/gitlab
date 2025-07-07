@@ -101,6 +101,16 @@ RSpec.describe Projects::WorkItemsController, feature_category: :team_planning d
           end
         end
       end
+
+      context 'when work item is a context for duo chat' do
+        it 'sets the ApplicationContext with an ai_resource key' do
+          get :show, params: { namespace_id: project.namespace, project_id: project, iid: work_item.iid }
+
+          expect(Gitlab::ApplicationContext.current).to include(
+            'meta.ai_resource' => work_item.try(:to_global_id)
+          )
+        end
+      end
     end
   end
 end
