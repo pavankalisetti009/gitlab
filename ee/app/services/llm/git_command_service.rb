@@ -33,7 +33,7 @@ module Llm
     def perform
       response = perform_ai_gateway_request!(user: user, tracking_context: {})
 
-      response_modifier = ::Gitlab::Llm::AiGateway::ResponseModifiers::GitCommand.new(Gitlab::Json.parse(response.body))
+      response_modifier = ::Gitlab::Llm::AiGateway::ResponseModifiers::GitCommand.new(response)
       Gitlab::Tracking::AiTracking.track_user_activity(user)
 
       success(response_modifier.response_body)

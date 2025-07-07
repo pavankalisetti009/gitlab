@@ -71,6 +71,30 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
   describe '#perform_ai_gateway_request!' do
     subject(:execute_request) { dummy_class.new(user, tracking_context).execute }
 
+    context 'when handling responses' do
+      let(:response) { instance_double(HTTParty::Response, body: body, success?: true) }
+
+      before do
+        allow(ai_gateway_client_double).to receive(:complete_prompt).and_return(response)
+      end
+
+      context 'when the response is a string' do
+        let(:body) { %("completion") }
+
+        it 'returns the string' do
+          expect(execute_request).to eq("completion")
+        end
+      end
+
+      context 'when the response is a hash' do
+        let(:body) { %({"content":"completion"}) }
+
+        it 'returns the content of the response' do
+          expect(execute_request).to eq("completion")
+        end
+      end
+    end
+
     context 'with default configuration (no namespace, no feature settings)' do
       it 'executes the ai gateway request with default values' do
         expect(ai_gateway_client_double).to receive(:complete_prompt).with(

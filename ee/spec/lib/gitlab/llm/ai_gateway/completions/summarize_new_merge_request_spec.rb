@@ -10,7 +10,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
     build(:ai_message, :summarize_new_merge_request, user: user, resource: project, request_id: 'uuid')
   end
 
-  let(:example_answer) { { "response" => "AI generated merge request summary" } }
+  let(:example_answer) { "AI generated merge request summary" }
   let(:example_response) { instance_double(HTTParty::Response, body: example_answer.to_json, success?: true) }
 
   subject(:summarize_new_merge_request) { described_class.new(prompt_message, prompt_class, options).execute }

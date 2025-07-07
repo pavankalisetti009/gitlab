@@ -24,7 +24,7 @@ RSpec.describe Llm::GitCommandService, feature_category: :code_review_workflow d
 
     let(:current_user) { user }
     let(:options) { { prompt: 'list 10 commit titles' } }
-    let(:response) { instance_double(HTTParty::Response, body: %("This is a response.")) }
+    let(:response) { instance_double(HTTParty::Response, body: %("This is a response."), success?: true) }
 
     include_context 'with ai features enabled for group'
 
