@@ -26,7 +26,7 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    context 'when post_pipeline_analyzer_status_updates feature flag is disabled for some root ancestors' do
+    context 'when group_settings_based_update_worker feature flag is disabled for some root ancestors' do
       let_it_be(:another_root_group) { create(:group) }
       let_it_be(:another_group) { create(:group, parent: another_root_group) }
       let_it_be_with_reload(:project_with_disabled_ff) { create(:project, group: another_group) }
@@ -34,7 +34,7 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
       let(:project_ids) { [project1.id, project2.id, project_with_disabled_ff.id] }
 
       before do
-        stub_feature_flags(post_pipeline_analyzer_status_updates: root_group)
+        stub_feature_flags(group_settings_based_update_worker: root_group)
 
         project1.security_setting.update!(secret_push_protection_enabled: true)
         project2.security_setting.update!(secret_push_protection_enabled: true)
