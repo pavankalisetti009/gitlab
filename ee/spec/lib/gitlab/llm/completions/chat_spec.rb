@@ -84,7 +84,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
       ::Gitlab::Llm::Chain::Tools::EpicReader,
       ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
-      ::Gitlab::Llm::Chain::Tools::CommitReader
+      ::Gitlab::Llm::Chain::Tools::CommitReader,
+      ::Gitlab::Llm::Chain::Tools::WorkItemReader
     ]
   end
 
