@@ -9,7 +9,7 @@ module EE
 
         override :valid_to_create?
         def valid_to_create?
-          super && !member_role_too_high?
+          super && can?(current_user, :invite_group_members, group) && !member_role_too_high?
         end
 
         override :after_successful_save
