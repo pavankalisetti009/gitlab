@@ -56,8 +56,6 @@ module EE
       def show_compromised_password_detection_alert?
         return false unless ::Gitlab::Saas.feature_available?(:notify_compromised_passwords)
 
-        return false unless ::Feature.enabled?(:notify_compromised_passwords, current_user)
-
         current_user&.compromised_password_detections&.unresolved&.exists?
       end
 

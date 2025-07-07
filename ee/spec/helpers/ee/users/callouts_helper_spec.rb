@@ -265,24 +265,10 @@ RSpec.describe EE::Users::CalloutsHelper do
           create(:compromised_password_detection, user: user, resolved_at: resolved_at)
         end
 
-        context 'when notify_compromised_passwords is enabled' do
-          before do
-            stub_feature_flags(notify_compromised_passwords: true)
-          end
+        it_behaves_like 'alert shows'
 
-          it_behaves_like 'alert shows'
-
-          context 'when the compromised password detection is resolved' do
-            let(:resolved_at) { 1.day.ago }
-
-            it_behaves_like 'alert does not show'
-          end
-        end
-
-        context 'when notify_compromised_passwords is disabled' do
-          before do
-            stub_feature_flags(notify_compromised_passwords: false)
-          end
+        context 'when the compromised password detection is resolved' do
+          let(:resolved_at) { 1.day.ago }
 
           it_behaves_like 'alert does not show'
         end

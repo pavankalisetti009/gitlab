@@ -8,7 +8,6 @@ RSpec.describe 'Compromised Password Detection', :js, feature_category: :system_
   let(:user) { create(:user, :with_namespace, password: current_password) }
 
   before do
-    stub_feature_flags(notify_compromised_passwords: true)
     stub_saas_features(notify_compromised_passwords: true)
   end
 
