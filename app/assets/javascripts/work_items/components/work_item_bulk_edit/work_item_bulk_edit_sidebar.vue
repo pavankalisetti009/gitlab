@@ -12,6 +12,7 @@ import workItemParent from '../../graphql/list/work_item_parent.query.graphql';
 import WorkItemBulkEditAssignee from './work_item_bulk_edit_assignee.vue';
 import WorkItemBulkEditDropdown from './work_item_bulk_edit_dropdown.vue';
 import WorkItemBulkEditLabels from './work_item_bulk_edit_labels.vue';
+
 import WorkItemBulkEditMilestone from './work_item_bulk_edit_milestone.vue';
 
 const WorkItemBulkEditIteration = () =>
@@ -165,6 +166,8 @@ export default {
               : undefined,
             iterationWidget: this.iteration ? { iterationId: this.iteration } : undefined,
             milestoneWidget: this.milestone ? { milestoneId: this.milestone } : undefined,
+            stateEvent: this.state && this.state.toUpperCase(),
+            subscriptionEvent: this.subscription && this.subscription.toUpperCase(),
           },
         },
       });
@@ -197,7 +200,7 @@ export default {
 <template>
   <gl-form id="work-item-list-bulk-edit" class="gl-p-5" @submit.prevent="handleFormSubmitted">
     <work-item-bulk-edit-dropdown
-      v-if="!shouldUseGraphQLBulkEdit"
+      v-if="isEditableUnlessEpicList"
       v-model="state"
       :header-text="__('Select state')"
       :items="$options.stateItems"
@@ -234,7 +237,7 @@ export default {
       data-testid="bulk-edit-health-status"
     />
     <work-item-bulk-edit-dropdown
-      v-if="!shouldUseGraphQLBulkEdit"
+      v-if="isEditableUnlessEpicList"
       v-model="subscription"
       :header-text="__('Select subscription')"
       :items="$options.subscriptionItems"
