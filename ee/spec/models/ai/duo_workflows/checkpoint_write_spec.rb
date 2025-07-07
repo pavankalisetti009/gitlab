@@ -25,6 +25,10 @@ RSpec.describe Ai::DuoWorkflows::CheckpointWrite, feature_category: :duo_workflo
     it { is_expected.to belong_to(:namespace).optional }
   end
 
+  it_behaves_like 'sync workflow attributes' do
+    subject { build(:duo_workflows_checkpoint_write) }
+  end
+
   it_behaves_like 'a BulkInsertSafe model', described_class do
     let_it_be(:workflow) { create(:duo_workflows_workflow) }
     let(:valid_items_for_bulk_insertion) do

@@ -3,13 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_workflow do
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:maintainer) { create(:user, maintainer_of: project) }
   let_it_be(:reporter) { create(:user, reporter_of: project) }
 
   let(:image) { 'example.com/example-image:latest' }
-  let(:workflow) { create(:duo_workflows_workflow, project: project, user: maintainer, image: image) }
+  let(:workflow) { create(:duo_workflows_workflow, user: maintainer, image: image, **container_params) }
+  let(:container_params) { { project: project } }
 
   let(:params) do
     {
@@ -84,6 +86,16 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       end
 
       include_examples params[:shared_examples]
+    end
+  end
+
+  context 'when workflow is not project-level' do
+    let(:container_params) { { namespace: group } }
+
+    it 'returns an error' do
+      expect(execute).to be_error
+      expect(execute.reason).to eq(:unprocessable_entity)
+      expect(execute.message).to eq('Only project-level workflow is supported')
     end
   end
 

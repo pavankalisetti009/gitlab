@@ -3,6 +3,7 @@
 module Ai
   module DuoWorkflows
     class CheckpointWrite < ::ApplicationRecord
+      include ::Ai::DuoWorkflows::SyncWorkflowAttributes
       include BulkInsertSafe
 
       CHECKPOINT_WRITES_LIMIT = 10000

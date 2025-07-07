@@ -24,16 +24,6 @@ module API
             forbidden!
           end
 
-          def authorize_run_workflows!(project, workflow_definition)
-            if workflow_definition == 'chat'
-              return if can?(current_user, :access_duo_agentic_chat, project)
-            elsif can?(current_user, :duo_workflow, project)
-              return
-            end
-
-            forbidden!
-          end
-
           def authorize_feature_flag!
             disabled =
               case params[:workflow_definition]
@@ -101,7 +91,9 @@ module API
           end
 
           params :workflow_params do
-            requires :project_id, type: String, desc: 'The ID or path of the workflow project',
+            optional :project_id, type: String, desc: 'The ID or path of the workflow project',
+              documentation: { example: '1' }
+            optional :namespace_id, type: String, desc: 'The ID or path of the workflow namespace',
               documentation: { example: '1' }
             optional :start_workflow, type: Boolean,
               desc: 'Optional parameter to start workflow in a CI pipeline.' \
@@ -133,6 +125,7 @@ module API
               values: ::Ai::DuoWorkflows::Workflow.environments.keys.map(&:to_s),
               desc: 'Environment for the workflow.',
               documentation: { example: 'web' }
+            exactly_one_of :project_id, :namespace_id
           end
         end
 
@@ -229,14 +222,18 @@ module API
                 use :workflow_params
               end
               post do
-                project = find_project!(params[:project_id])
-                authorize_run_workflows!(project, params[:workflow_definition])
+                container = if params[:project_id]
+                              find_project!(params[:project_id])
+                            elsif params[:namespace_id]
+                              find_namespace!(params[:namespace_id])
+                            end
 
-                service = ::Ai::DuoWorkflows::CreateWorkflowService.new(project: project, current_user: current_user,
-                  params: create_workflow_params)
+                service = ::Ai::DuoWorkflows::CreateWorkflowService.new(
+                  container: container, current_user: current_user, params: create_workflow_params)
 
                 result = service.execute
 
+                forbidden!(result.message) if result.error? && result.http_status == :forbidden
                 bad_request!(result[:message]) if result[:status] == :error
 
                 push_ai_gateway_headers

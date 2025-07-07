@@ -7,6 +7,7 @@ module API
         class Workflow < Grape::Entity
           expose :id
           expose :project_id
+          expose :namespace_id
           expose :agent_privileges
           expose :agent_privileges_names
           expose :pre_approved_agent_privileges

@@ -3,6 +3,8 @@
 module Ai
   module DuoWorkflows
     class Event < ::ApplicationRecord
+      include ::Ai::DuoWorkflows::SyncWorkflowAttributes
+
       UUID_REGEXP = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
 
       self.table_name = :duo_workflows_events

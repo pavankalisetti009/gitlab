@@ -5,8 +5,7 @@ module Ai
     class CreateEventService
       include ::Services::ReturnServiceResponses
 
-      def initialize(project:, workflow:, params:)
-        @project = project
+      def initialize(workflow:, params:)
         @params = params
         @workflow = workflow
       end
@@ -20,10 +19,7 @@ module Ai
       end
 
       def event_attributes
-        @params.merge(
-          workflow: @workflow,
-          project: @project
-        )
+        @params.merge(workflow: @workflow)
       end
     end
   end

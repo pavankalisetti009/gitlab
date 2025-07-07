@@ -12,15 +12,20 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
-  let_it_be(:workflow) do
+
+  let(:workflow) do
     create(
       :duo_workflows_workflow,
       user: user,
-      project: project,
+      workflow_definition: workflow_definition,
       pre_approved_agent_privileges: [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES],
-      agent_privileges: [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES]
+      agent_privileges: [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES],
+      **container_params
     )
   end
+
+  let(:workflow_definition) { 'software_development' }
+  let(:container_params) { { project: project } }
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -49,6 +54,19 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       end.to change { workflow.reload.checkpoints.count }.by(2)
 
       expect(json_response['id']).to eq(Ai::DuoWorkflows::Checkpoint.last.id.first)
+      expect(Ai::DuoWorkflows::Checkpoint.distinct.pluck('project_id')).to eq([project.id])
+    end
+
+    context 'with namespace-level chat workflow' do
+      let(:workflow_definition) { 'chat' }
+      let(:container_params) { { namespace_id: group.id } }
+
+      it 'has correct attributes in checkpoint records' do
+        post api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(Ai::DuoWorkflows::Checkpoint.distinct.pluck('namespace_id')).to eq([group.id])
+      end
     end
 
     context 'when authenticated with a token that has the ai_workflows scope' do
@@ -133,6 +151,17 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(response).to have_gitlab_http_status(:success)
     end
 
+    context 'with namespace-level chat workflow' do
+      let(:workflow_definition) { 'chat' }
+      let(:container_params) { { namespace_id: group.id } }
+
+      it 'allows updating a workflow' do
+        post api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:success)
+      end
+    end
+
     context 'with a workflow belonging to a different user' do
       let(:workflow) { create(:duo_workflows_workflow) }
 
@@ -177,10 +206,13 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
           post api(path, user), params: params
           expect(response).to have_gitlab_http_status(:created)
         end.to change { workflow.events.count }.by(1)
-        expect(json_response['id']).to eq(Ai::DuoWorkflows::Event.last.id)
+
+        created_event = Ai::DuoWorkflows::Event.last
+        expect(json_response['id']).to eq(created_event.id)
         expect(json_response['event_type']).to eq('message')
         expect(json_response['message']).to eq('Hello, World!')
         expect(json_response['event_status']).to eq('queued')
+        expect(created_event.project_id).to eq(project.id)
       end
 
       context 'when authenticated with a token that has the ai_workflows scope' do
@@ -201,6 +233,18 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
             expect(response).to have_gitlab_http_status(:created)
           end.to change { workflow.events.count }.by(1)
           expect(json_response['correlation_id']).to eq(correlation_id)
+        end
+      end
+
+      context 'with namespace-level chat workflow' do
+        let(:workflow_definition) { 'chat' }
+        let(:container_params) { { namespace_id: group.id } }
+
+        it 'allows updating a workflow' do
+          post api(path, user), params: params
+
+          created_event = Ai::DuoWorkflows::Event.last
+          expect(created_event.namespace_id).to eq(group.id)
         end
       end
 
@@ -377,11 +421,11 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
     end
 
     context 'when authenticated with a composite identity token' do
-      let_it_be(:service_account) do
+      let(:service_account) do
         create(:user, :service_account, developer_of: workflow.project, composite_identity_enforced: true)
       end
 
-      let_it_be(:composite_oauth_token) do
+      let(:composite_oauth_token) do
         create(:oauth_access_token, user: service_account, scopes: ['ai_workflows', "user:#{user.id}"])
       end
 

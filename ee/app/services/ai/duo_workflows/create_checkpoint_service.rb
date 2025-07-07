@@ -5,8 +5,7 @@ module Ai
     class CreateCheckpointService
       include ::Services::ReturnServiceResponses
 
-      def initialize(project:, workflow:, params:)
-        @project = project
+      def initialize(workflow:, params:)
         @params = params
         @workflow = workflow
       end
@@ -21,10 +20,7 @@ module Ai
       end
 
       def checkpoint_attributes
-        @params.merge(
-          workflow: @workflow,
-          project: @project
-        )
+        @params.merge(workflow: @workflow)
       end
     end
   end

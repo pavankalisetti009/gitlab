@@ -10,7 +10,7 @@ module Ai
       end
 
       def mcp_enabled
-        workflow.project.root_ancestor.duo_workflow_mcp_enabled
+        workflow.mcp_enabled?
       end
 
       def agent_privileges_names
