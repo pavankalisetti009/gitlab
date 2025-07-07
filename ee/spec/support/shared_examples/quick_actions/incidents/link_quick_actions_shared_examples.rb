@@ -26,9 +26,9 @@ RSpec.shared_examples 'link quick actions' do
           add_note("/link #{link} #{link_text}")
 
           expect(page).to have_content('Resource link added')
-          expect(issue.issuable_resource_links.first.link).to eq(link)
-          expect(issue.issuable_resource_links.first.link_type).to eq(link_type)
-          expect(issue.issuable_resource_links.first.link_text).to eq(link_text_expected)
+          expect(incident.issuable_resource_links.first.link).to eq(link)
+          expect(incident.issuable_resource_links.first.link_type).to eq(link_type)
+          expect(incident.issuable_resource_links.first.link_text).to eq(link_text_expected)
         end
       end
     end

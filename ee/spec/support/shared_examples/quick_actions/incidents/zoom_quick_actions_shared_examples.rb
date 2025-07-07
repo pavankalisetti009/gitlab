@@ -24,8 +24,8 @@ RSpec.shared_examples 'zoom quick actions ee' do
           add_note("/zoom #{zoom_link} #{link_text}")
 
           expect(page).to have_content('Zoom meeting added')
-          expect(issue.issuable_resource_links.first.link).to eq(zoom_link)
-          expect(issue.issuable_resource_links.first.link_text).to eq(link_text_expected)
+          expect(incident.issuable_resource_links.first.link).to eq(zoom_link)
+          expect(incident.issuable_resource_links.first.link_text).to eq(link_text_expected)
         end
       end
     end

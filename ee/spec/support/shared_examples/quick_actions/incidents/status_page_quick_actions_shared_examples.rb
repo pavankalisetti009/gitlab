@@ -12,8 +12,8 @@ RSpec.shared_examples 'status page quick actions' do
 
     shared_examples 'skip silently' do
       it 'does not allow publishing' do
-        expect(Gitlab::StatusPage).not_to receive(:mark_for_publication).with(project, user, issue)
-        expect(StatusPage::PublishWorker).not_to receive(:perform_async).with(user.id, project.id, issue.id)
+        expect(Gitlab::StatusPage).not_to receive(:mark_for_publication).with(project, user, incident)
+        expect(StatusPage::PublishWorker).not_to receive(:perform_async).with(user.id, project.id, incident.id)
 
         add_note('/publish')
 
@@ -22,15 +22,15 @@ RSpec.shared_examples 'status page quick actions' do
       end
     end
 
-    it 'publishes the issue' do
-      expect(StatusPage::PublishWorker).to receive(:perform_async).with(user.id, project.id, issue.id)
+    it 'publishes the incident' do
+      expect(StatusPage::PublishWorker).to receive(:perform_async).with(user.id, project.id, incident.id)
 
       add_note('/publish')
 
       expect(page).to have_content('Issue published on status page.')
     end
 
-    context 'during issue creation' do
+    context 'for incident creation' do
       it 'publishes the issue' do
         visit new_project_issue_path(project)
 
@@ -45,9 +45,9 @@ RSpec.shared_examples 'status page quick actions' do
       end
     end
 
-    context 'publishing causes an error' do
+    context 'when publishing causes an error' do
       it 'provides an error message' do
-        allow(StatusPage::PublishedIncident).to receive(:track).with(issue).and_raise('Error')
+        allow(StatusPage::PublishedIncident).to receive(:track).with(incident).and_raise('Error')
 
         add_note('/publish')
 
@@ -56,13 +56,13 @@ RSpec.shared_examples 'status page quick actions' do
       end
     end
 
-    context 'user does not have permissions' do
+    context 'when user does not have permissions' do
       let(:user) { create(:user) }
 
       it_behaves_like 'skip silently'
     end
 
-    context 'status page is not configured' do
+    context 'when status page is not configured' do
       before do
         status_page_setting.update!(enabled: false)
       end
@@ -74,9 +74,9 @@ RSpec.shared_examples 'status page quick actions' do
       it_behaves_like 'skip silently'
     end
 
-    context 'issue is already published' do
+    context 'when incident is already published' do
       before do
-        create(:status_page_published_incident, issue: issue)
+        create(:status_page_published_incident, issue: incident)
       end
 
       it_behaves_like 'skip silently'
