@@ -106,7 +106,7 @@ describe('SidebarStatus component', () => {
 
       await nextTick();
 
-      expect(findSidebarDropdownWidget().props('loading')).toBe(true);
+      expect(findSidebarDropdownWidget().props('searching')).toBe(true);
     });
 
     it('shows the status in dropdown when the items have finished fetching', async () => {

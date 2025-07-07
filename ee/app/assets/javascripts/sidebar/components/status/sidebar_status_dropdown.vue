@@ -103,7 +103,7 @@ export default {
       id="bulk_sidebar_status_dropdown"
       ref="listbox"
       v-model="selectedValue"
-      :loading="isLoading"
+      :searching="isLoading"
       :searchable="true"
       :header-text="__('Select status')"
       :reset-button-label="__('Reset')"
