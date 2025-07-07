@@ -35,7 +35,7 @@ module EE
           if member.user&.service_account?
             current_user.can?(:admin_service_account_member, member.group)
           else
-            current_user.can?(:admin_group_member, member.group)
+            current_user.can?(:invite_group_members, member.group)
           end
         end
 
