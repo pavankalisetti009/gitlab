@@ -112,6 +112,30 @@ module WorkItems
 
         status_ids = @statuses_to_remove.map(&:id)
         ::WorkItems::Statuses::Custom::Status.id_in(status_ids).delete_all
+
+        # We need to remove boards using the mapped system-defined identifier because these cannot have a
+        # foreign key constraint to cascade the deletion
+        system_defined_identifiers = @statuses_to_remove.filter_map(&:converted_from_system_defined_status_identifier)
+
+        return if system_defined_identifiers.blank?
+
+        # rubocop: disable CodeReuse/ActiveRecord -- these queries will only be used here
+        Namespaces::ProjectNamespace.where('traversal_ids[1] = ?', group.id).each_batch do |project_namespaces|
+          project_ids = Project.where(project_namespace_id: project_namespaces.select(:id))
+
+          ::List.where(
+            project_id: project_ids,
+            system_defined_status_identifier: system_defined_identifiers
+          ).delete_all
+        end
+
+        Group.where('traversal_ids[1] = ?', group.id).each_batch do |groups|
+          ::List.where(
+            group_id: groups,
+            system_defined_status_identifier: system_defined_identifiers
+          ).delete_all
+        end
+        # rubocop: enable CodeReuse/ActiveRecord
       end
 
       def validate_status_usage
