@@ -26620,6 +26620,9 @@ msgstr ""
 msgid "Failed to refresh compliance requirement status. Error: %{error_message}"
 msgstr ""
 
+msgid "Failed to regenerate new work item email address"
+msgstr ""
+
 msgid "Failed to regenerate unique domain"
 msgstr ""
 
@@ -70256,6 +70259,12 @@ msgid "Work in progress limit: %{wipLimit} items"
 msgstr ""
 
 msgid "Work item"
+msgstr ""
+
+msgid "Work item creation via email is not supported"
+msgstr ""
+
+msgid "Work item creation via email is only supported for projects"
 msgstr ""
 
 msgid "Work item not supported"

@@ -21,7 +21,7 @@ module Mutations
 
           raise_resource_not_available_error! unless Feature.enabled?(:members_permissions_detailed_export, group)
 
-          Namespaces::Export::ExportRunner.new(group, current_user).execute
+          ::Namespaces::Export::ExportRunner.new(group, current_user).execute
 
           {
             message: format(_('Your CSV export request has succeeded. The result will be emailed to %{email}.'),
