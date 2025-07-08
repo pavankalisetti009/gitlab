@@ -54,7 +54,7 @@ describe('WorkflowHeader', () => {
       });
 
       it('renders the default workflow header title', () => {
-        expect(findHeading().text()).toBe('Agent flow #123');
+        expect(findHeading().text()).toBe('Agent session #123');
       });
     });
   });

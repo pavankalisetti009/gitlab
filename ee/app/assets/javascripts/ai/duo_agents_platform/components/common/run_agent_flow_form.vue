@@ -66,7 +66,7 @@ export default {
 <template>
   <div>
     <gl-form-group
-      :label="s__('DuoAgentsPlatform|Select Agent Flow')"
+      :label="s__('DuoAgentsPlatform|Select a flow')"
       label-for="workflow-selector"
       class="gl-mb-5"
     >
@@ -96,7 +96,7 @@ export default {
     <duo-workflow-action
       :agent-privileges="selectedAgentFlowItem.agentPrivileges"
       :project-id="projectId"
-      :title="s__('DuoAgentsPlatform|Start Agent Flow')"
+      :title="s__('DuoAgentsPlatform|Start agent session')"
       :goal="prompt"
       :workflow-definition="selectedAgentFlowItem.value"
       :duo-workflow-invoke-path="duoAgentsInvokePath"

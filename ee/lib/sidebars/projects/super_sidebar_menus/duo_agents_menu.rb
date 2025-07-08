@@ -14,7 +14,7 @@ module Sidebars
 
         override :title
         def title
-          s_('DuoAgentsPlatform|Agents')
+          s_('DuoAgentsPlatform|Automate')
         end
 
         override :sprite_icon
@@ -26,8 +26,8 @@ module Sidebars
 
         def duo_agents_runs_menu_item
           ::Sidebars::MenuItem.new(
-            title: s_('Runs'),
-            link: project_duo_agents_platform_path(context.project),
+            title: s_('Agent sessions'),
+            link: project_automate_agent_sessions_path(context.project),
             active_routes: { controller: :duo_agents_platform },
             item_id: :agents_runs
           )

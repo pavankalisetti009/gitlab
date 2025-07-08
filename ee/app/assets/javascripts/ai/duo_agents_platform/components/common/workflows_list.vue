@@ -64,8 +64,8 @@ export default {
   <div>
     <gl-empty-state
       v-if="!hasWorkflows"
-      :title="s__('DuoAgentsPlatform|No Agent runs yet')"
-      :description="s__('DuoAgentsPlatform|New Agent runs will appear here.')"
+      :title="s__('DuoAgentsPlatform|No agent sessions yet')"
+      :description="s__('DuoAgentsPlatform|New agent sessions will appear here.')"
       :svg-path="emptyStateIllustrationPath"
     />
     <template v-else>
