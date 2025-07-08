@@ -7,6 +7,7 @@ import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import ComplianceFrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
 import updateComplianceViolationStatus from 'ee/compliance_violations/graphql/mutations/update_compliance_violation_status.mutation.graphql';
 
@@ -23,6 +24,7 @@ export default {
     GlLink,
     GlKeysetPagination,
     ComplianceViolationStatusDropdown,
+    ComplianceFrameworkBadge,
   },
   props: {
     groupPath: {
@@ -217,7 +219,15 @@ export default {
       </template>
 
       <template #cell(complianceControl)="{ item }">
-        <div class="gl-font-weight-semibold">{{ item.complianceControl.name }}</div>
+        <div class="gl-font-weight-semibold gl-mb-2">{{ item.complianceControl.name }}</div>
+        <compliance-framework-badge
+          v-if="
+            item.complianceControl.complianceRequirement &&
+            item.complianceControl.complianceRequirement.framework
+          "
+          :framework="item.complianceControl.complianceRequirement.framework"
+          popover-mode="details"
+        />
       </template>
 
       <template #cell(auditEvent)="{}">
