@@ -95,7 +95,11 @@ module Gitlab
             next if response.nil?
 
             h[:ai_gateway_response_code] = response.code
-            h[:ai_gateway_error_detail] = response.parsed_response["detail"] if response.parsed_response&.dig("detail")
+            if response.parsed_response.is_a?(String)
+              h[:ai_gateway_error_detail] = response.parsed_response
+            elsif response.respond_to?(:dig) && response.parsed_response&.dig("detail")
+              h[:ai_gateway_error_detail] = response.parsed_response["detail"]
+            end
           end
           Gitlab::ErrorTracking.track_exception(err, error_context)
           error(err.message)
