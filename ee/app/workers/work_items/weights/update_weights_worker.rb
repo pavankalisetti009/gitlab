@@ -7,6 +7,7 @@ module WorkItems
 
       data_consistency :delayed
       feature_category :team_planning
+      concurrency_limit -> { 100 }
       idempotent!
 
       def perform(work_item_ids)
