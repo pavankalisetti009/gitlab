@@ -6,10 +6,10 @@ module Analytics
       include CommonUsageService
 
       # TODO - Replace with namespace_traversal_path filter
-      # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491
+      # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491.
       QUERY = <<~SQL
         -- cte to load code contributors
-        WITH code_contributors AS (
+        WITH contributors AS (
           SELECT DISTINCT author_id
           FROM "contributions"
           WHERE startsWith(path, {traversal_path:String})
@@ -22,7 +22,7 @@ module Analytics
 
       NEW_QUERY = <<~SQL
         -- cte to load contributors
-        WITH code_contributors AS (
+        WITH contributors AS (
           SELECT DISTINCT author_id
           FROM (
             SELECT
@@ -40,7 +40,7 @@ module Analytics
         SELECT %{fields}
       SQL
 
-      CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM code_contributors"
+      CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM contributors"
       private_constant :CODE_CONTRIBUTORS_COUNT_QUERY
 
       code_suggestion_usage_events = ::Ai::CodeSuggestionEvent.events.values_at(
@@ -54,7 +54,7 @@ module Analytics
       CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY = <<~SQL.freeze
         SELECT COUNT(DISTINCT user_id)
           FROM code_suggestion_events_daily
-          WHERE user_id IN (SELECT author_id FROM code_contributors)
+          WHERE user_id IN (SELECT author_id FROM contributors)
           AND date >= {from:Date}
           AND date <= {to:Date}
           AND event IN (#{code_suggestion_usage_events})
@@ -66,7 +66,7 @@ module Analytics
       CODE_SUGGESTIONS_SHOWN_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences)
         FROM code_suggestion_events_daily
-        WHERE user_id IN (SELECT author_id FROM code_contributors)
+        WHERE user_id IN (SELECT author_id FROM contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}
         AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_shown_in_ide']}
@@ -78,7 +78,7 @@ module Analytics
       CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences)
         FROM code_suggestion_events_daily
-        WHERE user_id IN (SELECT author_id FROM code_contributors)
+        WHERE user_id IN (SELECT author_id FROM contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}
         AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']}
@@ -89,7 +89,7 @@ module Analytics
         <<~SQL.freeze
           SELECT #{field_select_sql}
           FROM code_suggestion_events_daily
-          WHERE user_id IN (SELECT author_id FROM code_contributors)
+          WHERE user_id IN (SELECT author_id FROM contributors)
           AND date >= {from:Date}
           AND date <= {to:Date}
           AND event IN (#{event_types_filter})
