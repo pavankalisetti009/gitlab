@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::CheckpointWrite, feature_category: :duo_workflow do
   it { is_expected.to validate_presence_of(:workflow) }
-  it { is_expected.to validate_presence_of(:project) }
   it { is_expected.to validate_presence_of(:thread_ts) }
   it { is_expected.to validate_presence_of(:task) }
   it { is_expected.to validate_presence_of(:idx) }
@@ -21,6 +20,9 @@ RSpec.describe Ai::DuoWorkflows::CheckpointWrite, feature_category: :duo_workflo
         .inverse_of(:checkpoint_writes)
         .optional
     end
+
+    it { is_expected.to belong_to(:project).optional }
+    it { is_expected.to belong_to(:namespace).optional }
   end
 
   it_behaves_like 'a BulkInsertSafe model', described_class do

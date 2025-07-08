@@ -12,6 +12,8 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
   describe 'associations' do
     it { is_expected.to have_many(:checkpoints).class_name('Ai::DuoWorkflows::Checkpoint') }
     it { is_expected.to have_many(:checkpoint_writes).class_name('Ai::DuoWorkflows::CheckpointWrite') }
+    it { is_expected.to belong_to(:project).optional }
+    it { is_expected.to belong_to(:namespace).optional }
   end
 
   describe '.for_user_with_id!' do

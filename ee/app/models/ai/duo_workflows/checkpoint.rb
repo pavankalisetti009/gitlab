@@ -6,7 +6,8 @@ module Ai
       self.table_name = :duo_workflows_checkpoints
 
       belongs_to :workflow, class_name: 'Ai::DuoWorkflows::Workflow'
-      belongs_to :project
+      belongs_to :project, optional: true
+      belongs_to :namespace, optional: true
 
       # checkpoint_writes can be created independently on checkpoints by langgraph so checkpoints and checkpoint_writes
       # are associated only by langgraph's thread_ts

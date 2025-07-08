@@ -9,6 +9,11 @@ RSpec.describe Ai::DuoWorkflows::Event, type: :model, feature_category: :duo_wor
   it { is_expected.to validate_presence_of(:event_type) }
   it { is_expected.to validate_presence_of(:event_status) }
 
+  describe 'associations' do
+    it { is_expected.to belong_to(:project).optional }
+    it { is_expected.to belong_to(:namespace).optional }
+  end
+
   describe 'correlation_id_value validation' do
     let(:valid_uuid) { '123e4567-e89b-12d3-a456-426614174000' }
 
