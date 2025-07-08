@@ -251,6 +251,56 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
         expect(configuration.reload.configured_at).to be_like_time(Time.current)
       end
 
+      describe 'auditing invalid policy yaml' do
+        let(:audit_service) do
+          Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService.new(
+            configuration
+          )
+        end
+
+        before do
+          allow(Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService)
+          .to receive(:new).with(configuration).and_return(audit_service)
+        end
+
+        it 'audits the invalid policy yaml' do
+          expect(audit_service).to receive(:execute)
+
+          execute
+        end
+
+        context 'when there is an error' do
+          before do
+            allow(audit_service).to receive(:execute).and_raise(StandardError)
+            allow(Gitlab::ErrorTracking).to receive(:track_exception).and_call_original
+          end
+
+          it 'tracks the error error and proceeds' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              an_instance_of(StandardError),
+              security_policy_management_project_id: configuration.security_policy_management_project.id,
+              configuration_id: configuration.id
+            )
+
+            expect { execute }.not_to raise_error
+          end
+        end
+
+        context 'when the collect policy yaml invalidated audit event feature is disabled' do
+          before do
+            stub_feature_flags(collect_policy_yaml_invalidated_audit_event: false)
+          end
+
+          it 'does not audit the invalid policy yaml' do
+            expect(
+              Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService
+            ).not_to receive(:new)
+
+            execute
+          end
+        end
+      end
+
       context 'with existing policy reads' do
         let_it_be(:policy_read) do
           create(:scan_result_policy_read, security_orchestration_policy_configuration: configuration)
