@@ -1,6 +1,6 @@
 <script>
 import { GlPopover, GlLink } from '@gitlab/ui';
-import { debounce, uniqBy } from 'lodash';
+import { debounce, get, set, uniqBy } from 'lodash';
 import produce from 'immer';
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -20,16 +20,24 @@ export default {
     popoverTitle: s__('SecurityOrchestration|No linked groups'),
     popoverLink: s__('SecurityOrchestration|How do I link a group to the policy?'),
   },
-  name: 'LinkedItemsDropdown',
+  name: 'ScopedGroupsDropdown',
   components: {
     GlPopover,
     GlLink,
     BaseItemsDropdown,
   },
   apollo: {
-    linkedSppItems: {
-      query: getSppLinkedProjectGroups,
+    groups: {
+      query() {
+        return this.designatedAsCsp ? getGroups : getSppLinkedProjectGroups;
+      },
       variables() {
+        if (this.designatedAsCsp) {
+          return {
+            search: this.searchTerm,
+          };
+        }
+
         return {
           fullPath: this.fullPath,
           includeParentDescendants: this.includeDescendants,
@@ -37,17 +45,17 @@ export default {
         };
       },
       update(data) {
-        const {
-          securityPolicyProjectLinkedGroups: {
-            nodes: linkedGroups = [],
-            pageInfo: namespacePageInfo = {},
-          } = {},
-        } = data?.project || {};
+        const groups = get(data, this.queryDataPath, []);
 
-        const descendants = this.flatMapDescendantGroups(linkedGroups);
-        this.items = uniqBy([...this.items, ...linkedGroups, ...descendants], 'id');
-        this.pageInfo = namespacePageInfo;
+        if (this.designatedAsCsp) {
+          this.items = uniqBy([...this.items, ...groups], 'id');
+        } else {
+          // Descendants only matter when we want to get all groups under parent groups
+          const descendants = this.flatMapDescendantGroups(groups);
+          this.items = uniqBy([...this.items, ...groups, ...descendants], 'id');
+        }
 
+        this.pageInfo = get(data, this.queryPageInfoPath, {});
         this.$emit('loaded', this.items);
       },
       result() {
@@ -61,6 +69,7 @@ export default {
       },
     },
   },
+  inject: ['designatedAsCsp'],
   props: {
     includeDescendants: {
       type: Boolean,
@@ -93,7 +102,7 @@ export default {
       pageInfo: {},
       searchTerm: '',
       // eslint-disable-next-line vue/no-unused-properties -- initialized for Apollo reactivity
-      linkedSppItems: {},
+      groups: {},
     };
   },
   computed: {
@@ -110,7 +119,7 @@ export default {
       return this.disabled || this.showPopover;
     },
     loading() {
-      return this.$apollo.queries.linkedSppItems.loading;
+      return this.$apollo.queries.groups.loading;
     },
     searching() {
       return this.loading && this.searchUsed && !this.hasNextPage;
@@ -139,6 +148,16 @@ export default {
     },
     existingFormattedSelectedIds() {
       return this.selected.filter((id) => this.itemsIds.includes(id));
+    },
+    queryDataPath() {
+      return this.designatedAsCsp
+        ? 'groups.nodes'
+        : 'project.securityPolicyProjectLinkedGroups.nodes';
+    },
+    queryPageInfoPath() {
+      return this.designatedAsCsp
+        ? 'groups.pageInfo'
+        : 'project.securityPolicyProjectLinkedGroups.pageInfo';
     },
     showPopover() {
       return !this.loading && this.items.length === 0;
@@ -174,18 +193,19 @@ export default {
     fetchMoreItems() {
       const variables = {
         after: this.pageInfo.endCursor,
-        fullPath: this.fullPath,
+        ...(this.designatedAsCsp ? {} : { fullPath: this.fullPath }),
       };
 
-      this.$apollo.queries.linkedSppItems
+      this.$apollo.queries.groups
         .fetchMore({
           variables,
           updateQuery(previousResult, { fetchMoreResult }) {
             return produce(fetchMoreResult, (draftData) => {
-              draftData.project.securityPolicyProjectLinkedGroups.nodes = [
-                ...previousResult.project.securityPolicyProjectLinkedGroups.nodes,
-                ...draftData.project.securityPolicyProjectLinkedGroups.nodes,
+              const data = [
+                ...get(previousResult, this.queryDataPath, []),
+                ...get(draftData, this.queryDataPath, []),
               ];
+              set(draftData, this.queryDataPath, data);
             });
           },
         })
@@ -210,7 +230,7 @@ export default {
       v-if="showPopover"
       boundary="viewport"
       triggers="manual blur"
-      target="linked-groups"
+      target="scoped-groups"
       placement="bottom"
       show-close-button
       :show="true"
@@ -222,7 +242,7 @@ export default {
     </gl-popover>
 
     <base-items-dropdown
-      id="linked-groups"
+      id="scoped-groups"
       multiple
       :category="category"
       :variant="variant"
