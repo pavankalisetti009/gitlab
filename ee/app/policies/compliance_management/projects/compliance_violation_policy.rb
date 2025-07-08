@@ -13,6 +13,7 @@ module ComplianceManagement
 
       rule { has_access_to_violations_on_group | has_access_to_violations_on_project }.policy do
         enable :read_compliance_violations_report
+        enable :create_note
       end
     end
   end

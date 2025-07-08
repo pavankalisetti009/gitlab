@@ -131,14 +131,19 @@ module Security
       # Determines the appropriate status value for a FindingTokenStatus based on a personal access token.
       #
       # @param [PersonalAccessToken, nil] token The token to check, or nil if not found
-      # @return [String] 'active', 'inactive', or 'unknown'
+      # @return [Symbol] Status enum value from FindingTokenStatus
       def token_status(token)
-        return 'unknown' unless token
+        statuses = Vulnerabilities::FindingTokenStatus.statuses
 
-        return token.active? ? 'active' : 'inactive' if token.respond_to?(:active?)
+        return statuses.key(statuses[:unknown]) unless token
+
+        if token.respond_to?(:active?)
+          status_symbol = token.active? ? :active : :inactive
+          return statuses.key(statuses[status_symbol])
+        end
 
         # Tokens without active? method (e.g., GroupScimAuthAccessToken) are assumed to be active
-        'active'
+        statuses.key(statuses[:active])
       end
 
       # Builds attributes for FindingTokenStatus records grouped by token SHA.

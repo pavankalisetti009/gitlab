@@ -191,6 +191,14 @@ RSpec.shared_examples 'a verifiable replicator' do
       end
 
       it_behaves_like 'a counter of succeeded available verifiables', :checksummed_count
+
+      context 'when there are no records' do
+        it 'returns 0' do
+          allow(described_class).to receive(:model_max_primary_key).and_return(nil)
+
+          expect(described_class.checksummed_count).to eq(0)
+        end
+      end
     end
 
     context 'when verification is disabled' do
@@ -247,6 +255,14 @@ RSpec.shared_examples 'a verifiable replicator' do
       end
 
       it_behaves_like 'a counter of failed available verifiables', :checksum_failed_count
+
+      context 'when there are no records' do
+        it 'returns 0' do
+          allow(described_class).to receive(:model_max_primary_key).and_return(nil)
+
+          expect(described_class.checksum_failed_count).to eq(0)
+        end
+      end
     end
 
     context 'when verification is disabled' do
@@ -328,6 +344,41 @@ RSpec.shared_examples 'a verifiable replicator' do
         allow(described_class).to receive(:verification_enabled?).and_return(false)
 
         expect(described_class.verification_total_count).to be_nil
+      end
+    end
+  end
+
+  describe '.checksum_total_count' do
+    context 'when verification is enabled' do
+      before do
+        model_record.verification_started!
+        model_record.save!
+
+        allow(described_class).to receive(:verification_enabled?).and_return(true)
+
+        # We disable the transaction_open? check because Gitlab::Database::BatchCounter.batch_count
+        # is not allowed within a transaction but all RSpec tests run inside a transaction.
+        stub_batch_counter_transaction_open_check
+      end
+
+      it 'returns the number of records' do
+        expect(described_class.checksum_total_count).to eq(1)
+      end
+
+      context 'when there are no records' do
+        it 'returns 0' do
+          allow(described_class).to receive(:model_max_primary_key).and_return(nil)
+
+          expect(described_class.checksum_total_count).to eq(0)
+        end
+      end
+    end
+
+    context 'when verification is disabled' do
+      it 'returns nil' do
+        allow(described_class).to receive(:verification_enabled?).and_return(false)
+
+        expect(described_class.checksum_total_count).to be_nil
       end
     end
   end

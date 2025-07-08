@@ -15,17 +15,24 @@ exports[`Status Page settings form default state should match the default snapsh
         aria-controls="reference-0"
         aria-expanded="false"
         aria-label="Expand Status page"
-        buttontextclasses="gl-sr-only"
+        buttontextclasses=""
         category="tertiary"
-        class="!gl-pl-2 !gl-pr-0 gl-shrink-0 settings-toggle"
+        class="!gl-px-0 gl-shrink-0 settings-toggle"
         data-testid="settings-block-toggle"
-        icon="chevron-lg-right"
+        icon=""
         size="small"
         tag="button"
         type="button"
         variant="default"
       >
-        Expand
+        <gl-animated-chevron-lg-right-down-icon-stub
+          variant="default"
+        />
+        <div
+          class="gl-sr-only"
+        >
+          Expand
+        </div>
       </gl-button-stub>
     </div>
     <div

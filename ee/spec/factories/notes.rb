@@ -16,6 +16,10 @@ FactoryBot.modify do
       namespace { association :group }
       noteable { association(:wiki_page_meta, namespace: namespace) }
     end
+
+    trait :on_project_compliance_violation do
+      noteable { association(:project_compliance_violation, project: project) }
+    end
   end
 end
 
@@ -24,4 +28,5 @@ FactoryBot.define do
   factory :note_on_vulnerability, parent: :note, traits: [:on_vulnerability]
 
   factory :discussion_note_on_vulnerability, parent: :note, traits: [:on_vulnerability], class: 'DiscussionNote'
+  factory :note_on_compliance_violation, parent: :note, traits: [:on_project_compliance_violation]
 end
