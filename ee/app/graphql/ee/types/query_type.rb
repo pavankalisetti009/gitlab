@@ -59,6 +59,11 @@ module EE
             required: false,
             description: 'Runner ID to retrieve data for.'
         end
+        field :configured_ai_catalog_items,
+          resolver: ::Resolvers::Ai::Catalog::ConfiguredItemsResolver,
+          null: false,
+          description: 'AI Catalog items configured for use.',
+          experiment: { milestone: '18.2' }
         field :current_license, ::Types::Admin::CloudLicenses::CurrentLicenseType,
           null: true,
           resolver: ::Resolvers::Admin::CloudLicenses::CurrentLicenseResolver,

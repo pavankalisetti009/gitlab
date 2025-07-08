@@ -571,6 +571,27 @@ Get the list of all the compliance requirement controls.
 
 Returns [`ComplianceRequirementControl`](#compliancerequirementcontrol).
 
+### `Query.configuredAiCatalogItems`
+
+AI Catalog items configured for use.
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Returns [`AiCatalogItemConsumerConnection!`](#aicatalogitemconsumerconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryconfiguredaicatalogitemsprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project ID to retrieve configured AI Catalog items for. |
+
 ### `Query.containerRepository`
 
 Find a container repository.
@@ -13886,6 +13907,30 @@ The connection type for [`AiCatalogItem`](#aicatalogitem).
 | <a id="aicatalogitemconnectionnodes"></a>`nodes` | [`[AiCatalogItem]`](#aicatalogitem) | A list of nodes. |
 | <a id="aicatalogitemconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
 
+#### `AiCatalogItemConsumerConnection`
+
+The connection type for [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconsumerconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
+| <a id="aicatalogitemconsumerconnectionedges"></a>`edges` | [`[AiCatalogItemConsumerEdge]`](#aicatalogitemconsumeredge) | A list of edges. |
+| <a id="aicatalogitemconsumerconnectionnodes"></a>`nodes` | [`[AiCatalogItemConsumer]`](#aicatalogitemconsumer) | A list of nodes. |
+| <a id="aicatalogitemconsumerconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiCatalogItemConsumerEdge`
+
+The edge type for [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconsumeredgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aicatalogitemconsumeredgenode"></a>`node` | [`AiCatalogItemConsumer`](#aicatalogitemconsumer) | The item at the end of the edge. |
+
 #### `AiCatalogItemEdge`
 
 The edge type for [`AiCatalogItem`](#aicatalogitem).
@@ -21960,6 +22005,22 @@ An AI catalog flow version.
 | <a id="aicatalogflowversionpublishedat"></a>`publishedAt` | [`Time`](#time) | Timestamp of when the item version was published. |
 | <a id="aicatalogflowversionupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item version was updated. |
 | <a id="aicatalogflowversionversionname"></a>`versionName` | [`String`](#string) | Version name of the item version. |
+
+### `AiCatalogItemConsumer`
+
+An AI catalog item configuration.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconsumerenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates whether the catalog item is enabled or not. |
+| <a id="aicatalogitemconsumergroup"></a>`group` | [`Group`](#group) | Group in which the catalog item is configured. |
+| <a id="aicatalogitemconsumerid"></a>`id` | [`ID!`](#id) | ID of the configuration item. |
+| <a id="aicatalogitemconsumeritem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Configuration catalog item. |
+| <a id="aicatalogitemconsumerlocked"></a>`locked` | [`Boolean!`](#boolean) | Indicates whether the catalog item configuration is locked or can be overridden. |
+| <a id="aicatalogitemconsumerorganization"></a>`organization` | [`Organization`](#organization) | Organization in which the catalog item is configured. |
+| <a id="aicatalogitemconsumerproject"></a>`project` | [`Project`](#project) | Project in which the catalog item is configured. |
 
 ### `AiConversationsThread`
 

@@ -459,6 +459,7 @@ module EE
         enable :read_security_resource
         enable :read_vulnerability
         enable :update_secret_detection_validity_checks_status
+        enable :read_ai_catalog_item_consumer
       end
 
       rule { can?(:push_code) }.policy do
@@ -699,6 +700,8 @@ module EE
         enable :manage_security_settings
         enable :configure_secret_detection_validity_checks
         enable :admin_vulnerability
+        enable :admin_ai_catalog_item
+        enable :admin_ai_catalog_item_consumer
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -1287,8 +1290,10 @@ module EE
         description_composer_enabled & can?(:read_merge_request)
       end.enable :access_description_composer
 
-      rule { ai_catalog_enabled & can?(:maintainer_access) }.policy do
-        enable :admin_ai_catalog_item
+      rule { ~ai_catalog_enabled }.policy do
+        prevent :admin_ai_catalog_item
+        prevent :admin_ai_catalog_item_consumer
+        prevent :read_ai_catalog_item_consumer
       end
 
       rule { container_registry_disabled }.policy do

@@ -5360,18 +5360,27 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
-  describe 'admin_ai_catalog_item' do
+  describe 'AI catalog abilities' do
     let(:current_user) { maintainer }
 
     context 'with global_ai_catalog feature flag enabled' do
       context 'when maintainer' do
         it { is_expected.to be_allowed(:admin_ai_catalog_item) }
+        it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
       end
 
       context 'when developer' do
         let(:current_user) { developer }
 
         it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+        it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+        it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+      end
+
+      context 'when reporter' do
+        let(:current_user) { reporter }
+
+        it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
       end
     end
 
@@ -5381,6 +5390,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
     end
   end
 

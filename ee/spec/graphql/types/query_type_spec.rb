@@ -20,6 +20,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ci_dedicated_hosted_runner_filters,
       :ci_dedicated_hosted_runner_usage,
       :ci_queueing_history,
+      :configured_ai_catalog_items,
       :current_license,
       :devops_adoption_enabled_namespaces,
       :duo_workflow_events,

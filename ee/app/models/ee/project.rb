@@ -230,6 +230,8 @@ module EE
 
       has_many :analyzer_statuses, class_name: 'Security::AnalyzerProjectStatus'
 
+      has_many :configured_ai_catalog_items, class_name: '::Ai::Catalog::ItemConsumer', inverse_of: :project
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level
