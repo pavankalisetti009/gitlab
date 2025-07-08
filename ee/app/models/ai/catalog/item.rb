@@ -14,6 +14,7 @@ module Ai
       belongs_to :project
 
       has_many :versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :ai_catalog_item_id, inverse_of: :item
+      has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
       AGENT_TYPE = :agent
 
