@@ -6,7 +6,7 @@ module Resolvers
       class ItemResolver < BaseResolver
         description 'Find an AI Catalog item.'
 
-        type ::Types::Ai::Catalog::ItemType, null: true
+        type ::Types::Ai::Catalog::ItemInterface, null: true
 
         argument :id,
           ::Types::GlobalIDType[::Ai::Catalog::Item],

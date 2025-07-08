@@ -3,8 +3,13 @@
 module Types
   module Ai
     module Catalog
-      # rubocop: disable Graphql/AuthorizeTypes -- public
-      class ItemType < ::Types::BaseObject
+      module ItemInterface
+        include Types::BaseInterface
+
+        RESOLVE_TYPES = {
+          ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentType
+        }.freeze
+
         graphql_name 'AiCatalogItem'
         description 'An AI catalog item'
 
@@ -19,8 +24,16 @@ module Types
           description: 'Type of the item.'
         field :name, GraphQL::Types::String, null: false, description: 'Name of the item.'
         field :project, ::Types::ProjectType, null: true, description: 'Project for the item.'
+        field :versions, ::Types::Ai::Catalog::VersionInterface.connection_type,
+          null: true,
+          description: 'Versions of the item.'
+
+        orphan_types ::Types::Ai::Catalog::AgentType
+
+        def self.resolve_type(item, _context)
+          RESOLVE_TYPES[item.item_type.to_sym] or raise "Unknown catalog item type: #{item.item_type}" # rubocop:disable Style/AndOr -- Syntax error when || is used
+        end
       end
-      # rubocop: enable Graphql/AuthorizeTypes
     end
   end
 end

@@ -10,7 +10,7 @@ module Mutations
           include Gitlab::Graphql::Authorize::AuthorizeResource
 
           field :item,
-            ::Types::Ai::Catalog::ItemType,
+            ::Types::Ai::Catalog::ItemInterface,
             null: true,
             description: 'Item created.'
 
