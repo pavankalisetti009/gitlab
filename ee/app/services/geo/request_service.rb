@@ -17,8 +17,9 @@ module Geo
       return response.parsed_response if with_response
 
       true
-    rescue Gitlab::HTTP::Error, Timeout::Error, SocketError, SystemCallError, OpenSSL::SSL::SSLError => e
+    rescue StandardError => e
       log_error("Failed to #{method} to primary url: #{url}", e)
+      Gitlab::ErrorTracking.track_exception(e)
       false
     end
 
