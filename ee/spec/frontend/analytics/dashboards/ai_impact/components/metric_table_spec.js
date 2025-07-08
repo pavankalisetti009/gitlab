@@ -227,10 +227,10 @@ describe('Metric table', () => {
     ${VULNERABILITY_METRICS.CRITICAL}              | ${'Critical vulnerabilities over time'} | ${vulnerabilityCriticalTestId}
     ${MERGE_REQUEST_METRICS.THROUGHPUT}            | ${'Merge request throughput'}           | ${mergeRequestThroughputTestId}
     ${CONTRIBUTOR_METRICS.COUNT}                   | ${'Contributor count'}                  | ${contributorCountTestId}
-    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions usage'}             | ${codeSuggestionsUsageRateTestId}
-    ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions acceptance rate'}   | ${codeSuggestionsAcceptanceRateTestId}
-    ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat: Unique users'}             | ${duoChatUsageRateTestId}
-    ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA: Unique users'}              | ${duoRcaUsageRateTestId}
+    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions: Usage'}            | ${codeSuggestionsUsageRateTestId}
+    ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions: Acceptance rate'}  | ${codeSuggestionsAcceptanceRateTestId}
+    ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat: Usage'}                    | ${duoChatUsageRateTestId}
+    ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA: Usage'}                     | ${duoRcaUsageRateTestId}
   `('for the $identifier table row', ({ name, testId }) => {
     describe('when loading data', () => {
       beforeEach(() => {
