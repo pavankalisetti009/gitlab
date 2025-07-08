@@ -21,8 +21,8 @@ RSpec.describe Security::AnalyzersStatus::ProcessDeletedEventsWorker, feature_ca
 
   context 'when the project exists' do
     it 'calls the RecalculateService with the project' do
-      expect(Security::AnalyzerNamespaceStatuses::RecalculateService).to receive(:execute)
-        .with(project.id, group, deleted_project: true)
+      expect(::Security::AnalyzerProjectStatus).to receive_message_chain(:by_projects, :delete_all)
+      expect(Security::AnalyzerNamespaceStatuses::RecalculateService).to receive(:execute).with(group)
 
       use_event
     end
@@ -35,6 +35,7 @@ RSpec.describe Security::AnalyzersStatus::ProcessDeletedEventsWorker, feature_ca
     end
 
     it 'does not call the RecalculateService' do
+      expect(::Security::AnalyzerProjectStatus).not_to receive(:by_projects)
       expect(Security::AnalyzerNamespaceStatuses::RecalculateService).not_to receive(:execute)
 
       use_event
