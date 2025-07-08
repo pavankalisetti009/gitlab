@@ -16,7 +16,7 @@ describe('ee/amazon_q_settings/components/disconnect_warning_modal.vue', () => {
         dismiss: dismissSpy,
       },
       stubs: {
-        MountingPortal: stubComponent(MountingPortal),
+        MountingPortal: stubComponent(MountingPortal, { name: 'MountingPortal' }),
       },
     });
   };

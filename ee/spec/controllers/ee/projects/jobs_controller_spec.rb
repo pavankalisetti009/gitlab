@@ -4,13 +4,15 @@ require 'spec_helper'
 
 RSpec.describe Projects::JobsController, feature_category: :continuous_integration do
   describe 'GET #show', :clean_gitlab_redis_shared_state do
+    subject(:show) { get_show(id: job.id, format: :json) }
+
     context 'when requesting JSON' do
       let_it_be(:user) { create(:user) }
-      let_it_be(:project) { create(:project) }
+      let_it_be(:project) { create(:project, :repository) }
 
       let(:merge_request) { create(:merge_request, source_project: project) }
       let(:runner) { create(:ci_runner, :instance, description: 'Shared runner') }
-      let(:pipeline) { create(:ci_pipeline, project: project) }
+      let(:pipeline) { create(:ci_pipeline, project: project, merge_request: merge_request) }
       let(:job) { create(:ci_build, :success, :artifacts, pipeline: pipeline, runner: runner) }
 
       before do
@@ -23,7 +25,7 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
       end
 
       it 'sets the ApplicationContext with an ai_resource key' do
-        get_show(id: job.id, format: :json)
+        show
 
         expect(Gitlab::ApplicationContext.current).to include(
           'meta.ai_resource' => job.try(:to_global_id)
@@ -35,11 +37,11 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
 
         before do
           stub_application_setting(shared_runners_minutes: 2)
-
-          get_show(id: job.id, format: :json)
         end
 
         it 'exposes quota information' do
+          show
+
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to match_response_schema('job/job_details', dir: 'ee')
           expect(json_response['runners']['quota']['used']).to eq 0
@@ -51,11 +53,9 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
         let(:group) { create(:group, :with_used_build_minutes_limit) }
         let(:project) { create(:project, :repository, namespace: group, shared_runners_enabled: true) }
 
-        before do
-          get_show(id: job.id, format: :json)
-        end
-
         it 'exposes quota information' do
+          show
+
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to match_response_schema('job/job_details', dir: 'ee')
           expect(json_response['runners']['quota']['used']).to eq 1000
@@ -68,11 +68,11 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
 
         before do
           stub_application_setting(shared_runners_minutes: 0)
-
-          get_show(id: job.id, format: :json)
         end
 
         it 'does not exposes quota information' do
+          show
+
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to match_response_schema('job/job_details', dir: 'ee')
           expect(json_response['runners']).not_to have_key('quota')
@@ -87,7 +87,7 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
         end
 
         it 'exposes quota information' do
-          get_show(id: job.id, format: :json)
+          show
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to match_response_schema('job/job_details', dir: 'ee')
@@ -128,11 +128,9 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
       context 'when project is private' do
         let_it_be(:project) { create(:project, :private) }
 
-        subject { get_show(id: job.id, format: :json) }
-
         shared_examples 'returns nil quota' do
           it 'returns no quota for the runner' do
-            subject
+            show
 
             expect(json_response['runners']['quota']).to eq nil
           end
@@ -140,7 +138,7 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
 
         shared_examples 'returns quota' do
           it 'returns a quota' do
-            subject
+            show
 
             expect(json_response['runners']['quota']).to eq(
               { 'used' => 0, 'limit' => project.root_namespace.shared_runners_minutes_limit }
@@ -181,6 +179,16 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
 
             it_behaves_like 'returns nil quota'
           end
+        end
+
+        context 'with custom roles' do
+          let(:project) { create(:project, :repository, :in_group) }
+
+          before do
+            stub_licensed_features(custom_roles: true)
+          end
+
+          it_behaves_like 'does not call custom role query'
         end
       end
     end

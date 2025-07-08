@@ -119,7 +119,7 @@ duo_chat_troubleshoot_job:
 duo_chat_explain_vulnerability:
   title: Vulnerability Explanation
   release_state: BETA
-  main_feature: GitLab Duo Chat
+  main_feature: Other GitLab Duo features
   compatible_llms:
     - mistral
     - mixtral
@@ -131,7 +131,7 @@ duo_chat_explain_vulnerability:
 duo_chat_summarize_comments:
   title: Discussion Summary
   release_state: BETA
-  main_feature: GitLab Duo Chat
+  main_feature: GitLab Duo for issues
   compatible_llms:
     - mistral
     - mixtral
@@ -143,7 +143,7 @@ duo_chat_summarize_comments:
 generate_commit_message:
   title: Merge Commit Message Generation
   release_state: BETA
-  main_feature: Other GitLab Duo features
+  main_feature: GitLab Duo for merge requests
   compatible_llms:
     - mistral
     - mixtral
@@ -155,7 +155,7 @@ generate_commit_message:
 summarize_new_merge_request:
   title: Merge Request Summary
   release_state: BETA
-  main_feature: Other GitLab Duo features
+  main_feature: GitLab Duo for merge requests
   compatible_llms:
     - mistral
     - mixtral
@@ -179,7 +179,7 @@ resolve_vulnerability:
 summarize_review:
   title: Code Review Summary
   release_state: EXPERIMENT
-  main_feature: Other GitLab Duo features
+  main_feature: GitLab Duo for merge requests
   compatible_llms:
     - mistral
     - mixtral
@@ -201,9 +201,9 @@ glab_ask_git_command:
   unit_primitives:
     - glab_ask_git_command
 review_merge_request:
-  title: Duo Code Review
+  title: Code Review
   release_state: EXPERIMENT
-  main_feature: Other GitLab Duo features
+  main_feature: GitLab Duo for merge requests
   compatible_llms:
     - claude_3
   unit_primitives:

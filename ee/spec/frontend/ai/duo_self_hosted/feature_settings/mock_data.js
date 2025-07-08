@@ -96,20 +96,20 @@ export const mockDuoChatFeatureSettings = [
   },
 ];
 
-export const mockOtherDuoFeaturesSettings = [
+export const mockMergeRequestFeatureSettings = [
   {
     feature: 'summarize_review',
-    title: 'Summarize Review',
-    mainFeature: 'Other GitLab Duo features',
-    releaseState: 'EXPERIMENT',
-    provider: 'self_hosted',
+    title: 'Code Review Summary',
+    mainFeature: 'GitLab Duo for merge requests',
+    releaseState: 'BETA',
+    provider: 'disabled',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
   },
   {
     feature: 'generate_commit_message',
-    title: 'Generate Commit Message',
-    mainFeature: 'Other GitLab Duo features',
+    title: 'Merge Commit Message Generation',
+    mainFeature: 'GitLab Duo for merge requests',
     releaseState: 'BETA',
     provider: 'self_hosted',
     selfHostedModel: {
@@ -120,8 +120,34 @@ export const mockOtherDuoFeaturesSettings = [
   },
 ];
 
+export const mockIssueFeatureSettings = [
+  {
+    feature: 'duo_chat_summarize_comments',
+    title: 'Discussion Summary',
+    mainFeature: 'GitLab Duo for issues',
+    releaseState: 'BETA',
+    provider: 'disabled',
+    selfHostedModel: null,
+    validModels: { nodes: mockSelfHostedModels },
+  },
+];
+
+export const mockOtherDuoFeaturesSettings = [
+  {
+    feature: 'glab_ask_git_command',
+    title: 'GitLab Duo for CLI',
+    mainFeature: 'Other GitLab Duo features',
+    releaseState: 'BETA',
+    provider: 'disabled',
+    selfHostedModel: null,
+    validModels: { nodes: mockSelfHostedModels },
+  },
+];
+
 export const mockAiFeatureSettings = [
   ...mockCodeSuggestionsFeatureSettings,
   ...mockDuoChatFeatureSettings,
+  ...mockMergeRequestFeatureSettings,
+  ...mockIssueFeatureSettings,
   ...mockOtherDuoFeaturesSettings,
 ];

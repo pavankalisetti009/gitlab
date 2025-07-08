@@ -3,7 +3,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FeatureSettingsTableRows from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_table_rows.vue';
 import ModelSelector from 'ee/ai/duo_self_hosted/feature_settings/components/model_selector.vue';
 import BatchSettingsUpdater from 'ee/ai/duo_self_hosted/feature_settings/components/batch_settings_updater.vue';
-import { DUO_MAIN_FEATURES } from 'ee/ai/duo_self_hosted/constants';
+import { DUO_MAIN_FEATURES } from 'ee/ai/shared/feature_settings/constants';
 import { mockAiFeatureSettings } from './mock_data';
 
 describe('FeatureSettingsTableRows', () => {
@@ -93,25 +93,30 @@ describe('FeatureSettingsTableRows', () => {
     it('renders the model select dropdown and passes the correct prop', () => {
       createComponent();
 
-      expect(findModelSelectorByIdx(0).props('aiFeatureSetting')).toEqual(
-        mockCodeSuggestionsFeatureSettings[0],
-      );
-      expect(findModelSelectorByIdx(1).props('aiFeatureSetting')).toEqual(
-        mockCodeSuggestionsFeatureSettings[1],
-      );
+      [0, 1].forEach((idx) => {
+        expect(findModelSelectorByIdx(idx).props('aiFeatureSetting')).toEqual(
+          mockCodeSuggestionsFeatureSettings[idx],
+        );
+      });
     });
 
-    it('renders the batch assignment button and passes the correct props', () => {
+    it('renders the batch settings updater when there are multiple features', () => {
       createComponent();
 
-      expect(findBatchSettingsUpdaterByIdx(0).props()).toMatchObject({
-        selectedFeatureSetting: mockCodeSuggestionsFeatureSettings[0],
-        aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
+      [0, 1].forEach((idx) => {
+        expect(findBatchSettingsUpdaterByIdx(idx).props()).toEqual({
+          selectedFeatureSetting: mockCodeSuggestionsFeatureSettings[idx],
+          aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
+        });
       });
-      expect(findBatchSettingsUpdaterByIdx(1).props()).toMatchObject({
-        selectedFeatureSetting: mockCodeSuggestionsFeatureSettings[1],
-        aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
-      });
+    });
+
+    it('does not render the batch settings updater when there is a single feature', () => {
+      const featureSetting = mockCodeSuggestionsFeatureSettings[0];
+
+      createComponent({ aiFeatureSettings: [featureSetting] });
+
+      expect(findBatchSettingsUpdaterByIdx(0).exists()).toBe(false);
     });
   });
 });

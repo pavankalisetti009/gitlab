@@ -67,13 +67,21 @@ describe('FeatureSettingsTableRows', () => {
     });
 
     describe('model batch settings updater', () => {
-      it('renders the model batch settings updater', () => {
+      it('renders the batch settings updater when there are multiple features', () => {
         [0, 1].forEach((idx) => {
           expect(findModelBatchSettingsUpdaterByIdx(idx).props()).toEqual({
             selectedFeatureSetting: mockCodeSuggestionsFeatureSettings[idx],
             aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
           });
         });
+      });
+
+      it('does not render the batch settings updater when there is a single feature', () => {
+        const featureSetting = mockCodeSuggestionsFeatureSettings[0];
+
+        createComponent({ aiFeatureSettings: [featureSetting] });
+
+        expect(findModelBatchSettingsUpdaterByIdx(0).exists()).toBe(false);
       });
 
       it('handles update-batch-saving-state event correctly', () => {
