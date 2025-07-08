@@ -58,6 +58,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:compliance_requirement_control_coverage) }
   it { expect(described_class).to have_graphql_field(:maven_virtual_registries) }
   it { expect(described_class).to have_graphql_field(:project_compliance_violations) }
+  it { expect(described_class).to have_graphql_field(:compliance_frameworks_needing_attention) }
 
   describe 'components' do
     let_it_be(:guest) { create(:user) }

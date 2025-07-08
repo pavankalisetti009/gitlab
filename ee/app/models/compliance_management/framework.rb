@@ -60,6 +60,63 @@ module ComplianceManagement
     scope :sorted_by_updated_at_asc, -> { reorder(Framework.arel_table['updated_at'].asc) }
     scope :sorted_by_updated_at_desc, -> { reorder(Framework.arel_table['updated_at'].desc) }
 
+    # Returns frameworks that need attention: no projects, no requirements, or requirements without controls
+    scope :needing_attention_for_group, ->(group) {
+      projects_in_hierarchy = group.all_project_ids
+
+      from(
+        sanitize_sql([
+          "(
+           SELECT
+             cmf.*,
+             COALESCE(counts.projects_count, 0) AS projects_count,
+             COALESCE(counts.requirements_count, 0) AS requirements_count,
+             COALESCE(counts.requirements_without_controls_count, 0) AS requirements_without_controls_count
+           FROM compliance_management_frameworks cmf
+           LEFT JOIN (
+             -- Subquery to calculate all counts for each framework
+             SELECT
+               f.id as framework_id,
+
+               -- Count projects using this framework within the group hierarchy
+               COALESCE((
+                 SELECT COUNT(*)
+                 FROM project_compliance_framework_settings pfs
+                 WHERE pfs.framework_id = f.id
+                 AND pfs.project_id IN (?)
+               ), 0) AS projects_count,
+
+               -- Count total requirements for this framework
+               COALESCE((
+                 SELECT COUNT(*)
+                 FROM compliance_requirements cr
+                 WHERE cr.framework_id = f.id
+               ), 0) AS requirements_count,
+
+               -- Count requirements that have no associated controls
+               -- (LEFT JOIN with NULL check finds unmatched requirements)
+               COALESCE((
+                 SELECT COUNT(*)
+                 FROM compliance_requirements cr
+                 LEFT JOIN compliance_requirements_controls crc ON cr.id = crc.compliance_requirement_id
+                 WHERE cr.framework_id = f.id AND crc.id IS NULL
+               ), 0) AS requirements_without_controls_count
+
+             FROM compliance_management_frameworks f
+           ) counts ON cmf.id = counts.framework_id
+
+           -- Only include frameworks belonging to the root namespace
+           WHERE cmf.namespace_id = ?
+         ) AS compliance_management_frameworks",
+          projects_in_hierarchy.any? ? projects_in_hierarchy : [0],
+          group.root_ancestor.id
+        ])
+      )
+        .where(
+          "projects_count = 0 OR requirements_count = 0 OR requirements_without_controls_count > 0"
+        )
+    }
+
     scope :with_requirements_and_controls, -> {
       joins(compliance_requirements: :compliance_requirements_controls)
         .includes(compliance_requirements: :compliance_requirements_controls)
