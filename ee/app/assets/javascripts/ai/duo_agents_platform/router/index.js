@@ -23,15 +23,16 @@ export const createRouter = (base) => {
         component: AgentsPlatformIndex,
       },
       {
-        name: AGENTS_PLATFORM_SHOW_ROUTE,
-        path: '/:id',
-        component: AgentsPlatformShow,
-      },
-      {
         name: AGENTS_PLATFORM_NEW_ROUTE,
         path: '/new',
         component: AgentsPlatformNew,
       },
+      {
+        name: AGENTS_PLATFORM_SHOW_ROUTE,
+        path: '/:id(\\d+)',
+        component: AgentsPlatformShow,
+      },
+      { path: '*', redirect: '/' },
     ],
   });
 };
