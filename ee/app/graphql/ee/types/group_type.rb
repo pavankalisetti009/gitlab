@@ -428,6 +428,14 @@ module EE
           authorize: :read_compliance_dashboard,
           experiment: { milestone: '18.2' }
 
+        field :compliance_frameworks_needing_attention,
+          ::Types::ComplianceManagement::ComplianceFramework::FrameworksNeedingAttentionType.connection_type,
+          null: true,
+          description: 'Frameworks missing either project assignments or requirements definitions.',
+          resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::FrameworksNeedingAttentionResolver,
+          authorize: :read_compliance_dashboard,
+          experiment: { milestone: '18.2' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end

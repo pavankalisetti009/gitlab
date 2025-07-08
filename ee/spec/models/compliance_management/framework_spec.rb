@@ -410,4 +410,311 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
       expect(results.find { |f| f.name == 'Framework 3' }.covered_count).to eq(0)
     end
   end
+
+  describe '.needing_attention_for_group' do
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: root_group) }
+    let_it_be(:another_root_group) { create(:group) }
+
+    let_it_be(:framework_with_projects_and_requirements) do
+      create(:compliance_framework, namespace: root_group, name: 'Framework with both')
+    end
+
+    let_it_be(:framework_without_projects) do
+      create(:compliance_framework, namespace: root_group, name: 'Framework without projects')
+    end
+
+    let_it_be(:framework_without_requirements) do
+      create(:compliance_framework, namespace: root_group, name: 'Framework without requirements')
+    end
+
+    let_it_be(:framework_in_different_namespace) do
+      create(:compliance_framework, namespace: another_root_group, name: 'Framework in different namespace')
+    end
+
+    let_it_be(:project_in_root) { create(:project, namespace: root_group) }
+    let_it_be(:project_in_subgroup) { create(:project, namespace: subgroup) }
+    let_it_be(:project_in_another_namespace) { create(:project, namespace: another_root_group) }
+
+    before do
+      create(:compliance_framework_project_setting,
+        compliance_management_framework: framework_with_projects_and_requirements,
+        project: project_in_root
+      )
+      requirement = create(:compliance_requirement, framework: framework_with_projects_and_requirements)
+      create(:compliance_requirements_control, compliance_requirement: requirement)
+
+      create(:compliance_requirement, framework: framework_without_projects)
+
+      create(:compliance_framework_project_setting,
+        compliance_management_framework: framework_without_requirements,
+        project: project_in_root
+      )
+
+      create(:compliance_framework_project_setting,
+        compliance_management_framework: framework_in_different_namespace,
+        project: project_in_another_namespace
+      )
+      create(:compliance_requirement, framework: framework_in_different_namespace)
+    end
+
+    context 'when querying from root group' do
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(root_group) }
+
+      it 'returns frameworks needing attention' do
+        expect(frameworks.map(&:name)).to contain_exactly(
+          'Framework without projects',
+          'Framework without requirements'
+        )
+      end
+
+      it 'excludes frameworks with both projects and requirements' do
+        expect(frameworks).not_to include(framework_with_projects_and_requirements)
+      end
+
+      it 'includes correct counts' do
+        framework_no_projects = frameworks.find { |f| f.name == 'Framework without projects' }
+        framework_no_requirements = frameworks.find { |f| f.name == 'Framework without requirements' }
+
+        expect(framework_no_projects.projects_count).to eq(0)
+        expect(framework_no_projects.requirements_count).to eq(1)
+
+        expect(framework_no_requirements.projects_count).to eq(1)
+        expect(framework_no_requirements.requirements_count).to eq(0)
+      end
+    end
+
+    context 'when querying from subgroup' do
+      let_it_be(:framework_with_subgroup_project) do
+        create(:compliance_framework, namespace: root_group, name: 'Framework with subgroup project')
+      end
+
+      before do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework_with_subgroup_project,
+          project: project_in_subgroup
+        )
+        requirement = create(:compliance_requirement, framework: framework_with_subgroup_project)
+        create(:compliance_requirements_control, compliance_requirement: requirement)
+      end
+
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(subgroup) }
+
+      it 'counts only projects within the subgroup hierarchy' do
+        expect(frameworks.map(&:name)).to contain_exactly(
+          'Framework with both',
+          'Framework without projects',
+          'Framework without requirements'
+        )
+      end
+
+      it 'returns correct project counts for subgroup context' do
+        framework_no_requirements = frameworks.find { |f| f.name == 'Framework without requirements' }
+
+        expect(framework_no_requirements.projects_count).to eq(0)
+        expect(framework_no_requirements.requirements_count).to eq(0)
+      end
+
+      it 'excludes frameworks with projects in the subgroup' do
+        expect(frameworks).not_to include(framework_with_subgroup_project)
+      end
+    end
+
+    context 'when framework has requirements without controls' do
+      let_it_be(:framework_with_missing_controls) do
+        create(:compliance_framework, namespace: root_group, name: 'Framework with missing controls')
+      end
+
+      let_it_be(:framework_with_all_controls) do
+        create(:compliance_framework, namespace: root_group, name: 'Framework with all controls')
+      end
+
+      before do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework_with_missing_controls,
+          project: project_in_root
+        )
+
+        requirement1 = create(:compliance_requirement, framework: framework_with_missing_controls)
+        create(:compliance_requirement, framework: framework_with_missing_controls)
+
+        create(:compliance_requirements_control, compliance_requirement: requirement1)
+
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework_with_all_controls,
+          project: project_in_root
+        )
+
+        requirement3 = create(:compliance_requirement, framework: framework_with_all_controls)
+        create(:compliance_requirements_control, compliance_requirement: requirement3)
+      end
+
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(root_group) }
+
+      it 'includes framework with requirements missing controls' do
+        expect(frameworks.map(&:name)).to include('Framework with missing controls')
+      end
+
+      it 'excludes framework where all requirements have controls' do
+        expect(frameworks).not_to include(framework_with_all_controls)
+      end
+
+      it 'returns correct counts for framework with missing controls' do
+        framework = frameworks.find { |f| f.name == 'Framework with missing controls' }
+
+        expect(framework.projects_count).to eq(1)
+        expect(framework.requirements_count).to eq(2)
+      end
+    end
+
+    context 'when group has no projects' do
+      let_it_be(:empty_group) { create(:group, parent: root_group) }
+
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(empty_group) }
+
+      it 'returns all frameworks as needing attention' do
+        expect(frameworks.count).to be >= 2
+      end
+    end
+
+    context 'when framework has multiple projects' do
+      let_it_be(:framework_with_multiple_projects) do
+        create(:compliance_framework, namespace: root_group, name: 'Framework with multiple projects')
+      end
+
+      before do
+        requirement = create(:compliance_requirement, framework: framework_with_multiple_projects)
+        create(:compliance_requirements_control, compliance_requirement: requirement)
+
+        3.times do
+          project = create(:project, namespace: root_group)
+          create(:compliance_framework_project_setting,
+            compliance_management_framework: framework_with_multiple_projects,
+            project: project
+          )
+        end
+      end
+
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(root_group) }
+
+      it 'counts distinct projects correctly' do
+        expect(frameworks).not_to include(framework_with_multiple_projects)
+      end
+    end
+
+    context 'when framework has no associations' do
+      let_it_be(:empty_framework) do
+        create(:compliance_framework, namespace: root_group, name: 'Empty framework')
+      end
+
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(root_group) }
+
+      it 'includes framework with no projects and no requirements' do
+        expect(frameworks.map(&:name)).to include('Empty framework')
+      end
+
+      it 'shows zero counts for empty framework' do
+        empty = frameworks.find { |f| f.name == 'Empty framework' }
+
+        expect(empty.projects_count).to eq(0)
+        expect(empty.requirements_count).to eq(0)
+      end
+    end
+
+    context 'when framework meets multiple conditions' do
+      let_it_be(:framework_no_projects_no_requirements) do
+        create(:compliance_framework, namespace: root_group, name: 'Framework with nothing')
+      end
+
+      let_it_be(:framework_no_projects_missing_controls) do
+        create(:compliance_framework, namespace: root_group, name: 'Framework no projects missing controls')
+      end
+
+      before do
+        create(:compliance_requirement, framework: framework_no_projects_missing_controls)
+      end
+
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(root_group) }
+
+      it 'includes frameworks meeting multiple conditions' do
+        expect(frameworks.map(&:name)).to include(
+          'Framework with nothing',
+          'Framework no projects missing controls'
+        )
+      end
+
+      it 'returns correct counts' do
+        framework_nothing = frameworks.find { |f| f.name == 'Framework with nothing' }
+        framework_no_proj_missing_ctrl = frameworks.find { |f| f.name == 'Framework no projects missing controls' }
+
+        expect(framework_nothing.projects_count).to eq(0)
+        expect(framework_nothing.requirements_count).to eq(0)
+
+        expect(framework_no_proj_missing_ctrl.projects_count).to eq(0)
+        expect(framework_no_proj_missing_ctrl.requirements_count).to eq(1)
+      end
+    end
+
+    context 'when requirement has multiple controls' do
+      let_it_be(:framework_with_multiple_controls) do
+        create(:compliance_framework, namespace: root_group, name: 'Framework with multiple controls')
+      end
+
+      before do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework_with_multiple_controls,
+          project: project_in_root
+        )
+
+        requirement = create(:compliance_requirement, framework: framework_with_multiple_controls)
+
+        # Create multiple controls for the same requirement
+        create(:compliance_requirements_control, compliance_requirement: requirement)
+        create(:compliance_requirements_control, :external, compliance_requirement: requirement)
+      end
+
+      subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(root_group) }
+
+      it 'excludes framework where all requirements have controls' do
+        expect(frameworks).not_to include(framework_with_multiple_controls)
+      end
+    end
+
+    context 'when framework has projects in root but viewed from subgroup' do
+      let_it_be(:framework_complex) do
+        create(:compliance_framework, namespace: root_group, name: 'Complex framework')
+      end
+
+      before do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework_complex,
+          project: project_in_root
+        )
+
+        req_with_control = create(:compliance_requirement, framework: framework_complex)
+        create(:compliance_requirement, framework: framework_complex)
+
+        create(:compliance_requirements_control, compliance_requirement: req_with_control)
+      end
+
+      context 'when root group is passed' do
+        subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(root_group) }
+
+        it 'includes framework due to missing controls' do
+          expect(frameworks.map(&:name)).to include('Complex framework')
+        end
+      end
+
+      context 'when sub group is passed' do
+        subject(:frameworks) { root_group.compliance_management_frameworks.needing_attention_for_group(subgroup) }
+
+        it 'includes framework due to no projects in subgroup' do
+          expect(frameworks.map(&:name)).to include('Complex framework')
+
+          framework = frameworks.find { |f| f.name == 'Complex framework' }
+          expect(framework.projects_count).to eq(0)
+        end
+      end
+    end
+  end
 end
