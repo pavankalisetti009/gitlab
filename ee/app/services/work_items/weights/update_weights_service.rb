@@ -8,6 +8,8 @@ module WorkItems
       end
 
       def execute
+        return unless Feature.enabled?(:update_rolled_up_weights, :instance)
+
         ::ApplicationRecord.transaction do
           process_work_items_with_ancestors
         end
