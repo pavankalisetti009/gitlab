@@ -177,7 +177,7 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
     end
 
     def metric_value(metric_name, geo_site: secondary)
-      Gitlab::Metrics.registry.get(metric_name)&.get({ name: geo_site.name, url: geo_site.name })
+      Gitlab::Metrics.client.get(metric_name)&.get({ name: geo_site.name, url: geo_site.name })
     end
   end
 
