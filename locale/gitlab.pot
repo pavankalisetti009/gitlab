@@ -70135,6 +70135,9 @@ msgstr ""
 msgid "WikiPage|Write your content or drag files here…"
 msgstr ""
 
+msgid "WikiPage|{Give this page a title}"
+msgstr ""
+
 msgid "Wiki|Add custom sidebar"
 msgstr ""
 
