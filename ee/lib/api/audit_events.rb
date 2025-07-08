@@ -21,6 +21,12 @@ module API
       )
     end
 
+    helpers do
+      def use_new_audit_tables?
+        Feature.enabled?(:read_audit_events_from_new_tables, current_user)
+      end
+    end
+
     resources :audit_events do
       desc 'Get the list of audit events' do
         success EE::API::Entities::AuditEvent
@@ -44,11 +50,23 @@ module API
         use :pagination
       end
       get do
-        level = ::Gitlab::Audit::Levels::Instance.new
-        params[:optimize_offset] = true
-        audit_events = AuditEventFinder.new(level: level, params: params).execute
+        if use_new_audit_tables?
+          finder = ::AuditEvents::CombinedAuditEventFinder.new(params: params)
+          result = finder.execute
 
-        present paginate_with_strategies(audit_events), with: EE::API::Entities::AuditEvent
+          if result[:cursor_for_next_page]
+            Gitlab::Pagination::Keyset::HeaderBuilder
+              .new(self)
+              .add_next_page_header({ cursor: result[:cursor_for_next_page] })
+          end
+
+          present result[:records], with: EE::API::Entities::AuditEvent
+        else
+          level = ::Gitlab::Audit::Levels::Instance.new
+          params[:optimize_offset] = true
+          audit_events = AuditEventFinder.new(level: level, params: params).execute
+          present paginate_with_strategies(audit_events), with: EE::API::Entities::AuditEvent
+        end
       end
 
       desc 'Get single audit event' do
@@ -58,9 +76,13 @@ module API
         requires :id, type: Integer, desc: 'The ID of audit event'
       end
       get ':id' do
-        level = ::Gitlab::Audit::Levels::Instance.new
-        # This is not `find_by!` from ActiveRecord
-        audit_event = AuditEventFinder.new(level: level).find(params[:id])
+        audit_event = if use_new_audit_tables?
+                        ::AuditEvents::CombinedAuditEventFinder.new.find(params[:id])
+                      else
+                        level = ::Gitlab::Audit::Levels::Instance.new
+                        AuditEventFinder.new(level: level).find(params[:id])
+                      end
+
         present audit_event, with: EE::API::Entities::AuditEvent
       end
     end
