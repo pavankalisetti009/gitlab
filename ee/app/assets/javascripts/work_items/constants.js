@@ -26,6 +26,7 @@ export const newWorkItemOptimisticUserPermissions = {
  * than 3:1 in dark mode
  */
 export const STATUS_LIGHT_TO_DARK_COLOR_MAP = {
+  '#995715': '#D99530',
   '#737278': '#89888D',
   '#1f75cb': '#428FDC',
   '#108548': '#2DA160',
