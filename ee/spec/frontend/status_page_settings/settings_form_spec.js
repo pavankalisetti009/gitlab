@@ -33,7 +33,8 @@ describe('Status Page settings form', () => {
 
   describe('default state', () => {
     it('should match the default snapshot', () => {
-      expect(wrapper.element).toMatchSnapshot();
+      // Transform snapshot for Vue2 compatibility
+      expect(wrapper.html().replace(/ison=/g, 'is-on=')).toMatchSnapshot();
     });
   });
 
