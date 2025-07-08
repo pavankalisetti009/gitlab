@@ -5,7 +5,7 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
-import { projectMock } from 'ee_jest/repository/mock_data';
+import { projectMock, lockPathMutationMock } from 'ee_jest/repository/mock_data';
 import LockFileDropdownItem from 'ee_component/repository/components/header_area/lock_file_dropdown_item.vue';
 import { createAlert } from '~/alert';
 
@@ -17,6 +17,7 @@ describe('LockFileDropdownItem component', () => {
   let fakeApollo;
 
   const lockPathMutationResolver = jest.fn();
+  const mockToastShow = jest.fn();
 
   const createComponent = ({ props = {}, mutationResolver = lockPathMutationResolver } = {}) => {
     window.gon = { current_username: projectMock.pathLocks.nodes[0].user.username };
@@ -33,6 +34,11 @@ describe('LockFileDropdownItem component', () => {
         canDestroyLock: true,
         isLocked: true,
         ...props,
+      },
+      mocks: {
+        $toast: {
+          show: mockToastShow,
+        },
       },
     });
   };
@@ -191,6 +197,50 @@ describe('LockFileDropdownItem component', () => {
       findLockFileDropdownItem().vm.$emit('action');
 
       expect(lockPathMutationResolver).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Toast', () => {
+    let lockPathMutationMockResolver;
+    beforeAll(() => {
+      lockPathMutationMockResolver = jest.fn().mockResolvedValue(lockPathMutationMock);
+    });
+
+    it('shows toast when file is successfully locked', async () => {
+      createComponent({
+        props: { isLocked: false },
+        mutationResolver: lockPathMutationMockResolver,
+      });
+      await waitForPromises();
+
+      findLockFileDropdownItem().vm.$emit('action');
+      clickSubmit();
+
+      expect(lockPathMutationMockResolver).toHaveBeenCalledWith({
+        filePath: 'some/path/locked_file.js',
+        lock: true,
+        projectPath: 'some/project/path',
+      });
+      await waitForPromises();
+
+      expect(mockToastShow).toHaveBeenCalledWith('The file is locked.');
+    });
+
+    it('shows toast when file is successfully unlocked', async () => {
+      createComponent({ mutationResolver: lockPathMutationMockResolver });
+      await waitForPromises();
+
+      findLockFileDropdownItem().vm.$emit('action');
+      clickSubmit();
+
+      expect(lockPathMutationMockResolver).toHaveBeenCalledWith({
+        filePath: 'some/path/locked_file.js',
+        lock: false,
+        projectPath: 'some/project/path',
+      });
+      await waitForPromises();
+
+      expect(mockToastShow).toHaveBeenCalledWith('The file is unlocked.');
     });
   });
 });

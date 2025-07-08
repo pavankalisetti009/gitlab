@@ -1,8 +1,11 @@
 <script>
-import { GlDisclosureDropdownItem, GlModal } from '@gitlab/ui';
+import Vue from 'vue';
+import { GlDisclosureDropdownItem, GlModal, GlToast } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { sprintf, __ } from '~/locale';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
+
+Vue.use(GlToast);
 
 export default {
   i18n: {
@@ -118,11 +121,14 @@ export default {
             lock: locked,
           },
         })
+        .then(() => {
+          this.$toast.show(locked ? __('The file is locked.') : __('The file is unlocked.'));
+          this.locked = locked;
+        })
         .catch((error) => {
           createAlert({ message: this.$options.i18n.mutationError, captureError: true, error });
         })
         .finally(() => {
-          this.locked = locked;
           this.isUpdating = false;
         });
     },
