@@ -26584,6 +26584,9 @@ msgstr ""
 msgid "Failed to load the Web IDE"
 msgstr ""
 
+msgid "Failed to load work items. Please try again."
+msgstr ""
+
 msgid "Failed to make repository read-only: %{reason}"
 msgstr ""
 
