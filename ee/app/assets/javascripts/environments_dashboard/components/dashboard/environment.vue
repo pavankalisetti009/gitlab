@@ -8,7 +8,6 @@ import TimeAgo from 'ee/vue_shared/dashboards/components/time_ago.vue';
 import { STATUS_FAILED } from 'ee/vue_shared/dashboards/constants';
 import { s__, __, sprintf } from '~/locale';
 import Commit from '~/vue_shared/components/commit.vue';
-import timeagoMixin from '~/vue_shared/mixins/timeago';
 import EnvironmentHeader from './environment_header.vue';
 
 export default {
@@ -27,7 +26,6 @@ export default {
   directives: {
     'gl-tooltip': GlTooltipDirective,
   },
-  mixins: [timeagoMixin],
   props: {
     environment: {
       type: Object,
@@ -36,7 +34,6 @@ export default {
   },
   tooltips: {
     timeAgo: __('Finished'),
-    triggerer: __('Triggerer'),
     job: s__('EnvironmentsDashboard|Job: %{job}'),
   },
   noDeploymentMessage: __('This environment has no deployments yet.'),
@@ -102,9 +99,6 @@ export default {
     },
     finishedTime() {
       return this.lastDeployment.deployed_at;
-    },
-    finishedTimeTitle() {
-      return this.tooltipTitle(this.finishedTime);
     },
     shouldShowTimeAgo() {
       return Boolean(this.finishedTime);
