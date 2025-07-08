@@ -23,5 +23,6 @@ module Security
 
     scope :by_projects, ->(project_ids) { where(project: project_ids) }
     scope :without_types, ->(types) { where.not(analyzer_type: types) }
+    scope :unarchived, -> { where(archived: false) }
   end
 end

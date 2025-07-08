@@ -138,6 +138,8 @@ module EE
             to: ::Groups::GroupTransferedEvent
           store.subscribe ::Security::AnalyzersStatus::ProcessProjectTransferEventsWorker,
             to: ::Projects::ProjectTransferedEvent
+          store.subscribe ::Security::AnalyzerNamespaceStatuses::ProcessGroupDeletedEventsWorker,
+            to: ::Groups::GroupDeletedEvent
         end
 
         def subscribe_to_external_issue_links_events(store)

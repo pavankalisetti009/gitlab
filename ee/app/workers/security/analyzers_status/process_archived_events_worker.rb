@@ -16,7 +16,7 @@ module Security
         namespace_id = event.data[:namespace_id]
 
         handle_project_related_records(project_id)
-        handle_namespace_related_records(project_id, namespace_id)
+        handle_namespace_related_records(namespace_id)
       end
 
       def handle_project_related_records(project_id)
@@ -26,11 +26,11 @@ module Security
         UpdateArchivedService.execute(project)
       end
 
-      def handle_namespace_related_records(project_id, namespace_id)
+      def handle_namespace_related_records(namespace_id)
         group = Group.find_by_id(namespace_id)
-        return unless project_id && group.present?
+        return unless group.present?
 
-        Security::AnalyzerNamespaceStatuses::RecalculateService.execute(project_id, group, deleted_project: false)
+        Security::AnalyzerNamespaceStatuses::RecalculateService.execute(group)
       end
     end
   end

@@ -3,28 +3,17 @@
 module Security
   module AnalyzerNamespaceStatuses
     class RecalculateService
-      def self.execute(project_id, group, deleted_project: false)
-        new(project_id, group, deleted_project).execute
+      def self.execute(group)
+        new(group).execute
       end
 
-      def initialize(project_id, group, deleted_project)
-        @project_id = project_id
+      def initialize(group)
         @group = group
-        @deleted_project = deleted_project
       end
 
       def execute
-        return unless project_id.present? && group.present?
+        return unless group.present?
 
-        verify_no_project_related_records if deleted_project
-        recalculate_analyzer_namespaces_statuses
-      end
-
-      private
-
-      attr_reader :project_id, :group, :deleted_project
-
-      def recalculate_analyzer_namespaces_statuses
         # recalculating for the group namespace could return a diff for each analyzer type
         # in case of actual status difference
         namespace_diffs = AdjustmentService.new([group.id]).execute
@@ -37,10 +26,9 @@ module Security
         AncestorsUpdateService.execute(ancestors_diffs_with_metadata)
       end
 
-      def verify_no_project_related_records
-        # Deleting project triggers async delete with loose foreign keys. Verify no records exists before recalculating
-        AnalyzerProjectStatus.by_projects(project_id).delete_all
-      end
+      private
+
+      attr_reader :group
 
       def get_ancestors_diffs_with_metadata(namespace_diffs)
         # Remove the project's group which has already have the updated value due to the AdjustmentService.

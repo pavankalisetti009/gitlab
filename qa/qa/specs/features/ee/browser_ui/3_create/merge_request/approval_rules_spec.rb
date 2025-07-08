@@ -21,7 +21,10 @@ module QA
 
       it 'allows multiple approval rules with users and groups',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347771',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/550596' do
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/550596',
+          type: :investigating
+        } do
         # Create a merge request with 2 rules
         merge_request = Resource::MergeRequest.fabricate_via_browser_ui! do |resource|
           resource.title = 'Add a new feature'

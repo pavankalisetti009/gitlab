@@ -16,7 +16,9 @@ module Security
         group = Group.find_by_id(namespace_id)
         return unless project_id && group.present?
 
-        Security::AnalyzerNamespaceStatuses::RecalculateService.execute(project_id, group, deleted_project: true)
+        # Deleting project triggers async delete with loose foreign keys. Verify no records exist before recalculating
+        AnalyzerProjectStatus.by_projects(project_id).delete_all
+        Security::AnalyzerNamespaceStatuses::RecalculateService.execute(group)
       end
     end
   end

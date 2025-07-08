@@ -80,12 +80,10 @@ export default {
   computed: {
     ...mapState([
       'projects',
-      'projectTokens',
       'isLoadingProjects',
       'selectedProjects',
       'projectSearchResults',
       'searchCount',
-      'searchQuery',
       'messages',
       'pageInfo',
       'projectsPage',
@@ -140,13 +138,8 @@ export default {
       'toggleSelectedProject',
       'setSearchQuery',
       'removeProject',
-      'clearProjectsEtagPoll',
-      'stopProjectsPolling',
       'paginateDashboard',
     ]),
-    addProjects() {
-      this.addProjectsToDashboard();
-    },
     onModalHidden() {
       this.clearSearchResults();
     },

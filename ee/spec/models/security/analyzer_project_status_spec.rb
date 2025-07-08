@@ -25,6 +25,8 @@ RSpec.describe Security::AnalyzerProjectStatus, feature_category: :security_asse
     let_it_be(:dast_analyzer) { create(:analyzer_project_status, :dast, project: project) }
     let_it_be(:container_scanning_analyzer) { create(:analyzer_project_status, :container_scanning, project: project) }
     let_it_be(:another_analyzer_status) { create(:analyzer_project_status, :secret_detection) }
+    let_it_be(:archived_project) { create(:project, archived: true) }
+    let_it_be(:archived_sast_analyzer) { create(:analyzer_project_status, project: archived_project, archived: true) }
 
     describe '.by_projects' do
       subject { described_class.by_projects(project) }
@@ -61,6 +63,14 @@ RSpec.describe Security::AnalyzerProjectStatus, feature_category: :security_asse
         it 'returns all analyzers' do
           is_expected.to include(sast_analyzer, dast_analyzer, container_scanning_analyzer, another_analyzer_status)
         end
+      end
+    end
+
+    describe '.unarchived' do
+      subject { described_class.unarchived }
+
+      it 'returns unarchived analyzer statuses only' do
+        is_expected.to not_include(archived_sast_analyzer)
       end
     end
   end
