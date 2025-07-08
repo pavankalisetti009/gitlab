@@ -54,7 +54,7 @@ describe('ProjectsToggleList', () => {
     });
 
     describe('single project', () => {
-      it('should render header and list for all projects when there is single project', () => {
+      it('renders header and list for all projects when there is single project in the group', () => {
         createComponent({
           propsData: {
             projects: [defaultNodes[0]],
@@ -62,6 +62,18 @@ describe('ProjectsToggleList', () => {
         });
 
         expect(findHeader().text()).toBe('All projects in this group except:');
+        expect(findToggleList().props('items')).toHaveLength(1);
+      });
+
+      it('renders header and list for all projects when there is single project in the instance', () => {
+        createComponent({
+          propsData: {
+            isInstanceLevel: true,
+            projects: [defaultNodes[0]],
+          },
+        });
+
+        expect(findHeader().text()).toBe('All projects in this instance except:');
         expect(findToggleList().props('items')).toHaveLength(1);
       });
     });

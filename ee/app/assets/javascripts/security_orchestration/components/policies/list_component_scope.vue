@@ -32,15 +32,20 @@ export default {
   },
   inject: ['namespaceType'],
   props: {
-    policyScope: {
-      type: Object,
+    isInstanceLevel: {
+      type: Boolean,
       required: false,
-      default: null,
+      default: false,
     },
     linkedSppItems: {
       type: Array,
       required: false,
       default: () => [],
+    },
+    policyScope: {
+      type: Object,
+      required: false,
+      default: null,
     },
   },
   computed: {
@@ -111,6 +116,7 @@ export default {
       v-else-if="showProjects"
       inline-list
       :is-group="isGroup"
+      :is-instance-level="isInstanceLevel"
       :bullet-style="false"
       :including="policyScopeHasIncludingProjects"
       :projects="policyScopeProjects.projects"
