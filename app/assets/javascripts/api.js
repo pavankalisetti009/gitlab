@@ -230,13 +230,14 @@ const Api = {
   },
 
   // Return namespaces list. Filtered by query
-  namespaces(query, callback) {
+  namespaces(query, options, callback) {
     const url = Api.buildUrl(Api.namespacesPath);
     return axios
       .get(url, {
         params: {
           search: query,
           per_page: DEFAULT_PER_PAGE,
+          ...options,
         },
       })
       .then(({ data }) => callback(data));

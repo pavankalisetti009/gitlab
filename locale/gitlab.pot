@@ -63100,6 +63100,9 @@ msgstr ""
 msgid "There was a problem fetching milestones."
 msgstr ""
 
+msgid "There was a problem fetching namespaces."
+msgstr ""
+
 msgid "There was a problem fetching project branches."
 msgstr ""
 
