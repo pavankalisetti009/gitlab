@@ -282,7 +282,10 @@ module IdentityVerifiable
     return true unless project_bot?
 
     member = members.first
-    return true if member && member.source.root_ancestor.actual_plan.paid_excluding_trials?
+    id_check_for_oss = ::Feature.enabled?(:id_check_for_oss, self)
+    if member && member.source.root_ancestor.actual_plan.paid_excluding_trials?(exclude_oss: id_check_for_oss)
+      return true
+    end
 
     return false unless created_by.present?
     return false if created_by.banned?

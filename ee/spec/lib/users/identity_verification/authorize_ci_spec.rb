@@ -129,10 +129,31 @@ RSpec.describe Users::IdentityVerification::AuthorizeCi, :saas, feature_category
       end
 
       context 'when root namespace has a paid plan' do
-        let_it_be(:ultimate_group) { create(:group_with_plan, :public, plan: :ultimate_plan) }
-        let_it_be(:project) { create(:project, group: ultimate_group) }
+        let_it_be(:group) { create(:group, :public) }
+        let_it_be(:project) { create(:project, group: group) }
+        let(:plan_name) { :ultimate_plan }
+
+        before do
+          create(:gitlab_subscription, namespace: group, hosted_plan: create(plan_name), trial: false)
+        end
 
         it { is_expected.to eq(true) }
+
+        context "with OSS plan" do
+          let(:plan_name) { :opensource_plan }
+
+          context 'with id_check_for_oss feature flag enabled' do
+            it { is_expected.to eq(false) }
+          end
+
+          context 'with id_check_for_oss feature flag disabled' do
+            before do
+              stub_feature_flags(id_check_for_oss: false)
+            end
+
+            it { is_expected.to eq(true) }
+          end
+        end
       end
 
       context 'when root namespace has purchased compute minutes' do

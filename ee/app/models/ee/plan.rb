@@ -77,8 +77,10 @@ module EE
       PAID_HOSTED_PLANS.include?(name)
     end
 
-    def paid_excluding_trials?
-      (PAID_HOSTED_PLANS - FREE_TRIAL_PLANS).include?(name)
+    def paid_excluding_trials?(exclude_oss: false)
+      paid_hosted_plans = PAID_HOSTED_PLANS.dup
+      paid_hosted_plans.delete(OPEN_SOURCE) if exclude_oss
+      (paid_hosted_plans - FREE_TRIAL_PLANS).include?(name)
     end
 
     def open_source?

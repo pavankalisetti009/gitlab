@@ -109,6 +109,14 @@ RSpec.describe Plan, feature_category: :subscription_management do
         it { is_expected.to be_falsey }
       end
     end
+
+    context 'with exclude_oss option' do
+      let(:plan) { build(:opensource_plan) }
+
+      context 'with exclude_oss option' do
+        it { expect(plan.paid_excluding_trials?(exclude_oss: true)).to be false }
+      end
+    end
   end
 
   describe '#open_source?' do
