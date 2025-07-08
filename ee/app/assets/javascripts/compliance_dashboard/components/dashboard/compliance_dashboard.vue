@@ -142,7 +142,7 @@ export default {
           {
             id: '2',
             extendedDashboardPanelProps: {
-              title: s__('ComplianceReport|Failed requirements'),
+              title: s__('ComplianceReport|Requirements'),
               loading: this.$apollo.queries.failedRequirements.loading,
             },
             component: FailedRequirements,
@@ -160,7 +160,7 @@ export default {
           {
             id: '3',
             extendedDashboardPanelProps: {
-              title: s__('ComplianceReport|Failed controls'),
+              title: s__('ComplianceReport|Controls'),
               loading: this.$apollo.queries.failedControls.loading,
             },
             component: FailedControls,

@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlEmptyState } from '@gitlab/ui';
 import { GL_LIGHT } from '~/constants';
 import FailedControls from 'ee/compliance_dashboard/components/dashboard/failed_controls.vue';
-import PieChart from 'ee/compliance_dashboard/components/dashboard/components/pie_chart.vue';
+import StatusChart from 'ee/compliance_dashboard/components/dashboard/components/status_chart.vue';
 
 describe('Failed controls panel', () => {
   let wrapper;
@@ -30,12 +30,11 @@ describe('Failed controls panel', () => {
 
   it('renders chart with correct props when controls are available', () => {
     createComponent();
-    const chartProps = wrapper.findComponent(PieChart).props();
+    const chartProps = wrapper.findComponent(StatusChart).props();
     expect(chartProps).toStrictEqual(
       expect.objectContaining({
         colorScheme: GL_LIGHT,
         legend: FailedControls.legend,
-        itemFormatter: FailedControls.itemFormatter,
         path: FailedControls.ROUTE_STANDARDS_ADHERENCE,
         data: controlsProp,
       }),

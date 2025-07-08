@@ -1,14 +1,14 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
-import { s__, n__ } from '~/locale';
+import { s__ } from '~/locale';
 
 import { ROUTE_STANDARDS_ADHERENCE } from '../../constants';
-import PieChart from './components/pie_chart.vue';
+import StatusChart from './components/status_chart.vue';
 
 export default {
   components: {
     GlEmptyState,
-    PieChart,
+    StatusChart,
   },
   props: {
     colorScheme: {
@@ -27,23 +27,21 @@ export default {
     },
   },
   legend: {
-    passed: s__('Compliance report|Successful controls'),
-    failed: s__('Compliance report|Failed controls'),
-    pending: s__('Compliance report|Pending controls'),
+    passed: s__('Compliance report|Passed'),
+    failed: s__('Compliance report|Failed'),
+    pending: s__('Compliance report|Pending'),
   },
-  itemFormatter: (count) =>
-    n__('Compliance report|%{count} control', 'Compliance report|%{count} controls', count),
   ROUTE_STANDARDS_ADHERENCE,
 };
 </script>
 
 <template>
-  <pie-chart
+  <status-chart
     v-if="!isEmpty"
     :legend="$options.legend"
     :color-scheme="colorScheme"
-    :item-formatter="$options.itemFormatter"
     :data="failedControls"
+    :x-axis-title="s__('Compliance report|Controls')"
     :path="$options.ROUTE_STANDARDS_ADHERENCE"
   />
   <gl-empty-state

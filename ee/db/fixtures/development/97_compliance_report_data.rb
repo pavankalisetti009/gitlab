@@ -57,7 +57,7 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
 
   private
 
-  def add_framework_to_project(project:)
+  def add_framework_to_project(project:, framework:)
     project.compliance_management_frameworks << framework
     framework.compliance_requirements.each do |requirement|
       # only requirements with controls can generate entries

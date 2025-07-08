@@ -15599,11 +15599,6 @@ msgstr ""
 msgid "Compliance frameworks"
 msgstr ""
 
-msgid "Compliance report|%{count} control"
-msgid_plural "Compliance report|%{count} controls"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "Compliance report|%{count} projects are not covered by %{framework}"
 msgstr ""
 
@@ -15616,24 +15611,10 @@ msgstr ""
 msgid "Compliance report|%{count} projects have no framework at all"
 msgstr ""
 
-msgid "Compliance report|%{count} requirement"
-msgid_plural "Compliance report|%{count} requirements"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "Compliance report|%{percent}%% coverage"
 msgstr ""
 
 msgid "Compliance report|%{percent}%% coverage for %{framework}"
-msgstr ""
-
-msgid "Compliance report|%{percent}%% failed"
-msgstr ""
-
-msgid "Compliance report|%{percent}%% passed"
-msgstr ""
-
-msgid "Compliance report|%{percent}%% pending"
 msgstr ""
 
 msgid "Compliance report|All frameworks"
@@ -15642,19 +15623,16 @@ msgstr ""
 msgid "Compliance report|Click to check all projects"
 msgstr ""
 
-msgid "Compliance report|Click to check all requirements"
+msgid "Compliance report|Controls"
 msgstr ""
 
-msgid "Compliance report|Failed controls"
+msgid "Compliance report|Failed"
 msgstr ""
 
-msgid "Compliance report|Failed requirements"
+msgid "Compliance report|Passed"
 msgstr ""
 
-msgid "Compliance report|Pending controls"
-msgstr ""
-
-msgid "Compliance report|Pending requirements"
+msgid "Compliance report|Pending"
 msgstr ""
 
 msgid "Compliance report|Projects covered by frameworks"
@@ -15663,13 +15641,10 @@ msgstr ""
 msgid "Compliance report|Projects not covered by frameworks"
 msgstr ""
 
+msgid "Compliance report|Requirements"
+msgstr ""
+
 msgid "Compliance report|Start by adding a compliance framework to your group."
-msgstr ""
-
-msgid "Compliance report|Successful controls"
-msgstr ""
-
-msgid "Compliance report|Successful requirements"
 msgstr ""
 
 msgid "Compliance report|There are no compliance frameworks."
@@ -16173,6 +16148,9 @@ msgstr ""
 msgid "ComplianceReport|Compliance pipelines are deprecated"
 msgstr ""
 
+msgid "ComplianceReport|Controls"
+msgstr ""
+
 msgid "ComplianceReport|Create a new framework"
 msgstr ""
 
@@ -16192,12 +16170,6 @@ msgid "ComplianceReport|Do you want to refresh the filtered results to include y
 msgstr ""
 
 msgid "ComplianceReport|Edit the framework"
-msgstr ""
-
-msgid "ComplianceReport|Failed controls"
-msgstr ""
-
-msgid "ComplianceReport|Failed requirements"
 msgstr ""
 
 msgid "ComplianceReport|Failed to update violation status. Please try again."
@@ -16255,6 +16227,9 @@ msgid "ComplianceReport|Please remove the compliance pipeline configuration from
 msgstr ""
 
 msgid "ComplianceReport|Remove frameworks from selected projects"
+msgstr ""
+
+msgid "ComplianceReport|Requirements"
 msgstr ""
 
 msgid "ComplianceReport|Search target branch"

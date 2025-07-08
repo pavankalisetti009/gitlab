@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlEmptyState } from '@gitlab/ui';
 import { GL_LIGHT } from '~/constants';
 import FailedRequirements from 'ee/compliance_dashboard/components/dashboard/failed_requirements.vue';
-import PieChart from 'ee/compliance_dashboard/components/dashboard/components/pie_chart.vue';
+import StatusChart from 'ee/compliance_dashboard/components/dashboard/components/status_chart.vue';
 
 describe('Failed requirements panel', () => {
   let wrapper;
@@ -31,12 +31,11 @@ describe('Failed requirements panel', () => {
 
   it('renders chart with correct props when requirements are available', () => {
     createComponent();
-    const chartProps = wrapper.findComponent(PieChart).props();
+    const chartProps = wrapper.findComponent(StatusChart).props();
     expect(chartProps).toStrictEqual(
       expect.objectContaining({
         colorScheme: GL_LIGHT,
         legend: FailedRequirements.legend,
-        itemFormatter: FailedRequirements.itemFormatter,
         path: FailedRequirements.ROUTE_STANDARDS_ADHERENCE,
         data: requirementsProp,
       }),
