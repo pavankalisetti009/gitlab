@@ -23,8 +23,8 @@ module RemoteDevelopment
     has_many :user_provided_workspace_variables, -> {
       user_provided.with_variable_type_environment.order_id_desc
     }, class_name: "RemoteDevelopment::WorkspaceVariable", inverse_of: :workspace
-    has_one :agentk_state, inverse_of: :workspace, class_name: 'RemoteDevelopment::WorkspaceAgentkState'
-    has_one :workspace_token, inverse_of: :workspace, class_name: 'RemoteDevelopment::WorkspaceToken'
+    has_one :workspace_agentk_state, inverse_of: :workspace, class_name: "RemoteDevelopment::WorkspaceAgentkState"
+    has_one :workspace_token, inverse_of: :workspace, class_name: "RemoteDevelopment::WorkspaceToken"
 
     validates :user, presence: true
     validates :agent, presence: true

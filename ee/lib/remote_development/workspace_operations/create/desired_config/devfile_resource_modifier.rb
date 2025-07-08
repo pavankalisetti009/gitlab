@@ -7,6 +7,8 @@ module RemoteDevelopment
         class DevfileResourceModifier
           include RemoteDevelopment::WorkspaceOperations::Create::CreateConstants
 
+          # @param [Hash] context
+          # @return [Hash]
           def self.modify(context)
             context => {
               workspace_name: String => workspace_name,
@@ -19,24 +21,28 @@ module RemoteDevelopment
               file_secret_name: String => file_secret_name,
             }
 
-            desired_config_array = set_host_users(
+            set_host_users(
               desired_config_array: desired_config_array,
               use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
             )
-            desired_config_array = set_runtime_class(
+
+            set_runtime_class(
               desired_config_array: desired_config_array,
               runtime_class_name: default_runtime_class
             )
-            desired_config_array = set_security_context(
+
+            set_security_context(
               desired_config_array: desired_config_array,
               allow_privilege_escalation: allow_privilege_escalation
             )
-            desired_config_array = patch_default_resources(
+
+            patch_default_resources(
               desired_config_array: desired_config_array,
               default_resources_per_workspace_container:
                 default_resources_per_workspace_container
             )
-            desired_config_array = inject_secrets(
+
+            inject_secrets(
               desired_config_array: desired_config_array,
               env_secret_name: env_secret_name,
               file_secret_name: file_secret_name
@@ -50,35 +56,32 @@ module RemoteDevelopment
             context.merge({ desired_config_array: desired_config_array })
           end
 
+          # @param [Array<Hash>] desired_config_array
+          # @param [Boolean] use_kubernetes_user_namespaces
+          # @return [void]
           def self.set_host_users(desired_config_array:, use_kubernetes_user_namespaces:)
             # NOTE: Not setting the use_kubernetes_user_namespaces always since setting it now would require migration
             # from old config version to a new one. Set this field always
             # when a new devfile parser is created for some other reason.
             return desired_config_array unless use_kubernetes_user_namespaces
 
-            desired_config_array.each do |workspace_resource|
-              next unless workspace_resource[:kind] == 'Deployment'
+            find_pod_spec(desired_config_array)[:hostUsers] = use_kubernetes_user_namespaces
 
-              workspace_resource[:spec][:template][:spec][:hostUsers] = use_kubernetes_user_namespaces
-            end
-            desired_config_array
+            nil
           end
 
           # @param [Array<Hash>] desired_config_array
           # @param [String] runtime_class_name
-          # @return [Array<Hash>]
+          # @return [void]
           def self.set_runtime_class(desired_config_array:, runtime_class_name:)
             # NOTE: Not setting the runtime_class_name always since changing it now would require migration
             # from old config version to a new one. Update this field to `runtime_class_name.presence`
             # when a new devfile parser is created for some other reason.
             return desired_config_array if runtime_class_name.empty?
 
-            desired_config_array.each do |workspace_resource|
-              next unless workspace_resource[:kind] == 'Deployment'
+            find_pod_spec(desired_config_array)[:runtimeClassName] = runtime_class_name
 
-              workspace_resource[:spec][:template][:spec][:runtimeClassName] = runtime_class_name
-            end
-            desired_config_array
+            nil
           end
 
           # Devfile library allows specifying the security context of pods/containers as mentioned in
@@ -92,114 +95,121 @@ module RemoteDevelopment
           # @param [Array<Hash>] desired_config_array
           # @param [Boolean] allow_privilege_escalation
           # @param [Boolean] use_kubernetes_user_namespaces
-          # @return [Array<Hash>]
+          # @return [void]
           def self.set_security_context(
             desired_config_array:,
             allow_privilege_escalation:
           )
-            desired_config_array.each do |workspace_resource|
-              next unless workspace_resource[:kind] == 'Deployment'
+            pod_security_context = {
+              runAsNonRoot: true,
+              runAsUser: RUN_AS_USER,
+              fsGroup: 0,
+              fsGroupChangePolicy: 'OnRootMismatch'
+            }
+            container_security_context = {
+              allowPrivilegeEscalation: allow_privilege_escalation,
+              privileged: false,
+              runAsNonRoot: true,
+              runAsUser: RUN_AS_USER
+            }
 
-              pod_security_context = {
-                runAsNonRoot: true,
-                runAsUser: RUN_AS_USER,
-                fsGroup: 0,
-                fsGroupChangePolicy: 'OnRootMismatch'
-              }
-              container_security_context = {
-                allowPrivilegeEscalation: allow_privilege_escalation,
-                privileged: false,
-                runAsNonRoot: true,
-                runAsUser: RUN_AS_USER
-              }
-
-              pod_spec = workspace_resource[:spec][:template][:spec]
-              # Explicitly set security context for the pod
-              pod_spec[:securityContext] = pod_security_context
-              # Explicitly set security context for all containers
-              pod_spec[:containers].each do |container|
-                container[:securityContext] = container_security_context
-              end
-              # Explicitly set security context for all init containers
-              pod_spec[:initContainers].each do |init_container|
-                init_container[:securityContext] = container_security_context
-              end
+            pod_spec = find_pod_spec(desired_config_array)
+            # Explicitly set security context for the pod
+            pod_spec[:securityContext] = pod_security_context
+            # Explicitly set security context for all containers
+            pod_spec[:containers].each do |container|
+              container[:securityContext] = container_security_context
             end
-            desired_config_array
+            # Explicitly set security context for all init containers
+            pod_spec[:initContainers].each do |init_container|
+              init_container[:securityContext] = container_security_context
+            end
+
+            nil
           end
 
           # @param [Array<Hash>] desired_config_array
           # @param [Hash] default_resources_per_workspace_container
-          # @return [Array<Hash>]
+          # @return [void]
           def self.patch_default_resources(desired_config_array:, default_resources_per_workspace_container:)
-            desired_config_array.each do |workspace_resource|
-              next unless workspace_resource.fetch(:kind) == 'Deployment'
+            pod_spec = find_pod_spec(desired_config_array)
 
-              pod_spec = workspace_resource.fetch(:spec).fetch(:template).fetch(:spec)
-
-              container_types = [:initContainers, :containers]
-              container_types.each do |container_type|
-                # the purpose of this deep_merge is to ensure
-                # the values from the devfile override any defaults defined at the agent
-                pod_spec.fetch(container_type).each do |container|
-                  container
-                    .fetch(:resources, {})
-                    .deep_merge!(default_resources_per_workspace_container) { |_, val, _| val }
-                end
+            container_types = [:initContainers, :containers]
+            container_types.each do |container_type|
+              # the purpose of this deep_merge is to ensure
+              # the values from the devfile override any defaults defined at the agent
+              pod_spec.fetch(container_type).each do |container|
+                container
+                  .fetch(:resources, {})
+                  .deep_merge!(default_resources_per_workspace_container) { |_, val, _| val }
               end
             end
-            desired_config_array
+
+            nil
           end
 
           # @param [Array<Hash>] desired_config_array
           # @param [String] env_secret_name
           # @param [String] file_secret_name
-          # @return [Array<Hash>]
+          # @return [void]
           def self.inject_secrets(desired_config_array:, env_secret_name:, file_secret_name:)
-            desired_config_array.each do |workspace_resource|
-              next unless workspace_resource.fetch(:kind) == 'Deployment'
-
-              volume = {
-                name: VARIABLES_VOLUME_NAME,
-                projected: {
-                  defaultMode: VARIABLES_VOLUME_DEFAULT_MODE,
-                  sources: [{ secret: { name: file_secret_name } }]
-                }
+            volume = {
+              name: VARIABLES_VOLUME_NAME,
+              projected: {
+                defaultMode: VARIABLES_VOLUME_DEFAULT_MODE,
+                sources: [{ secret: { name: file_secret_name } }]
               }
+            }
 
-              volume_mount = {
-                name: VARIABLES_VOLUME_NAME,
-                mountPath: VARIABLES_VOLUME_PATH
-              }
+            volume_mount = {
+              name: VARIABLES_VOLUME_NAME,
+              mountPath: VARIABLES_VOLUME_PATH
+            }
 
-              env_from = [{ secretRef: { name: env_secret_name } }]
+            env_from = [{ secretRef: { name: env_secret_name } }]
 
-              pod_spec = workspace_resource.fetch(:spec).fetch(:template).fetch(:spec)
-              pod_spec.fetch(:volumes) << volume unless file_secret_name.empty?
+            pod_spec = find_pod_spec(desired_config_array)
+            pod_spec.fetch(:volumes) << volume unless file_secret_name.empty?
 
-              pod_spec.fetch(:initContainers).each do |init_container|
-                init_container.fetch(:volumeMounts) << volume_mount unless file_secret_name.empty?
-                init_container[:envFrom] = env_from unless env_secret_name.empty?
-              end
-
-              pod_spec.fetch(:containers).each do |container|
-                container.fetch(:volumeMounts) << volume_mount unless file_secret_name.empty?
-                container[:envFrom] = env_from unless env_secret_name.empty?
-              end
+            pod_spec.fetch(:initContainers).each do |init_container|
+              init_container.fetch(:volumeMounts) << volume_mount unless file_secret_name.empty?
+              init_container[:envFrom] = env_from unless env_secret_name.empty?
             end
-            desired_config_array
+
+            pod_spec.fetch(:containers).each do |container|
+              container.fetch(:volumeMounts) << volume_mount unless file_secret_name.empty?
+              container[:envFrom] = env_from unless env_secret_name.empty?
+            end
+
+            nil
           end
 
           # @param [Array<Hash>] desired_config_array
           # @param [String] service_account_name
-          # @return [Array<Hash>]
+          # @return [void]
           def self.set_service_account(desired_config_array:, service_account_name:)
-            desired_config_array.each do |workspace_resource|
-              next unless workspace_resource.fetch(:kind) == 'Deployment'
+            find_pod_spec(desired_config_array)[:serviceAccountName] = service_account_name
 
-              workspace_resource[:spec][:template][:spec][:serviceAccountName] = service_account_name
-            end
-            desired_config_array
+            nil
+          end
+
+          # @param [Array<Hash>] desired_config_array
+          # @return [Hash]
+          def self.find_pod_spec(desired_config_array)
+            desired_config_array => [
+              *_,
+              {
+                kind: "Deployment",
+                spec: {
+                  template: {
+                    spec: pod_spec
+                  }
+                }
+              },
+              *_
+            ]
+
+            pod_spec
           end
 
           private_class_method :set_host_users,
@@ -207,7 +217,8 @@ module RemoteDevelopment
             :set_security_context,
             :patch_default_resources,
             :inject_secrets,
-            :set_service_account
+            :set_service_account,
+            :find_pod_spec
         end
       end
     end

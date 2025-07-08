@@ -4,6 +4,7 @@ require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::DevfileResourceAppender, :freeze_time, feature_category: :workspaces do
   include_context "with remote development shared fixtures"
+  include_context "with constant modules"
 
   # rubocop:disable RSpec/VerifiedDoubleReference -- fast_spec_helper does not load Rails models, so we must use a quoted class name here.let(:env_var) do
   let(:env_var) do
@@ -37,11 +38,24 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
 
   let(:labels) { { "app" => "workspace", "tier" => "development", "agent.gitlab.com/id" => "991" } }
   let(:workspace_inventory_annotations) { { "environment" => "production", "team" => "engineering" } }
+  let(:workspace_inventory_annotations_for_partial_reconciliation) do
+    workspace_inventory_annotations.merge(
+      { workspace_operations_constants_module::ANNOTATION_KEY_INCLUDE_IN_PARTIAL_RECONCILIATION => "true" }
+    )
+  end
+
   let(:common_annotations) do
     { "workspaces.gitlab.com/host-template" => "3000-#{workspace.name}.workspaces.localdev.me" }
   end
 
+  let(:common_annotations_for_partial_reconciliation) do
+    common_annotations.merge(
+      { workspace_operations_constants_module::ANNOTATION_KEY_INCLUDE_IN_PARTIAL_RECONCILIATION => "true" }
+    )
+  end
+
   let(:workspace_inventory_name) { "#{workspace.name}-workspace-inventory" }
+  let(:workspace_scripts_configmap_name) { "#{workspace.name}-scripts" }
   let(:secrets_inventory_name) { "#{workspace.name}-secrets-inventory" }
   let(:secrets_inventory_annotations) { { "config.k8s.io/owning-inventory" => secrets_inventory_name } }
   let(:scripts_configmap_name) { "#{workspace.name}-scripts" }
@@ -91,7 +105,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
       workspace_namespace: workspace.namespace,
       labels: labels,
       workspace_inventory_annotations: workspace_inventory_annotations,
+      workspace_inventory_annotations_for_partial_reconciliation:
+        workspace_inventory_annotations_for_partial_reconciliation,
       common_annotations: common_annotations,
+      common_annotations_for_partial_reconciliation: common_annotations_for_partial_reconciliation,
       workspace_inventory_name: workspace_inventory_name,
       secrets_inventory_name: secrets_inventory_name,
       secrets_inventory_annotations: secrets_inventory_annotations,
@@ -118,6 +135,35 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
     expect(kinds_and_names).to include(["NetworkPolicy", workspace.name])
     expect(kinds_and_names).to include(["Secret", env_secret_name])
     expect(kinds_and_names).to include(["Secret", file_secret_name])
+
+    resources_included_in_partial_reconciliation = [
+      { kind: "ConfigMap", name: workspace_inventory_name },
+      { kind: "ServiceAccount", name: workspace.name },
+      { kind: "NetworkPolicy", name: workspace.name },
+      { kind: "ConfigMap", name: workspace_scripts_configmap_name }
+    ]
+
+    result.each do |resource|
+      kind = resource[:kind]
+      name = resource.dig(:metadata, :name)
+      key = workspace_operations_constants_module::ANNOTATION_KEY_INCLUDE_IN_PARTIAL_RECONCILIATION
+
+      included_in_partial_reconciliation, excluded_from_partial_reconciliation = result.partition do |r|
+        resources_included_in_partial_reconciliation.any? do |spec|
+          spec[:kind] == r[:kind] && spec[:name] == r.dig(:metadata, :name)
+        end
+      end
+
+      included_in_partial_reconciliation.each do |r|
+        expect(r.dig(:metadata, :annotations, key)).to eq("true"),
+          "Expected #{kind}/#{name} to have annotation #{key}=true, but got #{r.dig(:metadata, :annotations)}"
+      end
+
+      excluded_from_partial_reconciliation.each do |r|
+        expect(r.dig(:metadata, :annotations, key)).to be_nil,
+          "Expected annotation #{key} to not be present in #{kind}/#{name}, but it is"
+      end
+    end
 
     secret_resources = result.select { |r| r[:kind] == "Secret" }
     secret_resources.each do |secret|

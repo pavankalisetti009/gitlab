@@ -30,7 +30,7 @@ module RemoteDevelopment
             workspace_agentk_state = WorkspaceAgentkState.create!(
               workspace: workspace,
               project: workspace.project,
-              desired_config: desired_config.as_json
+              desired_config: desired_config.symbolized_desired_config_array
             )
 
             if workspace_agentk_state.errors.present?

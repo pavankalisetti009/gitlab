@@ -40,10 +40,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
     ]
   end
 
-  # let(:desired_config_array_yaml) do
-  #   [base_deployment_resource.deep_stringify_keys, non_deployment_resource.deep_stringify_keys].map(&:to_yaml).join
-  # end
-
   let(:context) do
     {
       workspace_name: workspace_name,

@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceAgentkStateCreator, feature_category: :workspaces do
   include ResultMatchers
 
-  include_context 'with remote development shared fixtures'
+  include_context "with remote development shared fixtures"
 
   let(:workspace_name) { "workspace-991-990-fedcba" }
-  let(:workspace) { create(:workspace, name: workspace_name) }
-  let(:expected_desired_config_json) { desired_config.as_json }
+  let(:workspace) { create(:workspace, :without_workspace_agentk_state, name: workspace_name) }
+  let(:expected_desired_config_json) { desired_config.as_json.fetch("desired_config_array") }
   let(:logger) { instance_double(RemoteDevelopment::Logger) }
   let(:desired_config) do
     ::RemoteDevelopment::WorkspaceOperations::DesiredConfig.new(desired_config_array: create_desired_config_array)
@@ -28,7 +28,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceAgentk
     described_class.create(context) # rubocop:disable Rails/SaveBang -- This is not an ActiveRecord method
   end
 
-  it 'persists the record and returns nil' do
+  it "persists the record and returns nil" do
     expect { result }.to change { RemoteDevelopment::WorkspaceAgentkState.count }
 
     expect(RemoteDevelopment::WorkspaceAgentkState.last)

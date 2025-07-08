@@ -22,7 +22,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
 
   # See following documentation for details on all scenarios:
   #
-  # https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/-/blob/main/doc/workspace-updates.md
+  # https://gitlab.com/gitlab-org/workspaces/gitlab-workspaces-docs/-/blob/main/doc/workspace-reconciliation-logic.md
   #
   # Columns:
   #
@@ -147,7 +147,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
   # rubocop:enable Layout/LineLength, Style/TrailingCommaInArrayLiteral
 
   with_them do
-    it 'behaves as expected' do
+    it 'behaves as expected', :unlimited_max_formatted_output_length do
       expect(logger).not_to receive(:warn)
       expect(logger).not_to receive(:error)
 

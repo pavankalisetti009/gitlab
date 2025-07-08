@@ -17,12 +17,17 @@ module RemoteDevelopment
     #       See documentation at ../README.md#constant-declarations for more information.
     module WorkspaceOperationsConstants
       # Please keep alphabetized
+      ANNOTATION_KEY_INCLUDE_IN_PARTIAL_RECONCILIATION = :"workspaces.gitlab.com/include-in-partial-reconciliation"
+      ENV_VAR_SECRET_SUFFIX = "-env-var"
+      FILE_SECRET_SUFFIX = "-file"
       INTERNAL_COMMAND_LABEL = "gl-internal"
       INTERNAL_BLOCKING_COMMAND_LABEL = "#{INTERNAL_COMMAND_LABEL}-blocking".freeze
+      SECRETS_INVENTORY = "-secrets-inventory"
       VARIABLES_VOLUME_DEFAULT_MODE = 0o774
       VARIABLES_VOLUME_NAME = "gl-workspace-variables"
       VARIABLES_VOLUME_PATH = "/.workspace-data/variables/file"
       WORKSPACE_DATA_VOLUME_PATH = "/projects"
+      WORKSPACE_INVENTORY = "-workspace-inventory"
       WORKSPACE_LOGS_DIR = "#{WORKSPACE_DATA_VOLUME_PATH}/workspace-logs".freeze
       WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME = "gl_workspace_reconciled_actual_state.txt"
       WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH =

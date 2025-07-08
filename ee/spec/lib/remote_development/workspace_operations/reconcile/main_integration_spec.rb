@@ -263,7 +263,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::FULL }
     let(:workspace_agent_infos) { [] }
 
-    it 'returns expected keys within the response payload' do
+    it 'returns expected keys within the response payload', :unlimited_max_formatted_output_length do
       expect(response.fetch(:payload).keys).to contain_exactly(:settings, :workspace_rails_infos)
     end
 

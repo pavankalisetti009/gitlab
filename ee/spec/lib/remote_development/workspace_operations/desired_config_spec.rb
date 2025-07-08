@@ -61,17 +61,15 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::DesiredConfig, feature_ca
     end
   end
 
-  describe '#to_json' do
+  describe "#symbolized_desired_config_array" do
     let(:desired_config_array) { create_desired_config_array }
 
-    subject(:result) { desired_config.to_json }
-
-    it { expect(result).to be_valid_json }
-    it { expect(Gitlab::Json.parse(result)).to eq({ "desired_config_array" => create_desired_config_array }.as_json) }
+    it { expect(desired_config.symbolized_desired_config_array).to eq(desired_config_array) }
+    it { expect(desired_config.symbolized_desired_config_array).to be_kind_of(Array) }
   end
 
   describe '#==(other)' do
-    let(:desired_config) { described_class.new(desired_config_array: create_desired_config_array) }
+    let(:desired_config_array) { create_desired_config_array }
 
     context 'when both DesiredConfig instances have the same desired_config_array' do
       let(:other_desired_config) { described_class.new(desired_config_array: create_desired_config_array) }
@@ -87,7 +85,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::DesiredConfig, feature_ca
   end
 
   describe "#diff(other)" do
-    let(:desired_config) { described_class.new(desired_config_array: create_desired_config_array) }
+    let(:desired_config_array) { create_desired_config_array }
 
     context 'when other is not of DesiredConfig type' do
       using RSpec::Parameterized::TableSyntax
@@ -134,7 +132,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::DesiredConfig, feature_ca
                   environment: "production",
                   team: "engineering",
                   "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-secrets-inventory",
-                  "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+                  "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
                   "workspaces.gitlab.com/id": "993",
                   "workspaces.gitlab.com/max-resources-per-workspace-sha256":
                     "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"

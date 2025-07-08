@@ -14,7 +14,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
     {
       processed_devfile_yaml: example_devfile_yaml,
       logger: logger,
-      workspace_inventory_annotations: { k1: "v1", k2: "v2" },
+      workspace_inventory_annotations_for_partial_reconciliation: { k1: "v1", k2: "v2" },
       domain_template: "domain_template",
       labels: labels,
       workspace_name: workspace_name,

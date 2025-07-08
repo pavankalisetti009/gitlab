@@ -6,7 +6,7 @@
       "annotations": {
         "environment": "production",
         "team": "engineering",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -28,7 +28,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -59,7 +59,7 @@
             "environment": "production",
             "team": "engineering",
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-            "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
             "workspaces.gitlab.com/id": "993",
             "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
@@ -268,7 +268,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -307,7 +307,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -346,7 +346,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -367,7 +367,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -450,7 +450,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -471,7 +471,7 @@
       "annotations": {
         "environment": "production",
         "team": "engineering",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -493,7 +493,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -523,7 +523,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-secrets-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },
@@ -545,7 +545,7 @@
         "environment": "production",
         "team": "engineering",
         "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-secrets-inventory",
-        "workspaces.gitlab.com/host-template": "3000-workspace-991-990-fedcba.workspaces.localdev.me",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
         "workspaces.gitlab.com/id": "993",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
       },

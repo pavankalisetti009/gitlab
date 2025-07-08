@@ -186,8 +186,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
           ).to eq(variable[:value])
         end
 
-        expect(workspace.agentk_state).to be_present
-        expect(workspace.agentk_state.desired_config.fetch("desired_config_array")).to be_an(Array)
+        expect(workspace.workspace_agentk_state).to be_present
+        expect(workspace.workspace_agentk_state.desired_config).to be_an(Array)
+        pp workspace.workspace_agentk_state.desired_config
       end
 
       it_behaves_like 'tracks successful workspace creation event'

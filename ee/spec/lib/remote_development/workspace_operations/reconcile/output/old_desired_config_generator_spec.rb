@@ -140,6 +140,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldDes
     end
 
     context "when desired_state terminated" do
+      let(:include_all_resources) { true } # Ensure that the terminated behavior overrides the include_all_resources
       let(:desired_state_is_terminated) { true }
       let(:desired_state) { states_module::TERMINATED }
 

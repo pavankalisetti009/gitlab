@@ -34,10 +34,17 @@ FactoryBot.define do
 
     transient do
       random_string { SecureRandom.alphanumeric(6).downcase }
+      without_workspace_agentk_state { false }
       without_workspace_variables { false }
       without_realistic_after_create_timestamp_updates { false }
       after_initial_reconciliation { false }
       unprovisioned { false }
+    end
+
+    trait :without_workspace_agentk_state do
+      transient do
+        without_workspace_agentk_state { true }
+      end
     end
 
     trait :without_workspace_variables do
@@ -95,6 +102,25 @@ FactoryBot.define do
           responded_to_agent_at: 1.second.ago
         )
       else
+        unless evaluator.without_workspace_agentk_state
+          # NOTE: We could attempt to manually build a desired_config_array which has all the correct IDs and values
+          #       agent, namespace, workspace, etc, but this would be a lot of work. For now, we will just use the
+          #       business logic to create a valid one based on the workspace's current state and associations.
+          result = RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Main.main({
+            params: {
+              agent: workspace.agent
+            },
+            workspace: workspace,
+            logger: nil
+          })
+          desired_config_array = result.fetch(:desired_config).symbolized_desired_config_array
+
+          workspace.create_workspace_agentk_state!(
+            project: workspace.project,
+            desired_config: desired_config_array
+          )
+        end
+
         unless evaluator.without_workspace_variables
           workspace_variables = RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesBuilder.build(
             name: workspace.name,

@@ -84,13 +84,28 @@ module RemoteDevelopment
             include_all_resources = should_include_all_resources?(update_type: update_type, workspace: workspace)
             resources_include_type = include_all_resources ? ALL_RESOURCES_INCLUDED : PARTIAL_RESOURCES_INCLUDED
 
-            workspace_resources = OldDesiredConfigGenerator.generate_desired_config(
+            desired_config = DesiredConfigFetcher.fetch(workspace: workspace, logger: logger)
+            config_to_apply_array = ConfigToApplyBuilder.build(
               workspace: workspace,
+              include_all_resources: include_all_resources,
+              desired_config: desired_config
+            )
+
+            if workspace.workspace_agentk_state
+              # Leverage the DesiredConfig Value Object to ensure that config_to_apply is valid
+              DesiredConfig.new(desired_config_array: config_to_apply_array).validate!
+            end
+
+            # TODO: remove this and the above 'if' after a succesful shadow run. Issue - https://gitlab.com/gitlab-org/gitlab/-/issues/551935
+            old_config_to_apply = ConfigToApplyShadowRunHandler.handle(
+              workspace: workspace,
+              new_config_to_apply_array: config_to_apply_array,
               include_all_resources: include_all_resources,
               logger: logger
             )
+            config_to_apply_array = old_config_to_apply
 
-            stable_sorted_workspace_resources = workspace_resources.map do |resource|
+            stable_sorted_workspace_resources = config_to_apply_array.map do |resource|
               Gitlab::Utils.deep_sort_hash(resource)
             end
 
