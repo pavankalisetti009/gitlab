@@ -87,7 +87,20 @@ module Sbom
         find_all_paths(direct_dep.id, graph, transitive_paths)
       end
 
-      all_paths.concat(transitive_paths)
+      result = all_paths
+        .concat(transitive_paths)
+        .uniq { |path| [path.ancestor_id, path.descendant_id, path.path_length] }
+
+      ::Gitlab::AppLogger.info(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.group&.name,
+        namespace_id: project.group&.id,
+        count_path_nodes: result.count
+      )
+
+      result
     end
 
     def bulk_insert_paths(paths)

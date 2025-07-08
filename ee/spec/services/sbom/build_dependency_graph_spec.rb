@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Sbom::BuildDependencyGraph, feature_category: :dependency_management do
-  let_it_be(:project) { create(:project) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, group: group) }
   let_it_be(:ancestor) { create(:sbom_occurrence, project: project) }
   let_it_be(:descendant) do
     create(:sbom_occurrence, ancestors: [{ name: ancestor.component_name, version: ancestor.version }, {}],
@@ -11,7 +12,11 @@ RSpec.describe Sbom::BuildDependencyGraph, feature_category: :dependency_managem
   end
 
   let_it_be(:grandchild) do
-    create(:sbom_occurrence, ancestors: [{ name: descendant.component_name, version: descendant.version }],
+    create(:sbom_occurrence,
+      ancestors: [
+        { name: descendant.component_name, version: descendant.version },
+        { name: descendant.component_name, version: descendant.version }
+      ],
       input_file_path: descendant.input_file_path, project: project)
   end
 
@@ -39,6 +44,24 @@ RSpec.describe Sbom::BuildDependencyGraph, feature_category: :dependency_managem
 
   it "invokes the remove job after building the tree" do
     expect(Sbom::RemoveOldDependencyGraphsWorker).to receive(:perform_async).with(project.id)
+    service.execute
+  end
+
+  it "does not store duplicate graph paths" do
+    expect { service.execute }.to change {
+      Sbom::GraphPath.by_projects(project).where(ancestor: descendant, descendant: grandchild).count
+    }.from(0).to(1)
+  end
+
+  it "logs the expected message when the build completes" do
+    expect(::Gitlab::AppLogger).to receive(:info).with(
+      message: "New graph creation complete",
+      project: project.name,
+      project_id: project.id,
+      namespace: project.group.name,
+      namespace_id: project.group.id,
+      count_path_nodes: 6
+    )
     service.execute
   end
 end
