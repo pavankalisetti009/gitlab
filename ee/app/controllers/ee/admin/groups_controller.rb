@@ -9,6 +9,10 @@ module EE
 
       prepended do
         feature_category :continuous_integration, [:reset_runners_minutes]
+
+        before_action do
+          push_saas_feature(:gitlab_com_subscriptions)
+        end
       end
 
       def reset_runners_minutes
