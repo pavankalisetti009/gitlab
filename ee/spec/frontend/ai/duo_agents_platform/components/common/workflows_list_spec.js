@@ -39,8 +39,8 @@ describe('WorkflowsList', () => {
       it('renders the emptyState', () => {
         expect(findEmptyState().exists()).toBe(true);
         expect(findEmptyState().props()).toMatchObject({
-          title: 'No Agent runs yet',
-          description: 'New Agent runs will appear here.',
+          title: 'No agent sessions yet',
+          description: 'New agent sessions will appear here.',
           svgPath: 'illustrations/empty-state/empty-pipeline-md.svg',
         });
       });

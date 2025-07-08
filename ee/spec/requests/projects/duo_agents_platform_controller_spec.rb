@@ -25,7 +25,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       end
 
       it 'renders successfully' do
-        get project_duo_agents_platform_path(project)
+        get project_automate_agent_sessions_path(project)
 
         expect(response).to have_gitlab_http_status(:ok)
       end
@@ -37,7 +37,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       end
 
       it 'returns 404' do
-        get project_duo_agents_platform_path(project)
+        get project_automate_agent_sessions_path(project)
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
@@ -49,7 +49,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       end
 
       it 'returns 404' do
-        get project_duo_agents_platform_path(project)
+        get project_automate_agent_sessions_path(project)
 
         expect(response).to have_gitlab_http_status(:not_found)
       end

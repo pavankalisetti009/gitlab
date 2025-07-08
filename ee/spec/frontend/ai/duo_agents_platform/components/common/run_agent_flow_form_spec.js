@@ -46,7 +46,7 @@ describe('RunAgentFlowForm', () => {
 
     it('renders the agentFlow selector form group', () => {
       const formGroups = findFormGroups();
-      expect(formGroups.at(0).attributes('label')).toBe('Select Agent Flow');
+      expect(formGroups.at(0).attributes('label')).toBe('Select a flow');
     });
 
     it('renders the prompt form group', () => {
@@ -83,7 +83,7 @@ describe('RunAgentFlowForm', () => {
       expect(workflowAction.exists()).toBe(true);
       expect(workflowAction.props()).toEqual({
         projectId: 123,
-        title: 'Start Agent Flow',
+        title: 'Start agent session',
         hoverMessage: '',
         goal: '',
         size: 'small',

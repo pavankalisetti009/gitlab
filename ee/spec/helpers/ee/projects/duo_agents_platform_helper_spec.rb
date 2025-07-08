@@ -16,7 +16,7 @@ RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_wor
     subject(:helper_data) { helper.duo_agents_platform_data(project) }
 
     before do
-      allow(helper).to receive(:project_duo_agents_platform_path).with(project).and_return('/test-project/-/agents')
+      allow(helper).to receive(:project_automate_agent_sessions_path).with(project).and_return('/test-project/-/agents')
       allow(helper).to receive(:image_path).with(
         'illustrations/empty-state/empty-pipeline-md.svg')
         .and_return('/assets/illustrations/empty-state/empty-pipeline-md.svg'

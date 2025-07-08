@@ -26,8 +26,9 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           end
         end
 
-        scope :agents do
-          get '/(*vueroute)' => 'duo_agents_platform#show', as: :duo_agents_platform, format: false
+        scope :automate do
+          get '/(*vueroute)' => 'duo_agents_platform#show', as: :automate, format: false
+          get '/agent-sessions/(*vueroute)' => 'duo_agents_platform#show', as: :automate_agent_sessions, format: false
         end
 
         namespace :quality do

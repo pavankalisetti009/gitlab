@@ -44,7 +44,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
 
   describe '#title' do
     it 'returns correct title' do
-      expect(menu.title).to eq('Agents')
+      expect(menu.title).to eq('Automate')
     end
   end
 
@@ -62,11 +62,11 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
     let(:menu_item) { menu.renderable_items.first }
 
     it 'has correct title' do
-      expect(menu_item.title).to eq('Runs')
+      expect(menu_item.title).to eq('Agent sessions')
     end
 
     it 'has correct link' do
-      expect(menu_item.link).to eq("/#{project.full_path}/-/agents")
+      expect(menu_item.link).to eq("/#{project.full_path}/-/automate/agent-sessions")
     end
 
     it 'has correct active routes' do

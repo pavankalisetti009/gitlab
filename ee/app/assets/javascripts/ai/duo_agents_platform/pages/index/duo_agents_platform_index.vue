@@ -81,7 +81,7 @@ export default {
         variant="confirm"
         :to="{ name: $options.newPage }"
         data-testid="new-agent-flow-button"
-        >{{ s__('DuoAgentsPlatform|New Agent Flow') }}</gl-button
+        >{{ s__('DuoAgentsPlatform|New session') }}</gl-button
       >
     </div>
     <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />

@@ -39,7 +39,7 @@ export default {
 <template>
   <div class="gl-my-10">
     <h1 class="gl-font-size-h1 gl-mb-0">
-      {{ s__('DuoAgentsPlatform|Run an Agent Flow') }}
+      {{ s__('DuoAgentsPlatform|Start an agent session') }}
     </h1>
     <div class="gl-mt-6">
       <run-agent-flow-form
