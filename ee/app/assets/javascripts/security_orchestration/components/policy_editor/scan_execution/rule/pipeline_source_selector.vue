@@ -22,7 +22,7 @@ export default {
       return getSelectedOptionsText({
         options: PIPELINE_SOURCE_LISTBOX_OPTIONS,
         selected: this.sources,
-        placeholder: s__('SecurityOrchestration|Select the source'),
+        placeholder: s__('SecurityOrchestration|All pipeline sources'),
         maxOptionsShown: 2,
       });
     },

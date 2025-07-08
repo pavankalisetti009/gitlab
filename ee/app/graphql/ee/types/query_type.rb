@@ -16,7 +16,7 @@ module EE
           null: true,
           experiment: { milestone: '18.2' }
         field :ai_catalog_items,
-          ::Types::Ai::Catalog::ItemType.connection_type,
+          ::Types::Ai::Catalog::ItemInterface.connection_type,
           null: false,
           experiment: { milestone: '18.2' },
           description: 'List of AI Catalog items.'

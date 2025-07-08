@@ -284,7 +284,7 @@ describe('BaseRuleComponent', () => {
 
   describe('pipeline source dropdown', () => {
     describe('rendering', () => {
-      it('displays pipeline source dropdown when target branch type is selected', () => {
+      it('displays pipeline source dropdown', () => {
         createComponent({
           props: {
             initRule: {
@@ -296,20 +296,6 @@ describe('BaseRuleComponent', () => {
         });
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
-      });
-
-      it('does not display pipeline source dropdown when non-target branch type is selected', () => {
-        createComponent({
-          props: {
-            initRule: {
-              type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-              branches: ['*'],
-            },
-          },
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
-        });
-
-        expect(findPipelineSourceSelector().exists()).toBe(false);
       });
     });
 

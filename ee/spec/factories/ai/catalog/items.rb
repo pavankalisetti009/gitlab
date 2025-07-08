@@ -6,6 +6,10 @@ FactoryBot.define do
     sequence(:name) { |n| "Item #{n}" }
     sequence(:description) { |n| "Item #{n}" }
 
+    trait :with_version do
+      versions { [association(:ai_catalog_item_version)] }
+    end
+
     after(:build) do |item, _|
       item.organization ||=
         # The ordering of Organizations by created_at does not match ordering by the id column.

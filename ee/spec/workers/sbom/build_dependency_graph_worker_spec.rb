@@ -5,10 +5,18 @@ require 'spec_helper'
 RSpec.describe Sbom::BuildDependencyGraphWorker, feature_category: :dependency_management do
   let_it_be(:project) { create(:project) }
 
+  it_behaves_like 'an idempotent worker' do
+    let(:job_args) { [project.id] }
+  end
+
+  it_behaves_like 'worker with data consistency', described_class, data_consistency: :sticky
+
   describe 'worker configuration' do
     subject(:worker) { described_class }
 
     let(:number_of_retries) { worker.sidekiq_options["retry"] }
+    let(:deduplication_strategy) { worker.get_deduplicate_strategy }
+    let(:deduplication_settings) { worker.get_deduplication_options }
 
     it 'can be retried' do
       expect(worker.retry_disabled?).to be_falsey
@@ -34,6 +42,11 @@ RSpec.describe Sbom::BuildDependencyGraphWorker, feature_category: :dependency_m
           expect(retry_block).to eq(60)
         end
       end
+    end
+
+    it 'can be deduplicated' do
+      expect(deduplication_strategy).to eq(:until_executed)
+      expect(deduplication_settings).to include(if_deduplicated: :reschedule_once)
     end
   end
 

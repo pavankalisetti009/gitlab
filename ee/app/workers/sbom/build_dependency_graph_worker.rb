@@ -4,6 +4,7 @@ module Sbom
   class BuildDependencyGraphWorker
     include ApplicationWorker
 
+    deduplicate :until_executed, if_deduplicated: :reschedule_once
     idempotent!
 
     data_consistency :sticky

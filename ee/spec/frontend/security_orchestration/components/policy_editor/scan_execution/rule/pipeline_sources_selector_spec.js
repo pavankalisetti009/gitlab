@@ -30,7 +30,7 @@ describe('PipelineSourceSelector', () => {
     it('displays placeholder text when no sources are selected', () => {
       createComponent();
 
-      expect(findListbox().props('toggleText')).toBe('Select the source');
+      expect(findListbox().props('toggleText')).toBe('All pipeline sources');
     });
 
     it('displays source name when one source is selected', () => {
@@ -127,7 +127,7 @@ describe('PipelineSourceSelector', () => {
       createComponent([]);
 
       expect(findListbox().props('selected')).toEqual([]);
-      expect(findListbox().props('toggleText')).toBe('Select the source');
+      expect(findListbox().props('toggleText')).toBe('All pipeline sources');
     });
   });
 });
