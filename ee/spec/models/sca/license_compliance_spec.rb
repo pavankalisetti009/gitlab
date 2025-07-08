@@ -507,6 +507,34 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
             expect(added[2].classification).to eq('denied')
           end
         end
+
+        context 'when the project contains a software license with an unknown spdx id' do
+          let!(:software_license_policy_non_spdx_id) do
+            create(:software_license_policy, :denied,
+              project: project,
+              software_license_spdx_identifier: 'non-spdx-identifier',
+              scan_result_policy_read: create(:scan_result_policy_read, match_on_inclusion_license: true)
+            )
+          end
+
+          it 'tracks the missing license' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              kind_of(described_class::LicenseNotFoundError), license_spdx_id: software_license_policy_non_spdx_id.software_license_spdx_identifier,
+              project_id: software_license_policy_non_spdx_id.project_id
+            )
+
+            diff
+          end
+
+          it 'returns differences with denied status' do
+            added = diff[:added]
+
+            expect(added[0].spdx_identifier).to eq(aml_spdx_identifier)
+            expect(added[0].classification).to eq('denied')
+            expect(added[1].spdx_identifier).to eq(mspl_spdx_identifier)
+            expect(added[1].classification).to eq('denied')
+          end
+        end
       end
 
       context 'when when base_report has new dependencies for the same denied license' do

@@ -186,7 +186,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_active_vulnerability_management_policies_reached: 'false',
           max_scan_execution_policy_actions: Gitlab::CurrentSettings.scan_execution_policies_action_limit,
           max_scan_execution_policy_schedules: Gitlab::CurrentSettings.scan_execution_policies_schedule_limit,
-          enabled_experiments: []
+          enabled_experiments: [],
+          access_tokens: [].to_json
         }
       end
 
@@ -277,7 +278,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_active_vulnerability_management_policies_reached: 'false',
           max_scan_execution_policy_actions: Gitlab::CurrentSettings.scan_execution_policies_action_limit,
           max_scan_execution_policy_schedules: Gitlab::CurrentSettings.scan_execution_policies_schedule_limit,
-          enabled_experiments: []
+          enabled_experiments: [],
+          access_tokens: [].to_json
         }
       end
 
@@ -695,6 +697,130 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       it 'returns the preventing configurations' do
         expect(preventing_configurations).to contain_exactly(config)
       end
+    end
+  end
+
+  describe '#access_tokens_for_container' do
+    let_it_be(:policy_management_project) { create(:project) }
+
+    subject(:access_tokens) { helper.access_tokens_for_container(container) }
+
+    shared_examples 'without policy configuration' do
+      context 'when container has no security orchestration policy configuration' do
+        it 'returns empty array' do
+          expect(access_tokens).to be_empty
+        end
+      end
+    end
+
+    shared_examples 'with policy configuration' do
+      let_it_be(:bot_user1) { create(:user, :project_bot) }
+      let_it_be(:bot_user2) { create(:user, :project_bot) }
+      let_it_be(:regular_user) { create(:user) }
+
+      let_it_be_with_refind(:bot_token1) { create(:personal_access_token, user: bot_user1, name: 'Bot Token 1') }
+      let_it_be_with_refind(:bot_token2) { create(:personal_access_token, user: bot_user2, name: 'Bot Token 2') }
+      let_it_be(:regular_token) { create(:personal_access_token, user: regular_user, name: 'Regular Token') }
+      let_it_be(:impersonation_token) do
+        create(:personal_access_token, :impersonation, user: bot_user1, name: 'Impersonation Token')
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(security_policies_bypass_options_tokens_accounts: false)
+        end
+
+        it 'returns nil' do
+          expect(access_tokens).to be_empty
+        end
+      end
+
+      context 'when there are bot users with access tokens' do
+        before do
+          setup_bot_users
+        end
+
+        it 'returns access tokens for bot users only' do
+          expect(access_tokens).to contain_exactly(
+            { id: bot_token1.id, name: 'Bot Token 1' },
+            { id: bot_token2.id, name: 'Bot Token 2' }
+          )
+        end
+
+        it 'excludes impersonation tokens' do
+          expect(access_tokens).not_to include({ id: impersonation_token.id, name: 'Impersonation Token' })
+        end
+
+        it 'excludes tokens from regular users' do
+          expect(access_tokens).not_to include({ id: regular_token.id, name: 'Regular Token' })
+        end
+      end
+
+      context 'when bot users have no access tokens' do
+        before do
+          PersonalAccessToken.where(user: [bot_user1, bot_user2]).delete_all
+        end
+
+        it 'returns empty array' do
+          expect(access_tokens).to be_empty
+        end
+      end
+
+      context 'when there are no bot users' do
+        before do
+          remove_bot_users
+        end
+
+        it 'returns empty array' do
+          expect(access_tokens).to be_empty
+        end
+      end
+    end
+
+    context 'for project container' do
+      let_it_be(:container) { create(:project) }
+      let_it_be(:security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration,
+          security_policy_management_project: policy_management_project, project: container, namespace: nil
+        )
+      end
+
+      def setup_bot_users
+        container.add_maintainer(bot_user1)
+        container.add_maintainer(bot_user2)
+      end
+
+      def remove_bot_users
+        container.project_members.where(user: [bot_user1, bot_user2]).delete_all
+      end
+
+      it_behaves_like 'without policy configuration'
+      it_behaves_like 'with policy configuration'
+    end
+
+    context 'for namespace container' do
+      let_it_be(:root_group) { create(:group) }
+      let_it_be(:container) { create(:group, parent: root_group) }
+      let_it_be(:security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration,
+          security_policy_management_project: policy_management_project, namespace: container, project: nil
+        )
+      end
+
+      def setup_bot_users
+        bot_user1.user_detail.update!(bot_namespace: container)
+        bot_user2.user_detail.update!(bot_namespace: root_group)
+        container.add_maintainer(bot_user1)
+        root_group.add_maintainer(bot_user2)
+      end
+
+      def remove_bot_users
+        container.group_members.where(user: [bot_user1, bot_user2]).delete_all
+        root_group.group_members.where(user: [bot_user1, bot_user2]).delete_all
+      end
+
+      it_behaves_like 'without policy configuration'
+      it_behaves_like 'with policy configuration'
     end
   end
 end

@@ -10,10 +10,10 @@ RSpec.describe Analytics::AiAnalytics::TroubleshootUsageService, feature_categor
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, group: subgroup) }
-  let_it_be(:user1) { create(:user, developer_of: group) }
-  let_it_be(:user2) { create(:user, developer_of: subgroup) }
-  let_it_be(:user3) { create(:user, developer_of: group) }
-  let_it_be(:stranger_user) { create(:user) }
+  let_it_be(:user1) { create(:user) }
+  let_it_be(:user2) { create(:user) }
+  let_it_be(:user3) { create(:user) }
+  let_it_be(:user4) { create(:user) }
 
   let(:current_user) { user1 }
   let(:from) { Time.current }
@@ -77,20 +77,22 @@ RSpec.describe Analytics::AiAnalytics::TroubleshootUsageService, feature_categor
 
       context 'with data' do
         before do
+          project_namespace = project.project_namespace.reload
+
           clickhouse_fixture(:troubleshoot_job_events, [
-            { user_id: user1.id, timestamp: to - 3.days },
-            { user_id: user1.id, timestamp: to - 4.days },
-            { user_id: user2.id, timestamp: to - 2.days },
-            { user_id: stranger_user.id, timestamp: to - 2.days },
-            { user_id: user3.id, timestamp: to + 2.days }, # outside time range
-            { user_id: user3.id, timestamp: from - 2.days } # outside time range
+            { user_id: user1.id, namespace_path: group.traversal_path, timestamp: to - 3.days },
+            { user_id: user1.id, namespace_path: project_namespace.traversal_path, timestamp: to - 4.days },
+            { user_id: user2.id, namespace_path: project_namespace.traversal_path, timestamp: to - 2.days },
+            { user_id: user4.id, namespace_path: subgroup.traversal_path, timestamp: to - 2.days },
+            { user_id: user3.id, namespace_path: group.traversal_path, timestamp: to + 2.days }, # outside time range
+            { user_id: user3.id, namespace_path: group.traversal_path, timestamp: from - 2.days } # outside time range
           ])
         end
 
         it 'returns matched troubleshoot AI usage stats' do
           expect(service_response).to be_success
           expect(service_response.payload).to match(
-            root_cause_analysis_users_count: 3
+            root_cause_analysis_users_count: expected_events_count
           )
         end
       end
@@ -100,11 +102,15 @@ RSpec.describe Analytics::AiAnalytics::TroubleshootUsageService, feature_categor
   context 'for group' do
     let_it_be(:container) { group }
 
+    let(:expected_events_count) { 3 }
+
     it_behaves_like 'common ai usage rate service'
   end
 
   context 'for project' do
-    let_it_be(:container) { project.project_namespace.reload }
+    let_it_be(:container) { project.project_namespace }
+
+    let(:expected_events_count) { 2 }
 
     it_behaves_like 'common ai usage rate service'
   end

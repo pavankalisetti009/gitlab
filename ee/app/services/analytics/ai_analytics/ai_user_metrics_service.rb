@@ -10,6 +10,9 @@ module Analytics
         AND date >= {from:Date}
         AND date <= {to:Date}
         AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']}
+        AND (
+          {namespace_path:String} = '' OR startsWith(namespace_path, {namespace_path:String})
+        )
         GROUP BY user_id
       SQL
       private_constant :CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
@@ -21,6 +24,9 @@ module Analytics
         AND date >= {from:Date}
         AND date <= {to:Date}
         AND event = 1
+        AND (
+          {namespace_path:String} = '' OR startsWith(namespace_path, {namespace_path:String})
+        )
         GROUP BY user_id
       SQL
       private_constant :DUO_CHAT_INTERACTIONS_COUNT_QUERY
@@ -65,11 +71,16 @@ module Analytics
       end
 
       def placeholders
-        {
+        @placeholders ||= {
           from: from.to_date.iso8601,
           to: to.to_date.iso8601,
-          user_ids: user_ids.to_json
+          user_ids: user_ids.to_json,
+          namespace_path: filter_by_namespace_path_enabled? ? namespace.traversal_path : ''
         }
+      end
+
+      def filter_by_namespace_path_enabled?
+        Feature.enabled?(:use_ai_events_namespace_path_filter, namespace)
       end
 
       def feature_unavailable_error

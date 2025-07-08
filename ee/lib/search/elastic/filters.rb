@@ -23,7 +23,13 @@ module Search
 
           query_hash = search_level_filter(query_hash: query_hash, options: options)
 
-          membership_filter(query_hash: query_hash, options: options)
+          if Feature.enabled?(:search_refactor_membership_filter, options[:current_user])
+            add_filter(query_hash, :query, :bool, :filter) do
+              build_membership_filter_v2(options:).to_bool_query
+            end
+          else
+            membership_filter(query_hash: query_hash, options: options)
+          end
         end
 
         def by_source_branch(query_hash:, options:)
@@ -561,9 +567,7 @@ module Search
             end
 
             add_filter(query_hash, :query, :bool, :filter) do
-              {
-                bool: filter.to_h
-              }
+              filter.to_bool_query
             end
           end
         end
@@ -583,7 +587,7 @@ module Search
               permissions_filters = Search::Elastic::BoolExpr.new
               add_visibility_level_filter(user: user,
                 visibility_level_field: :namespace_visibility_level,
-                permissions_filters: permissions_filters)
+                filter: permissions_filters)
 
               should = [{ bool: permissions_filters.to_h }]
               traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
@@ -591,7 +595,6 @@ module Search
               authorized_traversal_ids = traversal_ids_for_user(user, options)
               unless authorized_traversal_ids.empty?
                 membership_filters = Search::Elastic::BoolExpr.new
-                membership_filters.minimum_should_match = 1
 
                 add_filter(membership_filters, :must) do
                   { terms: {
@@ -603,7 +606,7 @@ module Search
                 membership_filters.should += ancestry_filter(authorized_traversal_ids,
                   traversal_id_field: traversal_ids_prefix)
 
-                should << { bool: membership_filters.to_h }
+                should << membership_filters.to_bool_query
               end
 
               authorized_project_ancestry_namespace_ids = authorized_namespace_ids_for_project_group_ancestry(user)
@@ -624,7 +627,7 @@ module Search
                   } }
                 end
 
-                should << { bool: membership_filters.to_h }
+                should << membership_filters.to_bool_query
               end
 
               {
@@ -797,61 +800,46 @@ module Search
           project_ids
         end
 
-        def project_ids_for_user(user, options)
+        def projects_for_user(user, options)
           return [] unless user
 
           search_level = options.fetch(:search_level).to_sym
           authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
-
-          projects = case search_level
-                     when :global
-                       authorized_projects
-                     when :group
-                       namespace_ids = options[:group_ids]
-                       projects = Project.in_namespace(namespace_ids)
-                       if projects.present? && !projects.id_not_in(authorized_projects).exists?
-                         projects
-                       else
-                         Project.from_union([
-                           authorized_projects.in_namespace(namespace_ids),
-                           authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
-                         ])
-                       end
-                     when :project
-                       project_ids = options[:project_ids]
-                       projects = Project.id_in(project_ids)
-                       if projects.present? && !projects.id_not_in(authorized_projects).exists?
-                         projects
-                       else
-                         authorized_projects.id_in(project_ids)
-                       end
-                     end
-
-          features = Array.wrap(options[:features])
-          return projects.pluck_primary_key unless features.present?
-
-          project_ids_for_features(projects, user, features)
+          case search_level
+          when :global
+            authorized_projects
+          when :group
+            namespace_ids = options[:group_ids]
+            projects = Project.in_namespace(namespace_ids)
+            if projects.present? && !projects.id_not_in(authorized_projects).exists?
+              projects
+            else
+              Project.from_union([
+                authorized_projects.in_namespace(namespace_ids),
+                authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
+              ])
+            end
+          when :project
+            project_ids = options[:project_ids]
+            projects = Project.id_in(project_ids)
+            if projects.present? && !projects.id_not_in(authorized_projects).exists?
+              projects
+            else
+              authorized_projects.id_in(project_ids)
+            end
+          end
         end
 
         def traversal_ids_for_user(user, options)
           return [] unless user
 
-          search_level = options.fetch(:search_level).to_sym
           finder_params = {
             features: Array.wrap(options[:features]),
             min_access_level: options[:min_access_level]
           }
+          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
 
-          allowed_traversal_ids = case search_level
-                                  when :global
-                                    authorized_traversal_ids_for_global(user, finder_params)
-                                  when :group
-                                    authorized_traversal_ids_for_groups(user, options[:group_ids], finder_params)
-                                  when :project
-                                    authorized_traversal_ids_for_projects(user, options[:project_ids], finder_params)
-                                  end
-
-          allowed_traversal_ids.map { |id| "#{id.join('-')}-" }
+          get_traversal_ids_for_search_level(authorized_groups, options)
         end
 
         def authorized_namespace_ids_for_project_group_ancestry(user)
@@ -870,14 +858,11 @@ module Search
           not_covered_namespaces.pluck(:traversal_ids).flatten.uniq # rubocop:disable CodeReuse/ActiveRecord -- traversal_ids are needed to generate namespace_id array
         end
 
-        def authorized_traversal_ids_for_global(user, finder_params)
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
-
+        def authorized_traversal_ids_for_global(authorized_groups)
           ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
         end
 
-        def authorized_traversal_ids_for_groups(user, namespace_ids, finder_params)
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
+        def authorized_traversal_ids_for_groups(authorized_groups, namespace_ids)
           namespaces = Namespace.id_in(namespace_ids)
 
           return namespaces.map(&:traversal_ids) unless namespaces.id_not_in(authorized_groups).exists?
@@ -897,8 +882,7 @@ module Search
           end
         end
 
-        def authorized_traversal_ids_for_projects(user, project_ids, finder_params)
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
+        def authorized_traversal_ids_for_projects(authorized_groups, project_ids)
           namespace_ids = Project.id_in(project_ids).select(:namespace_id)
           namespaces = Namespace.id_in(namespace_ids)
 
@@ -1312,6 +1296,23 @@ module Search
           end
         end
 
+        def build_membership_filter_v2(options:)
+          user = options[:current_user]
+          search_level = options[:search_level].to_sym
+
+          membership_filter = Search::Elastic::BoolExpr.new
+
+          context.name(:filters, :permissions, search_level) do
+            membership_filter = build_project_and_group_membership_filters(filter: membership_filter,
+              user: user, options: options)
+            membership_filter = build_public_and_internal_filters(filter: membership_filter, user: user,
+              options: options)
+          end
+
+          membership_filter
+        end
+
+        # @deprecated - will be removed with search_refactor_membership_filter feature flag
         def membership_filter(query_hash:, options:)
           features = Array.wrap(options[:features])
           user = options[:current_user]
@@ -1321,13 +1322,14 @@ module Search
           add_filter(query_hash, :query, :bool, :filter) do
             context.name(:filters, :permissions, search_level) do
               permissions_filters = Search::Elastic::BoolExpr.new
-              add_visibility_level_filter(permissions_filters:, user:, visibility_level_field:)
-              add_project_feature_visibility_filter(permissions_filters:, features:, user:)
+              add_visibility_level_filter(filter: permissions_filters, user: user,
+                visibility_level_field: visibility_level_field)
+              add_project_feature_visibility_filter(filter: permissions_filters, features: features, user: user)
 
               membership_filters = build_membership_filters(user, options, features)
 
-              should = [{ bool: permissions_filters.to_h }]
-              should << { bool: membership_filters.to_h } unless membership_filters.to_h.empty?
+              should = [permissions_filters.to_bool_query]
+              should << membership_filters.to_bool_query unless membership_filters.empty?
 
               {
                 bool: {
@@ -1344,10 +1346,10 @@ module Search
         # admins do not add any filter
         # logged-in users get PUBLIC and INTERNAL
         # anonymous and logged in external users only get PUBLIC
-        def add_visibility_level_filter(permissions_filters:, user:, visibility_level_field:)
+        def add_visibility_level_filter(filter:, user:, visibility_level_field:)
           return if user&.can_read_all_resources?
 
-          add_filter(permissions_filters, :filter) do
+          add_filter(filter, :filter) do
             if user && !user.external?
               { terms: {
                 _name: context.name(visibility_level_field, :public_and_internal),
@@ -1364,7 +1366,7 @@ module Search
 
         # add project feature visibility filter, does not include group or project membership
         # admins get ENABLED and PRIVATE, all other users get ENABLED
-        def add_project_feature_visibility_filter(permissions_filters:, features:, user:)
+        def add_project_feature_visibility_filter(filter:, features:, user:)
           return if features.blank?
 
           access_level_allowed = [::ProjectFeature::ENABLED]
@@ -1374,9 +1376,8 @@ module Search
             access_context_name = :enabled_or_private
           end
 
-          permissions_filters.minimum_should_match = 1
           features.each do |feature|
-            add_filter(permissions_filters, :should) do
+            add_filter(filter, :should) do
               {
                 terms: {
                   _name: context.name(:"#{feature}_access_level", access_context_name),
@@ -1387,6 +1388,43 @@ module Search
           end
         end
 
+        def build_public_and_internal_filters(filter:, user:, options:)
+          features = Array.wrap(options[:features])
+          visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
+
+          new_filter = filter.dup
+
+          # for admins and anonymous users, do not nest the query
+          if user.nil? || user&.can_read_all_resources?
+            add_visibility_level_filter(filter: new_filter, user: user, visibility_level_field: visibility_level_field)
+            add_project_feature_visibility_filter(filter: new_filter, user: user, features: features)
+
+            return new_filter
+          end
+
+          public_and_internal_filter = Search::Elastic::BoolExpr.new
+          add_visibility_level_filter(filter: public_and_internal_filter, user: user,
+            visibility_level_field: visibility_level_field)
+          add_project_feature_visibility_filter(filter: public_and_internal_filter, user: user, features: features)
+
+          add_filter(new_filter, :should) do
+            public_and_internal_filter.to_bool_query
+          end
+
+          new_filter
+        end
+
+        def build_project_and_group_membership_filters(filter:, user:, options:)
+          return filter if user&.can_read_all_resources?
+
+          new_filter = filter.dup
+          add_group_membership_filters(new_filter, user, options)
+          add_project_membership_filters(new_filter, user, options)
+
+          new_filter
+        end
+
+        # @deprecated - will be removed with search_refactor_membership_filter flag
         def build_membership_filters(user, options, features)
           membership_filters = Search::Elastic::BoolExpr.new
           return membership_filters if user&.can_read_all_resources?
@@ -1401,6 +1439,230 @@ module Search
           membership_filters
         end
 
+        def add_group_membership_filters(membership_filters, user, options)
+          groups = ::Search::GroupsFinder.new(user: user).execute
+
+          return unless groups.exists?
+
+          features = Array.wrap(options[:features])
+          if features.empty?
+            add_filter(membership_filters, :should) do
+              traversal_id_field = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
+              traversal_ids = groups.map(&:elastic_namespace_ancestry)
+
+              ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field)
+            end
+
+            return
+          end
+
+          process_features_for_groups(
+            membership_filters: membership_filters,
+            user: user,
+            groups: groups,
+            features: features,
+            options: options
+          )
+        end
+
+        def process_features_for_groups(membership_filters:, user:, groups:, features:, options:)
+          user_abilities = ::Authz::Group.new(user, scope: groups).permitted
+
+          required_feature_access_levels = build_required_feature_access_levels(features)
+          group_ids_by_access_level = required_feature_access_levels.index_with do |level|
+            groups.by_min_access_level(user, level).pluck_primary_key
+          end
+
+          features.each do |feature|
+            access_levels = get_feature_access_levels(feature)
+
+            allowed_group_ids = group_ids_by_access_level[access_levels[:project]]
+            allowed_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+
+            private_allowed_group_ids = if access_levels[:project] != access_levels[:private_project]
+                                          group_ids_by_access_level[access_levels[:private_project]] +
+                                            allowed_ids_by_ability(feature:, user_abilities:)
+                                        else
+                                          []
+                                        end
+
+            add_feature_access_filter_for_groups(
+              membership_filters: membership_filters,
+              feature: feature,
+              allowed_group_ids: allowed_group_ids,
+              private_allowed_group_ids: private_allowed_group_ids,
+              access_levels: access_levels,
+              options: options
+            )
+          end
+        end
+
+        def build_required_feature_access_levels(features)
+          features.each_with_object(Set.new) do |feature, required_feature_access_levels|
+            access_levels = get_feature_access_levels(feature)
+
+            required_feature_access_levels << access_levels[:project]
+            required_feature_access_levels << access_levels[:private_project]
+          end
+        end
+
+        def get_feature_access_levels(feature)
+          {
+            project: ProjectFeature.required_minimum_access_level(feature),
+            private_project: ProjectFeature.required_minimum_access_level_for_private_project(feature)
+          }
+        end
+
+        def allowed_ids_by_ability(feature:, user_abilities:)
+          target_ability = FEATURE_TO_ABILITY_MAP[feature.to_sym]
+          user_abilities.filter_map do |id, abilities|
+            id if abilities.include?(target_ability)
+          end
+        end
+
+        def add_feature_access_filter_for_groups(
+          membership_filters:, feature:, allowed_group_ids:,
+          private_allowed_group_ids:, access_levels:, options:)
+          return if allowed_group_ids.blank? && private_allowed_group_ids.blank?
+
+          traversal_groups = {}
+
+          if allowed_group_ids.present?
+            groups = Group.id_in(allowed_group_ids)
+            traversal_ids = get_traversal_ids_for_search_level(groups, options)
+
+            access_contexts = build_access_contexts(access_levels)
+            consolidate_access_permissions(traversal_groups, traversal_ids, access_contexts)
+          end
+
+          if private_allowed_group_ids.present? && access_levels[:project] != access_levels[:private_project]
+            private_groups = Group.id_in(private_allowed_group_ids)
+            private_traversal_ids = get_traversal_ids_for_search_level(private_groups, options)
+
+            consolidate_access_permissions(traversal_groups, private_traversal_ids, :private)
+          end
+
+          consolidated_traversal_ids = {}
+          traversal_groups.each do |traversal_id, config|
+            key = config[:access_contexts].to_a.join('_')
+            consolidated_traversal_ids[key] ||= {
+              traversal_ids: Set.new,
+              access_contexts: config[:access_contexts]
+            }
+            consolidated_traversal_ids[key][:traversal_ids].add(traversal_id)
+          end
+
+          add_filter(membership_filters, :should) do
+            build_public_and_internal_group_filters(
+              public_and_internal_configs: consolidated_traversal_ids['public_internal'],
+              feature: feature, options: options)
+          end
+
+          add_filter(membership_filters, :should) do
+            build_private_group_filters(private_configs: consolidated_traversal_ids['public_internal_private'],
+              feature: feature, options: options)
+          end
+        end
+
+        def build_public_and_internal_group_filters(public_and_internal_configs:, feature:, options:)
+          return if public_and_internal_configs.blank?
+
+          filter = Search::Elastic::BoolExpr.new
+          visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
+          traversal_id_field = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
+
+          context.name(:public_and_internal_access) do
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:"#{feature}_access_level", :enabled_or_private),
+                  "#{feature}_access_level": [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
+                }
+              }
+            end
+
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:project_visibility_level, :public_or_internal),
+                  "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL]
+                }
+              }
+            end
+
+            public_and_internal_configs[:traversal_ids].each do |traversal_id|
+              add_filter(filter, :should) do
+                {
+                  prefix: {
+                    "#{traversal_id_field}": {
+                      _name: context.name(:ancestry_filter, :descendants),
+                      value: traversal_id
+                    }
+                  }
+                }
+              end
+            end
+          end
+
+          filter.to_bool_query
+        end
+
+        def build_private_group_filters(private_configs:, feature:, options:)
+          return if private_configs.blank?
+
+          filter = Search::Elastic::BoolExpr.new
+          traversal_id_field = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
+
+          context.name(:private_access) do
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:"#{feature}_access_level", :enabled_or_private),
+                  "#{feature}_access_level": [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
+                }
+              }
+            end
+
+            private_configs[:traversal_ids].each do |traversal_id|
+              add_filter(filter, :should) do
+                {
+                  prefix: {
+                    "#{traversal_id_field}": {
+                      _name: context.name(:ancestry_filter, :descendants),
+                      value: traversal_id
+                    }
+                  }
+                }
+              end
+            end
+          end
+
+          filter.to_bool_query
+        end
+
+        def consolidate_access_permissions(access_groups, collection, access_contexts)
+          collection.each do |item_id|
+            access_groups[item_id] ||= {
+              access_contexts: Set.new
+            }
+            access_groups[item_id][:access_contexts].merge(Array.wrap(access_contexts))
+          end
+        end
+
+        def get_traversal_ids_for_search_level(authorized_groups, options)
+          search_level = options.fetch(:search_level).to_sym
+
+          case search_level
+          when :global
+            authorized_traversal_ids_for_global(authorized_groups)
+          when :group
+            authorized_traversal_ids_for_groups(authorized_groups, options[:group_ids])
+          when :project
+            authorized_traversal_ids_for_projects(authorized_groups, options[:project_ids])
+          end.map { |id| "#{id.join('-')}-" }
+        end
+
+        # @deprecated - will be removed with search_refactor_membership_filter feature flag
         def add_traversal_ids_filters(membership_filters, user, options)
           traversal_ids = traversal_ids_for_user(user, options)
           return false if traversal_ids.blank?
@@ -1413,6 +1675,175 @@ module Search
           true
         end
 
+        def add_project_membership_filters(membership_filters, user, options)
+          return unless user
+
+          projects = projects_for_user(user, options)
+          return unless projects.exists?
+
+          features = Array.wrap(options[:features])
+
+          if features.empty?
+            project_id_field = options.fetch(:project_id_field, PROJECT_ID_FIELD)
+            add_filter(membership_filters, :should) do
+              {
+                terms: {
+                  _name: context.name(:project, :member),
+                  "#{project_id_field}": projects.pluck_primary_key
+                }
+              }
+            end
+
+            return
+          end
+
+          process_features_for_projects(membership_filters: membership_filters, user: user, projects: projects,
+            features: features, options: options)
+        end
+
+        def process_features_for_projects(membership_filters:, user:, projects:, features:, options:)
+          user_abilities = ::Authz::Project.new(user, scope: projects).permitted
+
+          required_feature_access_levels = build_required_feature_access_levels(features)
+          project_ids_by_access_level = required_feature_access_levels.index_with do |level|
+            projects.public_or_visible_to_user(user, level).pluck_primary_key
+          end
+
+          features.each do |feature|
+            access_levels = get_feature_access_levels(feature)
+
+            allowed_project_ids = project_ids_by_access_level[access_levels[:project]]
+            allowed_project_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+
+            private_allowed_project_ids = if access_levels[:project] != access_levels[:private_project]
+                                            project_ids_by_access_level[access_levels[:private_project]] +
+                                              allowed_ids_by_ability(feature:, user_abilities:)
+                                          else
+                                            []
+                                          end
+
+            add_feature_access_filter_for_projects(
+              membership_filters: membership_filters,
+              feature: feature,
+              allowed_project_ids: allowed_project_ids,
+              private_allowed_project_ids: private_allowed_project_ids,
+              access_levels: access_levels,
+              options: options
+            )
+          end
+        end
+
+        def add_feature_access_filter_for_projects(
+          membership_filters:, feature:, allowed_project_ids:,
+          private_allowed_project_ids:, access_levels:, options:)
+          return if allowed_project_ids.blank? && private_allowed_project_ids.blank?
+
+          project_access_groups = {}
+
+          access_contexts = build_access_contexts(access_levels)
+          consolidate_access_permissions(project_access_groups, allowed_project_ids, access_contexts)
+
+          if access_levels[:project] != access_levels[:private_project]
+            consolidate_access_permissions(project_access_groups, private_allowed_project_ids, :private)
+          end
+
+          consolidated_projects = {}
+          project_access_groups.each do |project_id, config|
+            key = config[:access_contexts].to_a.join('_')
+            consolidated_projects[key] ||= {
+              project_ids: Set.new,
+              access_contexts: config[:access_contexts]
+            }
+            consolidated_projects[key][:project_ids].add(project_id)
+          end
+
+          add_filter(membership_filters, :should) do
+            build_public_and_internal_project_filters(
+              public_and_internal_configs: consolidated_projects['public_internal'],
+              feature: feature, options: options)
+          end
+
+          add_filter(membership_filters, :should) do
+            build_private_project_filters(private_configs: consolidated_projects['public_internal_private'],
+              feature: feature, options: options)
+          end
+        end
+
+        def build_public_and_internal_project_filters(public_and_internal_configs:, feature:, options:)
+          return if public_and_internal_configs.blank?
+
+          filter = Search::Elastic::BoolExpr.new
+          visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
+          project_id_field = options.fetch(:project_id_field, PROJECT_ID_FIELD)
+
+          context.name(:public_and_internal_access) do
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:"#{feature}_access_level", :enabled_or_private),
+                  "#{feature}_access_level": [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
+                }
+              }
+            end
+
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:project_visibility_level, :public_or_internal),
+                  "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL]
+                }
+              }
+            end
+
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:project, :member),
+                  "#{project_id_field}": public_and_internal_configs[:project_ids].to_a
+                }
+              }
+            end
+          end
+
+          filter.to_bool_query
+        end
+
+        def build_private_project_filters(private_configs:, feature:, options:)
+          return if private_configs.blank?
+
+          filter = Search::Elastic::BoolExpr.new
+          project_id_field = options.fetch(:project_id_field, PROJECT_ID_FIELD)
+
+          context.name(:private_access) do
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:"#{feature}_access_level", :enabled_or_private),
+                  "#{feature}_access_level": [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
+                }
+              }
+            end
+
+            add_filter(filter, :filter) do
+              {
+                terms: {
+                  _name: context.name(:project, :member),
+                  "#{project_id_field}": private_configs[:project_ids].to_a
+                }
+              }
+            end
+          end
+
+          filter.to_bool_query
+        end
+
+        def build_access_contexts(access_levels)
+          [:public, :internal].tap do |access_contexts|
+            access_contexts << :private if access_levels[:project] == access_levels[:private_project]
+          end
+        end
+
+        # @deprecated - will be removed with search_refactor_membership_filter feature flag
         def add_project_ids_filters(membership_filters, user, options)
           project_ids = project_ids_for_user(user, options)
           return false if project_ids.blank?
@@ -1432,9 +1863,46 @@ module Search
           true
         end
 
+        # @deprecated - will be removed with search_refactor_membership_filter feature flag
+        def project_ids_for_user(user, options)
+          return [] unless user
+
+          search_level = options.fetch(:search_level).to_sym
+          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+
+          projects = case search_level
+                     when :global
+                       authorized_projects
+                     when :group
+                       namespace_ids = options[:group_ids]
+                       namespace_projects = Project.in_namespace(namespace_ids)
+                       if namespace_projects.present? && !namespace_projects.id_not_in(authorized_projects).exists?
+                         namespace_projects
+                       else
+                         Project.from_union([
+                           authorized_projects.in_namespace(namespace_ids),
+                           authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
+                         ])
+                       end
+                     when :project
+                       project_ids = options[:project_ids]
+                       projects_searched = Project.id_in(project_ids)
+                       if projects_searched.present? && !projects_searched.id_not_in(authorized_projects).exists?
+                         projects_searched
+                       else
+                         authorized_projects.id_in(project_ids)
+                       end
+                     end
+
+          features = Array.wrap(options[:features])
+          return projects.pluck_primary_key unless features.present?
+
+          project_ids_for_features(projects, user, features)
+        end
+
         def add_feature_access_level_filter(membership_filters, features)
           feature_access_level_filter = Search::Elastic::BoolExpr.new
-          feature_access_level_filter.minimum_should_match = 1
+
           features.each do |feature|
             add_filter(feature_access_level_filter, :should) do
               {
@@ -1448,7 +1916,7 @@ module Search
 
           membership_filters.minimum_should_match = 1
           add_filter(membership_filters, :filter) do
-            { bool: feature_access_level_filter.to_h }
+            feature_access_level_filter.to_bool_query
           end
         end
 

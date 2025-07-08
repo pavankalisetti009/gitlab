@@ -66,7 +66,8 @@ module EE::SecurityOrchestrationHelper
       max_scan_execution_policy_actions: max_scan_execution_policy_actions,
       max_scan_execution_policy_schedules: max_scan_execution_policy_schedules,
       enabled_experiments: enabled_policy_experiments(container),
-      designated_as_csp: container.designated_as_csp?.to_s
+      designated_as_csp: container.designated_as_csp?.to_s,
+      access_tokens: access_tokens_for_container(container).to_json
     }
 
     if container.is_a?(::Project)
@@ -181,6 +182,26 @@ module EE::SecurityOrchestrationHelper
     end
 
     ::Security::OrchestrationPolicyConfiguration.for_management_project(group.all_project_ids)
+  end
+
+  def access_tokens_for_container(container)
+    return [] if Feature.disabled?(:security_policies_bypass_options_tokens_accounts, container)
+
+    bot_users = if container.is_a?(::Project)
+                  container.bots
+                else
+                  User.by_bot_namespace_ids(container.self_and_ancestor_ids)
+                end
+
+    return [] if bot_users.empty?
+
+    PersonalAccessTokensFinder
+      .new({
+        users: bot_users, impersonation: false, state: 'active', sort: 'created_at_desc'
+      })
+      .execute
+      .select(:id, :name)
+      .map { |t| { id: t.id, name: t.name } }
   end
 
   private

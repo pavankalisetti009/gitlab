@@ -208,6 +208,12 @@ describe('Board List Header Component', () => {
 
       expect(wrapper.find('.board-header-collapsed-info-icon').exists()).toBe(true);
     });
+
+    it('does not show `status` icon on swimlanes header when collapsed', () => {
+      createComponent({ isSwimlanesHeader: true, collapsed: true, listType: ListType.status });
+
+      expect(findStatusIcon().exists()).toBe(false);
+    });
   });
 
   describe('setTotalIssuesCount event', () => {

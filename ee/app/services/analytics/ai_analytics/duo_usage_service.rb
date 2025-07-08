@@ -6,7 +6,8 @@ module Analytics
       include CommonUsageService
 
       # TODO - Replace with namespace_traversal_path filter
-      # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491
+      # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491.
+      # Can be removed with use_ai_events_namespace_path_filter feature flag.
       QUERY = <<~SQL
         -- cte to load contributors
         WITH contributors AS (
@@ -19,6 +20,7 @@ module Analytics
         SELECT %{fields}
       SQL
 
+      # Can be removed with use_ai_events_namespace_path_filter feature flag.
       NEW_QUERY = <<~SQL
         -- cte to load contributors
         WITH contributors AS (

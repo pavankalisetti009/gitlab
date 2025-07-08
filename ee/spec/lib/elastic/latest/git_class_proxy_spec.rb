@@ -80,7 +80,8 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
 
         it 'uses the correct elasticsearch query' do
           proxy.elastic_search('*', type: 'blob', options: search_options)
-          assert_named_queries('doc:is_a:blob', 'filters:permissions:global', 'blob:match:search_terms')
+          assert_named_queries('doc:is_a:blob',
+            'filters:permissions:global:visibility_level:public_and_internal', 'blob:match:search_terms')
         end
 
         it_behaves_like 'a search that respects custom roles', search_level: :global
@@ -101,7 +102,8 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
 
         it 'uses the correct elasticsearch query' do
           proxy.elastic_search('*', type: 'blob', options: search_options)
-          assert_named_queries('doc:is_a:blob', 'filters:permissions:group', 'blob:match:search_terms')
+          assert_named_queries('doc:is_a:blob',
+            'filters:permissions:group:visibility_level:public_and_internal', 'blob:match:search_terms')
         end
 
         context 'when user is authorized for the namespace' do
@@ -110,7 +112,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
 
             proxy.elastic_search('*', type: 'blob', options: search_options)
             assert_named_queries('doc:is_a:blob', 'blob:match:search_terms', 'filters:level:group',
-              'filters:permissions:group')
+              'filters:permissions:group:visibility_level:public_and_internal')
           end
         end
 
@@ -169,7 +171,8 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
 
         it 'uses the correct elasticsearch query' do
           proxy.elastic_search('*', type: 'blob', options: search_options)
-          assert_named_queries('doc:is_a:blob', 'filters:level:project', 'filters:permissions:project',
+          assert_named_queries('doc:is_a:blob', 'filters:level:project',
+            'filters:permissions:project:visibility_level:public_and_internal',
             'blob:match:search_terms', 'blob:related:repositories')
         end
 
@@ -365,7 +368,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
         sort: nil
       }
       proxy.blob_aggregations('*', search_options)
-      assert_named_queries('doc:is_a:blob', 'filters:permissions:global',
+      assert_named_queries('doc:is_a:blob', 'filters:permissions:global:visibility_level:public_and_internal',
         'blob:match:search_terms')
     end
 
@@ -381,7 +384,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
       }
       proxy.blob_aggregations('*', group_search_options)
       assert_named_queries('doc:is_a:blob', 'filters:level:group',
-        'filters:permissions:group', 'blob:match:search_terms')
+        'filters:permissions:group:visibility_level:public_and_internal', 'blob:match:search_terms')
     end
 
     it 'assert names queries for project blob search' do
@@ -395,7 +398,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
       }
       proxy.blob_aggregations('*', project_search_options)
       assert_named_queries('doc:is_a:blob', 'filters:level:project',
-        'filters:permissions:project', 'blob:match:search_terms')
+        'filters:permissions:project:visibility_level:public_and_internal', 'blob:match:search_terms')
     end
   end
 end

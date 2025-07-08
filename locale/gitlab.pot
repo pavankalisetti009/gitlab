@@ -17035,7 +17035,13 @@ msgstr ""
 msgid "ComplianceViolation|Dismissed"
 msgstr ""
 
+msgid "ComplianceViolation|Fix suggestion generated for this failed control"
+msgstr ""
+
 msgid "ComplianceViolation|Framework"
+msgstr ""
+
+msgid "ComplianceViolation|Go to project settings"
 msgstr ""
 
 msgid "ComplianceViolation|In review"
@@ -53279,6 +53285,9 @@ msgstr ""
 msgid "Runners|Learn more in the %{linkStart}Google Cloud documentation%{linkEnd}."
 msgstr ""
 
+msgid "Runners|Loading"
+msgstr ""
+
 msgid "Runners|Machine type"
 msgstr ""
 
@@ -53577,6 +53586,9 @@ msgstr ""
 msgid "Runners|Runner assigned to project."
 msgstr ""
 
+msgid "Runners|Runner authentication token"
+msgstr ""
+
 msgid "Runners|Runner authentication token expiration"
 msgstr ""
 
@@ -53758,6 +53770,9 @@ msgid "Runners|The name of node pool"
 msgstr ""
 
 msgid "Runners|The project, group or instance where the runner was registered. Instance runners are always owned by Administrator."
+msgstr ""
+
+msgid "Runners|The runner authentication token displays here %{boldStart}for a short time only%{boldEnd}. After you register the runner, this token is stored in the %{codeStart}config.toml%{codeEnd} and cannot be accessed again from the UI."
 msgstr ""
 
 msgid "Runners|The runner authentication token is invalid"

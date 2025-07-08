@@ -7,14 +7,16 @@ RSpec.describe ::Search::Elastic::ProjectQueryBuilder, :elastic_helpers, feature
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
 
+  # rubocop:disable Layout/LineLength -- keep the table intact
   where(:search_level, :projects, :groups, :admin_mode_enabled, :expected_filter) do
-    'global' | :any | [] | false | %w[filters:permissions:global]
+    'global' | :any | [] | false | %w[filters:permissions:global:visibility_level:public_and_internal]
     'global' | :any | [] | true | %w[]
-    'global' | [] | [] | false | %w[filters:permissions:global]
-    'group' | :any | [ref(:group)] | false | %w[filters:level:group filters:permissions:group]
+    'global' | [] | [] | false | %w[filters:permissions:global:visibility_level:public_and_internal]
+    'group' | :any | [ref(:group)] | false | %w[filters:level:group filters:permissions:group:visibility_level:public_and_internal]
     'group' | :any | [ref(:group)] | true | %w[filters:level:group]
-    'group' | [] | [ref(:group)] | false | %w[filters:level:group filters:permissions:group]
+    'group' | [] | [ref(:group)] | false | %w[filters:level:group filters:permissions:group:visibility_level:public_and_internal]
   end
+  # rubocop:enable Layout/LineLength
 
   with_them do
     let(:project_ids) { projects.eql?(:any) ? projects : projects.map(&:id) }

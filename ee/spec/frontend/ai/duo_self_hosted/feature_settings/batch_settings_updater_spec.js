@@ -98,6 +98,24 @@ describe('DuoSelfHostedBatchSettingsUpdater', () => {
     });
   });
 
+  it('disables batch update button if selected model is not compatible with all feature settings', () => {
+    const incompatibleModel = { id: 'gid://gitlab/Ai::SelfHostedModel/999' };
+    const featureSetting = {
+      feature: 'duo_chat',
+      title: 'General Chat',
+      mainFeature: 'GitLab Duo Chat',
+      provider: 'self_hosted',
+      selfHostedModel: incompatibleModel,
+    };
+
+    createComponent({ props: { selectedFeatureSetting: featureSetting } });
+
+    expect(findBatchUpdateButton().props()).toEqual({
+      tooltipTitle: 'This model cannot be applied to all GitLab Duo Chat sub-features',
+      disabled: true,
+    });
+  });
+
   it('disables batch update button if selected feature setting is disabled', () => {
     const disabledFeatureSetting = {
       feature: 'duo_chat',
@@ -132,7 +150,7 @@ describe('DuoSelfHostedBatchSettingsUpdater', () => {
         input: {
           features,
           provider: 'SELF_HOSTED',
-          aiSelfHostedModelId: 1,
+          aiSelfHostedModelId: 'gid://gitlab/Ai::SelfHostedModel/1',
         },
       });
     });
