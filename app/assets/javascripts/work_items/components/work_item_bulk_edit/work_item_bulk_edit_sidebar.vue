@@ -218,6 +218,7 @@ export default {
       :full-path="fullPath"
       :is-group="isGroup"
       :selected-labels-ids="addLabelIds"
+      data-testid="bulk-edit-add-labels"
       @select="addLabelIds = $event"
     />
     <work-item-bulk-edit-labels
@@ -226,6 +227,7 @@ export default {
       :full-path="fullPath"
       :is-group="isGroup"
       :selected-labels-ids="removeLabelIds"
+      data-testid="bulk-edit-remove-labels"
       @select="removeLabelIds = $event"
     />
     <work-item-bulk-edit-dropdown
