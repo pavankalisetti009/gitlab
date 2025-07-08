@@ -73,7 +73,7 @@ module Ai
           ::ActiveContext::Embeddings.generate_embeddings(
             search_term,
             unit_primitive: embeddings_unit_primitive,
-            model: current_embeddings_model
+            version: current_embeddings_version
           ).first
         end
 
@@ -87,10 +87,6 @@ module Ai
 
         def current_embeddings_field
           current_embeddings_version[:field]
-        end
-
-        def current_embeddings_model
-          current_embeddings_version[:model]
         end
       end
     end

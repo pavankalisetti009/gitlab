@@ -271,5 +271,30 @@ RSpec.describe Ai::ActiveContext::Embeddings::Code::VertexText, feature_category
         end
       end
     end
+
+    describe 'unit_primitive parameter' do
+      context 'when the given unit_primitive is nil' do
+        subject(:generate_embeddings) do
+          described_class.generate_embeddings(
+            contents,
+            unit_primitive: nil,
+            model: model,
+            user: user
+          )
+        end
+
+        it 'uses the default unit primitive' do
+          expect(llm_class).to receive(:new).with(
+            contents,
+            user: user,
+            tracking_context: { action: 'embedding' },
+            unit_primitive: 'generate_embeddings_codebase',
+            model: model
+          )
+
+          expect(generate_embeddings).to eq embeddings
+        end
+      end
+    end
   end
 end
