@@ -66,6 +66,19 @@ module EE::Groups::GroupMembersHelper
     super + custom_role_options
   end
 
+  def qualified_for_user_confirmation_bypass(group)
+    Feature.enabled?(:group_owner_placeholder_confirmation_bypass, group) && group.domain_verification_available?
+  end
+
+  override :allow_group_owner_enterprise_bypass?
+  def allow_group_owner_enterprise_bypass?(group)
+    strong_memoize_with(:allow_group_owner_enterprise_bypass, group) do
+      next false unless qualified_for_user_confirmation_bypass(group) && group&.namespace_settings
+
+      group.namespace_settings.allow_enterprise_bypass_placeholder_confirmation
+    end
+  end
+
   private
 
   def cannot_invite_member_subtext(group_name, actor)
