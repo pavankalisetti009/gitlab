@@ -16,6 +16,17 @@ module Gitlab
         ::Gitlab::Database::BatchCounter.new(relation, column: column, max_allowed_loops: MAX_ALLOWED_LOOPS)
           .count(start: 0)
       end
+
+      # This method is for overriding the MAX query that ::Gitlab::Database::BatchCounter does internally.
+      # Because sometimes it picks a bad query plan for a relation joining partitioned tables and times out.
+      # It needs the maximum key associated with the specified column to work, as it'll use it as a finish value.
+      def model_batch_count(relation, column:, max_key:)
+        return 0 unless max_key
+
+        ::Gitlab::Database::BatchCounter
+          .new(relation, column: column, max_allowed_loops: MAX_ALLOWED_LOOPS)
+          .count(start: 0, finish: max_key)
+      end
     end
   end
 end
