@@ -16,7 +16,10 @@ import {
   DUO_WORKFLOW_AGENT_PRIVILEGES,
   DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+  DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
+  CHAT_MESSAGE_TYPES,
+  GENIE_CHAT_MODEL_ROLES,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
@@ -238,13 +241,17 @@ export default {
         const checkpoint = JSON.parse(action.newCheckpoint.checkpoint);
         const messages = checkpoint.channel_values.ui_chat_log.map((msg, i) => {
           const requestId = `${this.workflowId}-${i}`;
+          const role = [CHAT_MESSAGE_TYPES.agent, CHAT_MESSAGE_TYPES.request].includes(
+            msg.message_type,
+          )
+            ? GENIE_CHAT_MODEL_ROLES.assistant
+            : msg.message_type;
 
           return {
-            content: msg.content,
+            ...msg,
             requestId,
-            tool_info: msg.tool_info,
-            message_type: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
-            role: msg.message_type === 'agent' ? 'assistant' : msg.message_type,
+            role,
+            message_type: role,
           };
         });
 
@@ -268,6 +275,10 @@ export default {
 
           // Only send actionResponse when NOT waiting for approval
           this.socketManager?.send({ actionResponse: { requestID: action.requestID } });
+        }
+
+        if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
+          this.setLoading(false);
         }
       } catch (err) {
         this.onError(err);
