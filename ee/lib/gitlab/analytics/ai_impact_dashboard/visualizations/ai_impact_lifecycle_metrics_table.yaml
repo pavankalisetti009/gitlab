@@ -7,6 +7,7 @@ data:
     filters:
       excludeMetrics:
         - cycle_time
+        - lead_time
         - change_failure_rate
         - code_suggestions_usage_rate
         - code_suggestions_acceptance_rate

@@ -144,6 +144,34 @@ exports[`AI impact Dashboard utils generateDateRanges returns the expected date 
 exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleton based on the table fields 1`] = `
 [
   {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "contributor_count",
+      "value": "Contributor count",
+    },
+  },
+  {
+    "invertTrendColor": true,
+    "metric": {
+      "identifier": "vulnerability_critical",
+      "value": "Critical vulnerabilities over time",
+    },
+  },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "deployment_frequency",
+      "value": "Deployment frequency",
+    },
+  },
+  {
+    "invertTrendColor": true,
+    "metric": {
+      "identifier": "change_failure_rate",
+      "value": "Change failure rate",
+    },
+  },
+  {
     "invertTrendColor": true,
     "metric": {
       "identifier": "cycle_time",
@@ -167,36 +195,8 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
   {
     "invertTrendColor": undefined,
     "metric": {
-      "identifier": "deployment_frequency",
-      "value": "Deployment frequency",
-    },
-  },
-  {
-    "invertTrendColor": true,
-    "metric": {
-      "identifier": "change_failure_rate",
-      "value": "Change failure rate",
-    },
-  },
-  {
-    "invertTrendColor": undefined,
-    "metric": {
       "identifier": "merge_request_throughput",
       "value": "Merge request throughput",
-    },
-  },
-  {
-    "invertTrendColor": true,
-    "metric": {
-      "identifier": "vulnerability_critical",
-      "value": "Critical vulnerabilities over time",
-    },
-  },
-  {
-    "invertTrendColor": undefined,
-    "metric": {
-      "identifier": "contributor_count",
-      "value": "Contributor count",
     },
   },
   {
