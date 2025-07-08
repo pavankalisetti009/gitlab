@@ -37,7 +37,13 @@ module RemoteDevelopment
         # because we want to catch changes at the index of self rather than find
         # the common elements between the two arrays. This example should help explain
         # the difference https://github.com/liufengyun/hashdiff/issues/43#issuecomment-485497196
+        # noinspection RubyMismatchedArgumentType -- hashdiff also supports arrays
         Hashdiff.diff(desired_config_array, other.desired_config_array, use_lcs: false)
+      end
+
+      # @return [Array]
+      def symbolized_desired_config_array
+        as_json.fetch("desired_config_array").map(&:deep_symbolize_keys)
       end
     end
   end

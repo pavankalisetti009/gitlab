@@ -5,13 +5,16 @@ module RemoteDevelopment
     module Create
       module DesiredConfig
         class DevfileParserGetter
+          include WorkspaceOperationsConstants
+
           # @param [Hash] context
           # @return [Hash]
           def self.get(context)
             context => {
               logger: logger,
               processed_devfile_yaml: processed_devfile_yaml,
-              workspace_inventory_annotations: annotations,
+              workspace_inventory_annotations_for_partial_reconciliation:
+              workspace_inventory_annotations_for_partial_reconciliation,
               domain_template: domain_template,
               labels: labels,
               workspace_name: workspace_name,
@@ -26,7 +29,7 @@ module RemoteDevelopment
                   workspace_name,
                   workspace_namespace,
                   YAML.dump(labels.deep_stringify_keys),
-                  YAML.dump(annotations.deep_stringify_keys),
+                  YAML.dump(workspace_inventory_annotations_for_partial_reconciliation.deep_stringify_keys),
                   replicas,
                   domain_template,
                   'none'

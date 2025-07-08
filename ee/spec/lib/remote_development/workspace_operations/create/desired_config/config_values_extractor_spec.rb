@@ -94,6 +94,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
         %i[
           allow_privilege_escalation
           common_annotations
+          common_annotations_for_partial_reconciliation
           default_resources_per_workspace_container
           default_runtime_class
           domain_template
@@ -114,6 +115,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
           workspace_desired_state_is_running
           workspace_id
           workspace_inventory_annotations
+          workspace_inventory_annotations_for_partial_reconciliation
           workspace_inventory_name
           workspace_name
           workspaces_agent_config
@@ -129,6 +131,16 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
         "some/annotation": "value",
         "workspaces.gitlab.com/host-template": "{{.port}}-#{workspace_name}.#{dns_zone}",
         "workspaces.gitlab.com/id": workspace_id.to_s,
+        "workspaces.gitlab.com/max-resources-per-workspace-sha256":
+          "e3dd9c9741b2b3f07cfd341f80ea3a9d4b5a09b29e748cf09b546e93ff98241c"
+      }
+    )
+    expect(extracted_values[:common_annotations_for_partial_reconciliation]).to eq(
+      {
+        "some/annotation": "value",
+        "workspaces.gitlab.com/host-template": "{{.port}}-#{workspace_name}.#{dns_zone}",
+        "workspaces.gitlab.com/id": workspace_id.to_s,
+        "workspaces.gitlab.com/include-in-partial-reconciliation": "true",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256":
           "e3dd9c9741b2b3f07cfd341f80ea3a9d4b5a09b29e748cf09b546e93ff98241c"
       }
@@ -168,6 +180,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
         "some/annotation": "value",
         "workspaces.gitlab.com/host-template": "{{.port}}-#{workspace_name}.#{dns_zone}",
         "workspaces.gitlab.com/id": workspace_id.to_s,
+        "workspaces.gitlab.com/max-resources-per-workspace-sha256":
+          "e3dd9c9741b2b3f07cfd341f80ea3a9d4b5a09b29e748cf09b546e93ff98241c"
+      }
+    )
+    expect(extracted_values[:workspace_inventory_annotations_for_partial_reconciliation]).to eq(
+      {
+        "config.k8s.io/owning-inventory": "#{workspace_name}-workspace-inventory",
+        "some/annotation": "value",
+        "workspaces.gitlab.com/host-template": "{{.port}}-#{workspace_name}.#{dns_zone}",
+        "workspaces.gitlab.com/id": workspace_id.to_s,
+        "workspaces.gitlab.com/include-in-partial-reconciliation": "true",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256":
           "e3dd9c9741b2b3f07cfd341f80ea3a9d4b5a09b29e748cf09b546e93ff98241c"
       }
