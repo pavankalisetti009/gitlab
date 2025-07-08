@@ -13,7 +13,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
 import MultipleGroupsProjectsDropdown from '../../shared/multiple_groups_projects_dropdown.vue';
-import LinkedItemsDropdown from '../../shared/linked_items_dropdown.vue';
+import ScopedGroupsDropdown from '../../shared/scoped_groups_dropdown.vue';
 
 export default {
   EXCEPTION_TYPE_LISTBOX_ITEMS,
@@ -30,7 +30,7 @@ export default {
   name: 'ScopeGroupSelector',
   components: {
     GlCollapsibleListbox,
-    LinkedItemsDropdown,
+    ScopedGroupsDropdown,
     PolicyPopover,
     MultipleGroupsProjectsDropdown,
   },
@@ -168,7 +168,7 @@ export default {
 
 <template>
   <div class="gl-flex gl-items-center gl-gap-3">
-    <linked-items-dropdown
+    <scoped-groups-dropdown
       data-testid="groups-dropdown"
       include-descendants
       :full-path="fullPath"
