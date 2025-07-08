@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['ProjectComplianceViolation'], feature_category: :compliance_management do
   let(:fields) do
-    %i[id created_at project compliance_control status audit_event notes discussions commenters]
+    %i[id created_at project compliance_control status audit_event notes discussions commenters issues]
   end
 
   specify { expect(described_class.graphql_name).to eq('ProjectComplianceViolation') }

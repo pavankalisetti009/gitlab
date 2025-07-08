@@ -28,6 +28,10 @@ module Types
 
         field :audit_event, Types::AuditEvents::AuditEventType,
           null: false, description: 'Audit event related to the violation.'
+
+        field :issues, Types::IssueType.connection_type,
+          null: true,
+          description: 'Project issues linked to the violation.'
       end
     end
   end
