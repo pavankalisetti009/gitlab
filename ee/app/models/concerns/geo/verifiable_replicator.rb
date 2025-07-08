@@ -155,7 +155,7 @@ module Geo
         # Bonus: This causes the progress bar to be hidden.
         return unless verification_enabled?
 
-        batch_count(model.verification_succeeded, model.primary_key) do
+        model_batch_count(model.verification_succeeded, column: model_column, max_key: model_max_primary_key) do
           model.verification_succeeded.count
         end
       end
@@ -165,7 +165,7 @@ module Geo
         # Bonus: This causes the progress bar to be hidden.
         return unless verification_enabled?
 
-        batch_count(model.verification_failed, model.primary_key) do
+        model_batch_count(model.verification_failed, column: model_column, max_key: model_max_primary_key) do
           model.verification_failed.count
         end
       end
@@ -175,7 +175,7 @@ module Geo
         # Bonus: This causes the progress bar to be hidden.
         return unless verification_enabled?
 
-        batch_count(model.available_verifiables, model.primary_key) do
+        model_batch_count(model.available_verifiables, column: model_column, max_key: model_max_primary_key) do
           model.available_verifiables.count
         end
       end
@@ -236,6 +236,14 @@ module Geo
 
       def force_primary_checksumming_feature_key
         :"geo_#{replicable_name}_force_primary_checksumming"
+      end
+
+      def model_max_primary_key
+        model.maximum(model_column)
+      end
+
+      def model_column
+        @model_column ||= model.primary_key
       end
     end
 
