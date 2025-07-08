@@ -5657,10 +5657,12 @@ RSpec.describe User, feature_category: :user_profile do
   describe '#ci_owned_runners', feature_category: :runner do
     let_it_be_with_refind(:user) { create(:user) }
 
+    subject(:ci_owned_runners) { user.ci_owned_runners }
+
     shared_examples 'nested groups owner' do
       context 'when the user is the owner of a multi-level group' do
         it 'loads all the runners in the tree of groups' do
-          expect(user.ci_owned_runners).to contain_exactly(runner, group_runner)
+          is_expected.to contain_exactly(runner, group_runner)
         end
 
         it 'returns true for owns_runner?' do
@@ -5671,6 +5673,8 @@ RSpec.describe User, feature_category: :user_profile do
     end
 
     shared_examples 'project member' do
+      let_it_be(:another_project_runner) { create(:ci_runner, :project, projects: [another_project, project]) }
+
       before do
         add_user # this method has to be defined in the caller block
       end
@@ -5679,11 +5683,12 @@ RSpec.describe User, feature_category: :user_profile do
         let(:access) { :maintainer }
 
         it 'loads the runners of the project' do
-          expect(user.ci_owned_runners).to contain_exactly(project_runner)
+          is_expected.to contain_exactly(project_runner, another_project_runner)
         end
 
         it 'returns true for owns_runner?' do
           expect(user.owns_runner?(project_runner)).to eq(true)
+          expect(user.owns_runner?(another_project_runner)).to eq(true)
         end
       end
 
@@ -5691,11 +5696,12 @@ RSpec.describe User, feature_category: :user_profile do
         let(:access) { :developer }
 
         it 'does not load any runner' do
-          expect(user.ci_owned_runners).to be_empty
+          is_expected.to be_empty
         end
 
         it 'returns false for owns_runner?' do
           expect(user.owns_runner?(project_runner)).to eq(false)
+          expect(user.owns_runner?(another_project_runner)).to eq(false)
         end
       end
 
@@ -5703,11 +5709,12 @@ RSpec.describe User, feature_category: :user_profile do
         let(:access) { :reporter }
 
         it 'does not load any runner' do
-          expect(user.ci_owned_runners).to be_empty
+          is_expected.to be_empty
         end
 
         it 'returns false for owns_runner?' do
           expect(user.owns_runner?(project_runner)).to eq(false)
+          expect(user.owns_runner?(another_project_runner)).to eq(false)
         end
       end
 
@@ -5715,11 +5722,12 @@ RSpec.describe User, feature_category: :user_profile do
         let(:access) { :guest }
 
         it 'does not load any runner' do
-          expect(user.ci_owned_runners).to be_empty
+          is_expected.to be_empty
         end
 
         it 'returns false for owns_runner?' do
           expect(user.owns_runner?(project_runner)).to eq(false)
+          expect(user.owns_runner?(another_project_runner)).to eq(false)
         end
       end
     end
@@ -5731,7 +5739,7 @@ RSpec.describe User, feature_category: :user_profile do
         end
 
         it 'does not load the runners of the group' do
-          expect(user.ci_owned_runners).to be_empty
+          is_expected.to be_empty
         end
 
         it 'returns false for owns_runner?' do
@@ -5745,7 +5753,7 @@ RSpec.describe User, feature_category: :user_profile do
         end
 
         it 'does not load any runner' do
-          expect(user.ci_owned_runners).to be_empty
+          is_expected.to be_empty
         end
 
         it 'returns false for owns_runner?' do
@@ -5881,6 +5889,7 @@ RSpec.describe User, feature_category: :user_profile do
       let_it_be(:group) { create(:group) }
       let_it_be(:project) { create(:project, group: group) }
       let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
+      let_it_be(:another_project) { create(:project) }
 
       it 'does not load any runner' do
         expect(user.ci_owned_runners).to be_empty
@@ -5902,6 +5911,17 @@ RSpec.describe User, feature_category: :user_profile do
           let_it_be(:group_runner) { create(:ci_runner, :group, groups: [subgroup]) }
 
           it_behaves_like 'nested groups owner'
+        end
+
+        context 'with a project runner owned by inaccessible project' do
+          let_it_be(:another_project_runner) { create(:ci_runner, :project, projects: [another_project, project]) }
+
+          it 'returns runner shared from inaccessible project' do
+            expect(ci_owned_runners).to contain_exactly(runner, another_project_runner)
+
+            expect(user.owns_runner?(another_project_runner)).to be true
+            expect(user.owns_runner?(runner)).to be true
+          end
         end
       end
 
@@ -5945,7 +5965,21 @@ RSpec.describe User, feature_category: :user_profile do
         )
         expect(user).not_to receive(:ci_owned_project_runners)
 
-        user.ci_owned_runners
+        ci_owned_runners
+      end
+
+      context 'with a project runner owned by inaccessible project' do
+        let_it_be(:project) { create(:project, owners: user) }
+        let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
+        let_it_be(:another_project) { create(:project) }
+        let_it_be(:another_project_runner) { create(:ci_runner, :project, projects: [another_project, project]) }
+
+        it 'returns runner shared from inaccessible project' do
+          expect(ci_owned_runners).to contain_exactly(runner, another_project_runner)
+
+          expect(user.owns_runner?(another_project_runner)).to be true
+          expect(user.owns_runner?(runner)).to be true
+        end
       end
     end
 
@@ -5962,7 +5996,7 @@ RSpec.describe User, feature_category: :user_profile do
         expect(user).not_to receive(:ci_owned_project_runners_from_project_members)
         expect(user).not_to receive(:ci_owned_project_runners_from_group_members)
 
-        user.ci_owned_runners
+        ci_owned_runners
       end
 
       context 'when feature flag is only enabled for other user' do
@@ -5973,7 +6007,7 @@ RSpec.describe User, feature_category: :user_profile do
           expect(user).to receive(:ci_owned_project_runners_from_group_members).and_return([])
           expect(user).to receive(:ci_owned_group_runners).and_return([])
 
-          user.ci_owned_runners
+          ci_owned_runners
         end
       end
     end
