@@ -326,7 +326,7 @@ describe('Api', () => {
       ]);
 
       return new Promise((resolve) => {
-        Api.namespaces(query, (response) => {
+        Api.namespaces(query, {}, (response) => {
           expect(response.length).toBe(1);
           expect(response[0].name).toBe('test');
           resolve();
