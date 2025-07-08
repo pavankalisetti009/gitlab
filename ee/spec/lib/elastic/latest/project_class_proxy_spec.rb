@@ -52,10 +52,11 @@ RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_sea
         enable_admin_mode!(current_user) if admin_mode
         allow(current_user).to receive(:can_read_all_resources?).and_return(admin_mode)
 
-        expected_queries = %W[project:multi_match:and:search_terms project:multi_match_phrase:search_terms
-          filters:doc:is_a:project filters:permissions:#{search_level}]
+        expected_queries = %w[project:multi_match:and:search_terms project:multi_match_phrase:search_terms
+          filters:doc:is_a:project]
 
         expected_queries.concat(%W[filters:level:#{search_level}]) unless search_level == 'global'
+
         if projects != :any
           expected_queries.concat(%W[filters:permissions:#{search_level}:visibility_level:public_and_internal])
         end

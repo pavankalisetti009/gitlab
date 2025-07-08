@@ -28,7 +28,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     assert_names_in_query(build, with: %w[
       work_item:multi_match:and:search_terms
       work_item:multi_match_phrase:search_terms
-      filters:permissions:global
+      filters:permissions:global:project_visibility_level:public_and_internal
       filters:not_hidden
       filters:not_work_item_type_ids
       filters:non_archived
@@ -286,7 +286,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       expect(query[:knn][:boost]).to eq(hybrid_boost)
 
       expected_filters = %w[
-        filters:permissions:global
+        filters:permissions:global:project_visibility_level:public_and_internal
         filters:non_confidential
         filters:confidential
         filters:confidential:as_author

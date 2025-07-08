@@ -152,7 +152,7 @@ RSpec.shared_examples 'a query filtered by project authorization' do
     end
 
     it 'applies authorization filters' do
-      assert_names_in_query(build, with: %w[filters:permissions:global])
+      assert_names_in_query(build, with: %w[filters:permissions:global:project_visibility_level:public_and_internal])
     end
 
     context 'when project_ids is passed :any' do
@@ -161,8 +161,8 @@ RSpec.shared_examples 'a query filtered by project authorization' do
       end
 
       it 'applies authorization filters' do
-        assert_names_in_query(build, with: %w[filters:permissions:global],
-          without: %w[filters:level:group
+        assert_names_in_query(build, with: %w[filters:permissions:global:project_visibility_level:public_and_internal],
+          without: %w[filters:level:group:project_visibility_level:public_and_internal
             filters:permissions:group
             filters:level:project
             filters:permissions:project])
@@ -177,10 +177,11 @@ RSpec.shared_examples 'a query filtered by project authorization' do
     end
 
     it 'applies authorization filters' do
-      assert_names_in_query(build, with: %w[filters:level:group filters:permissions:group],
-        without: %w[filters:permissions:global
+      assert_names_in_query(build, with: %w[filters:level:group
+        filters:permissions:group:project_visibility_level:public_and_internal],
+        without: %w[filters:permissions:global:project_visibility_level:public_and_internal
           filters:level:project
-          filters:permissions:project])
+          filters:permissions:project:project_visibility_level:public_and_internal])
     end
   end
 
@@ -190,10 +191,11 @@ RSpec.shared_examples 'a query filtered by project authorization' do
     end
 
     it 'applies authorization filters' do
-      assert_names_in_query(build, with: %w[filters:level:project filters:permissions:project],
-        without: %w[filters:permissions:global
+      assert_names_in_query(build, with: %w[filters:level:project
+        filters:permissions:project:project_visibility_level:public_and_internal],
+        without: %w[filters:permissions:global:project_visibility_level:public_and_internal
           filters:level:group
-          filters:permissions:group])
+          filters:permissions:group:project_visibility_level:public_and_internal])
     end
   end
 end
