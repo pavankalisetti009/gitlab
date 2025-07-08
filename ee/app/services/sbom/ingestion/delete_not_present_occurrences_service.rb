@@ -36,7 +36,7 @@ module Sbom
       end
 
       def sbom_build?(build)
-        build.metadata.config_options.dig(:artifacts, :reports, :cyclonedx).present?
+        build.options.dig(:artifacts, :reports, :cyclonedx).present?
       end
 
       def not_present_occurrences

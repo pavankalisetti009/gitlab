@@ -74,7 +74,6 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
     context 'with a valid project' do
       let(:pipeline) { execute.payload }
       let(:build) { pipeline.builds.find_by(name: :container_scanning) }
-      let(:metadata) { build.metadata }
 
       it 'creates a pipeline' do
         expect { execute }.to change { Ci::Pipeline.count }.by(1)
@@ -102,7 +101,7 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
       end
 
       it 'sets correct artifacts configuration' do
-        expect(metadata[:config_options][:artifacts]).to eq({
+        expect(build.options[:artifacts]).to eq({
           paths: ["**/gl-sbom-*.cdx.json"],
           access: "developer",
           reports: {
@@ -113,7 +112,7 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
       end
 
       it 'sets correct environment variables' do
-        expect(metadata[:config_variables]).to include(
+        expect(build.yaml_variables).to include(
           { key: "GIT_STRATEGY", value: "none" },
           { key: "REGISTRY_TRIGGERED", value: "true" },
           { key: "CS_IMAGE", value: image }

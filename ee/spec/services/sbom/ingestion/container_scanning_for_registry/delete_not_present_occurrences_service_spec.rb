@@ -11,12 +11,10 @@ RSpec.describe Sbom::Ingestion::ContainerScanningForRegistry::DeleteNotPresentOc
 
   shared_examples 'it no-ops with failed sbom jobs' do
     context 'when there are failed sbom jobs' do
-      let(:metadata) { { artifacts: { reports: { cyclonedx: { foo: :bar } } } } }
+      let(:options) { { artifacts: { reports: { cyclonedx: { foo: :bar } } } } }
 
       before do
-        create(:ee_ci_build, :failed, pipeline: pipeline)
-          .metadata
-          .update!(config_options: metadata)
+        create(:ee_ci_build, :failed, pipeline: pipeline, options: options)
       end
 
       it 'does not effect occurence count' do
