@@ -11484,6 +11484,9 @@ msgstr ""
 msgid "Browse Files"
 msgstr ""
 
+msgid "Browse commit files"
+msgstr ""
+
 msgid "Browse files"
 msgstr ""
 
