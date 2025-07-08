@@ -24,7 +24,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Ultimate::TrialFormComponent 
           firstName: user.first_name,
           lastName: user.last_name,
           emailDomain: user.email_domain,
-          companyName: user.organization,
+          companyName: user.user_detail_organization,
           showNameFields: false,
           phoneNumber: nil,
           country: '',

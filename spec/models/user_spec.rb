@@ -196,8 +196,8 @@ RSpec.describe User, feature_category: :user_profile do
     it { is_expected.to delegate_method(:location).to(:user_detail).allow_nil }
     it { is_expected.to delegate_method(:location=).to(:user_detail).with_arguments(:args).allow_nil }
 
-    it { is_expected.to delegate_method(:organization).to(:user_detail).allow_nil }
-    it { is_expected.to delegate_method(:organization=).to(:user_detail).with_arguments(:args).allow_nil }
+    it { is_expected.to delegate_method(:organization).to(:user_detail).with_prefix.allow_nil }
+    it { is_expected.to delegate_method(:organization=).to(:user_detail).with_arguments(:args).with_prefix.allow_nil }
 
     it { is_expected.to delegate_method(:email_reset_offered_at).to(:user_detail).allow_nil }
     it { is_expected.to delegate_method(:email_reset_offered_at=).to(:user_detail).with_arguments(:args).allow_nil }
@@ -354,26 +354,27 @@ RSpec.describe User, feature_category: :user_profile do
         expect(create(:user).user_detail).to be_persisted
       end
 
-      shared_examples 'delegated field' do |field|
+      shared_examples 'delegated field' do |field, prefix: nil|
+        field_name = prefix ? :"#{prefix}_#{field}" : field
         it 'correctly stores the `user_detail` attribute when the field is given on user creation' do
-          user = create(:user, field => 'my field')
+          user = create(:user, field_name => 'my field')
 
           expect(user.user_detail).to be_persisted
           expect(user.user_detail[field]).to eq('my field')
         end
 
         it 'delegates to `user_detail`' do
-          user = create(:user, field => 'my field')
+          user = create(:user, field_name => 'my field')
 
-          expect(user.public_send(field)).to eq(user.user_detail[field])
+          expect(user.public_send(field_name)).to eq(user.user_detail[field])
         end
       end
 
+      it_behaves_like 'delegated field', :organization, prefix: 'user_detail'
       it_behaves_like 'delegated field', :bio
       it_behaves_like 'delegated field', :linkedin
       it_behaves_like 'delegated field', :twitter
       it_behaves_like 'delegated field', :location
-      it_behaves_like 'delegated field', :organization
 
       it 'creates `user_detail` when `website_url` is given' do
         user = create(:user, website_url: 'https://example.com')

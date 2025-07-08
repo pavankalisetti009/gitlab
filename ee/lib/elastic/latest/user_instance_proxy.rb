@@ -23,13 +23,13 @@ module Elastic
           :updated_at,
           :admin,
           :state,
-          :organization,
           :timezone,
           :external
         ].each do |attr|
           data[attr.to_s] = safely_read_attribute_for_elasticsearch(attr)
         end
 
+        data['organization'] = safely_read_attribute_for_elasticsearch(:user_detail_organization)
         data['in_forbidden_state'] = in_forbidden_state?(target)
         data['status'] = target.status&.message
         data['status_emoji'] = target.status&.emoji

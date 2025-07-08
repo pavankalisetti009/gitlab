@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Groups > Add Ons > Discover Duo Enterprise > Hand Raise Lead', :js, :saas, feature_category: :activation do
   include Features::HandRaiseLeadHelpers
 
-  let_it_be(:user) { create(:user, :with_namespace, organization: 'GitLab') }
+  let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'GitLab') }
   let_it_be(:group) do
     create(:group_with_plan, trial_starts_on: 41.days.ago, trial_ends_on: 11.days.ago, owners: user)
   end

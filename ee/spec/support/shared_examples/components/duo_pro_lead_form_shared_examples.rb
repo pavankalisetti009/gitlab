@@ -20,7 +20,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::DuoPro::LeadFormComponent do
       last_name: user.last_name,
       show_name_fields: 'false',
       email_domain: user.email_domain,
-      company_name: user.organization,
+      company_name: user.user_detail_organization,
       submit_button_text: 'Continue',
       submit_path: submit_path
     }

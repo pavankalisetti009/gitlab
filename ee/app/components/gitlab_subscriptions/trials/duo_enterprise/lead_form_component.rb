@@ -71,7 +71,7 @@ module GitlabSubscriptions
             last_name: user.last_name,
             show_name_fields: user.last_name.blank?.to_s,
             email_domain: user.email_domain,
-            company_name: user.organization,
+            company_name: user.user_detail_organization,
             submit_button_text: submit_text,
             submit_path: submit_path
           }

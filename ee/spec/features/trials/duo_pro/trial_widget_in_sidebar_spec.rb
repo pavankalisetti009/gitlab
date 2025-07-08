@@ -6,7 +6,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
   include SubscriptionPortalHelpers
   include Features::HandRaiseLeadHelpers
 
-  let_it_be(:user) { create(:user, :with_namespace, organization: 'YMCA') }
+  let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
   let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab', owners: user) }
 
   before_all do

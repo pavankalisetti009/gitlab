@@ -9,7 +9,7 @@ module GitlabSubscriptions
           user_name: current_user.username,
           first_name: current_user.first_name,
           last_name: current_user.last_name,
-          company_name: current_user.organization
+          company_name: current_user.user_detail_organization
         }.to_json,
         submit_path: gitlab_subscriptions_hand_raise_leads_path
       }
