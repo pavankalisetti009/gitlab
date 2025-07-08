@@ -27,8 +27,7 @@ RSpec.describe Security::AnalyzersStatus::ProcessArchivedEventsWorker, feature_c
     end
 
     it 'calls the RecalculateService with the project' do
-      expect(Security::AnalyzerNamespaceStatuses::RecalculateService).to receive(:execute)
-        .with(project.id, group, deleted_project: false)
+      expect(Security::AnalyzerNamespaceStatuses::RecalculateService).to receive(:execute).with(group)
 
       use_event
     end

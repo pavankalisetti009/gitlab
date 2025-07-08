@@ -3364,6 +3364,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_analyzer_namespace_statuses_process_group_deleted_events
+  :worker_name: Security::AnalyzerNamespaceStatuses::ProcessGroupDeletedEventsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_analyzers_status_process_archived_events
   :worker_name: Security::AnalyzersStatus::ProcessArchivedEventsWorker
   :feature_category: :security_asset_inventories
