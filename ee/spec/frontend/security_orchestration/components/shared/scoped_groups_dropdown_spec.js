@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox, GlPopover, GlLink } from '@gitlab/ui';
-import LinkedItemsDropdown from 'ee/security_orchestration/components/shared/linked_items_dropdown.vue';
+import ScopedGroupsDropdown from 'ee/security_orchestration/components/shared/scoped_groups_dropdown.vue';
 import BaseItemsDropdown from 'ee/security_orchestration/components/shared/base_items_dropdown.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
@@ -11,7 +11,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createMockGroups } from 'ee_jest/security_orchestration/mocks/mock_data';
 
-describe('LinkedItemsDropdown', () => {
+describe('ScopedGroupsDropdown', () => {
   let wrapper;
   let requestHandler;
 
@@ -41,7 +41,7 @@ describe('LinkedItemsDropdown', () => {
   const moreGroups = createMockGroups(4);
 
   const groupsHandler = (nodes = moreGroups) =>
-    jest.fn().mockResolvedValue({
+    jest.fn().mockResolvedValueOnce({
       data: {
         groups: {
           nodes,
@@ -65,14 +65,20 @@ describe('LinkedItemsDropdown', () => {
     groupsHandler: groupsHandler(),
   };
 
-  const createComponent = ({ propsData = {}, handler = defaultHandler, stubs = {} } = {}) => {
-    wrapper = shallowMountExtended(LinkedItemsDropdown, {
+  const createComponent = ({
+    propsData = {},
+    handler = defaultHandler,
+    provide = {},
+    stubs = {},
+  } = {}) => {
+    wrapper = shallowMountExtended(ScopedGroupsDropdown, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         fullPath: 'gitlab-org',
         ...propsData,
       },
       stubs,
+      provide: { designatedAsCsp: false, ...provide },
     });
   };
 
@@ -97,28 +103,56 @@ describe('LinkedItemsDropdown', () => {
   });
 
   describe('groups', () => {
-    beforeEach(async () => {
+    it('renders default dropdown state', async () => {
       createComponent();
       await waitForPromises();
-    });
-
-    it('renders default dropdown state', () => {
-      expect(findDropdown().props('items')).toEqual(groups.map(mapItems));
       expect(findDropdown().props('headerText')).toBe('Select groups');
       expect(findDropdown().props('itemTypeName')).toBe('groups');
       expect(findDropdown().props('loading')).toBe(false);
     });
 
-    it('makes a query to fetch more groups', () => {
-      findDropdown().vm.$emit('bottom-reached');
+    describe('csp group', () => {
+      beforeEach(async () => {
+        createComponent({ provide: { designatedAsCsp: true } });
+        await waitForPromises();
+      });
 
-      expect(requestHandler.linkedGroupsHandler).toHaveBeenCalledTimes(2);
-      expect(requestHandler.linkedGroupsHandler).toHaveBeenNthCalledWith(2, {
-        fullPath: 'gitlab-org',
-        after: null,
-        includeParentDescendants: false,
-        search: '',
-        topLevelOnly: false,
+      it('requests groups', () => {
+        expect(findDropdown().props('items')).toEqual(moreGroups.map(mapItems));
+      });
+
+      it('makes a query to fetch more groups', () => {
+        findDropdown().vm.$emit('bottom-reached');
+
+        expect(requestHandler.groupsHandler).toHaveBeenCalledTimes(2);
+        expect(requestHandler.groupsHandler).toHaveBeenNthCalledWith(2, {
+          after: undefined,
+          search: '',
+        });
+      });
+    });
+
+    describe('non-csp group', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('requests linked groups', () => {
+        expect(findDropdown().props('items')).toEqual(groups.map(mapItems));
+      });
+
+      it('makes a query to fetch more groups', () => {
+        findDropdown().vm.$emit('bottom-reached');
+
+        expect(requestHandler.linkedGroupsHandler).toHaveBeenCalledTimes(2);
+        expect(requestHandler.linkedGroupsHandler).toHaveBeenNthCalledWith(2, {
+          fullPath: 'gitlab-org',
+          after: null,
+          includeParentDescendants: false,
+          search: '',
+          topLevelOnly: false,
+        });
       });
     });
   });
