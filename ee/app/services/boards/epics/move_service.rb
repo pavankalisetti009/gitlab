@@ -12,7 +12,7 @@ module Boards
 
         return unless requires_update_service?(epic_modification_params)
 
-        ::Epics::UpdateService.new(group: epic.group, current_user: current_user, params: epic_modification_params).execute(epic)
+        ::WorkItems::LegacyEpics::UpdateService.new(group: epic.group, current_user: current_user, params: epic_modification_params).execute(epic)
       end
 
       def board
