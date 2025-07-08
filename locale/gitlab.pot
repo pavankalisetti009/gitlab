@@ -17011,7 +17011,13 @@ msgstr ""
 msgid "ComplianceViolation|Dismissed"
 msgstr ""
 
+msgid "ComplianceViolation|Fix suggestion generated for this failed control"
+msgstr ""
+
 msgid "ComplianceViolation|Framework"
+msgstr ""
+
+msgid "ComplianceViolation|Go to project settings"
 msgstr ""
 
 msgid "ComplianceViolation|In review"

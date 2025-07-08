@@ -4,6 +4,7 @@ query getComplianceViolation($id: ID!) {
     status
     createdAt
     complianceControl {
+      id
       name
       complianceRequirement {
         name

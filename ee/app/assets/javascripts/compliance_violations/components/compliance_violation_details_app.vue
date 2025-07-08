@@ -7,6 +7,7 @@ import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import updateComplianceViolationStatus from '../graphql/mutations/update_compliance_violation_status.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
+import FixSuggestionSection from './fix_suggestion_section.vue';
 import ViolationSection from './violation_section.vue';
 
 Vue.use(GlToast);
@@ -16,6 +17,7 @@ export default {
   components: {
     AuditEvent,
     ComplianceViolationStatusDropdown,
+    FixSuggestionSection,
     GlLoadingIcon,
     ViolationSection,
   },
@@ -122,6 +124,11 @@ export default {
       class="gl-mt-5"
       :control="complianceViolation.complianceControl"
       :compliance-center-path="complianceCenterPath"
+    />
+    <fix-suggestion-section
+      class="gl-mt-5"
+      :control-id="complianceViolation.complianceControl.id"
+      :project-path="complianceViolation.project.webUrl"
     />
   </div>
 </template>

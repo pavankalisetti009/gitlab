@@ -7,6 +7,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ComplianceViolationDetailsApp from 'ee/compliance_violations/components/compliance_violation_details_app.vue';
 import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
 import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
+import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 
 Vue.use(VueApollo);
@@ -24,7 +25,8 @@ describe('ComplianceViolationDetailsApp', () => {
     status: 'IN_REVIEW',
     createdAt: '2025-06-16T02:20:41Z',
     complianceControl: {
-      name: 'Merge request controls',
+      id: 'minimum_approvals_required_2',
+      name: 'At least two approvals',
       complianceRequirement: {
         name: 'basic code regulation',
         framework: {
@@ -125,6 +127,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const findViolationDetails = () => wrapper.findByTestId('compliance-violation-details');
   const findAuditEvent = () => wrapper.findComponent(AuditEvent);
   const findViolationSection = () => wrapper.findComponent(ViolationSection);
+  const findFixSuggestionSection = () => wrapper.findComponent(FixSuggestionSection);
 
   afterEach(() => {
     wrapper?.destroy();
@@ -201,6 +204,17 @@ describe('ComplianceViolationDetailsApp', () => {
         mockComplianceViolationData.complianceControl,
       );
       expect(violationSectionComponent.props('complianceCenterPath')).toBe(complianceCenterPath);
+    });
+
+    it('renders the fix suggestion section', () => {
+      const fixSuggestionSectionComponent = findFixSuggestionSection();
+      expect(fixSuggestionSectionComponent.exists()).toBe(true);
+      expect(fixSuggestionSectionComponent.props('controlId')).toBe(
+        mockComplianceViolationData.complianceControl.id,
+      );
+      expect(fixSuggestionSectionComponent.props('projectPath')).toBe(
+        mockComplianceViolationData.project.webUrl,
+      );
     });
 
     describe('when violation has an audit event', () => {
