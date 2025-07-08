@@ -51,6 +51,13 @@ module EE
 
         push_to_gon_attributes(:licensed_features, name, enabled)
       end
+
+      # Exposes if a SaaS feature is available.
+      #
+      # name - The name of the SaaS feature
+      def push_saas_feature(name)
+        push_to_gon_attributes(:saas_features, name, ::Gitlab::Saas.feature_available?(name))
+      end
     end
   end
 end
