@@ -12845,9 +12845,6 @@ msgstr ""
 msgid "Cherry-pick this merge request"
 msgstr ""
 
-msgid "Child"
-msgstr ""
-
 msgid "Child issues and epics"
 msgstr ""
 
@@ -40406,9 +40403,6 @@ msgstr ""
 msgid "MrReports|Reports"
 msgstr ""
 
-msgid "Multi-project"
-msgstr ""
-
 msgid "Multiple IP address ranges are supported. Does not affect access to the group's settings."
 msgstr ""
 
@@ -65664,9 +65658,6 @@ msgstr ""
 msgid "Trigger cluster reindexing. Only use this with an index that was created in GitLab 13.0 or later."
 msgstr ""
 
-msgid "Trigger job"
-msgstr ""
-
 msgid "Trigger pipelines for mirror updates"
 msgstr ""
 
@@ -73431,6 +73422,9 @@ msgid_plural "checklist items"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "child"
+msgstr ""
+
 msgid "ci secure files"
 msgstr ""
 
@@ -74751,6 +74745,9 @@ msgstr ""
 msgid "mrWidget|Your password"
 msgstr ""
 
+msgid "multi-project"
+msgstr ""
+
 msgid "must be 254 characters or less."
 msgstr ""
 
@@ -75466,6 +75463,9 @@ msgid "toggle collapse"
 msgstr ""
 
 msgid "total must be less than or equal to %{size}"
+msgstr ""
+
+msgid "trigger job"
 msgstr ""
 
 msgid "trigger token"
