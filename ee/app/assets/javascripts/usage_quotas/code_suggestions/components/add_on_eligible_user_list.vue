@@ -139,9 +139,6 @@ export default {
     hasMaxRoleField() {
       return this.tableItems?.some(({ maxRole }) => maxRole);
     },
-    isFilteringEnabled() {
-      return this.glFeatures.enableAddOnUsersFiltering;
-    },
     isPagesizeSelectionEnabled() {
       return this.glFeatures.enableAddOnUsersPagesizeSelection;
     },
@@ -171,7 +168,7 @@ export default {
         'lastDuoActivityTime',
       ];
 
-      if (this.isFilteringEnabled && this.hasMaxRoleField) {
+      if (this.hasMaxRoleField) {
         fieldConfig = [
           'user',
           this.duoAddOn,

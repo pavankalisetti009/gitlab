@@ -13,7 +13,6 @@ module Groups
         include ::Nav::GitlabDuoSettingsPage
 
         before_action do
-          push_frontend_feature_flag(:enable_add_on_users_filtering, group)
           push_frontend_feature_flag(:enable_add_on_users_pagesize_selection, group)
         end
 

@@ -109,7 +109,6 @@ export default {
   },
   computed: {
     filterTokens() {
-      if (!this.isFilteringEnabled) return [];
       return [
         {
           options: [
@@ -125,11 +124,7 @@ export default {
         },
       ];
     },
-    isFilteringEnabled() {
-      return this.glFeatures.enableAddOnUsersFiltering;
-    },
     sortOptions() {
-      if (!this.isFilteringEnabled) return [];
       return SORT_OPTIONS;
     },
     addOnEligibleUsersQueryVariables() {
