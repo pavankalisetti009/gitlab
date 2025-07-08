@@ -33,6 +33,20 @@ query groupComplianceViolations(
           }
         }
         status
+        auditEvent {
+          id
+          createdAt
+          details
+          eventName
+          entityType
+          targetDetails
+          targetType
+          author {
+            id
+            name
+            username
+          }
+        }
       }
       pageInfo {
         hasNextPage
