@@ -20,6 +20,17 @@ query groupComplianceViolations(
         complianceControl {
           id
           name
+          complianceRequirement {
+            id
+            name
+            framework {
+              id
+              name
+              color
+              default
+              description
+            }
+          }
         }
         status
       }

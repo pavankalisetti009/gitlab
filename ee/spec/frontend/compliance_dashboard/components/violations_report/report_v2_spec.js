@@ -7,6 +7,7 @@ import ComplianceViolationsReportV2, {
   VIOLATION_PAGE_SIZE,
 } from 'ee/compliance_dashboard/components/violations_report/report_v2.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
+import ComplianceFrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -42,7 +43,18 @@ describe('ComplianceViolationsReportV2 component', () => {
               },
               complianceControl: {
                 id: 'gid://gitlab/ComplianceControl/1',
-                name: 'SOX - Code Review Required',
+                name: 'Code Review Required',
+                complianceRequirement: {
+                  id: 'gid://gitlab/ComplianceRequirement/1',
+                  name: 'Code Review Requirement',
+                  framework: {
+                    id: 'gid://gitlab/ComplianceFramework/1',
+                    name: 'SOX Framework',
+                    color: '#1f75cb',
+                    default: false,
+                    description: 'Sarbanes-Oxley compliance framework',
+                  },
+                },
               },
             },
           ],
@@ -76,7 +88,18 @@ describe('ComplianceViolationsReportV2 component', () => {
               },
               complianceControl: {
                 id: 'gid://gitlab/ComplianceControl/1',
-                name: 'SOX - Code Review Required',
+                name: 'Code Review Required',
+                complianceRequirement: {
+                  id: 'gid://gitlab/ComplianceRequirement/1',
+                  name: 'Code Review Requirement',
+                  framework: {
+                    id: 'gid://gitlab/ComplianceFramework/1',
+                    name: 'SOX Framework',
+                    color: '#1f75cb',
+                    default: false,
+                    description: 'Sarbanes-Oxley compliance framework',
+                  },
+                },
               },
             },
             {
@@ -91,7 +114,18 @@ describe('ComplianceViolationsReportV2 component', () => {
               },
               complianceControl: {
                 id: 'gid://gitlab/ComplianceControl/2',
-                name: 'SOX - Approval Required',
+                name: 'Approval Required',
+                complianceRequirement: {
+                  id: 'gid://gitlab/ComplianceRequirement/2',
+                  name: 'Approval Requirement',
+                  framework: {
+                    id: 'gid://gitlab/ComplianceFramework/2',
+                    name: 'GDPR Framework',
+                    color: '#d73a49',
+                    default: true,
+                    description: 'General Data Protection Regulation framework',
+                  },
+                },
               },
             },
           ],
@@ -115,6 +149,9 @@ describe('ComplianceViolationsReportV2 component', () => {
   const findTableLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findStatusDropdown = () => wrapper.findComponent(ComplianceViolationStatusDropdown);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
+  const findFrameworkBadge = () => wrapper.findComponent(ComplianceFrameworkBadge);
+
+  const tableRows = () => wrapper.findAll('tbody tr');
 
   const createMockApolloProvider = (resolverMock = mockGraphQlLoading) => {
     return createMockApollo([[groupComplianceViolationsQuery, resolverMock]]);
@@ -134,6 +171,7 @@ describe('ComplianceViolationsReportV2 component', () => {
         },
         stubs: {
           GlTable: false,
+          ComplianceFrameworkBadge: false,
         },
       }),
     );
@@ -199,10 +237,9 @@ describe('ComplianceViolationsReportV2 component', () => {
     });
 
     it('renders violation data correctly', () => {
-      const tableRows = wrapper.findAll('tbody tr');
-      expect(tableRows).toHaveLength(1);
+      const firstRow = tableRows().at(0);
 
-      const firstRow = tableRows.at(0);
+      expect(tableRows()).toHaveLength(1);
       expect(firstRow.text()).toContain('Frontend Project');
       expect(firstRow.text()).toContain('Code Review Required');
     });
@@ -214,6 +251,14 @@ describe('ComplianceViolationsReportV2 component', () => {
       expect(statusDropdown.props('disabled')).toBe(false);
       expect(statusDropdown.props('value')).toBe('detected');
       expect(statusDropdown.vm.selectedOption.text).toBe('Detected');
+    });
+
+    it('displays framework badge text in the compliance control column', () => {
+      const frameworkBadge = findFrameworkBadge();
+      const firstRow = tableRows().at(0);
+
+      expect(frameworkBadge.exists()).toBe(true);
+      expect(firstRow.text()).toContain('SOX Framework');
     });
   });
 
