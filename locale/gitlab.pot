@@ -9067,12 +9067,6 @@ msgstr ""
 msgid "Attribute 'pod-overrides' is not yet supported"
 msgstr ""
 
-msgid "Audit Event Author Placeholder"
-msgstr ""
-
-msgid "Audit Event Details placeholder"
-msgstr ""
-
 msgid "Audit events"
 msgstr ""
 
@@ -16109,6 +16103,9 @@ msgstr ""
 msgid "ComplianceReport|Avoid creating new compliance pipelines and use pipeline execution policies instead. %{linkStart}Pipeline execution policies%{linkEnd} provide the ability to enforce CI/CD jobs, execute security scans, and better manage compliance enforcement in pipelines."
 msgstr ""
 
+msgid "ComplianceReport|By %{name}"
+msgstr ""
+
 msgid "ComplianceReport|Change status"
 msgstr ""
 
@@ -16169,6 +16166,9 @@ msgstr ""
 msgid "ComplianceReport|Full target branch name"
 msgstr ""
 
+msgid "ComplianceReport|Generic Audit event"
+msgstr ""
+
 msgid "ComplianceReport|Have questions or thoughts on the new improvements? %{linkStart}Please provide feedback on your experience%{linkEnd}."
 msgstr ""
 
@@ -16179,6 +16179,9 @@ msgid "ComplianceReport|Less than 2 approvers"
 msgstr ""
 
 msgid "ComplianceReport|Migrate pipeline to a policy"
+msgstr ""
+
+msgid "ComplianceReport|No audit event available"
 msgstr ""
 
 msgid "ComplianceReport|No frameworks"
@@ -16233,6 +16236,9 @@ msgid "ComplianceReport|Unable to load the compliance framework report. Refresh 
 msgstr ""
 
 msgid "ComplianceReport|Unable to load the compliance violations report. Refresh the page and try again."
+msgstr ""
+
+msgid "ComplianceReport|Unknown author"
 msgstr ""
 
 msgid "ComplianceReport|Update filtered results?"

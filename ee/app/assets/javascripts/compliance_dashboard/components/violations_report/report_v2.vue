@@ -2,7 +2,7 @@
 import { GlAlert, GlLoadingIcon, GlTable, GlLink, GlToast, GlKeysetPagination } from '@gitlab/ui';
 import Vue from 'vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
@@ -114,6 +114,48 @@ export default {
         return '#';
       }
     },
+    parseCustomMessage(details) {
+      if (!details) return null;
+      if (typeof details === 'string') {
+        try {
+          // The ruby backend is currently just giving us details.to_s instead of details.to_json
+          // This is a temporary measure until the backend output is corrected.
+          // Until then we'll resort to matching on the custom message inside the hash's string representation.
+          const match = details.match(/:custom_message=>"([^"\\]*(\\.[^"\\]*)*)"/);
+          return match ? match[1] : null;
+        } catch (error) {
+          return null;
+        }
+      }
+      return null;
+    },
+    getAuditEventTitle(auditEvent) {
+      if (!auditEvent) {
+        return '';
+      }
+
+      const { targetDetails, eventName } = auditEvent || {};
+      const customMessage = this.parseCustomMessage(auditEvent?.details) || '';
+
+      if (targetDetails || customMessage || eventName) {
+        return `${targetDetails} : ${customMessage || eventName}`;
+      }
+
+      return this.$options.i18n.auditEventGeneric;
+    },
+    getAuditEventAuthor(auditEvent) {
+      if (!auditEvent) {
+        return '';
+      }
+
+      const name = auditEvent.author?.name || auditEvent.author?.username;
+
+      if (name) {
+        return sprintf(this.$options.i18n.auditEventAuthor, { name });
+      }
+
+      return this.$options.i18n.auditEventUnknownAuthor;
+    },
   },
   apollo: {
     violations: {
@@ -186,6 +228,10 @@ export default {
     statusUpdateError: s__('ComplianceReport|Failed to update violation status. Please try again.'),
     viewDetails: s__('ComplianceReport|Details'),
     changeStatus: s__('ComplianceReport|Change status'),
+    noAuditEvent: s__('ComplianceReport|No audit event available'),
+    auditEventGeneric: s__('ComplianceReport|Generic Audit event'),
+    auditEventAuthor: s__('ComplianceReport|By %{name}'),
+    auditEventUnknownAuthor: s__('ComplianceReport|Unknown author'),
   },
 };
 </script>
@@ -230,12 +276,17 @@ export default {
         />
       </template>
 
-      <template #cell(auditEvent)="{}">
-        <div>
+      <template #cell(auditEvent)="{ item }">
+        <div v-if="item.auditEvent">
           <div class="gl-font-weight-semibold gl-mb-2">
-            {{ __('Audit Event Details placeholder') }}
+            {{ getAuditEventTitle(item.auditEvent) }}
           </div>
-          <div class="gl-text-sm gl-text-secondary">{{ __('Audit Event Author Placeholder') }}</div>
+          <div class="gl-text-sm gl-text-secondary">
+            {{ getAuditEventAuthor(item.auditEvent) }}
+          </div>
+        </div>
+        <div v-else class="gl-text-sm gl-text-secondary">
+          {{ $options.i18n.noAuditEvent }}
         </div>
       </template>
 

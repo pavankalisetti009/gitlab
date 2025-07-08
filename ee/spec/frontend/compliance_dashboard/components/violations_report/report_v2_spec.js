@@ -35,7 +35,6 @@ describe('ComplianceViolationsReportV2 component', () => {
               id: 'gid://gitlab/ComplianceViolation/1',
               createdAt: '2025-06-08T10:00:00Z',
               status: 'detected',
-              linkedAuditEventId: 'audit_event_1',
               project: {
                 id: 'gid://gitlab/Project/1',
                 name: 'Frontend Project',
@@ -54,6 +53,22 @@ describe('ComplianceViolationsReportV2 component', () => {
                     default: false,
                     description: 'Sarbanes-Oxley compliance framework',
                   },
+                },
+              },
+              auditEvent: {
+                id: 'gid://gitlab/AuditEvent/1',
+                createdAt: '2025-06-08T09:30:00Z',
+                details:
+                  '{:event_name=\u003e"request_to_compliance_external_control_failed", :author_name=\u003e"Administrator", :author_class=\u003e"Gitlab::Audit::UnauthenticatedAuthor", :target_id=\u003e30, :target_type=\u003e"ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl", :target_details=\u003e"External control", :custom_message=\u003e"Request to compliance requirement external failed.", :ip_address=\u003enil, :entity_path=\u003e"p-compliance-group-1748445340/subgroup_1748445340/project-83"}',
+                eventName: 'merge_request_approval_operation',
+                entityPath: 'foo/bar',
+                entityType: 'Project',
+                targetDetails: 'Merge request #123',
+                targetType: 'MergeRequest',
+                author: {
+                  id: 'gid://gitlab/User/1',
+                  name: 'John Doe',
+                  username: 'johndoe',
                 },
               },
             },
@@ -101,6 +116,7 @@ describe('ComplianceViolationsReportV2 component', () => {
                   },
                 },
               },
+              auditEvent: null,
             },
             {
               id: 'gid://gitlab/ComplianceViolation/2',
@@ -127,6 +143,7 @@ describe('ComplianceViolationsReportV2 component', () => {
                   },
                 },
               },
+              auditEvent: null,
             },
           ],
           pageInfo: {
@@ -242,6 +259,8 @@ describe('ComplianceViolationsReportV2 component', () => {
       expect(tableRows()).toHaveLength(1);
       expect(firstRow.text()).toContain('Frontend Project');
       expect(firstRow.text()).toContain('Code Review Required');
+      expect(firstRow.text()).toContain('Request to compliance requirement external failed.');
+      expect(firstRow.text()).toContain('By John Doe');
     });
 
     it('renders status dropdown', () => {
@@ -461,6 +480,146 @@ describe('ComplianceViolationsReportV2 component', () => {
 
       const result = wrapper.vm.getViolationDetailsPath(violation);
       expect(result).toBe('#');
+    });
+  });
+
+  describe('getAuditEventTitle', () => {
+    beforeEach(() => {
+      wrapper = createComponent();
+    });
+
+    it('returns with custom message when available', () => {
+      const auditEvent = {
+        eventName: 'some_event',
+        targetType: 'control',
+        targetDetails: 'MergeRequest',
+        details: '{target_details=\u003e"Control", :custom_message=\u003e"Thing happened"}',
+      };
+
+      const result = wrapper.vm.getAuditEventTitle(auditEvent);
+      expect(result).toBe('MergeRequest : Thing happened');
+    });
+
+    it('returns with event name when custom message not available', () => {
+      const auditEvent = {
+        eventName: 'some_event',
+        targetType: 'control',
+        targetDetails: 'MergeRequest',
+        details: '{target_details=\u003e"Control", :entity_path=\u003e"/group1/project1"}',
+      };
+
+      const result = wrapper.vm.getAuditEventTitle(auditEvent);
+      expect(result).toBe('MergeRequest : some_event');
+    });
+
+    it('returns generic audit event when no specific details are available', () => {
+      const auditEvent = {
+        details: {},
+      };
+
+      const result = wrapper.vm.getAuditEventTitle(auditEvent);
+      expect(result).toBe('Generic Audit event');
+    });
+
+    it('returns empty string when audit event is null', () => {
+      const result = wrapper.vm.getAuditEventTitle(null);
+      expect(result).toBe('');
+    });
+  });
+
+  describe('getAuditEventAuthor', () => {
+    beforeEach(() => {
+      wrapper = createComponent();
+    });
+
+    it('returns author name from author object when available', () => {
+      const auditEvent = {
+        author: { name: 'Jane Smith', username: 'foobar' },
+      };
+
+      const result = wrapper.vm.getAuditEventAuthor(auditEvent);
+      expect(result).toBe('By Jane Smith');
+    });
+
+    it('returns author username from author object when available', () => {
+      const auditEvent = {
+        author: { name: null, username: 'foobar' },
+      };
+
+      const result = wrapper.vm.getAuditEventAuthor(auditEvent);
+      expect(result).toBe('By foobar');
+    });
+
+    it('returns unknown author when no author information is available', () => {
+      const auditEvent = {};
+
+      const result = wrapper.vm.getAuditEventAuthor(auditEvent);
+      expect(result).toBe('Unknown author');
+    });
+
+    it('returns empty string when audit event is null', () => {
+      const result = wrapper.vm.getAuditEventAuthor(null);
+      expect(result).toBe('');
+    });
+  });
+
+  describe('when violation has no audit event', () => {
+    beforeEach(() => {
+      const responseWithoutAuditEvent = {
+        data: {
+          group: {
+            id: 'gid://gitlab/Group/1',
+            name: 'Test Group',
+            projectComplianceViolations: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/ComplianceViolation/1',
+                  createdAt: '2025-06-08T10:00:00Z',
+                  status: 'detected',
+                  project: {
+                    id: 'gid://gitlab/Project/1',
+                    name: 'Frontend Project',
+                    fullPath: 'foo/bar',
+                  },
+                  complianceControl: {
+                    id: 'gid://gitlab/ComplianceControl/1',
+                    name: 'SOX - Code Review Required',
+                    complianceRequirement: {
+                      id: 'gid://gitlab/ComplianceRequirement/1',
+                      name: 'Code Review Requirement',
+                      framework: {
+                        id: 'gid://gitlab/ComplianceFramework/1',
+                        name: 'SOX Framework',
+                        color: '#1f75cb',
+                        default: false,
+                        description: 'Sarbanes-Oxley compliance framework',
+                      },
+                    },
+                  },
+                  auditEvent: null,
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: false,
+                startCursor: 'cursor1',
+                endCursor: 'cursor1',
+              },
+            },
+          },
+        },
+      };
+
+      const mockResolver = jest.fn().mockResolvedValue(responseWithoutAuditEvent);
+      wrapper = createComponent(mount, {}, mockResolver);
+    });
+
+    it('renders no audit event message', async () => {
+      await waitForPromises();
+      expect(tableRows()).toHaveLength(1);
+
+      const firstRow = tableRows().at(0);
+      expect(firstRow.text()).toContain('No audit event available');
     });
   });
 });

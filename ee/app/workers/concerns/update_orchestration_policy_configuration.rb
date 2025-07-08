@@ -9,6 +9,7 @@ module UpdateOrchestrationPolicyConfiguration
       Security::ScanResultPolicies::DeleteScanResultPolicyReadsWorker.perform_async(configuration.id)
 
       update_configuration_timestamp!(configuration)
+      audit_invalid_policy_yaml(configuration)
       return
     end
 
@@ -37,6 +38,18 @@ module UpdateOrchestrationPolicyConfiguration
     Security::SecurityOrchestrationPolicies::UpdateExperimentsService.new(
       policy_configuration: configuration
     ).execute
+  end
+
+  def audit_invalid_policy_yaml(configuration)
+    return if Feature.disabled?(:collect_policy_yaml_invalidated_audit_event,
+      configuration.security_policy_management_project)
+
+    Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService.new(configuration).execute
+  rescue StandardError => e
+    Gitlab::ErrorTracking.track_exception(e,
+      security_policy_management_project_id: configuration.security_policy_management_project.id,
+      configuration_id: configuration.id
+    )
   end
 
   def update_configuration_timestamp!(configuration)
