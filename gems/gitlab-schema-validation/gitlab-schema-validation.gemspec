@@ -22,12 +22,12 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "diffy"
   spec.add_runtime_dependency "pg_query"
 
-  spec.add_development_dependency "gitlab-styles", "~> 10.1.0"
+  spec.add_development_dependency "gitlab-styles", "~> 13.1.0"
   spec.add_development_dependency "pg", "~> 1.5.9"
   spec.add_development_dependency "pry"
-  spec.add_development_dependency "rspec", "~> 3.0"
+  spec.add_development_dependency "rspec", "~> 3.13"
   spec.add_development_dependency "rspec-benchmark", "~> 0.6.0"
   spec.add_development_dependency "rspec-parameterized", "~> 1.0"
-  spec.add_development_dependency "rubocop", "~> 1.50"
-  spec.add_development_dependency "rubocop-rspec", "~> 2.22"
+  spec.add_development_dependency "rubocop", "~> 1.71"
+  spec.add_development_dependency "rubocop-rspec", "~> 3.0"
 end
