@@ -6,9 +6,14 @@ module EE
       module NoteableInterface
         module ClassMethods
           def resolve_type(object, *)
-            return ::Types::VulnerabilityType if ::Vulnerability === object
-
-            super
+            case object
+            when ::Vulnerability
+              ::Types::VulnerabilityType
+            when ::ComplianceManagement::Projects::ComplianceViolation
+              ::Types::ComplianceManagement::Projects::ComplianceViolationType
+            else
+              super
+            end
           end
         end
 

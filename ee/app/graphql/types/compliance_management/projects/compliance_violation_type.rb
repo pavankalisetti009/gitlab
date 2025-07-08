@@ -7,6 +7,8 @@ module Types
         graphql_name 'ProjectComplianceViolation'
         description 'Compliance violation for a project.'
 
+        implements Types::Notes::NoteableInterface
+
         authorize :read_compliance_violations_report
 
         field :id, GraphQL::Types::ID,

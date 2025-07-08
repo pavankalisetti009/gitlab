@@ -35,6 +35,7 @@ RSpec.describe ::ComplianceManagement::Projects::ComplianceViolationPolicy, feat
       end
 
       it { is_expected.to be_allowed(:read_compliance_violations_report) }
+      it { is_expected.to be_allowed(:create_note) }
     end
 
     context 'when group is not licensed' do
@@ -45,6 +46,7 @@ RSpec.describe ::ComplianceManagement::Projects::ComplianceViolationPolicy, feat
       end
 
       it { is_expected.not_to be_allowed(:read_compliance_violations_report) }
+      it { is_expected.not_to be_allowed(:create_note) }
     end
   end
 
@@ -61,6 +63,7 @@ RSpec.describe ::ComplianceManagement::Projects::ComplianceViolationPolicy, feat
       end
 
       it { is_expected.to be_allowed(:read_compliance_violations_report) }
+      it { is_expected.to be_allowed(:create_note) }
     end
 
     context 'when project is not licensed' do
@@ -71,6 +74,7 @@ RSpec.describe ::ComplianceManagement::Projects::ComplianceViolationPolicy, feat
       end
 
       it { is_expected.not_to be_allowed(:read_compliance_violations_report) }
+      it { is_expected.not_to be_allowed(:create_note) }
     end
   end
 end

@@ -12,6 +12,8 @@ RSpec.describe EE::Types::Notes::NoteableInterface do
       expect(extended_class.resolve_type(build(:design), {})).to eq(Types::DesignManagement::DesignType)
       expect(extended_class.resolve_type(build(:alert_management_alert), {})).to eq(Types::AlertManagement::AlertType)
       expect(extended_class.resolve_type(build(:vulnerability), {})).to eq(Types::VulnerabilityType)
+      expect(extended_class.resolve_type(build(:project_compliance_violation), {}))
+        .to eq(Types::ComplianceManagement::Projects::ComplianceViolationType)
     end
   end
 end

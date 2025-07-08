@@ -480,4 +480,10 @@ RSpec.describe Note, feature_category: :team_planning do
       it { is_expected.to be('Owner') }
     end
   end
+
+  describe '#noteable_ability_name' do
+    it 'returns compliance_violations_report for a compliance violation note' do
+      expect(build(:note_on_compliance_violation).noteable_ability_name).to eq('compliance_violations_report')
+    end
+  end
 end
