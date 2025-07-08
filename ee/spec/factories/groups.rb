@@ -29,6 +29,18 @@ FactoryBot.modify do
         group.namespace_settings.update!(model_prompt_cache_enabled: false)
       end
     end
+
+    trait :with_duo_default_on do
+      namespace_settings { association(:namespace_settings, duo_availability: 'default_on') }
+    end
+
+    trait :with_duo_default_off do
+      namespace_settings { association(:namespace_settings, duo_availability: 'default_off') }
+    end
+
+    trait :with_duo_never_on do
+      namespace_settings { association(:namespace_settings, duo_availability: 'never_on') }
+    end
   end
 end
 

@@ -35,6 +35,11 @@ module ComplianceManagement
         where(framework_id: framework_id)
       }
 
+      scope :without_controls, -> {
+        left_joins(:compliance_requirements_controls)
+          .where(compliance_requirements_controls: { id: nil })
+      }
+
       def delete_compliance_requirements_controls
         ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl
           .where(compliance_requirement: self)

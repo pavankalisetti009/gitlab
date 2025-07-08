@@ -4,17 +4,20 @@ module Ai
   module ActiveContext
     module Embeddings
       module Code
-        class VertexText < ::ActiveContext::Embeddings
+        class VertexText
           EMBEDDINGS_MODEL_CLASS = Gitlab::Llm::VertexAi::Embeddings::Text
 
           # Vertex bulk limit is 250 so we choose a lower batch size
           # Gitlab::Llm::VertexAi::Embeddings::Text::BULK_LIMIT
           DEFAULT_BATCH_SIZE = 100
 
-          def self.generate_embeddings(contents, unit_primitive:, model: nil, user: nil, batch_size: nil)
-            # The caller might explicitly send in a `nil` batch_size,
-            # so we need to override to DEFAULT_BATCH_SIZE here instead of the method signature
+          DEFAULT_UNIT_PRIMITIVE = 'generate_embeddings_codebase'
+
+          def self.generate_embeddings(contents, unit_primitive: nil, model: nil, user: nil, batch_size: nil)
+            # The caller might explicitly send in `nil` values for these parameters
+            # so we need to override here instead of the method signature
             batch_size ||= DEFAULT_BATCH_SIZE
+            unit_primitive ||= DEFAULT_UNIT_PRIMITIVE
 
             new(
               contents,
