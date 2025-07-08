@@ -4,6 +4,7 @@ import { createAlert } from '~/alert';
 import { __, s__ } from '~/locale';
 import deleteSelfHostedModelMutation from '../graphql/mutations/delete_self_hosted_model.mutation.graphql';
 import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
+import getAiFeatureSettingsQuery from '../../feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 
 export default {
   name: 'DeleteModal',
@@ -64,6 +65,9 @@ export default {
           refetchQueries: [
             {
               query: getSelfHostedModelsQuery,
+            },
+            {
+              query: getAiFeatureSettingsQuery,
             },
           ],
         });
