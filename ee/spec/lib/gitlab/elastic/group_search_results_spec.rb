@@ -42,7 +42,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       include_examples 'search results filtered by labels'
 
       it_behaves_like 'namespace ancestry_filter for aggregations' do
-        let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
+        let(:query_name) { 'filters:permissions:group:private_access:ancestry_filter:descendants' }
       end
     end
 
@@ -50,7 +50,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     include_examples 'search results filtered by confidential'
     include_examples 'search results filtered by labels'
     it_behaves_like 'namespace ancestry_filter for aggregations' do
-      let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
+      let(:query_name) { 'filters:permissions:group:private_access:ancestry_filter:descendants' }
     end
   end
 
@@ -110,7 +110,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
 
     it_behaves_like 'namespace ancestry_filter for aggregations' do
-      let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
+      let(:query_name) { 'filters:permissions:group:private_access:ancestry_filter:descendants' }
     end
   end
 

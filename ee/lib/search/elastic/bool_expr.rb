@@ -16,8 +16,30 @@ module Search
         self.minimum_should_match = nil
       end
 
+      def dup
+        new_expr = self.class.new
+        new_expr.must = must.deep_dup
+        new_expr.must_not = must_not.deep_dup
+        new_expr.should = should.deep_dup
+        new_expr.filter = filter.deep_dup
+        new_expr.minimum_should_match = minimum_should_match
+        new_expr
+      end
+
       def to_h
         super.reject { |_, value| value.blank? }
+      end
+
+      def empty?
+        to_h.blank?
+      end
+
+      def to_bool_query
+        return if empty?
+
+        self.minimum_should_match ||= 1 if should.present?
+
+        { bool: to_h }
       end
 
       def to_json(...)

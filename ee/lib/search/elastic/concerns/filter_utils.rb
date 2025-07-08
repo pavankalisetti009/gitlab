@@ -13,7 +13,8 @@ module Search
 
           return query_hash if filter_result.blank?
 
-          query_hash.dig(*path) << filter_result
+          filter_result = Array.wrap(filter_result) unless filter_result.is_a?(Array)
+          query_hash.dig(*path).concat(filter_result)
           query_hash
         end
       end

@@ -3559,9 +3559,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
       context 'when user has no access' do
         let_it_be(:user) { create(:user) }
-        let(:fixture_file) { 'global_search_user_no_access.json' }
+        let(:fixture_file) { 'global_search_user_no_access_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'global_search_user_no_access.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when user has access' do
@@ -3572,9 +3582,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:namespace_ancestry) { subgroup.elastic_namespace_ancestry }
-            let(:fixture_file) { 'global_search_user_access_to_group_as_reporter.json' }
+            let(:fixture_file) { 'global_search_user_access_to_group_as_reporter_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'global_search_user_access_to_group_as_reporter.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
 
           context 'with guest role' do
@@ -3583,9 +3603,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:namespace_ancestry) { subgroup.elastic_namespace_ancestry }
-            let(:fixture_file) { 'global_search_user_access_to_group_as_guest.json' }
+            let(:fixture_file) { 'global_search_user_access_to_group_as_guest_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'global_search_user_access_to_group_as_guest.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
         end
 
@@ -3596,9 +3626,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:project_id) { project.id.to_s }
-            let(:fixture_file) { 'global_search_user_access_to_project_as_reporter.json' }
+            let(:fixture_file) { 'global_search_user_access_to_project_as_reporter_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'global_search_user_access_to_project_as_reporter.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
 
           context 'with guest role' do
@@ -3607,9 +3647,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:project_id) { project.id.to_s }
-            let(:fixture_file) { 'global_search_user_access_to_project_as_guest.json' }
+            let(:fixture_file) { 'global_search_user_access_to_project_as_guest_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'global_search_user_access_to_project_as_guest.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
         end
 
@@ -3622,37 +3672,77 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
 
           let(:namespace_ancestry) { group.elastic_namespace_ancestry }
-          let(:fixture_file) { 'global_search_user_access_to_group_with_custom_role.json' }
+          let(:fixture_file) { 'global_search_user_access_to_group_with_custom_role_v2.json' }
 
           it { is_expected.to eq(expected_query) }
+
+          context 'when search_refactor_membership_filter feature flag is false' do
+            let(:fixture_file) { 'global_search_user_access_to_group_with_custom_role.json' }
+
+            before do
+              stub_feature_flags(search_refactor_membership_filter: false)
+            end
+
+            it { is_expected.to eq(expected_query) }
+          end
         end
 
         context 'in project when access is shared through another group' do
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
-          let(:fixture_file) { 'global_search_user_access_to_project_with_shared_group.json' }
           let(:project_id) { project.id.to_s }
           let(:namespace_ancestry) { group_shared.elastic_namespace_ancestry }
+          let(:fixture_file) { 'global_search_user_access_to_project_with_shared_group_v2.json' }
 
           before_all do
             create(:project_group_link, :reporter, project: project, group: group_shared)
           end
 
           it { is_expected.to eq(expected_query) }
+
+          context 'when search_refactor_membership_filter feature flag is false' do
+            let(:fixture_file) { 'global_search_user_access_to_project_with_shared_group.json' }
+
+            before do
+              stub_feature_flags(search_refactor_membership_filter: false)
+            end
+
+            it { is_expected.to eq(expected_query) }
+          end
         end
       end
 
       context 'when user is an admin', :enable_admin_mode do
         let_it_be(:user) { create(:admin) }
-        let(:fixture_file) { 'global_search_admin.json' }
+        let(:fixture_file) { 'global_search_admin_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'global_search_admin.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when user is anonymous' do
         let(:user) { nil }
-        let(:fixture_file) { 'global_search_anonymous.json' }
+        let(:fixture_file) { 'global_search_anonymous_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'global_search_anonymous.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
     end
 
@@ -3672,9 +3762,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
       context 'when user has no access' do
         let_it_be(:user) { create(:user) }
-        let(:fixture_file) { 'group_search_user_no_access.json' }
+        let(:fixture_file) { 'group_search_user_no_access_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'group_search_user_no_access.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when user has access' do
@@ -3685,9 +3785,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:namespace_ancestry) { subgroup.elastic_namespace_ancestry }
-            let(:fixture_file) { 'group_search_user_access_to_group_as_reporter.json' }
+            let(:fixture_file) { 'group_search_user_access_to_group_as_reporter_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'group_search_user_access_to_group_as_reporter.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
 
           context 'with guest role' do
@@ -3696,9 +3806,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:namespace_ancestry) { subgroup.elastic_namespace_ancestry }
-            let(:fixture_file) { 'group_search_user_access_to_group_as_guest.json' }
+            let(:fixture_file) { 'group_search_user_access_to_group_as_guest_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'group_search_user_access_to_group_as_guest.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
         end
 
@@ -3709,9 +3829,46 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:project_id) { project.id.to_s }
-            let(:fixture_file) { 'group_search_user_access_to_project_as_reporter.json' }
+            let(:fixture_file) { 'group_search_user_access_to_project_as_reporter_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'group_search_user_access_to_project_as_reporter.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
+
+            context 'and searching in the project namespace' do
+              let(:fixture_file) { 'group_search_user_access_to_project_as_reporter_v2.json' }
+              let(:searched_group) { subgroup.elastic_namespace_ancestry }
+              let(:options) do
+                {
+                  current_user: user,
+                  project_ids: [],
+                  group_ids: [subgroup.id],
+                  search_level: search_level,
+                  features: :repository,
+                  project_visibility_level_field: :visibility_level
+                }
+              end
+
+              it { is_expected.to eq(expected_query) }
+
+              context 'when search_refactor_membership_filter feature flag is false' do
+                let(:fixture_file) { 'group_search_user_access_to_project_as_reporter.json' }
+
+                before do
+                  stub_feature_flags(search_refactor_membership_filter: false)
+                end
+
+                it { is_expected.to eq(expected_query) }
+              end
+            end
           end
 
           context 'with guest role' do
@@ -3720,9 +3877,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:project_id) { project.id.to_s }
-            let(:fixture_file) { 'group_search_user_access_to_project_as_guest.json' }
+            let(:fixture_file) { 'group_search_user_access_to_project_as_guest_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'group_search_user_access_to_project_as_guest.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
         end
 
@@ -3735,14 +3902,24 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
 
           let(:namespace_ancestry) { group.elastic_namespace_ancestry }
-          let(:fixture_file) { 'group_search_user_access_to_group_with_custom_role.json' }
+          let(:fixture_file) { 'group_search_user_access_to_group_with_custom_role_v2.json' }
 
           it { is_expected.to eq(expected_query) }
+
+          context 'when search_refactor_membership_filter feature flag is false' do
+            let(:fixture_file) { 'group_search_user_access_to_group_with_custom_role.json' }
+
+            before do
+              stub_feature_flags(search_refactor_membership_filter: false)
+            end
+
+            it { is_expected.to eq(expected_query) }
+          end
         end
 
         context 'in project when access is shared through another group' do
+          let(:fixture_file) { 'group_search_user_access_to_project_with_shared_group_v2.json' }
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
-          let(:fixture_file) { 'group_search_user_access_to_project_with_shared_group.json' }
           let(:project_id) { project.id.to_s }
 
           before_all do
@@ -3750,21 +3927,51 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
 
           it { is_expected.to eq(expected_query) }
+
+          context 'when search_refactor_membership_filter feature flag is false' do
+            let(:fixture_file) { 'group_search_user_access_to_project_with_shared_group.json' }
+
+            before do
+              stub_feature_flags(search_refactor_membership_filter: false)
+            end
+
+            it { is_expected.to eq(expected_query) }
+          end
         end
       end
 
       context 'when user is an admin', :enable_admin_mode do
         let_it_be(:user) { create(:admin) }
-        let(:fixture_file) { 'group_search_admin.json' }
+        let(:fixture_file) { 'group_search_admin_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'group_search_admin.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when user is anonymous' do
         let(:user) { nil }
-        let(:fixture_file) { 'group_search_anonymous.json' }
+        let(:fixture_file) { 'group_search_anonymous_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'group_search_anonymous.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
     end
 
@@ -3784,9 +3991,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
       context 'when user has no access' do
         let_it_be(:user) { create(:user) }
-        let(:fixture_file) { 'project_search_user_no_access.json' }
+        let(:fixture_file) { 'project_search_user_no_access_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'project_search_user_no_access.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when user has access' do
@@ -3797,9 +4014,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:namespace_ancestry) { subgroup.elastic_namespace_ancestry }
-            let(:fixture_file) { 'project_search_user_access_to_group_as_reporter.json' }
+            let(:fixture_file) { 'project_search_user_access_to_group_as_reporter_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'project_search_user_access_to_group_as_reporter.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
 
           context 'with guest role' do
@@ -3808,9 +4035,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:namespace_ancestry) { subgroup.elastic_namespace_ancestry }
-            let(:fixture_file) { 'project_search_user_access_to_group_as_guest.json' }
+            let(:fixture_file) { 'project_search_user_access_to_group_as_guest_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'project_search_user_access_to_group_as_guest.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
         end
 
@@ -3821,9 +4058,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:project_id) { project.id.to_s }
-            let(:fixture_file) { 'project_search_user_access_to_project_as_reporter.json' }
+            let(:fixture_file) { 'project_search_user_access_to_project_as_reporter_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'project_search_user_access_to_project_as_reporter.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
 
           context 'with guest role' do
@@ -3832,9 +4079,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             let(:project_id) { project.id.to_s }
-            let(:fixture_file) { 'project_search_user_access_to_project_as_guest.json' }
+            let(:fixture_file) { 'project_search_user_access_to_project_as_guest_v2.json' }
 
             it { is_expected.to eq(expected_query) }
+
+            context 'when search_refactor_membership_filter feature flag is false' do
+              let(:fixture_file) { 'project_search_user_access_to_project_as_guest.json' }
+
+              before do
+                stub_feature_flags(search_refactor_membership_filter: false)
+              end
+
+              it { is_expected.to eq(expected_query) }
+            end
           end
         end
 
@@ -3847,14 +4104,25 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
 
           let(:namespace_ancestry) { project.namespace.elastic_namespace_ancestry }
-          let(:fixture_file) { 'project_search_user_access_to_group_with_custom_role.json' }
+          let(:fixture_file) { 'project_search_user_access_to_group_with_custom_role_v2.json' }
 
           it { is_expected.to eq(expected_query) }
+
+          context 'when search_refactor_membership_filter feature flag is false' do
+            let(:fixture_file) { 'project_search_user_access_to_group_with_custom_role.json' }
+
+            before do
+              stub_feature_flags(search_refactor_membership_filter: false)
+            end
+
+            it { is_expected.to eq(expected_query) }
+          end
         end
 
         context 'in project when access is shared through another group' do
+          let(:fixture_file) { 'project_search_user_access_to_project_with_shared_group_v2.json' }
+
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
-          let(:fixture_file) { 'project_search_user_access_to_project_with_shared_group.json' }
           let(:project_id) { project.id.to_s }
 
           before_all do
@@ -3862,21 +4130,51 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
 
           it { is_expected.to eq(expected_query) }
+
+          context 'when search_refactor_membership_filter feature flag is false' do
+            let(:fixture_file) { 'project_search_user_access_to_project_with_shared_group.json' }
+
+            before do
+              stub_feature_flags(search_refactor_membership_filter: false)
+            end
+
+            it { is_expected.to eq(expected_query) }
+          end
         end
       end
 
       context 'when user is an admin', :enable_admin_mode do
         let_it_be(:user) { create(:admin) }
-        let(:fixture_file) { 'project_search_admin.json' }
+        let(:fixture_file) { 'project_search_admin_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'project_search_admin.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when user is anonymous' do
         let(:user) { nil }
-        let(:fixture_file) { 'project_search_anonymous.json' }
+        let(:fixture_file) { 'project_search_anonymous_v2.json' }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'project_search_anonymous.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
     end
 
@@ -3892,9 +4190,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         }
       end
 
-      let(:fixture_file) { 'global_search_anonymous_custom_project_visibility_level_field.json' }
+      let(:fixture_file) { 'global_search_anonymous_custom_project_visibility_level_field_v2.json' }
 
       it { is_expected.to eq(expected_query) }
+
+      context 'when search_refactor_membership_filter feature flag is false' do
+        let(:fixture_file) { 'global_search_anonymous_custom_project_visibility_level_field.json' }
+
+        before do
+          stub_feature_flags(search_refactor_membership_filter: false)
+        end
+
+        it { is_expected.to eq(expected_query) }
+      end
     end
 
     context 'when multiple features are provided' do
@@ -3908,9 +4216,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         }
       end
 
-      let(:fixture_file) { 'global_search_anonymous_multiple_features.json' }
+      let(:fixture_file) { 'global_search_anonymous_multiple_features_v2.json' }
 
       it { is_expected.to eq(expected_query) }
+
+      context 'when search_refactor_membership_filter feature flag is false' do
+        let(:fixture_file) { 'global_search_anonymous_multiple_features.json' }
+
+        before do
+          stub_feature_flags(search_refactor_membership_filter: false)
+        end
+
+        it { is_expected.to eq(expected_query) }
+      end
     end
   end
 
