@@ -64,8 +64,13 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
       allow(::ActiveContext).to receive_message_chain(:adapter, :client, :search).and_return(search_response)
       # mock the call to embeddings generation which calls AIGW
       allow(Ai::ActiveContext::Embeddings::Code::VertexText).to receive(:generate_embeddings)
-        .with(%w[content_1 content_2], model: 'text-embedding-005', unit_primitive: unit_primitive, batch_size: 40)
-        .and_return([embedding_1, embedding_2])
+        .with(
+          %w[content_1 content_2],
+          model: 'text-embedding-005',
+          unit_primitive: unit_primitive,
+          user: nil,
+          batch_size: 40
+        ).and_return([embedding_1, embedding_2])
 
       allow(described_class).to receive(:fetch_content).and_call_original
       allow(described_class).to receive(:apply_embeddings).and_call_original
@@ -138,6 +143,7 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
             %w[content_1],
             model: 'text-embedding-005',
             unit_primitive: unit_primitive,
+            user: nil,
             batch_size: 40
           ).and_return([embedding_1])
       end

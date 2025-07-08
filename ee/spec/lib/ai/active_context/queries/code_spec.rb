@@ -23,10 +23,14 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
     context 'when a code collection record exists' do
       before do
+        # We get the embeddings version and details from Ai::ActiveContext::Collections::Code::MODELS
+        embeddings_version = 1
+        embeddings_version_details = Ai::ActiveContext::Collections::Code::MODELS[1]
+
         create(
           :ai_active_context_collection,
           name: Ai::ActiveContext::Collections::Code.collection_name,
-          search_embedding_version: 1, # see Ai::ActiveContext::Collections::Code::MODELS for details
+          search_embedding_version: embeddings_version,
           include_ref_fields: false
         )
 
@@ -35,7 +39,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
           .with(
             search_term,
             unit_primitive: 'generate_embeddings_codebase',
-            model: 'text-embedding-005'
+            version: embeddings_version_details
           ).and_return([target_embeddings])
 
         # mock code collections search, with different results depending on project_id
