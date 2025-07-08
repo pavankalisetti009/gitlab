@@ -112,10 +112,20 @@ module WorkItems
 
         status_ids = @statuses_to_remove.map(&:id)
         ::WorkItems::Statuses::Custom::Status.id_in(status_ids).delete_all
+      end
 
-        # We need to remove boards using the mapped system-defined identifier because these cannot have a
-        # foreign key constraint to cascade the deletion
-        system_defined_identifiers = @statuses_to_remove.filter_map(&:converted_from_system_defined_status_identifier)
+      # We need to remove associated system-defined board lists because these cannot have a
+      # foreign key constraint to cascade the deletion
+      def remove_system_defined_board_lists
+        return unless @statuses_to_remove&.any?
+
+        system_defined_identifiers = @statuses_to_remove.filter_map do |status|
+          if status.is_a?(WorkItems::Statuses::SystemDefined::Status)
+            status.id
+          else
+            status.converted_from_system_defined_status_identifier
+          end
+        end
 
         return if system_defined_identifiers.blank?
 
