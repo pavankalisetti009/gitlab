@@ -117,6 +117,17 @@ RSpec.describe Gitlab::Geo::Replicator, feature_category: :geo_replication do
     end
   end
 
+  describe '.model_name' do
+    where(:replicators) { described_class.subclasses }
+    with_them do
+      let(:name) { Gitlab::Geo::ModelMapper.convert_to_name(replicators.model) }
+
+      it 'returns the corresponding model name' do
+        expect(replicators.model_name).to eq(name)
+      end
+    end
+  end
+
   describe '.for_replicable_params' do
     it 'returns the corresponding Replicator instance' do
       replicator = described_class.for_replicable_params(replicable_name: 'dummy', replicable_id: 123456)
