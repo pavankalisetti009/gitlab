@@ -6,6 +6,8 @@ module EE
       extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
 
+      include ::WorkItems::IterationArgumentHelpers
+
       prepended do
         argument :verification_status_widget, ::Types::WorkItems::Widgets::VerificationStatusFilterInputType,
           required: false,
@@ -81,22 +83,6 @@ module EE
 
       def prepare_health_status_params(args)
         args[:health_status] = args.delete(:health_status_filter) if args[:health_status_filter].present?
-      end
-
-      def iteration_ids_from_args(args)
-        args[:iteration_id].compact.map do |id|
-          ::GitlabSchema.parse_gid(id, expected_type: ::Iteration).model_id
-        rescue ::Gitlab::Graphql::Errors::ArgumentError
-          id
-        end
-      end
-
-      def iteration_cadence_ids_from_args(args)
-        args[:iteration_cadence_id].compact.map do |id|
-          ::GitlabSchema.parse_gid(id, expected_type: ::Iterations::Cadence).model_id
-        rescue ::Gitlab::Graphql::Errors::ArgumentError
-          id
-        end
       end
     end
   end
