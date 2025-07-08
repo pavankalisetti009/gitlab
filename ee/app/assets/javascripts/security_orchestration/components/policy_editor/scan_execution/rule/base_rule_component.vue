@@ -115,6 +115,9 @@ export default {
         'ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{branchExceptions} %{agents} %{namespaces}',
       );
     },
+    showAllPipelineSources() {
+      return !TARGET_BRANCHES.includes(this.selectedBranchType);
+    },
   },
   methods: {
     setSelectedRule(key) {
@@ -141,7 +144,6 @@ export default {
         branchType,
         rule: this.initRule,
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
       });
 
       this.$emit('changed', updatedRule);
@@ -199,7 +201,11 @@ export default {
           </template>
 
           <template #sources>
-            <pipeline-source-selector :pipeline-sources="pipelineSources" @select="updateRule" />
+            <pipeline-source-selector
+              :all-sources="showAllPipelineSources"
+              :pipeline-sources="pipelineSources"
+              @select="updateRule"
+            />
           </template>
 
           <template #branchExceptions>

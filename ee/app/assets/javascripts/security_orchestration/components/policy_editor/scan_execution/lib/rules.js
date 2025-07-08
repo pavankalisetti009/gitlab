@@ -41,39 +41,27 @@ export const RULE_KEY_MAP = {
  * @param {Array<string>} options.targetBranches - Branch types that support pipeline sources
  * @returns {Object} The updated rule object
  */
-export const handleBranchTypeSelect = ({
-  branchType,
-  rule,
-  pipelineRuleKey,
-  targetBranches = [],
-}) => {
+export const handleBranchTypeSelect = ({ branchType, rule, pipelineRuleKey }) => {
+  let updatedRule;
+
+  /**
+   * Either branch or branch_type property are allowed on rule object
+   * Based on value we remove one and set another and vice versa
+   */
   if (branchType === SPECIFIC_BRANCHES.value) {
     /**
      * Pipeline rule and Schedule rule have different default values
      * Pipeline rule supports wildcard for branches
      */
     const branches = rule.type === pipelineRuleKey ? ['*'] : [];
-
-    // Create a new rule with branches and without branch_type
-    const updatedRule = { ...rule, branches };
+    updatedRule = { ...rule, branches };
     delete updatedRule.branch_type;
-
-    return updatedRule;
+  } else {
+    updatedRule = { ...rule, branch_type: branchType };
+    delete updatedRule.branches;
   }
 
-  /**
-   * Either branch of branch_type property
-   * is simultaneously allowed on rule object
-   * Based on value we remove one and
-   * set another and vice versa
-   */
-  const updatedRule = { ...rule, branch_type: branchType };
-  delete updatedRule.branches;
-
-  if (updatedRule.pipeline_sources && !targetBranches.includes(branchType)) {
-    delete updatedRule.pipeline_sources;
-  }
-
+  delete updatedRule.pipeline_sources;
   return updatedRule;
 };
 
