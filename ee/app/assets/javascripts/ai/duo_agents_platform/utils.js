@@ -2,7 +2,7 @@ import { s__ } from '~/locale';
 import { humanize } from '~/lib/utils/text_utility';
 
 export const formatAgentDefinition = (agentDefinition) => {
-  return humanize(agentDefinition || s__('DuoAgentsPlatform|Agent flow'));
+  return humanize(agentDefinition || s__('DuoAgentsPlatform|Agent session'));
 };
 
 export const formatAgentFlowName = (agentDefinition, id) => {

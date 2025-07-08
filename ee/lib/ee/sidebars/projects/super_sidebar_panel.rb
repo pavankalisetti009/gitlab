@@ -11,7 +11,7 @@ module EE
           super
 
           insert_menu_after(
-            ::Sidebars::Projects::SuperSidebarMenus::AnalyzeMenu,
+            ::Sidebars::Projects::SuperSidebarMenus::PlanMenu,
             ::Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu.new(context)
           )
         end

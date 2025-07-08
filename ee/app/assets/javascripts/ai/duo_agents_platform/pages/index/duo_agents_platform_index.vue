@@ -5,9 +5,10 @@ import { createAlert } from '~/alert';
 import WorkflowsList from '../../components/common/workflows_list.vue';
 import { getWorkflows } from '../../graphql/queries/get_workflows.query.graphql';
 import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
+import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
 
 export default {
-  name: 'DuoAgentPlatformIndex',
+  name: AGENT_PLATFORM_INDEX_COMPONENT_NAME,
   components: {
     GlButton,
     GlLoadingIcon,
@@ -80,7 +81,7 @@ export default {
         variant="confirm"
         :to="{ name: $options.newPage }"
         data-testid="new-agent-flow-button"
-        >{{ s__('DuoAgentsPlatform|New Agent Flow') }}</gl-button
+        >{{ s__('DuoAgentsPlatform|New session') }}</gl-button
       >
     </div>
     <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />

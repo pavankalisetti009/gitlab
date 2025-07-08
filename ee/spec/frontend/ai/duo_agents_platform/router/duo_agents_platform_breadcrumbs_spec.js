@@ -68,14 +68,14 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
       const items = getBreadcrumbItems();
 
       expect(items[items.length - 1]).toEqual({
-        text: 'Agents',
+        text: 'Agent sessions',
         to: undefined,
       });
     });
 
     it('has correct number of items', () => {
       const items = getBreadcrumbItems();
-      expect(items).toHaveLength(3); // 2 static routes + current page
+      expect(items).toHaveLength(4); // 2 static routes + Automate + Agent Sessions
     });
   });
 
@@ -91,10 +91,11 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
 
     it('includes root route with Vue router navigation', () => {
       const items = getBreadcrumbItems();
-      expect(items[2]).toEqual({
-        text: 'Agents',
-        to: { name: AGENTS_PLATFORM_INDEX_ROUTE },
-      });
+      expect(items[2].text).toBe('Automate');
+      expect(items[2].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
+
+      expect(items[3].text).toBe('Agent sessions');
+      expect(items[3].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
     });
 
     it('includes new page as last item without link', () => {
@@ -121,10 +122,11 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
     it('includes root route with Vue router navigation', () => {
       const items = getBreadcrumbItems();
 
-      expect(items[2]).toEqual({
-        text: 'Agents',
-        to: { name: AGENTS_PLATFORM_INDEX_ROUTE },
-      });
+      expect(items[2].text).toBe('Automate');
+      expect(items[2].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
+
+      expect(items[3].text).toBe('Agent sessions');
+      expect(items[3].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
     });
 
     it('includes current agent page as last item without link', () => {
@@ -138,7 +140,7 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
 
     it('has correct number of items', () => {
       const items = getBreadcrumbItems();
-      expect(items).toHaveLength(4); // 2 static routes + root route + current agent
+      expect(items).toHaveLength(5); // 2 static routes + root route + current agent
     });
   });
 
@@ -156,11 +158,13 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
     it('does not include agent route', () => {
       const items = getBreadcrumbItems();
 
-      expect(items).toHaveLength(3); // 2 static routes + root route only
-      expect(items[items.length - 1]).toEqual({
-        text: 'Agents',
-        to: { name: AGENTS_PLATFORM_INDEX_ROUTE },
-      });
+      expect(items).toHaveLength(4); // 2 static routes + root routes + sh
+
+      expect(items[2].text).toBe('Automate');
+      expect(items[2].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
+
+      expect(items[3].text).toBe('Agent sessions');
+      expect(items[3].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
     });
   });
 });
