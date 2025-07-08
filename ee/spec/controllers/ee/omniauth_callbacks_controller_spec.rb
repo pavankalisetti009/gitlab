@@ -349,6 +349,157 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
     end
   end
 
+  describe 'restricted country login prevention' do
+    let(:provider) { :github }
+    let(:error_message) { "It looks like you are visiting GitLab from Mainland China, Macau, or Hong Kong" }
+
+    before do
+      stub_omniauth_provider(provider, context: request)
+      stub_omniauth_setting(
+        {
+          enabled: true,
+          allow_single_sign_on: [provider.to_s],
+          auto_link_user: true,
+          block_auto_created_users: false
+        }
+      )
+    end
+
+    shared_examples "restricted country message" do
+      it 'prevents login and redirects to signin page with error' do
+        post provider
+
+        expect(request.env['warden']).not_to be_authenticated
+        expect(response).to redirect_to(new_user_session_path)
+        expect(flash[:alert]).to include(error_message)
+      end
+
+      it 'does not create a new user account' do
+        expect { post provider }.not_to change { User.count }
+      end
+    end
+
+    context 'when new user attempts signing-up from restricted country' do
+      before do
+        user.destroy!
+
+        request.env['HTTP_CF_IPCOUNTRY'] = 'CN'
+      end
+
+      it_behaves_like 'restricted country message'
+
+      context 'with feature flag disabled' do
+        before do
+          stub_feature_flags(restrict_sso_login_for_pipl_compliance: false)
+        end
+
+        it 'allows new user signup and login' do
+          post provider
+
+          expect(request.env['warden']).to be_authenticated
+          created_user = User.find_by_email(user.email)
+          expect(created_user).to be_present
+        end
+      end
+    end
+
+    context 'when existing user attempts login from restricted country' do
+      before do
+        request.env['HTTP_CF_IPCOUNTRY'] = 'CN'
+      end
+
+      it 'allows existing user login' do
+        post provider
+
+        expect(request.env['warden']).to be_authenticated
+      end
+    end
+
+    context 'when user attempts login from allowed country' do
+      let(:user_email) { user.email }
+
+      before do
+        user.destroy!
+
+        request.env['HTTP_CF_IPCOUNTRY'] = 'US'
+        mock_auth_hash(provider.to_s, extern_uid, user_email)
+      end
+
+      it 'allows new user signup and login' do
+        post provider
+
+        expect(request.env['warden']).to be_authenticated
+
+        created_user = User.find_by_email(user_email)
+        expect(created_user).to be_present
+        expect(created_user.identities.first.extern_uid).to eq(extern_uid)
+      end
+    end
+
+    context 'when existing user attempts login from allowed country' do
+      before do
+        request.env['HTTP_CF_IPCOUNTRY'] = 'US'
+        mock_auth_hash(provider.to_s, extern_uid, user.email)
+      end
+
+      it 'allows existing user login' do
+        expect { post provider }.not_to change { User.count }
+        expect(request.env['warden']).to be_authenticated
+        expect(request.env['warden'].user).to eq(user)
+      end
+    end
+
+    context 'when country header is missing' do
+      before do
+        request.env.delete('HTTP_CF_IPCOUNTRY')
+        mock_auth_hash(provider.to_s, extern_uid, user.email)
+      end
+
+      it 'allows login (treats as non-restricted)' do
+        post provider
+
+        expect(request.env['warden']).to be_authenticated
+      end
+    end
+
+    context 'with different OAuth providers' do
+      let(:providers_to_test) { [:github, :google_oauth2] }
+
+      before do
+        request.env['HTTP_CF_IPCOUNTRY'] = 'CN'
+      end
+
+      it 'blocks login for all OAuth providers from restricted countries' do
+        providers_to_test.each do |test_provider|
+          mock_auth_hash(test_provider.to_s, "uid-#{test_provider}", "user-#{test_provider}@example.com")
+          stub_omniauth_provider(test_provider, context: request)
+
+          post test_provider
+
+          expect(request.env['warden']).not_to be_authenticated
+          expect(response).to redirect_to(new_user_session_path)
+        end
+      end
+
+      context 'with feature flag disabled' do
+        before do
+          stub_feature_flags(restrict_sso_login_for_pipl_compliance: false)
+        end
+
+        it 'allows login for all OAuth providers from restricted countries' do
+          providers_to_test.each do |test_provider|
+            mock_auth_hash(test_provider.to_s, "uid-#{test_provider}", "user-#{test_provider}@example.com")
+            stub_omniauth_provider(test_provider, context: request)
+
+            post test_provider
+
+            expect(request.env['warden']).to be_authenticated
+          end
+        end
+      end
+    end
+  end
+
   context 'with strategies', :aggregate_failures do
     let(:provider) { :github }
     let(:check_namespace_plan) { true }

@@ -34458,6 +34458,9 @@ msgstr ""
 msgid "Issue|Title"
 msgstr ""
 
+msgid "It looks like you are visiting GitLab from Mainland China, Macau, or Hong Kong.We advise you to %{jihu_url} before continuing."
+msgstr ""
+
 msgid "It looks like you're attempting to activate your subscription. Use %{a_start}the Subscription page%{a_end} instead."
 msgstr ""
 

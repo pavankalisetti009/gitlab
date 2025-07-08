@@ -7,6 +7,7 @@ module EE
 
     prepended do
       include ::Gitlab::RackLoadBalancingHelpers
+      include ::Users::IdentityVerificationHelper
     end
 
     override :openid_connect
@@ -96,6 +97,24 @@ module EE
       opt_in = request.env.fetch('omniauth.params', {}).deep_symbolize_keys[:onboarding_status_email_opt_in]
       data[:onboarding_status_email_opt_in] = ::Gitlab::Utils.to_boolean(opt_in, default: false)
       data
+    end
+
+    override :allowed_new_user?
+    def allowed_new_user?(auth_user)
+      # We need to stop new sign ups in case of restricted countries based on the user IP address
+      # It should only apply for new signups, so we check if the user is new in the database.
+      new_user = super
+
+      if new_user && restricted_country?(request.env['HTTP_CF_IPCOUNTRY']) && ::Feature.enabled?(
+        :restrict_sso_login_for_pipl_compliance, :instance)
+
+        # This logger statement can be deleted while we are deleting feature flag
+        ::Gitlab::AppLogger.info("Gitlab Signup via SSO failed for Region: #{request.env['HTTP_CF_IPCOUNTRY']}")
+
+        raise ::OmniauthCallbacksController::SignUpFromRestrictedCountyError
+      end
+
+      new_user
     end
 
     override :set_session_active_since
