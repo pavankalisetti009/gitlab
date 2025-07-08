@@ -17,7 +17,7 @@ describe('Agents Platform Router', () => {
     });
 
     it('has the correct number of routes', () => {
-      expect(router.options.routes).toHaveLength(3);
+      expect(router.options.routes).toHaveLength(4);
     });
 
     describe('when examining the index route', () => {
@@ -51,6 +51,19 @@ describe('Agents Platform Router', () => {
     it('uses the custom base path', () => {
       // Support Vue2 and Vue3
       expect(router.options.base || router.options.history?.base).toBe(customBase);
+    });
+  });
+
+  describe('catchall redirect', () => {
+    it('adds the * redirect path as the last route', () => {
+      router = createRouter(baseRoute);
+      const { routes } = router.options;
+      const lastRoute = routes[routes.length - 1];
+
+      // In Vue3, the received result is "/:pathMatch(.*)*"
+      expect(lastRoute.path.endsWith('*')).toBe(true);
+      expect(lastRoute.redirect).toBe('/');
+      expect(lastRoute.name).toBeUndefined();
     });
   });
 });
