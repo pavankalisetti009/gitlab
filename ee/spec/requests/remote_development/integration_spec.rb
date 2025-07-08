@@ -35,6 +35,12 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:common_parent_namespace_name) { "common-parent-group" }
   let(:common_parent_namespace) { create(:group, name: common_parent_namespace_name, owners: agent_admin_user) }
   let(:common_organization) { common_parent_namespace.organization }
+  let(:organization_user) do
+    create(:user).tap do |u|
+      create(:organization_user, organization: common_organization, user: u)
+    end
+  end
+
   let(:agent_project_namespace) do
     create(:group, name: "agent-project-group", parent: common_parent_namespace)
   end
@@ -112,7 +118,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:workspace_project) do
     files = { devfile_path => devfile_yaml }
     create(:project, :in_group, :custom_repo, path: workspace_project_name, files: files,
-      namespace: workspace_project_namespace, developers: user)
+      namespace: workspace_project_namespace, developers: [user, organization_user])
   end
 
   let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
@@ -138,8 +144,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   # @param [String] random_string
+  # @param [User] user
   # @return [Array]
-  def expected_internal_variables(random_string:)
+  def expected_internal_variables(random_string:, user:)
     # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
     [
       { key: "GL_WORKSPACE_LOGS_DIR", type: :environment, value: workspace_operations_constants_module::WORKSPACE_LOGS_DIR },
@@ -151,8 +158,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GIT_CONFIG_KEY_1", type: :environment, value: "user.name" },
       { key: "GIT_CONFIG_KEY_2", type: :environment, value: "user.email" },
       { key: "GIT_CONFIG_VALUE_0", type: :environment, value: git_credential_store_script_file_path },
-      { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
-      { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
+      { key: "GIT_CONFIG_VALUE_1", type: :environment, value: user.name },
+      { key: "GIT_CONFIG_VALUE_2", type: :environment, value: user.email },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
@@ -263,8 +270,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   # rubocop:disable Metrics/AbcSize -- We want this to stay a single method
   # @param [String] random_string
+  # @param [User] user
   # @return [RemoteDevelopment::Workspace]
-  def do_create_workspace(random_string:)
+  def do_create_workspace(random_string:, user:)
     allow(SecureRandom).to receive(:alphanumeric) { random_string }
 
     # FETCH THE AGENT CONFIG VIA THE GRAPHQL API, SO WE CAN USE ITS VALUES WHEN CREATING WORKSPACE
@@ -304,7 +312,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(actual_processed_devfile).to eq(expected_processed_devfile)
 
     all_expected_vars =
-      (expected_internal_variables(random_string: random_string) + user_provided_variables)
+      (expected_internal_variables(random_string: random_string, user: user) + user_provided_variables)
         .sort_by { |v| v[:key] }
 
     # NOTE: We convert the actual records into hashes and sort them as a hash rather than ordering in
@@ -332,7 +340,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(expected_without_regexes).to match(actual_without_regexes)
 
     expected_gl_token_value =
-      expected_internal_variables(random_string: random_string).find { |var| var[:key] == token_file_name }[:value]
+      expected_internal_variables(random_string: random_string,
+        user: user).find { |var| var[:key] == token_file_name }[:value]
     actual_gl_token_value = all_actual_vars.find { |var| var[:key] == token_file_name }[:value]
     expect(actual_gl_token_value).to match(expected_gl_token_value)
 
@@ -450,7 +459,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       do_create_workspaces_agent_config
 
       # CREATE WORKSPACE VIA GRAPHQL API
-      workspace = do_create_workspace(random_string: "abcdef")
+      workspace = do_create_workspace(random_string: "abcdef", user: user)
 
       additional_args_for_expected_config_to_apply =
         build_additional_args_for_expected_config_to_apply_yaml_stream(
@@ -589,8 +598,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       do_delete_namespace_mapping
       do_create_org_mapping
 
-      # CREATE A NEW WORKSPACE WITH THE ORGANIZATION MAPPING
-      do_create_workspace(random_string: "ghijkl")
+      # CREATE A NEW WORKSPACE WITH THE ORGANIZATION MAPPING WITH MINIMUM USER PRIVILEGES
+      do_create_workspace(random_string: "ghijkl", user: organization_user)
     end
   end
 
