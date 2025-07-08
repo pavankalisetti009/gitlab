@@ -253,14 +253,14 @@ RSpec.describe Boards::Epics::MoveService do
 
       context 'service calls' do
         let(:reposition_service) { instance_double(Boards::Epics::RepositionService) }
-        let(:update_service) { instance_double(::Epics::UpdateService) }
+        let(:update_service) { instance_double(::WorkItems::LegacyEpics::UpdateService) }
         let(:service_result) { ServiceResponse.success }
 
         before do
           allow(Boards::Epics::RepositionService).to receive(:new).and_return(reposition_service)
           allow(reposition_service).to receive(:execute).and_return(service_result)
 
-          allow(::Epics::UpdateService).to receive(:new).and_return(update_service)
+          allow(::WorkItems::LegacyEpics::UpdateService).to receive(:new).and_return(update_service)
           allow(update_service).to receive(:execute).and_return(service_result)
         end
 
@@ -300,7 +300,7 @@ RSpec.describe Boards::Epics::MoveService do
               let(:to_list) { development_list }
 
               it 'calls UpdateService' do
-                expect(::Epics::UpdateService).to receive(:new).with(
+                expect(::WorkItems::LegacyEpics::UpdateService).to receive(:new).with(
                   group: epic.group,
                   current_user: user,
                   params: kind_of(Hash)
@@ -316,7 +316,7 @@ RSpec.describe Boards::Epics::MoveService do
               let(:to_list) { closed }
 
               it 'calls UpdateService' do
-                expect(::Epics::UpdateService).to receive(:new).with(
+                expect(::WorkItems::LegacyEpics::UpdateService).to receive(:new).with(
                   group: epic.group,
                   current_user: user,
                   params: kind_of(Hash)
@@ -336,7 +336,7 @@ RSpec.describe Boards::Epics::MoveService do
               end
 
               it 'calls UpdateService' do
-                expect(::Epics::UpdateService).to receive(:new).with(
+                expect(::WorkItems::LegacyEpics::UpdateService).to receive(:new).with(
                   group: epic.group,
                   current_user: user,
                   params: kind_of(Hash)
@@ -355,7 +355,7 @@ RSpec.describe Boards::Epics::MoveService do
               let(:params) { super().merge(move_before_id: epic.id, position_in_list: 1) }
 
               it 'does not call UpdateService' do
-                expect(::Epics::UpdateService).not_to receive(:new)
+                expect(::WorkItems::LegacyEpics::UpdateService).not_to receive(:new)
 
                 subject
               end
@@ -366,7 +366,7 @@ RSpec.describe Boards::Epics::MoveService do
               let(:to_list) { backlog }
 
               it 'does not call UpdateService' do
-                expect(::Epics::UpdateService).not_to receive(:new)
+                expect(::WorkItems::LegacyEpics::UpdateService).not_to receive(:new)
 
                 subject
               end

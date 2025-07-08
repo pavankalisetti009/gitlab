@@ -29,7 +29,7 @@ RSpec.describe "User tests hooks", :js, feature_category: :webhooks do
       end
     end
 
-    context "when URL is invalid", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/461551' do
+    context "when URL is invalid" do
       before do
         stub_full_request(hook.url, method: :post).to_raise(SocketError.new("Failed to open"))
         click_button('Test')
@@ -37,7 +37,7 @@ RSpec.describe "User tests hooks", :js, feature_category: :webhooks do
       end
 
       it do
-        expect(page).to have_selector('[data-testid="alert-danger"]', text: "Hook execution failed: Failed to open")
+        expect(page).to have_selector('[data-testid="alert-danger"]', text: "Hook execution failed. Failed to open")
       end
     end
   end
