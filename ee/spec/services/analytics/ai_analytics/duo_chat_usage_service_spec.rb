@@ -10,6 +10,7 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, group: subgroup) }
+  let_it_be(:project_namespace) { project.project_namespace.reload }
   let_it_be(:user1) { create(:user, developer_of: group) }
   let_it_be(:user2) { create(:user, developer_of: subgroup) }
   let_it_be(:user3) { create(:user, developer_of: group) }
@@ -24,10 +25,14 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
   end
 
   shared_examples 'common chat usage service' do |flag_enabled|
+    # This shared examples requires the following variables
+    # :expected_results
+    before do
+      stub_feature_flags(fetch_contributions_data_from_new_tables: flag_enabled)
+    end
+
     context 'when the clickhouse is not available for analytics' do
       before do
-        stub_feature_flags(fetch_contributions_data_from_new_tables: flag_enabled)
-
         allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).with(container).and_return(false)
       end
 
@@ -81,13 +86,17 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
       context 'with data' do
         before do
           clickhouse_fixture(:duo_chat_events, [
-            { user_id: user1.id, event: 1, timestamp: to - 3.days },
-            { user_id: user1.id, event: 1, timestamp: to - 4.days },
-            { user_id: user2.id, event: 1, timestamp: to - 2.days },
-            { user_id: user2.id, event: 1, timestamp: to - 2.days },
-            { user_id: stranger_user.id, event: 1, timestamp: to - 2.days },
-            { user_id: user3.id, event: 1, timestamp: to + 2.days },
-            { user_id: user3.id, event: 1, timestamp: from - 2.days }
+            { user_id: user1.id, namespace_path: group.traversal_path, event: 1, timestamp: to - 3.days },
+            { user_id: user1.id, namespace_path: group.traversal_path, event: 1, timestamp: to - 4.days },
+            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: to - 2.days },
+            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: to - 2.days },
+            # Included only when use_ai_events_namespace_path_filter is enabled
+            { user_id: stranger_user.id, namespace_path: project_namespace.traversal_path, event: 1,
+              timestamp: to - 2.days },
+            # out of timeframe
+            { user_id: user3.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: to + 2.days },
+            # out of timeframe
+            { user_id: user3.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: from - 2.days }
           ])
 
           insert_events_into_click_house([
@@ -100,31 +109,74 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
 
         it 'returns matched contributors duo chat usage stats' do
           expect(service_response).to be_success
-          expect(service_response.payload).to match(
-            contributors_count: 3,
-            duo_chat_contributors_count: 2
-          )
+
+          expect(service_response.payload).to match(expected_results)
         end
       end
     end
   end
 
-  context 'for group' do
-    let_it_be(:container) { group }
+  context 'when use_ai_events_namespace_path_filter feature flag is disabled' do
+    let(:expected_results) do
+      {
+        contributors_count: 3,
+        duo_chat_contributors_count: 2
+      }
+    end
 
-    it_behaves_like 'common chat usage service', true
+    before do
+      stub_feature_flags(use_ai_events_namespace_path_filter: false)
+    end
 
-    context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
-      it_behaves_like 'common chat usage service', false
+    context 'for group' do
+      let_it_be(:container) { group }
+
+      it_behaves_like 'common chat usage service', true
+
+      context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
+        it_behaves_like 'common chat usage service', false
+      end
+    end
+
+    context 'for project' do
+      let_it_be(:container) { project.project_namespace.reload }
+
+      it_behaves_like 'common chat usage service', true
+
+      context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
+        it_behaves_like 'common chat usage service', false
+      end
     end
   end
 
-  context 'for project' do
-    let_it_be(:container) { project.project_namespace.reload }
+  context 'when use_ai_events_namespace_path_filter feature flag is enabled' do
+    context 'for group' do
+      let_it_be(:container) { group }
 
-    it_behaves_like 'common chat usage service', true
+      let(:expected_results) do
+        {
+          contributors_count: 3,
+          duo_chat_contributors_count: 3
+        }
+      end
 
-    context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
+      # When use_ai_events_namespace_path_filter is enabled we do not need to
+      # run this shared behavior with 'true' parameter because contributors filter won't be used
+      it_behaves_like 'common chat usage service', false
+    end
+
+    context 'for project' do
+      let_it_be(:container) { project.project_namespace.reload }
+
+      let(:expected_results) do
+        {
+          contributors_count: 3,
+          duo_chat_contributors_count: 2
+        }
+      end
+
+      # When use_ai_events_namespace_path_filter is enabled we do not need to
+      # run this shared behavior with 'true' parameter because contributors filter won't be used
       it_behaves_like 'common chat usage service', false
     end
   end
