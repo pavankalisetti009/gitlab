@@ -299,7 +299,15 @@ describe('Iterations report issues', () => {
     beforeEach(() => {
       mountComponent({
         props: { ...defaultProps, label },
-        data: { issues: { count } },
+        data: {
+          issues: {
+            pageInfo: {
+              hasNextPage: true,
+              hasPreviousPage: false,
+            },
+            count,
+          },
+        },
       });
     });
 
