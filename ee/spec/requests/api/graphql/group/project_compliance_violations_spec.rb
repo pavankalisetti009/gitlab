@@ -32,12 +32,21 @@ RSpec.describe 'getting the project compliance violations for a group', feature_
   let_it_be(:audit_event3) { create(:audit_events_project_audit_event, project_id: other_project.id) }
 
   let_it_be(:violation1) do
-    create(:project_compliance_violation, namespace: root_group_project.namespace, project: root_group_project,
+    create(:project_compliance_violation, namespace: root_group_project.namespace,
+      project: root_group_project,
       audit_event_id: audit_event1.id,
       audit_event_table_name: :project_audit_events,
       compliance_control: control1,
       status: 0
     )
+  end
+
+  let_it_be(:violation1_issue1) do
+    create(:project_compliance_violation_issue, project: root_group_project, project_compliance_violation: violation1)
+  end
+
+  let_it_be(:violation1_issue2) do
+    create(:project_compliance_violation_issue, project: root_group_project, project_compliance_violation: violation1)
   end
 
   let_it_be(:violation2) do
@@ -90,6 +99,12 @@ RSpec.describe 'getting the project compliance violations for a group', feature_
           id
           name
         }
+        issues {
+          nodes {
+            id
+            title
+          }
+        }
       }
     GRAPHQL
   end
@@ -124,8 +139,24 @@ RSpec.describe 'getting the project compliance violations for a group', feature_
       'complianceControl' => {
         'id' => violation.compliance_control.to_global_id.to_s,
         'name' => violation.compliance_control.name
+      },
+      'issues' => {
+        "nodes" => get_issues_output(violation)
       }
     }
+  end
+
+  def get_issues_output(violation)
+    output = []
+
+    violation.issues.each do |issue|
+      output.prepend({
+        'id' => issue.to_global_id.to_s,
+        'title' => issue.title
+      })
+    end
+
+    output
   end
 
   def query(params = {})
