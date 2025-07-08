@@ -92,9 +92,6 @@ export default {
         this.hasRemediation
       );
     },
-    hasIssue() {
-      return Boolean(this.vulnerability.issueFeedback?.issueIid);
-    },
     hasRemediation() {
       return this.vulnerability.remediations?.[0]?.diff?.length > 0;
     },
