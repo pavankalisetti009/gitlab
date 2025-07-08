@@ -568,10 +568,7 @@ export const GET_WORKSPACES_ORGANIZATION_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS 
           {
             id: 'gid://gitlab/Clusters::Agent/3',
             name: 'org-agent-1',
-            project: {
-              id: 'gid://gitlab/Project/103',
-              nameWithNamespace: 'GitLab Org / GitLab Agent Three',
-            },
+            project: null,
             workspacesAgentConfig: {
               id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
             },
@@ -588,7 +585,7 @@ export const TRANSFORMED_GET_WORKSPACES_CLUSTER_AGENTS_QUERY_RESULT_ORG_AND_NAME
     value: 'gid://gitlab/Clusters::Agent/2',
   },
   {
-    text: 'GitLab Org / GitLab Agent Three / org-agent-1',
+    text: 'org-agent-1',
     value: 'gid://gitlab/Clusters::Agent/3',
   },
   {
