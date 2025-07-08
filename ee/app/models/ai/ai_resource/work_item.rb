@@ -3,7 +3,7 @@
 module Ai
   module AiResource
     class WorkItem < Ai::AiResource::Issue
-      def serialize_for_ai(content_limit:)
+      def serialize_for_ai(content_limit: default_content_limit)
         synced_epic = resource.synced_epic
         if synced_epic
           ::EpicSerializer.new(current_user: current_user) # rubocop: disable CodeReuse/Serializer -- we need to serialize resource here

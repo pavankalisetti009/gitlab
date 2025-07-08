@@ -40,6 +40,14 @@ RSpec.describe Ai::AiResource::WorkItem, feature_category: :duo_chat do
                                      })
       wrapped_work_item.serialize_for_ai(content_limit: 100)
     end
+
+    context 'when content_limit is omitted' do
+      let(:work_item) { build_stubbed(:work_item) }
+
+      it 'does not raise error' do
+        expect { wrapped_work_item.serialize_for_ai }.not_to raise_error
+      end
+    end
   end
 
   describe '#current_page_type' do
