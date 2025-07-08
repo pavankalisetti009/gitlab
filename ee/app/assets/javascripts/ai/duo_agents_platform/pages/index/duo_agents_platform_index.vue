@@ -5,9 +5,10 @@ import { createAlert } from '~/alert';
 import WorkflowsList from '../../components/common/workflows_list.vue';
 import { getWorkflows } from '../../graphql/queries/get_workflows.query.graphql';
 import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
+import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
 
 export default {
-  name: 'DuoAgentPlatformIndex',
+  name: AGENT_PLATFORM_INDEX_COMPONENT_NAME,
   components: {
     GlButton,
     GlLoadingIcon,
