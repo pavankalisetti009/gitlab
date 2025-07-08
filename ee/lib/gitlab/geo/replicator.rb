@@ -87,6 +87,13 @@ module Gitlab
         "#{self.replicable_name.camelize(:lower)}Registries"
       end
 
+      # Return the name of the base model, formatted for API usage
+      # :: and capitalisation is replaced by underscores
+      # @return [String] slug that identifies the base Model name, i.e. "ci_secure_file"
+      def self.model_name
+        Gitlab::Geo::ModelMapper.convert_to_name(self.model)
+      end
+
       # @return [String] GraphQL mutation registry class used by registry_class_enum.rb. E.g. "PACKAGE_FILE_REGISTRY"
       def self.graphql_mutation_registry_class
         self.registry_class.graphql_enum_key
