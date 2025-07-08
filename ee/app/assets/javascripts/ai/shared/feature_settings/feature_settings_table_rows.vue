@@ -117,7 +117,7 @@ export default {
     </template>
     <template #cell(batch_model_update)="{ item }">
       <model-selection-batch-settings-updater
-        v-if="!isLoading"
+        v-if="!isLoading && aiFeatureSettings.length > 1"
         class="gl-float-right"
         :ai-feature-settings="aiFeatureSettings"
         :selected-feature-setting="item"

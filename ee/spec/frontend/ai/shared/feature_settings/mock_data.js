@@ -70,10 +70,79 @@ export const mockDuoChatFeatureSettings = [
   },
 ];
 
+export const mockMergeRequestFeatureSettings = [
+  {
+    feature: 'summarize_review',
+    title: 'Code Review Summary',
+    mainFeature: 'GitLab Duo for merge requests',
+    selectedModel: null,
+    selectableModels: [
+      {
+        ref: 'claude_sonnet_3_7_20250219',
+        name: 'Claude Sonnet 3.7 - Anthropic',
+      },
+      {
+        ref: 'claude_3_5_sonnet_20240620',
+        name: 'Claude Sonnet 3.5 - Anthropic',
+      },
+      {
+        ref: 'claude_3_haiku_20240307',
+        name: 'Claude Haiku 3 - Anthropic',
+      },
+    ],
+  },
+  {
+    feature: 'generate_commit_message',
+    title: 'Merge Commit Message Generation',
+    mainFeature: 'GitLab Duo for merge requests',
+    selectedModel: null,
+    selectableModels: [
+      {
+        ref: 'claude_sonnet_3_7_20250219',
+        name: 'Claude Sonnet 3.7 - Anthropic',
+      },
+      {
+        ref: 'claude_3_5_sonnet_20240620',
+        name: 'Claude Sonnet 3.5 - Anthropic',
+      },
+      {
+        ref: 'claude_3_haiku_20240307',
+        name: 'Claude Haiku 3 - Anthropic',
+      },
+    ],
+  },
+];
+
+export const mockIssueFeatureSettings = [
+  {
+    feature: 'duo_chat_summarize_comments',
+    title: 'Discussion Summary',
+    mainFeature: 'GitLab Duo for issues',
+    selectedModel: {
+      ref: 'claude_3_5_sonnet_20240620',
+      name: 'Claude Sonnet 3.5 - Anthropic',
+    },
+    selectableModels: [
+      {
+        ref: 'claude_sonnet_3_7_20250219',
+        name: 'Claude Sonnet 3.7 - Anthropic',
+      },
+      {
+        ref: 'claude_3_5_sonnet_20240620',
+        name: 'Claude Sonnet 3.5 - Anthropic',
+      },
+      {
+        ref: 'claude_3_haiku_20240307',
+        name: 'Claude Haiku 3 - Anthropic',
+      },
+    ],
+  },
+];
+
 export const mockOtherDuoFeaturesSettings = [
   {
-    feature: 'summarize_new_merge_request',
-    title: 'Summarize New Merge Request',
+    feature: 'glab_ask_git_command',
+    title: 'GitLab Duo for CLI',
     mainFeature: 'Other GitLab Duo features',
     selectedModel: {
       ref: 'claude_3_5_sonnet_20240620',
@@ -99,6 +168,8 @@ export const mockOtherDuoFeaturesSettings = [
 export const mockAiFeatureSettings = [
   ...mockCodeSuggestionsFeatureSettings,
   ...mockDuoChatFeatureSettings,
+  ...mockMergeRequestFeatureSettings,
+  ...mockIssueFeatureSettings,
   ...mockOtherDuoFeaturesSettings,
 ];
 
