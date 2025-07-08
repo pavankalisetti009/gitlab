@@ -2412,6 +2412,9 @@ msgstr ""
 msgid "AICatalog|Description is required."
 msgstr ""
 
+msgid "AICatalog|Edit"
+msgstr ""
+
 msgid "AICatalog|Edit agent"
 msgstr ""
 

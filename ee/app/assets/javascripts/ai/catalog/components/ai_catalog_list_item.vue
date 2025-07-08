@@ -1,17 +1,23 @@
 <script>
-import { GlButton, GlBadge, GlMarkdown, GlLink, GlAvatar, GlTooltipDirective } from '@gitlab/ui';
+import {
+  GlAvatar,
+  GlBadge,
+  GlDisclosureDropdown,
+  GlMarkdown,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { s__ } from '~/locale';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE, AI_CATALOG_AGENTS_RUN_ROUTE } from '../router/constants';
 import { ENUM_TO_NAME_MAP } from '../constants';
 
 export default {
   name: 'AiCatalogListItem',
   components: {
-    GlButton,
+    GlAvatar,
+    GlDisclosureDropdown,
     GlBadge,
     GlMarkdown,
-    GlLink,
-    GlAvatar,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -22,14 +28,26 @@ export default {
       required: true,
     },
   },
-  methods: {
-    formatId(id) {
-      return getIdFromGraphQLId(id);
+  computed: {
+    items() {
+      const formattedId = getIdFromGraphQLId(this.item.id);
+      return [
+        {
+          text: s__('AICatalog|Run'),
+          href: this.$router.resolve({
+            name: AI_CATALOG_AGENTS_RUN_ROUTE,
+            params: { id: formattedId },
+          }).href,
+        },
+        {
+          text: s__('AICatalog|Edit'),
+          href: this.$router.resolve({
+            name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+            params: { id: formattedId },
+          }).href,
+        },
+      ];
     },
-  },
-  routes: {
-    show: AI_CATALOG_AGENTS_SHOW_ROUTE,
-    run: AI_CATALOG_AGENTS_RUN_ROUTE,
   },
   ENUM_TO_NAME_MAP,
 };
@@ -49,9 +67,7 @@ export default {
       />
       <div class="gl-flex gl-grow gl-flex-col gl-gap-1">
         <div class="gl-mb-1 gl-flex gl-flex-wrap gl-items-center gl-gap-2">
-          <gl-link :to="{ name: $options.routes.show, params: { id: formatId(item.id) } }">
-            {{ item.name }}
-          </gl-link>
+          {{ item.name }}
           <gl-badge variant="neutral" class="gl-self-center">
             {{ $options.ENUM_TO_NAME_MAP[item.itemType] }}
           </gl-badge>
@@ -62,10 +78,13 @@ export default {
         </div>
       </div>
     </div>
-    <div>
-      <gl-button :to="{ name: $options.routes.run, params: { id: formatId(item.id) } }">
-        {{ s__('AICatalog|Run') }}
-      </gl-button>
-    </div>
+    <gl-disclosure-dropdown
+      :toggle-text="__('More actions')"
+      :items="items"
+      category="tertiary"
+      icon="ellipsis_v"
+      no-caret
+      text-sr-only
+    />
   </li>
 </template>
