@@ -11,24 +11,25 @@ import { isTopLevelGroup } from '../../utils';
 import FrameworkCoverage from './framework_coverage.vue';
 import FailedRequirements from './failed_requirements.vue';
 import FailedControls from './failed_controls.vue';
+import FrameworksNeedsAttention from './frameworks_needs_attention.vue';
 
 import frameworkCoverageQuery from './graphql/framework_coverage.query.graphql';
 import failedRequirementsQuery from './graphql/failed_requirements.query.graphql';
 import failedControlsQuery from './graphql/failed_controls.query.graphql';
+import frameworksNeedsAttentionQuery from './graphql/frameworks_needs_attention.query.graphql';
 
-const MINIMAL_HEIGHT = 2;
-const FRAMEWORKS_PER_UNIT = 7;
-const DummyComponent = {
-  render() {
-    return null;
-  },
-};
+const COVERAGE_MINIMAL_HEIGHT = 2;
+const COVERAGE_FRAMEWORKS_PER_UNIT = 7;
+
+const ATTENTION_MINIMAL_HEIGHT = 2.5;
+const ATTENTION_FRAMEWORKS_PER_UNIT = 7;
 
 export default {
   components: {
     DashboardLayout,
     ExtendedDashboardPanel,
     FrameworkCoverage,
+    FrameworksNeedsAttention,
   },
   props: {
     groupPath: {
@@ -57,6 +58,7 @@ export default {
         passed: 0,
         pending: 0,
       },
+      frameworksNeedsAttention: [],
       colorScheme: getSystemColorScheme(),
     };
   },
@@ -109,6 +111,20 @@ export default {
         this.handleGenericError(error);
       },
     },
+    frameworksNeedsAttention: {
+      query: frameworksNeedsAttentionQuery,
+      variables() {
+        return {
+          groupPath: this.groupPath,
+        };
+      },
+      update(data) {
+        return data.group.complianceFrameworksNeedingAttention.nodes;
+      },
+      error(error) {
+        this.handleGenericError(error);
+      },
+    },
   },
   computed: {
     isTopLevelGroup() {
@@ -116,7 +132,12 @@ export default {
     },
     dashboardConfig() {
       const coverageHeight =
-        MINIMAL_HEIGHT + Math.ceil(this.summary.details.length / FRAMEWORKS_PER_UNIT);
+        COVERAGE_MINIMAL_HEIGHT +
+        Math.ceil(this.summary.details.length / COVERAGE_FRAMEWORKS_PER_UNIT);
+
+      const needsAttentionHeight =
+        ATTENTION_MINIMAL_HEIGHT +
+        Math.ceil(this.frameworksNeedsAttention.length / ATTENTION_FRAMEWORKS_PER_UNIT);
 
       return {
         panels: [
@@ -175,20 +196,26 @@ export default {
               xPos: 6,
             },
           },
-          {
-            id: '4',
-            extendedDashboardPanelProps: {
-              title: s__('ComplianceReport|Frameworks needs attention'),
-            },
-            component: DummyComponent,
-            gridAttributes: {
-              width: 12,
-              height: 1,
-              yPos: 3,
-              xPos: 0,
-            },
-          },
-        ],
+          this.frameworksNeedsAttention.length
+            ? {
+                id: '4',
+                extendedDashboardPanelProps: {
+                  title: s__('ComplianceReport|Frameworks needs attention'),
+                  loading: this.$apollo.queries.frameworksNeedsAttention.loading,
+                },
+                component: FrameworksNeedsAttention,
+                componentProps: {
+                  frameworks: this.frameworksNeedsAttention,
+                },
+                gridAttributes: {
+                  width: 12,
+                  height: needsAttentionHeight,
+                  yPos: coverageHeight + 3,
+                  xPos: 0,
+                },
+              }
+            : null,
+        ].filter(Boolean),
       };
     },
   },
