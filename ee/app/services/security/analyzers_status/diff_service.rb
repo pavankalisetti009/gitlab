@@ -11,7 +11,6 @@ module Security
 
       def execute
         process_new_statuses
-        process_removed_statuses
 
         diff_with_metadata
       end
@@ -39,18 +38,6 @@ module Security
           old_status = current_record&.status.to_s
 
           update_diff_if_status_changed(analyzer_type, old_status, new_status)
-        end
-      end
-
-      def process_removed_statuses
-        current_statuses = fetch_current_statuses
-        processed_types = extract_processed_types
-
-        current_statuses.each do |type, record|
-          old_status = record.status.to_s
-          next if processed_types.include?(type) || old_status == 'not_configured'
-
-          record_status_change(type, old_status, 'not_configured')
         end
       end
 

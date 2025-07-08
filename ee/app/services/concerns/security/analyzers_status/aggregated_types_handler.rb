@@ -24,10 +24,10 @@ module Security
         not_configured: 0
       }.freeze
 
-      def build_aggregated_type_status(project, analyzer_type, status)
+      def build_aggregated_type_status(project, analyzer_type, status_hash)
         return unless aggregated_type_for(analyzer_type).present? && project.present?
 
-        calculate_updated_aggregated_status(project, analyzer_type, status)
+        calculate_updated_aggregated_status(project, analyzer_type, status_hash)
       end
 
       private
@@ -38,34 +38,35 @@ module Security
         end&.first
       end
 
-      def calculate_updated_aggregated_status(project, analyzer_type, status)
+      def calculate_updated_aggregated_status(project, analyzer_type, status_hash)
         analyzer_statuses = project.analyzer_statuses
         aggregated_type = aggregated_type_for(analyzer_type)
         other_type = find_other_type(aggregated_type, analyzer_type)
         return unless other_type.present? && aggregated_type.present?
 
-        aggregated_status = extract_analyzer_status(analyzer_statuses, aggregated_type)
         other_status = extract_analyzer_status(analyzer_statuses, other_type)
+        current_status = status_hash[:status]
+        wanted_aggregated_status = higher_priority_between(current_status, other_status)
 
-        wanted_aggregated_status = higher_priority_between(status, other_status)
-        return if aggregated_status == wanted_aggregated_status
+        # return if the other type is the only responsible for the aggregated status
+        return if wanted_aggregated_status == other_status && wanted_aggregated_status != current_status
 
-        build_analyzer_status_hash(project, aggregated_type, wanted_aggregated_status)
+        build_analyzer_status_hash(project, aggregated_type, wanted_aggregated_status, status_hash: status_hash)
       end
 
       def higher_priority_between(status_1, status_2)
         status_priority(status_1) > status_priority(status_2) ? status_1 : status_2
       end
 
-      def build_analyzer_status_hash(project, type, status, build = nil)
+      def build_analyzer_status_hash(project, type, status, build: nil, status_hash: nil)
         {
           project_id: project.id,
           traversal_ids: project.namespace.traversal_ids,
           analyzer_type: type,
           status: status,
-          last_call: build&.started_at || build&.created_at || Time.current,
+          last_call: build&.started_at || build&.created_at || status_hash&.dig(:last_call) || Time.current,
           archived: project.archived,
-          build_id: build&.id
+          build_id: build&.id || status_hash&.dig(:build_id)
         }
       end
 

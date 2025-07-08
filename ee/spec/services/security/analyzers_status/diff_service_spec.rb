@@ -82,38 +82,6 @@ RSpec.describe Security::AnalyzersStatus::DiffService, feature_category: :vulner
           expect(calculate_diff).to eq(expected_diff)
         end
       end
-
-      context 'when an existing status is not in the new statuses' do
-        let(:new_analyzer_statuses) do
-          {
-            sast: { project_id: project.id, analyzer_type: :sast, status: :failed },
-            dependency_scanning: { project_id: project.id, analyzer_type: :dependency_scanning, status: :success }
-          }
-        end
-
-        it 'sets the missing status to not_configured' do
-          expected_diff = diff_metadata.merge({ diff: {
-            sast: { 'success' => -1, 'failed' => 1 },
-            dast: { 'failed' => -1, 'not_configured' => 1 },
-            dependency_scanning: { 'success' => 1 }
-          } })
-
-          expect(calculate_diff).to eq(expected_diff)
-        end
-      end
-
-      context 'when the new_analyzer_statuses is empty' do
-        let(:new_analyzer_statuses) { {} }
-
-        it 'calculates the correct diff' do
-          expected_diff = diff_metadata.merge({ diff: {
-            sast: { 'success' => -1, 'not_configured' => 1 },
-            dast: { 'failed' => -1, 'not_configured' => 1 }
-          } })
-
-          expect(calculate_diff).to eq(expected_diff)
-        end
-      end
     end
   end
 end

@@ -12,6 +12,9 @@ module Security
         "skipped" => :failed
       }.freeze
 
+      PIPELINE_EXCLUDED_TYPES = %w[secret_detection secret_detection_secret_push_protection
+        container_scanning container_scanning_for_registry].freeze
+
       def initialize(pipeline)
         @pipeline = pipeline
         @project = pipeline&.project
@@ -62,7 +65,8 @@ module Security
 
           build_analyzer_groups.each do |build_analyzer_group|
             if status_priority(status) > status_priority(memo[build_analyzer_group]&.[](:status))
-              memo[build_analyzer_group] = build_analyzer_status_hash(project, build_analyzer_group, status, build)
+              memo[build_analyzer_group] =
+                build_analyzer_status_hash(project, build_analyzer_group, status, build: build)
             end
           end
         end
@@ -76,10 +80,10 @@ module Security
       end
 
       def not_configured_statuses(analyzers_statuses)
-        excluded_types = TYPE_MAPPINGS.keys + (analyzers_statuses.present? ? analyzers_statuses.keys : [])
+        excluded_types = PIPELINE_EXCLUDED_TYPES + (analyzers_statuses.present? ? analyzers_statuses.keys : [])
         AnalyzerProjectStatus.by_projects(project).without_types(excluded_types).select(:analyzer_type)
           .each_with_object({}) do |record, memo|
-          analyzer_type = record.analyzer_type
+          analyzer_type = record.analyzer_type.to_sym
           memo[analyzer_type] = build_analyzer_status_hash(project, analyzer_type, :not_configured)
         end
       end
@@ -117,7 +121,7 @@ module Security
           next unless analyzers_statuses[pipeline_type]
 
           aggregated_status =
-            build_aggregated_type_status(project, pipeline_type, analyzers_statuses[pipeline_type][:status])
+            build_aggregated_type_status(project, pipeline_type, analyzers_statuses[pipeline_type])
           memo[aggregated_status[:analyzer_type]] = aggregated_status if aggregated_status
         end
       end

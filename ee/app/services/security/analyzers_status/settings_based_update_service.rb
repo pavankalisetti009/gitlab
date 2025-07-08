@@ -50,7 +50,8 @@ module Security
           setting_type = TYPE_MAPPINGS[@analyzer_type][:setting_type]
 
           aggregated_status =
-            build_aggregated_type_status(project, TYPE_MAPPINGS[@analyzer_type][:setting_type], setting_status)
+            build_aggregated_type_status(project, TYPE_MAPPINGS[@analyzer_type][:setting_type],
+              { status: setting_status })
 
           memo[project] = {
             setting_type => build_analyzer_status_hash(project, setting_type, setting_status)

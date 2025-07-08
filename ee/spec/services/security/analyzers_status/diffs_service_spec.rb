@@ -96,7 +96,6 @@ RSpec.describe Security::AnalyzersStatus::DiffsService, feature_category: :vulne
               namespace_id: group.id,
               traversal_ids: group.traversal_ids,
               diff: {
-                sast: { 'success' => -1, 'not_configured' => 1 },
                 dependency_scanning_pipeline_based: { 'failed' => 1 },
                 dependency_scanning: { 'failed' => 1 }
               }
@@ -263,13 +262,11 @@ RSpec.describe Security::AnalyzersStatus::DiffsService, feature_category: :vulne
         }
       end
 
-      it 'marks non existing statuses as not_configured' do
+      it 'adds the new statuses only' do
         expected_result = [{
           namespace_id: group.id,
           traversal_ids: group.traversal_ids,
           diff: {
-            sast: { 'success' => -1, 'not_configured' => 1 },          # from project1
-            dast: { 'failed' => -1, 'not_configured' => 1 },           # from project2
             dependency_scanning: { 'success' => 1 },                   # from project1
             secret_push_protection_pipeline_based: { 'success' => 1 }  # from project2
           }
