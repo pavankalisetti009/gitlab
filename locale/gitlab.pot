@@ -62532,6 +62532,12 @@ msgstr ""
 msgid "The file has been successfully deleted."
 msgstr ""
 
+msgid "The file is locked."
+msgstr ""
+
+msgid "The file is unlocked."
+msgstr ""
+
 msgid "The file you're about to delete is tracked by LFS"
 msgstr ""
 
