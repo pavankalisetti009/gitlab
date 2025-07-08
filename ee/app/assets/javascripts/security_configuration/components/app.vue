@@ -1,12 +1,14 @@
 <script>
 import { GlTabs, GlTab } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import TempForm from './security_labels/temp_form.vue';
 
 export default {
   components: {
     GlTabs,
     GlTab,
     PageHeading,
+    TempForm,
   },
 };
 </script>
@@ -22,6 +24,7 @@ export default {
             )
           }}
         </p>
+        <temp-form />
       </gl-tab>
     </gl-tabs>
   </div>
