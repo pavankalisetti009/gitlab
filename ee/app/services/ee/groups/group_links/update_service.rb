@@ -26,7 +26,6 @@ module EE
         end
 
         def log_audit_event(group_link)
-          changes = group_link.previous_changes.symbolize_keys.except(:updated_at)
           return unless changes.present?
 
           audit_context = {
@@ -39,9 +38,9 @@ module EE
                      "access params for the group #{group_link.shared_group.name}",
             additional_details: {
               changes: [
-                access_change(changes[:group_access]),
-                expiry_change(changes[:expires_at]),
-                member_role_change(changes[:member_role_id])
+                change_details(:group_access, formatter: ->(v) { ::Gitlab::Access.human_access(v) }),
+                change_details(:expires_at),
+                change_details(:member_role_id, name: :member_role)
               ].compact
             }.compact
           }
@@ -49,34 +48,15 @@ module EE
           ::Gitlab::Audit::Auditor.audit(audit_context)
         end
 
-        def access_change(change = nil)
+        def change_details(attr, name: nil, formatter: ->(v) { v.to_s })
+          change = changes[attr]
           return if change.blank?
 
-          {
-            change: :group_access,
-            from: ::Gitlab::Access.human_access(change.first),
-            to: ::Gitlab::Access.human_access(change.last)
-          }
+          { change: name || attr, from: formatter.call(change.first), to: formatter.call(change.last) }
         end
 
-        def expiry_change(change = nil)
-          return if change.blank?
-
-          {
-            change: :expires_at,
-            from: change.first.to_s,
-            to: change.last.to_s
-          }
-        end
-
-        def member_role_change(change = nil)
-          return if change.blank?
-
-          {
-            change: :member_role,
-            from: change.first.to_s,
-            to: change.last.to_s
-          }
+        def changes
+          @changes ||= group_link.previous_changes.symbolize_keys.except(:updated_at)
         end
       end
     end
