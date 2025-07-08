@@ -279,6 +279,10 @@ module Gitlab
         @slack_link_regex ||= Gitlab::UntrustedRegexp.new('<([^|<>]*[|][^|<>]*)>')
       end
 
+      def helm_index_app_version_quote_regex
+        @helm_index_app_version_quote_regex ||= /^(\s*appVersion:\s+)(?!["'])([^\n\r]+)$/m
+      end
+
       private
 
       def conan_name_regex
