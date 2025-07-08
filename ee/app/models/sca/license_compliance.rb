@@ -4,6 +4,8 @@ module SCA
   class LicenseCompliance
     include ::Gitlab::Utils::StrongMemoize
 
+    LicenseNotFoundError = Class.new(StandardError)
+
     SORT_DIRECTION = {
       asc: ->(items) { items },
       desc: ->(items) { items.reverse }
@@ -84,9 +86,18 @@ module SCA
           end
 
           license = policy.custom_software_license || software_license
+
+          if license.blank?
+            Gitlab::ErrorTracking.track_exception(LicenseNotFoundError.new,
+              license_spdx_id: policy.software_license_spdx_identifier,
+              project_id: policy.project_id)
+
+            next [nil, nil]
+          end
+
           reported_license = reported_license_by_license_model(license)
           [license.canonical_id, build_policy(reported_license, policy)]
-        end
+        end.compact
       end
     end
 
