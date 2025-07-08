@@ -1158,4 +1158,15 @@ RSpec.describe Gitlab::Regex, feature_category: :tooling do
     it { is_expected.to match('1.0-SNAPSHOT_v1_snapshot edited') }
     it { is_expected.not_to match('!!()()') }
   end
+
+  describe '.helm_index_app_version_quote_regex' do
+    subject { described_class.helm_index_app_version_quote_regex }
+
+    it { is_expected.to match('appVersion: master') }
+    it { is_expected.to match('appVersion: 4852e000') }
+    it { is_expected.to match('appVersion: v1.0.0') }
+    it { is_expected.not_to match('apiVersion: master') }
+    it { is_expected.not_to match('apiVersion: "4852e000"') }
+    it { is_expected.not_to match('apiVersion: \'v1.0.0\'') }
+  end
 end
