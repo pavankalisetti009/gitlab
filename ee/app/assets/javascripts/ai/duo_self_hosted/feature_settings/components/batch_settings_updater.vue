@@ -33,13 +33,38 @@ export default {
     selectedFeatureSettingDisabled() {
       return this.selectedFeatureSetting.provider === PROVIDERS.DISABLED;
     },
+    selectedModelCompatibleWithAllSettings() {
+      const selectedModelId = this.selectedFeatureSetting.selfHostedModel?.id;
+
+      if (!selectedModelId) return false;
+
+      return this.aiFeatureSettings.every((fs) => {
+        const validModels = fs.validModels?.nodes?.map((model) => model.id);
+
+        return validModels.includes(selectedModelId);
+      });
+    },
     canBatchUpdate() {
-      return !this.selectedFeatureSettingUnassigned && !this.selectedFeatureSettingDisabled;
+      return (
+        !this.selectedFeatureSettingUnassigned &&
+        !this.selectedFeatureSettingDisabled &&
+        this.selectedModelCompatibleWithAllSettings
+      );
     },
     tooltipTitle() {
-      const tooltipText = this.canBatchUpdate
-        ? s__('AdminSelfHostedModels|Apply to all %{mainFeature} sub-features')
-        : s__('AdminSelfHostedModels|Assign a model to %{subFeature} before applying to all');
+      let tooltipText;
+
+      if (this.canBatchUpdate) {
+        tooltipText = s__('AdminSelfHostedModels|Apply to all %{mainFeature} sub-features');
+      } else if (this.selectedFeatureSettingUnassigned || this.selectedFeatureSettingDisabled) {
+        tooltipText = s__(
+          'AdminSelfHostedModels|Assign a model to %{subFeature} before applying to all',
+        );
+      } else {
+        tooltipText = s__(
+          'AdminSelfHostedModels|This model cannot be applied to all %{mainFeature} sub-features',
+        );
+      }
 
       return sprintf(tooltipText, {
         mainFeature: this.selectedFeatureSetting.mainFeature,

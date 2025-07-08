@@ -1,34 +1,34 @@
 export const mockSelfHostedModels = [
   {
-    id: 1,
+    id: 'gid://gitlab/Ai::SelfHostedModel/1',
     name: 'Model 1',
     model: 'mistral',
     modelDisplayName: 'Mistral',
     releaseState: 'GA',
   },
   {
-    id: 2,
+    id: 'gid://gitlab/Ai::SelfHostedModel/2',
     name: 'Model 2',
     model: 'codellama',
     modelDisplayName: 'Code Llama',
     releaseState: 'BETA',
   },
   {
-    id: 3,
+    id: 'gid://gitlab/Ai::SelfHostedModel/3',
     name: 'Model 3',
     model: 'codegemma',
     modelDisplayName: 'CodeGemma',
     releaseState: 'BETA',
   },
   {
-    id: 4,
+    id: 'gid://gitlab/Ai::SelfHostedModel/4',
     name: 'Model 4',
     model: 'gpt',
     modelDisplayName: 'GPT',
     releaseState: 'GA',
   },
   {
-    id: 5,
+    id: 'gid://gitlab/Ai::SelfHostedModel/5',
     name: 'Model 5',
     model: 'claude_3',
     modelDisplayName: 'Claude 3',
@@ -65,7 +65,7 @@ export const mockDuoChatFeatureSettings = [
     releaseState: 'EXPERIMENT',
     provider: 'self_hosted',
     selfHostedModel: {
-      id: 1,
+      id: 'gid://gitlab/Ai::SelfHostedModel/1',
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
@@ -77,7 +77,7 @@ export const mockDuoChatFeatureSettings = [
     releaseState: 'GA',
     provider: 'self_hosted',
     selfHostedModel: {
-      id: 1,
+      id: 'gid://gitlab/Ai::SelfHostedModel/1',
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
@@ -89,7 +89,7 @@ export const mockDuoChatFeatureSettings = [
     releaseState: 'BETA',
     provider: 'self_hosted',
     selfHostedModel: {
-      id: 1,
+      id: 'gid://gitlab/Ai::SelfHostedModel/1',
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
@@ -113,7 +113,7 @@ export const mockMergeRequestFeatureSettings = [
     releaseState: 'BETA',
     provider: 'self_hosted',
     selfHostedModel: {
-      id: 1,
+      id: 'gid://gitlab/Ai::SelfHostedModel/1',
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
