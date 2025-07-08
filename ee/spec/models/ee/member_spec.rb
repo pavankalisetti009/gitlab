@@ -826,49 +826,35 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
   end
 
   describe '.with_group_group_sharing_access' do
+    let_it_be(:user) { create(:user) }
     let_it_be(:shared_group) { create(:group) }
+    let_it_be(:invited_group) { create(:group) }
 
-    include_context 'with multiple users in a group with custom roles' do
-      let(:group) { shared_group }
-    end
-
-    where(:invited_group_access, :invited_group_member_role, :member, :expected_access_level, :expected_member_role) do
-      Gitlab::Access::GUEST | nil | ref(:user_a) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::GUEST | nil | ref(:user_b) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::GUEST | nil | ref(:user_c) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::GUEST | nil | ref(:user_d) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::GUEST | nil | ref(:user_e) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
-      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
-      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_c) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_d) | Gitlab::Access::GUEST | ref(:guest_read_runners)
-      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_e) | Gitlab::Access::GUEST | ref(:guest_read_runners)
-      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
-      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
-      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_c) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_d) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
-      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_e) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
-      Gitlab::Access::DEVELOPER | nil | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
-      Gitlab::Access::DEVELOPER | nil | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
-      Gitlab::Access::DEVELOPER | nil | ref(:user_c) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::DEVELOPER | nil | ref(:user_d) | Gitlab::Access::DEVELOPER | nil
-      Gitlab::Access::DEVELOPER | nil | ref(:user_e) | Gitlab::Access::DEVELOPER | nil
-      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
-      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
-      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_c) | Gitlab::Access::GUEST | nil
-      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_d) | Gitlab::Access::DEVELOPER | nil
-      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_e) | Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability)
+    where(:user_access, :group_access, :expected_access_level, :expected_member_role) do
+      10 | 30 | 10 | ref(:user_role)
+      30 | 10 | 10 | ref(:group_role)
+      10 | 10 | 10 | ref(:user_role)
     end
 
     with_them do
-      before do
-        create(
-          :group_group_link,
-          group_access: invited_group_access,
-          member_role: invited_group_member_role,
-          shared_group: shared_group,
-          shared_with_group: invited_group
+      let(:user_role) { create(:member_role, base_access_level: user_access, namespace: invited_group) }
+      let(:group_role) { create(:member_role, base_access_level: group_access, namespace: shared_group) }
+
+      let(:member) do
+        create(:group_member,
+          access_level: user_access,
+          user: user,
+          group: invited_group,
+          member_role: user_role
         )
+      end
+
+      before do
+        create(:group_group_link,
+          group_access: group_access,
+          shared_group: shared_group,
+          shared_with_group: invited_group,
+          member_role: group_role)
       end
 
       context 'when `custom_role_for_group_link_enabled` is true' do
@@ -881,7 +867,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
           expect(members.size).to eq(1)
           expect(members.first.access_level).to eq(expected_access_level)
-          expect(members.first.member_role_id).to eq(expected_member_role&.id)
+          expect(members.first.member_role_id).to eq expected_member_role.id
         end
       end
 

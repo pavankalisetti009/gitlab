@@ -3,6 +3,8 @@
 module Authz
   module UserGroupMemberRoles
     class UpdateForGroupService < BaseService
+      include ::Authz::MemberRoleInSharedGroup
+
       attr_reader :user, :group, :member
 
       def initialize(member)
@@ -81,28 +83,6 @@ module Authz
           .and(members[:requested_at].eq(nil))
           .and(members[:state].eq(::Member::STATE_ACTIVE))
           .and(members[:access_level].gt(Gitlab::Access::MINIMAL_ACCESS))
-      end
-
-      def member_role_id_in_shared_group
-        group_access_level = group_group_links[:group_access]
-        group_member_role_id = group_group_links[:member_role_id]
-
-        user_access_level = members[:access_level]
-        user_member_role_id = members[:member_role_id]
-
-        Arel::Nodes::Case.new
-          .when(user_access_level.gt(group_access_level)).then(group_member_role_id)
-          .when(user_access_level.lt(group_access_level)).then(user_member_role_id)
-          .when(group_member_role_id.eq(nil)).then(nil)
-          .else(user_member_role_id)
-      end
-
-      def members
-        Member.arel_table
-      end
-
-      def group_group_links
-        ::GroupGroupLink.arel_table
       end
 
       def user_group_member_roles
