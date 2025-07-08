@@ -15,7 +15,6 @@ module Admin
       before_action :ensure_seat_assignable_duo_add_on!
 
       before_action do
-        push_frontend_feature_flag(:enable_add_on_users_filtering)
         push_frontend_feature_flag(:enable_add_on_users_pagesize_selection)
       end
 

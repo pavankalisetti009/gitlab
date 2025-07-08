@@ -32,7 +32,6 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('Add On Eligible User List', () => {
   let wrapper;
-  let enableAddOnUsersFiltering = false;
   let enableAddOnUsersPagesizeSelection = false;
 
   const duoProAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
@@ -91,7 +90,6 @@ describe('Add On Eligible User List', () => {
       },
       provide: {
         glFeatures: {
-          enableAddOnUsersFiltering,
           enableAddOnUsersPagesizeSelection,
         },
       },
@@ -129,43 +127,36 @@ describe('Add On Eligible User List', () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(duoProDefaultQueryVariables);
     });
 
-    describe('when enableAddOnUsersFiltering is enabled', () => {
-      beforeEach(() => {
-        enableAddOnUsersFiltering = true;
-        return createComponent();
-      });
+    it('passes the correct sort options to <search-and-sort-bar>', () => {
+      expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual(SORT_OPTIONS);
+    });
 
-      it('passes the correct sort options to <search-and-sort-bar>', () => {
-        expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual(SORT_OPTIONS);
-      });
+    it('passes the correct tokens to <search-and-sort-bar>', () => {
+      expect(findSearchAndSortBar().props('tokens')).toStrictEqual([
+        {
+          options: [
+            { value: 'true', title: 'Yes' },
+            { value: 'false', title: 'No' },
+          ],
+          icon: 'user',
+          operators: OPERATORS_IS,
+          title: TOKEN_TITLE_ASSIGNED_SEAT,
+          token: BaseToken,
+          type: TOKEN_TYPE_ASSIGNED_SEAT,
+          unique: true,
+        },
+      ]);
+    });
 
-      it('passes the correct tokens to <search-and-sort-bar>', () => {
-        expect(findSearchAndSortBar().props('tokens')).toStrictEqual([
-          {
-            options: [
-              { value: 'true', title: 'Yes' },
-              { value: 'false', title: 'No' },
-            ],
-            icon: 'user',
-            operators: OPERATORS_IS,
-            title: TOKEN_TITLE_ASSIGNED_SEAT,
-            token: BaseToken,
-            type: TOKEN_TYPE_ASSIGNED_SEAT,
-            unique: true,
-          },
-        ]);
-      });
+    it('fetches users list by assigned seats', async () => {
+      const filterOptions = { filterByAssignedSeat: 'true' };
 
-      it('fetches users list by assigned seats', async () => {
-        const filterOptions = { filterByAssignedSeat: 'true' };
+      findSearchAndSortBar().vm.$emit('onFilter', { filterByAssignedSeat: 'true' });
+      await waitForPromises();
 
-        findSearchAndSortBar().vm.$emit('onFilter', { filterByAssignedSeat: 'true' });
-        await waitForPromises();
-
-        expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-          ...duoProDefaultQueryVariables,
-          ...filterOptions,
-        });
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...duoProDefaultQueryVariables,
+        ...filterOptions,
       });
     });
 

@@ -75,11 +75,8 @@ export default {
     },
   },
   computed: {
-    isFilteringEnabled() {
-      return this.glFeatures.enableAddOnUsersFiltering;
-    },
     sortOptions() {
-      return this.isFilteringEnabled ? SORT_OPTIONS : [];
+      return SORT_OPTIONS;
     },
     queryVariables() {
       return {
@@ -91,7 +88,6 @@ export default {
       };
     },
     filterTokens() {
-      if (!this.isFilteringEnabled) return [];
       return [
         {
           options: [

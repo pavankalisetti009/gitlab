@@ -145,10 +145,7 @@ module Sbom
       end
 
       # Skip if we've already visited this node on this path to avoid cycles
-      if visited.include?(current)
-        handle_cycle_detected(current_path)
-        return
-      end
+      return if visited.include?(current)
 
       # Early termination checks
       return unless should_continue_traversal?
@@ -212,10 +209,6 @@ module Sbom
       else
         @collector[:paths] << path_entry
       end
-    end
-
-    def handle_cycle_detected(current_path)
-      handle_target_reached(current_path, true)
     end
 
     def should_continue_traversal?
