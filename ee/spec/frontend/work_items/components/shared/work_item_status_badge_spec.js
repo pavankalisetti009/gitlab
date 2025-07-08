@@ -1,6 +1,7 @@
 import { GlIcon, GlTruncate } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
+import { GL_DARK } from '~/constants';
 
 describe('WorkItemStatusBadge', () => {
   let wrapper;
@@ -56,7 +57,28 @@ describe('WorkItemStatusBadge', () => {
 
     it('applies the color style to the icon', () => {
       createComponent({ color: testColor });
-      expect(findIcon().attributes('style')).toEqual('color: rgb(255, 0, 0);');
+      expect(findIcon().attributes('style')).toBe('color: rgb(255, 0, 0);');
     });
+  });
+
+  describe('icon colors in dark mode', () => {
+    beforeEach(() => {
+      gon.user_color_mode = GL_DARK;
+    });
+
+    it.each`
+      color        | darkModeColor
+      ${'#737278'} | ${'color: rgb(137, 136, 141);'}
+      ${'#1f75cb'} | ${'color: rgb(66, 143, 220);'}
+      ${'#108548'} | ${'color: rgb(45, 161, 96);'}
+      ${'#DD2B0E'} | ${'color: rgb(236, 89, 65);'}
+    `(
+      'converts $color to dark mode friendly $darkModeColor in dark mode',
+      ({ color, darkModeColor }) => {
+        createComponent({ color });
+
+        expect(findIcon().attributes('style')).toBe(darkModeColor);
+      },
+    );
   });
 });
