@@ -8,7 +8,8 @@ const getMockViolationData = (id) => ({
   status: 'IN_REVIEW',
   createdAt: '2025-06-16T02:20:41Z',
   complianceControl: {
-    name: 'Merge request controls',
+    id: 'minimum_approvals_required_2',
+    name: 'At least two approvals',
     complianceRequirement: {
       name: 'basic code regulation',
       framework: {
@@ -24,7 +25,7 @@ const getMockViolationData = (id) => ({
     id: 'gid://gitlab/Project/2',
     nameWithNamespace: 'GitLab.org / GitLab Test',
     fullPath: 'gitlab-org/gitlab-test',
-    webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+    webUrl: 'http://127.0.0.1:3000/gitlab-org/gitlab-test',
     __typename: 'Project',
   },
   auditEvent: {
@@ -44,7 +45,7 @@ const getMockViolationData = (id) => ({
       id: 'gid://gitlab/Project/2',
       name: 'Test project',
       fullPath: 'gitlab-org/gitlab-test',
-      webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+      webUrl: 'http://127.0.0.1:3000/gitlab-org/gitlab-test',
     },
     group: null,
     user: {
