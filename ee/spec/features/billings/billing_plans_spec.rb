@@ -7,8 +7,8 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
   include Features::HandRaiseLeadHelpers
   include Features::BillingPlansHelpers
 
-  let(:user) { create(:user, first_name: 'James', last_name: 'Bond', organization: 'ACME') }
-  let(:auditor) { create(:auditor, first_name: 'James', last_name: 'Bond', organization: 'ACME') }
+  let(:user) { create(:user, first_name: 'James', last_name: 'Bond', user_detail_organization: 'ACME') }
+  let(:auditor) { create(:auditor, first_name: 'James', last_name: 'Bond', user_detail_organization: 'ACME') }
   let(:namespace) { user.namespace }
   let(:free_plan) { create(:free_plan) }
   let(:bronze_plan) { create(:bronze_plan) }

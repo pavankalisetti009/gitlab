@@ -44,19 +44,19 @@ export const HIDE_METRIC_DRILL_DOWN = [
 // The AI impact metrics supported for over time tiles
 export const AI_IMPACT_OVER_TIME_METRICS = {
   [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Code Suggestions usage'),
+    label: s__('AiImpactAnalytics|Code Suggestions: Usage'),
     units: UNITS.PERCENT,
   },
   [AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE]: {
-    label: s__('AiImpactAnalytics|Code Suggestions acceptance rate'),
+    label: s__('AiImpactAnalytics|Code Suggestions: Acceptance rate'),
     units: UNITS.PERCENT,
   },
   [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Duo Chat: Unique users'),
+    label: s__('AiImpactAnalytics|Duo Chat: Usage'),
     units: UNITS.PERCENT,
   },
   [AI_METRICS.DUO_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Duo seats: Assigned and used'),
+    label: s__('AiImpactAnalytics|Assigned Duo seat engagement'),
     units: UNITS.PERCENT,
   },
 };
@@ -64,7 +64,7 @@ export const AI_IMPACT_OVER_TIME_METRICS = {
 export const AI_IMPACT_USAGE_METRICS = {
   ...AI_IMPACT_OVER_TIME_METRICS,
   [AI_METRICS.DUO_RCA_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Duo RCA: Unique users'),
+    label: s__('AiImpactAnalytics|Duo RCA: Usage'),
     units: UNITS.PERCENT,
   },
 };

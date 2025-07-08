@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent do
-  let(:user) { build(:user, first_name: 'John', last_name: 'Doe', organization: 'Acme Corp') }
+  let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: 'Acme Corp') }
   let(:form_params) do
     {
       glm_source: 'some-source',
@@ -22,7 +22,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
           firstName: user.first_name,
           lastName: user.last_name,
           emailDomain: user.email_domain,
-          companyName: user.organization,
+          companyName: user.user_detail_organization,
           country: '',
           state: ''
         },
@@ -53,7 +53,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
       expect(user_data['firstName']).to eq(user.first_name)
       expect(user_data['lastName']).to eq(user.last_name)
       expect(user_data['emailDomain']).to eq(user.email_domain)
-      expect(user_data['companyName']).to eq(user.organization)
+      expect(user_data['companyName']).to eq(user.user_detail_organization)
       expect(user_data['country']).to eq('')
       expect(user_data['state']).to eq('')
     end
@@ -83,7 +83,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
           firstName: user.first_name,
           lastName: user.last_name,
           emailDomain: user.email_domain,
-          companyName: user.organization,
+          companyName: user.user_detail_organization,
           country: '',
           state: ''
         },
@@ -109,14 +109,14 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
 
   describe 'user data variations' do
     context 'when user has blank last name' do
-      let(:user) { build(:user, first_name: 'John', last_name: '', organization: 'Acme Corp') }
+      let(:user) { build(:user, first_name: 'John', last_name: '', user_detail_organization: 'Acme Corp') }
       let(:expected_form_data_attributes) do
         {
           userData: {
             firstName: user.first_name,
             lastName: user.last_name,
             emailDomain: user.email_domain,
-            companyName: user.organization,
+            companyName: user.user_detail_organization,
             country: '',
             state: ''
           }
@@ -129,7 +129,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
     end
 
     context 'when user has present last name' do
-      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', organization: 'Acme Corp') }
+      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: 'Acme Corp') }
 
       it 'includes last name in user data' do
         view_model = parsed_view_model
@@ -140,7 +140,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
     end
 
     context 'when user has no organization' do
-      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', organization: nil) }
+      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: nil) }
 
       it 'handles nil organization gracefully' do
         view_model = parsed_view_model
@@ -149,7 +149,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
     end
 
     context 'when user has blank organization' do
-      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', organization: '') }
+      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: '') }
 
       it 'handles blank organization' do
         view_model = parsed_view_model
@@ -158,7 +158,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Welcome::TrialFormComponent d
     end
 
     context 'when user has special characters in name' do
-      let(:user) { build(:user, first_name: "John's", last_name: 'O\'Connor', organization: 'Acme & Co.') }
+      let(:user) { build(:user, first_name: "John's", last_name: 'O\'Connor', user_detail_organization: 'Acme & Co.') }
 
       it 'handles special characters in user data' do
         view_model = parsed_view_model

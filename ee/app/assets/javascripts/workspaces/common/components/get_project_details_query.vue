@@ -124,7 +124,8 @@ export default {
       const nodes = agents?.workspacesClusterAgents?.nodes || [];
       return nodes.map(({ id, name, project }) => ({
         value: id,
-        text: `${project.nameWithNamespace} / ${name}`,
+        text: project ? `${project.nameWithNamespace} / ${name}` : name,
+        // Organization agents may have private projects that we do not have access to
       }));
     },
   },

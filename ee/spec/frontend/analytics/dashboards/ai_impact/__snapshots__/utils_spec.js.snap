@@ -203,28 +203,28 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
     "invertTrendColor": undefined,
     "metric": {
       "identifier": "code_suggestions_usage_rate",
-      "value": "Code Suggestions usage",
+      "value": "Code Suggestions: Usage",
     },
   },
   {
     "invertTrendColor": undefined,
     "metric": {
       "identifier": "code_suggestions_acceptance_rate",
-      "value": "Code Suggestions acceptance rate",
+      "value": "Code Suggestions: Acceptance rate",
     },
   },
   {
     "invertTrendColor": undefined,
     "metric": {
       "identifier": "duo_chat_usage_rate",
-      "value": "Duo Chat: Unique users",
+      "value": "Duo Chat: Usage",
     },
   },
   {
     "invertTrendColor": undefined,
     "metric": {
       "identifier": "duo_rca_usage_rate",
-      "value": "Duo RCA: Unique users",
+      "value": "Duo RCA: Usage",
     },
   },
 ]

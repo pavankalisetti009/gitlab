@@ -14,7 +14,7 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
           user_name: user.username,
           first_name: user.first_name,
           last_name: user.last_name,
-          company_name: user.organization
+          company_name: user.user_detail_organization
         }.to_json,
         submit_path: gitlab_subscriptions_hand_raise_leads_path
       }
