@@ -134,4 +134,23 @@ RSpec.describe EE::Gitlab::GonHelper do
       it_behaves_like 'sets the licensed features flag'
     end
   end
+
+  describe '#push_saas_feature' do
+    let_it_be(:feature) { ::Gitlab::Saas::FEATURES.first }
+
+    it 'pushes the SaaS feature to the frontend' do
+      gon = class_double('Gon')
+      stub_saas_features(feature => true)
+
+      allow(helper)
+        .to receive(:gon)
+        .and_return(gon)
+
+      expect(gon)
+        .to receive(:push)
+        .with({ saas_features: { feature.to_s.camelize(:lower) => true } }, true)
+
+      helper.push_saas_feature(feature)
+    end
+  end
 end

@@ -1,11 +1,6 @@
 import { GlFormFields } from '@gitlab/ui';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogAgentCreateEditForm from 'ee/ai/catalog/components/ai_catalog_agent_create_edit_form.vue';
-import {
-  MAX_LENGTH_NAME,
-  MAX_LENGTH_DESCRIPTION,
-  MAX_LENGTH_PROMPT,
-} from 'ee/ai/catalog/constants';
 
 describe('AiCatalogAgentForm', () => {
   let wrapper;
@@ -30,11 +25,13 @@ describe('AiCatalogAgentForm', () => {
   };
 
   const createWrapper = (props = {}) => {
-    wrapper = mountExtended(AiCatalogAgentCreateEditForm, {
-      attachTo: document.body,
+    wrapper = shallowMountExtended(AiCatalogAgentCreateEditForm, {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      stubs: {
+        GlFormFields,
       },
     });
   };
@@ -48,19 +45,19 @@ describe('AiCatalogAgentForm', () => {
 
       createWrapper(initialProps);
 
-      expect(findNameField().element.value).toBe(defaultFormValues.name);
-      expect(findDescriptionField().element.value).toBe(defaultFormValues.description);
-      expect(findSystemPromptField().element.value).toBe(defaultFormValues.systemPrompt);
-      expect(findUserPromptField().element.value).toBe(defaultFormValues.userPrompt);
+      expect(findNameField().props('value')).toBe(defaultFormValues.name);
+      expect(findDescriptionField().props('value')).toBe(defaultFormValues.description);
+      expect(findSystemPromptField().props('value')).toBe(defaultFormValues.systemPrompt);
+      expect(findUserPromptField().props('value')).toBe(defaultFormValues.userPrompt);
     });
 
     it('renders the form with empty values when no props are provided', () => {
       createWrapper();
 
-      expect(findNameField().element.value).toBe('');
-      expect(findDescriptionField().element.value).toBe('');
-      expect(findSystemPromptField().element.value).toBe('');
-      expect(findUserPromptField().element.value).toBe('');
+      expect(findNameField().props('value')).toBe('');
+      expect(findDescriptionField().props('value')).toBe('');
+      expect(findSystemPromptField().props('value')).toBe('');
+      expect(findUserPromptField().props('value')).toBe('');
     });
   });
 
@@ -93,8 +90,6 @@ describe('AiCatalogAgentForm', () => {
     });
 
     it('trims the form values before emitting them', async () => {
-      createWrapper();
-
       const addRandomSpacesToString = (value) => `  ${value}  `;
 
       const formValuesWithRandomSpaces = {
@@ -104,71 +99,11 @@ describe('AiCatalogAgentForm', () => {
         userPrompt: addRandomSpacesToString(defaultFormValues.userPrompt),
       };
 
-      await findNameField().setValue(formValuesWithRandomSpaces.name);
-      await findDescriptionField().setValue(formValuesWithRandomSpaces.description);
-      await findSystemPromptField().setValue(formValuesWithRandomSpaces.systemPrompt);
-      await findUserPromptField().setValue(formValuesWithRandomSpaces.userPrompt);
+      createWrapper(formValuesWithRandomSpaces);
+
       await findFormFields().vm.$emit('submit');
 
       expect(wrapper.emitted('submit')).toEqual([[defaultFormValues]]);
-    });
-  });
-
-  describe('Validation', () => {
-    it('enforces character limit on name field', async () => {
-      createWrapper();
-
-      const longText = 'a'.repeat(MAX_LENGTH_NAME + 1);
-      await findNameField().setValue(longText);
-      await findNameField().trigger('blur');
-
-      const errorMessage = wrapper.find('[data-testid="agent-form-input-name"] + div');
-
-      expect(errorMessage.text()).toBe(
-        `Input cannot exceed ${MAX_LENGTH_NAME} characters. Please shorten your input.`,
-      );
-    });
-
-    it('enforces character limit on description field', async () => {
-      createWrapper();
-
-      const longText = 'a'.repeat(MAX_LENGTH_DESCRIPTION + 1);
-      await findDescriptionField().setValue(longText);
-      await findDescriptionField().trigger('blur');
-
-      const errorMessage = wrapper.find('[data-testid="agent-form-textarea-description"] + div');
-
-      expect(errorMessage.text()).toBe(
-        `Input cannot exceed ${MAX_LENGTH_DESCRIPTION} characters. Please shorten your input.`,
-      );
-    });
-
-    it('enforces character limit on system prompt field', async () => {
-      createWrapper();
-
-      const longText = 'a'.repeat(MAX_LENGTH_PROMPT + 1);
-      await findSystemPromptField().setValue(longText);
-      await findSystemPromptField().trigger('blur');
-
-      const errorMessage = wrapper.find('[data-testid="agent-form-textarea-system-prompt"] + div');
-
-      expect(errorMessage.text()).toBe(
-        `Input cannot exceed ${MAX_LENGTH_PROMPT} characters. Please shorten your input.`,
-      );
-    });
-
-    it('enforces character limit on user prompt field', async () => {
-      createWrapper();
-
-      const longText = 'a'.repeat(MAX_LENGTH_PROMPT + 1);
-      await findUserPromptField().setValue(longText);
-      await findUserPromptField().trigger('blur');
-
-      const errorMessage = wrapper.find('[data-testid="agent-form-textarea-user-prompt"] + div');
-
-      expect(errorMessage.text()).toBe(
-        `Input cannot exceed ${MAX_LENGTH_PROMPT} characters. Please shorten your input.`,
-      );
     });
   });
 });

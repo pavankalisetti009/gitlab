@@ -38,6 +38,28 @@
   }
 }
 
+.plan-badge-vue {
+  &[data-plan='gold'] {
+    color: $gl-ultimate-plan;
+  }
+
+  &[data-plan='ultimate'] {
+    color: $gl-ultimate-plan;
+  }
+
+  &[data-plan='silver'] {
+    color: $gl-premium-plan;
+  }
+
+  &[data-plan='premium'] {
+    color: $gl-premium-plan;
+  }
+
+  &[data-plan='bronze'] {
+    color: $gl-bronze-plan;
+  }
+}
+
 .invite-modal-content {
   grid-row: 1;
   grid-column: 1;
