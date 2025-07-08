@@ -63,6 +63,11 @@ export default {
     },
   },
   props: {
+    isInstanceLevel: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     policyScope: {
       type: Object,
       required: false,
@@ -150,6 +155,7 @@ export default {
         <template v-else-if="policyHasProjects">
           <projects-toggle-list
             :is-group="isGroup"
+            :is-instance-level="isInstanceLevel"
             :including="policyScopeHasIncludingProjects"
             :projects="policyScopeProjects.projects"
           />

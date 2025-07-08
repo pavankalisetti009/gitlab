@@ -10,7 +10,8 @@ module Ai
       self.table_name = :duo_workflows_workflows
 
       belongs_to :user
-      belongs_to :project
+      belongs_to :project, optional: true
+      belongs_to :namespace, optional: true
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
       has_many :checkpoint_writes, class_name: 'Ai::DuoWorkflows::CheckpointWrite'
       has_many :events, class_name: 'Ai::DuoWorkflows::Event'

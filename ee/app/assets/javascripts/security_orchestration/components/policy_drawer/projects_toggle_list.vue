@@ -8,13 +8,6 @@ export default {
     ToggleList,
   },
   i18n: {
-    allProjectsText: s__(
-      'SecurityOrchestration|%{allLabel}%{projectCount} %{projectLabel} in this group',
-    ),
-    allProjectsExceptText: s__('SecurityOrchestration|All projects in this group except:'),
-    allProjectsForProjectExceptText: s__(
-      'SecurityOrchestration|All projects linked to this project except:',
-    ),
     allProjectsButtonText: s__('SecurityOrchestration|Show all included projects'),
     hideProjectsButtonText: s__('SecurityOrchestration|Hide extra projects'),
     showMoreProjectsLabel: s__('SecurityOrchestration|Show more projects'),
@@ -23,6 +16,11 @@ export default {
     projectsLabel: __('projects'),
   },
   props: {
+    isInstanceLevel: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     projects: {
       type: Array,
       required: false,
@@ -73,12 +71,21 @@ export default {
     },
     header() {
       if (this.allProjects) {
-        return this.renderHeader(this.$options.i18n.allProjectsText);
+        return this.renderHeader(
+          s__('SecurityOrchestration|%{allLabel}%{projectCount} %{projectLabel} in this group'),
+        );
       }
 
       if (this.allProjectsExcept) {
-        const { allProjectsExceptText, allProjectsForProjectExceptText } = this.$options.i18n;
-        return this.isGroup ? allProjectsExceptText : allProjectsForProjectExceptText;
+        if (this.isInstanceLevel) {
+          return s__('SecurityOrchestration|All projects in this instance except:');
+        }
+
+        if (this.isGroup) {
+          return s__('SecurityOrchestration|All projects in this group except:');
+        }
+
+        return s__('SecurityOrchestration|All projects linked to this project except:');
       }
 
       return this.projectIncludingText;

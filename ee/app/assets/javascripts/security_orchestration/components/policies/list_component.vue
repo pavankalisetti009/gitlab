@@ -512,8 +512,12 @@ export default {
         </gl-badge>
       </template>
 
-      <template #cell(scope)="{ item: { policyScope } }">
-        <list-component-scope :policy-scope="policyScope" :linked-spp-items="linkedSppItems" />
+      <template #cell(scope)="{ item: { csp, policyScope } }">
+        <list-component-scope
+          :is-instance-level="csp"
+          :policy-scope="policyScope"
+          :linked-spp-items="linkedSppItems"
+        />
       </template>
 
       <template #cell(updatedAt)="{ value: updatedAt }">

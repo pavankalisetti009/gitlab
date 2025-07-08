@@ -169,6 +169,7 @@ describe('DrawerLayout component', () => {
       });
 
       expect(findScopeInfoRow().exists()).toBe(true);
+      expect(findScopeInfoRow().props('isInstanceLevel')).toBe(false);
     });
   });
 

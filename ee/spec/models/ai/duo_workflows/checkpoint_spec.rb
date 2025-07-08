@@ -44,6 +44,9 @@ RSpec.describe Ai::DuoWorkflows::Checkpoint, feature_category: :duo_workflow do
   end
 
   describe 'associations' do
+    it { is_expected.to belong_to(:project).optional }
+    it { is_expected.to belong_to(:namespace).optional }
+
     describe '#checkpoint_writes' do
       let_it_be(:write3) { create(:duo_workflows_checkpoint_write, thread_ts: checkpoint1.thread_ts) }
       let_it_be(:write4) { create(:duo_workflows_checkpoint_write, workflow: checkpoint2.workflow) }
