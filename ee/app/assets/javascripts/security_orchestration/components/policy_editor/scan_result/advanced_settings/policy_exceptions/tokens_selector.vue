@@ -1,11 +1,5 @@
 <script>
-import {
-  GlAlert,
-  GlFormGroup,
-  GlCollapsibleListbox,
-  GlFormCheckboxGroup,
-  GlTruncate,
-} from '@gitlab/ui';
+import { GlFormGroup, GlCollapsibleListbox, GlFormCheckboxGroup, GlTruncate } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { s__ } from '~/locale';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
@@ -20,17 +14,10 @@ export default {
       'ScanResultPolicy|Apply this approval rule to any branch or a specific protected branch.',
     ),
     tokensHeader: s__('ScanResultPolicy|Access tokens'),
-    tokenDefaultText: s__('ScanResultPolicy|Select tokens'),
-    noTokensCreated: s__('ScanResultPolicy|There are no access tokens created'),
     accessTokenTypeName: s__('ScanResultPolicy|access token'),
-    securityProjectDefaultText: s__('ScanResultPolicy|Security team project'),
-    frequentlyUsedHeader: s__('ScanResultPolicy|Recently created'),
-    targetProjectTitle: s__('ScanResultPolicy|Target project documentation'),
-    fetchingError: s__('ScanResultPolicy|Error occurred while fetching access tokens.'),
   },
   name: 'TokensSelector',
   components: {
-    GlAlert,
     GlFormGroup,
     GlCollapsibleListbox,
     GlFormCheckboxGroup,
@@ -38,7 +25,7 @@ export default {
   },
   inject: ['accessTokens'],
   props: {
-    tokens: {
+    selectedTokens: {
       type: Array,
       required: false,
       default: () => [],
@@ -46,27 +33,24 @@ export default {
   },
   data() {
     return {
-      showAlert: false,
       searchTerm: '',
     };
   },
   computed: {
-    selectedTokens() {
-      return this.tokens.map(({ id }) => id);
+    selectedTokensIds() {
+      return this.selectedTokens.map(({ id }) => id);
     },
     accessTokensItems() {
-      if (!Array.isArray(this.accessTokens) || this.accessTokens.length === 0) {
-        return {};
-      }
-
-      return this.accessTokens?.reduce((acc, { id, name }) => {
-        acc[id] = name;
-        return acc;
-      }, {});
+      return (
+        this.accessTokens?.reduce((acc, { id, name }) => {
+          acc[id] = name;
+          return acc;
+        }, {}) || {}
+      );
     },
     toggleText() {
       return renderMultiSelectText({
-        selected: this.selectedTokens.map(String),
+        selected: this.selectedTokensIds.map(String),
         items: this.accessTokensItems,
         itemTypeName: this.$options.i18n.accessTokenTypeName,
         useAllSelected: false,
@@ -127,7 +111,7 @@ export default {
         multiple
         class="gl-w-full"
         searchable
-        :selected="selectedTokens"
+        :selected="selectedTokensIds"
         :header-text="$options.i18n.tokensHeader"
         :items="filteredItems"
         :toggle-text="toggleText"
@@ -145,22 +129,18 @@ export default {
       </gl-collapsible-listbox>
     </gl-form-group>
 
-    <gl-alert v-if="showAlert" variant="danger" :dismissible="false">
-      {{ $options.i18n.fetchingError }}
-    </gl-alert>
-
     <div class="gl-mt-6">
-      <h5 class="gl-mb-5">{{ $options.i18n.frequentlyUsedHeader }}</h5>
+      <h5 class="gl-mb-5">{{ s__('ScanResultPolicy|Recently created') }}</h5>
       <div>
         <gl-form-checkbox-group
           v-if="hasRecentlyUsedItems"
           data-testid="recently-selected-list"
           :options="recentlyUsedItems"
-          :checked="selectedTokens"
+          :checked="selectedTokensIds"
           @input="setTokens"
         />
         <p v-else>
-          {{ $options.i18n.noTokensCreated }}
+          {{ s__('ScanResultPolicy|There are no access tokens created') }}
         </p>
       </div>
     </div>

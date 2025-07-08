@@ -2,9 +2,9 @@
 import { GlButton, GlModal } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import {
+  ACCOUNTS,
   ROLES,
   GROUPS,
-  ACCOUNTS,
   TOKENS,
   SOURCE_BRANCH_PATTERNS,
   EXCEPTIONS_FULL_OPTIONS_MAP,
@@ -14,6 +14,7 @@ import GroupsSelector from './groups_selector.vue';
 import TokensSelector from './tokens_selector.vue';
 import BranchPatternSelector from './branch_pattern_selector.vue';
 import PolicyExceptionsSelector from './policy_exceptions_selector.vue';
+import ServiceAccountsSelector from './service_accounts_selector.vue';
 
 export default {
   ROLES,
@@ -37,6 +38,7 @@ export default {
     TokensSelector,
     RolesSelector,
     PolicyExceptionsSelector,
+    ServiceAccountsSelector,
   },
   props: {
     exceptions: {
@@ -68,6 +70,9 @@ export default {
     tokens() {
       return this.selectedExceptions?.tokens || [];
     },
+    accounts() {
+      return this.selectedExceptions?.accounts || [];
+    },
   },
   methods: {
     tabSelected(tab) {
@@ -85,6 +90,12 @@ export default {
     },
     selectTab(tab) {
       this.$emit('select-tab', tab);
+    },
+    setAccounts(accounts) {
+      this.selectedExceptions = {
+        ...this.selectedExceptions,
+        accounts,
+      };
     },
     setBranches(branches) {
       this.selectedExceptions = {
@@ -134,8 +145,13 @@ export default {
       <groups-selector v-if="tabSelected($options.GROUPS)" />
       <tokens-selector
         v-if="tabSelected($options.TOKENS)"
-        :tokens="tokens"
+        :selected-tokens="tokens"
         @set-tokens="setTokens"
+      />
+      <service-accounts-selector
+        v-if="tabSelected($options.ACCOUNTS)"
+        :selected-accounts="accounts"
+        @set-accounts="setAccounts"
       />
       <branch-pattern-selector
         v-if="tabSelected($options.SOURCE_BRANCH_PATTERNS)"

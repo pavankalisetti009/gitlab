@@ -18,6 +18,9 @@ const Api = {
   groupsPath: '/api/:version/groups.json',
   groupPath: '/api/:version/groups/:id',
   groupMembersPath: '/api/:version/groups/:id/members',
+  groupServiceAccountsPath: '/api/:version/groups/:id/service_accounts',
+  groupServiceAccountsTokensPath:
+    '/api/:version/groups/:id/service_accounts/:account_id/personal_access_tokens',
   groupMilestonesPath: '/api/:version/groups/:id/milestones',
   subgroupsPath: '/api/:version/groups/:id/subgroups',
   descendantGroupsPath: '/api/:version/groups/:id/descendant_groups',
@@ -170,6 +173,30 @@ const Api = {
     return axios.get(url, {
       params: {
         per_page: DEFAULT_PER_PAGE,
+        ...options,
+      },
+    });
+  },
+
+  groupServiceAccounts(id, options = {}) {
+    const url = Api.buildUrl(this.groupServiceAccountsPath).replace(':id', encodeURIComponent(id));
+
+    return axios.get(url, {
+      params: {
+        sort: 'desc',
+        ...options,
+      },
+    });
+  },
+
+  groupServiceAccountsTokens(groupId, accountId, options = {}) {
+    const url = Api.buildUrl(this.groupServiceAccountsTokensPath)
+      .replace(':id', encodeURIComponent(groupId))
+      .replace(':account_id', encodeURIComponent(accountId));
+
+    return axios.get(url, {
+      params: {
+        sort: 'desc',
         ...options,
       },
     });

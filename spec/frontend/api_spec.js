@@ -212,6 +212,33 @@ describe('Api', () => {
     });
   });
 
+  describe('groupServiceAccounts', () => {
+    it('fetches group service accounts', () => {
+      const groupId = '54321';
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/groups/${groupId}/service_accounts`;
+      const expectedData = [{ username: 'username', name: 'user' }];
+      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, expectedData);
+
+      return Api.groupServiceAccounts(groupId).then(({ data }) => {
+        expect(data).toEqual(expectedData);
+      });
+    });
+  });
+
+  describe('groupServiceAccountsTokens', () => {
+    it('fetches group service accounts personal access tokens', () => {
+      const groupId = '54321';
+      const accountId = '123';
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/groups/${groupId}/service_accounts/${accountId}/personal_access_tokens`;
+      const expectedData = [{ id: '1', name: 'token' }];
+      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, expectedData);
+
+      return Api.groupServiceAccountsTokens(groupId, accountId).then(({ data }) => {
+        expect(data).toEqual(expectedData);
+      });
+    });
+  });
+
   describe('groupSubgroups', () => {
     it('fetches group subgroups', () => {
       const groupId = '54321';

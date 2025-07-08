@@ -1,4 +1,4 @@
-import { uniqueId } from 'lodash';
+import { uniqueId, get } from 'lodash';
 import {
   ACCOUNTS,
   EXCEPTIONS_FULL_OPTIONS_MAP,
@@ -12,6 +12,25 @@ export const createSourceBranchPatternObject = ({ id = '', source = {}, target =
   source,
   target,
 });
+
+export const createServiceAccountObject = ({ id = '', account = {}, tokens = [] } = {}) => ({
+  id: id || uniqueId('account_'),
+  account,
+  tokens,
+});
+/**
+ * Extract username from account
+ * @param item
+ * @returns {*}
+ */
+export const getUserName = (item) => get(item, 'account.username', '');
+
+/**
+ * validate that account has all required properties
+ * @param item
+ * @returns {boolean}
+ */
+export const isValidServiceAccount = (item) => item && Boolean(item.name) && Boolean(item.username);
 
 /**
  * remove ids from items

@@ -1,4 +1,4 @@
-import { GlAlert, GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
+import { GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import TokensSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/tokens_selector.vue';
@@ -12,7 +12,7 @@ describe('TokensSelector', () => {
   };
 
   const defaultProps = {
-    tokens: [],
+    selectedTokens: [],
   };
 
   const createComponent = (props = {}, provide = {}) => {
@@ -28,7 +28,6 @@ describe('TokensSelector', () => {
     });
   };
 
-  const findAlert = () => wrapper.findComponent(GlAlert);
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findFormCheckboxGroup = () => wrapper.findByTestId('recently-selected-list');
@@ -60,10 +59,6 @@ describe('TokensSelector', () => {
       });
     });
 
-    it('does not render alert initially', () => {
-      expect(findAlert().exists()).toBe(false);
-    });
-
     it('renders recently created section', () => {
       expect(wrapper.text()).toContain('Recently created');
     });
@@ -72,7 +67,7 @@ describe('TokensSelector', () => {
   describe('token selection', () => {
     beforeEach(() => {
       createComponent({
-        tokens: mockTokens.slice(0, 2),
+        selectedTokens: mockTokens.slice(0, 2),
       });
     });
 
@@ -97,14 +92,14 @@ describe('TokensSelector', () => {
     });
 
     it('shows correct toggle text for single selection', async () => {
-      createComponent({ tokens: [{ id: 1 }] });
+      createComponent({ selectedTokens: [{ id: 1 }] });
       await waitForPromises();
 
       expect(findCollapsibleListbox().props('toggleText')).toBe('project-token-1');
     });
 
     it('shows default text when no tokens selected', () => {
-      createComponent({ tokens: [] });
+      createComponent({ selectedTokens: [] });
       expect(findCollapsibleListbox().props('toggleText')).toBe('Select access token');
     });
   });
@@ -118,24 +113,24 @@ describe('TokensSelector', () => {
       const searchTerm = 'project-token-1';
       await findCollapsibleListbox().vm.$emit('search', searchTerm);
 
-      // Wait for debounce
-      jest.advanceTimersByTime(250);
-
       expect(wrapper.vm.searchTerm).toBe(searchTerm);
+      expect(findCollapsibleListbox().props('items')).toEqual([
+        { text: 'project-token-1', value: 1, fullName: 'project-token-1-full-name' },
+      ]);
     });
 
     it('filters items based on search term', async () => {
       await findCollapsibleListbox().vm.$emit('search', 'project-token-1');
 
       expect(findCollapsibleListbox().props('items')).toEqual([
-        { text: 'project-token-1', value: 1 },
+        { text: 'project-token-1', value: 1, fullName: 'project-token-1-full-name' },
       ]);
     });
   });
 
   describe('recently used tokens', () => {
     beforeEach(() => {
-      createComponent({ tokens: mockTokens.slice(0, 2) });
+      createComponent({ selectedTokens: mockTokens.slice(0, 2) });
     });
 
     it('displays recently used tokens in checkbox group', async () => {
@@ -162,10 +157,10 @@ describe('TokensSelector', () => {
 
     it('formats listbox items correctly', () => {
       const expectedItems = [
-        { text: 'project-token-1', value: 1 },
-        { text: 'project-token-2', value: 2 },
-        { text: 'project-token-3', value: 3 },
-        { text: 'project-token-4', value: 4 },
+        { text: 'project-token-1', value: 1, fullName: 'project-token-1-full-name' },
+        { text: 'project-token-2', value: 2, fullName: 'project-token-2-full-name' },
+        { text: 'project-token-3', value: 3, fullName: 'project-token-3-full-name' },
+        { text: 'project-token-4', value: 4, fullName: 'project-token-4-full-name' },
       ];
       expect(findCollapsibleListbox().props('items')).toEqual(expectedItems);
     });
@@ -173,12 +168,12 @@ describe('TokensSelector', () => {
 
   describe('edge cases', () => {
     it('handles empty tokens prop', () => {
-      createComponent({ tokens: [] });
+      createComponent({ selectedTokens: [] });
       expect(findCollapsibleListbox().props('selected')).toEqual([]);
     });
 
     it('handles undefined tokens prop', () => {
-      createComponent({ tokens: undefined }, { accessTokens: undefined });
+      createComponent({ selectedTokens: undefined }, { accessTokens: undefined });
       expect(findCollapsibleListbox().props('items')).toEqual([]);
     });
   });
