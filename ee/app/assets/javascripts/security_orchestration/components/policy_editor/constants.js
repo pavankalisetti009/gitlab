@@ -159,14 +159,14 @@ export const ALL_PROTECTED_BRANCHES = {
 export const TARGET_PROTECTED = 'target_protected';
 
 export const TARGET_PROTECTED_BRANCHES = {
-  text: __('target all protected branches'),
+  text: __('targets all protected branches'),
   value: TARGET_PROTECTED,
 };
 
 export const TARGET_DEFAULT = 'target_default';
 
 export const PROJECT_TARGET_DEFAULT_BRANCH = {
-  text: __('target default branch'),
+  text: __('targets default branch'),
   value: TARGET_DEFAULT,
 };
 
