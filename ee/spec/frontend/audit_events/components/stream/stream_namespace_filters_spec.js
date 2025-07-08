@@ -86,7 +86,7 @@ describe('StreamWithNamespaceFilters', () => {
           [
             {
               namespace: '',
-              type: 'project',
+              type: '',
             },
           ],
         ]);

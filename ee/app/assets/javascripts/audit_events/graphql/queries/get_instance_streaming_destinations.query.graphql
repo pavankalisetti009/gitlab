@@ -4,6 +4,13 @@ query instanceDestinations {
   auditEventsInstanceStreamingDestinations {
     nodes {
       ...StreamingDestinationFragment
+      namespaceFilters {
+        id
+        namespace {
+          id
+          fullPath
+        }
+      }
     }
   }
 }
