@@ -8,6 +8,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     it { is_expected.to belong_to(:project).optional }
 
     it { is_expected.to have_many(:versions) }
+    it { is_expected.to have_many(:consumers) }
   end
 
   describe 'validations' do

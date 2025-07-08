@@ -184,6 +184,13 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             expect { execute }.to change { existing_dast_status.reload.status }.from('success').to('not_configured')
           end
 
+          it 'doesnt update existing setting based records to not_configured' do
+            existing_spp_status = create(:analyzer_project_status, project: project,
+              analyzer_type: :secret_detection_secret_push_protection, status: :success)
+
+            expect { execute }.not_to change { existing_spp_status.reload.status }
+          end
+
           it 'updates the archive column' do
             archived_status = create(:analyzer_project_status, project: project, analyzer_type: :sast,
               status: :success, archived: true)
@@ -259,12 +266,31 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
         context 'when no security jobs are found' do
           let!(:build) { create(:ci_build, :success, pipeline: pipeline) }
 
-          it 'sets all analyzer statuses to not_configured' do
+          it 'sets all pipeline analyzer statuses to not_configured' do
             sast_status = create(:analyzer_project_status, project: project, analyzer_type: :sast, status: :success)
             dast_status = create(:analyzer_project_status, project: project, analyzer_type: :dast, status: :failed)
 
             expect { execute }.to change { sast_status.reload.status }.from('success').to('not_configured')
               .and change { dast_status.reload.status }.from('failed').to('not_configured')
+          end
+
+          it 'sets aggregated type statuses to not_configured' do
+            sd_pipeline_status = create(:analyzer_project_status, project: project,
+              analyzer_type: :secret_detection_pipeline_based, status: :success)
+            sd_aggregated_status = create(:analyzer_project_status, project: project,
+              analyzer_type: :secret_detection, status: :failed)
+
+            expect { execute }.to change { sd_pipeline_status.reload.status }.from('success').to('not_configured')
+              .and change { sd_aggregated_status.reload.status }.from('failed').to('not_configured')
+          end
+
+          it 'sets aggregated type statuses to not_configured when no previous record exists' do
+            create(:analyzer_project_status, project: project,
+              analyzer_type: :secret_detection_pipeline_based, status: :success)
+
+            expect { execute }.to change {
+              Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection)&.status
+            }.from(nil).to('not_configured')
           end
 
           include_examples 'calls namespace related services'
@@ -388,15 +414,16 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
           context 'when aggregated status would not change' do
             let!(:secret_detection_build) { create(:ci_build, :secret_detection, :success, pipeline: pipeline) }
+            let(:status) { Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection) }
 
-            it 'does not update aggregated status when it already has the correct status' do
+            it 'update aggregated status build and last_call when it already has the correct status' do
               create(:analyzer_project_status, project: project, analyzer_type: :secret_detection, status: :success)
               create(:analyzer_project_status, project: project,
                 analyzer_type: :secret_detection_secret_push_protection, status: :not_configured)
 
-              expect { execute }.not_to change {
-                Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection).updated_at
-              }
+              expect { execute }.to change { status.reload.last_call }
+                .and change { status.reload.build_id }
+                .and change { status.reload.updated_at }
             end
           end
 
@@ -420,19 +447,21 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
             before do
               create(:analyzer_project_status, project: project,
-                analyzer_type: :secret_detection_secret_push_protection, status: :failed)
-              create(:analyzer_project_status, project: project,
                 analyzer_type: :container_scanning_for_registry, status: :success)
+              create(:analyzer_project_status, project: project,
+                analyzer_type: :secret_detection_secret_push_protection, status: :not_configured)
+              create(:analyzer_project_status, project: project,
+                analyzer_type: :secret_detection, status: :not_configured)
             end
 
             it 'handles multiple aggregated types correctly' do
               execute
 
-              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection).status)
-                .to eq('failed')
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :container_scanning))
+               .to have_attributes(status: 'failed', build_id: container_scanning_build.id)
 
-              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :container_scanning)
-                .status).to eq('failed')
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+                .to have_attributes(status: 'success', build_id: secret_detection_build.id)
             end
           end
         end

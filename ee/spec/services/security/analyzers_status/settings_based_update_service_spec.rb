@@ -229,13 +229,9 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
             project2.security_setting.update!(setting_field => false)
           end
 
-          it 'does not update the aggregated record when status matches' do
-            original_updated_at = existing_aggregated_record.updated_at
-
+          it 'updates the aggregated record when status matches' do
             travel_to(1.minute.from_now) do
-              execute
-
-              expect(existing_aggregated_record.reload.updated_at.to_i).to eq(original_updated_at.to_i)
+              expect { execute }.to change { existing_aggregated_record.reload.updated_at }
             end
           end
 
