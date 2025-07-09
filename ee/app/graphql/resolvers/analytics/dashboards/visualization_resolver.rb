@@ -4,6 +4,12 @@ module Resolvers
   module Analytics
     module Dashboards
       class VisualizationResolver < BaseResolver
+        include Gitlab::Graphql::Authorize::AuthorizeResource
+
+        calls_gitaly!
+        authorizes_object!
+        authorize :read_product_analytics
+
         type ::Types::Analytics::Dashboards::VisualizationType, null: true
 
         def resolve
