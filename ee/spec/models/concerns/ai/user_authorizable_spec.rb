@@ -5,24 +5,25 @@ require 'spec_helper'
 RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
   let_it_be(:user) { create(:user) }
 
+  let(:expected_allowed) { true }
+  let(:expected_namespace_ids) { [] }
+  let(:expected_enablement_type) { nil }
+  let(:expected_authorized_by_duo_core) { false }
+  let(:expected_response) do
+    described_class::Response.new(
+      allowed?: expected_allowed,
+      namespace_ids: expected_namespace_ids,
+      enablement_type: expected_enablement_type,
+      authorized_by_duo_core: expected_authorized_by_duo_core)
+  end
+
   describe '#allowed_to_use' do
     let(:ai_feature) { :my_feature }
     let(:duo_core_features_enabled) { true }
     let(:service_name) { ai_feature }
     let(:maturity) { :ga }
     let(:free_access) { true }
-    let(:expected_allowed) { true }
-    let(:expected_namespace_ids) { [] }
-    let(:expected_enablement_type) { nil }
-    let(:expected_authorized_by_duo_core) { false }
     let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_pro]) }
-    let(:expected_response) do
-      described_class::Response.new(
-        allowed?: expected_allowed,
-        namespace_ids: expected_namespace_ids,
-        enablement_type: expected_enablement_type,
-        authorized_by_duo_core: expected_authorized_by_duo_core)
-    end
 
     let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
     let_it_be(:expired_gitlab_purchase) do
@@ -354,55 +355,66 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
-  describe '#allowed_to_use?' do
-    let(:ai_feature) { :my_feature }
-    let(:allowed) { true }
+  context 'when amazon q integration is connected' do
+    subject { user.allowed_to_use(ai_feature) }
 
-    subject { user.allowed_to_use?(ai_feature) }
-
-    before do
-      allow(user).to receive(:allowed_to_use).with(ai_feature, service_name: nil, licensed_feature: :ai_features)
-        .and_return(described_class::Response.new(allowed?: allowed))
+    let_it_be(:access_data) do
+      create(:cloud_connector_access, data: {
+        available_services: [
+          { name: "amazon_q_integration", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
+          { name: "duo_chat", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
+          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] }
+        ]
+      })
     end
 
-    it { is_expected.to eq(allowed) }
+    let_it_be(:gitlab_subscription_add_on_purchase) do
+      create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_amazon_q)
+    end
 
-    context 'when amazon q integration is connected' do
-      let_it_be(:access_data) do
-        create(:cloud_connector_access, data: {
-          available_services: [
-            { name: "amazon_q_integration", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] }
-          ]
-        })
+    let_it_be(:gitlab_subscription_user_add_on_assignment) do
+      duo_pro_purchase = create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise)
+      create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: duo_pro_purchase)
+    end
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:amazon_q_connected, :ai_feature, :expected_enablement_type) do
+      false | :duo_chat | 'duo_enterprise'
+      true  | :duo_chat | 'duo_amazon_q'
+      true  | :code_suggestions | 'duo_amazon_q'
+      true  | :troubleshoot_job | 'duo_amazon_q'
+      true  | :explain_vulnerability | 'duo_amazon_q'
+      true  | :resolve_vulnerability | 'duo_amazon_q'
+      true  | :summarize_comments | 'duo_amazon_q'
+      true  | :review_merge_request | 'duo_enterprise'
+    end
+
+    with_them do
+      before do
+        Ai::Setting.instance.update!(amazon_q_ready: amazon_q_connected)
+        stub_licensed_features(amazon_q: true)
       end
 
-      let_it_be(:gitlab_subscription_add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_amazon_q)
+      it 'checks whether the feature is available in Amazon Q' do
+        is_expected.to eq(expected_response)
       end
+    end
+  end
 
-      using RSpec::Parameterized::TableSyntax
+  describe '#allowed_to_use?' do
+    let(:ai_feature) { :my_feature }
 
-      where(:amazon_q_connected, :ai_feature, :service_name, :licensed_feature) do
-        false | :duo_chat              | nil                   | :ai_features
-        true  | :duo_chat              | :amazon_q_integration | :amazon_q
-        true  | :code_suggestions      | :amazon_q_integration | :amazon_q
-        true  | :troubleshoot_job      | :amazon_q_integration | :amazon_q
-        true  | :explain_vulnerability | :amazon_q_integration | :amazon_q
-        true  | :resolve_vulnerability | :amazon_q_integration | :amazon_q
-        true  | :summarize_comments    | :amazon_q_integration | :amazon_q
-        true  | :sast                  | nil                   | :ai_features
-      end
+    subject { user.allowed_to_use?(ai_feature, service_name: :duo_chat, licensed_feature: :ai_features) }
 
-      with_them do
-        before do
-          Ai::Setting.instance.update!(amazon_q_ready: amazon_q_connected)
-          stub_licensed_features(amazon_q: true)
-        end
+    it 'checks allowed_to_use object' do
+      expect(user).to receive(:allowed_to_use).with(
+        ai_feature,
+        service_name: :duo_chat,
+        licensed_feature: :ai_features
+      ).and_return(expected_response)
 
-        it 'checks whether the feature is available in Amazon Q' do
-          is_expected.to eq(true)
-        end
-      end
+      is_expected.to eq(true)
     end
   end
 

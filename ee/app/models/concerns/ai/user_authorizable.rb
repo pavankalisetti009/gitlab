@@ -88,8 +88,6 @@ module Ai
       end
 
       def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features)
-        return true if amazon_q_connected?(ai_feature)
-
         allowed_to_use(ai_feature, service_name: service_name, licensed_feature: licensed_feature).allowed?
       end
 
@@ -98,6 +96,9 @@ module Ai
       end
 
       def allowed_to_use(ai_feature, service_name: nil, licensed_feature: :ai_features)
+        amazon_q_response = check_amazon_q_feature(ai_feature)
+        return amazon_q_response if amazon_q_response
+
         # Check if feature and service are valid and available
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return denied_response unless feature_data
@@ -203,8 +204,16 @@ module Ai
         @duo_core_add_on_purchase ||= GitlabSubscriptions::AddOnPurchase.for_duo_core.for_user(self).active.first
       end
 
-      def amazon_q_connected?(ai_feature)
-        ::Ai::AmazonQ.connected? && AMAZON_Q_FEATURES.include?(ai_feature)
+      def check_amazon_q_feature(ai_feature)
+        return unless ::Ai::AmazonQ.connected?
+        return unless AMAZON_Q_FEATURES.include?(ai_feature)
+
+        Response.new(
+          allowed?: true,
+          namespace_ids: [],
+          enablement_type: 'duo_amazon_q',
+          authorized_by_duo_core: false
+        )
       end
 
       def namespaces_allowed_in_com(maturity)
