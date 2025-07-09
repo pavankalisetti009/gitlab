@@ -2,6 +2,8 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
+import { getCookie } from '~/lib/utils/common_utils';
+import { DUO_AGENTIC_MODE_COOKIE } from 'ee/ai/tanuki_bot/constants';
 import TanukiBotChatApp from './components/app.vue';
 import store from './store';
 
@@ -18,16 +20,23 @@ export const initTanukiBotChatDrawer = () => {
     return false;
   }
 
+  const { userId, resourceId, projectId, chatTitle, rootNamespaceId, agenticAvailable } =
+    el.dataset;
+
   const toggleEls = document.querySelectorAll('.js-tanuki-bot-chat-toggle');
   if (toggleEls.length) {
     toggleEls.forEach((toggleEl) => {
       toggleEl.addEventListener('click', () => {
-        duoChatGlobalState.isShown = !duoChatGlobalState.isShown;
+        if (getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true' && agenticAvailable === 'true') {
+          duoChatGlobalState.isAgenticChatShown = !duoChatGlobalState.isAgenticChatShown;
+          duoChatGlobalState.isShown = false;
+        } else {
+          duoChatGlobalState.isShown = !duoChatGlobalState.isShown;
+          duoChatGlobalState.isAgenticChatShown = false;
+        }
       });
     });
   }
-
-  const { userId, resourceId, projectId, chatTitle, rootNamespaceId } = el.dataset;
 
   return new Vue({
     el,
@@ -41,6 +50,7 @@ export const initTanukiBotChatDrawer = () => {
           projectId,
           chatTitle,
           rootNamespaceId,
+          agenticAvailable: JSON.parse(agenticAvailable),
         },
       });
     },

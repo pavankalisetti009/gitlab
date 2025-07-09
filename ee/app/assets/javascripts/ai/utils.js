@@ -1,4 +1,9 @@
 import { duoChatGlobalState } from '~/super_sidebar/constants';
+import { setCookie } from '~/lib/utils/common_utils';
+import {
+  DUO_AGENTIC_MODE_COOKIE,
+  DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
+} from 'ee/ai/tanuki_bot/constants';
 
 export const concatStreamedChunks = (arr) => {
   if (!arr) return '';
@@ -8,6 +13,36 @@ export const concatStreamedChunks = (arr) => {
   if (end < 0) end = arr.length;
 
   return arr.slice(0, end).join('');
+};
+
+/**
+ * setCookie wrapper with duo agentic mode constances.
+ *
+ * @param {isAgenticMode} Boolean - Value to save
+ * @returns {void}
+ */
+export const saveDuoAgenticModePreference = (isAgenticMode) => {
+  setCookie(DUO_AGENTIC_MODE_COOKIE, isAgenticMode, {
+    expires: DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
+  });
+};
+
+/**
+ * Swith duo chat based on agenticMode value and save to cookie based on
+ * saveCookie value.
+ *
+ * @param {agenticMode} Boolean - Agentic mode state
+ * @param {saveCookie} Boolean - Save to cookie flag
+ * @returns {void}
+ */
+
+export const setAgenticMode = (agenticMode = true, saveCookie = false) => {
+  duoChatGlobalState.isShown = !agenticMode;
+  duoChatGlobalState.isAgenticChatShown = agenticMode;
+
+  if (saveCookie) {
+    saveDuoAgenticModePreference(agenticMode);
+  }
 };
 
 /**
@@ -22,9 +57,7 @@ export const sendDuoChatCommand = ({ question, resourceId, variables = {} } = {}
   if (!question || !resourceId) {
     throw new Error('Both arguments `question` and `resourceId` are required');
   }
-  if (!duoChatGlobalState.isShown) {
-    duoChatGlobalState.isShown = true;
-  }
+  setAgenticMode(false, true);
 
   window.requestIdleCallback(() => {
     duoChatGlobalState.commands.push({

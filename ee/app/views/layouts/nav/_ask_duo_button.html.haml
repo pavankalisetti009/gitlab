@@ -1,15 +1,7 @@
 - label = s_('DuoChat|GitLab Duo Chat')
 - duo_with_amazon_q_label = s_('DuoChat|GitLab Duo with Amazon Q')
-- duo_agentic_chat = s_('DuoAgenticChat|GitLab Duo Agentic Chat')
 - chat_disabled_reason = ::Gitlab::Llm::TanukiBot.chat_disabled_reason(user: current_user, container: @group || @project).to_s
 - amazon_q_enabled = ::Ai::AmazonQ.enabled?
-
-- if Feature.enabled?(:duo_workflow_workhorse, current_user) && current_user.can?(:access_duo_agentic_chat, @project)
-  = render Pajamas::ButtonComponent.new(variant: :default,
-    category: :secondary,
-    icon: 'duo-agentic-chat',
-    size: 'medium',
-    button_options: { class: 'enabled-button js-duo-agentic-chat-toggle', aria: { label: duo_agentic_chat }})
 
 - if chat_disabled_reason.present?
   - translated_project = s_('DuoChat|project')

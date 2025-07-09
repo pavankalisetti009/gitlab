@@ -30,3 +30,6 @@ export const TANUKI_BOT_FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitl
 
 export const WIDTH_OFFSET = 10;
 export const MULTI_THREADED_CONVERSATION_TYPE = 'DUO_CHAT';
+
+export const DUO_AGENTIC_MODE_COOKIE = 'duo_agentic_mode_on';
+export const DUO_AGENTIC_MODE_COOKIE_EXPIRATION = 365 * 10;

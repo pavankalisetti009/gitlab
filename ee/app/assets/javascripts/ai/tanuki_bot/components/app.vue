@@ -2,12 +2,14 @@
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { DuoChat } from '@gitlab/duo-ui';
+import { GlToggle } from '@gitlab/ui';
 import { v4 as uuidv4 } from 'uuid';
 import { __, s__ } from '~/locale';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { clearDuoChatCommands, generateEventLabelFromText } from 'ee/ai/utils';
+import { clearDuoChatCommands, generateEventLabelFromText, setAgenticMode } from 'ee/ai/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
@@ -33,6 +35,7 @@ import {
   MESSAGE_TYPES,
   WIDTH_OFFSET,
   MULTI_THREADED_CONVERSATION_TYPE,
+  DUO_AGENTIC_MODE_COOKIE,
 } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
@@ -54,6 +57,7 @@ export default {
     DuoChat,
     DuoChatCallout,
     TanukiBotSubscriptions,
+    GlToggle,
   },
   mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
   provide() {
@@ -85,6 +89,11 @@ export default {
       type: String,
       required: false,
       default: null,
+    },
+    agenticAvailable: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   apollo: {
@@ -184,6 +193,14 @@ export default {
   },
   computed: {
     ...mapState(['loading', 'messages']),
+    duoAgenticModePreference: {
+      get() {
+        return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
+      },
+      set(value) {
+        setAgenticMode(value, true);
+      },
+    },
     computedResourceId() {
       if (this.hasCommands) {
         return this.duoChatGlobalState.commands[0].resourceId;
@@ -513,7 +530,16 @@ export default {
         @chat-hidden="onChatClose"
         @track-feedback="onTrackFeedback"
         @chat-resize="onChatResize"
-      />
+        ><template v-if="agenticAvailable" #footer-controls>
+          <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
+            <gl-toggle
+              v-model="duoAgenticModePreference"
+              :label="s__('DuoChat|Agentic mode (Beta)')"
+              label-position="left"
+            />
+          </div>
+        </template>
+      </duo-chat>
     </div>
     <duo-chat-callout @callout-dismissed="onCalloutDismissed" />
   </div>
