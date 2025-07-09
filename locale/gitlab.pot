@@ -2433,10 +2433,10 @@ msgstr ""
 msgid "AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include..."
 msgstr ""
 
-msgid "AICatalog|Prompt"
+msgid "AICatalog|Provide default instructions or context that will be included with every user interaction."
 msgstr ""
 
-msgid "AICatalog|Provide default instructions or context that will be included with every user interaction."
+msgid "AICatalog|Provide instructions or context that will be included for this run."
 msgstr ""
 
 msgid "AICatalog|Run"

@@ -1,23 +1,36 @@
-import { GlFormTextarea } from '@gitlab/ui';
+import VueApollo from 'vue-apollo';
+import Vue from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
+
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogAgentsRun from 'ee/ai/catalog/pages/ai_catalog_agents_run.vue';
+import AiCatalogAgentRunForm from 'ee/ai/catalog/components/ai_catalog_agent_run_form.vue';
+import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
+import { mockAgent, mockCatalogItemResponse } from '../mock_data';
+
+Vue.use(VueApollo);
 
 describe('AiCatalogAgentsRun', () => {
   let wrapper;
+  let mockApollo;
 
-  const agentId = '941';
+  const agentId = '1';
 
   const mockRouter = {
     back: jest.fn(),
   };
-
   const mockToast = {
     show: jest.fn(),
   };
 
+  const mockCatalogItemQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemResponse);
+
   const createComponent = () => {
+    mockApollo = createMockApollo([[aiCatalogAgentQuery, mockCatalogItemQueryHandler]]);
+
     wrapper = shallowMountExtended(AiCatalogAgentsRun, {
+      apolloProvider: mockApollo,
       mocks: {
         $route: {
           params: { id: agentId },
@@ -30,12 +43,10 @@ describe('AiCatalogAgentsRun', () => {
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findBackButton = () => wrapper.findByTestId('ai-catalog-back-button');
-  const findSubmitButton = () => wrapper.findByTestId('ai-catalog-run-button');
-  const findForm = () => wrapper.find('form');
-  const findTextarea = () => wrapper.findComponent(GlFormTextarea);
+  const findRunForm = () => wrapper.findComponent(AiCatalogAgentRunForm);
 
-  beforeEach(() => {
-    createComponent();
+  beforeEach(async () => {
+    await createComponent();
   });
 
   afterEach(() => {
@@ -43,16 +54,15 @@ describe('AiCatalogAgentsRun', () => {
   });
 
   it('renders page heading', () => {
-    expect(findPageHeading().props('heading')).toBe(`Run agent: ${agentId}`);
+    expect(findPageHeading().props('heading')).toBe(`Run agent: ${mockAgent.name}`);
   });
 
   it('renders the back button', () => {
     expect(findBackButton().text()).toBe('Go back');
   });
 
-  it('renders form with submit button', () => {
-    expect(findForm().exists()).toBe(true);
-    expect(findSubmitButton().text()).toBe('Run');
+  it('renders run form', () => {
+    expect(findRunForm().exists()).toBe(true);
   });
 
   it('calls router.back when back button is clicked', async () => {
@@ -64,9 +74,7 @@ describe('AiCatalogAgentsRun', () => {
   it('shows toast with prompt on form submit', () => {
     const mockPrompt = 'Mock prompt';
 
-    findTextarea().vm.$emit('input', mockPrompt);
-
-    findForm().trigger('submit');
+    findRunForm().vm.$emit('submit', { userPrompt: mockPrompt });
 
     expect(mockToast.show).toHaveBeenCalledWith(mockPrompt);
   });
