@@ -106,7 +106,11 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
           'Q' => '16', 'R' => '16')
       end
 
-      shared_examples_for 'highest precedence for policy variables' do
+      context 'when job is marked as a policy job' do
+        before do
+          job.options.merge!(execution_policy_job: true)
+        end
+
         it 'replaces yaml_variables to apply them with the highest precedence' do
           expect(scoped_variables.to_hash_variables).to eq(
             [var('A', 1), var('B', 1),
@@ -138,14 +142,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
             'O' => '14', 'P' => '15',
             'Q' => '16', 'R' => '16')
         end
-      end
-
-      context 'when job is marked as a policy job' do
-        before do
-          job.options.merge!(execution_policy_job: true)
-        end
-
-        it_behaves_like 'highest precedence for policy variables'
 
         context 'when job has execution_policy_variables_override option set to disallow user-defined variables' do
           before do
@@ -164,14 +160,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
                 var('I', 9), var('J', 9),
                 var('P', 15), var('Q', 15),
                 var('Q', 16), var('R', 16)])
-          end
-
-          context 'when feature flag "security_policies_optional_variables_control" is disabled' do
-            before do
-              stub_feature_flags(security_policies_optional_variables_control: false)
-            end
-
-            it_behaves_like 'highest precedence for policy variables'
           end
         end
       end
@@ -299,42 +287,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
               var('H', 8), var('I', 8),
               var('P', 15), var('Q', 15),
               var('Q', 16), var('R', 16)])
-        end
-
-        context 'when feature flag "security_policies_optional_variables_control" is disabled' do
-          before do
-            stub_feature_flags(security_policies_optional_variables_control: false)
-          end
-
-          it 'returns variables with user-defined variables and the policy variables with the highest precedence' do
-            expect(scoped_variables_for_pipeline_seed.to_hash_variables).to eq(
-              [var('A', 1), var('B', 1),
-                var('B', 2), var('C', 2),
-                var('C', 3), var('D', 3),
-                var('E', 5), var('F', 5),
-                var('I', 8),
-                var('J', 10), var('K', 10),
-                var('K', 11), var('L', 11),
-                var('L', 12), var('M', 12),
-                var('M', 13), var('N', 13),
-                var('N', 14), var('O', 14),
-                var('P', 15), var('Q', 15),
-                var('Q', 16), var('R', 16),
-                var('G', 7), var('H', 7)])
-          end
-
-          it 'overrides duplicate keys depending on resource hierarchy' do
-            expect(scoped_variables_for_pipeline_seed.to_hash).to match(
-              'A' => '1', 'B' => '2',
-              'C' => '3', 'D' => '3',
-              'E' => '5', 'F' => '5',
-              'G' => '7', 'H' => '7',
-              'I' => '8', 'J' => '10',
-              'K' => '11', 'L' => '12',
-              'M' => '13', 'N' => '14',
-              'O' => '14', 'P' => '15',
-              'Q' => '16', 'R' => '16')
-          end
         end
       end
     end

@@ -838,20 +838,6 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
             expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('project policy token')
           end
         end
-
-        context 'when feature flag "security_policies_optional_variables_control" is disabled' do
-          before do
-            stub_feature_flags(security_policies_optional_variables_control: false)
-          end
-
-          it 'ignores run variables' do
-            stages = execute.payload.stages
-            test_stage = stages.find_by(name: 'test')
-
-            project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
-            expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('project policy token')
-          end
-        end
       end
 
       context 'when override is disallowed' do
@@ -877,20 +863,6 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
             project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
             expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('run token')
-          end
-
-          context 'when feature flag "security_policies_optional_variables_control" is disabled' do
-            before do
-              stub_feature_flags(security_policies_optional_variables_control: false)
-            end
-
-            it 'ignores run variables' do
-              stages = execute.payload.stages
-              test_stage = stages.find_by(name: 'test')
-
-              project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
-              expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('project policy token')
-            end
           end
         end
       end

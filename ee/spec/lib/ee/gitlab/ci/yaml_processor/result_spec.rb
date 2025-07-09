@@ -84,20 +84,6 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
         it 'sets `execution_policy_variables_override` option' do
           expect(build.dig(:options, :execution_policy_variables_override)).to eq({ allowed: false })
         end
-
-        context 'when feature flag "security_policies_optional_variables_control" is disabled' do
-          before do
-            stub_feature_flags(security_policies_optional_variables_control: false)
-          end
-
-          it 'sets the `execution_policy_job` option' do
-            expect(build.dig(:options, :execution_policy_job)).to eq true
-          end
-
-          it 'does not set `execution_policy_variables_override` option' do
-            expect(build.dig(:options, :execution_policy_variables_override)).to be_nil
-          end
-        end
       end
 
       context 'when creating_policy_pipeline? is false' do

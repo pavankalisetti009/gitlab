@@ -123,11 +123,11 @@ module Gitlab
           def job_options
             return {} unless creating_policy_pipeline?
 
-            { execution_policy_job: true, execution_policy_name: current_policy.name }.tap do |options|
-              if Feature.enabled?(:security_policies_optional_variables_control, project)
-                options[:execution_policy_variables_override] = current_policy.variables_override_strategy
-              end
-            end
+            {
+              execution_policy_job: true,
+              execution_policy_name: current_policy.name,
+              execution_policy_variables_override: current_policy.variables_override_strategy
+            }
           end
 
           private

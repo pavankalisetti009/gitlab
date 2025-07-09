@@ -26,7 +26,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
           GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
           user: user,
           namespaces: [owned_group],
-          any_self_service_plan: true
+          any_self_service_plan: true,
+          plan_id: nil
         ) do |instance|
           allow(instance).to receive(:execute).and_return(
             instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
