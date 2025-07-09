@@ -1,4 +1,3 @@
-- return unless ::Gitlab::Saas.feature_available?(:pipl_compliance)
 
 = gitlab_ui_form_for @application_setting, url: general_admin_application_settings_path(anchor: 'js-enforce-pipl-compliance-settings'), html: { class: 'fieldset-form', id: 'enforce-pipl-compliance-settings' } do |f|
   = form_errors(@application_setting)
