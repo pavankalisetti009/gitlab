@@ -93,7 +93,7 @@ module Resolvers
           ::RequirementsManagement::Requirement.where(issue_id: work_items_ids.reorder(nil))
 
         # keeps old requirement iids filter backwards compatible
-        requirements = requirements.where(iid: legacy_iids) if legacy_iids.present?
+        requirements = requirements.iid_in(legacy_iids) if legacy_iids.present?
 
         # Preserve the same ordering from the ids returned from WorkItemsFinder
         # Prevents joining issues table again to have the correct sort

@@ -385,11 +385,9 @@ class IssuableFinder
     items.pg_full_text_search(search, matched_columns: params[:in].to_s.split(','))
   end
 
-  # rubocop: disable CodeReuse/ActiveRecord
   def by_iids(items)
-    params[:iids].present? ? items.where(iid: params[:iids]) : items
+    params[:iids].present? ? items.iid_in(params[:iids]) : items
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   # rubocop: disable CodeReuse/ActiveRecord
   def by_negated_iids(items)

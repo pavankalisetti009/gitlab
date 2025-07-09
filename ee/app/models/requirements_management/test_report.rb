@@ -89,7 +89,7 @@ module RequirementsManagement
           build.project.issues.opened.for_requirement_iids(iids)
             .select('issues.id, requirement.iid as requirement_iid')
         else
-          build.project.issues.opened.with_issue_type(:requirement).where(iid: iids)
+          build.project.issues.opened.with_issue_type(:requirement).iid_in(iids)
             .select('issues.id, issues.iid as work_item_iid')
         end
       end
