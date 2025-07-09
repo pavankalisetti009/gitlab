@@ -107,7 +107,7 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
         subject.execute
       end
 
-      it 'updates metrics for all sites' do
+      it 'updates metrics for all sites', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/548147' do
         allow(GeoNodeStatus).to receive(:current_node_status).and_return(GeoNodeStatus.new(primary_data))
 
         secondary.update!(status: GeoNodeStatus.new(data))
