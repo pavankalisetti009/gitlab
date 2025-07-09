@@ -34,7 +34,7 @@
       = render 'security_policies'
 
   - if Feature.enabled?(:security_policies_csp, :instance)
-    = render ::Layouts::SettingsBlockComponent.new(_('Compliance and security policy group for this instance'),
+    = render ::Layouts::SettingsBlockComponent.new(_('Compliance and security policy group'),
       id: 'js-centralized_security_policy_management_setting',
       testid: 'admin-centralized_security_policy_management_setting',
       expanded: expanded_by_default?) do |c|

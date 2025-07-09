@@ -5,6 +5,7 @@ import { generateMockProjects } from 'ee_jest/security_orchestration/mocks/mock_
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { EXCEPT_PROJECTS } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import { WITHOUT_EXCEPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import InstanceProjectsDropdown from 'ee/security_orchestration/components/shared/instance_projects_dropdown.vue';
 
 describe('ScopeProjectSelector', () => {
   let wrapper;
@@ -12,18 +13,20 @@ describe('ScopeProjectSelector', () => {
   const projects = generateMockProjects([1, 2]);
   const mappedProjects = projects.map(({ id }) => ({ id: getIdFromGraphQLId(id) }));
 
-  const createComponent = (propsData = {}) => {
+  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(ScopeProjectSelector, {
       propsData: {
         groupFullPath: 'gitlab-org',
         projects: { excluding: [] },
         ...propsData,
       },
+      provide: { designatedAsCsp: false, ...provide },
     });
   };
 
   const findExceptionTypeSelector = () => wrapper.findByTestId('exception-type');
   const findGroupProjectsDropdown = () => wrapper.findComponent(GroupProjectsDropdown);
+  const findInstanceProjectsDropdown = () => wrapper.findComponent(InstanceProjectsDropdown);
 
   describe('default rendering', () => {
     it('renders exceptions type selector', () => {
@@ -35,7 +38,7 @@ describe('ScopeProjectSelector', () => {
 
     it('renders exceptions type selector with empty projects', () => {
       createComponent({
-        projects: {},
+        propsData: { projects: {} },
       });
 
       expect(findExceptionTypeSelector().exists()).toBe(true);
@@ -44,117 +47,194 @@ describe('ScopeProjectSelector', () => {
   });
 
   describe('renders projects selector', () => {
-    it('renders projects selector when exception type is selected', () => {
-      createComponent({
-        exceptionType: EXCEPT_PROJECTS,
+    describe('non-csp group', () => {
+      it('renders group projects selector when exception type is selected', () => {
+        createComponent({
+          propsData: { exceptionType: EXCEPT_PROJECTS },
+        });
+
+        expect(findGroupProjectsDropdown().exists()).toBe(true);
+        expect(findInstanceProjectsDropdown().exists()).toBe(false);
       });
 
-      expect(findGroupProjectsDropdown().exists()).toBe(true);
+      it('renders group projects selector when exceptions are disabled', () => {
+        createComponent({
+          propsData: {
+            projects: {
+              including: [],
+            },
+          },
+        });
+
+        expect(findExceptionTypeSelector().exists()).toBe(false);
+        expect(findGroupProjectsDropdown().exists()).toBe(true);
+        expect(findInstanceProjectsDropdown().exists()).toBe(false);
+      });
     });
 
-    it('renders projects selector when exceptions are disabled', () => {
-      createComponent({
-        projects: {
-          including: [],
-        },
+    describe('csp group', () => {
+      it('renders instance projects selector when exception type is selected', () => {
+        createComponent({
+          propsData: { exceptionType: EXCEPT_PROJECTS },
+          provide: { designatedAsCsp: true },
+        });
+
+        expect(findGroupProjectsDropdown().exists()).toBe(false);
+        expect(findInstanceProjectsDropdown().exists()).toBe(true);
       });
 
-      expect(findExceptionTypeSelector().exists()).toBe(false);
-      expect(findGroupProjectsDropdown().exists()).toBe(true);
+      it('renders instance projects selector when exceptions are disabled', () => {
+        createComponent({
+          propsData: {
+            projects: {
+              including: [],
+            },
+          },
+          provide: { designatedAsCsp: true },
+        });
+
+        expect(findExceptionTypeSelector().exists()).toBe(false);
+        expect(findGroupProjectsDropdown().exists()).toBe(false);
+        expect(findInstanceProjectsDropdown().exists()).toBe(true);
+      });
     });
   });
 
-  describe('project selection', () => {
-    it('should select exception projects', () => {
-      createComponent({
-        exceptionType: EXCEPT_PROJECTS,
+  describe.each`
+    title              | designatedAsCsp | findProjectSelector
+    ${'non-csp group'} | ${false}        | ${findGroupProjectsDropdown}
+    ${'csp group'}     | ${true}         | ${findInstanceProjectsDropdown}
+  `('$title', ({ designatedAsCsp, findProjectSelector }) => {
+    describe('project selection', () => {
+      it('should select exception projects', () => {
+        createComponent({
+          propsData: { exceptionType: EXCEPT_PROJECTS },
+          provide: { designatedAsCsp },
+        });
+
+        findProjectSelector().vm.$emit('select', projects);
+
+        expect(wrapper.emitted('changed')).toEqual([
+          [
+            {
+              projects: {
+                excluding: mappedProjects,
+              },
+            },
+          ],
+        ]);
       });
 
-      findGroupProjectsDropdown().vm.$emit('select', projects);
-
-      expect(wrapper.emitted('changed')).toEqual([
-        [
-          {
+      it('should select specific projects', () => {
+        createComponent({
+          propsData: {
             projects: {
-              excluding: mappedProjects,
+              including: [],
             },
           },
-        ],
-      ]);
+          provide: { designatedAsCsp },
+        });
+
+        findProjectSelector().vm.$emit('select', projects);
+
+        expect(wrapper.emitted('changed')).toEqual([
+          [
+            {
+              projects: {
+                including: mappedProjects,
+              },
+            },
+          ],
+        ]);
+      });
     });
 
-    it('should select specific projects', () => {
-      createComponent({
-        projects: {
-          including: [],
-        },
-      });
-
-      findGroupProjectsDropdown().vm.$emit('select', projects);
-
-      expect(wrapper.emitted('changed')).toEqual([
-        [
-          {
+    describe('error state', () => {
+      it('emits error when projects loading fails', () => {
+        createComponent({
+          propsData: {
             projects: {
               including: mappedProjects,
             },
           },
-        ],
-      ]);
+          provide: { designatedAsCsp },
+        });
+
+        findProjectSelector().vm.$emit('projects-query-error');
+
+        expect(wrapper.emitted('error')).toEqual([['Failed to load group projects']]);
+      });
+
+      it('does not render initial error state for a dropdown', () => {
+        createComponent({
+          propsData: {
+            projects: {
+              including: mappedProjects,
+            },
+          },
+          provide: { designatedAsCsp },
+        });
+        expect(findProjectSelector().props('state')).toBe(true);
+      });
+
+      it('renders error state for a dropdown when form is dirty', () => {
+        createComponent({
+          propsData: {
+            isDirty: true,
+            projects: {
+              including: [],
+            },
+          },
+          provide: { designatedAsCsp },
+        });
+        expect(findProjectSelector().props('state')).toBe(false);
+      });
     });
   });
 
   describe('selected projects', () => {
-    it.each`
-      key            | projectType    | hasExceptions
-      ${'excluding'} | ${'exception'} | ${true}
-      ${'including'} | ${'specific'}  | ${false}
-    `('renders selected $projectType projects', ({ key, hasExceptions }) => {
-      createComponent({
-        projects: {
-          [key]: mappedProjects,
-        },
-        exceptionType: EXCEPT_PROJECTS,
+    describe('non-csp group', () => {
+      it.each`
+        key            | projectType    | hasExceptions
+        ${'excluding'} | ${'exception'} | ${true}
+        ${'including'} | ${'specific'}  | ${false}
+      `('renders selected $projectType projects', ({ key, hasExceptions }) => {
+        createComponent({
+          propsData: {
+            projects: {
+              [key]: mappedProjects,
+            },
+            exceptionType: EXCEPT_PROJECTS,
+          },
+        });
+
+        expect(findExceptionTypeSelector().exists()).toBe(hasExceptions);
+        expect(findGroupProjectsDropdown().props('selected')).toEqual([
+          projects[0].id,
+          projects[1].id,
+        ]);
       });
-
-      expect(findExceptionTypeSelector().exists()).toBe(hasExceptions);
-      expect(findGroupProjectsDropdown().props('selected')).toEqual([
-        projects[0].id,
-        projects[1].id,
-      ]);
-    });
-  });
-
-  describe('error state', () => {
-    it('emits error when projects loading fails', () => {
-      createComponent({
-        projects: {
-          including: mappedProjects,
-        },
-      });
-
-      findGroupProjectsDropdown().vm.$emit('projects-query-error');
-
-      expect(wrapper.emitted('error')).toEqual([['Failed to load group projects']]);
     });
 
-    it('does not render initial error state for a dropdown', () => {
-      createComponent({
-        projects: {
-          including: mappedProjects,
-        },
-      });
-      expect(findGroupProjectsDropdown().props('state')).toBe(true);
-    });
+    describe('csp group', () => {
+      it.each`
+        key            | projectType    | hasExceptions
+        ${'excluding'} | ${'exception'} | ${true}
+        ${'including'} | ${'specific'}  | ${false}
+      `('renders selected $projectType projects', ({ key, hasExceptions }) => {
+        createComponent({
+          propsData: {
+            projects: {
+              [key]: mappedProjects,
+            },
+            exceptionType: EXCEPT_PROJECTS,
+          },
+          provide: { designatedAsCsp: true },
+        });
 
-    it('renders error state for a dropdown when form is dirty', () => {
-      createComponent({
-        isDirty: true,
-        projects: {
-          including: [],
-        },
+        expect(findExceptionTypeSelector().exists()).toBe(hasExceptions);
+        expect(findInstanceProjectsDropdown().props('selected')).toEqual([1, 2]);
       });
-      expect(findGroupProjectsDropdown().props('state')).toBe(false);
     });
   });
 
@@ -171,8 +251,10 @@ describe('ScopeProjectSelector', () => {
   describe('reset selected projects', () => {
     it('should select exception type WITHOUT_EXCEPTIONS and reset exceptions', () => {
       createComponent({
-        projects: {
-          excluding: mappedProjects,
+        propsData: {
+          projects: {
+            excluding: mappedProjects,
+          },
         },
       });
 
