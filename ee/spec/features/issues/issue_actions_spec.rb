@@ -13,6 +13,7 @@ RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
   let(:user) { create(:user) }
 
   before do
+    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(epics: true)
     sign_in(user)
   end
@@ -25,9 +26,9 @@ RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
       end
 
       it 'does not show "Promote to epic" item in issue actions dropdown' do
-        click_button 'Issue actions'
+        click_button 'More actions', match: :first
 
-        expect(page).not_to have_button('Promote to epic')
+        expect(page).not_to have_button 'Change type'
       end
     end
 
@@ -41,8 +42,10 @@ RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
       end
 
       it 'clicking "Promote to epic" creates and redirects user to epic' do
-        click_button 'Issue actions'
-        click_button 'Promote to epic'
+        click_button 'More actions', match: :first
+        click_button 'Change type'
+        select 'Epic (Promote to group)', from: 'Type'
+        click_button 'Change type'
 
         expect(page).to have_current_path(group_epic_path(group, 1))
       end

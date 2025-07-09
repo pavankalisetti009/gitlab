@@ -70686,6 +70686,9 @@ msgstr ""
 msgid "WorkItem|At risk"
 msgstr ""
 
+msgid "WorkItem|Attributes"
+msgstr ""
+
 msgid "WorkItem|Author"
 msgstr ""
 

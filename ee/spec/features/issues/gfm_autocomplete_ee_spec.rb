@@ -13,6 +13,7 @@ RSpec.describe 'GFM autocomplete EE', :js, feature_category: :team_planning do
   let_it_be(:issue) { create(:issue, project: project, assignees: [user]) }
 
   before do
+    stub_feature_flags(work_item_view_for_issues: true)
     project.add_maintainer(user)
 
     sign_in(user)
@@ -22,11 +23,8 @@ RSpec.describe 'GFM autocomplete EE', :js, feature_category: :team_planning do
 
   context 'assignees' do
     it 'only lists users who are currently assigned to the issue when using /unassign' do
-      fill_in 'Comment', with: '/una'
-
+      fill_in 'Add a reply', with: '/una'
       find_highlighted_autocomplete_item.click
-
-      wait_for_requests
 
       expect(find_autocomplete_menu).to have_text(user.username)
       expect(find_autocomplete_menu).not_to have_text(another_user.username)
@@ -39,15 +37,9 @@ RSpec.describe 'GFM autocomplete EE', :js, feature_category: :team_planning do
     end
 
     it 'correctly autocompletes iteration reference prefix' do
-      textarea = find('[data-supports-quick-actions="true"]')
-      # Warmup: allow the autocompletion items to be loaded into the client.
-      textarea.send_keys '/'
+      fill_in 'Add a reply', with: '/ite'
 
-      wait_for_requests
-
-      textarea.send_keys :enter, '/', 'i', 't', :enter
-
-      expect(textarea['value']).to have_text('/iteration *iteration:')
+      expect(find_autocomplete_menu).to have_text('/iteration *iteration:')
     end
   end
 end

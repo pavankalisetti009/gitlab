@@ -12,14 +12,11 @@ RSpec.describe 'Resource weight events', :js, feature_category: :team_planning d
     let(:issue) { create(:issue, project: project, weight: nil, due_date: Date.new(2016, 8, 28)) }
 
     before do
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(200)
+      stub_feature_flags(work_item_view_for_issues: true)
       project.add_maintainer(user)
       sign_in(user)
       visit project_issue_path(project, issue)
-      wait_for_all_requests
-    end
-
-    after do
-      wait_for_requests
     end
 
     context 'when original issue has weight events' do
@@ -28,9 +25,11 @@ RSpec.describe 'Resource weight events', :js, feature_category: :team_planning d
       before do
         target_project.add_maintainer(user)
 
-        add_note("/weight 2")
+        fill_in('Add a reply', with: '/weight 2')
+        click_button 'Comment'
 
-        add_note("/weight 3\n/move #{target_project.full_path}")
+        fill_in('Add a reply', with: "/weight 3\n/move #{target_project.full_path}")
+        click_button 'Comment'
       end
 
       it "creates expected weight events on the moved issue" do
@@ -38,13 +37,11 @@ RSpec.describe 'Resource weight events', :js, feature_category: :team_planning d
         expect(issue.reload).to be_closed
 
         visit project_issue_path(target_project, issue)
-        wait_for_all_requests
 
         expect(page).to have_content('set weight to 2', count: 1)
         expect(page).to have_content('changed weight to 3 from 2', count: 1)
 
         visit project_issue_path(project, issue)
-        wait_for_all_requests
 
         expect(page).to have_content('set weight to 2', count: 1)
         expect(page).to have_content('changed weight to 3 from 2', count: 1)
