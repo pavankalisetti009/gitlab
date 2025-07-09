@@ -131,3 +131,9 @@ export const SEVERITY_GROUPS = [
 export const VULNERABILITY_DETAIL_CODE_FLOWS = 'VulnerabilityDetailCodeFlows';
 
 export const EXPORT_NOT_READY_ERROR_CODE = 'EXPORT_NOT_READY';
+export const EXPORT_ERROR_MESSAGE_CHART_LOADING = s__(
+  'SecurityReports|Chart is still loading. Please try again after all data has loaded.',
+);
+export const EXPORT_ERROR_MESSAGE_CHART_FAILURE = s__(
+  'SecurityReports|Chart failed to initialize. Please refresh the page and try again.',
+);

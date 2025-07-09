@@ -7,6 +7,8 @@ import {
   SEVERITY_LEVEL_HIGH,
   SEVERITY_LEVEL_MEDIUM,
   SEVERITY_LEVEL_LOW,
+  EXPORT_ERROR_MESSAGE_CHART_LOADING,
+  EXPORT_ERROR_MESSAGE_CHART_FAILURE,
 } from 'ee/security_dashboard/constants';
 import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_badge.vue';
 import { firstAndLastY } from '~/lib/utils/chart_utils';
@@ -18,6 +20,7 @@ import {
 import { formattedChangeInPercent } from '~/lib/utils/number_utils';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
+import { PdfExportError } from 'ee/security_dashboard/helpers';
 import SecurityDashboardCard from './security_dashboard_card.vue';
 import ChartButtons from './vulnerabilities_over_time_chart_buttons.vue';
 
@@ -172,9 +175,17 @@ export default {
       this.chartObject[severityLevel] = echarts;
     },
     getChartReportData() {
+      if (this.isLoadingHistory) {
+        throw new PdfExportError(EXPORT_ERROR_MESSAGE_CHART_LOADING);
+      }
+
       const charts = severityLevels.map((severityLevel) => {
         const chartItem = this.charts.find((item) => item.severityLevel === severityLevel);
         const chart = this.chartObject[severityLevel];
+
+        if (!chart) {
+          throw new PdfExportError(EXPORT_ERROR_MESSAGE_CHART_FAILURE);
+        }
 
         return {
           severity: severityLevel,

@@ -7,6 +7,7 @@ import groupVulnerabilityHistoryQuery from 'ee/security_dashboard/graphql/querie
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import { PdfExportError } from 'ee/security_dashboard/helpers';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
@@ -193,6 +194,33 @@ describe('Vulnerabilities Over Time Chart Component', () => {
         charts: expect.any(Array),
         selected_day_range: expect.any(Number),
         date_info: expect.any(String),
+      });
+    });
+
+    describe('error handling', () => {
+      it('throws PdfExportError when it is loading', () => {
+        createComponent();
+
+        const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+
+        expect(() => {
+          chartReportDataFn();
+        }).toThrow(
+          new PdfExportError('Chart is still loading. Please try again after all data has loaded.'),
+        );
+      });
+
+      it('throws PdfExportError when chart is not initialized', async () => {
+        createComponent();
+        await waitForPromises();
+
+        const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+
+        expect(() => {
+          chartReportDataFn();
+        }).toThrow(
+          new PdfExportError('Chart failed to initialize. Please refresh the page and try again.'),
+        );
       });
     });
   });
