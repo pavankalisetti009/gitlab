@@ -111,18 +111,18 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
         expect(csv[0]['Vulnerability IDs']).to eq(expected_vulnerabilities)
       end
 
-      # it 'avoids N+1 queries' do
-      #   control = ActiveRecord::QueryRecorder.new do
-      #     service_class.generate
-      #   end
+      xit 'avoids N+1 queries' do # rubocop:disable RSpec/PendingWithoutReason -- TODO: Sbom::Occurrence#has_dependency_paths? has an n+1 query which is unavoidable for now
+        control = ActiveRecord::QueryRecorder.new do
+          service_class.generate
+        end
 
-      #   create_list(:sbom_occurrence, 3, :with_vulnerabilities,
-      #     project: project, source: create(:sbom_source))
+        create_list(:sbom_occurrence, 3, :with_vulnerabilities,
+          project: project, source: create(:sbom_source))
 
-      #   expect do
-      #     service_class.generate
-      #   end.to issue_same_number_of_queries_as(control).or_fewer
-      # end
+        expect do
+          service_class.generate
+        end.to issue_same_number_of_queries_as(control).or_fewer
+      end
     end
   end
 end

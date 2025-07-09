@@ -141,12 +141,12 @@ RSpec.describe Sbom::Exporters::JsonArrayService, feature_category: :dependency_
       end
     end
 
-    # it 'does not have N+1 queries' do
-    #   control = ActiveRecord::QueryRecorder.new { described_class.new(nil, project.sbom_occurrences).generate_part }
+    xit 'does not have N+1 queries' do # rubocop:disable RSpec/PendingWithoutReason -- TODO: Sbom::Occurrence#has_dependency_paths? has an n+1 query which is unavoidable for now
+      control = ActiveRecord::QueryRecorder.new { described_class.new(nil, project.sbom_occurrences).generate_part }
 
-    #   create(:sbom_occurrence, :mit, project: project)
+      create(:sbom_occurrence, :mit, project: project)
 
-    #   expect { described_class.new(nil, project.sbom_occurrences).generate_part }.not_to exceed_query_limit(control)
-    # end
+      expect { described_class.new(nil, project.sbom_occurrences).generate_part }.not_to exceed_query_limit(control)
+    end
   end
 end
