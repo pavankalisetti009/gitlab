@@ -12581,6 +12581,9 @@ msgstr ""
 msgid "Change path"
 msgstr ""
 
+msgid "Change requests must be approved by the requesting user."
+msgstr ""
+
 msgid "Change reviewers"
 msgstr ""
 
@@ -62551,9 +62554,6 @@ msgid "The branch or tag does not exist"
 msgstr ""
 
 msgid "The branch to merge into."
-msgstr ""
-
-msgid "The change requests must be completed or resolved."
 msgstr ""
 
 msgid "The comment you are editing has been changed by another user. Would you like to keep your changes and overwrite the new description or discard your changes?"
