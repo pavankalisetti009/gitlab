@@ -504,4 +504,25 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       end
     end
   end
+
+  describe '#compliance_security_policy_group_id' do
+    subject { helper.compliance_security_policy_group_id }
+
+    before do
+      allow(Security::PolicySetting).to receive(:for_organization).and_return(policy_setting)
+    end
+
+    context 'when CSP group is not set' do
+      let(:policy_setting) { build_stubbed(:security_policy_settings, csp_namespace: nil) }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when CSP group is set' do
+      let(:csp_group) { build_stubbed(:group) }
+      let(:policy_setting) { build_stubbed(:security_policy_settings, csp_namespace: csp_group) }
+
+      it { is_expected.to eq(csp_group.id) }
+    end
+  end
 end
