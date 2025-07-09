@@ -311,7 +311,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
 
     with_them do
       it 'returns the correct visualization path' do
-        visualization = described_class.from_file(filename: filename, project: project)
+        visualization = described_class.from_file(filename: filename, config_project: project, container: project)
 
         expect(visualization.type).to be_present
         expect(visualization.slug).to eq(filename)
@@ -321,7 +321,8 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
 
     context 'when file cannot be opened' do
       it 'initializes visualization with errors' do
-        visualization = described_class.from_file(filename: 'not-existing-file', project: project)
+        visualization = described_class.from_file(filename: 'not-existing-file', config_project: project,
+          container: project)
 
         expect(visualization.slug).to eq('not-existing-file')
         expect(visualization.errors).to match_array(['Visualization file not-existing-file.yaml not found'])
@@ -330,7 +331,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
   end
 
   describe '.product_analytics_visualizations' do
-    subject(:product_analytics_vis) { described_class.product_analytics_visualizations }
+    subject(:product_analytics_vis) { described_class.product_analytics_visualizations(project) }
 
     num_builtin_visualizations = 14
 
@@ -340,7 +341,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
   end
 
   describe '.value_stream_dashboard_visualizations' do
-    subject(:vsd_visualizations) { described_class.value_stream_dashboard_visualizations }
+    subject(:vsd_visualizations) { described_class.value_stream_dashboard_visualizations(project) }
 
     num_builtin_visualizations = 14
 
@@ -350,7 +351,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
   end
 
   describe '.dora_metrics_visualizations' do
-    subject(:dora_metrics_vis) { described_class.dora_metrics_visualizations }
+    subject(:dora_metrics_vis) { described_class.dora_metrics_visualizations(project) }
 
     num_builtin_visualizations = 8
 
@@ -360,7 +361,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
   end
 
   describe '.merge_requests_visualizations' do
-    subject(:mr_visualizations) { described_class.merge_requests_visualizations }
+    subject(:mr_visualizations) { described_class.merge_requests_visualizations(project) }
 
     it 'returns the merge request analytics dashboard builtin visualizations' do
       expect(mr_visualizations.count).to eq(3)
@@ -452,7 +453,7 @@ other: okay1111
       YAML
     end
 
-    subject(:visualization) { described_class.new(config: invalid_yaml, slug: 'test') }
+    subject(:visualization) { described_class.new(container: project, config: invalid_yaml, slug: 'test') }
 
     it 'captures the syntax error' do
       expect(visualization.errors).to match_array(['root is not of type: object'])
@@ -461,7 +462,7 @@ other: okay1111
 
   context 'when initialized with init_error' do
     subject(:visualization) do
-      described_class.new(config: nil, slug: "not-existing",
+      described_class.new(container: project, config: nil, slug: "not-existing",
         init_error: "Some init error")
     end
 
@@ -472,7 +473,7 @@ other: okay1111
 
   describe 'handling slugs correctly' do
     subject(:visualization_slug) do
-      described_class.new(config: nil, slug: slug,
+      described_class.new(container: project, config: nil, slug: slug,
         init_error: "Some init error").slug
     end
 

@@ -14,11 +14,12 @@ import {
   SEVERITY_GROUP_B,
   SEVERITY_GROUP_A,
   SEVERITY_GROUPS,
+  EXPORT_ERROR_MESSAGE_CHART_LOADING,
 } from 'ee/security_dashboard/constants';
 import { Accordion, AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
 import { s__, n__, sprintf } from '~/locale';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
-import { limitVulnerabilityGradeProjects } from 'ee/security_dashboard/helpers';
+import { limitVulnerabilityGradeProjects, PdfExportError } from 'ee/security_dashboard/helpers';
 import SecurityDashboardCard from './security_dashboard_card.vue';
 
 const SEVERITY_LEVELS_ORDERED_BY_SEVERITY = [
@@ -95,9 +96,6 @@ export default {
         // }
         return keyBy(vulnerabilityGrades, 'grade');
       },
-      result() {
-        this.$emit('chart-report-data-registered', this.getChartReportData);
-      },
       error() {
         this.errorLoadingVulnerabilitiesGrades = true;
       },
@@ -114,6 +112,9 @@ export default {
         projects: this.findProjectsForGroup(group),
       }));
     },
+  },
+  mounted() {
+    this.$emit('chart-report-data-registered', this.getChartReportData);
   },
   methods: {
     findProjectsForGroup(group) {
@@ -173,6 +174,10 @@ export default {
       this.expandedGrade = grade;
     },
     getChartReportData() {
+      if (this.isLoadingGrades) {
+        throw new PdfExportError(EXPORT_ERROR_MESSAGE_CHART_LOADING);
+      }
+
       return {
         vulnerability_grades: this.limitedVulnerabilityGrades,
         expanded_grade: this.expandedGrade,

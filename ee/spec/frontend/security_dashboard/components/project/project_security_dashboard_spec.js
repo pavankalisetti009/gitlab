@@ -203,7 +203,7 @@ describe('Project Security Dashboard component', () => {
         expect(() => {
           getReportDataFn();
         }).toThrow(
-          new PdfExportError('Chart is still loading. Please try again in a few minutes.'),
+          new PdfExportError('Chart is still loading. Please try again after all data has loaded.'),
         );
       });
 

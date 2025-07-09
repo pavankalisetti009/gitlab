@@ -342,6 +342,10 @@ module EE
       end
     end
 
+    def compliance_security_policy_group_id
+      Security::PolicySetting.for_organization(::Organizations::Organization.default_organization).csp_namespace_id
+    end
+
     private
 
     def identity_verification_attributes

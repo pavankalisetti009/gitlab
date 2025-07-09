@@ -3,9 +3,10 @@
 module Types
   module Analytics
     module Dashboards
-      class PanelType < BaseObject # rubocop:disable Graphql/AuthorizeTypes,Style/InlineDisableAnnotation
+      class PanelType < BaseObject
         graphql_name 'CustomizableDashboardPanel'
         description 'Represents a customizable dashboard panel.'
+        authorize :read_product_analytics
 
         field :title,
           type: GraphQL::Types::String,

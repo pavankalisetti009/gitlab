@@ -30,18 +30,20 @@ export default {
     selectedModel() {
       return this.aiFeatureSetting.selectedModel?.ref || '';
     },
+    defaultModelOption() {
+      const text = sprintf(s__('AdminAIPoweredFeatures|GitLab Default %{defaultModel}'), {
+        defaultModel: `(${this.aiFeatureSetting.defaultModel?.name})` || '',
+      });
+
+      return { value: '', text };
+    },
     listItems() {
       const modelOptions = this.aiFeatureSetting.selectableModels.map(({ ref, name }) => ({
         value: ref,
         text: name,
       }));
 
-      const defaultModelOption = {
-        value: '', // the GitLab Default model is represented by an empty string
-        text: s__('AdminAIPoweredFeatures|GitLab Default'),
-      };
-
-      return [...modelOptions, defaultModelOption];
+      return [...modelOptions, this.defaultModelOption];
     },
     selectedOption() {
       return this.listItems.find(({ value }) => value === this.selectedModel);

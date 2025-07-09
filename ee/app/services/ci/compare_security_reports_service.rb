@@ -70,7 +70,7 @@ module Ci
           scope: 'all',
           limit: Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT
         }
-      ).execute
+      ).execute.with_api_scopes
       Gitlab::Ci::Reports::Security::AggregatedFinding.new(pipeline, findings)
     end
 

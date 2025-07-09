@@ -64,19 +64,8 @@ describe('Security Dashboard Layout component', () => {
     );
 
     it('includes the group full path in the report data', () => {
-      const mockData = 'some test';
-      const mockGetExportData = jest.fn().mockReturnValue(mockData);
-
       createWrapper({
         showExport: true,
-        stubs: {
-          VulnerabilitiesOverTimeChart: {
-            template: '<div></div>',
-            methods: {
-              getExportData: mockGetExportData,
-            },
-          },
-        },
       });
 
       const getReportDataFn = findExportButton().props('getReportData');

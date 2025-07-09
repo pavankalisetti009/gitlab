@@ -8,6 +8,9 @@ query getAiNamespaceFeatureSettings($groupId: GroupID!) {
         ref
         name
       }
+      defaultModel {
+        name
+      }
       selectableModels {
         ref
         name

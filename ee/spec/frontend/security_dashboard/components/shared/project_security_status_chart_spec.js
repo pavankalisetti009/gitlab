@@ -16,6 +16,7 @@ import {
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { trimText } from 'helpers/text_helper';
+import { PdfExportError } from 'ee/security_dashboard/helpers';
 import {
   mockProjectsWithSeverityCounts,
   mockInstanceVulnerabilityGrades,
@@ -242,6 +243,20 @@ describe('Vulnerability Severity component', () => {
       const result = chartReportDataFn();
 
       expect(result.expanded_grade).toBe(SEVERITY_GROUP_C);
+    });
+
+    it('throws PdfExportError when it is loading', () => {
+      wrapper = createComponent({
+        query: instanceVulnerabilityGradesQuery,
+        mockData: mockInstanceVulnerabilityGrades(),
+      });
+      const chartReportDataFn = wrapper.emitted('chart-report-data-registered')[0][0];
+
+      expect(() => {
+        chartReportDataFn();
+      }).toThrow(
+        new PdfExportError('Chart is still loading. Please try again after all data has loaded.'),
+      );
     });
   });
 });

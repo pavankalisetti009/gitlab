@@ -4158,7 +4158,7 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Features"
 msgstr ""
 
-msgid "AdminAIPoweredFeatures|GitLab Default"
+msgid "AdminAIPoweredFeatures|GitLab Default %{defaultModel}"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|GitLab Duo Chat"
@@ -30974,7 +30974,7 @@ msgstr ""
 msgid "GroupSettings|Undo"
 msgstr ""
 
-msgid "GroupSettings|Unless manually disabled, this setting will be automatically enabled in GitLab 18.0. This setting is scheduled to be removed in GitLab 18.3, and the JWT format will be used by all job tokens."
+msgid "GroupSettings|Unless manually disabled, this setting will be automatically enabled in GitLab 19.0. This setting is scheduled to be removed in GitLab 20.0, and the JWT format will be used by all job tokens."
 msgstr ""
 
 msgid "GroupSettings|Users can create %{link_start_group}group access tokens%{link_end} and %{link_start_project}project access tokens%{link_end} in this group"
@@ -57624,7 +57624,7 @@ msgstr ""
 msgid "SecurityReports|Chart failed to initialize. Please refresh the page and try again."
 msgstr ""
 
-msgid "SecurityReports|Chart is still loading. Please try again in a few minutes."
+msgid "SecurityReports|Chart is still loading. Please try again after all data has loaded."
 msgstr ""
 
 msgid "SecurityReports|Check the messages generated while parsing the following security reports, as they may prevent the results from being ingested by GitLab. Ensure the security report conforms to a supported %{helpPageLinkStart}JSON schema%{helpPageLinkEnd}."

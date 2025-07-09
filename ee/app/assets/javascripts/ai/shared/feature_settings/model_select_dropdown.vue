@@ -53,6 +53,9 @@ export default {
     isBetaModel(model) {
       return model?.releaseState === RELEASE_STATES.BETA;
     },
+    isDefaultModel(model) {
+      return model?.value === '';
+    },
     onSelect(option) {
       this.$emit('select', option);
     },
@@ -80,9 +83,17 @@ export default {
         <template #emoji>
           <div data-testid="dropdown-toggle-text" class="gl-flex gl-w-full gl-justify-between">
             <div class="gl-align-items gl-flex gl-overflow-hidden">
+              <gl-badge
+                v-if="isDefaultModel(selectedOption)"
+                data-testid="default-model-selected-badge"
+                class="!gl-ml-0 gl-mr-3"
+                variant="info"
+                icon="tanuki"
+                icon-size="sm"
+              />
               <gl-experiment-badge
                 v-if="isBetaModel(selectedOption)"
-                data-testid="toggle-beta-badge"
+                data-testid="beta-model-selected-badge"
                 class="!gl-ml-0 gl-mr-3"
                 type="beta"
               />
@@ -97,9 +108,21 @@ export default {
     </template>
 
     <template #list-item="{ item }">
-      <div v-if="isBetaModel(item)" class="gl-flex gl-items-center gl-justify-between">
+      <div class="gl-flex gl-items-center gl-justify-between">
         {{ item.text }}
-        <gl-badge variant="neutral">{{ __('Beta') }} </gl-badge>
+        <gl-badge
+          v-if="isDefaultModel(item)"
+          data-testid="default-model-dropdown-badge"
+          variant="info"
+          icon="tanuki"
+        />
+        <gl-badge
+          v-if="isBetaModel(item)"
+          data-testid="beta-model-dropdown-badge"
+          variant="neutral"
+        >
+          {{ __('Beta') }}
+        </gl-badge>
       </div>
     </template>
 

@@ -18,6 +18,10 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
         allow_next_found_instance_of(Namespace) do |instance|
           allow(instance).to receive(:read_only?).and_return(true)
         end
+        # Ensure ProjectNamespace isn't coerced to Namespace which causes this spec to fail.
+        allow_next_found_instance_of(Namespaces::ProjectNamespace) do |instance|
+          allow(instance).to receive(:read_only?).and_return(true)
+        end
 
         visit project_pipelines_path(project)
         wait_for_requests
@@ -31,6 +35,10 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
     describe 'when namespace is in read-only mode' do
       it 'renders 404' do
         allow_next_found_instance_of(Namespace) do |instance|
+          allow(instance).to receive(:read_only?).and_return(true)
+        end
+        # Ensure ProjectNamespace isn't coerced to Namespace which causes this spec to fail.
+        allow_next_found_instance_of(Namespaces::ProjectNamespace) do |instance|
           allow(instance).to receive(:read_only?).and_return(true)
         end
 

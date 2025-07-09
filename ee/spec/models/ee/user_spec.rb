@@ -3760,10 +3760,10 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
-  describe '#ci_owned_runners' do
+  describe '#ci_available_runners' do
     using RSpec::Parameterized::TableSyntax
 
-    subject(:runners) { user.ci_owned_runners }
+    subject(:ci_available_runners) { user.ci_available_runners }
 
     let_it_be(:user, refind: true) { create(:user) }
     let_it_be(:group_a) { create(:group, name: "group-a") }
