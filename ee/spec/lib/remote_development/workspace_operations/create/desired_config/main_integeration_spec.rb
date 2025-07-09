@@ -427,7 +427,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -449,7 +450,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -480,7 +482,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+                "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
               },
               creationTimestamp: nil,
               labels: {
@@ -694,7 +697,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -733,7 +737,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -772,7 +777,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -793,7 +799,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -876,7 +883,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -1003,7 +1011,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -1025,7 +1034,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -1056,7 +1066,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+                "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
               },
               creationTimestamp: nil,
               labels: {
@@ -1271,7 +1282,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -1310,7 +1322,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -1349,7 +1362,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -1370,7 +1384,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -1453,7 +1468,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -1579,7 +1595,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -1601,7 +1618,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -1632,7 +1650,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+                "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
               },
               creationTimestamp: nil,
               labels: {
@@ -1846,7 +1865,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -1885,7 +1905,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -1924,7 +1945,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -1945,7 +1967,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -2028,7 +2051,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -2154,7 +2178,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -2176,7 +2201,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -2207,7 +2233,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+                "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
               },
               creationTimestamp: nil,
               labels: {
@@ -2421,7 +2448,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -2460,7 +2488,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -2499,7 +2528,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -2520,7 +2550,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -2603,7 +2634,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -2728,7 +2760,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -2750,7 +2783,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -2781,7 +2815,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+                "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
               },
               creationTimestamp: nil,
               labels: {
@@ -2963,7 +2998,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -3002,7 +3038,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -3041,7 +3078,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -3062,7 +3100,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -3244,7 +3283,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -3267,7 +3307,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -3300,7 +3341,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+                "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
               },
               creationTimestamp: nil,
               labels: {
@@ -3515,7 +3557,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -3556,7 +3599,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -3596,7 +3640,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -3618,7 +3663,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -3706,7 +3752,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -3807,7 +3854,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -3830,7 +3878,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -3863,7 +3912,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+                "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
               },
               creationTimestamp: nil,
               labels: {
@@ -4078,7 +4128,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -4119,7 +4170,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           creationTimestamp: nil,
           labels: {
@@ -4159,7 +4211,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -4181,7 +4234,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",
@@ -4269,7 +4323,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca",
+            "workspaces.gitlab.com/include-in-partial-reconciliation": "true"
           },
           labels: {
             app: "workspace",

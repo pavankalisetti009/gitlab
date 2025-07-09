@@ -57,7 +57,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
     end
 
     context "for has_one" do
-      it { is_expected.to have_one(:agentk_state) }
+      it { is_expected.to have_one(:workspace_agentk_state) }
       it { is_expected.to have_one(:workspace_token) }
     end
 
@@ -75,24 +75,26 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
     end
 
     context "when from factory" do
-      before do
-        # we need to save to save to allow some associations verified below to register the new workspace
-        workspace.save!
-      end
+      let_it_be(:created_workspace) { create(:workspace) }
 
       it "has correct associations from factory" do
-        expect(workspace.user).to eq(user)
-        expect(workspace.project).to eq(project)
-        expect(workspace.agent).to eq(agent)
-        expect(workspace.personal_access_token).to eq(personal_access_token)
-        expect(agent.unversioned_latest_workspaces_agent_config.workspaces.first).to eq(workspace)
-        expect(workspace.url_prefix).to eq("#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}")
-        expect(workspace.url_query_string).to eq("folder=dir%2Ffile")
-      end
-
-      it "has correct workspaces_agent_config associations from factory" do
-        expect(workspace.workspaces_agent_config_version).to eq(agent_config.versions.size)
-        expect(workspace.workspaces_agent_config).to eq(agent_config)
+        expect(created_workspace.user).to be_valid
+        expect(created_workspace.project).to be_valid
+        expect(created_workspace.agent).to be_valid
+        expect(created_workspace.personal_access_token).to be_valid
+        expect(created_workspace.agent.unversioned_latest_workspaces_agent_config.workspaces.first)
+          .to eq(created_workspace)
+        expect(created_workspace.url_prefix)
+          .to eq("#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{created_workspace.name}")
+        expect(created_workspace.url_query_string).to eq("folder=dir%2Ffile")
+        expect(created_workspace.workspace_agentk_state).not_to be_nil
+        expect(created_workspace.workspace_agentk_state).to be_valid
+        expect(created_workspace.workspace_agentk_state.desired_config).not_to be_nil
+        expect(
+          RemoteDevelopment::WorkspaceOperations::DesiredConfig.new(
+            desired_config_array: created_workspace.workspace_agentk_state.desired_config
+          )
+        ).to be_valid
       end
     end
   end

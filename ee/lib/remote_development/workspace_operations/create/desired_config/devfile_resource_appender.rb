@@ -5,35 +5,42 @@ module RemoteDevelopment
     module Create
       module DesiredConfig
         class DevfileResourceAppender
+          include WorkspaceOperationsConstants
+
+          # @param [Hash] context
+          # @return [Hash]
           def self.append(context)
             context => {
-              desired_config_array: desired_config_array,
-              workspace_name: workspace_name,
-              workspace_namespace: workspace_namespace,
-              labels: labels,
-              workspace_inventory_annotations: workspace_inventory_annotations,
               common_annotations: common_annotations,
-              workspace_inventory_name: workspace_inventory_name,
-              secrets_inventory_name: secrets_inventory_name,
-              secrets_inventory_annotations: secrets_inventory_annotations,
-              scripts_configmap_name: scripts_configmap_name,
-              processed_devfile_yaml: processed_devfile_yaml,
-              gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
-              network_policy_enabled: network_policy_enabled,
-              network_policy_egress: network_policy_egress,
-              image_pull_secrets: image_pull_secrets,
-              max_resources_per_workspace: max_resources_per_workspace,
-              shared_namespace: shared_namespace,
+              common_annotations_for_partial_reconciliation: common_annotations_for_partial_reconciliation,
+              desired_config_array: desired_config_array,
               env_secret_name: env_secret_name,
-              file_secret_name: file_secret_name
+              file_secret_name: file_secret_name,
+              gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
+              image_pull_secrets: image_pull_secrets,
+              labels: labels,
+              max_resources_per_workspace: max_resources_per_workspace,
+              network_policy_egress: network_policy_egress,
+              network_policy_enabled: network_policy_enabled,
+              processed_devfile_yaml: processed_devfile_yaml,
+              scripts_configmap_name: scripts_configmap_name,
+              secrets_inventory_annotations: secrets_inventory_annotations,
+              secrets_inventory_name: secrets_inventory_name,
+              shared_namespace: shared_namespace,
+              workspace_inventory_annotations: workspace_inventory_annotations,
+              workspace_inventory_annotations_for_partial_reconciliation:
+              workspace_inventory_annotations_for_partial_reconciliation,
+              workspace_inventory_name: workspace_inventory_name,
+              workspace_name: workspace_name,
+              workspace_namespace: workspace_namespace
             }
 
-            append_inventory_config_map(
+            append_inventory_configmap(
               desired_config_array: desired_config_array,
               name: workspace_inventory_name,
               namespace: workspace_namespace,
               labels: labels,
-              annotations: common_annotations,
+              annotations: common_annotations_for_partial_reconciliation,
               prepend: true
             )
 
@@ -43,7 +50,7 @@ module RemoteDevelopment
               namespace: workspace_namespace,
               image_pull_secrets: image_pull_secrets,
               labels: labels,
-              annotations: workspace_inventory_annotations
+              annotations: workspace_inventory_annotations_for_partial_reconciliation
             )
 
             append_network_policy(
@@ -54,7 +61,7 @@ module RemoteDevelopment
               network_policy_enabled: network_policy_enabled,
               network_policy_egress: network_policy_egress,
               labels: labels,
-              annotations: workspace_inventory_annotations
+              annotations: workspace_inventory_annotations_for_partial_reconciliation
             )
 
             append_scripts_resources(
@@ -63,10 +70,10 @@ module RemoteDevelopment
               name: scripts_configmap_name,
               namespace: workspace_namespace,
               labels: labels,
-              annotations: workspace_inventory_annotations
+              annotations: workspace_inventory_annotations_for_partial_reconciliation
             )
 
-            append_inventory_config_map(
+            append_inventory_configmap(
               desired_config_array: desired_config_array,
               name: secrets_inventory_name,
               namespace: workspace_namespace,
@@ -108,8 +115,9 @@ module RemoteDevelopment
           # @param [String] namespace
           # @param [Hash<String, String>] labels
           # @param [Hash<String, String>] annotations
+          # @param [Boolean] prepend -- If true, prepend the configmap to the desired_config_array
           # @return [void]
-          def self.append_inventory_config_map(
+          def self.append_inventory_configmap(
             desired_config_array:,
             name:,
             namespace:,
@@ -119,7 +127,7 @@ module RemoteDevelopment
           )
             extra_labels = { "cli-utils.sigs.k8s.io/inventory-id": name }
 
-            config_map = {
+            configmap = {
               kind: "ConfigMap",
               apiVersion: "v1",
               metadata: {
@@ -131,9 +139,9 @@ module RemoteDevelopment
             }
 
             if prepend
-              desired_config_array.prepend(config_map)
+              desired_config_array.prepend(configmap)
             else
-              desired_config_array.append(config_map)
+              desired_config_array.append(configmap)
             end
 
             nil
@@ -406,7 +414,7 @@ module RemoteDevelopment
             nil
           end
 
-          private_class_method :append_inventory_config_map,
+          private_class_method :append_inventory_configmap,
             :append_secret,
             :append_network_policy,
             :append_scripts_resources,

@@ -73,7 +73,9 @@ RSpec.describe 'Issue promotion', :js, feature_category: :portfolio_management d
 
       # Spec for https://gitlab.com/gitlab-org/gitlab/-/issues/215549
       context 'if there is a remove resource milestone event' do
-        let!(:resource_milestone_event) { create(:resource_milestone_event, issue: issue, action: 'remove', milestone_id: nil) }
+        let!(:resource_milestone_event) do
+          create(:resource_milestone_event, issue: issue, action: 'remove', milestone_id: nil)
+        end
 
         it 'promotes the issue' do
           add_note('/promote')

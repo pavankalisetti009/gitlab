@@ -14,7 +14,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
 
   let(:full_reference) { epic.to_reference(full: true) }
 
-  context 'reference on an issue' do
+  describe 'reference on an issue' do
     before do
       stub_licensed_features(epics: true)
 
@@ -87,7 +87,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
     end
   end
 
-  context 'note cross-referencing' do
+  describe 'note cross-referencing' do
     let(:issue) { create(:issue, project: project) }
 
     before do
