@@ -31692,6 +31692,9 @@ msgstr ""
 msgid "Historical release"
 msgstr ""
 
+msgid "Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed."
+msgstr ""
+
 msgid "History"
 msgstr ""
 
