@@ -58,8 +58,7 @@ module Gitlab
           end
 
           def current_resource?(resource_identifier_type, resource_name)
-            resource_identifier_type == 'current' &&
-              context.resource.class.name.underscore.tr('/', '_') == resource_name.tr(' ', '_')
+            resource_identifier_type == 'current' && context_resource_class_name == resource_name.tr(' ', '_')
           end
 
           def projects_from_context
@@ -165,6 +164,10 @@ module Gitlab
             MESSAGE
 
             Answer.error_answer(context: context, content: content, error_code: "M3005")
+          end
+
+          def context_resource_class_name
+            ::Gitlab::Utils::ClassNameConverter.new(context.resource.class).string_representation
           end
         end
       end
