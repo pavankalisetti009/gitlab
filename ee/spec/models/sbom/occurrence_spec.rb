@@ -735,6 +735,42 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.with_dependency_paths_existence' do
+    let_it_be(:occurrence_1) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_3) { create(:sbom_occurrence) }
+    let_it_be(:graph_path_1) { create(:sbom_graph_path, descendant: occurrence_1, ancestor: occurrence_2) }
+    let_it_be(:graph_path_2) { create(:sbom_graph_path, descendant: occurrence_3, ancestor: occurrence_2) }
+
+    it 'correctly identifies occurrences with dependency paths' do
+      expect(described_class.with_dependency_paths_existence.order_by_id.map(&:has_dependency_paths)).to eq(
+        [true, false, true]
+      )
+    end
+
+    it 'adds has_dependency_paths to attributes' do
+      occurrence = described_class.with_dependency_paths_existence.order_by_id.first
+      expect(occurrence.attributes.key?('has_dependency_paths')).to be true
+    end
+
+    it 'avoids n+1 queries' do
+      # control query
+      control = ActiveRecord::QueryRecorder.new do
+        described_class.with_dependency_paths_existence.map(&:has_dependency_paths)
+      end
+
+      # create 2 more occurrences and paths
+      2.times do
+        occ = create(:sbom_occurrence)
+        create(:sbom_graph_path, descendant: occ, ancestor: occurrence_2)
+      end
+
+      expect do
+        described_class.with_dependency_paths_existence.map(&:has_dependency_paths)
+      end.not_to exceed_query_limit(control)
+    end
+  end
+
   describe '#name' do
     let(:component) { build(:sbom_component, name: 'rails') }
     let(:occurrence) { build(:sbom_occurrence, component: component) }
@@ -912,6 +948,24 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
             }
           )
         end
+      end
+    end
+  end
+
+  describe '#has_dependency_paths?' do
+    let_it_be(:occurrence_1) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence) }
+    let_it_be(:graph_path_1) { create(:sbom_graph_path, descendant: occurrence_1, ancestor: occurrence_2) }
+
+    it 'returns true if the occurrence is a descendant in sbom_graph_paths' do
+      expect(occurrence_1.has_dependency_paths?).to be(true)
+    end
+
+    context 'when the attribute is already calculated using with_dependency_paths_existence scope' do
+      let_it_be(:occ) { described_class.with_dependency_paths_existence.order_by_id.first }
+
+      it 'does not make additional database queries' do
+        expect { occ.has_dependency_paths? }.not_to make_queries_matching(/sbom_graph_paths/)
       end
     end
   end
