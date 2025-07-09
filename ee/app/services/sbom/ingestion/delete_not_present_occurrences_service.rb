@@ -3,6 +3,8 @@
 module Sbom
   module Ingestion
     class DeleteNotPresentOccurrencesService
+      include Sbom::EsHelper
+
       DELETE_BATCH_SIZE = 100
 
       def self.execute(...)
@@ -17,7 +19,8 @@ module Sbom
       def execute
         return if has_failed_sbom_jobs?
 
-        not_present_occurrences.each_batch(of: DELETE_BATCH_SIZE) { |occurrences, _| occurrences.delete_all }
+        vulnerability_ids = collect_vulnerability_ids_and_delete_occurrences
+        sync_elasticsearch(vulnerability_ids)
       end
 
       private
@@ -42,6 +45,23 @@ module Sbom
 
       def default_source_type_filters
         ::Sbom::Source::DEFAULT_SOURCES.keys + [nil]
+      end
+
+      def collect_vulnerability_ids_and_delete_occurrences
+        vulnerability_ids = []
+
+        not_present_occurrences.each_batch(of: DELETE_BATCH_SIZE) do |occurrences, _|
+          vulnerability_ids += extract_vulnerability_ids(occurrences)
+          occurrences.delete_all
+        end
+
+        vulnerability_ids.uniq.compact
+      end
+
+      def extract_vulnerability_ids(occurrences)
+        Sbom::OccurrencesVulnerability
+          .for_occurrence_ids(occurrences.select(:id))
+          .map(&:vulnerability_id)
       end
     end
   end

@@ -2,6 +2,8 @@
 
 module Sbom
   class CreateOccurrencesVulnerabilitiesService
+    include Sbom::EsHelper
+
     def self.execute(finding_data)
       new(finding_data).execute
     end
@@ -16,15 +18,11 @@ module Sbom
       result = fetch_occurrence_data
       return if result.cmd_tuples == 0
 
-      attributes = result.map do |data|
-        {
-          sbom_occurrence_id: data['id'],
-          vulnerability_id: vulnerability_ids[data['uuid']],
-          project_id: data['project_id']
-        }
-      end
+      attributes, vuln_ids = build_attributes_and_vulnerability_ids(result)
 
       Sbom::OccurrencesVulnerability.upsert_all(attributes, unique_by: [:sbom_occurrence_id, :vulnerability_id])
+
+      sync_elasticsearch(vuln_ids)
     end
 
     private
@@ -62,6 +60,27 @@ module Sbom
 
     def vulnerability_ids
       @vulnerability_ids ||= finding_data.to_h { |data| [data[:uuid], data[:vulnerability_id]] }
+    end
+
+    def build_attributes_and_vulnerability_ids(result)
+      vuln_ids = []
+
+      attributes = result.map do |data|
+        vulnerability_id = vulnerability_ids[data['uuid']]
+        vuln_ids << vulnerability_id
+
+        build_occurrence_vulnerability_attributes(data, vulnerability_id)
+      end
+
+      [attributes, vuln_ids.uniq.compact]
+    end
+
+    def build_occurrence_vulnerability_attributes(data, vulnerability_id)
+      {
+        sbom_occurrence_id: data['id'],
+        vulnerability_id: vulnerability_id,
+        project_id: data['project_id']
+      }
     end
   end
 end
