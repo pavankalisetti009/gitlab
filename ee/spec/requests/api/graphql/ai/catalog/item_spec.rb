@@ -6,14 +6,28 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
-  let(:latest_version) { catalog_item.versions.last }
+  let_it_be(:catalog_item) { create(:ai_catalog_item, :with_version, project: project, public: true) }
+
+  let(:latest_version) { catalog_item.latest_version }
   let(:data) { graphql_data_at(:ai_catalog_item) }
   let(:params) { { id: catalog_item.to_global_id } }
   let(:current_user) { nil }
 
   let(:query) do
     <<~GRAPHQL
-      {
+      fragment VersionFragment on AiCatalogItemVersion {
+        id
+        updatedAt
+        createdAt
+        publishedAt
+        versionName
+        ... on AiCatalogAgentVersion {
+          systemPrompt
+          userPrompt
+        }
+      }
+
+      query {
         aiCatalogItem(id: "#{params[:id]}") {
           description
           id
@@ -21,18 +35,13 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
           name
           public
           project { id }
+          latestVersion {
+            ...VersionFragment
+          }
           versions {
             count
             nodes {
-              id
-              updatedAt
-              createdAt
-              publishedAt
-              versionName
-              ... on AiCatalogAgentVersion {
-                systemPrompt
-                userPrompt
-              }
+              ...VersionFragment
             }
           }
         }
@@ -52,6 +61,7 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
           'description' => catalog_item.description,
           'itemType' => 'AGENT',
           'public' => catalog_item.public,
+          'latestVersion' => a_graphql_entity_for(latest_version),
           'versions' => hash_including(
             'count' => 1,
             'nodes' => contain_exactly(
@@ -93,8 +103,6 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
   end
 
   context 'with a public catalog item' do
-    let_it_be(:catalog_item) { create(:ai_catalog_item, :with_version, project: project, public: true) }
-
     it_behaves_like 'a successful query'
 
     context 'when feature flag is disabled' do
@@ -130,5 +138,19 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
 
       it_behaves_like 'an unsuccessful query'
     end
+  end
+
+  it 'returns the latest version when more than one exists' do
+    latest_version = create(:ai_catalog_item_version, version: '2.1.0', item: catalog_item)
+
+    post_graphql(query, current_user: nil)
+
+    expect(response).to have_gitlab_http_status(:success)
+    expect(data).to match(
+      a_graphql_entity_for(
+        catalog_item,
+        'latestVersion' => a_graphql_entity_for(latest_version)
+      )
+    )
   end
 end

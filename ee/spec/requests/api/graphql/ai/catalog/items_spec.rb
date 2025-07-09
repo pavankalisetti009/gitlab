@@ -11,7 +11,7 @@ RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog d
   let(:current_user) { nil }
 
   let(:query) do
-    "{ #{query_nodes('AiCatalogItems')} }"
+    "{ #{query_nodes('AiCatalogItems', max_depth: 3)} }"
   end
 
   shared_examples 'a successful query' do
@@ -64,5 +64,28 @@ RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog d
 
       it_behaves_like 'an unsuccessful query'
     end
+  end
+
+  it 'returns catalog item versions without N+1 database queries' do
+    catalog_item_1, catalog_item_2 = create_list(:ai_catalog_item, 2, project: project, public: true)
+
+    post_graphql(query, current_user: nil) # Warm up
+
+    create(:ai_catalog_item_version, item: catalog_item_1)
+    create(:ai_catalog_item_version, item: catalog_item_2)
+
+    control_count = ActiveRecord::QueryRecorder.new do
+      post_graphql(query, current_user: nil)
+    end
+
+    create(:ai_catalog_item_version, item: catalog_item_1, version: 'v1.0.1')
+    create(:ai_catalog_item_version, item: catalog_item_2, version: 'v1.0.1')
+
+    expect do
+      post_graphql(query, current_user: nil)
+    end.not_to exceed_query_limit(control_count)
+
+    expect(graphql_data_at(:ai_catalog_items, :nodes, :versions, :nodes).size).to eq(4)
+    expect(graphql_data_at(:ai_catalog_items, :nodes, :latest_version).compact.size).to eq(2)
   end
 end

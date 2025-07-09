@@ -14,6 +14,7 @@ RSpec.describe Types::Ai::Catalog::ItemInterface, feature_category: :workflow_ca
       id
       item_type
       name
+      latest_version
       project
       public
       versions
