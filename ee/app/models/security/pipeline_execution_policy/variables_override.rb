@@ -45,8 +45,7 @@ module Security
       end
 
       def apply_variables_override?
-        policy_job? && override_settings &&
-          ::Feature.enabled?(:security_policies_optional_variables_control, project)
+        policy_job? && override_settings
       end
 
       # allowed:true + exceptions: [...]

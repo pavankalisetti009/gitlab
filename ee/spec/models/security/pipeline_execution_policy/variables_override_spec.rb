@@ -54,14 +54,6 @@ RSpec.describe Security::PipelineExecutionPolicy::VariablesOverride, feature_cat
         let(:job_options) { { execution_policy_job: true, execution_policy_variables_override: { allowed: false } } }
 
         it { is_expected.to eq expected_original_variables }
-
-        context 'when feature flag `security_policies_optional_variables_control` is disabled' do
-          before do
-            stub_feature_flags(security_policies_optional_variables_control: false)
-          end
-
-          it { is_expected.to eq expected_enforced_variables }
-        end
       end
     end
   end
@@ -98,14 +90,6 @@ RSpec.describe Security::PipelineExecutionPolicy::VariablesOverride, feature_cat
 
           context 'when matching' do
             it { is_expected.to eq({}) }
-
-            context 'when feature flag "security_policies_optional_variables_control" is disabled' do
-              before do
-                stub_feature_flags(security_policies_optional_variables_control: false)
-              end
-
-              it { is_expected.to eq('SAST_DISABLED' => 'true') }
-            end
           end
 
           context 'when not matching' do
@@ -121,14 +105,6 @@ RSpec.describe Security::PipelineExecutionPolicy::VariablesOverride, feature_cat
           let(:override_option) { { allowed: false } }
 
           it { is_expected.to eq({}) }
-
-          context 'when feature flag "security_policies_optional_variables_control" is disabled' do
-            before do
-              stub_feature_flags(security_policies_optional_variables_control: false)
-            end
-
-            it { is_expected.to eq('SAST_DISABLED' => 'true') }
-          end
         end
 
         context 'with `exceptions`' do

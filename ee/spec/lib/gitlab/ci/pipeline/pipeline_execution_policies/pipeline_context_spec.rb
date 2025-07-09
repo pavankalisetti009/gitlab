@@ -632,14 +632,6 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
         expect(job_options).to eq(execution_policy_job: true, execution_policy_name: 'My policy',
           execution_policy_variables_override: { allowed: false })
       end
-
-      context 'when the feature flag "security_policies_optional_variables_control" is disabled' do
-        before do
-          stub_feature_flags(security_policies_optional_variables_control: false)
-        end
-
-        it { is_expected.to eq({ execution_policy_job: true, execution_policy_name: 'My policy' }) }
-      end
     end
 
     context 'when building project pipeline' do
