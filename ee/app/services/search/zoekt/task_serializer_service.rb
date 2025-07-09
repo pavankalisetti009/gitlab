@@ -85,7 +85,8 @@ module Search
         project = namespace&.project
 
         gitaly_payload(project).merge(
-          NamespaceId: namespace.id,
+          NamespaceId: namespace&.id,
+          RepoId: project&.id,
           Callback: { name: 'index_graph', payload: { task_id: task.id, service_type: :knowledge_graph } },
           Timeout: "#{KNOWLEDGE_GRAPH_INDEXING_TIMEOUT_S}s"
         )
