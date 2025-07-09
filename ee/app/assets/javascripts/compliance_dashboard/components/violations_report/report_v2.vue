@@ -4,12 +4,13 @@ import Vue from 'vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__, sprintf } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
-import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
+import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import ComplianceFrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
 import updateComplianceViolationStatus from 'ee/compliance_violations/graphql/mutations/update_compliance_violation_status.mutation.graphql';
+import { statusesInfo } from '../standards_adherence_report/components/details_drawer/statuses_info';
 
 Vue.use(GlToast);
 
@@ -87,7 +88,7 @@ export default {
       }
     },
     getFormattedDate(dateString) {
-      return formatDate(dateString, ISO_SHORT_FORMAT, true);
+      return formatDate(dateString, LONG_DATE_FORMAT_WITH_TZ, true);
     },
     getViolationDetailsPath(violation) {
       if (!violation || !violation.id) {
@@ -113,6 +114,18 @@ export default {
       } catch (error) {
         return '#';
       }
+    },
+    getProjectPath(project) {
+      if (!project) {
+        return '#';
+      }
+
+      const projectPath = project.fullPath || project.path_with_namespace;
+      if (!projectPath) {
+        return '#';
+      }
+
+      return `/${projectPath}`;
     },
     parseCustomMessage(details) {
       if (!details) return null;
@@ -155,6 +168,23 @@ export default {
       }
 
       return this.$options.i18n.auditEventUnknownAuthor;
+    },
+    getComplianceControlTitle(control) {
+      if (!control || !control.name) {
+        return '';
+      }
+
+      const statusInfo = statusesInfo[control.name];
+      if (
+        statusInfo &&
+        statusInfo.fixes &&
+        statusInfo.fixes.length > 0 &&
+        statusInfo.fixes[0].linkTitle
+      ) {
+        return statusInfo.fixes[0].linkTitle;
+      }
+
+      return control.name;
     },
   },
   apollo: {
@@ -265,7 +295,9 @@ export default {
       </template>
 
       <template #cell(complianceControl)="{ item }">
-        <div class="gl-font-weight-semibold gl-mb-2">{{ item.complianceControl.name }}</div>
+        <div class="gl-font-weight-semibold gl-mb-2">
+          {{ getComplianceControlTitle(item.complianceControl) }}
+        </div>
         <compliance-framework-badge
           v-if="
             item.complianceControl.complianceRequirement &&
@@ -291,7 +323,9 @@ export default {
       </template>
 
       <template #cell(project)="{ item }">
-        <div class="gl-font-weight-semibold">{{ item.project.name }}</div>
+        <gl-link :href="getProjectPath(item.project)" class="gl-font-weight-semibold">
+          {{ item.project.name }}
+        </gl-link>
       </template>
 
       <template #cell(createdAt)="{ item }">
