@@ -6,6 +6,7 @@ import { shallowMount } from '@vue/test-utils';
 import { createAlert } from '~/alert';
 
 import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import deleteSelfHostedModelMutation from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/mutations/delete_self_hosted_model.mutation.graphql';
 import DeleteModal from 'ee/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_delete_modal.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
@@ -24,7 +25,15 @@ const mockModel = mockSelfHostedModelsList[1]; // without feature settings
 describe('DeleteModal', () => {
   let wrapper;
 
-  const getSelfHostedModelsSuccessHandler = jest.fn().mockResolvedValue({
+  const getAiFeatureSettingsQueryHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiFeatureSettings: {
+        errors: [],
+      },
+    },
+  });
+
+  const getSelfHostedModelsQueryHandler = jest.fn().mockResolvedValue({
     data: {
       aiSelfHostedModels: {
         errors: [],
@@ -44,7 +53,8 @@ describe('DeleteModal', () => {
     apolloHandlers = [[deleteSelfHostedModelMutation, deleteMutationSuccessHandler]],
   } = {}) => {
     const mockApollo = createMockApollo([
-      [getSelfHostedModelsQuery, getSelfHostedModelsSuccessHandler],
+      [getSelfHostedModelsQuery, getSelfHostedModelsQueryHandler],
+      [getAiFeatureSettingsQuery, getAiFeatureSettingsQueryHandler],
       ...apolloHandlers,
     ]);
 
@@ -110,7 +120,11 @@ describe('DeleteModal', () => {
       });
 
       it('refreshes self-hosted model data', () => {
-        expect(getSelfHostedModelsSuccessHandler).toHaveBeenCalled();
+        expect(getSelfHostedModelsQueryHandler).toHaveBeenCalledTimes(1);
+      });
+
+      it('refetches AI feature settings data', () => {
+        expect(getAiFeatureSettingsQueryHandler).toHaveBeenCalledTimes(1);
       });
 
       it('shows a success message', () => {
