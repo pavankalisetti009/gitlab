@@ -15,29 +15,22 @@ module GoogleAnalyticsCSP
       script_src_values = Array.wrap(default_script_src) | ['*.googletagmanager.com']
       policy.script_src(*script_src_values)
 
+      ga4_domains = [
+        '*.googletagmanager.com', # Google tag manager
+        '*.analytics.gitlab.com'  # Analytics server
+      ]
+
       default_img_src = policy.directives['img-src'] || policy.directives['default-src']
-      img_src_values =
-        Array.wrap(default_img_src) |
-        [
-          '*.google-analytics.com',
-          '*.analytics.google.com',
-          '*.googletagmanager.com',
-          '*.g.doubleclick.net',
-          '*.analytics.gitlab.com'
-        ]
+      img_src_values = Array.wrap(default_img_src) | ga4_domains
       policy.img_src(*img_src_values)
 
       default_connect_src = policy.directives['connect-src'] || policy.directives['default-src']
-      connect_src_values =
-        Array.wrap(default_connect_src) |
-        [
-          '*.google-analytics.com',
-          '*.analytics.google.com',
-          '*.googletagmanager.com',
-          '*.g.doubleclick.net',
-          '*.analytics.gitlab.com'
-        ]
+      connect_src_values = Array.wrap(default_connect_src) | ga4_domains
       policy.connect_src(*connect_src_values)
+
+      default_frame_src = policy.directives['frame-src'] || policy.directives['default-src']
+      frame_src_values = Array.wrap(default_frame_src) | ga4_domains
+      policy.frame_src(*frame_src_values)
     end
   end
 end
