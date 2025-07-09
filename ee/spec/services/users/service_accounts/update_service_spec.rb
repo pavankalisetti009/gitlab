@@ -2,42 +2,28 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::ServiceAccounts::UpdateService, feature_category: :user_management do
+RSpec.describe Users::ServiceAccounts::UpdateService, feature_category: :user_management do
   let_it_be(:organization) { create(:organization) }
-  let_it_be(:other_group) { create(:group, organization: organization) }
-  let(:group) { create(:group, organization: organization) }
-  let(:admin) { create(:admin) }
-  let(:owner) { create(:user) }
-  let(:maintainer) { create(:user) }
-  let(:service_account_user) { create(:user, :service_account, provisioned_by_group: group) }
-  let(:regular_user) { create(:user, provisioned_by_group: group) }
+  let_it_be(:admin) { create(:admin) }
+  let_it_be(:service_account_user) { create(:user, :service_account) }
+  let_it_be(:regular_user) { create(:user) }
 
-  let(:user) { service_account_user }
+  let_it_be(:user) { service_account_user }
 
-  let(:params) do
+  let_it_be(:params) do
     {
       name: FFaker::Name.name,
       username: FFaker::Internet.unique.user_name,
-      email: FFaker::Internet.email,
-      group_id: group.id
+      email: FFaker::Internet.email
     }
   end
 
-  let(:current_user) { owner }
-
   subject(:result) { described_class.new(current_user, user, params).execute }
-
-  before do
-    group.add_owner(owner)
-    group.add_maintainer(maintainer)
-  end
 
   shared_examples 'not authorized to update' do
     it 'returns an error', :aggregate_failures do
       expect(result.status).to eq(:error)
-      expect(result.message).to eq(
-        s_('ServiceAccount|You are not authorized to update service accounts in this namespace.')
-      )
+      expect(result.message).to eq(s_('ServiceAccount|User does not have permission to update a service account.'))
       expect(result.reason).to eq(:forbidden)
     end
   end
@@ -78,24 +64,15 @@ RSpec.describe Namespaces::ServiceAccounts::UpdateService, feature_category: :us
     context 'when params are empty' do
       let(:params) { {} }
 
-      it 'returns an error', :aggregate_failures do
-        expect(result.status).to eq(:error)
-        expect(result.message).to eq(_('Group with the provided ID not found.'))
-      end
-    end
-
-    context 'when the provided group id is invalid' do
-      let(:params) { super().merge(group_id: other_group.id) }
-
-      it 'returns an error', :aggregate_failures do
-        expect(result.status).to eq(:error)
-        expect(result.message).to eq(_('Group ID provided does not match the service account\'s group ID.'))
+      it 'returns success', :aggregate_failures do
+        expect(result.status).to eq(:success)
+        expect(result.message).to eq(_('Service account was successfully updated.'))
       end
     end
 
     context 'when username is already taken' do
       let(:existing_user) { create(:user, username: 'existing_username') }
-      let(:params) { super().merge({ username: existing_user.username }) }
+      let(:params) { { username: existing_user.username } }
 
       it 'returns an error', :aggregate_failures do
         expect(result.status).to eq(:error)
@@ -133,47 +110,29 @@ RSpec.describe Namespaces::ServiceAccounts::UpdateService, feature_category: :us
 
       context 'when admin mode is enabled', :enable_admin_mode do
         it_behaves_like 'authorized to update'
-      end
-    end
 
-    context 'when current user is a group owner' do
-      let(:current_user) { owner }
-
-      it_behaves_like 'authorized to update'
-
-      context 'when saas', :saas do
-        it_behaves_like 'authorized to update'
-      end
-
-      context 'when email confirmation setting is set to hard' do
-        before do
-          stub_application_setting_enum('email_confirmation_setting', 'hard')
-        end
-
-        it 'updates the unconfirmed email instead of the email', :aggregate_failures do
-          expect(result.payload[:user].unconfirmed_email).to eq(params[:email])
-          expect(result.payload[:user].email).not_to eq(params[:email])
-        end
-
-        context 'when the group owns the email domain', :saas do
+        context 'when email confirmation setting is set to hard' do
           before do
-            stub_licensed_features(service_accounts: true, domain_verification: true)
-            project = create(:project, group: group)
-            create(:pages_domain, project: project, domain: 'test.com')
+            stub_application_setting_enum('email_confirmation_setting', 'hard')
           end
 
-          let(:params) { super().merge(email: 'test@test.com') }
+          let(:params) { super().merge(email: 'new-email@email.com') }
 
-          it 'updates the email', :aggregate_failures do
-            expect(result.payload[:user].email).to eq(params[:email])
-            expect(result.payload[:user].unconfirmed_email).to be_nil
+          it 'updates the unconfirmed email instead of the email', :aggregate_failures do
+            expect(result.payload[:user].unconfirmed_email).to eq(params[:email])
+            expect(result.payload[:user].email).not_to eq(params[:email])
           end
         end
       end
     end
 
-    context 'when current user is not a group owner' do
-      let(:current_user) { maintainer }
+    context 'when current user is not an admin' do
+      before do
+        group = create(:group)
+        group.add_owner(current_user)
+      end
+
+      let(:current_user) { create(:user) }
 
       it_behaves_like 'not authorized to update'
     end
