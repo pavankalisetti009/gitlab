@@ -42,13 +42,7 @@ module GitlabSubscriptions
     end
 
     def cache_key
-      if Feature.enabled?(:pnp_subscription_plan_cache_key)
-        if @namespace_id.present?
-          "pnp-subscription-plan-#{@plan}-#{@namespace_id}"
-        else
-          "pnp-subscription-plan-#{@plan}"
-        end
-      elsif @namespace_id.present?
+      if @namespace_id.present?
         "subscription-plans-#{@plan}-#{@namespace_id}"
       else
         "subscription-plans-#{@plan}"
