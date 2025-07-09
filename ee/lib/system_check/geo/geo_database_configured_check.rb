@@ -19,37 +19,10 @@ module SystemCheck
       end
 
       def multi_check
-        unless Gitlab::Geo.geo_database_configured?
-          $stdout.puts Rainbow('no').red
-          try_fixing_it(WRONG_CONFIGURATION_MESSAGE)
-          for_more_information(database_docs)
-
-          return false
-        end
-
-        unless connection_healthy?
-          $stdout.puts Rainbow('no').red
-          try_fixing_it(UNHEALTHY_CONNECTION_MESSAGE)
-          for_more_information(database_docs)
-
-          return false
-        end
-
-        unless tables_present?
-          $stdout.puts Rainbow('no').red
-          try_fixing_it(NO_TABLES_MESSAGE)
-          for_more_information(database_docs)
-
-          return false
-        end
-
-        unless fresh_database?
-          $stdout.puts Rainbow('no').red
-          try_fixing_it(REUSING_EXISTING_DATABASE_MESSAGE)
-          for_more_information(troubleshooting_docs)
-
-          return false
-        end
+        return error_message(WRONG_CONFIGURATION_MESSAGE) unless Gitlab::Geo.geo_database_configured?
+        return error_message(UNHEALTHY_CONNECTION_MESSAGE) unless ::Geo::TrackingBase.connected?
+        return error_message(NO_TABLES_MESSAGE) unless tables_present?
+        return error_message(REUSING_EXISTING_DATABASE_MESSAGE, troubleshooting_docs) unless fresh_database?
 
         $stdout.puts Rainbow('yes').green
         true
@@ -64,10 +37,6 @@ module SystemCheck
       end
 
       private
-
-      def connection_healthy?
-        ::Geo::TrackingBase.connection.active?
-      end
 
       def tables_present?
         !needs_migration?
@@ -99,6 +68,14 @@ module SystemCheck
 
       def fresh_database?
         !geo_health_check.reusing_existing_tracking_database?
+      end
+
+      def error_message(message, docs = database_docs)
+        $stdout.puts Rainbow('no').red
+        try_fixing_it(message)
+        for_more_information(docs)
+
+        false
       end
     end
   end
