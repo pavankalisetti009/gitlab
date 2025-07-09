@@ -4,21 +4,26 @@ module Security
   class PolicySetting < ApplicationRecord
     self.table_name = 'security_policy_settings'
 
-    include SingletonRecord
-
     validates :csp_namespace, top_level_group: true
 
     validate :validate_csp_is_group
 
     # A group for managing Centralized Security Policies
+    belongs_to :organization, class_name: 'Organizations::Organization'
     belongs_to :csp_namespace, class_name: 'Group', optional: true
 
     after_commit :trigger_security_policies_updates, if: :saved_change_to_csp_namespace_id?
 
-    def self.csp_enabled?(group)
+    ignore_column :singleton, remove_with: '18.4', remove_after: '2025-08-21'
+
+    def self.for_organization(organization)
+      safe_find_or_create_by(organization: organization) # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only uses a subtransaction if creating a record, which should only happen once per organization
+    end
+
+    def csp_enabled?(group)
       return false if GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
 
-      instance.csp_namespace_id.present? && (
+      csp_namespace_id.present? && (
         ::Feature.enabled?(:security_policies_csp, group) ||
           ::Feature.enabled?(:security_policies_csp, group&.root_ancestor) ||
           ::Feature.enabled?(:security_policies_csp, :instance)

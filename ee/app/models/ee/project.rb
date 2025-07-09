@@ -51,6 +51,7 @@ module EE
       include ProductAnalyticsHelpers
       include ::Geo::ReplicableModel
       include ::Geo::VerifiableModel
+      include ::Security::OrganizationPolicySetting
 
       before_update :update_legacy_open_source_license_available, if: -> { visibility_level_changed? }
 
@@ -1504,8 +1505,6 @@ module EE
 
     private
 
-    delegate :csp_enabled?, to: ::Security::PolicySetting
-
     def path_locks_changed_epoch_cache_key
       "project:#{id}:path_locks_changed_epoch"
     end
@@ -1533,7 +1532,7 @@ module EE
 
     def security_orchestration_policy_configuration_parent_group_ids
       # Even if project has no group, the CSP group should be returned if enabled
-      return [::Security::PolicySetting.instance.csp_namespace_id] if !group && csp_enabled?(group)
+      return [organization_policy_setting.csp_namespace_id] if !group && csp_enabled?(group)
 
       group&.self_and_ancestor_ids_with_csp
     end
