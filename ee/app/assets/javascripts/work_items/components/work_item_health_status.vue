@@ -34,6 +34,10 @@ export default {
       type: String,
       required: true,
     },
+    isWorkItemClosed: {
+      type: Boolean,
+      required: true,
+    },
     workItemId: {
       type: String,
       required: true,
@@ -76,7 +80,7 @@ export default {
         : this.fullPath;
     },
     canUpdateMetadata() {
-      return this.workItem?.userPermissions?.setWorkItemMetadata;
+      return this.workItem?.userPermissions?.setWorkItemMetadata && !this.isWorkItemClosed;
     },
   },
   apollo: {
