@@ -51,6 +51,92 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         subject { service.execute }
       end
 
+      context 'when system note' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(
+          :existing_note_severity,
+          :existing_note_comment,
+          :new_severity,
+          :new_comment,
+          :note_expected,
+          :expected_note_text
+        ) do
+          [
+            [
+              'critical',
+              'Severity needs to be updated.',
+              'critical',
+              'Severity needs to be updated.',
+              false,
+              nil
+            ],
+            [
+              'critical',
+              'Severity needs to be updated.',
+              'critical',
+              'Another comment',
+              true,
+              'changed comment to: "Another comment"'
+            ],
+            [
+              'critical',
+              'Severity needs to be updated.',
+              'low',
+              'Severity needs to be updated.',
+              true,
+              'changed vulnerability severity from High to Low with the following comment: ' \
+                '"Severity needs to be updated."'
+            ]
+          ]
+        end
+
+        with_them do
+          before do
+            existing_note_text = ::SystemNotes::VulnerabilitiesService.formatted_note(
+              'changed',
+              existing_note_severity,
+              nil,
+              existing_note_comment,
+              'severity',
+              original_severity
+            )
+
+            create(
+              :note,
+              :system,
+              noteable: vulnerability,
+              project: project,
+              note: existing_note_text
+            )
+
+            create(
+              :note,
+              :system,
+              noteable: vulnerability,
+              project: project,
+              note: existing_note_text
+            )
+
+            vulnerability.update!(severity: existing_note_severity)
+            vulnerability.reload
+          end
+
+          it 'creates a new system note only when needed' do
+            new_service = described_class.new(user, [vulnerability.id], new_comment, new_severity)
+
+            expect { new_service.execute }
+              .to change { Note.count }
+                    .by(note_expected ? 1 : 0)
+
+            if note_expected
+              last_note = Note.last
+              expect(last_note.note).to eq(expected_note_text)
+            end
+          end
+        end
+      end
+
       it 'updates the severity for each vulnerability', :freeze_time do
         service.execute
 

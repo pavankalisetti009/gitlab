@@ -176,17 +176,6 @@ RSpec.describe Vulnerabilities::ChangesTrackingService, feature_category: :vulne
           expect(result.message).to eq(invalid_message)
         end
       end
-
-      context 'when no vulnerabilities are trackable (e.g., no change)' do
-        let(:new_value) { old_value }
-
-        it 'returns an error response for un-trackable records' do
-          result = service.execute
-
-          expect(result).to be_error
-          expect(result.message).to eq(missing_message)
-        end
-      end
     end
   end
 end

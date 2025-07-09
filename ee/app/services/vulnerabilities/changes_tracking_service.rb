@@ -53,23 +53,12 @@ module Vulnerabilities
       @tracking_error = nil
 
       vulnerabilities.each do |vulnerability|
-        next unless should_track_change?(vulnerability)
-
-        begin
-          track_vulnerability_update(vulnerability)
-          tracked << vulnerability
-        rescue StandardError => e
-          @tracking_error = e
-          break
-        end
+        track_vulnerability_update(vulnerability)
+        tracked << vulnerability
+      rescue StandardError => e
+        @tracking_error = e
+        break
       end
-    end
-
-    def should_track_change?(vulnerability)
-      project = vulnerability.project
-      old_value = vulnerability.attributes[field]
-
-      project.present? && old_value != new_value
     end
 
     def track_vulnerability_update(vulnerability)
