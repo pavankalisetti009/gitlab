@@ -1,14 +1,14 @@
 <script>
 import { GlLink, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import FeatureSettingsTableRows from './feature_settings_table_rows.vue';
+import ModelSelectionFeatureSettingsTable from 'ee/ai/model_selection/feature_settings_table.vue';
 import FeatureSettingsBlock from './feature_settings_block.vue';
 import { DUO_MAIN_FEATURES } from './constants';
 
 export default {
   name: 'FeatureSettingsTable',
   components: {
-    FeatureSettingsTableRows,
+    ModelSelectionFeatureSettingsTable,
     FeatureSettingsBlock,
     GlLink,
     GlSprintf,
@@ -78,9 +78,9 @@ export default {
         </gl-sprintf>
       </template>
       <template #content>
-        <feature-settings-table-rows
-          data-testid="code-suggestions-table-rows"
-          :ai-feature-settings="codeSuggestionsFeatures"
+        <model-selection-feature-settings-table
+          data-testid="code-suggestions-table"
+          :feature-settings="codeSuggestionsFeatures"
           :is-loading="isLoading"
         />
       </template>
@@ -100,9 +100,9 @@ export default {
         </gl-sprintf>
       </template>
       <template #content>
-        <feature-settings-table-rows
-          data-testid="duo-chat-table-rows"
-          :ai-feature-settings="duoChatFeatures"
+        <model-selection-feature-settings-table
+          data-testid="duo-chat-table"
+          :feature-settings="duoChatFeatures"
           :is-loading="isLoading"
         />
       </template>
@@ -125,9 +125,9 @@ export default {
         </gl-sprintf>
       </template>
       <template #content>
-        <feature-settings-table-rows
-          data-testid="duo-merge-requests-table-rows"
-          :ai-feature-settings="mergeRequestFeatures"
+        <model-selection-feature-settings-table
+          data-testid="duo-merge-requests-table"
+          :feature-settings="mergeRequestFeatures"
           :is-loading="isLoading"
         />
       </template>
@@ -150,9 +150,9 @@ export default {
         </gl-sprintf>
       </template>
       <template #content>
-        <feature-settings-table-rows
-          data-testid="duo-issues-table-rows"
-          :ai-feature-settings="issueFeatures"
+        <model-selection-feature-settings-table
+          data-testid="duo-issues-table"
+          :feature-settings="issueFeatures"
           :is-loading="isLoading"
         />
       </template>
@@ -175,9 +175,9 @@ export default {
         </gl-sprintf>
       </template>
       <template #content>
-        <feature-settings-table-rows
-          data-testid="other-duo-features-table-rows"
-          :ai-feature-settings="otherGitLabDuoFeatures"
+        <model-selection-feature-settings-table
+          data-testid="other-duo-features-table"
+          :feature-settings="otherGitLabDuoFeatures"
           :is-loading="isLoading"
         />
       </template>
