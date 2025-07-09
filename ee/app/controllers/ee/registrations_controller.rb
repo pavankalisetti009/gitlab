@@ -45,23 +45,30 @@ module EE
     private
 
     def verify_arkose_labs_challenge!
+      start_time = current_monotonic_time
       return if verify_arkose_labs_token
 
       flash[:alert] =
         s_('Session|There was a error loading the user verification challenge. Refresh to try again.')
 
       render action: 'new'
+    ensure
+      store_duration(:verify_arkose_labs_challenge!, start_time)
     end
 
     def restrict_registration
+      start_time = current_monotonic_time
       return unless restricted_country?(request.env['HTTP_CF_IPCOUNTRY'])
       return if allow_invited_user?
 
       member&.destroy
       redirect_to restricted_signup_identity_verification_path
+    ensure
+      store_duration(:ee_restrict_registration, start_time)
     end
 
     def check_seats
+      start_time = current_monotonic_time
       return unless ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.block_seat_overages_for_self_managed?
 
       email = Array.wrap(sign_up_params[:email])
@@ -72,6 +79,8 @@ module EE
         s_('Registration|There are no seats left on your GitLab instance. Please contact your GitLab administrator.')
 
       render action: 'new'
+    ensure
+      store_duration(:ee_check_seats, start_time)
     end
 
     def allow_invited_user?
@@ -111,29 +120,40 @@ module EE
       # RegistrationsController#after_inactive_sign_up_path_for is correctly called with the custom_attributes
       # that are added by this action so that the IdentityVerifiable module observation of them is correct.
       # Identity Verification feature specs cover this ordering.
-      record_arkose_data(user)
+
+      store_duration(:ee_record_arkose_data) { record_arkose_data(user) }
 
       # calling this before super since originating_member_id will be cleared from the session when super is called
-      exempt_paid_namespace_invitee_from_identity_verification(user)
+      store_duration(:ee_exempt_paid_namespace_invitee_from_identity_verification) do
+        exempt_paid_namespace_invitee_from_identity_verification(user)
+      end
 
       super
 
-      send_custom_confirmation_instructions
+      store_duration(:ee_send_custom_confirmation_instructions) { send_custom_confirmation_instructions }
 
-      user.assume_high_risk_if_phone_verification_limit_exceeded!
+      store_duration(:ee_user_assume_high_risk_if_phone_verification_limit_exceeded!) do
+        user.assume_high_risk_if_phone_verification_limit_exceeded!
+      end
 
-      ::Onboarding::StatusCreateService
+      store_duration(:ee_onboarding_status_create_service_instantiate) do
+        ::Onboarding::StatusCreateService
         .new(onboarding_status_params, session['user_return_to'], resource, onboarding_first_step_path).execute
-      clear_memoization(:onboarding_status_presenter) # clear since registration_type is now set
+        clear_memoization(:onboarding_status_presenter) # clear since registration_type is now set
+      end
 
-      log_audit_event(user)
+      store_duration(:ee_log_audit_event) { log_audit_event(user) }
+
       # This must come after user has been onboarding to properly detect the label from the onboarded user.
-      ::Gitlab::Tracking.event(
-        self.class.name,
-        'successfully_submitted_form',
-        label: onboarding_status_presenter.tracking_label,
-        user: user
-      )
+
+      store_duration(:ee_successfull_submitted_form_event) do
+        ::Gitlab::Tracking.event(
+          self.class.name,
+          'successfully_submitted_form',
+          label: onboarding_status_presenter.tracking_label,
+          user: user
+        )
+      end
     end
 
     override :onboarding_status_params
@@ -226,6 +246,7 @@ module EE
 
     override :sign_up_params
     def sign_up_params
+      start_time = current_monotonic_time
       data = super
 
       return super unless ::Onboarding.enabled? && data.key?(:onboarding_status_email_opt_in)
@@ -234,6 +255,7 @@ module EE
       # be certain the user was ever shown this option so we should default to false to follow opt in guidelines.
       data[:onboarding_status_email_opt_in] =
         ::Gitlab::Utils.to_boolean(data[:onboarding_status_email_opt_in], default: false)
+      store_duration(:ee_sign_up_params_ee, start_time)
       data
     end
 
