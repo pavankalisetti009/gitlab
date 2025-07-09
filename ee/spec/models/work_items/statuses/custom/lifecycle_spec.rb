@@ -226,4 +226,32 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       expect(custom_lifecycle.default_statuses).to contain_exactly(open_status, closed_status, duplicate_status)
     end
   end
+
+  describe '#default_status_for_work_item' do
+    subject(:default_status) { custom_lifecycle.default_status_for_work_item(work_item) }
+
+    context 'for open work item' do
+      let(:work_item) { build(:work_item, :opened) }
+
+      it 'returns correct status' do
+        is_expected.to eq(custom_lifecycle.default_open_status)
+      end
+    end
+
+    context 'for duplicated work item' do
+      let(:work_item) { build(:work_item, :closed, duplicated_to_id: 1) }
+
+      it 'returns correct status' do
+        is_expected.to eq(custom_lifecycle.default_duplicate_status)
+      end
+    end
+
+    context 'for closed work item' do
+      let(:work_item) { build(:work_item, :closed) }
+
+      it 'returns correct status' do
+        is_expected.to eq(custom_lifecycle.default_closed_status)
+      end
+    end
+  end
 end

@@ -64,7 +64,7 @@ module EE
       end
 
       def update_status_to_open(status)
-        status = lifecycle&.default_open_status if status.nil? && (work_item.current_status || lifecycle&.custom?)
+        status = :default if status.nil? && (work_item.current_status || lifecycle&.custom?)
 
         ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute if status
       end
@@ -72,7 +72,6 @@ module EE
       def lifecycle
         work_item.work_item_type.status_lifecycle_for(work_item.resource_parent.root_ancestor)
       end
-      strong_memoize_attr :lifecycle
     end
   end
 end

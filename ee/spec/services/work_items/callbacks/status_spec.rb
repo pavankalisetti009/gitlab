@@ -113,11 +113,20 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       it_behaves_like 'does not call services to create current status record'
     end
 
+    shared_examples 'sets the default status' do
+      it 'calls the status update service with the default status' do
+        expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+          .with(item, current_user, :default)
+          .and_return(status_update_service)
+        expect(status_update_service).to receive(:execute)
+
+        run_callback
+      end
+    end
+
     context 'for system defined lifecycle' do
       context 'when status param is not given' do
-        it_behaves_like 'handle status for open state' do
-          let(:status) { default_open_status }
-        end
+        it_behaves_like 'sets the default status'
       end
 
       context 'when status param is given' do
@@ -131,9 +140,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       context 'when user does not have permission to set status' do
         let(:current_user) { create(:user) }
 
-        it_behaves_like 'handle status for open state' do
-          let(:status) { default_open_status }
-        end
+        it_behaves_like 'sets the default status'
       end
     end
 
@@ -145,9 +152,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       end
 
       context 'when status param is not given' do
-        it_behaves_like 'handle status for open state' do
-          let(:status) { status_lifecycle.default_open_status }
-        end
+        it_behaves_like 'sets the default status'
       end
 
       context 'when status param is given' do
@@ -162,9 +167,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
         let(:status_from_other_group) { create(:work_item_custom_status) }
         let(:params) { { status: status_from_other_group } }
 
-        it_behaves_like 'handle status for open state' do
-          let(:status) { status_lifecycle.default_open_status }
-        end
+        it_behaves_like 'sets the default status'
       end
     end
   end

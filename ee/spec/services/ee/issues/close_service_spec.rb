@@ -245,37 +245,18 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
             )
           end
 
-          context "when the issues is not duplicated" do
-            it "calls the status update service" do
-              expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
-                .with(work_item, current_user, closed_status)
-                .and_return(status_update_service)
-              expect(status_update_service).to receive(:execute)
+          it "calls the status update service" do
+            expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+              .with(work_item, current_user, :default)
+              .and_return(status_update_service)
+            expect(status_update_service).to receive(:execute)
 
-              execute
-            end
-          end
-
-          context "when the issue is duplicated" do
-            let(:duplicated_work_item) { create(:work_item, :task, namespace: group) }
-
-            before do
-              work_item.update!(duplicated_to_id: duplicated_work_item.id)
-            end
-
-            it "calls the status update service" do
-              expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
-                .with(work_item, current_user, duplicated_status)
-                .and_return(status_update_service)
-              expect(status_update_service).to receive(:execute)
-
-              execute
-            end
+            execute
           end
         end
 
         context 'when namespace has a custom lifecycle' do
-          let(:custom_lifecycle) do
+          let!(:custom_lifecycle) do
             create(:work_item_custom_lifecycle, namespace: group).tap do |lifecycle|
               create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item.work_item_type)
             end
@@ -283,7 +264,7 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
 
           it "calls the status update service" do
             expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
-              .with(work_item, current_user, custom_lifecycle.default_closed_status)
+              .with(work_item, current_user, :default)
               .and_return(status_update_service)
             expect(status_update_service).to receive(:execute)
 
@@ -299,7 +280,7 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
 
             it "calls the status update service with the default open status" do
               expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
-                .with(work_item, current_user, custom_lifecycle.default_closed_status)
+                .with(work_item, current_user, :default)
                 .and_return(status_update_service)
               expect(status_update_service).to receive(:execute)
 

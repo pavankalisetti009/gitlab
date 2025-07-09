@@ -6,18 +6,27 @@ module WorkItems
       class UpdateService
         include Gitlab::InternalEventsTracking
 
-        def initialize(work_item, current_user, status)
+        def initialize(work_item, current_user, status = :default)
           @work_item = ensure_work_item(work_item)
           @current_user = current_user
-          @status = status
+
+          if status == :default
+            @default_status_used = true
+            @status = lifecycle&.default_status_for_work_item(@work_item)
+          else
+            @default_status_used = false
+            @status = status
+          end
         end
 
         def execute
-          return unless has_correct_type?
+          return unless status_in_lifecycle?
           return if work_item.current_status&.status == status
 
           update_work_item_status
           create_system_note
+
+          return if @default_status_used
 
           track_internal_event(
             'change_work_item_status_value',
@@ -34,8 +43,8 @@ module WorkItems
 
         attr_reader :work_item, :current_user, :status
 
-        def has_correct_type?
-          status && lifecycle.has_status_id?(status.id)
+        def status_in_lifecycle?
+          status && lifecycle && lifecycle.has_status_id?(status.id)
         end
 
         def lifecycle
