@@ -25,6 +25,8 @@ module Resolvers
       argument :limit, Integer, required: false,
         description: "Number of paths to fetch."
 
+      validates mutually_exclusive: [:after, :before]
+
       def resolve(**args)
         return if Feature.disabled?(:dependency_graph_graphql, project)
 
@@ -49,7 +51,7 @@ module Resolvers
 
       def decode_cursor(cursor)
         ::Gitlab::Json.parse(Base64.decode64(cursor))
-      rescue StandardError => e
+      rescue JSON::ParserError => e
         raise GraphQL::ExecutionError, "Invalid cursor format: #{e.message}"
       end
 
