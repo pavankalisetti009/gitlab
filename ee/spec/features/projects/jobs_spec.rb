@@ -50,6 +50,11 @@ RSpec.describe 'Jobs', :clean_gitlab_redis_shared_state, feature_category: :cont
           allow_next_found_instance_of(Namespace) do |instance|
             allow(instance).to receive(:read_only?).and_return(true)
           end
+          # Ensure ProjectNamespace isn't coerced to Namespace which causes this spec to fail.
+          allow_next_found_instance_of(Namespaces::ProjectNamespace) do |instance|
+            allow(instance).to receive(:read_only?).and_return(true)
+          end
+
           visit project_job_path(project, job)
           wait_for_requests
 
