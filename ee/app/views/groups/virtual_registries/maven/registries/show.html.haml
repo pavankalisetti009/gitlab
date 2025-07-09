@@ -4,4 +4,4 @@
 - breadcrumb_title @maven_registry.id.to_s
 - page_title title
 
-= render ::Layouts::PageHeadingComponent.new(title)
+#js-vue-maven-registry-details{ "data-provide": maven_registry_data(@group, @maven_registry) }

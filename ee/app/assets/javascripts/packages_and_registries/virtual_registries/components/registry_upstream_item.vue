@@ -8,6 +8,7 @@ import {
   GlTruncate,
 } from '@gitlab/ui';
 import { s__, sprintf, n__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 
 export default {
@@ -66,6 +67,9 @@ export default {
     id() {
       return this.upstream.id;
     },
+    idFromGraphQL() {
+      return getIdFromGraphQLId(this.upstream.id);
+    },
     cacheSize() {
       return this.upstream.cacheSize;
     },
@@ -85,10 +89,10 @@ export default {
       return this.upstream.artifactCount;
     },
     editPath() {
-      return this.editUpstreamPathTemplate.replace(':id', this.upstream.id);
+      return this.editUpstreamPathTemplate.replace(':id', this.idFromGraphQL);
     },
     showPath() {
-      return this.showUpstreamPathTemplate.replace(':id', this.upstream.id);
+      return this.showUpstreamPathTemplate.replace(':id', this.idFromGraphQL);
     },
     isFirstUpstream() {
       return this.index === 0;

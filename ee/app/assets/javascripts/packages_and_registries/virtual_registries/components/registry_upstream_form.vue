@@ -1,6 +1,7 @@
 <script>
 import { GlForm, GlFormGroup, GlFormInput, GlFormTextarea, GlButton } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
+import { isValidURL } from '~/lib/utils/url_utility';
 
 export default {
   name: 'RegistryUpstreamForm',
@@ -47,6 +48,7 @@ export default {
     cacheValidityHoursHelpText: s__('VirtualRegistry|Time in hours'),
     createUpstreamButtonLabel: s__('VirtualRegistry|Create upstream'),
     testUpstreamButtonLabel: s__('VirtualRegistry|Test upstream'),
+    invalidUrl: s__('VirtualRegistry|Please provide a valid URL.'),
     cancelButtonLabel: __('Cancel'),
   },
   /**
@@ -73,6 +75,7 @@ export default {
           ? this.upstream.cacheValidityHours
           : 24,
       },
+      showValidation: false,
     };
   },
   ids: {
@@ -84,16 +87,30 @@ export default {
     cacheValidityHoursInputId: 'cache-validity-hours-input',
   },
   computed: {
+    isValidURL() {
+      return isValidURL(this.form.url);
+    },
+    isValidUrlState() {
+      return this.showValidation ? this.isValidURL : true;
+    },
     saveButtonText() {
       return this.upstream.id ? __('Save changes') : this.$options.i18n.createUpstreamButtonLabel;
     },
   },
   methods: {
     submit() {
-      this.$emit('submit', this.form);
+      this.showValidation = true;
+
+      if (this.isValidURL) {
+        this.$emit('submit', this.form);
+      }
     },
     testUpstream() {
-      this.$emit('testUpstream', this.form);
+      this.showValidation = true;
+
+      if (this.isValidURL) {
+        this.$emit('testUpstream', this.form);
+      }
     },
     cancel() {
       this.$emit('cancel');
@@ -115,10 +132,13 @@ export default {
     <gl-form-group
       :label="$options.i18n.upstreamUrlLabel"
       :label-for="$options.ids.upstreamUrlInputId"
+      :invalid-feedback="$options.i18n.invalidUrl"
+      :state="isValidUrlState"
     >
       <gl-form-input
         :id="$options.ids.upstreamUrlInputId"
         v-model="form.url"
+        type="url"
         data-testid="upstream-url-input"
         required
       />
