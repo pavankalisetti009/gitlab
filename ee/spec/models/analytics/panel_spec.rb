@@ -48,7 +48,7 @@ RSpec.describe Analytics::Panel, feature_category: :product_analytics do
     let_it_be(:project) { create(:project, :with_product_analytics_dashboard) }
 
     it 'returns nil when yaml is missing' do # instead of raising a 500
-      expect(described_class.from_data(nil, project)).to be_nil
+      expect(described_class.from_data(nil, project, project)).to be_nil
     end
   end
 end

@@ -97,13 +97,13 @@ module Analytics
         container.default_dashboards_configuration_source
 
       visualizations = []
-      visualizations << custom_visualizations(config_project)
+      visualizations << custom_visualizations(container, config_project)
       visualizations << builtin_visualizations(container, user)
 
       visualizations.flatten
     end
 
-    def self.custom_visualizations(config_project)
+    def self.custom_visualizations(container, config_project)
       trees = config_project&.repository&.tree(:head, VISUALIZATIONS_ROOT_LOCATION)
 
       return [] unless trees.present?
@@ -111,24 +111,25 @@ module Analytics
       trees.entries.map do |entry|
         config = config_project.repository.blob_data_at(config_project.repository.root_ref_sha, entry.path)
 
-        new(config: config, slug: File.basename(entry.name, File.extname(entry.name)))
+        new(container: container, config: config, slug: File.basename(entry.name, File.extname(entry.name)))
       end
     end
 
-    def self.from_file(filename:, project:)
+    def self.from_file(filename:, config_project:, container:)
       return unless filename
 
-      content = load_project_visualization_data(filename: filename, project: project)
+      content = load_project_visualization_data(filename: filename, project: config_project)
       content ||= load_builtin_visualization_data(filename: filename)
 
       if content
-        new(config: content, slug: filename)
+        new(container: container, config: content, slug: filename)
       else
-        new(config: nil, slug: filename, init_error: "Visualization file #{filename}.yaml not found")
+        new(container: container, config: nil, slug: filename,
+          init_error: "Visualization file #{filename}.yaml not found")
       end
     end
 
-    def self.from_data(data:)
+    def self.from_data(data:, container:)
       return unless data
 
       slug = if data.key?('slug')
@@ -137,31 +138,36 @@ module Analytics
                SecureRandom.alphanumeric(10)
              end
 
-      new(config: YAML.safe_dump(data), slug: slug)
+      new(container: container, config: YAML.safe_dump(data), slug: slug)
     end
 
     def self.skip_for_project_namespace?(name)
       VISUALIZATIONS_FOR_GROUP_ONLY.include?(name)
     end
 
-    def self.product_analytics_visualizations(is_project = false)
-      unsafe_load_builtin_visualizations(PRODUCT_ANALYTICS_VISUALIZATIONS, PRODUCT_ANALYTICS_PATH, is_project)
+    def self.product_analytics_visualizations(container, is_project = false)
+      unsafe_load_builtin_visualizations(PRODUCT_ANALYTICS_VISUALIZATIONS, PRODUCT_ANALYTICS_PATH, container,
+        is_project)
     end
 
-    def self.value_stream_dashboard_visualizations(is_project = false)
-      unsafe_load_builtin_visualizations(VALUE_STREAM_DASHBOARD_VISUALIZATIONS, VALUE_STREAM_DASHBOARD_PATH, is_project)
+    def self.value_stream_dashboard_visualizations(container, is_project = false)
+      unsafe_load_builtin_visualizations(VALUE_STREAM_DASHBOARD_VISUALIZATIONS, VALUE_STREAM_DASHBOARD_PATH, container,
+        is_project)
     end
 
-    def self.ai_impact_dashboard_visualizations(is_project = false)
-      unsafe_load_builtin_visualizations(AI_IMPACT_DASHBOARD_VISUALIZATIONS, AI_IMPACT_DASHBOARD_PATH, is_project)
+    def self.ai_impact_dashboard_visualizations(container, is_project = false)
+      unsafe_load_builtin_visualizations(AI_IMPACT_DASHBOARD_VISUALIZATIONS, AI_IMPACT_DASHBOARD_PATH, container,
+        is_project)
     end
 
-    def self.dora_metrics_visualizations(is_project = false)
-      unsafe_load_builtin_visualizations(DORA_METRICS_VISUALIZATIONS, DORA_METRICS_VISUALIZATIONS_PATH, is_project)
+    def self.dora_metrics_visualizations(container, is_project = false)
+      unsafe_load_builtin_visualizations(DORA_METRICS_VISUALIZATIONS, DORA_METRICS_VISUALIZATIONS_PATH, container,
+        is_project)
     end
 
-    def self.merge_requests_visualizations
-      unsafe_load_builtin_visualizations(MERGE_REQUESTS_VISUALIZATIONS, MERGE_REQUESTS_VISUALIZATIONS_PATH, true)
+    def self.merge_requests_visualizations(container)
+      unsafe_load_builtin_visualizations(MERGE_REQUESTS_VISUALIZATIONS, MERGE_REQUESTS_VISUALIZATIONS_PATH, container,
+        true)
     end
 
     def self.builtin_visualizations(container, user)
@@ -170,29 +176,31 @@ module Analytics
       visualizations = []
 
       if container.product_analytics_enabled? && container.product_analytics_onboarded?(user)
-        visualizations << product_analytics_visualizations(is_project)
+        visualizations << product_analytics_visualizations(container, is_project)
       end
 
       if container.value_streams_dashboard_available?
-        visualizations << value_stream_dashboard_visualizations(is_project)
+        visualizations << value_stream_dashboard_visualizations(container, is_project)
       end
 
       if container.value_streams_dashboard_available? && container.dora_metrics_dashboard_enabled?(user)
-        visualizations << dora_metrics_visualizations(is_project)
+        visualizations << dora_metrics_visualizations(container, is_project)
       end
 
       if container.ai_impact_dashboard_available_for?(user)
-        visualizations << ai_impact_dashboard_visualizations(is_project)
+        visualizations << ai_impact_dashboard_visualizations(container, is_project)
       end
 
-      visualizations << merge_requests_visualizations if container.merge_request_analytics_enabled?(user)
+      visualizations << merge_requests_visualizations(container) if container.merge_request_analytics_enabled?(user)
 
       visualizations.flatten
     end
 
-    def initialize(config:, slug:, init_error: nil)
+    def initialize(container:, config:, slug:, init_error: nil)
+      raise ArgumentError, 'container cannot be nil' if container.nil?
+
       if init_error
-        initialize_with_error(init_error, slug)
+        initialize_with_error(container, init_error, slug)
         return
       end
 
@@ -204,11 +212,15 @@ module Analytics
       rescue Psych::Exception => e
         @errors = [e.message]
       end
+      @container = container
       @slug = slug&.parameterize
       @errors = schema_errors_for(@config)
     end
 
-    def initialize_with_error(init_error, slug)
+    def initialize_with_error(container, init_error, slug)
+      raise ArgumentError, 'container cannot be nil' if container.nil?
+
+      @container = container
       @options = {}
       @type = 'unknown'
       @data = {}
@@ -262,13 +274,13 @@ module Analytics
         nil
       end
 
-      def unsafe_load_builtin_visualizations(visualization_names, directory, is_project)
+      def unsafe_load_builtin_visualizations(visualization_names, directory, container, is_project)
         visualization_names.filter_map do |name|
           next if is_project && skip_for_project_namespace?(name)
 
           config = File.read(Rails.root.join(directory, "#{name}.yaml"))
 
-          new(config: config, slug: name)
+          new(container: container, config: config, slug: name)
         end
       end
     end

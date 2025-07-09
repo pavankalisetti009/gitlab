@@ -3,9 +3,10 @@
 module Types
   module Analytics
     module Dashboards
-      class VisualizationType < BaseObject # rubocop:disable Graphql/AuthorizeTypes,Style/InlineDisableAnnotation
+      class VisualizationType < BaseObject
         graphql_name 'CustomizableDashboardVisualization'
         description 'Represents a customizable dashboard visualization.'
+        authorize :read_product_analytics
 
         field :type,
           type: GraphQL::Types::String,
