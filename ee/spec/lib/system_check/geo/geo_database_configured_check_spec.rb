@@ -21,7 +21,7 @@ RSpec.describe SystemCheck::Geo::GeoDatabaseConfiguredCheck, :silence_stdout, fe
     end
 
     it "checks database configuration" do
-      stub_database_state(subject, active: false)
+      stub_database_state(subject, connected: false)
 
       expect(subject).to receive(:try_fixing_it).with(described_class::UNHEALTHY_CONNECTION_MESSAGE)
 
@@ -54,11 +54,11 @@ RSpec.describe SystemCheck::Geo::GeoDatabaseConfiguredCheck, :silence_stdout, fe
     end
   end
 
-  def stub_database_state(subject, configured: true, active: true, tables: true, fresh: true)
+  def stub_database_state(subject, configured: true, connected: true, tables: true, fresh: true)
     allow(subject).to receive(:needs_migration?).and_return(!tables)
 
     allow(::Gitlab::Geo).to receive(:geo_database_configured?).and_return(configured)
-    allow(::Geo::TrackingBase).to receive(:connection).and_return(double(active?: active))
+    allow(::Geo::TrackingBase).to receive(:connected?).and_return(connected)
 
     allow_next_instance_of(::Gitlab::Geo::HealthCheck) do |health_check|
       allow(health_check).to receive(:reusing_existing_tracking_database?).and_return(!fresh)
