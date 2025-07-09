@@ -6,7 +6,6 @@ module SecretsManagement
 
     SERVER_VERSION_FILE = 'GITLAB_OPENBAO_VERSION'
     KV_VALUE_FIELD = 'value'
-    TOKEN_HEADER = 'X-Vault-Token'
     DEFAULT_JWT_ROLE = 'app'
     GITLAB_JWT_AUTH_PATH = 'gitlab_rails_jwt'
     OPENBAO_TOKEN_TTL = '15m'
@@ -34,7 +33,6 @@ module SecretsManagement
       @jwt = jwt
       @role = role
       @auth_mount = auth_mount
-      authenticate!
     end
 
     def enable_auth_engine(mount_path, type, allow_existing: false)
@@ -185,28 +183,7 @@ module SecretsManagement
 
     private
 
-    attr_reader :jwt, :auth_token, :role, :auth_mount
-
-    def authenticate!
-      result = jwt_login
-
-      @auth_token = result.dig('auth', 'client_token')
-
-      raise AuthenticationError, 'No token received from OpenBao' unless auth_token
-    rescue ConnectionError, ApiError => e
-      raise AuthenticationError, "Failed to authenticate with OpenBao: #{e}"
-    end
-
-    def jwt_login
-      params = { jwt: jwt }
-      params[:role] = role if role.present?
-
-      make_request(
-        :post,
-        "auth/#{auth_mount}/login",
-        params
-      )
-    end
+    attr_reader :jwt, :role, :auth_mount
 
     # save_raw_policy and read_raw_policy handle raw (direct API responses)
     # and the get_policy/set_policy forms should be preferred as they return
@@ -229,16 +206,22 @@ module SecretsManagement
     end
 
     def connection
-      # We memoize by auth_token so that we support both unauthenticated and authenticated requests
-      strong_memoize_with(:connection, auth_token) do
-        Faraday.new(url: URI.join(configuration.host, configuration.base_path)) do |f|
-          f.request :json
-          f.response :json
+      Faraday.new(url: URI.join(configuration.host, configuration.base_path)) do |f|
+        f.request :json
+        f.response :json
 
-          f.headers[TOKEN_HEADER] = auth_token if auth_token.present?
+        f.headers['X-Vault-Inline-Auth-Path'] = "auth/#{auth_mount}/login"
+
+        f.headers['X-Vault-Inline-Auth-Parameter-token'] =
+          Base64.urlsafe_encode64({ key: "jwt", value: jwt }.to_json, padding: false)
+
+        if role.present?
+          f.headers['X-Vault-Inline-Auth-Parameter-role'] =
+            Base64.urlsafe_encode64({ key: "role", value: role }.to_json, padding: false)
         end
       end
     end
+    strong_memoize_attr :connection
 
     def make_request(method, url, params = {}, optional: false)
       response = case method
@@ -254,7 +237,8 @@ module SecretsManagement
 
       body = response.body
 
-      raise ApiError, body["errors"].to_sentence if body && body["errors"]&.any?
+      handle_authentication_error!(body)
+      handle_api_error!(body)
 
       if response.status == 404
         raise ApiError, 'not found' unless optional
@@ -265,6 +249,16 @@ module SecretsManagement
       body
     rescue ::Faraday::Error => e
       raise ConnectionError, e.message
+    end
+
+    def handle_authentication_error!(body)
+      return unless body && body["errors"]&.to_sentence&.include?('inline authentication')
+
+      raise AuthenticationError, "Failed to authenticate with OpenBao"
+    end
+
+    def handle_api_error!(body)
+      raise ApiError, body["errors"].to_sentence if body && body["errors"]&.any?
     end
 
     def configuration
