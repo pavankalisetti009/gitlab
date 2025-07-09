@@ -1,6 +1,7 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 
+import { GL_LIGHT } from '~/constants';
 import { ROUTE_STANDARDS_ADHERENCE } from '../../constants';
 import StatusChart from './components/status_chart.vue';
 
@@ -12,7 +13,8 @@ export default {
   props: {
     colorScheme: {
       type: String,
-      required: true,
+      required: false,
+      default: GL_LIGHT,
     },
     failedControls: {
       type: Object,
@@ -36,16 +38,14 @@ export default {
     :legend="$options.legend"
     :color-scheme="colorScheme"
     :data="failedControls"
-    :x-axis-title="s__('Compliance report|Controls')"
+    :x-axis-title="s__('ComplianceReport|Controls')"
     :path="$options.ROUTE_STANDARDS_ADHERENCE"
   />
   <gl-empty-state
     v-else
-    :title="s__('Compliance report|There are no controls.')"
+    :title="s__('ComplianceReport|There are no controls.')"
     :description="
-      s__(
-        'Compliance report|You can add controls for requirements inside the compliance framework.',
-      )
+      s__('ComplianceReport|You can add controls for requirements inside the compliance framework.')
     "
     class="gl-m-0 gl-pt-3"
   />

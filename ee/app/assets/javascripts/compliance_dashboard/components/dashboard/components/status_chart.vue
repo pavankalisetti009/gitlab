@@ -1,6 +1,7 @@
 <script>
 import { GlBarChart } from '@gitlab/ui/dist/charts';
 import { s__ } from '~/locale';
+import { GL_LIGHT } from '~/constants';
 import { getColors } from '../utils/chart';
 
 export default {
@@ -10,7 +11,8 @@ export default {
   props: {
     colorScheme: {
       type: String,
-      required: true,
+      required: false,
+      default: GL_LIGHT,
     },
     data: {
       type: Object,
@@ -20,38 +22,24 @@ export default {
       type: String,
       required: true,
     },
-    xAxisTitle: {
-      type: String,
-      required: true,
-    },
   },
   computed: {
     chartData() {
       return {
         items: [
           {
-            value: [this.data.passed, this.$options.legend.passed],
+            value: [this.data.passed, s__('ComplianceReport|Passed')],
             itemStyle: { color: this.colors.blueDataColor },
           },
           {
-            value: [this.data.pending, this.$options.legend.pending],
+            value: [this.data.pending, s__('ComplianceReport|Pending')],
             itemStyle: { color: this.colors.orangeDataColor },
           },
           {
-            value: [this.data.failed, this.$options.legend.failed],
+            value: [this.data.failed, s__('ComplianceReport|Failed')],
             itemStyle: { color: this.colors.magentaDataColor },
           },
         ],
-      };
-    },
-    chartOption() {
-      return {
-        grid: {
-          left: '15%',
-        },
-        yAxis: {
-          nameGap: 60,
-        },
       };
     },
     colors() {
@@ -63,21 +51,16 @@ export default {
       this.$router.push({ name: this.path });
     },
   },
-  legend: {
-    passed: s__('Compliance report|Passed'),
-    failed: s__('Compliance report|Failed'),
-    pending: s__('Compliance report|Pending'),
-  },
 };
 </script>
 
 <template>
+  <!-- axis titles intentionally blank -->
   <gl-bar-chart
-    :x-axis-title="xAxisTitle"
-    :y-axis-title="s__('ComplianceReport|Count')"
+    x-axis-title=""
+    y-axis-title=""
     height="auto"
     :data="chartData"
-    :option="chartOption"
     @chartItemClicked="handleChartClick"
   />
 </template>

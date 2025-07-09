@@ -2,6 +2,7 @@
 import { GlButton, GlEmptyState } from '@gitlab/ui';
 import { GlChart } from '@gitlab/ui/dist/charts';
 
+import { GL_LIGHT } from '~/constants';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { sanitize } from '~/lib/dompurify';
@@ -29,7 +30,8 @@ export default {
     },
     colorScheme: {
       type: String,
-      required: true,
+      required: false,
+      default: GL_LIGHT,
     },
   },
   computed: {
@@ -118,7 +120,7 @@ export default {
             formatter: (params) => this.getTooltip(params.tickIndex),
           },
           // eslint-disable-next-line @gitlab/require-i18n-strings
-          data: [...yAxisTitles, `{all|${s__('Compliance report|All frameworks')}}`],
+          data: [...yAxisTitles, `{all|${s__('ComplianceReport|All frameworks')}}`],
           axisLine: {
             show: false,
           },
@@ -139,7 +141,7 @@ export default {
 
         series: [
           {
-            name: s__('Compliance report|Projects covered by frameworks'),
+            name: s__('ComplianceReport|Projects covered by frameworks'),
             type: 'bar',
             stack: 'total',
             data: [...percents.map((value) => ({ value })), { value: totalCoveredPercent }],
@@ -151,7 +153,7 @@ export default {
             barWidth: '80%',
           },
           {
-            name: s__('Compliance report|Projects not covered by frameworks'),
+            name: s__('ComplianceReport|Projects not covered by frameworks'),
             type: 'bar',
             stack: 'total',
             data: [
@@ -168,8 +170,8 @@ export default {
 
         legend: {
           data: [
-            s__('Compliance report|Projects covered by frameworks'),
-            s__('Compliance report|Projects not covered by frameworks'),
+            s__('ComplianceReport|Projects covered by frameworks'),
+            s__('ComplianceReport|Projects not covered by frameworks'),
           ],
           top: 0,
           left: 0,
@@ -207,20 +209,20 @@ export default {
 
       return `<div class="gl-text-default gl-text-sm gl-bg-default gl-p-3">
         <h4 class="gl-font-bold gl-text-sm gl-m-0 gl-mb-2">${sprintf(
-          s__('Compliance report|%{percent}%% coverage'),
+          s__('ComplianceReport|%{percent}%% coverage'),
           {
             percent: coveragePercent,
           },
         )}</h4>
         <ul class="gl-list-none gl-m-0 gl-p-0">
-          <li>${sprintf(s__('Compliance report|%{count} projects have at least one framework'), {
+          <li>${sprintf(s__('ComplianceReport|%{count} projects have at least one framework'), {
             count: this.summary.coveredCount,
           })}</li>
-          <li>${sprintf(s__('Compliance report|%{count} projects have no framework at all'), {
+          <li>${sprintf(s__('ComplianceReport|%{count} projects have no framework at all'), {
             count: uncoveredCount,
           })}</li>
         </ul>
-        <p class="gl-font-bold gl-mt-2 gl-mb-0">${s__('Compliance report|Click to check all projects')}</p>
+        <p class="gl-font-bold gl-mt-2 gl-mb-0">${s__('ComplianceReport|Click to check all projects')}</p>
       </div>`;
     },
     getTooltipForFramework(details) {
@@ -231,26 +233,23 @@ export default {
 
       return `<div class="gl-text-default gl-text-sm gl-bg-default gl-p-3">
         <h4 class="gl-font-bold gl-text-sm gl-m-0 gl-mb-2">${sprintf(
-          s__('Compliance report|%{percent}%% coverage for %{framework}'),
+          s__('ComplianceReport|%{percent}%% coverage for %{framework}'),
           {
             percent: coveragePercent,
             framework: sanitizedFrameworkName,
           },
         )}</h4>
         <ul class="gl-list-none gl-m-0 gl-p-0">
-          <li>${sprintf(s__('Compliance report|%{count} projects have framework: %{framework}'), {
+          <li>${sprintf(s__('ComplianceReport|%{count} projects have framework: %{framework}'), {
             count: coveredCount,
             framework: sanitizedFrameworkName,
           })}</li>
-          <li>${sprintf(
-            s__('Compliance report|%{count} projects are not covered by %{framework}'),
-            {
-              count: uncoveredCount,
-              framework: sanitizedFrameworkName,
-            },
-          )}</li>
+          <li>${sprintf(s__('ComplianceReport|%{count} projects are not covered by %{framework}'), {
+            count: uncoveredCount,
+            framework: sanitizedFrameworkName,
+          })}</li>
         </ul>
-        <p class="gl-font-bold gl-mt-2 gl-mb-0">${s__('Compliance report|Click to check all projects')}</p>
+        <p class="gl-font-bold gl-mt-2 gl-mb-0">${s__('ComplianceReport|Click to check all projects')}</p>
       </div>`;
     },
     newFramework() {
@@ -270,8 +269,8 @@ export default {
   />
   <gl-empty-state
     v-else
-    :title="s__('Compliance report|There are no compliance frameworks.')"
-    :description="s__('Compliance report|Start by adding a compliance framework to your group.')"
+    :title="s__('ComplianceReport|There are no compliance frameworks.')"
+    :description="s__('ComplianceReport|Start by adding a compliance framework to your group.')"
     class="gl-m-0 gl-pt-3"
   >
     <template #actions>

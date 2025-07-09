@@ -44,6 +44,5 @@ describe('Compliance dashboard status chart', () => {
       data.pending,
       data.failed,
     ]);
-    expect(chartProps.xAxisTitle).toBe(wrapper.props('xAxisTitle'));
   });
 });
