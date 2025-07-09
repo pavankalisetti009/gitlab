@@ -21,7 +21,6 @@ class DependencyEntity < Grape::Entity
       location[:ancestors].map(&:compact).reject(&:empty?)
     end
     expose :has_dependency_paths
-    expose :dependency_paths, using: Sbom::DependencyPathEntity
   end
 
   class VulnerabilityEntity < Grape::Entity

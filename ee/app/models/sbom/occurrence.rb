@@ -5,6 +5,7 @@ module Sbom
     LICENSE_COLUMNS = [:spdx_identifier, :name, :url].freeze
     include EachBatch
     include ::Namespaces::Traversal::Traversable
+    include Gitlab::Utils::StrongMemoize
 
     belongs_to :component, optional: false, inverse_of: :occurrences
     belongs_to :component_version, inverse_of: :occurrences
@@ -229,7 +230,6 @@ module Sbom
         path: input_file_path,
         top_level: top_level?,
         ancestors: ancestors,
-        dependency_paths: dependency_paths,
         has_dependency_paths: has_dependency_paths?
       }
     end
@@ -246,21 +246,9 @@ module Sbom
     private
 
     def has_dependency_paths?
-      return @has_dependency_paths if defined?(@has_dependency_paths)
-
-      @has_dependency_paths = Feature.enabled?(:dependency_paths, project) && @dependency_paths.any?
+      Sbom::GraphPath.exists?(descendant_id: id)
     end
-
-    def dependency_paths
-      return @dependency_paths if defined?(@dependency_paths)
-
-      @dependency_paths =
-        if Feature.enabled?(:dependency_paths, project)
-          Sbom::DependencyPath.find(occurrence_id: id, project_id: project.id)
-        else
-          []
-        end
-    end
+    strong_memoize_attr :has_dependency_paths?
 
     def input_file_blob_path
       return unless input_file_path.present?
