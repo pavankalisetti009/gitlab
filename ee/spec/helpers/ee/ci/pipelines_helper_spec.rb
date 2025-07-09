@@ -5,8 +5,10 @@ require 'spec_helper'
 RSpec.describe EE::Ci::PipelinesHelper, feature_category: :continuous_integration do
   include Devise::Test::ControllerHelpers
 
+  let_it_be(:project_namespace) { build_stubbed(:project_namespace) }
+  let_it_be(:project) { build_stubbed(:project, project_namespace: project_namespace) }
+
   describe '#pipelines_list_data' do
-    let_it_be(:project) { build_stubbed(:project) }
     let_it_be(:current_user) { build_stubbed(:user) }
 
     before do
@@ -63,8 +65,6 @@ RSpec.describe EE::Ci::PipelinesHelper, feature_category: :continuous_integratio
   end
 
   describe '#new_pipeline_data' do
-    let_it_be(:project) { build_stubbed(:project) }
-
     subject(:data) { helper.new_pipeline_data(project) }
 
     it 'includes identity_verification_path' do
