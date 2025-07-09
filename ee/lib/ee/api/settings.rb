@@ -11,6 +11,8 @@ module EE
 
           # rubocop:disable Metrics/CyclomaticComplexity
           # rubocop:disable Metrics/PerceivedComplexity
+          # rubocop:disable Metrics/AbcSize
+
           override :filter_attributes_using_license
           def filter_attributes_using_license(attrs)
             unless ::License.feature_available?(:repository_mirrors)
@@ -99,8 +101,13 @@ module EE
               attrs = attrs.except(:receptive_cluster_agents_enabled)
             end
 
+            unless ::Gitlab::Saas.feature_available?(:pipl_compliance)
+              attrs = attrs.except(:enforce_pipl_compliance)
+            end
+
             attrs
           end
+          # rubocop:enable Metrics/AbcSize
           # rubocop:enable Metrics/CyclomaticComplexity
           # rubocop:enable Metrics/PerceivedComplexity
         end
