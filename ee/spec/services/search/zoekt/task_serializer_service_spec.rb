@@ -89,6 +89,27 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
       end
     end
 
+    context 'with :index_graph_repo task' do
+      let(:project) { task.knowledge_graph_replica.knowledge_graph_enabled_namespace.namespace.project }
+      let(:task) { create(:knowledge_graph_task, task_type: :index_graph_repo) }
+
+      it 'serializes the task' do
+        expect(execute_task).to match(a_hash_including(
+          name: :index_graph,
+          payload: {
+            GitalyConnectionInfo: an_instance_of(Hash),
+            Callback: {
+              name: 'index_graph',
+              payload: { task_id: task.id, service_type: :knowledge_graph }
+            },
+            RepoId: project.id,
+            NamespaceId: project.project_namespace.id,
+            Timeout: "5400s"
+          }
+        ))
+      end
+    end
+
     context 'with unknown task' do
       let(:task) { create(:zoekt_task) }
 

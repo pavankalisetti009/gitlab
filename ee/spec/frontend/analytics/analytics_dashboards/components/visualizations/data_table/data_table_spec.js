@@ -1,4 +1,4 @@
-import { GlIcon, GlTableLite } from '@gitlab/ui';
+import { GlIcon, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import DataTable from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/data_table.vue';
@@ -11,14 +11,15 @@ describe('DataTable Visualization', () => {
   const findTable = () => wrapper.findComponent(GlTableLite);
   const findTableHeaders = () => findTable().findAll('th');
   const findTableRowCells = (idx) => findTable().find('tbody').findAll('tr').at(idx).findAll('td');
+  const findPagination = () => wrapper.findComponent(GlKeysetPagination);
 
-  const data = [{ field_one: 'alpha', field_two: 'beta', field_three: 'gamma' }];
+  const nodes = [{ field_one: 'alpha', field_two: 'beta', field_three: 'gamma' }];
 
   const createWrapper = (mountFn = shallowMount, props = {}) => {
     wrapper = extendedWrapper(
       mountFn(DataTable, {
         propsData: {
-          data,
+          data: { nodes },
           options: {},
           ...props,
         },
@@ -58,7 +59,7 @@ describe('DataTable Visualization', () => {
 
       expect(rowCells).toHaveLength(3);
 
-      Object.values(data[0]).forEach((value, idx) => {
+      Object.values(nodes[0]).forEach((value, idx) => {
         expect(rowCells.at(idx).text()).toBe(value);
         expect(rowCells.at(idx).classes()).toEqual(
           expect.arrayContaining(['gl-truncate', 'gl-max-w-0']),
@@ -68,11 +69,13 @@ describe('DataTable Visualization', () => {
 
     it('should not add delimiters for small numbers', () => {
       createWrapper(mount, {
-        data: [
-          {
-            field_one: 123,
-          },
-        ],
+        data: {
+          nodes: [
+            {
+              field_one: 123,
+            },
+          ],
+        },
       });
 
       const rowCells = findTableRowCells(0);
@@ -86,11 +89,13 @@ describe('DataTable Visualization', () => {
       [123456789, '123,456,789'],
     ])('should format "%d" with delimiters as "%s"', (value, expected) => {
       createWrapper(mount, {
-        data: [
-          {
-            field_one: value,
-          },
-        ],
+        data: {
+          nodes: [
+            {
+              field_one: value,
+            },
+          ],
+        },
       });
 
       const rowCells = findTableRowCells(0);
@@ -105,7 +110,7 @@ describe('DataTable Visualization', () => {
         { foo: { text: 'foo', href: 'https://example.com/foo' } },
         { bar: { text: 'bar', href: 'https://example.com/bar' } },
       ];
-      createWrapper(mount, { data: linksData });
+      createWrapper(mount, { data: { nodes: linksData } });
 
       const rowCells = findTableRowCells(0);
 
@@ -120,7 +125,7 @@ describe('DataTable Visualization', () => {
 
     it('should render external link icon for external links', () => {
       const linksData = [{ foo: { text: 'foo', href: 'https://example.com/foo' } }];
-      createWrapper(mount, { data: linksData });
+      createWrapper(mount, { data: { nodes: linksData } });
 
       const rowCells = findTableRowCells(0);
 
@@ -134,7 +139,9 @@ describe('DataTable Visualization', () => {
 
     it('should not add delimiters to link text for small numbers', () => {
       createWrapper(mount, {
-        data: [{ foo: { text: 123, href: 'https://example.com/foo' } }],
+        data: {
+          nodes: [{ foo: { text: 123, href: 'https://example.com/foo' } }],
+        },
       });
 
       const rowCells = findTableRowCells(0);
@@ -148,7 +155,9 @@ describe('DataTable Visualization', () => {
       [123456789, '123,456,789'],
     ])('should format link text of "%d" with delimiters as "%s"', (value, expected) => {
       createWrapper(mount, {
-        data: [{ foo: { text: value, href: 'https://example.com/foo' } }],
+        data: {
+          nodes: [{ foo: { text: value, href: 'https://example.com/foo' } }],
+        },
       });
 
       const rowCells = findTableRowCells(0);
@@ -164,13 +173,65 @@ describe('DataTable Visualization', () => {
       ];
       /* eslint-enable no-script-url */
 
-      createWrapper(mount, { data: linksData });
+      createWrapper(mount, { data: { nodes: linksData } });
 
       const badLink = findTableRowCells(1).at(0).find('a');
 
       expect(findTableRowCells(0).at(0).find('a').exists()).toBe(true);
       expect(badLink.text()).toBe('bar');
       expect(badLink.attributes('href')).toBe('about:blank');
+    });
+  });
+
+  describe('pagination', () => {
+    it('does not render page controls if there is no other pages', () => {
+      createWrapper();
+
+      expect(findPagination().exists()).toBe(false);
+    });
+
+    describe('with previous page', () => {
+      const pageInfo = { hasPreviousPage: true, startCursor: 'start' };
+
+      beforeEach(() => {
+        createWrapper(mount, { data: { nodes, pageInfo } });
+      });
+
+      it('renders pagination controls', () => {
+        expect(findPagination().props()).toMatchObject(pageInfo);
+      });
+
+      it('emits updateQuery when selected', () => {
+        findPagination().vm.$emit('prev');
+
+        expect(wrapper.emitted('updateQuery')[0][0]).toMatchObject({
+          pagination: {
+            prevPageCursor: pageInfo.startCursor,
+          },
+        });
+      });
+    });
+
+    describe('with next page', () => {
+      const pageInfo = { hasNextPage: true, endCursor: 'end' };
+
+      beforeEach(() => {
+        createWrapper(mount, { data: { nodes, pageInfo } });
+      });
+
+      it('renders pagination controls', () => {
+        expect(findPagination().props()).toMatchObject(pageInfo);
+      });
+
+      it('emits updateQuery when selected', () => {
+        findPagination().vm.$emit('next');
+
+        expect(wrapper.emitted('updateQuery')[0][0]).toMatchObject({
+          pagination: {
+            nextPageCursor: pageInfo.endCursor,
+          },
+        });
+      });
     });
   });
 
@@ -223,7 +284,7 @@ describe('DataTable Visualization', () => {
         'renders the custom $component.name component with the correct props',
         ({ component, customData }) => {
           createWrapper(mount, {
-            data: [{ custom: customData }],
+            data: { nodes: [{ custom: customData }] },
             options: {
               fields: [{ key: 'custom', component: component.name }],
             },

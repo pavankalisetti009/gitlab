@@ -125,19 +125,34 @@ describe('RegistryUpstreamForm', () => {
   });
 
   describe('emits events', () => {
-    it('emits submit event when form is submitted', () => {
+    it('emits submit event when form is submitted and form is valid', () => {
+      createComponent({ upstream });
+
       findForm().vm.$emit('submit', { preventDefault: () => {} });
-      expect(Boolean(wrapper.emitted('submit'))).toBe(true);
-      expect(wrapper.emitted('submit')[0]).toEqual([
-        {
-          name: '',
-          url: '',
-          description: '',
-          username: '',
-          password: '',
-          cacheValidityHours: 24,
-        },
-      ]);
+
+      const submittedEvent = wrapper.emitted('submit');
+      const [eventParams] = submittedEvent[0];
+
+      expect(Boolean(submittedEvent)).toBe(true);
+      expect(eventParams).toEqual(
+        expect.objectContaining({
+          name: 'foo',
+          url: 'https://example.com',
+          description: 'bar',
+          username: 'bax',
+          cacheValidityHours: 12,
+        }),
+      );
+    });
+
+    it('does not emit a submit event when the form is not valid', () => {
+      createComponent({ upstream: { ...upstream, url: 'ftp://hello' } });
+
+      findForm().vm.$emit('submit', { preventDefault: () => {} });
+
+      const submittedEvent = wrapper.emitted('submit');
+
+      expect(Boolean(submittedEvent)).toBe(false);
     });
 
     it('emits cancel event when Cancel button is clicked', () => {
@@ -147,19 +162,33 @@ describe('RegistryUpstreamForm', () => {
     });
 
     it('emits testUpstream event when Test upstream button is clicked', () => {
-      createComponent({ canTestUpstream: true });
+      createComponent({ upstream, canTestUpstream: true });
+
       findTestUpstreamButton().vm.$emit('click');
-      expect(Boolean(wrapper.emitted('testUpstream'))).toBe(true);
-      expect(wrapper.emitted('testUpstream')[0]).toEqual([
-        {
-          name: '',
-          url: '',
-          description: '',
-          username: '',
-          password: '',
-          cacheValidityHours: 24,
-        },
-      ]);
+
+      const testEvent = wrapper.emitted('testUpstream');
+      const [eventParams] = testEvent[0];
+
+      expect(Boolean(testEvent)).toBe(true);
+      expect(eventParams).toEqual(
+        expect.objectContaining({
+          name: 'foo',
+          url: 'https://example.com',
+          description: 'bar',
+          username: 'bax',
+          cacheValidityHours: 12,
+        }),
+      );
+    });
+
+    it('does not emit a testUpstream event when the form is not valid', () => {
+      createComponent({ upstream: { ...upstream, url: 'ftp://hello' }, canTestUpstream: true });
+
+      findTestUpstreamButton().vm.$emit('click');
+
+      const testEvent = wrapper.emitted('testUpstream');
+
+      expect(Boolean(testEvent)).toBe(false);
     });
   });
 });

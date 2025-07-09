@@ -15,6 +15,7 @@ import {
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+  DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
@@ -429,6 +430,98 @@ describe('Duo Agentic Chat', () => {
 
         expect(mockSocketManager.send).toHaveBeenCalledWith({
           actionResponse: { requestID: 'request-id-2' },
+        });
+      });
+
+      it.each([
+        {
+          messageType: 'request',
+          expectedRole: 'assistant',
+          expectedMessageType: 'assistant',
+          description: 'handles request message type correctly',
+        },
+        {
+          messageType: 'agent',
+          expectedRole: 'assistant',
+          expectedMessageType: 'assistant',
+          description: 'handles agent message type correctly',
+        },
+        {
+          messageType: 'special',
+          expectedRole: 'special',
+          expectedMessageType: 'special',
+          description: 'handles special message type correctly',
+        },
+      ])('$description', async ({ messageType, expectedRole, expectedMessageType }) => {
+        const mockCheckpointData = {
+          requestID: 'request-id-3',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'Processing your request',
+                    message_type: messageType,
+                    additional_data: { some: 'data' },
+                  },
+                ],
+              },
+            }),
+            status: 'completed',
+          },
+        };
+
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
+          },
+        });
+
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.arrayContaining([
+            expect.objectContaining({
+              content: 'Processing your request',
+              message_type: expectedMessageType,
+              role: expectedRole,
+              additional_data: { some: 'data' },
+              requestId: '456-0',
+            }),
+          ]),
+        );
+
+        expect(mockSocketManager.send).toHaveBeenCalledWith({
+          actionResponse: { requestID: 'request-id-3' },
+        });
+      });
+
+      it('sets loading to false when workflow status is INPUT_REQUIRED', async () => {
+        const mockCheckpointData = {
+          requestID: 'request-id-4',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'Please provide more information',
+                    message_type: 'agent',
+                  },
+                ],
+              },
+            }),
+            status: DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
+          },
+        };
+
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
+          },
+        });
+
+        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+        expect(mockSocketManager.send).toHaveBeenCalledWith({
+          actionResponse: { requestID: 'request-id-4' },
         });
       });
 

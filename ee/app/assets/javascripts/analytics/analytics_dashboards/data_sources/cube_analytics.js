@@ -58,7 +58,7 @@ export const convertToTableFormat = (resultSet, _query, visualizationOptions) =>
     columns.map((column) => [column.key, convertToSnakeCase(column.shortTitle)]),
   );
 
-  return rows.map((row) => {
+  const nodes = rows.map((row) => {
     return Object.fromEntries(
       Object.entries(row)
         .map(([key, value]) => {
@@ -84,6 +84,7 @@ export const convertToTableFormat = (resultSet, _query, visualizationOptions) =>
         .filter(Boolean),
     );
   });
+  return { nodes };
 };
 
 const convertToSingleValue = (resultSet, query) => {
