@@ -70,6 +70,15 @@ RSpec.describe WorkItems::Widgets::Statuses::UpdateService, feature_category: :t
     end
 
     context 'when all conditions are met' do
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'change_work_item_status_value' }
+        let(:category) { described_class.name }
+        let(:namespace) { group }
+        let(:label) { new_status.category.to_s }
+
+        subject { described_class.new(work_item, user, new_status).execute }
+      end
+
       context 'when work item has no current status' do
         it 'creates a new status record with correct status' do
           expect { service.execute }.to change { WorkItems::Statuses::CurrentStatus.count }.by(1)

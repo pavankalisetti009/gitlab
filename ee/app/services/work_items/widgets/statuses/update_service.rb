@@ -4,6 +4,8 @@ module WorkItems
   module Widgets
     module Statuses
       class UpdateService
+        include Gitlab::InternalEventsTracking
+
         def initialize(work_item, current_user, status)
           @work_item = ensure_work_item(work_item)
           @current_user = current_user
@@ -16,6 +18,16 @@ module WorkItems
 
           update_work_item_status
           create_system_note
+
+          track_internal_event(
+            'change_work_item_status_value',
+            namespace: work_item.project&.namespace || work_item.namespace,
+            project: work_item.project,
+            user: current_user,
+            additional_properties: {
+              label: status.category.to_s
+            }
+          )
         end
 
         private
