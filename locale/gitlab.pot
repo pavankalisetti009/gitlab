@@ -41492,6 +41492,9 @@ msgstr ""
 msgid "No more than %{max_frameworks} compliance frameworks can be updated at the same time."
 msgstr ""
 
+msgid "No more than %{max_work_items} work items can be loaded at the same time"
+msgstr ""
+
 msgid "No more than %{max_work_items} work items can be modified at the same time."
 msgstr ""
 
