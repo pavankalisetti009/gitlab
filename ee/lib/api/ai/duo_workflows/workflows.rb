@@ -39,14 +39,21 @@ module API
           end
 
           def start_workflow_params(workflow_id)
-            oauth_token = params[:use_service_account] ? composite_identity_token : gitlab_oauth_token
+            if Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
+              use_service_account = true
+              oauth_token = composite_identity_token
+            else
+              use_service_account = false
+              oauth_token = gitlab_oauth_token
+            end
+
             {
               goal: params[:goal],
               workflow_definition: params[:workflow_definition],
               workflow_id: workflow_id,
               workflow_oauth_token: oauth_token.plaintext_token,
               workflow_service_token: duo_workflow_token[:token],
-              use_service_account: params[:use_service_account],
+              use_service_account: use_service_account,
               source_branch: params[:source_branch],
               workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
             }
@@ -87,7 +94,7 @@ module API
           end
 
           def create_workflow_params
-            declared_params(include_missing: false).except(:start_workflow, :use_service_account, :source_branch)
+            declared_params(include_missing: false).except(:start_workflow, :source_branch)
           end
 
           params :workflow_params do
@@ -112,9 +119,6 @@ module API
               desc: 'When this is enabled Duo Workflow may stop to ask the user questions before proceeding. ' \
                 'When it is disabled Duo Workflow will always just run through the workflow without ever asking ' \
                 'for user input. Defaults to true.',
-              documentation: { example: true }
-            optional :use_service_account, type: Boolean,
-              desc: 'Optional parameter to start the workflow CI pipeline using a service account.',
               documentation: { example: true }
             optional :image, type: String, desc: 'Container image to use for running the workflow in CI pipeline.',
               documentation: { example: 'registry.gitlab.com/gitlab-org/duo-workflow/custom-image:latest' }

@@ -15,6 +15,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let(:pre_approved_agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
   let(:workflow_definition) { 'software_development' }
   let(:allow_agent_to_request_user) { false }
+  let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
 
   before_all do
     group.add_developer(user)
@@ -24,7 +25,20 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
     # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
     allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+    allow_next_instance_of(::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService) do |service|
+      allow(service).to receive(:execute).and_return({
+        status: :success,
+        oauth_access_token: instance_double('Doorkeeper::AccessToken',
+          plaintext_token: 'oauth_token')
+      })
+    end
     # rubocop:enable RSpec/AnyInstanceOf
+
+    ::Ai::Setting.instance.update!(
+      duo_workflow_service_account_user_id: service_account.id
+    )
+    project.update!(allow_composite_identities_to_run_pipelines: true)
+    project.reload
   end
 
   describe 'POST /ai/duo_workflows/workflows' do
@@ -350,29 +364,15 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         end
       end
 
-      context 'when use_service_account is set to true' do
-        let(:params) do
-          {
-            project_id: project.id,
-            start_workflow: true,
-            goal: 'Print hello world',
-            use_service_account: true
-          }
-        end
+      context 'when duo_workflow_use_composite_identity feature flag is disabled' do
+        it 'uses regular OAuth token' do
+          stub_feature_flags(duo_workflow_use_composite_identity: false)
+          expect(::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService).not_to receive(:new)
+          expect(::Ai::DuoWorkflows::CreateOauthAccessTokenService).to receive(:new)
 
-        let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
+          post api(path, user), params: params
 
-        before do
-          allow_next_instance_of(::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService) do |service|
-            allow(service).to receive(:execute).and_return({
-              status: :success,
-              oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token')
-            })
-          end
-          ::Ai::Setting.instance.update!(
-            duo_workflow_service_account_user_id: service_account.id
-          )
-          project.update!(allow_composite_identities_to_run_pipelines: true)
+          expect(response).to have_gitlab_http_status(:created)
         end
 
         it_behaves_like 'starts duo workflow execution in CI'
