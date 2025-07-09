@@ -1,5 +1,5 @@
 <script>
-import { DATA_VIZ_BLUE_500 } from '@gitlab/ui/src/tokens/build/js/tokens';
+import { DATA_VIZ_BLUE_500 } from '@gitlab/ui/dist/tokens/build/js/tokens';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
 import { GlAlert, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import ChartTooltipText from 'ee/analytics/shared/components/chart_tooltip_text.vue';
