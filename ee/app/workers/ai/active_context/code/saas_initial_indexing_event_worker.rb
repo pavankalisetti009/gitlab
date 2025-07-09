@@ -40,7 +40,11 @@ module Ai
 
             next if records_to_insert.empty?
 
-            Ai::ActiveContext::Code::EnabledNamespace.insert_all(records_to_insert)
+            Ai::ActiveContext::Code::EnabledNamespace.insert_all(
+              records_to_insert,
+              unique_by: %w[connection_id namespace_id]
+            )
+
             total_count += records_to_insert.size
           end
 

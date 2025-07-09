@@ -14,8 +14,13 @@ module Ai
           },
           index_repository: {
             period: 1.hour,
-            if: -> { ::Ai::ActiveContext::Code::Repository.pending_with_active_connection.exists? },
+            if: -> { ::Ai::ActiveContext::Code::Repository.pending.with_active_connection.exists? },
             execute: -> { RepositoryIndexService.enqueue_pending_jobs }
+          },
+          mark_repository_as_ready: {
+            period: 1.hour,
+            if: -> { ::Ai::ActiveContext::Code::Repository.embedding_indexing_in_progress.exists? },
+            dispatch: { event: MarkRepositoryAsReadyEvent }
           },
           saas_initial_indexing: {
             period: 1.hour,

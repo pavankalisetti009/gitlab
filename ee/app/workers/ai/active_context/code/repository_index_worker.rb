@@ -29,7 +29,7 @@ module Ai
           return false unless repository&.pending?
 
           in_lock(lease_key(id), ttl: LEASE_TTL, sleep_sec: LEASE_TRY_AFTER, retries: LEASE_RETRIES) do
-            IndexingService.execute(repository)
+            InitialIndexingService.execute(repository)
           end
         rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError
           self.class.perform_in(RETRY_IN_IF_LOCKED, id)

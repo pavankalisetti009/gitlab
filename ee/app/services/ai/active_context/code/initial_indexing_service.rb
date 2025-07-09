@@ -3,7 +3,7 @@
 module Ai
   module ActiveContext
     module Code
-      class IndexingService
+      class InitialIndexingService
         def self.execute(repository)
           new(repository).execute
         end
@@ -16,8 +16,12 @@ module Ai
           repository.code_indexing_in_progress!
           indexed_ids = run_indexer!
 
+          return unless indexed_ids.any?
+
           repository.embedding_indexing_in_progress!
           enqueue_refs!(indexed_ids)
+
+          set_highest_enqueued_item!(indexed_ids.last)
         rescue StandardError => e
           repository.update!(state: :failed, last_error: e.message)
           raise e
@@ -31,6 +35,13 @@ module Ai
 
         def enqueue_refs!(ids)
           ::Ai::ActiveContext::Collections::Code.track_refs!(hashes: ids, routing: repository.project_id)
+        end
+
+        def set_highest_enqueued_item!(item)
+          repository.update!(
+            initial_indexing_last_queued_item: item,
+            indexed_at: Time.current
+          )
         end
 
         attr_reader :repository

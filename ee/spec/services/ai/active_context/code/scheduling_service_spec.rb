@@ -240,7 +240,7 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
       context 'when there are pending namespaces to process' do
         before do
           allow(Ai::ActiveContext::Code::EnabledNamespace)
-            .to receive_message_chain(:with_active_connection, :exists?).and_return(true)
+            .to receive_message_chain(:pending, :with_active_connection, :exists?).and_return(true)
         end
 
         it 'publishes ProcessPendingEnabledNamespaceEvent' do
@@ -254,7 +254,7 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
       context 'when there are no pending namespaces to process' do
         before do
           allow(Ai::ActiveContext::Code::EnabledNamespace)
-            .to receive_message_chain(:with_active_connection, :exists?).and_return(false)
+            .to receive_message_chain(:pending, :with_active_connection, :exists?).and_return(false)
         end
 
         it 'does not publish the event' do
@@ -269,7 +269,7 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
       context 'when there are repositories to process' do
         before do
           allow(::Ai::ActiveContext::Code::Repository)
-            .to receive_message_chain(:pending_with_active_connection, :exists?).and_return(true)
+            .to receive_message_chain(:pending, :with_active_connection, :exists?).and_return(true)
         end
 
         it 'enqueues jobs via RepositoryIndexService' do
@@ -282,7 +282,7 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
       context 'when there are no repositories to process' do
         before do
           allow(::Ai::ActiveContext::Code::Repository)
-            .to receive_message_chain(:pending_with_active_connection, :exists?).and_return(false)
+            .to receive_message_chain(:pending, :with_active_connection, :exists?).and_return(false)
         end
 
         it 'does not enqueue jobs via RepositoryIndexService' do
