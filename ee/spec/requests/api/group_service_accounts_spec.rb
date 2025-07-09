@@ -256,6 +256,19 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         expect(json_response['username']).to eq(params[:username])
       end
 
+      context 'when email is provided' do
+        let(:params) { { email: 'test@test.com' } }
+
+        it 'only updates the unconfirmed email' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response.keys).to match_array(%w[id name username email public_email unconfirmed_email])
+          expect(json_response['unconfirmed_email']).to eq('test@test.com')
+          expect(json_response['email']).not_to eq('test@test.com')
+        end
+      end
+
       context 'when user with the username already exists' do
         let(:existing_user) { create(:user, username: 'existing_user') }
         let(:params) { { username: existing_user.username } }
@@ -568,6 +581,24 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
         context 'when saas', :saas do
           it_behaves_like "service account user update"
+
+          context 'when group has a verified domain' do
+            before do
+              stub_licensed_features(service_accounts: true, domain_verification: true)
+              project = create(:project, group: group)
+              create(:pages_domain, project: project, domain: 'test.com')
+            end
+
+            let(:params) { super().merge(email: 'test@test.com') }
+
+            it 'updates the email' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['email']).to eq('test@test.com')
+              expect(json_response.keys).to match_array(%w[id name username email public_email])
+            end
+          end
         end
       end
 

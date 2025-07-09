@@ -2,56 +2,48 @@
 
 module Namespaces
   module ServiceAccounts
-    class UpdateService
-      attr_reader :current_user, :user, :params
+    class UpdateService < ::Users::ServiceAccounts::UpdateService
+      extend ::Gitlab::Utils::Override
 
-      ALLOWED_PARAMS = [:username, :name].freeze
+      attr_reader :group_id
 
       def initialize(current_user, user, params = {})
-        @current_user = current_user
-        @user = user
-        @params = params.slice(*ALLOWED_PARAMS)
+        super
+        @group_id = params[:group_id]
       end
 
+      override :execute
       def execute
-        return error(_('User is not a service account'), :bad_request) unless user.service_account?
+        return error(error_messages[:group_not_found], :not_found) unless group.present?
+        return error(error_messages[:invalid_group_id], :bad_request) unless group.id == user.provisioned_by_group&.id
 
-        unless can_update_service_account?
-          return error(
-            s_('ServiceAccount|You are not authorized to update service accounts in this namespace.'),
-            :forbidden
-          )
-        end
-
-        user_update = update_user
-
-        if user_update[:status] == :success
-          success
-        else
-          error(user_update[:message], :bad_request)
-        end
+        super
       end
 
       private
 
+      override :can_update_service_account?
       def can_update_service_account?
         Ability.allowed?(current_user, :admin_service_accounts, user.provisioned_by_group)
       end
 
-      def update_user
-        Users::UpdateService.new(current_user, update_params.merge(user: user, force_name_change: true)).execute
+      def group
+        @_group ||= ::Group.find_by_id(@group_id)
       end
 
-      def update_params
-        params
+      override :skip_confirmation?
+      def skip_confirmation?
+        super || group.owner_of_email?(params[:email])
       end
 
-      def error(message, reason)
-        ServiceResponse.error(message: message, reason: reason)
-      end
-
-      def success
-        ServiceResponse.success(message: _('Service account was successfully updated.'), payload: { user: user })
+      override :error_messages
+      def error_messages
+        super.merge(
+          no_permission:
+            s_('ServiceAccount|You are not authorized to update service accounts in this namespace.'),
+          invalid_group_id: s_('ServiceAccount|Group ID provided does not match the service account\'s group ID.'),
+          group_not_found: s_('ServiceAccount|Group with the provided ID not found.')
+        )
       end
     end
   end

@@ -135,12 +135,13 @@ module API
           requires :user_id, type: Integer, desc: 'The ID of the service account user'
           optional :name, type: String, desc: 'Name of the user'
           optional :username, type: String, desc: 'Username of the user'
+          optional :email, type: String, desc: 'Custom email address for the user'
         end
 
         patch ":user_id" do
           validate_service_account_user
 
-          update_params = declared_params(include_missing: false)
+          update_params = declared_params(include_missing: false).merge({ group_id: params[:id] })
 
           response = ::Namespaces::ServiceAccounts::UpdateService
                        .new(current_user, user, update_params)
