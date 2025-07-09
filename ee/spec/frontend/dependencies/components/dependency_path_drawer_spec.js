@@ -2,7 +2,6 @@ import {
   GlDrawer,
   GlTruncateText,
   GlBadge,
-  GlAlert,
   GlCollapsibleListbox,
   GlSkeletonLoader,
   GlKeysetPagination,
@@ -64,7 +63,6 @@ describe('DependencyPathDrawer component', () => {
   const findDrawer = () => wrapper.findComponent(GlDrawer);
   const findTitle = () => wrapper.findByTestId('dependency-path-drawer-title');
   const findHeader = () => wrapper.findByTestId('dependency-path-drawer-header');
-  const findAlert = () => wrapper.findComponent(GlAlert);
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findAllListItem = () => wrapper.findAll('li');
   const getTruncateText = (index) => findAllListItem().at(index).findComponent(GlTruncateText);
@@ -404,25 +402,6 @@ describe('DependencyPathDrawer component', () => {
           after: null,
         });
       });
-    });
-  });
-
-  describe('drawer footer warning', () => {
-    it('displays the warning message when limitExceeded', () => {
-      createComponent({ props: { limitExceeded: true } });
-
-      const alert = findAlert();
-
-      expect(alert.props()).toMatchObject({ variant: 'warning' });
-      expect(alert.text()).toBe(
-        'Resolve the vulnerability in these dependencies to see additional paths. GitLab shows a maximum of 20 dependency paths per vulnerability.',
-      );
-    });
-
-    it('does not display the warning message by default', () => {
-      createComponent();
-
-      expect(findAlert().exists()).toBe(false);
     });
   });
 });

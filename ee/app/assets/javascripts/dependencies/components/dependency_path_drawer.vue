@@ -3,7 +3,6 @@ import {
   GlDrawer,
   GlTruncateText,
   GlBadge,
-  GlAlert,
   GlCollapsibleListbox,
   GlSkeletonLoader,
   GlKeysetPagination,
@@ -22,7 +21,6 @@ export default {
     GlDrawer,
     GlTruncateText,
     GlBadge,
-    GlAlert,
     GlCollapsibleListbox,
     GlSkeletonLoader,
     GlKeysetPagination,
@@ -52,11 +50,6 @@ export default {
       type: Array,
       required: false,
       default: () => [],
-    },
-    limitExceeded: {
-      type: Boolean,
-      required: false,
-      default: false,
     },
     showDrawer: {
       type: Boolean,
@@ -239,21 +232,5 @@ export default {
         />
       </div>
     </div>
-    <template #footer>
-      <gl-alert v-if="limitExceeded" :dismissible="false" variant="warning">
-        {{ $options.i18n.maxDepthWarning }}
-      </gl-alert>
-    </template>
   </gl-drawer>
 </template>
-
-<!-- A bugfix for gitlab-ui also introduced a problem with the stickness of the footer. 
-See https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/merge_requests/4512#note_2593807401
-Until it's fixed, this line fixes it for this drawer specifically.  -->
-<style>
-.dependency-path-drawer {
-  .gl-drawer-body {
-    min-height: auto;
-  }
-}
-</style>

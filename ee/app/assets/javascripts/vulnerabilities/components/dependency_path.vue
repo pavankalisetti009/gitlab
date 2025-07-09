@@ -23,11 +23,6 @@ export default {
       required: false,
       default: () => [],
     },
-    dependencyPathsLimitExceeded: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   data() {
     return {
@@ -66,7 +61,6 @@ export default {
         :show-drawer="isDrawerOpen"
         :component="component"
         :dropdown-items="dropdownItems"
-        :limit-exceeded="dependencyPathsLimitExceeded"
         @close="closeDrawer"
       />
     </mounting-portal>

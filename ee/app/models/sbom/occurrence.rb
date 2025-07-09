@@ -203,6 +203,21 @@ module Sbom
       .where(occurrences_vulnerabilities: { vulnerability_id: vulnerability_id })
     end
 
+    scope :with_dependency_paths_existence, -> {
+      select(
+        arel_table[Arel.star],
+        Arel::Nodes::As.new(
+          Arel::Nodes::Exists.new(
+            Sbom::GraphPath.arel_table
+              .project(1)
+              .where(Sbom::GraphPath.arel_table[:descendant_id].eq(arel_table[:id]))
+              .take(1)
+          ),
+          Arel.sql('has_dependency_paths')
+        )
+      )
+    }
+
     def self.arel_grouping_by_traversal_ids_and_id
       arel_table.grouping([arel_table['traversal_ids'], arel_table['id']])
     end
@@ -243,12 +258,18 @@ module Sbom
     end
     # rubocop:enable Performance/AncestorsInclude
 
-    private
-
     def has_dependency_paths?
-      Sbom::GraphPath.exists?(descendant_id: id)
+      # has_dependency_paths is added to the model as a calculated attribute
+      # in with_dependency_paths_existence scope
+      if attributes.key?('has_dependency_paths')
+        attributes['has_dependency_paths']
+      else
+        Sbom::GraphPath.exists?(descendant_id: id)
+      end
     end
     strong_memoize_attr :has_dependency_paths?
+
+    private
 
     def input_file_blob_path
       return unless input_file_path.present?
