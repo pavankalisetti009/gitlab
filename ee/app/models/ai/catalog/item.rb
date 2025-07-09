@@ -17,9 +17,11 @@ module Ai
       has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
       AGENT_TYPE = :agent
+      FLOW_TYPE = :flow
 
       enum :item_type, {
-        AGENT_TYPE => 1
+        AGENT_TYPE => 1,
+        FLOW_TYPE => 2
       }
     end
   end

@@ -21887,6 +21887,36 @@ An AI catalog agent version.
 | <a id="aicatalogagentversionuserprompt"></a>`userPrompt` | [`String`](#string) | User prompt for the agent. |
 | <a id="aicatalogagentversionversionname"></a>`versionName` | [`String`](#string) | Version name of the item version. |
 
+### `AiCatalogFlow`
+
+An AI catalog flow.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowcreatedat"></a>`createdAt` | [`Time!`](#time) | Date of creation. |
+| <a id="aicatalogflowdescription"></a>`description` | [`String!`](#string) | Description of the item. |
+| <a id="aicatalogflowid"></a>`id` | [`ID!`](#id) | ID of the item. |
+| <a id="aicatalogflowitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
+| <a id="aicatalogflowname"></a>`name` | [`String!`](#string) | Name of the item. |
+| <a id="aicatalogflowproject"></a>`project` | [`Project`](#project) | Project for the item. |
+| <a id="aicatalogflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
+
+### `AiCatalogFlowVersion`
+
+An AI catalog flow version.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowversioncreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item version was created. |
+| <a id="aicatalogflowversionid"></a>`id` | [`ID!`](#id) | ID of the item version. |
+| <a id="aicatalogflowversionpublishedat"></a>`publishedAt` | [`Time`](#time) | Timestamp of when the item version was published. |
+| <a id="aicatalogflowversionupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item version was updated. |
+| <a id="aicatalogflowversionversionname"></a>`versionName` | [`String`](#string) | Version name of the item version. |
+
 ### `AiConversationsThread`
 
 Conversation thread of the AI feature.
@@ -44350,6 +44380,7 @@ Possible item types for AI items.
 | Value | Description |
 | ----- | ----------- |
 | <a id="aicatalogitemtypeagent"></a>`AGENT` | Agent. |
+| <a id="aicatalogitemtypeflow"></a>`FLOW` | Flow. |
 
 ### `AiConversationsThreadsConversationType`
 
@@ -49914,6 +49945,7 @@ An AI catalog item.
 Implementations:
 
 - [`AiCatalogAgent`](#aicatalogagent)
+- [`AiCatalogFlow`](#aicatalogflow)
 
 ##### Fields
 
@@ -49934,6 +49966,7 @@ An AI catalog item version.
 Implementations:
 
 - [`AiCatalogAgentVersion`](#aicatalogagentversion)
+- [`AiCatalogFlowVersion`](#aicatalogflowversion)
 
 ##### Fields
 

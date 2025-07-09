@@ -7,7 +7,8 @@ module Types
         include Types::BaseInterface
 
         RESOLVE_TYPES = {
-          ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentType
+          ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentType,
+          ::Ai::Catalog::Item::FLOW_TYPE => ::Types::Ai::Catalog::FlowType
         }.freeze
 
         graphql_name 'AiCatalogItem'
@@ -29,6 +30,7 @@ module Types
           description: 'Versions of the item.'
 
         orphan_types ::Types::Ai::Catalog::AgentType
+        orphan_types ::Types::Ai::Catalog::FlowType
 
         def self.resolve_type(item, _context)
           RESOLVE_TYPES[item.item_type.to_sym] or raise "Unknown catalog item type: #{item.item_type}" # rubocop:disable Style/AndOr -- Syntax error when || is used

@@ -7,7 +7,8 @@ module Types
         include Types::BaseInterface
 
         RESOLVE_TYPES = {
-          ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentVersionType
+          ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentVersionType,
+          ::Ai::Catalog::Item::FLOW_TYPE => ::Types::Ai::Catalog::FlowVersionType
         }.freeze
 
         graphql_name 'AiCatalogItemVersion'
@@ -24,6 +25,7 @@ module Types
           description: 'Version name of the item version.'
 
         orphan_types ::Types::Ai::Catalog::AgentVersionType
+        orphan_types ::Types::Ai::Catalog::FlowVersionType
 
         def self.resolve_type(version, _context)
           item_type = version.item.item_type.to_sym
