@@ -3,20 +3,37 @@
 require 'spec_helper'
 
 RSpec.describe Types::Sbom::DependencyInterface, feature_category: :dependency_management do
+  include GraphqlHelpers
+
   let(:fields) do
-    %i[id name version componentVersion packager location licenses reachability vulnerability_count vulnerabilities]
+    %i[
+      id
+      name
+      version
+      componentVersion
+      packager
+      location
+      licenses
+      reachability
+      vulnerability_count
+      vulnerabilities
+      dependencyPaths
+    ]
   end
 
   let(:dependency) { instance_double(::Sbom::Occurrence) }
+
   let(:interface) do
     Class.new do
       include Types::Sbom::DependencyInterface
       attr_reader :object
+      attr_reader :context
 
-      def initialize(object)
+      def initialize(object, context)
         @object = object
+        @context = context
       end
-    end.new(dependency)
+    end.new(dependency, query_context(user: User.new))
   end
 
   it { expect(described_class).to have_graphql_fields(fields) }
@@ -68,6 +85,34 @@ RSpec.describe Types::Sbom::DependencyInterface, feature_category: :dependency_m
 
         expect(interface.vulnerability_count).to eq(0)
       end
+    end
+  end
+
+  describe '#dependency_paths' do
+    let_it_be(:project) { build(:project) }
+    let(:resolver) { instance_double(::Resolvers::Sbom::DependencyPathsResolver) }
+    let(:ancestor) { instance_double(::Sbom::Occurrence) }
+    let(:dependency_paths) do
+      [
+        { path: [ancestor], is_cyclic: false }
+      ]
+    end
+
+    it 'returns dependency paths' do
+      allow(dependency).to receive_messages(
+        project: project,
+        to_global_id: 'globalID'
+      )
+
+      expect(::Resolvers::Sbom::DependencyPathsResolver).to receive(:new)
+        .with(object: project, context: interface.context, field: nil)
+        .and_return(resolver)
+
+      expect(resolver).to receive(:resolve)
+        .with(occurrence: 'globalID')
+        .and_return(dependency_paths)
+
+      expect(interface.dependency_paths).to eq(dependency_paths)
     end
   end
 end

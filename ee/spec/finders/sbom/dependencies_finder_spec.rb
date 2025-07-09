@@ -25,7 +25,7 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
   end
 
   shared_examples 'filter and sorting' do
-    subject(:dependencies) { described_class.new(project_or_group, current_user: nil, params: params).execute }
+    subject(:dependencies) { described_class.new(dependable, current_user: nil, params: params).execute }
 
     context 'without params' do
       let_it_be(:params) { {} }
@@ -251,7 +251,7 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
   end
 
   context 'with project' do
-    let(:project_or_group) { project }
+    let(:dependable) { project }
 
     include_examples 'filter and sorting'
 
@@ -298,16 +298,28 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
   end
 
   context 'with group' do
-    let(:project_or_group) { group }
+    let(:dependable) { group }
 
     include_examples 'filter and sorting'
     include_examples 'group with project_id filters'
   end
 
   context 'with subgroup' do
-    let(:project_or_group) { subgroup }
+    let(:dependable) { subgroup }
 
     include_examples 'filter and sorting'
     include_examples 'group with project_id filters'
+  end
+
+  context 'with vulnerability' do
+    let(:dependable) { create(:vulnerability, project: project) }
+
+    before do
+      occurrence_1.vulnerabilities << dependable
+      occurrence_2.vulnerabilities << dependable
+      occurrence_3.vulnerabilities << dependable
+    end
+
+    include_examples 'filter and sorting'
   end
 end

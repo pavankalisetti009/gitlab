@@ -39,6 +39,19 @@ module Types
         resolver: ::Resolvers::Sbom::DependencyVulnerabilitiesResolver,
         description: 'Vulnerabilities associated with the dependency.'
 
+      field :dependency_paths, ::Types::Sbom::DependencyPathPage,
+        null: true, experiment: { milestone: '18.2' },
+        authorize: :read_dependency,
+        description: 'Ancestor dependency paths for a dependency. \
+      Returns `null` if `dependency_graph_graphql` feature flag is disabled.' do
+        argument :after, String, required: false,
+          description: "Fetch paths after the cursor."
+        argument :before, String, required: false,
+          description: "Fetch paths before the cursor."
+        argument :limit, Integer, required: false,
+          description: "Number of paths to fetch."
+      end
+
       # Returns nil when the value is not in the predefined PACKAGE_MANAGERS list
       # This will prevent GraphQL type errors for projects with unknown package managers
       def packager
@@ -48,6 +61,13 @@ module Types
 
       def vulnerability_count
         object.vulnerabilities&.size || 0
+      end
+
+      def dependency_paths(**args)
+        # Inject the occurrence argument with the current object's ID
+        args[:occurrence] = object.to_global_id
+        ::Resolvers::Sbom::DependencyPathsResolver.new(object: object.project, context: context,
+          field: nil).resolve(**args)
       end
     end
   end
