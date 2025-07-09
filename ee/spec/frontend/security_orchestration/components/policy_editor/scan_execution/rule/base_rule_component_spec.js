@@ -284,7 +284,25 @@ describe('BaseRuleComponent', () => {
 
   describe('pipeline source dropdown', () => {
     describe('rendering', () => {
-      it('displays pipeline source dropdown', () => {
+      it('renders for branch type that does not target other branches', () => {
+        createComponent({
+          props: {
+            initRule: {
+              type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+              branch_type: ALL_PROTECTED_BRANCHES,
+            },
+          },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+
+        expect(findPipelineSourceSelector().exists()).toBe(true);
+        expect(findPipelineSourceSelector().props()).toEqual({
+          allSources: true,
+          pipelineSources: {},
+        });
+      });
+
+      it('renders for branch type that targets other branches', () => {
         createComponent({
           props: {
             initRule: {
@@ -296,10 +314,14 @@ describe('BaseRuleComponent', () => {
         });
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
+        expect(findPipelineSourceSelector().props()).toEqual({
+          allSources: false,
+          pipelineSources: {},
+        });
       });
     });
 
-    describe('pipeline source selection', () => {
+    describe('selection', () => {
       it('updates the rule when pipeline sources are selected', async () => {
         createComponent({
           props: {
@@ -318,7 +340,7 @@ describe('BaseRuleComponent', () => {
     });
 
     describe('with feature flag disabled', () => {
-      it('does not show pipeline source selector when feature flag is disabled', () => {
+      it('does not show when feature flag is disabled', () => {
         createComponent({
           props: {
             initRule: {

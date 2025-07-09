@@ -1,14 +1,18 @@
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PipelineSourceSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/pipeline_source_selector.vue';
-import { PIPELINE_SOURCE_LISTBOX_OPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+import {
+  PIPELINE_SOURCE_LISTBOX_OPTIONS,
+  TARGETS_BRANCHES_PIPELINE_SOURCE_LISTBOX_OPTIONS,
+} from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 
 describe('PipelineSourceSelector', () => {
   let wrapper;
 
-  const createComponent = (including = []) => {
+  const createComponent = ({ allSources = true, including = [] } = {}) => {
     wrapper = shallowMountExtended(PipelineSourceSelector, {
       propsData: {
+        allSources,
         pipelineSources: { including },
       },
     });
@@ -17,7 +21,7 @@ describe('PipelineSourceSelector', () => {
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
 
   describe('rendering', () => {
-    it('renders the collapsible listbox with correct props', () => {
+    it('renders the dropdown with all sources by default', () => {
       createComponent();
 
       const listbox = findListbox();
@@ -25,6 +29,23 @@ describe('PipelineSourceSelector', () => {
       expect(listbox.props('multiple')).toBe(true);
       expect(listbox.props('items')).toEqual(PIPELINE_SOURCE_LISTBOX_OPTIONS);
       expect(listbox.props('selected')).toEqual([]);
+    });
+
+    it('renders the dropdown with limited sources based on `allSources` prop', () => {
+      createComponent({ allSources: false });
+
+      const listbox = findListbox();
+      expect(listbox.exists()).toBe(true);
+      expect(listbox.props('multiple')).toBe(true);
+      expect(listbox.props('items')).toEqual(TARGETS_BRANCHES_PIPELINE_SOURCE_LISTBOX_OPTIONS);
+      expect(listbox.props('selected')).toEqual([]);
+    });
+
+    it('renders selected sources in the dropdown', () => {
+      const selectedSources = ['web', 'api'];
+      createComponent({ including: selectedSources });
+
+      expect(findListbox().props('selected')).toEqual(selectedSources);
     });
 
     it('displays placeholder text when no sources are selected', () => {
@@ -35,7 +56,7 @@ describe('PipelineSourceSelector', () => {
 
     it('displays source name when one source is selected', () => {
       const selectedSource = 'web';
-      createComponent([selectedSource]);
+      createComponent({ including: [selectedSource] });
 
       // Find the text representation of the selected source
       const sourceText = PIPELINE_SOURCE_LISTBOX_OPTIONS.find(
@@ -46,7 +67,7 @@ describe('PipelineSourceSelector', () => {
 
     it('displays multiple source names when multiple sources are selected', () => {
       const selectedSources = ['web', 'api'];
-      createComponent(selectedSources);
+      createComponent({ including: selectedSources });
 
       // The toggle text should contain both source names
       const toggleText = findListbox().props('toggleText');
@@ -62,7 +83,7 @@ describe('PipelineSourceSelector', () => {
 
     it('truncates display text when more than 2 sources are selected', () => {
       const selectedSources = ['api', 'push', 'web'];
-      createComponent(selectedSources);
+      createComponent({ including: selectedSources });
 
       const toggleText = findListbox().props('toggleText');
 
@@ -92,7 +113,7 @@ describe('PipelineSourceSelector', () => {
     });
 
     it('emits update event with multiple selected sources', () => {
-      createComponent(['web']);
+      createComponent({ including: ['web'] });
 
       const selectedSources = ['web', 'api'];
       findListbox().vm.$emit('select', selectedSources);
@@ -104,7 +125,7 @@ describe('PipelineSourceSelector', () => {
     });
 
     it('emits update event with empty array when all sources are deselected', () => {
-      createComponent(['web', 'api']);
+      createComponent({ including: ['web', 'api'] });
 
       findListbox().vm.$emit('select', []);
 
@@ -112,22 +133,6 @@ describe('PipelineSourceSelector', () => {
       expect(wrapper.emitted('select')[0][0]).toEqual({
         pipeline_sources: { including: [] },
       });
-    });
-  });
-
-  describe('props handling', () => {
-    it('passes selected sources to the listbox', () => {
-      const selectedSources = ['web', 'api'];
-      createComponent(selectedSources);
-
-      expect(findListbox().props('selected')).toEqual(selectedSources);
-    });
-
-    it('handles empty pipelineSources array', () => {
-      createComponent([]);
-
-      expect(findListbox().props('selected')).toEqual([]);
-      expect(findListbox().props('toggleText')).toBe('All pipeline sources');
     });
   });
 });

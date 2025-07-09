@@ -72,6 +72,16 @@ export const ERROR_MESSAGE_MAP = {
   [POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY]: DAST_SCANNERS_PARSING_ERROR,
 };
 
+// Use PIPELINE_SOURCE_OPTIONS as part of https://gitlab.com/gitlab-org/gitlab/-/issues/554272
+export const TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS = {
+  merge_request_event: s__('SecurityOrchestration|Merge request pipeline'),
+  push: s__('SecurityOrchestration|Code push'),
+};
+
+export const TARGETS_BRANCHES_PIPELINE_SOURCE_LISTBOX_OPTIONS = Object.entries(
+  TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS,
+).map(([value, text]) => ({ value, text }));
+
 export const PIPELINE_SOURCE_OPTIONS = {
   api: s__('SecurityOrchestration|API request'),
   chat: s__('SecurityOrchestration|ChatOps command'),
