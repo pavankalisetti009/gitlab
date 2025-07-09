@@ -486,4 +486,111 @@ RSpec.describe Note, feature_category: :team_planning do
       expect(build(:note_on_compliance_violation).noteable_ability_name).to eq('compliance_violations_report')
     end
   end
+
+  describe '.with_noteable_type' do
+    let_it_be(:issue) { create(:issue, project: create(:project)) }
+    let_it_be(:epic) { create(:epic) }
+
+    let_it_be(:note1) { create(:note, noteable: issue, project: issue.project) }
+    let_it_be(:note2) { create(:note, noteable: epic, project: nil) }
+
+    subject { described_class.with_noteable_type(noteable_type) }
+
+    context 'when noteable_type matches some notes' do
+      let(:noteable_type) { 'Issue' }
+
+      it { is_expected.to contain_exactly(note1) }
+    end
+
+    context 'when noteable_type matches no notes' do
+      let(:noteable_type) { 'MergeRequest' }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '.with_noteable_ids' do
+    let_it_be(:issue1) { create(:issue, project: create(:project)) }
+    let_it_be(:issue2) { create(:issue, project: create(:project)) }
+
+    let_it_be(:note1) { create(:note, noteable: issue1, project: issue1.project) }
+    let_it_be(:note2) { create(:note, noteable: issue2, project: issue2.project) }
+    let_it_be(:note3) { create(:note, noteable: issue2, project: issue2.project) }
+
+    subject { described_class.with_noteable_ids(ids) }
+
+    context 'when some ids match notes' do
+      let(:ids) { [issue2.id] }
+
+      it { is_expected.to contain_exactly(note2, note3) }
+    end
+
+    context 'when no ids match notes' do
+      let(:ids) { [9999] }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '.with_note' do
+    let_it_be(:issue) { create(:issue, project: create(:project)) }
+    let_it_be(:note1) { create(:note, noteable: issue, project: issue.project, note: 'some specific text') }
+    let_it_be(:note2) { create(:note, noteable: issue, project: issue.project, note: 'another note') }
+
+    subject { described_class.with_note(search_text) }
+
+    context 'when note text matches' do
+      let(:search_text) { 'some specific text' }
+
+      it { is_expected.to contain_exactly(note1) }
+    end
+
+    context 'when note text does not match' do
+      let(:search_text) { 'not existing' }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '.distinct_on_noteable_id' do
+    let_it_be(:issue) { create(:issue, project: create(:project)) }
+    let_it_be(:note1) { create(:note, noteable: issue, project: issue.project, created_at: 2.days.ago) }
+    let_it_be(:note2) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago) }
+    let_it_be(:epic) { create(:epic) }
+    let_it_be(:note3) { create(:note, noteable: epic, project: nil) }
+
+    subject(:distinct_notes) { described_class.distinct_on_noteable_id }
+
+    it 'returns one note per noteable_id' do
+      noteable_ids = distinct_notes.map(&:noteable_id)
+
+      expect(noteable_ids).to match_array([issue.id, epic.id])
+    end
+
+    it 'returns any one note for noteable_id' do
+      notes_for_issue = distinct_notes.select { |note| note.noteable_id == issue.id }
+
+      expect(notes_for_issue.size).to eq(1)
+      expect([note1.id, note2.id]).to include(notes_for_issue.first.id)
+    end
+  end
+
+  describe '.order_by_noteable_latest_first' do
+    let_it_be(:issue) { create(:issue, project: create(:project)) }
+    let_it_be(:note1) { create(:note, noteable: issue, project: issue.project, created_at: 3.days.ago, id: 1) }
+    let_it_be(:note2) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago, id: 2) }
+    let_it_be(:note3) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago, id: 3) }
+
+    let_it_be(:epic) { create(:epic) }
+    let_it_be(:note4) { create(:note, noteable: epic, project: nil, created_at: 2.days.ago, id: 4) }
+
+    subject(:ordered_notes) { described_class.order_by_noteable_latest_first }
+
+    it 'orders notes by noteable_id ascending and created_at descending' do
+      grouped = ordered_notes.group_by(&:noteable_id)
+
+      expect(grouped[issue.id].map(&:id)).to eq([3, 2, 1])
+      expect(grouped[epic.id].map(&:id)).to eq([4])
+    end
+  end
 end

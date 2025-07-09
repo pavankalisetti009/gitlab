@@ -12,11 +12,8 @@ RSpec.describe 'Google Analytics 4 content security policy', feature_category: :
   let(:script_src) { ['*.googletagmanager.com'] }
   let(:connect_and_img_src) do
     [
-      '*.googletagmanager.com',
-      '*.google-analytics.com',
-      '*.analytics.google.com',
-      '*.g.doubleclick.net',
-      '*.analytics.gitlab.com'
+      '*.googletagmanager.com', # Google tag manager
+      '*.analytics.gitlab.com'  # Analytics server
     ]
   end
 
@@ -36,6 +33,8 @@ RSpec.describe 'Google Analytics 4 content security policy', feature_category: :
     expect(find_csp_directive('connect-src', header: csp_header)).to include(*connect_and_img_src)
 
     expect(find_csp_directive('img-src', header: csp_header)).to include(*connect_and_img_src)
+
+    expect(find_csp_directive('frame-src', header: csp_header)).to include(*connect_and_img_src)
   end
 
   context 'when disabled' do
