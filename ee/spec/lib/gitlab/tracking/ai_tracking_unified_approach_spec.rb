@@ -17,7 +17,6 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
     before do
       allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
-      stub_feature_flags(unified_ai_events_write: true)
     end
 
     context 'for unknown event' do

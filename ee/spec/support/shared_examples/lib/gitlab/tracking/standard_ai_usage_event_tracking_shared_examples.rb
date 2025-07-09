@@ -17,17 +17,6 @@ RSpec.shared_examples 'standard ai usage event tracking' do
     Ai::UsageEvent.last
   end
 
-  context 'when `unified_ai_events_write` feature flag is disabled' do
-    before do
-      stub_feature_flags(unified_ai_events_write: false)
-    end
-
-    it 'does not call to unified approach at all' do
-      expect(Gitlab::Tracking::AiTracking::UnifiedApproach).not_to receive(:track_event)
-      track_event
-    end
-  end
-
   context 'with clickhouse not available' do
     before do
       allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
