@@ -23,7 +23,6 @@ module EE
       private
 
       def immutable_protection_rule
-        return if ::Feature.disabled?(:container_registry_immutable_tags, project)
         return unless project.licensed_feature_available?(:container_registry_immutable_tag_rules)
 
         project.container_registry_protection_tag_rules.detect do |rule|

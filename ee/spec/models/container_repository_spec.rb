@@ -187,14 +187,6 @@ RSpec.describe ContainerRepository, feature_category: :geo_replication do
 
         it_behaves_like 'checking mutable tag rules on a container repository'
       end
-
-      context 'when the feature flag `container_registry_immutable_tags` is disabled' do
-        before do
-          stub_feature_flags(container_registry_immutable_tags: false)
-        end
-
-        it_behaves_like 'checking mutable tag rules on a container repository'
-      end
     end
 
     context 'when there are no immutable tag rules' do

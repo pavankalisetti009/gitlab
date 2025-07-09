@@ -36,7 +36,6 @@ module EE
 
         def tag_immutable_patterns(project, actions)
           return unless project
-          return unless ::Feature.enabled?(:container_registry_immutable_tags, project)
           return unless project.licensed_feature_available?(:container_registry_immutable_tag_rules)
           return unless (actions & %w[push delete *]).any?
 

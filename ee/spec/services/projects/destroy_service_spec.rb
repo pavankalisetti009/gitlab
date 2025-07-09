@@ -472,14 +472,6 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
             it { is_expected.to be true }
           end
         end
-
-        context 'when the feature `container_registry_immutable_tags` is disabled' do
-          before do
-            stub_feature_flags(container_registry_immutable_tags: false)
-          end
-
-          it { is_expected.to be true }
-        end
       end
 
       context 'when there are no registry tags' do

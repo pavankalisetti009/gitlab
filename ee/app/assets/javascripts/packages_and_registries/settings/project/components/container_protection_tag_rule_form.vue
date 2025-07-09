@@ -1,6 +1,5 @@
 <script>
 import { GlFormGroup, GlFormRadio } from '@gitlab/ui';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import CeContainerProtectionTagRuleForm from '~/packages_and_registries/settings/project/components/container_protection_tag_rule_form.vue';
 
@@ -13,7 +12,7 @@ export default {
     GlFormGroup,
     GlFormRadio,
   },
-  mixins: [glFeatureFlagsMixin(), glAbilitiesMixin()],
+  mixins: [glAbilitiesMixin()],
   props: {
     ...CeContainerProtectionTagRuleForm.props,
     rule: {
@@ -33,10 +32,7 @@ export default {
       return this.tagRuleType === PROTECTED_RULE_TYPE;
     },
     canCreateImmutableTagRule() {
-      return (
-        this.glFeatures.containerRegistryImmutableTags &&
-        this.glAbilities.createContainerRegistryProtectionImmutableTagRule
-      );
+      return this.glAbilities.createContainerRegistryProtectionImmutableTagRule;
     },
     showProtectionType() {
       return this.canCreateImmutableTagRule && !this.rule;

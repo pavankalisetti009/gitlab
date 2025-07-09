@@ -62,8 +62,7 @@ module EE
         end
 
         def immutable_restriction?
-          ::Feature.enabled?(:container_registry_immutable_tags, project) &&
-            project.licensed_feature_available?(:container_registry_immutable_tag_rules)
+          project.licensed_feature_available?(:container_registry_immutable_tag_rules)
         end
       end
     end

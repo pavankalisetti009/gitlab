@@ -18,51 +18,35 @@ describe('Immutable Badge', () => {
   const findBadge = () => wrapper.findComponent(GlBadge);
   const findPopover = () => wrapper.findComponent(GlPopover);
 
-  const createComponent = (props = {}, flagState = true) => {
+  const createComponent = (props = {}) => {
     wrapper = shallowMount(ImmutableBadge, {
       propsData: {
         ...defaultProps,
         ...props,
       },
-      provide: {
-        glFeatures: {
-          containerRegistryImmutableTags: flagState,
-        },
-      },
     });
   };
 
-  describe('with feature flag containerRegistryImmutableTags true', () => {
-    describe('when tag is immutable', () => {
-      it('displays badge and popover', () => {
-        createComponent();
+  describe('when tag is immutable', () => {
+    it('displays badge and popover', () => {
+      createComponent();
 
-        expect(findBadge().text()).toBe('immutable');
-        expect(findBadge().attributes('id')).toBe('test_badge');
-        expect(findPopover().props('target')).toBe('test_badge');
-      });
-    });
-
-    describe('when tag is not immutable', () => {
-      it('does not display badge or popover', () => {
-        createComponent({
-          tag: {
-            name: 'test2',
-            protection: {
-              immutable: false,
-            },
-          },
-        });
-
-        expect(findBadge().exists()).toBe(false);
-        expect(findPopover().exists()).toBe(false);
-      });
+      expect(findBadge().text()).toBe('immutable');
+      expect(findBadge().attributes('id')).toBe('test_badge');
+      expect(findPopover().props('target')).toBe('test_badge');
     });
   });
 
-  describe('with feature flag containerRegistryImmutableTags false', () => {
+  describe('when tag is not immutable', () => {
     it('does not display badge or popover', () => {
-      createComponent({}, false);
+      createComponent({
+        tag: {
+          name: 'test2',
+          protection: {
+            immutable: false,
+          },
+        },
+      });
 
       expect(findBadge().exists()).toBe(false);
       expect(findPopover().exists()).toBe(false);

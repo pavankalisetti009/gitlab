@@ -110,7 +110,6 @@ module EE
     private
 
     def immutable_tag_rules_apply?
-      return false unless ::Feature.enabled?(:container_registry_immutable_tags, project)
       return false unless project.licensed_feature_available?(:container_registry_immutable_tag_rules)
       return false unless project.has_container_registry_immutable_tag_rules?
 

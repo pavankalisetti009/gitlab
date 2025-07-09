@@ -10,8 +10,6 @@ module EE
         def validate(protection_rule)
           return unless protection_rule.immutable?
 
-          return _('Not available') unless ::Feature.enabled?(:container_registry_immutable_tags, project)
-
           unless project.licensed_feature_available?(:container_registry_immutable_tag_rules)
             return _('Immutable tag rules require an Ultimate license')
           end

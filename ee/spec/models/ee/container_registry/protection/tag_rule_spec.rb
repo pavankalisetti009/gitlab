@@ -123,14 +123,6 @@ RSpec.describe ContainerRegistry::Protection::TagRule, type: :model, feature_cat
 
       it_behaves_like 'returning same result for different access levels', true
 
-      context 'when the feature container_registry_immutable_tags is disabled' do
-        before do
-          stub_feature_flags(container_registry_immutable_tags: false)
-        end
-
-        it_behaves_like 'returning same result for different access levels', false
-      end
-
       context 'when the feature is not licensed' do
         before do
           stub_licensed_features(container_registry_immutable_tag_rules: false)
@@ -152,14 +144,6 @@ RSpec.describe ContainerRegistry::Protection::TagRule, type: :model, feature_cat
       let_it_be(:rule) { build(:container_registry_protection_tag_rule, :immutable) }
 
       it_behaves_like 'returning same result for different access levels', true
-
-      context 'when the feature container_registry_immutable_tags is disabled' do
-        before do
-          stub_feature_flags(container_registry_immutable_tags: false)
-        end
-
-        it_behaves_like 'returning same result for different access levels', false
-      end
 
       context 'when the feature is not licensed' do
         before do

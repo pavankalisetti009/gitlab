@@ -10,8 +10,7 @@ module EE
 
           override :protected_for_delete?
           def protected_for_delete?(project:, current_user:)
-            if ::Feature.enabled?(:container_registry_immutable_tags, project) &&
-                project.licensed_feature_available?(:container_registry_immutable_tag_rules) &&
+            if project.licensed_feature_available?(:container_registry_immutable_tag_rules) &&
                 project.container_registry_protection_tag_rules.immutable.exists? &&
                 project.has_container_registry_tags?
               return true
@@ -36,8 +35,7 @@ module EE
           end
 
           def immutable_tags_feature_available?(project)
-            ::Feature.enabled?(:container_registry_immutable_tags, project) &&
-              project.licensed_feature_available?(:container_registry_immutable_tag_rules)
+            project.licensed_feature_available?(:container_registry_immutable_tag_rules)
           end
         end
       end
