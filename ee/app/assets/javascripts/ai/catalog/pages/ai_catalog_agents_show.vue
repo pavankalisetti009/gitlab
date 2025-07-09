@@ -1,7 +1,7 @@
 <script>
 import { GlButton, GlModal } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -45,7 +45,7 @@ export default {
   },
   computed: {
     agentId() {
-      return this.aiCatalogItem?.id || this.$route.params.id;
+      return getIdFromGraphQLId(this.aiCatalogItem?.id) || this.$route.params.id;
     },
     agentName() {
       return this.aiCatalogItem?.name || '';

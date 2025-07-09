@@ -1,25 +1,48 @@
 <script>
-import { GlButton, GlFormGroup, GlFormTextarea } from '@gitlab/ui';
+import { GlButton, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
+import AiCatalogAgentRunForm from '../components/ai_catalog_agent_run_form.vue';
 
 export default {
   name: 'AiCatalogAgentsRun',
   components: {
     GlButton,
-    GlFormGroup,
-    GlFormTextarea,
+    GlLoadingIcon,
     PageHeading,
+    AiCatalogAgentRunForm,
   },
   data() {
     return {
-      prompt: '',
+      aiCatalogItem: {},
       isSubmitting: false,
     };
   },
+  apollo: {
+    aiCatalogItem: {
+      query: aiCatalogAgentQuery,
+      variables() {
+        return {
+          id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
+        };
+      },
+      update(data) {
+        return data?.aiCatalogItem || {};
+      },
+    },
+  },
   computed: {
+    isLoading() {
+      return this.$apollo.queries.aiCatalogItem.loading;
+    },
     pageTitle() {
-      return `${s__('AICatalog|Run agent')}: ${this.$route.params.id}`;
+      return `${s__('AICatalog|Run agent')}: ${this.aiCatalogItem.name}`;
+    },
+    defaultUserPrompt() {
+      return this.aiCatalogItem?.userPrompt || '';
     },
   },
   methods: {
@@ -32,11 +55,11 @@ export default {
       // run page in drawer or need more sophisticated navigation handling.
       this.$router.back();
     },
-    async onSubmit() {
+    async onSubmit({ userPrompt }) {
       this.isSubmitting = true;
 
       try {
-        this.$toast.show(this.prompt);
+        this.$toast.show(userPrompt);
       } catch (error) {
         this.$toast.show(s__('AICatalog|Failed to run agent.'));
       } finally {
@@ -53,22 +76,17 @@ export default {
       {{ __('Go back') }}
     </gl-button>
 
-    <page-heading :heading="pageTitle" />
+    <div v-if="isLoading" class="gl-flex gl-h-full gl-items-center gl-justify-center">
+      <gl-loading-icon size="lg" />
+    </div>
+    <template v-else>
+      <page-heading :heading="pageTitle" />
 
-    <form @submit.prevent="onSubmit">
-      <gl-form-group :label="s__('AICatalog|Prompt')" label-for="prompt-textarea">
-        <gl-form-textarea id="prompt-textarea" v-model="prompt" :no-resize="false" rows="6" />
-      </gl-form-group>
-
-      <gl-button
-        type="submit"
-        variant="confirm"
-        class="js-no-auto-disable"
-        :loading="isSubmitting"
-        data-testid="ai-catalog-run-button"
-      >
-        {{ s__('AICatalog|Run') }}
-      </gl-button>
-    </form>
+      <ai-catalog-agent-run-form
+        :is-submitting="isSubmitting"
+        :default-user-prompt="defaultUserPrompt"
+        @submit="onSubmit"
+      />
+    </template>
   </div>
 </template>

@@ -1,28 +1,13 @@
 <script>
 import { uniqueId } from 'lodash';
 import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
-import { formValidators } from '@gitlab/ui/dist/utils';
 import {
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
   MAX_LENGTH_PROMPT,
 } from 'ee/ai/catalog/constants';
-import { __, s__, sprintf } from '~/locale';
-
-const createValidators = (requiredLabel, maxLength) => {
-  return [
-    formValidators.required(requiredLabel),
-    formValidators.factory(
-      sprintf(
-        s__('AICatalog|Input cannot exceed %{value} characters. Please shorten your input.'),
-        {
-          value: maxLength,
-        },
-      ),
-      (value) => value.length <= maxLength,
-    ),
-  ];
-};
+import { __, s__ } from '~/locale';
+import { createFieldValidators } from '../utils';
 
 export default {
   components: {
@@ -94,7 +79,10 @@ export default {
   fields: {
     name: {
       label: __('Name'),
-      validators: createValidators(s__('AICatalog|Name is required.'), MAX_LENGTH_NAME),
+      validators: createFieldValidators({
+        requiredLabel: s__('AICatalog|Name is required.'),
+        maxLength: MAX_LENGTH_NAME,
+      }),
       inputAttrs: {
         'data-testid': 'agent-form-input-name',
         placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
@@ -105,10 +93,10 @@ export default {
     },
     description: {
       label: __('Description'),
-      validators: createValidators(
-        s__('AICatalog|Description is required.'),
-        MAX_LENGTH_DESCRIPTION,
-      ),
+      validators: createFieldValidators({
+        requiredLabel: s__('AICatalog|Description is required.'),
+        maxLength: MAX_LENGTH_DESCRIPTION,
+      }),
       groupAttrs: {
         labelDescription: s__(
           'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
@@ -117,7 +105,10 @@ export default {
     },
     systemPrompt: {
       label: s__('AICatalog|System Prompt'),
-      validators: createValidators(s__('AICatalog|System Prompt is required.'), MAX_LENGTH_PROMPT),
+      validators: createFieldValidators({
+        requiredLabel: s__('AICatalog|System Prompt is required.'),
+        maxLength: MAX_LENGTH_PROMPT,
+      }),
       groupAttrs: {
         labelDescription: s__(
           "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
@@ -126,7 +117,10 @@ export default {
     },
     userPrompt: {
       label: s__('AICatalog|User Prompt'),
-      validators: createValidators(s__('AICatalog|User Prompt is required.'), MAX_LENGTH_PROMPT),
+      validators: createFieldValidators({
+        requiredLabel: s__('AICatalog|User Prompt is required.'),
+        maxLength: MAX_LENGTH_PROMPT,
+      }),
       groupAttrs: {
         labelDescription: s__(
           'AICatalog|Provide default instructions or context that will be included with every user interaction.',
