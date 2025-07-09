@@ -12,13 +12,11 @@ describe('Dependency paths drawer component', () => {
   let wrapper;
 
   const defaultProps = {
-    dependency: {
-      component: {
-        name: 'uri',
-        version: '13.3',
-      },
-      dependencyPaths: [{ path: [{ name: 'jest', version: '29.7.0' }] }],
+    component: {
+      name: 'uri',
+      version: '13.3',
     },
+    sbomOccurrences: [{ id: 1, inputFilePath: 'yarn.lock' }],
   };
 
   const createComponent = (props = {}) => {
@@ -87,12 +85,17 @@ describe('Dependency paths drawer component', () => {
     });
 
     it('renders the drawer on and passes the correct props', () => {
-      const { component, dependencyPaths } = defaultProps.dependency;
+      const { component, sbomOccurrences } = defaultProps;
+
+      const dropdownItems = sbomOccurrences.map(({ id: value, inputFilePath: text }) => ({
+        value,
+        text,
+      }));
 
       expect(findDrawer().props()).toMatchObject({
         showDrawer: true,
-        dependencyPaths,
         component,
+        dropdownItems,
       });
     });
 

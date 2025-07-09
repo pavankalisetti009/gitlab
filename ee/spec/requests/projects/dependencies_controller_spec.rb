@@ -69,11 +69,7 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             expect(json_response['dependencies']).to match_array(expected)
           end
 
-          # rubocop:disable RSpec/PendingWithoutReason -- TODO:
-          # We unfortunately have an unavoidable N+1 query for now
-          # because of the dependency_paths method in Sbom::Occurrence model
-          # So skipping this test for now
-          xit 'avoids N+1 queries' do
+          xit 'avoids N+1 queries' do # rubocop:disable RSpec/PendingWithoutReason -- TODO: Sbom::Occurrence#has_dependency_paths? has an n+1 query which is unavoidable for now
             control_count = ActiveRecord::QueryRecorder
               .new { get project_dependencies_path(project, **params, format: :json) }.count
             create_list(:sbom_occurrence, 2, project: project)
@@ -81,7 +77,6 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             expect { get project_dependencies_path(project, **params, format: :json) }
               .not_to exceed_query_limit(control_count)
           end
-          # rubocop:enable RSpec/PendingWithoutReason
 
           shared_examples 'it can filter dependencies' do |filter_under_test|
             subject(:show_dependency_list) { json_response['dependencies'].map(&matcher) }

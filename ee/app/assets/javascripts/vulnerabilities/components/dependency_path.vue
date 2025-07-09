@@ -14,9 +14,14 @@ export default {
     DependencyPathDrawer,
   },
   props: {
-    dependency: {
+    component: {
       type: Object,
       required: true,
+    },
+    sbomOccurrences: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
     dependencyPathsLimitExceeded: {
       type: Boolean,
@@ -28,6 +33,11 @@ export default {
     return {
       isDrawerOpen: false,
     };
+  },
+  computed: {
+    dropdownItems() {
+      return this.sbomOccurrences.map(({ id: value, inputFilePath: text }) => ({ value, text }));
+    },
   },
   methods: {
     toggleDrawer() {
@@ -54,8 +64,8 @@ export default {
     <mounting-portal mount-to="#js-dependency-paths-drawer-portal">
       <dependency-path-drawer
         :show-drawer="isDrawerOpen"
-        :component="dependency.component"
-        :dependency-paths="dependency.dependencyPaths"
+        :component="component"
+        :dropdown-items="dropdownItems"
         :limit-exceeded="dependencyPathsLimitExceeded"
         @close="closeDrawer"
       />
