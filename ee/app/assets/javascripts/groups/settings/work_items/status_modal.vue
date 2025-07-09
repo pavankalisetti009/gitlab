@@ -30,7 +30,7 @@ const STATUS_CATEGORIES = {
 const CATEGORY_MAP = {
   [STATUS_CATEGORIES.TRIAGE]: {
     icon: 'status-neutral',
-    color: '#4c4f52',
+    color: '#995715',
     label: s__('WorkItem|Triage'),
     defaultState: 'open',
   },

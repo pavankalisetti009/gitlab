@@ -9,7 +9,7 @@ FactoryBot.define do
 
     trait :triage do
       name { FFaker::Name.unique.name }
-      color { '#4c4f52' }
+      color { '#995715' }
       category { :triage }
       converted_from_system_defined_status_identifier { nil }
     end
