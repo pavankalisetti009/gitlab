@@ -107,6 +107,35 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
       end
     end
 
+    context 'allow enforce_pipl_compliance in application settings' do
+      let(:params) { { enforce_pipl_compliance: true } }
+
+      it_behaves_like 'PUT request permissions for admin mode'
+
+      subject(:api_request) do
+        put api(path, admin, admin_mode: true), params: params
+      end
+
+      it 'sets setting when licensed feature is available' do
+        stub_saas_features(pipl_compliance: true)
+
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['enforce_pipl_compliance']).to eq(true)
+      end
+
+      it 'does not set the value when licensed feature is not available' do
+        params[:enforce_pipl_compliance] = false
+        stub_saas_features(pipl_compliance: false)
+
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['enforce_pipl_compliance']).to eq(true)
+      end
+    end
+
     context 'with duo_features_enabled settings' do
       let(:params) { { duo_features_enabled: false, lock_duo_features_enabled: true } }
 
