@@ -33,30 +33,41 @@ const CATEGORY_MAP = {
     color: '#4c4f52',
     label: s__('WorkItem|Triage'),
     defaultState: 'open',
+    description: s__(
+      'WorkItem|Use for items that are still in a proposal or ideation phase, not yet accepted or planned for work.',
+    ),
   },
   [STATUS_CATEGORIES.TO_DO]: {
     icon: 'status-waiting',
     color: '#737278',
     label: s__('WorkItem|To do'),
     defaultState: 'open',
+    description: s__('WorkItem|Use for planned work that is not actively being worked on.'),
   },
   [STATUS_CATEGORIES.IN_PROGRESS]: {
     icon: 'status-running',
     color: '#1f75cb',
     label: s__('WorkItem|In progress'),
     defaultState: 'open',
+    description: s__('WorkItem|Use for items that are actively being worked on.'),
   },
   [STATUS_CATEGORIES.DONE]: {
     icon: 'status-success',
     color: '#108548',
     label: s__('WorkItem|Done'),
     defaultState: 'closed',
+    description: s__(
+      'WorkItem|Use for items that have been completed. Applying a done status will close the item.',
+    ),
   },
   [STATUS_CATEGORIES.CANCELLED]: {
     icon: 'status-cancelled',
     color: '#dd2b0e',
     label: s__('WorkItem|Canceled'),
     defaultState: 'duplicate',
+    description: s__(
+      'WorkItem|Use for items that are no longer relevant and will not be completed. Applying a canceled status will close the item.',
+    ),
   },
 };
 
@@ -154,6 +165,9 @@ export default {
     },
     getCategoryLabel(category) {
       return CATEGORY_MAP[category].label || category;
+    },
+    getCategoryDescription(category) {
+      return CATEGORY_MAP[category].description || '';
     },
     getCategoryDefaultState(category) {
       return CATEGORY_MAP[category].defaultState || '';
@@ -533,10 +547,13 @@ export default {
           class="gl-mb-6"
           :data-testid="`category-${category.toLowerCase()}`"
         >
-          <div class="gl-mb-3 gl-flex gl-items-center gl-justify-between">
+          <div class="gl-mb-2 gl-flex gl-flex-col gl-gap-1">
             <h3 class="gl-m-0 gl-text-size-reset gl-font-bold">
               {{ getCategoryLabel(category) }}
             </h3>
+            <p data-testid="category-description" class="!gl-mb-0 gl-text-sm gl-text-subtle">
+              {{ getCategoryDescription(category) }}
+            </p>
           </div>
 
           <div>

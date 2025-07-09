@@ -49,7 +49,7 @@ describe('StatusLifecycleModal', () => {
         name: 'In Progress',
         color: '#1f75cb',
         iconName: 'status-running',
-        description: '',
+        description: 'In progress',
         __typename: 'WorkItemStatus',
       },
       {
@@ -57,7 +57,7 @@ describe('StatusLifecycleModal', () => {
         name: 'Done',
         color: '#108548',
         iconName: 'status-success',
-        description: 'Completed work',
+        description: 'Information regarding done',
         __typename: 'WorkItemStatus',
       },
     ],
@@ -206,6 +206,12 @@ describe('StatusLifecycleModal', () => {
       expect(findCategorySection('in_progress')).toBeDefined();
       expect(findCategorySection('done')).toBeDefined();
       expect(findStatusBadges()).toHaveLength(3);
+    });
+
+    it('shows description of each category', () => {
+      expect(
+        findCategorySection('to_do').find('[data-testid="category-description"]').exists(),
+      ).toBe(true);
     });
 
     it('shows default status badges for default statuses', () => {
