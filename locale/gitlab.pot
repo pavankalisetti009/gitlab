@@ -4158,7 +4158,7 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Features"
 msgstr ""
 
-msgid "AdminAIPoweredFeatures|GitLab Default"
+msgid "AdminAIPoweredFeatures|GitLab Default %{defaultModel}"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|GitLab Duo Chat"
