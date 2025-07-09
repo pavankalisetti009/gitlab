@@ -55,7 +55,7 @@ module ComplianceManagement
           ids << records.map(&:id)
         end
 
-        ::MergeRequests::ComplianceViolation.where(id: ids.flatten) # rubocop: disable CodeReuse/ActiveRecord
+        ::MergeRequests::ComplianceViolation.id_in(ids.flatten)
       end
 
       def csv_header

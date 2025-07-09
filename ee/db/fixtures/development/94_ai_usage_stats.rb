@@ -117,7 +117,7 @@ Gitlab::Seeder.quiet do
   end
 
   projects = Project.all
-  projects = projects.where(id: ENV['PROJECT_ID']) if ENV['PROJECT_ID']
+  projects = projects.id_in(ENV['PROJECT_ID']) if ENV['PROJECT_ID']
 
   projects.find_each do |project|
     seeder = Gitlab::Seeder::AiUsageStats.new(project)

@@ -13,7 +13,6 @@ module Gitlab
     #
     # Returns an Array containing all the Groups, including their preloaded
     # plans.
-    # rubocop: disable CodeReuse/ActiveRecord
     def preload(groups)
       return groups unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
@@ -44,7 +43,7 @@ module Gitlab
 
       # Grab all the plans for all the Groups, using only a single query.
       plans = Plan
-        .where(id: all_plan_ids.to_a)
+        .id_in(all_plan_ids.to_a)
         .index_by(&:id)
 
       # Assign all the plans to the groups that have access to them.
@@ -68,9 +67,8 @@ module Gitlab
       if groups.is_a?(ActiveRecord::Relation)
         groups
       else
-        Group.where(id: groups)
+        Group.id_in(groups)
       end
     end
-    # rubocop: enable CodeReuse/ActiveRecord
   end
 end

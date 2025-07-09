@@ -115,7 +115,7 @@ module GitlabSubscriptions
       # rubocop: disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- Safe because query filters based on passed user_ids
       def sm_eligible_user_ids
         GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(add_on_type: duo_type).execute
-          .where(id: user_ids)
+          .id_in(user_ids)
           .pluck(:id)
       end
       # rubocop: enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit

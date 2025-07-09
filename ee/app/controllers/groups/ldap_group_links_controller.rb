@@ -28,12 +28,10 @@ class Groups::LdapGroupLinksController < Groups::ApplicationController
     end
   end
 
-  # rubocop: disable CodeReuse/ActiveRecord
   def destroy
-    @group.ldap_group_links.where(id: params[:id]).destroy_all # rubocop: disable Cop/DestroyAll
+    @group.ldap_group_links.id_in(params[:id]).destroy_all # rubocop: disable Cop/DestroyAll
     redirect_back_or_default(default: { action: 'index' }, options: { notice: 'LDAP link removed' })
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   private
 

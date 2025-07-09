@@ -52,7 +52,7 @@ end
 
 Gitlab::Seeder.quiet do
   groups = Group.top_level
-  groups = groups.where(id: ENV['GROUP_ID']) if ENV['GROUP_ID']
+  groups = groups.id_in(ENV['GROUP_ID']) if ENV['GROUP_ID']
 
   groups.find_each do |group|
     seeder = Gitlab::Seeder::ValueStreamDashboardCounts.new(group)
