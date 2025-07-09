@@ -190,6 +190,73 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
     end
   end
 
+  context 'with the licensed feature for disable_invite_members' do
+    shared_examples 'successful group link creation' do
+      it 'creates a group link' do
+        expect { create_service }.to change { group.shared_with_group_links.count }.by(1)
+      end
+    end
+
+    shared_examples 'failed group link creation' do
+      it 'does not create a group link' do
+        expect { create_service }.not_to change { group.shared_with_group_links.count }
+      end
+    end
+
+    context 'when the user is a group owner' do
+      before_all do
+        shared_with_group.add_guest(user)
+        group.add_owner(user)
+      end
+
+      context 'and the licensed feature is available' do
+        before do
+          stub_licensed_features(disable_invite_members: true)
+        end
+
+        context 'and the setting disable_invite_members is ON' do
+          before do
+            stub_application_setting(disable_invite_members: true)
+          end
+
+          it_behaves_like 'failed group link creation'
+        end
+
+        context 'and the setting disable_invite_members is OFF' do
+          before do
+            stub_application_setting(disable_invite_members: false)
+          end
+
+          it_behaves_like 'successful group link creation'
+        end
+      end
+
+      context 'and the licensed feature is unavailable' do
+        before do
+          stub_licensed_features(disable_invite_members: false)
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        it_behaves_like 'successful group link creation'
+      end
+    end
+
+    context 'when the user is an admin and the setting disable_invite_members is ON' do
+      let_it_be(:user) { create(:admin) }
+
+      before do
+        stub_licensed_features(disable_invite_members: true)
+        stub_application_setting(disable_invite_members: true)
+      end
+
+      context 'with admin mode enabled', :enable_admin_mode do
+        it_behaves_like 'successful group link creation'
+      end
+
+      it_behaves_like 'failed group link creation'
+    end
+  end
+
   describe 'seat assignments', :sidekiq_inline do
     let_it_be(:user_b) { create(:user) }
 

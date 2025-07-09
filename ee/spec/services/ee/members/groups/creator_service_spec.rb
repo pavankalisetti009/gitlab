@@ -306,6 +306,81 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
 
       it_behaves_like 'billable promotion management feature'
     end
+
+    context 'with the licensed feature for disable_invite_members' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:user) { create(:user) }
+      let_it_be(:access_level) { :maintainer }
+
+      shared_examples 'successful member creation' do
+        it 'creates a new member' do
+          member = described_class.add_member(group, user, access_level, current_user: current_user)
+          expect(member).to be_persisted
+        end
+      end
+
+      shared_examples 'failed member creation' do
+        it 'does not create a new member' do
+          member = described_class.add_member(group, user, access_level, current_user: current_user)
+          expect(member).not_to be_persisted
+          expect(member.errors.full_messages).to include(/not authorized to create member/)
+        end
+      end
+
+      context 'when the user is a group owner' do
+        let_it_be(:current_user) { create(:user) }
+
+        before_all do
+          group.add_owner(current_user)
+        end
+
+        context 'when the licensed feature for disable_invite_members is available' do
+          before do
+            stub_licensed_features(disable_invite_members: true)
+          end
+
+          context 'when the setting disable_invite_members is ON' do
+            before do
+              stub_application_setting(disable_invite_members: true)
+            end
+
+            it_behaves_like 'failed member creation'
+          end
+
+          context 'when the setting disable_invite_members is OFF' do
+            before do
+              stub_application_setting(disable_invite_members: false)
+            end
+
+            it_behaves_like 'successful member creation'
+          end
+        end
+
+        context 'when the licensed feature for disable_invite_members is unavailable' do
+          before do
+            stub_licensed_features(disable_invite_members: false)
+            stub_application_setting(disable_invite_members: true)
+          end
+
+          it_behaves_like 'successful member creation'
+        end
+      end
+
+      context 'when the user is an admin and the setting disable_invite_members is ON' do
+        let_it_be(:current_user) { create(:admin) }
+
+        before do
+          stub_licensed_features(disable_invite_members: true)
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        context 'with admin mode enabled', :enable_admin_mode do
+          it_behaves_like 'successful member creation'
+        end
+
+        it_behaves_like 'failed member creation'
+      end
+    end
   end
 
   describe '.add_members' do
