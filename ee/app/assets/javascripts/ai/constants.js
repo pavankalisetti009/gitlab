@@ -19,6 +19,8 @@ export const GENIE_CHAT_MODEL_ROLES = {
 
 export const CHAT_MESSAGE_TYPES = {
   tool: 'tool',
+  agent: 'agent',
+  request: 'request',
 };
 
 export const EXPLAIN_CODE_TRACKING_EVENT_NAME = 'explain_code_blob_viewer';
@@ -45,4 +47,5 @@ export const DUO_WORKFLOW_AGENT_PRIVILEGES = [2, 3];
 export const DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES = [2];
 export const DUO_WORKFLOW_CLIENT_VERSION = '1.0';
 export const DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED = 'TOOL_CALL_APPROVAL_REQUIRED';
+export const DUO_WORKFLOW_STATUS_INPUT_REQUIRED = 'INPUT_REQUIRED';
 export const DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY = 'repository';
