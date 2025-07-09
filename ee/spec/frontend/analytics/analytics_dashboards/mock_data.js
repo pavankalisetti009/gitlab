@@ -21,6 +21,7 @@ import LabelToken from '~/vue_shared/components/filtered_search_bar/tokens/label
 import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_token.vue';
 import { FILTERED_SEARCH_MAX_LABELS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
+import { VISUALIZATION_SLUG_DORA_PERFORMERS_SCORE } from 'ee/analytics/analytics_dashboards/constants';
 import BranchToken from '~/vue_shared/components/filtered_search_bar/tokens/branch_token.vue';
 
 export const TEST_TRACKING_KEY = 'gid://gitlab/Project/2';
@@ -1016,6 +1017,22 @@ export const invalidVisualization = {
     `property '/version' is not: 1`,
     `property '/titlePropertyTypoOhNo' is invalid: error_type=schema`,
   ],
+};
+
+export const licensedVisualization = {
+  type: 'CoolLicensedVisualization',
+  slug: VISUALIZATION_SLUG_DORA_PERFORMERS_SCORE,
+  version: 1,
+  title: 'Licensed visualization',
+  data: {
+    type: 'cube_analytics',
+    query: {
+      users: {
+        measures: ['TrackedEvents.count'],
+        dimensions: ['TrackedEvents.eventType'],
+      },
+    },
+  },
 };
 
 export const mockPanel = {

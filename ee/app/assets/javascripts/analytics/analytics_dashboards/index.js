@@ -11,10 +11,27 @@ import DashboardsApp from './dashboards_app.vue';
 import createRouter from './router';
 import AnalyticsDashboardsBreadcrumbs from './components/analytics_dashboards_breadcrumbs.vue';
 
+const rawJSONtoObject = (json) => convertObjectPropsToCamelCase(JSON.parse(json));
+
 const buildAnalyticsDashboardPointer = (analyticsDashboardPointerJSON = '') => {
   return analyticsDashboardPointerJSON.length
-    ? convertObjectPropsToCamelCase(JSON.parse(analyticsDashboardPointerJSON))
+    ? rawJSONtoObject(analyticsDashboardPointerJSON)
     : null;
+};
+
+// The licensed features are passed as a JSON from ruby, we need to parse the JSON
+// then explicitly convert the feature flags into Booleans for use in JS.
+const buildLicensedFeatures = (features = '') => {
+  const parsed = features.length ? rawJSONtoObject(features) : {};
+  return Object.entries(parsed).reduce(
+    (acc, [k, v]) => {
+      acc[k] = parseBoolean(v);
+      return acc;
+    },
+    {
+      hasScopedLabelsFeature: false,
+    },
+  );
 };
 
 export default () => {
@@ -48,11 +65,12 @@ export default () => {
     isInstanceConfiguredWithSelfManagedAnalyticsProvider,
     defaultUseInstanceConfiguration,
     overviewCountsAggregationEnabled,
-    hasScopedLabelsFeature,
+    licensedFeatures: licensedFeaturesJSON = '',
   } = el.dataset;
 
   const analyticsDashboardPointer = buildAnalyticsDashboardPointer(analyticsDashboardPointerJSON);
   const canConfigureProjectSettings = parseBoolean(canConfigureProjectSettingsString);
+  const licensedFeatures = buildLicensedFeatures(licensedFeaturesJSON);
 
   Vue.use(VueApollo);
 
@@ -136,9 +154,10 @@ export default () => {
       ),
       defaultUseInstanceConfiguration: parseBoolean(defaultUseInstanceConfiguration),
       overviewCountsAggregationEnabled: parseBoolean(overviewCountsAggregationEnabled),
-      hasScopedLabelsFeature: parseBoolean(hasScopedLabelsFeature),
       canCreateNewDashboard,
       customizableDashboardsAvailable,
+      licensedFeatures,
+      hasScopedLabelsFeature: licensedFeatures.hasScopedLabelsFeature,
     },
     render(h) {
       return h(DashboardsApp);

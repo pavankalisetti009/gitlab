@@ -1,4 +1,4 @@
-import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlButton, GlLink, GlSprintf, GlDashboardPanel } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { VARIANT_DANGER, VARIANT_WARNING, VARIANT_INFO } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -10,7 +10,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
-import { mockPanel, invalidVisualization } from '../mock_data';
+import { mockPanel, invalidVisualization, licensedVisualization } from '../mock_data';
 
 const mockFetch = jest.fn().mockResolvedValue([]);
 jest.mock('ee/analytics/analytics_dashboards/data_sources', () => ({
@@ -26,6 +26,9 @@ describe('AnalyticsDashboardPanel', () => {
   const findAlertMessages = () => wrapper.findByTestId('alert-messages').findAll('li');
   const findAlertDescriptionLink = () => wrapper.findComponent(GlLink);
   const findAlertBody = () => wrapper.findByTestId('alert-body');
+  const findDashboardPanel = () => wrapper.findComponent(GlDashboardPanel);
+  const findDashboardPanelLicenseWarning = () =>
+    wrapper.findByTestId('dashboard-panel-license-warning');
   const findVisualization = () => wrapper.findComponent(LineChart);
 
   const createWrapper = ({ props = {}, provide = {} } = {}) => {
@@ -39,6 +42,9 @@ describe('AnalyticsDashboardPanel', () => {
         isProject: true,
         dataSourceClickhouse: true,
         overviewCountsAggregationEnabled: true,
+        licensedFeatures: {
+          hasDoraMetrics: true,
+        },
         ...provide,
       },
       propsData: {
@@ -127,6 +133,46 @@ describe('AnalyticsDashboardPanel', () => {
     it('sets editing to true on the panels base', () => {
       expect(findExtendedDashboardPanel().props()).toMatchObject({
         editing: true,
+      });
+    });
+  });
+
+  describe('when the visualization is licensed invalid', () => {
+    describe('with the correct license', () => {
+      it('renders the visualization', () => {
+        createWrapper({
+          props: { visualization: licensedVisualization },
+        });
+
+        expect(findDashboardPanelLicenseWarning().exists()).toBe(false);
+      });
+    });
+
+    describe('without the correct license', () => {
+      beforeEach(() => {
+        createWrapper({
+          props: { visualization: licensedVisualization },
+          provide: {
+            licensedFeatures: {
+              hasDoraMetrics: false,
+            },
+          },
+        });
+      });
+
+      it('renders the panel permissions state', () => {
+        expect(findDashboardPanel().props('titleIconClass')).toBe('gl-text-danger');
+        expect(findDashboardPanel().props('borderColorClass')).toBe('gl-border-t-red-500');
+
+        // TODO: Replace .attributes checks with .props when we merge
+        //       https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/merge_requests/4734
+        expect(findDashboardPanel().attributes('body-content-class')).toBe('gl-content-center');
+      });
+
+      it('renders the missing license message', () => {
+        expect(findDashboardPanelLicenseWarning().text()).toBe(
+          'This feature requires an Ultimate plan Learn more.',
+        );
       });
     });
   });
