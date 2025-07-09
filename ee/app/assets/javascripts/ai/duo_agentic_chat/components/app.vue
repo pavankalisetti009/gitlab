@@ -2,9 +2,11 @@
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { AgenticDuoChat, AgenticToolApprovalFlow } from '@gitlab/duo-ui';
+import { GlToggle } from '@gitlab/ui';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
+import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { clearDuoChatCommands } from 'ee/ai/utils';
+import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
 import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
 import { parseGid } from '~/graphql_shared/utils';
 import {
@@ -23,13 +25,14 @@ import {
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
-import { WIDTH_OFFSET } from '../../tanuki_bot/constants';
+import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 
 export default {
   name: 'DuoAgenticChatApp',
   components: {
     AgenticDuoChat,
     AgenticToolApprovalFlow,
+    GlToggle,
   },
   provide() {
     return {
@@ -124,6 +127,14 @@ export default {
     },
     showToolApprovalModal() {
       return this.workflowStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED;
+    },
+    duoAgenticModePreference: {
+      get() {
+        return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
+      },
+      set(value) {
+        setAgenticMode(value, true);
+      },
     },
   },
   watch: {
@@ -363,13 +374,23 @@ export default {
         :should-render-resizable="true"
         :with-feedback="false"
         :show-header="true"
+        badge-type="beta"
         :dimensions="dimensions"
         @new-chat="onNewChat"
         @send-chat-prompt="onSendChatPrompt"
         @chat-cancel="onChatCancel"
         @chat-hidden="onChatClose"
         @chat-resize="onChatResize"
-      />
+        ><template #footer-controls>
+          <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
+            <gl-toggle
+              v-model="duoAgenticModePreference"
+              :label="s__('DuoChat|Agentic mode (Beta)')"
+              label-position="left"
+            />
+          </div>
+        </template>
+      </agentic-duo-chat>
 
       <agentic-tool-approval-flow
         :visible="showToolApprovalModal"
