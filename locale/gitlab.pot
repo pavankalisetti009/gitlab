@@ -47080,6 +47080,9 @@ msgstr ""
 msgid "Preferences|Customize the behavior of the system layout and default views."
 msgstr ""
 
+msgid "Preferences|Dark color scheme"
+msgstr ""
+
 msgid "Preferences|Default text editor"
 msgstr ""
 
@@ -47140,6 +47143,9 @@ msgstr ""
 msgid "Preferences|Layout width"
 msgstr ""
 
+msgid "Preferences|Light color scheme"
+msgstr ""
+
 msgid "Preferences|Mode"
 msgstr ""
 
@@ -47173,7 +47179,7 @@ msgstr ""
 msgid "Preferences|Surround text selection when typing quotes or brackets"
 msgstr ""
 
-msgid "Preferences|Syntax highlights"
+msgid "Preferences|Syntax highlighting"
 msgstr ""
 
 msgid "Preferences|Tab width"
