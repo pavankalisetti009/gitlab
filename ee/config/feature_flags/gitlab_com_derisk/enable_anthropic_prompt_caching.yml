@@ -7,3 +7,4 @@ milestone: '17.9'
 group: group::ai framework
 type: gitlab_com_derisk
 default_enabled: false
+log_state_changes: true
