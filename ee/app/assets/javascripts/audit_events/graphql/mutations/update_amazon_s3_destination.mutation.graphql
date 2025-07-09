@@ -5,6 +5,7 @@ mutation updateAmazonS3Destination(
   $secretAccessKey: String
   $awsRegion: String!
   $bucketName: String!
+  $active: Boolean = true
 ) {
   auditEventsAmazonS3ConfigurationUpdate(
     input: {
@@ -14,6 +15,7 @@ mutation updateAmazonS3Destination(
       secretAccessKey: $secretAccessKey
       awsRegion: $awsRegion
       bucketName: $bucketName
+      active: $active
     }
   ) {
     errors
@@ -23,6 +25,7 @@ mutation updateAmazonS3Destination(
       accessKeyXid
       awsRegion
       bucketName
+      active
     }
   }
 }

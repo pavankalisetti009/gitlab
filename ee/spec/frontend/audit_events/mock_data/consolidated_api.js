@@ -1,12 +1,25 @@
 export const groupStreamingDestinationDataPopulator = (nodes) => ({
   data: {
-    group: { id: 'test-group-id', externalAuditEventStreamingDestinations: { nodes } },
+    group: {
+      id: 'test-group-id',
+      externalAuditEventStreamingDestinations: {
+        nodes: nodes.map((node) => ({
+          ...node,
+          active: node.active !== undefined ? node.active : true,
+        })),
+      },
+    },
   },
 });
 
 export const instanceStreamingDestinationDataPopulator = (nodes) => ({
   data: {
-    auditEventsInstanceStreamingDestinations: { nodes },
+    auditEventsInstanceStreamingDestinations: {
+      nodes: nodes.map((node) => ({
+        ...node,
+        active: node.active !== undefined ? node.active : true,
+      })),
+    },
   },
 });
 
@@ -31,6 +44,7 @@ export const destinationCreateMutationPopulator = (errors = []) => ({
     secretToken: 'newSecretToken',
     eventTypeFilters: [],
     namespaceFilters: [],
+    active: true,
   },
 });
 
@@ -62,6 +76,7 @@ export const mockHttpTypeDestination = [
         },
       },
     ],
+    active: true,
   },
   {
     __typename: 'GroupAuditEventStreamingDestination',
@@ -80,6 +95,7 @@ export const mockHttpTypeDestination = [
     secretToken: 'mockSecretToken',
     eventTypeFilters: ['add_gpg_key', 'user_created'],
     namespaceFilters: [],
+    active: true,
   },
 ];
 
@@ -97,6 +113,7 @@ export const mockAwsTypeDestination = [
     secretToken: 'SECRET_ACCESS_KEY_1',
     eventTypeFilters: [],
     namespaceFilters: [],
+    active: true,
   },
   {
     __typename: 'GroupAuditEventStreamingDestination',
@@ -111,6 +128,7 @@ export const mockAwsTypeDestination = [
     secretToken: 'SECRET_ACCESS_KEY_2',
     eventTypeFilters: [],
     namespaceFilters: [],
+    active: true,
   },
 ];
 
@@ -128,6 +146,7 @@ export const mockGcpTypeDestination = [
     secretToken: 'PRIVATE_KEY_1',
     eventTypeFilters: [],
     namespaceFilters: [],
+    active: true,
   },
   {
     __typename: 'GroupAuditEventStreamingDestination',
@@ -142,6 +161,7 @@ export const mockGcpTypeDestination = [
     secretToken: 'PRIVATE_KEY_2',
     eventTypeFilters: [],
     namespaceFilters: [],
+    active: true,
   },
 ];
 

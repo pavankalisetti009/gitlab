@@ -373,6 +373,7 @@ describe('AuditEventsStream', () => {
             config: {},
             eventTypeFilters: [],
             namespaceFilters: [],
+            active: true,
           };
           const streamingDestinationsQueryUnknownCategory = jest
             .fn()
