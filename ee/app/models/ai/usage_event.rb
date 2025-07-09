@@ -19,15 +19,7 @@ module Ai
     belongs_to :namespace, optional: true
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
-    enum :event, {
-      code_suggestions_requested: 1, # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
-      code_suggestion_shown_in_ide: 2,
-      code_suggestion_accepted_in_ide: 3,
-      code_suggestion_rejected_in_ide: 4,
-      code_suggestion_direct_access_token_refresh: 5, # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
-      request_duo_chat_response: 6,
-      troubleshoot_job: 7
-    }
+    enum :event, Gitlab::Tracking::AiTracking.registered_events
 
     validates :timestamp, :user_id, :organization_id, presence: true
     validates :extras, json_schema: { filename: "ai_usage_event_extras", size_limit: 16.kilobytes }
