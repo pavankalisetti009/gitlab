@@ -17,11 +17,6 @@ describe('Compliance dashboard status chart', () => {
     wrapper = shallowMount(StatusChart, {
       propsData: {
         colorScheme: GL_LIGHT,
-        legend: {
-          passed: 'Passed',
-          failed: 'Failed',
-          pending: 'Pending',
-        },
         path: 'dummy',
         data,
         ...props,

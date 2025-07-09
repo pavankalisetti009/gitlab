@@ -7,7 +7,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { sanitize } from '~/lib/dompurify';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { ROUTE_NEW_FRAMEWORK, ROUTE_PROJECTS, i18n } from '../../constants';
-import { getColors, getLegendConfig, getTooltipConfig } from './utils/chart';
+import { getColors } from './utils/chart';
 
 const generateFrameworkChartId = (framework) => `framework_${getIdFromGraphQLId(framework.id)}`;
 
@@ -41,6 +41,10 @@ export default {
         .map(({ framework }) => `{${generateFrameworkChartId(framework)}|${framework.name}}`)
         .reverse();
 
+      const TOOLTIP_OPTIONS = {
+        padding: 0,
+        borderWidth: 0,
+      };
       const { textColor, blueDataColor, orangeDataColor, ticksColor } = getColors(this.colorScheme);
 
       const yAxisLabels = Object.fromEntries(
@@ -75,7 +79,7 @@ export default {
         },
 
         tooltip: {
-          ...getTooltipConfig(textColor),
+          ...TOOLTIP_OPTIONS,
           trigger: 'item',
           formatter: (params) => this.getTooltip(params.dataIndex),
         },
@@ -109,7 +113,7 @@ export default {
           type: 'category',
           triggerEvent: true,
           tooltip: {
-            ...getTooltipConfig(textColor),
+            ...TOOLTIP_OPTIONS,
             show: true,
             formatter: (params) => this.getTooltip(params.tickIndex),
           },
@@ -167,7 +171,17 @@ export default {
             s__('Compliance report|Projects covered by frameworks'),
             s__('Compliance report|Projects not covered by frameworks'),
           ],
-          ...getLegendConfig(),
+          top: 0,
+          left: 0,
+          orient: 'vertical',
+          itemWidth: 14,
+          itemHeight: 14,
+          itemGap: 8,
+          textStyle: {
+            fontSize: 12,
+            color: textColor,
+            fontWeight: 'bold',
+          },
         },
       };
     },

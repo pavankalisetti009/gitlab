@@ -9,11 +9,7 @@ import {
   GL_TEXT_COLOR_DEFAULT as GL_TEXT_COLOR_DEFAULT_DARK,
   GRAY_900 as GRAY_900_DARK,
 } from '@gitlab/ui/src/tokens/build/js/tokens.dark';
-import {
-  getColors,
-  getLegendConfig,
-  getTooltipConfig,
-} from 'ee/compliance_dashboard/components/dashboard/utils/chart';
+import { getColors } from 'ee/compliance_dashboard/components/dashboard/utils/chart';
 import { GL_DARK, GL_LIGHT } from '~/constants';
 
 describe('chart utility functions', () => {
@@ -46,28 +42,6 @@ describe('chart utility functions', () => {
 
     it('adopts to color scheme change', () => {
       expect(getColors(GL_LIGHT)).not.toEqual(getColors(GL_DARK));
-    });
-  });
-
-  describe('getLegendConfig', () => {
-    it('returns expected structure', () => {
-      const COLOR = 'test';
-      expect(getLegendConfig(COLOR)).toEqual(
-        expect.objectContaining({
-          orient: 'vertical',
-          textStyle: expect.objectContaining({
-            color: COLOR,
-          }),
-        }),
-      );
-    });
-  });
-
-  describe('getTooltipConfig', () => {
-    it('returns expected structure', () => {
-      expect(Object.keys(getTooltipConfig()).sort()).toStrictEqual(
-        ['padding', 'borderWidth', 'textStyle'].sort(),
-      );
     });
   });
 });

@@ -1,6 +1,5 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
-import { s__ } from '~/locale';
 
 import { ROUTE_STANDARDS_ADHERENCE } from '../../constants';
 import StatusChart from './components/status_chart.vue';
@@ -26,11 +25,7 @@ export default {
       return passed + failed + pending === 0;
     },
   },
-  legend: {
-    passed: s__('Compliance report|Passed'),
-    failed: s__('Compliance report|Failed'),
-    pending: s__('Compliance report|Pending'),
-  },
+
   ROUTE_STANDARDS_ADHERENCE,
 };
 </script>

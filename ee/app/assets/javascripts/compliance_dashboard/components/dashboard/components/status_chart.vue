@@ -1,5 +1,6 @@
 <script>
 import { GlBarChart } from '@gitlab/ui/dist/charts';
+import { s__ } from '~/locale';
 import { getColors } from '../utils/chart';
 
 export default {
@@ -9,10 +10,6 @@ export default {
   props: {
     colorScheme: {
       type: String,
-      required: true,
-    },
-    legend: {
-      type: Object,
       required: true,
     },
     data: {
@@ -33,15 +30,15 @@ export default {
       return {
         items: [
           {
-            value: [this.data.passed, this.legend.passed],
+            value: [this.data.passed, this.$options.legend.passed],
             itemStyle: { color: this.colors.blueDataColor },
           },
           {
-            value: [this.data.pending, this.legend.pending],
+            value: [this.data.pending, this.$options.legend.pending],
             itemStyle: { color: this.colors.orangeDataColor },
           },
           {
-            value: [this.data.failed, this.legend.failed],
+            value: [this.data.failed, this.$options.legend.failed],
             itemStyle: { color: this.colors.magentaDataColor },
           },
         ],
@@ -66,13 +63,18 @@ export default {
       this.$router.push({ name: this.path });
     },
   },
+  legend: {
+    passed: s__('Compliance report|Passed'),
+    failed: s__('Compliance report|Failed'),
+    pending: s__('Compliance report|Pending'),
+  },
 };
 </script>
 
 <template>
   <gl-bar-chart
     :x-axis-title="xAxisTitle"
-    y-axis-title="Count"
+    :y-axis-title="s__('ComplianceReport|Count')"
     height="auto"
     :data="chartData"
     :option="chartOption"

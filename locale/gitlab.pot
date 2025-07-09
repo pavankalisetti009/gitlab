@@ -16151,6 +16151,9 @@ msgstr ""
 msgid "ComplianceReport|Controls"
 msgstr ""
 
+msgid "ComplianceReport|Count"
+msgstr ""
+
 msgid "ComplianceReport|Create a new framework"
 msgstr ""
 

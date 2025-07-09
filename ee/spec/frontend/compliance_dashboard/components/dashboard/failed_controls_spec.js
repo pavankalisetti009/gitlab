@@ -34,7 +34,6 @@ describe('Failed controls panel', () => {
     expect(chartProps).toStrictEqual(
       expect.objectContaining({
         colorScheme: GL_LIGHT,
-        legend: FailedControls.legend,
         path: FailedControls.ROUTE_STANDARDS_ADHERENCE,
         data: controlsProp,
       }),

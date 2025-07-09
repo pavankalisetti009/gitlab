@@ -23,26 +23,3 @@ export function getColors(colorScheme) {
     ticksColor: isDark ? GRAY_900_DARK : GRAY_900,
   };
 }
-
-export const getLegendConfig = (textColor) => ({
-  top: 0,
-  left: 0,
-  orient: 'vertical',
-  itemWidth: 14,
-  itemHeight: 14,
-  itemGap: 8,
-  textStyle: {
-    fontSize: 12,
-    color: textColor,
-    fontWeight: 'bold',
-  },
-});
-
-export const getTooltipConfig = (textColor) => ({
-  padding: 0,
-  borderWidth: 0,
-  textStyle: {
-    fontSize: 12,
-    color: textColor,
-  },
-});
