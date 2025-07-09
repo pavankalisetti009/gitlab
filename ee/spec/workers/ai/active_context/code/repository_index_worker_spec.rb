@@ -10,25 +10,25 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
 
     before do
       allow(::ActiveContext).to receive(:indexing?).and_return(true)
-      allow(Ai::ActiveContext::Code::IndexingService).to receive(:execute)
+      allow(Ai::ActiveContext::Code::InitialIndexingService).to receive(:execute)
     end
 
     context 'when ActiveContext indexing is enabled' do
       context 'with a valid pending repository' do
-        it 'calls IndexingService.execute with the repository' do
+        it 'calls InitialIndexingService.execute with the repository' do
           worker.perform(repository.id)
 
-          expect(Ai::ActiveContext::Code::IndexingService).to have_received(:execute).with(repository)
+          expect(Ai::ActiveContext::Code::InitialIndexingService).to have_received(:execute).with(repository)
         end
       end
 
       context 'with a repository that is not pending' do
         let_it_be(:ready_repository) { create(:ai_active_context_code_repository, state: :ready) }
 
-        it 'does not call IndexingService.execute' do
+        it 'does not call InitialIndexingService.execute' do
           worker.perform(ready_repository.id)
 
-          expect(Ai::ActiveContext::Code::IndexingService).not_to have_received(:execute)
+          expect(Ai::ActiveContext::Code::InitialIndexingService).not_to have_received(:execute)
         end
       end
 
@@ -36,7 +36,7 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
         it 'does not call IndexingService.execute' do
           worker.perform(999999)
 
-          expect(Ai::ActiveContext::Code::IndexingService).not_to have_received(:execute)
+          expect(Ai::ActiveContext::Code::InitialIndexingService).not_to have_received(:execute)
         end
       end
     end
@@ -46,10 +46,10 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
         allow(::ActiveContext).to receive(:indexing?).and_return(false)
       end
 
-      it 'does not call IndexingService.execute' do
+      it 'does not call InitialIndexingService.execute' do
         worker.perform(repository.id)
 
-        expect(Ai::ActiveContext::Code::IndexingService).not_to have_received(:execute)
+        expect(Ai::ActiveContext::Code::InitialIndexingService).not_to have_received(:execute)
       end
     end
 
@@ -70,7 +70,7 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
               retries: described_class::LEASE_RETRIES,
               sleep_sec: described_class::LEASE_TRY_AFTER)
 
-          expect(Ai::ActiveContext::Code::IndexingService).not_to receive(:execute)
+          expect(Ai::ActiveContext::Code::InitialIndexingService).not_to receive(:execute)
 
           worker.perform(repository.id)
         end
