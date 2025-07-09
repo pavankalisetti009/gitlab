@@ -84,4 +84,16 @@ export const limitVulnerabilityGradeProjects = (
 
 export const PROJECT_LOADING_ERROR_MESSAGE = __('An error occurred while retrieving projects.');
 
+/**
+ * Custom error class for PDF export operations that are not ready.
+ *
+ * @param {string} message - User-friendly error message describing why the export isn't ready
+ */
+export class PdfExportError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'PdfExportError';
+  }
+}
+
 export default () => ({});

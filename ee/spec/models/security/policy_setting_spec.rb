@@ -3,9 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Security::PolicySetting, feature_category: :security_policy_management, type: :model do
-  subject(:settings) { build(:security_policy_settings) }
+  let_it_be(:organization) { create(:organization) }
+
+  subject(:settings) { build(:security_policy_settings, organization: organization) }
 
   describe 'associations' do
+    it { is_expected.to belong_to(:organization).class_name('Organizations::Organization') }
     it { is_expected.to belong_to(:csp_namespace).optional.class_name('Group') }
   end
 
@@ -13,12 +16,6 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
     describe 'csp_namespace' do
       let_it_be(:parent_group) { create(:group) }
       let_it_be(:child_group) { create(:group, parent: parent_group) }
-
-      it_behaves_like 'cleanup by a loose foreign key' do
-        let_it_be(:parent) { create(:group) }
-        let_it_be(:model) { create(:security_policy_settings, csp_namespace: parent) }
-        let(:lfk_column) { :csp_namespace_id }
-      end
 
       it 'can be assigned a top level group' do
         settings.update!(csp_namespace: parent_group)
@@ -40,46 +37,40 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
         expect(settings.errors[:csp_namespace]).to include('must be a group')
       end
     end
-
-    it_behaves_like 'singleton record validation' do
-      it 'allows updating the existing record' do
-        setting = described_class.create!
-
-        setting.csp_namespace = build(:group)
-
-        expect(setting).to be_valid
-      end
-    end
   end
 
-  describe '.instance' do
+  describe '.for_organization' do
+    subject(:for_organization) { described_class.for_organization(organization) }
+
     context 'when an entry does not exist' do
       it 'creates an entry' do
-        expect { described_class.instance }.to change { described_class.count }.by(1)
+        expect { for_organization }.to change { described_class.count }.by(1)
       end
 
       it 'sets default attributes' do
-        expect(described_class.instance).to have_attributes(csp_namespace_id: nil)
+        expect(for_organization).to have_attributes(csp_namespace_id: nil)
       end
     end
 
     context 'when an entry exists' do
-      let_it_be(:settings) { create(:security_policy_settings, csp_namespace: create(:group)) }
+      let_it_be(:settings) do
+        create(:security_policy_settings, organization: organization, csp_namespace: create(:group))
+      end
 
       it 'does not create a new entry' do
-        expect { described_class.instance }.not_to change { described_class.count }
+        expect { for_organization }.not_to change { described_class.count }
       end
 
       it 'returns the existing entry' do
-        expect(described_class.instance).to eq(settings)
+        expect(for_organization).to eq(settings)
       end
     end
   end
 
-  describe '.csp_enabled?' do
+  describe '#csp_enabled?' do
     include Security::PolicyCspHelpers
 
-    subject { described_class.csp_enabled?(group) }
+    subject { settings.csp_enabled?(group) }
 
     let(:group) { top_level_group }
     let_it_be(:top_level_group) { create(:group) }
@@ -89,7 +80,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
     context 'when the group is designated as a CSP group' do
       before do
-        stub_csp_group(group)
+        settings.update!(csp_namespace: top_level_group)
       end
 
       it { is_expected.to be(true) }
@@ -127,7 +118,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
   end
 
   describe '#trigger_security_policies_updates' do
-    subject(:policy_settings) { create(:security_policy_settings) }
+    subject(:policy_settings) { create(:security_policy_settings, organization: organization) }
 
     let_it_be(:old_group) { create(:group) }
     let_it_be(:new_group) { create(:group) }

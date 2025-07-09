@@ -4,7 +4,7 @@ import { GlLineChart } from '@gitlab/ui/dist/charts';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
-import { PROJECT_LOADING_ERROR_MESSAGE } from 'ee/security_dashboard/helpers';
+import { PROJECT_LOADING_ERROR_MESSAGE, PdfExportError } from 'ee/security_dashboard/helpers';
 import { DOC_PATH_PROJECT_SECURITY_DASHBOARD } from 'ee/security_dashboard/constants';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -172,6 +172,18 @@ export default {
       this.chart = chart;
     },
     getReportData() {
+      if (this.isLoading) {
+        throw new PdfExportError(
+          s__('SecurityReports|Chart is still loading. Please try again in a few minutes.'),
+        );
+      }
+
+      if (!this.chart) {
+        throw new PdfExportError(
+          s__('SecurityReports|Chart failed to initialize. Please refresh the page and try again.'),
+        );
+      }
+
       return {
         project_vulnerabilities_history: {
           svg: this.chart.getDataURL({

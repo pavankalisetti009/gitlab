@@ -2,8 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::ActiveContext::Code::IndexingService, feature_category: :global_search do
+RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category: :global_search do
   let_it_be(:repository) { create(:ai_active_context_code_repository, state: :pending) }
+  let_it_be(:collection) { create(:ai_active_context_collection) }
+
+  before do
+    allow(ActiveContext::CollectionCache).to receive(:fetch).and_return(collection)
+  end
 
   describe '.execute' do
     subject(:execute) { described_class.execute(repository) }
@@ -20,6 +25,7 @@ RSpec.describe Ai::ActiveContext::Code::IndexingService, feature_category: :glob
       execute
 
       expect(repository.reload.state).to eq('embedding_indexing_in_progress')
+      expect(repository.initial_indexing_last_queued_item).to eq('hash2')
     end
 
     context 'when indexing fails' do

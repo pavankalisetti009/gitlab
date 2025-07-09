@@ -39,6 +39,16 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
         expect(repository).not_to be_valid
       end
 
+      it 'is valid with initial_indexing_last_queued_item' do
+        repository.metadata = { initial_indexing_last_queued_item: 'item_ref_123' }
+        expect(repository).to be_valid
+      end
+
+      it 'is valid with null initial_indexing_last_queued_item' do
+        repository.metadata = { initial_indexing_last_queued_item: nil }
+        expect(repository).to be_valid
+      end
+
       it 'is valid with last_error' do
         repository.metadata = { last_error: 'Something went wrong' }
         expect(repository).to be_valid
@@ -47,6 +57,11 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
       it 'is valid with null last_error' do
         repository.metadata = { last_error: nil }
         expect(repository).to be_valid
+      end
+
+      it 'is invalid with wrong type for initial_indexing_last_queued_item' do
+        repository.metadata = { initial_indexing_last_queued_item: 123 }
+        expect(repository).not_to be_valid
       end
 
       it 'is invalid with wrong type for last_error' do
@@ -92,17 +107,6 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
   end
 
   describe 'scopes' do
-    describe '.by_state' do
-      let_it_be(:pending) { create(:ai_active_context_code_repository, state: :pending) }
-      let_it_be(:ready) { create(:ai_active_context_code_repository, state: :ready) }
-
-      it 'returns repositories with matching state' do
-        result = described_class.by_state(:pending)
-
-        expect(result).to contain_exactly(pending)
-      end
-    end
-
     describe '.for_connection_and_enabled_namespace' do
       let_it_be(:connection1) { create(:ai_active_context_connection) }
       let_it_be(:connection2) { create(:ai_active_context_connection, :inactive) }
@@ -151,28 +155,6 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
         result = described_class.with_active_connection
 
         expect(result).to contain_exactly(repository_with_active_connection)
-      end
-    end
-
-    describe '.pending_with_active_connection' do
-      let_it_be(:active_connection) { create(:ai_active_context_connection) }
-      let_it_be(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
-      let_it_be(:pending_with_active) do
-        create(:ai_active_context_code_repository, state: :pending, active_context_connection: active_connection)
-      end
-
-      let_it_be(:ready_with_active) do
-        create(:ai_active_context_code_repository, state: :ready, active_context_connection: active_connection)
-      end
-
-      let_it_be(:pending_with_inactive) do
-        create(:ai_active_context_code_repository, state: :pending, active_context_connection: inactive_connection)
-      end
-
-      it 'returns pending repositories with active connections' do
-        result = described_class.pending_with_active_connection
-
-        expect(result).to contain_exactly(pending_with_active)
       end
     end
   end

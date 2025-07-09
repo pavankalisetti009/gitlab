@@ -8,7 +8,7 @@ module Ai
 
         def self.enqueue_pending_jobs
           ::Ai::ActiveContext::Code::Repository
-            .pending_with_active_connection
+            .pending.with_active_connection
             .limit(PROCESS_PENDING_LIMIT)
             .each do |repository|
               RepositoryIndexWorker.perform_async(repository.id)

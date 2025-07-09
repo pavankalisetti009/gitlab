@@ -203,6 +203,10 @@ module EE
         end
 
         def subscribe_to_active_context_code_events(store)
+          store.subscribe ::Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker,
+            to: ::Ai::ActiveContext::Code::MarkRepositoryAsReadyEvent,
+            if: ->(_) { ::Feature.enabled?(:active_context_code_event_mark_repository_ready, :instance) }
+
           store.subscribe ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorker,
             to: ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent
 

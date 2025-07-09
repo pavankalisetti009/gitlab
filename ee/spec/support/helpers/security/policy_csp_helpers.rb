@@ -3,9 +3,11 @@
 module Security
   module PolicyCspHelpers
     def stub_csp_group(group)
-      allow(Security::PolicySetting).to receive(:instance).and_return(
-        instance_double(Security::PolicySetting, csp_namespace_id: group.id)
-      )
+      allow(Security::PolicySetting)
+        .to receive(:for_organization).with(an_instance_of(Organizations::Organization))
+                                      .and_return(
+                                        Security::PolicySetting.new(csp_namespace_id: group.id)
+                                      )
     end
   end
 end

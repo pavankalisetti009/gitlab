@@ -7,7 +7,7 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexService, feature_category
 
   describe '.enqueue_pending_jobs' do
     before do
-      allow(::Ai::ActiveContext::Code::Repository).to receive(:pending_with_active_connection)
+      allow(::Ai::ActiveContext::Code::Repository).to receive_message_chain(:pending, :with_active_connection)
         .and_return(::Ai::ActiveContext::Code::Repository.all)
     end
 

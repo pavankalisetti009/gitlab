@@ -11,6 +11,7 @@ import {
   HTTP_STATUS_OK,
   HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '~/lib/utils/http_status';
+import { PdfExportError } from 'ee/security_dashboard/helpers';
 
 jest.mock('~/alert');
 
@@ -21,7 +22,7 @@ describe('PdfExportButton', () => {
   let wrapper;
   let mock;
 
-  const createWrapper = () => {
+  const createWrapper = (props = {}) => {
     wrapper = shallowMountExtended(PdfExportButton, {
       provide: {
         vulnerabilitiesPdfExportEndpoint,
@@ -29,6 +30,7 @@ describe('PdfExportButton', () => {
       },
       propsData: {
         getReportData: jest.fn().mockResolvedValue({}),
+        ...props,
       },
     });
   };
@@ -125,6 +127,25 @@ describe('PdfExportButton', () => {
 
     expect(createAlert).toHaveBeenCalledWith({
       message: serverMessage,
+      variant: 'danger',
+      dismissible: true,
+    });
+  });
+
+  it('shows error alert when charts are still loading', async () => {
+    const errorMessage = 'Chart is still loading. Please try again in a few minutes.';
+
+    createWrapper({
+      getReportData: jest.fn().mockImplementation(() => {
+        throw new PdfExportError(errorMessage);
+      }),
+    });
+
+    findButton().vm.$emit('click');
+    await nextTick();
+
+    expect(createAlert).toHaveBeenCalledWith({
+      message: errorMessage,
       variant: 'danger',
       dismissible: true,
     });
