@@ -18959,25 +18959,6 @@ CREATE SEQUENCE onboarding_progresses_id_seq
 
 ALTER SEQUENCE onboarding_progresses_id_seq OWNED BY onboarding_progresses.id;
 
-CREATE TABLE operations_feature_flag_scopes (
-    id bigint NOT NULL,
-    feature_flag_id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    active boolean NOT NULL,
-    environment_scope character varying DEFAULT '*'::character varying NOT NULL,
-    strategies jsonb DEFAULT '[{"name": "default", "parameters": {}}]'::jsonb NOT NULL
-);
-
-CREATE SEQUENCE operations_feature_flag_scopes_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE operations_feature_flag_scopes_id_seq OWNED BY operations_feature_flag_scopes.id;
-
 CREATE TABLE operations_feature_flags (
     id bigint NOT NULL,
     project_id bigint NOT NULL,
@@ -28269,8 +28250,6 @@ ALTER TABLE ONLY observability_traces_issues_connections ALTER COLUMN id SET DEF
 
 ALTER TABLE ONLY onboarding_progresses ALTER COLUMN id SET DEFAULT nextval('onboarding_progresses_id_seq'::regclass);
 
-ALTER TABLE ONLY operations_feature_flag_scopes ALTER COLUMN id SET DEFAULT nextval('operations_feature_flag_scopes_id_seq'::regclass);
-
 ALTER TABLE ONLY operations_feature_flags ALTER COLUMN id SET DEFAULT nextval('operations_feature_flags_id_seq'::regclass);
 
 ALTER TABLE ONLY operations_feature_flags_clients ALTER COLUMN id SET DEFAULT nextval('operations_feature_flags_clients_id_seq'::regclass);
@@ -30985,9 +30964,6 @@ ALTER TABLE ONLY observability_traces_issues_connections
 
 ALTER TABLE ONLY onboarding_progresses
     ADD CONSTRAINT onboarding_progresses_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY operations_feature_flag_scopes
-    ADD CONSTRAINT operations_feature_flag_scopes_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY operations_feature_flags_clients
     ADD CONSTRAINT operations_feature_flags_clients_pkey PRIMARY KEY (id);
@@ -35829,8 +35805,6 @@ CREATE UNIQUE INDEX index_external_pull_requests_on_project_and_branches ON exte
 CREATE INDEX index_external_status_checks_protected_branches_on_project_id ON external_status_checks_protected_branches USING btree (project_id);
 
 CREATE INDEX index_f4903d2246 ON instance_type_ci_runner_machines USING btree (organization_id);
-
-CREATE UNIQUE INDEX index_feature_flag_scopes_on_flag_id_and_environment_scope ON operations_feature_flag_scopes USING btree (feature_flag_id, environment_scope);
 
 CREATE UNIQUE INDEX index_feature_flags_clients_on_project_id_and_token_encrypted ON operations_feature_flags_clients USING btree (project_id, token_encrypted);
 
@@ -46200,9 +46174,6 @@ ALTER TABLE ONLY customer_relations_organizations
 
 ALTER TABLE ONLY ai_agent_version_attachments
     ADD CONSTRAINT fk_rails_a4ed49efb5 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY operations_feature_flag_scopes
-    ADD CONSTRAINT fk_rails_a50a04d0a4 FOREIGN KEY (feature_flag_id) REFERENCES operations_feature_flags(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY duo_workflows_events
     ADD CONSTRAINT fk_rails_a55845e9fa FOREIGN KEY (workflow_id) REFERENCES duo_workflows_workflows(id) ON DELETE CASCADE;
