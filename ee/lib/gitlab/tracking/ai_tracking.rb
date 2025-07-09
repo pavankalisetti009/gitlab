@@ -2,6 +2,8 @@
 
 module Gitlab
   module Tracking
+    # Class for tracking AI usage events.
+    # @see doc/development/ai_features/usage_tracking.md for documentation
     module AiTracking
       extend AiUsageEventsRegistryDsl
 
