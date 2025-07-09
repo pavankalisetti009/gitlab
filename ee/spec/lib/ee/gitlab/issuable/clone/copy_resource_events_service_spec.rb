@@ -88,12 +88,25 @@ RSpec.describe Gitlab::Issuable::Clone::CopyResourceEventsService, feature_categ
           milestone = create(:milestone, title: 'milestone', group: group)
           original_issue.update!(milestone: milestone)
 
-          subject.execute
+          expect do
+            subject.execute
+          end.to change { ResourceStateEvent.count }.by(1)
 
           latest_state_event = ResourceStateEvent.last
           expect(latest_state_event).to be_valid
           expect(latest_state_event.issue_id).to be_nil
           expect(latest_state_event.epic).to eq(new_epic)
+        end
+
+        it 'sets the correct namespace_id on copied events' do
+          expect do
+            subject.execute
+          end.to change { ResourceStateEvent.count }.by(1)
+
+          latest_state_event = ResourceStateEvent.last
+          expect(latest_state_event).to be_valid
+          expect(latest_state_event.epic).to eq(new_epic)
+          expect(latest_state_event.namespace_id).to eq(new_epic.group_id)
         end
       end
 
