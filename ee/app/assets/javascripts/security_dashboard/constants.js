@@ -129,3 +129,5 @@ export const SEVERITY_GROUPS = [
 ];
 
 export const VULNERABILITY_DETAIL_CODE_FLOWS = 'VulnerabilityDetailCodeFlows';
+
+export const EXPORT_NOT_READY_ERROR_CODE = 'EXPORT_NOT_READY';

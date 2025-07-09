@@ -57609,6 +57609,12 @@ msgstr ""
 msgid "SecurityReports|Change status"
 msgstr ""
 
+msgid "SecurityReports|Chart failed to initialize. Please refresh the page and try again."
+msgstr ""
+
+msgid "SecurityReports|Chart is still loading. Please try again in a few minutes."
+msgstr ""
+
 msgid "SecurityReports|Check the messages generated while parsing the following security reports, as they may prevent the results from being ingested by GitLab. Ensure the security report conforms to a supported %{helpPageLinkStart}JSON schema%{helpPageLinkEnd}."
 msgstr ""
 

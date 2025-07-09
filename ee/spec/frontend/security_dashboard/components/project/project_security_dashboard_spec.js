@@ -12,6 +12,7 @@ import { useFakeDate } from 'helpers/fake_date';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
+import { PdfExportError } from 'ee/security_dashboard/helpers';
 import { mockProjectSecurityChartsWithData, mockSeverityCountsWithData } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -191,6 +192,35 @@ describe('Project Security Dashboard component', () => {
         project_vulnerabilities_history: {
           svg: mockSvg,
         },
+      });
+    });
+
+    describe('error handling', () => {
+      it("throws PdfExportError when it's loading", () => {
+        createWrapper();
+        const getReportDataFn = findExportButton().props('getReportData');
+
+        expect(() => {
+          getReportDataFn();
+        }).toThrow(
+          new PdfExportError('Chart is still loading. Please try again in a few minutes.'),
+        );
+      });
+
+      it('throws PdfExportError when chart is not initialized', async () => {
+        createWrapper({
+          historyQueryData: mockProjectSecurityChartsWithData(),
+          severitiesCountQueryData: mockSeverityCountsWithData(),
+        });
+        await waitForPromises();
+
+        const getReportDataFn = findExportButton().props('getReportData');
+
+        expect(() => {
+          getReportDataFn();
+        }).toThrow(
+          new PdfExportError('Chart failed to initialize. Please refresh the page and try again.'),
+        );
       });
     });
   });
