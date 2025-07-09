@@ -27,11 +27,11 @@ describe('FeatureSettingsTable', () => {
   const findFeatureSettingsTable = () => wrapper.findComponent(FeatureSettingsTable);
   const findAllSettingsBlock = () => wrapper.findAllComponents(FeatureSettingsBlock);
   const findAllSettingsDescriptions = () => wrapper.findAllComponents(GlSprintf);
-  const findDuoChatTableRows = () => wrapper.findByTestId('duo-chat-table-rows');
-  const findCodeSuggestionsTableRows = () => wrapper.findByTestId('code-suggestions-table-rows');
-  const findOtherDuoFeaturesTableRows = () => wrapper.findByTestId('other-duo-features-table-rows');
-  const findDuoIssuesTableRows = () => wrapper.findByTestId('duo-issues-table-rows');
-  const findDuoMergeRequestTableRows = () => wrapper.findByTestId('duo-merge-requests-table-rows');
+  const findDuoChatTable = () => wrapper.findByTestId('duo-chat-table');
+  const findCodeSuggestionsTable = () => wrapper.findByTestId('code-suggestions-table');
+  const findOtherDuoFeaturesTable = () => wrapper.findByTestId('other-duo-features-table');
+  const findDuoIssuesTable = () => wrapper.findByTestId('duo-issues-table');
+  const findDuoMergeRequestTable = () => wrapper.findByTestId('duo-merge-requests-table');
 
   it('renders the component', () => {
     createComponent();
@@ -43,11 +43,11 @@ describe('FeatureSettingsTable', () => {
     it('passes the correct loading state to `FeatureSettingsTableRows`', () => {
       createComponent({ props: { isLoading: true } });
 
-      expect(findCodeSuggestionsTableRows().props('isLoading')).toBe(true);
-      expect(findDuoChatTableRows().props('isLoading')).toBe(true);
-      expect(findDuoMergeRequestTableRows().props('isLoading')).toBe(true);
-      expect(findDuoIssuesTableRows().props('isLoading')).toBe(true);
-      expect(findOtherDuoFeaturesTableRows().props('isLoading')).toBe(true);
+      expect(findCodeSuggestionsTable().props('isLoading')).toBe(true);
+      expect(findDuoChatTable().props('isLoading')).toBe(true);
+      expect(findDuoMergeRequestTable().props('isLoading')).toBe(true);
+      expect(findDuoIssuesTable().props('isLoading')).toBe(true);
+      expect(findOtherDuoFeaturesTable().props('isLoading')).toBe(true);
     });
   });
 
@@ -61,7 +61,7 @@ describe('FeatureSettingsTable', () => {
       expect(findAllSettingsDescriptions().at(0).attributes('message')).toContain(
         'Assists developers by generating and completing code in real-time.',
       );
-      expect(findCodeSuggestionsTableRows().props('aiFeatureSettings')).toEqual(
+      expect(findCodeSuggestionsTable().props('featureSettings')).toEqual(
         mockCodeSuggestionsFeatureSettings,
       );
     });
@@ -73,7 +73,7 @@ describe('FeatureSettingsTable', () => {
       expect(findAllSettingsDescriptions().at(1).attributes('message')).toContain(
         'An AI assistant that helps users accelerate software development using real-time conversational AI',
       );
-      expect(findDuoChatTableRows().props('aiFeatureSettings')).toEqual(mockDuoChatFeatureSettings);
+      expect(findDuoChatTable().props('featureSettings')).toEqual(mockDuoChatFeatureSettings);
     });
 
     it('renders Duo Merge Request section', () => {
@@ -83,7 +83,7 @@ describe('FeatureSettingsTable', () => {
       expect(findAllSettingsDescriptions().at(2).attributes('message')).toContain(
         'AI-native features that help users accomplish tasks during the lifecycle of a merge request.',
       );
-      expect(findDuoMergeRequestTableRows().props('aiFeatureSettings')).toEqual(
+      expect(findDuoMergeRequestTable().props('featureSettings')).toEqual(
         mockMergeRequestFeatureSettings,
       );
     });
@@ -95,7 +95,7 @@ describe('FeatureSettingsTable', () => {
       expect(findAllSettingsDescriptions().at(3).attributes('message')).toContain(
         'An AI-native feature that generates a summary of discussions on an issue.',
       );
-      expect(findDuoIssuesTableRows().props('aiFeatureSettings')).toEqual(mockIssueFeatureSettings);
+      expect(findDuoIssuesTable().props('featureSettings')).toEqual(mockIssueFeatureSettings);
     });
 
     it('renders Other GitLab Duo features section', () => {
@@ -105,7 +105,7 @@ describe('FeatureSettingsTable', () => {
       expect(findAllSettingsDescriptions().at(4).attributes('message')).toContain(
         'AI-native features that support users outside of Chat or Code Suggestions.',
       );
-      expect(findOtherDuoFeaturesTableRows().props('aiFeatureSettings')).toEqual(
+      expect(findOtherDuoFeaturesTable().props('featureSettings')).toEqual(
         mockOtherDuoFeaturesSettings,
       );
     });

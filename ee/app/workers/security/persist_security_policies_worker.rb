@@ -3,6 +3,7 @@
 module Security
   class PersistSecurityPoliciesWorker
     include ApplicationWorker
+    include ::Gitlab::InternalEventsTracking
 
     data_consistency :sticky
     idempotent!
@@ -29,6 +30,8 @@ module Security
       )
 
       Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService.new(configuration).execute
+
+      track_csp_usage(configuration)
     end
 
     private
@@ -40,6 +43,15 @@ module Security
         policy_type: policy_type,
         force_resync: force_resync
       ).execute
+    end
+
+    def track_csp_usage(configuration)
+      return unless configuration.designated_as_csp?
+
+      track_internal_event(
+        'sync_csp_configuration',
+        namespace: configuration.namespace
+      )
     end
   end
 end
