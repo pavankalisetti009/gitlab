@@ -182,7 +182,7 @@ class IssuableFinder
 
     state_counts = finder
       .execute
-      .reorder(nil)
+      .without_order
       .group(:state_id)
       .count
 

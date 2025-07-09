@@ -89,7 +89,7 @@ module EE
           return issues if all_assignee_lists.empty?
 
           matching_assignee = ::IssueAssignee
-                                .where(user_id: all_assignee_lists.reorder(nil).select(:user_id))
+                                .where(user_id: all_assignee_lists.without_order.select(:user_id))
                                 .where("issue_id = issues.id")
                                 .select(1)
 
