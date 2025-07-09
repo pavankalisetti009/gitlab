@@ -202,6 +202,21 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
     end
 
+    describe '.with_reserved_bytes' do
+      let_it_be(:node1) { create(:zoekt_node) }
+      let_it_be(:node2) { create(:zoekt_node) }
+      let_it_be(:node3) { create(:zoekt_node) }
+      let_it_be(:replica1) { create(:knowledge_graph_replica, zoekt_node: node1, reserved_storage_bytes: 1000) }
+      let_it_be(:index1) { create(:zoekt_index, node: node1, reserved_storage_bytes: 2000) }
+      let_it_be(:index2) { create(:zoekt_index, node: node2, reserved_storage_bytes: 500) }
+
+      subject(:with_reserved_bytes) { described_class.where(id: [node1, node2, node3]).with_reserved_bytes }
+
+      it 'returns sum of reserved bytes or nil for each node' do
+        expect(with_reserved_bytes.pluck(:reserved_storage_bytes_total)).to match_array([3000, 500, nil])
+      end
+    end
+
     describe '.negative_unclaimed_storage_bytes' do
       let_it_be(:node_with_negative_storage) { create(:zoekt_node) }
       let_it_be(:node_with_positive_storage) { create(:zoekt_node) }
@@ -228,17 +243,33 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       let_it_be(:node_with_zero_storage) { create(:zoekt_node, total_bytes: 1000, used_bytes: 1000) }
       let_it_be(:node_with_negative_storage) { create(:zoekt_node, :enough_free_space) }
 
-      before do
-        # Scenario with positive unclaimed storage
+      # Scenario with positive unclaimed storage
+      let_it_be(:index1) do
         create(:zoekt_index,
           node: node_with_positive_storage,
-          reserved_storage_bytes: node_with_positive_storage.total_bytes / 2
+          reserved_storage_bytes: node_with_positive_storage.total_bytes / 3
         )
+      end
 
-        # Scenario with negative unclaimed storage
+      let_it_be(:replica1) do
+        create(:knowledge_graph_replica,
+          zoekt_node: node_with_positive_storage,
+          reserved_storage_bytes: node_with_positive_storage.total_bytes / 3
+        )
+      end
+
+      # Scenario with negative unclaimed storage
+      let_it_be(:index2) do
         create(:zoekt_index,
           node: node_with_negative_storage,
-          reserved_storage_bytes: node_with_negative_storage.total_bytes * 2
+          reserved_storage_bytes: (node_with_negative_storage.total_bytes / 2) + 10
+        )
+      end
+
+      let_it_be(:replica2) do
+        create(:knowledge_graph_replica,
+          zoekt_node: node_with_negative_storage,
+          reserved_storage_bytes: (node_with_negative_storage.total_bytes / 2) + 10
         )
       end
 
@@ -250,22 +281,13 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(positive_nodes).not_to include(node_with_negative_storage)
       end
 
-      it 'adds unclaimed_storage_bytes attribute to returned nodes' do
-        result = described_class.with_positive_unclaimed_storage_bytes.find(node_with_positive_storage.id)
-
-        expect(result).to respond_to(:unclaimed_storage_bytes)
-        expect(result.unclaimed_storage_bytes).to be > 0
-      end
-
       it 'calculates unclaimed_storage_bytes correctly using SQL formula' do
-        result = described_class.with_positive_unclaimed_storage_bytes.find(node_with_positive_storage.id)
+        result = described_class.with_positive_unclaimed_storage_bytes
 
-        # The SQL unclaimed_storage_bytes formula should match:
-        # usable_storage_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0)
-        expected_unclaimed_bytes = node_with_positive_storage.usable_storage_bytes -
-          node_with_positive_storage.indices.sum(:reserved_storage_bytes)
-
-        expect(result.unclaimed_storage_bytes).to eq(expected_unclaimed_bytes)
+        expect(result).to match_array([node_with_positive_storage])
+        expect(result[0]).to have_attribute('unclaimed_storage_bytes')
+        expect(result[0]['unclaimed_storage_bytes']).to be > 0
+        expect(result[0]['unclaimed_storage_bytes']).to eq(node_with_positive_storage.unclaimed_storage_bytes)
       end
 
       it 'groups results by node id to handle multiple indices' do
@@ -294,9 +316,31 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     describe '.order_by_unclaimed_space_desc' do
       let_it_be(:node2) { create(:zoekt_node, :not_enough_free_space) }
       let_it_be(:node3) { create(:zoekt_node, :enough_free_space) }
+      let_it_be(:node4) { create(:zoekt_node, :enough_free_space) }
+
+      let_it_be(:index1) do
+        create(:zoekt_index,
+          node: node3,
+          reserved_storage_bytes: 100_000
+        )
+      end
+
+      let_it_be(:replica1) do
+        create(:knowledge_graph_replica,
+          zoekt_node: node3,
+          reserved_storage_bytes: 100_000
+        )
+      end
+
+      let_it_be(:replica2) do
+        create(:knowledge_graph_replica,
+          zoekt_node: node4,
+          reserved_storage_bytes: 150_000
+        )
+      end
 
       it 'returns nodes with positive unclaimed storage_bytes in descending order' do
-        expect(described_class.order_by_unclaimed_space_desc.to_a).to eq([node3, node2])
+        expect(described_class.order_by_unclaimed_space_desc.to_a).to eq([node4, node3, node2])
       end
     end
 
