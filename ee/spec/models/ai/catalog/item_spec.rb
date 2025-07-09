@@ -24,6 +24,6 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   end
 
   describe 'enums' do
-    it { is_expected.to define_enum_for(:item_type).with_values(agent: 1) }
+    it { is_expected.to define_enum_for(:item_type).with_values(agent: 1, flow: 2) }
   end
 end
