@@ -2,6 +2,8 @@
 
 module Vulnerabilities
   class BulkSeverityOverrideService < BaseBulkUpdateService
+    include Gitlab::Utils::StrongMemoize
+
     def initialize(current_user, vulnerability_ids, comment, severity)
       super(current_user, vulnerability_ids, comment)
       @new_severity = severity
@@ -9,32 +11,92 @@ module Vulnerabilities
 
     private
 
-    def update(vulnerabilities_ids)
-      selected_vulnerabilities = vulnerabilities_to_update(vulnerabilities_ids)
-      vulnerability_attrs = vulnerabilities_attributes(selected_vulnerabilities)
-      return if vulnerability_attrs.empty?
+    def update(vulnerability_ids)
+      vulnerabilities_attributes = vulnerabilities_attributes(vulnerabilities(vulnerability_ids))
+      return if vulnerabilities_attributes.blank?
 
-      db_attributes = db_attributes_for(vulnerability_attrs)
+      changed = vulnerabilities_that_changed_severity(vulnerability_ids)
+      update_vulnerabilities!(changed) if changed.any?
 
-      begin
-        SecApplicationRecord.transaction do
-          update_support_tables(selected_vulnerabilities, db_attributes)
-          Vulnerabilities::BulkEsOperationService.new(selected_vulnerabilities).execute do |vulnerabilities|
-            vulnerabilities.update_all(db_attributes[:vulnerabilities])
-          end
+      create_notes!(vulnerabilities_attributes)
+      audit_severity_changes(vulnerabilities_attributes)
+      track_severity_changes(vulnerabilities_attributes)
+    rescue StandardError => e
+      track_severity_changes(vulnerabilities_attributes, e) if vulnerabilities_attributes.presence
+      raise
+    end
+
+    def update_vulnerabilities!(vulnerabilities)
+      attributes = vulnerabilities_attributes(vulnerabilities)
+      db_attributes = db_attributes_for(attributes)
+
+      SecApplicationRecord.transaction do
+        update_support_tables(vulnerabilities, db_attributes)
+
+        Vulnerabilities::BulkEsOperationService.new(vulnerabilities).execute do |batch|
+          batch.update_all(db_attributes[:vulnerabilities])
         end
-
-        Note.transaction do
-          notes_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
-          SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
-        end
-      rescue StandardError => e
-        track_severity_changes(vulnerability_attrs, e)
-        raise
       end
+    end
 
-      audit_severity_changes(vulnerability_attrs)
-      track_severity_changes(vulnerability_attrs)
+    def create_notes!(vulnerability_attributes)
+      vulnerability_ids = extract_vulnerability_ids(vulnerability_attributes)
+      latest_notes_by_vulnerability_ids = fetch_latest_system_notes(vulnerability_ids)
+
+      attributes_to_insert = select_attributes_needing_new_note(
+        vulnerability_attributes,
+        latest_notes_by_vulnerability_ids
+      )
+
+      return if attributes_to_insert.empty?
+
+      db_attributes = db_attributes_for(attributes_to_insert)
+
+      Note.transaction do
+        note_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
+        SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(note_ids))
+      end
+    end
+
+    def extract_vulnerability_ids(vulnerability_attributes)
+      vulnerability_attributes.map(&:first)
+    end
+
+    def fetch_latest_system_notes(vulnerability_ids)
+      Note
+        .system
+        .with_noteable_type(Vulnerability.name)
+        .with_noteable_ids(vulnerability_ids)
+        .distinct_on_noteable_id
+        .order_by_noteable_latest_first
+        .index_by(&:noteable_id)
+    end
+
+    def select_attributes_needing_new_note(vulnerability_attributes, latest_notes_by_vulnerability_ids)
+      vulnerability_attributes.select do |id, severity, *_|
+        intended_note = formatted_severity_change_note(severity)
+
+        last_note = latest_notes_by_vulnerability_ids[id]
+        last_note.nil? || last_note.note != intended_note
+      end
+    end
+
+    def formatted_severity_change_note(original_severity)
+      if original_severity.to_s == @new_severity.to_s
+        format(
+          'changed comment to: "%{comment}"',
+          comment: comment
+        )
+      else
+        ::SystemNotes::VulnerabilitiesService.formatted_note(
+          'changed',
+          @new_severity,
+          nil,
+          comment,
+          'severity',
+          original_severity
+        )
+      end
     end
 
     def authorized_for_project(project)
@@ -80,20 +142,31 @@ module Vulnerabilities
       }
     end
 
-    def vulnerabilities_to_update(ids)
-      # rubocop: disable CodeReuse/ActiveRecord -- context specific
-      Vulnerability.id_in(ids).where.not(severity: @new_severity)
-      # rubocop: enable CodeReuse/ActiveRecord
+    def vulnerabilities(ids)
+      strong_memoize_with(:vulnerabilities, ids.sort) do
+        Vulnerability
+          .id_in(ids)
+          .with_projects_and_routes
+      end
     end
 
-    def update_support_tables(vulnerabilities, db_attributes)
-      Vulnerabilities::Finding.by_vulnerability(vulnerabilities).update_all(severity: @new_severity, updated_at: now)
-      Vulnerabilities::SeverityOverride.insert_all!(db_attributes[:severity_overrides])
+    def vulnerabilities_that_changed_severity(ids)
+      strong_memoize_with(:vulnerabilities_that_changed_severity, ids.sort) do
+        vulnerabilities(ids).without_severities(@new_severity)
+      end
     end
 
     def vulnerabilities_attributes(vulnerabilities)
-      attributes_relation = vulnerabilities.select(:id, :severity, :project_id).with_projects
-      attributes_relation.map { |v| [v.id, v.severity, v.project_id, v.project.project_namespace_id, v.project, v] }
+      vulnerabilities.map do |v|
+        [
+          v.id,
+          v.severity,
+          v.project_id,
+          v.project.project_namespace_id,
+          v.project,
+          v
+        ]
+      end
     end
 
     def vulnerabilities_update_attributes
@@ -101,6 +174,11 @@ module Vulnerabilities
         severity: @new_severity,
         updated_at: now
       }
+    end
+
+    def update_support_tables(vulnerabilities, db_attributes)
+      Vulnerabilities::Finding.by_vulnerability(vulnerabilities).update_all(severity: @new_severity, updated_at: now)
+      Vulnerabilities::SeverityOverride.insert_all!(db_attributes[:severity_overrides])
     end
 
     def system_note_metadata_action
@@ -115,14 +193,7 @@ module Vulnerabilities
           project_id: project_id,
           namespace_id: namespace_id,
           system: true,
-          note: ::SystemNotes::VulnerabilitiesService.formatted_note(
-            'changed',
-            @new_severity,
-            nil,
-            comment,
-            'severity',
-            severity
-          ),
+          note: formatted_severity_change_note(severity),
           author_id: user.id,
           created_at: now,
           updated_at: now,
