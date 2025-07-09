@@ -20,28 +20,18 @@ module GitlabSubscriptions
     # process.
     before_action :authenticate_user!, except: :new, unless: :identity_verification_request?
 
-    before_action :load_eligible_groups, only: :new
-
     feature_category :subscription_management
     urgency :low
 
     def new
       return ensure_registered! unless current_user.present?
 
-      @namespace =
-        if params[:namespace_id]
-          namespace_id = params[:namespace_id].to_i
-          @eligible_groups.find { |n| n.id == namespace_id }
-        end
+      namespace = find_eligible_namespace(id: params[:namespace_id])
 
-      if params[:plan_id]
-        redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
-          plan_id: sanitize(params[:plan_id]),
-          namespace: @namespace
-        ).build
-      else
-        redirect_to Gitlab::Saas.about_pricing_url
-      end
+      redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
+        plan_id: sanitize(params[:plan_id]),
+        namespace: namespace
+      ).build
     end
 
     def buy_minutes
@@ -177,6 +167,18 @@ module GitlabSubscriptions
       result.payload.first || {}
     end
 
+    def find_eligible_namespace(id:)
+      namespace = current_user.owned_groups.top_level.with_counts(archived: false).find_by_id(id)
+
+      return unless namespace.present? && GitlabSubscriptions::FetchPurchaseEligibleNamespacesService.eligible?(
+        user: current_user,
+        namespace: namespace,
+        any_self_service_plan: true
+      )
+
+      namespace
+    end
+
     def current_group
       find_group(plan_id: subscription_params[:plan_id])[:namespace]
     end
@@ -210,26 +212,6 @@ module GitlabSubscriptions
 
         plan_response[:success] ? plan_response[:data].first : nil
       end
-    end
-
-    def load_eligible_groups
-      return @eligible_groups = [] unless current_user
-
-      @eligible_groups = fetch_eligible_groups
-    end
-
-    def fetch_eligible_groups
-      candidate_groups = current_user.owned_groups.top_level.with_counts(archived: false)
-
-      result = GitlabSubscriptions::FetchPurchaseEligibleNamespacesService
-                 .new(user: current_user, namespaces: candidate_groups, any_self_service_plan: true)
-                 .execute
-
-      return [] unless result.success?
-
-      # rubocop:disable Rails/Pluck -- doing .pluck is only valid inside model hence disabling
-      (result.payload || []).map { |h| h[:namespace] }
-      # rubocop:enable Rails/Pluck
     end
 
     def ensure_registered!
