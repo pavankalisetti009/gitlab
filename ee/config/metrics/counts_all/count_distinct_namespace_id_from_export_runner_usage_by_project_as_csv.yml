@@ -2,6 +2,8 @@
 key_path: redis_hll_counters.count_distinct_namespace_id_from_export_runner_usage_by_project_as_csv
 description: Count of unique namespaces exporting runner usage CSV report
 product_group: runner
+product_categories:
+- fleet_visibility
 performance_indicator_type: []
 value_type: number
 status: active

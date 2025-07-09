@@ -2,6 +2,8 @@
 key_path: redis_hll_counters.count_distinct_project_id_from_export_runner_usage_by_project_as_csv_for_project
 description: Count of unique projects exporting runner usage as CSV from project dashboard
 product_group: runner
+product_categories:
+- fleet_visibility
 performance_indicator_type: []
 value_type: number
 status: active
