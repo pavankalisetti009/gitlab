@@ -3,19 +3,19 @@ import { mount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { listItems, featureSettingsListItems } from './mock_data';
+import { selfHostedModelslistItems, modelSelectionListItems } from './mock_data';
 
 describe('ModelSelectDropdown', () => {
   let wrapper;
 
   const placeholderDropdownText = 'Select model';
-  const selectedOption = listItems[0];
+  const selectedOption = selfHostedModelslistItems[0];
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = extendedWrapper(
       mount(ModelSelectDropdown, {
         propsData: {
-          items: listItems,
+          items: selfHostedModelslistItems,
           placeholderDropdownText,
           selectedOption,
           ...props,
@@ -29,7 +29,10 @@ describe('ModelSelectDropdown', () => {
   const findDropdownListItems = () => wrapper.findAllByRole('option');
   const findAddModelButton = () => wrapper.findByTestId('add-self-hosted-model-button');
   const findDropdownToggleText = () => wrapper.findByTestId('dropdown-toggle-text');
-  const findToggleBetaBadge = () => wrapper.findByTestId('toggle-beta-badge');
+  const findBetaModelSelectedBadge = () => wrapper.findByTestId('beta-model-selected-badge');
+  const findBetaModelDropdownBadges = () => wrapper.findAllByTestId('beta-model-dropdown-badge');
+  const findDefaultModelSelectedBadge = () => wrapper.findByTestId('default-model-selected-badge');
+  const findDefaultModelDropdownBadge = () => wrapper.findByTestId('default-model-dropdown-badge');
 
   it('renders the component', () => {
     createComponent();
@@ -53,19 +56,19 @@ describe('ModelSelectDropdown', () => {
     });
   });
 
-  describe('list items', () => {
+  describe('items', () => {
     it('renders list items', () => {
       createComponent();
 
-      expect(findGLCollapsibleListbox().props('items')).toBe(listItems);
+      expect(findGLCollapsibleListbox().props('items')).toBe(selfHostedModelslistItems);
     });
 
-    it('can handle feature settings list items', () => {
-      createComponent({ props: { items: featureSettingsListItems } });
+    it('can handle items with no `releaseState`', () => {
+      createComponent({ props: { items: modelSelectionListItems } });
 
-      expect(findGLCollapsibleListbox().props('items')).toBe(featureSettingsListItems);
-      expect(findDropdownListItems().at(5).text()).toEqual('Disable');
-      expect(findDropdownListItems().at(6).text()).toEqual('GitLab AI Vendor');
+      expect(findGLCollapsibleListbox().props('items')).toBe(modelSelectionListItems);
+      expect(findDropdownListItems().at(0).text()).toEqual('Claude Sonnet 3.5 - Anthropic');
+      expect(findDropdownListItems().at(1).text()).toEqual('Claude Sonnet 3.7 - Anthropic');
     });
 
     it('sets a default selected value based on the selected option', () => {
@@ -122,24 +125,44 @@ describe('ModelSelectDropdown', () => {
     });
   });
 
-  describe('when there are beta models', () => {
+  describe('beta model items', () => {
     beforeEach(() => {
       createComponent();
     });
 
-    it('displays a beta badge with beta options in the dropdown', () => {
-      const betaModelOption = findDropdownListItems().at(1);
-
-      expect(betaModelOption.text()).toMatch('Code Llama');
-      expect(betaModelOption.find('.gl-badge-content').text()).toMatch('Beta');
+    it('displays the beta badge with dropdown options', () => {
+      expect(findBetaModelDropdownBadges()).toHaveLength(3);
     });
 
-    it('displays a beta badge with a selected beta option', () => {
-      const selectedBetaModel = listItems[1];
+    it('displays the beta badge when beta option is selected', () => {
+      const betaModel = selfHostedModelslistItems[1];
 
-      createComponent({ props: { selectedOption: selectedBetaModel } });
+      createComponent({ props: { selectedOption: betaModel } });
 
-      expect(findToggleBetaBadge().exists()).toBe(true);
+      expect(findBetaModelSelectedBadge().exists()).toBe(true);
+    });
+  });
+
+  describe('default model items', () => {
+    it('displays the default model badge with dropdown option', () => {
+      createComponent({ props: { items: modelSelectionListItems } });
+
+      const defaultModel = findDropdownListItems().at(3);
+
+      expect(defaultModel.text()).toMatch('GitLab Default (Claude Sonnet 3.7 - Anthropic)');
+      expect(findDefaultModelDropdownBadge().exists()).toBe(true);
+    });
+
+    it('displays the default model badge when option is selected', () => {
+      const defaultModel = { value: '', text: 'GitLab Default (Claude Sonnet 3.7 - Anthropic)' };
+
+      createComponent({
+        props: {
+          selectedOption: defaultModel,
+        },
+      });
+
+      expect(findDefaultModelSelectedBadge().exists()).toBe(true);
     });
   });
 });
