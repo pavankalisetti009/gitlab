@@ -80,4 +80,18 @@ module VirtualRegistryHelper
       }
     }.to_json
   end
+
+  def maven_registry_data(group, maven_registry)
+    {
+      groupPath: group.full_path,
+      registry: {
+        id: maven_registry.id,
+        name: maven_registry.name,
+        description: maven_registry.description
+      },
+      registryEditPath: edit_group_virtual_registries_maven_registry_path(group, maven_registry),
+      showUpstreamPathTemplate: group_virtual_registries_maven_upstream_path(group, ':id'),
+      editUpstreamPathTemplate: edit_group_virtual_registries_maven_upstream_path(group, ':id')
+    }.to_json
+  end
 end

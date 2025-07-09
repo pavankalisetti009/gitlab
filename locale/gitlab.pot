@@ -68586,6 +68586,9 @@ msgstr ""
 msgid "VirtualRegistry|Password (optional)"
 msgstr ""
 
+msgid "VirtualRegistry|Please provide a valid URL."
+msgstr ""
+
 msgid "VirtualRegistry|Registry types"
 msgstr ""
 

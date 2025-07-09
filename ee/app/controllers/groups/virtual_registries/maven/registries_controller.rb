@@ -10,7 +10,8 @@ module Groups
         before_action :verify_destroy_virtual_registry!, only: [:destroy]
         before_action :set_registry, only: [:show, :edit, :update, :destroy]
 
-        before_action :push_ability, only: [:index]
+        before_action :push_ability, only: [:index, :show]
+        before_action :push_create_ability, only: [:show]
 
         feature_category :virtual_registry
         urgency :low
@@ -61,6 +62,11 @@ module Groups
 
         def push_ability
           push_frontend_ability(ability: :update_virtual_registry,
+            resource: group.virtual_registry_policy_subject, user: current_user)
+        end
+
+        def push_create_ability
+          push_frontend_ability(ability: :create_virtual_registry,
             resource: group.virtual_registry_policy_subject, user: current_user)
         end
 

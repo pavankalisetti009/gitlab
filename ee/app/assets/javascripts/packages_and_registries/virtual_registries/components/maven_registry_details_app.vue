@@ -101,6 +101,11 @@ export default {
       return this.glAbilities.createVirtualRegistry ? s__('VirtualRegistry|Add upstream') : null;
     },
   },
+  watch: {
+    upstreams(val) {
+      this.upstreamItems = val?.nodes || [];
+    },
+  },
   methods: {
     reorderUpstream(direction, upstreamId) {
       this.$emit('reorderUpstream', direction, upstreamId);
@@ -174,7 +179,7 @@ export default {
         <registry-upstream-form
           :registry="registry"
           :can-test-upstream="canTestUpstream"
-          @createUpstream="createUpstream"
+          @submit="createUpstream"
           @testUpstream="testUpstream"
           @cancel="hideForm"
         />
