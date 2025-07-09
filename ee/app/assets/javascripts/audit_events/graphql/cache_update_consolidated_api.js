@@ -63,6 +63,9 @@ export function updateAuditEventsStreamingDestinationFromCache({ store, isInstan
       namespaceFilters() {
         return updatedData.namespaceFilters;
       },
+      active() {
+        return updatedData.active;
+      },
     },
   });
 }

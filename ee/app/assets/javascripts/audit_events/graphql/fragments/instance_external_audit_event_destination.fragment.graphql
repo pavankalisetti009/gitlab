@@ -6,6 +6,7 @@ fragment InstanceExternalAuditEventDestinationFragment on InstanceExternalAuditE
   destinationUrl
   verificationToken
   eventTypeFilters
+  active
   headers {
     nodes {
       ...AuditEventStreamingHeaderFragment

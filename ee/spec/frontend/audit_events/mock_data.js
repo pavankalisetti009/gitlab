@@ -110,6 +110,7 @@ export const mockExternalDestinations = [
     },
     eventTypeFilters: [],
     namespaceFilter: null,
+    active: true,
   },
   {
     __typename: 'ExternalAuditEventDestination',
@@ -122,6 +123,7 @@ export const mockExternalDestinations = [
       nodes: [makeHeader(), makeHeader()],
     },
     namespaceFilter: makeNamespaceFilter(),
+    active: true,
   },
 ];
 
@@ -136,6 +138,7 @@ export const mockInstanceExternalDestinations = [
       nodes: [],
     },
     eventTypeFilters: [],
+    active: true,
   },
   {
     __typename: 'InstanceExternalAuditEventDestination',
@@ -147,6 +150,7 @@ export const mockInstanceExternalDestinations = [
       nodes: [makeInstanceHeader(), makeInstanceHeader()],
     },
     eventTypeFilters: ['add_gpg_key', 'user_created'],
+    active: true,
   },
 ];
 
@@ -159,6 +163,7 @@ export const mockGcpLoggingDestinations = [
     googleProjectIdName: 'my-google-project-1',
     logIdName: 'audit-events',
     privateKey: 'PRIVATE_KEY',
+    active: true,
   },
   {
     __typename: 'GoogleCloudLoggingConfigurationType',
@@ -168,6 +173,7 @@ export const mockGcpLoggingDestinations = [
     googleProjectIdName: 'new-google-project-2',
     logIdName: 'audit-events',
     privateKey: 'PRIVATE_KEY',
+    active: true,
   },
 ];
 
@@ -180,6 +186,7 @@ export const mockInstanceGcpLoggingDestinations = [
     googleProjectIdName: 'my-google-project-1',
     logIdName: 'audit-events',
     privateKey: 'PRIVATE_KEY',
+    active: true,
   },
   {
     __typename: 'InstanceGoogleCloudLoggingConfigurationType',
@@ -189,6 +196,7 @@ export const mockInstanceGcpLoggingDestinations = [
     googleProjectIdName: 'new-google-project-2',
     logIdName: 'audit-events',
     privateKey: 'PRIVATE_KEY',
+    active: true,
   },
 ];
 
@@ -201,6 +209,7 @@ export const mockAmazonS3Destinations = [
     awsRegion: 'us-east-1',
     bucketName: 'bucket-name-1',
     secretAccessKey: 'SECRET_ACCESS_KEY_1',
+    active: true,
   },
   {
     __typename: 'AmazonS3ConfigurationType',
@@ -210,6 +219,7 @@ export const mockAmazonS3Destinations = [
     awsRegion: 'us-east-2',
     bucketName: 'bucket-name-2',
     secretAccessKey: 'SECRET_ACCESS_KEY_2',
+    active: true,
   },
 ];
 
@@ -222,6 +232,7 @@ export const mockInstanceAmazonS3Destinations = [
     awsRegion: 'us-east-1',
     bucketName: 'bucket-name-1',
     secretAccessKey: 'SECRET_ACCESS_KEY_1',
+    active: true,
   },
   {
     __typename: 'InstanceAmazonS3ConfigurationType',
@@ -231,6 +242,7 @@ export const mockInstanceAmazonS3Destinations = [
     awsRegion: 'us-east-2',
     bucketName: 'bucket-name-2',
     secretAccessKey: 'SECRET_ACCESS_KEY_2',
+    active: true,
   },
 ];
 
@@ -300,6 +312,7 @@ export const destinationCreateMutationPopulator = (errors = []) => {
         nodes: [],
       },
       namespaceFilter: null,
+      active: true,
     },
   };
 
@@ -333,6 +346,7 @@ export const destinationUpdateMutationPopulator = (errors = []) => {
         nodes: [],
       },
       namespaceFilter: null,
+      active: true,
     },
   };
 
@@ -358,6 +372,7 @@ export const gcpLoggingDestinationCreateMutationPopulator = (errors = []) => {
       clientEmail: 'my-email@my-google-project.iam.gservice.account.com',
       googleProjectIdName: 'my-google-project',
       logIdName: 'audit-events',
+      active: true,
     },
   };
 
@@ -383,6 +398,7 @@ export const instanceGcpLoggingDestinationCreateMutationPopulator = (errors = []
       clientEmail: 'my-email@my-google-project.iam.gservice.account.com',
       googleProjectIdName: 'my-google-project',
       logIdName: 'audit-events',
+      active: true,
     },
   };
 
@@ -408,6 +424,7 @@ export const gcpLoggingDestinationUpdateMutationPopulator = (errors = []) => {
       clientEmail: 'my-email@my-google-project.iam.gservice.account.com',
       googleProjectIdName: 'my-google-project-1',
       logIdName: 'audit-events',
+      active: true,
     },
   };
 
@@ -433,6 +450,7 @@ export const instanceGcpLoggingDestinationUpdateMutationPopulator = (errors = []
       clientEmail: 'my-email@my-google-project.iam.gservice.account.com',
       googleProjectIdName: 'my-google-project-1',
       logIdName: 'audit-events',
+      active: true,
     },
   };
 
@@ -458,6 +476,7 @@ export const amazonS3DestinationCreateMutationPopulator = (errors = []) => {
       accessKeyXid: 'AKIA1231dsdsdsdsds23',
       awsRegion: 'us-east-1',
       bucketName: 'bucket-name-1',
+      active: true,
     },
   };
 
@@ -483,6 +502,7 @@ export const instanceAmazonS3DestinationCreateMutationPopulator = (errors = []) 
       accessKeyXid: 'AKIA1231dsdsdsdsds23',
       awsRegion: 'us-east-1',
       bucketName: 'bucket-name-1',
+      active: true,
     },
   };
 
@@ -508,6 +528,7 @@ export const amazonS3DestinationUpdateMutationPopulator = (errors = []) => {
       accessKeyXid: 'AKIA1231dsdsdsdsds23',
       awsRegion: 'us-east-1',
       bucketName: 'bucket-name-1',
+      active: true,
     },
   };
 
@@ -533,6 +554,7 @@ export const instanceAmazonS3DestinationUpdateMutationPopulator = (errors = []) 
       accessKeyXid: 'AKIA1231dsdsdsdsds23',
       awsRegion: 'us-east-1',
       bucketName: 'bucket-name-1',
+      active: true,
     },
   };
 
@@ -673,6 +695,7 @@ export const destinationInstanceCreateMutationPopulator = (errors = []) => {
       headers: {
         nodes: [],
       },
+      active: true,
     },
   };
 
@@ -705,6 +728,7 @@ export const destinationInstanceUpdateMutationPopulator = (errors = []) => {
       headers: {
         nodes: [],
       },
+      active: true,
     },
   };
 
