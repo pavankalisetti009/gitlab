@@ -68,7 +68,7 @@ module Security
           project: config.project,
           namespace: config.namespace,
           inherited: config.source != object,
-          csp: config.source.designated_as_csp?
+          csp: config.designated_as_csp?
         )
       end
     end

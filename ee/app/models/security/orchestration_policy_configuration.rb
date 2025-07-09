@@ -65,7 +65,7 @@ module Security
       for_namespace(namespace_ids).or(for_project(project_ids))
     end
 
-    delegate :actual_limits, :actual_plan_name, :actual_plan, to: :source
+    delegate :actual_limits, :actual_plan_name, :actual_plan, :designated_as_csp?, to: :source
 
     def self.policy_management_project?(project_id)
       self.exists?(security_policy_management_project_id: project_id)
