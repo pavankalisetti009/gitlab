@@ -44,8 +44,7 @@ module EE
           null: true,
           description: 'Counts for each vulnerability severity in the project.',
           authorize: :read_vulnerability_statistics,
-          skip_type_authorization: :read_vulnerability_statistics,
-          experiment: { milestone: '18.0' }
+          skip_type_authorization: :read_vulnerability_statistics
 
         field :vulnerability_severities_count, ::Types::VulnerabilitySeveritiesCountType,
           null: true,
@@ -636,8 +635,7 @@ module EE
 
         field :analyzer_statuses, [::Types::Security::AnalyzerProjectStatusType],
           null: true,
-          description: 'Status for all analyzers in the project.',
-          experiment: { milestone: '18.0' }
+          description: 'Status for all analyzers in the project.'
 
         field :duo_agentic_chat_available, ::GraphQL::Types::Boolean,
           null: true,
