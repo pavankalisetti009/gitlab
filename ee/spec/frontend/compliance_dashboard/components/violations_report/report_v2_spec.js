@@ -2,6 +2,7 @@ import { GlAlert, GlLoadingIcon, GlTable, GlKeysetPagination } from '@gitlab/ui'
 import { mount, shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
+import { statusesInfo } from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/statuses_info';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import ComplianceViolationsReportV2, {
   VIOLATION_PAGE_SIZE,
@@ -42,7 +43,7 @@ describe('ComplianceViolationsReportV2 component', () => {
               },
               complianceControl: {
                 id: 'gid://gitlab/ComplianceControl/1',
-                name: 'Code Review Required',
+                name: 'scanner_sast_running',
                 complianceRequirement: {
                   id: 'gid://gitlab/ComplianceRequirement/1',
                   name: 'Code Review Requirement',
@@ -103,7 +104,7 @@ describe('ComplianceViolationsReportV2 component', () => {
               },
               complianceControl: {
                 id: 'gid://gitlab/ComplianceControl/1',
-                name: 'Code Review Required',
+                name: 'minimum_approvals_required_1',
                 complianceRequirement: {
                   id: 'gid://gitlab/ComplianceRequirement/1',
                   name: 'Code Review Requirement',
@@ -130,7 +131,7 @@ describe('ComplianceViolationsReportV2 component', () => {
               },
               complianceControl: {
                 id: 'gid://gitlab/ComplianceControl/2',
-                name: 'Approval Required',
+                name: 'scanner_sast_running',
                 complianceRequirement: {
                   id: 'gid://gitlab/ComplianceRequirement/2',
                   name: 'Approval Requirement',
@@ -258,7 +259,7 @@ describe('ComplianceViolationsReportV2 component', () => {
 
       expect(tableRows()).toHaveLength(1);
       expect(firstRow.text()).toContain('Frontend Project');
-      expect(firstRow.text()).toContain('Code Review Required');
+      expect(firstRow.text()).toContain('SAST configuration');
       expect(firstRow.text()).toContain('Request to compliance requirement external failed.');
       expect(firstRow.text()).toContain('By John Doe');
     });
@@ -483,6 +484,165 @@ describe('ComplianceViolationsReportV2 component', () => {
     });
   });
 
+  describe('getProjectPath', () => {
+    beforeEach(() => {
+      wrapper = createComponent();
+    });
+
+    it('returns correct path for project with fullPath', () => {
+      const project = {
+        fullPath: 'group/project',
+      };
+
+      const result = wrapper.vm.getProjectPath(project);
+      expect(result).toBe('/group/project');
+    });
+
+    it('returns correct path for project with path_with_namespace', () => {
+      const project = {
+        path_with_namespace: 'group/another-project',
+      };
+
+      const result = wrapper.vm.getProjectPath(project);
+      expect(result).toBe('/group/another-project');
+    });
+
+    it('prefers fullPath over path_with_namespace when both exist', () => {
+      const project = {
+        fullPath: 'group/preferred-project',
+        path_with_namespace: 'group/fallback-project',
+      };
+
+      const result = wrapper.vm.getProjectPath(project);
+      expect(result).toBe('/group/preferred-project');
+    });
+
+    it('returns # when project is null or undefined', () => {
+      expect(wrapper.vm.getProjectPath(null)).toBe('#');
+      expect(wrapper.vm.getProjectPath(undefined)).toBe('#');
+    });
+
+    it('returns # when both fullPath and path_with_namespace are missing', () => {
+      const project = {};
+
+      const result = wrapper.vm.getProjectPath(project);
+      expect(result).toBe('#');
+    });
+  });
+
+  describe('getComplianceControlTitle', () => {
+    beforeEach(() => {
+      wrapper = createComponent();
+    });
+
+    it('returns linkTitle from statusesInfo when control name matches', () => {
+      const control = {
+        name: 'scanner_sast_running',
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('SAST configuration');
+    });
+
+    it('returns linkTitle for known control names', () => {
+      const control = {
+        name: 'minimum_approvals_required_1',
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('Merge request approvals');
+    });
+
+    it('returns original name when control name not found in statusesInfo', () => {
+      const control = {
+        name: 'unknown_control_name',
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('unknown_control_name');
+    });
+
+    it('returns empty string when control is null or undefined', () => {
+      expect(wrapper.vm.getComplianceControlTitle(null)).toBe('');
+      expect(wrapper.vm.getComplianceControlTitle(undefined)).toBe('');
+    });
+
+    it('returns empty string when control.name is missing', () => {
+      const control = {};
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('');
+    });
+
+    it('handles edge cases in statusesInfo structure', () => {
+      const control = {
+        name: 'default_branch_protected',
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('Protected branches');
+    });
+
+    it('handles statusInfo with null/undefined fixes', () => {
+      const control = { name: 'test_control_null_fixes' };
+
+      statusesInfo.test_control_null_fixes = {
+        description: 'Test control',
+        fixes: null,
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('test_control_null_fixes');
+    });
+
+    it('handles statusInfo with empty fixes array', () => {
+      const control = { name: 'test_control_empty_fixes' };
+
+      statusesInfo.test_control_empty_fixes = {
+        description: 'Test control',
+        fixes: [],
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('test_control_empty_fixes');
+    });
+
+    it('handles statusInfo with fixes[0] but no linkTitle', () => {
+      const control = { name: 'test_control_no_link_title' };
+
+      statusesInfo.test_control_no_link_title = {
+        description: 'Test control',
+        fixes: [
+          {
+            title: 'Fix title',
+            description: 'Fix description',
+          },
+        ],
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('test_control_no_link_title');
+    });
+
+    it('handles statusInfo with fixes[0].linkTitle as null', () => {
+      const control = { name: 'test_control_null_link_title' };
+
+      statusesInfo.test_control_null_link_title = {
+        description: 'Test control',
+        fixes: [
+          {
+            title: 'Fix title',
+            description: 'Fix description',
+            linkTitle: null,
+          },
+        ],
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('test_control_null_link_title');
+    });
+  });
+
   describe('getAuditEventTitle', () => {
     beforeEach(() => {
       wrapper = createComponent();
@@ -583,7 +743,7 @@ describe('ComplianceViolationsReportV2 component', () => {
                   },
                   complianceControl: {
                     id: 'gid://gitlab/ComplianceControl/1',
-                    name: 'SOX - Code Review Required',
+                    name: 'default_branch_protected',
                     complianceRequirement: {
                       id: 'gid://gitlab/ComplianceRequirement/1',
                       name: 'Code Review Requirement',
