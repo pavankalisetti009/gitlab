@@ -93,6 +93,7 @@ export default {
             :duo-availability="duoAvailability"
             :experiment-features-enabled="experimentFeaturesEnabled"
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
+            :prompt-cache-enabled="promptCacheEnabled"
             :has-parent-form-changed="hasParentFormChanged"
             @submit="submitForm"
             @radio-changed="onRadioChanged"
