@@ -15587,7 +15587,7 @@ msgstr ""
 msgid "Compliance Center|Violations"
 msgstr ""
 
-msgid "Compliance and security policy group for this instance"
+msgid "Compliance and security policy group"
 msgstr ""
 
 msgid "Compliance center"
