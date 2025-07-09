@@ -83,7 +83,9 @@ export default {
   },
   computed: {
     formattedSelectedIds() {
-      return this.multiple ? this.selected : [this.selected];
+      const idArray = this.multiple ? this.selected : [this.selected];
+      // Allow selected ids to be strings or numbers so that the toggle text is correct
+      return idArray.map((item) => item.toString());
     },
     itemsIds() {
       return this.items.map(({ value }) => value);

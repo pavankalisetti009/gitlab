@@ -11,6 +11,7 @@ import {
   EXCEPTION_TYPE_TEXTS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
+import InstanceProjectsDropdown from 'ee/security_orchestration/components/shared/instance_projects_dropdown.vue';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 
@@ -21,9 +22,11 @@ export default {
   },
   name: 'ScopeProjectSelector',
   components: {
-    GroupProjectsDropdown,
     GlCollapsibleListbox,
+    GroupProjectsDropdown,
+    InstanceProjectsDropdown,
   },
+  inject: ['designatedAsCsp'],
   props: {
     disabled: {
       type: Boolean,
@@ -67,12 +70,19 @@ export default {
         ? this.projects?.[this.payloadKey]
         : [];
 
-      return projects?.map(({ id }) => convertToGraphQLId(TYPENAME_PROJECT, id)) || [];
+      const projectIds = projects?.map(({ id }) => id) || [];
+
+      if (this.designatedAsCsp) {
+        return projectIds;
+      }
+
+      // Non-CSP project selector uses graphql
+      return projectIds.map((id) => convertToGraphQLId(TYPENAME_PROJECT, id));
     },
     selectedExceptionTypeText() {
       return EXCEPTION_TYPE_TEXTS[this.exceptionType];
     },
-    showGroupProjectsDropdown() {
+    showProjectsDropdown() {
       return this.exceptionType === EXCEPT_PROJECTS || !this.showExceptions;
     },
     projectsEmpty() {
@@ -114,14 +124,25 @@ export default {
       @select="selectExceptionType"
     />
 
-    <group-projects-dropdown
-      v-if="showGroupProjectsDropdown"
-      :disabled="disabled"
-      :group-full-path="groupFullPath"
-      :selected="projectIds"
-      :state="isFieldValid"
-      @projects-query-error="emitError"
-      @select="setSelectedProjects"
-    />
+    <template v-if="showProjectsDropdown">
+      <instance-projects-dropdown
+        v-if="designatedAsCsp"
+        :disabled="disabled"
+        :selected="projectIds"
+        :state="isFieldValid"
+        @projects-query-error="emitError"
+        @select="setSelectedProjects"
+      />
+
+      <group-projects-dropdown
+        v-else
+        :disabled="disabled"
+        :group-full-path="groupFullPath"
+        :selected="projectIds"
+        :state="isFieldValid"
+        @projects-query-error="emitError"
+        @select="setSelectedProjects"
+      />
+    </template>
   </div>
 </template>
