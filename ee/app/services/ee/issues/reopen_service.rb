@@ -54,23 +54,13 @@ module EE
             namespace_id: issue.namespace_id
           })
         )
-        update_status_to_open(status)
+        update_status_after_state_change(issue, status)
 
         return super unless work_item.synced_epic
 
         super
         # Creating a system note changes `updated_at` for the issue
         work_item.synced_epic.update_column(:updated_at, issue.updated_at)
-      end
-
-      def update_status_to_open(status)
-        status = :default if status.nil? && (work_item.current_status || lifecycle&.custom?)
-
-        ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute if status
-      end
-
-      def lifecycle
-        work_item.work_item_type.status_lifecycle_for(work_item.resource_parent.root_ancestor)
       end
     end
   end

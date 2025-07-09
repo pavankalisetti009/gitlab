@@ -191,6 +191,16 @@ module EE
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end
+
+      def update_status_after_state_change(issue, status)
+        status = :default if status.nil? && (issue.current_status || lifecycle_for(issue)&.custom?)
+
+        ::WorkItems::Widgets::Statuses::UpdateService.new(issue, current_user, status).execute if status
+      end
+
+      def lifecycle_for(issue)
+        issue.work_item_type.status_lifecycle_for(issue.resource_parent.root_ancestor)
+      end
     end
   end
 end
