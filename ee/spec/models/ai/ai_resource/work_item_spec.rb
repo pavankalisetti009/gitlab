@@ -42,7 +42,7 @@ RSpec.describe Ai::AiResource::WorkItem, feature_category: :duo_chat do
     end
 
     context 'when content_limit is omitted' do
-      let(:work_item) { build_stubbed(:work_item) }
+      let(:work_item) { create(:work_item) }
 
       it 'does not raise error' do
         expect { wrapped_work_item.serialize_for_ai }.not_to raise_error
