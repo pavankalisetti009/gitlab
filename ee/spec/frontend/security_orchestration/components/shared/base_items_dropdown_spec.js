@@ -81,15 +81,29 @@ describe('BaseItemsDropdown', () => {
   });
 
   describe('selected items', () => {
-    it('renders selected items', () => {
+    const selected = [mockedItemsIds[0], mockedItemsIds[1]];
+    it('renders selected items when ids are Strings', () => {
       createComponent({
         propsData: {
           items: mockedItems,
-          selected: [mockedItemsIds[0], mockedItemsIds[1]],
+          selected,
         },
       });
 
-      expect(findDropdown().props('selected')).toEqual([mockedItemsIds[0], mockedItemsIds[1]]);
+      expect(findDropdown().props('selected')).toEqual(selected);
+      expect(findDropdown().props('toggleText')).toBe('text_1, text_2');
+    });
+
+    it('renders selected items when ids are Numbers', () => {
+      const selectedNumbers = selected.map(Number);
+      createComponent({
+        propsData: {
+          items: mockedItems,
+          selected: selectedNumbers,
+        },
+      });
+
+      expect(findDropdown().props('selected')).toEqual(selectedNumbers);
       expect(findDropdown().props('toggleText')).toBe('text_1, text_2');
     });
   });
