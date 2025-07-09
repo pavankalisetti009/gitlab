@@ -8,7 +8,6 @@ module EE
 
         prepended do
           before_action only: :show do
-            push_frontend_feature_flag(:container_registry_immutable_tags, project)
             push_frontend_ability(
               ability: :create_container_registry_protection_immutable_tag_rule,
               resource: project,

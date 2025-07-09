@@ -390,16 +390,6 @@ RSpec.describe Auth::ContainerRegistryAuthenticationService, feature_category: :
         )
       end
 
-      context 'when feature container_registry_immutable_tags is disabled' do
-        let(:current_params) { { scopes: ["repository:#{container_repository_path}:push"] } }
-
-        before do
-          stub_feature_flags(container_registry_immutable_tags: false)
-        end
-
-        it_behaves_like 'not including tag_immutable_patterns'
-      end
-
       context 'when the feature is not licensed' do
         let(:current_params) { { scopes: ["repository:#{container_repository_path}:push"] } }
 

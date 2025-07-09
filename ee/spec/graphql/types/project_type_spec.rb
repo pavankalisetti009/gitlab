@@ -1040,13 +1040,5 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
 
       it { is_expected.to have_attributes(size: 3).and satisfy { |nodes| nodes.first['tagNamePattern'] == 'mutable' } }
     end
-
-    context 'when the feature container_registry_immutable_tags is disabled' do
-      before do
-        stub_feature_flags(container_registry_immutable_tags: false)
-      end
-
-      it { is_expected.to have_attributes(size: 1).and satisfy { |nodes| nodes.first['tagNamePattern'] == 'mutable' } }
-    end
   end
 end

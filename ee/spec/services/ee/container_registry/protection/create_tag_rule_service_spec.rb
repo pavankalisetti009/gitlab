@@ -86,13 +86,5 @@ RSpec.describe ContainerRegistry::Protection::CreateTagRuleService, feature_cate
 
       it_behaves_like 'an erroneous immutable rule creation', message: 'Immutable tag rules require an Ultimate license'
     end
-
-    context 'when the feature flag is disabled' do
-      before do
-        stub_feature_flags(container_registry_immutable_tags: false)
-      end
-
-      it_behaves_like 'an erroneous immutable rule creation', message: 'Not available'
-    end
   end
 end

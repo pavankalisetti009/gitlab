@@ -13,8 +13,6 @@ RSpec.describe Projects::Settings::PackagesAndRegistriesController, feature_cate
       sign_in(user)
     end
 
-    it_behaves_like 'pushed feature flag', :container_registry_immutable_tags
-
     context 'for create_container_registry_protection_immutable_tag_rule ability' do
       shared_examples 'pushing frontend ability' do
         it 'sets the frontend ability correctly' do

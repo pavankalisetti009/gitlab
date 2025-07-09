@@ -18,9 +18,6 @@ describe('ContainerProtectionTagRules', () => {
 
   const defaultProvidedValues = {
     projectPath: 'path',
-    glFeatures: {
-      containerRegistryImmutableTags: true,
-    },
   };
 
   const defaultResolver = jest
@@ -40,7 +37,7 @@ describe('ContainerProtectionTagRules', () => {
     });
   };
 
-  describe('when feature flag `containerRegistryImmutableTags` is enabled', () => {
+  describe('default', () => {
     beforeEach(() => {
       createComponent();
     });
@@ -61,20 +58,6 @@ describe('ContainerProtectionTagRules', () => {
       await waitForPromises();
 
       expect(findProtectionTypeBadge().text()).toBe('immutable');
-    });
-  });
-
-  describe('when feature flag `containerRegistryImmutableTags` is disabled', () => {
-    it('does not display protection type badge', async () => {
-      createComponent({
-        glFeatures: {
-          containerRegistryImmutableTags: false,
-        },
-      });
-
-      await waitForPromises();
-
-      expect(findProtectionTypeBadge().exists()).toBe(false);
     });
   });
 });

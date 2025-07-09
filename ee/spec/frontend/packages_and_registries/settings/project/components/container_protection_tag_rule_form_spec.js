@@ -16,9 +16,6 @@ describe('Container Protection Rule Form', () => {
 
   const defaultProvidedValues = {
     projectPath: 'path',
-    glFeatures: {
-      containerRegistryImmutableTags: true,
-    },
     glAbilities: {
       createContainerRegistryProtectionImmutableTagRule: true,
     },
@@ -101,24 +98,6 @@ describe('Container Protection Rule Form', () => {
           ...defaultProvidedValues,
           glAbilities: {
             createContainerRegistryProtectionImmutableTagRule: false,
-          },
-        },
-      });
-    });
-
-    it('form field "protectionType" does not exist', () => {
-      expect(findProtectionTypeProtectedRadio().exists()).toBe(false);
-      expect(findProtectionTypeImmutableRadio().exists()).toBe(false);
-    });
-  });
-
-  describe('when `containerRegistryImmutableTags` feature flag is turned off', () => {
-    beforeEach(() => {
-      createComponent({
-        provide: {
-          ...defaultProvidedValues,
-          glFeatures: {
-            containerRegistryImmutableTags: false,
           },
         },
       });

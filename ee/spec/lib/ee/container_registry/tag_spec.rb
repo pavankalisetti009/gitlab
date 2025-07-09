@@ -41,19 +41,6 @@ RSpec.describe ContainerRegistry::Tag, feature_category: :container_registry do
         )
       end
 
-      context 'when the feature flag container_registry_immutable_tags is disabled' do
-        before do
-          stub_feature_flags(container_registry_immutable_tags: false)
-        end
-
-        it 'does not return a matching immutable rule' do
-          is_expected.to have_attributes(
-            minimum_access_level_for_push: 'maintainer',
-            minimum_access_level_for_delete: 'owner'
-          )
-        end
-      end
-
       context 'when the feature is unlicensed' do
         before do
           stub_licensed_features(container_registry_immutable_tag_rules: false)
@@ -83,14 +70,6 @@ RSpec.describe ContainerRegistry::Tag, feature_category: :container_registry do
       end
 
       it { is_expected.to be_truthy }
-
-      context 'when the feature flag container_registry_immutable_tags is disabled' do
-        before do
-          stub_feature_flags(container_registry_immutable_tags: false)
-        end
-
-        it { is_expected.to be_falsey }
-      end
 
       context 'when the feature is unlicensed' do
         before do

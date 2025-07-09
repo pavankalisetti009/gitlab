@@ -1,6 +1,5 @@
 <script>
 import { GlBadge, GlPopover } from '@gitlab/ui';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export default {
   name: 'ImmutableBadge',
@@ -8,7 +7,6 @@ export default {
     GlBadge,
     GlPopover,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     tag: {
       type: Object,
@@ -21,7 +19,7 @@ export default {
   },
   computed: {
     isImmutable() {
-      return this.glFeatures.containerRegistryImmutableTags && this.tag.protection?.immutable;
+      return this.tag.protection?.immutable;
     },
   },
 };

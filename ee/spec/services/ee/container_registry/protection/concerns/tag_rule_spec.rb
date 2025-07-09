@@ -69,16 +69,6 @@ RSpec.describe ContainerRegistry::Protection::Concerns::TagRule, feature_categor
             expect(tag_name_patterns.map(&:source)).to match_array(%w[owner_pattern admin_pattern maintainer_pattern])
           end
         end
-
-        context 'when feature container_registry_immutable_tags is disabled' do
-          before do
-            stub_feature_flags(container_registry_immutable_tags: false)
-          end
-
-          it 'only returns the mutable tag name patterns' do
-            expect(tag_name_patterns.map(&:source)).to match_array(%w[owner_pattern admin_pattern maintainer_pattern])
-          end
-        end
       end
 
       context 'when current user is supplied' do
@@ -94,14 +84,6 @@ RSpec.describe ContainerRegistry::Protection::Concerns::TagRule, feature_categor
           context 'when the licensed feature is not available' do
             before do
               stub_licensed_features(container_registry_immutable_tag_rules: false)
-            end
-
-            it { is_expected.to be_nil }
-          end
-
-          context 'when feature container_registry_immutable_tags is disabled' do
-            before do
-              stub_feature_flags(container_registry_immutable_tags: false)
             end
 
             it { is_expected.to be_nil }
@@ -127,17 +109,6 @@ RSpec.describe ContainerRegistry::Protection::Concerns::TagRule, feature_categor
           context 'when the licensed feature is not available' do
             before do
               stub_licensed_features(container_registry_immutable_tag_rules: false)
-            end
-
-            it 'returns the tag name patterns with access levels that are above the user excluding immutable tags' do
-              expect(tag_name_patterns).to all(be_a(Gitlab::UntrustedRegexp))
-              expect(tag_name_patterns.map(&:source)).to match_array(expected_patterns - %w[immutable_pattern])
-            end
-          end
-
-          context 'when feature container_registry_immutable_tags is disabled' do
-            before do
-              stub_feature_flags(container_registry_immutable_tags: false)
             end
 
             it 'returns the tag name patterns with access levels that are above the user excluding immutable tags' do
@@ -196,14 +167,6 @@ RSpec.describe ContainerRegistry::Protection::Concerns::TagRule, feature_categor
     context 'when licensed feature is not available' do
       before do
         stub_licensed_features(container_registry_immutable_tag_rules: false)
-      end
-
-      it_behaves_like 'checking for mutable tag rules'
-    end
-
-    context 'when feature is disabled' do
-      before do
-        stub_feature_flags(container_registry_immutable_tags: false)
       end
 
       it_behaves_like 'checking for mutable tag rules'
