@@ -40,8 +40,6 @@ describe('buildDefaultScheduleRule', () => {
 });
 
 describe('handleBranchTypeSelect', () => {
-  const TARGET_BRANCHES = [ALL_PROTECTED_BRANCHES.value, PROJECT_DEFAULT_BRANCH.value];
-
   describe('when selecting SPECIFIC_BRANCHES', () => {
     it('returns rule with branches array and removes branch_type for pipeline rules', () => {
       const rule = {
@@ -53,7 +51,6 @@ describe('handleBranchTypeSelect', () => {
         branchType: SPECIFIC_BRANCHES.value,
         rule,
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
       });
 
       expect(result).toEqual({
@@ -73,7 +70,6 @@ describe('handleBranchTypeSelect', () => {
         branchType: SPECIFIC_BRANCHES.value,
         rule,
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
       });
 
       expect(result).toEqual({
@@ -95,7 +91,6 @@ describe('handleBranchTypeSelect', () => {
         branchType: SPECIFIC_BRANCHES.value,
         rule,
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
       });
 
       expect(result).toEqual({
@@ -118,7 +113,6 @@ describe('handleBranchTypeSelect', () => {
         branchType: ALL_PROTECTED_BRANCHES.value,
         rule,
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
       });
 
       expect(result).toEqual({
@@ -140,7 +134,6 @@ describe('handleBranchTypeSelect', () => {
         branchType: PROJECT_DEFAULT_BRANCH.value,
         rule,
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
       });
 
       expect(result).toEqual({
@@ -153,24 +146,7 @@ describe('handleBranchTypeSelect', () => {
   });
 
   describe('pipeline_sources handling', () => {
-    it('keeps pipeline_sources when selecting a target branch type', () => {
-      const rule = {
-        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        branches: ['feature/*'],
-        pipeline_sources: ['web', 'api'],
-      };
-
-      const result = handleBranchTypeSelect({
-        branchType: ALL_PROTECTED_BRANCHES.value, // This is in TARGET_BRANCHES
-        rule,
-        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
-      });
-
-      expect(result.pipeline_sources).toEqual(['web', 'api']);
-    });
-
-    it('removes pipeline_sources when selecting a non-target branch type', () => {
+    it('removes pipeline_sources', () => {
       const rule = {
         type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
         branches: ['feature/*'],
@@ -181,63 +157,8 @@ describe('handleBranchTypeSelect', () => {
         branchType: 'non-target-branch-type', // Not in TARGET_BRANCHES
         rule,
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
       });
 
-      expect(result.pipeline_sources).toBeUndefined();
-    });
-
-    it('does nothing with pipeline_sources if they do not exist in the rule', () => {
-      const rule = {
-        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        branches: ['feature/*'],
-      };
-
-      const result = handleBranchTypeSelect({
-        branchType: 'non-target-branch-type',
-        rule,
-        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: TARGET_BRANCHES,
-      });
-
-      expect(result.pipeline_sources).toBeUndefined();
-    });
-  });
-
-  describe('edge cases', () => {
-    it('handles empty targetBranches array', () => {
-      const rule = {
-        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        branches: ['feature/*'],
-        pipeline_sources: ['web', 'api'],
-      };
-
-      const result = handleBranchTypeSelect({
-        branchType: ALL_PROTECTED_BRANCHES.value,
-        rule,
-        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        targetBranches: [], // Empty array
-      });
-
-      // Should remove pipeline_sources since no branch types are targeted
-      expect(result.pipeline_sources).toBeUndefined();
-    });
-
-    it('handles undefined targetBranches parameter', () => {
-      const rule = {
-        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        branches: ['feature/*'],
-        pipeline_sources: ['web', 'api'],
-      };
-
-      const result = handleBranchTypeSelect({
-        branchType: ALL_PROTECTED_BRANCHES.value,
-        rule,
-        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-        // No targetBranches parameter
-      });
-
-      // Should remove pipeline_sources since targetBranches defaults to empty array
       expect(result.pipeline_sources).toBeUndefined();
     });
   });

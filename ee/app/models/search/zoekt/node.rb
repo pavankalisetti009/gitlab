@@ -5,6 +5,7 @@ module Search
     class Node < ApplicationRecord
       self.table_name = 'zoekt_nodes'
       include EachBatch
+      include FromUnion
 
       DEFAULT_CONCURRENCY_LIMIT = 20
       MAX_CONCURRENCY_LIMIT = 200
@@ -19,7 +20,7 @@ module Search
       before_save :set_usable_storage_bytes, unless: -> { usable_storage_bytes_locked_until&.future? }
 
       UNCLAIMED_STORAGE_BYTES_FORMULA = <<~SQL
-        (zoekt_nodes.usable_storage_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0))
+        (zoekt_nodes.usable_storage_bytes - COALESCE(reserved_storage_bytes_total, 0))
       SQL
 
       SERVICES = {
@@ -75,17 +76,28 @@ module Search
       scope :with_pending_indices, -> do
         where_exists(::Search::Zoekt::Index.pending.where('zoekt_indices.zoekt_node_id = zoekt_nodes.id'))
       end
+      scope :with_reserved_bytes, -> do
+        node_ids_with_bytes = ::Search::Zoekt::Node.from_union([
+          ::Search::Zoekt::Index.select(0, :zoekt_node_id, 'sum(reserved_storage_bytes) as reserved_bytes')
+            .group(:zoekt_node_id),
+          ::Ai::KnowledgeGraph::Replica.select(1, :zoekt_node_id, 'sum(reserved_storage_bytes) as reserved_bytes')
+            .group(:zoekt_node_id)
+        ]).select(:zoekt_node_id, 'sum(reserved_bytes) as reserved_storage_bytes_total').group(:zoekt_node_id)
+
+        joins("LEFT OUTER JOIN (#{node_ids_with_bytes.to_sql}) reserved_bytes ON " \
+          "zoekt_nodes.id=reserved_bytes.zoekt_node_id")
+      end
       scope :with_positive_unclaimed_storage_bytes, -> do
         sql = <<~SQL
           zoekt_nodes.*, #{UNCLAIMED_STORAGE_BYTES_FORMULA} AS unclaimed_storage_bytes
         SQL
-        left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} > 0").select(sql)
+        with_reserved_bytes.where("#{UNCLAIMED_STORAGE_BYTES_FORMULA} > 0").select(sql)
       end
       scope :order_by_unclaimed_space_desc, -> do
         with_positive_unclaimed_storage_bytes.order('unclaimed_storage_bytes DESC')
       end
       scope :negative_unclaimed_storage_bytes, -> do
-        left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} < 0")
+        with_reserved_bytes.where("#{UNCLAIMED_STORAGE_BYTES_FORMULA} < 0")
       end
       scope :with_service, ->(service) { where("? = ANY(services)", SERVICES.fetch(service)) }
 
@@ -195,7 +207,7 @@ module Search
       private
 
       def reserved_storage_bytes
-        indices.sum(:reserved_storage_bytes)
+        indices.sum(:reserved_storage_bytes) + knowledge_graph_replicas.sum(:reserved_storage_bytes)
       end
 
       def set_usable_storage_bytes
