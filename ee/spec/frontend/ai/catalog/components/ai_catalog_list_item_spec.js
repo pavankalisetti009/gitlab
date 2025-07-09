@@ -1,4 +1,4 @@
-import { GlButton, GlBadge, GlMarkdown, GlLink, GlAvatar } from '@gitlab/ui';
+import { GlBadge, GlMarkdown, GlAvatar, GlDisclosureDropdown } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -6,6 +6,12 @@ import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue
 
 describe('AiCatalogListItem', () => {
   let wrapper;
+
+  const mockRouter = {
+    resolve: jest.fn().mockReturnValue({
+      href: '/mock-route',
+    }),
+  };
 
   const mockItem = {
     id: 'gid://gitlab/Ai::Catalog::Item/1',
@@ -26,16 +32,17 @@ describe('AiCatalogListItem', () => {
             run: '/agents/:id/run',
           },
         },
+
+        $router: mockRouter,
       },
     });
   };
 
   const findAvatar = () => wrapper.findComponent(GlAvatar);
-  const findLink = () => wrapper.findComponent(GlLink);
   const findBadges = () => wrapper.findAllComponents(GlBadge);
   const findTypeBadge = () => findBadges().at(0);
   const findMarkdown = () => wrapper.findComponent(GlMarkdown);
-  const findRunButton = () => wrapper.findComponent(GlButton);
+  const findDisclosureDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -58,17 +65,6 @@ describe('AiCatalogListItem', () => {
       expect(avatar.props('size')).toBe(48);
     });
 
-    it('displays the agent name as a link', () => {
-      const link = findLink();
-
-      expect(link.exists()).toBe(true);
-      expect(link.text()).toBe('Test AI Agent');
-      expect(link.props('to')).toEqual({
-        name: '/agents/:id',
-        params: { id: 1 },
-      });
-    });
-
     it('displays type badge with correct variant and text', () => {
       const typeBadge = findTypeBadge();
 
@@ -77,15 +73,12 @@ describe('AiCatalogListItem', () => {
       expect(typeBadge.text()).toBe('agent');
     });
 
-    it('displays run button with correct props', () => {
-      const runButton = findRunButton();
+    it('displays actions in a disclosure dropdown', () => {
+      const itemTexts = findDisclosureDropdown()
+        .props('items')
+        .map((item) => item.text);
 
-      expect(runButton.exists()).toBe(true);
-      expect(runButton.text()).toBe('Run');
-      expect(runButton.props('to')).toEqual({
-        name: '/agents/:id/run',
-        params: { id: 1 },
-      });
+      expect(itemTexts).toEqual(['Run', 'Edit']);
     });
 
     it('displays description', () => {
