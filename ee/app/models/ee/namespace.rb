@@ -28,6 +28,7 @@ module EE
     prepended do
       include EachBatch
       include Elastic::NamespaceUpdate
+      include ::Security::OrganizationPolicySetting
 
       has_one :elasticsearch_indexed_namespace
       has_one :gitlab_subscription
@@ -608,7 +609,7 @@ module EE
     def designated_as_csp?
       return false unless csp_enabled?(self)
 
-      ::Security::PolicySetting.instance.csp_namespace_id == id
+      organization_policy_setting.csp_namespace_id == id
     end
     strong_memoize_attr :designated_as_csp?
 
@@ -627,7 +628,7 @@ module EE
       return self_and_ancestor_ids unless csp_enabled?(self)
 
       # The most top-level group is last
-      [*self_and_ancestor_ids, ::Security::PolicySetting.instance.csp_namespace_id].compact.uniq
+      [*self_and_ancestor_ids, organization_policy_setting.csp_namespace_id].compact.uniq
     end
     strong_memoize_attr :self_and_ancestor_ids_with_csp
 
@@ -635,7 +636,7 @@ module EE
       return ancestor_ids unless csp_enabled?(self)
 
       # The most top-level group is last
-      [*ancestor_ids, ::Security::PolicySetting.instance.csp_namespace_id].compact.uniq
+      [*ancestor_ids, organization_policy_setting.csp_namespace_id].compact.uniq
     end
     strong_memoize_attr :ancestor_ids_with_csp
 
@@ -725,8 +726,6 @@ module EE
     end
 
     private
-
-    delegate :csp_enabled?, to: ::Security::PolicySetting
 
     def has_paid_hosted_plan?
       has_subscription? && gitlab_subscription.has_a_paid_hosted_plan?

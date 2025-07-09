@@ -6,6 +6,7 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
+  let_it_be(:default_organization) { create(:organization, :default) } # rubocop:disable Gitlab/RSpec/AvoidCreateDefaultOrganization -- API manages self-managed instance-wide setting. Support for organization-level settings will be added later.
   let(:params) { { csp_namespace_id: nil } }
 
   shared_examples 'requires admin authentication' do |verb|
@@ -66,7 +67,7 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'requires security_policies_csp feature flag', :get
 
     context 'when all requirements are met' do
-      let!(:policy_setting) { Security::PolicySetting.instance }
+      let!(:policy_setting) { Security::PolicySetting.for_organization(default_organization) }
 
       before do
         policy_setting.update!(csp_namespace_id: group.id)
@@ -111,7 +112,7 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'requires security_policies_csp feature flag', :put
 
     context 'when all requirements are met' do
-      let!(:policy_setting) { Security::PolicySetting.instance }
+      let!(:policy_setting) { Security::PolicySetting.for_organization(default_organization) }
 
       context 'with valid csp_namespace_id' do
         it 'updates the csp_namespace_id' do
