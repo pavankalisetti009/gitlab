@@ -2,7 +2,7 @@
 
 class Admin::PushRulesController < Admin::ApplicationController
   before_action :check_push_rules_available!
-  before_action :set_push_rule
+  before_action :set_push_rule, except: :update
   before_action :set_application_setting
 
   respond_to :html
@@ -12,7 +12,13 @@ class Admin::PushRulesController < Admin::ApplicationController
   def show; end
 
   def update
-    @push_rule.update(push_rule_params)
+    service_response = PushRules::CreateOrUpdateService.new(
+      container: current_organization,
+      current_user: current_user,
+      params: push_rule_params
+    ).execute
+
+    @push_rule = service_response.payload[:push_rule]
 
     if @push_rule.valid?
       link_push_rule_to_application_settings
@@ -29,27 +35,9 @@ class Admin::PushRulesController < Admin::ApplicationController
   end
 
   def push_rule_params
-    allowed_fields = %i[deny_delete_tag commit_message_regex commit_message_negative_regex
-      branch_name_regex author_email_regex
-      member_check file_name_regex max_file_size prevent_secrets]
-
-    if @push_rule.available?(:reject_unsigned_commits)
-      allowed_fields << :reject_unsigned_commits
-    end
-
-    if @push_rule.available?(:commit_committer_check)
-      allowed_fields << :commit_committer_check
-    end
-
-    if @push_rule.available?(:commit_committer_name_check)
-      allowed_fields << :commit_committer_name_check
-    end
-
-    if @push_rule.available?(:reject_non_dco_commits)
-      allowed_fields << :reject_non_dco_commits
-    end
-
-    params.require(:push_rule).permit(allowed_fields)
+    # filtering occurs in the PushRules::CreateOrUpdateService
+    # where this method is passed into
+    params.require(:push_rule).to_unsafe_h
   end
 
   # rubocop: disable CodeReuse/ActiveRecord
