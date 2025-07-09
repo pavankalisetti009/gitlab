@@ -149,7 +149,7 @@ module Gitlab
         @logger.puts
 
         @logger.puts '=> Description:'
-        @logger.puts change.description
+        @logger.puts change.mr_description
         @logger.puts
 
         if change.labels.present? || change.assignees.present? || change.reviewers.present?

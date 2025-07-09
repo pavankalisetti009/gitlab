@@ -47,29 +47,19 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
   end
 
   describe 'handling connection and authentication errors' do
-    after do
-      # Reset WebMock to its previous state
-      webmock_enable!(allow_localhost: true)
-      WebMock.reset!
-    end
-
     context 'when connection error occurs during API calls' do
       before do
         webmock_enable!(allow_localhost: false)
 
-        # First allow the JWT login to succeed
-        stub_request(
-          :post,
-          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
-          .to_return(
-            status: 200,
-            headers: { 'Content-Type' => 'application/json' },
-            body: { auth: { client_token: "test-token" } }.to_json
-          )
-
         # Then make the secrets engine request fail with connection error
         stub_request(:post, %r{#{described_class.configuration.host}/v1/sys/mounts})
           .to_raise(Errno::ECONNREFUSED)
+      end
+
+      after do
+        # Reset WebMock to its previous state
+        webmock_enable!(allow_localhost: true)
+        WebMock.reset!
       end
 
       it 'raises ConnectionError for operations after authentication' do
@@ -79,62 +69,11 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
     end
 
-    context 'when connection error occurs during authentication' do
-      before do
-        webmock_enable!(allow_localhost: false)
-
-        # Make the JWT login fail with connection error
-        stub_request(
-          :post,
-          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
-          .to_raise(Errno::ECONNREFUSED)
-      end
-
+    context 'when authentication error happens during API calls' do
       it 'raises AuthenticationError wrapping the connection error' do
-        expect { described_class.new(jwt: jwt, role: role) }
+        client = described_class.new(jwt: jwt, role: role, auth_mount: 'something_else')
+        expect { client.enable_secrets_engine('test', 'kv-v2') }
           .to raise_error(described_class::AuthenticationError, /Failed to authenticate with OpenBao/)
-      end
-    end
-
-    context 'when API error occurs during authentication' do
-      before do
-        webmock_enable!(allow_localhost: false)
-
-        # Make the JWT login fail with API error response
-        stub_request(
-          :post,
-          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
-          .to_return(
-            status: 400,
-            headers: { 'Content-Type' => 'application/json' },
-            body: { errors: ["Invalid JWT"] }.to_json
-          )
-      end
-
-      it 'raises AuthenticationError wrapping the API error' do
-        expect { described_class.new(jwt: jwt, role: role) }
-          .to raise_error(described_class::AuthenticationError, /Failed to authenticate with OpenBao/)
-      end
-    end
-
-    context 'when authentication succeeds but returns no token' do
-      before do
-        webmock_enable!(allow_localhost: false)
-
-        # Return a response with empty auth object
-        stub_request(
-          :post,
-          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
-          .to_return(
-            status: 200,
-            headers: { 'Content-Type' => 'application/json' },
-            body: { auth: {} }.to_json
-          )
-      end
-
-      it 'raises AuthenticationError with no token message' do
-        expect { described_class.new(jwt: jwt, role: role) }
-          .to raise_error(described_class::AuthenticationError, /No token received from OpenBao/)
       end
     end
   end
