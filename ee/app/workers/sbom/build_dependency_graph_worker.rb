@@ -14,7 +14,7 @@ module Sbom
     sidekiq_options retry: 2
     sidekiq_retry_in do |retry_count, exception, _jobhash|
       case exception
-      when ActiveRecord::RecordInvalid
+      when ActiveRecord::RecordInvalid, ActiveRecord::InvalidForeignKey
         # When this happens, it means that another job is removing Sbom::Occurrence
         # which happens only if there's a newer Ci::Pipeline that recently finished
         # In that case we can discard this job immediately

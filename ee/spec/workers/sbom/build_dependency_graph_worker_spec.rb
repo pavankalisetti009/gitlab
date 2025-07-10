@@ -35,6 +35,14 @@ RSpec.describe Sbom::BuildDependencyGraphWorker, feature_category: :dependency_m
         end
       end
 
+      context 'on ActiveRecord::InvalidForeignKey' do
+        let(:exception) { ActiveRecord::InvalidForeignKey.new }
+
+        it 'gets discarded' do
+          expect(retry_block).to eq(:discard)
+        end
+      end
+
       context 'on other exception' do
         let(:exception) { StandardError.new }
 
