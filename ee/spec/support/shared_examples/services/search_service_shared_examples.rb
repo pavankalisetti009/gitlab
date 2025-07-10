@@ -1,16 +1,38 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'search respects visibility' do
-  it 'respects visibility' do
-    enable_admin_mode!(user) if admin_mode
-    projects.each do |project|
-      update_feature_access_level(
-        project,
-        feature_access_level,
-        visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s)
-      )
-    end
+# check access for search visibility using permissions tables in
+# spec/support/shared_contexts/policies/project_policy_table_shared_context.rb
+#
+# The shared examples checks access when user has access to the project and group separately
+# `group_access` can be provided to not run the group check
+# `project_access` can be provided to not run the project check
+# `project_feature_setup` can be provided to not run the project feature access setup
+#
+# requires the following to be defined in test context
+#  - `user` - user built with access to the projects
+#  - `user_in_group` - user built with access to the groups
+#  - `projects` - list of projects to update `feature_access_level`
+#  - `project_level` - project visibility level
+#  - `admin_mode` - whether admin mode is enabled
+#  - `feature_access_level` - a single value or an array of feature access level changes to update
+#  - `search_level` - used for Search::GroupService
+#  - `search` - the search term
+#  - `scope` - the scope of the search results
+#  - `expected_count` - the expected search result count
+RSpec.shared_examples 'search respects visibility' do |group_access: true, project_access: true,
+  project_feature_setup: true|
+  before do
+    set_project_visibility_and_feature_access_level if project_feature_setup && project_access
+    set_group_visibility_level if group_access
+
     ensure_elasticsearch_index!
+  end
+
+  # sidekiq needed for ElasticAssociationIndexerWorker
+  it 'respects visibility with access at project level', :sidekiq_inline do
+    skip unless project_access
+
+    enable_admin_mode!(user) if admin_mode
 
     expect_search_results(user, scope, expected_count: expected_count) do |user|
       if described_class.eql?(Search::GlobalService)
@@ -18,6 +40,36 @@ RSpec.shared_examples 'search respects visibility' do
       else
         described_class.new(user, search_level, search: search).execute
       end
+    end
+  end
+
+  it 'respects visibility with access at group level', :sidekiq_inline do
+    skip unless group_access
+
+    enable_admin_mode!(user_in_group) if admin_mode
+
+    expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
+      if described_class.eql?(Search::GlobalService)
+        described_class.new(user, search: search).execute
+      else
+        described_class.new(user, search_level, search: search).execute
+      end
+    end
+  end
+
+  private
+
+  def set_group_visibility_level
+    group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
+  end
+
+  def set_project_visibility_and_feature_access_level
+    projects.each do |project|
+      update_feature_access_level(
+        project,
+        feature_access_level,
+        visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s)
+      )
     end
   end
 end
@@ -59,7 +111,7 @@ RSpec.shared_examples 'EE search service shared examples' do |normal_results, el
       is_expected.to be_a(normal_results)
     end
 
-    context 'advanced syntax queries for all scopes', :elastic, :sidekiq_inline do
+    describe 'advanced syntax queries for all scopes', :elastic, :sidekiq_inline do
       queries = [
         '"display bug"',
         'bug -display',
