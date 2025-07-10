@@ -227,8 +227,8 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
   end
 
   describe '#saml' do
-    let(:mock_saml_response) { File.read('spec/fixtures/authentication/saml_response.xml') }
     let(:provider) { 'saml_okta' }
+    let(:mock_saml_response) { File.read('spec/fixtures/authentication/saml_response.xml') }
 
     controller(described_class) do
       alias_method :saml_okta, :handle_omniauth
@@ -255,6 +255,56 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
       it 'fails to authenticate' do
         post :saml_okta, params: { SAMLResponse: mock_saml_response }
         expect(request.env['warden']).not_to be_authenticated
+      end
+    end
+
+    context 'with session_not_on_or_after attribute in response' do
+      let(:provider) { 'saml' }
+      let(:last_request_id) { 'ONELOGIN_4fee3b046395c4e751011e97f8900b5273d56685' }
+      let(:user) { create(:omniauth_user, :two_factor, extern_uid: 'my-uid', provider: 'saml') }
+      let(:saml_config) { mock_saml_config_with_upstream_two_factor_authn_contexts }
+
+      def stub_last_request_id(id)
+        session['last_authn_request_id'] = id
+      end
+
+      before do
+        allow(routes).to receive(:generate_extras).and_return(['/users/auth/saml/callback', []])
+
+        stub_last_request_id(last_request_id)
+        stub_omniauth_saml_config(
+          enabled: true,
+          auto_link_saml_user: true,
+          allow_single_sign_on: ['saml'],
+          providers: [saml_config]
+        )
+        mock_auth_hash_with_saml_xml('saml', +'my-uid', user.email, mock_saml_response)
+        request.env['devise.mapping'] = Devise.mappings[:user]
+        request.env['omniauth.auth'] = Rails.application.env_config['omniauth.auth']
+      end
+
+      it 'sets the SSO session expiration time in session store' do
+        sso_state = instance_double(::Gitlab::Auth::Saml::SsoState)
+        allow(::Gitlab::Auth::Saml::SsoState).to receive(:new).and_return(sso_state)
+
+        expect(sso_state).to receive(:update_active)
+          .with(session_not_on_or_after: Time.parse('2024-07-17T09:01:48Z'))
+        post :saml, params: { SAMLResponse: mock_saml_response }
+      end
+
+      context 'when feature flag saml_timeout_supplied_by_idp_override is disabled' do
+        before do
+          stub_feature_flags(saml_timeout_supplied_by_idp_override: false)
+        end
+
+        it 'is called with default time' do
+          sso_state = instance_double(::Gitlab::Auth::Saml::SsoState)
+          allow(::Gitlab::Auth::Saml::SsoState).to receive(:new).and_return(sso_state)
+
+          expect(sso_state).to receive(:update_active).with(session_not_on_or_after: nil)
+
+          post :saml, params: { SAMLResponse: mock_saml_response }
+        end
       end
     end
   end

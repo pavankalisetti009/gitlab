@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'fast_spec_helper'
+require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::GroupSaml::SsoState, feature_category: :system_access do
   let(:saml_provider_id) { 10 }
@@ -27,12 +27,29 @@ RSpec.describe Gitlab::Auth::GroupSaml::SsoState, feature_category: :system_acce
   end
 
   describe '#update_active' do
+    let(:new_state) { double }
+
     it 'updates the current sign in state' do
       Gitlab::Session.with_session({}) do
-        new_state = double
         sso_state.update_active(new_state)
 
-        expect(Gitlab::Session.current[:active_group_sso_sign_ins]).to eq({ saml_provider_id => new_state })
+        expect(Gitlab::Session.current[:active_group_sso_sign_ins]).to eq(
+          { saml_provider_id => new_state,
+            "#{saml_provider_id}_session_not_on_or_after" => nil })
+      end
+    end
+
+    it "sets 'SessionNotOnOrAfter' correctly" do
+      session_not_on_or_after = 1.day.from_now
+
+      Gitlab::Session.with_session({}) do
+        sso_state.update_active(new_state, session_not_on_or_after: session_not_on_or_after)
+        expect(Gitlab::Session.current[:active_group_sso_sign_ins]).to eq(
+          {
+            saml_provider_id => new_state,
+            "#{saml_provider_id}_session_not_on_or_after" => session_not_on_or_after
+          }
+        )
       end
     end
   end
@@ -87,4 +104,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::SsoState, feature_category: :system_acce
       end
     end
   end
+
+  it_behaves_like 'SAML SSO State checks for session_not_on_or_after', 'group'
 end

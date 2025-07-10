@@ -570,7 +570,7 @@ RSpec.describe Gitlab::Auth::GroupSaml::SsoEnforcer, feature_category: :system_a
           [
             {
               provider_id: saml_provider.id,
-              time_remaining: described_class::DEFAULT_SESSION_TIMEOUT
+              time_remaining: described_class::DEFAULT_SESSION_TIMEOUT.to_f
             }
           ]
         )
@@ -606,6 +606,126 @@ RSpec.describe Gitlab::Auth::GroupSaml::SsoEnforcer, feature_category: :system_a
             }
           ]
         )
+      end
+    end
+
+    context 'when session_not_on_or_after is specified' do
+      it 'returns data for existing session based on session_not_on_or_after value' do
+        freeze_time do
+          session_not_on_or_after = (Time.zone.now + 4.hours).to_s
+          described_class.new(saml_provider).update_session(session_not_on_or_after: session_not_on_or_after)
+
+          expect(sessions_time_remaining_for_expiry).to match_array(
+            [
+              {
+                provider_id: saml_provider.id,
+                time_remaining: 4.hours.to_f
+              }
+            ]
+          )
+        end
+      end
+
+      it 'returns calculated time remaining on expiry based on session_not_on_or_after value' do
+        other_saml_provider = build_stubbed(:saml_provider)
+        frozen_time = Time.utc(2024, 2, 2, 1, 44)
+        session_not_on_or_after_value = Time.zone.parse((frozen_time + 10.hours).to_s)
+        other_session_not_on_or_after_value = Time.zone.parse((frozen_time + 15.hours).to_s)
+
+        travel_to(frozen_time) do
+          described_class.new(saml_provider).update_session(session_not_on_or_after: session_not_on_or_after_value)
+        end
+
+        travel_to(frozen_time + 4.hours) do
+          described_class.new(other_saml_provider).update_session(session_not_on_or_after: other_session_not_on_or_after_value)
+        end
+
+        travel_to(frozen_time + 6.hours) do
+          expect(sessions_time_remaining_for_expiry).to match_array(
+            [
+              {
+                provider_id: saml_provider.id,
+                time_remaining: 4.hours.to_f
+              },
+              {
+                provider_id: other_saml_provider.id,
+                time_remaining: 9.hours.to_f
+              }
+            ]
+          )
+        end
+      end
+
+      it 'overrides default timeout when session_not_on_or_after is specified' do
+        frozen_time = Time.utc(2024, 2, 2, 1, 44)
+        session_not_on_or_after_value = Time.zone.parse((frozen_time + 2.days).to_s)
+        time_remaining_for_expiry_default_timeout = session_not_on_or_after_value - (frozen_time + 4.hours)
+
+        travel_to(frozen_time) do
+          described_class.new(saml_provider).update_session(session_not_on_or_after: session_not_on_or_after_value)
+        end
+
+        travel_to(frozen_time + 4.hours) do
+          expect(sessions_time_remaining_for_expiry).to match_array(
+            [
+              {
+                provider_id: saml_provider.id,
+                time_remaining: time_remaining_for_expiry_default_timeout.to_f
+              }
+            ]
+          )
+        end
+      end
+
+      context 'when saml_timeout_supplied_by_idp_override feature flag is disabled' do
+        before do
+          stub_feature_flags(saml_timeout_supplied_by_idp_override: false)
+        end
+
+        it 'returns data for existing sessions using default timeout only' do
+          freeze_time do
+            described_class.new(saml_provider).update_session
+
+            expect(described_class.sessions_time_remaining_for_expiry).to match_array(
+              [
+                {
+                  provider_id: saml_provider.id,
+                  time_remaining: described_class::DEFAULT_SESSION_TIMEOUT.to_f
+                }
+              ]
+            )
+          end
+        end
+
+        it 'calculates time remaining based on default timeout regardless of session_not_on_or_after' do
+          other_saml_provider = build_stubbed(:saml_provider)
+          frozen_time = Time.utc(2024, 2, 2, 1, 44)
+          session_not_on_or_after_value = Time.zone.parse((frozen_time + 4.hours).to_s)
+
+          travel_to(frozen_time) do
+            # Even though we provide session_not_on_or_after, it should be ignored
+            described_class.new(saml_provider).update_session(session_not_on_or_after: session_not_on_or_after_value)
+          end
+
+          travel_to(frozen_time + 4.hours) do
+            described_class.new(other_saml_provider).update_session
+          end
+
+          travel_to(frozen_time + 6.hours) do
+            expect(described_class.sessions_time_remaining_for_expiry).to match_array(
+              [
+                {
+                  provider_id: saml_provider.id,
+                  time_remaining: 18.hours.to_f # DEFAULT_SESSION_TIMEOUT (24h) - 6h elapsed
+                },
+                {
+                  provider_id: other_saml_provider.id,
+                  time_remaining: 22.hours.to_f # DEFAULT_SESSION_TIMEOUT (24h) - 2h elapsed
+                }
+              ]
+            )
+          end
+        end
       end
     end
   end
