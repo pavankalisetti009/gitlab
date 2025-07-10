@@ -139,16 +139,26 @@ module API
         end
         post 'status_check_responses' do
           merge_request = find_merge_request_with_access(params[:merge_request_iid], :approve_merge_request)
-
           status_check = merge_request.project.external_status_checks.find(params[:external_status_check_id])
 
+          not_found! unless status_check
           check_sha_param!(params, merge_request)
 
-          not_found! unless current_user.can?(:provide_status_check_response, merge_request)
+          result = ::MergeRequests::StatusCheckResponses::CreateService.new(
+            project: merge_request.project,
+            current_user: current_user,
+            params: {
+              external_status_check: status_check,
+              sha: params[:sha],
+              status: params[:status]
+            }
+          ).execute(merge_request)
 
-          approval = merge_request.status_check_responses.create!(external_status_check: status_check, sha: params[:sha], status: params[:status])
-
-          present(approval, with: Entities::MergeRequests::StatusCheckResponse)
+          if result.success?
+            present result[:status_check_response], with: Entities::MergeRequests::StatusCheckResponse
+          else
+            render_api_error!(result[:errors], result.reason)
+          end
         end
 
         segment 'status_checks' do
