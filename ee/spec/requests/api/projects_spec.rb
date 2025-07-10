@@ -2308,4 +2308,36 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
   end
+
+  describe 'POST /projects/:id/archive' do
+    let(:path) { "/projects/#{project.id}/archive" }
+
+    context 'when project archiving fails' do
+      it 'does not log an audit event' do
+        expect { post api(path, another_user) }.not_to change { AuditEvent.count }
+      end
+    end
+
+    context 'when project archiving succeeds' do
+      it 'logs an audit event' do
+        expect { post api(path, user) }.to change { AuditEvent.count }.by(1)
+      end
+    end
+  end
+
+  describe 'POST /projects/:id/unarchive' do
+    let(:path) { "/projects/#{project.id}/unarchive" }
+
+    context 'when project unarchiving fails' do
+      it 'does not log an audit event' do
+        expect { post api(path, another_user) }.not_to change { AuditEvent.count }
+      end
+    end
+
+    context 'when project unarchiving succeeds' do
+      it 'logs an audit event' do
+        expect { post api(path, user) }.to change { AuditEvent.count }.by(1)
+      end
+    end
+  end
 end
