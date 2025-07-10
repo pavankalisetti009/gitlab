@@ -135,7 +135,7 @@ export default {
       <img class="gl-h-11" aria-hidden="true" :src="$options.emptyTodosFilteredSvg" />
       <span>{{ __('Sorry, your filter produced no results') }}</span>
     </div>
-    <div v-else>
+    <ol v-else class="gl-m-0 gl-list-none gl-p-0">
       <todo-item
         v-for="todo in todos"
         :key="todo.id"
@@ -143,7 +143,7 @@ export default {
         :todo="todo"
         @change="$apollo.queries.todos.refetch()"
       />
-    </div>
+    </ol>
 
     <div class="gl-px-5 gl-py-3">
       <a href="/dashboard/todos">{{ __('All to-do items') }}</a>
