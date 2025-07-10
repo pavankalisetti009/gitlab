@@ -2728,7 +2728,7 @@
   :feature_category: :code_review_workflow
   :has_external_dependencies: false
   :urgency: :low
-  :resource_boundary: :unknown
+  :resource_boundary: :cpu
   :weight: 1
   :idempotent: true
   :tags: []

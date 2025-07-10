@@ -8,6 +8,7 @@ module MergeRequests
     sidekiq_options retry: true
     feature_category :code_review_workflow
     urgency :low
+    worker_resource_boundary :cpu
     idempotent!
 
     def perform(merge_request_id)
