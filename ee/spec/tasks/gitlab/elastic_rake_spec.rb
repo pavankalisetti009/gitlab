@@ -57,6 +57,10 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
     include_examples 'rake task executor task', :index_group_wikis
   end
 
+  describe 'gitlab:elastic:index_vulnerabilities' do
+    include_examples 'rake task executor task', :index_vulnerabilities
+  end
+
   describe 'gitlab:elastic:create_empty_index' do
     include_examples 'rake task executor task', :create_empty_index
   end

@@ -256,7 +256,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   end
 
   describe '#estimate_shard_sizes' do
-    let(:counts) { [400, 1500, 10_000_000, 50_000_000, 100_000_000, 4_000, 5_000] }
+    let(:counts) { [400, 1500, 10_000_000, 50_000_000, 100_000_000, 4_000, 5_000, 5_000] }
     let(:counted_items) { described_class::CLASSES_TO_COUNT }
 
     before do
@@ -317,6 +317,13 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
           recommended replicas: 1
       ESTIMATE
 
+      expected_vulnerabilities = <<~ESTIMATE.chomp
+        - gitlab-test-vulnerabilities:
+          document count: 5,000
+          recommended shards: 5
+          recommended replicas: 1
+      ESTIMATE
+
       expect(logger).to receive(:info).with(%r{#{expected_issues}})
       expect(logger).to receive(:info).with(/#{expected_notes}/)
       expect(logger).to receive(:info).with(/#{expected_merge_requests}/)
@@ -324,6 +331,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       expect(logger).to receive(:info).with(/#{expected_users}/)
       expect(logger).to receive(:info).with(/#{expected_projects}/)
       expect(logger).to receive(:info).with(/#{expected_work_items}/)
+      expect(logger).to receive(:info).with(/#{expected_vulnerabilities}/)
 
       service.execute(:estimate_shard_sizes)
     end
@@ -872,6 +880,61 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       expect(service).to receive(:index_group_wikis).ordered
 
       index_group_entities
+    end
+  end
+
+  describe '#index_vulnerabilities' do
+    let_it_be(:vulnerability_read) { create(:vulnerability_read) }
+
+    context 'when vulnerability indexing is not allowed' do
+      before do
+        allow(::Search::Elastic::VulnerabilityIndexingHelper)
+          .to receive(:vulnerability_indexing_allowed?).and_return(false)
+      end
+
+      it 'skips indexing and logs warning' do
+        expect(logger).to receive(:info).with('Indexing vulnerabilities...')
+        expect(logger).to receive(:info).with(/Skipping vulnerability indexing/)
+        expect(::Vulnerabilities::Read).not_to receive(:all)
+
+        service.execute(:index_vulnerabilities)
+      end
+    end
+
+    shared_examples 'it performs indexing' do
+      it 'calls track! for vulnerabilities' do
+        expect(logger).to receive(:info).with(/Indexing vulnerabilities/).twice
+        expect(Elastic::ProcessInitialBookkeepingService).to receive(:track!).with(vulnerability_read)
+
+        service.execute(:index_vulnerabilities)
+      end
+
+      it 'avoids N+1 queries', :use_sql_query_cache do
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) { service.execute(:index_vulnerabilities) }
+
+        create_list(:vulnerability_read, 3)
+
+        expect(Elastic::ProcessInitialBookkeepingService).to receive(:track!)
+
+        expect { service.execute(:index_vulnerabilities) }.to issue_same_number_of_queries_as(control).or_fewer
+      end
+    end
+
+    context 'when rails env is dev' do
+      before do
+        stub_rails_env('development')
+      end
+
+      it_behaves_like 'it performs indexing'
+    end
+
+    context 'when vulnerability indexing is allowed' do
+      before do
+        allow(::Search::Elastic::VulnerabilityIndexingHelper)
+          .to receive(:vulnerability_indexing_allowed?).and_return(true)
+      end
+
+      it_behaves_like 'it performs indexing'
     end
   end
 
