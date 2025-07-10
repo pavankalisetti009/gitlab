@@ -226,6 +226,13 @@ module EE
           .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/422405")
       end
 
+      scope :orphaned_security_policy_bots, -> do
+        security_policy_bot
+        .joins("LEFT OUTER JOIN members ON members.user_id = users.id AND members.type = 'ProjectMember'")
+        .left_outer_joins(:ghost_user_migration)
+        .where(members: { id: nil }, ghost_user_migrations: { id: nil })
+      end
+
       accepts_nested_attributes_for :namespace
       accepts_nested_attributes_for :custom_attributes
 

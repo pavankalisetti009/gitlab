@@ -563,6 +563,64 @@ RSpec.describe User, feature_category: :system_access do
       it { is_expected.to contain_exactly(security_policy_bot_1, security_policy_bot_2) }
     end
 
+    describe '.security_policy_bot_users_without_project_membership' do
+      let_it_be(:security_policy_bot_with_project) { create(:user, :security_policy_bot) }
+      let_it_be(:security_policy_bot_orphaned) { create(:user, :security_policy_bot) }
+      let_it_be(:regular_user) { create(:user) }
+      let_it_be(:project) { create(:project) }
+
+      before_all do
+        project.add_guest(security_policy_bot_with_project)
+      end
+
+      subject { described_class.orphaned_security_policy_bots }
+
+      it 'returns security policy bots without project memberships' do
+        expect(subject).to contain_exactly(security_policy_bot_orphaned)
+      end
+
+      it 'excludes security policy bots with project memberships' do
+        expect(subject).not_to include(security_policy_bot_with_project)
+      end
+
+      it 'excludes regular users' do
+        expect(subject).not_to include(regular_user)
+      end
+
+      context 'when security policy bot has ghost user migration' do
+        let_it_be(:security_policy_bot_with_migration) { create(:user, :security_policy_bot) }
+        let_it_be(:ghost_user_migration) { create(:ghost_user_migration, user: security_policy_bot_with_migration) }
+
+        it 'excludes security policy bots with ghost user migrations' do
+          expect(subject).not_to include(security_policy_bot_with_migration)
+        end
+      end
+
+      context 'when security policy bot has both project membership and ghost user migration' do
+        let_it_be(:security_policy_bot_both) { create(:user, :security_policy_bot) }
+        let_it_be(:project_2) { create(:project) }
+
+        before_all do
+          project_2.add_guest(security_policy_bot_both)
+          create(:ghost_user_migration, user: security_policy_bot_both)
+        end
+
+        it 'excludes security policy bots with both project membership and ghost user migration' do
+          expect(subject).not_to include(security_policy_bot_both)
+        end
+      end
+
+      context 'with various bot types' do
+        let_it_be(:automation_bot) { create(:user, user_type: :automation_bot) }
+        let_it_be(:project_bot) { create(:user, :project_bot) }
+        let_it_be(:alert_bot) { create(:user, user_type: :alert_bot) }
+
+        it 'only includes security policy bots' do
+          expect(subject).not_to include(automation_bot, project_bot, alert_bot)
+        end
+      end
+    end
+
     describe '.with_admin_role' do
       let_it_be(:user_1) { create(:user) }
       let_it_be(:user_2) { create(:user) }
