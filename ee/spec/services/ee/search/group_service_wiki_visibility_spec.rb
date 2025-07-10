@@ -42,6 +42,7 @@ RSpec.describe Search::GroupService, '#visibility', feature_category: :global_se
 
         with_them do
           let(:user) { create_user_from_membership(project, membership) }
+          let(:user_in_group) { create_user_from_membership(group, membership) }
 
           before do
             project.wiki.index_wiki_blobs

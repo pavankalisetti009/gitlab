@@ -38,7 +38,7 @@ module Search
           doc_type: DOC_TYPE,
           features: 'merge_requests',
           project_id_field: :target_project_id,
-          authorization_use_traversal_ids: false # https://gitlab.com/gitlab-org/gitlab/-/issues/351279
+          authorization_use_traversal_ids: false # https://gitlab.com/gitlab-org/gitlab/-/issues/491211
         }
       end
 

@@ -13,12 +13,14 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
 
   describe 'visibility', :elastic_delete_by_query, :sidekiq_inline do
     include_context 'ProjectPolicyTable context'
+
     let_it_be(:group) { create(:group) }
     let_it_be_with_reload(:project) { create(:project, :repository, namespace: group) }
-    let_it_be_with_reload(:project2) { create(:project, :repository) }
 
+    let(:user_in_group) { create_user_from_membership(group, membership) }
     let(:user) { create_user_from_membership(project, membership) }
-    let(:projects) { [project, project2] }
+
+    let(:projects) { [project] }
     let(:search_level) { project }
 
     where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
@@ -28,17 +30,20 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
     with_them do
       before do
         project.repository.index_commits_and_blobs
-        project2.repository.index_commits_and_blobs
       end
 
-      it_behaves_like 'search respects visibility' do
-        let(:scope) { 'commits' }
-        let(:search) { 'initial' }
+      context 'for commits' do
+        it_behaves_like 'search respects visibility' do
+          let(:scope) { 'commits' }
+          let(:search) { 'initial' }
+        end
       end
 
-      it_behaves_like 'search respects visibility' do
-        let(:scope) { 'blobs' }
-        let(:search) { '.gitmodules' }
+      context 'for blobs' do
+        it_behaves_like 'search respects visibility' do
+          let(:scope) { 'blobs' }
+          let(:search) { '.gitmodules' }
+        end
       end
     end
   end
