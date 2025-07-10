@@ -25,8 +25,12 @@ export default {
     hasBypassOptionsGroupsRoles() {
       return this.glFeatures.securityPoliciesBypassOptionsGroupRoles;
     },
+    hasApprovalPolicyBranchExceptions() {
+      return this.glFeatures.approvalPolicyBranchExceptions;
+    },
     availableOptions() {
       const options = renderOptionsList({
+        approvalPolicyBranchExceptions: this.hasApprovalPolicyBranchExceptions,
         securityPoliciesBypassOptionsTokensAccounts: this.hasBypassOptionsAccountsTokens,
         securityPoliciesBypassOptionsGroupRoles: this.hasBypassOptionsGroupsRoles,
       });

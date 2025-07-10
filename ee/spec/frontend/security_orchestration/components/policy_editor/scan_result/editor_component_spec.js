@@ -947,7 +947,7 @@ describe('EditorComponent', () => {
 
   describe('bypass options', () => {
     it('renders bypass policy exceptions when ff is true', () => {
-      factory({ provide: { glFeatures: { securityPoliciesBypassOptions: true } } });
+      factory({ provide: { glFeatures: { approvalPolicyBranchExceptions: true } } });
 
       expect(findPolicyExceptions().exists()).toBe(true);
     });

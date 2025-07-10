@@ -203,7 +203,11 @@ export default {
   },
   computed: {
     hasBypassOptions() {
-      return this.glFeatures.securityPoliciesBypassOptions;
+      return (
+        this.glFeatures.approvalPolicyBranchExceptions ||
+        this.glFeatures.securityPoliciesBypassOptionsTokensAccounts ||
+        this.glFeatures.securityPoliciesBypassOptionsGroupRoles
+      );
     },
     actionError() {
       const actionErrors = this.errorSources.filter(([primaryKey]) => primaryKey === 'action');
