@@ -331,6 +331,25 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
 
         it_behaves_like 'logs an audit event'
       end
+
+      describe '#after_execute' do
+        let(:new_access_level) { Gitlab::Access::OWNER }
+
+        it 'is invoked with correct args' do
+          expect(service).to receive(:after_execute).with(
+            action: :update,
+            old_values_map: a_hash_including(
+              access_level: member.access_level,
+              human_access: member.human_access_labeled,
+              expires_at: member.expires_at,
+              member_role_id: member.member_role_id
+            ),
+            member: member
+          )
+
+          update_member
+        end
+      end
     end
 
     context 'when updating a member role of a member' do
@@ -451,6 +470,72 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
           let(:target_member_role) { nil }
 
           it_behaves_like 'correct member role assignment'
+        end
+
+        describe 'Authz::UserGroupMemberRole records of the member' do
+          let(:initial_member_role) { nil }
+          let(:target_member_role) { member_role_guest }
+
+          before do
+            stub_feature_flags(cache_user_group_member_roles: source)
+          end
+
+          it_behaves_like 'correct member role assignment'
+
+          shared_examples 'enqueues UpdateForGroupWorker job' do
+            it 'enqueues an ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
+              allow(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to receive(:perform_async)
+
+              update_member
+
+              expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker)
+                .to have_received(:perform_async).with(member.id)
+            end
+          end
+
+          shared_examples 'does not enqueue UpdateForGroupWorker job' do
+            it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
+              expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).not_to receive(:perform_async)
+
+              update_member
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(cache_user_group_member_roles: false)
+            end
+
+            it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+          end
+
+          context 'when neither member role nor access level was updated' do
+            let(:params) { { expires_at: 1.day.from_now.to_date, source: source } }
+
+            it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+          end
+
+          context 'when only access level was updated' do
+            let(:params) { { access_level: Gitlab::Access::DEVELOPER, source: source } }
+
+            context 'and source group has a member role in another group' do
+              let_it_be(:shared_group) { create(:group) }
+
+              before do
+                create(:group_group_link,
+                  shared_group: shared_group,
+                  shared_with_group: source,
+                  member_role: create(:member_role, namespace: shared_group)
+                )
+              end
+
+              it_behaves_like 'enqueues UpdateForGroupWorker job'
+            end
+
+            it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+          end
+
+          it_behaves_like 'enqueues UpdateForGroupWorker job'
         end
       end
     end
