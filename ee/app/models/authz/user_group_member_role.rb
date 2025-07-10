@@ -24,8 +24,15 @@ module Authz
     validates :member_role, presence: true
 
     def self.for_user_in_group_and_shared_groups(user, group)
-      where(user: user)
-        .where('group_id = ? OR shared_with_group_id = ?', group.id, group.id)
+      direct_membership = where(user: user, group: group, shared_with_group: nil)
+      shared_group_membership = where(user: user, shared_with_group: group)
+
+      from(
+        Arel::Nodes::TableAlias.new(
+          Arel::Nodes::UnionAll.new(direct_membership.arel, shared_group_membership.arel),
+          table_name
+        )
+      )
     end
 
     def self.in_shared_group(shared_group, shared_with_group)
