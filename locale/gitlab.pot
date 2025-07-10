@@ -15614,6 +15614,27 @@ msgstr ""
 msgid "Compliance frameworks"
 msgstr ""
 
+msgid "Compliance report|Actions"
+msgstr ""
+
+msgid "Compliance report|Edit framework"
+msgstr ""
+
+msgid "Compliance report|Framework name"
+msgstr ""
+
+msgid "Compliance report|Policies"
+msgstr ""
+
+msgid "Compliance report|Projects"
+msgstr ""
+
+msgid "Compliance report|Requirements"
+msgstr ""
+
+msgid "Compliance report|Requirements without controls"
+msgstr ""
+
 msgid "Compliance requirement control successfully deleted"
 msgstr ""
 

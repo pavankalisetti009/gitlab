@@ -9,10 +9,12 @@ import ComplianceDashboard from 'ee/compliance_dashboard/components/dashboard/co
 import FrameworkCoverage from 'ee/compliance_dashboard/components/dashboard/framework_coverage.vue';
 import FailedRequirements from 'ee/compliance_dashboard/components/dashboard/failed_requirements.vue';
 import FailedControls from 'ee/compliance_dashboard/components/dashboard/failed_controls.vue';
+import FrameworksNeedsAttention from 'ee/compliance_dashboard/components/dashboard/frameworks_needs_attention.vue';
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import frameworkCoverageQuery from 'ee/compliance_dashboard/components/dashboard/graphql/framework_coverage.query.graphql';
 import failedRequirementsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_requirements.query.graphql';
 import failedControlsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_controls.query.graphql';
+import frameworksNeedsAttentionQuery from 'ee/compliance_dashboard/components/dashboard/graphql/frameworks_needs_attention.query.graphql';
 import { GL_LIGHT } from '~/constants';
 
 Vue.use(VueApollo);
@@ -78,11 +80,47 @@ const generateFailedControlsQueryMockResponse = () => ({
   },
 });
 
+const generateFrameworksNeedsAttentionQueryMockResponse = (count = 3) => ({
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/2857',
+      complianceFrameworksNeedingAttention: {
+        nodes: Array.from({ length: count }).map((_, idx) => ({
+          id: `gid://gitlab/ComplianceManagement::FrameworkNeedsAttention/${idx}`,
+          framework: {
+            id: `gid://gitlab/ComplianceManagement::Framework/${idx}`,
+            name: `Framework ${idx}`,
+            color: '#6699CC',
+            scanExecutionPolicies: {
+              nodes: [
+                {
+                  name: `Scan Execution Policy ${idx}`,
+                  __typename: 'ScanExecutionPolicy',
+                },
+              ],
+            },
+            vulnerabilityManagementPolicies: { nodes: [] },
+            scanResultPolicies: { nodes: [] },
+            pipelineExecutionPolicies: { nodes: [] },
+          },
+          projectsCount: 5,
+          requirementsCount: 10,
+          requirementsWithoutControls: [],
+        })),
+      },
+      __typename: 'Group',
+    },
+  },
+});
+
 describe('Compliance dashboard', () => {
   let wrapper;
   const frameworkCoverageQueryMock = jest.fn().mockImplementation(() => new Promise(() => {}));
   const failedRequirementsQueryMock = jest.fn().mockImplementation(() => new Promise(() => {}));
   const failedControlsQueryMock = jest.fn().mockImplementation(() => new Promise(() => {}));
+  const frameworksNeedsAttentionQueryMock = jest
+    .fn()
+    .mockImplementation(() => new Promise(() => {}));
 
   const getDashboardConfig = () => wrapper.findComponent(DashboardLayout).props('config');
 
@@ -91,6 +129,7 @@ describe('Compliance dashboard', () => {
       [frameworkCoverageQuery, frameworkCoverageQueryMock],
       [failedRequirementsQuery, failedRequirementsQueryMock],
       [failedControlsQuery, failedControlsQueryMock],
+      [frameworksNeedsAttentionQuery, frameworksNeedsAttentionQueryMock],
     ]);
 
     wrapper = shallowMount(ComplianceDashboard, {
@@ -106,13 +145,17 @@ describe('Compliance dashboard', () => {
     const frameworkCoverage = generateFrameworkCoverageQueryMockResponse();
     const failedRequirements = generateFailedRequirementsQueryMockResponse();
     const failedControls = generateFailedControlsQueryMockResponse();
+    const frameworksNeedsAttention = generateFrameworksNeedsAttentionQueryMockResponse();
 
-    beforeEach(() => {
+    beforeEach(async () => {
       frameworkCoverageQueryMock.mockResolvedValue(frameworkCoverage);
       failedRequirementsQueryMock.mockResolvedValue(failedRequirements);
       failedControlsQueryMock.mockResolvedValue(failedControls);
+      frameworksNeedsAttentionQueryMock.mockResolvedValue(frameworksNeedsAttention);
       createComponent();
-      return nextTick();
+      await waitForPromises();
+
+      await nextTick();
     });
 
     it('contains framework coverage panel', () => {
@@ -157,6 +200,25 @@ describe('Compliance dashboard', () => {
         }),
       );
     });
+
+    it('contains frameworks needs attention panel when there are frameworks', () => {
+      const { panels } = getDashboardConfig();
+      const needsAttentionPanel = panels.find(
+        (panel) => panel.component === FrameworksNeedsAttention,
+      );
+
+      expect(needsAttentionPanel).toBeDefined();
+      expect(needsAttentionPanel.componentProps.frameworks).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            framework: expect.objectContaining({
+              name: expect.any(String),
+            }),
+          }),
+        ]),
+      );
+    });
   });
 
   describe('framework coverage panel', () => {
@@ -181,17 +243,69 @@ describe('Compliance dashboard', () => {
     );
   });
 
-  describe('when one of the query fails', () => {
-    it.each([frameworkCoverageQueryMock, failedControlsQueryMock, failedRequirementsQueryMock])(
-      'displays error message',
-      async (queryMock) => {
-        queryMock.mockRejectedValue(new Error('Network error'));
+  describe('frameworks needs attention panel', () => {
+    it('excludes frameworks needs attention panel when there are no frameworks', async () => {
+      frameworkCoverageQueryMock.mockResolvedValue(generateFrameworkCoverageQueryMockResponse());
+      failedRequirementsQueryMock.mockResolvedValue(generateFailedRequirementsQueryMockResponse());
+      failedControlsQueryMock.mockResolvedValue(generateFailedControlsQueryMockResponse());
+      frameworksNeedsAttentionQueryMock.mockResolvedValue(
+        generateFrameworksNeedsAttentionQueryMockResponse(0),
+      );
+      createComponent();
+      await waitForPromises();
+
+      await nextTick();
+
+      const needsAttentionPanel = getDashboardConfig().panels.find(
+        (panel) => panel.component === FrameworksNeedsAttention,
+      );
+      expect(needsAttentionPanel).toBeUndefined();
+    });
+
+    it.each`
+      frameworksCount | expectedPanelSize
+      ${1}            | ${3.5}
+      ${2}            | ${3.5}
+      ${3}            | ${3.5}
+      ${20}           | ${5.5}
+    `(
+      'renders correct height for $frameworksCount frameworks needing attention',
+      async ({ frameworksCount, expectedPanelSize }) => {
+        frameworkCoverageQueryMock.mockResolvedValue(generateFrameworkCoverageQueryMockResponse());
+        failedRequirementsQueryMock.mockResolvedValue(
+          generateFailedRequirementsQueryMockResponse(),
+        );
+        failedControlsQueryMock.mockResolvedValue(generateFailedControlsQueryMockResponse());
+        frameworksNeedsAttentionQueryMock.mockResolvedValue(
+          generateFrameworksNeedsAttentionQueryMockResponse(frameworksCount),
+        );
         createComponent();
         await waitForPromises();
-        expect(createAlert).toHaveBeenCalledWith({
-          message: 'Something went wrong on our end.',
-        });
+
+        await nextTick();
+
+        const panelConfig = getDashboardConfig().panels.find(
+          (panel) => panel.component === FrameworksNeedsAttention,
+        );
+        expect(panelConfig).toBeDefined();
+        expect(panelConfig.gridAttributes.height).toBe(expectedPanelSize);
       },
     );
+  });
+
+  describe('when one of the query fails', () => {
+    it.each([
+      frameworkCoverageQueryMock,
+      failedControlsQueryMock,
+      failedRequirementsQueryMock,
+      frameworksNeedsAttentionQueryMock,
+    ])('displays error message', async (queryMock) => {
+      queryMock.mockRejectedValue(new Error('Network error'));
+      createComponent();
+      await waitForPromises();
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Something went wrong on our end.',
+      });
+    });
   });
 });
