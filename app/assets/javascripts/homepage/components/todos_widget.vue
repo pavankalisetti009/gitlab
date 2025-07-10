@@ -103,7 +103,7 @@ export default {
 </script>
 
 <template>
-  <visibility-change-detector class="gl-border gl-rounded-lg gl-bg-subtle" @visible="reload">
+  <visibility-change-detector class="gl-rounded-lg gl-bg-subtle" @visible="reload">
     <div class="gl-flex gl-items-center gl-justify-between gl-gap-2 gl-px-5">
       <h4 class="gl-grow">{{ __('To-do items') }}</h4>
 
@@ -139,6 +139,7 @@ export default {
       <todo-item
         v-for="todo in todos"
         :key="todo.id"
+        class="hover:!gl-bg-strong"
         :todo="todo"
         @change="$apollo.queries.todos.refetch()"
       />
