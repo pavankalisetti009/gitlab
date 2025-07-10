@@ -21,6 +21,7 @@ export const fetchValueStreamData = ({ dispatch }) =>
 
 export const setSelectedValueStream = ({ commit, dispatch }, valueStream) => {
   commit(types.SET_SELECTED_VALUE_STREAM, valueStream);
+  dispatch('setDefaultSelectedStage');
   return dispatch('fetchValueStreamData');
 };
 

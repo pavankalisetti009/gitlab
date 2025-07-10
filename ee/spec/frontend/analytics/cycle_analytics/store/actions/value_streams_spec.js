@@ -48,7 +48,7 @@ describe('Value Stream Analytics actions / value streams', () => {
         vs,
         { ...state, selectedValueStream: {} },
         [{ type: types.SET_SELECTED_VALUE_STREAM, payload: vs }],
-        [{ type: 'fetchValueStreamData' }],
+        [{ type: 'setDefaultSelectedStage' }, { type: 'fetchValueStreamData' }],
       );
     });
   });
