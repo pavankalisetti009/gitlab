@@ -9,8 +9,14 @@ module BulkImports
         return super unless %w[epics epic issues issue].include?(relation_key)
 
         if %w[issues issue].include?(relation_key)
-          super # create the issue first
-          return handle_epic_issue(relation_object)
+          epic_from_association = relation_object.epic_issue&.epic
+          relative_position = relation_object.epic_issue&.relative_position
+
+          relation_object.epic_issue = nil
+          super
+
+          return handle_issue_with_epic_association(relation_object, epic_from_association, relative_position)
+
         end
 
         create_epic(relation_object) if relation_object.new_record?
@@ -34,26 +40,39 @@ module BulkImports
         ).execute
       end
 
-      def handle_epic_issue(issue)
-        issue_as_work_item = WorkItem.id_in(issue.id).first
+      def handle_issue_with_epic_association(issue, epic, relative_position)
+        return issue unless epic
 
-        if issue_as_work_item&.epic&.work_item
-          existing_parent_link = issue_as_work_item.epic.work_item.child_links.for_children(issue_as_work_item)
-          return if existing_parent_link.present?
+        epic_work_item = epic.new_record? ? create_epic(epic)&.work_item : epic.work_item
+        issue_as_work_item = WorkItem.find_by_id(issue.id)
 
-          create_parent_link = ::WorkItems::ParentLinks::CreateService.new(
-            issue_as_work_item.epic.work_item, current_user,
-            { target_issuable: issue_as_work_item, synced_work_item: true }
-          ).execute
+        return unless issue_as_work_item && epic_work_item
 
-          return unless create_parent_link[:status] == :success
-
-          legacy_epic_issue_link = issue.epic_issue
-          legacy_epic_issue_link.work_item_parent_link_id = create_parent_link[:created_references].first.id
-          legacy_epic_issue_link.save(touch: false)
-        end
+        link = create_parent_link(epic_work_item, issue_as_work_item, relative_position)
+        return issue unless link
 
         issue
+      end
+
+      def create_parent_link(parent_work_item, child_work_item, relative_position)
+        # since we are working with imported items, we have to temporarily set this attribute on the child, so that
+        # the Epics::Links::CreateService knows not to perform validation related to hierarchy.
+
+        # Importing isn't set on the child work item anymore because we persisted it separately to handle the epic issue
+        # relation first. More context on the discussion around work item hierarchy permissions vs legacy epics
+        # can be found here https://gitlab.com/gitlab-org/gitlab/-/issues/505855
+        child_work_item.importing = true
+        result = ::WorkItems::ParentLinks::CreateService.new(
+          parent_work_item,
+          current_user,
+          { target_issuable: child_work_item, relative_position: relative_position }
+        ).execute
+
+        child_work_item.importing = nil
+
+        return unless result[:status] == :success
+
+        result[:created_references]&.first
       end
     end
   end
