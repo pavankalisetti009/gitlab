@@ -13,6 +13,11 @@ module EE
           argument :lock_duo_features_enabled, GraphQL::Types::Boolean,
             required: false,
             description: copy_field_description(::Types::GroupType, :lock_duo_features_enabled)
+          argument :web_based_commit_signing_enabled,
+            GraphQL::Types::Boolean,
+            required: false,
+            description: copy_field_description(::Types::GroupType, :web_based_commit_signing_enabled),
+            experiment: { milestone: '18.2' }
         end
       end
     end
