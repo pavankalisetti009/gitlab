@@ -41,6 +41,7 @@ module WorkItems
         when ::WorkItems::Statuses::SystemDefined::Status
           convert_system_to_custom_status!(status, status_params)
         when ::WorkItems::Statuses::Custom::Status
+          ensure_status_belongs_to_namespace!(status)
           update_custom_status!(status, status_params)
           status
         end
@@ -118,6 +119,12 @@ module WorkItems
           converted_ids = @processed_statuses.filter_map(&:converted_from_system_defined_status_identifier)
           original_statuses.reject { |status| converted_ids.include?(status.id) }
         end
+      end
+
+      def ensure_status_belongs_to_namespace!(status)
+        return if status.namespace_id == lifecycle.namespace_id
+
+        raise StandardError, "Status '#{status.name}' doesn't belong to this namespace."
       end
 
       def validate_status_removal_constraints
