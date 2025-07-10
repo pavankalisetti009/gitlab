@@ -98,12 +98,7 @@ module Mutations
 
         update_option_by_request_headers(method, options)
 
-        if Feature.enabled?(:duo_chat_early_thread_creation, current_user)
-          handle_chat_arguments(options) if method == :chat
-        else
-          thread = find_thread(options.delete(:thread_id)) || create_thread(options.delete(:conversation_type))
-          options[:thread] = thread if thread
-        end
+        handle_chat_arguments(options) if method == :chat
 
         options[:started_at] = started_at
 
@@ -148,22 +143,6 @@ module Mutations
         options[:thread] = thread if thread
       rescue RuntimeError => e
         raise Gitlab::Graphql::Errors::ArgumentError, e.message
-      end
-
-      def find_thread(thread_id)
-        return unless thread_id
-
-        current_user.ai_conversation_threads.find(thread_id.model_id)
-      rescue ActiveRecord::RecordNotFound
-        raise Gitlab::Graphql::Errors::ArgumentError, "Thread not found. It may have expired."
-      end
-
-      def create_thread(conversation_type)
-        return unless conversation_type
-
-        current_user.ai_conversation_threads.create!(conversation_type: conversation_type)
-      rescue ActiveRecord::RecordNotSaved, ArgumentError
-        raise Gitlab::Graphql::Errors::ArgumentError, "Failed to create a thread for #{conversation_type}."
       end
 
       def check_feature_flag_enabled!(method)

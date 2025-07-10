@@ -49,32 +49,13 @@ module Resolvers
       end
 
       def find_thread(args)
-        if Feature.enabled?(:duo_chat_early_thread_creation, current_user)
-          thread_id = args[:thread_id]&.model_id
-          Gitlab::Llm::ThreadEnsurer.new(current_user, Current.organization).execute(
-            thread_id: thread_id,
-            conversation_type: args[:conversation_type]
-          )
-        else
-          find_thread_by_id(args[:thread_id]) ||
-            find_thread_by_conversation_type(args[:conversation_type])
-        end
+        thread_id = args[:thread_id]&.model_id
+        Gitlab::Llm::ThreadEnsurer.new(current_user, Current.organization).execute(
+          thread_id: thread_id,
+          conversation_type: args[:conversation_type]
+        )
       rescue RuntimeError => e
         raise Gitlab::Graphql::Errors::ArgumentError, e.message
-      end
-
-      def find_thread_by_id(thread_id)
-        return unless thread_id
-
-        current_user.ai_conversation_threads.find(thread_id.model_id)
-      rescue ActiveRecord::RecordNotFound
-        raise Gitlab::Graphql::Errors::ArgumentError, "Thread #{thread_id.model_id} is not found."
-      end
-
-      def find_thread_by_conversation_type(conversation_type)
-        return unless conversation_type
-
-        current_user.ai_conversation_threads.for_conversation_type(conversation_type).last
       end
     end
   end

@@ -255,20 +255,6 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
       end
 
       it_behaves_like 'an AI action'
-
-      context 'when duo_chat_early_thread_creation is disabled' do
-        before do
-          stub_feature_flags(duo_chat_early_thread_creation: false)
-        end
-
-        let(:expected_options) do
-          options = super()
-          options.delete(:thread)
-          options
-        end
-
-        it_behaves_like 'an AI action'
-      end
     end
 
     context 'when summarize_comments input is set' do
@@ -468,20 +454,6 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
       end
 
       it_behaves_like 'an AI action'
-
-      context 'when duo_chat_early_thread_creation is disabled' do
-        before do
-          stub_feature_flags(duo_chat_early_thread_creation: false)
-        end
-
-        let(:expected_options) do
-          options = super()
-          options.delete(:thread)
-          options
-        end
-
-        it_behaves_like 'an AI action'
-      end
     end
 
     context 'when explain_vulnerability input is set', :saas do
