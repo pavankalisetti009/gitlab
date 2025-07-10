@@ -149,5 +149,59 @@ RSpec.describe BulkImports::Projects::Pipelines::IssuesPipeline, feature_categor
         end
       end
     end
+
+    context 'when epic_issue creation fails' do
+      it 'creates issue but no epic_issue when ParentLinks::CreateService fails' do
+        allow_next_instance_of(::WorkItems::ParentLinks::CreateService) do |service|
+          allow(service).to receive(:execute).and_return({ status: :error, message: 'Service failed' })
+        end
+
+        expect { pipeline.run }.to change { Issue.count }.by(2)
+                               .and not_change { EpicIssue.count }
+
+        issue = project.issues.first
+        expect(issue.epic_issue).to be_nil
+      end
+
+      it 'creates issue but no epic_issue when parent link creation returns empty references' do
+        allow_next_instance_of(::WorkItems::ParentLinks::CreateService) do |service|
+          allow(service).to receive(:execute).and_return({ status: :success, created_references: [] })
+        end
+
+        expect { pipeline.run }.to change { Issue.count }.by(2)
+                               .and not_change { EpicIssue.count }
+
+        issue = project.issues.first
+        expect(issue.epic_issue).to be_nil
+      end
+    end
+
+    context 'without epic association' do
+      let(:issue_without_epic) do
+        {
+          'title' => 'title without epic',
+          'state' => 'opened',
+          'author_id' => 22
+          # No epic_issue
+        }
+      end
+
+      before do
+        issue_with_index = [issue_without_epic, 0]
+        allow_next_instance_of(BulkImports::Common::Extractors::NdjsonExtractor) do |extractor|
+          allow(extractor).to receive(:extract).and_return(BulkImports::Pipeline::ExtractedData.new(data: [issue_with_index]))
+        end
+      end
+
+      it 'creates issue normally using standard pipeline' do
+        expect { pipeline.run }.to change { Issue.count }.by(1)
+                               .and not_change { EpicIssue.count }
+                               .and not_change { Epic.count }
+
+        issue = project.issues.first
+        expect(issue.epic_issue).to be_nil
+        expect(issue.title).to eq('title without epic')
+      end
+    end
   end
 end

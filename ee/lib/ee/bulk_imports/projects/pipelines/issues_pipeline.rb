@@ -12,14 +12,16 @@ module EE
 
             return unless issue
 
-            super
+            if issue.epic_issue.present?
+              epic_from_association = issue.epic_issue.epic
+              relative_position = issue.epic_issue.relative_position
+              issue.epic_issue = nil
+              super
 
-            # In some instances the issue would not be valid, but would be persisted, if some associations are invalid,
-            # e.g. Designs missing the author
-            #
-            # We still want to make sure we create the work_item_parent_links relationship if one should exist if
-            # the issue was persisted.
-            handle_epic_issue(issue)
+              handle_issue_with_epic_association(issue, epic_from_association, relative_position)
+            else
+              super
+            end
           end
         end
       end
