@@ -46,13 +46,33 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     it_behaves_like 'an authorization failure'
   end
 
-  context 'when the params are invalid' do
+  context 'when graphql params are invalid' do
     let(:name) { nil }
+    let(:description) { nil }
 
     it 'returns the validation error' do
       execute
 
-      expect(graphql_errors.to_s).to include('provided invalid value for name (Expected value to not be null)')
+      expect(graphql_errors.first['message']).to include(
+        'provided invalid value for',
+        'name (Expected value to not be null)',
+        'description (Expected value to not be null)'
+      )
+    end
+  end
+
+  context 'when model params are invalid' do
+    let(:name) { '' }
+    let(:description) { '' }
+
+    it 'returns the validation error' do
+      execute
+
+      expect(graphql_data_at(:ai_catalog_agent_create, :errors)).to contain_exactly(
+        "Description can't be blank",
+        "Name can't be blank"
+      )
+      expect(graphql_data_at(:ai_catalog_agent_create, :item)).to be_nil
     end
   end
 
