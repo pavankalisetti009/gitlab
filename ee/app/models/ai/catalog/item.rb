@@ -10,6 +10,8 @@ module Ai
       validates :name, length: { maximum: 255 }
       validates :description, length: { maximum: 1_024 }
 
+      validates_inclusion_of :public, in: [true, false]
+
       belongs_to :organization, class_name: 'Organizations::Organization', optional: false
       belongs_to :project
 

@@ -20,6 +20,8 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
     it { is_expected.to validate_length_of(:description).is_at_most(1_024) }
 
+    it { is_expected.to validate_inclusion_of(:public).in_array([true, false]) }
+
     it { expect(build(:ai_catalog_item)).to be_valid }
   end
 

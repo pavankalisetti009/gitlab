@@ -1272,7 +1272,7 @@ module EE
         description_composer_enabled & can?(:read_merge_request)
       end.enable :access_description_composer
 
-      rule { ai_catalog_enabled & can?(:duo_workflow) & can?(:maintainer_access) }.policy do
+      rule { ai_catalog_enabled & can?(:maintainer_access) }.policy do
         enable :admin_ai_catalog_item
       end
 

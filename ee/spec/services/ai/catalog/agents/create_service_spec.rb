@@ -7,7 +7,6 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
   let_it_be(:project) { create(:project, maintainers: maintainer) }
 
   let(:user) { maintainer }
-  let(:duo_workflow_available) { true }
   let(:params) do
     {
       name: 'Agent',
@@ -18,11 +17,6 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
   end
 
   subject(:response) { described_class.new(project: project, current_user: user, params: params).execute }
-
-  before do
-    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow)
-      .and_return(duo_workflow_available)
-  end
 
   describe '#execute' do
     shared_examples 'an authorization failure' do
@@ -77,12 +71,6 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       before do
         stub_feature_flags(global_ai_catalog: false)
       end
-
-      it_behaves_like 'an authorization failure'
-    end
-
-    context 'when duo_workflow_available is false' do
-      let(:duo_workflow_available) { false }
 
       it_behaves_like 'an authorization failure'
     end
