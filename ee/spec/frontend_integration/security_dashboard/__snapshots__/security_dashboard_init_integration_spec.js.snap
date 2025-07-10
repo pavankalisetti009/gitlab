@@ -467,6 +467,50 @@ exports[`Security Dashboard default states sets up project-level 1`] = `
 </div>
 `;
 
+exports[`Security Dashboard default states sets up project-level with \`projectSecurityDashboardNew\` feature flag set to \`true\` 1`] = `
+<div>
+  <div
+    data-testid="project-security-dashboard-new"
+  >
+    <section
+      class="gl-flex gl-items-center gl-my-4"
+    >
+      <div
+        class="gl-flex gl-flex-col gl-w-full"
+      >
+        <div
+          class="gl-flex gl-items-center"
+        >
+          <h2
+            class="gl-my-0"
+            data-testid="title"
+          >
+            Security dashboard
+          </h2>
+        </div>
+        <div
+          class="gl-flex gl-mt-3"
+        >
+          <p
+            class="gl-mb-0"
+            data-testid="description"
+          >
+            This dashboard provides an overview of your security vulnerabilities.
+          </p>
+        </div>
+      </div>
+    </section>
+    <div
+      class="gl-flex"
+    >
+      <div
+        class="gl-flex gl-flex-col gl-grow"
+      />
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Security Dashboard error states has unavailable pages 1`] = `
 <div>
   <section

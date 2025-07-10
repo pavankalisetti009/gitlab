@@ -66,10 +66,10 @@ export default async (el, dashboardType) => {
     if (!hasProjects) {
       component = ReportNotConfiguredGroup;
     } else if (isGroupSecurityDashboardNewEnabled) {
-      const { default: SecurityDashboardNew } = await import(
-        './components/shared/security_dashboard_new.vue'
+      const { default: GroupSecurityDashboardNew } = await import(
+        './components/shared/group_security_dashboard_new.vue'
       );
-      component = SecurityDashboardNew;
+      component = GroupSecurityDashboardNew;
     } else {
       component = SecurityDashboard;
     }
@@ -86,7 +86,19 @@ export default async (el, dashboardType) => {
       gradesQuery: instanceVulnerabilityGradesQuery,
     };
   } else if (dashboardType === DASHBOARD_TYPE_PROJECT) {
-    component = hasVulnerabilities ? ProjectSecurityCharts : ReportNotConfiguredProject;
+    const isProjectSecurityDashboardNewEnabled = gon.features.projectSecurityDashboardNew;
+
+    if (!hasVulnerabilities) {
+      component = ReportNotConfiguredProject;
+    } else if (isProjectSecurityDashboardNewEnabled) {
+      const { default: ProjectSecurityDashboardNew } = await import(
+        './components/shared/project_security_dashboard_new.vue'
+      );
+
+      component = ProjectSecurityDashboardNew;
+    } else {
+      component = ProjectSecurityCharts;
+    }
     props = {
       projectFullPath,
       shouldShowPromoBanner: !hideThirdPartyOffers,

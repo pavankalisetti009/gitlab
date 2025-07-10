@@ -1,0 +1,10 @@
+---
+name: project_security_dashboard_new
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/550167
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/197492 
+rollout_issue_url:
+milestone: '18.3'
+group: group::security insights
+type: beta
+default_enabled: false

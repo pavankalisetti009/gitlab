@@ -4,19 +4,19 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
-import GroupSecurityDashboardV2 from 'ee/security_dashboard/components/shared/security_dashboard_new.vue';
+import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/group_security_dashboard_new.vue';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 
 jest.mock('~/alert');
 
-describe('Security Dashboard (new version) - Component', () => {
+describe('Group Security Dashboard (new version) - Component', () => {
   let wrapper;
 
   const mockGroupFullPath = 'group/subgroup';
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMountExtended(GroupSecurityDashboardV2, {
+    wrapper = shallowMountExtended(GroupSecurityDashboardNew, {
       propsData: {
         ...props,
       },
