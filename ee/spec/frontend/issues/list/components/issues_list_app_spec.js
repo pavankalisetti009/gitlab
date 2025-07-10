@@ -109,6 +109,7 @@ describe('EE IssuesListApp component', () => {
     iconName: 'status-cancelled',
     id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/4',
     name: "Won't do",
+    description: null,
     position: 0,
     __typename: 'WorkItemStatus',
   };

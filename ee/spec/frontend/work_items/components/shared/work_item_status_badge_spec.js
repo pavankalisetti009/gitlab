@@ -1,4 +1,4 @@
-import { GlIcon, GlTruncate } from '@gitlab/ui';
+import { GlIcon, GlTooltip, GlTruncate } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import { GL_DARK } from '~/constants';
@@ -9,11 +9,14 @@ describe('WorkItemStatusBadge', () => {
   const findIcon = () => wrapper.findComponent(GlIcon);
   const findBadge = () => wrapper.find('[data-testid="work-item-status"]');
   const findBadgeText = () => findBadge().text();
+  const findTooltip = () => wrapper.findComponent(GlTooltip);
+  const findTruncate = () => wrapper.findComponent(GlTruncate);
 
   const createComponent = ({
     name = 'Duplicate',
     iconName = 'status-cancelled',
     color = '',
+    description = null,
   } = {}) => {
     wrapper = shallowMount(WorkItemStatusBadge, {
       propsData: {
@@ -21,6 +24,7 @@ describe('WorkItemStatusBadge', () => {
           name,
           iconName,
           color,
+          description,
         },
       },
       stubs: {
@@ -80,5 +84,35 @@ describe('WorkItemStatusBadge', () => {
         expect(findIcon().attributes('style')).toBe(darkModeColor);
       },
     );
+  });
+
+  describe('tooltip behavior', () => {
+    it('shows tooltip when description is provided', () => {
+      const description = 'This describes the status.';
+      createComponent({ description });
+
+      const tooltip = findTooltip();
+      expect(tooltip.exists()).toBe(true);
+      expect(tooltip.text()).toContain('Duplicate');
+      expect(tooltip.text()).toContain(description);
+    });
+
+    it('does not show tooltip when description is empty', () => {
+      createComponent();
+
+      expect(findTooltip().exists()).toBe(false);
+    });
+
+    it('avoids duplicate tooltips when description is present', () => {
+      createComponent({ description: 'Some description' });
+
+      expect(findTruncate().props('withTooltip')).toBe(false);
+    });
+
+    it('shows truncation tooltip when needed and no description is present', () => {
+      createComponent();
+
+      expect(findTruncate().props('withTooltip')).toBe(true);
+    });
   });
 });

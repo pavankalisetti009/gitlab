@@ -55,6 +55,7 @@ const applyEEWorkItemPermissions = (obj, blockedWorkItemsValue = false) => {
 export const mockWorkItemStatus = {
   id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2',
   name: 'In progress',
+  description: null,
   iconName: 'status-running',
   color: '#1f75cb',
   position: 0,
