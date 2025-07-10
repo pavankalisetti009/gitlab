@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -10,7 +10,6 @@ import AiCatalogAgentRunForm from '../components/ai_catalog_agent_run_form.vue';
 export default {
   name: 'AiCatalogAgentsRun',
   components: {
-    GlButton,
     GlLoadingIcon,
     PageHeading,
     AiCatalogAgentRunForm,
@@ -46,15 +45,6 @@ export default {
     },
   },
   methods: {
-    onBack() {
-      // TODO: Consider routing strategy for "back" navigation
-      // Currently using hardcoded routes to go "back" to previous page in user flow.
-      // Issue: Users could theoretically come from anywhere, then get routed back to
-      // whatever is in history, which may not be the intended previous step.
-      // For now, keeping this approach but may need to revisit if we implement
-      // run page in drawer or need more sophisticated navigation handling.
-      this.$router.back();
-    },
     async onSubmit({ userPrompt }) {
       this.isSubmitting = true;
 
@@ -72,10 +62,6 @@ export default {
 
 <template>
   <div>
-    <gl-button data-testid="ai-catalog-back-button" @click="onBack">
-      {{ __('Go back') }}
-    </gl-button>
-
     <div v-if="isLoading" class="gl-flex gl-h-full gl-items-center gl-justify-center">
       <gl-loading-icon size="lg" />
     </div>
