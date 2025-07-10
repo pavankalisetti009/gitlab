@@ -30,6 +30,13 @@ module QA
         Page::Main::Menu.perform(&:sign_out)
         Flow::Login.sign_in(as: maintainer_user)
 
+        Support::Waiter.wait_until(max_duration: 120, sleep_interval: 10,
+          message: 'Wait until maintainer user created in project') do
+          # use find_user instead of find_member because we need to wait for
+          # project_authorizations table to be updated
+          project.find_user(maintainer_user.username)
+        end
+
         Page::Dashboard::Projects.perform do |projects|
           projects.click_member_tab
           expect(projects).to have_filtered_project_with_access_role(project.name, "Guest")
