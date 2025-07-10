@@ -3,6 +3,14 @@
 module WorkItems
   module Lifecycles
     class BaseService < ::BaseContainerService
+      def initialize(...)
+        super
+
+        @statuses_to_create = []
+        @statuses_to_update = []
+        @statuses_to_remove = []
+      end
+
       private
 
       def apply_status_changes
@@ -45,13 +53,23 @@ module WorkItems
           update_custom_status!(existing_status, status_params)
           existing_status
         else
-          create_custom_status!(prepare_custom_status_params(status_params))
+          create_custom_status!(prepare_custom_status_params(status_params)).tap do |status|
+            @statuses_to_create << status
+          end
         end
       end
 
       def convert_system_to_custom_status!(system_defined_status, status_params)
         prepared_params = prepare_custom_status_params(status_params, system_defined_status, system_defined_status.id)
-        create_custom_status!(prepared_params)
+        create_custom_status!(prepared_params).tap do |status|
+          @statuses_to_update << status if converted_with_changes?(system_defined_status, status)
+        end
+      end
+
+      def converted_with_changes?(system_defined_status, status)
+        system_defined_status.name != status.name ||
+          system_defined_status.color != status.color ||
+          status.description.present?
       end
 
       def create_custom_status!(prepared_params)
@@ -64,6 +82,8 @@ module WorkItems
         status.assign_attributes(update_attributes)
 
         return unless status.changed?
+
+        @statuses_to_update << status
 
         status.updated_by = current_user
         status.save!

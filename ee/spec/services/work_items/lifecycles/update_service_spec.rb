@@ -144,6 +144,62 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             .to contain_exactly(1, 3, 5)
         end
 
+        it 'tracks deletion events for the missing statuses' do
+          expect { result }
+            .to trigger_internal_events('delete_custom_status_in_group_settings')
+            .with(user: user, namespace: group, additional_properties: { label: eq('in_progress').or(eq('canceled')) })
+            .exactly(2).times
+        end
+
+        context 'when some system-defined status params are changed' do
+          let(:updated_status_params) { params[:statuses][1] }
+
+          shared_examples 'triggers events for converted statuses with changes' do
+            it 'tracks update events for the updated statuses' do
+              expect { result }
+                .to trigger_internal_events('update_custom_status_in_group_settings')
+                .with(user: user, namespace: group, additional_properties: {
+                  label: updated_status_params[:category].to_s
+                })
+            end
+          end
+
+          context 'when name is changed' do
+            before do
+              updated_status_params[:name] = 'New name'
+            end
+
+            it_behaves_like 'triggers events for converted statuses with changes'
+          end
+
+          context 'when color is changed' do
+            before do
+              updated_status_params[:color] = '#000000'
+            end
+
+            it_behaves_like 'triggers events for converted statuses with changes'
+          end
+
+          context 'when description is changed' do
+            before do
+              updated_status_params[:description] = 'Some description'
+            end
+
+            it_behaves_like 'triggers events for converted statuses with changes'
+          end
+
+          context 'when description is set to empty string' do
+            before do
+              updated_status_params[:description] = ''
+            end
+
+            it 'does not trigger update event' do
+              expect { result }
+                .not_to trigger_internal_events('update_custom_status_in_group_settings')
+            end
+          end
+        end
+
         context 'when there are board lists using the system-defined status' do
           let_it_be(:subgroup) { create(:group, parent: group) }
           let_it_be(:project) { create(:project, group: group) }
@@ -321,6 +377,13 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             expect(lifecycle.statuses.count).to eq(5)
           end
 
+          it 'tracks creation events for the new statuses' do
+            expect { result }
+              .to trigger_internal_events('create_custom_status_in_group_settings')
+              .with(user: user, namespace: group, additional_properties: { label: eq('to_do').or(eq('done')) })
+              .exactly(2).times
+          end
+
           it 'reorders statuses correctly' do
             expect(lifecycle.ordered_statuses.pluck(:name)).to eq([
               custom_lifecycle.default_open_status.name,
@@ -356,6 +419,12 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               description: 'Updated description',
               updated_by: user
             )
+          end
+
+          it 'tracks update events for the updated statuses' do
+            expect { result }
+              .to trigger_internal_events('update_custom_status_in_group_settings')
+              .with(user: user, namespace: group, additional_properties: { label: 'to_do' })
           end
 
           it 'preserves the status mapping' do
