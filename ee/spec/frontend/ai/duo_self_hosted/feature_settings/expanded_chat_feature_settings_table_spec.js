@@ -1,13 +1,21 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlSprintf, GlAlert, GlLink } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
+
+import { createAlert } from '~/alert';
+import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ExpandedChatFeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
-import { createAlert } from '~/alert';
-import waitForPromises from 'helpers/wait_for_promises';
-import { mockAiFeatureSettings } from './mock_data';
+import BetaFeaturesAlert from 'ee/ai/duo_self_hosted/feature_settings/components/beta_features_alert.vue';
+import FeatureSettingsBlock from 'ee/ai/shared/feature_settings/feature_settings_block.vue';
+
+import {
+  mockAiFeatureSettings,
+  mockDuoChatFeatureSettings,
+  mockCodeSuggestionsFeatureSettings,
+} from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -29,7 +37,6 @@ describe('ExpandedChatFeatureSettingsTable', () => {
   const createComponent = ({
     apolloHandlers = [[getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler]],
     injectedProps = {},
-    stubs = {},
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
@@ -40,20 +47,18 @@ describe('ExpandedChatFeatureSettingsTable', () => {
         duoConfigurationSettingsPath,
         ...injectedProps,
       },
-      stubs: { ...stubs },
     });
   };
 
   const findFeatureSettingsTable = () => wrapper.findComponent(ExpandedChatFeatureSettingsTable);
-  const findDuoChatTableRows = () => wrapper.findByTestId('duo-chat-table-rows');
-  const findCodeSuggestionsTableRows = () => wrapper.findByTestId('code-suggestions-table-rows');
-  const findOtherDuoFeaturesTableRows = () => wrapper.findByTestId('other-duo-features-table-rows');
-  const findDuoMergeRequestTableRows = () => wrapper.findByTestId('duo-merge-requests-table-rows');
-  const findDuoIssuesTableRows = () => wrapper.findByTestId('duo-issues-table-rows');
-  const findSectionHeaders = () => wrapper.findAll('h2');
-  const findSectionDescriptions = () => wrapper.findAllComponents(GlSprintf);
-  const findDuoConfigurationLink = () => wrapper.findByTestId('duo-configuration-link');
-  const findBetaAlert = () => wrapper.findComponent(GlAlert);
+  const findDuoChatTable = () => wrapper.findByTestId('duo-chat-table');
+  const findCodeSuggestionsTable = () => wrapper.findByTestId('code-suggestions-table');
+  const findOtherDuoFeaturesTable = () => wrapper.findByTestId('other-duo-features-table');
+  const findDuoMergeRequestTable = () => wrapper.findByTestId('duo-merge-requests-table');
+  const findDuoIssuesTable = () => wrapper.findByTestId('duo-issues-table');
+  const findAllSettingsBlock = () => wrapper.findAllComponents(FeatureSettingsBlock);
+  const findAllSettingsDescriptions = () => wrapper.findAllComponents(GlSprintf);
+  const findBetaAlert = () => wrapper.findComponent(BetaFeaturesAlert);
 
   beforeEach(async () => {
     createComponent();
@@ -65,52 +70,79 @@ describe('ExpandedChatFeatureSettingsTable', () => {
     expect(findFeatureSettingsTable().exists()).toBe(true);
   });
 
-  it('renders Code Suggestions section', () => {
-    expect(findSectionHeaders().at(0).text()).toBe('Code Suggestions');
-    expect(findSectionDescriptions().at(0).attributes('message')).toContain(
-      'Assists developers by generating and completing code in real-time.',
-    );
-    expect(findCodeSuggestionsTableRows().exists()).toBe(true);
-  });
-
-  it('renders Duo Chat section', () => {
-    expect(findSectionHeaders().at(1).text()).toBe('GitLab Duo Chat');
-    expect(findSectionDescriptions().at(1).attributes('message')).toContain(
-      'An AI assistant that helps users accelerate software development using real-time conversational AI.',
-    );
-    expect(findDuoChatTableRows().exists()).toBe(true);
-  });
-
-  it('renders Duo merge request features section', () => {
-    expect(findSectionHeaders().at(2).text()).toBe('GitLab Duo for merge requests');
-    expect(findSectionDescriptions().at(2).attributes('message')).toContain(
-      'AI-native features that help users accomplish tasks during the lifecycle of a merge request.',
-    );
-    expect(findDuoMergeRequestTableRows().exists()).toBe(true);
-  });
-
-  it('renders Duo issues section', () => {
-    expect(findSectionHeaders().at(3).text()).toBe('GitLab Duo for issues');
-    expect(findSectionDescriptions().at(3).attributes('message')).toContain(
-      'An AI-native feature that generates a summary of discussions on an issue.',
-    );
-    expect(findDuoIssuesTableRows().exists()).toBe(true);
-  });
-
-  it('renders Other Duo features section', () => {
-    expect(findSectionHeaders().at(4).text()).toBe('Other GitLab Duo features');
-    expect(findSectionDescriptions().at(4).attributes('message')).toContain(
-      'AI-native features that support users outside of Chat or Code Suggestions.',
-    );
-    expect(findOtherDuoFeaturesTableRows().exists()).toBe(true);
-  });
-
   describe('when feature settings data is loading', () => {
-    it('passes the correct loading state to FeatureSettingsTableRows', () => {
+    it('passes the correct loading state to FeatureSettingsTable', () => {
       createComponent();
 
-      expect(findCodeSuggestionsTableRows().props('isLoading')).toBe(true);
-      expect(findDuoChatTableRows().props('isLoading')).toBe(true);
+      [findCodeSuggestionsTable, findDuoChatTable].forEach((findTableFn) => {
+        expect(findTableFn().props('isLoading')).toBe(true);
+      });
+    });
+  });
+
+  describe('when feature settings query is successful', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+    });
+
+    describe.each`
+      section                         | index | expectedTitle                      | expectedDescription                                                                                      | findSectionTableFn           | expectedFeatureSettings
+      ${'Code Suggestions'}           | ${0}  | ${'Code Suggestions'}              | ${'Assists developers by generating and completing code in real-time.'}                                  | ${findCodeSuggestionsTable}  | ${[['code_generations', 'GA'], ['code_completions', 'GA']]}
+      ${'Duo Chat'}                   | ${1}  | ${'GitLab Duo Chat'}               | ${'An AI assistant that helps users accelerate software development using real-time conversational AI.'} | ${findDuoChatTable}          | ${[['duo_chat', 'GA'], ['duo_chat_explain_code', 'BETA'], ['duo_chat_troubleshoot_job', 'EXPERIMENT']]}
+      ${'Duo merge request features'} | ${2}  | ${'GitLab Duo for merge requests'} | ${'AI-native features that help users accomplish tasks during the lifecycle of a merge request.'}        | ${findDuoMergeRequestTable}  | ${[['summarize_review', 'BETA'], ['generate_commit_message', 'BETA']]}
+      ${'Duo issues'}                 | ${3}  | ${'GitLab Duo for issues'}         | ${'An AI-native feature that generates a summary of discussions on an issue.'}                           | ${findDuoIssuesTable}        | ${[['duo_chat_summarize_comments', 'BETA']]}
+      ${'Other Duo features'}         | ${4}  | ${'Other GitLab Duo features'}     | ${'AI-native features that support users outside of Chat or Code Suggestions.'}                          | ${findOtherDuoFeaturesTable} | ${[['glab_ask_git_command', 'BETA']]}
+    `(
+      '$section',
+      ({
+        index,
+        expectedTitle,
+        expectedDescription,
+        findSectionTableFn,
+        expectedFeatureSettings,
+      }) => {
+        it('renders section and table', () => {
+          expect(findAllSettingsBlock().at(index).props('title')).toBe(expectedTitle);
+          expect(findAllSettingsDescriptions().at(index).attributes('message')).toContain(
+            expectedDescription,
+          );
+          expect(findSectionTableFn().exists()).toBe(true);
+        });
+
+        it('passes sorted feature settings by release state as table props', () => {
+          expect(
+            findSectionTableFn()
+              .props('featureSettings')
+              .map((fs) => [fs.feature, fs.releaseState]),
+          ).toEqual(expectedFeatureSettings);
+        });
+      },
+    );
+
+    it('does not render section when there are no feature settings to show', async () => {
+      const featureSettingsExcludingOtherDuo = [
+        ...mockDuoChatFeatureSettings,
+        ...mockCodeSuggestionsFeatureSettings,
+      ];
+      const getFeatureSettingsExcludingOtherDuoSuccessHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiFeatureSettings: {
+            nodes: featureSettingsExcludingOtherDuo,
+            errors: [],
+          },
+        },
+      });
+
+      createComponent({
+        apolloHandlers: [
+          [getAiFeatureSettingsQuery, getFeatureSettingsExcludingOtherDuoSuccessHandler],
+        ],
+      });
+      await waitForPromises();
+
+      expect(findAllSettingsBlock()).toHaveLength(2);
+      expect(findOtherDuoFeaturesTable().exists()).toBe(false);
     });
   });
 
@@ -123,51 +155,14 @@ describe('ExpandedChatFeatureSettingsTable', () => {
   describe('when beta features are disabled', () => {
     it('displays a beta models info alert', () => {
       createComponent({
-        injectedProps: { betaModelsEnabled: false },
-        stubs: { GlLink, GlSprintf },
+        injectedProps: {
+          betaModelsEnabled: false,
+        },
       });
 
-      expect(findBetaAlert().exists()).toBe(true);
-      expect(findDuoConfigurationLink().attributes('href')).toBe(duoConfigurationSettingsPath);
-    });
-  });
-
-  describe('when the API query is successful', () => {
-    beforeEach(async () => {
-      createComponent();
-      await waitForPromises();
-    });
-
-    it('passes Code Suggestions table row data to FeatureSettingsTableRows', () => {
-      expect(findCodeSuggestionsTableRows().props('isLoading')).toEqual(false);
-
-      const tableRowsFeatureSettingsProps =
-        findCodeSuggestionsTableRows().props('aiFeatureSettings');
-      expect(tableRowsFeatureSettingsProps.map((fs) => [fs.feature, fs.releaseState])).toEqual([
-        ['code_generations', 'GA'],
-        ['code_completions', 'GA'],
-      ]);
-    });
-
-    it('passes sorted Duo Chat table row data to FeatureSettingsTableRows', () => {
-      expect(findDuoChatTableRows().props('isLoading')).toEqual(false);
-
-      const tableRowsFeatureSettingsProps = findDuoChatTableRows().props('aiFeatureSettings');
-      expect(tableRowsFeatureSettingsProps.map((fs) => [fs.feature, fs.releaseState])).toEqual([
-        ['duo_chat', 'GA'],
-        ['duo_chat_explain_code', 'BETA'],
-        ['duo_chat_troubleshoot_job', 'EXPERIMENT'],
-      ]);
-    });
-
-    it('passes sorted Other Duo Features table row data to FeatureSettingsTableRows', () => {
-      expect(findOtherDuoFeaturesTableRows().props('isLoading')).toEqual(false);
-
-      const tableRowsFeatureSettingsProps =
-        findOtherDuoFeaturesTableRows().props('aiFeatureSettings');
-      expect(tableRowsFeatureSettingsProps.map((fs) => [fs.feature, fs.releaseState])).toEqual([
-        ['glab_ask_git_command', 'BETA'],
-      ]);
+      expect(findBetaAlert().props('duoConfigurationSettingsPath')).toBe(
+        duoConfigurationSettingsPath,
+      );
     });
   });
 
