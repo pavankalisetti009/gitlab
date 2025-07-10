@@ -9,14 +9,15 @@ title: Gitaly on Kubernetes
 
 - Tier: Free, Premium, Ultimate
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
-- Status: Beta
+- Status: Limited availability
 
 {{< /details >}}
 
 {{< history >}}
 
-- Introduced in GitLab 17.3 as an [experiment](../../policy/development_stages_support.md#experiment).
-- Promoted to [beta](../../policy/development_stages_support.md#beta) status in GitLab 17.10.
+- Introduced in GitLab 17.3 as an [experiment](../../policy/development_stages_support.md).
+- Changed from experiment to beta in GitLab 17.10.
+- Changed from beta to limited availability in GitLab 18.2.
 
 {{< /history >}}
 
