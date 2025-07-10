@@ -36,15 +36,19 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
     group.add_owner(user)
   end
 
-  context 'when user has permission to read compliance violations report' do
-    shared_examples 'does not create audit event' do
-      it 'does not create any audit event' do
-        expect { mutate }.not_to change {
-          AuditEvent.where("details LIKE '%update_project_compliance_violation%'").count
-        }
-      end
+  shared_examples 'skips audit event and system note creation' do
+    it 'does not create any audit event' do
+      expect { mutate }.not_to change {
+        AuditEvent.where("details LIKE '%update_project_compliance_violation%'").count
+      }
     end
 
+    it 'does not create a system note' do
+      expect { mutate }.not_to change { Note.where(noteable_id: compliance_violation.id).count }
+    end
+  end
+
+  context 'when user has permission to read compliance violations report' do
     context 'with valid parameters' do
       let(:new_status) { 'IN_REVIEW' }
 
@@ -73,6 +77,10 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
         }.by(1)
       end
 
+      it 'creates a system note' do
+        expect { mutate }.to change { Note.where(noteable_id: compliance_violation.id).count }.by(1)
+      end
+
       context 'when status is same as previous one' do
         let(:new_status) { compliance_violation.status.upcase }
 
@@ -83,7 +91,7 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
           expect(mutation_response['errors']).to be_empty
         end
 
-        it_behaves_like 'does not create audit event'
+        it_behaves_like 'skips audit event and system note creation'
       end
     end
 
@@ -121,7 +129,7 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
           expect(graphql_errors).to include(a_hash_including('message' => error_message))
         end
 
-        it_behaves_like 'does not create audit event'
+        it_behaves_like 'skips audit event and system note creation'
       end
 
       context 'when status is invalid' do
@@ -135,7 +143,7 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
           )
         end
 
-        it_behaves_like 'does not create audit event'
+        it_behaves_like 'skips audit event and system note creation'
       end
 
       context 'when compliance violation belongs to different project' do
@@ -161,7 +169,7 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
           expect(graphql_errors).to include(a_hash_including('message' => error_message))
         end
 
-        it_behaves_like 'does not create audit event'
+        it_behaves_like 'skips audit event and system note creation'
       end
     end
   end
@@ -179,7 +187,7 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
       expect(graphql_errors).to include(a_hash_including('message' => error_message))
     end
 
-    it_behaves_like 'does not create audit event'
+    it_behaves_like 'skips audit event and system note creation'
   end
 
   context 'when feature is not licensed' do
@@ -195,6 +203,6 @@ RSpec.describe 'UpdateProjectComplianceViolation', feature_category: :compliance
       expect(graphql_errors).to include(a_hash_including('message' => error_message))
     end
 
-    it_behaves_like 'does not create audit event'
+    it_behaves_like 'skips audit event and system note creation'
   end
 end
