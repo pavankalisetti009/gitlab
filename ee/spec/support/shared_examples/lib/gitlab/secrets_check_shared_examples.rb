@@ -1,5 +1,25 @@
 # frozen_string_literal: true
 
+RSpec.shared_examples 'calls SDS' do
+  include_context 'secrets check context'
+  it 'calls SDS' do
+    secrets_check.validate!
+
+    expect_any_instance_of(Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient) do |instance|
+      expect(instance).to have_received(:send_request_to_sds)
+    end
+  end
+end
+
+RSpec.shared_examples 'does not call SDS' do
+  include_context 'secrets check context'
+  it 'does not call SDS' do
+    expect(Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient).not_to receive(:new)
+
+    secrets_check.validate!
+  end
+end
+
 RSpec.shared_examples 'skips the push check' do
   include_context 'secrets check context'
   it "does not call format_response on the next instance" do
