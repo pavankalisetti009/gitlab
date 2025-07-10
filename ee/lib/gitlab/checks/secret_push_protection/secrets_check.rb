@@ -17,6 +17,39 @@ module Gitlab
         }.freeze
 
         def validate!
+          run_validation_dark_launch! if should_run_dark_launch?
+          run_validation!
+        end
+
+        private
+
+        def should_run_dark_launch?
+          Feature.enabled?(:secret_detection_enable_spp_for_public_projects, project) &&
+            public_project_without_spp?
+        end
+
+        # Returns true for public projects that don't have SPP enabled
+        def public_project_without_spp?
+          project.public? &&
+            (!project.licensed_feature_available?(:secret_push_protection) ||
+             !project.security_setting&.secret_push_protection_enabled?)
+        end
+
+        # Dark launch: Route SPP traffic through SDS for public projects to validate load handling.
+        # This sends real production traffic to SDS without affecting the user experience or
+        # blocking pushes. Used to test SDS capacity before full rollout.
+        # Only runs for public projects that don't have SPP enabled or licensed.
+        # See: https://gitlab.com/gitlab-org/gitlab/-/issues/551932
+        def run_validation_dark_launch!
+          logger.log_timed(LOG_MESSAGES[:secrets_check]) do
+            payloads = payload_processor.standardize_payloads
+            break unless payloads
+
+            sds_client.send_request_to_sds(payloads, exclusions: exclusions_manager.active_exclusions)
+          end
+        end
+
+        def run_validation!
           return unless eligibility_checker.should_scan?
 
           thread = nil
@@ -64,8 +97,6 @@ module Gitlab
             thread&.exit
           end
         end
-
-        private
 
         ##############################
         # Helpers
