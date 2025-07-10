@@ -11595,7 +11595,7 @@ msgstr ""
 msgid "BulkImport|Import groups by direct transfer"
 msgstr ""
 
-msgid "BulkImport|Import user memberships"
+msgid "BulkImport|Import user memberships. %{helpLink}"
 msgstr ""
 
 msgid "BulkImport|Import with projects"
@@ -11679,9 +11679,6 @@ msgstr ""
 msgid "BulkImport|Select the groups you want to import."
 msgstr ""
 
-msgid "BulkImport|Select whether user memberships in groups and projects are imported."
-msgstr ""
-
 msgid "BulkImport|Showing %{start} - %{end} of %{total}"
 msgstr ""
 
@@ -11731,6 +11728,9 @@ msgid "BulkImport|View import results"
 msgstr ""
 
 msgid "BulkImport|View placeholders"
+msgstr ""
+
+msgid "BulkImport|What can I import?"
 msgstr ""
 
 msgid "BulkImport|You cannot import projects with this group. To import projects, reconfigure the source GitLab instance or group. %{linkStart}Learn more%{linkEnd}."
