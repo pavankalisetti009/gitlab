@@ -118,5 +118,30 @@ RSpec.describe Todo, feature_category: :notifications do
         end
       end
     end
+
+    context 'when the todo is coming from a compliance violation' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, namespace: group) }
+      let_it_be(:violation) { create(:project_compliance_violation, namespace: group, project: project) }
+
+      context 'when coming from the epic itself' do
+        let_it_be(:todo) { create(:todo, project: project, group: group, user: current_user, target: violation) }
+
+        it 'returns the violation web path' do
+          is_expected.to eq("http://localhost/#{project.full_path}/-/security/compliance_violations/#{violation.id}")
+        end
+      end
+
+      context 'when coming from a note on the compliance violation' do
+        let_it_be(:note) { create(:note, noteable: violation, project: project) }
+        let_it_be(:todo) do
+          create(:todo, project: project, group: project.group, user: current_user, note: note, target: violation)
+        end
+
+        it 'returns the violations web path with an anchor to the note' do
+          is_expected.to eq("http://localhost/#{project.full_path}/-/security/compliance_violations/#{violation.id}#note_#{note.id}")
+        end
+      end
+    end
   end
 end

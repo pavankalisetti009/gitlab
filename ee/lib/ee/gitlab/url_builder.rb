@@ -27,6 +27,8 @@ module EE
             else
               super
             end
+          when ::ComplianceManagement::Projects::ComplianceViolation
+            instance.project_security_compliance_violation_url(object.project, object, **options)
           else
             super
           end
@@ -42,6 +44,9 @@ module EE
             instance.project_security_vulnerability_url(noteable.project, noteable, anchor: dom_id(note), **options)
           elsif note.for_group_wiki?
             instance.group_wiki_page_url(note.noteable, anchor: dom_id(note), **options)
+          elsif note.for_compliance_violation?
+            instance.project_security_compliance_violation_url(
+              noteable.project, noteable, anchor: dom_id(note), **options)
           else
             super
           end

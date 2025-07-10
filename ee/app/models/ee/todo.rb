@@ -53,7 +53,7 @@ module EE
       return build_duo_getting_started_url if for_duo_access_granted?
 
       case target
-      when Vulnerability, Epic
+      when Vulnerability, Epic, ComplianceManagement::Projects::ComplianceViolation
         ::Gitlab::UrlBuilder.build(
           target,
           anchor: note.present? ? ActionView::RecordIdentifier.dom_id(note) : nil

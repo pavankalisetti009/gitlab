@@ -13,10 +13,14 @@ RSpec.describe Gitlab::UrlBuilder do
       :epic_board            | ->(epic_board)    { "/groups/#{epic_board.group.full_path}/-/epic_boards/#{epic_board.id}" }
       :vulnerability         | ->(vulnerability) { "/#{vulnerability.project.full_path}/-/security/vulnerabilities/#{vulnerability.id}" }
 
+      :project_compliance_violation | ->(violation) { "/#{violation.project.full_path}/-/security/compliance_violations/#{violation.id}" }
+
       :note_on_epic          | ->(note)          { "/groups/#{note.noteable.group.full_path}/-/epics/#{note.noteable.iid}#note_#{note.id}" }
       :note_on_vulnerability | ->(note)          { "/#{note.project.full_path}/-/security/vulnerabilities/#{note.noteable.id}#note_#{note.id}" }
 
       :group_wiki            | ->(wiki)          { "/groups/#{wiki.container.full_path}/-/wikis/home" }
+
+      :note_on_compliance_violation | ->(note) { "/#{note.project.full_path}/-/security/compliance_violations/#{note.noteable.id}#note_#{note.id}" }
 
       [:issue, :objective]   | ->(issue)         { "/#{issue.project.full_path}/-/work_items/#{issue.iid}" }
       [:issue, :key_result]  | ->(issue)         { "/#{issue.project.full_path}/-/work_items/#{issue.iid}" }

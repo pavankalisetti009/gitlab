@@ -9,6 +9,8 @@ RSpec.describe Types::TodoableInterface, feature_category: :notifications do
     it 'knows the correct type for EE-only objects' do
       expect(extended_class.resolve_type(build(:epic), {})).to eq(Types::EpicType)
       expect(extended_class.resolve_type(build(:vulnerability), {})).to eq(Types::VulnerabilityType)
+      expect(extended_class.resolve_type(build(:project_compliance_violation), {}))
+        .to eq(Types::ComplianceManagement::Projects::ComplianceViolationType)
     end
   end
 end

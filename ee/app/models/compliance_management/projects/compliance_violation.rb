@@ -4,6 +4,7 @@ module ComplianceManagement
   module Projects
     class ComplianceViolation < ApplicationRecord
       include ::Noteable
+      include ::Todoable
       include ::Mentionable
       include ::Awardable
 
@@ -52,6 +53,15 @@ module ComplianceManagement
 
       def audit_event
         @audit_event ||= audit_event_class&.find_by(id: audit_event_id)
+      end
+
+      # Used by app/policies/todo_policy.rb
+      def readable_by?(user)
+        Ability.allowed?(user, :read_compliance_violations_report, self)
+      end
+
+      def name
+        "Compliance Violation ##{id}"
       end
 
       private

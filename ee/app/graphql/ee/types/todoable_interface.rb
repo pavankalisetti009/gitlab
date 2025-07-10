@@ -15,6 +15,8 @@ module EE
             ::Types::EpicType
           when Vulnerability
             ::Types::VulnerabilityType
+          when ::ComplianceManagement::Projects::ComplianceViolation
+            ::Types::ComplianceManagement::Projects::ComplianceViolationType
           else
             super
           end
