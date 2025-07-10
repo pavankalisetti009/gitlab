@@ -47158,6 +47158,9 @@ msgstr ""
 msgid "Preferences|Light color scheme"
 msgstr ""
 
+msgid "Preferences|Maintain indentation"
+msgstr ""
+
 msgid "Preferences|Mode"
 msgstr ""
 
@@ -47225,6 +47228,9 @@ msgid "Preferences|Web IDE"
 msgstr ""
 
 msgid "Preferences|Web IDE and Workspaces"
+msgstr ""
+
+msgid "Preferences|When you type in a description or comment box, pressing %{kbdOpen}Enter%{kbdClose} creates a new line indented the same as the previous line."
 msgstr ""
 
 msgid "Preferences|When you type in a description or comment box, pressing %{kbdOpen}Enter%{kbdClose} in a list adds a new item below."
