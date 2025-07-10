@@ -40,7 +40,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
     create_ai_usage_data
   end
 
-  def create_ai_usage_data
+  def create_ai_usage_data # rubocop:disable Metrics/AbcSize -- this is a development seed script
     project.users.count.times do
       user = project.users.sample
 
@@ -66,6 +66,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
           user: user,
           event: 'code_suggestion_shown_in_ide',
           timestamp: rand(TIME_PERIOD_DAYS).days.ago,
+          namespace_path: project.project_namespace.traversal_path,
           payload: payload).tap(&:save!).tap(&:store_to_clickhouse)
 
         next unless rand(100) < 35 # 35% acceptance rate
@@ -74,6 +75,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
           user: user,
           event: 'code_suggestion_accepted_in_ide',
           timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds,
+          namespace_path: project.project_namespace.traversal_path,
           payload: payload).tap(&:save!).tap(&:store_to_clickhouse)
       end
 

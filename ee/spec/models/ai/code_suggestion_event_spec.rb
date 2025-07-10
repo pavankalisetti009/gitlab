@@ -21,6 +21,44 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
     end
   end
 
+  describe '.for' do
+    let_it_be(:group) { create(:group, :with_organization) }
+    let_it_be(:sub_group) { create(:group, parent: group) }
+    let_it_be(:project_1) { create(:project, group: group) }
+    let_it_be(:project_2) { create(:project, group: sub_group) }
+    let_it_be(:event_1) do
+      create(:ai_code_suggestion_event, organization: group.organization,
+        namespace_path: project_1.reload.project_namespace.traversal_path)
+    end
+
+    let_it_be(:event_2) do
+      create(:ai_code_suggestion_event, organization: group.organization,
+        namespace_path: project_2.reload.project_namespace.traversal_path)
+    end
+
+    let(:resource) { group }
+
+    subject(:get_events) { described_class.for(resource) }
+
+    it 'filters records using IN operator optimization' do
+      expect_next_instance_of(Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder) do |builder|
+        expect(builder).to receive(:execute)
+      end
+
+      get_events
+    end
+
+    context 'when resource is a group' do
+      it { is_expected.to contain_exactly(event_1, event_2) }
+    end
+
+    context 'when resource is a project' do
+      let(:resource) { project_2 }
+
+      it { is_expected.to contain_exactly(event_2) }
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:organization_id) }
   end

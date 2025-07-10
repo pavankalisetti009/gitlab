@@ -22,6 +22,33 @@ module Ai
 
     validates :organization_id, presence: true
 
+    # Uses IN operator optimization to increase query efficiency
+    def self.for(resource)
+      namespace_ids_scope =
+        if resource.is_a?(Project)
+          Namespace.where(id: resource.project_namespace_id).select(:id)
+        else
+          resource.all_projects.select(:project_namespace_id)
+        end
+
+      # We filter by "timestamp <= Time.current" to skip scanning table future partitions
+      recent_events_scope = where(timestamp: ...Time.current).order(timestamp: :desc, id: :desc)
+
+      # Finds events where the namespace_path ends with the given namespace ID
+      # Example: "1/2/3" matches namespace_id 3
+      array_mapping_scope =
+        ->(id_expression) {
+          where(Arel.sql("(substring(namespace_path FROM '([0-9]+)[^0-9]*$'))::bigint").eq(id_expression))
+        }
+
+      Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder.new(
+        scope: recent_events_scope,
+        array_scope: namespace_ids_scope,
+        array_mapping_scope: array_mapping_scope,
+        finder_query: ->(_, id_expression) { where(arel_table[:id].eq(id_expression)) }
+      ).execute
+    end
+
     def to_clickhouse_csv_row
       super.merge({
         unique_tracking_id: payload['unique_tracking_id'],

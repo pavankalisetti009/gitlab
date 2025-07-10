@@ -39,9 +39,13 @@ module Ai
       return ::Ai::CodeSuggestionEvent.none unless Ability.allowed?(current_user, :read_enterprise_ai_analytics,
         resource)
 
-      # rubocop: disable CodeReuse/ActiveRecord -- will be replaced after namespace_path is populated at ai_code_suggestion_events
-      ::Ai::CodeSuggestionEvent.where(user_id: contributors_ids)
-      # rubocop: enable CodeReuse/ActiveRecord
+      if Feature.enabled?(:use_ai_events_namespace_path_filter, resource)
+        ::Ai::CodeSuggestionEvent.for(resource)
+      else
+        # rubocop: disable CodeReuse/ActiveRecord -- will be replaced after namespace_path is populated at ai_code_suggestion_events
+        ::Ai::CodeSuggestionEvent.where(user_id: contributors_ids)
+        # rubocop: enable CodeReuse/ActiveRecord
+      end
     end
 
     private
