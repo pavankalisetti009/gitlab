@@ -3,7 +3,7 @@
 - project_id = Gitlab::Llm::TanukiBot.project_id
 - root_namespace_id = Gitlab::Llm::TanukiBot.root_namespace_id
 - chat_title = ::Ai::AmazonQ.enabled? ? s_('GitLab Duo Chat with Amazon Q') : s_('GitLab Duo Chat')
-- is_agentic_available = Feature.enabled?(:duo_workflow_workhorse, current_user) && current_user.can?(:access_duo_agentic_chat, @project) && project_id.present?
+- is_agentic_available = Feature.enabled?(:duo_workflow_workhorse, current_user) && project_id.present? && current_user.can?(:access_duo_agentic_chat, @project)
 
 - if Feature.enabled?(:duo_workflow_workhorse, current_user) && project_id.present?
   #js-duo-agentic-chat-app{ data: { project_id: project_id, resource_id: resource_id } }
