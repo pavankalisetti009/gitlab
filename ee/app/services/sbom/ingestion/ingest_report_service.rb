@@ -69,8 +69,8 @@ module Sbom
           message: message,
           project: project.name,
           project_id: project.id,
-          namespace: project.group.name,
-          namespace_id: project.group.id,
+          namespace: project.namespace.name,
+          namespace_id: project.namespace.id,
           cache_key: cache_key.to_s
         )
       end

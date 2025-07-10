@@ -6,8 +6,8 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
   let_it_be(:num_components) { 283 }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :public, group: group) }
-  let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
-  let_it_be(:sbom_report) { create(:ci_reports_sbom_report, num_components: num_components) }
+  let!(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
+  let!(:sbom_report) { create(:ci_reports_sbom_report, num_components: num_components) }
 
   let(:sequencer) { ::Ingestion::Sequencer.new }
   let(:source_sequencer) { ::Ingestion::Sequencer.new(start: num_components + 1) }
@@ -15,6 +15,44 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
   subject(:execute) { described_class.execute(pipeline, sbom_report) }
 
   describe '#execute' do
+    shared_examples_for 'logging the dependency graph scheduling status' do |message|
+      before do
+        allow(::Gitlab::AppLogger).to receive(:info)
+      end
+
+      context 'when the project belongs to a group' do
+        it 'logs the expected message' do
+          execute
+
+          expect(::Gitlab::AppLogger).to have_received(:info).with(
+            message: message,
+            project: project.name,
+            project_id: project.id,
+            namespace: group.name,
+            namespace_id: group.id,
+            cache_key: graph_cache_key.key
+          )
+        end
+      end
+
+      context 'when the project belongs to a namespace' do
+        let(:project) { create(:project, :public) }
+
+        it 'logs the expected message' do
+          execute
+
+          expect(::Gitlab::AppLogger).to have_received(:info).with(
+            message: message,
+            project: project.name,
+            project_id: project.id,
+            namespace: project.namespace.name,
+            namespace_id: project.namespace.id,
+            cache_key: graph_cache_key.key
+          )
+        end
+      end
+    end
+
     before do
       allow(::Sbom::Ingestion::IngestReportSliceService).to receive(:execute)
         .and_wrap_original do |_, _, occurrence_maps|
@@ -84,17 +122,7 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
         execute
       end
 
-      it 'logs the expected message' do
-        expect(::Gitlab::AppLogger).to receive(:info).with(
-          message: "Graph already built",
-          project: project.name,
-          project_id: project.id,
-          namespace: project.group.name,
-          namespace_id: project.group.id,
-          cache_key: graph_cache_key.key
-        )
-        execute
-      end
+      it_behaves_like 'logging the dependency graph scheduling status', 'Graph already built'
     end
 
     context 'when this report has not been ingested' do
@@ -124,17 +152,7 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
         execute
       end
 
-      it 'logs the expected message' do
-        expect(::Gitlab::AppLogger).to receive(:info).with(
-          message: "Building dependency graph",
-          project: project.name,
-          project_id: project.id,
-          namespace: project.group.name,
-          namespace_id: project.group.id,
-          cache_key: graph_cache_key.key
-        )
-        execute
-      end
+      it_behaves_like 'logging the dependency graph scheduling status', 'Building dependency graph'
     end
   end
 end
