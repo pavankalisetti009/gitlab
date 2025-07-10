@@ -31761,6 +31761,9 @@ msgstr ""
 msgid "Homepage|Start creating merge requests, pushing code, commenting in issues, and doing other work to view a feed of your activity here."
 msgstr ""
 
+msgid "Homepage|The number of issues is not available. Please refresh the page to try again."
+msgstr ""
+
 msgid "Homepage|The number of merge requests is not available. Please refresh the page to try again."
 msgstr ""
 
