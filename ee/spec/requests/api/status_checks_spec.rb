@@ -100,6 +100,15 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
 
     let(:status) { 'passed' }
 
+    shared_examples 'not creating a status check response and returns error' do |status, error = {}|
+      it 'does not create status check response and returns error' do
+        expect { subject }.not_to change { MergeRequests::StatusCheckResponse.count }
+
+        expect(response).to have_gitlab_http_status(status)
+        expect(json_response).to include(error.as_json) if error.present?
+      end
+    end
+
     context 'permissions' do
       using RSpec::Parameterized::TableSyntax
 
@@ -137,38 +146,81 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
         project.add_member(user, :maintainer) if user
       end
 
+      context 'when the request is valid' do
+        it 'creates a status check response and returns the correct status' do
+          expect { subject }.to change { MergeRequests::StatusCheckResponse.count }.by(1)
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
       context 'when external status check ID does not belong to the requested project' do
         let_it_be(:external_status_check) { create(:external_status_check) }
 
-        it 'returns a not found status' do
-          subject
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
+        it_behaves_like 'not creating a status check response and returns error', :not_found, message: "404 Not found"
       end
 
       context 'when sha is not the source branch HEAD' do
         let(:sha) { 'notarealsha' }
 
-        it 'does not create a new approval' do
-          expect { subject }.not_to change { MergeRequests::StatusCheckResponse.count }
-        end
-
-        it 'returns a conflict error' do
-          subject
-
-          expect(response).to have_gitlab_http_status(:conflict)
-        end
+        it_behaves_like 'not creating a status check response and returns error', :conflict
       end
 
       context 'when user is not authenticated' do
         let(:user) { nil }
 
-        it 'returns an unauthorized status' do
-          subject
+        it_behaves_like 'not creating a status check response and returns error', :unauthorized, message: '401 Unauthorized'
+      end
 
-          expect(response).to have_gitlab_http_status(:unauthorized)
+      context 'when service returns validation errors' do
+        context 'when sha is missing' do
+          subject do
+            post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/status_check_responses", user),
+              params: { external_status_check_id: external_status_check.id, status: status }
+          end
+
+          it_behaves_like 'not creating a status check response and returns error', :bad_request, error: 'sha is missing'
         end
+
+        context 'when status is invalid' do
+          let(:status) { 'invalid_status' }
+
+          it_behaves_like 'not creating a status check response and returns error', :bad_request, error: 'status does not have a valid value'
+        end
+
+        context 'when status is missing' do
+          subject do
+            post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/status_check_responses", user),
+              params: { external_status_check_id: external_status_check.id, sha: sha }
+          end
+
+          it_behaves_like 'not creating a status check response and returns error', :bad_request, error: 'status is missing, status does not have a valid value'
+        end
+
+        context 'when service returns other validation errors' do
+          before do
+            allow_next_instance_of(::MergeRequests::StatusCheckResponses::CreateService) do |service|
+              allow(service).to receive(:execute).with(merge_request).and_return(
+                ServiceResponse.error(
+                  message: 'Validation failed',
+                  reason: :bad_request,
+                  payload: { errors: "Sha can't be blank" }
+                )
+              )
+            end
+          end
+
+          it_behaves_like 'not creating a status check response and returns error', :bad_request, message: 'Sha can\'t be blank'
+        end
+      end
+
+      context 'when service returns permission errors' do
+        before do
+          project.project_members.where(user: user).delete_all
+          project.add_member(user, :guest)
+        end
+
+        it_behaves_like 'not creating a status check response and returns error', :forbidden, message: '403 Forbidden'
       end
     end
   end
