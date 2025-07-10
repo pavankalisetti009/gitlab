@@ -50,7 +50,8 @@ module Users
 
       def project_requires_verified_user?
         root_namespace = project.root_namespace
-        return false if root_namespace.actual_plan.paid_excluding_trials?
+        id_check_for_oss = ::Feature.enabled?(:id_check_for_oss, user)
+        return false if root_namespace.actual_plan.paid_excluding_trials?(exclude_oss: id_check_for_oss)
 
         ci_usage = root_namespace.ci_minutes_usage
         return false if ci_usage.quota_enabled? && ci_usage.quota.any_purchased?

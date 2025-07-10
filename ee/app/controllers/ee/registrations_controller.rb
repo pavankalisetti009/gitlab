@@ -105,10 +105,9 @@ module EE
     def exempt_paid_namespace_invitee_from_identity_verification(user)
       return unless identity_verification_enabled?
       return unless invite_root_namespace&.has_subscription?
-      return unless invite_root_namespace&.actual_plan&.paid_excluding_trials?
 
       id_check_for_oss = ::Feature.enabled?(:id_check_for_oss, user)
-      return if id_check_for_oss && invite_root_namespace.actual_plan.open_source?
+      return unless invite_root_namespace&.actual_plan&.paid_excluding_trials?(exclude_oss: id_check_for_oss)
 
       user.add_identity_verification_exemption('invited to paid namespace')
     end
