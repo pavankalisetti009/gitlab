@@ -6,4 +6,4 @@ rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521318
 milestone: '17.10'
 group: group::security infrastructure
 type: beta
-default_enabled: false
+default_enabled: true
