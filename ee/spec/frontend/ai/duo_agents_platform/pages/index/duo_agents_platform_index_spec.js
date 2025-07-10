@@ -3,27 +3,27 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlLoadingIcon } from '@gitlab/ui';
 
-import WorkflowsList from 'ee/ai/duo_agents_platform/components/common/workflows_list.vue';
+import AgentFlowList from 'ee/ai/duo_agents_platform/components/common/agent_flow_list.vue';
 import AgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/duo_agents_platform_index.vue';
-import { getWorkflows } from 'ee/ai/duo_agents_platform/graphql/queries/get_workflows.query.graphql';
+import { getAgentFlows } from 'ee/ai/duo_agents_platform/graphql/queries/get_agent_flows.query.graphql';
 
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 import { createAlert } from '~/alert';
-import { mockWorkflowsResponse } from '../../../mocks';
+import { mockAgentFlowsResponse } from '../../../mocks';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
 describe('AgentsPlatformIndex', () => {
   let wrapper;
-  const workflowsHandler = jest.fn();
+  const getAgentFlowsHandler = jest.fn();
 
   const projectPath = 'project/path';
 
   const createWrapper = (props = {}) => {
-    const handlers = [[getWorkflows, workflowsHandler]];
+    const handlers = [[getAgentFlows, getAgentFlowsHandler]];
 
     wrapper = shallowMount(AgentsPlatformIndex, {
       apolloProvider: createMockApollo(handlers),
@@ -37,12 +37,12 @@ describe('AgentsPlatformIndex', () => {
     return waitForPromises();
   };
 
-  const findWorkflowsList = () => wrapper.findComponent(WorkflowsList);
+  const findWorkflowsList = () => wrapper.findComponent(AgentFlowList);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findNewAgentFlowButton = () => wrapper.find('[data-testid="new-agent-flow-button"]');
 
   beforeEach(() => {
-    workflowsHandler.mockResolvedValue(mockWorkflowsResponse);
+    getAgentFlowsHandler.mockResolvedValue(mockAgentFlowsResponse);
   });
 
   describe('when loading the queries', () => {
@@ -82,13 +82,12 @@ describe('AgentsPlatformIndex', () => {
     describe('workflows query', () => {
       describe('on successful fetch', () => {
         beforeEach(async () => {
-          workflowsHandler.mockResolvedValue(mockWorkflowsResponse);
           await createWrapper();
         });
 
         it('fetches workflows data', () => {
-          expect(workflowsHandler).toHaveBeenCalledTimes(1);
-          expect(workflowsHandler).toHaveBeenCalledWith({
+          expect(getAgentFlowsHandler).toHaveBeenCalledTimes(1);
+          expect(getAgentFlowsHandler).toHaveBeenCalledWith({
             projectPath,
             before: null,
             first: 20,
@@ -96,8 +95,8 @@ describe('AgentsPlatformIndex', () => {
           });
         });
 
-        it('passes workflows to WorkflowsList component', () => {
-          const expectedWorkflows = mockWorkflowsResponse.data.duoWorkflowWorkflows.edges.map(
+        it('passes workflows to AgentFlowList component', () => {
+          const expectedWorkflows = mockAgentFlowsResponse.data.duoWorkflowWorkflows.edges.map(
             (w) => w.node,
           );
 
@@ -109,7 +108,7 @@ describe('AgentsPlatformIndex', () => {
         const errorMessage = 'Network error';
 
         beforeEach(async () => {
-          workflowsHandler.mockRejectedValue(new Error(errorMessage));
+          getAgentFlowsHandler.mockRejectedValue(new Error(errorMessage));
           await createWrapper();
         });
 
@@ -120,33 +119,46 @@ describe('AgentsPlatformIndex', () => {
           });
         });
 
-        it('passes empty array to WorkflowsList component', () => {
+        it('passes empty array to AgentFlowList component', () => {
           expect(findWorkflowsList().props('workflows')).toEqual([]);
         });
       });
 
       describe('when workflows query returns no data', () => {
         beforeEach(async () => {
-          workflowsHandler.mockResolvedValue({
+          getAgentFlowsHandler.mockResolvedValue({
             data: {
-              duoWorkflowWorkflows: null,
+              duoWorkflowWorkflows: {
+                edges: [],
+                pageInfo: {
+                  startCursor: null,
+                  endCursor: null,
+                  hasNextPage: false,
+                  hasPreviousPage: false,
+                },
+              },
             },
           });
           await createWrapper();
         });
 
-        it('passes empty array to WorkflowsList component', () => {
+        it('passes empty array to AgentFlowList component', () => {
           expect(findWorkflowsList().props('workflows')).toEqual([]);
         });
 
-        it('passes empty page info to WorkflowsList component', () => {
-          expect(findWorkflowsList().props('workflowsPageInfo')).toEqual({});
+        it('passes empty page info to AgentFlowList component', () => {
+          expect(findWorkflowsList().props('workflowsPageInfo')).toEqual({
+            startCursor: null,
+            endCursor: null,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          });
         });
       });
 
       describe('when workflows query returns empty edges', () => {
         beforeEach(async () => {
-          workflowsHandler.mockResolvedValue({
+          getAgentFlowsHandler.mockResolvedValue({
             data: {
               duoWorkflowWorkflows: {
                 pageInfo: {
@@ -162,11 +174,11 @@ describe('AgentsPlatformIndex', () => {
           await createWrapper();
         });
 
-        it('passes empty array to WorkflowsList component', () => {
+        it('passes empty array to AgentFlowList component', () => {
           expect(findWorkflowsList().props('workflows')).toEqual([]);
         });
 
-        it('passes correct page info to WorkflowsList component', () => {
+        it('passes correct page info to AgentFlowList component', () => {
           const expectedPageInfo = {
             startCursor: null,
             endCursor: null,
@@ -187,7 +199,7 @@ describe('AgentsPlatformIndex', () => {
         it('calls refetch with correct parameters', () => {
           findWorkflowsList().vm.$emit('next-page');
 
-          expect(workflowsHandler).toHaveBeenCalledWith({
+          expect(getAgentFlowsHandler).toHaveBeenCalledWith({
             projectPath,
             after: 'end',
             last: null,
@@ -201,6 +213,7 @@ describe('AgentsPlatformIndex', () => {
           const secondPageWorkflowEdges = [
             {
               node: {
+                __typename: 'DuoWorkflow',
                 id: 'gid://gitlab/DuoWorkflow::Workflow/3',
                 humanStatus: 'pending',
                 updatedAt: '2024-01-03T00:00:00Z',
@@ -209,6 +222,7 @@ describe('AgentsPlatformIndex', () => {
             },
             {
               node: {
+                __typename: 'DuoWorkflow',
                 id: 'gid://gitlab/DuoWorkflow::Workflow/4',
                 humanStatus: 'failed',
                 updatedAt: '2024-01-04T00:00:00Z',
@@ -232,16 +246,16 @@ describe('AgentsPlatformIndex', () => {
           };
 
           // Reset the handler and set up the chain of responses
-          workflowsHandler.mockReset();
-          workflowsHandler
-            .mockResolvedValueOnce(mockWorkflowsResponse) // First call returns initial data
+          getAgentFlowsHandler.mockReset();
+          getAgentFlowsHandler
+            .mockResolvedValueOnce(mockAgentFlowsResponse) // First call returns initial data
             .mockResolvedValueOnce(secondPageResponse); // Second call returns second page data
 
           // Create a new wrapper to get fresh data
           await createWrapper();
 
           // Assert initial data is passed as props
-          const initialWorkflows = mockWorkflowsResponse.data.duoWorkflowWorkflows.edges.map(
+          const initialWorkflows = mockAgentFlowsResponse.data.duoWorkflowWorkflows.edges.map(
             (w) => w.node,
           );
           expect(findWorkflowsList().props('workflows')).toEqual(initialWorkflows);
@@ -251,7 +265,7 @@ describe('AgentsPlatformIndex', () => {
           await waitForPromises();
 
           // Assert that refetch was called with correct parameters
-          expect(workflowsHandler).toHaveBeenCalledWith({
+          expect(getAgentFlowsHandler).toHaveBeenCalledWith({
             projectPath,
             after: 'end',
             before: null,
@@ -269,7 +283,7 @@ describe('AgentsPlatformIndex', () => {
         it('calls refetch with correct parameters', () => {
           findWorkflowsList().vm.$emit('prev-page');
 
-          expect(workflowsHandler).toHaveBeenCalledWith({
+          expect(getAgentFlowsHandler).toHaveBeenCalledWith({
             projectPath,
             after: null,
             before: 'start',

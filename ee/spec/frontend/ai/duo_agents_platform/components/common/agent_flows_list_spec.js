@@ -1,15 +1,15 @@
 import { GlEmptyState, GlLink, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
-import WorkflowsList from 'ee/ai/duo_agents_platform/components/common/workflows_list.vue';
-import { mockWorkflows } from '../../../mocks';
+import AgentFlowList from 'ee/ai/duo_agents_platform/components/common/agent_flow_list.vue';
+import { mockAgentFlows } from '../../../mocks';
 
-describe('WorkflowsList', () => {
+describe('AgentFlowList', () => {
   let wrapper;
 
   const createWrapper = (props = {}, mountFn = mount) => {
-    wrapper = mountFn(WorkflowsList, {
+    wrapper = mountFn(AgentFlowList, {
       propsData: {
-        workflows: mockWorkflows,
+        workflows: mockAgentFlows,
         workflowsPageInfo: {},
         emptyStateIllustrationPath: 'illustrations/empty-state/empty-pipeline-md.svg',
         ...props,
@@ -78,7 +78,7 @@ describe('WorkflowsList', () => {
 
       describe('workflowDefinition column', () => {
         it('each goal cell is wrapped in a gl-link', () => {
-          expect(findAgentNameLink()).toHaveLength(2); // from mockWorkflows.length
+          expect(findAgentNameLink()).toHaveLength(2); // from mockAgentFlows.length
           expect(findAgentNameLink().at(0).props('to').name).toBe('agents_platform_show_route');
           expect(findAgentNameLink().at(0).props('to').params).toEqual({
             id: 1,

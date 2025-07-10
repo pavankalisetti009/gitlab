@@ -15,7 +15,7 @@ export default {
       required: true,
       type: String,
     },
-    workflowDefinition: {
+    agentFlowDefinition: {
       required: true,
       type: String,
     },
@@ -29,7 +29,7 @@ export default {
         },
         {
           key: 'Type',
-          value: this.workflowDefinition,
+          value: this.agentFlowDefinition,
         },
       ].map((entry) => {
         return { ...entry, value: entry.value ? entry.value : __('N/A') };

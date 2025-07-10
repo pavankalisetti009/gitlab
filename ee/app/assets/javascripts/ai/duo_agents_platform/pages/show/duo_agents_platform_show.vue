@@ -3,22 +3,22 @@ import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { getDuoWorkflowEventsQuery } from '../../graphql/queries/get_duo_workflow_events.query.graphql';
+import { getAgentFlow } from '../../graphql/queries/get_agent_flow.query.graphql';
 import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from '../../constants';
 import { formatAgentDefinition, formatAgentStatus } from '../../utils';
-import WorkflowDetails from './components/workflow_details.vue';
+import AgentFlowDetails from './components/agent_flow_details.vue';
 
 export default {
   name: 'DuoAgentsPlatformShow',
-  components: { WorkflowDetails },
+  components: { AgentFlowDetails },
   data() {
     return {
-      workflowEvents: [],
+      agentFlow: null,
     };
   },
   apollo: {
-    workflowEvents: {
-      query: getDuoWorkflowEventsQuery,
+    agentFlow: {
+      query: getAgentFlow,
       pollInterval: DUO_AGENTS_PLATFORM_POLLING_INTERVAL,
       variables() {
         return {
@@ -26,7 +26,7 @@ export default {
         };
       },
       update(data) {
-        return data?.duoWorkflowEvents?.nodes || [];
+        return data?.duoWorkflowWorkflows?.edges?.[0]?.node || {};
       },
       error(err) {
         createAlert({
@@ -39,22 +39,25 @@ export default {
   },
   computed: {
     isLoading() {
-      return this.$apollo.queries.workflowEvents.loading;
+      return this.$apollo.queries.agentFlow.loading;
     },
     status() {
-      return formatAgentStatus(this.workflowEvents[0]?.workflowStatus);
+      return formatAgentStatus(this.agentFlow?.humanStatus);
     },
-    workflowDefinition() {
-      return formatAgentDefinition(this.workflowEvents[0]?.workflowDefinition);
+    agentFlowDefinition() {
+      return formatAgentDefinition(this.agentFlow?.workflowDefinition);
+    },
+    agentFlowCheckpoint() {
+      return this.agentFlow?.firstCheckpoint?.checkpoint || '';
     },
   },
 };
 </script>
 <template>
-  <workflow-details
+  <agent-flow-details
     :is-loading="isLoading"
     :status="status"
-    :workflow-definition="workflowDefinition"
-    :workflow-events="workflowEvents"
+    :agent-flow-definition="agentFlowDefinition"
+    :agent-flow-checkpoint="agentFlowCheckpoint"
   />
 </template>

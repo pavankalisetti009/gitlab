@@ -1,16 +1,16 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import WorkflowInfo from 'ee/ai/duo_agents_platform/pages/show/components/workflow_info.vue';
+import AgentFlowInfo from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_info.vue';
 
-describe('WorkflowInfo', () => {
+describe('AgentFlowInfo', () => {
   let wrapper;
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(WorkflowInfo, {
+    wrapper = shallowMount(AgentFlowInfo, {
       propsData: {
         isLoading: false,
         status: 'RUNNING',
-        workflowDefinition: 'software_development',
+        agentFlowDefinition: 'software_development',
         ...props,
       },
     });
@@ -24,7 +24,7 @@ describe('WorkflowInfo', () => {
       createComponent({
         isLoading: true,
         status: 'RUNNING',
-        workflowDefinition: 'software_development',
+        agentFlowDefinition: 'software_development',
       });
     });
 
@@ -43,7 +43,7 @@ describe('WorkflowInfo', () => {
 
   describe('info data', () => {
     it.each`
-      status       | workflowDefinition        | expectedStatus | expectedType
+      status       | agentFlowDefinition       | expectedStatus | expectedType
       ${'STOPPED'} | ${'software_development'} | ${'STOPPED'}   | ${'software_development'}
       ${'STARTED'} | ${'testing'}              | ${'STARTED'}   | ${'testing'}
       ${''}        | ${'something_else'}       | ${'N/A'}       | ${'something_else'}
@@ -51,8 +51,8 @@ describe('WorkflowInfo', () => {
       ${''}        | ${''}                     | ${'N/A'}       | ${'N/A'}
     `(
       'renders expected values when status is $status and definition is `$workflowDefinition`',
-      ({ status, workflowDefinition, expectedStatus, expectedType }) => {
-        createComponent({ status, workflowDefinition });
+      ({ status, agentFlowDefinition, expectedStatus, expectedType }) => {
+        createComponent({ status, agentFlowDefinition });
 
         expect(findListItems().at(0).text()).toContain(`Status: ${expectedStatus}`);
         expect(findListItems().at(1).text()).toContain(`Type: ${expectedType}`);
