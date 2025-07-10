@@ -3,7 +3,10 @@
 module Ai
   module DuoWorkflows
     class Checkpoint < ::ApplicationRecord
-      self.table_name = :duo_workflows_checkpoints
+      include PartitionedTable
+
+      partitioned_by :created_at, strategy: :daily, retain_for: 30.days
+      self.table_name = :p_duo_workflows_checkpoints
 
       belongs_to :workflow, class_name: 'Ai::DuoWorkflows::Workflow'
       belongs_to :project, optional: true
@@ -22,6 +25,21 @@ module Ai
 
       scope :ordered_with_writes, -> { includes(:checkpoint_writes).order(thread_ts: :desc) }
       scope :with_checkpoint_writes, -> { includes(:checkpoint_writes) }
+
+      # Single ID lookups are possible due to database trigger
+      # [id, created_at] being composite id due to partitioning
+      def self.find(*args)
+        if args.length == 1 && !args[0].is_a?(Array)
+          find_by_id(args[0])
+        else
+          super
+        end
+      end
+
+      def to_global_id(_options = {})
+        GlobalID.new(::Gitlab::GlobalId.build(self, id: id.first))
+      end
+      alias_method :to_gid, :to_global_id
 
       private
 
