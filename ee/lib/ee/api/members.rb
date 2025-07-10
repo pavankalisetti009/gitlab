@@ -132,7 +132,7 @@ module EE
             result = BilledUsersFinder.new(group, search_term: params[:search], order_by: sorting).execute
 
             users = result[:users].preload_user_detail
-            owners = group.member_owners_excluding_project_bots
+            owners = group.member_owners_excluding_project_bots_and_service_accounts
 
             present paginate(users),
               with: ::EE::API::Entities::BillableMember,

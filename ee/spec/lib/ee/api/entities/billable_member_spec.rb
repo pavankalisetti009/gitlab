@@ -19,7 +19,7 @@ RSpec.describe ::EE::API::Entities::BillableMember, feature_category: :seat_cost
       project_member_user_ids: [],
       shared_group_user_ids: [],
       shared_project_user_ids: [],
-      owners: group.member_owners_excluding_project_bots
+      owners: group.member_owners_excluding_project_bots_and_service_accounts
     }
   end
 
