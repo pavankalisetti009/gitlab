@@ -14,7 +14,14 @@ module WorkItems
       def after_create
         return unless root_ancestor&.try(:work_item_status_feature_available?)
 
-        update_current_status(status_from_params || default_status)
+        if status_from_params
+          update_current_status(status_from_params)
+        else
+          # Ensure any supported item has a valid status upon creation
+          ::WorkItems::Widgets::Statuses::UpdateService.new(
+            work_item, current_user, :default
+          ).execute
+        end
       end
 
       def after_update
@@ -32,13 +39,7 @@ module WorkItems
 
         params[:status]
       end
-
-      def default_status
-        return if work_item.current_status
-
-        # Ensure any supported item has a valid status upon creation
-        lifecycle&.default_open_status
-      end
+      strong_memoize_attr :status_from_params
 
       def update_current_status(status)
         return unless status

@@ -73,15 +73,7 @@ module WorkItems
 
           return unless lifecycle
 
-          default_status = if open?
-                             lifecycle.default_open_status
-                           elsif duplicated?
-                             lifecycle.default_duplicate_status
-                           else
-                             lifecycle.default_closed_status
-                           end
-
-          build_current_status(system_defined_status: default_status)
+          build_current_status(system_defined_status: lifecycle.default_status_for_work_item(self))
         end
 
         current_status.status

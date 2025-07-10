@@ -122,4 +122,32 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
     it { is_expected.to include(ActiveRecord::FixedItemsModel::Model) }
     it { is_expected.to include(GlobalID::Identification) }
   end
+
+  describe '#default_status_for_work_item' do
+    subject(:default_status) { lifecycle.default_status_for_work_item(work_item) }
+
+    context 'for open work item' do
+      let(:work_item) { build(:work_item, :opened) }
+
+      it 'returns correct status' do
+        is_expected.to eq(lifecycle.default_open_status)
+      end
+    end
+
+    context 'for duplicated work item' do
+      let(:work_item) { build(:work_item, :closed, duplicated_to_id: 1) }
+
+      it 'returns correct status' do
+        is_expected.to eq(lifecycle.default_duplicate_status)
+      end
+    end
+
+    context 'for closed work item' do
+      let(:work_item) { build(:work_item, :closed) }
+
+      it 'returns correct status' do
+        is_expected.to eq(lifecycle.default_closed_status)
+      end
+    end
+  end
 end

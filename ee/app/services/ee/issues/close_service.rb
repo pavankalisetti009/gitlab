@@ -48,31 +48,13 @@ module EE
           )
         end
 
-        update_status_to_closed(issue, status)
+        update_status_after_state_change(issue, status)
 
         return super unless issue.synced_epic
 
         super
         # Creating a system note changes `updated_at` for the issue
         issue.synced_epic.update_column(:updated_at, issue.updated_at)
-      end
-
-      def update_status_to_closed(issue, status)
-        status = find_default_status(issue) if status.nil?
-
-        ::WorkItems::Widgets::Statuses::UpdateService.new(issue, current_user, status).execute if status
-      end
-
-      def find_default_status(issue)
-        lifecycle = issue.work_item_type.status_lifecycle_for(issue.resource_parent.root_ancestor)
-
-        return unless issue.current_status || lifecycle&.custom?
-
-        if issue.duplicated?
-          lifecycle&.default_duplicate_status
-        else
-          lifecycle&.default_closed_status
-        end
       end
     end
   end

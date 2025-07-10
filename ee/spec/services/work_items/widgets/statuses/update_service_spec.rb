@@ -51,6 +51,15 @@ RSpec.describe WorkItems::Widgets::Statuses::UpdateService, feature_category: :t
       end
     end
 
+    context 'when work item type does not support statuses' do
+      let(:work_item) { create(:work_item, :incident, project: project) }
+
+      it 'returns nil without updating status' do
+        expect(service.execute).to be_nil
+        expect(work_item_status).to be_nil
+      end
+    end
+
     context 'when status has incorect type' do
       let(:new_status) { ::WorkItems::Statuses::SystemDefined::Status.new(id: 99, name: 'Invalid') }
 
@@ -70,6 +79,28 @@ RSpec.describe WorkItems::Widgets::Statuses::UpdateService, feature_category: :t
     end
 
     context 'when all conditions are met' do
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'change_work_item_status_value' }
+        let(:category) { described_class.name }
+        let(:namespace) { group }
+        let(:label) { new_status.category.to_s }
+
+        subject { described_class.new(work_item, user, new_status).execute }
+      end
+
+      context 'when given status is :default' do
+        let(:new_status) { :default }
+        let(:work_item) do
+          create(:work_item, :task, :closed, project: project, duplicated_to: create(:work_item, project: project))
+        end
+
+        it 'sets the default status' do
+          expect { service.execute }.to change { WorkItems::Statuses::CurrentStatus.count }.by(1)
+
+          expect(work_item_status).to eq(build(:work_item_system_defined_status, :duplicate))
+        end
+      end
+
       context 'when work item has no current status' do
         it 'creates a new status record with correct status' do
           expect { service.execute }.to change { WorkItems::Statuses::CurrentStatus.count }.by(1)
