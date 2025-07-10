@@ -14,7 +14,9 @@ module Authz
         # Deletes one record for the target group and one for each group it was
         # invited to with an assigned member role. Expected volume: ~100 records
         # maximum.
-        ::Authz::UserGroupMemberRole.for_user_in_group_and_shared_groups(user, group).delete_all
+        ids = ::Authz::UserGroupMemberRole.for_user_in_group_and_shared_groups(user, group).ids # rubocop: disable CodeReuse/ActiveRecord -- Very specific use case.
+
+        ::Authz::UserGroupMemberRole.delete_all_with_id(ids)
       end
     end
   end

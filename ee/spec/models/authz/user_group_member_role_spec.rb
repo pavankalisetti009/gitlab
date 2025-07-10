@@ -51,19 +51,30 @@ RSpec.describe Authz::UserGroupMemberRole, feature_category: :permissions do
     let_it_be(:group) { create(:group) }
     let_it_be(:other_group) { create(:group) }
 
-    let_it_be(:user_in_group) { create(:user_group_member_role, user: user, group: group) }
-    let_it_be(:user_in_shared_with_group) { create(:user_group_member_role, user: user, shared_with_group: group) }
-    let_it_be(:user_in_other_group) { create(:user_group_member_role, user: user, group: other_group) }
-    let_it_be(:user_in_shared_with_other_group) do
-      create(:user_group_member_role, user: user, shared_with_group: other_group)
+    # target records
+    let_it_be(:user_in_group) { create_record(user, group: group) }
+    let_it_be(:user_in_shared_group) { create_record(user, shared_with_group: group) }
+
+    # non-target records
+    let_it_be(:user_in_group_shared_with_other_group) do
+      create_record(user, group: group, shared_with_group: other_group)
     end
 
-    let_it_be(:other_user_in_group) { create(:user_group_member_role, user: other_user, group: group) }
+    let_it_be(:user_in_other_group) { create_record(user, group: other_group) }
+    let_it_be(:user_in_other_shared_group) { create_record(user, shared_with_group: other_group) }
+    let_it_be(:other_user_in_group) { create_record(other_user, group: group) }
 
     subject(:results) { described_class.for_user_in_group_and_shared_groups(user, group) }
 
+    def create_record(user, group: nil, shared_with_group: nil)
+      attrs = { user: user }
+      attrs[:group] = group if group
+      attrs[:shared_with_group] = shared_with_group if shared_with_group
+      create(:user_group_member_role, attrs)
+    end
+
     it 'returns records only for the given user and group' do
-      expect(results).to match_array([user_in_group, user_in_shared_with_group])
+      expect(results).to match_array([user_in_group, user_in_shared_group])
     end
   end
 
