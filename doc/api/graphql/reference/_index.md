@@ -39131,8 +39131,10 @@ Compliance violation for a project.
 | <a id="projectcomplianceviolationdiscussions"></a>`discussions` | [`DiscussionConnection!`](#discussionconnection) | All discussions on the noteable. (see [Connections](#connections)) |
 | <a id="projectcomplianceviolationid"></a>`id` | [`ID!`](#id) | Compliance violation ID. |
 | <a id="projectcomplianceviolationissues"></a>`issues` | [`IssueConnection`](#issueconnection) | Project issues linked to the violation. (see [Connections](#connections)) |
+| <a id="projectcomplianceviolationname"></a>`name` | [`String`](#string) | Name or title of the object. |
 | <a id="projectcomplianceviolationproject"></a>`project` | [`Project!`](#project) | Project of the compliance violation. |
 | <a id="projectcomplianceviolationstatus"></a>`status` | [`ComplianceViolationStatus!`](#complianceviolationstatus) | Compliance violation status of the project. |
+| <a id="projectcomplianceviolationweburl"></a>`webUrl` | [`String`](#string) | URL of the object. |
 
 #### Fields with arguments
 
@@ -47790,6 +47792,7 @@ Sort options for todos.
 | ----- | ----------- |
 | <a id="todotargetenumalert"></a>`ALERT` | Alert. |
 | <a id="todotargetenumcommit"></a>`COMMIT` | Commit. |
+| <a id="todotargetenumcompliance_violation"></a>`COMPLIANCE_VIOLATION` | Project Compliance Violation. |
 | <a id="todotargetenumdesign"></a>`DESIGN` | Design. |
 | <a id="todotargetenumepic"></a>`EPIC` | An Epic. |
 | <a id="todotargetenumissue"></a>`ISSUE` | Issue. |
@@ -50808,6 +50811,7 @@ Implementations:
 - [`MergeRequestReviewer`](#mergerequestreviewer)
 - [`Namespace`](#namespace)
 - [`Project`](#project)
+- [`ProjectComplianceViolation`](#projectcomplianceviolation)
 - [`UserCore`](#usercore)
 - [`Vulnerability`](#vulnerability)
 - [`WikiPage`](#wikipage)

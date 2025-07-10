@@ -8,6 +8,7 @@ module Types
         description 'Compliance violation for a project.'
 
         implements Types::Notes::NoteableInterface
+        implements Types::TodoableInterface
 
         authorize :read_compliance_violations_report
 
@@ -32,6 +33,10 @@ module Types
         field :issues, Types::IssueType.connection_type,
           null: true,
           description: 'Project issues linked to the violation.'
+
+        def web_url
+          Gitlab::UrlBuilder.build(object)
+        end
       end
     end
   end

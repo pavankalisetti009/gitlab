@@ -398,4 +398,71 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
       end
     end
   end
+
+  describe '#readable_by?' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
+    let_it_be(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
+    let_it_be(:owner) { create(:user) }
+    let_it_be(:regular_user) { create(:user) }
+
+    subject(:violation) do
+      create(:project_compliance_violation,
+        project: project,
+        namespace: namespace,
+        compliance_control: compliance_control,
+        audit_event_id: audit_event.id,
+        audit_event_table_name: :project_audit_events
+      )
+    end
+
+    before do
+      stub_licensed_features(group_level_compliance_violations_report: true,
+        project_level_compliance_violations_report: true)
+    end
+
+    context 'when user has permission to read compliance violations report' do
+      before_all do
+        namespace.add_owner(owner)
+      end
+
+      it 'returns true' do
+        expect(violation.readable_by?(owner)).to be true
+      end
+    end
+
+    context 'when user does not have permission to read compliance violations report' do
+      it 'returns false' do
+        expect(violation.readable_by?(regular_user)).to be false
+      end
+    end
+
+    context 'when user is nil' do
+      it 'returns false' do
+        expect(violation.readable_by?(nil)).to be false
+      end
+    end
+  end
+
+  describe '#name' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
+    let_it_be(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+    subject(:violation) do
+      create(:project_compliance_violation,
+        project: project,
+        namespace: namespace,
+        compliance_control: compliance_control,
+        audit_event_id: audit_event.id,
+        audit_event_table_name: :project_audit_events
+      )
+    end
+
+    it 'returns the formatted name with the violation ID' do
+      expect(violation.name).to eq("Compliance Violation ##{violation.id}")
+    end
+  end
 end
