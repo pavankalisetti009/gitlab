@@ -3,8 +3,6 @@
 class AddTestNewPermissionToMemberRole < Gitlab::Database::Migration[2.3]
   milestone '16.5'
 
-  enable_lock_retries!
-
   def up
     add_column :member_roles, :test_new_permission, :boolean, default: false, null: false
   end
