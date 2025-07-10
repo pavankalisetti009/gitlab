@@ -1,8 +1,10 @@
 <script>
 import { parseCustomFileConfiguration } from 'ee/security_orchestration/components/policy_editor/utils';
 import getProjectId from 'ee/security_orchestration/graphql/queries/get_project_id.query.graphql';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { SUFFIX_ON_CONFLICT } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
+import {
+  SCHEDULE,
+  SUFFIX_ON_CONFLICT,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import CodeBlockFilePath from './code_block_file_path.vue';
 import VariablesOverrideList from './variables_override_list.vue';
 
@@ -11,7 +13,6 @@ export default {
     CodeBlockFilePath,
     VariablesOverrideList,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     action: {
       type: Object,
@@ -36,11 +37,6 @@ export default {
       required: false,
       default: () => {},
     },
-    isNewPolicy: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
   },
   data() {
     return {
@@ -48,9 +44,6 @@ export default {
     };
   },
   computed: {
-    hasVariablesControl() {
-      return this.glFeatures.securityPoliciesOptionalVariablesControl;
-    },
     ciConfigurationPath() {
       return this.action?.include?.[0] || {};
     },
@@ -59,6 +52,9 @@ export default {
     },
     selectedRef() {
       return this.ciConfigurationPath.ref;
+    },
+    isScheduledPolicy() {
+      return this.strategy === SCHEDULE;
     },
   },
   async mounted() {
@@ -140,9 +136,8 @@ export default {
     />
 
     <variables-override-list
-      v-if="hasVariablesControl"
+      v-if="!isScheduledPolicy"
       class="gl-mt-4"
-      :is-new-policy="isNewPolicy"
       :variables-override="variablesOverride"
       @select="updateProperty('variables_override', $event)"
     />

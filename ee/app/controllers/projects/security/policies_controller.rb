@@ -13,7 +13,6 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:scheduled_pipeline_execution_policies, project)
-        push_frontend_feature_flag(:security_policies_optional_variables_control, project)
         push_frontend_feature_flag(:security_policies_bypass_options, project)
         push_frontend_feature_flag(:security_policies_bypass_options_tokens_accounts, project)
         push_frontend_feature_flag(:security_policies_bypass_options_group_roles, project)

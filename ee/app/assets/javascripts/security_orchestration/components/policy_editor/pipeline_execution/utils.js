@@ -2,7 +2,12 @@ import { safeDump, safeLoad } from 'js-yaml';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { hasInvalidKey } from '../utils';
-import { DEFAULT_SCHEDULE, PIPELINE_EXECUTION_SCHEDULE_POLICY, SCHEDULE } from './constants';
+import {
+  DEFAULT_SCHEDULE,
+  DEFAULT_VARIABLES_OVERRIDE_STATE,
+  PIPELINE_EXECUTION_SCHEDULE_POLICY,
+  SCHEDULE,
+} from './constants';
 
 /**
  * Update policy strategy and create new policy object with required properties
@@ -14,8 +19,10 @@ import { DEFAULT_SCHEDULE, PIPELINE_EXECUTION_SCHEDULE_POLICY, SCHEDULE } from '
 export const updatePolicyStrategy = ({ policy, strategy }) => {
   let newPolicy;
 
+  // `variables_override` is not supported by schedule type at the moment and needs to be handled differently.
+  // Addressed by https://gitlab.com/gitlab-org/gitlab/-/issues/543105.
   if (strategy === SCHEDULE) {
-    const { pipeline_config_strategy, ...oldPolicy } = policy;
+    const { pipeline_config_strategy, variables_override, ...oldPolicy } = policy;
     newPolicy = {
       ...oldPolicy,
       schedules: [DEFAULT_SCHEDULE],
@@ -27,6 +34,7 @@ export const updatePolicyStrategy = ({ policy, strategy }) => {
       ...oldPolicy,
       pipeline_config_strategy: strategy,
       type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+      variables_override: policy.variables_override || DEFAULT_VARIABLES_OVERRIDE_STATE,
     };
   }
 

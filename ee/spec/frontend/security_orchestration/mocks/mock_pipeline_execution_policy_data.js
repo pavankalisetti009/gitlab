@@ -30,6 +30,10 @@ export const mockPipelineExecutionObject = {
   skip_ci: {
     allowed: false,
   },
+  variables_override: {
+    allowed: false,
+    exceptions: [],
+  },
   type: 'pipeline_execution_policy',
 };
 

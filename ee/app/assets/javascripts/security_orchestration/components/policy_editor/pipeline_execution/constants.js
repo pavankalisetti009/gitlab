@@ -11,18 +11,6 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
         - project: ''
     skip_ci:
       allowed: false
-`;
-
-export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES = `pipeline_execution_policy:
-  - name: ''
-    description: ''
-    enabled: true
-    pipeline_config_strategy: inject_policy
-    content:
-      include:
-        - project: ''
-    skip_ci:
-      allowed: false
     variables_override:
       allowed: false
       exceptions: []
@@ -51,6 +39,9 @@ content:
     - project: ''
 skip_ci:
   allowed: false
+variables_override:
+  allowed: false
+  exceptions: []
 `;
 
 export const HOUR_IN_SECONDS = 3600;

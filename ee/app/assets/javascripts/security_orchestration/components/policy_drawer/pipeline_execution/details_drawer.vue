@@ -2,7 +2,6 @@
 import { GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
 import {
   generateScheduleSummary,
@@ -37,7 +36,6 @@ export default {
     SkipCiConfiguration,
     VariablesOverrideConfiguration,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     policy: {
       type: Object,
@@ -46,7 +44,7 @@ export default {
   },
   computed: {
     hasVariablesControl() {
-      return this.glFeatures.securityPoliciesOptionalVariablesControl && this.variablesOverride;
+      return this.variablesOverride;
     },
     variablesOverride() {
       return this.parsedYaml?.variables_override;

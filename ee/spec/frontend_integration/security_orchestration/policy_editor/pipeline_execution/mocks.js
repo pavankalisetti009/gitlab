@@ -11,6 +11,9 @@ export const mockPipelineExecutionActionManifest = `pipeline_execution_policy:
         - project: ''
     skip_ci:
       allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
 `;
 
 export const mockPipelineExecutionOverrideActionManifest = `pipeline_execution_policy:
@@ -23,6 +26,9 @@ export const mockPipelineExecutionOverrideActionManifest = `pipeline_execution_p
         - project: ''
     skip_ci:
       allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
 `;
 
 export const mockPipelineExecutionSkipCiManifest = `pipeline_execution_policy:
@@ -35,6 +41,9 @@ export const mockPipelineExecutionSkipCiManifest = `pipeline_execution_policy:
         - project: ''
     skip_ci:
       allowed: true
+    variables_override:
+      allowed: false
+      exceptions: []
 `;
 
 export const mockPipelineExecutionSkipCiWithUsersManifest = `pipeline_execution_policy:

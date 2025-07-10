@@ -117,14 +117,6 @@ describe('VariablesOverrideList', () => {
       expect(findModal().props('exceptions')).toEqual(variablesOverride.exceptions);
       expect(findModal().props('isVariablesOverrideAllowed')).toBe(true);
     });
-
-    it('renders collapsible listbox as collapsed for new policies with default variable configuration', () => {
-      createComponent({
-        propsData: { variablesOverride: DEFAULT_VARIABLES_OVERRIDE_STATE, isNewPolicy: true },
-      });
-
-      expect(findAccordionItem().props('visible')).toBe(false);
-    });
   });
 
   describe('with empty exceptions array', () => {

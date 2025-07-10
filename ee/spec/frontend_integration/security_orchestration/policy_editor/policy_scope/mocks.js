@@ -48,6 +48,9 @@ export const mockPipelineExecutionActionManifest = `pipeline_execution_policy:
         - project: ''
     skip_ci:
       allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
     policy_scope:
       compliance_frameworks:
         - id: 1
@@ -202,6 +205,9 @@ export const EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
         - project: ''
     skip_ci:
       allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
     policy_scope:
       projects:
         excluding:
@@ -283,6 +289,9 @@ export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
         - project: ''
     skip_ci:
       allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
     policy_scope:
       groups:
         including:
@@ -355,6 +364,9 @@ export const INCLUDING_GROUPS_MOCKS = {
         - project: ''
     skip_ci:
       allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
     policy_scope:
       groups:
         including:
@@ -404,6 +416,9 @@ export const EXCLUDING_PROJECTS_ON_PROJECT_LEVEL = `pipeline_execution_policy:
         - project: ''
     skip_ci:
       allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
     policy_scope:
       projects:
         excluding:

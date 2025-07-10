@@ -55,15 +55,10 @@ export default {
       required: false,
       default: () => ({}),
     },
-    isNewPolicy: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
   },
   data() {
     return {
-      accordionVisible: !this.isNewPolicy && !isEmpty(this.variablesOverride),
+      accordionVisible: !isEmpty(this.variablesOverride),
     };
   },
   computed: {

@@ -9,7 +9,6 @@ import EditorLayout from 'ee/security_orchestration/components/policy_editor/edi
 import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
-  DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES,
   DEFAULT_SCHEDULE,
   DEFAULT_VARIABLES_OVERRIDE_STATE,
   INJECT,
@@ -173,30 +172,17 @@ describe('EditorComponent', () => {
       expect(findDisabledAction().props()).toEqual({ disabled: false, error });
     });
 
-    it('renders the default policy editor layout', () => {
+    it('renders the default policy editor layout with variables', () => {
       factory();
-      const editorLayout = findPolicyEditorLayout();
-      expect(editorLayout.exists()).toBe(true);
-      expect(editorLayout.props()).toEqual(
-        expect.objectContaining({ yamlEditorValue: DEFAULT_PIPELINE_EXECUTION_POLICY }),
-      );
-    });
-
-    it('renders the default policy editor layout with variables when ff is on', () => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesOptionalVariablesControl: true,
-          },
-        },
-      });
 
       expect(findActionSection().props('variablesOverride')).toEqual(
         DEFAULT_VARIABLES_OVERRIDE_STATE,
       );
-      expect(findPolicyEditorLayout().props()).toEqual(
+      const editorLayout = findPolicyEditorLayout();
+      expect(editorLayout.exists()).toBe(true);
+      expect(editorLayout.props()).toEqual(
         expect.objectContaining({
-          yamlEditorValue: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES,
+          yamlEditorValue: DEFAULT_PIPELINE_EXECUTION_POLICY,
         }),
       );
     });
@@ -213,9 +199,12 @@ describe('EditorComponent', () => {
 
     it('disables the action if there is an action validation error', () => {
       factoryWithExistingPolicy({ policy: mockInvalidPipelineExecutionObject });
-      expect(findActionSection().exists()).toBe(true);
       expect(findDisabledAction().props()).toEqual({ disabled: true, error });
-      expect(findActionSection().props('variablesOverride')).toEqual(undefined);
+      expect(findActionSection().exists()).toBe(true);
+      expect(findActionSection().props('variablesOverride')).toEqual({
+        allowed: false,
+        exceptions: [],
+      });
     });
 
     it('passes variables override to action section', () => {
@@ -453,11 +442,6 @@ describe('EditorComponent', () => {
           propsData: {
             existingPolicy: { ...mockWithoutRefPipelineExecutionObject },
           },
-          provide: {
-            glFeatures: {
-              securityPoliciesOptionalVariablesControl: true,
-            },
-          },
         });
 
         expect(findActionSection().props('variablesOverride')).toEqual(undefined);
@@ -542,6 +526,9 @@ content:
     - project: ''
 skip_ci:
   allowed: false
+variables_override:
+  allowed: false
+  exceptions: []
 type: pipeline_execution_policy
 `,
           },
