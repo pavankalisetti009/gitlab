@@ -15,6 +15,7 @@ export default {
     GlKeysetPagination,
     AssigneeAvatars: () => import('./assignee_avatars.vue'),
     DiffLineChanges: () => import('./diff_line_changes.vue'),
+    MergeRequestLink: () => import('./merge_request_link.vue'),
   },
   props: {
     data: {

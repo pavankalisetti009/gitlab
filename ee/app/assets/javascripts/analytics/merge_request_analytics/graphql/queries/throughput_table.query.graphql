@@ -70,6 +70,8 @@ query getThroughputTableData(
             detailedStatus {
               id
               icon
+              name
+              label
             }
           }
         }
