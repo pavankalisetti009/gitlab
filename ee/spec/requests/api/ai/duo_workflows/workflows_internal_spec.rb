@@ -45,7 +45,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
         expect(response).to have_gitlab_http_status(:created)
       end.to change { workflow.reload.checkpoints.count }.by(2)
 
-      expect(json_response['id']).to eq(Ai::DuoWorkflows::Checkpoint.last.id)
+      expect(json_response['id']).to eq(Ai::DuoWorkflows::Checkpoint.last.id.first)
     end
 
     context 'when authenticated with a token that has the ai_workflows scope' do
@@ -75,7 +75,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
       get api(path, user)
       expect(response).to have_gitlab_http_status(:ok)
-      expect(json_response.pluck('id')).to eq([checkpoint2.id, checkpoint1.id])
+      expect(json_response.pluck('id')).to eq([checkpoint2.id.first, checkpoint1.id.first])
       expect(json_response.pluck('thread_ts')).to eq([checkpoint2.thread_ts, checkpoint1.thread_ts])
       expect(json_response.pluck('parent_ts')).to eq([checkpoint2.parent_ts, checkpoint1.parent_ts])
       expect(json_response[0]).to have_key('checkpoint')
@@ -88,11 +88,11 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
       checkpoint_write = create(:duo_workflows_checkpoint_write, thread_ts: checkpoint.thread_ts,
         workflow: checkpoint.workflow)
-      path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id}"
+      path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id.first}"
 
       get api(path, user)
       expect(response).to have_gitlab_http_status(:ok)
-      expect(json_response['id']).to eq(checkpoint.id)
+      expect(json_response['id']).to eq(checkpoint.id.first)
       expect(json_response['thread_ts']).to eq(checkpoint.thread_ts)
       expect(json_response['parent_ts']).to eq(checkpoint.parent_ts)
       expect(json_response).to have_key('checkpoint')
@@ -106,7 +106,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
         checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
         create(:duo_workflows_checkpoint_write, thread_ts: checkpoint.thread_ts,
           workflow: checkpoint.workflow)
-        path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id}"
+        path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id.first}"
         get api(path, user)
 
         expect(response).to have_gitlab_http_status(:not_found)

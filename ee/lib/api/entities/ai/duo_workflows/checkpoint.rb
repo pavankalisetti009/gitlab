@@ -5,7 +5,9 @@ module API
     module Ai
       module DuoWorkflows
         class Checkpoint < Grape::Entity
-          expose :id
+          expose :id do |checkpoint|
+            checkpoint.id.first
+          end
           expose :thread_ts
           expose :parent_ts
           expose :checkpoint
