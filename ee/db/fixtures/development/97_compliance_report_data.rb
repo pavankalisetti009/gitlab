@@ -34,7 +34,7 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
             project = FactoryBot.create(:project, namespace: @group, creator: @admin,
               name: "#{FFaker::Product.product_name}-#{project_no}")
             [red_framework, green_framework].slice(0, rand(1..2)).each do |framework|
-              add_framework_to_project(project: project, project_no: project_no, framework: framework)
+              add_framework_to_project(project: project, framework: framework)
             end
             print '.'
           end
@@ -43,7 +43,7 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
             project = FactoryBot.create(:project, namespace: subgroup, creator: @admin,
               name: "#{FFaker::Product.product_name}-subgroup-#{project_no}")
             [red_framework, green_framework].slice(0, rand(1..2)).each do |framework|
-              add_framework_to_project(project: project, project_no: project_no, framework: framework)
+              add_framework_to_project(project: project, framework: framework)
             end
             print '.'
           end
@@ -57,36 +57,21 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
 
   private
 
-  def add_framework_to_project(project:, project_no:, framework:)
+  def add_framework_to_project(project:, framework:)
     project.compliance_management_frameworks << framework
-    framework.compliance_requirements.each_with_index do |requirement, req_idx|
+    framework.compliance_requirements.each do |requirement|
       # only requirements with controls can generate entries
       next if requirement.compliance_requirements_controls.empty?
 
-      status = determine_status(project_no, req_idx)
+      status = determine_status
       create_requirement_compliance_status(project, requirement, status)
       create_control_compliance_statuses(project, requirement, status)
     end
   end
 
-  def determine_status(project_no, req_idx)
-    # Create some variance
-    #
-    # first project will have all requirements passed
-    # second project will have second requirement pending
-    # third project will have second requirement failed at random control
-    # random for other projects
+  def determine_status
     status_options = %w[pass pending fail]
-
-    if project_no == 1 && req_idx == 0
-      'pass'
-    elsif project_no == 2 && req_idx == 1
-      'pending'
-    elsif project_no == 3 && req_idx == 1
-      'fail'
-    else
-      status_options.sample
-    end
+    status_options.sample
   end
 
   def create_requirement_compliance_status(project, requirement, status)

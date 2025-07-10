@@ -2,13 +2,19 @@
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { getSystemColorScheme } from '~/lib/utils/css_utils';
 
 import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 
 import { isTopLevelGroup } from '../../utils';
 import FrameworkCoverage from './framework_coverage.vue';
+import FailedRequirements from './failed_requirements.vue';
+import FailedControls from './failed_controls.vue';
+
 import frameworkCoverageQuery from './graphql/framework_coverage.query.graphql';
+import failedRequirementsQuery from './graphql/failed_requirements.query.graphql';
+import failedControlsQuery from './graphql/failed_controls.query.graphql';
 
 const MINIMAL_HEIGHT = 2;
 const FRAMEWORKS_PER_UNIT = 7;
@@ -41,6 +47,17 @@ export default {
         coveredCount: 0,
         details: [],
       },
+      failedRequirements: {
+        failed: 0,
+        passed: 0,
+        pending: 0,
+      },
+      failedControls: {
+        failed: 0,
+        passed: 0,
+        pending: 0,
+      },
+      colorScheme: getSystemColorScheme(),
     };
   },
   apollo: {
@@ -61,10 +78,35 @@ export default {
         };
       },
       error(error) {
-        createAlert({
-          message: __('Something went wrong on our end.'),
-        });
-        Sentry.captureException(error);
+        this.handleGenericError(error);
+      },
+    },
+    failedRequirements: {
+      query: failedRequirementsQuery,
+      variables() {
+        return {
+          groupPath: this.groupPath,
+        };
+      },
+      update(data) {
+        return data.group.complianceRequirementCoverage;
+      },
+      error(error) {
+        this.handleGenericError(error);
+      },
+    },
+    failedControls: {
+      query: failedControlsQuery,
+      variables() {
+        return {
+          groupPath: this.groupPath,
+        };
+      },
+      update(data) {
+        return data.group.complianceRequirementControlCoverage;
+      },
+      error(error) {
+        this.handleGenericError(error);
       },
     },
   },
@@ -88,6 +130,7 @@ export default {
             componentProps: {
               summary: this.summary,
               isTopLevelGroup: this.isTopLevelGroup,
+              colorScheme: this.colorScheme,
             },
             gridAttributes: {
               width: 12,
@@ -99,12 +142,17 @@ export default {
           {
             id: '2',
             extendedDashboardPanelProps: {
-              title: s__('ComplianceReport|Failed requirements'),
+              title: s__('ComplianceReport|Requirements'),
+              loading: this.$apollo.queries.failedRequirements.loading,
             },
-            component: DummyComponent,
+            component: FailedRequirements,
+            componentProps: {
+              failedRequirements: this.failedRequirements,
+              colorScheme: this.colorScheme,
+            },
             gridAttributes: {
               width: 6,
-              height: 1,
+              height: 3,
               yPos: coverageHeight,
               xPos: 0,
             },
@@ -112,12 +160,17 @@ export default {
           {
             id: '3',
             extendedDashboardPanelProps: {
-              title: s__('ComplianceReport|Failed controls'),
+              title: s__('ComplianceReport|Controls'),
+              loading: this.$apollo.queries.failedControls.loading,
             },
-            component: DummyComponent,
+            component: FailedControls,
+            componentProps: {
+              failedControls: this.failedControls,
+              colorScheme: this.colorScheme,
+            },
             gridAttributes: {
               width: 6,
-              height: 1,
+              height: 3,
               yPos: coverageHeight,
               xPos: 6,
             },
@@ -137,6 +190,14 @@ export default {
           },
         ],
       };
+    },
+  },
+  methods: {
+    handleGenericError(error) {
+      createAlert({
+        message: __('Something went wrong on our end.'),
+      });
+      Sentry.captureException(error);
     },
   },
 };

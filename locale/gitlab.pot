@@ -15614,42 +15614,6 @@ msgstr ""
 msgid "Compliance frameworks"
 msgstr ""
 
-msgid "Compliance report|%{count} projects are not covered by %{framework}"
-msgstr ""
-
-msgid "Compliance report|%{count} projects have at least one framework"
-msgstr ""
-
-msgid "Compliance report|%{count} projects have framework: %{framework}"
-msgstr ""
-
-msgid "Compliance report|%{count} projects have no framework at all"
-msgstr ""
-
-msgid "Compliance report|%{percent}%% coverage"
-msgstr ""
-
-msgid "Compliance report|%{percent}%% coverage for %{framework}"
-msgstr ""
-
-msgid "Compliance report|All frameworks"
-msgstr ""
-
-msgid "Compliance report|Click to check all projects"
-msgstr ""
-
-msgid "Compliance report|Projects covered by frameworks"
-msgstr ""
-
-msgid "Compliance report|Projects not covered by frameworks"
-msgstr ""
-
-msgid "Compliance report|Start by adding a compliance framework to your group."
-msgstr ""
-
-msgid "Compliance report|There are no compliance frameworks."
-msgstr ""
-
 msgid "Compliance requirement control successfully deleted"
 msgstr ""
 
@@ -16103,7 +16067,28 @@ msgstr ""
 msgid "ComplianceManagement|Requirement"
 msgstr ""
 
+msgid "ComplianceReport|%{count} projects are not covered by %{framework}"
+msgstr ""
+
+msgid "ComplianceReport|%{count} projects have at least one framework"
+msgstr ""
+
+msgid "ComplianceReport|%{count} projects have framework: %{framework}"
+msgstr ""
+
+msgid "ComplianceReport|%{count} projects have no framework at all"
+msgstr ""
+
+msgid "ComplianceReport|%{percent}%% coverage"
+msgstr ""
+
+msgid "ComplianceReport|%{percent}%% coverage for %{framework}"
+msgstr ""
+
 msgid "ComplianceReport|Action"
+msgstr ""
+
+msgid "ComplianceReport|All frameworks"
 msgstr ""
 
 msgid "ComplianceReport|Apply frameworks to selected projects"
@@ -16130,6 +16115,9 @@ msgstr ""
 msgid "ComplianceReport|Choose one bulk action"
 msgstr ""
 
+msgid "ComplianceReport|Click to check all projects"
+msgstr ""
+
 msgid "ComplianceReport|Compliance framework"
 msgstr ""
 
@@ -16137,6 +16125,9 @@ msgid "ComplianceReport|Compliance framework coverage"
 msgstr ""
 
 msgid "ComplianceReport|Compliance pipelines are deprecated"
+msgstr ""
+
+msgid "ComplianceReport|Controls"
 msgstr ""
 
 msgid "ComplianceReport|Create a new framework"
@@ -16160,10 +16151,7 @@ msgstr ""
 msgid "ComplianceReport|Edit the framework"
 msgstr ""
 
-msgid "ComplianceReport|Failed controls"
-msgstr ""
-
-msgid "ComplianceReport|Failed requirements"
+msgid "ComplianceReport|Failed"
 msgstr ""
 
 msgid "ComplianceReport|Failed to update violation status. Please try again."
@@ -16223,10 +16211,25 @@ msgstr ""
 msgid "ComplianceReport|Only group owners and maintainers can view the framework details"
 msgstr ""
 
+msgid "ComplianceReport|Passed"
+msgstr ""
+
+msgid "ComplianceReport|Pending"
+msgstr ""
+
 msgid "ComplianceReport|Please remove the compliance pipeline configuration from the compliance framework so that the new pipeline execution policy can take precedence."
 msgstr ""
 
+msgid "ComplianceReport|Projects covered by frameworks"
+msgstr ""
+
+msgid "ComplianceReport|Projects not covered by frameworks"
+msgstr ""
+
 msgid "ComplianceReport|Remove frameworks from selected projects"
+msgstr ""
+
+msgid "ComplianceReport|Requirements"
 msgstr ""
 
 msgid "ComplianceReport|Search target branch"
@@ -16239,6 +16242,18 @@ msgid "ComplianceReport|Select frameworks"
 msgstr ""
 
 msgid "ComplianceReport|Show old report"
+msgstr ""
+
+msgid "ComplianceReport|Start by adding a compliance framework to your group."
+msgstr ""
+
+msgid "ComplianceReport|There are no compliance frameworks."
+msgstr ""
+
+msgid "ComplianceReport|There are no controls."
+msgstr ""
+
+msgid "ComplianceReport|There are no requirements."
 msgstr ""
 
 msgid "ComplianceReport|There was a problem fetching compliance frameworks."
@@ -16275,6 +16290,12 @@ msgid "ComplianceReport|We are replacing the violations report with a new versio
 msgstr ""
 
 msgid "ComplianceReport|You are viewing the compliance centre for %{project}. To see information for all projects, go to %{linkStart}group%{linkEnd}."
+msgstr ""
+
+msgid "ComplianceReport|You can add controls for requirements inside the compliance framework."
+msgstr ""
+
+msgid "ComplianceReport|You can add requirements inside the compliance framework."
 msgstr ""
 
 msgid "ComplianceReport|and %{count} more"
