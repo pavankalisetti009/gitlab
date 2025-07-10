@@ -92,12 +92,14 @@ export default {
     handleColorDropdownShow() {
       this.triggerValidation();
       this.colorBeforeDropdownOpen = this.formData.color;
+      this.$refs.colorField?.$el?.focus();
     },
     handleColorDropdownHide() {
       if (!validateHexColor(this.formData.color)) {
         // If invalid, revert to the color it was when dropdown opened
         this.updateFormData('color', this.colorBeforeDropdownOpen);
       }
+      this.$refs.title?.$el?.focus();
     },
   },
 };
@@ -115,12 +117,7 @@ export default {
           >
             <template #toggle>
               <gl-button>
-                <gl-icon
-                  :size="12"
-                  :name="categoryIcon"
-                  :style="{ color: formData.color }"
-                  class="gl-ml-2 gl-mr-1"
-                />
+                <gl-icon :size="12" :name="categoryIcon" :style="{ color: formData.color }" />
                 <gl-icon name="chevron-down" />
               </gl-button>
             </template>
@@ -161,6 +158,7 @@ export default {
                       @input="updateFormData('color', $event.trim())"
                     />
                     <gl-form-input
+                      ref="colorField"
                       :value="formData.color"
                       :state="getFormState(formErrors.color)"
                       data-testid="status-color-input-text"

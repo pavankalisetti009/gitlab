@@ -578,7 +578,7 @@ export default {
                   <gl-icon
                     name="grip"
                     :size="12"
-                    class="js-drag-handle gl-mt-2"
+                    class="js-drag-handle gl-mt-2 gl-flex-none"
                     :class="{
                       'gl-cursor-grabbing': false,
                       'gl-cursor-grab': canReorderStatuses(category),
@@ -589,7 +589,7 @@ export default {
                     :size="12"
                     :name="status.iconName"
                     :style="{ color: status.color }"
-                    class="gl-mr-1 gl-mt-2"
+                    class="gl-mr-1 gl-mt-2 gl-flex-none"
                   />
                   <div>
                     <span>{{ status.name }}</span>
@@ -607,7 +607,7 @@ export default {
                   </div>
                   <gl-disclosure-dropdown
                     :ref="status.name"
-                    class="gl-ml-auto"
+                    class="gl-ml-auto gl-items-start"
                     text-sr-only
                     :toggle-text="__('More actions')"
                     no-caret
