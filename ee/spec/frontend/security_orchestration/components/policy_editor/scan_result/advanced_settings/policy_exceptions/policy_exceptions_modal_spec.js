@@ -104,7 +104,7 @@ describe('PolicyExceptionsModal', () => {
       createComponent({
         propsData: {
           exceptions: {
-            tokens: mockTokens,
+            access_tokens: mockTokens,
           },
           selectedTab: TOKENS,
         },
@@ -126,7 +126,7 @@ describe('PolicyExceptionsModal', () => {
         },
       });
 
-      await findTokensSelector().vm.$emit('set-tokens', mockTokens);
+      await findTokensSelector().vm.$emit('set-access-tokens', mockTokens);
 
       expect(wrapper.emitted('changed')).toBeUndefined();
 
@@ -135,7 +135,7 @@ describe('PolicyExceptionsModal', () => {
       expect(wrapper.emitted('changed')).toEqual([
         [
           {
-            tokens: mockTokens,
+            access_tokens: mockTokens,
           },
         ],
       ]);

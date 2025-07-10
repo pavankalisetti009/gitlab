@@ -78,7 +78,7 @@ export default (el, namespaceType) => {
     el,
     apolloProvider,
     provide: {
-      accessTokens: parsedAccessTokens,
+      availableAccessTokens: parsedAccessTokens,
       createAgentHelpPath,
       designatedAsCsp: parseBoolean(designatedAsCsp),
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),

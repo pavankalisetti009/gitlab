@@ -67,8 +67,8 @@ export default {
     branches() {
       return this.selectedExceptions?.branches || [];
     },
-    tokens() {
-      return this.selectedExceptions?.tokens || [];
+    accessTokens() {
+      return this.selectedExceptions?.access_tokens || [];
     },
     accounts() {
       return this.selectedExceptions?.accounts || [];
@@ -103,10 +103,10 @@ export default {
         branches,
       };
     },
-    setTokens(tokens) {
+    setAccessTokens(accessTokens) {
       this.selectedExceptions = {
         ...this.selectedExceptions,
-        tokens,
+        access_tokens: accessTokens,
       };
     },
     saveChanges() {
@@ -145,8 +145,8 @@ export default {
       <groups-selector v-if="tabSelected($options.GROUPS)" />
       <tokens-selector
         v-if="tabSelected($options.TOKENS)"
-        :selected-tokens="tokens"
-        @set-tokens="setTokens"
+        :selected-tokens="accessTokens"
+        @set-access-tokens="setAccessTokens"
       />
       <service-accounts-selector
         v-if="tabSelected($options.ACCOUNTS)"

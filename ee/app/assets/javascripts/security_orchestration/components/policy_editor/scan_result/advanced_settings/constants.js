@@ -18,7 +18,7 @@ export const TARGET = 'target';
 export const ROLES = 'roles';
 export const GROUPS = 'groups';
 export const ACCOUNTS = 'accounts';
-export const TOKENS = 'tokens';
+export const TOKENS = 'access_tokens';
 export const SOURCE_BRANCH_PATTERNS = 'branches';
 
 export const EXCEPTIONS_FULL_OPTIONS_MAP = {

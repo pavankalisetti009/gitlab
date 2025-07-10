@@ -8,7 +8,7 @@ describe('TokensSelector', () => {
   let wrapper;
 
   const defaultProvide = {
-    accessTokens: mockTokens,
+    availableAccessTokens: mockTokens,
   };
 
   const defaultProps = {
@@ -75,16 +75,16 @@ describe('TokensSelector', () => {
       expect(findCollapsibleListbox().props('selected')).toEqual([1, 2]);
     });
 
-    it('emits set-tokens event when tokens are selected via listbox', async () => {
+    it('emits set-access-tokens event when tokens are selected via listbox', async () => {
       await findCollapsibleListbox().vm.$emit('select', [1, 3]);
 
-      expect(wrapper.emitted('set-tokens')).toEqual([[[{ id: 1 }, { id: 3 }]]]);
+      expect(wrapper.emitted('set-access-tokens')).toEqual([[[{ id: 1 }, { id: 3 }]]]);
     });
 
-    it('emits set-tokens event when tokens are selected via checkbox group', async () => {
+    it('emits set-access-tokens event when tokens are selected via checkbox group', async () => {
       await findFormCheckboxGroup().vm.$emit('input', [2, 4]);
 
-      expect(wrapper.emitted('set-tokens')).toEqual([[[{ id: 2 }, { id: 4 }]]]);
+      expect(wrapper.emitted('set-access-tokens')).toEqual([[[{ id: 2 }, { id: 4 }]]]);
     });
 
     it('shows correct toggle text for multiple selections', () => {
@@ -143,7 +143,7 @@ describe('TokensSelector', () => {
     });
 
     it('shows message when no tokens are created', () => {
-      createComponent({}, { accessTokens: [] });
+      createComponent({}, { availableAccessTokens: [] });
 
       expect(wrapper.text()).toContain('There are no access tokens created');
       expect(findFormCheckboxGroup().exists()).toBe(false);
@@ -173,7 +173,7 @@ describe('TokensSelector', () => {
     });
 
     it('handles undefined tokens prop', () => {
-      createComponent({ selectedTokens: undefined }, { accessTokens: undefined });
+      createComponent({ selectedTokens: undefined }, { availableAccessTokens: undefined });
       expect(findCollapsibleListbox().props('items')).toEqual([]);
     });
   });
