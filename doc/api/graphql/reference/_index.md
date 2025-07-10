@@ -10670,6 +10670,25 @@ Input type: `RunnersRegistrationTokenResetInput`
 | <a id="mutationrunnersregistrationtokenreseterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationrunnersregistrationtokenresettoken"></a>`token` | [`String`](#string) | Runner token after mutation. |
 
+### `Mutation.safeDisablePipelineVariables`
+
+Input type: `SafeDisablePipelineVariablesInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsafedisablepipelinevariablesclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsafedisablepipelinevariablesfullpath"></a>`fullPath` | [`ID!`](#id) | Full path of the group to disable pipeline variables for. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsafedisablepipelinevariablesclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsafedisablepipelinevariableserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationsafedisablepipelinevariablessuccess"></a>`success` | [`Boolean!`](#boolean) | Indicates whether the migration was successfully enqueued. |
+
 ### `Mutation.savedReplyCreate`
 
 Input type: `SavedReplyCreateInput`
