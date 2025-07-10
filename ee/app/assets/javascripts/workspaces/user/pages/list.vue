@@ -84,7 +84,7 @@ export default {
         logError(err);
       },
       async result({ data, error }) {
-        if (error) {
+        if (error || !data.currentUser) {
           this.error = i18n.loadingWorkspacesFailed;
           return;
         }
