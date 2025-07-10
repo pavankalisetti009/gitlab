@@ -23,7 +23,7 @@ export default {
     GlFormCheckboxGroup,
     GlTruncate,
   },
-  inject: ['accessTokens'],
+  inject: ['availableAccessTokens'],
   props: {
     selectedTokens: {
       type: Array,
@@ -42,7 +42,7 @@ export default {
     },
     accessTokensItems() {
       return (
-        this.accessTokens?.reduce((acc, { id, name }) => {
+        this.availableAccessTokens?.reduce((acc, { id, name }) => {
           acc[id] = name;
           return acc;
         }, {}) || {}
@@ -58,7 +58,7 @@ export default {
     },
     listBoxItems() {
       return (
-        this.accessTokens?.map(({ name, id, full_name: fullName }) => ({
+        this.availableAccessTokens?.map(({ name, id, full_name: fullName }) => ({
           text: name,
           value: id,
           fullName,
@@ -91,7 +91,7 @@ export default {
     },
     setTokens(ids) {
       const payload = ids.map((id) => ({ id }));
-      this.$emit('set-tokens', payload);
+      this.$emit('set-access-tokens', payload);
     },
   },
 };
