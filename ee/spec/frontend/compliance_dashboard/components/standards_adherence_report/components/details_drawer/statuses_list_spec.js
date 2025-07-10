@@ -153,9 +153,9 @@ describe('StatusesList', () => {
       expect(findTitles().at(1).text()).toContain('External');
     });
     it('displays appropriate status indicators for different statuses', () => {
-      expect(findAllFailedStatuses().length).toBe(2); // 2 failed controls
-      expect(findAllPendingStatuses().length).toBe(1); // 1 pending control
-      expect(findAllPassedStatuses().length).toBe(1); // 1 passed control
+      expect(findAllFailedStatuses()).toHaveLength(2); // 2 failed controls
+      expect(findAllPendingStatuses()).toHaveLength(1); // 1 pending control
+      expect(findAllPassedStatuses()).toHaveLength(1); // 1 passed control
     });
   });
 
@@ -179,12 +179,12 @@ describe('StatusesList', () => {
     });
 
     it('displays fix section for controls with fixes', () => {
-      expect(findFixSection().length).toBe(1);
+      expect(findFixSection()).toHaveLength(1);
     });
 
     it('renders Ultimate badge for fixes with ultimate flag', () => {
       const badges = findBadges();
-      expect(badges.length).toBe(1);
+      expect(badges).toHaveLength(1);
       expect(badges.at(0).text()).toBe('Ultimate');
     });
   });

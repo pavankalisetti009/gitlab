@@ -179,7 +179,7 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
           mountExtended,
         );
 
-        expect(wrapper.findAllByTestId('agent-mapping-status-label').length).toBe(0);
+        expect(wrapper.findAllByTestId('agent-mapping-status-label')).toHaveLength(0);
       });
     });
 
@@ -239,7 +239,7 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
         mountExtended,
       );
       expect(findAgentsTable().text()).not.toContain('Actions');
-      expect(findAgentsTable().findAllComponents(AgentMappingStatusToggle).length).toBe(0);
+      expect(findAgentsTable().findAllComponents(AgentMappingStatusToggle)).toHaveLength(0);
     });
   });
 });

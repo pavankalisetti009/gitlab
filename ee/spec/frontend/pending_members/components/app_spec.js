@@ -96,7 +96,7 @@ describe('PendingMembersApp', () => {
     });
 
     it('does not render pending members', () => {
-      expect(findPendingMembers().length).toBe(0);
+      expect(findPendingMembers()).toHaveLength(0);
     });
 
     it('does not render empty state', () => {
@@ -152,7 +152,7 @@ describe('PendingMembersApp', () => {
     });
 
     it('does not render pending members', () => {
-      expect(findPendingMembers().length).toBe(0);
+      expect(findPendingMembers()).toHaveLength(0);
     });
 
     it('renders empty state', async () => {
@@ -177,7 +177,7 @@ describe('PendingMembersApp', () => {
     });
 
     it('does not render pending members', () => {
-      expect(findPendingMembers().length).toBe(0);
+      expect(findPendingMembers()).toHaveLength(0);
     });
 
     it('does not render empty state', () => {

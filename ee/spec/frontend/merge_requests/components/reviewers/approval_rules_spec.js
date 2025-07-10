@@ -100,13 +100,13 @@ describe('Reviewer drawer approval rules component', () => {
   it('toggles optional rows when clicking toggle', async () => {
     createComponent({ key: 'optional' });
 
-    expect(findRuleRows().length).toBe(0);
+    expect(findRuleRows()).toHaveLength(0);
 
     findOptionalToggle().vm.$emit('click');
 
     await nextTick();
 
-    expect(findRuleRows().length).toBe(3);
+    expect(findRuleRows()).toHaveLength(3);
   });
 
   describe('when codeowners rule exists', () => {

@@ -37,7 +37,7 @@ describe('Vulnerability Code Flow', () => {
     expect(findAllPopovers().exists()).toBe(true);
     expect(findButtonGroup().exists()).toBe(true);
     expect(findButtons().exists()).toBe(true);
-    expect(findButtons().length).toBe(2);
+    expect(findButtons()).toHaveLength(2);
   });
 
   describe('check popovers content', () => {
@@ -96,8 +96,8 @@ describe('Vulnerability Code Flow', () => {
     });
 
     it('selects first row', () => {
-      expect(files.length).toBe(1);
-      expect(rows.length).toBe(3);
+      expect(files).toHaveLength(1);
+      expect(rows).toHaveLength(3);
 
       files.wrappers.forEach((file, index) => {
         const fileRows = file.findAll('[data-testid^="step-row-"]');

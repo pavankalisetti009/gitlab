@@ -38,7 +38,7 @@ describe('ObservabilityUsageBreakdown', () => {
   });
 
   it('renders ObservabilityUsageSectionedBar', () => {
-    expect(wrapper.findAllComponents(ObservabilityUsageSectionedBar).length).toBe(2);
+    expect(wrapper.findAllComponents(ObservabilityUsageSectionedBar)).toHaveLength(2);
   });
 
   it('renders the sectioned storage usage', () => {
@@ -50,7 +50,7 @@ describe('ObservabilityUsageBreakdown', () => {
   });
 
   it('renders ObservabilityUsageChart', () => {
-    expect(wrapper.findAllComponents(ObservabilityUsageChart).length).toBe(2);
+    expect(wrapper.findAllComponents(ObservabilityUsageChart)).toHaveLength(2);
   });
 
   it('renders storage usage chart', () => {

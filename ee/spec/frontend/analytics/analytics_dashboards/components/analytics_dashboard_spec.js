@@ -341,7 +341,7 @@ describe('AnalyticsDashboard', () => {
 
       const { panels } = getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
 
-      expect(findAllPanels().length).toBe(panels.length);
+      expect(findAllPanels()).toHaveLength(panels.length);
 
       panels.forEach((panel) => {
         expect(findPanelByTitle(panel.title).props()).toMatchObject({

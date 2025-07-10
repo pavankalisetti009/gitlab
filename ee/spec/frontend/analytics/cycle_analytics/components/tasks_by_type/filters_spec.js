@@ -81,7 +81,7 @@ describe('TasksByTypeFilters', () => {
 
       findSubjectFilters().vm.$emit('input', TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST);
 
-      expect(wrapper.emitted('set-subject').length).toBe(1);
+      expect(wrapper.emitted('set-subject')).toHaveLength(1);
       expect(wrapper.emitted('set-subject')[0][0]).toEqual(TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST);
     });
 
@@ -90,7 +90,7 @@ describe('TasksByTypeFilters', () => {
 
       findCollapsibleListbox().vm.$emit('select', [mockLabels[0].title]);
 
-      expect(wrapper.emitted('toggle-label').length).toBe(1);
+      expect(wrapper.emitted('toggle-label')).toHaveLength(1);
       expect(wrapper.emitted('toggle-label')[0][0]).toEqual(mockLabels[0]);
       expect(mockAlertDismiss).not.toHaveBeenCalled();
     });
@@ -125,7 +125,7 @@ describe('TasksByTypeFilters', () => {
 
     it('should allow removing a label', () => {
       findCollapsibleListbox().vm.$emit('select', [mockLabels[0].title]);
-      expect(wrapper.emitted('toggle-label').length).toBe(1);
+      expect(wrapper.emitted('toggle-label')).toHaveLength(1);
       expect(wrapper.emitted('toggle-label')[0][0]).toEqual(mockLabels[1]);
     });
 
@@ -157,7 +157,7 @@ describe('TasksByTypeFilters', () => {
       });
 
       it('shows the labels in the listbox', () => {
-        expect(findCollapsibleListbox().props().items.length).toBe(mockLabels.length);
+        expect(findCollapsibleListbox().props().items).toHaveLength(mockLabels.length);
       });
     });
   });
@@ -205,7 +205,7 @@ describe('TasksByTypeFilters', () => {
       });
 
       it('shows the labels in the listbox', () => {
-        expect(findCollapsibleListbox().props().items.length).toBe(results.length);
+        expect(findCollapsibleListbox().props().items).toHaveLength(results.length);
       });
     });
   });

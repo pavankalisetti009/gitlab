@@ -50,7 +50,7 @@ describe('GroupAdherences component', () => {
     });
 
     it('lists all checks', () => {
-      expect(findCheckGroupHeaders().length).toBe(6);
+      expect(findCheckGroupHeaders()).toHaveLength(6);
       expect(findCheckGroupHeaders().at(0).text()).toMatch('Prevent authors as approvers');
       expect(findCheckGroupHeaders().at(1).text()).toMatch('Prevent committers as approvers');
       expect(findCheckGroupHeaders().at(2).text()).toMatch('At least two approvals');
@@ -123,7 +123,7 @@ describe('GroupAdherences component', () => {
     });
 
     it('lists all projects', () => {
-      expect(findProjectGroupHeaders().length).toBe(3);
+      expect(findProjectGroupHeaders()).toHaveLength(3);
       expect(findProjectGroupHeaders().at(0).text()).toMatch('Project A');
       expect(findProjectGroupHeaders().at(1).text()).toMatch('Project B');
       expect(findProjectGroupHeaders().at(2).text()).toMatch('Project C');
@@ -162,7 +162,7 @@ describe('GroupAdherences component', () => {
     });
 
     it('lists all standards', () => {
-      expect(findStandardGroupHeaders().length).toBe(2);
+      expect(findStandardGroupHeaders()).toHaveLength(2);
       expect(findStandardGroupHeaders().at(0).text()).toMatch('GitLab');
       expect(findStandardGroupHeaders().at(1).text()).toMatch('SOC 2');
     });

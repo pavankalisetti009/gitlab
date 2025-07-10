@@ -57,19 +57,19 @@ describe('Pagination component', () => {
     it('emits event when going to next page', () => {
       findNextButton().trigger('click');
 
-      expect(wrapper.emitted('next').length).toBe(1);
+      expect(wrapper.emitted('next')).toHaveLength(1);
     });
 
     it('emits event when going to prev page', () => {
       findPrevButton().trigger('click');
 
-      expect(wrapper.emitted('prev').length).toBe(1);
+      expect(wrapper.emitted('prev')).toHaveLength(1);
     });
 
     it('emits even when changing page size', () => {
       findPageSizeSelector().vm.$emit('input');
 
-      expect(wrapper.emitted('page-size-change').length).toBe(1);
+      expect(wrapper.emitted('page-size-change')).toHaveLength(1);
     });
   });
 });

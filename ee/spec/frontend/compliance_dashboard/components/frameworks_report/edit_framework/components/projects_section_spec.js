@@ -347,8 +347,8 @@ describe('Projects section', () => {
         const emittedEvents = wrapper.emitted('update:projects');
         const lastEvent = emittedEvents[emittedEvents.length - 1][0];
 
-        expect(lastEvent.addProjects.length).toBe(mockProjects.length);
-        expect(lastEvent.removeProjects.length).toBe(0);
+        expect(lastEvent.addProjects).toHaveLength(mockProjects.length);
+        expect(lastEvent.removeProjects).toHaveLength(0);
       });
 
       it('correctly handles toggling selection multiple times', async () => {
@@ -366,7 +366,7 @@ describe('Projects section', () => {
         await nextTick();
 
         const emittedEvents = wrapper.emitted('update:projects');
-        expect(emittedEvents.length).toBe(3);
+        expect(emittedEvents).toHaveLength(3);
 
         const lastEvent = emittedEvents[emittedEvents.length - 1][0];
         const projectId = getIdFromGraphQLId(mockProjects[1].id);

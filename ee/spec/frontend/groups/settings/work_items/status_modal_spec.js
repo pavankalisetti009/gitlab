@@ -727,7 +727,7 @@ describe('StatusLifecycleModal', () => {
     });
 
     it('all statuses of the lifecycle have the three dot options', () => {
-      expect(findAllDropdowns().length).toBe(mockLifecycle.statuses.length);
+      expect(findAllDropdowns()).toHaveLength(mockLifecycle.statuses.length);
     });
 
     describe('Default action', () => {

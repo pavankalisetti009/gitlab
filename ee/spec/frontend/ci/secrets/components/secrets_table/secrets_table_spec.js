@@ -116,7 +116,7 @@ describe('SecretsTable component', () => {
 
     it('renders a table of secrets', () => {
       expect(findSecretsTable().exists()).toBe(true);
-      expect(findSecretsTableRows().length).toBe(mockProjectSecretsData.length);
+      expect(findSecretsTableRows()).toHaveLength(mockProjectSecretsData.length);
     });
 
     it('shows the secret name as a link to the secret details', () => {

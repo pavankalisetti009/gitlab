@@ -637,7 +637,7 @@ describe('RelatedItemsTree', () => {
             isFirstChild: true,
           });
 
-          expect(state.children[state.parentItem.reference].length).toEqual(0);
+          expect(state.children[state.parentItem.reference]).toHaveLength(0);
           expect(state.childrenFlags[state.parentItem.reference].itemHasChildren).toEqual(false);
           expect(state.children[newParentItem.parentReference]).toEqual(
             expect.arrayContaining(['bar']),

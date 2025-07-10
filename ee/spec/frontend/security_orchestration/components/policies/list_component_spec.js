@@ -266,7 +266,7 @@ describe('List component', () => {
       describe('breaking changes icon', () => {
         const expectNoBreakingChangesIcon = () => {
           const icons = findStatusCells().at(0).findAll('svg');
-          expect(icons.length).toBe(1);
+          expect(icons).toHaveLength(1);
           expect(icons.at(0).props('name')).toBe('check-circle-filled');
         };
 

@@ -86,7 +86,7 @@ describe('ProjectsPipelinesChartsApp', () => {
       });
 
       it('shows 5 tabs', () => {
-        expect(findAllGlTabs().length).toBe(5);
+        expect(findAllGlTabs()).toHaveLength(5);
       });
 
       it('does not show migration alert', () => {
@@ -203,7 +203,7 @@ describe('ProjectsPipelinesChartsApp', () => {
     });
 
     it('shows 2 tabs', () => {
-      expect(findAllGlTabs().length).toBe(2);
+      expect(findAllGlTabs()).toHaveLength(2);
     });
 
     it(`renders tab with a title "Project quality" at index 1`, () => {

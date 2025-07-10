@@ -50,7 +50,7 @@ describe('MetricsFilteredSearch', () => {
     const filteredSeach = findFilteredSearch();
     expect(filteredSeach.exists()).toBe(true);
     const tokens = filteredSeach.props('tokens');
-    expect(tokens.length).toBe(defaultSearchMetadata.attribute_keys.length);
+    expect(tokens).toHaveLength(defaultSearchMetadata.attribute_keys.length);
     tokens.forEach((token, index) => {
       expect(token.type).toBe(defaultSearchMetadata.attribute_keys[index]);
       expect(token.title).toBe(defaultSearchMetadata.attribute_keys[index]);

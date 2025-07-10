@@ -90,7 +90,7 @@ describe('ArtifactRegistryImageDetails', () => {
   it('renders tags', () => {
     createComponent();
 
-    expect(findAllTags().length).toBe(3);
+    expect(findAllTags()).toHaveLength(3);
     expect(findAllTags().at(0).findComponent(GlTruncate).props()).toMatchObject({
       text: 'latest',
       withTooltip: true,

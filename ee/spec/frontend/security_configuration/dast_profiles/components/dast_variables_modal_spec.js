@@ -130,7 +130,7 @@ describe('DastVariablesModal', () => {
 
   describe('on create mode', () => {
     it('should display only one form-group when the modal is open', () => {
-      expect(findAllFormsGroups().length).toBe(1);
+      expect(findAllFormsGroups()).toHaveLength(1);
     });
 
     it('displays radio buttons when a boolean variable is selected', async () => {
@@ -151,7 +151,7 @@ describe('DastVariablesModal', () => {
     it('does not display any form input when type is null', async () => {
       await findVariableSelector().vm.$emit('select', null);
       expect(findAllFormsGroups().exists()).toBe(true);
-      expect(findAllFormsGroups().length).toBe(1);
+      expect(findAllFormsGroups()).toHaveLength(1);
     });
 
     it('emits addVariable event when modal is submitted with valid data', async () => {
@@ -215,7 +215,7 @@ describe('DastVariablesModal', () => {
       });
       await nextTick();
       expect(findRadioGroup().exists()).toBe(true);
-      expect(findAllFormRadio().length).toBe(2);
+      expect(findAllFormRadio()).toHaveLength(2);
     });
 
     it('displays form input when variable is not boolean or selector (for non-selector type)', async () => {
@@ -247,7 +247,7 @@ describe('DastVariablesModal', () => {
     it('does not display any form input when type is null', () => {
       createComponent({ variable: { type: null } });
       expect(findAllFormsGroups().exists()).toBe(true);
-      expect(findAllFormsGroups().length).toBe(1);
+      expect(findAllFormsGroups()).toHaveLength(1);
     });
 
     it('emits updateVariable event when modal is submitted with valid data', () => {

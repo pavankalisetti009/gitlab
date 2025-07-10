@@ -83,7 +83,7 @@ describe('TypeOfWorkChartsLoader', () => {
     });
 
     it('fetches top group labels', () => {
-      expect(mock.history.get.length).toBe(2);
+      expect(mock.history.get).toHaveLength(2);
       expect(mock.history.get[0]).toEqual(
         expect.objectContaining({
           url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type/top_labels',
@@ -96,7 +96,7 @@ describe('TypeOfWorkChartsLoader', () => {
     });
 
     it('fetches tasks by type', () => {
-      expect(mock.history.get.length).toBe(2);
+      expect(mock.history.get).toHaveLength(2);
       expect(mock.history.get[1]).toEqual(
         expect.objectContaining({
           url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type',
@@ -128,7 +128,7 @@ describe('TypeOfWorkChartsLoader', () => {
       });
 
       it('refetches the tasks by type', () => {
-        expect(mock.history.get.length).toBe(3);
+        expect(mock.history.get).toHaveLength(3);
         expect(mock.history.get[2]).toEqual(
           expect.objectContaining({
             url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type',
@@ -148,7 +148,7 @@ describe('TypeOfWorkChartsLoader', () => {
       });
 
       it('refetches the tasks by type', () => {
-        expect(mock.history.get.length).toBe(3);
+        expect(mock.history.get).toHaveLength(3);
         expect(mock.history.get[2]).toEqual(
           expect.objectContaining({
             url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type',
@@ -176,7 +176,7 @@ describe('TypeOfWorkChartsLoader', () => {
     });
 
     it('does not request tasks by type', () => {
-      expect(mock.history.get.length).toBe(1);
+      expect(mock.history.get).toHaveLength(1);
       expect(mock.history.get[0]).toEqual(
         expect.objectContaining({
           url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type/top_labels',
@@ -200,7 +200,7 @@ describe('TypeOfWorkChartsLoader', () => {
     });
 
     it('does not request tasks by type', () => {
-      expect(mock.history.get.length).toBe(1);
+      expect(mock.history.get).toHaveLength(1);
       expect(mock.history.get[0]).toEqual(
         expect.objectContaining({
           url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type/top_labels',

@@ -27,7 +27,7 @@ describe('LogsTable', () => {
     mountComponent();
 
     const rows = getRows();
-    expect(rows.length).toBe(mockLogs.length);
+    expect(rows).toHaveLength(mockLogs.length);
     mockLogs.forEach((m, i) => {
       const row = getRows().at(i);
       expect(row.find(`[data-testid="log-timestamp"]`).text()).toBe(

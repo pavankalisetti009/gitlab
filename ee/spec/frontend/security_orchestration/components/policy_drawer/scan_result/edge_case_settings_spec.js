@@ -24,7 +24,7 @@ describe('EdgeCaseSettings', () => {
     createComponent({ [UNBLOCK_RULES_KEY]: true, customKey: true });
 
     const paragraphs = wrapper.findAll('p');
-    expect(paragraphs.length).toBe(2);
+    expect(paragraphs).toHaveLength(2);
     expect(paragraphs.at(0).text()).toBe(UNBLOCK_RULES_TEXT);
     expect(paragraphs.at(1).text()).toBe('customKey');
   });

@@ -134,7 +134,7 @@ describe('Approvals ProjectRules', () => {
         })),
       );
 
-      expect(wrapper.findComponent(Rules).findAllComponents(RuleName).length).toBe(
+      expect(wrapper.findComponent(Rules).findAllComponents(RuleName)).toHaveLength(
         TEST_RULES.length,
       );
     });
@@ -167,8 +167,8 @@ describe('Approvals ProjectRules', () => {
     });
 
     it('should only display 1 rule', () => {
-      expect(store.modules.approvals.state.rules.length).toBe(1);
-      expect(wrapper.findComponent(Rules).findAllComponents(RuleName).length).toBe(1);
+      expect(store.modules.approvals.state.rules).toHaveLength(1);
+      expect(wrapper.findComponent(Rules).findAllComponents(RuleName)).toHaveLength(1);
     });
   });
 

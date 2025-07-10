@@ -140,7 +140,7 @@ describe('lead_time_charts.vue', () => {
       });
 
       it('makes a call to the project API endpoint', () => {
-        expect(mock.history.get.length).toBe(4);
+        expect(mock.history.get).toHaveLength(4);
         expect(mock.history.get[0].url).toMatch('/projects/test%2Fproject/dora/metrics');
       });
 
@@ -163,7 +163,7 @@ describe('lead_time_charts.vue', () => {
       });
 
       it('makes a call to the group API endpoint', () => {
-        expect(mock.history.get.length).toBe(4);
+        expect(mock.history.get).toHaveLength(4);
         expect(mock.history.get[0].url).toMatch('/groups/test%2Fgroup/dora/metrics');
       });
 

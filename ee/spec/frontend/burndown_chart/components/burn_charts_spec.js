@@ -87,7 +87,7 @@ describe('burndown_chart', () => {
     });
     await waitForPromises();
 
-    expect(wrapper.emitted('updateTotal').length).toBe(1);
+    expect(wrapper.emitted('updateTotal')).toHaveLength(1);
   });
 
   it('passes loading through to charts', async () => {

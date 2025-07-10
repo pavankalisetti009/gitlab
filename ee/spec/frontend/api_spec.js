@@ -266,7 +266,7 @@ describe('Api', () => {
         comment,
       });
 
-      expect(mock.history.post.length).toBe(1);
+      expect(mock.history.post).toHaveLength(1);
       expect(mock.history.post[0].data).toBe(
         JSON.stringify({ status: 'approved', represented_as: representedAs, comment }),
       );
@@ -285,7 +285,7 @@ describe('Api', () => {
         comment,
       });
 
-      expect(mock.history.post.length).toBe(1);
+      expect(mock.history.post).toHaveLength(1);
       expect(mock.history.post[0].data).toBe(
         JSON.stringify({ status: 'rejected', represented_as: representedAs, comment }),
       );

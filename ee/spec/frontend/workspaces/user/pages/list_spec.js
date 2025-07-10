@@ -99,7 +99,7 @@ describe('workspaces/user/pages/list.vue', () => {
     });
 
     it('renders only one confirm button when empty state is present', () => {
-      expect(findAllConfirmButtons().length).toBe(1);
+      expect(findAllConfirmButtons()).toHaveLength(1);
     });
 
     it('does not render the workspace tabs', () => {

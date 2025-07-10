@@ -86,7 +86,7 @@ describe('Code owners component', () => {
     });
 
     it('renders codeowners list', () => {
-      expect(findCodeOwners().length).toBe(codeOwnersMock.length);
+      expect(findCodeOwners()).toHaveLength(codeOwnersMock.length);
     });
 
     it('renders a popover trigger with question icon', () => {
@@ -176,7 +176,7 @@ describe('Code owners component', () => {
       await createComponent({ codeOwnersDataMock: codeOwners });
 
       expect(findCollapse().text()).toBe(expectedText);
-      expect(findCodeOwners().length).toBe(expectedCount);
+      expect(findCodeOwners()).toHaveLength(expectedCount);
     },
   );
 });

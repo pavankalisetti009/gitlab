@@ -88,7 +88,7 @@ describe('PromotionRequestsApp', () => {
       it('renders the table with rows corresponding to mocked data', () => {
         expect(findTable().exists()).toBe(true);
 
-        expect(findTable().findAll('tbody > tr').length).toEqual(result.nodes.length);
+        expect(findTable().findAll('tbody > tr')).toHaveLength(result.nodes.length);
       });
 
       it('renders the mocked data properly inside a row', () => {

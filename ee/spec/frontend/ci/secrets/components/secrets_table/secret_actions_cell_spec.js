@@ -26,7 +26,7 @@ describe('SecretActionsCell component', () => {
   });
 
   it('shows the actions dropdown for the secret', () => {
-    expect(findSecretActionItems().length).toBe(2);
+    expect(findSecretActionItems()).toHaveLength(2);
   });
 
   it('shows the "Edit secret" action', () => {

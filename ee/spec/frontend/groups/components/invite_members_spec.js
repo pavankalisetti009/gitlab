@@ -29,7 +29,7 @@ describe('User invites', () => {
 
     describe('Initial state', () => {
       it('creates input field', () => {
-        expect(inputs().length).toBe(1);
+        expect(inputs()).toHaveLength(1);
       });
 
       it('does not set a value', () => {
@@ -45,7 +45,7 @@ describe('User invites', () => {
       });
 
       it('creates 3 input fields', () => {
-        expect(inputs().length).toBe(3);
+        expect(inputs()).toHaveLength(3);
       });
 
       it.each([0, 1, 2])('restores the value of the passed emails', (index) => {
@@ -64,7 +64,7 @@ describe('User invites', () => {
       });
 
       it('adds an input field', () => {
-        expect(inputs().length).toBe(2);
+        expect(inputs()).toHaveLength(2);
       });
 
       it.each([0, 1])('does not set a value', (index) => {
@@ -81,7 +81,7 @@ describe('User invites', () => {
     it('number of initial inputs can be configured', () => {
       createComponent({ initialEmailInputs: 2 });
 
-      expect(inputs().length).toBe(2);
+      expect(inputs()).toHaveLength(2);
     });
 
     it('placeholder can be configured', () => {

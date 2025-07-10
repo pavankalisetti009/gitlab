@@ -225,7 +225,7 @@ describe('ResourceLinksBlock', () => {
       await clickFirstDeleteButton();
 
       expect(deleteResponse).toHaveBeenCalledWith(expectedVars);
-      expect(findAllResourceLinks().length).toBe(2);
+      expect(findAllResourceLinks()).toHaveLength(2);
     });
 
     it('should show an error when delete returns an error', async () => {
@@ -258,7 +258,7 @@ describe('ResourceLinksBlock', () => {
       await clickFirstDeleteButton();
 
       expect(createAlert).toHaveBeenCalledWith(expectedError);
-      expect(findAllResourceLinks().length).toBe(3);
+      expect(findAllResourceLinks()).toHaveLength(3);
     });
   });
 

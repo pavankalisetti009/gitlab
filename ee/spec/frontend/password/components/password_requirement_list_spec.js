@@ -184,8 +184,8 @@ describe('Password requirement list component', () => {
           expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(true);
           expect(form.classList.contains(INVALID_FORM_CLASS)).toBe(true);
         }
-        expect(findRuleTextsByClass(RED_TEXT_CLASS).length).toBe(unMatchedNumber);
-        expect(findRuleTextsByClass(GREEN_TEXT_CLASS).length).toBe(
+        expect(findRuleTextsByClass(RED_TEXT_CLASS)).toHaveLength(unMatchedNumber);
+        expect(findRuleTextsByClass(GREEN_TEXT_CLASS)).toHaveLength(
           wrapper.vm.ruleTypes.length - unMatchedNumber,
         );
       });
@@ -227,11 +227,11 @@ describe('Password requirement list component', () => {
 
         const errorRules = findRuleTextsByClass(RED_TEXT_CLASS);
 
-        expect(errorRules.length).toBe(3);
+        expect(errorRules).toHaveLength(3);
         expect(errorRules.at(0).text()).toBe('Must be between 8-128 characters');
         expect(errorRules.at(1).text()).toBe('Cannot use common phrases (e.g. "password")');
         expect(errorRules.at(2).text()).toBe('Cannot include your name, username, or email');
-        expect(findRuleTextsByClass(GREEN_TEXT_CLASS).length).toBe(0);
+        expect(findRuleTextsByClass(GREEN_TEXT_CLASS)).toHaveLength(0);
         expect(findForm().classList.contains(INVALID_FORM_CLASS)).toBe(true);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(true);
       });
@@ -257,11 +257,11 @@ describe('Password requirement list component', () => {
 
         const validRules = findRuleTextsByClass(GREEN_TEXT_CLASS);
 
-        expect(validRules.length).toBe(3);
+        expect(validRules).toHaveLength(3);
         expect(validRules.at(0).text()).toBe('Must be between 8-128 characters');
         expect(validRules.at(1).text()).toBe('Cannot use common phrases (e.g. "password")');
         expect(validRules.at(2).text()).toBe('Cannot include your name, username, or email');
-        expect(findRuleTextsByClass(RED_TEXT_CLASS).length).toBe(0);
+        expect(findRuleTextsByClass(RED_TEXT_CLASS)).toHaveLength(0);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(false);
       });
     });

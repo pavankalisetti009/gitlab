@@ -157,7 +157,7 @@ describe('~/security_configuration/components/app', () => {
     });
 
     it('does not render the feature card component', () => {
-      expect(findFeatureCards().length).toBe(0);
+      expect(findFeatureCards()).toHaveLength(0);
     });
 
     it('renders the component', () => {

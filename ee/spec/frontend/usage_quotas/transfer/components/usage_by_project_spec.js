@@ -43,7 +43,7 @@ describe('UsageByProject', () => {
     });
 
     it('renders 10 rows of `GlSkeletonLoader` component', () => {
-      expect(wrapper.findAllComponents(GlSkeletonLoader).length).toBe(20);
+      expect(wrapper.findAllComponents(GlSkeletonLoader)).toHaveLength(20);
     });
   });
 

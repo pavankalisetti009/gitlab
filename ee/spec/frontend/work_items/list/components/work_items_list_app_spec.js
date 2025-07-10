@@ -195,7 +195,7 @@ describeSkipVue3(skipReason, () => {
         unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
       }));
 
-      expect(findWorkItemsListApp().props('eeSearchTokens').length).toBe(2);
+      expect(findWorkItemsListApp().props('eeSearchTokens')).toHaveLength(2);
       expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(expectedTokens[0]);
       expect(findWorkItemsListApp().props('eeSearchTokens')[1]).toMatchObject(expectedTokens[1]);
     });

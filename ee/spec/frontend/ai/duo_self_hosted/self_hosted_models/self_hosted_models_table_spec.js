@@ -139,7 +139,7 @@ describe('SelfHostedModelsTable', () => {
     });
 
     it('renders a disclosure dropdown for each self-hosted model entry', () => {
-      expect(findDisclosureDropdowns().length).toBe(3);
+      expect(findDisclosureDropdowns()).toHaveLength(3);
     });
 
     describe('search', () => {
@@ -154,7 +154,7 @@ describe('SelfHostedModelsTable', () => {
       it('can search the table', async () => {
         await findSearchBox().vm.$emit('input', 'mock-self-hosted-model-1');
 
-        expect(findTableRows().length).toEqual(1);
+        expect(findTableRows()).toHaveLength(1);
         expect(findTableRows().at(0).text()).toContain('mock-self-hosted-model-1');
       });
     });
@@ -196,7 +196,7 @@ describe('SelfHostedModelsTable', () => {
       });
 
       it('renders an edit button for each model', () => {
-        expect(findEditButtons().length).toBe(3);
+        expect(findEditButtons()).toHaveLength(3);
 
         findEditButtons().wrappers.forEach((button) => {
           expect(button.text()).toEqual('Edit');
@@ -219,7 +219,7 @@ describe('SelfHostedModelsTable', () => {
 
         await waitForPromises();
 
-        expect(findDeleteDisclosureItems().length).toBe(3);
+        expect(findDeleteDisclosureItems()).toHaveLength(3);
 
         findDeleteDisclosureItems().wrappers.forEach((button) => {
           expect(button.text()).toEqual('Delete');

@@ -59,7 +59,7 @@ describe('MavenRegistriesListApp', () => {
       expect(findSkeletonLoader().exists()).toBe(true);
       expect(findAlert().exists()).toBe(false);
       expect(findEmptyState().exists()).toBe(false);
-      expect(findRegistryItems().length).toBe(0);
+      expect(findRegistryItems()).toHaveLength(0);
     });
   });
 
@@ -78,7 +78,7 @@ describe('MavenRegistriesListApp', () => {
       expect(findEmptyState().exists()).toBe(false);
 
       const items = findRegistryItems();
-      expect(items.length).toBe(2);
+      expect(items).toHaveLength(2);
 
       items.wrappers.forEach((item, i) => {
         expect(item.props()).toMatchObject({
@@ -101,7 +101,7 @@ describe('MavenRegistriesListApp', () => {
       expect(findSkeletonLoader().exists()).toBe(false);
       expect(findAlert().exists()).toBe(false);
       expect(findEmptyState().exists()).toBe(true);
-      expect(findRegistryItems().length).toBe(0);
+      expect(findRegistryItems()).toHaveLength(0);
     });
   });
 
@@ -121,7 +121,7 @@ describe('MavenRegistriesListApp', () => {
       expect(findAlert().exists()).toBe(true);
       expect(findAlert().text()).toBe(errorMessage);
       expect(findEmptyState().exists()).toBe(false);
-      expect(findRegistryItems().length).toBe(0);
+      expect(findRegistryItems()).toHaveLength(0);
     });
   });
 
@@ -139,7 +139,7 @@ describe('MavenRegistriesListApp', () => {
       expect(findAlert().exists()).toBe(true);
       expect(findAlert().text()).toBe('Failed to fetch list of maven virtual registries.');
       expect(findEmptyState().exists()).toBe(false);
-      expect(findRegistryItems().length).toBe(0);
+      expect(findRegistryItems()).toHaveLength(0);
     });
   });
 });

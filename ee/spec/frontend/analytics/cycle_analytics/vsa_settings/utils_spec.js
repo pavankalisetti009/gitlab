@@ -294,7 +294,7 @@ describe('generateInitialStageData', () => {
   it('appends hidden stages to the end of the list', () => {
     const res = generateInitialStageData([defaultConfig], [hiddenDefaultStage, initialCustomStage]);
 
-    expect(res.length).toBe(2);
+    expect(res).toHaveLength(2);
     expect(res[0].id).toBe(initialCustomStage.id);
     expect(res[1].id).toBe(hiddenDefaultStage.id);
   });

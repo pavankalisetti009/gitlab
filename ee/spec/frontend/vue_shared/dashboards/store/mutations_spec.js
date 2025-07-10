@@ -223,7 +223,7 @@ describe('mutations', () => {
 
       mutations[types.RECEIVE_NEXT_PAGE_SUCCESS](localState, results);
 
-      expect(localState.projectSearchResults.length).toEqual(2);
+      expect(localState.projectSearchResults).toHaveLength(2);
       expect(localState.pageInfo.currentPage).toEqual(2);
       expect(localState.pageInfo.nextPage).toEqual(3);
     });

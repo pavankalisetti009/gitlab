@@ -129,7 +129,7 @@ describe('ee/protected_environments/create_protected_environment.vue', () => {
       createComponent();
       findCancelButton().trigger('click');
 
-      expect(wrapper.emitted('cancel').length).toBe(1);
+      expect(wrapper.emitted('cancel')).toHaveLength(1);
     });
 
     it('searches the environment name', async () => {

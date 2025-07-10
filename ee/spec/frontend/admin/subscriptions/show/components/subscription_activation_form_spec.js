@@ -120,7 +120,7 @@ describe('SubscriptionActivationForm', () => {
     });
 
     it(`emits the ${SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT} event`, () => {
-      expect(wrapper.emitted(SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT).length).toBe(1);
+      expect(wrapper.emitted(SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT)).toHaveLength(1);
     });
 
     describe('adds text that does not match the pattern', () => {
@@ -156,7 +156,7 @@ describe('SubscriptionActivationForm', () => {
         it(`emits the ${SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT} event`, async () => {
           findActivateSubscriptionForm().vm.$emit('submit', createFakeEvent());
           await waitForPromises();
-          expect(wrapper.emitted(SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT).length).toBe(2);
+          expect(wrapper.emitted(SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT)).toHaveLength(2);
         });
       });
     });

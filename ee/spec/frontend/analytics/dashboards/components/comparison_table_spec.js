@@ -59,7 +59,7 @@ describe('Comparison table', () => {
 
   it('shows loading skeletons for each metric comparison cell', () => {
     createWrapper({ tableData: [{ metric: mockMetric }] });
-    expect(findMetricComparisonSkeletons().length).toBe(3);
+    expect(findMetricComparisonSkeletons()).toHaveLength(3);
   });
 
   describe('date range table cell', () => {

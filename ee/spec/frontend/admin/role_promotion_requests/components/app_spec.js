@@ -128,7 +128,7 @@ describe('RolePromotionRequestsApp', () => {
             approve(userId);
             approve(otherUserId);
             await waitForPromises();
-            expect(findAllGlAlerts().length).toBe(2);
+            expect(findAllGlAlerts()).toHaveLength(2);
           });
 
           it('will dismiss relevant error message after a successful action', async () => {
@@ -143,7 +143,7 @@ describe('RolePromotionRequestsApp', () => {
             );
             approve(userId);
             await waitForPromises();
-            expect(findAllGlAlerts().length).toBe(1);
+            expect(findAllGlAlerts()).toHaveLength(1);
           });
         });
       });

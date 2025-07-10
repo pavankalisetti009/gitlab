@@ -32,7 +32,7 @@ describe('SlotSwitch', () => {
       activeSlotNames: [],
     });
 
-    expect(getChildrenHtml().length).toBe(0);
+    expect(getChildrenHtml()).toHaveLength(0);
   });
 
   it('renders one slot if activeSlotNames contains single slot name', () => {

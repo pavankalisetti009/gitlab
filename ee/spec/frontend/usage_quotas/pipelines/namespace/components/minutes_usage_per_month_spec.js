@@ -36,7 +36,7 @@ describe('MinutesUsagePerMonth', () => {
     });
 
     it('renders 2 loading-icon when isLoading is true', () => {
-      expect(wrapper.findAllComponents(GlLoadingIcon).length).toBe(2);
+      expect(wrapper.findAllComponents(GlLoadingIcon)).toHaveLength(2);
       expect(findMinutesLoadingIndicator().exists()).toBe(true);
       expect(findSharedRunnersLoadingIndicator().exists()).toBe(true);
     });
@@ -52,7 +52,7 @@ describe('MinutesUsagePerMonth', () => {
     });
 
     it('does not render loading-icon', () => {
-      expect(wrapper.findAllComponents(GlLoadingIcon).length).toBe(0);
+      expect(wrapper.findAllComponents(GlLoadingIcon)).toHaveLength(0);
     });
 
     it('does not render NoMinutesAlert if there are compute minutes', () => {
@@ -74,7 +74,7 @@ describe('MinutesUsagePerMonth', () => {
     });
 
     it('does not render loading-icon', () => {
-      expect(wrapper.findAllComponents(GlLoadingIcon).length).toBe(0);
+      expect(wrapper.findAllComponents(GlLoadingIcon)).toHaveLength(0);
     });
 
     it('does not render compute charts', () => {

@@ -211,7 +211,7 @@ describe('IterationDropdown', () => {
         });
 
         it('emits event', () => {
-          expect(wrapper.emitted('onIterationSelect').length).toBe(2);
+          expect(wrapper.emitted('onIterationSelect')).toHaveLength(2);
         });
       });
     });

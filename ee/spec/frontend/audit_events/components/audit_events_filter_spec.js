@@ -105,7 +105,7 @@ describe('AuditEventsFilter', () => {
     });
 
     it('only the enabled tokens type is available for selection', () => {
-      expect(getAvailableTokens().length).toEqual(1);
+      expect(getAvailableTokens()).toHaveLength(1);
       expect(getAvailableTokens()).toMatchObject([{ type }]);
     });
   });

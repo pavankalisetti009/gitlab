@@ -287,7 +287,7 @@ describe('RolesCrud component', () => {
     );
 
     it('renders the standard roles', () => {
-      expect(findRolesTable().props('roles').length).toBe(standardRoles.length);
+      expect(findRolesTable().props('roles')).toHaveLength(standardRoles.length);
     });
   });
 });

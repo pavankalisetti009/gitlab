@@ -265,7 +265,7 @@ describe('FrameworksTable component', () => {
       expect(requirementsColumn.text()).toContain('SOC2');
       expect(requirementsColumn.text()).toContain('GitLab');
       expect(requirementsColumn.text()).toContain('External');
-      expect(findRequirementItems.length).toBe(3);
+      expect(findRequirementItems).toHaveLength(3);
     });
 
     it('separates requirements with commas', () => {
@@ -279,7 +279,7 @@ describe('FrameworksTable component', () => {
 
       expect(requirementsColumn.text()).toContain('SOC2,');
       expect(requirementsColumn.text()).toContain('GitLab,');
-      expect(findRequirementItems.length).toBe(3);
+      expect(findRequirementItems).toHaveLength(3);
     });
 
     it(`limits the displayed requirements to 10 items`, () => {
@@ -291,7 +291,7 @@ describe('FrameworksTable component', () => {
       const requirementsColumn = findRequirementsColumn(0);
       const findRequirementItems = requirementsColumn.findAll('[data-testid="requirement-item"]');
 
-      expect(findRequirementItems.length).toBe(10);
+      expect(findRequirementItems).toHaveLength(10);
     });
 
     it('does not show and X more when requirements are within display limit', () => {
@@ -305,7 +305,7 @@ describe('FrameworksTable component', () => {
 
       expect(requirementsColumn.text()).not.toContain('and');
       expect(requirementsColumn.text()).not.toContain('more');
-      expect(findRequirementItems.length).toBe(3);
+      expect(findRequirementItems).toHaveLength(3);
     });
 
     it('does not render the requirements column when adherenceV2Enabled is false', () => {
@@ -912,7 +912,7 @@ describe('FrameworksTable component', () => {
             },
           }),
         );
-        expect(wrapper.emitted('update-frameworks').length).toBe(1);
+        expect(wrapper.emitted('update-frameworks')).toHaveLength(1);
         expect($toast.show).toHaveBeenCalledWith(expectedMessage);
       },
     );

@@ -97,7 +97,7 @@ describe('GroupSelect component', () => {
         createWrapper({ queryHandler: emptyGroupsQueryHandler });
         await waitForPromises();
 
-        expect(findGlDropdownItems().length).toBe(1);
+        expect(findGlDropdownItems()).toHaveLength(1);
         expect(findFirstGlDropdownItem().text()).toContain(mockGroup0.name);
       });
     });

@@ -132,7 +132,7 @@ describe('Status checks extension', () => {
       jest.advanceTimersByTime(POLL_INTERVAL_MS * 2);
       await waitForPromises();
 
-      expect(mock.history.get.length).toBe(1);
+      expect(mock.history.get).toHaveLength(1);
     });
 
     it('should start polling if there are pending status checks', async () => {
@@ -140,7 +140,7 @@ describe('Status checks extension', () => {
       jest.advanceTimersByTime(POLL_INTERVAL_MS * 2);
       await waitForPromises();
 
-      expect(mock.history.get.length).toBe(2);
+      expect(mock.history.get).toHaveLength(2);
     });
 
     it('should stop polling once there are no more pending checks', async () => {
@@ -152,7 +152,7 @@ describe('Status checks extension', () => {
       jest.advanceTimersByTime(POLL_INTERVAL_MS * 2);
       await waitForPromises();
 
-      expect(mock.history.get.length).toBe(3);
+      expect(mock.history.get).toHaveLength(3);
     });
   });
 
@@ -282,13 +282,13 @@ describe('Status checks extension', () => {
         getAndClickRetryActionButton();
         await waitForPromises();
 
-        expect(mock.history.get.length).toBe(1);
+        expect(mock.history.get).toHaveLength(1);
         expect(mock.history.get[0].url).toBe(getChecksEndpoint);
 
         jest.advanceTimersByTime(POLL_INTERVAL_MS * 2);
         await waitForPromises();
 
-        expect(mock.history.get.length).toBe(2);
+        expect(mock.history.get).toHaveLength(2);
         expect(mock.history.get[1].url).toBe(getChecksEndpoint);
       });
 
@@ -301,7 +301,7 @@ describe('Status checks extension', () => {
         getAndClickRetryActionButton();
         await waitForPromises();
 
-        expect(mock.history.get.length).toBe(2);
+        expect(mock.history.get).toHaveLength(2);
         expect(mock.history.get[0].url).toBe(getChecksEndpoint);
       });
 

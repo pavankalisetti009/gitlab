@@ -70,7 +70,7 @@ describe('CustomStageEventLabelField', () => {
     });
 
     it('shows the labels in the listbox', () => {
-      expect(findCollapsibleListbox().props().items.length).toBe(mockLabels.length);
+      expect(findCollapsibleListbox().props().items).toHaveLength(mockLabels.length);
     });
 
     it('renders with no selected label', () => {
@@ -82,7 +82,7 @@ describe('CustomStageEventLabelField', () => {
 
       findCollapsibleListbox().vm.$emit('select', selectedLabel.id);
 
-      expect(wrapper.emitted('update-label').length).toBe(1);
+      expect(wrapper.emitted('update-label')).toHaveLength(1);
       expect(wrapper.emitted('update-label')[0]).toEqual([{ id: selectedLabel.id }]);
     });
   });
@@ -117,7 +117,7 @@ describe('CustomStageEventLabelField', () => {
     });
 
     it('emits an error', () => {
-      expect(wrapper.emitted('error').length).toBe(1);
+      expect(wrapper.emitted('error')).toHaveLength(1);
       expect(wrapper.emitted('error')[0]).toEqual([
         'There was an error fetching label data for the selected group',
       ]);
@@ -151,7 +151,7 @@ describe('CustomStageEventLabelField', () => {
       });
 
       it('shows the labels in the listbox', () => {
-        expect(findCollapsibleListbox().props().items.length).toBe(results.length);
+        expect(findCollapsibleListbox().props().items).toHaveLength(results.length);
       });
     });
   });

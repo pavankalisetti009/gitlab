@@ -387,7 +387,7 @@ describe('Comparison chart', () => {
 
     it('will emit `set-alerts` with the failed metric names', () => {
       expect(Sentry.captureException).toHaveBeenCalled();
-      expect(wrapper.emitted('set-alerts').length).toBe(1);
+      expect(wrapper.emitted('set-alerts')).toHaveLength(1);
       expect(wrapper.emitted('set-alerts')[0][0]).toEqual({
         canRetry: true,
         alerts: [],
@@ -422,7 +422,7 @@ describe('Comparison chart', () => {
 
     it('will emit `set-alerts` with the failed metric names', () => {
       expect(Sentry.captureException).toHaveBeenCalled();
-      expect(wrapper.emitted('set-alerts').length).toBe(1);
+      expect(wrapper.emitted('set-alerts')).toHaveLength(1);
       expect(wrapper.emitted('set-alerts')[0][0]).toEqual({
         canRetry: true,
         alerts: [],
@@ -500,7 +500,7 @@ describe('Comparison chart', () => {
     });
 
     it('emits `set-alerts` warning with the restricted metrics', () => {
-      expect(wrapper.emitted('set-alerts').length).toBe(1);
+      expect(wrapper.emitted('set-alerts')).toHaveLength(1);
       expect(wrapper.emitted('set-alerts')[0][0]).toEqual({
         canRetry: false,
         warnings: [],

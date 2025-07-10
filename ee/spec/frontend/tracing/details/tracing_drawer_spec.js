@@ -68,7 +68,7 @@ describe('TracingDrawer', () => {
 
   it('emits close', () => {
     findDrawer().vm.$emit('close');
-    expect(wrapper.emitted('close').length).toBe(1);
+    expect(wrapper.emitted('close')).toHaveLength(1);
   });
 
   it('displays the correct title', () => {

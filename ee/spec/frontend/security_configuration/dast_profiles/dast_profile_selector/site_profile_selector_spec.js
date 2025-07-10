@@ -43,6 +43,6 @@ describe('SiteProfileSelector', () => {
     expect(findSelectProfileBtn().exists()).toBe(true);
 
     findSelectProfileBtn().vm.$emit('click');
-    expect(wrapper.emitted('open-drawer').length).toBe(1);
+    expect(wrapper.emitted('open-drawer')).toHaveLength(1);
   });
 });

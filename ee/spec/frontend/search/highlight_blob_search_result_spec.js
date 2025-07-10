@@ -12,7 +12,7 @@ describe('ee/search/highlight_blob_search_result', () => {
 
     setHighlightClass(searchKeyword);
 
-    expect(document.querySelectorAll('.js-blob-result .hll').length).toBe(4);
+    expect(document.querySelectorAll('.js-blob-result .hll')).toHaveLength(4);
 
     resetHTMLFixture();
   });
@@ -23,7 +23,7 @@ describe('ee/search/highlight_blob_search_result', () => {
 
     setHighlightClass(searchKeyword);
 
-    expect(document.querySelectorAll('.js-blob-result .hll').length).toBe(3);
+    expect(document.querySelectorAll('.js-blob-result .hll')).toHaveLength(3);
 
     resetHTMLFixture();
   });

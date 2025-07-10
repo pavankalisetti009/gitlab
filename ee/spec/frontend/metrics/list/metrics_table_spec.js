@@ -34,7 +34,7 @@ describe('MetricsTable', () => {
     mountComponent();
 
     const rows = getRows();
-    expect(rows.length).toBe(mockMetrics.length);
+    expect(rows).toHaveLength(mockMetrics.length);
     mockMetrics.forEach((m, i) => {
       const row = getRows().at(i);
       expect(row.find(`[data-testid="metric-name"]`).text()).toBe(m.name);

@@ -55,7 +55,7 @@ describe('createIssueUrlWithLogDetails', () => {
     const EXPECTED_LOG_BODY_LIMIT = 1000;
     const EXPECTED_SUFFIX = `[...]`;
 
-    expect(observabilityLogDetails.body.length).toBe(EXPECTED_LOG_BODY_LIMIT);
+    expect(observabilityLogDetails.body).toHaveLength(EXPECTED_LOG_BODY_LIMIT);
     expect(observabilityLogDetails.body).toBe(
       `${'a'.repeat(EXPECTED_LOG_BODY_LIMIT - EXPECTED_SUFFIX.length)}${EXPECTED_SUFFIX}`,
     );

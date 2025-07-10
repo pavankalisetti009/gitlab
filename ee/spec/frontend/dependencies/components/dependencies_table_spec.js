@@ -482,7 +482,7 @@ describe('DependenciesTable component', () => {
       });
 
       it('does not display the dependency path button', () => {
-        expect(findDependencyPathButtons().length).toBe(0);
+        expect(findDependencyPathButtons()).toHaveLength(0);
       });
 
       it('passes the correct props and only locations with dependency paths to the DependencyPathDrawer component when triggered', async () => {

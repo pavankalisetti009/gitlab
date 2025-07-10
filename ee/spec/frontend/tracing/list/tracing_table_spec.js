@@ -90,7 +90,7 @@ describe('TracingTable', () => {
     mountComponent();
 
     const rows = getRows();
-    expect(rows.length).toBe(mockTraces.length);
+    expect(rows).toHaveLength(mockTraces.length);
     mockTraces.forEach((_, i) => {
       const row = getRows().at(i);
       const expected = expectedTraces[i];

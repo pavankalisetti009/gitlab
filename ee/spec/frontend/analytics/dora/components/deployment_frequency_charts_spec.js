@@ -246,7 +246,7 @@ describe('deployment_frequency_charts.vue', () => {
       });
 
       it('makes a call to the project API endpoint', () => {
-        expect(mock.history.get.length).toBe(4);
+        expect(mock.history.get).toHaveLength(4);
         expect(mock.history.get[0].url).toMatch('/projects/test%2Fproject/dora/metrics');
       });
 
@@ -267,7 +267,7 @@ describe('deployment_frequency_charts.vue', () => {
       });
 
       it('makes a call to the group API endpoint', () => {
-        expect(mock.history.get.length).toBe(4);
+        expect(mock.history.get).toHaveLength(4);
         expect(mock.history.get[0].url).toMatch('/groups/test%2Fgroup/dora/metrics');
       });
 
@@ -397,7 +397,7 @@ describe('deployment_frequency_charts.vue', () => {
 
           expect(currentTimePeriodChartData.data).toHaveLength(3);
           expect(forecastSeries.data).toEqual(result);
-          expect(forecastSeries.data.length).toBe(daysForecasted);
+          expect(forecastSeries.data).toHaveLength(daysForecasted);
           expect(forecastSeries.lineStyle).toEqual(forecastLineStyle);
           expect(forecastSeries.areaStyle).toEqual(forecastAreaStyle);
         },
