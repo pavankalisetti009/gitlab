@@ -84,7 +84,7 @@ module Security
         .with_merge_request_links
         .with_feedbacks
         .with_vulnerability
-        .merge(::Security::Scan.by_pipeline_ids(pipeline.id))
+        .merge(::Security::Scan.by_pipeline_ids(pipeline_ids))
         .merge(::Security::Scan.latest_successful)
         .ordered(params[:sort])
         .then { |relation| by_report_types(relation) }
@@ -98,6 +98,16 @@ module Security
 
     def limit
       @limit ||= params[:limit] || DEFAULT_LIMIT
+    end
+
+    def pipeline_ids
+      if Feature.enabled?(:show_child_reports_in_mr_page, project)
+        # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Pluck is more efficient & limit of 1000 by default
+        pipeline.self_and_project_descendants.pluck(:id)
+        # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
+      else
+        [pipeline.id]
+      end
     end
 
     def include_dismissed?

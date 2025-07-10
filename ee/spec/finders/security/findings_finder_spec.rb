@@ -128,7 +128,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
       end
 
       describe 'N+1 queries' do
-        let(:query_limit) { 8 }
+        let(:query_limit) { 9 }
 
         it 'does not cause N+1 queries' do
           expect { findings }.not_to exceed_query_limit(query_limit)
@@ -288,6 +288,71 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
           describe 'the vulnerability is included in results' do
             it { is_expected.to eq(vulnerability_finding.vulnerability) }
+          end
+        end
+      end
+    end
+
+    context 'when there are downstream child pipelines with findings' do
+      let_it_be(:child_pipeline) { create(:ci_pipeline, child_of: pipeline) }
+      let_it_be(:child_sast_build) { create(:ci_build, :success, name: 'sast', pipeline: child_pipeline) }
+      let_it_be(:child_artifact_sast) { create(:ee_ci_job_artifact, :sast_bandit, job: child_sast_build) }
+      let_it_be(:child_report_sast) { create(:ci_reports_security_report, pipeline: child_pipeline, type: :sast) }
+
+      before_all do
+        sast_content = File.read(child_artifact_sast.file.path)
+        Gitlab::Ci::Parsers::Security::Sast.parse!(sast_content, child_report_sast)
+        child_report_sast.merge!(child_report_sast)
+
+        { child_artifact_sast => child_report_sast }.flat_map do |artifact, report|
+          scan = create(:security_scan, :latest_successful, scan_type: artifact.job.name, build: artifact.job)
+          scanner_external_id = report.scanner.external_id
+          scanner = create(:vulnerabilities_scanner, project: child_pipeline.project, external_id: scanner_external_id)
+
+          report.findings.flat_map do |finding, _index|
+            create(
+              :security_finding,
+              severity: finding.severity,
+              uuid: finding.uuid,
+              deduplicated: true,
+              scan: scan,
+              scanner: scanner
+            )
+          end
+        end
+      end
+
+      describe '#execute' do
+        subject(:finding_uuids) { findings.map(&:uuid) }
+
+        before do
+          stub_licensed_features(sast: true)
+        end
+
+        context 'with the default parameters' do
+          let(:expected_uuids) { Security::Finding.pluck(:uuid) - [Security::Finding.second[:uuid]] }
+
+          it 'includes child build findings' do
+            expect(finding_uuids).to match_array(expected_uuids)
+            expect(finding_uuids).to include(*Security::Finding.by_build_ids(child_sast_build).map(&:uuid))
+          end
+
+          context 'with FF show_child_reports_in_mr_page disabled' do
+            before do
+              stub_feature_flags(show_child_reports_in_mr_page: false)
+            end
+
+            it 'does not include child pipeline findings' do
+              expect(finding_uuids).not_to include(*Security::Finding.by_build_ids(child_sast_build).map(&:uuid))
+            end
+          end
+        end
+
+        context 'when the `scanner` is provided' do
+          let(:scanner) { child_report_sast.scanner.external_id }
+
+          it 'returns findings belonging to that scanner' do
+            expect(finding_uuids).to include(*Security::Finding.by_build_ids(child_sast_build).map(&:uuid))
           end
         end
       end
