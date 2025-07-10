@@ -2,6 +2,8 @@
 key_path: redis_hll_counters.count_distinct_namespace_id_from_export_runner_usage_by_project_for_group_as_csv_weekly
 description: Weekly count of unique groups exporting runner usage CSV report from group dashboard
 product_group: runner
+product_categories:
+- fleet_visibility
 performance_indicator_type: []
 value_type: number
 status: active
