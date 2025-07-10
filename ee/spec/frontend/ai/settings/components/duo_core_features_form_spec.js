@@ -1,4 +1,4 @@
-import { GlLink, GlSprintf, GlFormGroup, GlFormCheckbox } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlFormGroup, GlFormCheckbox, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
@@ -13,6 +13,7 @@ describe('DuoCoreFeaturesForm', () => {
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     return shallowMountExtended(DuoCoreFeaturesForm, {
       propsData: {
+        disabledCheckbox: false,
         duoCoreFeaturesEnabled: false,
         ...props,
       },
@@ -30,6 +31,8 @@ describe('DuoCoreFeaturesForm', () => {
   };
 
   const findFormCheckbox = () => wrapper.findComponent(GlFormCheckbox);
+  const findButton = () => wrapper.find('button');
+  const findIcon = () => wrapper.findComponent(GlIcon);
 
   beforeEach(() => {
     wrapper = createComponent();
@@ -87,5 +90,38 @@ describe('DuoCoreFeaturesForm', () => {
     it('renders the instance description', () => {
       expect(wrapper.text()).toMatch('This setting applies to the whole instance.');
     });
+  });
+
+  it('does not render icon and tooltip initially', () => {
+    wrapper = createComponent();
+    expect(findButton().exists()).toBe(false);
+    expect(findIcon().exists()).toBe(false);
+  });
+
+  it('renders icon and tooltip after mounting', () => {
+    wrapper = createComponent({ props: { disabledCheckbox: true } });
+
+    expect(findButton().exists()).toBe(true);
+    expect(findIcon().exists()).toBe(true);
+  });
+
+  it('leaves the checkbox enabled', () => {
+    expect(findFormCheckbox().attributes('disabled')).not.toBeDefined();
+  });
+
+  describe('with Duo availability never on', () => {
+    it('disables the checkbox', () => {
+      wrapper = createComponent({ props: { disabledCheckbox: true } });
+
+      expect(findFormCheckbox().attributes('disabled')).toBeDefined();
+    });
+  });
+
+  it('disables checkbox switching from enabled to disabled', async () => {
+    wrapper = createComponent({ props: { disabledCheckbox: false } });
+
+    await wrapper.setProps({ disabledCheckbox: true });
+
+    expect(findFormCheckbox().attributes('disabled')).toBeDefined();
   });
 });

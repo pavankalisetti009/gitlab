@@ -1,5 +1,12 @@
 <script>
-import { GlSprintf, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
+import {
+  GlFormCheckbox,
+  GlFormGroup,
+  GlIcon,
+  GlLink,
+  GlSprintf,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
 import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
@@ -20,14 +27,22 @@ export default {
     ),
   },
   components: {
-    GlSprintf,
     GlFormCheckbox,
     GlFormGroup,
+    GlIcon,
     GlLink,
+    GlSprintf,
     PromoPageLink,
+  },
+  directives: {
+    tooltip: GlTooltipDirective,
   },
   inject: ['isSaaS'],
   props: {
+    disabledCheckbox: {
+      type: Boolean,
+      required: true,
+    },
     duoCoreFeaturesEnabled: {
       type: Boolean,
       required: true,
@@ -64,9 +79,26 @@ export default {
       <gl-form-checkbox
         v-model="duoCoreEnabled"
         data-testid="use-duo-core-features-checkbox"
+        :disabled="disabledCheckbox"
         @change="checkboxChanged"
       >
-        <span id="duo-core-checkbox-label">{{ $options.i18n.checkboxLabel }}</span>
+        <div class="gl-flex">
+          <span id="duo-core-checkbox-label">{{ $options.i18n.checkboxLabel }}</span>
+          <button
+            v-if="disabledCheckbox"
+            v-tooltip="
+              s__(
+                'AiPowered|This setting requires GitLab Duo availability to be on or off by default.',
+              )
+            "
+            type="button"
+            class="gl-ml-2 gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0"
+            :aria-label="s__('AiPowered|Lock tooltip icon')"
+            variant="subtle"
+          >
+            <gl-icon name="lock" />
+          </button>
+        </div>
         <template #help>
           <gl-sprintf :message="description">
             <template #br>
