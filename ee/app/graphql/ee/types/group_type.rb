@@ -410,6 +410,14 @@ module EE
           authorize: :read_compliance_dashboard,
           experiment: { milestone: '18.1' }
 
+        field :security_metrics,
+          ::Types::Security::SecurityMetricsType,
+          null: true,
+          description: 'Security metrics.' \
+          'This feature is currently under development and not yet available for general use.',
+          resolver: ::Resolvers::Security::SecurityMetricsResolver,
+          experiment: { milestone: '18.2' }
+
         field :project_compliance_violations,
           ::Types::ComplianceManagement::Projects::ComplianceViolationType.connection_type,
           null: true,

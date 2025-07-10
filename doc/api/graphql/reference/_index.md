@@ -20712,6 +20712,29 @@ The edge type for [`VulnerabilitiesCountByDay`](#vulnerabilitiescountbyday).
 | <a id="vulnerabilitiescountbydayedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="vulnerabilitiescountbydayedgenode"></a>`node` | [`VulnerabilitiesCountByDay`](#vulnerabilitiescountbyday) | The item at the end of the edge. |
 
+#### `VulnerabilitiesOverTimeConnection`
+
+The connection type for [`VulnerabilitiesOverTime`](#vulnerabilitiesovertime).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitiesovertimeconnectionedges"></a>`edges` | [`[VulnerabilitiesOverTimeEdge]`](#vulnerabilitiesovertimeedge) | A list of edges. |
+| <a id="vulnerabilitiesovertimeconnectionnodes"></a>`nodes` | [`[VulnerabilitiesOverTime]`](#vulnerabilitiesovertime) | A list of nodes. |
+| <a id="vulnerabilitiesovertimeconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `VulnerabilitiesOverTimeEdge`
+
+The edge type for [`VulnerabilitiesOverTime`](#vulnerabilitiesovertime).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitiesovertimeedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="vulnerabilitiesovertimeedgenode"></a>`node` | [`VulnerabilitiesOverTime`](#vulnerabilitiesovertime) | The item at the end of the edge. |
+
 #### `VulnerabilityConnection`
 
 The connection type for [`Vulnerability`](#vulnerability).
@@ -30260,6 +30283,25 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="groupscanresultpoliciesincludeunscoped"></a>`includeUnscoped` | [`Boolean`](#boolean) | Filter policies that are scoped to the project. |
 | <a id="groupscanresultpoliciesrelationship"></a>`relationship` | [`SecurityPolicyRelationType`](#securitypolicyrelationtype) | Filter policies by the given policy relationship. Default is DIRECT. |
+
+##### `Group.securityMetrics`
+
+Security metrics.This feature is currently under development and not yet available for general use.
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Returns [`SecurityMetrics`](#securitymetrics).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs. |
+| <a id="groupsecuritymetricsscanner"></a>`scanner` | [`[String!]`](#string) | Filter by scanner names. |
+| <a id="groupsecuritymetricsseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter by vulnerability severity levels. |
 
 ##### `Group.securityPolicies`
 
@@ -40532,6 +40574,32 @@ Representation of a secrets permission.
 | <a id="secretpermissionprincipal"></a>`principal` | [`Principal!`](#principal) | Who is provided access to. For eg: User/Role/MemberRole/Group. |
 | <a id="secretpermissionproject"></a>`project` | [`Project!`](#project) | Project the secret permission belong to. |
 
+### `SecurityMetrics`
+
+Represents security metrics.
+
+#### Fields with arguments
+
+##### `SecurityMetrics.vulnerabilitiesOverTime`
+
+Vulnerability metrics over time with filtering and grouping capabilities. This feature is currently under development and not yet available for general use.
+
+Returns [`VulnerabilitiesOverTimeConnection`](#vulnerabilitiesovertimeconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="securitymetricsvulnerabilitiesovertimeenddate"></a>`endDate` | [`ISO8601Date!`](#iso8601date) | End date for the vulnerability metrics time range. |
+| <a id="securitymetricsvulnerabilitiesovertimeprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs. |
+| <a id="securitymetricsvulnerabilitiesovertimescanner"></a>`scanner` | [`[String!]`](#string) | Filter by scanner types. |
+| <a id="securitymetricsvulnerabilitiesovertimeseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter by vulnerability severity levels. |
+| <a id="securitymetricsvulnerabilitiesovertimestartdate"></a>`startDate` | [`ISO8601Date!`](#iso8601date) | Start date for the vulnerability metrics time range. |
+
 ### `SecurityPolicyType`
 
 Represents the security policy.
@@ -42422,6 +42490,19 @@ Represents the count of vulnerabilities by severity on a particular day. This da
 | <a id="vulnerabilitiescountbydaytotal"></a>`total` | [`Int!`](#int) | Total number of vulnerabilities on a particular day. |
 | <a id="vulnerabilitiescountbydayunknown"></a>`unknown` | [`Int!`](#int) | Total number of vulnerabilities on a particular day with unknown severity. |
 
+### `VulnerabilitiesOverTime`
+
+Represents vulnerability metrics over time with filtering and grouping capabilities.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitiesovertimebyreporttype"></a>`byReportType` | [`[VulnerabilityReportTypeCount!]`](#vulnerabilityreporttypecount) | Vulnerability counts grouped by report type. |
+| <a id="vulnerabilitiesovertimebyseverity"></a>`bySeverity` | [`[VulnerabilitySeverityCount!]`](#vulnerabilityseveritycount) | Vulnerability counts grouped by severity level. |
+| <a id="vulnerabilitiesovertimecount"></a>`count` | [`Int!`](#int) | Total number of vulnerabilities for the date. |
+| <a id="vulnerabilitiesovertimedate"></a>`date` | [`ISO8601Date!`](#iso8601date) | Date for the metrics. |
+
 ### `Vulnerability`
 
 Represents a vulnerability.
@@ -43100,6 +43181,17 @@ Represents a vulnerability remediation type.
 | <a id="vulnerabilityremediationtypediff"></a>`diff` | [`String`](#string) | Diff of the remediation. |
 | <a id="vulnerabilityremediationtypesummary"></a>`summary` | [`String`](#string) | Summary of the remediation. |
 
+### `VulnerabilityReportTypeCount`
+
+Represents a count of vulnerabilities for a specific report type.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilityreporttypecountcount"></a>`count` | [`Int!`](#int) | Number of vulnerabilities. |
+| <a id="vulnerabilityreporttypecountreporttype"></a>`reportType` | [`VulnerabilityReportType!`](#vulnerabilityreporttype) | Report type. |
+
 ### `VulnerabilityRepresentationInformation`
 
 Represents vulnerability information.
@@ -43176,6 +43268,17 @@ Represents vulnerability counts by severity.
 | <a id="vulnerabilityseveritiescountlow"></a>`low` | [`Int`](#int) | Number of vulnerabilities of LOW severity of the project. |
 | <a id="vulnerabilityseveritiescountmedium"></a>`medium` | [`Int`](#int) | Number of vulnerabilities of MEDIUM severity of the project. |
 | <a id="vulnerabilityseveritiescountunknown"></a>`unknown` | [`Int`](#int) | Number of vulnerabilities of UNKNOWN severity of the project. |
+
+### `VulnerabilitySeverityCount`
+
+Represents a count of vulnerabilities for a specific severity level.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilityseveritycountcount"></a>`count` | [`Int!`](#int) | Number of vulnerabilities. |
+| <a id="vulnerabilityseveritycountseverity"></a>`severity` | [`VulnerabilitySeverity!`](#vulnerabilityseverity) | Severity level. |
 
 ### `VulnerabilityStateTransitionType`
 
