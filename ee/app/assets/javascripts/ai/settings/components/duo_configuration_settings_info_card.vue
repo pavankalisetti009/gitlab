@@ -66,6 +66,20 @@ export default {
     title() {
       return DUO_TITLES[this.activeDuoTier];
     },
+    isDuoCoreEnabled() {
+      // FIXME: Database inconsistency between Duo Core feature flags and availability settings
+      //
+      // Issue: Some Duo Core features are enabled in the database even when duoAvailability
+      // is set to 'Always off', creating an misinformal state.
+      //
+      // Current fix: This method aggregates both conditions to determine actual availability.
+      // Future: Potentially clean up database state to remove this workaround.
+      //
+      // Reference: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196907#note_2616291902
+      return (
+        this.areDuoCoreFeaturesEnabled && this.duoAvailability !== AVAILABILITY_OPTIONS.NEVER_ON
+      );
+    },
   },
 };
 </script>
@@ -87,7 +101,7 @@ export default {
       <section>
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.duoCoreAvailabilityText"
-          :config-value="areDuoCoreFeaturesEnabled"
+          :config-value="isDuoCoreEnabled"
         />
       </section>
       <section v-if="areExperimentSettingsAllowed">

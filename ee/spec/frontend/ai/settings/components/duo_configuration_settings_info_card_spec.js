@@ -59,6 +59,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
   const findDuoConfigurationSettingsInfo = () =>
     wrapper.findByTestId('duo-configuration-settings-info');
   const findConfigurationStatus = () => wrapper.findByTestId('configuration-status');
+  const findDuoCoreConfigValue = () => findDuoConfigurationRows().at(0).props('configValue');
 
   describe('on component loaded', () => {
     beforeEach(() => {
@@ -147,6 +148,36 @@ describe('DuoConfigurationSettingsInfoCard', () => {
       expect(findDuoConfigurationRows().at(0).props('configValue')).toBe(true);
       expect(findDuoConfigurationRows().at(1).props('configValue')).toBe(true);
       expect(findDuoConfigurationRows().at(2).props('configValue')).toBe(true);
+    });
+
+    describe('when Duo Core features are enabled and availability is on', () => {
+      it('sets config value for Duo Core to true', () => {
+        createComponent({
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+          areDuoCoreFeaturesEnabled: true,
+        });
+        expect(findDuoCoreConfigValue()).toBe(true);
+      });
+    });
+
+    describe('when Duo Core features are enabled and availability is off', () => {
+      it('sets config value for Duo Core to false', () => {
+        createComponent({
+          duoAvailability: AVAILABILITY_OPTIONS.NEVER_ON,
+          areDuoCoreFeaturesEnabled: false,
+        });
+        expect(findDuoCoreConfigValue()).toBe(false);
+      });
+    });
+
+    describe('when Duo Core features are disabled and availability is on', () => {
+      it('sets config value for Duo Core to false', () => {
+        createComponent({
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+          areDuoCoreFeaturesEnabled: false,
+        });
+        expect(findDuoCoreConfigValue()).toBe(false);
+      });
     });
   });
 });
