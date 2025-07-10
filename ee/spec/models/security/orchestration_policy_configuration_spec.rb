@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :security_policy_management do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:security_policy_management_project) { create(:project, :repository) }
 
   let(:security_orchestration_policy_configuration) do
@@ -4366,6 +4368,87 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       it_behaves_like 'schema integrity test',
         'vulnerability_management_policy_rule_content.json',
         %w[properties vulnerability_management_policy items properties rules items]
+    end
+  end
+
+  describe '#policy_limit_by_type' do
+    subject { security_orchestration_policy_configuration.policy_limit_by_type(policy_type) }
+
+    context 'with a valid policy type' do
+      context 'for :approval_policy' do
+        let(:policy_type) { :approval_policy }
+
+        it 'returns the limit from settings' do
+          stub_application_setting(security_approval_policies_limit: 15)
+
+          expect(subject).to eq(15)
+        end
+      end
+
+      context 'for :pipeline_execution_policy' do
+        let(:policy_type) { :pipeline_execution_policy }
+        let(:limit_service) { instance_double(Security::SecurityOrchestrationPolicies::LimitService) }
+
+        before do
+          allow(Security::SecurityOrchestrationPolicies::LimitService)
+            .to receive(:new)
+            .with(container: security_orchestration_policy_configuration.source)
+            .and_return(limit_service)
+          allow(limit_service).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(10)
+        end
+
+        it 'returns the policy limit from LimitService' do
+          expect(subject).to eq(10)
+        end
+      end
+
+      where(:policy_type, :expected_policy_limit) do
+        :scan_execution_policy                | lazy { Security::ScanExecutionPolicy::POLICY_LIMIT }
+        :pipeline_execution_schedule_policy   | lazy { Security::PipelineExecutionSchedulePolicy::POLICY_LIMIT }
+        :vulnerability_management_policy      | lazy { Security::VulnerabilityManagementPolicy::POLICY_LIMIT }
+        :ci_component_publishing_policy       | lazy { Security::CiComponentPublishingPolicy::POLICY_LIMIT }
+      end
+
+      with_them do
+        it 'returns the policy limit' do
+          expect(subject).to eq(expected_policy_limit)
+        end
+      end
+    end
+
+    context 'with an invalid policy type' do
+      let(:policy_type) { :invalid_policy }
+
+      it 'raises an ArgumentError' do
+        expect { subject }.to raise_error(ArgumentError, 'Invalid policy type: invalid_policy')
+      end
+    end
+  end
+
+  describe '#policy_type_name_by_type' do
+    subject { security_orchestration_policy_configuration.policy_type_name_by_type(policy_type) }
+
+    where(:policy_type, :expected_policy_type_name) do
+      :approval_policy                      | 'Merge request approval policy'
+      :scan_execution_policy                | 'Scan execution policy'
+      :pipeline_execution_policy            | 'Pipeline execution policy'
+      :pipeline_execution_schedule_policy   | 'Pipeline execution schedule policy'
+      :vulnerability_management_policy      | 'Vulnerability management policy'
+      :ci_component_publishing_policy       | 'CI component publishing policy'
+    end
+
+    with_them do
+      it 'returns the policy type name' do
+        expect(subject).to eq(expected_policy_type_name)
+      end
+    end
+
+    context 'with an invalid policy type' do
+      let(:policy_type) { :invalid_policy }
+
+      it 'raises an ArgumentError' do
+        expect { subject }.to raise_error(ArgumentError, 'Invalid policy type: invalid_policy')
+      end
     end
   end
 end

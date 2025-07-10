@@ -13,6 +13,7 @@ module Security
 
     APPROVAL_RULES_BATCH_SIZE = 5000
 
+    POLICY_TYPE_NAME = 'Merge request approval policy'
     SCAN_FINDING = 'scan_finding'
     LICENSE_SCANNING = 'license_scanning'
     LICENSE_FINDING = 'license_finding'

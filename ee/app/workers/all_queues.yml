@@ -3444,6 +3444,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_collect_policies_limit_audit_events
+  :worker_name: Security::CollectPoliciesLimitAuditEventsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_configuration_set_group_secret_push_protection
   :worker_name: Security::Configuration::SetGroupSecretPushProtectionWorker
   :feature_category: :security_testing_configuration
