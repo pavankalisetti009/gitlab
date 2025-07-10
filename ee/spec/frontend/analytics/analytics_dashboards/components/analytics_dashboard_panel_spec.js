@@ -163,10 +163,7 @@ describe('AnalyticsDashboardPanel', () => {
       it('renders the panel permissions state', () => {
         expect(findDashboardPanel().props('titleIconClass')).toBe('gl-text-danger');
         expect(findDashboardPanel().props('borderColorClass')).toBe('gl-border-t-red-500');
-
-        // TODO: Replace .attributes checks with .props when we merge
-        //       https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/merge_requests/4734
-        expect(findDashboardPanel().attributes('body-content-class')).toBe('gl-content-center');
+        expect(findDashboardPanel().props('bodyContentClass')).toBe('gl-content-center');
       });
 
       it('renders the missing license message', () => {
