@@ -53,6 +53,22 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
     end
   end
 
+  context 'transfering current status' do
+    let(:transfer_service) { instance_double(WorkItems::Widgets::Statuses::TransferService) }
+    let(:namespace_ids) { [project.project_namespace_id] }
+
+    it 'delegates transfer to WorkItems::Widgets::Statuses::TransferService' do
+      expect(WorkItems::Widgets::Statuses::TransferService).to receive(:new).with(
+        old_root_namespace: project.namespace.root_ancestor,
+        new_root_namespace: group,
+        project_namespace_ids: namespace_ids
+      ).and_return(transfer_service)
+      expect(transfer_service).to receive(:execute)
+
+      subject.execute(group)
+    end
+  end
+
   describe 'elasticsearch indexing', feature_category: :global_search do
     it 'delegates transfer to Elastic::ProjectTransferWorker and ::Search::Zoekt::ProjectTransferWorker' do
       expect(::Elastic::ProjectTransferWorker).to receive(:perform_async).with(project.id, project.namespace.id, group.id).once

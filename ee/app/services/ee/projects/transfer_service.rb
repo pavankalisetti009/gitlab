@@ -19,6 +19,8 @@ module EE
         super
 
         ::Epics::TransferService.new(current_user, group, project).execute
+
+        transfer_status_data
       end
 
       override :post_update_hooks
@@ -71,6 +73,14 @@ module EE
         ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker.perform_async(
           project.id, framework_id, { "skip_framework_check" => true }
         )
+      end
+
+      def transfer_status_data
+        ::WorkItems::Widgets::Statuses::TransferService.new(
+          old_root_namespace: old_namespace.root_ancestor,
+          new_root_namespace: new_namespace.root_ancestor,
+          project_namespace_ids: [project.project_namespace_id]
+        ).execute
       end
     end
   end

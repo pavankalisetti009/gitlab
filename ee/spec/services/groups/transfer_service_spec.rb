@@ -103,6 +103,22 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         end
       end
     end
+
+    context 'when transfering current status' do
+      let(:transfer_status_service) { instance_double(WorkItems::Widgets::Statuses::TransferService) }
+      let(:namespace_ids) { group.all_projects.pluck(:project_namespace_id) }
+
+      it 'delegates transfer to WorkItems::Widgets::Statuses::TransferService' do
+        expect(WorkItems::Widgets::Statuses::TransferService).to receive(:new).with(
+          old_root_namespace: group.root_ancestor,
+          new_root_namespace: new_group.root_ancestor,
+          project_namespace_ids: namespace_ids
+        ).and_return(transfer_status_service)
+        expect(transfer_status_service).to receive(:execute)
+
+        transfer_service.execute(new_group)
+      end
+    end
   end
 
   describe 'zoekt indexing', :aggregate_failures do

@@ -47,6 +47,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:security_exclusions).class_name('Security::GroupSecurityExclusion') }
     it { is_expected.to have_many(:enterprise_users).through(:enterprise_user_details).source(:user) }
     it { is_expected.to have_many(:subscription_seat_assignments).class_name('GitlabSubscriptions::SeatAssignment') }
+    it { is_expected.to have_many(:custom_lifecycles).class_name('WorkItems::Statuses::Custom::Lifecycle') }
 
     it do
       is_expected.to have_many(:ai_feature_settings)
@@ -4367,5 +4368,23 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     subject { group.virtual_registry_policy_subject }
 
     it { is_expected.to be_a(::VirtualRegistries::Packages::Policies::Group).and have_attributes(group:) }
+  end
+
+  describe '#lifecycles' do
+    context 'with system-defined lifecycles' do
+      let_it_be(:system_defined_lifecycles) { ::WorkItems::Statuses::SystemDefined::Lifecycle.all }
+
+      it 'returns system-defined lifecycles' do
+        expect(group.lifecycles).to eq(system_defined_lifecycles)
+      end
+    end
+
+    context 'with custom lifecycles' do
+      let!(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: group) }
+
+      it 'returns custom lifecycles' do
+        expect(group.lifecycles).to contain_exactly(custom_lifecycle)
+      end
+    end
   end
 end

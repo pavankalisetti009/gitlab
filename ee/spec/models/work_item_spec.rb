@@ -996,7 +996,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
-    let_it_be(:work_item, reload: true) { create(:work_item, :task, project: project) }
+    let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }
 
     before do
       stub_licensed_features(work_item_status: true)
@@ -1135,6 +1135,79 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
               expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
               expect(status_with_fallback.id).to eq(lifecycle.default_duplicate_status_id)
             end
+          end
+        end
+      end
+    end
+  end
+
+  describe '#current_status_with_fallback' do
+    let_it_be(:lifecycle) { build(:work_item_system_defined_lifecycle) }
+    let_it_be_with_reload(:work_item) { create(:work_item, :task) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    subject(:current_status_with_fallback) { work_item.current_status_with_fallback }
+
+    context 'when current_status exists' do
+      let_it_be(:current_status) do
+        create(:work_item_current_status, work_item: work_item, system_defined_status: lifecycle.default_open_status)
+      end
+
+      it 'returns the current status' do
+        expect(current_status_with_fallback).to eq(current_status)
+      end
+    end
+
+    context 'when current_status does not exist' do
+      context 'when state is open' do
+        let(:expected_current_status) do
+          work_item.build_current_status(system_defined_status: lifecycle.default_open_status)
+        end
+
+        before do
+          work_item.state = :opened
+        end
+
+        it 'returns the initialized current status with default open status as status' do
+          expect(current_status_with_fallback.persisted?).to be_falsey
+          expect(current_status_with_fallback.class).to eq(WorkItems::Statuses::CurrentStatus)
+          expect(current_status_with_fallback.system_defined_status).to eq(lifecycle.default_open_status)
+        end
+      end
+
+      context 'when state is closed' do
+        before do
+          work_item.state = :closed
+        end
+
+        it 'returns the initialized current status with default closed status as status' do
+          expect(current_status_with_fallback.persisted?).to be_falsey
+          expect(current_status_with_fallback.class).to eq(WorkItems::Statuses::CurrentStatus)
+          expect(current_status_with_fallback.system_defined_status).to eq(lifecycle.default_closed_status)
+        end
+
+        context 'when work item is a duplicate' do
+          before do
+            work_item.duplicated_to = build_stubbed(:work_item)
+          end
+
+          it 'returns the initialized current status with default duplicate status as status' do
+            expect(current_status_with_fallback.persisted?).to be_falsey
+            expect(current_status_with_fallback.class).to eq(WorkItems::Statuses::CurrentStatus)
+            expect(current_status_with_fallback.system_defined_status).to eq(lifecycle.default_duplicate_status)
+          end
+        end
+
+        context 'when work item type does not have a lifecycle' do
+          before do
+            work_item.work_item_type = create(:work_item_type, :incident)
+          end
+
+          it 'returns nil' do
+            expect(current_status_with_fallback).to be_nil
           end
         end
       end

@@ -68,15 +68,16 @@ module WorkItems
       }
 
       def status_with_fallback
-        if current_status.nil?
-          lifecycle = work_item_type.system_defined_lifecycle
+        current_status_with_fallback&.status
+      end
 
-          return unless lifecycle
+      def current_status_with_fallback
+        return current_status if current_status.present?
 
-          build_current_status(system_defined_status: lifecycle.default_status_for_work_item(self))
-        end
+        lifecycle = work_item_type.system_defined_lifecycle
+        return unless lifecycle
 
-        current_status.status
+        build_current_status(system_defined_status: lifecycle.default_status_for_work_item(self))
       end
     end
   end
