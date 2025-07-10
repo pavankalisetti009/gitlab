@@ -715,7 +715,7 @@ module EE
           'SUM(COALESCE(issues.weight, 0)) AS issues_weight_sum',
           'COUNT(issues.id) AS issues_count'
         )
-        .reorder(nil)
+        .without_order
         .group("issues.state_id")
 
       by_state = state_sums.each_with_object({}) do |state_sum, result|

@@ -61,7 +61,7 @@ module EE
 
         labels = ::Label
           .from_union(relations, remove_duplicates: false)
-          .reorder(nil)
+          .without_order
           .pluck(:title, :id)
 
         group_by_prefix(labels, scoped_label_prefixes).values

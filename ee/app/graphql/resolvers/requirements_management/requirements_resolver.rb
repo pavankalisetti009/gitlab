@@ -89,8 +89,7 @@ module Resolvers
                            .new(current_user, args.merge(iids: args[:work_item_iids]))
                            .execute.select(:id)
 
-        requirements =
-          ::RequirementsManagement::Requirement.where(issue_id: work_items_ids.reorder(nil))
+        requirements = ::RequirementsManagement::Requirement.where(issue_id: work_items_ids.without_order)
 
         # keeps old requirement iids filter backwards compatible
         requirements = requirements.iid_in(legacy_iids) if legacy_iids.present?

@@ -10,11 +10,10 @@ module EE
       end
 
       def weight
-        # rubocop: disable CodeReuse/ActiveRecord
         relation = object.items
 
         if relation.respond_to?(:reorder)
-          relation = relation.reorder(nil)
+          relation = relation.without_order
 
           result = relation.sum(:weight)
 
@@ -26,7 +25,6 @@ module EE
         else
           relation.map(&:weight).compact.sum
         end
-        # rubocop: enable CodeReuse/ActiveRecord
       end
     end
   end

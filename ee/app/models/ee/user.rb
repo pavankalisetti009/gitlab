@@ -449,7 +449,7 @@ module EE
           .execute
           .preload(:projects)
           .joins(:projects)
-          .reorder(nil)
+          .without_order
           .distinct
       else
         params = {
@@ -461,7 +461,7 @@ module EE
           .where(id: found_groups.select(:custom_project_templates_group_id))
           .preload(:projects)
           .joins(:projects)
-          .reorder(nil)
+          .without_order
           .distinct
       end
     end
@@ -720,7 +720,7 @@ module EE
         .where(author_id: self)
         .created_after(Time.current - 1.year)
         .distinct
-        .reorder(nil)
+        .without_order
 
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
     end
@@ -731,7 +731,7 @@ module EE
         .where(author_id: self)
         .created_after(Time.current - 1.year)
         .distinct
-        .reorder(nil)
+        .without_order
 
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
     end

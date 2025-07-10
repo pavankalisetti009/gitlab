@@ -13,13 +13,13 @@ module Analytics
 
     def issues_count
       @issues_count ||= fetch_cached(:issues, Issue) do
-        IssuesFinder.new(@current_user, issuable_params).execute.limit(RECENT_COUNT_LIMIT).reorder(nil).count # rubocop:disable CodeReuse/ActiveRecord
+        IssuesFinder.new(@current_user, issuable_params).execute.limit(RECENT_COUNT_LIMIT).without_order.count
       end
     end
 
     def merge_requests_count
       @merge_requests_count ||= fetch_cached(:merge_requests, MergeRequest) do
-        MergeRequestsFinder.new(@current_user, issuable_params).execute.limit(RECENT_COUNT_LIMIT).reorder(nil).count # rubocop:disable CodeReuse/ActiveRecord
+        MergeRequestsFinder.new(@current_user, issuable_params).execute.limit(RECENT_COUNT_LIMIT).without_order.count
       end
     end
 
@@ -29,7 +29,7 @@ module Analytics
           @group,
           @current_user,
           params: { created_after: RECENT_DURATION.ago }
-        ).execute(include_relations: [:direct, :descendants]).limit(RECENT_COUNT_LIMIT).reorder(nil).count # rubocop:disable CodeReuse/ActiveRecord
+        ).execute(include_relations: [:direct, :descendants]).limit(RECENT_COUNT_LIMIT).without_order.count
       end
     end
 
