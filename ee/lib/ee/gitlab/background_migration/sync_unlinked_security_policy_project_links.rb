@@ -30,6 +30,7 @@ module EE
           self.table_name = 'namespaces'
           self.inheritance_column = :_type_disabled
 
+          include ::Namespaces::Traversal::Recursive # Added to fix failing static analysis pipeline
           include ::Namespaces::Traversal::Linear
           include ::Namespaces::Traversal::Cached
 
