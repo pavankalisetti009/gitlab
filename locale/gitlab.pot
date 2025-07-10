@@ -27065,7 +27065,7 @@ msgstr ""
 msgid "File size exceeds preview limit."
 msgstr ""
 
-msgid "File suppressed by a .gitattributes entry or the file's encoding is unsupported."
+msgid "File suppressed by a .gitattributes entry, the file's encoding is unsupported, or the file size exceeds the limit."
 msgstr ""
 
 msgid "File too large. Secure files must be less than %{limit} MB."
