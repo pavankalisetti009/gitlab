@@ -618,22 +618,18 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
 
     context 'when amazon q is connected' do
-      where(:duo_chat_on_saas, :amazon_q_connected, :allowed_to_use, :duo_chat_enabled_for_user) do
-        true  | true  | true  | be_allowed(policy)
-        false | true  | true  | be_allowed(policy)
-        true  | false | true  | be_disallowed(policy)
-        true  | false | false | be_disallowed(policy)
+      where(:duo_chat_on_saas, :amazon_q_connected, :duo_chat_enabled_for_user) do
+        true  | true   | be_allowed(policy)
+        false | true   | be_allowed(policy)
+        true  | false  | be_disallowed(policy)
+        true  | false  | be_disallowed(policy)
       end
 
       with_them do
         before do
-          allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_on_saas)
-
+          allow(::Gitlab).to receive(:com?).and_return(duo_chat_on_saas)
           allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
           stub_licensed_features(ai_chat: true, amazon_q: true)
-
-          allow(current_user).to receive(:allowed_to_use).with(:duo_chat, service_name: nil,
-            licensed_feature: :ai_features).and_return(::Ai::UserAuthorizable::Response.new(allowed?: false))
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
