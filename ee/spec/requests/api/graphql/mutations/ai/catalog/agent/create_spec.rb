@@ -12,7 +12,6 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
   let(:mutation) { graphql_mutation(:ai_catalog_agent_create, params) }
   let(:name) { 'Name' }
   let(:description) { 'Description' }
-  let(:duo_workflow_available) { true }
   let(:params) do
     {
       project_id: project.to_global_id,
@@ -25,24 +24,12 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
 
   subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }
 
-  before do
-    allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
-    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow)
-      .and_return(duo_workflow_available)
-  end
-
   shared_examples 'an authorization failure' do
     it_behaves_like 'a mutation that returns a top-level access error'
 
     it 'does not create a catalog item or version' do
       expect { execute }.not_to change { Ai::Catalog::Item.count }
     end
-  end
-
-  context 'when duo_workflow_available is false' do
-    let(:duo_workflow_available) { false }
-
-    it_behaves_like 'an authorization failure'
   end
 
   context 'when user is a developer' do

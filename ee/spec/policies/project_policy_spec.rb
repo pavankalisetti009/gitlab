@@ -5250,33 +5250,23 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
   describe 'admin_ai_catalog_item' do
     let(:current_user) { maintainer }
-    let(:duo_workflow) { true }
 
-    before do
-      allow(subject).to receive(:allowed?).and_call_original
-      allow(subject).to receive(:allowed?).with(:duo_workflow).and_return(duo_workflow)
-    end
+    context 'with global_ai_catalog feature flag enabled' do
+      context 'when maintainer' do
+        it { is_expected.to be_allowed(:admin_ai_catalog_item) }
+      end
 
-    context 'when maintainer, with global_ai_catalog feature flag enabled and can?(:duo_workflow)' do
-      it { is_expected.to be_allowed(:admin_ai_catalog_item) }
-    end
+      context 'when developer' do
+        let(:current_user) { developer }
 
-    context 'when developer' do
-      let(:current_user) { developer }
-
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+        it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+      end
     end
 
     context 'when global_ai_catalog feature flag is disabled' do
       before do
         stub_feature_flags(global_ai_catalog: false)
       end
-
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-    end
-
-    context 'when can?(:duo_workflow) false' do
-      let(:duo_workflow) { false }
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
     end
