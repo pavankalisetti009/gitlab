@@ -1,8 +1,9 @@
-mutation updateComplianceViolationStatus($input: UpdateComplianceViolationStatusInput!) {
-  updateComplianceViolationStatus(input: $input) @client {
+mutation updateProjectComplianceViolation($input: UpdateProjectComplianceViolationInput!) {
+  updateProjectComplianceViolation(input: $input) {
     clientMutationId
     errors
-    violation {
+    complianceViolation {
+      id
       status
     }
   }

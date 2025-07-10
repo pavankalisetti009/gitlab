@@ -1,5 +1,5 @@
-query getComplianceViolation($id: ID!) {
-  complianceViolation(id: $id) @client {
+query getComplianceViolation($id: ComplianceManagementProjectsComplianceViolationID!) {
+  projectComplianceViolation(id: $id) {
     id
     status
     createdAt
@@ -7,6 +7,7 @@ query getComplianceViolation($id: ID!) {
       id
       name
       complianceRequirement {
+        id
         name
         framework {
           id

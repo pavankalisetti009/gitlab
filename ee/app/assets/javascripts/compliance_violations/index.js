@@ -2,12 +2,11 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import ViolationDetailsApp from './components/compliance_violation_details_app.vue';
-import { resolvers } from './graphql/resolvers';
 
 Vue.use(VueApollo);
 
 const apolloProvider = new VueApollo({
-  defaultClient: createDefaultClient(resolvers),
+  defaultClient: createDefaultClient(),
 });
 
 export const initDetailsApp = () => {

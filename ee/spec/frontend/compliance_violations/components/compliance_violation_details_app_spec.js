@@ -1,115 +1,129 @@
-import { GlLoadingIcon, GlToast } from '@gitlab/ui';
+import { GlAlert, GlLoadingIcon, GlToast } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ComplianceViolationDetailsApp from 'ee/compliance_violations/components/compliance_violation_details_app.vue';
 import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
 import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
+import complianceViolationQuery from 'ee/compliance_violations/graphql/compliance_violation.query.graphql';
+import updateComplianceViolationStatus from 'ee/compliance_violations/graphql/mutations/update_compliance_violation_status.mutation.graphql';
 
 Vue.use(VueApollo);
 Vue.use(GlToast);
 
+jest.mock('~/sentry/sentry_browser_wrapper');
+
 describe('ComplianceViolationDetailsApp', () => {
   let wrapper;
   let mockApollo;
+  let queryHandler;
+  let mutationHandler;
 
   const violationId = '123';
   const complianceCenterPath = 'mock/compliance-center';
 
   const mockComplianceViolationData = {
-    id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
-    status: 'IN_REVIEW',
-    createdAt: '2025-06-16T02:20:41Z',
-    complianceControl: {
-      id: 'minimum_approvals_required_2',
-      name: 'At least two approvals',
-      complianceRequirement: {
-        name: 'basic code regulation',
-        framework: {
-          id: 'gid://gitlab/ComplianceManagement::Framework/3',
-          color: '#cd5b45',
-          default: false,
-          name: 'SOC 2',
-          description: 'SOC 2 description',
+    data: {
+      projectComplianceViolation: {
+        id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
+        status: 'IN_REVIEW',
+        createdAt: '2025-06-16T02:20:41Z',
+        complianceControl: {
+          id: 'gid://gitlab/ComplianceManagement::ComplianceControl/1',
+          name: 'Test Control',
+          complianceRequirement: {
+            id: 'gid://gitlab/ComplianceManagement::ComplianceRequirement/1',
+            name: 'Test Requirement',
+            framework: {
+              id: 'gid://gitlab/ComplianceManagement::Framework/1',
+              color: '#1f75cb',
+              default: false,
+              name: 'Test Framework',
+              description: 'Test framework description',
+            },
+          },
         },
+        project: {
+          id: 'gid://gitlab/Project/2',
+          nameWithNamespace: 'GitLab.org / GitLab Test',
+          fullPath: '/gitlab/org/gitlab-test',
+          webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+          __typename: 'Project',
+        },
+        auditEvent: {
+          id: 'gid://gitlab/AuditEvents::ProjectAuditEvent/467',
+          eventName: 'merge_request_merged',
+          targetId: '2',
+          details: '{}',
+          ipAddress: '123.1.1.9',
+          entityPath: 'gitlab-org/gitlab-test',
+          entityId: '2',
+          entityType: 'Project',
+          author: {
+            id: 'gid://gitlab/User/1',
+            name: 'John Doe',
+          },
+          project: {
+            id: 'gid://gitlab/Project/2',
+            name: 'Test project',
+            fullPath: 'gitlab-org/gitlab-test',
+            webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+          },
+          group: null,
+          user: {
+            id: 'gid://gitlab/User/1',
+            name: 'John Doe',
+          },
+        },
+        __typename: 'ComplianceManagement::Projects::ComplianceViolation',
       },
     },
-    project: {
-      id: 'gid://gitlab/Project/2',
-      nameWithNamespace: 'GitLab.org / GitLab Test',
-      fullPath: '/gitlab/org/gitlab-test',
-      webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-      __typename: 'Project',
-    },
-    auditEvent: {
-      id: 'gid://gitlab/AuditEvents::ProjectAuditEvent/467',
-      eventName: 'merge_request_merged',
-      targetId: '2',
-      details: '{}',
-      ipAddress: '123.1.1.9',
-      entityPath: 'gitlab-org/gitlab-test',
-      entityId: '2',
-      entityType: 'Project',
-      author: {
-        id: 'gid://gitlab/User/1',
-        name: 'John Doe',
-      },
-      project: {
-        id: 'gid://gitlab/Project/2',
-        name: 'Test project',
-        fullPath: 'gitlab-org/gitlab-test',
-        webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-      },
-      group: null,
-      user: {
-        id: 'gid://gitlab/User/1',
-        name: 'John Doe',
-      },
-    },
-    __typename: 'ComplianceViolation',
   };
 
   const mockUpdateResponseData = {
-    clientMutationId: 'test-id',
-    errors: [],
-    violation: {
-      status: 'resolved',
-      __typename: 'ComplianceViolation',
+    data: {
+      updateProjectComplianceViolation: {
+        clientMutationId: null,
+        errors: [],
+        complianceViolation: {
+          status: 'RESOLVED',
+          __typename: 'ComplianceManagement::Projects::ComplianceViolation',
+        },
+        __typename: 'UpdateProjectComplianceViolationPayload',
+      },
     },
-    __typename: 'UpdateComplianceViolationStatusPayload',
   };
 
-  const mockResolvers = ({
-    shouldThrowQueryError = false,
-    shouldThrowMutationError = false,
-    violationData = mockComplianceViolationData,
-  } = {}) => ({
-    Query: {
-      complianceViolation: () => {
-        if (shouldThrowQueryError) {
-          throw new Error('Query error');
-        }
+  const mockGraphQlError = jest.fn().mockRejectedValue(new Error('GraphQL error'));
 
-        return violationData;
+  const mockComplianceViolation = mockComplianceViolationData.data.projectComplianceViolation;
+
+  const mockDataWithoutAuditEvent = {
+    data: {
+      projectComplianceViolation: {
+        ...mockComplianceViolation,
+        auditEvent: null,
       },
     },
-    Mutation: {
-      updateComplianceViolationStatus: () => {
-        if (shouldThrowMutationError) {
-          throw new Error('Mutation error');
-        }
+  };
 
-        return mockUpdateResponseData;
-      },
-    },
-  });
+  const createComponent = ({
+    props = {},
+    mockQueryHandler = jest.fn().mockResolvedValue(mockComplianceViolationData),
+    mockMutationHandler = jest.fn().mockResolvedValue(mockUpdateResponseData),
+  } = {}) => {
+    queryHandler = mockQueryHandler;
+    mutationHandler = mockMutationHandler;
 
-  const createComponent = ({ props = {}, resolverOptions = {} } = {}) => {
-    mockApollo = createMockApollo([], mockResolvers(resolverOptions));
+    mockApollo = createMockApollo([
+      [complianceViolationQuery, queryHandler],
+      [updateComplianceViolationStatus, mutationHandler],
+    ]);
 
     wrapper = shallowMountExtended(ComplianceViolationDetailsApp, {
       apolloProvider: mockApollo,
@@ -128,27 +142,36 @@ describe('ComplianceViolationDetailsApp', () => {
   const findAuditEvent = () => wrapper.findComponent(AuditEvent);
   const findViolationSection = () => wrapper.findComponent(ViolationSection);
   const findFixSuggestionSection = () => wrapper.findComponent(FixSuggestionSection);
+  const findErrorMessage = () => wrapper.findComponent(GlAlert);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
   afterEach(() => {
     wrapper?.destroy();
   });
 
+  describe('when the query fails', () => {
+    beforeEach(async () => {
+      createComponent({ mockQueryHandler: mockGraphQlError });
+      await waitForPromises();
+    });
+
+    it('renders the error message', () => {
+      expect(findErrorMessage().exists()).toBe(true);
+      expect(findErrorMessage().text()).toBe(
+        'Failed to load the compliance violation. Refresh the page and try again.',
+      );
+      expect(Sentry.captureException).toHaveBeenCalled();
+    });
+  });
+
   describe('when loading', () => {
     beforeEach(() => {
-      createComponent({
-        mocks: {
-          $apollo: {
-            queries: {
-              complianceViolation: {
-                loading: true,
-              },
-            },
-          },
-        },
-        data: {
-          complianceViolation: null,
-        },
-      });
+      // Create a query handler that never resolves to keep the component in loading state
+      const loadingQueryHandler = jest.fn().mockImplementation(() => new Promise(() => {}));
+      createComponent({ mockQueryHandler: loadingQueryHandler });
     });
 
     it('shows loading icon', () => {
@@ -190,7 +213,7 @@ describe('ComplianceViolationDetailsApp', () => {
     });
 
     it('displays the project location with link', () => {
-      const { project } = mockComplianceViolationData;
+      const { project } = mockComplianceViolation;
       const projectLink = wrapper.findByTestId('compliance-violation-location-link');
       expect(projectLink.exists()).toBe(true);
       expect(projectLink.text()).toBe(project.nameWithNamespace);
@@ -201,7 +224,7 @@ describe('ComplianceViolationDetailsApp', () => {
       const violationSectionComponent = findViolationSection();
       expect(violationSectionComponent.exists()).toBe(true);
       expect(violationSectionComponent.props('control')).toEqual(
-        mockComplianceViolationData.complianceControl,
+        mockComplianceViolation.complianceControl,
       );
       expect(violationSectionComponent.props('complianceCenterPath')).toBe(complianceCenterPath);
     });
@@ -210,10 +233,10 @@ describe('ComplianceViolationDetailsApp', () => {
       const fixSuggestionSectionComponent = findFixSuggestionSection();
       expect(fixSuggestionSectionComponent.exists()).toBe(true);
       expect(fixSuggestionSectionComponent.props('controlId')).toBe(
-        mockComplianceViolationData.complianceControl.id,
+        mockComplianceViolation.complianceControl.id,
       );
       expect(fixSuggestionSectionComponent.props('projectPath')).toBe(
-        mockComplianceViolationData.project.webUrl,
+        mockComplianceViolation.project.webUrl,
       );
     });
 
@@ -221,17 +244,17 @@ describe('ComplianceViolationDetailsApp', () => {
       it('renders the audit event component with correct props', () => {
         const auditEventComponent = findAuditEvent();
         expect(auditEventComponent.exists()).toBe(true);
-        expect(auditEventComponent.props('auditEvent')).toEqual(
-          mockComplianceViolationData.auditEvent,
-        );
+        expect(auditEventComponent.props('auditEvent')).toEqual(mockComplianceViolation.auditEvent);
       });
     });
 
     describe('when violation does not have an audit event', () => {
-      it('renders the audit event component with correct props', () => {
+      it('does not render the audit event component', async () => {
         createComponent({
-          resolverOptions: { violationData: { ...mockComplianceViolationData, auditEvent: null } },
+          mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithoutAuditEvent),
         });
+        await waitForPromises();
+
         const auditEventComponent = findAuditEvent();
         expect(auditEventComponent.exists()).toBe(false);
       });
@@ -245,21 +268,15 @@ describe('ComplianceViolationDetailsApp', () => {
     });
 
     it('calls mutation when status is changed', async () => {
-      const mutationSpy = jest.spyOn(wrapper.vm.$apollo, 'mutate');
-
       findStatusDropdown().vm.$emit('change', 'resolved');
       await waitForPromises();
 
-      expect(mutationSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variables: {
-            input: {
-              violationId,
-              status: 'resolved',
-            },
-          },
-        }),
-      );
+      expect(mutationHandler).toHaveBeenCalledWith({
+        input: {
+          id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
+          status: 'RESOLVED',
+        },
+      });
     });
 
     it('sets loading state during status update', async () => {
@@ -274,35 +291,39 @@ describe('ComplianceViolationDetailsApp', () => {
       expect(dropdown.props('loading')).toBe(false);
     });
 
-    it('shows error toast when mutation fails', async () => {
-      createComponent({
-        resolverOptions: { shouldThrowMutationError: true },
+    describe('error handling', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockMutationHandler: jest.fn().mockRejectedValue(new Error('Mutation error')),
+        });
+
+        const mockToast = { show: jest.fn() };
+        wrapper.vm.$toast = mockToast;
+
+        await waitForPromises();
       });
 
-      const mockToast = { show: jest.fn() };
-      wrapper.vm.$toast = mockToast;
+      it('shows error toast when mutation fails', async () => {
+        findStatusDropdown().vm.$emit('change', 'resolved');
+        await waitForPromises();
 
-      await waitForPromises();
-
-      findStatusDropdown().vm.$emit('change', 'resolved');
-      await waitForPromises();
-
-      expect(mockToast.show).toHaveBeenCalledWith(
-        'Failed to update compliance violation status. Please try again later.',
-        { variant: 'danger' },
-      );
-    });
-
-    it('resets loading state even when mutation fails', async () => {
-      createComponent({
-        resolverOptions: { shouldThrowMutationError: true },
+        expect(wrapper.vm.$toast.show).toHaveBeenCalledWith(
+          'Failed to update compliance violation status. Please try again later.',
+          { variant: 'danger' },
+        );
       });
-      await waitForPromises();
 
-      findStatusDropdown().vm.$emit('change', 'resolved');
-      await waitForPromises();
+      it('resets loading state even when mutation fails', async () => {
+        const dropdown = findStatusDropdown();
 
-      expect(wrapper.vm.isStatusUpdating).toBe(false);
+        dropdown.vm.$emit('change', 'resolved');
+
+        await nextTick();
+        expect(dropdown.props('loading')).toBe(true);
+
+        await waitForPromises();
+        expect(dropdown.props('loading')).toBe(false);
+      });
     });
   });
 });
