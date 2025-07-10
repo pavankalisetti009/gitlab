@@ -2,19 +2,19 @@ import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { AgentMessage, SystemMessage } from '@gitlab/duo-ui';
 import { createAlert } from '~/alert';
-import WorkflowLogs from 'ee/ai/duo_agents_platform/pages/show/components/workflow_logs.vue';
-import { mockWorkflowEvents, checkpoint1 } from '../../../../mocks';
+import AgentFlowLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_logs.vue';
+import { mockAgentFlowCheckpoint } from '../../../../mocks';
 
 jest.mock('~/alert');
 
-describe('WorkflowLogs', () => {
+describe('AgentFlowLogs', () => {
   let wrapper;
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(WorkflowLogs, {
+    wrapper = shallowMount(AgentFlowLogs, {
       propsData: {
         isLoading: false,
-        workflowEvents: [],
+        agentFlowCheckpoint: '',
         ...props,
       },
     });
@@ -40,7 +40,7 @@ describe('WorkflowLogs', () => {
   describe('when loaded', () => {
     describe('and there are no logs', () => {
       beforeEach(() => {
-        createComponent({ workflowEvents: [] });
+        createComponent({ agentFlowCheckpoint: '' });
       });
 
       it('displays fallback message when no events', () => {
@@ -55,7 +55,7 @@ describe('WorkflowLogs', () => {
 
   describe('with workflow events', () => {
     beforeEach(() => {
-      createComponent({ workflowEvents: mockWorkflowEvents });
+      createComponent({ agentFlowCheckpoint: mockAgentFlowCheckpoint });
     });
 
     it('displays all messages in the ui_chat_log', () => {
@@ -82,23 +82,9 @@ describe('WorkflowLogs', () => {
     });
   });
 
-  describe('with single workflow event', () => {
-    beforeEach(() => {
-      createComponent({ workflowEvents: [{ checkpoint: checkpoint1 }] });
-    });
-
-    it('displays the single checkpoint', () => {
-      expect(findAllToolMessages()).toHaveLength(1);
-      expect(findAllToolMessages().at(0).props().message).toEqual({
-        content: 'Starting workflow...',
-        message_type: 'tool',
-      });
-    });
-  });
-
   describe('when the workflow data cannot be parsed from JSON', () => {
     beforeEach(async () => {
-      createComponent({ workflowEvents: [{ checkpoint: {} }] });
+      createComponent({ agentFlowCheckpoint: 'asdasdsa' });
       await nextTick();
     });
 
@@ -109,9 +95,9 @@ describe('WorkflowLogs', () => {
     });
   });
 
-  describe('with empty workflow events', () => {
+  describe('with empty string', () => {
     beforeEach(() => {
-      createComponent({ workflowEvents: [] });
+      createComponent({ agentFlowCheckpoint: '' });
     });
 
     it('displays fallback message when no events', () => {

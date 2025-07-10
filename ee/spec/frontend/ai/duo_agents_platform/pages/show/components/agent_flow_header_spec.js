@@ -1,15 +1,15 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import WorkflowHeader from 'ee/ai/duo_agents_platform/pages/show/components/workflow_header.vue';
+import AgentFlowHeader from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_header.vue';
 
-describe('WorkflowHeader', () => {
+describe('AgentFlowHeader', () => {
   let wrapper;
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(WorkflowHeader, {
+    wrapper = shallowMount(AgentFlowHeader, {
       propsData: {
         isLoading: false,
-        workflowDefinition: 'Software development',
+        agentFlowDefinition: 'Software development',
         ...props,
       },
       mocks: {
@@ -50,7 +50,7 @@ describe('WorkflowHeader', () => {
 
     describe('without a workflow definition', () => {
       beforeEach(() => {
-        createComponent({ workflowDefinition: '' });
+        createComponent({ agentFlowDefinition: '' });
       });
 
       it('renders the default workflow header title', () => {

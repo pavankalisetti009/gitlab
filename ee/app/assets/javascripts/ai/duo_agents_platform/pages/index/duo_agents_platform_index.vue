@@ -2,8 +2,8 @@
 import { GlButton, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import WorkflowsList from '../../components/common/workflows_list.vue';
-import { getWorkflows } from '../../graphql/queries/get_workflows.query.graphql';
+import AgentFlowList from '../../components/common/agent_flow_list.vue';
+import { getAgentFlows } from '../../graphql/queries/get_agent_flows.query.graphql';
 import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
 import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
 
@@ -12,7 +12,7 @@ export default {
   components: {
     GlButton,
     GlLoadingIcon,
-    WorkflowsList,
+    AgentFlowList,
   },
   inject: ['emptyStateIllustrationPath', 'projectPath'],
   data() {
@@ -23,7 +23,7 @@ export default {
   },
   apollo: {
     workflows: {
-      query: getWorkflows,
+      query: getAgentFlows,
       variables() {
         return {
           projectPath: this.projectPath,
@@ -33,7 +33,7 @@ export default {
         };
       },
       update(data) {
-        return data?.duoWorkflowWorkflows?.edges.map((w) => w.node) || [];
+        return data?.duoWorkflowWorkflows?.edges?.map((w) => w.node) || [];
       },
       result({ data }) {
         this.workflowsPageInfo = data?.duoWorkflowWorkflows?.pageInfo || {};
@@ -85,7 +85,7 @@ export default {
       >
     </div>
     <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />
-    <workflows-list
+    <agent-flow-list
       v-else
       class="gl-mt-5"
       :empty-state-illustration-path="emptyStateIllustrationPath"

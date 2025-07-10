@@ -11,14 +11,14 @@ export default {
       required: true,
       type: Boolean,
     },
-    workflowDefinition: {
+    agentFlowDefinition: {
       required: true,
       type: String,
     },
   },
   computed: {
     pageTitle() {
-      return formatAgentFlowName(this.workflowDefinition, this.$route.params.id);
+      return formatAgentFlowName(this.agentFlowDefinition, this.$route.params.id);
     },
   },
 };

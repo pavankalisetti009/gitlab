@@ -1,4 +1,6 @@
-query getWorkflows($projectPath: ID!, $after: String, $before: String, $first: Int, $last: Int) {
+#import "../fragments/flow.fragment.graphql"
+
+query getAgentFlows($projectPath: ID!, $after: String, $before: String, $first: Int, $last: Int) {
   duoWorkflowWorkflows(
     projectPath: $projectPath
     first: $first
@@ -14,10 +16,7 @@ query getWorkflows($projectPath: ID!, $after: String, $before: String, $first: I
     }
     edges {
       node {
-        id
-        humanStatus
-        updatedAt
-        workflowDefinition
+        ...FlowFragment
       }
     }
   }

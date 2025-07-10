@@ -6,14 +6,14 @@ import { s__ } from '~/locale';
 import { AGENT_MESSAGE_TYPE } from '../../../constants';
 
 export default {
-  name: 'WorkflowLogs',
+  name: 'AgentFlowLogs',
   props: {
     isLoading: {
       type: Boolean,
       required: true,
     },
-    workflowEvents: {
-      type: Array,
+    agentFlowCheckpoint: {
+      type: String,
       required: true,
     },
   },
@@ -21,14 +21,11 @@ export default {
     hasLogs() {
       return this.logs?.length > 0;
     },
-    lastWorkflowEvent() {
-      return this.workflowEvents?.length > 0 ? this.workflowEvents[0] : null;
-    },
-    lastWorkflowCheckpoint() {
-      if (!this.lastWorkflowEvent) return null;
+    parsedCheckpoint() {
+      if (!this.agentFlowCheckpoint) return null;
 
       try {
-        return JSON.parse(this.lastWorkflowEvent?.checkpoint);
+        return JSON.parse(this.agentFlowCheckpoint);
       } catch (err) {
         createAlert({
           message: s__('DuoAgentsPlatform|Could not display logs. Please try again.'),
@@ -37,7 +34,7 @@ export default {
       }
     },
     logs() {
-      return this.lastWorkflowCheckpoint?.channel_values?.ui_chat_log || [];
+      return this.parsedCheckpoint?.channel_values?.ui_chat_log || [];
     },
   },
   methods: {

@@ -7,7 +7,7 @@ import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
 import { formatAgentFlowName, formatAgentStatus } from '../../utils';
 
 export default {
-  name: 'AgentWorkflowsList',
+  name: 'AgentFlowList',
   components: {
     GlEmptyState,
     GlKeysetPagination,
