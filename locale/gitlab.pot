@@ -26632,6 +26632,9 @@ msgstr ""
 msgid "Failed to load the Web IDE"
 msgstr ""
 
+msgid "Failed to load the compliance violation. Refresh the page and try again."
+msgstr ""
+
 msgid "Failed to load work items. Please try again."
 msgstr ""
 

@@ -1,8 +1,8 @@
 <script>
-import { GlLoadingIcon, GlToast } from '@gitlab/ui';
+import { GlLoadingIcon, GlToast, GlAlert } from '@gitlab/ui';
 import Vue from 'vue';
 import { __, sprintf } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import updateComplianceViolationStatus from '../graphql/mutations/update_compliance_violation_status.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
@@ -18,6 +18,7 @@ export default {
     AuditEvent,
     ComplianceViolationStatusDropdown,
     FixSuggestionSection,
+    GlAlert,
     GlLoadingIcon,
     ViolationSection,
   },
@@ -33,28 +34,42 @@ export default {
   },
   data() {
     return {
-      complianceViolation: {},
+      queryError: false,
+      projectComplianceViolation: {},
       isStatusUpdating: false,
     };
   },
   apollo: {
-    complianceViolation: {
+    projectComplianceViolation: {
       query: complianceViolationQuery,
       variables() {
         return {
-          id: this.violationId,
+          id: this.graphqlViolationId,
         };
+      },
+      update(data) {
+        return data?.projectComplianceViolation;
+      },
+      error(e) {
+        Sentry.captureException(e);
+        this.queryError = true;
       },
     },
   },
   computed: {
+    graphqlViolationId() {
+      return `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${this.violationId}`;
+    },
     isLoading() {
-      return this.$apollo.queries.complianceViolation.loading;
+      return this.$apollo.queries.projectComplianceViolation.loading;
+    },
+    hasViolationData() {
+      return this.projectComplianceViolation && this.projectComplianceViolation.id;
     },
     title() {
-      if (!this.complianceViolation) return '';
+      if (!this.hasViolationData) return '';
       return sprintf(__('Details of vio-%{violationId}'), {
-        violationId: getIdFromGraphQLId(this.complianceViolation.id),
+        violationId: this.violationId,
       });
     },
   },
@@ -66,9 +81,31 @@ export default {
           mutation: updateComplianceViolationStatus,
           variables: {
             input: {
-              violationId: this.violationId,
-              status: newStatus,
+              id: this.graphqlViolationId,
+              status: newStatus.toUpperCase(),
             },
+          },
+          update: (cache, { data: { updateProjectComplianceViolation } }) => {
+            if (updateProjectComplianceViolation.errors.length === 0) {
+              const data = cache.readQuery({
+                query: complianceViolationQuery,
+                variables: { id: this.graphqlViolationId },
+              });
+
+              const updatedData = {
+                ...data,
+                projectComplianceViolation: {
+                  ...data.projectComplianceViolation,
+                  status: updateProjectComplianceViolation.complianceViolation.status,
+                },
+              };
+
+              cache.writeQuery({
+                query: complianceViolationQuery,
+                variables: { id: this.graphqlViolationId },
+                data: updatedData,
+              });
+            }
           },
         });
       } catch (error) {
@@ -83,17 +120,21 @@ export default {
   i18n: {
     status: __('Status'),
     location: __('Location'),
+    queryError: __('Failed to load the compliance violation. Refresh the page and try again.'),
     statusUpdateError: __('Failed to update compliance violation status. Please try again later.'),
   },
 };
 </script>
 <template>
+  <gl-alert v-if="queryError" variant="danger" class="gl-mt-3" :dismissible="false">
+    {{ $options.i18n.queryError }}
+  </gl-alert>
   <gl-loading-icon
-    v-if="isLoading"
+    v-else-if="isLoading"
     data-testid="compliance-violation-details-loading-status"
     class="gl-mt-5"
   />
-  <div v-else data-testid="compliance-violation-details">
+  <div v-else-if="hasViolationData" data-testid="compliance-violation-details">
     <h1 class="page-title gl-text-size-h-display" data-testid="compliance-violation-title">
       {{ title }}
     </h1>
@@ -101,7 +142,7 @@ export default {
       <span class="gl-font-bold">{{ $options.i18n.status }}:</span>
       <compliance-violation-status-dropdown
         class="gl-ml-3 gl-align-baseline"
-        :value="complianceViolation.status.toLowerCase()"
+        :value="projectComplianceViolation.status.toLowerCase()"
         :loading="isStatusUpdating"
         @change="handleStatusChange"
       />
@@ -109,26 +150,26 @@ export default {
     <div class="gl-mt-4">
       <span class="gl-font-bold">{{ $options.i18n.location }}:</span>
       <a
-        :href="complianceViolation.project.webUrl"
+        :href="projectComplianceViolation.project.webUrl"
         data-testid="compliance-violation-location-link"
       >
-        {{ complianceViolation.project.nameWithNamespace }}
+        {{ projectComplianceViolation.project.nameWithNamespace }}
       </a>
     </div>
     <audit-event
-      v-if="complianceViolation.auditEvent"
+      v-if="projectComplianceViolation.auditEvent"
       class="gl-mt-5"
-      :audit-event="complianceViolation.auditEvent"
+      :audit-event="projectComplianceViolation.auditEvent"
     />
     <violation-section
       class="gl-mt-5"
-      :control="complianceViolation.complianceControl"
+      :control="projectComplianceViolation.complianceControl"
       :compliance-center-path="complianceCenterPath"
     />
     <fix-suggestion-section
       class="gl-mt-5"
-      :control-id="complianceViolation.complianceControl.id"
-      :project-path="complianceViolation.project.webUrl"
+      :control-id="projectComplianceViolation.complianceControl.id"
+      :project-path="projectComplianceViolation.project.webUrl"
     />
   </div>
 </template>
