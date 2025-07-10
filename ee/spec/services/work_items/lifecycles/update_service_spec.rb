@@ -393,6 +393,59 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               custom_lifecycle.default_duplicate_status.name
             ])
           end
+
+          context 'when other root namespace exists' do
+            let_it_be(:other_group) { create(:group) }
+
+            let!(:other_custom_lifecycle) do
+              create(:work_item_custom_lifecycle, name: system_defined_lifecycle.name, namespace: other_group)
+            end
+
+            let(:params) do
+              {
+                id: custom_lifecycle.to_gid,
+                statuses: [
+                  status_params_for(custom_lifecycle.default_open_status),
+                  status_params_for(custom_lifecycle.default_closed_status),
+                  status_params_for(custom_lifecycle.default_duplicate_status),
+                  status_params_for(other_custom_lifecycle.default_open_status)
+                ],
+                default_open_status_index: 0,
+                default_closed_status_index: 1,
+                default_duplicate_status_index: 2
+              }
+            end
+
+            shared_examples 'returns error and does not change data' do
+              it_behaves_like 'returns validation error'
+
+              it 'does not add status from other lifecycle' do
+                expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+
+                expect(custom_lifecycle.statuses.count).to eq(3)
+              end
+            end
+
+            context 'when provided lifecycle belongs to other root namespace' do
+              before do
+                params[:id] = other_custom_lifecycle.to_gid
+              end
+
+              let(:expected_error_message) do
+                "You don't have permission to update this lifecycle."
+              end
+
+              it_behaves_like 'returns error and does not change data'
+            end
+
+            context 'when provided status belongs to other root namespace' do
+              let(:expected_error_message) do
+                "Status '#{other_custom_lifecycle.default_open_status.name}' doesn't belong to this namespace."
+              end
+
+              it_behaves_like 'returns error and does not change data'
+            end
+          end
         end
 
         context 'when statuses are updated' do

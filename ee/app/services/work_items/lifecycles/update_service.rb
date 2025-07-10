@@ -17,6 +17,10 @@ module WorkItems
         message: 'Invalid lifecycle type. Custom lifecycle already exists.'
       )
 
+      LifecycleUpdateForbiddenError = ServiceResponse.error(
+        message: "You don't have permission to update this lifecycle."
+      )
+
       def initialize(container:, current_user: nil, params: {})
         super
       end
@@ -25,6 +29,7 @@ module WorkItems
         return FeatureNotAvailableError unless feature_available?
         return NotAuthorizedError unless authorized?
         return InvalidLifecycleTypeError if invalid_lifecycle_type?
+        return LifecycleUpdateForbiddenError if lifecycle_update_forbidden?
 
         result = custom_lifecycle_present? ? update_custom_lifecycle! : create_custom_lifecycle!
 
@@ -112,6 +117,10 @@ module WorkItems
             }
           )
         end
+      end
+
+      def lifecycle_update_forbidden?
+        custom_lifecycle? && lifecycle.namespace_id != group.id
       end
 
       def invalid_lifecycle_type?
