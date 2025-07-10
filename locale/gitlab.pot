@@ -6099,6 +6099,9 @@ msgstr ""
 msgid "AiPowered|Local AI gateway URL"
 msgstr ""
 
+msgid "AiPowered|Lock tooltip icon"
+msgstr ""
+
 msgid "AiPowered|Might result in requests having higher latency."
 msgstr ""
 
@@ -6148,6 +6151,9 @@ msgid "AiPowered|This setting applies to the whole instance. By turning this on,
 msgstr ""
 
 msgid "AiPowered|This setting applies to the whole top-level group. By turning this on, you accept the %{termsLinkStart}GitLab AI Functionality Terms%{termsLinkEnd} unless your organization has a separate agreement with GitLab governing AI feature usage. Check the %{requirementsLinkStart}eligibility requirements%{requirementsLinkEnd}."
+msgstr ""
+
+msgid "AiPowered|This setting requires GitLab Duo availability to be on or off by default."
 msgstr ""
 
 msgid "AiPowered|Turn off GitLab Duo Workflow"

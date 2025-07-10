@@ -130,6 +130,7 @@ export default {
     <duo-core-features-form
       v-if="!onGeneralSettingsPage"
       :duo-core-features-enabled="duoCoreEnabled"
+      :disabled-checkbox="disableConfigCheckboxes"
       @change="duoCoreCheckboxChanged"
     />
 
