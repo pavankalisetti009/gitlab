@@ -94,8 +94,7 @@ module EE
           null: true,
           description: 'Counts for each vulnerability severity in the group and its subgroups.',
           authorize: :read_vulnerability_statistics,
-          skip_type_authorization: :read_vulnerability_statistics,
-          experiment: { milestone: '18.0' }
+          skip_type_authorization: :read_vulnerability_statistics
 
         field :vulnerability_severities_count, ::Types::VulnerabilitySeveritiesCountType,
           null: true,
@@ -378,8 +377,7 @@ module EE
         field :analyzer_statuses, [::Types::Security::AnalyzerGroupStatusType],
           null: true,
           description: 'Status for all analyzers in the group.',
-          resolver: ::Resolvers::Security::AnalyzerGroupStatusResolver,
-          experiment: { milestone: '18.0' }
+          resolver: ::Resolvers::Security::AnalyzerGroupStatusResolver
 
         field :compliance_requirement_control_coverage,
           ::Types::ComplianceManagement::ComplianceFramework::RequirementControlCoverageType,
