@@ -32,6 +32,12 @@ module Security
       Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService.new(configuration).execute
 
       track_csp_usage(configuration)
+
+      return unless Feature.enabled?(:collect_policies_limit_audit_events,
+        configuration.security_policy_management_project
+      )
+
+      Security::CollectPoliciesLimitAuditEventsWorker.perform_async(configuration.id)
     end
 
     private

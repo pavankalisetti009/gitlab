@@ -24,7 +24,7 @@ module Security
     # json_schemer computes an $id fallback property for schemas lacking one.
     # But this schema is kept anonymous on purpose, so the $id is stripped.
     POLICY_SCHEMA_JSON = POLICY_SCHEMA.value.except('$id')
-    AVAILABLE_POLICY_TYPES = %i[approval_policy scan_execution_policy pipeline_execution_policy pipeline_execution_schedule_policy vulnerability_management_policy].freeze
+    AVAILABLE_POLICY_TYPES = %i[approval_policy scan_execution_policy pipeline_execution_policy pipeline_execution_schedule_policy vulnerability_management_policy ci_component_publishing_policy].freeze
     JSON_SCHEMA_VALIDATION_TIMEOUT = 5.seconds
     ALL_PROJECT_IDS_BATCH_SIZE = 1000
 
@@ -125,6 +125,44 @@ module Security
       end
     end
     strong_memoize_attr :latest_commit_before_configured_at
+
+    def policy_limit_by_type(policy_type)
+      validate_policy_type(policy_type)
+
+      case policy_type.to_sym
+      when :approval_policy
+        approval_policies_limit
+      when :pipeline_execution_policy
+        pipeline_execution_policy_limit
+      when :scan_execution_policy
+        ScanExecutionPolicy::POLICY_LIMIT
+      when :pipeline_execution_schedule_policy
+        PipelineExecutionSchedulePolicy::POLICY_LIMIT
+      when :vulnerability_management_policy
+        VulnerabilityManagementPolicy::POLICY_LIMIT
+      when :ci_component_publishing_policy
+        CiComponentPublishingPolicy::POLICY_LIMIT
+      end
+    end
+
+    def policy_type_name_by_type(policy_type)
+      validate_policy_type(policy_type)
+
+      case policy_type.to_sym
+      when :approval_policy
+        ScanResultPolicy::POLICY_TYPE_NAME
+      when :scan_execution_policy
+        ScanExecutionPolicy::POLICY_TYPE_NAME
+      when :pipeline_execution_policy
+        PipelineExecutionPolicy::POLICY_TYPE_NAME
+      when :pipeline_execution_schedule_policy
+        PipelineExecutionSchedulePolicy::POLICY_TYPE_NAME
+      when :vulnerability_management_policy
+        VulnerabilityManagementPolicy::POLICY_TYPE_NAME
+      when :ci_component_publishing_policy
+        CiComponentPublishingPolicy::POLICY_TYPE_NAME
+      end
+    end
 
     def policy_by_type(type_or_types)
       return [] if policy_hash.blank?
@@ -258,6 +296,12 @@ module Security
     end
 
     private
+
+    def validate_policy_type(policy_type)
+      return if AVAILABLE_POLICY_TYPES.include?(policy_type.to_sym)
+
+      raise ArgumentError, "Invalid policy type: #{policy_type}"
+    end
 
     def available_policy_types
       policies_to_exclude = experiment_enabled?(:pipeline_execution_schedule_policy) ? [] : [:pipeline_execution_schedule_policy]

@@ -6,6 +6,7 @@ module Security
     include ::Gitlab::Utils::StrongMemoize
 
     POLICY_LIMIT = 5
+    POLICY_TYPE_NAME = 'Scan execution policy'
 
     RULE_TYPES = {
       pipeline: 'pipeline',
