@@ -258,18 +258,6 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
 
             subject
           end
-
-          context 'when stream_audit_events_remote_ip_proxy_protocol is disabled' do
-            before do
-              stub_feature_flags(stream_audit_events_remote_ip_proxy_protocol: false)
-            end
-
-            it 'does not send ip_address to audit event' do
-              expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(hash_including(ip_address: ip))
-
-              subject
-            end
-          end
         end
       end
     end

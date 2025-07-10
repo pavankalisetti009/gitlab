@@ -82,22 +82,6 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
           expect(json_response["message"]).to eq(expected_msg.stringify_keys)
         end
 
-        context 'when stream_audit_events_remote_ip_proxy_protocol is disabled' do
-          before do
-            stub_feature_flags(stream_audit_events_remote_ip_proxy_protocol: false)
-          end
-
-          it 'does not send ip_address to audit event' do
-            expect(::Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(audit_message)).once
-
-            subject
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response["status"]).to be_truthy
-            expect(json_response["message"]).to eq(expected_msg.stringify_keys)
-          end
-        end
-
         context 'when log_git_streaming_audit_events is disabled' do
           before do
             stub_feature_flags(log_git_streaming_audit_events: false)
