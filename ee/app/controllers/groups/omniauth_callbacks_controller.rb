@@ -81,7 +81,8 @@ class Groups::OmniauthCallbacksController < OmniauthCallbacksController
   end
 
   def store_active_saml_session
-    Gitlab::Auth::GroupSaml::SsoEnforcer.new(@saml_provider).update_session
+    Gitlab::Auth::GroupSaml::SsoEnforcer.new(@saml_provider).update_session(
+      session_not_on_or_after: session_not_on_or_after_attribute)
   end
 
   def redirect_unverified_saml_initiation

@@ -119,7 +119,8 @@ module EE
 
     override :set_session_active_since
     def set_session_active_since(id)
-      ::Gitlab::Auth::Saml::SsoState.new(provider_id: id).update_active
+      ::Gitlab::Auth::Saml::SsoState.new(provider_id: id)
+        .update_active(session_not_on_or_after: session_not_on_or_after_attribute)
     end
 
     override :store_redirect_to
@@ -137,6 +138,13 @@ module EE
 
     def saml_response
       oauth.fetch(:extra, {}).fetch(:response_object, {})
+    end
+
+    def session_not_on_or_after_attribute
+      return unless ::Feature.enabled?(:saml_timeout_supplied_by_idp_override, :instance)
+      return unless saml_response.present? # response object can be nil in case authentication fails
+
+      saml_response.session_expires_at
     end
 
     def valid_gitlab_initiated_saml_request?

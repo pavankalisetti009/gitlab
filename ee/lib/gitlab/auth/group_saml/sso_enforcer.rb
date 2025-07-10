@@ -8,11 +8,41 @@ module Gitlab
 
         class << self
           def sessions_time_remaining_for_expiry
-            SsoState.active_saml_sessions.map do |id, last_sign_in_at|
-              expires_at = last_sign_in_at + DEFAULT_SESSION_TIMEOUT
-              # expires_at is DateTime; convert to Time; Time - Time yields a Float
-              time_remaining_for_expiry = expires_at.to_time - Time.current
-              { provider_id: id, time_remaining: time_remaining_for_expiry }
+            active_sessions = SsoState.active_saml_sessions
+
+            if ::Feature.enabled?(:saml_timeout_supplied_by_idp_override, :instance)
+              active_sessions.filter_map do |key, last_sign_in_at|
+                # Skip session expiry keys - we only want provider sessions
+                next if key.to_s.end_with?(SsoState::SESSION_EXPIRY_SUFFIX)
+                next unless last_sign_in_at
+
+                expires_at = last_sign_in_at + DEFAULT_SESSION_TIMEOUT
+
+                provider_id = key
+
+                # Check for SAML-specific session expiry
+                saml_expiry_key = "#{provider_id}#{SsoState::SESSION_EXPIRY_SUFFIX}"
+                saml_expires_at = active_sessions[saml_expiry_key]
+
+                # If SessionNotOnOrAfter attribute is present use the same value to determine session expiry
+                expires_at = saml_expires_at if saml_expires_at
+
+                time_remaining_for_expiry = expires_at.to_time - Time.current
+
+                # expires_at is DateTime; convert to Time; Time - Time yields a Float
+                { provider_id: key, time_remaining: time_remaining_for_expiry }
+              end
+            else
+              active_sessions.filter_map do |key, last_sign_in_at|
+                # Skip session expiry keys - we only want provider sessions
+                next if key.to_s.end_with?(SsoState::SESSION_EXPIRY_SUFFIX)
+                next unless last_sign_in_at
+
+                expires_at = last_sign_in_at + DEFAULT_SESSION_TIMEOUT
+                # expires_at is DateTime; convert to Time; Time - Time yields a Float
+                time_remaining_for_expiry = expires_at.to_time - Time.current
+                { provider_id: key, time_remaining: time_remaining_for_expiry }
+              end
             end
           end
 
@@ -65,8 +95,8 @@ module Gitlab
           @session_timeout = session_timeout
         end
 
-        def update_session
-          SsoState.new(saml_provider.id).update_active(DateTime.now)
+        def update_session(session_not_on_or_after: nil)
+          SsoState.new(saml_provider.id).update_active(DateTime.now, session_not_on_or_after: session_not_on_or_after)
         end
 
         def active_session?

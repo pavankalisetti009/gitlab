@@ -18,6 +18,7 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
 
   before do
     stub_licensed_features(group_saml: true)
+    allow(saml_response).to receive(:session_expires_at).and_return(nil)
   end
 
   def linked_accounts

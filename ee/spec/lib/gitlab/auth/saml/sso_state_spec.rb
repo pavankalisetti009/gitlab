@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'fast_spec_helper'
+require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::Saml::SsoState, feature_category: :system_access do
   let(:saml_provider_id) { 'saml' }
@@ -16,13 +16,24 @@ RSpec.describe Gitlab::Auth::Saml::SsoState, feature_category: :system_access do
   end
 
   describe '#update_active' do
+    let(:new_state) { double }
+    let(:session_expiry) { Time.current + 2.days }
+
     it 'updates the current sign in state' do
       Gitlab::Session.with_session({}) do
-        new_state = double
         sso_state.update_active(time: new_state)
 
         expect(Gitlab::Session.current[:active_instance_sso_sign_ins])
-          .to eq({ saml_provider_id => { 'last_signin_at' => new_state } })
+          .to eq({ saml_provider_id => { 'last_signin_at' => new_state, "session_not_on_or_after" => nil } })
+      end
+    end
+
+    it 'updates session_not_on_or_after attribute' do
+      Gitlab::Session.with_session({}) do
+        sso_state.update_active(time: new_state, session_not_on_or_after: session_expiry)
+        expect(Gitlab::Session.current[:active_instance_sso_sign_ins]).to eq({ saml_provider_id => {
+          "last_signin_at" => new_state, "session_not_on_or_after" => session_expiry
+        } })
       end
     end
   end
@@ -68,7 +79,7 @@ RSpec.describe Gitlab::Auth::Saml::SsoState, feature_category: :system_access do
         end
       end
 
-      it 'is nil when last_signin_at is also nil in an active session' do
+      it 'is inactive when last_signin_at is also nil in an active session' do
         Gitlab::Session.with_session(
           active_instance_sso_sign_ins: { saml_provider_id => { 'last_signin_at' => nil } }
         ) do
@@ -107,4 +118,6 @@ RSpec.describe Gitlab::Auth::Saml::SsoState, feature_category: :system_access do
       end
     end
   end
+
+  it_behaves_like 'SAML SSO State checks for session_not_on_or_after', 'instance'
 end

@@ -26,8 +26,9 @@ RSpec.describe Gitlab::Auth::Saml::SsoEnforcer, feature_category: :system_access
     stubbed_saml_config
   end
 
-  def update_session(time: Time.current)
-    Gitlab::Auth::Saml::SsoState.new(provider_id: :saml).update_active(time: time)
+  def update_session(time: Time.current, session_not_on_or_after: nil)
+    Gitlab::Auth::Saml::SsoState.new(provider_id: :saml)
+      .update_active(time: time, session_not_on_or_after: session_not_on_or_after)
   end
 
   subject(:enforcer) { described_class.new user: user }
@@ -66,6 +67,51 @@ RSpec.describe Gitlab::Auth::Saml::SsoEnforcer, feature_category: :system_access
 
         travel_to(2.hours.from_now) do
           expect(enforcer).not_to be_active_session
+        end
+      end
+    end
+
+    context 'when feature flag saml_timeout_supplied_by_idp_override is enabled' do
+      context 'when session expiration is provided as SAML response' do
+        let(:session_timeout) { 2.hours }
+
+        subject(:enforcer) { described_class.new user: user, session_timeout: session_timeout }
+
+        it 'returns false if session has expired' do
+          update_session(time: Time.current, session_not_on_or_after: 30.minutes.from_now.iso8601)
+
+          travel_to(1.hour.from_now) do
+            expect(enforcer).not_to be_active_session
+          end
+        end
+
+        it 'returns true if session has not expired' do
+          update_session(time: Time.current, session_not_on_or_after: 4.hours.from_now.iso8601)
+
+          travel_to(3.hours.from_now) do
+            expect(enforcer).to be_active_session
+          end
+        end
+      end
+    end
+
+    context 'when feature flag saml_timeout_supplied_by_idp_override is disabled' do
+      before do
+        stub_feature_flags(saml_timeout_supplied_by_idp_override: false)
+      end
+
+      context 'when session expiration is provided as SAML response' do
+        let(:session_timeout) { 2.hours }
+
+        subject(:enforcer) { described_class.new user: user, session_timeout: session_timeout }
+
+        it 'does not evaluate session expiration in the SAML response' do
+          update_session(time: Time.current, session_not_on_or_after: 30.minutes.from_now.iso8601)
+          expect(enforcer).to be_active_session
+
+          travel_to(1.hour.from_now) do
+            expect(enforcer).to be_active_session
+          end
         end
       end
     end
