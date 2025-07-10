@@ -77,6 +77,11 @@ namespace :gitlab do
       Search::RakeTask::Elastic.task_executor_service.execute(:index_group_wikis)
     end
 
+    desc 'GitLab | Elasticsearch | Index vulnerabilities'
+    task index_vulnerabilities: :environment do
+      Search::RakeTask::Elastic.task_executor_service.execute(:index_vulnerabilities)
+    end
+
     desc 'GitLab | Elasticsearch | Create empty indexes and assigns an alias for each'
     task create_empty_index: [:environment] do |_t, _args|
       Search::RakeTask::Elastic.task_executor_service.execute(:create_empty_index)

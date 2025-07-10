@@ -216,5 +216,17 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
         end
       end
     end
+
+    context 'for task: vulnerabilities' do
+      let(:job_args) { 'vulnerabilities' }
+
+      it_behaves_like 'an idempotent worker' do
+        it 'indexes vulnerabilities' do
+          expect(task_executor_service).to receive(:execute).with(:index_vulnerabilities)
+
+          perform
+        end
+      end
+    end
   end
 end

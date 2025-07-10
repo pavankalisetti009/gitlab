@@ -22,6 +22,7 @@ module Search
       index_projects_status
       index_snippets
       index_users
+      index_vulnerabilities
       info
       list_pending_migrations
       mark_reindex_failed
@@ -32,8 +33,7 @@ module Search
       resume_indexing
     ].freeze
 
-    # Vulnerability is not available for onpremise and rake tasks can be revisited from https://gitlab.com/gitlab-org/gitlab/-/issues/525484
-    CLASSES_TO_COUNT = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - [Repository, Commit, ::Wiki, Vulnerability].freeze
+    CLASSES_TO_COUNT = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - [Repository, Commit, ::Wiki].freeze
     SHARDS_MIN = 5
     SHARDS_DIVISOR = 5_000_000
     REPOSITORY_MULTIPLIER = 0.5
@@ -417,6 +417,28 @@ module Search
       end
 
       logger.info("Indexing group wikis... #{Rainbow('done').green}")
+    end
+
+    def index_vulnerabilities
+      logger.info('Indexing vulnerabilities...')
+
+      # Skip for GitLab self-managed, to be revisited with https://gitlab.com/gitlab-org/gitlab/-/issues/525484
+      indexing_allowed = Rails.env.development? ||
+        ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed?
+
+      unless indexing_allowed
+        logger.info(Rainbow('Skipping vulnerability indexing as it is not allowed.').orange)
+
+        return
+      end
+
+      vulnerability_reads = ::Vulnerabilities::Read.all
+
+      vulnerability_reads.each_batch do |batch|
+        ::Elastic::ProcessInitialBookkeepingService.track!(*batch)
+      end
+
+      logger.info("Indexing vulnerabilities... #{Rainbow('done').green}")
     end
 
     def info

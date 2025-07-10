@@ -8,7 +8,7 @@ module Search
       prepend ::Geo::SkipSecondary
 
       INITIAL_TASK = :initiate
-      TASKS = %i[namespaces projects snippets users].freeze
+      TASKS = %i[namespaces projects snippets users vulnerabilities].freeze
       DEFAULT_DELAY = 2.minutes
 
       data_consistency :delayed
@@ -37,6 +37,8 @@ module Search
           task_executor_service.execute(:index_snippets)
         when :users
           task_executor_service.execute(:index_users)
+        when :vulnerabilities
+          task_executor_service.execute(:index_vulnerabilities)
         end
       end
 
