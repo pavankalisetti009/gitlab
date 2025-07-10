@@ -10,7 +10,7 @@ module Search
       MAX_CONCURRENCY_LIMIT = 200
       ONLINE_DURATION_THRESHOLD = 1.minute
       WATERMARK_LIMIT_LOW = 0.6
-      WATERMARK_LIMIT_HIGH = 0.75
+      WATERMARK_LIMIT_HIGH = Rails.env.development? ? 0.98 : 0.75
       WATERMARK_LIMIT_CRITICAL = Rails.env.development? ? 0.99 : 0.85
       TASK_PULL_FREQUENCY_DEFAULT = '10s'
       TASK_PULL_FREQUENCY_INCREASED = '500ms'

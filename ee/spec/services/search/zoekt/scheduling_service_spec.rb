@@ -268,6 +268,16 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect(execute_task).to be(false)
     end
 
+    context 'when on development environment' do
+      before do
+        allow(Rails.env).to receive(:development?).and_return(true)
+      end
+
+      it 'returns false' do
+        expect(execute_task).to be(false)
+      end
+    end
+
     context 'when on .com', :saas do
       let_it_be(:expiration_date) { Time.zone.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD }
       let_it_be(:zkt_enabled_namespace) { create(:zoekt_enabled_namespace) }
