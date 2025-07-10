@@ -3,6 +3,8 @@
 module WorkItems
   module Lifecycles
     class UpdateService < BaseService
+      include Gitlab::InternalEventsTracking
+
       FeatureNotAvailableError = ServiceResponse.error(
         message: 'This feature is currently behind a feature flag, and it is not available.'
       )
@@ -25,6 +27,8 @@ module WorkItems
         return InvalidLifecycleTypeError if invalid_lifecycle_type?
 
         result = custom_lifecycle_present? ? update_custom_lifecycle! : create_custom_lifecycle!
+
+        track_internal_events
 
         ServiceResponse.success(payload: { lifecycle: result })
       rescue StandardError => e
@@ -75,6 +79,38 @@ module WorkItems
           ).tap do
             remove_system_defined_board_lists
           end
+        end
+      end
+
+      def track_internal_events
+        @statuses_to_create.each do |status|
+          track_internal_event('create_custom_status_in_group_settings',
+            namespace: group,
+            user: current_user,
+            additional_properties: {
+              label: status.category.to_s
+            }
+          )
+        end
+
+        @statuses_to_update.each do |status|
+          track_internal_event('update_custom_status_in_group_settings',
+            namespace: group,
+            user: current_user,
+            additional_properties: {
+              label: status.category.to_s
+            }
+          )
+        end
+
+        @statuses_to_remove.each do |status|
+          track_internal_event('delete_custom_status_in_group_settings',
+            namespace: group,
+            user: current_user,
+            additional_properties: {
+              label: status.category.to_s
+            }
+          )
         end
       end
 

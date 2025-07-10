@@ -11,10 +11,10 @@ module WorkItems
           @current_user = current_user
 
           if status == :default
-            @default_status_used = true
+            @auto_transition = true
             @status = lifecycle&.default_status_for_work_item(@work_item)
           else
-            @default_status_used = false
+            @auto_transition = false
             @status = status
           end
         end
@@ -26,7 +26,7 @@ module WorkItems
           update_work_item_status
           create_system_note
 
-          return if @default_status_used
+          return if @auto_transition
 
           track_internal_event(
             'change_work_item_status_value',
