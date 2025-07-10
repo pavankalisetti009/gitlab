@@ -111,6 +111,17 @@ module EE
         end
       end
 
+      override :transfer_status_data
+      def transfer_status_data(old_root_ancestor_id)
+        return unless old_root_ancestor_id && new_parent_group
+
+        ::WorkItems::Widgets::Statuses::TransferService.new(
+          old_root_namespace: ::Group.find_by_id(old_root_ancestor_id),
+          new_root_namespace: new_parent_group.root_ancestor,
+          project_namespace_ids: group.all_projects.map(&:project_namespace_id)
+        ).execute
+      end
+
       override :remove_paid_features_for_projects
       def remove_paid_features_for_projects(old_root_ancestor_id)
         return if old_root_ancestor_id == group.root_ancestor.id
