@@ -35,6 +35,11 @@ export default {
           return;
         }
 
+        if (!result?.data?.namespace) {
+          this.$emit('error');
+          return;
+        }
+
         const { mappedAgents, unmappedAgents, id: namespaceId } = result.data.namespace;
 
         const agents = [];
