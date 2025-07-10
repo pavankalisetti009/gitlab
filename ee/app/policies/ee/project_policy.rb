@@ -563,8 +563,11 @@ module EE
       end
 
       rule { ~validity_checks_available }.policy do
-        prevent :update_secret_detection_validity_checks_status
         prevent :configure_secret_detection_validity_checks
+      end
+
+      rule { ~refresh_validity_checks_available }.policy do
+        prevent :update_secret_detection_validity_checks_status
       end
 
       rule { container_scanning_for_registry_available & can?(:admin_security_testing) }.policy do
@@ -1185,8 +1188,13 @@ module EE
 
       condition(:validity_checks_available, scope: :subject) do
         ::Feature.enabled?(:validity_checks, @subject) &&
-          ::Feature.enabled?(:secret_detection_validity_checks_refresh_token, @subject) &&
           @subject.licensed_feature_available?(:secret_detection_validity_checks)
+      end
+
+      condition(:refresh_validity_checks_available, scope: :subject) do
+        ::Feature.enabled?(:validity_checks, @subject) &&
+          @subject.licensed_feature_available?(:secret_detection_validity_checks) &&
+          ::Feature.enabled?(:secret_detection_validity_checks_refresh_token, @subject)
       end
 
       condition(:container_scanning_for_registry_available) do
