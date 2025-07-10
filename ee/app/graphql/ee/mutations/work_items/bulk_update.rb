@@ -23,8 +23,8 @@ module EE
 
         private
 
-        override :parent_for!
-        def parent_for!(parent_id)
+        override :resource_parent!
+        def resource_parent!(parent_id, full_path)
           parent = super
           return parent unless parent.is_a?(::Group)
 
@@ -35,6 +35,20 @@ module EE
           end
 
           parent
+        end
+
+        override :find_parent_by_full_path
+        def find_parent_by_full_path(full_path)
+          namespace = ::Gitlab::Graphql::Loaders::FullPathModelLoader.new(::Namespace, full_path).find.sync
+
+          case namespace
+          when ::Namespaces::UserNamespace
+            nil
+          when ::Namespaces::ProjectNamespace
+            namespace.project
+          else
+            namespace
+          end
         end
       end
     end
