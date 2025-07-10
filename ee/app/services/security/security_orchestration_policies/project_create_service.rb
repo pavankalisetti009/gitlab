@@ -38,8 +38,8 @@ module Security
         policy_project.add_members(members_to_add, :developer)
       end
 
-      # rubocop:disable CodeReuse/ActiveRecord -- too specific for a scope
       def developers_and_maintainers_without_group_access(policy_project)
+        # rubocop:disable CodeReuse/ActiveRecord -- too specific for a scope
         user_ids = ProjectAuthorization
                      .where(project_id: container.id, access_level: ACCESS_LEVELS_TO_ADD)
                      .where_not_exists(
@@ -49,12 +49,12 @@ module Security
                            access_level: ::Gitlab::Access::DEVELOPER...))
                      .distinct
                      .pluck(:user_id) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- avoids cross-join
+        # rubocop:enable CodeReuse/ActiveRecord
 
         return User.none if user_ids.none?
 
-        User.where(id: user_ids)
+        User.id_in(user_ids)
       end
-      # rubocop:enable CodeReuse/ActiveRecord
 
       def create_project_params
         {

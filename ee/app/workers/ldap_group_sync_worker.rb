@@ -12,11 +12,10 @@ class LdapGroupSyncWorker # rubocop:disable Scalability/IdempotentWorker
   weight 2
   loggable_arguments 0, 1
 
-  # rubocop: disable CodeReuse/ActiveRecord
   def perform(group_ids, provider = nil)
     return unless Gitlab::Auth::Ldap::Config.group_sync_enabled?
 
-    groups = Group.where(id: Array(group_ids))
+    groups = Group.id_in(Array(group_ids))
 
     if provider
       EE::Gitlab::Auth::Ldap::Sync::Proxy.open(provider) do |proxy|
@@ -26,7 +25,6 @@ class LdapGroupSyncWorker # rubocop:disable Scalability/IdempotentWorker
       sync_groups(groups)
     end
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   def sync_groups(groups, proxy: nil)
     groups.each { |group| sync_group(group, proxy: proxy) }

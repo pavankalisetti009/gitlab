@@ -26,10 +26,8 @@ module Members
     attr_reader :group, :current_user, :user
 
     def set_memberships_to_awaiting
-      # rubocop: disable CodeReuse/ActiveRecord
-      affected_memberships = Member.where(id: memberships)
+      affected_memberships = Member.id_in(memberships)
         .update_all(state: ::Member::STATE_AWAITING, updated_at: Time.current)
-      # rubocop: enable CodeReuse/ActiveRecord
 
       if affected_memberships > 0
         UserProjectAccessChangedService.new(user.id).execute

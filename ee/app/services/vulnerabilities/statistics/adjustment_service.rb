@@ -201,8 +201,8 @@ module Vulnerabilities
 
       def project_attributes_as_values_sql
         # rubocop:disable CodeReuse/ActiveRecord -- not reusable
-        attributes = Project.where(id: project_ids).joins_namespace.limit(project_ids.length)
-                              .pluck(:id, :archived, :traversal_ids, :namespace_id)
+        attributes = Project.id_in(project_ids).joins_namespace.limit(project_ids.length)
+          .pluck(:id, :archived, :traversal_ids, :namespace_id)
         # rubocop:enable CodeReuse/ActiveRecord
 
         tuples = attributes.map do |row|

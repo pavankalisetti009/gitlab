@@ -26,11 +26,9 @@ module Elastic
 
       return unless user_ids
 
-      # rubocop:disable CodeReuse/ActiveRecord
-      User.where(id: user_ids).find_in_batches do |batch_of_users|
+      User.id_in(user_ids).find_in_batches do |batch_of_users|
         Elastic::ProcessBookkeepingService.track!(*batch_of_users)
       end
-      # rubocop:enable CodeReuse/ActiveRecord
     end
 
     def update_namespace_associations(namespace)

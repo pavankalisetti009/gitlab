@@ -5,7 +5,7 @@ class Gitlab::Seeder::MergeRequestPredictions
   VERSION = "0.0.0"
 
   def seed!
-    MergeRequest.where.not(id: MergeRequest::Predictions.select(:merge_request_id)).find_each do |mr|
+    MergeRequest.id_not_in(MergeRequest::Predictions.select(:merge_request_id)).find_each do |mr|
       next if mr.predictions.present?
 
       suggestion = {

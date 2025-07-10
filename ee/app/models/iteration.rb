@@ -291,7 +291,7 @@ class Iteration < ApplicationRecord
   # ensure dates do not overlap with other Iterations in the same cadence tree
   def dates_do_not_overlap
     return unless iterations_cadence
-    return unless iterations_cadence.iterations.where.not(id: self.id).within_timeframe(start_date, due_date).exists?
+    return unless iterations_cadence.iterations.id_not_in(self.id).within_timeframe(start_date, due_date).exists?
 
     errors.add(:base, s_("Iteration|Dates cannot overlap with other existing Iterations within this iterations cadence"))
   end

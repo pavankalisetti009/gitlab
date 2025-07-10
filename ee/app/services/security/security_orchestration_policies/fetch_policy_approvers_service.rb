@@ -67,7 +67,7 @@ approvers: [] })
       # rubocop: disable CodeReuse/ActiveRecord
       def authorizable_users_in_group_hierarchy_by_ids_or_usernames(user_ids, user_names)
         User.by_ids_or_usernames(user_ids, user_names)
-          .where(id: container.authorizable_members_with_parents.pluck(:user_id))
+          .id_in(container.authorizable_members_with_parents.pluck(:user_id))
       end
       # rubocop: enable CodeReuse/ActiveRecord
 
