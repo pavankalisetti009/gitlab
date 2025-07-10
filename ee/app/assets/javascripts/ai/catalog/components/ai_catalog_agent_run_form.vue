@@ -4,10 +4,12 @@ import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { MAX_LENGTH_PROMPT } from 'ee/ai/catalog/constants';
 import { createFieldValidators } from '../utils';
+import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
 export default {
   name: 'AiCatalogAgentRunForm',
   components: {
+    AiCatalogFormButtons,
     GlButton,
     GlForm,
     GlFormFields,
@@ -80,16 +82,17 @@ export default {
         />
       </template>
     </gl-form-fields>
-
-    <gl-button
-      class="js-no-auto-disable"
-      type="submit"
-      variant="confirm"
-      category="primary"
-      data-testid="agent-run-form-submit-button"
-      :loading="isSubmitting"
-    >
-      {{ s__('AICatalog|Run') }}
-    </gl-button>
+    <ai-catalog-form-buttons :is-disabled="isSubmitting">
+      <gl-button
+        class="js-no-auto-disable"
+        type="submit"
+        variant="confirm"
+        category="primary"
+        data-testid="agent-run-form-submit-button"
+        :loading="isSubmitting"
+      >
+        {{ s__('AICatalog|Run') }}
+      </gl-button>
+    </ai-catalog-form-buttons>
   </gl-form>
 </template>

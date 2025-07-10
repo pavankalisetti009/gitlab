@@ -8,9 +8,11 @@ import {
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
 import { createFieldValidators } from '../utils';
+import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
 export default {
   components: {
+    AiCatalogFormButtons,
     GlButton,
     GlForm,
     GlFormFields,
@@ -186,15 +188,17 @@ export default {
         />
       </template>
     </gl-form-fields>
-    <gl-button
-      class="js-no-auto-disable"
-      type="submit"
-      variant="confirm"
-      category="primary"
-      data-testid="agent-form-submit-button"
-      :loading="isLoading"
-    >
-      {{ submitButtonText }}
-    </gl-button>
+    <ai-catalog-form-buttons :is-disabled="isLoading">
+      <gl-button
+        class="js-no-auto-disable"
+        type="submit"
+        variant="confirm"
+        category="primary"
+        data-testid="agent-form-submit-button"
+        :loading="isLoading"
+      >
+        {{ submitButtonText }}
+      </gl-button>
+    </ai-catalog-form-buttons>
   </gl-form>
 </template>

@@ -42,7 +42,6 @@ describe('AiCatalogAgentsRun', () => {
   };
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
-  const findBackButton = () => wrapper.findByTestId('ai-catalog-back-button');
   const findRunForm = () => wrapper.findComponent(AiCatalogAgentRunForm);
 
   beforeEach(async () => {
@@ -57,18 +56,8 @@ describe('AiCatalogAgentsRun', () => {
     expect(findPageHeading().props('heading')).toBe(`Run agent: ${mockAgent.name}`);
   });
 
-  it('renders the back button', () => {
-    expect(findBackButton().text()).toBe('Go back');
-  });
-
   it('renders run form', () => {
     expect(findRunForm().exists()).toBe(true);
-  });
-
-  it('calls router.back when back button is clicked', async () => {
-    await findBackButton().vm.$emit('click');
-
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it('shows toast with prompt on form submit', () => {
