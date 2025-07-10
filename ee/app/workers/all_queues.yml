@@ -893,6 +893,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:users_security_policy_bot_cleanup_cron
+  :worker_name: Users::SecurityPolicyBotCleanupCronWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:users_unconfirmed_users_deletion_cron
   :worker_name: Users::UnconfirmedUsersDeletionCronWorker
   :feature_category: :user_management
