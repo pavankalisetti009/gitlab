@@ -14,6 +14,7 @@ export const PROJECT_SCOPE_TYPE_TEXTS = {
 };
 
 export const CSP_SCOPE_TYPE_TEXTS = {
+  [PROJECTS_WITH_FRAMEWORK]: s__('SecurityOrchestration|projects with compliance frameworks'),
   [ALL_PROJECTS_IN_GROUP]: s__('SecurityOrchestration|all projects in this instance'),
   [SPECIFIC_PROJECTS]: s__('SecurityOrchestration|specific projects'),
   [ALL_PROJECTS_IN_LINKED_GROUPS]: s__('SecurityOrchestration|all projects in the groups'),
