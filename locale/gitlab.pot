@@ -13127,6 +13127,9 @@ msgstr ""
 msgid "CiStatusLabel|skipped"
 msgstr ""
 
+msgid "CiStatusLabel|success with warnings"
+msgstr ""
+
 msgid "CiStatusLabel|waiting for callback"
 msgstr ""
 

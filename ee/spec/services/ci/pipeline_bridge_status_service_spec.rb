@@ -37,14 +37,14 @@ RSpec.describe Ci::PipelineBridgeStatusService, feature_category: :continuous_in
       it 'only calls inherit_status_from_downstream on upstream bridge' do
         allow(downstream_bridge).to receive(:inherit_status_from_upstream!)
 
-        expect(upstream_bridge).to receive(:inherit_status_from_downstream!).with(pipeline)
-        expect(downstream_bridge).not_to receive(:inherit_status_from_downstream!)
+        expect(upstream_bridge).to receive(:inherit_status_from_downstream).with(pipeline)
+        expect(downstream_bridge).not_to receive(:inherit_status_from_downstream)
 
         subject
       end
 
       it 'only calls inherit_status_from_upstream on downstream bridge' do
-        allow(upstream_bridge).to receive(:inherit_status_from_downstream!)
+        allow(upstream_bridge).to receive(:inherit_status_from_downstream)
 
         expect(upstream_bridge).not_to receive(:inherit_status_from_upstream!)
         expect(downstream_bridge).to receive(:inherit_status_from_upstream!)
