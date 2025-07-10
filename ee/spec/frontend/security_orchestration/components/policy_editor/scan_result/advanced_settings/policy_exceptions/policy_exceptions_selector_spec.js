@@ -9,6 +9,7 @@ describe('PolicyExceptionsSelector', () => {
     wrapper = shallowMountExtended(PolicyExceptionsSelector, {
       provide: {
         glFeatures: {
+          approvalPolicyBranchExceptions: true,
           securityPoliciesBypassOptionsGroupRoles: true,
           securityPoliciesBypassOptionsTokensAccounts: true,
           ...glFeatures,
@@ -65,9 +66,10 @@ describe('PolicyExceptionsSelector', () => {
       expect(headers.at(2).text()).toBe('Source Branch Patterns');
     });
 
-    it('renders one option when both flags are disabled', () => {
+    it('renders only branch patterns option when other two flags are disabled', () => {
       createComponent({
         glFeatures: {
+          approvalPolicyBranchExceptions: true,
           securityPoliciesBypassOptionsTokensAccounts: false,
           securityPoliciesBypassOptionsGroupRoles: false,
         },
@@ -76,6 +78,20 @@ describe('PolicyExceptionsSelector', () => {
       const headers = findHeaders();
       expect(findPolicyExceptionSelectors()).toHaveLength(1);
       expect(headers.at(0).text()).toBe('Source Branch Patterns');
+    });
+
+    it('renders none of the options when all flags are disabled', () => {
+      createComponent({
+        glFeatures: {
+          approvalPolicyBranchExceptions: false,
+          securityPoliciesBypassOptionsTokensAccounts: false,
+          securityPoliciesBypassOptionsGroupRoles: false,
+        },
+      });
+
+      const headers = findHeaders();
+      expect(findPolicyExceptionSelectors()).toHaveLength(0);
+      expect(headers).toHaveLength(0);
     });
   });
 });
