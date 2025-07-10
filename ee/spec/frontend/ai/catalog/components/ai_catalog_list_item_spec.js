@@ -1,15 +1,19 @@
-import { GlBadge, GlMarkdown, GlAvatar, GlDisclosureDropdown } from '@gitlab/ui';
+import { GlBadge, GlMarkdown, GlAvatar, GlDisclosureDropdownItem } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
+
+const mockRoute = '/mock-route';
 
 describe('AiCatalogListItem', () => {
   let wrapper;
 
   const mockRouter = {
     resolve: jest.fn().mockReturnValue({
-      href: '/mock-route',
+      route: {
+        path: mockRoute,
+      },
     }),
   };
 
@@ -42,7 +46,7 @@ describe('AiCatalogListItem', () => {
   const findBadges = () => wrapper.findAllComponents(GlBadge);
   const findTypeBadge = () => findBadges().at(0);
   const findMarkdown = () => wrapper.findComponent(GlMarkdown);
-  const findDisclosureDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -73,12 +77,16 @@ describe('AiCatalogListItem', () => {
       expect(typeBadge.text()).toBe('agent');
     });
 
-    it('displays actions in a disclosure dropdown', () => {
-      const itemTexts = findDisclosureDropdown()
-        .props('items')
-        .map((item) => item.text);
+    it('displays three actions in a disclosure dropdown', () => {
+      const items = findDisclosureDropdownItems();
 
-      expect(itemTexts).toEqual(['Run', 'Edit']);
+      expect(items).toHaveLength(3);
+      expect(items.at(0).text()).toBe('Run');
+      expect(items.at(0).attributes('to')).toBe(mockRoute);
+      expect(items.at(1).text()).toBe('Edit');
+      expect(items.at(1).attributes('to')).toBe(mockRoute);
+      expect(items.at(2).text()).toBe('Delete (Coming soon)');
+      expect(items.at(2).attributes('variant')).toBe('danger');
     });
 
     it('displays description', () => {

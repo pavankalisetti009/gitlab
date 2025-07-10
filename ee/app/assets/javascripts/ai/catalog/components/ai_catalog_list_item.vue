@@ -3,6 +3,8 @@ import {
   GlAvatar,
   GlBadge,
   GlDisclosureDropdown,
+  GlDisclosureDropdownGroup,
+  GlDisclosureDropdownItem,
   GlIcon,
   GlMarkdown,
   GlTooltipDirective,
@@ -18,6 +20,8 @@ export default {
     GlAvatar,
     GlBadge,
     GlDisclosureDropdown,
+    GlDisclosureDropdownGroup,
+    GlDisclosureDropdownItem,
     GlIcon,
     GlMarkdown,
   },
@@ -36,18 +40,18 @@ export default {
       return [
         {
           text: s__('AICatalog|Run'),
-          href: this.$router.resolve({
+          to: this.$router.resolve({
             name: AI_CATALOG_AGENTS_RUN_ROUTE,
             params: { id: formattedId },
-          }).href,
+          }).route.path,
           icon: 'rocket-launch',
         },
         {
           text: s__('AICatalog|Edit'),
-          href: this.$router.resolve({
+          to: this.$router.resolve({
             name: AI_CATALOG_AGENTS_SHOW_ROUTE,
             params: { id: formattedId },
-          }).href,
+          }).route.path,
           icon: 'pencil',
         },
       ];
@@ -84,16 +88,37 @@ export default {
     </div>
     <gl-disclosure-dropdown
       :toggle-text="__('More actions')"
-      :items="items"
       category="tertiary"
       icon="ellipsis_v"
       no-caret
       text-sr-only
     >
-      <template #list-item="{ item: listItem }">
-        <gl-icon :name="listItem.icon" class="gl-mr-2" variant="subtle" aria-hidden="true" />
-        {{ listItem.text }}
-      </template>
+      <gl-disclosure-dropdown-group>
+        <gl-disclosure-dropdown-item
+          v-for="(listItem, index) in items"
+          :key="index"
+          :item="listItem"
+          :to="listItem.to"
+        >
+          <template #list-item>
+            <span>
+              <gl-icon :name="listItem.icon" class="gl-mr-2" variant="subtle" aria-hidden="true" />
+              {{ listItem.text }}
+            </span>
+          </template>
+        </gl-disclosure-dropdown-item>
+      </gl-disclosure-dropdown-group>
+      <gl-disclosure-dropdown-group bordered>
+        <gl-disclosure-dropdown-item variant="danger">
+          <template #list-item>
+            <span>
+              <gl-icon name="remove" class="gl-mr-2" variant="current" aria-hidden="true" />
+              <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
+              {{ __('Delete') }} (Coming soon)
+            </span>
+          </template>
+        </gl-disclosure-dropdown-item>
+      </gl-disclosure-dropdown-group>
     </gl-disclosure-dropdown>
   </li>
 </template>
