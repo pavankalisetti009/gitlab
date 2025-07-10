@@ -12,24 +12,29 @@ RSpec.describe Mutations::Groups::Update, feature_category: :groups_and_projects
   describe '#resolve' do
     using RSpec::Parameterized::TableSyntax
 
-    subject { described_class.new(object: group, context: query_context, field: nil).resolve(**params) }
+    before do
+      stub_saas_features(repositories_web_based_commit_signing: true)
+    end
 
-    context 'when changing duo_features_enabled settings' do
-      shared_examples 'updating the group duo_features_enabled settings' do
+    subject(:mutation) { described_class.new(object: group, context: query_context, field: nil).resolve(**params) }
+
+    context 'when changing group settings' do
+      shared_examples 'updating the group settings' do
         it 'updates the settings' do
-          expect { subject }
+          expect { mutation }
             .to change { group.reload.duo_features_enabled }.to(false)
             .and change { group.reload.lock_duo_features_enabled }.to(true)
+            .and change { group.reload.web_based_commit_signing_enabled }.to(true)
         end
 
         it 'returns no errors' do
-          expect(subject).to eq(errors: [], group: group)
+          expect(mutation).to eq(errors: [], group: group)
         end
       end
 
       shared_examples 'denying access to group' do
         it 'raises Gitlab::Graphql::Errors::ResourceNotAvailable' do
-          expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+          expect { mutation }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
         end
       end
 
@@ -37,12 +42,13 @@ RSpec.describe Mutations::Groups::Update, feature_category: :groups_and_projects
         {
           full_path: group.full_path,
           duo_features_enabled: false,
-          lock_duo_features_enabled: true
+          lock_duo_features_enabled: true,
+          web_based_commit_signing_enabled: true
         }
       end
 
       where(:user_role, :shared_examples_name) do
-        :owner      | 'updating the group duo_features_enabled settings'
+        :owner      | 'updating the group settings'
         :maintainer | 'denying access to group'
         :developer  | 'denying access to group'
         :reporter   | 'denying access to group'
@@ -56,6 +62,24 @@ RSpec.describe Mutations::Groups::Update, feature_category: :groups_and_projects
         end
 
         it_behaves_like params[:shared_examples_name]
+      end
+    end
+
+    context 'when use_web_based_commit_signing_enabled feature flag is disabled' do
+      before_all do
+        stub_feature_flags(use_web_based_commit_signing_enabled: false)
+        group.add_owner(current_user)
+      end
+
+      let_it_be(:params) do
+        {
+          full_path: group.full_path,
+          web_based_commit_signing_enabled: true
+        }
+      end
+
+      it 'does not update the settings' do
+        expect { mutation }.not_to change { group.reload.web_based_commit_signing_enabled }
       end
     end
   end

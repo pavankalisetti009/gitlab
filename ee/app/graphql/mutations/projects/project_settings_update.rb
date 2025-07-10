@@ -28,7 +28,8 @@ module Mutations
       argument :web_based_commit_signing_enabled,
         GraphQL::Types::Boolean,
         required: false,
-        description: 'Indicates whether web-based commit signing is enabled for the project.'
+        description: 'Indicates whether web-based commit signing is enabled for the project.',
+        experiment: { milestone: '18.2' }
 
       field :project_settings,
         Types::Projects::SettingType,

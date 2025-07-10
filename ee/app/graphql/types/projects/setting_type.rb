@@ -24,7 +24,8 @@ module Types
       field :web_based_commit_signing_enabled,
         GraphQL::Types::Boolean,
         null: false,
-        description: 'Indicates whether web-based commit signing is enabled for the project.'
+        description: 'Indicates whether web-based commit signing is enabled for the project.',
+        experiment: { milestone: '18.2' }
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

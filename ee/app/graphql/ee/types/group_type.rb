@@ -436,6 +436,12 @@ module EE
           authorize: :read_compliance_dashboard,
           experiment: { milestone: '18.2' }
 
+        field :web_based_commit_signing_enabled,
+          GraphQL::Types::Boolean,
+          null: false,
+          description: 'Indicates whether web-based commit signing is enabled for the group.',
+          experiment: { milestone: '18.2' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
