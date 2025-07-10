@@ -39,10 +39,25 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
   let(:filter_params) { {} }
   let(:expected_filters) { {} }
 
-  let_it_be(:code_suggestion_event_1) { create(:ai_code_suggestion_event, :shown, user: user_1) }
-  let_it_be(:code_suggestion_event_2) { create(:ai_code_suggestion_event, :accepted, user: user_1) }
-  let_it_be(:code_suggestion_event_3) { create(:ai_code_suggestion_event, :accepted, user: user_2) }
-  let_it_be(:code_suggestion_event_4) { create(:ai_code_suggestion_event, :accepted, user: user_3) }
+  let_it_be(:code_suggestion_event_1) do
+    create(:ai_code_suggestion_event, :shown, user: user_1,
+      namespace_path: group_project.reload.project_namespace.traversal_path)
+  end
+
+  let_it_be(:code_suggestion_event_2) do
+    create(:ai_code_suggestion_event, :accepted, user: user_1,
+      namespace_path: subgroup_project.reload.project_namespace.traversal_path)
+  end
+
+  let_it_be(:code_suggestion_event_3) do
+    create(:ai_code_suggestion_event, :accepted, user: user_2,
+      namespace_path: other_group_project.reload.project_namespace.traversal_path)
+  end
+
+  let_it_be(:code_suggestion_event_4) do
+    create(:ai_code_suggestion_event, :accepted, user: user_3,
+      namespace_path: subgroup_project.reload.project_namespace.traversal_path)
+  end
 
   before do
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
@@ -73,14 +88,12 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
         group.add_reporter(current_user)
       end
 
-      it 'returns code suggestion events from contributors' do
+      it 'returns code suggestion events' do
         post_graphql(query, current_user: current_user)
 
         event_ids = code_suggestion_events.pluck('id')
 
-        expect(code_suggestion_events.count).to eq(3)
-        expect(event_ids).to match_array([code_suggestion_event_1.to_global_id.to_s,
-          code_suggestion_event_2.to_global_id.to_s, code_suggestion_event_3.to_global_id.to_s])
+        expect(event_ids).to match_array(expected_event_ids)
       end
     end
   end
@@ -89,36 +102,73 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
     it_behaves_like 'code suggestion events' do
       let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
       let(:code_suggestion_events) { graphql_data.dig('group', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
+      let(:expected_event_ids) do
+        [
+          code_suggestion_event_1,
+          code_suggestion_event_2,
+          code_suggestion_event_4
+        ].map(&:to_global_id).map(&:to_s)
+      end
     end
 
-    # This context can be removed within next iterations after
-    # we allow filtering events by groups or projects
-    context 'when group is not a root group' do
-      let(:query) { graphql_query_for(:group, { fullPath: subgroup.full_path }, ai_usage_data_fields) }
-
-      before_all do
-        group.add_reporter(current_user)
+    context 'when use_ai_events_namespace_path_filter is not enabled' do
+      before do
+        stub_feature_flags(use_ai_events_namespace_path_filter: false)
       end
 
-      it 'raises error' do
-        post_graphql(query, current_user: current_user)
+      it_behaves_like 'code suggestion events' do
+        let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
+        let(:code_suggestion_events) { graphql_data.dig('group', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
+        let(:expected_event_ids) do
+          [
+            code_suggestion_event_1,
+            code_suggestion_event_2,
+            code_suggestion_event_3
+          ].map(&:to_global_id).map(&:to_s)
+        end
+      end
 
-        expect(graphql_errors).to include(a_hash_including('message' => 'Not available for this resource.'))
+      context 'when group is not a root group' do
+        let(:query) { graphql_query_for(:group, { fullPath: subgroup.full_path }, ai_usage_data_fields) }
+
+        before_all do
+          group.add_reporter(current_user)
+        end
+
+        it 'raises error' do
+          post_graphql(query, current_user: current_user)
+
+          expect(graphql_errors).to include(a_hash_including('message' => 'Not available for this resource.'))
+        end
       end
     end
   end
 
   context 'for project' do
-    let(:query) { graphql_query_for(:project, { fullPath: group_project.full_path }, ai_usage_data_fields) }
-    let(:code_suggestion_events) { graphql_data.dig('project', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
+    it_behaves_like 'code suggestion events' do
+      let(:query) { graphql_query_for(:project, { fullPath: subgroup_project.full_path }, ai_usage_data_fields) }
+      let(:code_suggestion_events) { graphql_data.dig('project', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
 
-    context 'when user has right permissions' do
+      let(:expected_event_ids) do
+        [
+          code_suggestion_event_2,
+          code_suggestion_event_4
+        ].map(&:to_global_id).map(&:to_s)
+      end
+    end
+
+    context 'when use_ai_events_namespace_path_filter is not enabled' do
+      let(:query) { graphql_query_for(:project, { fullPath: subgroup_project.full_path }, ai_usage_data_fields) }
+      let(:code_suggestion_events) { graphql_data.dig('project', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
+
       before_all do
         group.add_reporter(current_user)
       end
 
-      # This example can be removed within next iterations after
-      # we allow filtering events by groups or projects
+      before do
+        stub_feature_flags(use_ai_events_namespace_path_filter: false)
+      end
+
       it 'raises an exception' do
         post_graphql(query, current_user: current_user)
 

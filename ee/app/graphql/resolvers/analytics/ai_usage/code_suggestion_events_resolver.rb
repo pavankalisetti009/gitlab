@@ -13,9 +13,11 @@ module Resolvers
         end
 
         def resolve
-          ::Ai::CodeSuggestionEventsFinder
-            .new(current_user, resource: object)
-            .execute
+          finder =
+            ::Ai::CodeSuggestionEventsFinder
+              .new(current_user, resource: object)
+
+          offset_pagination(finder.execute)
         end
 
         private
@@ -25,7 +27,9 @@ module Resolvers
         # way to filter data in a reliable way.
         # We can remove this check after namespace_path is populated into ai_code_suggestion_events table,
         # for more information check https://gitlab.com/gitlab-org/gitlab/-/issues/490601#note_2122055518.
+        # Remove with use_ai_events_namespace_path_filter feature flag.
         def should_raise_error?
+          return false if Feature.enabled?(:use_ai_events_namespace_path_filter, object)
           return true if object.is_a?(Project)
           return true unless object.root?
 
