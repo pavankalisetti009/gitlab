@@ -134,7 +134,8 @@
               "component": {
                 "enum": [
                   "AssigneeAvatars",
-                  "DiffLineChanges"
+                  "DiffLineChanges",
+                  "MergeRequestLink"
                 ]
               }
             }

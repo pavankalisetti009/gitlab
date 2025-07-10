@@ -277,22 +277,18 @@ describe('DataTable Visualization', () => {
         });
       });
 
-      it.each`
-        component          | customData
-        ${DiffLineChanges} | ${{ additions: 10, deletions: 10 }}
-      `(
-        'renders the custom $component.name component with the correct props',
-        ({ component, customData }) => {
-          createWrapper(mount, {
-            data: { nodes: [{ custom: customData }] },
-            options: {
-              fields: [{ key: 'custom', component: component.name }],
-            },
-          });
+      it('renders a custom component with the correct props', () => {
+        const customData = { additions: 10, deletions: 10 };
 
-          expect(wrapper.findComponent(component).props()).toEqual(customData);
-        },
-      );
+        createWrapper(mount, {
+          data: { nodes: [{ customData }] },
+          options: {
+            fields: [{ key: 'customData', component: 'DiffLineChanges' }],
+          },
+        });
+
+        expect(wrapper.findComponent(DiffLineChanges).props()).toMatchObject(customData);
+      });
     });
   });
 });

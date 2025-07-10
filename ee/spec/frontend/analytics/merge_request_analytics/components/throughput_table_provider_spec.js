@@ -243,7 +243,7 @@ describe('ThroughputTableProvider', () => {
         });
 
         it('includes a pipeline icon when available', async () => {
-          const iconName = 'status_canceled';
+          const iconName = 'status_success';
 
           await createComponentWithAdditionalData({
             pipelines: {
@@ -253,6 +253,8 @@ describe('ThroughputTableProvider', () => {
                   detailedStatus: {
                     id: '1',
                     icon: iconName,
+                    name: 'success',
+                    label: 'Success',
                   },
                 },
               ],
