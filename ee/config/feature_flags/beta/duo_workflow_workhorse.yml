@@ -6,5 +6,5 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/193149
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/547503
 milestone: '18.2'
 group: group::duo workflow
-type: experiment
-default_enabled: false
+type: beta
+default_enabled: true
