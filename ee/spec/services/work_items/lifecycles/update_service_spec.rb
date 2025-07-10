@@ -31,7 +31,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
   end
 
   before do
-    stub_licensed_features(work_item_status: true)
+    stub_licensed_features(work_item_status: true, board_status_lists: true)
   end
 
   RSpec.shared_examples 'creates custom lifecycle' do
@@ -142,6 +142,62 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
         it 'preserves the status mapping' do
           expect(lifecycle.statuses.pluck(:converted_from_system_defined_status_identifier))
             .to contain_exactly(1, 3, 5)
+        end
+
+        context 'when there are board lists using the system-defined status' do
+          let_it_be(:subgroup) { create(:group, parent: group) }
+          let_it_be(:project) { create(:project, group: group) }
+
+          let!(:group_list) do
+            create(
+              :status_list,
+              board: create(:board, group: group),
+              system_defined_status_identifier: build(:work_item_system_defined_status, :in_progress).id
+            )
+          end
+
+          let!(:subgroup_list) do
+            create(
+              :status_list,
+              board: create(:board, group: subgroup),
+              system_defined_status_identifier: build(:work_item_system_defined_status, :in_progress).id
+            )
+          end
+
+          let!(:project_list) do
+            create(
+              :status_list,
+              board: create(:board, project: project),
+              system_defined_status_identifier: build(:work_item_system_defined_status, :in_progress).id
+            )
+          end
+
+          let!(:other_system_defined_list) do
+            create(
+              :status_list,
+              board: create(:board, project: project),
+              system_defined_status_identifier: build(:work_item_system_defined_status, :to_do).id
+            )
+          end
+
+          let!(:other_project_list) do
+            create(
+              :status_list,
+              board: create(:board),
+              system_defined_status_identifier: build(:work_item_system_defined_status, :in_progress).id
+            )
+          end
+
+          it 'removes board lists using the omitted statuses' do
+            expect { result }.to change { List.count }.by(-3)
+
+            expect { group_list.reload }.to raise_error(ActiveRecord::RecordNotFound)
+            expect { subgroup_list.reload }.to raise_error(ActiveRecord::RecordNotFound)
+            expect { project_list.reload }.to raise_error(ActiveRecord::RecordNotFound)
+
+            expect(other_system_defined_list.reload).to be_present
+            expect(other_project_list.reload).to be_present
+          end
         end
 
         context 'when trying to exclude a status in use' do
@@ -436,6 +492,63 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
             it_behaves_like 'removes custom statuses'
             it_behaves_like 'reorders custom statuses'
+
+            context 'when there are board lists using the mapped status' do
+              let_it_be(:subgroup) { create(:group, parent: group) }
+              let_it_be(:project) { create(:project, group: group) }
+
+              let!(:group_list) do
+                create(
+                  :status_list,
+                  board: create(:board, group: group),
+                  system_defined_status_identifier: custom_status.converted_from_system_defined_status_identifier
+                )
+              end
+
+              let!(:subgroup_list) do
+                create(
+                  :status_list,
+                  board: create(:board, group: subgroup),
+                  system_defined_status_identifier: custom_status.converted_from_system_defined_status_identifier
+                )
+              end
+
+              let!(:project_list) do
+                create(
+                  :status_list,
+                  board: create(:board, project: project),
+                  system_defined_status_identifier: custom_status.converted_from_system_defined_status_identifier
+                )
+              end
+
+              let!(:custom_status_list) do
+                create(
+                  :status_list,
+                  :with_custom_status,
+                  board: create(:board, project: project),
+                  custom_status: create(:work_item_custom_status, :triage, namespace: group)
+                )
+              end
+
+              let!(:other_project_list) do
+                create(
+                  :status_list,
+                  board: create(:board),
+                  system_defined_status_identifier: custom_status.converted_from_system_defined_status_identifier
+                )
+              end
+
+              it 'removes the mapped board lists' do
+                expect { result }.to change { List.count }.by(-3)
+
+                expect { group_list.reload }.to raise_error(ActiveRecord::RecordNotFound)
+                expect { subgroup_list.reload }.to raise_error(ActiveRecord::RecordNotFound)
+                expect { project_list.reload }.to raise_error(ActiveRecord::RecordNotFound)
+
+                expect(custom_status_list.reload).to be_present
+                expect(other_project_list.reload).to be_present
+              end
+            end
 
             context 'when trying to remove a status in explicit use' do
               let(:work_item) { create(:work_item, namespace: group) }

@@ -48,6 +48,8 @@ module WorkItems
           lifecycle.save! if lifecycle.changed?
 
           handle_deferred_status_removal
+          remove_system_defined_board_lists
+
           lifecycle
         end
       end
@@ -70,7 +72,9 @@ module WorkItems
             default_closed_status: default_statuses[:default_closed_status],
             default_duplicate_status: default_statuses[:default_duplicate_status],
             created_by: current_user
-          )
+          ).tap do
+            remove_system_defined_board_lists
+          end
         end
       end
 
