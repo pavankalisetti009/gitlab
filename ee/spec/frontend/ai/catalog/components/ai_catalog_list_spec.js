@@ -1,4 +1,4 @@
-import { GlSkeletonLoader } from '@gitlab/ui';
+import { GlEmptyState, GlSkeletonLoader } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -50,6 +50,7 @@ describe('AiCatalogList', () => {
   };
 
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
+  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findList = () => wrapper.find('ul');
   const findListItems = () => wrapper.findAllComponents(AiCatalogListItem);
   const findContainer = () => wrapper.findByTestId('ai-catalog-list');
@@ -75,23 +76,26 @@ describe('AiCatalogList', () => {
       expect(list.classes()).toContain('gl-p-0');
     });
 
-    it('does not render skeleton loader when not loading', () => {
+    it('does not render skeleton loader and empty state when not loading and there are items', () => {
       expect(findSkeletonLoader().exists()).toBe(false);
+      expect(findEmptyState().exists()).toBe(false);
     });
   });
 
   describe('loading state', () => {
-    it('shows skeleton loader and hides list when loading is true', () => {
+    it('shows skeleton loader and hides list and empty state when loading is true', () => {
       createComponent({ isLoading: true });
 
       expect(findSkeletonLoader().exists()).toBe(true);
+      expect(findEmptyState().exists()).toBe(false);
       expect(findList().exists()).toBe(false);
     });
 
-    it('shows list and hides skeleton loader when loading is false', () => {
+    it('shows list and hides skeleton loader when loading is false and there are items', () => {
       createComponent({ isLoading: false });
 
       expect(findSkeletonLoader().exists()).toBe(false);
+      expect(findEmptyState().exists()).toBe(false);
       expect(findList().exists()).toBe(true);
     });
   });
@@ -121,12 +125,9 @@ describe('AiCatalogList', () => {
       createComponent({ items: [] });
     });
 
-    it('renders empty list when no items provided', () => {
-      expect(findList().exists()).toBe(true);
-      expect(findListItems()).toHaveLength(0);
-    });
-
-    it('does not render skeleton loader when not loading with empty items', () => {
+    it('does render the empty state, but no list and skeleton loader when no items provided', () => {
+      expect(findEmptyState().exists()).toBe(true);
+      expect(findList().exists()).toBe(false);
       expect(findSkeletonLoader().exists()).toBe(false);
     });
   });
