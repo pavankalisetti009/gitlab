@@ -14,6 +14,7 @@ module QA
 
             view 'ee/app/assets/javascripts/audit_events/components/audit_events_stream.vue' do
               element 'stream-destinations'
+              element 'all-stream-destinations'
             end
 
             view 'ee/app/assets/javascripts/audit_events/components/stream/stream_http_destination_editor.vue' do
@@ -46,8 +47,14 @@ module QA
             end
 
             def has_stream_destination?(name)
-              within_element('stream-destinations') do
-                has_element?('toggle-btn', text: name)
+              if has_element?('all-stream-destinations', wait: 1)
+                within_element('all-stream-destinations') do
+                  has_element?('toggle-btn', text: name)
+                end
+              else
+                within_element('stream-destinations') do
+                  has_element?('toggle-btn', text: name)
+                end
               end
             end
           end
