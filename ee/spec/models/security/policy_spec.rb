@@ -1259,4 +1259,58 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       })
     end
   end
+
+  describe '.with_bypass_settings' do
+    let_it_be(:policy_with_bypass) do
+      create(:security_policy, bypass_access_token_ids: [1])
+    end
+
+    let_it_be(:policy_without_bypass) do
+      create(:security_policy, :require_approval)
+    end
+
+    let_it_be(:policy_with_empty_bypass) { create(:security_policy, content: { bypass_settings: {} }) }
+
+    it 'returns only policies with non-empty bypass_settings' do
+      result = described_class.with_bypass_settings
+      expect(result).to contain_exactly(policy_with_bypass)
+    end
+  end
+
+  describe '#bypass_settings' do
+    let(:access_token_id) { 42 }
+    let(:service_account_id) { 99 }
+
+    context 'when bypass_settings is nil' do
+      let(:policy) { build(:security_policy, content: {}) }
+
+      it 'returns a BypassSettings object with nil ids' do
+        expect(policy.bypass_settings.access_token_ids).to be_nil
+        expect(policy.bypass_settings.service_account_ids).to be_nil
+      end
+    end
+
+    context 'when bypass_settings is empty' do
+      let(:policy) { build(:security_policy, content: { bypass_settings: {} }) }
+
+      it 'returns a BypassSettings object with nil ids' do
+        expect(policy.bypass_settings.access_token_ids).to be_nil
+        expect(policy.bypass_settings.service_account_ids).to be_nil
+      end
+    end
+
+    context 'when bypass_settings has access_tokens and service_accounts' do
+      let(:policy) do
+        build(:security_policy,
+          bypass_access_token_ids: [access_token_id],
+          bypass_service_account_ids: [service_account_id]
+        )
+      end
+
+      it 'returns the correct ids' do
+        expect(policy.bypass_settings.access_token_ids).to contain_exactly(access_token_id)
+        expect(policy.bypass_settings.service_account_ids).to contain_exactly(service_account_id)
+      end
+    end
+  end
 end

@@ -74,6 +74,10 @@ module Security
       where("content->'actions' @> ?", [{ role_approvers: [custom_role_id] }].to_json)
     end
 
+    scope :with_bypass_settings, -> do
+      where("content->'bypass_settings' IS NOT NULL").where("content->'bypass_settings' <> ?", '{}')
+    end
+
     delegate :namespace?, :namespace, :project?, :project, to: :security_orchestration_policy_configuration
 
     def self.checksum(policy_hash)
@@ -313,6 +317,11 @@ module Security
     def enforced_scans=(scans)
       metadata['enforced_scans'] = scans
     end
+
+    def bypass_settings
+      Security::ScanResultPolicies::BypassSettings.new(policy_content[:bypass_settings])
+    end
+    strong_memoize_attr :bypass_settings
 
     private
 
