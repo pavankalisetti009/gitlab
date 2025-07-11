@@ -32,61 +32,37 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
     end
   end
 
-  it 'defaults regexp_uses_re2 to true' do
+  it 'always sets regexp_uses_re2 to true' do
     push_rule = create(:push_rule)
-
     expect(push_rule.regexp_uses_re2).to eq(true)
+
+    push_rule.regexp_uses_re2 = false
+    expect(push_rule.regexp_uses_re2).to eq(true)
+
+    push_rule.save!
+    expect(push_rule.reload.regexp_uses_re2).to eq(true)
   end
 
-  it 'updates regexp_uses_re2 to true on edit' do
-    push_rule = create(:push_rule, regexp_uses_re2: nil)
+  it 'cannot set regexp_uses_re2 to false' do
+    push_rule = create(:push_rule)
 
-    expect do
-      push_rule.update!(branch_name_regex: '.*')
-    end.to change(push_rule, :regexp_uses_re2).to true
+    push_rule.regexp_uses_re2 = false
+    expect(push_rule.regexp_uses_re2).to eq(true)
+
+    push_rule.update_column(:regexp_uses_re2, false)
+    push_rule.reload
+
+    push_rule.save!
+    expect(push_rule.reload.regexp_uses_re2).to eq(true)
   end
 
   describe '#branch_name_allowed?' do
     subject(:push_rule) { create(:push_rule, branch_name_regex: '\d+\-.*') }
 
-    it 'uses RE2 regex engine' do
+    it 'always uses RE2 regex engine' do
       expect_any_instance_of(Gitlab::UntrustedRegexp).to receive(:===)
 
       subject.branch_name_allowed?('123-feature')
-    end
-
-    context 'with legacy regex' do
-      before do
-        push_rule.update_column(:regexp_uses_re2, nil)
-      end
-
-      it 'attempts to use safe RE2 regex engine' do
-        expect_any_instance_of(Gitlab::UntrustedRegexp).to receive(:===)
-
-        subject.branch_name_allowed?('ee-feature-ee')
-      end
-
-      context 'when unsafe regexps are available' do
-        it 'falls back to ruby regex engine' do
-          stub_feature_flags(disable_unsafe_regexp: false)
-
-          push_rule.update_column(:branch_name_regex, '(ee|ce).*\1')
-
-          expect(subject.branch_name_allowed?('ee-feature-ee')).to be true
-          expect(subject.branch_name_allowed?('ee-feature-ce')).to be false
-        end
-      end
-
-      context 'when unsafe regexps are disabled' do
-        it 'raises an exception' do
-          stub_feature_flags(disable_unsafe_regexp: true)
-
-          push_rule.update_column(:branch_name_regex, '(ee|ce).*\1')
-
-          expect { subject.branch_name_allowed?('ee-feature-ee') }
-            .to raise_error(described_class::MatchError)
-        end
-      end
     end
   end
 
