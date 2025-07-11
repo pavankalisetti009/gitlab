@@ -880,12 +880,18 @@ module EE
         @user.assigned_to_duo_pro?(@subject)
       end
 
+      condition(:duo_usage_analytics_enabled) do
+        ::Feature.enabled?(:duo_usage_dashboard, @subject.root_ancestor) && @user.assigned_to_duo_add_ons?(@subject)
+      end
+
       condition(:amazon_q_enabled) do
         ::Ai::AmazonQ.enabled?
       end
 
       rule { can?(:read_product_analytics) & (amazon_q_enabled | assigned_to_duo_pro) }.enable :read_pro_ai_analytics
       rule { can?(:read_product_analytics) & (amazon_q_enabled | assigned_to_duo_enterprise) }.enable :read_enterprise_ai_analytics
+
+      rule { can?(:read_product_analytics) & duo_usage_analytics_enabled }.enable :read_duo_usage_analytics
 
       rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
 

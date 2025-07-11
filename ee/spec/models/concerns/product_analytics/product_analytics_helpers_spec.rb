@@ -122,6 +122,33 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
     end
   end
 
+  describe '#duo_usage_dashboard_enabled?' do
+    subject { project.duo_usage_dashboard_enabled?(user) }
+
+    where(:enabled, :outcome) do
+      false | false
+      true  | true
+    end
+
+    with_them do
+      before do
+        allow(Ability).to receive(:allowed?)
+                            .with(user, :read_duo_usage_analytics, anything)
+                            .and_return(enabled)
+      end
+
+      it { is_expected.to eq(outcome) }
+    end
+
+    context 'when the duo_usage_dashboard feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_usage_dashboard: false)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
   describe '#product_analytics_dashboards' do
     it 'returns nothing if product analytics disabled' do
       stub_licensed_features(product_analytics: false)
@@ -134,6 +161,7 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
       stub_feature_flags(dora_metrics_dashboard: false)
       stub_feature_flags(product_analytics_features: false)
       stub_feature_flags(consolidate_mr_analytics_in_shared_dashboards: false)
+      stub_feature_flags(duo_usage_dashboard: false)
       expect(project.product_analytics_dashboards(user)).to be_empty
     end
 

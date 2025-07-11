@@ -63,6 +63,10 @@ module ProductAnalyticsHelpers
       Feature.enabled?(:consolidate_mr_analytics_in_shared_dashboards, self)
   end
 
+  def duo_usage_dashboard_enabled?(user)
+    Ability.allowed?(user, :read_duo_usage_analytics, self)
+  end
+
   def product_analytics_dashboards(user)
     ::Analytics::Dashboard.for(container: self, user: user)
   end

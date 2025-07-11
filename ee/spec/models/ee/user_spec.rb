@@ -2257,6 +2257,86 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#assigned_to_duo_add_ons?' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:user) { create(:user) }
+    let(:subscription_purchase) { nil }
+
+    subject { user.assigned_to_duo_add_ons?(namespace) }
+
+    before do
+      if subscription_purchase.present?
+        create(
+          :gitlab_subscription_user_add_on_assignment,
+          user: user,
+          add_on_purchase: subscription_purchase
+        )
+      end
+    end
+
+    context 'on SaaS', :saas do
+      it { is_expected.to eq(false) }
+
+      context 'when user is assigned to a duo core seat on namespace' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: namespace) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is assigned to a duo pro seat on namespace' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is assigned to a duo enterprise seat on namespace' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is assigned to a duo amazon q seat on namespace' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q, namespace: namespace) }
+
+        it { is_expected.to eq(true) }
+      end
+    end
+
+    context 'on self-managed' do
+      it { is_expected.to eq(false) }
+
+      context 'when user is assigned to a duo self-hosted seat on instance' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_self_hosted, :self_managed) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is assigned to a duo core seat on instance' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, :self_managed) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is assigned to a duo pro seat on instance' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is assigned to a duo enterprise seat on instance' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is assigned to a duo amazon q seat on instance' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q, :self_managed) }
+
+        it { is_expected.to eq(true) }
+      end
+    end
+  end
+
   describe '#can_access_admin_area?' do
     let_it_be_with_refind(:user_without_admin_role) { create(:user) }
     let_it_be_with_refind(:user_with_admin_role) { create(:user) }
