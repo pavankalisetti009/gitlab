@@ -13,18 +13,9 @@ module ComplianceManagement
       validates_presence_of :project_compliance_violation, :issue, :project
 
       # Validate associations for data consistency
-      validate :issue_belongs_to_project
       validate :violation_belongs_to_project
 
       private
-
-      def issue_belongs_to_project
-        return unless issue && project_id
-
-        if issue.project_id != project_id # rubocop:disable Style/GuardClause -- Easier to read
-          errors.add(:issue, _('must belong to the specified project'))
-        end
-      end
 
       def violation_belongs_to_project
         if project_compliance_violation && project_id && project_compliance_violation.project_id != project_id
