@@ -44627,7 +44627,7 @@ ALTER TABLE ONLY dependency_proxy_manifest_states
     ADD CONSTRAINT fk_d79f184865 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY users
-    ADD CONSTRAINT fk_d7b9ff90af FOREIGN KEY (organization_id) REFERENCES organizations(id) NOT VALID;
+    ADD CONSTRAINT fk_d7b9ff90af FOREIGN KEY (organization_id) REFERENCES organizations(id);
 
 ALTER TABLE p_ci_pipelines
     ADD CONSTRAINT fk_d80e161c54 FOREIGN KEY (ci_ref_id) REFERENCES ci_refs(id) ON DELETE SET NULL;
