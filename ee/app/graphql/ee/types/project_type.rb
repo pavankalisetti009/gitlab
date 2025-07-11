@@ -358,6 +358,11 @@ module EE
           experiment: { milestone: '16.9' },
           description: 'Indicates whether GitLab Duo features are enabled for the project.'
 
+        field :duo_context_exclusion_settings, ::Types::Projects::DuoContextExclusionSettingsType,
+          null: true,
+          description: 'Settings for excluding files from Duo context.',
+          experiment: { milestone: '18.2' }
+
         field :duo_workflow_status_check, ::Types::Ai::DuoWorkflows::EnablementType,
           null: true,
           experiment: { milestone: '17.7' },

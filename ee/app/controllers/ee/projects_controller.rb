@@ -20,6 +20,7 @@ module EE
       before_action do
         push_licensed_feature(:remote_development)
         push_frontend_feature_flag(:repository_lock_information, @project)
+        push_frontend_feature_flag(:use_duo_context_exclusion, @project)
       end
     end
 
@@ -62,6 +63,10 @@ module EE
 
       if project&.licensed_feature_available?(:external_status_checks)
         attributes << :only_allow_merge_if_all_status_checks_passed
+      end
+
+      if project&.licensed_ai_features_available? && ::Feature.enabled?(:use_duo_context_exclusion, project)
+        attributes << { duo_context_exclusion_settings: { exclusion_rules: [] } }
       end
 
       if project&.licensed_feature_available?(:security_orchestration_policies)

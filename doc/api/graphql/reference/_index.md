@@ -36814,6 +36814,7 @@ Project-level settings for product analytics provider.
 | <a id="projectdetailedimportstatus"></a>`detailedImportStatus` | [`DetailedImportStatus`](#detailedimportstatus) | Detailed import status of the project. |
 | <a id="projectdora"></a>`dora` | [`Dora`](#dora) | Project's DORA metrics. |
 | <a id="projectduoagenticchatavailable"></a>`duoAgenticChatAvailable` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.1. **Status**: Experiment. User access to Duo agentic Chat feature. |
+| <a id="projectduocontextexclusionsettings"></a>`duoContextExclusionSettings` {{< icon name="warning-solid" >}} | [`DuoContextExclusionSettings`](#duocontextexclusionsettings) | **Introduced** in GitLab 18.2. **Status**: Experiment. Settings for excluding files from Duo context. |
 | <a id="projectduofeaturesenabled"></a>`duoFeaturesEnabled` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 16.9. **Status**: Experiment. Indicates whether GitLab Duo features are enabled for the project. |
 | <a id="projectduoworkflowstatuscheck"></a>`duoWorkflowStatusCheck` {{< icon name="warning-solid" >}} | [`DuoWorkflowEnablement`](#duoworkflowenablement) | **Introduced** in GitLab 17.7. **Status**: Experiment. Indicates whether Duo Agent Platform is enabled for the project. |
 | <a id="projectexplorecatalogpath"></a>`exploreCatalogPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.6. **Status**: Experiment. Path to the project catalog resource. |

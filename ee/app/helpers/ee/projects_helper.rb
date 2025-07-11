@@ -47,7 +47,8 @@ module EE
         licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
         amazonQAvailable: Ai::AmazonQ.connected?,
         amazonQAutoReviewEnabled: project.amazon_q_integration&.auto_review_enabled.present?,
-        duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?
+        duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
+        duoContextExclusionSettings: project.project_setting.duo_context_exclusion_settings || {}
       })
     end
 
