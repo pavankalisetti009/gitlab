@@ -3433,7 +3433,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
       end
 
-      context 'with scan policies targetting specific pipeline source' do
+      context 'with scan policies targeting specific pipeline source' do
         let(:container_scanning_policy) do
           build(
             :scan_execution_policy,
@@ -3458,6 +3458,17 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           end
         end
       end
+    end
+  end
+
+  describe '#active_scan_execution_policy_names' do
+    include_context 'for policies with pipeline and scheduled rules'
+
+    subject(:active_scan_execution_policy_names) { security_orchestration_policy_configuration.active_scan_execution_policy_names('refs/heads/master', project) }
+
+    it 'includes pipeline and scheduled policy names' do
+      expect(active_scan_execution_policy_names).to contain_exactly(dast_policy[:name], sast_policy_with_schedule[:name],
+        container_scanning_policy[:name])
     end
   end
 
@@ -3698,6 +3709,25 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           end
         end
       end
+    end
+  end
+
+  describe '#active_pipeline_execution_policy_names' do
+    let(:policy_yaml) { fixture_file('security_orchestration.yml', dir: 'ee') }
+
+    subject(:active_pipeline_execution_policy_names) { security_orchestration_policy_configuration.active_pipeline_execution_policy_names }
+
+    before do
+      allow(security_policy_management_project).to receive(:repository).and_return(repository)
+      allow(repository).to receive(:blob_data_at).with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH).and_return(policy_yaml)
+    end
+
+    it 'returns active pipeline execution policy names' do
+      expect(active_pipeline_execution_policy_names).to contain_exactly('Run custom pipeline configuration',
+        'Second pipeline execution policy',
+        'Third pipeline execution policy',
+        'Fourth pipeline execution policy',
+        'Fifth pipeline execution policy')
     end
   end
 

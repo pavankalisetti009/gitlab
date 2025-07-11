@@ -64,6 +64,10 @@ module Security
         .select { |policy| applicable_for_pipeline_source?(block_given? ? yield(policy[:rules]) : policy[:rules], pipeline_source) }
     end
 
+    def active_scan_execution_policy_names(ref, project)
+      active_policies_for_project(ref, project).pluck(:name) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- not an ActiveRecord model and active_scan_execution_policies has limit
+    end
+
     def active_pipeline_policies_for_project(ref, project, pipeline_source = nil)
       active_policies_for_project(ref, project, pipeline_source) do |policy_rules|
         policy_rules.select { |rule| rule[:type] == RULE_TYPES[:pipeline] }

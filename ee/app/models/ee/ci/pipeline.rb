@@ -127,6 +127,14 @@ module EE
               Security::PipelineAnalyzersStatusUpdateWorker.perform_async(pipeline.id) if pipeline.default_branch?
             end
           end
+
+          after_transition any => :skipped do |pipeline|
+            pipeline.run_after_commit do
+              if ::Feature.enabled?(:collect_security_policy_skipped_pipelines_audit_events, pipeline.project)
+                Security::Policies::SkipPipelinesAuditWorker.perform_async(pipeline.id)
+              end
+            end
+          end
         end
       end
 
