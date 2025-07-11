@@ -12,8 +12,7 @@ class PushRule < ApplicationRecord
   belongs_to :organization, class_name: 'Organizations::Organization'
   has_one :group, inverse_of: :push_rule, autosave: true
 
-  before_update :convert_to_re2
-
+  before_save :convert_to_re2
   def self.global
     find_by(is_sample: true)
   end
@@ -63,16 +62,18 @@ class PushRule < ApplicationRecord
     write_setting_with_global_default(:reject_non_dco_commits, value)
   end
 
+  def regexp_uses_re2
+    # Always return true to enforce RE2 usage for security
+    # Database column is maintained for compatibility but ignored
+    # This regexp_uses_re2 column will be deprecated and removed in the future
+    # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/553148
+    true
+  end
+
   private
 
   def convert_to_re2
     self.regexp_uses_re2 = true
-  end
-
-  # Allow fallback to ruby regex library
-  # Only supported for existing regexes due to denial of service risk
-  def allow_regex_fallback?
-    !regexp_uses_re2?
   end
 
   request_cache def read_setting_with_global_default(setting)
