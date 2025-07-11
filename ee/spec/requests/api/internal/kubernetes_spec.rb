@@ -195,6 +195,10 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
         send_request
 
         expect(response).to have_gitlab_http_status(:not_acceptable)
+        expect(json_response['message']).to eq(
+          'The remote development workspaces config for the agent is invalid. ' \
+            'Please see https://docs.gitlab.com/user/workspace/settings/#configuration-reference'
+        )
       end
     end
 
