@@ -11,7 +11,7 @@ import ViolationSection from 'ee/compliance_violations/components/violation_sect
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import complianceViolationQuery from 'ee/compliance_violations/graphql/compliance_violation.query.graphql';
-import updateComplianceViolationStatus from 'ee/compliance_violations/graphql/mutations/update_compliance_violation_status.mutation.graphql';
+import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
 
 Vue.use(VueApollo);
 Vue.use(GlToast);
@@ -122,7 +122,7 @@ describe('ComplianceViolationDetailsApp', () => {
 
     mockApollo = createMockApollo([
       [complianceViolationQuery, queryHandler],
-      [updateComplianceViolationStatus, mutationHandler],
+      [updateProjectComplianceViolation, mutationHandler],
     ]);
 
     wrapper = shallowMountExtended(ComplianceViolationDetailsApp, {

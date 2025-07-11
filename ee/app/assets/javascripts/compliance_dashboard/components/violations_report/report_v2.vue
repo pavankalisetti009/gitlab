@@ -9,7 +9,7 @@ import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import ComplianceFrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
-import updateComplianceViolationStatus from 'ee/compliance_violations/graphql/mutations/update_compliance_violation_status.mutation.graphql';
+import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import { statusesInfo } from '../standards_adherence_report/components/details_drawer/statuses_info';
 
 Vue.use(GlToast);
@@ -70,14 +70,22 @@ export default {
     async handleStatusChange(newStatus, violation) {
       this.isStatusUpdating = true;
       try {
-        await this.$apollo.mutate({
-          mutation: updateComplianceViolationStatus,
+        const result = await this.$apollo.mutate({
+          mutation: updateProjectComplianceViolation,
           variables: {
             input: {
-              violationId: violation.id,
-              status: newStatus,
+              id: violation.id,
+              status: newStatus.toUpperCase(),
             },
           },
+        });
+
+        if (result.data?.updateProjectComplianceViolation?.errors?.length > 0) {
+          throw new Error(result.data.updateProjectComplianceViolation.errors.join(', '));
+        }
+
+        this.$toast.show(this.$options.i18n.statusUpdateSuccess, {
+          variant: 'success',
         });
       } catch (error) {
         this.$toast.show(this.$options.i18n.statusUpdateError, {
@@ -209,44 +217,44 @@ export default {
   fields: [
     {
       key: 'status',
-      label: __('Status'),
-      thClass: 'gl-w-1/6 !gl-p-5',
-      tdClass: '!gl-align-middle',
+      label: s__('ComplianceReport|Status'),
+      thClass: 'gl-w-1/7 !gl-p-5',
+      tdClass: '!gl-align-top',
       sortable: true,
     },
     {
       key: 'complianceControl',
       label: s__('ComplianceReport|Violated control and framework'),
-      thClass: 'gl-w-1/4 !gl-p-5',
-      tdClass: '!gl-align-middle',
+      thClass: 'gl-w-1/5 !gl-p-5',
+      tdClass: '!gl-align-top',
       sortable: true,
     },
     {
       key: 'auditEvent',
       label: s__('ComplianceReport|Audit Event'),
-      thClass: 'gl-w-1/4 !gl-p-5',
-      tdClass: '!gl-align-middle',
+      thClass: 'gl-w-1/3 !gl-p-5',
+      tdClass: '!gl-align-top',
       sortable: false,
     },
     {
       key: 'project',
       label: __('Project'),
       thClass: 'gl-w-1/6 !gl-p-5',
-      tdClass: '!gl-align-middle',
+      tdClass: '!gl-align-top',
       sortable: true,
     },
     {
       key: 'createdAt',
       label: s__('ComplianceReport|Date detected'),
       thClass: 'gl-w-1/8 !gl-p-5',
-      tdClass: '!gl-align-middle',
+      tdClass: '!gl-align-top',
       sortable: true,
     },
     {
       key: 'actions',
       label: s__('ComplianceReport|Action'),
       thClass: 'gl-w-1/8 !gl-p-5',
-      tdClass: '!gl-align-middle',
+      tdClass: '!gl-align-top',
       sortable: false,
     },
   ],
@@ -256,6 +264,7 @@ export default {
     ),
     noViolationsFound: s__('ComplianceReport|No violations found'),
     statusUpdateError: s__('ComplianceReport|Failed to update violation status. Please try again.'),
+    statusUpdateSuccess: s__('ComplianceReport|Violation status updated successfully.'),
     viewDetails: s__('ComplianceReport|Details'),
     changeStatus: s__('ComplianceReport|Change status'),
     noAuditEvent: s__('ComplianceReport|No audit event available'),
@@ -284,9 +293,9 @@ export default {
       class="compliance-violations-table"
     >
       <template #cell(status)="{ item }">
-        <div class="gl-mt-5" data-testid="compliance-violation-status">
+        <div class="" data-testid="compliance-violation-status">
           <compliance-violation-status-dropdown
-            class="gl-ml-3 gl-align-baseline"
+            class="gl-align-baseline"
             :value="item.status.toLowerCase()"
             :loading="isStatusUpdating"
             @change="(newStatus) => handleStatusChange(newStatus, item)"

@@ -1,10 +1,10 @@
 <script>
 import { GlLoadingIcon, GlToast, GlAlert } from '@gitlab/ui';
 import Vue from 'vue';
-import { __, sprintf } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
-import updateComplianceViolationStatus from '../graphql/mutations/update_compliance_violation_status.mutation.graphql';
+import updateProjectComplianceViolation from '../graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
 import FixSuggestionSection from './fix_suggestion_section.vue';
@@ -77,36 +77,22 @@ export default {
     async handleStatusChange(newStatus) {
       this.isStatusUpdating = true;
       try {
-        await this.$apollo.mutate({
-          mutation: updateComplianceViolationStatus,
+        const result = await this.$apollo.mutate({
+          mutation: updateProjectComplianceViolation,
           variables: {
             input: {
               id: this.graphqlViolationId,
               status: newStatus.toUpperCase(),
             },
           },
-          update: (cache, { data: { updateProjectComplianceViolation } }) => {
-            if (updateProjectComplianceViolation.errors.length === 0) {
-              const data = cache.readQuery({
-                query: complianceViolationQuery,
-                variables: { id: this.graphqlViolationId },
-              });
+        });
 
-              const updatedData = {
-                ...data,
-                projectComplianceViolation: {
-                  ...data.projectComplianceViolation,
-                  status: updateProjectComplianceViolation.complianceViolation.status,
-                },
-              };
+        if (result.data?.updateProjectComplianceViolation?.errors?.length > 0) {
+          throw new Error(result.data.updateProjectComplianceViolation.errors.join(', '));
+        }
 
-              cache.writeQuery({
-                query: complianceViolationQuery,
-                variables: { id: this.graphqlViolationId },
-                data: updatedData,
-              });
-            }
-          },
+        this.$toast.show(this.$options.i18n.statusUpdateSuccess, {
+          variant: 'success',
         });
       } catch (error) {
         this.$toast.show(this.$options.i18n.statusUpdateError, {
@@ -118,10 +104,15 @@ export default {
     },
   },
   i18n: {
-    status: __('Status'),
-    location: __('Location'),
-    queryError: __('Failed to load the compliance violation. Refresh the page and try again.'),
-    statusUpdateError: __('Failed to update compliance violation status. Please try again later.'),
+    status: s__('ComplianceReport|Status'),
+    location: s__('ComplianceReport|Location'),
+    queryError: s__(
+      'ComplianceReport|Failed to load the compliance violation. Refresh the page and try again.',
+    ),
+    statusUpdateError: s__(
+      'ComplianceReport|Failed to update compliance violation status. Please try again later.',
+    ),
+    statusUpdateSuccess: s__('ComplianceReport|Violation status updated successfully.'),
   },
 };
 </script>

@@ -1,4 +1,4 @@
-import { GlAlert, GlLoadingIcon, GlTable, GlKeysetPagination } from '@gitlab/ui';
+import { GlAlert, GlLoadingIcon, GlTable, GlKeysetPagination, GlToast } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
@@ -10,11 +10,13 @@ import ComplianceViolationsReportV2, {
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import ComplianceFrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
+import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 Vue.use(VueApollo);
+Vue.use(GlToast);
 
 jest.mock('~/graphql_shared/utils', () => ({
   getIdFromGraphQLId: jest.fn(),
@@ -162,6 +164,41 @@ describe('ComplianceViolationsReportV2 component', () => {
   const mockGraphQlLoading = jest.fn().mockResolvedValue(new Promise(() => {}));
   const mockGraphQlError = jest.fn().mockRejectedValue(new Error('GraphQL error'));
 
+  const mockUpdateMutationSuccess = jest.fn().mockResolvedValue({
+    data: {
+      updateProjectComplianceViolation: {
+        clientMutationId: 'test-id',
+        errors: [],
+        complianceViolation: {
+          id: 'gid://gitlab/ComplianceViolation/1',
+          status: 'RESOLVED',
+          createdAt: '2025-06-08T10:00:00Z',
+          complianceControl: {
+            name: 'SOX - Code Review Required',
+            complianceRequirement: {
+              name: 'basic code regulation',
+              framework: {
+                id: 'gid://gitlab/ComplianceManagement::Framework/3',
+                color: '#cd5b45',
+                default: false,
+                name: 'SOC 2',
+                description: 'SOC 2 description',
+              },
+            },
+          },
+          project: {
+            id: 'gid://gitlab/Project/1',
+            nameWithNamespace: 'GitLab.org / GitLab Test',
+            fullPath: 'gitlab-org/gitlab-test',
+            webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
+          },
+        },
+      },
+    },
+  });
+
+  const mockUpdateMutationError = jest.fn().mockRejectedValue(new Error('Mutation error'));
+
   const findErrorMessage = () => wrapper.findComponent(GlAlert);
   const findViolationsTable = () => wrapper.findComponent(GlTable);
   const findTableLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -171,18 +208,25 @@ describe('ComplianceViolationsReportV2 component', () => {
 
   const tableRows = () => wrapper.findAll('tbody tr');
 
-  const createMockApolloProvider = (resolverMock = mockGraphQlLoading) => {
-    return createMockApollo([[groupComplianceViolationsQuery, resolverMock]]);
+  const createMockApolloProvider = (
+    resolverMock = mockGraphQlLoading,
+    mutationMock = mockUpdateMutationSuccess,
+  ) => {
+    return createMockApollo([
+      [groupComplianceViolationsQuery, resolverMock],
+      [updateProjectComplianceViolation, mutationMock],
+    ]);
   };
 
-  const createComponent = (
+  const createComponent = ({
     mountFn = shallowMount,
     props = {},
     resolverMock = mockGraphQlLoading,
-  ) => {
+    mutationMock = mockUpdateMutationSuccess,
+  } = {}) => {
     return extendedWrapper(
       mountFn(ComplianceViolationsReportV2, {
-        apolloProvider: createMockApolloProvider(resolverMock),
+        apolloProvider: createMockApolloProvider(resolverMock, mutationMock),
         propsData: {
           groupPath,
           ...props,
@@ -211,7 +255,7 @@ describe('ComplianceViolationsReportV2 component', () => {
 
   describe('when initializing', () => {
     beforeEach(() => {
-      wrapper = createComponent(mount, {}, mockGraphQlLoading);
+      wrapper = createComponent({ mountFn: mount, resolverMock: mockGraphQlLoading });
     });
 
     it('renders the table loading icon', () => {
@@ -232,7 +276,7 @@ describe('ComplianceViolationsReportV2 component', () => {
 
   describe('when the query fails', () => {
     beforeEach(async () => {
-      wrapper = createComponent(shallowMount, {}, mockGraphQlError);
+      wrapper = createComponent({ resolverMock: mockGraphQlError });
       await waitForPromises();
     });
 
@@ -246,7 +290,7 @@ describe('ComplianceViolationsReportV2 component', () => {
 
   describe('when there are violations', () => {
     beforeEach(async () => {
-      wrapper = createComponent(mount, {}, mockGraphQlSuccess);
+      wrapper = createComponent({ mountFn: mount, resolverMock: mockGraphQlSuccess });
       await waitForPromises();
     });
 
@@ -302,12 +346,128 @@ describe('ComplianceViolationsReportV2 component', () => {
         },
       };
       const mockResolver = jest.fn().mockResolvedValue(emptyResponse);
-      wrapper = createComponent(mount, {}, mockResolver);
+      wrapper = createComponent({ mountFn: mount, resolverMock: mockResolver });
       await waitForPromises();
     });
 
     it('renders the empty table message', () => {
       expect(findViolationsTable().text()).toContain('No violations found');
+    });
+  });
+
+  describe('status change functionality', () => {
+    beforeEach(async () => {
+      wrapper = createComponent({
+        mountFn: mount,
+        resolverMock: mockGraphQlSuccess,
+        mutationMock: mockUpdateMutationSuccess,
+      });
+      await waitForPromises();
+    });
+
+    it('calls mutation when status is changed', async () => {
+      const statusDropdown = findStatusDropdown();
+      statusDropdown.vm.$emit('change', 'resolved');
+      await waitForPromises();
+
+      expect(mockUpdateMutationSuccess).toHaveBeenCalledWith({
+        input: {
+          id: 'gid://gitlab/ComplianceViolation/1',
+          status: 'RESOLVED',
+        },
+      });
+    });
+
+    it('sets loading state during status update', async () => {
+      const statusDropdown = findStatusDropdown();
+      statusDropdown.vm.$emit('change', 'resolved');
+      await nextTick();
+
+      expect(statusDropdown.props('loading')).toBe(true);
+
+      await waitForPromises();
+
+      expect(statusDropdown.props('loading')).toBe(false);
+    });
+
+    it('shows success toast when mutation succeeds', async () => {
+      const mockToast = { show: jest.fn() };
+      wrapper.vm.$toast = mockToast;
+
+      const statusDropdown = findStatusDropdown();
+      statusDropdown.vm.$emit('change', 'resolved');
+      await waitForPromises();
+
+      expect(mockToast.show).toHaveBeenCalledWith('Violation status updated successfully.', {
+        variant: 'success',
+      });
+    });
+
+    it('shows error toast when mutation fails', async () => {
+      wrapper = createComponent({
+        mountFn: mount,
+        resolverMock: mockGraphQlSuccess,
+        mutationMock: mockUpdateMutationError,
+      });
+      await waitForPromises();
+
+      const mockToast = { show: jest.fn() };
+      wrapper.vm.$toast = mockToast;
+
+      const statusDropdown = findStatusDropdown();
+      statusDropdown.vm.$emit('change', 'resolved');
+      await waitForPromises();
+
+      expect(mockToast.show).toHaveBeenCalledWith(
+        'Failed to update violation status. Please try again.',
+        { variant: 'danger' },
+      );
+    });
+
+    it('shows error toast when mutation returns errors', async () => {
+      const mockMutationWithErrors = jest.fn().mockResolvedValue({
+        data: {
+          updateProjectComplianceViolation: {
+            clientMutationId: 'test-id',
+            errors: ['Validation failed'],
+            complianceViolation: null,
+          },
+        },
+      });
+
+      wrapper = createComponent({
+        mountFn: mount,
+        resolverMock: mockGraphQlSuccess,
+        mutationMock: mockMutationWithErrors,
+      });
+      await waitForPromises();
+
+      const mockToast = { show: jest.fn() };
+      wrapper.vm.$toast = mockToast;
+
+      const statusDropdown = findStatusDropdown();
+      statusDropdown.vm.$emit('change', 'resolved');
+      await waitForPromises();
+
+      expect(mockToast.show).toHaveBeenCalledWith(
+        'Failed to update violation status. Please try again.',
+        { variant: 'danger' },
+      );
+    });
+
+    it('resets loading state even when mutation fails', async () => {
+      wrapper = createComponent({
+        mountFn: mount,
+        resolverMock: mockGraphQlSuccess,
+        mutationMock: mockUpdateMutationError,
+      });
+      await waitForPromises();
+
+      const statusDropdown = findStatusDropdown();
+      statusDropdown.vm.$emit('change', 'resolved');
+      await waitForPromises();
+
+      expect(wrapper.vm.isStatusUpdating).toBe(false);
     });
   });
 
@@ -348,7 +508,7 @@ describe('ComplianceViolationsReportV2 component', () => {
 
     beforeEach(async () => {
       const mockResolver = jest.fn().mockResolvedValue(mockViolationsResponseWithPagination);
-      wrapper = createComponent(mount, {}, mockResolver);
+      wrapper = createComponent({ mountFn: mount, resolverMock: mockResolver });
       await waitForPromises();
     });
 
@@ -771,7 +931,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const mockResolver = jest.fn().mockResolvedValue(responseWithoutAuditEvent);
-      wrapper = createComponent(mount, {}, mockResolver);
+      wrapper = createComponent({ mountFn: mount, resolverMock: mockResolver });
     });
 
     it('renders no audit event message', async () => {
