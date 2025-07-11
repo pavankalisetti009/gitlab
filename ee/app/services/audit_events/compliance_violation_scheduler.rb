@@ -30,6 +30,15 @@ module AuditEvents
       return false unless audit_event.entity
       return false if audit_event.entity.is_a?(Gitlab::Audit::NullEntity)
 
+      unless audit_event.event_name.present?
+        Gitlab::AppLogger.info(
+          message: "Audit event without event_name encountered in compliance scheduler",
+          audit_event_id: audit_event.id,
+          audit_event_class: audit_event.class.name
+        )
+        return false
+      end
+
       if audit_event.entity_type == 'Project'
         return false unless ::Feature.enabled?(:enable_project_compliance_violations, audit_event.project)
 

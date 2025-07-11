@@ -122,9 +122,74 @@ RSpec.describe AuditEvents::ComplianceViolationScheduler, feature_category: :com
         end
       end
 
+      context 'when audit event has no event_name' do
+        let_it_be(:project) { create(:project) }
+        let(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id, event_name: nil) }
+
+        before do
+          allow(audit_event).to receive(:project).and_return(project)
+          allow(project).to receive(:licensed_feature_available?)
+                              .with(:project_level_compliance_violations_report).and_return(true)
+        end
+
+        it 'returns false and logs the missing event_name' do
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            message: "Audit event without event_name encountered in compliance scheduler",
+            audit_event_id: audit_event.id,
+            audit_event_class: audit_event.class.name
+          )
+
+          expect(scheduler.send(:should_schedule_compliance_check?, audit_event)).to be false
+        end
+      end
+
+      context 'when audit event has blank event_name' do
+        let_it_be(:project) { create(:project) }
+        let(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id, event_name: '') }
+
+        before do
+          allow(audit_event).to receive(:project).and_return(project)
+          allow(project).to receive(:licensed_feature_available?)
+                              .with(:project_level_compliance_violations_report).and_return(true)
+        end
+
+        it 'returns false and logs the missing event_name' do
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            message: "Audit event without event_name encountered in compliance scheduler",
+            audit_event_id: audit_event.id,
+            audit_event_class: audit_event.class.name
+          )
+
+          expect(scheduler.send(:should_schedule_compliance_check?, audit_event)).to be false
+        end
+      end
+
+      context 'when audit event has whitespace-only event_name' do
+        let_it_be(:project) { create(:project) }
+        let(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id, event_name: '   ') }
+
+        before do
+          allow(audit_event).to receive(:project).and_return(project)
+          allow(project).to receive(:licensed_feature_available?)
+                              .with(:project_level_compliance_violations_report).and_return(true)
+        end
+
+        it 'returns false and logs the missing event_name' do
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            message: "Audit event without event_name encountered in compliance scheduler",
+            audit_event_id: audit_event.id,
+            audit_event_class: audit_event.class.name
+          )
+
+          expect(scheduler.send(:should_schedule_compliance_check?, audit_event)).to be false
+        end
+      end
+
       context 'when audit event entity is a Project' do
         let_it_be(:project) { create(:project) }
-        let(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
+        let(:audit_event) do
+          create(:audit_events_project_audit_event, project_id: project.id, event_name: 'test_event')
+        end
 
         context 'when project has licensed feature available' do
           before do
@@ -153,7 +218,7 @@ RSpec.describe AuditEvents::ComplianceViolationScheduler, feature_category: :com
 
       context 'when audit event entity is a Group' do
         let(:group) { create(:group) }
-        let(:audit_event) { create(:audit_events_group_audit_event, group_id: group.id) }
+        let(:audit_event) { create(:audit_events_group_audit_event, group_id: group.id, event_name: 'test_event') }
 
         context 'when group has licensed feature available' do
           before do
@@ -181,7 +246,7 @@ RSpec.describe AuditEvents::ComplianceViolationScheduler, feature_category: :com
       end
 
       context 'when audit event entity is neither Project nor Group' do
-        let(:audit_event) { create(:audit_events_user_audit_event) }
+        let(:audit_event) { create(:audit_events_user_audit_event, event_name: 'test_event') }
 
         it 'returns nil' do
           expect(scheduler.send(:should_schedule_compliance_check?, audit_event)).to be_nil
@@ -191,7 +256,7 @@ RSpec.describe AuditEvents::ComplianceViolationScheduler, feature_category: :com
 
     context 'when feature flag is disabled' do
       let_it_be(:project) { create(:project) }
-      let(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id, event_name: 'test_event') }
 
       before do
         stub_feature_flags(enable_project_compliance_violations: false)
