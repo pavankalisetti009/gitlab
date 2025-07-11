@@ -10,7 +10,7 @@ module Gitlab
       class BaseLazyAggregate
         include ::Gitlab::Graphql::Deferred
 
-        attr_reader :query_ctx, :object_id, :lazy_state
+        attr_reader :query_ctx, :lazy_state
 
         # Initializes the lazy aggregate with the query context and an object ID.
         # The block is optional and can define additional behavior during execution.
