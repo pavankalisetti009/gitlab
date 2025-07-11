@@ -30,17 +30,11 @@ describe('DuoWorkflowSettings', () => {
   const findDisableButton = () => wrapper.findByTestId('disable-workflow-button');
   const findConfirmModal = () => wrapper.findComponent(GlModal);
   const findWorkflowStatus = () => wrapper.find('h3');
-  const findTitle = () => wrapper.findByTestId('duo-workflow-settings-title');
-  const findSubtitle = () => wrapper.findByTestId('duo-workflow-settings-subtitle');
   const findServiceAccount = () => wrapper.findByTestId('service-account');
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
   const createWrapper = (provide = {}) => {
     const defaultMountOptions = {
-      propsData: {
-        title: 'Test Title',
-        subtitle: 'Test Subtitle',
-      },
       provide: {
         duoWorkflowEnabled: false,
         duoWorkflowServiceAccount: null,
@@ -68,8 +62,6 @@ describe('DuoWorkflowSettings', () => {
     it('renders the component with default props when workflow is disabled', () => {
       createWrapper();
 
-      expect(findTitle().text()).toBe('Test Title');
-      expect(findSubtitle().text()).toBe('Test Subtitle');
       expect(findEnableButton().exists()).toBe(true);
       expect(findDisableButton().exists()).toBe(false);
       expect(findWorkflowStatus().text()).toBe('Off');
@@ -112,7 +104,7 @@ describe('DuoWorkflowSettings', () => {
           expect.arrayContaining([
             expect.objectContaining({
               id: 'duo-workflow-successfully-enabled',
-              message: `GitLab Duo Workflow is now on for the instance and the service account (@${SERVICE_ACCOUNT.username}) was created. To use Workflow in your groups, you must turn on AI features for specific groups.`,
+              message: `GitLab Duo Agent Platform is now on for the instance and the service account (@${SERVICE_ACCOUNT.username}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups.`,
               variant: 'success',
             }),
           ]),
@@ -137,7 +129,7 @@ describe('DuoWorkflowSettings', () => {
             expect.objectContaining({
               id: 'duo-workflow-successfully-enabled',
               message:
-                'GitLab Duo Workflow is now on for the instance. To use Workflow in your groups, you must turn on AI features for specific groups.',
+                'GitLab Duo Agent Platform is now on for the instance. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
               variant: 'success',
             }),
           ]),

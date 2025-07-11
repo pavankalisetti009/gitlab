@@ -147,25 +147,10 @@ describe('GitLab Duo Home', () => {
         expect(findDuoCoreUpgradeCard().exists()).toBe(true);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
       });
-    });
 
-    describe('when showDuoWorkflowSettings is true', () => {
-      beforeEach(() => {
+      it('renders DuoWorkflowSettings', () => {
         createComponent({ showDuoWorkflowSettings: true });
-      });
-
-      it('renders DuoWorkflowSettings but not CodeSuggestionsUsage', () => {
         expect(findDuoWorkflowSettings().exists()).toBe(true);
-        expect(findCodeSuggestionsUsage().exists()).toBe(false);
-        expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
-        expect(findHealthCheckList().exists()).toBe(false);
-      });
-
-      it('passes the correct props to DuoWorkflowSettings', () => {
-        expect(findDuoWorkflowSettings().props('title')).toBe('GitLab Duo');
-        expect(findDuoWorkflowSettings().props('subtitle')).toBe(
-          'Monitor, manage, and customize AI-powered features to ensure efficient utilization and alignment.',
-        );
       });
     });
   });
