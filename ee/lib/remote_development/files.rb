@@ -19,9 +19,9 @@ module RemoteDevelopment
       #
       # The container image is pinned to linux/amd64 digest, instead of the tag digest.
       # This is to prevent Rancher Desktop from pulling the linux/arm64 architecture of the image
-      # which will disrupt local development since gitlab-workspaces-tools does not support
+      # which will disrupt local development since vscode fork and workspace tools image does not support
       # that architecture yet and thus the workspace won't start.
-      # This will be fixed in https://gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools/-/issues/12
+      # This will be fixed in https://gitlab.com/gitlab-org/gitlab/-/issues/550128
       read_file("settings/default_devfile.yaml")
     end
 
