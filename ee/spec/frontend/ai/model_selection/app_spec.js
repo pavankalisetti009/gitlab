@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlExperimentBadge } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import ModelSelectionApp from 'ee/ai/model_selection/app.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -41,6 +42,7 @@ describe('ModelSelectionApp', () => {
   };
 
   const findTitle = () => wrapper.findByTestId('model-selection-title');
+  const findBetaBadge = () => wrapper.findComponent(GlExperimentBadge);
   const findFeatureSettingsTable = () => wrapper.findComponent(FeatureSettingsTable);
 
   it('has a title', () => {
@@ -55,6 +57,12 @@ describe('ModelSelectionApp', () => {
     expect(wrapper.text()).toMatch(
       'Manage GitLab Duo by configuring and assigning models to AI-native features.',
     );
+  });
+
+  it('has a beta badge', () => {
+    createComponent();
+
+    expect(findBetaBadge().props('type')).toBe('beta');
   });
 
   it('passes the correct loading state to `FeatureSettingsTable` when data is loading', () => {
