@@ -82,6 +82,7 @@ The following features are not found in standard Markdown:
 - [Front matter](#front-matter)
 - [GitLab-specific references](#gitlab-specific-references)
 - [Includes](#includes)
+- [Placeholders](#placeholders)
 - [Inline diffs](#inline-diff)
 - [Math equations and symbols written in LaTeX](#math-equations)
 - [Strikethrough](#emphasis)
@@ -1965,6 +1966,33 @@ When rendered, the example looks similar to:
 > var s = "JavaScript syntax highlighting";
 > alert(s);
 > ```
+
+## Placeholders
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/14389) in GitLab 18.2 [with a flag](../administration/feature_flags/_index.md) named `markdown_placeholders`. Disabled by default.
+
+{{< /history >}}
+
+Placeholders can be used to display certain types of changeable data, such as a project's title
+or latest tag. They are filled in each time the Markdown is rendered.
+
+The syntax is `%{PLACEHOLDER}`.
+
+| Placeholder               | Example value       | Description |
+|---------------------------|---------------------|-------------|
+| `%{gitlab_server}`        | `gitlab.com`        | Server of a project |
+| `%{gitlab_pages_domain}`  | `pages.gitlab.com`  | Domain hosting GitLab Pages |
+| `%{project_path}`         | `gitlab-org/gitlab` | Path of a project including the parent groups |
+| `%{project_name}`         | `gitlab`            | Name of a project |
+| `%{project_id}`           | `278964`            | Database ID associated with a project |
+| `%{project_namespace}`    | `gitlab-org`        | Project namespace of a project |
+| `%{project_title}`        | `GitLab`            | Title of a project |
+| `%{group_name}`           | `gitlab-org`        | Group of a project |
+| `%{default_branch}`       | `master`            | Default branch name configured for a project’s repository |
+| `%{commit_sha}`           | `ad10e011ce65492322037633ebc054efde37b143` | ID of the most recent commit to the default branch of a project’s repository |
+| `%{latest_tag}`           | `v17.10.7-ee`       | Latest tag added to the project’s repository |
 
 ## Escape characters
 

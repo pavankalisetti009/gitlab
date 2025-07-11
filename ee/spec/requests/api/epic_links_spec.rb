@@ -120,7 +120,7 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
       before do
         stub_licensed_features(epics: true, subepics: true)
 
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(102)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(103)
       end
 
       context 'and group is public and user is not a member' do
