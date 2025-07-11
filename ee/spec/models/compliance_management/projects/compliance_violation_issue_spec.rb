@@ -31,37 +31,6 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationIssue, type: :
         create(:project_compliance_violation, project: other_project, namespace: namespace)
       end
 
-      describe '#issue_belongs_to_project' do
-        context 'when issue belongs to project' do
-          subject(:violation_issue) do
-            build(:project_compliance_violation_issue,
-              project: project,
-              issue: issue,
-              project_compliance_violation: compliance_violation
-            )
-          end
-
-          it 'is valid' do
-            expect(violation_issue).to be_valid
-          end
-        end
-
-        context 'when issue does not belong to project' do
-          subject(:violation_issue) do
-            build(:project_compliance_violation_issue,
-              project: project,
-              issue: other_issue,
-              project_compliance_violation: compliance_violation
-            )
-          end
-
-          it 'is invalid' do
-            expect(violation_issue).not_to be_valid
-            expect(violation_issue.errors[:issue]).to include('must belong to the specified project')
-          end
-        end
-      end
-
       describe '#violation_belongs_to_project' do
         context 'when compliance violation belongs to project' do
           subject(:violation_issue) do
