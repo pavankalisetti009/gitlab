@@ -5871,6 +5871,9 @@ msgstr ""
 msgid "AiImpactAnalytics|Code Suggestions: Usage"
 msgstr ""
 
+msgid "AiImpactAnalytics|Data available after upgrade to GitLab 18.0. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
 msgid "AiImpactAnalytics|Duo Chat: Usage"
 msgstr ""
 
