@@ -2252,6 +2252,30 @@ Input type: `AiCatalogAgentCreateInput`
 | <a id="mutationaicatalogagentcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationaicatalogagentcreateitem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Item created. |
 
+### `Mutation.aiCatalogAgentDelete`
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AiCatalogAgentDeleteInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogagentdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogagentdeleteid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog Agent to delete. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogagentdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogagentdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationaicatalogagentdeletesuccess"></a>`success` | [`Boolean!`](#boolean) | Returns true if catalog Agent was successfully deleted. |
+
 ### `Mutation.aiDuoWorkflowCreate`
 
 {{< details >}}

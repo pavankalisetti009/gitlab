@@ -16,6 +16,10 @@ module Ai
       def error(message)
         ServiceResponse.error(message: Array(message))
       end
+
+      def error_no_permissions
+        error('You have insufficient permissions')
+      end
     end
   end
 end
