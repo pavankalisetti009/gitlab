@@ -9,6 +9,9 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
   let_it_be(:current_user) { create(:user) }
   let_it_be(:owner_user) { create(:user) }
   let_it_be(:mutation_name) { :project_secret_delete }
+  let(:error_message) do
+    "The resource that you are attempting to access does not exist or you don't have permission to perform this action"
+  end
 
   let(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
@@ -50,15 +53,21 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
     it_behaves_like 'a mutation on an unauthorized resource'
   end
 
-  context 'when current user is not the project owner' do
+  context 'when current user is maintainer, but has no openbao policies' do
     before_all do
       project.add_maintainer(current_user)
     end
 
-    it_behaves_like 'a mutation on an unauthorized resource'
+    it 'returns permission error from Openbao' do
+      post_mutation
+
+      expect(response).to have_gitlab_http_status(:error)
+      expect(graphql_errors).to be_present
+      expect(graphql_errors.first['message']).to include("permission denied")
+    end
   end
 
-  context 'when current user is the project owner' do
+  context 'when current user is the project owner and has proper openbao policies' do
     before_all do
       project.add_owner(current_user)
     end
@@ -130,7 +139,7 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
 
         post_mutation
 
-        expect_graphql_errors_to_include("`secrets_manager` feature flag is disabled.")
+        expect_graphql_errors_to_include(error_message)
       end
     end
   end

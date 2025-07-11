@@ -7,7 +7,7 @@ module Mutations
         graphql_name 'ProjectSecretDelete'
         include ResolvesProject
 
-        authorize :admin_project_secrets_manager
+        authorize :delete_project_secrets
 
         argument :project_path, GraphQL::Types::ID,
           required: true,
@@ -24,10 +24,6 @@ module Mutations
 
         def resolve(project_path:, name:)
           project = authorized_find!(project_path: project_path)
-
-          if Feature.disabled?(:secrets_manager, project)
-            raise_resource_not_available_error!("`secrets_manager` feature flag is disabled.")
-          end
 
           result = ::SecretsManagement::ProjectSecrets::DeleteService
             .new(project, current_user)

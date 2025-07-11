@@ -6,7 +6,7 @@ module Types
       graphql_name 'ProjectSecret'
       description 'Representation of a project secret.'
 
-      authorize :admin_project_secrets_manager
+      authorize :read_project_secrets
 
       field :project,
         Types::ProjectType,

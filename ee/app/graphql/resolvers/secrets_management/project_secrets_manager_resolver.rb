@@ -12,7 +12,7 @@ module Resolvers
         required: true,
         description: 'Project of the secrets manager.'
 
-      authorize :admin_project_secrets_manager
+      authorize :read_project_secrets_manager_status
 
       def resolve(project_path:)
         project = authorized_find!(project_path: project_path)

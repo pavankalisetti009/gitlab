@@ -9,7 +9,7 @@ module Mutations
         include Gitlab::InternalEventsTracking
         include ResolvesProject
 
-        authorize :admin_project_secrets_manager
+        authorize :update_project_secrets
 
         argument :project_path, GraphQL::Types::ID,
           required: true,
@@ -46,10 +46,6 @@ module Mutations
 
         def resolve(project_path:, name:, **args)
           project = authorized_find!(project_path: project_path)
-
-          if Feature.disabled?(:secrets_manager, project)
-            raise_resource_not_available_error!("`secrets_manager` feature flag is disabled.")
-          end
 
           result = ::SecretsManagement::ProjectSecrets::UpdateService
             .new(project, current_user)

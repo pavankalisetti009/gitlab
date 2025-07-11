@@ -16,12 +16,10 @@ module Resolvers
         required: true,
         description: 'Name of the project secret to view.'
 
-      authorize :admin_project_secrets_manager
+      authorize :read_project_secrets
 
       def resolve(project_path:, name:)
         project = authorized_find!(project_path: project_path)
-
-        ensure_active_secrets_manager!(project)
 
         result = ::SecretsManagement::ProjectSecrets::ReadService.new(project, current_user).execute(name)
 
@@ -36,12 +34,6 @@ module Resolvers
 
       def find_object(project_path:)
         resolve_project(full_path: project_path)
-      end
-
-      def ensure_active_secrets_manager!(project)
-        return if project.secrets_manager&.active?
-
-        raise_resource_not_available_error!('Project secrets manager is not active')
       end
     end
   end
