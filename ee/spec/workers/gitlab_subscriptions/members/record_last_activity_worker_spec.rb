@@ -15,15 +15,23 @@ RSpec.describe GitlabSubscriptions::Members::RecordLastActivityWorker, :clean_gi
     ::Users::ActivityEvent.new(data: { user_id: user_id, namespace_id: namespace_id })
   end
 
-  it_behaves_like 'subscribes to event' do
-    let(:event) { last_activity_event }
-  end
-
-  context 'when the lease_key is taken' do
-    before do
-      allow(Gitlab::ExclusiveLease).to receive(:get_uuid).with(lease_key).and_return(true)
+  context 'in a saas environment', :saas do
+    it_behaves_like 'subscribes to event' do
+      let(:event) { last_activity_event }
     end
 
+    context 'when the lease_key is taken' do
+      before do
+        allow(Gitlab::ExclusiveLease).to receive(:get_uuid).with(lease_key).and_return(true)
+      end
+
+      it_behaves_like 'ignores the published event' do
+        let(:event) { last_activity_event }
+      end
+    end
+  end
+
+  context 'in a self managed environment' do
     it_behaves_like 'ignores the published event' do
       let(:event) { last_activity_event }
     end
