@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::OAuth::OauthResourceOwnerRedirectResolver, feature_category: :system_access do
-  let(:resolver) { described_class.new(namespace_path) }
-  let(:namespace_path) { nil }
+  let(:resolver) { described_class.new(namespace_id) }
+  let(:namespace_id) { nil }
   let(:saml_provider) { create(:saml_provider, enforced_sso: true) }
   let(:group) { saml_provider.group }
   let(:child_group) { create(:group, parent: group) }
@@ -17,21 +17,21 @@ RSpec.describe Gitlab::Auth::OAuth::OauthResourceOwnerRedirectResolver, feature_
   describe '#resolve_redirect_url' do
     subject(:resolve_redirect_url) { resolver.resolve_redirect_url }
 
-    context 'when top_level_namespace_path is blank' do
-      let(:namespace_path) { nil }
+    context 'when root_namespace_id is blank' do
+      let(:namespace_id) { nil }
 
       it 'returns new_user_session_url' do
         expect(resolve_redirect_url).to eq('/login')
       end
 
       it 'does not query for group' do
-        expect(::Group).not_to receive(:find_by_full_path)
+        expect(::Group).not_to receive(:find_by_id)
         resolve_redirect_url
       end
     end
 
     context 'when namespace is found' do
-      let(:namespace_path) { group.full_path }
+      let(:namespace_id) { group.id }
 
       context 'when found namespace is a Group' do
         context 'when feature flag is enabled' do
@@ -89,7 +89,7 @@ RSpec.describe Gitlab::Auth::OAuth::OauthResourceOwnerRedirectResolver, feature_
 
       context 'when found namespace is not a Group' do
         let(:user_namespace) { create(:user_namespace) }
-        let(:namespace_path) { user_namespace.full_path }
+        let(:namespace_id) { user_namespace.id }
 
         it 'returns new_user_session_url' do
           expect(resolve_redirect_url).to eq('/login')
@@ -98,7 +98,7 @@ RSpec.describe Gitlab::Auth::OAuth::OauthResourceOwnerRedirectResolver, feature_
     end
 
     context 'when namespace is not found' do
-      let(:namespace_path) { 'non-existent-group' }
+      let(:namespace_id) { 999999 }
 
       it 'returns new_user_session_url' do
         expect(resolve_redirect_url).to eq('/login')
@@ -106,7 +106,7 @@ RSpec.describe Gitlab::Auth::OAuth::OauthResourceOwnerRedirectResolver, feature_
     end
 
     context 'with child namespace path' do
-      let(:namespace_path) { child_group.full_path }
+      let(:namespace_id) { child_group.id }
 
       before do
         allow(resolver).to receive(:build_sso_redirect_url)

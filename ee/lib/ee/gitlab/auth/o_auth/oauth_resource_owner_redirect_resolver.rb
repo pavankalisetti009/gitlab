@@ -10,9 +10,9 @@ module EE
 
           override :resolve_redirect_url
           def resolve_redirect_url
-            return super if top_level_namespace_path.blank?
+            return super if root_namespace_id.blank?
 
-            group = ::Group.find_by_full_path(top_level_namespace_path)
+            group = ::Group.find_by_id(root_namespace_id)
             return super unless group
             return super unless ::Feature.enabled?(:ff_oauth_redirect_to_sso_login, group.root_ancestor)
 
