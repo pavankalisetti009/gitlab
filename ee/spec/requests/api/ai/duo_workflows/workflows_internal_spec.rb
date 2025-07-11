@@ -24,6 +24,9 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+    # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+    allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+    # rubocop:enable RSpec/AnyInstanceOf
   end
 
   describe 'POST /ai/duo_workflows/workflows/:id/checkpoints' do

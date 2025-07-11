@@ -156,7 +156,16 @@ module Gitlab
             prompt_class: nil,
             feature_category: :duo_workflow,
             execute_method: nil,
-            maturity: :experimental,
+            maturity: :beta,
+            self_managed: true,
+            internal: true
+          },
+          duo_agent_platform: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_workflow,
+            execute_method: nil,
+            maturity: :beta,
             self_managed: true,
             internal: true
           },

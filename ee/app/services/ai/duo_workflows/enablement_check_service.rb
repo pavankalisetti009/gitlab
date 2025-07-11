@@ -27,7 +27,8 @@ module Ai
             message: _("User must have developer access to the project.")
           }, {
             name: :feature_available,
-            value: ::Gitlab::Llm::StageCheck.available?(@project, :duo_workflow),
+            value: ::Gitlab::Llm::StageCheck.available?(@project,
+              :duo_workflow) && @current_user&.allowed_to_use?(:duo_agent_platform),
             message: _("duo_workflow licensed feature must be available for the project and experimental " \
               "features must be enabled.")
           }

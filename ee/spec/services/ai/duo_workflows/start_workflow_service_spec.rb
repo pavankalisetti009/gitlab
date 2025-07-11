@@ -77,6 +77,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       before do
         stub_feature_flags(duo_workflow: duo_workflow_ff, duo_workflow_in_ci: duo_workflow_in_ci_ff)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        allow(current_user).to receive(:allowed_to_use?).and_return(true)
         project.project_setting.update!(duo_features_enabled: duo_features_enabled)
         workflow.update!(user: current_user)
       end
@@ -94,6 +95,9 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+      # rubocop:enable RSpec/AnyInstanceOf
       allow_next_instance_of(Ci::CreatePipelineService) do |instance|
         allow(instance).to receive(:execute).and_return(service_response)
       end
@@ -115,6 +119,9 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       settings_double = instance_double(::Ai::Setting, duo_workflow_service_account_user: service_account)
       allow(::Ai::Setting).to receive(:instance).and_return(settings_double)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+      # rubocop:enable RSpec/AnyInstanceOf
       project.project_setting.update!(duo_features_enabled: true)
 
       mock_workload = instance_double(Ci::Workloads::Workload, id: 123)
@@ -143,6 +150,9 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
   context 'with source_branch parameter' do
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+      # rubocop:enable RSpec/AnyInstanceOf
       project.project_setting.update!(duo_features_enabled: true)
     end
 

@@ -1211,7 +1211,8 @@ module EE
       with_scope :subject
       condition(:duo_workflow_available) do
         @subject.duo_features_enabled &&
-          ::Gitlab::Llm::StageCheck.available?(@subject, :duo_workflow)
+          ::Gitlab::Llm::StageCheck.available?(@subject, :duo_workflow) &&
+          @user&.allowed_to_use?(:duo_agent_platform)
       end
 
       rule { duo_workflow_enabled & duo_workflow_available & can?(:developer_access) }.policy do
