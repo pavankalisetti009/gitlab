@@ -215,13 +215,7 @@ export default {
       return !this.updatedNoteBody.length || this.isSubmitting;
     },
     isInternalNote() {
-      return this.discussionNote.internal || this.discussion.confidential;
-    },
-    discussionNote() {
-      const discussionNote = this.discussion.id
-        ? this.getDiscussionLastNote(this.discussion)
-        : this.note;
-      return discussionNote || {};
+      return this.discussion.confidential;
     },
     canSuggest() {
       return (
@@ -299,7 +293,7 @@ export default {
       }
     },
     updatePlaceholder() {
-      this.formFieldProps.placeholder = this.discussionNote?.internal
+      this.formFieldProps.placeholder = this.isInternalNote
         ? this.$options.i18n.bodyPlaceholderInternal
         : this.$options.i18n.bodyPlaceholder;
     },
@@ -398,7 +392,7 @@ export default {
     <div class="flash-container"></div>
     <form :data-line-code="lineCode" class="edit-note common-note-form js-quick-submit gfm-form">
       <comment-field-layout
-        :is-internal-note="discussionNote.internal"
+        :is-internal-note="isInternalNote"
         :note="updatedNoteBody"
         :noteable-data="getNoteableData"
       >
@@ -409,7 +403,6 @@ export default {
           :markdown-docs-path="markdownDocsPath"
           :code-suggestions-config="codeSuggestionsConfig"
           :help-page-path="helpPagePath"
-          :note="discussionNote"
           :noteable-type="noteableType"
           :form-field-props="formFieldProps"
           :autosave-key="autosaveKey"
