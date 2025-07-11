@@ -84,10 +84,9 @@ module EE
                   end
 
                   unless agent.unversioned_latest_workspaces_agent_config
-                    render_api_error!(
+                    not_acceptable!(
                       'The remote development workspaces config for the agent is invalid. ' \
-                        'Please see https://docs.gitlab.com/user/workspace/settings/#configuration-reference',
-                      406
+                        'Please see https://docs.gitlab.com/user/workspace/settings/#configuration-reference'
                     )
                   end
 
