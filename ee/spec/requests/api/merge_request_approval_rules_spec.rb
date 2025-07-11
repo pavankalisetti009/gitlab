@@ -58,7 +58,6 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
     let(:users) { [approver] }
     let(:groups) { [group] }
     let(:current_user) { other_user }
-
     let!(:mr_approval_rule) do
       create(
         :approval_merge_request_rule,
@@ -157,6 +156,46 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
     end
   end
 
+  shared_examples_for 'getting v2 approval rule/s' do
+    context 'when the v2_approval_rules flag is enabled' do
+      let!(:mr_approval_rule) do
+        create(:merge_requests_approval_rule,
+          :from_merge_request,
+          merge_request: merge_request,
+          project_id: merge_request.project.id,
+          approver_users: users,
+          approver_groups: groups
+        )
+      end
+
+      before do
+        group.add_developer(approver)
+        stub_feature_flags(v2_approval_rules: true)
+
+        get api(url, current_user)
+      end
+
+      it 'matches the response schema' do
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to match_response_schema(schema_path, dir: 'ee')
+
+        rule = get_rule.call(json_response)
+
+        expect(rule['name']).to eq(mr_approval_rule.name)
+        expect(rule['approvals_required']).to eq(mr_approval_rule.approvals_required)
+        expect(rule['rule_type']).to eq(mr_approval_rule.rule_type)
+        expect(rule['report_type']).to be_nil
+        expect(rule['section']).to be_nil
+        expect(rule['contains_hidden_groups']).to eq(false)
+        expect(rule['source_rule']).to be_nil
+        expect(rule['eligible_approvers']).to match_array([hash_including('id' => approver.id)])
+        expect(rule['users']).to match_array([hash_including('id' => approver.id)])
+        expect(rule['groups']).to match_array([hash_including('id' => group.id)])
+        expect(rule['overridden']).to eq(false)
+      end
+    end
+  end
+
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/approval_rules/:approval_rule_id' do
     include_context "getting approval rule"
 
@@ -175,6 +214,7 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
     let(:get_rule) { ->(response) { response.first } }
 
     it_behaves_like 'getting approval rule/s'
+    it_behaves_like 'getting v2 approval rule/s'
 
     context 'user can read merge request' do
       before do

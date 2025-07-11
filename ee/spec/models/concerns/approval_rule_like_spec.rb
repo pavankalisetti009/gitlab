@@ -28,6 +28,8 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       group2.add_guest(group2_user)
     end
 
+    it { is_expected.to respond_to(:rule_project) }
+
     describe '#approvers_include_user?' do
       let(:rule) { subject.class.find(subject.id) }
 

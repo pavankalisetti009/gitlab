@@ -16,32 +16,64 @@ RSpec.describe ApprovalRulePresenter, feature_category: :compliance_management d
   describe '#approvers' do
     let_it_be(:private_member) { create(:group_member, group: private_group) }
     let_it_be(:public_member) { create(:group_member, group: public_group) }
-    let_it_be(:rule) { create(:approval_merge_request_rule, groups: [public_group, private_group]) }
+
+    let(:mr_rule) { create(:approval_merge_request_rule, groups: groups) }
+    let(:project_rule) { create(:approval_project_rule, groups: groups) }
+    let(:group_rule) { create(:approval_group_rule, groups: groups) }
+    let(:merge_request) { create(:merge_request) }
+    let(:v2_mr_rule) do
+      create(:merge_requests_approval_rule,
+        :from_merge_request,
+        merge_request: merge_request,
+        project_id: merge_request.project.id,
+        approver_groups: groups
+      )
+    end
 
     subject { presenter.approvers }
 
-    before do
-      rule.clear_memoization(:approvers)
-    end
-
-    context 'when user cannot see one of the groups' do
-      it { is_expected.to be_empty }
-    end
-
-    context 'when user can see all groups' do
-      before do
-        private_group.add_guest(user)
+    shared_examples 'hiding approvers when a group is not visible' do
+      context 'when user cannot see one of the groups' do
+        it { is_expected.to be_empty }
       end
 
-      it { is_expected.to contain_exactly(user, private_member.user, public_member.user) }
+      context 'when user can see all groups' do
+        before do
+          private_group.add_guest(user)
+        end
+
+        it { is_expected.to contain_exactly(user, private_member.user, public_member.user) }
+      end
     end
 
-    context 'when user is a member of the project' do
-      before do
-        rule.project.add_developer(user)
+    describe 'hides approvers when a group is not visible' do
+      context 'with a group level rule' do
+        let(:rule) { group_rule }
+
+        it_behaves_like 'hiding approvers when a group is not visible'
       end
 
-      it { is_expected.to contain_exactly(private_member.user, public_member.user) }
+      context 'when the rule is associated with a project' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:rule, :project) do
+          ref(:mr_rule)      | lazy { mr_rule.project }
+          ref(:project_rule) | lazy { project_rule.project }
+          ref(:v2_mr_rule)   | lazy { v2_mr_rule.merge_request.project }
+        end
+
+        with_them do
+          it_behaves_like 'hiding approvers when a group is not visible'
+
+          context 'when user is a member of the project' do
+            before do
+              project.add_developer(user)
+            end
+
+            it { is_expected.to contain_exactly(private_member.user, public_member.user) }
+          end
+        end
+      end
     end
   end
 

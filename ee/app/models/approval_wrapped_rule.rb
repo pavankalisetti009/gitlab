@@ -25,7 +25,7 @@ class ApprovalWrappedRule
     :@approval_rule,
     :regular?, :any_approver?, :code_owner?, :report_approver?,
     :overridden?, :id, :users, :groups, :code_owner, :from_scan_result_policy?,
-    :source_rule, :rule_type, :report_type, :approvals_required, :section, :to_global_id
+    :source_rule, :rule_type, :report_type, :approvals_required, :section, :to_global_id, :rule_project
   )
 
   def self.wrap(merge_request, rule)

@@ -105,6 +105,7 @@ class ApprovalMergeRequestRule < ApplicationRecord
   def project
     merge_request.target_project
   end
+  alias_method :rule_project, :project
 
   def approval_project_rule_id=(approval_project_rule_id)
     self.approval_merge_request_rule_source ||= build_approval_merge_request_rule_source

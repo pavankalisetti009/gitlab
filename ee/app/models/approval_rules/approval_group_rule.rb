@@ -39,5 +39,9 @@ module ApprovalRules
       # so all protected branches for a group are always returned.
       group.projects.map(&:all_protected_branches).flat_map(&:to_a).uniq
     end
+
+    def rule_project
+      # group approval rules are not associated with a project
+    end
   end
 end
