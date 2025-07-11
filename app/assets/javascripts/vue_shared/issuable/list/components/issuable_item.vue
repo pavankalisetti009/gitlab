@@ -422,15 +422,15 @@ export default {
           :work-item-type="type"
           show-tooltip-on-hover
         />
-        <span
+        <button
           v-if="issuable.confidential"
           v-gl-tooltip
           :title="__('Confidential')"
-          class="gl-mr-2 gl-inline-block gl-w-5"
+          class="button-reset gl-mr-2 gl-inline-block gl-w-5"
           data-testid="confidential-icon-container"
         >
           <gl-icon name="eye-slash" />
-        </span>
+        </button>
         <span
           v-if="issuable.hidden"
           v-gl-tooltip
@@ -502,7 +502,7 @@ export default {
                   :title="tooltipTitle(issuable.createdAt)"
                   :aria-label="tooltipTitle(issuable.createdAt)"
                   data-testid="issuable-created-at"
-                  class="!gl-cursor-default gl-border-none gl-bg-transparent gl-p-0 gl-text-subtle focus-visible:gl-focus-inset"
+                  class="button-reset gl-text-subtle"
                 >
                   {{ createdAt }}
                 </button>
@@ -615,14 +615,14 @@ export default {
             class="!gl-mr-0 gl-hidden sm:gl-inline-flex"
             data-testid="issuable-comments"
           >
-            <span
+            <button
               v-gl-tooltip
               :title="__('Comments')"
-              class="gl-flex gl-items-center !gl-text-inherit"
+              class="button-reset gl-flex gl-items-center !gl-text-inherit"
             >
               <gl-icon name="comments" class="gl-mr-2" />
               {{ notesCount }}
-            </span>
+            </button>
           </li>
           <li v-else-if="detailLoading" class="!gl-mr-0">
             <gl-skeleton-loader :width="30" :lines="1" equal-width-lines />
@@ -663,9 +663,9 @@ export default {
         <button
           v-if="timestamp"
           v-gl-tooltip.bottom
-          class="!gl-cursor-default gl-border-none gl-bg-transparent gl-p-0 gl-text-subtle focus-visible:gl-focus-inset sm:gl-inline-block"
           :title="tooltipTitle(timestamp)"
           :aria-label="tooltipTitle(timestamp)"
+          class="button-reset gl-text-subtle sm:gl-inline-block"
           data-testid="issuable-timestamp"
         >
           {{ formattedTimestamp }}
