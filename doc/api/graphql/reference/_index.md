@@ -13357,6 +13357,33 @@ Input type: `WorkItemExportInput`
 | <a id="mutationworkitemexporterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationworkitemexportmessage"></a>`message` | [`String`](#string) | Export request result message. |
 
+### `Mutation.workItemHierarchyAddChildrenItems`
+
+Adds children to a given work item's hierarchy by Global ID.
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `WorkItemHierarchyAddChildrenItemsInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationworkitemhierarchyaddchildrenitemschildrenids"></a>`childrenIds` | [`[WorkItemID!]!`](#workitemid) | Global IDs of children work items. |
+| <a id="mutationworkitemhierarchyaddchildrenitemsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitemhierarchyaddchildrenitemsid"></a>`id` | [`WorkItemID!`](#workitemid) | Global ID of the work item. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationworkitemhierarchyaddchildrenitemsaddedchildren"></a>`addedChildren` | [`[WorkItem!]!`](#workitem) | Work items that were added as children. |
+| <a id="mutationworkitemhierarchyaddchildrenitemsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitemhierarchyaddchildrenitemserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+
 ### `Mutation.workItemRemoveLinkedItems`
 
 Remove items linked to the work item.
