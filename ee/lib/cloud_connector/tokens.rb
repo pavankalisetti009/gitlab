@@ -9,7 +9,7 @@ module CloudConnector
 
     # Unit primitives that are fully migrated to the new token path
     ROLLED_OUT_UNIT_PRIMITIVES = %i[observability_all duo_workflow_execute_workflow security_scans
-      amazon_q_integration].freeze
+      amazon_q_integration duo_agent_platform].freeze
 
     # Retrieves a token for the specified unit primitive
     #

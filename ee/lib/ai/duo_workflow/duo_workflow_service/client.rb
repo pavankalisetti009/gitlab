@@ -49,7 +49,7 @@ module Ai
 
         def cloud_connector_token
           CloudConnector::Tokens.get(
-            unit_primitive: :duo_workflow_execute_workflow,
+            unit_primitive: :duo_agent_platform,
             resource: current_user
           )
         end

@@ -116,7 +116,13 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
       end
     end
 
-    context 'when the user has access to the project' do
+    context 'when the user has access to the project and is allowed to use duo_agent_platform' do
+      before do
+        # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+        allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+        # rubocop:enable RSpec/AnyInstanceOf
+      end
+
       it 'returns the workflows' do
         post_graphql(query, current_user: current_user)
 

@@ -4701,9 +4701,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
           allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check_available)
           stub_ee_application_setting(duo_features_enabled: duo_features_enabled)
+          allow(current_user).to receive(:allowed_to_use?).and_return(false)
         end
 
-        it { is_expected.to match_expected_result }
+        context 'when user is not allowed to use duo_agent_platfrom' do
+          it { is_expected.to be_disallowed(:duo_workflow) }
+        end
+
+        context 'when user is allowed to use duo_agent_platfrom' do
+          before do
+            allow(current_user).to receive(:allowed_to_use?).and_return(true)
+          end
+
+          it { is_expected.to match_expected_result }
+        end
       end
     end
 

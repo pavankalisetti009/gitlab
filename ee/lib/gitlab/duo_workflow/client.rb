@@ -41,7 +41,7 @@ module Gitlab
 
       def self.cloud_connector_token(user:)
         ::CloudConnector::Tokens.get(
-          unit_primitive: :duo_workflow_execute_workflow,
+          unit_primitive: :duo_agent_platform,
           resource: user
         )
       end

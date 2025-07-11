@@ -84,6 +84,7 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
     context "when duo workflow is available" do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        allow(user).to receive(:allowed_to_use?).and_return(true)
       end
 
       it "can finish a workflow", :aggregate_failures do
@@ -261,6 +262,10 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       context "when duo_features_enabled settings is turned off" do
         before do
           project.project_setting.update!(duo_features_enabled: false)
+        end
+
+        after do
+          project.project_setting.update!(duo_features_enabled: true)
         end
 
         it "returns not found", :aggregate_failures do

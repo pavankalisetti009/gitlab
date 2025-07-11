@@ -18,6 +18,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+    # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+    allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+    # rubocop:enable RSpec/AnyInstanceOf
   end
 
   describe 'POST /ai/duo_workflows/workflows' do

@@ -17,19 +17,23 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
   let(:current_user) { developer }
 
   describe "read_duo_workflow and update_duo_workflow" do
-    where(:duo_features_enabled, :current_user, :stage_check_available, :allowed) do
-      true   | ref(:developer)  | true  | true
-      true   | ref(:developer)  | false | false
-      true   | ref(:maintainer) | false | false
-      true   | ref(:maintainer) | true  | true
-      true   | ref(:guest)      | true  | false
-      false  | ref(:developer)  | true  | false
+    where(:duo_features_enabled, :current_user, :stage_check_available, :user_is_allowed_to_use, :allowed) do
+      true   | ref(:developer)  | true  | false | false
+      true   | ref(:developer)  | false | false | false
+      true   | ref(:maintainer) | false | false | false
+      true   | ref(:maintainer) | true  | false | false
+      true   | ref(:guest)      | true  | false | false
+      false  | ref(:developer)  | true  | false | false
+      true   | ref(:maintainer) | true  | true  | true
+      true   | ref(:guest)      | true  | true  | false
+      true   | ref(:developer)  | true  | true  | true
     end
 
     with_them do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project,
           :duo_workflow).and_return(stage_check_available)
+        allow(current_user).to receive(:allowed_to_use?).and_return(user_is_allowed_to_use)
         project.project_setting.update!(duo_features_enabled: duo_features_enabled)
         workflow.update!(user: current_user)
       end
@@ -53,6 +57,10 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
       context "when current user is a service account" do
         let(:current_user) do
           create(:user, :service_account, developer_of: workflow.project, composite_identity_enforced: true)
+        end
+
+        before do
+          allow(current_user).to receive(:allowed_to_use?).and_return(true)
         end
 
         it { is_expected.to be_allowed(:read_duo_workflow) }
@@ -184,6 +192,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
       before do
         stub_feature_flags(duo_workflow: duo_workflow_ff, duo_workflow_in_ci: duo_workflow_in_ci_ff)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check)
+        allow(current_user).to receive(:allowed_to_use?).and_return(true)
         project.project_setting.update!(duo_features_enabled: duo_features_enabled)
         workflow.update!(user: current_user)
       end

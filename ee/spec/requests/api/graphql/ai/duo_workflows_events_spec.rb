@@ -43,6 +43,9 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_workflow d
   context 'when user is logged in' do
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      # rubocop:disable RSpec/AnyInstanceOf  -- not the next instance
+      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+      # rubocop:enable RSpec/AnyInstanceOf
     end
 
     it 'returns user messages' do

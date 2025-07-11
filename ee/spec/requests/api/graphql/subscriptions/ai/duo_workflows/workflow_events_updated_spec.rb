@@ -56,6 +56,9 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
   context "when duo workflow is available" do
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+      # rubocop:enable RSpec/AnyInstanceOf
     end
 
     context 'when user is unauthorized' do

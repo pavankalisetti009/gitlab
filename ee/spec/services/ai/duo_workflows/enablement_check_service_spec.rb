@@ -21,6 +21,9 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
       context 'when duo_workflow licensed feature is available' do
         before do
           allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+          # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+          allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+          # rubocop:enable RSpec/AnyInstanceOf
         end
 
         it "returns status and checks" do

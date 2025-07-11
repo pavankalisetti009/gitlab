@@ -51,8 +51,6 @@ RSpec.describe Ai::DuoWorkflows::CheckpointPolicy, feature_category: :duo_workfl
             checkpoint.workflow.update!(user: current_user)
           end
 
-          it { is_expected.to be_allowed(:read_duo_workflow_event) }
-
           context "when duo_features_enabled settings is turned off" do
             before do
               project.project_setting.update!(duo_features_enabled: false)
@@ -60,6 +58,29 @@ RSpec.describe Ai::DuoWorkflows::CheckpointPolicy, feature_category: :duo_workfl
 
             it { is_expected.to be_disallowed(:read_duo_workflow) }
             it { is_expected.to be_disallowed(:update_duo_workflow) }
+          end
+
+          context "when duo_features_enabled settings is turned on" do
+            before do
+              project.project_setting.update!(duo_features_enabled: true)
+            end
+
+            context "when user is not allowed to use duo_agent_platfrom" do
+              before do
+                allow(current_user).to receive(:allowed_to_use?).and_return(false)
+              end
+
+              it { is_expected.to be_disallowed(:read_duo_workflow) }
+              it { is_expected.to be_disallowed(:update_duo_workflow) }
+            end
+
+            context "when user is allowed to use duo_agent_platfrom" do
+              before do
+                allow(current_user).to receive(:allowed_to_use?).and_return(true)
+              end
+
+              it { is_expected.to be_allowed(:read_duo_workflow_event) }
+            end
           end
         end
       end
