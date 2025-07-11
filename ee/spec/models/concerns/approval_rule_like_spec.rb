@@ -560,7 +560,6 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
     let_it_be(:approval_rule1) { create(:approval_project_rule, project: project, approval_policy_rule: policy_rule1) }
     let_it_be(:approval_rule2) { create(:approval_project_rule, project: project, approval_policy_rule: policy_rule2) }
     let_it_be(:approval_rule3) { create(:approval_project_rule, project: project, approval_policy_rule: nil) }
-    # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
     it 'returns approval rules associated with the given policy rules' do
       result = project.approval_rules.for_approval_policy_rules(security_policy.approval_policy_rules)
@@ -594,4 +593,34 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       expect(result).not_to include(approval_rule3)
     end
   end
+
+  describe '.for_merge_requests' do
+    let_it_be(:merge_request) { create(:merge_request) }
+    let_it_be(:other_merge_request) { create(:merge_request) }
+
+    let_it_be(:rule_1) { create(:approval_merge_request_rule, merge_request: merge_request) }
+    let_it_be(:rule_2) { create(:approval_merge_request_rule, merge_request: merge_request) }
+    let_it_be(:rule_3) { create(:approval_merge_request_rule, merge_request: build(:merge_request)) }
+
+    it 'returns rules for the specified merge request' do
+      result = ApprovalMergeRequestRule.for_merge_requests(merge_request.id)
+
+      expect(result).to contain_exactly(rule_1, rule_2)
+    end
+
+    it 'returns empty when no rules match the merge request' do
+      result = ApprovalMergeRequestRule.for_merge_requests(other_merge_request.id)
+
+      expect(result).to be_empty
+    end
+
+    it 'supports multiple merge requests' do
+      rule_4 = create(:approval_merge_request_rule, merge_request: other_merge_request)
+
+      result = ApprovalMergeRequestRule.for_merge_requests([merge_request.id, other_merge_request.id])
+
+      expect(result).to contain_exactly(rule_1, rule_2, rule_4)
+    end
+  end
+  # rubocop:enable RSpec/FactoryBot/AvoidCreate
 end

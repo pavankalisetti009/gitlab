@@ -76,6 +76,10 @@ module ApprovalRuleLike
       where(approval_policy_rule: policy_rules)
     end
 
+    scope :for_merge_requests, ->(merge_requests_ids) do
+      where(merge_request_id: merge_requests_ids)
+    end
+
     scope :by_report_types, ->(report_types) { where(report_type: report_types) }
   end
 

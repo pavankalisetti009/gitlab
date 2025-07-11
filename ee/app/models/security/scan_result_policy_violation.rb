@@ -27,6 +27,7 @@ module Security
     }
 
     scope :including_scan_result_policy_reads, -> { includes(:scan_result_policy_read) }
+    scope :including_security_policies, -> { includes(:security_policy) }
 
     scope :for_approval_rules,
       ->(approval_rules) {
