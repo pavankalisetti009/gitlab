@@ -25,9 +25,9 @@ RSpec.describe 'project secrets manager', feature_category: :secrets_management 
     it_behaves_like 'a query that returns a top-level access error'
   end
 
-  context 'when current user is not the project owner' do
+  context 'when current user is a guest' do
     before_all do
-      project.add_maintainer(current_user)
+      project.add_guest(current_user)
     end
 
     before do

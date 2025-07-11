@@ -11,6 +11,9 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
 
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
+  let(:error_message) do
+    "The resource that you are attempting to access does not exist or you don't have permission to perform this action"
+  end
 
   let(:list_query) do
     graphql_query_for(
@@ -54,19 +57,20 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
     it_behaves_like 'a query that returns a top-level access error'
   end
 
-  context 'when current user is not the project owner' do
-    before_all do
-      project.add_maintainer(current_user)
-    end
+  context 'when current user is maintainer but has no policies in OpenBao' do
+    let(:current_user) { create(:user, maintainer_of: project) }
 
     before do
       post_graphql(list_query, current_user: current_user)
     end
 
-    it_behaves_like 'a query that returns a top-level access error'
+    it 'returns permission error from Openbao' do
+      expect(graphql_errors).to be_present
+      expect(graphql_errors.first['message']).to include("permission denied")
+    end
   end
 
-  context 'when current user is not the project owner and attempts to fetch a secret' do
+  context 'when current user maintainer, no policies in OpenBao attempts to fetch a secret' do
     before_all do
       project.add_maintainer(current_user)
     end
@@ -75,7 +79,11 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
       get_graphql(read_query, current_user: current_user)
     end
 
-    it_behaves_like 'a query that returns a top-level access error'
+    it 'returns permission error from Openbao' do
+      expect(response).to have_gitlab_http_status(:error)
+      expect(graphql_errors).to be_present
+      expect(graphql_errors.first['message']).to include("permission denied")
+    end
   end
 
   context 'when current user is the project owner' do
@@ -116,7 +124,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
       it 'returns a top-level error' do
         expect(graphql_errors).to be_present
         error_messages = graphql_errors.pluck('message')
-        expect(error_messages).to match_array(['Project secrets manager is not active'])
+        expect(error_messages).to match_array([error_message])
       end
     end
 
@@ -129,7 +137,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
       it 'returns a top-level error' do
         expect(graphql_errors).to be_present
         error_messages = graphql_errors.pluck('message')
-        expect(error_messages).to match_array(['Project secrets manager is not active'])
+        expect(error_messages).to match_array([error_message])
       end
     end
 

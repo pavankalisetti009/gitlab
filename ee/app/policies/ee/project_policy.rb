@@ -1242,6 +1242,25 @@ module EE
         enable :create_container_registry_protection_immutable_tag_rule
       end
 
+      condition(:secrets_manager_enabled) do
+        ::Feature.enabled?(:secrets_manager, @subject)
+      end
+
+      condition(:secrets_manager_active) do
+        @subject&.secrets_manager&.active?
+      end
+
+      rule { can?(:reporter_access) & secrets_manager_enabled }.policy do
+        enable :read_project_secrets_manager_status
+      end
+
+      rule { can?(:reporter_access) & secrets_manager_enabled & secrets_manager_active }.policy do
+        enable :read_project_secrets
+        enable :create_project_secrets
+        enable :update_project_secrets
+        enable :delete_project_secrets
+      end
+
       condition(:ai_review_mr_enabled) do
         @subject.duo_features_enabled
       end

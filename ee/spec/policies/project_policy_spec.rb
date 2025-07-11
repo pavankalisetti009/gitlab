@@ -5251,6 +5251,120 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
+  describe 'project secrets permissions' do
+    where(:project_visibility, :secrets_manager_active, :role, :allowed) do
+      :private  | false | :guest      | false
+      :private  | false | :reporter   | false
+      :private  | false | :owner      | false
+      :private  | true  | :anonymous  | false
+      :private  | true  | :guest      | false
+      :private  | true  | :reporter   | true
+      :private  | true  | :owner      | true
+      :private  | true  | :guest      | false
+      :private  | true  | :reporter   | true
+      :private  | true  | :developer  | true
+      :private  | true  | :owner      | true
+      :public   | true  | :anonymous  | false
+      :public   | true  | :reporter   | true
+    end
+
+    with_them do
+      let(:project) { create(:project, project_visibility) }
+      let!(:secrets_manager) do
+        if secrets_manager_active
+          secrets_manager_active_value = secrets_manager_active ? 1 : 0
+          create(:project_secrets_manager, project: project, status: secrets_manager_active_value)
+        end
+      end
+
+      let(:current_user) do
+        case role
+        when :anonymous
+          anonymous
+        when :guest
+          create(:user, guest_of: project)
+        when :reporter
+          create(:user, reporter_of: project)
+        when :developer
+          create(:user, developer_of: project)
+        when :maintainer
+          create(:user, maintainer_of: project)
+        when :owner
+          create(:user, owner_of: project)
+        else
+          public_send(role)
+        end
+      end
+
+      it "enforces the expected permissions" do
+        %i[read_project_secrets create_project_secrets update_project_secrets delete_project_secrets].each do |permission|
+          if allowed
+            is_expected.to be_allowed(permission)
+          else
+            is_expected.to be_disallowed(permission)
+          end
+        end
+      end
+    end
+  end
+
+  describe 'secrets_manager_status permissions' do
+    let(:policy) { :read_project_secrets_manager_status }
+
+    where(:project_visibility, :secrets_manager_active, :role, :allowed) do
+      :private  | false | :guest      | false
+      :private  | false | :reporter   | true
+      :private  | false | :owner      | true
+      :private  | true  | :anonymous  | false
+      :private  | true  | :guest      | false
+      :private  | true  | :reporter   | true
+      :private  | true  | :owner      | true
+      :private  | true  | :guest      | false
+      :private  | true  | :reporter   | true
+      :private  | true  | :developer  | true
+      :private  | true  | :owner      | true
+      :public   | true  | :anonymous  | false
+      :public   | true  | :reporter   | true
+    end
+
+    with_them do
+      let(:project) { create(:project, project_visibility) }
+      let!(:secrets_manager) do
+        if secrets_manager_active
+          secrets_manager_active_value = secrets_manager_active ? 1 : 0
+          create(:project_secrets_manager, project: project, status: secrets_manager_active_value)
+        end
+      end
+
+      let(:current_user) do
+        case role
+        when :anonymous
+          anonymous
+        when :guest
+          create(:user, guest_of: project)
+        when :reporter
+          create(:user, reporter_of: project)
+        when :developer
+          create(:user, developer_of: project)
+        when :maintainer
+          create(:user, maintainer_of: project)
+        when :owner
+          create(:user, owner_of: project)
+        else
+          public_send(role)
+        end
+      end
+
+      it "enforces the expected permissions" do
+        if allowed
+          is_expected.to be_allowed(policy)
+        else
+          is_expected.to be_disallowed(policy)
+        end
+      end
+    end
+  end
+
   describe 'admin_ai_catalog_item' do
     let(:current_user) { maintainer }
 
