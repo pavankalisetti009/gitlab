@@ -136,6 +136,12 @@ module EE
       validates :security_and_compliance_settings,
         json_schema: { filename: "security_and_compliance_settings", detail_errors: true }
 
+      encrypts :sdrs_jwt_signing_key
+
+      validates :sdrs_jwt_signing_key, json_schema: { filename: 'application_setting_sdrs_jwt_signing_key' },
+        allow_nil: true
+      validates :sdrs_jwt_signing_key, length: { maximum: 10_000 }
+
       validates :mirror_capacity_threshold,
         :mirror_max_capacity,
         :elasticsearch_indexed_file_size_limit_kb,
