@@ -91,6 +91,9 @@ module Analytics
       merge_requests_throughput_table
     ].freeze
 
+    DUO_USAGE_VISUALIZATIONS_PATH = 'ee/lib/gitlab/analytics/duo_usage_analytics/visualizations'
+    DUO_USAGE_VISUALIZATIONS = %w[duo_seat_engagement_rate_over_time].freeze
+
     def self.for(container:, user:)
       config_project =
         container.analytics_dashboards_configuration_project ||
@@ -170,6 +173,10 @@ module Analytics
         true)
     end
 
+    def self.duo_usage_visualizations(container, is_project = false)
+      unsafe_load_builtin_visualizations(DUO_USAGE_VISUALIZATIONS, DUO_USAGE_VISUALIZATIONS_PATH, container, is_project)
+    end
+
     def self.builtin_visualizations(container, user)
       is_project = container.is_a?(Project)
 
@@ -190,6 +197,8 @@ module Analytics
       if container.ai_impact_dashboard_available_for?(user)
         visualizations << ai_impact_dashboard_visualizations(container, is_project)
       end
+
+      visualizations << duo_usage_visualizations(container, is_project) if container.duo_usage_dashboard_enabled?(user)
 
       visualizations << merge_requests_visualizations(container) if container.merge_request_analytics_enabled?(user)
 
@@ -242,6 +251,8 @@ module Analytics
           DORA_METRICS_VISUALIZATIONS_PATH
         elsif MERGE_REQUESTS_VISUALIZATIONS.include?(data)
           MERGE_REQUESTS_VISUALIZATIONS_PATH
+        elsif DUO_USAGE_VISUALIZATIONS.include?(data)
+          DUO_USAGE_VISUALIZATIONS_PATH
         else
           PRODUCT_ANALYTICS_PATH
         end

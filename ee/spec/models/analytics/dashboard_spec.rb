@@ -29,6 +29,9 @@ RSpec.describe Analytics::Dashboard, feature_category: :product_analytics do
     allow(Ability).to receive(:allowed?)
       .with(user, :read_project_merge_request_analytics, anything)
       .and_return(true)
+    allow(Ability).to receive(:allowed?)
+      .with(user, :read_duo_usage_analytics, anything)
+      .and_return(true)
 
     allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
 
@@ -79,6 +82,22 @@ RSpec.describe Analytics::Dashboard, feature_category: :product_analytics do
 
     it 'returns the correct panels' do
       expect(dashboard.panels.size).to eq(3)
+    end
+  end
+
+  shared_examples 'returns the Duo usage dashboard' do
+    it 'returns the Duo usage dashboard' do
+      expect(dashboard).to be_a(described_class)
+      expect(dashboard.title).to eq('GitLab Duo usage analytics')
+      expect(dashboard.slug).to eq('duo_usage')
+      expect(dashboard.description).to eq(
+        "View detailed statistics of Duo usage over time."
+      )
+      expect(dashboard.status).to eq('experiment')
+    end
+
+    it 'returns the correct panels' do
+      expect(dashboard.panels.size).to eq(1)
     end
   end
 
@@ -142,7 +161,8 @@ description: with missing properties
             'Value Streams Dashboard',
             'DORA metrics analytics',
             'AI impact analytics',
-            'Merge request analytics'
+            'Merge request analytics',
+            'GitLab Duo usage analytics'
           ]
         )
       end
@@ -154,7 +174,7 @@ description: with missing properties
 
         it 'returns custom and builtin dashboards' do
           expect(dashboards).to be_a(Array)
-          expect(dashboards.size).to eq(7)
+          expect(dashboards.size).to eq(8)
           expect(dashboards.last).to be_a(described_class)
           expect(dashboards.last.title).to eq('Dashboard Example 1')
           expect(dashboards.last.slug).to eq('dashboard_example_1')
@@ -193,7 +213,7 @@ description: with missing properties
         it 'excludes the dashboard from the list' do
           expected_dashboards =
             ["Audience", "Behavior", "Value Streams Dashboard", "AI impact analytics",
-              "DORA metrics analytics", "Merge request analytics", "Dashboard Example 1"]
+              "DORA metrics analytics", "Merge request analytics", "GitLab Duo usage analytics", "Dashboard Example 1"]
 
           expect(dashboards.map(&:title)).to eq(expected_dashboards)
         end
@@ -205,7 +225,7 @@ description: with missing properties
         end
 
         it 'excludes product analytics dashboards' do
-          expect(dashboards.size).to eq(5)
+          expect(dashboards.size).to eq(6)
         end
       end
     end
@@ -217,7 +237,7 @@ description: with missing properties
 
       it 'returns a collection of builtin dashboards' do
         expect(dashboards.map(&:title)).to match_array(['Value Streams Dashboard', 'DORA metrics analytics',
-          'AI impact analytics', 'Contributions Dashboard'])
+          'AI impact analytics', 'GitLab Duo usage analytics', 'Contributions Dashboard'])
       end
 
       context 'when configuration project is set' do
@@ -229,7 +249,7 @@ description: with missing properties
           expect(dashboards).to be_a(Array)
           expect(dashboards.map(&:title)).to match_array(
             ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
-              'Dashboard Example 1', 'Contributions Dashboard']
+              'Dashboard Example 1', 'GitLab Duo usage analytics', 'Contributions Dashboard']
           )
         end
       end
@@ -248,7 +268,7 @@ description: with missing properties
         it 'excludes the dashboard from the list' do
           expect(dashboards.map(&:title)).to match_array(
             ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
-              "Dashboard Example 1", 'Contributions Dashboard']
+              'Dashboard Example 1', 'GitLab Duo usage analytics', 'Contributions Dashboard']
           )
         end
       end
@@ -455,6 +475,44 @@ description: with missing properties
       subject { described_class.contributions_dashboard(project, config_project) }
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '.duo_usage_dashboard' do
+    context 'for groups' do
+      let(:dashboard) { described_class.duo_usage_dashboard(group, config_project, user) }
+
+      it_behaves_like 'returns the Duo usage dashboard'
+
+      context 'when read_duo_usage_analytics is not permitted' do
+        before do
+          allow(Ability).to receive(:allowed?)
+                              .with(user, :read_duo_usage_analytics, anything)
+                              .and_return(false)
+        end
+
+        it 'returns nil' do
+          expect(dashboard).to be_nil
+        end
+      end
+    end
+
+    context 'for projects' do
+      let(:dashboard) { described_class.duo_usage_dashboard(project, config_project, user) }
+
+      it_behaves_like 'returns the Duo usage dashboard'
+
+      context 'when read_duo_usage_analytics is not permitted' do
+        before do
+          allow(Ability).to receive(:allowed?)
+                              .with(user, :read_duo_usage_analytics, anything)
+                              .and_return(false)
+        end
+
+        it 'returns nil' do
+          expect(dashboard).to be_nil
+        end
+      end
     end
   end
 

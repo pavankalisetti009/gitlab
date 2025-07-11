@@ -115,6 +115,26 @@ module Analytics
       )
     end
 
+    def self.duo_usage_dashboard(container, config_project, user)
+      return unless container.duo_usage_dashboard_enabled?(user)
+
+      config_file_name = container.is_a?(Group) ? 'duo_usage_dashboard' : 'project_duo_usage_dashboard'
+
+      config =
+        load_yaml_dashboard_config(
+          config_file_name,
+          'ee/lib/gitlab/analytics/duo_usage_analytics/dashboards'
+        )
+
+      new(
+        slug: 'duo_usage',
+        container: container,
+        config: config,
+        config_project: config_project,
+        user_defined: false
+      )
+    end
+
     def self.contributions_dashboard(container, config_project)
       return unless container.contributions_dashboard_available?
 
@@ -164,6 +184,7 @@ module Analytics
       builtin << contributions_dashboard(container, config_project)
       builtin << dora_metrics_dashboard(container, config_project) if container.dora_metrics_dashboard_enabled?(user)
       builtin << merge_request_analytics_dashboard(container, config_project, user)
+      builtin << duo_usage_dashboard(container, config_project, user)
 
       builtin.flatten
     end

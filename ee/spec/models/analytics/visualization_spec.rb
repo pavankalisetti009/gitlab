@@ -72,6 +72,10 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
     ]
   end
 
+  let(:duo_usage_available_visualizations) do
+    %w[duo_seat_engagement_rate_over_time]
+  end
+
   before do
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
     stub_licensed_features(
@@ -92,6 +96,9 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
                   .and_return(false)
     allow(Ability).to receive(:allowed?)
                   .with(user, :read_project_merge_request_analytics, anything)
+                  .and_return(false)
+    allow(Ability).to receive(:allowed?)
+                  .with(user, :read_duo_usage_analytics, anything)
                   .and_return(false)
   end
 
@@ -137,6 +144,18 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
 
     it 'includes built in visualizations for Merge request analytics dashboard' do
       expect(visualizations.map(&:slug)).to include(*mr_analytics_available_visualizations)
+    end
+  end
+
+  shared_examples_for 'shows Duo usage analytics visualizations when available' do
+    before do
+      allow(Ability).to receive(:allowed?)
+                          .with(user, :read_duo_usage_analytics, anything)
+                          .and_return(true)
+    end
+
+    it 'includes built in visualizations for Duo usage analytics dashboard' do
+      expect(visualizations.map(&:slug)).to include(*duo_usage_available_visualizations)
     end
   end
 
@@ -226,6 +245,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
 
       it_behaves_like 'shows AI impact visualizations when available'
       it_behaves_like 'shows Merge request analytics visualizations when available'
+      it_behaves_like 'shows Duo usage analytics visualizations when available'
     end
 
     context 'when resource_parent is a group' do
@@ -267,6 +287,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
 
       it_behaves_like 'shows AI impact visualizations when available'
       it_behaves_like 'shows DORA Metrics visualizations when available'
+      it_behaves_like 'shows Duo usage analytics visualizations when available'
     end
   end
 
