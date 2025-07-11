@@ -3614,6 +3614,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_policies_skip_pipelines_audit
+  :worker_name: Security::Policies::SkipPipelinesAuditWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_process_scan_result_policy
   :worker_name: Security::ProcessScanResultPolicyWorker
   :feature_category: :security_policy_management

@@ -684,6 +684,8 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
 
           it 'does not schedule security status update worker' do
             expect(Security::PipelineAnalyzersStatusUpdateWorker).not_to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
           end
         end
 
@@ -692,7 +694,36 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
 
           it 'does not schedule security status update worker' do
             expect(Security::PipelineAnalyzersStatusUpdateWorker).not_to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
           end
+        end
+      end
+    end
+
+    context 'Security::Policies::SkipPipelinesAuditWorker' do
+      let(:build) { create(:ci_empty_pipeline, project: project, status: from_status) }
+      let(:from_status) { Ci::HasStatus::ACTIVE_STATUSES[-1] }
+
+      context 'on pipeline skipped' do
+        subject(:transition_pipeline) { pipeline.skip }
+
+        context 'when the feature flag `collect_security_policy_skipped_pipelines_audit_events` is disabled' do
+          before do
+            stub_feature_flags(collect_security_policy_skipped_pipelines_audit_events: false)
+          end
+
+          it 'does not enqueue SkipPipelinesAuditWorker' do
+            expect(Security::Policies::SkipPipelinesAuditWorker).not_to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
+          end
+        end
+
+        it 'enqueue SkipPipelinesAuditWorker' do
+          expect(Security::Policies::SkipPipelinesAuditWorker).to receive(:perform_async).with(pipeline.id)
+
+          transition_pipeline
         end
       end
     end
