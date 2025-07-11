@@ -3,26 +3,46 @@
 module GitlabSubscriptions
   module Trials
     class WelcomeCreateService
-      def initialize(params:, user:)
+      include Gitlab::Allowable
+
+      def initialize(params:, user:, namespace_id: nil, project_id: nil, lead_created: false)
         @params = params
         @user = user
+        @namespace_id = namespace_id
+        @project_id = project_id
+        @lead_created = lead_created
       end
 
       def execute
-        @namespace = create_group
-        create_project
+        if namespace_id.blank?
+          return not_found unless user.can_create_group?
 
-        submit_lead
-        add_on_purchase = submit_trial
-        ServiceResponse.success(
-          message: 'Trial applied',
-          payload: { namespace_id: namespace.id, add_on_purchase: add_on_purchase }
-        )
+          @namespace = create_group
+        else
+          @namespace = Namespace.find(namespace_id)
+          return not_found unless GitlabSubscriptions::Trials.namespace_eligible?(namespace)
+          return not_found unless user.can?(:admin_namespace, namespace)
+        end
+
+        return error unless namespace.persisted?
+
+        if project_id.blank?
+          return not_found unless user.can_create_project?
+
+          @project = create_project
+        else
+          @project = Project.find(project_id)
+          return not_found unless user.can?(:admin_project, project)
+        end
+
+        return error unless project.persisted?
+
+        setup_trial
       end
 
       private
 
-      attr_reader :user, :params, :namespace
+      attr_reader :user, :params, :namespace, :project, :namespace_id, :project_id, :lead_created
 
       def create_group
         name = ActionController::Base.helpers.sanitize(params[:group_name])
@@ -61,6 +81,18 @@ module GitlabSubscriptions
         result[:add_on_purchase]
       end
 
+      def setup_trial
+        @lead_created = submit_lead.success? unless lead_created
+
+        return error unless lead_created
+
+        add_on_purchase = submit_trial
+
+        return error unless add_on_purchase.present?
+
+        success(add_on_purchase)
+      end
+
       def trial_params
         gl_com_params = { gitlab_com_trial: true, sync_to_gl: true }
         namespace_params = {
@@ -86,6 +118,46 @@ module GitlabSubscriptions
           *::Onboarding::StatusPresenter::GLM_PARAMS,
           :company_name, :first_name, :last_name, :country, :state
         ).merge(attrs)
+      end
+
+      def model_errors
+        {
+          group: namespace.try(:errors).try(:full_messages),
+          project: project.try(:errors).try(:full_messages)
+        }.select { |_m, e| e.present? }
+      end
+
+      def not_found
+        ServiceResponse.error(message: 'Not found', reason: :not_found)
+      end
+
+      def progress
+        {
+          namespace_id: namespace.try(:id),
+          project_id: project.try(:id),
+          lead_created: lead_created
+        }
+      end
+
+      def failure_stage
+        stages = %w[namespace project lead application]
+        index = [!!namespace.try(:persisted?), !!project.try(:persisted?), lead_created, false].find_index(false)
+
+        stages[index]
+      end
+
+      def error
+        ServiceResponse.error(
+          message: "Trial creation failed in #{failure_stage} stage",
+          payload: progress.merge({ model_errors: model_errors })
+        )
+      end
+
+      def success(add_on_purchase)
+        ServiceResponse.success(
+          message: 'Trial applied',
+          payload: { namespace_id: namespace.id, add_on_purchase: add_on_purchase }
+        )
       end
     end
   end
