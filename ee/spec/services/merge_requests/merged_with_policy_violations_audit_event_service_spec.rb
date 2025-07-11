@@ -8,7 +8,7 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
   let_it_be(:mr_author) { create :user, username: 'author one' }
   let_it_be(:project) { create :project, :repository }
   let_it_be(:merge_time) { Time.now.utc }
-  let_it_be_with_reload(:merge_request) do
+  let_it_be(:merge_request) do
     create :merge_request,
       :opened,
       title: 'MR One',
@@ -18,7 +18,10 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
       target_project: project
   end
 
-  let_it_be(:policy_project) { create(:project, :repository) }
+  let(:merge_request_reference) { "#{project.full_path}!#{merge_request.iid}" }
+
+  let_it_be(:group) { create(:group) }
+  let_it_be(:policy_project) { create(:project, :repository, group: group) }
   let_it_be(:policy_configuration) do
     create(:security_orchestration_policy_configuration, project: project,
       security_policy_management_project: policy_project)
@@ -31,11 +34,24 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
       security_orchestration_policy_configuration: policy_configuration)
   end
 
+  let(:license_violation_data) { { violations: { license_scanning: { 'MIT License' => %w[A B] } } } }
+  let(:any_mr_violation_data) { { violations: { any_merge_request: { commits: true } } } }
+
   let(:service) { described_class.new(merge_request) }
 
-  def build_violation_details(policy, data, status = :failed)
-    create(:scan_result_policy_violation, status, project: project, merge_request: merge_request,
-      scan_result_policy_read: policy, approval_policy_rule: approval_policy_rule, violation_data: data)
+  def create_policy_read
+    create(:scan_result_policy_read, project: project,
+      security_orchestration_policy_configuration: policy_configuration)
+  end
+
+  def create_violation(policy, rule, data = {}, status = :failed)
+    create(:scan_result_policy_violation, status,
+      project: project,
+      merge_request: merge_request,
+      scan_result_policy_read: policy,
+      approval_policy_rule: rule,
+      violation_data: data
+    )
   end
 
   describe '#execute' do
@@ -45,9 +61,9 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
       {
         name: 'merge_request_merged_with_policy_violations',
         author: merger,
-        scope: project,
-        target: merge_request,
-        message: "Merge request with title 'MR One' was merged with 1 security policy violation(s)",
+        scope: policy_project,
+        target: security_policy,
+        message: "Merge request (#{merge_request_reference}) was merged with security policy violation(s)",
         additional_details: {
           merge_request_title: merge_request.title,
           merge_request_id: merge_request.id,
@@ -58,27 +74,10 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
           project_id: project.id,
           project_name: project.name,
           project_full_path: project.full_path,
-          violated_policies: [
-            {
-              policy_id: security_policy.id,
-              policy_name: security_policy_name,
-              policy_type: 'approval_policy',
-              security_policy_management_project_id: policy_project.id,
-              security_orchestration_policy_configuration_id: policy_configuration.id
-            }
-          ],
-          security_policy_approval_rules: policy_approval_rules,
-          violation_details: violation_details
+          policy_violations: policy_violations,
+          policy_approval_rules: policy_approval_rules
         }
       }
-    end
-
-    shared_examples 'recording the audit event' do
-      it 'records a merge_request_merged_with_policy_violations audit event' do
-        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context)
-
-        execute_service
-      end
     end
 
     shared_examples 'not recording the audit event' do
@@ -90,100 +89,144 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
     end
 
     context 'when merge request is merged' do
-      context 'with scan result policy violations' do
-        let_it_be(:approval_policy_rule) do
+      context 'with multiple scan result policy violations' do
+        let_it_be(:license_approval_policy_rule) do
           create(:approval_policy_rule, :license_finding, security_policy: security_policy)
         end
 
-        let_it_be_with_reload(:approval_rule) do
+        let_it_be(:any_mr_approval_policy_rule) do
+          create(:approval_policy_rule, :any_merge_request, security_policy: security_policy)
+        end
+
+        let_it_be(:license_approval_rule) do
           create(
             :report_approver_rule,
             :license_scanning,
             merge_request: merge_request.reload,
-            approval_policy_rule: approval_policy_rule,
+            approval_policy_rule: license_approval_policy_rule,
             approvals_required: 1,
             user_ids: [approver.id]
           )
         end
 
-        let_it_be(:approval_merge_request_rules_approved_approver) do
-          create(:approval_merge_request_rules_approved_approver,
-            approval_merge_request_rule: approval_rule, user: approver)
+        let_it_be(:any_mr_approval_rule) do
+          create(
+            :report_approver_rule,
+            :any_merge_request,
+            merge_request: merge_request.reload,
+            approval_policy_rule: any_mr_approval_policy_rule,
+            approvals_required: 1,
+            user_ids: [approver.id]
+          )
         end
 
         let(:policy_approval_rules) do
           [
             {
-              name: approval_rule.name,
+              name: license_approval_rule.name,
               report_type: 'license_scanning',
               approved: true,
               approvals_required: 1,
               approved_approvers: ['approver one'],
               invalid_rule: false,
               fail_open: false
+            },
+            {
+              name: any_mr_approval_rule.name,
+              report_type: 'any_merge_request',
+              approved: false,
+              approvals_required: 1,
+              approved_approvers: [],
+              invalid_rule: false,
+              fail_open: false
             }
           ]
         end
 
-        let(:license_scanning_violations_json) do
-          {
-            "dependencies" => %w[A B],
-            "license" => "MIT License",
-            "url" => "https://spdx.org/licenses/MIT.html"
-          }
-        end
-
-        let(:violations_count) { 1 }
-        let(:violation_details) do
-          {
-            fail_open_policies: [],
-            fail_closed_policies: [security_policy_name],
-            warn_mode_policies: [],
-            new_scan_finding_violations: [],
-            previous_scan_finding_violations: [],
-            license_scanning_violations: [license_scanning_violations_json],
-            any_merge_request_violations: [],
-            errors: [],
-            comparison_pipelines: []
-          }
+        let(:policy_violations) do
+          [
+            {
+              approval_policy_rule_id: license_approval_policy_rule.id,
+              violation_status: 'failed',
+              violation_data: license_violation_data.as_json
+            },
+            {
+              approval_policy_rule_id: any_mr_approval_policy_rule.id,
+              violation_status: 'failed',
+              violation_data: any_mr_violation_data.as_json
+            }
+          ]
         end
 
         before do
-          policy = create(:scan_result_policy_read, project: project,
-            security_orchestration_policy_configuration: policy_configuration)
+          create_violation(create_policy_read, license_approval_policy_rule, license_violation_data)
 
-          create(:report_approver_rule, :license_scanning, merge_request: merge_request,
-            scan_result_policy_read: policy, name: security_policy_name)
+          create(:approval_merge_request_rules_approved_approver,
+            approval_merge_request_rule: license_approval_rule, user: approver)
 
-          build_violation_details(policy,
-            violations: { license_scanning: { 'MIT License' => %w[A B] } }
-          )
+          create_violation(create_policy_read, any_mr_approval_policy_rule, any_mr_violation_data)
+
+          # extra approval rule to ensure policy rules are grouped correctly
+          create(:report_approver_rule, :license_scanning, user_ids: [approver.id],
+            approval_policy_rule: any_mr_approval_policy_rule, approvals_required: 1)
+
           merge_request.update!(state_id: MergeRequest.available_states[:merged])
           merge_request.metrics.update!(merged_at: merge_time, merged_by: merger)
         end
 
-        it_behaves_like 'recording the audit event'
+        context 'when violations are from the same policy' do
+          it 'records one audit event for the policy violations' do
+            expect(::Gitlab::Audit::Auditor).to receive(:audit).once.with(audit_context)
 
-        context 'with invalid rules' do
-          before do
-            approval_rule.update_columns(approvals_required: 2)
+            execute_service
           end
+        end
 
-          let(:policy_approval_rules) do
+        context 'when there violations from different policy' do
+          let(:another_policy_approval_rules) do
             [
               {
-                name: approval_rule.name,
+                name: 'Another License Approval Rule',
                 report_type: 'license_scanning',
                 approved: false,
-                approvals_required: 2,
-                approved_approvers: ['approver one'],
-                invalid_rule: true,
+                approvals_required: 1,
+                approved_approvers: [],
+                invalid_rule: false,
                 fail_open: false
               }
             ]
           end
 
-          it_behaves_like 'recording the audit event'
+          before do
+            merge_request.update_columns(state_id: MergeRequest.available_states[:opened])
+
+            another_security_policy = create(:security_policy, :approval_policy, name: 'Another Policy',
+              policy_index: 1, security_orchestration_policy_configuration_id: policy_configuration.id)
+
+            another_license_approval_policy_rule = create(:approval_policy_rule, :license_finding,
+              security_policy: another_security_policy)
+
+            create(:report_approver_rule, :license_scanning,
+              name: 'Another License Approval Rule',
+              merge_request: merge_request.reload,
+              approval_policy_rule: another_license_approval_policy_rule,
+              approvals_required: 1,
+              user_ids: [approver.id]
+            )
+
+            create_violation(create_policy_read, another_license_approval_policy_rule, license_violation_data)
+
+            merge_request.update_columns(state_id: MergeRequest.available_states[:merged])
+          end
+
+          it 'records two audit events for the two policies' do
+            [policy_approval_rules, another_policy_approval_rules].each do |approval_rules|
+              expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+                a_hash_including(additional_details: hash_including(policy_approval_rules: approval_rules)))
+            end
+
+            execute_service
+          end
         end
 
         context 'when merged by author is not available' do
