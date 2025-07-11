@@ -18,7 +18,7 @@ module Ai
         BATCH_SIZE = 100
 
         def handle_event(_)
-          return false unless ::ActiveContext.indexing?
+          return false unless Ai::ActiveContext::Collections::Code.indexing?
 
           process_repositories
         end

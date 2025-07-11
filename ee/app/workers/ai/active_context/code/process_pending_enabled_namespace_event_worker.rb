@@ -19,7 +19,7 @@ module Ai
           10.minutes
 
         def handle_event(_)
-          return false unless ::ActiveContext.indexing?
+          return false unless ::Ai::ActiveContext::Collections::Code.indexing?
 
           process_next_namespace
         end

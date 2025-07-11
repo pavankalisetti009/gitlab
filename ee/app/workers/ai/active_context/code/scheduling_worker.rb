@@ -18,7 +18,7 @@ module Ai
         loggable_arguments 0
 
         def perform(task = nil)
-          return false unless ::ActiveContext.indexing?
+          return false unless ::Ai::ActiveContext::Collections::Code.indexing?
 
           return initiate if task.nil?
 

@@ -22,7 +22,7 @@ module Ai
         LEASE_TTL = 31.minutes
 
         def perform(id)
-          return false unless ::ActiveContext.indexing?
+          return false unless ::Ai::ActiveContext::Collections::Code.indexing?
 
           repository = Ai::ActiveContext::Code::Repository.find_by_id(id)
 

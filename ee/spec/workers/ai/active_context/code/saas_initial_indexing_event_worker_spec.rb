@@ -52,8 +52,7 @@ RSpec.describe Ai::ActiveContext::Code::SaasInitialIndexingEventWorker, feature_
 
     with_them do
       before do
-        allow(::ActiveContext::Config).to receive_messages(indexing_enabled?: indexing_enabled,
-          enabled?: indexing_enabled)
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(indexing_enabled)
         allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_available)
 
         other_namespace_id = namespace.id + 1
