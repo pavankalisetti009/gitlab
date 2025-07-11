@@ -90,6 +90,24 @@ module Ai
         workflow_definition == 'chat'
       end
 
+      def project_level?
+        project_id.present?
+      end
+
+      def namespace_level?
+        namespace_id.present?
+      end
+
+      def resource_parent
+        project || namespace
+      end
+
+      def mcp_enabled?
+        return true if resource_parent.root_ancestor.duo_workflow_mcp_enabled
+
+        false
+      end
+
       private
 
       def only_known_pre_approved_agent_privileges

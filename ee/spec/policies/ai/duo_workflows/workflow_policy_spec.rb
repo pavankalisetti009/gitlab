@@ -73,11 +73,59 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
     end
   end
 
-  describe "read_duo_workflow and update_duo_workflow for agentic chat" do
+  describe "read_duo_workflow and update_duo_workflow for project-level agentic chat" do
     let_it_be(:workflow) { create(:duo_workflows_workflow, :agentic_chat, project: project) }
 
     before do
       allow(policy).to receive(:can?).with(:access_duo_agentic_chat, project)
+        .and_return(can_use_agentic_chat)
+    end
+
+    context "when agentic chat is allowed" do
+      let(:can_use_agentic_chat) { true }
+
+      context "when current user is workflow owner" do
+        before do
+          workflow.update!(user: current_user)
+        end
+
+        it 'allows read and update workflow policy' do
+          is_expected.to be_allowed(:read_duo_workflow)
+          is_expected.to be_allowed(:update_duo_workflow)
+        end
+      end
+
+      context "when current user is not workflow owner" do
+        before do
+          workflow.update!(user: create(:user))
+        end
+
+        it 'disallows read and update workflow policy' do
+          is_expected.to be_disallowed(:read_duo_workflow)
+          is_expected.to be_disallowed(:update_duo_workflow)
+        end
+      end
+    end
+
+    context "when agentic chat is disallowed" do
+      let(:can_use_agentic_chat) { false }
+
+      before do
+        workflow.update!(user: current_user)
+      end
+
+      it 'disallows read and update workflow policy' do
+        is_expected.to be_disallowed(:read_duo_workflow)
+        is_expected.to be_disallowed(:update_duo_workflow)
+      end
+    end
+  end
+
+  describe "read_duo_workflow and update_duo_workflow for namespace-level agentic chat" do
+    let_it_be(:workflow) { create(:duo_workflows_workflow, :agentic_chat, namespace: group) }
+
+    before do
+      allow(policy).to receive(:can?).with(:access_duo_agentic_chat, group)
         .and_return(can_use_agentic_chat)
     end
 

@@ -637,6 +637,74 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
   end
 
+  describe 'access_duo_agentic_chat' do
+    let(:policy) { :access_duo_agentic_chat }
+
+    let_it_be_with_reload(:current_user) { create(:user) }
+
+    context 'when on .org or .com', :saas do
+      where(:duo_pro_seat_assigned, :feature_flag, :duo_agentic_chat_enabled_for_user) do
+        true  | true  | be_allowed(policy)
+        true  | false | be_disallowed(policy)
+        false | true  | be_disallowed(policy)
+      end
+
+      with_them do
+        before do
+          stub_feature_flags(duo_agentic_chat: feature_flag)
+          allow(current_user).to receive(:allowed_to_use?).and_return(duo_pro_seat_assigned)
+        end
+
+        it { is_expected.to duo_agentic_chat_enabled_for_user }
+      end
+    end
+
+    context 'when not on .org or .com' do
+      where(:lock_duo_features_enabled, :duo_pro_seat_assigned, :duo_agentic_chat_enabled_for_user) do
+        true | true | be_disallowed(policy)
+        true  |  false |  be_disallowed(policy)
+        false |  false |  be_disallowed(policy)
+        false |  true  |  be_allowed(policy)
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab).to receive(:org_or_com?).and_return(false)
+          stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
+          allow(current_user).to receive(:allowed_to_use?).and_return(duo_pro_seat_assigned)
+        end
+
+        it { is_expected.to duo_agentic_chat_enabled_for_user }
+      end
+    end
+
+    context 'when duo chat is self hosted' do
+      where(:duo_chat_on_saas, :self_hosted, :allowed_to_use, :free, :duo_agentic_chat_enabled_for_user) do
+        true  | true  | true  | true  | be_allowed(policy)
+        false | true  | true  | true  | be_allowed(policy)
+        true  | false | true  | true  | be_allowed(policy)
+        true  | true  | false | true  | be_disallowed(policy)
+        true  | true  | true  | false | be_allowed(policy)
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_on_saas)
+          allow(::Ai::FeatureSetting).to receive_message_chain(:find_by_feature,
+            :self_hosted?).and_return(self_hosted)
+
+          self_hosted_service_data = instance_double(CloudConnector::SelfSigned::AvailableServiceData)
+          allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:self_hosted_models)
+                                                                            .and_return(self_hosted_service_data)
+          allow(current_user).to receive(:allowed_to_use?).and_return(allowed_to_use)
+          allow(self_hosted_service_data).to receive(:free_access?).and_return(free)
+        end
+
+        it { is_expected.to duo_agentic_chat_enabled_for_user }
+      end
+    end
+  end
+
   describe 'access_x_ray_on_instance' do
     context 'when on .org or .com', :saas do
       context 'when x ray available' do

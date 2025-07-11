@@ -86,6 +86,17 @@ RSpec.shared_context 'with duo features enabled and ai chat available for group 
   end
 end
 
+RSpec.shared_context 'with duo features enabled and agentic chat available for group on SaaS' do
+  include_context 'with duo pro addon'
+
+  before do
+    allow(Gitlab).to receive(:org_or_com?).and_return(true)
+    stub_ee_application_setting(should_check_namespace_plan: true)
+    stub_licensed_features(agentic_chat: true)
+    group.namespace_settings.reload.update!(duo_features_enabled: true, experiment_features_enabled: true)
+  end
+end
+
 RSpec.shared_context 'with duo features enabled and ai chat not available for group on SaaS' do
   include_context 'with duo pro addon'
 

@@ -84,6 +84,10 @@ module EE
         end
       end
 
+      condition(:duo_agentic_chat_enabled) do
+        ::Feature.enabled?(:duo_agentic_chat, @user)
+      end
+
       condition(:user_belongs_to_paid_namespace) do
         next false unless @user
 
@@ -215,6 +219,7 @@ module EE
       end.enable :access_code_suggestions
 
       rule { duo_chat_enabled_for_user & ~ai_features_banned }.enable :access_duo_chat
+      rule { can?(:access_duo_chat) & duo_agentic_chat_enabled }.enable :access_duo_agentic_chat
 
       rule { runner_upgrade_management_available | user_belongs_to_paid_namespace }.enable :read_runner_upgrade_status
 
