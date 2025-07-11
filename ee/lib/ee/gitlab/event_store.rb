@@ -267,6 +267,8 @@ module EE
           store.subscribe ::GitlabSubscriptions::Members::RecordLastActivityWorker,
             to: ::Users::ActivityEvent,
             if: ->(event) {
+              return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
               namespace_id = event.data[:namespace_id]
 
               !GitlabSubscriptions::Members::ActivityService.lease_taken?(
