@@ -9,7 +9,7 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
     let_it_be(:repository) { create(:ai_active_context_code_repository, state: :pending) }
 
     before do
-      allow(::ActiveContext).to receive(:indexing?).and_return(true)
+      allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
       allow(Ai::ActiveContext::Code::InitialIndexingService).to receive(:execute)
     end
 
@@ -41,9 +41,9 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
       end
     end
 
-    context 'when ActiveContext indexing is disabled' do
+    context 'when indexing is disabled' do
       before do
-        allow(::ActiveContext).to receive(:indexing?).and_return(false)
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
       end
 
       it 'does not call InitialIndexingService.execute' do

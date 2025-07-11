@@ -19,13 +19,13 @@ RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_cate
 
     before do
       stub_const(queue_class_name, Ai::Context::TestQueue)
-      allow(ActiveContext::Config).to receive(:indexing_enabled?).and_return(true)
+      allow(ActiveContext).to receive(:indexing?).and_return(true)
       allow(worker).to receive(:in_lock).and_yield
     end
 
     context 'when indexing is disabled' do
       before do
-        allow(ActiveContext::Config).to receive(:indexing_enabled?).and_return(false)
+        allow(ActiveContext).to receive(:indexing?).and_return(false)
       end
 
       it 'returns false' do

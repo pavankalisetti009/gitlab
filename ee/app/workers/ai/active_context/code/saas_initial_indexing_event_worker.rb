@@ -21,7 +21,7 @@ module Ai
 
         def handle_event(_)
           return false unless ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-          return false unless ::ActiveContext.indexing?
+          return false unless ::Ai::ActiveContext::Collections::Code.indexing?
 
           process_in_batches!
         end

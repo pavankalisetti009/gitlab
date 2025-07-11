@@ -18,7 +18,7 @@ RSpec.describe Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker, featur
   describe '#handle_event', :clean_gitlab_redis_shared_state do
     context 'when indexing is enabled' do
       before do
-        allow(::ActiveContext).to receive(:indexing?).and_return(true)
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
       end
 
       context 'when there are multiple repositories with embedding indexing in progress' do
@@ -155,7 +155,7 @@ RSpec.describe Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker, featur
 
     context 'when indexing is disabled' do
       before do
-        allow(::ActiveContext).to receive(:indexing?).and_return(false)
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
       end
 
       it 'does nothing' do

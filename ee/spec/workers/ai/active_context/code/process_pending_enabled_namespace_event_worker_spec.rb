@@ -22,7 +22,7 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
 
   context 'when indexing is enabled' do
     before do
-      allow(::ActiveContext::Config).to receive_messages(indexing_enabled?: true, enabled?: true)
+      allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
     end
 
     context 'when there are enabled namespaces to process' do

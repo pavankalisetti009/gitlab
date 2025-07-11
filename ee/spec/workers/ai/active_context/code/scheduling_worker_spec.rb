@@ -32,7 +32,7 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingWorker, feature_category: :glo
 
     context 'when indexing is disabled' do
       before do
-        allow(::ActiveContext).to receive(:indexing?).and_return(false)
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
       end
 
       it 'returns false without further execution' do
@@ -44,7 +44,7 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingWorker, feature_category: :glo
 
     context 'when indexing is enabled' do
       before do
-        allow(::ActiveContext).to receive(:indexing?).and_return(true)
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
       end
 
       context 'when no task is provided' do
