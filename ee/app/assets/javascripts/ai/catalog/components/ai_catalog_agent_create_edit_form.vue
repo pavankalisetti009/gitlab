@@ -64,7 +64,12 @@ export default {
       return uniqueId('ai-catalog-agent-create-edit-form-');
     },
     submitButtonText() {
-      return this.mode === 'create' ? s__('AICatalog|Create agent') : s__('AICatalog|Save changes');
+      // eslint-disable-next-line @gitlab/require-i18n-strings
+      const tmpComingSoonLabel = ' (Coming soon)';
+      if (this.mode === 'create') {
+        return s__('AICatalog|Create agent') + tmpComingSoonLabel;
+      }
+      return s__('AICatalog|Save changes') + tmpComingSoonLabel;
     },
   },
   methods: {

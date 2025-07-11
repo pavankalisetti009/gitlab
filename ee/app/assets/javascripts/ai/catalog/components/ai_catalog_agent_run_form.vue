@@ -91,7 +91,8 @@ export default {
         data-testid="agent-run-form-submit-button"
         :loading="isSubmitting"
       >
-        {{ s__('AICatalog|Run') }}
+        <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
+        {{ s__('AICatalog|Run') }} (Coming soon)
       </gl-button>
     </ai-catalog-form-buttons>
   </gl-form>
