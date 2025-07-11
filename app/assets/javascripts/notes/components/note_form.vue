@@ -136,7 +136,7 @@ export default {
   },
   computed: {
     ...mapState(useNotes, [
-      'getDiscussionLastNote',
+      'getDiscussionCurrentUserLastNote',
       'getNoteableData',
       'getNotesDataByProp',
       'getUserDataByProp',
@@ -273,7 +273,7 @@ export default {
     },
     editMyLastNote() {
       if (this.updatedNoteBody === '') {
-        const lastNoteInDiscussion = this.getDiscussionLastNote(this.discussion);
+        const lastNoteInDiscussion = this.getDiscussionCurrentUserLastNote(this.discussion);
 
         if (lastNoteInDiscussion) {
           eventHub.$emit('enterEditMode', {
