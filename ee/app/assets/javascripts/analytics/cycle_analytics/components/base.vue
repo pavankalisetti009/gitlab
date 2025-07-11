@@ -63,6 +63,7 @@ export default {
     ...mapState([
       'isLoading',
       'isLoadingStage',
+      'isFetchingGroupStages',
       'selectedProjects',
       'selectedStage',
       'selectedStageEvents',
@@ -235,7 +236,7 @@ export default {
         v-if="selectedStageReady"
         data-testid="vsa-path-navigation"
         class="gl-mt-4 gl-w-full"
-        :loading="isLoading"
+        :loading="isLoading || isFetchingGroupStages"
         :stages="pathNavigationData"
         :selected-stage="selectedStage"
         @selected="onStageSelect"

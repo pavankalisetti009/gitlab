@@ -75,6 +75,7 @@ describe('EE Value Stream Analytics component', () => {
       state: {
         isLoading: false,
         isLoadingStage: false,
+        isFetchingGroupStages: false,
         selectedProjects: [],
         selectedStageEvents: [],
         isLoadingValueStreams: false,
@@ -333,6 +334,18 @@ describe('EE Value Stream Analytics component', () => {
       findPathNavigation().vm.$emit('selected', OVERVIEW_STAGE_CONFIG);
 
       expect(setDefaultSelectedStage).toHaveBeenCalled();
+    });
+
+    it('shows loading state when fetching value stream', () => {
+      createWrapper({ state: { isLoading: true } });
+
+      expect(findPathNavigation().props('loading')).toBe(true);
+    });
+
+    it('shows loading state when fetching stages', () => {
+      createWrapper({ state: { isFetchingGroupStages: true } });
+
+      expect(findPathNavigation().props('loading')).toBe(true);
     });
   });
 
