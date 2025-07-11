@@ -10,4 +10,6 @@ RSpec.describe Types::Ai::Catalog::FlowType, feature_category: :workflow_catalog
   it 'implements the correct interface' do
     expect(described_class.interfaces).to include(Types::Ai::Catalog::ItemInterface)
   end
+
+  it { expect(described_class).to require_graphql_authorizations(:read_ai_catalog_item) }
 end

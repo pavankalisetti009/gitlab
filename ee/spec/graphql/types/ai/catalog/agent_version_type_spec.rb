@@ -20,4 +20,6 @@ RSpec.describe Types::Ai::Catalog::AgentVersionType, feature_category: :workflow
     expect(described_class.own_fields.size).to eq(expected_fields.size)
     expect(described_class).to include_graphql_fields(*expected_fields)
   end
+
+  it { expect(described_class).to require_graphql_authorizations(:read_ai_catalog_item) }
 end
