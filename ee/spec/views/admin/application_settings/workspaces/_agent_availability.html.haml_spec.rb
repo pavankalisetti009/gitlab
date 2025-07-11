@@ -21,20 +21,16 @@ RSpec.describe 'admin/application_settings/_workspaces_agent_availability', feat
   end
 
   [true, false].each do |license_enabled|
-    [true, false].each do |flag_enabled|
-      context "when license is #{license_enabled ? 'enabled' : 'disabled'} " \
-        "and flag is #{flag_enabled ? 'on' : 'off'}" do
-        before do
-          stub_licensed_features(remote_development: license_enabled)
-          stub_feature_flags(workspaces_agents_availability_admin: flag_enabled)
-        end
+    context "when license is #{license_enabled ? 'enabled' : 'disabled'}" do
+      before do
+        stub_licensed_features(remote_development: license_enabled)
+      end
 
-        it "#{license_enabled && flag_enabled ? 'renders' : 'does not render'} settings" do
-          if license_enabled && flag_enabled
-            expect(rendered).to have_selector('#js-workspaces-agent-availability-settings')
-          else
-            expect(rendered).to be_nil
-          end
+      it "#{license_enabled ? 'renders' : 'does not render'} settings" do
+        if license_enabled
+          expect(rendered).to have_selector('#js-workspaces-agent-availability-settings')
+        else
+          expect(rendered).to be_nil
         end
       end
     end
@@ -43,7 +39,6 @@ RSpec.describe 'admin/application_settings/_workspaces_agent_availability', feat
   context 'when settings is rendered' do
     before do
       stub_licensed_features(remote_development: true)
-      stub_feature_flags(workspaces_agents_availability_admin: true)
     end
 
     it { is_expected.to have_selector("[data-organization-id='#{organization.id}']") }
