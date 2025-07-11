@@ -176,7 +176,7 @@ describe('Value Stream Analytics actions / value streams', () => {
               payload: valueStreams,
             },
           ],
-          [{ type: 'fetchValueStreamData' }, { type: 'fetchStageCountValues' }],
+          [{ type: 'fetchValueStreamData' }],
         );
       });
 
@@ -237,13 +237,17 @@ describe('Value Stream Analytics actions / value streams', () => {
       mock.onGet(endpoints.valueStreamData).reply(HTTP_STATUS_OK, { stages: [], events: [] });
     });
 
-    it('dispatches fetchGroupStages and fetchStageMedianValues', () => {
+    it('dispatches fetchGroupStages, fetchStageCountValues and fetchStageMedianValues', () => {
       return testAction(
         actions.fetchValueStreamData,
         null,
         state,
         [],
-        [{ type: 'fetchGroupStages' }, { type: 'fetchStageMedianValues' }],
+        [
+          { type: 'fetchGroupStages' },
+          { type: 'fetchStageCountValues' },
+          { type: 'fetchStageMedianValues' },
+        ],
       );
     });
   });
