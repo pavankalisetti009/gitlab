@@ -24,7 +24,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
         expect { response }.not_to change { Ai::Catalog::Item.count }
         expect(response).to be_error
         expect(response.message).to match_array(
-          ['You have insufficient permissions to create agents for this project'])
+          ['You have insufficient permissions'])
       end
     end
 

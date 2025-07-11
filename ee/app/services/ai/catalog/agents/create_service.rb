@@ -35,10 +35,6 @@ module Ai
 
         private
 
-        def error_no_permissions
-          error('You have insufficient permissions to create agents for this project')
-        end
-
         def error_creating(item)
           error(item.errors.full_messages.presence || 'Failed to create agent')
         end

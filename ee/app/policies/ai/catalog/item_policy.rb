@@ -15,12 +15,21 @@ module Ai
         can?(:developer_access, @subject.project)
       end
 
+      condition(:maintainer_access) do
+        can?(:maintainer_access, @subject.project)
+      end
+
       rule { public_item | developer_access }.policy do
         enable :read_ai_catalog_item
       end
 
+      rule { maintainer_access }.policy do
+        enable :admin_ai_catalog_item
+      end
+
       rule { ~ai_catalog_enabled }.policy do
         prevent :read_ai_catalog_item
+        prevent :admin_ai_catalog_item
       end
     end
   end
