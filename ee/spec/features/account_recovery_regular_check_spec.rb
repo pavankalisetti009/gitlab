@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Account recovery regular check callout', feature_category: :user_management do
+  include Features::TwoFactorHelpers
+
   context 'when signed in' do
     let(:user_two_factor_disabled) { create(:user) }
     let(:user_two_factor_enabled) { create(:user, :two_factor) }
@@ -28,12 +30,8 @@ RSpec.describe 'Account recovery regular check callout', feature_category: :user
         it 'does not show the callout', :js do
           visit profile_two_factor_auth_path
 
-          fill_in 'pin_code', with: user_two_factor_disabled.reload.current_otp
-          fill_in 'current_password', with: user_two_factor_disabled.password
-
-          click_button 'Register with two-factor app'
-          click_button 'Copy codes'
-          click_link 'Proceed'
+          otp_authenticator_registration_and_copy_codes(user_two_factor_disabled.reload.current_otp,
+            user_two_factor_disabled.password)
 
           visit dashboard_todos_path
 

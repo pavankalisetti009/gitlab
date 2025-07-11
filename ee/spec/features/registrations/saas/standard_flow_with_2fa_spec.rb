@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'SaaS registration from an invite', :with_current_organization, :js, :saas_registration, feature_category: :onboarding do
+  include Features::TwoFactorHelpers
+
   context 'when user has not completed welcome step before being added to group', :sidekiq_inline do
     it 'registers the user, completes 2fa and sends them to the profile account page' do
       group = create_group
@@ -25,7 +27,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
       expect_to_be_on_2fa_verification(with_invite_notification: true)
 
-      fill_in_2fa_setup_form(password)
+      otp_authenticator_registration_and_copy_codes(user.current_otp, password)
 
       expect_to_be_on_profile_account_page
       ensure_onboarding_is_finished
@@ -47,7 +49,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
         expect_to_be_on_2fa_verification(with_invite_notification: true)
 
-        fill_in_2fa_setup_form(password)
+        otp_authenticator_registration_and_copy_codes(user.current_otp, password)
 
         expect_to_be_on_profile_account_page
         ensure_onboarding_is_finished
@@ -75,7 +77,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
       expect_to_be_on_2fa_verification
 
-      fill_in_2fa_setup_form(password)
+      otp_authenticator_registration_and_copy_codes(user.current_otp, password)
 
       expect_to_be_on_profile_account_page
       ensure_onboarding_is_finished
@@ -140,15 +142,5 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
         source: group,
         invite_source: 'test'
       ).execute
-  end
-
-  def fill_in_2fa_setup_form(password)
-    fill_in 'current_password', with: password
-    fill_in 'pin_code', with: user.current_otp
-
-    click_button 'Register with two-factor app'
-
-    click_button 'Copy codes'
-    click_link 'Proceed'
   end
 end
