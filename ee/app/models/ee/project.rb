@@ -473,6 +473,8 @@ module EE
         :product_analytics_instrumentation_key,
         :auto_duo_code_review_enabled,
         :auto_duo_code_review_enabled=,
+        :duo_context_exclusion_settings,
+        :duo_context_exclusion_settings=,
         to: :project_setting
       with_options prefix: :delegated, to: :project_setting do
         delegate :require_reauthentication_to_approve=
@@ -1428,6 +1430,7 @@ module EE
       !!require_reauthentication_to_approve
     end
 
+    override :licensed_ai_features_available?
     def licensed_ai_features_available?
       licensed_feature_available?(:ai_features) || licensed_feature_available?(:ai_chat)
     end

@@ -59,6 +59,18 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'GET edit' do
+    render_views
+
+    context 'feature flags' do
+      it 'pushes use_duo_context_exclusion feature flag to frontend' do
+        get :edit, params: { namespace_id: project.namespace.path, id: project.path }
+
+        expect(response.body).to have_pushed_frontend_feature_flags(useDuoContextExclusion: true)
+      end
+    end
+  end
+
   describe 'GET show', feature_category: :groups_and_projects do
     render_views
 
@@ -673,7 +685,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
     end
 
     context 'analytics dashboards pointer setting' do
-      let_it_be(:project, reload: true) { create(:project, namespace: group) }
       let_it_be(:another_project) do
         create(:project, namespace: group, maintainers: user)
       end
@@ -740,6 +751,69 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         it 'sets spp_repository_pipeline_access' do
           expect { request }
             .to change { project.reload.project_setting.spp_repository_pipeline_access }.from(true).to(false)
+        end
+      end
+    end
+
+    context 'when duo_context_exclusion_settings is specified' do
+      let(:request) do
+        put :update, params: { namespace_id: project.namespace, id: project, project: params }
+      end
+
+      let(:exclusion_settings) { { exclusion_rules: ['*.log', 'node_modules/', 'tmp/'] } }
+      let(:params) do
+        {
+          project_setting_attributes: {
+            duo_context_exclusion_settings: exclusion_settings
+          }
+        }
+      end
+
+      it 'does not update the setting without licensed AI features' do
+        expect { request }.not_to change { project.reload.project_setting.duo_context_exclusion_settings }
+      end
+
+      context 'with licensed AI features' do
+        before do
+          stub_licensed_features(ai_features: true)
+          project.project_setting.update!(duo_context_exclusion_settings: { exclusion_rules: [] })
+        end
+
+        it 'updates duo_context_exclusion_settings' do
+          expect { request }
+            .to change { project.reload.project_setting.duo_context_exclusion_settings }
+            .from({ "exclusion_rules" => [] })
+            .to(exclusion_settings.stringify_keys)
+        end
+
+        context 'with existing exclusion settings' do
+          let(:initial_settings) { { exclusion_rules: ['*.txt'] } }
+
+          before do
+            project.project_setting.update!(duo_context_exclusion_settings: initial_settings)
+          end
+
+          it 'updates the existing settings' do
+            expect { request }
+              .to change { project.reload.project_setting.duo_context_exclusion_settings }
+              .from(initial_settings.stringify_keys)
+              .to(exclusion_settings.stringify_keys)
+          end
+        end
+
+        context 'with empty exclusion rules' do
+          # we can't use empty array due to strong params deep_munge
+          let(:exclusion_settings) { { exclusion_rules: nil } }
+
+          before do
+            project.project_setting.update!(duo_context_exclusion_settings: { exclusion_rules: ['*.log'] })
+          end
+
+          it 'clears the exclusion rules' do
+            expect { request }
+              .to change { project.reload.project_setting.duo_context_exclusion_settings }
+              .to({})
+          end
         end
       end
     end
