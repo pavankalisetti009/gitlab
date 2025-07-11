@@ -37837,7 +37837,7 @@ CREATE INDEX index_routes_on_path_trigram ON routes USING gin (path gin_trgm_ops
 
 CREATE UNIQUE INDEX index_routes_on_source_type_and_source_id ON routes USING btree (source_type, source_id);
 
-CREATE UNIQUE INDEX index_saml_group_links_on_group_id_and_saml_group_name ON saml_group_links USING btree (group_id, saml_group_name);
+CREATE UNIQUE INDEX index_saml_group_links_on_group_id_saml_group_name_provider ON saml_group_links USING btree (group_id, saml_group_name, provider);
 
 CREATE INDEX index_saml_group_links_on_member_role_id ON saml_group_links USING btree (member_role_id);
 

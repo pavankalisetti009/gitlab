@@ -35,9 +35,9 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response).to(
         match([
-          { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group1" },
-                { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group2" },
-                { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group3" }
+          { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group1", "provider" => nil },
+                { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group2", "provider" => nil },
+                { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group3", "provider" => nil }
         ])
       )
     end
@@ -98,6 +98,46 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
 
           it_behaves_like 'has expected results'
         end
+
+        context 'when group has provider-scoped SAML group links' do
+          let(:current_user) { owner }
+
+          let_it_be(:group) { create(:group) }
+          let(:group_id) { group.id }
+
+          before do
+            group.add_owner(owner)
+
+            create(:saml_provider, group: group, enabled: true)
+
+            group.saml_group_links.create!(
+              saml_group_name: "provider-group1", access_level: ::Gitlab::Access::GUEST, provider: "saml_provider_1"
+            )
+            group.saml_group_links.create!(
+              saml_group_name: "provider-group2", access_level: ::Gitlab::Access::DEVELOPER, provider: "saml_provider_2"
+            )
+          end
+
+          it "returns SAML group links with provider information" do
+            subject
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to(
+              match([
+                {
+                  "access_level" => ::Gitlab::Access::GUEST,
+                  "name" => "provider-group1",
+                  "provider" => "saml_provider_1"
+                },
+                {
+                  "access_level" => ::Gitlab::Access::DEVELOPER,
+                  "name" => "provider-group2",
+                  "provider" => "saml_provider_2"
+                }
+              ])
+            )
+          end
+        end
       end
     end
 
@@ -154,6 +194,24 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
             expect(response).to have_gitlab_http_status(:created)
             expect(json_response['name']).to eq('Test group')
             expect(json_response['access_level']).to eq(::Gitlab::Access::GUEST)
+            expect(json_response['provider']).to be_nil
+          end
+        end
+
+        context 'when providing a provider parameter' do
+          let(:params) { super().merge(provider: 'saml_provider_1') }
+
+          it "adds saml group link with provider" do
+            expect do
+              subject
+            end.to change { group_with_saml_group_links.saml_group_links.count }.by(1)
+
+            aggregate_failures "testing response" do
+              expect(response).to have_gitlab_http_status(:created)
+              expect(json_response['name']).to eq('Test group')
+              expect(json_response['access_level']).to eq(::Gitlab::Access::GUEST)
+              expect(json_response['provider']).to eq('saml_provider_1')
+            end
           end
         end
 
@@ -198,6 +256,114 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
             expect(response).to have_gitlab_http_status(:bad_request)
           end
         end
+
+        context 'when provider parameter is too long' do
+          let(:params) { super().merge(provider: 'a' * 256) }
+
+          it "returns a 400 error when provider is too long" do
+            subject
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+
+        context 'when creating duplicate group links with different providers' do
+          before do
+            group_with_saml_group_links.saml_group_links.create!(
+              saml_group_name: 'Test group', access_level: ::Gitlab::Access::GUEST, provider: 'provider1'
+            )
+          end
+
+          let(:params) { super().merge(provider: 'provider2') }
+
+          it "allows creating a link with same group name but different provider" do
+            expect do
+              subject
+            end.to change { group_with_saml_group_links.saml_group_links.count }.by(1)
+
+            aggregate_failures "testing response" do
+              expect(response).to have_gitlab_http_status(:created)
+              expect(json_response['name']).to eq('Test group')
+              expect(json_response['access_level']).to eq(::Gitlab::Access::GUEST)
+              expect(json_response['provider']).to eq('provider2')
+            end
+          end
+        end
+
+        context 'when creating duplicate group links with same provider' do
+          before do
+            group_with_saml_group_links.saml_group_links.create!(
+              saml_group_name: 'Test group', access_level: ::Gitlab::Access::GUEST, provider: 'provider1'
+            )
+          end
+
+          let(:params) { super().merge(provider: 'provider1') }
+
+          it "returns a 400 error for duplicate group name and provider" do
+            subject
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include('Saml group name has already been taken')
+          end
+        end
+
+        context 'when creating duplicate group links with nil provider' do
+          before do
+            group_with_saml_group_links.saml_group_links.create!(
+              saml_group_name: 'Test group', access_level: ::Gitlab::Access::GUEST, provider: nil
+            )
+          end
+
+          it "returns a 400 error for duplicate group name with nil provider" do
+            subject
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include('Saml group name has already been taken')
+          end
+        end
+
+        context 'when creating link with same group name but one has nil provider' do
+          before do
+            group_with_saml_group_links.saml_group_links.create!(
+              saml_group_name: 'Test group', access_level: ::Gitlab::Access::GUEST, provider: nil
+            )
+          end
+
+          let(:params) { super().merge(provider: 'provider1') }
+
+          it "allows creating a link with same group name when existing has nil provider" do
+            expect do
+              subject
+            end.to change { group_with_saml_group_links.saml_group_links.count }.by(1)
+
+            aggregate_failures "testing response" do
+              expect(response).to have_gitlab_http_status(:created)
+              expect(json_response['name']).to eq('Test group')
+              expect(json_response['access_level']).to eq(::Gitlab::Access::GUEST)
+              expect(json_response['provider']).to eq('provider1')
+            end
+          end
+        end
+
+        context 'when providing empty string as provider' do
+          let(:params) { super().merge(provider: '') }
+
+          it "normalizes empty string provider to nil" do
+            expect do
+              subject
+            end.to change { group_with_saml_group_links.saml_group_links.count }.by(1)
+
+            aggregate_failures "testing response" do
+              expect(response).to have_gitlab_http_status(:created)
+              expect(json_response['name']).to eq('Test group')
+              expect(json_response['access_level']).to eq(::Gitlab::Access::GUEST)
+              expect(json_response['provider']).to be_nil
+            end
+
+            created_link = group_with_saml_group_links.saml_group_links.last
+            expect(created_link.provider).to be_nil
+          end
+        end
       end
     end
 
@@ -240,6 +406,7 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response['name']).to eq('saml-group1')
             expect(json_response['access_level']).to eq(::Gitlab::Access::GUEST)
+            expect(json_response['provider']).to be_nil
           end
         end
 
@@ -250,6 +417,118 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
             subject
 
             expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context "when getting a provider-scoped SAML group link" do
+          let(:current_user) { owner }
+
+          let_it_be(:group_with_provider_link) { create(:group) }
+          let_it_be(:saml_provider_for_get) { create(:saml_provider, group: group_with_provider_link, enabled: true) }
+          let_it_be(:group_id) { group_with_provider_link.id }
+          let_it_be(:saml_group_name) { "provider-scoped-group" }
+
+          before do
+            group_with_provider_link.saml_group_links.create!(saml_group_name: "provider-scoped-group",
+              access_level: ::Gitlab::Access::MAINTAINER, provider: "test_provider")
+            group_with_provider_link.add_owner(owner)
+          end
+
+          it "gets saml group link with provider information" do
+            subject
+
+            aggregate_failures "testing response" do
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['name']).to eq('provider-scoped-group')
+              expect(json_response['access_level']).to eq(::Gitlab::Access::MAINTAINER)
+              expect(json_response['provider']).to eq('test_provider')
+            end
+          end
+        end
+
+        context "when multiple links exist with same group name but different providers" do
+          let(:current_user) { owner }
+
+          let_it_be(:group_with_multiple_links) { create(:group) }
+          let_it_be(:saml_provider_for_get) { create(:saml_provider, group: group_with_multiple_links, enabled: true) }
+          let_it_be(:group_id) { group_with_multiple_links.id }
+          let_it_be(:saml_group_name) { "shared-group-name" }
+
+          before do
+            group_with_multiple_links.saml_group_links.create!(
+              saml_group_name: "shared-group-name",
+              access_level: ::Gitlab::Access::GUEST,
+              provider: "provider1"
+            )
+            group_with_multiple_links.saml_group_links.create!(
+              saml_group_name: "shared-group-name",
+              access_level: ::Gitlab::Access::DEVELOPER,
+              provider: "provider2"
+            )
+            group_with_multiple_links.saml_group_links.create!(
+              saml_group_name: "shared-group-name",
+              access_level: ::Gitlab::Access::MAINTAINER,
+              provider: nil
+            )
+            group_with_multiple_links.add_owner(owner)
+          end
+
+          it "returns error when multiple links exist without provider parameter" do
+            subject
+
+            expect(response).to have_gitlab_http_status(:unprocessable_entity)
+            expect(json_response['message']).to include(
+              'Multiple group links found with the same name. Please specify a provider parameter to disambiguate.'
+            )
+          end
+
+          context "when provider parameter is specified" do
+            subject do
+              get api("/groups/#{group_id}/saml_group_links/#{saml_group_name}?provider=provider2", current_user)
+            end
+
+            it "gets the specific link for the provider" do
+              subject
+
+              aggregate_failures "testing response" do
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['name']).to eq('shared-group-name')
+                expect(json_response['access_level']).to eq(::Gitlab::Access::DEVELOPER)
+                expect(json_response['provider']).to eq('provider2')
+              end
+            end
+          end
+
+          context "when provider parameter is empty string" do
+            subject { get api("/groups/#{group_id}/saml_group_links/#{saml_group_name}?provider=", current_user) }
+
+            it "gets the link with nil provider" do
+              subject
+
+              aggregate_failures "testing response" do
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['name']).to eq('shared-group-name')
+                expect(json_response['access_level']).to eq(::Gitlab::Access::MAINTAINER)
+                expect(json_response['provider']).to be_nil
+              end
+            end
+          end
+
+          context "when provider parameter is whitespace-only" do
+            subject do
+              get api("/groups/#{group_id}/saml_group_links/#{saml_group_name}?provider=%20%20%20", current_user)
+            end
+
+            it "gets the link with nil provider" do
+              subject
+
+              aggregate_failures "testing response" do
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['name']).to eq('shared-group-name')
+                expect(json_response['access_level']).to eq(::Gitlab::Access::MAINTAINER)
+                expect(json_response['provider']).to be_nil
+              end
+            end
           end
         end
       end
@@ -316,6 +595,100 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
             end.not_to change { group_with_saml_group_links.saml_group_links.count }
 
             expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context "when multiple links exist with same group name but different providers" do
+          let(:current_user) { owner }
+
+          let_it_be(:group_with_multiple_delete_links) { create(:group) }
+          let_it_be(:saml_provider_for_delete) do
+            create(:saml_provider, group: group_with_multiple_delete_links, enabled: true)
+          end
+
+          let_it_be(:group_id) { group_with_multiple_delete_links.id }
+          let_it_be(:saml_group_name) { "delete-shared-group-name" }
+
+          before do
+            group_with_multiple_delete_links.saml_group_links.create!(
+              saml_group_name: "delete-shared-group-name",
+              access_level: ::Gitlab::Access::GUEST,
+              provider: "provider1"
+            )
+            group_with_multiple_delete_links.saml_group_links.create!(
+              saml_group_name: "delete-shared-group-name",
+              access_level: ::Gitlab::Access::DEVELOPER,
+              provider: "provider2"
+            )
+            group_with_multiple_delete_links.saml_group_links.create!(
+              saml_group_name: "delete-shared-group-name",
+              access_level: ::Gitlab::Access::MAINTAINER,
+              provider: nil
+            )
+            group_with_multiple_delete_links.add_owner(owner)
+          end
+
+          it "returns error when multiple links exist without provider parameter" do
+            expect do
+              subject
+            end.not_to change { group_with_multiple_delete_links.saml_group_links.count }
+
+            expect(response).to have_gitlab_http_status(:unprocessable_entity)
+            expect(json_response['message']).to include(
+              'Multiple group links found with the same name. Please specify a provider parameter to disambiguate.'
+            )
+          end
+
+          context "when provider parameter is specified" do
+            subject do
+              delete api("/groups/#{group_id}/saml_group_links/#{saml_group_name}?provider=provider2", current_user)
+            end
+
+            it "deletes the specific link for the provider" do
+              expect do
+                subject
+
+                expect(response).to have_gitlab_http_status(:no_content)
+              end.to change { group_with_multiple_delete_links.saml_group_links.count }.by(-1)
+
+              remaining_links = group_with_multiple_delete_links.saml_group_links.where(
+                saml_group_name: saml_group_name)
+              expect(remaining_links.pluck(:provider)).to match_array(['provider1', nil])
+            end
+          end
+
+          context "when provider parameter is empty string" do
+            subject { delete api("/groups/#{group_id}/saml_group_links/#{saml_group_name}?provider=", current_user) }
+
+            it "deletes the link with nil provider" do
+              expect do
+                subject
+
+                expect(response).to have_gitlab_http_status(:no_content)
+              end.to change { group_with_multiple_delete_links.saml_group_links.count }.by(-1)
+
+              remaining_links = group_with_multiple_delete_links.saml_group_links.where(
+                saml_group_name: saml_group_name)
+              expect(remaining_links.pluck(:provider)).to match_array(%w[provider1 provider2])
+            end
+          end
+
+          context "when provider parameter is whitespace-only" do
+            subject do
+              delete api("/groups/#{group_id}/saml_group_links/#{saml_group_name}?provider=%20%20%20", current_user)
+            end
+
+            it "deletes the link with nil provider" do
+              expect do
+                subject
+
+                expect(response).to have_gitlab_http_status(:no_content)
+              end.to change { group_with_multiple_delete_links.saml_group_links.count }.by(-1)
+
+              remaining_links = group_with_multiple_delete_links.saml_group_links.where(
+                saml_group_name: saml_group_name)
+              expect(remaining_links.pluck(:provider)).to match_array(%w[provider1 provider2])
+            end
           end
         end
       end
