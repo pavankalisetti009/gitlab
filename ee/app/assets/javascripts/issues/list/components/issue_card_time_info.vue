@@ -5,6 +5,7 @@ import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_sta
 import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';
 import { findHealthStatusWidget, findWeightWidget, findIterationWidget } from '~/work_items/utils';
 import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
+import { METADATA_KEYS } from '~/work_items/constants';
 
 export default {
   components: {
@@ -30,6 +31,11 @@ export default {
       required: false,
       default: false,
     },
+    hiddenMetadataKeys: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   computed: {
     healthStatus() {
@@ -42,17 +48,28 @@ export default {
       return this.issue.weight || findWeightWidget(this.issue)?.weight;
     },
     showWeight() {
-      return this.hasIssueWeightsFeature && this.weight != null;
+      return (
+        this.hasIssueWeightsFeature &&
+        this.weight != null &&
+        !this.hiddenMetadataKeys.includes(this.$options.constants.METADATA_KEYS.WEIGHT)
+      );
     },
     iteration() {
       return this.hasIterationsFeature && findIterationWidget(this.issue)?.iteration;
     },
   },
+  constants: {
+    METADATA_KEYS,
+  },
 };
 </script>
 
 <template>
-  <issue-card-time-info :issue="issue" :detail-loading="detailLoading">
+  <issue-card-time-info
+    :issue="issue"
+    :detail-loading="detailLoading"
+    :hidden-metadata-keys="hiddenMetadataKeys"
+  >
     <template #weight>
       <work-item-attribute
         v-if="showWeight"
@@ -71,7 +88,10 @@ export default {
     </template>
     <issue-health-status v-if="showHealthStatus" :health-status="healthStatus" />
     <template #iteration>
-      <work-item-iteration-attribute v-if="iteration" :iteration="iteration" />
+      <work-item-iteration-attribute
+        v-if="iteration && !hiddenMetadataKeys.includes($options.constants.METADATA_KEYS.ITERATION)"
+        :iteration="iteration"
+      />
     </template>
   </issue-card-time-info>
 </template>

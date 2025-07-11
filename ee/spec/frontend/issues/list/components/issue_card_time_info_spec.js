@@ -58,10 +58,11 @@ describe('EE IssueCardTimeInfo component', () => {
     hasIterationsFeature = false,
     isWorkItemList = false,
     issueCardTimeInfoStub,
+    hiddenMetadataKeys = [],
   } = {}) =>
     shallowMountExtended(IssueCardTimeInfoEE, {
       provide: { hasIssuableHealthStatusFeature, hasIssueWeightsFeature, hasIterationsFeature },
-      propsData: { issue, isWorkItemList },
+      propsData: { issue, isWorkItemList, hiddenMetadataKeys },
       stubs: issueCardTimeInfoStub,
     });
 
@@ -83,6 +84,21 @@ describe('EE IssueCardTimeInfo component', () => {
         });
 
         expect(findWeightCount().props('title')).toBe('2');
+      });
+
+      it('hides weight when "weight" is in hiddenMetadataKeys', () => {
+        wrapper = mountComponent({
+          issue: obj,
+          hasIssueWeightsFeature: true,
+          hiddenMetadataKeys: ['weight'],
+          issueCardTimeInfoStub: {
+            IssueCardTimeInfo: stubComponent(IssueCardTimeInfo, {
+              template: `<div><slot name="weight"></slot></div>`,
+            }),
+          },
+        });
+
+        expect(findWeightCount().exists()).toBe(false);
       });
     });
 
@@ -144,6 +160,21 @@ describe('EE IssueCardTimeInfo component', () => {
       expect(findIteration().exists()).toBe(true);
     });
 
+    it('hides iteration when "iteration" is in hiddenMetadataKeys', () => {
+      wrapper = mountComponent({
+        issue: workItemObject,
+        hasIterationsFeature: true,
+        hiddenMetadataKeys: ['iteration'],
+        issueCardTimeInfoStub: {
+          IssueCardTimeInfo: stubComponent(IssueCardTimeInfo, {
+            template: `<div><slot name="iteration"></slot></div>`,
+          }),
+        },
+      });
+
+      expect(findIteration().exists()).toBe(false);
+    });
+
     it('does not render when iteration feature is disabled', () => {
       wrapper = mountComponent({ issue: workItemObject, hasIterationsFeature: false });
 
@@ -160,6 +191,25 @@ describe('EE IssueCardTimeInfo component', () => {
         hasIterationsFeature: true,
       });
 
+      expect(findIteration().exists()).toBe(false);
+    });
+  });
+
+  describe('multiple hidden metadata fields', () => {
+    it('hides both weight and iteration when specified', () => {
+      wrapper = mountComponent({
+        issue: workItemObject,
+        hasIssueWeightsFeature: true,
+        hasIterationsFeature: true,
+        hiddenMetadataKeys: ['weight', 'iteration'],
+        issueCardTimeInfoStub: {
+          IssueCardTimeInfo: stubComponent(IssueCardTimeInfo, {
+            template: `<div><slot name="weight"></slot><slot name="iteration"></slot></div>`,
+          }),
+        },
+      });
+
+      expect(findWeightCount().exists()).toBe(false);
       expect(findIteration().exists()).toBe(false);
     });
   });

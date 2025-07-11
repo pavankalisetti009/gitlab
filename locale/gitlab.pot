@@ -70627,10 +70627,19 @@ msgstr ""
 msgid "WorkItems|Ancestors not available"
 msgstr ""
 
+msgid "WorkItems|Blocked/Blocking"
+msgstr ""
+
 msgid "WorkItems|Display options"
 msgstr ""
 
+msgid "WorkItems|Fields"
+msgstr ""
+
 msgid "WorkItems|Open items in side panel"
+msgstr ""
+
+msgid "WorkItems|Options applied to all views"
 msgstr ""
 
 msgid "WorkItems|Your preferences"
