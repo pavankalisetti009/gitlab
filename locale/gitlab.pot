@@ -24574,9 +24574,6 @@ msgstr ""
 msgid "EmailParticipantsWarning|and %{moreCount} more"
 msgstr ""
 
-msgid "EmailVerification|Update your email to a valid permanent address. If you use a temporary email, you won't be able to sign in later."
-msgstr ""
-
 msgid "Emails"
 msgstr ""
 
@@ -32120,9 +32117,6 @@ msgstr[1] ""
 msgid "IdentityVerification|A code has already been sent to this email address. Check your spam folder or enter another email address."
 msgstr ""
 
-msgid "IdentityVerification|A new code has been sent to your updated email address."
-msgstr ""
-
 msgid "IdentityVerification|A new code has been sent."
 msgstr ""
 
@@ -32262,9 +32256,6 @@ msgid "IdentityVerification|The code has expired. Send a new code and try again.
 msgstr ""
 
 msgid "IdentityVerification|The code is incorrect. Enter it again, or send a new code."
-msgstr ""
-
-msgid "IdentityVerification|Update email"
 msgstr ""
 
 msgid "IdentityVerification|Verification code"
