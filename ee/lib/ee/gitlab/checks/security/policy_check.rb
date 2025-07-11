@@ -14,6 +14,7 @@ module EE
 
             logger.log_timed(LOG_MESSAGE) do
               break unless branch_name_affected_by_policy?
+              break if policies_bypass_applied?
 
               if force_push?
                 raise ::Gitlab::GitAccess::ForbiddenError, FORCE_PUSH_ERROR_MESSAGE
@@ -30,6 +31,14 @@ module EE
               .new(project: project).execute
 
             branch_name.in? affected_branches
+          end
+
+          def policies_bypass_applied?
+            return false if ::Feature.disabled?(:security_policies_bypass_options_tokens_accounts, project)
+
+            ::Security::ScanResultPolicies::PushBypassChecker.new(
+              project: project, user_access: user_access, branch_name: branch_name
+            ).check_bypass!
           end
 
           def force_push?

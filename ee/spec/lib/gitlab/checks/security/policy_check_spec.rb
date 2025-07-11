@@ -101,5 +101,46 @@ RSpec.describe Gitlab::Checks::Security::PolicyCheck, '#validate!', feature_cate
         expect { policy_check! }.not_to raise_error
       end
     end
+
+    context 'with bypass_settings' do
+      let_it_be(:user) { create(:user, :project_bot) }
+      let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
+
+      context 'when policies_bypass_applied? allows bypass with access token' do
+        before do
+          create(:security_policy, linked_projects: [project], bypass_access_token_ids: [personal_access_token.id])
+        end
+
+        it 'does not raise' do
+          expect { policy_check! }.not_to raise_error
+        end
+      end
+
+      context 'when policies_bypass_applied? does not allow bypass with access token' do
+        before do
+          # Create a policy with a different access token, so the current token is not allowed
+          another_token = create(:personal_access_token)
+          create(:security_policy, linked_projects: [project], bypass_access_token_ids: [another_token.id])
+        end
+
+        it 'raises error' do
+          expect { policy_check! }.to raise_error(
+            Gitlab::GitAccess::ForbiddenError, described_class::FORCE_PUSH_ERROR_MESSAGE
+          )
+        end
+      end
+    end
+
+    context 'when the security_policies_bypass_options_tokens_accounts feature flag is disabled' do
+      before do
+        stub_feature_flags(security_policies_bypass_options_tokens_accounts: false)
+      end
+
+      it 'does not bypass and raises error' do
+        expect { policy_check! }.to raise_error(
+          Gitlab::GitAccess::ForbiddenError, described_class::FORCE_PUSH_ERROR_MESSAGE
+        )
+      end
+    end
   end
 end
