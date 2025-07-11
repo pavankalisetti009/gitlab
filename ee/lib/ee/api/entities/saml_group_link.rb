@@ -9,6 +9,7 @@ module EE
         expose :member_role_id, documentation: { type: 'integer', example: 12 }, if: ->(instance, _options) do
           instance.group.custom_roles_enabled?
         end
+        expose :provider, documentation: { type: 'string', example: 'saml' }
       end
     end
   end

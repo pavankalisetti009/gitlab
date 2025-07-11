@@ -15,11 +15,76 @@ RSpec.describe SamlGroupLink, feature_category: :system_access do
     it { is_expected.to validate_length_of(:provider).is_at_most(255) }
 
     context 'group name uniqueness' do
+      let_it_be(:group) { create(:group) }
+
       before do
-        create(:saml_group_link, group: create(:group))
+        create(:saml_group_link, group: group, saml_group_name: 'test-group')
       end
 
       it { is_expected.to validate_uniqueness_of(:saml_group_name).scoped_to([:group_id, :provider]) }
+
+      context 'with same group name but different providers' do
+        before do
+          create(:saml_group_link, group: group, saml_group_name: 'duplicate-group', provider: 'provider1')
+        end
+
+        it 'allows creating links with same group name but different providers' do
+          link = build(:saml_group_link, group: group, saml_group_name: 'duplicate-group', provider: 'provider2')
+
+          expect(link).to be_valid
+        end
+      end
+
+      context 'with same group name and nil provider' do
+        before do
+          create(:saml_group_link, group: group, saml_group_name: 'duplicate-group', provider: nil)
+        end
+
+        it 'allows creating links with same group name when one has nil provider' do
+          link = build(:saml_group_link, group: group, saml_group_name: 'duplicate-group', provider: 'provider1')
+
+          expect(link).to be_valid
+        end
+      end
+
+      context 'with same group name and same provider' do
+        before do
+          create(:saml_group_link, group: group, saml_group_name: 'duplicate-group', provider: 'provider1')
+        end
+
+        it 'prevents creating duplicate links with same group name and provider' do
+          duplicate_link = build(:saml_group_link, group: group, saml_group_name: 'duplicate-group',
+            provider: 'provider1')
+
+          expect(duplicate_link).not_to be_valid
+          expect(duplicate_link.errors[:saml_group_name]).to include('has already been taken')
+        end
+      end
+
+      context 'with both nil provider' do
+        before do
+          create(:saml_group_link, group: group, saml_group_name: 'duplicate-group', provider: nil)
+        end
+
+        it 'prevents creating duplicate links with same group name and nil provider' do
+          duplicate_link = build(:saml_group_link, group: group, saml_group_name: 'duplicate-group', provider: nil)
+
+          expect(duplicate_link).not_to be_valid
+          expect(duplicate_link.errors[:saml_group_name]).to include('has already been taken')
+        end
+      end
+
+      context 'across different groups' do
+        let_it_be(:other_group) { create(:group) }
+
+        it 'allows creating links with same group name and provider in different groups' do
+          create(:saml_group_link, group: group, saml_group_name: 'same-group', provider: 'provider1')
+          link_in_other_group = build(:saml_group_link, group: other_group, saml_group_name: 'same-group',
+            provider: 'provider1')
+
+          expect(link_in_other_group).to be_valid
+        end
+      end
     end
 
     context 'saml_group_name with whitespaces' do
@@ -37,6 +102,38 @@ RSpec.describe SamlGroupLink, feature_category: :system_access do
         saml_group_link.valid?
 
         expect(saml_group_link.provider).to eq('idp-1')
+      end
+    end
+
+    context 'provider normalization' do
+      let_it_be(:group) { create(:group) }
+
+      it 'normalizes empty string to nil' do
+        saml_group_link = build(:saml_group_link, group: group, provider: '')
+
+        expect(saml_group_link).to be_valid
+        expect(saml_group_link.provider).to be_nil
+      end
+
+      it 'normalizes whitespace-only string to nil' do
+        saml_group_link = build(:saml_group_link, group: group, provider: '   ')
+
+        expect(saml_group_link).to be_valid
+        expect(saml_group_link.provider).to be_nil
+      end
+
+      it 'keeps valid provider values unchanged' do
+        saml_group_link = build(:saml_group_link, group: group, provider: 'okta')
+
+        expect(saml_group_link).to be_valid
+        expect(saml_group_link.provider).to eq('okta')
+      end
+
+      it 'keeps nil provider values unchanged' do
+        saml_group_link = build(:saml_group_link, group: group, provider: nil)
+
+        expect(saml_group_link).to be_valid
+        expect(saml_group_link.provider).to be_nil
       end
     end
 
@@ -145,6 +242,67 @@ RSpec.describe SamlGroupLink, feature_category: :system_access do
         results = described_class.by_assign_duo_seats(true)
 
         expect(results).to contain_exactly(group_link_w_assign_duo_seats)
+      end
+    end
+
+    describe '.by_provider' do
+      let_it_be(:provider_name) { 'okta' }
+      let_it_be(:group_link_with_provider) { create(:saml_group_link, group: group, provider: provider_name) }
+      let_it_be(:group_link_without_provider) { create(:saml_group_link, group: group, provider: nil) }
+
+      it 'finds group links with the specified provider' do
+        results = described_class.by_provider(provider_name)
+
+        expect(results).to match_array([group_link_with_provider])
+      end
+
+      it 'finds group links with nil provider when searching for nil' do
+        results = described_class.by_provider(nil)
+
+        expect(results).to match_array([group_link, group_link_without_provider])
+      end
+
+      it 'returns empty when no matches exist' do
+        results = described_class.by_provider('non-existent-provider')
+
+        expect(results).to be_empty
+      end
+
+      context 'with multiple providers' do
+        let_it_be(:azure_provider) { 'azure' }
+        let_it_be(:group_link_with_azure) { create(:saml_group_link, group: group, provider: azure_provider) }
+
+        it 'finds only group links with the specified provider' do
+          results = described_class.by_provider(provider_name)
+
+          expect(results).to match_array([group_link_with_provider])
+          expect(results).not_to include(group_link_with_azure)
+        end
+      end
+
+      context 'with multiple groups' do
+        let_it_be(:group2) { create(:group) }
+        let_it_be(:group_link2_with_provider) { create(:saml_group_link, group: group2, provider: provider_name) }
+
+        it 'finds group links across all groups with the specified provider' do
+          results = described_class.by_provider(provider_name)
+
+          expect(results).to match_array([group_link_with_provider, group_link2_with_provider])
+        end
+      end
+
+      context 'with array of providers' do
+        let_it_be(:azure_provider) { 'azure' }
+        let_it_be(:google_provider) { 'google' }
+        let_it_be(:group_link_with_azure) { create(:saml_group_link, group: group, provider: azure_provider) }
+        let_it_be(:group_link_with_google) { create(:saml_group_link, group: group, provider: google_provider) }
+
+        it 'finds group links with any of the specified providers' do
+          results = described_class.by_provider([provider_name, azure_provider])
+
+          expect(results).to match_array([group_link_with_provider, group_link_with_azure])
+          expect(results).not_to include(group_link_with_google)
+        end
       end
     end
   end
