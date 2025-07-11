@@ -112,3 +112,26 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
     }),
   },
 };
+
+export const AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS = {
+  // Code suggestions usage only started being tracked April 4, 2024
+  // https://gitlab.com/gitlab-org/gitlab/-/issues/456108
+  [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE]: {
+    startDate: new Date('2024-04-04'),
+    message: s__(
+      'AiImpactAnalytics|The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see %{linkStart}epic 12978%{linkEnd}.',
+    ),
+    link: 'https://gitlab.com/groups/gitlab-org/-/epics/12978',
+  },
+  // Duo RCA usage only started being tracked April 23, 2025
+  // https://gitlab.com/gitlab-org/gitlab/-/issues/486523
+  [AI_METRICS.DUO_RCA_USAGE_RATE]: {
+    startDate: new Date('2025-04-23'),
+    message: s__(
+      'AiImpactAnalytics|Data available after upgrade to GitLab 18.0. %{linkStart}Learn more%{linkEnd}.',
+    ),
+    link: helpPagePath('user/analytics/ai_impact_analytics', {
+      anchor: 'ai-usage-metrics',
+    }),
+  },
+};

@@ -13,7 +13,7 @@ import { toYmd, extractQueryResponseFromNamespace } from '~/analytics/shared/uti
 import { AI_METRICS, UNITS } from '~/analytics/shared/constants';
 import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import { dasherize } from '~/lib/utils/text_utility';
-import { formatNumber, s__ } from '~/locale';
+import { formatNumber } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
@@ -57,6 +57,7 @@ import {
   SUPPORTED_AI_METRICS,
   HIDE_METRIC_DRILL_DOWN,
   AI_IMPACT_TABLE_METRICS,
+  AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS,
 } from '../constants';
 import {
   fetchMetricsForTimePeriods,
@@ -344,15 +345,7 @@ export default {
     },
     formatNumber,
   },
-
-  // Code suggestions usage only started being tracked April 4, 2024
-  // https://gitlab.com/gitlab-org/gitlab/-/issues/456108
-  CODE_SUGGESTIONS_START_DATE: new Date('2024-04-04'),
-  CODE_SUGGESTIONS_USAGE_RATE: AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
-  CODE_SUGGESTIONS_START_DATE_TOOLTIP: s__(
-    'AiImpactAnalytics|The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see %{linkStart}epic 12978%{linkEnd}.',
-  ),
-  CODE_SUGGESTIONS_START_DATE_LINK: 'https://gitlab.com/groups/gitlab-org/-/epics/12978',
+  dataNotAvailableTooltips: AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS,
 };
 </script>
 <template>
@@ -400,13 +393,13 @@ export default {
         <gl-tooltip v-if="tooltip" :target="() => $refs[`${key}-${identifier}`]">
           <gl-sprintf
             v-if="
-              identifier === $options.CODE_SUGGESTIONS_USAGE_RATE &&
-              end < $options.CODE_SUGGESTIONS_START_DATE
+              $options.dataNotAvailableTooltips[identifier] &&
+              end < $options.dataNotAvailableTooltips[identifier].startDate
             "
-            :message="$options.CODE_SUGGESTIONS_START_DATE_TOOLTIP"
+            :message="$options.dataNotAvailableTooltips[identifier].message"
           >
             <template #link="{ content }">
-              <gl-link :href="$options.CODE_SUGGESTIONS_START_DATE_LINK" target="_blank">{{
+              <gl-link :href="$options.dataNotAvailableTooltips[identifier].link" target="_blank">{{
                 content
               }}</gl-link>
             </template>

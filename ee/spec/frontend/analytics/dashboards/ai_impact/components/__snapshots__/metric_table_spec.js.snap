@@ -359,12 +359,12 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
 
 exports[`Metric table for the duo_rca_usage_rate table row when the data is loaded renders the metric values 1`] = `
 [
-  "33.3% 5/15",
-  "85.7% 6/7",
-  "73.3% 11/15",
-  "66.7% 12/18",
-  "41.2% 7/17",
-  "50.0% 6/12",
+  "33.3% Data available after upgrade to GitLab 18.0. Learn more.",
+  "85.7% Data available after upgrade to GitLab 18.0. Learn more.",
+  "73.3% Data available after upgrade to GitLab 18.0. Learn more.",
+  "66.7% Data available after upgrade to GitLab 18.0. Learn more.",
+  "41.2% Data available after upgrade to GitLab 18.0. Learn more.",
+  "50.0% Data available after upgrade to GitLab 18.0. Learn more.",
 ]
 `;
 
