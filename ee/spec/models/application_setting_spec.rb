@@ -279,6 +279,29 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#sdrs_jwt_signing_key' do
+      let(:rsa_key) { OpenSSL::PKey::RSA.generate(2048) }
+      let(:setting) { build(:application_setting) }
+
+      it { is_expected.to allow_value(nil).for(:sdrs_jwt_signing_key) }
+      it { is_expected.to allow_value(rsa_key.to_pem).for(:sdrs_jwt_signing_key) }
+
+      it 'encrypts and decrypts the value' do
+        setting.sdrs_jwt_signing_key = rsa_key.to_pem
+        setting.save!
+
+        # Verify encryption
+        encrypted_value = described_class.connection.select_value(
+          "SELECT sdrs_jwt_signing_key FROM application_settings WHERE id = #{setting.id}"
+        )
+        expect(encrypted_value).not_to include(rsa_key.to_pem)
+
+        # Verify decryption
+        setting.reload
+        expect(setting.sdrs_jwt_signing_key).to eq(rsa_key.to_pem)
+      end
+    end
+
     describe 'security policy settings' do
       it 'validates security_approval_policies_limit' do
         is_expected.to validate_numericality_of(:security_approval_policies_limit)
