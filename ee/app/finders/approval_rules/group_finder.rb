@@ -31,9 +31,10 @@ module ApprovalRules
     private
 
     def project_groups
-      return Group.none unless rule.respond_to?(:project)
+      project = rule.rule_project
 
-      project = rule.project
+      return Group.none unless project
+
       return Group.none unless Feature.enabled?(:show_private_groups_as_approvers,
         project) && current_user&.can?(:read_project, project)
 

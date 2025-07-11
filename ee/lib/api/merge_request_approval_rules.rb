@@ -30,7 +30,11 @@ module API
         get '/', urgency: :low do
           merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
-          present paginate(merge_request.approval_rules), with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+          if Feature.enabled?(:v2_approval_rules, merge_request.project)
+            present paginate(merge_request.v2_approval_rules), with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+          else
+            present paginate(merge_request.approval_rules), with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+          end
         end
 
         desc 'Create new merge request approval rules' do

@@ -19,6 +19,8 @@ class ApprovalProjectRule < ApplicationRecord
   ].freeze
 
   belongs_to :project
+
+  alias_method :rule_project, :project
   has_and_belongs_to_many :protected_branches
   has_many :approval_merge_request_rule_sources
   has_many :approval_merge_request_rules, through: :approval_merge_request_rule_sources

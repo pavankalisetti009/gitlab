@@ -71,7 +71,10 @@ module MergeRequests
 
     def source_rule; end
 
-    def overridden?; end
+    def overridden?
+      # Implement this when we implement source_rule
+      false
+    end
 
     def code_owner; end
 
@@ -100,6 +103,12 @@ module MergeRequests
       user.present? &&
         user_defined? &&
         editable?(user)
+    end
+
+    def rule_project
+      return merge_request.target_project if originates_from_merge_request?
+
+      project
     end
 
     private

@@ -287,7 +287,7 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
 
   describe '#overridden?' do
     it 'returns nil' do
-      expect(rule.overridden?).to be_nil
+      expect(rule.overridden?).to be false
     end
   end
 
@@ -306,6 +306,39 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
   describe '#report_type' do
     it 'is nil' do
       expect(rule.report_type).to be_nil
+    end
+  end
+
+  describe '#rule_project' do
+    subject { rule.rule_project }
+
+    context 'when rule originates from merge request' do
+      let(:merge_request) { create(:merge_request) }
+      let(:rule) do
+        create(:merge_requests_approval_rule,
+          merge_request: merge_request,
+          project_id: merge_request.project.id,
+          origin: :merge_request
+        )
+      end
+
+      it { is_expected.to eq(merge_request.project) }
+    end
+
+    context 'when rule originates from a project' do
+      let(:rule) do
+        create(:merge_requests_approval_rule,
+          :from_project,
+          project: project,
+          project_id: project.id
+        )
+      end
+
+      it { is_expected.to eq(project) }
+    end
+
+    context 'when rule originates from a group' do
+      it { is_expected.to be_nil }
     end
   end
 
