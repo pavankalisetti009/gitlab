@@ -53,15 +53,17 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
     end
 
     let(:expected_full_file_intro) do
-      " You will also be provided with the original content of modified files (before changes). " \
+      " You will also be provided with the original content of modified files (before changes) " \
+        "to help you better understand the context and scope of changes. " \
         "Newly added files are not included as their full content is already in the diffs."
     end
 
     let(:expected_full_content_section) do
       <<~CONTENT.chomp
-        Original file content (before changes):
+        <original_files>
+        Use this context to better understand the changes and identify genuine issues in the code.
 
-        Check for code duplication, redundancies, and inconsistencies.
+        Original file content (before changes):
 
         <full_file filename="UPDATED.md">
         @@ -1,4 +1,4 @@
@@ -71,6 +73,7 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
         +Welcome!
         +This is an updated file.
         </full_file>
+        </original_files>
       CONTENT
     end
 
@@ -144,9 +147,10 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
       let(:expected_full_content_section) do
         <<~CONTENT.chomp
-          Original file content (before changes):
+          <original_files>
+          Use this context to better understand the changes and identify genuine issues in the code.
 
-          Check for code duplication, redundancies, and inconsistencies.
+          Original file content (before changes):
 
           <full_file filename="UPDATED.md">
           # UPDATED
@@ -165,6 +169,7 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
           This is updated content
           </full_file>
+          </original_files>
         CONTENT
       end
 
@@ -205,9 +210,8 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
       it 'formats custom instructions section correctly' do
         expect(prompt_inputs[:custom_instructions_section]).to eq <<~SECTION
-          Custom Review Instructions:
           <custom_instructions>
-          You must also apply the following custom review instructions. Each instruction specifies which files it applies to:
+          Apply these additional review instructions to matching files:
 
           For files matching "*.rb" (Ruby Style Guide):
           Follow Ruby style conventions and best practices
@@ -220,13 +224,12 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
           IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
 
-          FORMATTING REQUIREMENT: When generating a comment based on a custom instruction, you MUST format it as follows:
+          When commenting based on custom instructions, format as:
           "According to custom instructions in '[instruction_name]': [your comment here]"
 
-          For example:
-          "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
+          Example: "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
 
-          This formatting is ONLY required for comments that are triggered by custom instructions. Regular review comments based on standard review criteria should NOT include this prefix.
+          This formatting is only required for custom instruction comments. Regular review comments based on standard review criteria should NOT include this prefix.
           </custom_instructions>
         SECTION
       end
@@ -249,9 +252,8 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
         it 'treats each instruction individually even with same name' do
           expect(prompt_inputs[:custom_instructions_section]).to eq <<~SECTION
-            Custom Review Instructions:
             <custom_instructions>
-            You must also apply the following custom review instructions. Each instruction specifies which files it applies to:
+            Apply these additional review instructions to matching files:
 
             For files matching "*.rb" (General Code Review):
             Review for code quality and best practices
@@ -261,13 +263,12 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
             IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
 
-            FORMATTING REQUIREMENT: When generating a comment based on a custom instruction, you MUST format it as follows:
+            When commenting based on custom instructions, format as:
             "According to custom instructions in '[instruction_name]': [your comment here]"
 
-            For example:
-            "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
+            Example: "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
 
-            This formatting is ONLY required for comments that are triggered by custom instructions. Regular review comments based on standard review criteria should NOT include this prefix.
+            This formatting is only required for custom instruction comments. Regular review comments based on standard review criteria should NOT include this prefix.
             </custom_instructions>
           SECTION
         end
