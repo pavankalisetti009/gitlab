@@ -69,13 +69,14 @@ export function componentForField(field, fieldName) {
 }
 
 export default class Presenter {
-  #config;
-  #component;
+  config;
+  component;
+  data;
 
   forField(item, fieldName, props) {
     const field = fieldName === 'title' || !fieldName ? item : item[fieldName];
     const component = componentForField(field, fieldName);
-    const { source } = this.#config || {};
+    const { source } = this.config || {};
 
     return {
       render(h) {
@@ -95,8 +96,9 @@ export default class Presenter {
     const component = presentersByDisplayType[display] || ListPresenter;
     const additionalProps = additionalPropsByDisplayType[display] || {};
 
-    this.#config = config;
-    this.#component = {
+    this.config = config;
+    this.data = data;
+    this.component = {
       provide: {
         presenter: this,
         queryKey,
@@ -110,13 +112,8 @@ export default class Presenter {
 
     return this;
   }
-
-  get component() {
-    return this.#component;
-  }
 }
 
 export const present = (data, config, props) => {
-  const presenter = new Presenter().init({ data, config, ...props });
-  return presenter.component;
+  return new Presenter().init({ data, config, ...props });
 };

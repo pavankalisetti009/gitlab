@@ -37278,6 +37278,9 @@ msgstr ""
 msgid "List your Gitea repositories"
 msgstr ""
 
+msgid "Load %{count} more"
+msgstr ""
+
 msgid "Load GLQL view"
 msgstr ""
 
@@ -37288,6 +37291,9 @@ msgid "Load more users"
 msgstr ""
 
 msgid "Loading"
+msgstr ""
+
+msgid "Loading %{count} more..."
 msgstr ""
 
 msgid "Loading %{name}"
@@ -66223,6 +66229,9 @@ msgid "Unable to load the diff. %{button_try_again}"
 msgstr ""
 
 msgid "Unable to load the merge request widget. Try reloading the page."
+msgstr ""
+
+msgid "Unable to load the next page."
 msgstr ""
 
 msgid "Unable to load user list. Reload the page and try again."
