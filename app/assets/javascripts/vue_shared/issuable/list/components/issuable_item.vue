@@ -29,6 +29,7 @@ import {
   WORK_ITEM_TYPE_ENUM_ISSUE,
   WORK_ITEM_TYPE_NAME_TEST_CASE,
   WORK_ITEM_TYPE_ENUM_TEST_CASE,
+  METADATA_KEYS,
 } from '~/work_items/constants';
 import {
   isAssigneesWidget,
@@ -115,6 +116,14 @@ export default {
       required: false,
       default: false,
     },
+    hiddenMetadataKeys: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+  },
+  constants: {
+    METADATA_KEYS,
   },
   computed: {
     issuableId() {
@@ -535,7 +544,9 @@ export default {
           <slot name="target-branch"></slot>
         </span>
         <p
-          v-if="labels.length"
+          v-if="
+            labels.length && !hiddenMetadataKeys.includes($options.constants.METADATA_KEYS.LABELS)
+          "
           role="group"
           :aria-label="__('Labels')"
           class="gl-mb-0 gl-mt-1 gl-flex gl-flex-wrap gl-gap-2"
@@ -571,7 +582,13 @@ export default {
           <slot v-else name="status"></slot>
         </li>
         <slot name="pipeline-status"></slot>
-        <li v-if="assignees.length" class="!gl-mr-0">
+        <li
+          v-if="
+            assignees.length &&
+            !hiddenMetadataKeys.includes($options.constants.METADATA_KEYS.ASSIGNEE)
+          "
+          class="!gl-mr-0"
+        >
           <issuable-assignees
             :assignees="assignees"
             :icon-size="16"
@@ -590,7 +607,11 @@ export default {
         </li>
         <slot name="discussions">
           <li
-            v-if="showDiscussions && notesCount"
+            v-if="
+              showDiscussions &&
+              notesCount &&
+              !hiddenMetadataKeys.includes($options.constants.METADATA_KEYS.COMMENTS)
+            "
             class="!gl-mr-0 gl-hidden sm:gl-inline-flex"
             data-testid="issuable-comments"
           >
@@ -607,10 +628,20 @@ export default {
             <gl-skeleton-loader :width="30" :lines="1" equal-width-lines />
           </li>
         </slot>
-        <li class="!gl-mr-0 [&:not(:has(li))]:gl-hidden">
+        <li
+          v-if="!hiddenMetadataKeys.includes($options.constants.METADATA_KEYS.POPULARITY)"
+          class="!gl-mr-0 [&:not(:has(li))]:gl-hidden"
+        >
           <slot name="statistics"></slot>
         </li>
-        <li v-if="isOpen && hasBlockingRelationships" class="!gl-mr-0 empty:gl-hidden">
+        <li
+          v-if="
+            isOpen &&
+            hasBlockingRelationships &&
+            !hiddenMetadataKeys.includes($options.constants.METADATA_KEYS.BLOCKED)
+          "
+          class="!gl-mr-0 empty:gl-hidden"
+        >
           <work-item-relationship-icons
             :work-item-type="type"
             :work-item-full-path="workItemFullPath"
