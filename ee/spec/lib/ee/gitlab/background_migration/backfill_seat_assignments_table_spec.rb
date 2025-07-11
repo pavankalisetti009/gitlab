@@ -11,8 +11,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSeatAssignmentsTable, featur
 
   let!(:subscription_seat_assignments) { table(:subscription_seat_assignments) }
 
-  let!(:user) { users.create!(name: 'test-1', email: 'test@example.com', projects_limit: 5) }
-  let!(:other_user) { users.create!(name: 'test-2', email: 'test-2@example.com', projects_limit: 5) }
+  let!(:user) do
+    users.create!(name: 'test-1', email: 'test@example.com', projects_limit: 5, organization_id: organization.id)
+  end
+
+  let!(:other_user) do
+    users.create!(name: 'test-2', email: 'test-2@example.com', projects_limit: 5, organization_id: organization.id)
+  end
 
   let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
 

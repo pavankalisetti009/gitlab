@@ -12,7 +12,11 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillComplianceViolationNullTarge
   let(:users) { table(:users) }
 
   let(:merge_requests) { table(:merge_requests) }
-  let(:violating_user) { users.create!(username: 'john_doe', email: 'johndoe@gitlab.com', projects_limit: 2) }
+  let(:violating_user) do
+    users.create!(username: 'john_doe', email: 'johndoe@gitlab.com', projects_limit: 2,
+      organization_id: organization.id)
+  end
+
   let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
   let!(:namespace) do
     namespaces

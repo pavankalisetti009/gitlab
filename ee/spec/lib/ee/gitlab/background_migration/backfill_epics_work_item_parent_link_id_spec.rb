@@ -7,7 +7,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillEpicsWorkItemParentLinkId, f
   let(:epics) { table(:epics) }
   let(:issues) { table(:issues) }
 
-  let(:author) { table(:users).create!(username: 'tester', projects_limit: 100) }
+  let(:author) { table(:users).create!(username: 'tester', projects_limit: 100, organization_id: organization.id) }
   let(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
   let(:namespace) do
     table(:namespaces).create!(name: 'my test group1', path: 'my-test-group1', organization_id: organization.id)
