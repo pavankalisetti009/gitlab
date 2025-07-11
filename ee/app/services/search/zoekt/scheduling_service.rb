@@ -55,7 +55,9 @@ module Search
           dispatch: { event: IndexMarkedAsReadyEvent }
         },
         remove_expired_subscriptions: {
-          if: -> { ::Gitlab::Saas.feature_available?(:exact_code_search) },
+          if: -> {
+            !Rails.env.development? && ::Gitlab::Saas.feature_available?(:exact_code_search)
+          },
           execute: -> { EnabledNamespace.destroy_namespaces_with_expired_subscriptions! }
         },
         repo_should_be_marked_as_orphaned_check: {
