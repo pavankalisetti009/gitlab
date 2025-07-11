@@ -3,6 +3,7 @@ import {
   GlAvatar,
   GlBadge,
   GlDisclosureDropdown,
+  GlIcon,
   GlMarkdown,
   GlTooltipDirective,
 } from '@gitlab/ui';
@@ -15,8 +16,9 @@ export default {
   name: 'AiCatalogListItem',
   components: {
     GlAvatar,
-    GlDisclosureDropdown,
     GlBadge,
+    GlDisclosureDropdown,
+    GlIcon,
     GlMarkdown,
   },
   directives: {
@@ -38,6 +40,7 @@ export default {
             name: AI_CATALOG_AGENTS_RUN_ROUTE,
             params: { id: formattedId },
           }).href,
+          icon: 'rocket-launch',
         },
         {
           text: s__('AICatalog|Edit'),
@@ -45,6 +48,7 @@ export default {
             name: AI_CATALOG_AGENTS_SHOW_ROUTE,
             params: { id: formattedId },
           }).href,
+          icon: 'pencil',
         },
       ];
     },
@@ -85,6 +89,11 @@ export default {
       icon="ellipsis_v"
       no-caret
       text-sr-only
-    />
+    >
+      <template #list-item="{ item: listItem }">
+        <gl-icon :name="listItem.icon" class="gl-mr-2" variant="subtle" aria-hidden="true" />
+        {{ listItem.text }}
+      </template>
+    </gl-disclosure-dropdown>
   </li>
 </template>
