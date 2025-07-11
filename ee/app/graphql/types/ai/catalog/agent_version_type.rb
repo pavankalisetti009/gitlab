@@ -3,10 +3,10 @@
 module Types
   module Ai
     module Catalog
-      # rubocop: disable Graphql/AuthorizeTypes -- Permissions are still to be determined https://gitlab.com/gitlab-org/gitlab/-/issues/553928
       class AgentVersionType < ::Types::BaseObject
         graphql_name 'AiCatalogAgentVersion'
         description 'An AI catalog agent version'
+        authorize :read_ai_catalog_item
 
         implements ::Types::Ai::Catalog::VersionInterface
 
@@ -23,7 +23,6 @@ module Types
           object.definition['user_prompt']
         end
       end
-      # rubocop: enable Graphql/AuthorizeTypes
     end
   end
 end
