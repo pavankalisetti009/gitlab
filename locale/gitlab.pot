@@ -41516,6 +41516,9 @@ msgstr ""
 msgid "No more than %{max_work_items} work items can be modified at the same time."
 msgstr ""
 
+msgid "No more than %{max_work_items} work items can be moved at the same time"
+msgstr ""
+
 msgid "No more than %{max_work_items} work items can be updated at the same time"
 msgstr ""
 
