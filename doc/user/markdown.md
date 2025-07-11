@@ -745,6 +745,10 @@ When rendered, the example looks similar to:
 
 - Autocomplete for wiki pages [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/442229) in GitLab 16.11.
 - Ability to reference labels from groups [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/455120) in GitLab 17.1.
+- Ability to reference issues, epics, and work items with `[work_item:NUMBER]` syntax [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/352861) in GitLab 18.2.
+
+- Ability to reference issues, epics, and work items with `[work_item:123]` syntax [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/352861) in GitLab 18.1 [with a flag](../administration/feature_flags/_index.md) named `extensible_reference_filters`. Disabled by default.
+- Ability to reference issues, epics, and work items with `[work_item:123]` syntax [generally available](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/197052) in GitLab 18.2. Feature flag `extensible_reference_filters` removed.
 
 {{< /history >}}
 
@@ -764,10 +768,11 @@ GitLab Flavored Markdown recognizes the following:
 | Specific group                                                                       | `@group_name`                                         |                                                |                                    |
 | Entire team                                                                          | [`@all`](discussions/_index.md#mentioning-all-members) |                                                |                                    |
 | Project                                                                              | `namespace/project>`                                  |                                                |                                    |
-| Issue                                                                                | ``#123``                                              | `namespace/project#123`                        | `project#123`                      |
+| Issue                                                                                | ``#123`` or `[issue:123]` | `namespace/project#123` or `[issue:namespace/project/123]` | `project#123` or `[issue:project/123]` |
+| [Work item](work_items/_index.md)                                                    | `[work_item:123]` | `[work_item:namespace/project/123]` | `[work_item:project/123]` |
 | Merge request                                                                        | `!123`                                                | `namespace/project!123`                        | `project!123`                      |
 | Snippet                                                                              | `$123`                                                | `namespace/project$123`                        | `project$123`                      |
-| [Epic](group/epics/_index.md)                                                        | `#123` or `&123`  | `group1/subgroup#123` or `group1/subgroup&123` | |
+| [Epic](group/epics/_index.md)                                                        | `#123` or `&123` or `[work_item:123]` | `group1/subgroup#123` or `group1/subgroup&123` or `[work_item:group1/subgroup/123]` | |
 | [Iteration](group/iterations/_index.md)                                              | `*iteration:"iteration title"`                        |                                                |                                    |
 | [Iteration cadence](group/iterations/_index.md) by ID<sup>1</sup>                    | `[cadence:123]`                                       |                                                |                                    |
 | [Iteration cadence](group/iterations/_index.md) by title (one word)<sup>1</sup>      | `[cadence:plan]`                                      |                                                |                                    |
