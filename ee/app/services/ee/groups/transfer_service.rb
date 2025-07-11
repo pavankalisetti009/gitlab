@@ -113,11 +113,24 @@ module EE
 
       override :transfer_status_data
       def transfer_status_data(old_root_ancestor_id)
-        return unless old_root_ancestor_id && new_parent_group
+        return unless old_root_ancestor_id
+
+        old_root_ancestor = ::Group.find_by_id(old_root_ancestor_id)
+        new_root_namespace = new_parent_group&.root_ancestor || group
+
+        if group_is_already_root?
+          # When the group is already root, we need first to copy the lifecycles from the old root namespace
+          # to the new root namespace, and then adjust the statuses to the new root namespace
+          ::WorkItems::Widgets::Statuses::TransferLifecycleService.new(
+            old_root_namespace: old_root_ancestor,
+            new_root_namespace: new_root_namespace
+          ).execute
+        end
 
         ::WorkItems::Widgets::Statuses::TransferService.new(
-          old_root_namespace: ::Group.find_by_id(old_root_ancestor_id),
-          new_root_namespace: new_parent_group.root_ancestor,
+          old_root_namespace: old_root_ancestor,
+          # Reset to include lifecycles created in previous iterations
+          new_root_namespace: new_root_namespace.reset,
           project_namespace_ids: group.all_projects.map(&:project_namespace_id)
         ).execute
       end

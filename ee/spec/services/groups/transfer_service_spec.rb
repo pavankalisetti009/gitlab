@@ -118,6 +118,50 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
 
         transfer_service.execute(new_group)
       end
+
+      context "when new group is already root" do
+        let_it_be(:root_group) { create(:group) }
+        let_it_be_with_refind(:group) { create(:group, parent: root_group) }
+        let(:new_group) { nil }
+        let(:transfer_lifecycle_service) { instance_double(WorkItems::Widgets::Statuses::TransferLifecycleService) }
+
+        it 'delegates transfer to TransferLifecycleService and to TransferService' do
+          expect(WorkItems::Widgets::Statuses::TransferLifecycleService).to receive(:new).with(
+            old_root_namespace: root_group,
+            new_root_namespace: group
+          ).and_return(transfer_lifecycle_service)
+          expect(transfer_lifecycle_service).to receive(:execute)
+
+          expect(WorkItems::Widgets::Statuses::TransferService).to receive(:new).with(
+            old_root_namespace: root_group,
+            new_root_namespace: group,
+            project_namespace_ids: namespace_ids
+          ).and_return(transfer_status_service)
+          expect(transfer_status_service).to receive(:execute)
+
+          transfer_service.execute(new_group)
+        end
+
+        context "with a work_item" do
+          before do
+            stub_licensed_features(work_item_status: true)
+          end
+
+          let_it_be(:project) { create(:project, group: group) }
+          let!(:work_item) { create(:work_item, :issue, project: project) }
+          let!(:custom_lifecycle) { create(:work_item_custom_lifecycle, :for_issues, namespace: root_group) }
+          let!(:custom_status) { custom_lifecycle.default_open_status }
+          let!(:current_status) { create(:work_item_current_status, work_item: work_item, custom_status: custom_status) }
+
+          it "ensures that the custom_status changes to the corresponding status of the new lifecycle" do
+            expect { transfer_service.execute(new_group) }.to change { current_status.reload.custom_status_id }
+
+            new_lifecycle = WorkItems::Statuses::Custom::Lifecycle.last
+
+            expect(current_status.custom_status).to eq(new_lifecycle.default_open_status)
+          end
+        end
+      end
     end
   end
 
