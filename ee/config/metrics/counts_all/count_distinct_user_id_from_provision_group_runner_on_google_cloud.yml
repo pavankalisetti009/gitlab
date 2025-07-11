@@ -2,6 +2,8 @@
 key_path: redis_hll_counters.count_distinct_user_id_from_provision_group_runner_on_google_cloud
 description: Count of unique users who created a group runner using the Google Cloud platform
 product_group: runner
+product_categories:
+- runner
 performance_indicator_type: []
 value_type: number
 status: active
@@ -13,9 +15,9 @@ time_frame:
 data_source: internal_events
 data_category: optional
 tiers:
-  - free
-  - premium
-  - ultimate
+- free
+- premium
+- ultimate
 events:
-  - name: provision_group_runner_on_google_cloud
-    unique: user.id
+- name: provision_group_runner_on_google_cloud
+  unique: user.id
