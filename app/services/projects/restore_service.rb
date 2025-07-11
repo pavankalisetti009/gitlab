@@ -4,28 +4,30 @@ module Projects
   class RestoreService < BaseService
     include Gitlab::Utils::StrongMemoize
 
-    DELETED_SUFFIX_REGEX = /-deleted-[a-zA-Z0-9]+\z/
+    DELETED_SUFFIX_REGEX = /-(deleted|deletion_scheduled)-[a-zA-Z0-9]+\z/
 
     def execute
-      return error(_('Project has not been marked for deletion')) unless project.self_deletion_scheduled?
-      return error(_('Project already deleted')) if project.self_deletion_in_progress?
+      result = preconditions_checks
+      return result if result.error?
 
-      result = ::Projects::UpdateService.new(
-        project,
-        current_user,
-        {
-          archived: false,
-          hidden: false,
-          name: updated_value(project.name),
-          path: updated_value(project.path),
-          remove_deletion_schedule: true,
-          # These deletion parameters must be removed as part of https://gitlab.com/gitlab-org/gitlab/-/issues/492405
-          marked_for_deletion_at: nil,
-          deleting_user: nil
-        }
-      ).execute
+      result = ServiceResponse.from_legacy_hash(
+        ::Projects::UpdateService.new(
+          project,
+          current_user,
+          {
+            archived: false,
+            hidden: false,
+            name: updated_value(project.name),
+            path: updated_value(project.path),
+            remove_deletion_schedule: true,
+            # These deletion parameters must be removed as part of https://gitlab.com/gitlab-org/gitlab/-/issues/492405
+            marked_for_deletion_at: nil,
+            deleting_user: nil
+          }
+        ).execute
+      )
 
-      if result[:status] == :success
+      if result.success?
         log_event
 
         ## Trigger root namespace statistics refresh, to add project_statistics of
@@ -37,6 +39,20 @@ module Projects
     end
 
     private
+
+    def preconditions_checks
+      unless can?(current_user, :remove_project, project)
+        return ServiceResponse.error(message: _('You are not authorized to perform this action'))
+      end
+
+      unless project.self_deletion_scheduled?
+        return ServiceResponse.error(message: _('Project has not been marked for deletion'))
+      end
+
+      return ServiceResponse.error(message: _('Project already deleted')) if project.self_deletion_in_progress?
+
+      ServiceResponse.success
+    end
 
     def log_event
       log_info("User #{current_user.id} restored project #{project.full_path}")

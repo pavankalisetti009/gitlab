@@ -6,20 +6,22 @@ module EE
       extend ::Gitlab::Utils::Override
       include SecurityOrchestrationHelper
 
-      override :execute
-      def execute
-        return success if project.marked_for_deletion_at?
+      private
+
+      override :preconditions_checks
+      def preconditions_checks
+        result = super
+        return result if result.error?
 
         if reject_security_policy_project_deletion?
-          return error(
-            s_('SecurityOrchestration|Project cannot be deleted because it is linked as a security policy project')
+          return ServiceResponse.error(
+            message: s_('SecurityOrchestration|Project cannot be deleted because it ' \
+              'is linked as a security policy project')
           )
         end
 
-        super
+        ServiceResponse.success
       end
-
-      private
 
       override :log_event
       def log_event

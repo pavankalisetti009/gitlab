@@ -15,7 +15,7 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
         hash_including(name: 'group_deletion_marked')
       ).and_call_original
 
-      expect { result }.to change { AuditEvent.count }.by(1)
+      expect { result }.to change { AuditEvent.count }
     end
   end
 end

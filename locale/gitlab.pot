@@ -48661,6 +48661,9 @@ msgstr ""
 msgid "Project groups"
 msgstr ""
 
+msgid "Project has been already marked for deletion"
+msgstr ""
+
 msgid "Project has not been marked for deletion"
 msgstr ""
 

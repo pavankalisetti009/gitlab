@@ -2,43 +2,86 @@
 
 module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level module
   class MarkForDeletionService < BaseService
-    def execute
-      return error(_('You are not authorized to perform this action')) unless can?(current_user, :remove_group, group)
-      return error(_('Group has been already marked for deletion')) if group.marked_for_deletion_on.present?
+    RenamingFailedError = Class.new(StandardError)
+    DeletionScheduleSavingFailedError = Class.new(StandardError)
 
-      result = create_deletion_schedule
-      if result[:status] == :success
-        log_event
-        send_group_deletion_notification
+    def execute
+      result = preconditions_checks
+      return result if result.error?
+
+      deletion_schedule = group.build_deletion_schedule(
+        marked_for_deletion_on: Time.current.utc,
+        deleting_user: current_user
+      )
+
+      error = nil
+
+      group.transaction do
+        rename_group_for_deletion! if rename_group_for_deletion?
+        save_deletion_schedule!(deletion_schedule)
+      rescue RenamingFailedError
+        error = group.errors.full_messages.to_sentence
+        raise ActiveRecord::Rollback
+      rescue DeletionScheduleSavingFailedError
+        error = deletion_schedule.errors.full_messages.to_sentence
+        raise ActiveRecord::Rollback
       end
 
-      result
+      if error
+        ServiceResponse.error(message: error)
+      else
+        log_event
+        send_group_deletion_notification
+        ServiceResponse.success
+      end
     end
 
     private
 
-    def send_group_deletion_notification
-      ::NotificationService.new.group_scheduled_for_deletion(group)
-    end
-
-    def create_deletion_schedule
-      deletion_schedule = group.build_deletion_schedule(deletion_schedule_params)
-
-      if deletion_schedule.save
-        success
-      else
-        errors = deletion_schedule.errors.full_messages.to_sentence
-
-        error(errors)
+    def preconditions_checks
+      unless can?(current_user, :remove_group, group)
+        return ServiceResponse.error(message: _('You are not authorized to perform this action'))
       end
+
+      if group.self_deletion_scheduled?
+        return ServiceResponse.error(message: _('Group has been already marked for deletion'))
+      end
+
+      ServiceResponse.success
     end
 
-    def deletion_schedule_params
-      { marked_for_deletion_on: Time.current.utc, deleting_user: current_user }
+    def rename_group_for_deletion?
+      Feature.enabled?(:rename_group_path_upon_deletion_scheduling, group) &&
+        !group.has_container_repository_including_subgroups?
+    end
+
+    def rename_group_for_deletion!
+      successful = ::Groups::UpdateService.new(
+        group,
+        current_user,
+        { name: suffixed_identifier(group.name), path: suffixed_identifier(group.path) }
+      ).execute
+      return if successful
+
+      raise RenamingFailedError
+    end
+
+    def suffixed_identifier(original_identifier)
+      "#{original_identifier}-deletion_scheduled-#{group.id}"
+    end
+
+    def save_deletion_schedule!(deletion_schedule)
+      return if deletion_schedule.save
+
+      raise DeletionScheduleSavingFailedError
     end
 
     def log_event
       log_info("User #{current_user.id} marked group #{group.full_path} for deletion")
+    end
+
+    def send_group_deletion_notification
+      ::NotificationService.new.group_scheduled_for_deletion(group)
     end
   end
 end
