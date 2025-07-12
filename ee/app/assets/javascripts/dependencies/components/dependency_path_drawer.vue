@@ -3,11 +3,13 @@ import {
   GlDrawer,
   GlTruncateText,
   GlBadge,
+  GlAlert,
   GlCollapsibleListbox,
   GlSkeletonLoader,
   GlKeysetPagination,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { TYPENAME_SBOM_OCCURRENCE } from 'ee/graphql_shared/constants';
@@ -21,6 +23,7 @@ export default {
     GlDrawer,
     GlTruncateText,
     GlBadge,
+    GlAlert,
     GlCollapsibleListbox,
     GlSkeletonLoader,
     GlKeysetPagination,
@@ -30,9 +33,6 @@ export default {
       default: NAMESPACE_PROJECT,
     },
     projectFullPath: {
-      default: '',
-    },
-    groupFullPath: {
       default: '',
     },
   },
@@ -66,6 +66,7 @@ export default {
         after: null,
         before: null,
       },
+      error: null,
     };
   },
   apollo: {
@@ -86,8 +87,13 @@ export default {
         return nodes;
       },
       result({ data }) {
-        const { pageInfo = {} } = data.project?.dependencyPaths || {};
+        if (!data?.project?.dependencyPaths) return;
+        const { pageInfo = {} } = data.project.dependencyPaths;
         this.pageInfo = pageInfo;
+      },
+      error(error) {
+        this.error = s__('Vulnerability|Error fetching dependency paths. Please try again.');
+        Sentry.captureException(error);
       },
     },
   },
@@ -204,6 +210,9 @@ export default {
     </template>
     <gl-skeleton-loader v-if="isLoading" />
     <div v-else>
+      <gl-alert v-if="error" variant="danger" class="gl-mb-3" @dismiss="error = null">
+        {{ error }}
+      </gl-alert>
       <ul class="gl-list-none gl-p-2">
         <li
           v-for="(dependencyPath, index) in dependencyPaths"
