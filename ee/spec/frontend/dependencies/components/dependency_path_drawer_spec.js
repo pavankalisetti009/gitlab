@@ -5,6 +5,7 @@ import {
   GlCollapsibleListbox,
   GlSkeletonLoader,
   GlKeysetPagination,
+  GlAlert,
 } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
@@ -15,6 +16,7 @@ import getDependencyPaths from 'ee/dependencies/graphql/dependency_paths.query.g
 import DependencyPathDrawer from 'ee/dependencies/components/dependency_path_drawer.vue';
 import { RENDER_ALL_SLOTS_TEMPLATE, stubComponent } from 'helpers/stub_component';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { NAMESPACE_PROJECT, NAMESPACE_GROUP } from 'ee/dependencies/constants';
 import { getDependencyPathsResponse, defaultDependencyPaths } from './mock_data';
@@ -22,6 +24,9 @@ import { getDependencyPathsResponse, defaultDependencyPaths } from './mock_data'
 Vue.use(VueApollo);
 
 jest.mock('~/lib/utils/dom_utils', () => ({ getContentWrapperHeight: jest.fn() }));
+jest.mock('~/sentry/sentry_browser_wrapper', () => ({
+  captureException: jest.fn(),
+}));
 
 describe('DependencyPathDrawer component', () => {
   let wrapper;
@@ -69,6 +74,7 @@ describe('DependencyPathDrawer component', () => {
   const getBadge = (index) => findAllListItem().at(index).findComponent(GlBadge);
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
+  const findAlert = () => wrapper.findComponent(GlAlert);
 
   afterEach(() => {
     mockApollo = null;
@@ -100,6 +106,11 @@ describe('DependencyPathDrawer component', () => {
     it('has the drawer title', () => {
       createComponent({ props: { showDrawer: false } });
       expect(findTitle().text()).toEqual('Dependency paths');
+    });
+
+    it('does not show error alert', async () => {
+      await createComponent();
+      expect(findAlert().exists()).toBe(false);
     });
   });
 
@@ -402,6 +413,34 @@ describe('DependencyPathDrawer component', () => {
           after: null,
         });
       });
+    });
+  });
+
+  describe('error handling', () => {
+    const errorMessage = 'Error fetching dependency paths. Please try again.';
+    const mockError = new Error('GraphQL Error');
+
+    beforeEach(async () => {
+      const errorResolver = jest.fn().mockRejectedValue(mockError);
+      await createComponent({ resolver: errorResolver });
+    });
+
+    it('shows error alert when GraphQL query fails', () => {
+      expect(findAlert().props('variant')).toBe('danger');
+      expect(findAlert().text()).toBe(errorMessage);
+    });
+
+    it('calls Sentry.captureException when GraphQL query fails', () => {
+      expect(Sentry.captureException).toHaveBeenCalledWith(mockError);
+    });
+
+    it('dismisses error alert when dismiss event is emitted', async () => {
+      expect(findAlert().exists()).toBe(true);
+
+      findAlert().vm.$emit('dismiss');
+      await nextTick();
+
+      expect(findAlert().exists()).toBe(false);
     });
   });
 });
