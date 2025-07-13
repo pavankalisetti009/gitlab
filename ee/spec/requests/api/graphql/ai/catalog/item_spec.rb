@@ -19,6 +19,8 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
           id
           itemType
           name
+          public
+          project { id }
           versions {
             count
             nodes {
@@ -49,6 +51,7 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
           'name' => catalog_item.name,
           'description' => catalog_item.description,
           'itemType' => 'AGENT',
+          'public' => catalog_item.public,
           'versions' => hash_including(
             'count' => 1,
             'nodes' => contain_exactly(

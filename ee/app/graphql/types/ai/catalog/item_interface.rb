@@ -25,6 +25,9 @@ module Types
           description: 'Type of the item.'
         field :name, GraphQL::Types::String, null: false, description: 'Name of the item.'
         field :project, ::Types::ProjectType, null: true, description: 'Project for the item.'
+        field :public, GraphQL::Types::Boolean,
+          null: false,
+          description: 'Whether the item is publicly visible in the catalog.'
         field :versions, ::Types::Ai::Catalog::VersionInterface.connection_type,
           null: true,
           description: 'Versions of the item.'
