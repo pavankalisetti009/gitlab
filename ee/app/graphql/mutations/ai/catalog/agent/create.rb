@@ -26,6 +26,10 @@ module Mutations
             required: true,
             description: 'Project for the agent.'
 
+          argument :public, GraphQL::Types::Boolean,
+            required: true,
+            description: 'Whether the agent is publicly visible in the catalog.'
+
           argument :system_prompt, GraphQL::Types::String,
             required: true,
             description: 'System prompt for the agent.'

@@ -17,6 +17,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       project_id: project.to_global_id,
       name: name,
       description: description,
+      public: true,
       system_prompt: 'A',
       user_prompt: 'B'
     }
@@ -82,7 +83,8 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     item = Ai::Catalog::Item.last
     expect(item).to have_attributes(
       name: params[:name],
-      description: params[:description]
+      description: params[:description],
+      public: true
     )
     expect(item.versions.first).to have_attributes(
       schema_version: 1,

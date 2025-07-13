@@ -11,6 +11,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
     {
       name: 'Agent',
       description: 'Description',
+      public: true,
       system_prompt: 'A',
       user_prompt: 'B'
     }
@@ -39,7 +40,8 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       item = Ai::Catalog::Item.last
       expect(item).to have_attributes(
         name: params[:name],
-        description: params[:description]
+        description: params[:description],
+        public: true
       )
       expect(item.versions.first).to have_attributes(
         schema_version: 1,

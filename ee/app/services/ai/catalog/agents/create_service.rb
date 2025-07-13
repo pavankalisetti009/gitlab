@@ -10,7 +10,7 @@ module Ai
         def execute
           return error_no_permissions unless allowed?
 
-          item_params = params.slice(:name, :description)
+          item_params = params.slice(:name, :description, :public)
           item_params.merge!(
             item_type: Ai::Catalog::Item::AGENT_TYPE,
             organization_id: project.organization_id,
