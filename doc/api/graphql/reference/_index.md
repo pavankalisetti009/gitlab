@@ -21992,6 +21992,7 @@ An AI catalog agent.
 | <a id="aicatalogagentitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
 | <a id="aicatalogagentname"></a>`name` | [`String!`](#string) | Name of the item. |
 | <a id="aicatalogagentproject"></a>`project` | [`Project`](#project) | Project for the item. |
+| <a id="aicatalogagentpublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
 | <a id="aicatalogagentversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 ### `AiCatalogAgentVersion`
@@ -22024,6 +22025,7 @@ An AI catalog flow.
 | <a id="aicatalogflowitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
 | <a id="aicatalogflowname"></a>`name` | [`String!`](#string) | Name of the item. |
 | <a id="aicatalogflowproject"></a>`project` | [`Project`](#project) | Project for the item. |
+| <a id="aicatalogflowpublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
 | <a id="aicatalogflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 ### `AiCatalogFlowVersion`
@@ -50166,6 +50168,7 @@ Implementations:
 | <a id="aicatalogitemitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
 | <a id="aicatalogitemname"></a>`name` | [`String!`](#string) | Name of the item. |
 | <a id="aicatalogitemproject"></a>`project` | [`Project`](#project) | Project for the item. |
+| <a id="aicatalogitempublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
 | <a id="aicatalogitemversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### `AiCatalogItemVersion`
