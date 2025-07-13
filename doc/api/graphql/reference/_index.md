@@ -2241,6 +2241,7 @@ Input type: `AiCatalogAgentCreateInput`
 | <a id="mutationaicatalogagentcreatedescription"></a>`description` | [`String!`](#string) | Description for the agent. |
 | <a id="mutationaicatalogagentcreatename"></a>`name` | [`String!`](#string) | Name for the agent. |
 | <a id="mutationaicatalogagentcreateprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project for the agent. |
+| <a id="mutationaicatalogagentcreatepublic"></a>`public` | [`Boolean!`](#boolean) | Whether the agent is publicly visible in the catalog. |
 | <a id="mutationaicatalogagentcreatesystemprompt"></a>`systemPrompt` | [`String!`](#string) | System prompt for the agent. |
 | <a id="mutationaicatalogagentcreateuserprompt"></a>`userPrompt` | [`String!`](#string) | User prompt for the agent. |
 
