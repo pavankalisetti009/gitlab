@@ -181,11 +181,7 @@ module API
                     executor_binary_urls: Gitlab::DuoWorkflow::Executor.executor_binary_urls,
                     version: Gitlab::DuoWorkflow::Executor.version
                   },
-                  workflow_metadata: {
-                    extended_logging: Feature.enabled?(:duo_workflow_extended_logging, current_user),
-                    is_team_member:
-                      ::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(current_user&.id)
-                  }
+                  workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user)
                 }
 
                 present access, with: Grape::Presenters::Presenter

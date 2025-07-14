@@ -45,6 +45,14 @@ module Gitlab
           resource: user
         )
       end
+
+      def self.metadata(user)
+        {
+          extended_logging: Feature.enabled?(:duo_workflow_extended_logging, user),
+          is_team_member:
+            ::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id)
+        }
+      end
     end
   end
 end
