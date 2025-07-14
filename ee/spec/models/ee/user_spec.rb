@@ -3392,11 +3392,13 @@ RSpec.describe User, feature_category: :system_access do
   describe '#delete_async', :saas do
     context 'when target user is the same as deleted_by' do
       let_it_be(:user) { create(:user) }
+      let_it_be(:delay_user_account_self_deletion_enabled) { true }
 
       subject { user.delete_async(deleted_by: user) }
 
       before do
         allow(user).to receive(:has_possible_spam_contributions?).and_return(true)
+        stub_application_setting(delay_user_account_self_deletion: delay_user_account_self_deletion_enabled)
       end
 
       context 'when user is not a member of a namespace with a paid plan subscription (excluding trials)' do
