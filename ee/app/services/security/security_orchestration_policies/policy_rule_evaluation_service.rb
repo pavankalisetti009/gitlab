@@ -101,17 +101,8 @@ module Security
         scanners = extract_scanners(rule)
         return false if scanners.blank?
 
-        return scan_execution_policy_scan_enforced?(scanners) if ::Feature.disabled?(
-          :unblock_rules_using_pipeline_execution_policies, project.group)
-
         enforced_scans = Set.new(active_scan_execution_policy_scans + pipeline_execution_policy_scans(rule))
         scanners.all? { |scanner| enforced_scans.include?(scanner) }
-      end
-
-      def scan_execution_policy_scan_enforced?(scanners)
-        scanners.all? do |scanner|
-          active_scan_execution_policy_scans.include?(scanner)
-        end
       end
 
       def pipeline_execution_policy_scans(rule)
