@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_catalog do
+RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_catalog do
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
 
@@ -11,9 +11,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
     {
       name: 'Agent',
       description: 'Description',
-      public: true,
-      system_prompt: 'A',
-      user_prompt: 'B'
+      public: true
     }
   end
 
@@ -41,15 +39,14 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       expect(item).to have_attributes(
         name: params[:name],
         description: params[:description],
-        public: true,
-        item_type: Ai::Catalog::Item::AGENT_TYPE.to_s
+        item_type: Ai::Catalog::Item::FLOW_TYPE.to_s,
+        public: true
       )
       expect(item.versions.first).to have_attributes(
         schema_version: 1,
         version: 'v1.0.0-draft',
         definition: {
-          system_prompt: params[:system_prompt],
-          user_prompt: params[:user_prompt]
+          triggers: []
         }.stringify_keys
       )
     end

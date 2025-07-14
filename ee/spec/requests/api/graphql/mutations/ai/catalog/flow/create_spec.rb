@@ -2,14 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflow_catalog do
+RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
 
   let(:current_user) { maintainer }
-  let(:mutation) { graphql_mutation(:ai_catalog_agent_create, params) }
+  let(:mutation) { graphql_mutation(:ai_catalog_flow_create, params) }
   let(:name) { 'Name' }
   let(:description) { 'Description' }
   let(:params) do
@@ -17,9 +17,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       project_id: project.to_global_id,
       name: name,
       description: description,
-      public: true,
-      system_prompt: 'A',
-      user_prompt: 'B'
+      public: true
     }
   end
 
@@ -69,11 +67,11 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     it 'returns the validation error' do
       execute
 
-      expect(graphql_data_at(:ai_catalog_agent_create, :errors)).to contain_exactly(
+      expect(graphql_data_at(:ai_catalog_flow_create, :errors)).to contain_exactly(
         "Description can't be blank",
         "Name can't be blank"
       )
-      expect(graphql_data_at(:ai_catalog_agent_create, :item)).to be_nil
+      expect(graphql_data_at(:ai_catalog_flow_create, :item)).to be_nil
     end
   end
 
@@ -84,15 +82,14 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     expect(item).to have_attributes(
       name: params[:name],
       description: params[:description],
-      public: true,
-      item_type: Ai::Catalog::Item::AGENT_TYPE.to_s
+      item_type: Ai::Catalog::Item::FLOW_TYPE.to_s,
+      public: true
     )
     expect(item.versions.first).to have_attributes(
       schema_version: 1,
       version: 'v1.0.0-draft',
       definition: {
-        system_prompt: params[:system_prompt],
-        user_prompt: params[:user_prompt]
+        triggers: []
       }.stringify_keys
     )
   end
@@ -100,7 +97,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
   it 'returns the new item' do
     execute
 
-    expect(graphql_data_at(:ai_catalog_agent_create, :item)).to match a_hash_including(
+    expect(graphql_data_at(:ai_catalog_flow_create, :item)).to match a_hash_including(
       'name' => name,
       'project' => a_hash_including('id' => project.to_global_id.to_s),
       'description' => description
