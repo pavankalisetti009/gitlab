@@ -20,7 +20,7 @@ module Security
     scope :by_namespace, ->(namespace) { where(namespace_id: namespace) }
 
     def total_projects_count
-      @total_projects_count ||= group.all_project_ids.size
+      @total_projects_count ||= group.all_unarchived_project_ids.size
     end
 
     def not_configured

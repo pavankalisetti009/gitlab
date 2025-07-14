@@ -48,7 +48,7 @@ RSpec.describe Security::AnalyzerNamespaceStatus, feature_category: :security_as
 
     context 'when the not_configured is greater than zero' do
       before do
-        allow(group).to receive(:all_project_ids).and_return([1, 2, 3, 4, 5])
+        allow(group).to receive(:all_unarchived_project_ids).and_return([1, 2, 3, 4, 5])
       end
 
       it 'returns the count of projects which are not configured for that analyzer type' do
@@ -58,11 +58,36 @@ RSpec.describe Security::AnalyzerNamespaceStatus, feature_category: :security_as
 
     context 'when the not_configured is lesser than zero' do
       before do
-        allow(group).to receive(:all_project_ids).and_return([1])
+        allow(group).to receive(:all_unarchived_project_ids).and_return([1])
       end
 
       it 'returns 0' do
         expect(analyzer_namespace_status.not_configured).to eq(0)
+      end
+    end
+  end
+
+  describe '#total_projects_count' do
+    let!(:group) { create(:group) }
+
+    let!(:proj1) { create(:project, group: group) }
+    let!(:proj2) { create(:project, group: group, archived: project_archived) }
+
+    let!(:analyzer_namespace_status) { create(:analyzer_namespace_status, group: group, success: 0, failure: 0) }
+
+    context 'when a project is archived' do
+      let(:project_archived) { true }
+
+      it 'is not included' do
+        expect(analyzer_namespace_status.total_projects_count).to eq(1)
+      end
+    end
+
+    context 'when a project is not archived' do
+      let(:project_archived) { false }
+
+      it 'is included' do
+        expect(analyzer_namespace_status.total_projects_count).to eq(2)
       end
     end
   end
