@@ -56,13 +56,5 @@ RSpec.describe Packages::CreateAuditEventsService, feature_category: :package_re
     end
 
     include_examples 'audit event logging'
-
-    context 'when package_registry_audit_events feature flag is disabled' do
-      before do
-        stub_feature_flags(package_registry_audit_events: false)
-      end
-
-      it { is_expected.to be_error.and have_attributes(message: 'Feature flag is not enabled') }
-    end
   end
 end

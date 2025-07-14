@@ -31,16 +31,4 @@ RSpec.describe 'getting namespace package settings in a namespace', feature_cate
       expect(package_settings_response).to include('auditEventsEnabled' => package_settings.audit_events_enabled)
     end
   end
-
-  context 'when package_registry_audit_events feature flag is disabled' do
-    before do
-      stub_feature_flags(package_registry_audit_events: false)
-    end
-
-    it 'returns null for audit_events_enabled' do
-      graphql_query
-
-      expect(package_settings_response).to include('auditEventsEnabled' => nil)
-    end
-  end
 end

@@ -28,19 +28,6 @@ RSpec.describe Mutations::Namespace::PackageSettings::Update, feature_category: 
       it_behaves_like 'updating the namespace package setting attributes',
         from: { audit_events_enabled: false }, to: { audit_events_enabled: true }
       it_behaves_like 'returning a success'
-
-      context 'when package_registry_audit_events feature flag is disabled' do
-        before do
-          stub_feature_flags(package_registry_audit_events: false)
-        end
-
-        it 'does not update the audit_events_enabled attribute' do
-          is_expected.to include(
-            package_settings: have_attributes(audit_events_enabled: false),
-            errors: []
-          )
-        end
-      end
     end
 
     context 'without existing namespace package setting' do
