@@ -9,6 +9,7 @@ import {
   GlTableLite,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlLink,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
@@ -128,8 +129,14 @@ describe('Category form', () => {
         it('renders the labels in the category', () => {
           mockSecurityLabels
             .filter((label) => label.categoryId === category.id)
-            .forEach((label, i) => {
-              expect(wrapper.findAllComponents(GlLabel).at(i).props('title')).toBe(label.label);
+            .forEach((label, index) => {
+              expect(wrapper.findAllComponents(GlLabel).at(index).props('title')).toBe(label.label);
+              expect(
+                wrapper.findComponent(GlTableLite).find('tbody').findAll('tr').at(index).text(),
+              ).toContain(label.description);
+              expect(wrapper.findAllComponents(GlLink).at(index).text()).toContain(
+                `${label.projectCount} project`,
+              );
             });
         });
       }

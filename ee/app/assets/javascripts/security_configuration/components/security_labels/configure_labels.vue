@@ -76,7 +76,7 @@ export default {
         @selectCategory="selectCategory"
       />
     </div>
-    <div class="gl-w-3/4 gl-p-6">
+    <div class="gl-w-3/4">
       <category-form
         :security-labels="group.securityLabels.nodes"
         :category="selectedCategory"

@@ -56202,6 +56202,9 @@ msgstr ""
 msgid "SecurityLabels|Name is required"
 msgstr ""
 
+msgid "SecurityLabels|Save changes"
+msgstr ""
+
 msgid "SecurityLabels|Security labels"
 msgstr ""
 
@@ -67380,6 +67383,9 @@ msgid "Use your smart card to authenticate with the LDAP server."
 msgstr ""
 
 msgid "Used"
+msgstr ""
+
+msgid "Used by"
 msgstr ""
 
 msgid "Used by %d package"
