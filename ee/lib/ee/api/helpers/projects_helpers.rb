@@ -24,6 +24,7 @@ module EE
             optional :requirements_access_level, type: String, values: %w[disabled private enabled], desc: 'Requirements feature access level. One of `disabled`, `private` or `enabled`'
             optional :prevent_merge_without_jira_issue, type: Grape::API::Boolean, desc: 'Require an associated issue from Jira'
             optional :auto_duo_code_review_enabled, type: Grape::API::Boolean, desc: 'Enable automatic reviews by GitLab Duo on merge requests'
+            optional :spp_repository_pipeline_access, type: Grape::API::Boolean, desc: 'Grant read-only access to security policy configurations for enforcement in linked CI/CD projects'
           end
 
           params :optional_filter_params_ee do
@@ -50,6 +51,7 @@ module EE
             optional :web_based_commit_signing_enabled,
               type: ::Grape::API::Boolean,
               desc: 'Enable web based commit signing for this project'
+            optional :spp_repository_pipeline_access, type: Grape::API::Boolean, desc: 'Grant read-only access to security policy configurations for enforcement in linked CI/CD projects'
           end
 
           params :share_project_params_ee do
@@ -83,7 +85,8 @@ module EE
               :requirements_access_level,
               :prevent_merge_without_jira_issue,
               :ci_restrict_pipeline_cancellation_role,
-              :web_based_commit_signing_enabled
+              :web_based_commit_signing_enabled,
+              :spp_repository_pipeline_access
             ]
           end
         end
@@ -109,6 +112,10 @@ module EE
           end
 
           attrs.delete(:auto_duo_code_review_enabled) unless ::License.feature_available?(:review_merge_request)
+
+          return if ::License.feature_available?(:security_orchestration_policies)
+
+          attrs.delete(:spp_repository_pipeline_access)
         end
       end
     end
