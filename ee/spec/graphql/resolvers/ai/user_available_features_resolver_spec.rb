@@ -65,11 +65,10 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
                 duo_include_context_dependency: 'include_dependency_context',
                 duo_include_context_local_git: 'include_local_git_context',
                 duo_include_context_terminal: 'include_terminal_context',
-                duo_include_context_user_rule: 'include_user_rule_context',
                 duo_include_context_repository: 'include_repository_context'
               }
 
-            already_enabled_context = %w[include_file_context include_snippet_context].freeze
+            already_enabled_context = %w[include_file_context include_snippet_context include_user_rule_context].freeze
 
             feature_flags.each do |flag, feature|
               context "when only #{flag} is enabled" do
