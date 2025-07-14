@@ -97,6 +97,6 @@ export default {
     @form-submit="submit"
     @form-cancel="cancel"
   >
-    <group-select v-model="selectedGroup" :list="list" />
+    <group-select v-model="selectedGroup" />
   </board-new-item>
 </template>

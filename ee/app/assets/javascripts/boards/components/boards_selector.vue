@@ -18,6 +18,7 @@ export default {
   // See https://gitlab.com/gitlab-org/gitlab/-/issues/509355.
   props: BoardsSelectorFoss.props,
   computed: {
+    // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `BoardsSelectorFoss` which calls `showCreate()` internally
     showCreate() {
       return this.isEpicBoard || this.multipleIssueBoardsAvailable;
     },
@@ -26,6 +27,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `BoardsSelectorFoss` which calls `fullBoardId()` internally
     fullBoardId(boardId) {
       return this.isEpicBoard ? fullEpicBoardId(boardId) : fullBoardId(boardId);
     },
@@ -38,6 +40,7 @@ export default {
         name: node.name,
       }));
     },
+    // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `BoardsSelectorFoss` which calls `loadBoards()` internally
     loadBoards(toggleDropdown = true) {
       if (this.isEpicBoard) {
         this.track('click_dropdown', { label: 'board_switcher' });

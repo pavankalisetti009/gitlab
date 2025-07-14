@@ -107,6 +107,7 @@ export default {
         this.glFeatures.workItemStatusFeatureFlag
       );
     },
+    // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `IssueBoardFilteredSearchFoss` which calls `tokens()` internally
     tokens() {
       const { fetchIterations } = issueBoardFilters(this.$apollo, this.fullPath, this.isGroupBoard);
 

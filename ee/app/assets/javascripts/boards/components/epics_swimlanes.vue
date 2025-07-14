@@ -20,7 +20,6 @@ import IssuesLaneList from './issues_lane_list.vue';
 import SwimlanesLoadingSkeleton from './swimlanes_loading_skeleton.vue';
 
 export default {
-  EpicLane,
   epicLaneBaseHeight: EPIC_LANE_BASE_HEIGHT,
   draggableItemTypes: DraggableItemTypes,
   components: {
@@ -186,22 +185,6 @@ export default {
         left: container.scrollWidth,
         behavior: 'smooth',
       });
-    },
-    getEpicLaneProps(index) {
-      return {
-        key: this.epics[index].id,
-        props: {
-          epic: this.epics[index],
-          lists: this.lists,
-          disabled: this.disabled,
-          canAdminList: this.canAdminList,
-          boardId: this.boardId,
-          filterParams: this.filters,
-          highlightedLists: this.highlightedLists,
-          canAdminEpic: this.canAdminEpic,
-          totalIssuesCountByListId: this.totalIssuesCountByListId,
-        },
-      };
     },
     toggleUnassignedLane() {
       this.isUnassignedCollapsed = !this.isUnassignedCollapsed;

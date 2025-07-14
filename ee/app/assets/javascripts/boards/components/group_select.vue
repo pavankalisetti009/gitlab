@@ -29,10 +29,6 @@ export default {
     event: 'selectGroup',
   },
   props: {
-    list: {
-      type: Object,
-      required: true,
-    },
     selectedGroup: {
       type: Object,
       required: true,

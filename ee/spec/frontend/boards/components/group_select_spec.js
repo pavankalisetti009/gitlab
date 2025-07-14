@@ -7,7 +7,6 @@ import subgroupsQuery from '~/boards/graphql/sub_groups.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { mockList } from 'jest/boards/mock_data';
 import { mockGroup0, mockGroupsResponse } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -34,7 +33,6 @@ describe('GroupSelect component', () => {
       mount(GroupSelect, {
         apolloProvider: mockApollo,
         propsData: {
-          list: mockList,
           selectedGroup,
         },
         provide: {
