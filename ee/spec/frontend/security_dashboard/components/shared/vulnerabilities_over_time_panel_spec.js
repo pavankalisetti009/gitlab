@@ -7,11 +7,16 @@ import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/share
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useFakeDate } from 'helpers/fake_date';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
 describe('VulnerabilitiesOverTimePanel', () => {
+  const todayInIsoFormat = '2020-07-06';
+  const ninetyDaysAgoInIsoFormat = '2020-04-07';
+  useFakeDate(todayInIsoFormat);
+
   let wrapper;
 
   const mockGroupFullPath = 'group/subgroup';
@@ -97,6 +102,8 @@ describe('VulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
+        startDate: ninetyDaysAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
     });
 
@@ -110,6 +117,8 @@ describe('VulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
         projectId: 'gid://gitlab/Project/456',
+        startDate: ninetyDaysAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
     });
 
@@ -122,6 +131,8 @@ describe('VulnerabilitiesOverTimePanel', () => {
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
+        startDate: ninetyDaysAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
     });
   });
