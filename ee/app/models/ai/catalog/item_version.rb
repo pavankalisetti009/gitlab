@@ -3,7 +3,11 @@
 module Ai
   module Catalog
     class ItemVersion < ApplicationRecord
+      include SafelyChangeColumnDefault
+
       self.table_name = "ai_catalog_item_versions"
+
+      columns_changing_default :definition
 
       validates :definition, :schema_version, :version, presence: true
 
