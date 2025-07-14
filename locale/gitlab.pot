@@ -20235,6 +20235,9 @@ msgstr ""
 msgid "DPoP preference updated."
 msgstr ""
 
+msgid "DSA keys are considered deprecated."
+msgstr ""
+
 msgid "DSN"
 msgstr ""
 
@@ -36014,6 +36017,9 @@ msgid "Key details"
 msgstr ""
 
 msgid "Key features"
+msgstr ""
+
+msgid "Key length should be at least 2048 bits."
 msgstr ""
 
 msgid "Key:"
