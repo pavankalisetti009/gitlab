@@ -553,7 +553,7 @@ GEM
       jwt (>= 2.5)
       ostruct (>= 0.5)
     dotenv (2.7.6)
-    drb (2.2.1)
+    drb (2.2.3)
     dry-cli (1.0.0)
     dry-core (1.0.1)
       concurrent-ruby (~> 1.0)
