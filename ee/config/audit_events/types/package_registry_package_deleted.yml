@@ -1,7 +1,6 @@
 ---
 name: package_registry_package_deleted
 description: A package was deleted from GitLab package registry. Available only when
-  the feature flag `package_registry_audit_events` is enabled and
   the namespace's package setting `audit_events_enabled` is true.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/329588
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/178181
