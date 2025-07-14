@@ -609,9 +609,9 @@ GEM
       html-pipeline (~> 2.9)
     factory_bot (6.5.0)
       activesupport (>= 5.0.0)
-    factory_bot_rails (6.4.4)
+    factory_bot_rails (6.5.0)
       factory_bot (~> 6.5)
-      railties (>= 5.0.0)
+      railties (>= 6.1.0)
     faraday (2.13.1)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -2122,7 +2122,7 @@ DEPENDENCIES
   email_reply_trimmer (~> 0.1)
   email_spec (~> 2.3.0)
   error_tracking_open_api!
-  factory_bot_rails (~> 6.4.3)
+  factory_bot_rails (~> 6.5.0)
   faraday (~> 2)
   faraday-multipart (~> 1.0)
   faraday-retry (~> 2)
