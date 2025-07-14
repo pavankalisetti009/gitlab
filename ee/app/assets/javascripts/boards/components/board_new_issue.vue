@@ -45,6 +45,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `BoardNewIssueFoss` which calls `addNewIssueToList()` internally
     addNewIssueToList({ issueInput }) {
       const { labels, assignee, milestone, weight, iteration, iterationCadence } = this.board;
       const config = {

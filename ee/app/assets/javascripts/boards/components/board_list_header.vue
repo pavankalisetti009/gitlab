@@ -33,9 +33,11 @@ export default {
     },
   },
   computed: {
+    // eslint-disable-next-line vue/no-unused-properties  -- This component inherits from `BoardListHeaderFoss` which calls `countIcon()` internally
     countIcon() {
       return this.isEpicBoard ? 'epic' : 'issues';
     },
+    // eslint-disable-next-line vue/no-unused-properties  -- This component inherits from `BoardListHeaderFoss` which calls `itemsTooltipLabel()` internally
     itemsTooltipLabel() {
       const { maxIssueCount } = this.list;
       if (maxIssueCount > 0) {
@@ -49,6 +51,7 @@ export default {
         ? n__(`%d epic`, `%d epics`, this.itemsCount)
         : n__(`%d issue`, `%d issues`, this.itemsCount);
     },
+    // eslint-disable-next-line vue/no-unused-properties  -- This component inherits from `BoardListHeaderFoss` which calls `weightCountToolTip()` internally
     weightCountToolTip() {
       if (!this.weightFeatureAvailable) {
         return null;

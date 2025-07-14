@@ -45,6 +45,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `BoardNewIssueFoss` which calls `createOrUpdateBoard()` internally
     async createOrUpdateBoard() {
       const response = await this.$apollo.mutate({
         mutation: this.isEpicBoard ? this.currentEpicBoardMutation : this.currentMutation,
@@ -61,6 +62,7 @@ export default {
         ? response.data.epicBoardUpdate.epicBoard
         : response.data.updateBoard.board;
     },
+    // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `BoardNewIssueFoss` which calls `deleteBoard()` internally
     async deleteBoard() {
       await this.$apollo.mutate({
         mutation: this.isEpicBoard ? destroyEpicBoardMutation : this.deleteMutation,

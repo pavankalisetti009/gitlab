@@ -52,9 +52,6 @@ export default {
         ? __('Board scope affects which issues are displayed for anyone who visits this board')
         : __('Board scope affects which epics are displayed for anyone who visits this board');
     },
-    iterationId() {
-      return this.board.iteration?.id;
-    },
   },
 
   methods: {
