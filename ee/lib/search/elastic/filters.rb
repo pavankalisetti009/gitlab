@@ -20,9 +20,11 @@ module Search
         def by_search_level_and_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
 
-          unless ALLOWED_SEARCH_LEVELS.include?(options[:search_level].to_sym)
-            raise ArgumentError, 'search_level invalid'
-          end
+          user = options[:current_user]
+          search_level = options[:search_level].to_sym
+          raise ArgumentError, 'search_level invalid' unless ALLOWED_SEARCH_LEVELS.include?(search_level)
+
+          return match_none_filter(query_hash) if cross_project_search_restricted_for_user?(user:, search_level:)
 
           query_hash = search_level_filter(query_hash: query_hash, options: options)
 
@@ -530,10 +532,12 @@ module Search
         def by_search_level_and_group_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
 
+          user = options[:current_user]
           search_level = options[:search_level].to_sym
           raise ArgumentError, 'search_level invalid' unless ALLOWED_SEARCH_LEVELS.include?(search_level)
 
-          user = options[:current_user]
+          return match_none_filter(query_hash) if cross_project_search_restricted_for_user?(user:, search_level:)
+
           query_hash = search_level_filter(query_hash: query_hash, options: options)
           return query_hash if user&.can_read_all_resources?
 
@@ -665,6 +669,18 @@ module Search
         end
 
         private
+
+        # users without read_cross_project permission may not perform global and group searches
+        # https://docs.gitlab.com/administration/settings/external_authorization/
+        def cross_project_search_restricted_for_user?(user:, search_level:)
+          [:global, :group].include?(search_level) && !Ability.allowed?(user, :read_cross_project)
+        end
+
+        def match_none_filter(query_hash)
+          add_filter(query_hash, :query, :bool, :filter) do
+            { match_none: {} }
+          end
+        end
 
         def group_ids_user_has_min_access_as(access_level:, user:, group_ids:)
           finder_params = { min_access_level: access_level }
