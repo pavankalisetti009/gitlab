@@ -108,15 +108,12 @@ if options[:export_rspec_metrics]
   require_relative '../lib/tooling/predictive_tests/metrics_exporter'
 
   validate_required_env_variables!(%w[
-    GLCI_CRYSTALBALL_MAPPING_DIR
     GLCI_ALL_FAILED_RSPEC_TESTS_FILE
     GLCI_PREDICTIVE_TEST_METRICS_OUTPUT_DIR
   ])
 
   Tooling::PredictiveTests::MetricsExporter.new(
     rspec_all_failed_tests_file: ENV['GLCI_ALL_FAILED_RSPEC_TESTS_FILE'],
-    crystalball_mapping_dir: ENV['GLCI_CRYSTALBALL_MAPPING_DIR'],
-    frontend_fixtures_mapping_file: ENV['FRONTEND_FIXTURES_MAPPING_PATH'],
     output_dir: ENV['GLCI_PREDICTIVE_TEST_METRICS_OUTPUT_DIR']
   ).execute
 end
