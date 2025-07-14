@@ -21,11 +21,6 @@ import {
 
 const { epic } = mockQueryResponse.data.group;
 
-const mockElement = {
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-};
-
 Vue.use(Vuex);
 
 describe('RelatedItemsTree', () => {
@@ -93,52 +88,32 @@ describe('RelatedItemsTree', () => {
           document.body.classList.toggle('no-drop', containedNoDropClassOriginally);
         });
 
-        describe('computed', () => {
-          describe('treeRootWrapper', () => {
-            it('should return Draggable reference when userSignedIn prop is true', () => {
-              expect(findTreeRoot().element.tagName).toBe('DRAGGABLE-STUB');
-            });
-
-            it('should return string "ul" when userSignedIn prop is false', async () => {
-              await store.dispatch('setInitialConfig', {
-                ...mockInitialConfig,
-                userSignedIn: false,
-              });
-
-              expect(findTreeRoot().element.tagName).toBe('UL');
-            });
+        describe('Draggable root', () => {
+          it('should configure a Draggable component when userSignedIn is true', () => {
+            expect(findTreeRoot().element.tagName).toBe('DRAGGABLE-STUB');
+            expect(findTreeRoot().attributes()).toEqual(
+              expect.objectContaining({
+                animation: '200',
+                delay: '100',
+                forcefallback: 'true',
+                fallbackclass: 'is-dragging',
+                ghostclass: 'is-ghost',
+                group: 'crud-body',
+                tag: 'ul',
+                'data-parent-reference': mockParentItem.reference,
+                'data-parent-id': mockParentItem.id,
+                filter: `[data-button-type=${treeItemChevronBtnKey}]`,
+              }),
+            );
           });
 
-          describe('treeRootOptions', () => {
-            it('should return object containing Vue.Draggable config extended from `defaultSortableOptions` when userSignedIn prop is true', () => {
-              expect(findTreeRoot().attributes()).toEqual(
-                expect.objectContaining({
-                  animation: '200',
-                  delay: '100',
-                  forcefallback: 'true',
-                  fallbackclass: 'is-dragging',
-                  ghostclass: 'is-ghost',
-                  group: 'crud-body',
-                  tag: 'ul',
-                  'data-parent-reference': mockParentItem.reference,
-                  'data-parent-id': mockParentItem.id,
-                  filter: `[data-button-type=${treeItemChevronBtnKey}]`,
-                }),
-              );
+          it('should not be a Draggable component when userSignedIn is false', async () => {
+            await store.dispatch('setInitialConfig', {
+              ...mockInitialConfig,
+              userSignedIn: false,
             });
 
-            it('should return an empty object when userSignedIn prop is false', async () => {
-              await store.dispatch('setInitialConfig', {
-                ...mockInitialConfig,
-                userSignedIn: false,
-              });
-
-              expect(Object.keys(findTreeRoot().attributes())).toEqual([
-                'move',
-                'data-testid',
-                'class',
-              ]);
-            });
+            expect(findTreeRoot().element.tagName).toBe('UL');
           });
         });
 
@@ -258,7 +233,7 @@ describe('RelatedItemsTree', () => {
             it('adds a class `is-dragging` to document body', () => {
               expect(document.body.classList.contains('is-dragging')).toBe(false);
 
-              wrapper.vm.handleDragOnStart({
+              wrapper.findComponent(Draggable).vm.$emit('start', {
                 to: wrapper.element,
               });
 
@@ -266,7 +241,12 @@ describe('RelatedItemsTree', () => {
             });
 
             it('adds and removes a click event handler to ignore clicks while dragging', () => {
-              wrapper.vm.handleDragOnStart({
+              const mockElement = {
+                addEventListener: jest.fn(),
+                removeEventListener: jest.fn(),
+              };
+
+              wrapper.findComponent(Draggable).vm.$emit('start', {
                 to: mockElement,
               });
               jest.runAllTimers();
@@ -356,13 +336,16 @@ describe('RelatedItemsTree', () => {
 
             describe('origin parent is different than destination parent', () => {
               it('calls `moveItem`', async () => {
+                const mockElement = document.createElement('div');
+                mockElement.dataset.id = 'test-id';
+
                 jest.spyOn(store, 'dispatch').mockImplementation(() => {});
 
                 wrapper.findComponent(Draggable).vm.$emit('end', {
                   oldIndex: 1,
                   newIndex: 0,
                   from: wrapper.element,
-                  to: wrapper.find('li:first-child .sub-tree-root'),
+                  to: mockElement,
                 });
                 await nextTick();
 
@@ -370,7 +353,7 @@ describe('RelatedItemsTree', () => {
                   'moveItem',
                   expect.objectContaining({
                     oldParentItem: wrapper.vm.parentItem,
-                    newParentItem: wrapper.find('li:first-child .sub-tree-root').dataset,
+                    newParentItem: expect.objectContaining({ id: 'test-id' }),
                     targetItem: wrapper.vm.children[1],
                     oldIndex: 1,
                     newIndex: 0,
