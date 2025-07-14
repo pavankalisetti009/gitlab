@@ -35,6 +35,7 @@ module API
         optional :confidential_note_events, type: Boolean, desc: "Trigger hook on confidential note(comment) events"
         optional :job_events, type: Boolean, desc: "Trigger hook on job events"
         optional :pipeline_events, type: Boolean, desc: "Trigger hook on pipeline events"
+        optional :project_events, type: Boolean, desc: "Trigger hook on project events"
         optional :wiki_page_events, type: Boolean, desc: "Trigger hook on wiki events"
         optional :deployment_events, type: Boolean, desc: "Trigger hook on deployment events"
         optional :feature_flag_events, type: Boolean, desc: "Trigger hook on feature flag events"

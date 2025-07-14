@@ -182,6 +182,9 @@
     },
     "vulnerability_events": {
       "type": "boolean"
+    },
+    "project_events": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
