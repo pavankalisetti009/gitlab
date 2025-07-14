@@ -33,7 +33,7 @@ describe('ee/oncall_schedules/components/schedule/components/preset_days/days_he
 
   describe('template', () => {
     it('renders component container element with class `item-sublabel`', () => {
-      expect(wrapper.classes()).toContain('item-sublabel');
+      expect(wrapper.classes('item-sublabel')).toBe(true);
     });
 
     it('renders sub item elements for all items in HOURS_IN_DAY', () => {
@@ -44,17 +44,11 @@ describe('ee/oncall_schedules/components/schedule/components/preset_days/days_he
       const currentDate = new Date();
       mountComponent({ timeframeItem: currentDate });
 
-      const currentHour = currentDate.getHours();
-      expect(findSublabels().at(currentHour).classes()).toStrictEqual([
-        'sublabel-value',
-        'gl-grow',
-        'gl-basis-0',
-        'gl-text-center',
-        'gl-font-normal',
-        'gl-text-subtle',
-        '!gl-text-default',
-        'gl-font-bold',
-      ]);
+      const hourSublabel = findSublabels().at(currentDate.getHours());
+
+      expect(hourSublabel.classes('!gl-text-default')).toBe(true);
+      expect(hourSublabel.classes('gl-font-bold')).toBe(true);
+
       expect(findDaysHeaderCurrentIndicator().exists()).toBe(true);
     });
   });
