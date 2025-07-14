@@ -5,18 +5,24 @@ import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisse
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import DuoChatCallout, {
+  ASK_DUO_HOTSPOT_CSS_CLASS,
   DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS,
 } from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
+import { stubExperiments } from 'helpers/experimentation_helper';
 
 describe('DuoChatCallout', () => {
   let wrapper;
   let userCalloutDismissSpy;
+  let trackingSpy;
 
   const findCalloutDismisser = () => wrapper.findComponent(UserCalloutDismisser);
   const findPopoverWithinDismisser = () => findCalloutDismisser().findComponent(GlPopover);
   const findLinkWithinDismisser = () => findCalloutDismisser().findComponent(GlButton);
   const findLearnHowLink = () => wrapper.findComponent(GlLink);
+  const findHotspot = () => document.querySelector(`.${ASK_DUO_HOTSPOT_CSS_CLASS}`);
+
   const findTargetElements = () =>
     document.querySelectorAll(`.${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}`);
   const findFirstTargetElement = () => findTargetElements()[0];
@@ -42,7 +48,11 @@ describe('DuoChatCallout', () => {
   };
 
   beforeEach(() => {
-    setHTMLFixture(`<button class="${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}"></button>`);
+    setHTMLFixture(`
+      <button class="${ASK_DUO_HOTSPOT_CSS_CLASS}"></button>
+      <button class="${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}"></button>
+    `);
+
     createComponent();
   });
 
@@ -83,11 +93,12 @@ describe('DuoChatCallout', () => {
     expect(wrapper.text()).toBe('');
   });
 
-  describe('popover target', () => {
+  describe('popover props', () => {
     it('passes the correct target to the popover when there is only one potential target element', () => {
       const el = findFirstTargetElement();
       expect(findPopoverWithinDismisser().props('target')).toEqual(el);
     });
+
     it('passes the correct target to the popover when there are several potentiaL target elements', () => {
       setHTMLFixture(`
         <button class="${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}" style="display: none"></button>
@@ -97,6 +108,10 @@ describe('DuoChatCallout', () => {
       const expectedElement = findTargetElements()[2];
       createComponent();
       expect(findPopoverWithinDismisser().props('target')).toEqual(expectedElement);
+    });
+
+    it('passes the correct triggers', () => {
+      expect(findPopoverWithinDismisser().props('triggers')).toEqual('manual');
     });
   });
 
@@ -155,13 +170,19 @@ describe('DuoChatCallout', () => {
     });
   });
 
-  describe('tracking', () => {
-    it('should track render', async () => {
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+  describe('with tracking', () => {
+    beforeEach(() => {
+      trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
+    });
 
-      await findPopoverWithinDismisser().vm.$emit('shown');
+    afterEach(() => {
+      unmockTracking();
+    });
 
-      expect(trackEventSpy).toHaveBeenCalledWith('render_duo_chat_callout', {}, undefined);
+    it('tracks render', () => {
+      findPopoverWithinDismisser().vm.$emit('shown');
+
+      expect(trackingSpy).toHaveBeenCalledWith(undefined, 'render_duo_chat_callout', {});
     });
 
     it('does not track render when callout is not shown', () => {
@@ -170,10 +191,10 @@ describe('DuoChatCallout', () => {
       expect(trackEventSpy).not.toHaveBeenCalled();
     });
 
-    it('should track click learn how link', async () => {
+    it('tracks click learn how link', () => {
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
-      await findLearnHowLink().vm.$emit('click');
+      findLearnHowLink().vm.$emit('click');
 
       expect(trackEventSpy).toHaveBeenCalledWith(
         'click_learn_how_link_duo_chat_callout',
@@ -182,12 +203,102 @@ describe('DuoChatCallout', () => {
       );
     });
 
-    it('should track dismiss', async () => {
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+    it('tracks duo chat button click', () => {
+      findFirstTargetElement().click();
 
-      await findLinkWithinDismisser().vm.$emit('click');
+      expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_button', {
+        label: 'tanuki_bot_breadcrumbs_button',
+      });
+    });
 
-      expect(trackEventSpy).toHaveBeenCalledWith('dismiss_duo_chat_callout', {}, undefined);
+    it('tracks dismiss', () => {
+      findPopoverWithinDismisser().vm.$emit('close-button-clicked');
+
+      expect(trackingSpy).toHaveBeenCalledWith(undefined, 'dismiss_duo_chat_callout', {});
+    });
+
+    it('tracks popover button click', () => {
+      findLinkWithinDismisser().vm.$emit('click');
+
+      expect(trackingSpy).not.toHaveBeenCalledWith(undefined, 'dismiss_duo_chat_callout', {});
+      expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_ask_gitlab_duo', {});
+    });
+  });
+
+  describe('beforeDestroy', () => {
+    it('removes event listeners', () => {
+      const removeTargetSpy = jest.spyOn(findFirstTargetElement(), 'removeEventListener');
+
+      wrapper.destroy();
+
+      expect(removeTargetSpy).toHaveBeenCalledWith('click', expect.any(Function));
+    });
+  });
+
+  describe('when hotspot_duo_chat_during_trial experiment', () => {
+    beforeEach(() => {
+      stubExperiments({ hotspot_duo_chat_during_trial: 'candidate' });
+      createComponent();
+    });
+
+    it('passes the correct target', () => {
+      const el = findHotspot();
+      expect(findPopoverWithinDismisser().props('target')).toEqual(el);
+    });
+
+    it('passes the correct triggers', () => {
+      expect(findPopoverWithinDismisser().props('triggers')).toEqual('hover focus');
+    });
+
+    it('does not show popover', () => {
+      expect(findPopoverWithinDismisser().props('show')).toBe(false);
+    });
+
+    describe('with tracking', () => {
+      beforeEach(() => {
+        trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
+      });
+
+      afterEach(() => {
+        unmockTracking();
+      });
+
+      it('tracks hotspot render', () => {
+        createComponent();
+
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'render_ask_gitlab_duo_hotspot', {
+          context: expect.any(Object),
+        });
+      });
+
+      it('tracks hotspot click', () => {
+        findHotspot().click();
+
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_ask_gitlab_duo_hotspot', {
+          context: expect.any(Object),
+        });
+      });
+
+      it('tracks duo chat button click', () => {
+        findFirstTargetElement().click();
+
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_button', {
+          label: 'tanuki_bot_breadcrumbs_button',
+          context: expect.any(Object),
+        });
+      });
+    });
+
+    describe('beforeDestroy', () => {
+      it('removes event listeners', () => {
+        const removeHotspotSpy = jest.spyOn(findHotspot(), 'removeEventListener');
+        const removeTargetSpy = jest.spyOn(findFirstTargetElement(), 'removeEventListener');
+
+        wrapper.destroy();
+
+        expect(removeHotspotSpy).toHaveBeenCalledWith('click', expect.any(Function));
+        expect(removeTargetSpy).toHaveBeenCalledWith('click', expect.any(Function));
+      });
     });
   });
 });
