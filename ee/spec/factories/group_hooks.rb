@@ -27,6 +27,7 @@ FactoryBot.define do
       confidential_note_events { true }
       job_events { true }
       pipeline_events { true }
+      project_events { true }
       wiki_page_events { true }
       releases_events { true }
       subgroup_events { true }

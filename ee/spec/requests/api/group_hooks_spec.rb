@@ -59,6 +59,7 @@ RSpec.describe API::GroupHooks, :aggregate_failures, feature_category: :webhooks
         resource_access_token_events
         member_events
         vulnerability_events
+        project_events
       ]
     end
 
