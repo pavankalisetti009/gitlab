@@ -19,6 +19,7 @@ query getSecurityLabels($fullPath: ID!, $categoryId: ID) {
         label
         description
         color
+        projectCount
       }
     }
   }
