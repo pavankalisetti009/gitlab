@@ -283,14 +283,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
             it_behaves_like 'creates a violation'
           end
 
-          context 'when feature flag "unblock_rules_using_pipeline_execution_policies" is disabled' do
-            before do
-              stub_feature_flags(unblock_rules_using_pipeline_execution_policies: false)
-            end
-
-            it_behaves_like 'creates a violation'
-          end
-
           context 'when scans are enforced by both pipeline and scan execution policies' do
             let(:scans) { %w[dependency_scanning] }
             let(:scan_execution_policy) do
@@ -307,20 +299,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
               let(:scan_execution_policy_scans) { %w[container_scanning] }
 
               it_behaves_like 'does not create a violation'
-
-              context 'when feature flag "unblock_rules_using_pipeline_execution_policies" is disabled' do
-                before do
-                  stub_feature_flags(unblock_rules_using_pipeline_execution_policies: false)
-                end
-
-                it_behaves_like 'creates a violation'
-
-                context 'when all scans related to the rule are enforced by SEP' do
-                  let(:scan_execution_policy_scans) { %w[dependency_scanning container_scanning] }
-
-                  it_behaves_like 'does not create a violation'
-                end
-              end
             end
 
             context 'when SEP enforces scans unrelated to the rule' do
