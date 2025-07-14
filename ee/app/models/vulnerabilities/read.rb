@@ -101,14 +101,16 @@ module Vulnerabilities
     scope :with_states, ->(states) { where(state: states) }
     scope :with_owasp_top_10, ->(owasp_top_10) { where(owasp_top_10: owasp_top_10) }
     scope :with_identifier_name, ->(name) do
+      return none if name.nil?
+
       where("EXISTS (
         SELECT 1
         FROM unnest(vulnerability_reads.identifier_names) AS idt_names
         WHERE idt_names ILIKE ?
-      )", name)
+      )", sanitize_sql_like(name))
     end
     scope :with_container_image, ->(images) { where(location_image: images) }
-    scope :with_container_image_starting_with, ->(image) { where(arel_table[:location_image].matches("#{image}%")) }
+    scope :with_container_image_starting_with, ->(image) { where(arel_table[:location_image].matches("#{sanitize_sql_like(image)}%")) }
     scope :with_cluster_agent_ids, ->(agent_ids) { where(cluster_agent_id: agent_ids) }
     scope :with_resolution, ->(has_resolution = true) { where(resolved_on_default_branch: has_resolution) }
     scope :with_ai_resolution, ->(resolution = true) { where(has_vulnerability_resolution: resolution) }
