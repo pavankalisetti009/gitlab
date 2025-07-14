@@ -3,10 +3,13 @@ export const DRAWER_MODES = {
   EDIT: 'edit',
 };
 
+export const CATEGORY_EDITABLE = 'EDITABLE';
+export const CATEGORY_PARTIALLY_EDITABLE = 'PARTIALLY_EDITABLE';
+export const CATEGORY_LOCKED = 'LOCKED';
+
 export const defaultCategory = {
   name: '',
   description: '',
   multipleSelection: false,
-  canEditCategory: true,
-  canEditAttributes: true,
+  editableState: CATEGORY_EDITABLE,
 };
