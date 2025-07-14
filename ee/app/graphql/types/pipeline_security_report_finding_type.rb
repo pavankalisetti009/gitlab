@@ -101,6 +101,11 @@ module Types
       null: true,
       description: 'Vulnerability related to the security report finding.'
 
+    field :finding_token_status, Types::Vulnerabilities::FindingTokenStatusType,
+      null: true,
+      description: 'Status of the secret token associated with this vulnerability.',
+      resolver: Resolvers::Vulnerabilities::FindingTokenStatusResolver
+
     field :issue_links,
       type: ::Types::Vulnerability::IssueLinkType.connection_type,
       null: true,

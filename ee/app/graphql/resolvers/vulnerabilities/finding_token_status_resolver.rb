@@ -8,7 +8,8 @@ module Resolvers
       alias_method :vulnerability, :object
 
       def resolve
-        return if Feature.disabled?(:validity_checks, vulnerability.project)
+        return unless should_display_finding_token_status?
+
         return unless vulnerability.finding
 
         BatchLoader::GraphQL.for(vulnerability.finding.id).batch do |finding_ids, loader|
@@ -18,6 +19,20 @@ module Resolvers
               loader.call(token_status.vulnerability_occurrence_id, token_status)
             end
         end
+      end
+
+      private
+
+      def should_display_finding_token_status?
+        return false unless vulnerability.report_type == 'secret_detection'
+        return false unless Feature.enabled?(:validity_checks, project)
+        return false unless project.licensed_feature_available?(:secret_detection_validity_checks)
+
+        project.security_setting&.validity_checks_enabled
+      end
+
+      def project
+        vulnerability.project
       end
     end
   end
