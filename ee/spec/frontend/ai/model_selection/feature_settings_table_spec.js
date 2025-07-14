@@ -4,7 +4,7 @@ import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
 import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/batch_settings_updater.vue';
 import ModelHeader from 'ee/ai/shared/feature_settings/model_header.vue';
 
-import { mockCodeSuggestionsFeatureSettings } from '../shared/feature_settings/mock_data';
+import { mockCodeSuggestionsFeatureSettings } from './mock_data';
 
 describe('ModelSelectionFeatureSettingsTable', () => {
   let wrapper;
@@ -73,6 +73,14 @@ describe('ModelSelectionFeatureSettingsTable', () => {
             aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
           });
         });
+      });
+
+      it('does not render the batch settings updater when there is a single feature', () => {
+        const featureSetting = mockCodeSuggestionsFeatureSettings[0];
+
+        createComponent({ featureSettings: [featureSetting] });
+
+        expect(findModelBatchSettingsUpdaterByIdx(0).exists()).toBe(false);
       });
 
       it('handles update-batch-saving-state event correctly', () => {

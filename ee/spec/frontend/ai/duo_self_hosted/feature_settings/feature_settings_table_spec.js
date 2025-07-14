@@ -96,6 +96,14 @@ describe('FeatureSettingsTable', () => {
         });
       });
 
+      it('does not render the batch settings updater when there is a single feature', () => {
+        const featureSetting = mockCodeSuggestionsFeatureSettings[0];
+
+        createComponent({ featureSettings: [featureSetting] });
+
+        expect(findModelBatchSettingsUpdaterByIdx(0).exists()).toBe(false);
+      });
+
       it('handles update-batch-saving-state event correctly', async () => {
         findModelBatchSettingsUpdaterByIdx(0).vm.$emit('update-batch-saving-state', true);
         await nextTick();

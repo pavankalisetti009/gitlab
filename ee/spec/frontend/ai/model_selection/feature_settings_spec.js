@@ -1,7 +1,8 @@
 import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import FeatureSettingsTable from 'ee/ai/shared/feature_settings/feature_settings_table.vue';
 import FeatureSettingsBlock from 'ee/ai/shared/feature_settings/feature_settings_block.vue';
+import FeatureSettings from 'ee/ai/model_selection/feature_settings.vue';
+
 import {
   mockCodeSuggestionsFeatureSettings,
   mockDuoChatFeatureSettings,
@@ -11,11 +12,11 @@ import {
   mockAiFeatureSettings,
 } from './mock_data';
 
-describe('FeatureSettingsTable', () => {
+describe('FeatureSettings', () => {
   let wrapper;
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMountExtended(FeatureSettingsTable, {
+    wrapper = shallowMountExtended(FeatureSettings, {
       propsData: {
         featureSettings: mockAiFeatureSettings,
         isLoading: false,
@@ -24,7 +25,7 @@ describe('FeatureSettingsTable', () => {
     });
   };
 
-  const findFeatureSettingsTable = () => wrapper.findComponent(FeatureSettingsTable);
+  const findFeatureSettings = () => wrapper.findComponent(FeatureSettings);
   const findAllSettingsBlock = () => wrapper.findAllComponents(FeatureSettingsBlock);
   const findAllSettingsDescriptions = () => wrapper.findAllComponents(GlSprintf);
   const findDuoChatTable = () => wrapper.findByTestId('duo-chat-table');
@@ -36,7 +37,7 @@ describe('FeatureSettingsTable', () => {
   it('renders the component', () => {
     createComponent();
 
-    expect(findFeatureSettingsTable().exists()).toBe(true);
+    expect(findFeatureSettings().exists()).toBe(true);
   });
 
   describe('when feature settings data is loading', () => {

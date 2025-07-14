@@ -101,6 +101,7 @@ export default {
     </template>
     <template #cell(batch_model_update)="{ item }">
       <duo-self-hosted-batch-settings-updater
+        v-if="!isLoading && featureSettings.length > 1"
         class="gl-float-right"
         :ai-feature-settings="featureSettings"
         :selected-feature-setting="item"

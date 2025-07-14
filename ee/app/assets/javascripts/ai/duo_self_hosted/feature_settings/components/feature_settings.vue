@@ -12,7 +12,7 @@ import FeatureSettingsTable from './feature_settings_table.vue';
 import BetaFeaturesAlert from './beta_features_alert.vue';
 
 export default {
-  name: 'ExpandedChatFeatureSettingsTable',
+  name: 'FeatureSettings',
   components: {
     FeatureSettingsTable,
     FeatureSettingsBlock,

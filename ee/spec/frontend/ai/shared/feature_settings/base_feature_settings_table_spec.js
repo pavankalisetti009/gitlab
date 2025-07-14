@@ -1,7 +1,7 @@
 import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import BaseFeatureSettingsTable from 'ee/ai/shared/feature_settings/base_feature_settings_table.vue';
-import { mockCodeSuggestionsFeatureSettings } from './mock_data';
+import { featureSettings } from './mock_data';
 
 const MOCK_FIELDS = [
   {
@@ -21,7 +21,7 @@ describe('BaseFeatureSettingsTable', () => {
   const createComponent = (props = {}) => {
     wrapper = mountExtended(BaseFeatureSettingsTable, {
       propsData: {
-        items: mockCodeSuggestionsFeatureSettings,
+        items: featureSettings,
         isLoading: false,
         fields: MOCK_FIELDS,
         ...props,
