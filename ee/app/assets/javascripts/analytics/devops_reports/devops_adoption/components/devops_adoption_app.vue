@@ -329,7 +329,7 @@ export default {
         <devops-score />
       </gl-tab>
 
-      <template #tabs-end>
+      <template #toolbar-end>
         <span class="nav-item gl-hidden gl-grow gl-self-center md:gl-block" align="right">
           <devops-adoption-add-dropdown
             :search-term="groupsSearchTerm"

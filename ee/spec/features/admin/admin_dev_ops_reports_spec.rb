@@ -42,7 +42,7 @@ RSpec.describe 'DevOps adoption page', :js, feature_category: :devops_reports do
       visit admin_dev_ops_reports_path
 
       within tabs_selector do
-        expect(page.all(:css, tab_item_selector).length).to be(6)
+        expect(page.all(:css, tab_item_selector).length).to be(5)
         expect(page).to have_text 'Overview Dev Sec Ops DevOps Score'
       end
     end
@@ -166,7 +166,7 @@ RSpec.describe 'DevOps adoption page', :js, feature_category: :devops_reports do
       visit admin_dev_ops_reports_path
 
       within tabs_selector do
-        expect(page.all(:css, tab_item_selector).length).to be(6)
+        expect(page.all(:css, tab_item_selector).length).to be(5)
         expect(page).to have_text 'Overview Dev Sec Ops DevOps Score'
       end
     end
