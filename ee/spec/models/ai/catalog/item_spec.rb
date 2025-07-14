@@ -9,6 +9,17 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
 
     it { is_expected.to have_many(:versions) }
     it { is_expected.to have_many(:consumers) }
+
+    it { is_expected.to have_one(:latest_version) }
+
+    describe '#latest_version' do
+      it 'returns the latest version' do
+        item = create(:ai_catalog_item, :with_version)
+        latest_version = create(:ai_catalog_item_version, item: item, version: '1.0.1')
+
+        expect(item.latest_version).to eq(latest_version)
+      end
+    end
   end
 
   describe 'validations' do

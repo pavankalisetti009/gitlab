@@ -31,6 +31,9 @@ module Types
         field :versions, ::Types::Ai::Catalog::VersionInterface.connection_type,
           null: true,
           description: 'Versions of the item.'
+        field :latest_version, ::Types::Ai::Catalog::VersionInterface,
+          null: true,
+          description: 'Latest version of the item.'
 
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType

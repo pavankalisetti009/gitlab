@@ -16,7 +16,7 @@ module EE
           null: true,
           experiment: { milestone: '18.2' }
         field :ai_catalog_items,
-          ::Types::Ai::Catalog::ItemInterface.connection_type,
+          resolver: ::Resolvers::Ai::Catalog::ItemsResolver,
           null: false,
           experiment: { milestone: '18.2' },
           description: 'List of AI Catalog items.'
@@ -405,12 +405,6 @@ module EE
 
       def project_compliance_violation(id:)
         ::GitlabSchema.find_by_gid(id)
-      end
-
-      def ai_catalog_items
-        return ::Ai::Catalog::Item.none unless ::Feature.enabled?(:global_ai_catalog, current_user)
-
-        ::Ai::Catalog::Item.not_deleted
       end
 
       private
