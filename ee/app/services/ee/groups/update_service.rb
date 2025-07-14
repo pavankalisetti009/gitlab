@@ -8,7 +8,8 @@ module EE
         :prevent_forking_outside_group,
         :remove_dormant_members,
         :remove_dormant_members_period,
-        :allow_enterprise_bypass_placeholder_confirmation
+        :allow_enterprise_bypass_placeholder_confirmation,
+        :enterprise_bypass_expires_at
       ].freeze
 
       override :execute
