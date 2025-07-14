@@ -6,6 +6,7 @@ RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog d
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
+  let_it_be(:deleted_catalog_item) { create(:ai_catalog_item, project: project, public: true, deleted_at: 1.day.ago) }
   let(:nodes) { graphql_data_at(:ai_catalog_items, :nodes) }
   let(:current_user) { nil }
 
@@ -14,7 +15,7 @@ RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog d
   end
 
   shared_examples 'a successful query' do
-    it 'returns AI catalog items' do
+    it 'returns AI not deleted catalog items' do
       post_graphql(query, current_user: current_user)
 
       expect(response).to have_gitlab_http_status(:success)

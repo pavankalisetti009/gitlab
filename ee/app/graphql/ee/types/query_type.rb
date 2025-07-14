@@ -405,7 +405,7 @@ module EE
       def ai_catalog_items
         return ::Ai::Catalog::Item.none unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
-        ::Ai::Catalog::Item.all
+        ::Ai::Catalog::Item.not_deleted
       end
 
       private

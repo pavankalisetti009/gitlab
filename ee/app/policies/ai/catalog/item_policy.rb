@@ -11,6 +11,10 @@ module Ai
         @subject.public?
       end
 
+      condition(:deleted_item, scope: :subject) do
+        @subject.deleted?
+      end
+
       condition(:developer_access) do
         can?(:developer_access, @subject.project)
       end
@@ -28,6 +32,11 @@ module Ai
       end
 
       rule { ~ai_catalog_enabled }.policy do
+        prevent :read_ai_catalog_item
+        prevent :admin_ai_catalog_item
+      end
+
+      rule { deleted_item }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
       end
