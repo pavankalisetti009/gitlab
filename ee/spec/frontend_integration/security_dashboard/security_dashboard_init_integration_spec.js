@@ -40,34 +40,34 @@ describe('Security Dashboard', () => {
     root.remove();
   });
 
-  const createComponent = ({ data, type }) => {
+  const createComponent = async ({ data, type }) => {
     const el = document.createElement('div');
     Object.assign(el.dataset, { ...TEST_DATASET, ...data });
     root.appendChild(el);
-    vm = initSecurityDashboard(el, type);
+    vm = await initSecurityDashboard(el, type);
   };
 
-  const createEmptyComponent = () => {
-    vm = initSecurityDashboard(null, null);
+  const createEmptyComponent = async () => {
+    vm = await initSecurityDashboard(null, null);
   };
 
   describe('default states', () => {
-    it('sets up group-level', () => {
-      createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
+    it('sets up group-level', async () => {
+      await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
 
       expect(root).toMatchSnapshot();
     });
 
-    it('sets up group-level with `groupSecurityDashboardNew` feature flag set to `true`', () => {
+    it('sets up group-level with `groupSecurityDashboardNew` feature flag set to `true`', async () => {
       window.gon.features.groupSecurityDashboardNew = true;
 
-      createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
+      await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
 
       expect(root).toMatchSnapshot();
     });
 
-    it('sets up instance-level', () => {
-      createComponent({
+    it('sets up instance-level', async () => {
+      await createComponent({
         data: { instanceDashboardSettingsPath: '/instance/settings_page' },
         type: DASHBOARD_TYPE_INSTANCE,
       });
@@ -75,8 +75,8 @@ describe('Security Dashboard', () => {
       expect(root).toMatchSnapshot();
     });
 
-    it('sets up project-level', () => {
-      createComponent({
+    it('sets up project-level', async () => {
+      await createComponent({
         data: {
           projectFullPath: '/test/project',
           hasVulnerabilities: 'true',
@@ -90,14 +90,14 @@ describe('Security Dashboard', () => {
   });
 
   describe('error states', () => {
-    it('does not have an element', () => {
-      createEmptyComponent();
+    it('does not have an element', async () => {
+      await createEmptyComponent();
 
       expect(root).toStrictEqual(EMPTY_DIV);
     });
 
-    it('has unavailable pages', () => {
-      createComponent({ data: { isUnavailable: true } });
+    it('has unavailable pages', async () => {
+      await createComponent({ data: { isUnavailable: true } });
 
       expect(root).toMatchSnapshot();
     });
