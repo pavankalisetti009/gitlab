@@ -113,6 +113,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:workspaces).class_name('RemoteDevelopment::Workspace') }
     it { is_expected.to have_many(:workspace_agentk_states).class_name('RemoteDevelopment::WorkspaceAgentkState') }
 
+    it { is_expected.to have_many(:configured_ai_catalog_items).class_name('Ai::Catalog::ItemConsumer') }
+
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
         {
