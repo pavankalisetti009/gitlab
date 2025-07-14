@@ -69,6 +69,9 @@ module EE
             ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
               Ability.allowed?(options[:current_user], :admin_project, project)
           end
+          expose :spp_repository_pipeline_access,
+            documentation: { type: 'boolean', desc: 'The spp_repository_pipeline_access setting is only visible if the security_orchestration_policies feature is available.' },
+            if: ->(project, _) { project.feature_available?(:security_orchestration_policies) }
         end
       end
     end

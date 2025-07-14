@@ -475,6 +475,8 @@ module EE
         :auto_duo_code_review_enabled=,
         :duo_context_exclusion_settings,
         :duo_context_exclusion_settings=,
+        :spp_repository_pipeline_access,
+        :spp_repository_pipeline_access=,
         to: :project_setting
       with_options prefix: :delegated, to: :project_setting do
         delegate :require_reauthentication_to_approve=

@@ -1909,6 +1909,34 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    describe 'updating of spp_repository_pipeline_access' do
+      let(:project_params) { { spp_repository_pipeline_access: false } }
+
+      context 'when security_orchestration_policies is available' do
+        before do
+          stub_licensed_features(security_orchestration_policies: true)
+        end
+
+        it 'updates spp_repository_pipeline_access' do
+          expect { subject }.to change { project.reload.spp_repository_pipeline_access }.from(true).to(false)
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['spp_repository_pipeline_access']).to eq(project_params[:spp_repository_pipeline_access])
+        end
+      end
+
+      context 'when security_orchestration_policies is not available' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it 'does not update spp_repository_pipeline_access' do
+          expect { subject }.to not_change { project.reload.spp_repository_pipeline_access }.from(true)
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['spp_repository_pipeline_access']).to be_nil
+        end
+      end
+    end
+
     context 'when setting auto_duo_code_review_enabled' do
       let(:project_params) { { auto_duo_code_review_enabled: true } }
       let_it_be(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }

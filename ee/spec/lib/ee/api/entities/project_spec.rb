@@ -194,4 +194,38 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
       end
     end
   end
+
+  describe 'spp_repository_pipeline_access' do
+    let_it_be(:project) { create(:project) }
+
+    context 'when feature is available' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it 'returns true by default' do
+        expect(subject[:spp_repository_pipeline_access]).to be(true)
+      end
+
+      context 'when the setting is disabled' do
+        before do
+          project.project_setting.update!(spp_repository_pipeline_access: false)
+        end
+
+        it 'returns false' do
+          expect(subject[:spp_repository_pipeline_access]).to be(false)
+        end
+      end
+    end
+
+    context 'when feature is not available' do
+      before do
+        stub_licensed_features(security_orchestration_policies: false)
+      end
+
+      it 'returns nil' do
+        expect(subject[:spp_repository_pipeline_access]).to be_nil
+      end
+    end
+  end
 end
