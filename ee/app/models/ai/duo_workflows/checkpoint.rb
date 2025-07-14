@@ -2,10 +2,12 @@
 
 module Ai
   module DuoWorkflows
+    CHECKPOINT_RETENTION_DAYS = 30
+
     class Checkpoint < ::ApplicationRecord
       include PartitionedTable
 
-      partitioned_by :created_at, strategy: :daily, retain_for: 30.days
+      partitioned_by :created_at, strategy: :daily, retain_for: CHECKPOINT_RETENTION_DAYS.days
       self.table_name = :p_duo_workflows_checkpoints
 
       belongs_to :workflow, class_name: 'Ai::DuoWorkflows::Workflow'

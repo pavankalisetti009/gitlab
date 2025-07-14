@@ -90,6 +90,14 @@ module Ai
         workflow_definition == 'chat'
       end
 
+      def archived?
+        created_at <= CHECKPOINT_RETENTION_DAYS.days.ago
+      end
+
+      def stalled?
+        !created? && !checkpoints.exists?
+      end
+
       def project_level?
         project_id.present?
       end

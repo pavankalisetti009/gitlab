@@ -21,10 +21,41 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
     create(:duo_workflows_workflow, environment: :web, project: project, user: user, created_at: 1.day.ago)
   end
 
-  let_it_be(:workflows) { [workflow_without_environment, workflow_with_ide_environment, workflow_with_web_environment] }
+  let_it_be(:archived_workflow) do
+    create(:duo_workflows_workflow,
+      project: project,
+      user: user,
+      created_at: (Ai::DuoWorkflows::CHECKPOINT_RETENTION_DAYS + 1).days.ago)
+  end
+
+  let_it_be(:stalled_workflow) do
+    workflow = create(:duo_workflows_workflow, project: project, user: user)
+    workflow.start!
+    workflow
+  end
+
+  let_it_be(:non_stalled_workflow_with_checkpoint) do
+    workflow = create(:duo_workflows_workflow, project: project, user: user)
+    workflow.start!
+    create(:duo_workflows_checkpoint, workflow: workflow, project: workflow.project)
+    workflow
+  end
+
+  let_it_be(:workflows) do
+    [
+      workflow_without_environment,
+      workflow_with_ide_environment,
+      workflow_with_web_environment,
+      archived_workflow,
+      stalled_workflow,
+      non_stalled_workflow_with_checkpoint
+    ]
+  end
+
   let_it_be(:workflows_project_2) { create_list(:duo_workflows_workflow, 2, project: project_2, user: user) }
   let_it_be(:workflows_for_different_user) { create_list(:duo_workflows_workflow, 4, project: project) }
   let(:all_project_workflows) { workflows + workflows_project_2 }
+
   let(:fields) do
     <<~GRAPHQL
       nodes {
@@ -47,6 +78,8 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
         preApprovedAgentPrivilegesNames,
         mcpEnabled
         allowAgentToRequestUser
+        archived
+        stalled
         firstCheckpoint {
           checkpoint
           metadata
@@ -144,7 +177,13 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
           expect(returned_workflow['updatedAt']).to eq(matching_workflow.updated_at.iso8601)
           expect(returned_workflow['goal']).to eq("Fix pipeline")
           expect(returned_workflow['workflowDefinition']).to eq("software_development")
-          expect(returned_workflow['status']).to eq("CREATED")
+          expected_status = case matching_workflow
+                            when stalled_workflow, non_stalled_workflow_with_checkpoint
+                              "RUNNING"
+                            else
+                              "CREATED"
+                            end
+          expect(returned_workflow['status']).to eq(expected_status)
           expect(returned_workflow['statusName']).to eq(matching_workflow.status_name.to_s)
           expect(returned_workflow['agentPrivilegesNames']).to eq(["read_write_files"])
           expect(returned_workflow['preApprovedAgentPrivilegesNames']).to eq([])
@@ -292,6 +331,76 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
             expect(returned_workflows.length).to eq(all_project_workflows.length)
             expect(returned_workflows.first['createdAt']).to be > returned_workflows.last['createdAt']
           end
+        end
+      end
+
+      context 'with archived and stalled fields' do
+        it 'returns the correct archived and stalled values', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          returned_workflows_by_id = returned_workflows.index_by { |w| w['id'] }
+
+          # Check archived workflow
+          archived_result = returned_workflows_by_id[archived_workflow.to_global_id.to_s]
+          expect(archived_result).not_to be_nil
+          expect(archived_result['archived']).to be(true)
+          expect(archived_result['stalled']).to be(false) # archived workflows in created state are not stalled
+
+          # Check stalled workflow (running state with no checkpoints)
+          stalled_result = returned_workflows_by_id[stalled_workflow.to_global_id.to_s]
+          expect(stalled_result).not_to be_nil
+          expect(stalled_result['archived']).to be(false)
+          expect(stalled_result['stalled']).to be(true)
+
+          # Check non-stalled workflow with checkpoint
+          non_stalled_result = returned_workflows_by_id[non_stalled_workflow_with_checkpoint.to_global_id.to_s]
+          expect(non_stalled_result).not_to be_nil
+          expect(non_stalled_result['archived']).to be(false)
+          expect(non_stalled_result['stalled']).to be(false)
+
+          # Check regular workflows (not archived, in created state so not stalled)
+          [workflow_without_environment, workflow_with_ide_environment,
+            workflow_with_web_environment].each do |workflow|
+            result = returned_workflows_by_id[workflow.to_global_id.to_s]
+            expect(result).not_to be_nil
+            expect(result['archived']).to be(false)
+            expect(result['stalled']).to be(false)
+          end
+        end
+      end
+
+      context 'with the workflow_id argument for archived workflow' do
+        let(:variables) { { workflow_id: archived_workflow.to_global_id.to_s } }
+
+        it 'returns the archived workflow with correct archived status', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows.length).to eq(1)
+          expect(returned_workflows.first['id']).to eq(archived_workflow.to_global_id.to_s)
+          expect(returned_workflows.first['archived']).to be(true)
+          expect(returned_workflows.first['stalled']).to be(false)
+        end
+      end
+
+      context 'with the workflow_id argument for stalled workflow' do
+        let(:variables) { { workflow_id: stalled_workflow.to_global_id.to_s } }
+
+        it 'returns the stalled workflow with correct stalled status', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows.length).to eq(1)
+          expect(returned_workflows.first['id']).to eq(stalled_workflow.to_global_id.to_s)
+          expect(returned_workflows.first['archived']).to be(false)
+          expect(returned_workflows.first['stalled']).to be(true)
         end
       end
     end

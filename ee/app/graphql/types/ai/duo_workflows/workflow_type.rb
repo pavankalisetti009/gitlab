@@ -82,6 +82,12 @@ module Types
         field :first_checkpoint, Types::Ai::DuoWorkflows::WorkflowEventType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: "First checkpoint of the session."
+
+        field :archived, GraphQL::Types::Boolean, method: :archived?,
+          description: 'Archived due to retention policy.'
+
+        field :stalled, GraphQL::Types::Boolean, method: :stalled?,
+          description: 'Workflow got created but has no checkpoints.'
       end
     end
   end

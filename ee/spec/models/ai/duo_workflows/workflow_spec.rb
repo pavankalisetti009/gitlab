@@ -323,4 +323,91 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
       end
     end
   end
+
+  describe '#archived?' do
+    subject { workflow.archived? }
+
+    context 'when created more than CHECKPOINT_RETENTION_DAYS ago' do
+      let(:workflow) do
+        build(:duo_workflows_workflow, created_at: (Ai::DuoWorkflows::CHECKPOINT_RETENTION_DAYS + 1).days.ago)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when created exactly CHECKPOINT_RETENTION_DAYS ago' do
+      let(:workflow) do
+        build(:duo_workflows_workflow, created_at: Ai::DuoWorkflows::CHECKPOINT_RETENTION_DAYS.days.ago)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when created less than CHECKPOINT_RETENTION_DAYS ago' do
+      let(:workflow) do
+        build(:duo_workflows_workflow, created_at: (Ai::DuoWorkflows::CHECKPOINT_RETENTION_DAYS - 1).days.ago)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when created recently' do
+      let(:workflow) { build(:duo_workflows_workflow, created_at: 1.day.ago) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
+  describe '#stalled?' do
+    subject { workflow.stalled? }
+
+    context 'when status is created and has no checkpoints' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when status is not created and has no checkpoints' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      before do
+        workflow.start! # transitions to :running
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when status is not created and has checkpoints' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      before do
+        workflow.start! # transitions to :running
+        create(:duo_workflows_checkpoint, workflow: workflow)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when status is finished and has no checkpoints' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      before do
+        workflow.start! # transitions to :running
+        workflow.finish! # transitions to :finished
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when status is failed and has checkpoints' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      before do
+        workflow.drop! # transitions to :failed
+        create(:duo_workflows_checkpoint, workflow: workflow)
+      end
+
+      it { is_expected.to be(false) }
+    end
+  end
 end
