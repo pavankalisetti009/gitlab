@@ -18,6 +18,8 @@ module Ai
       has_many :versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :ai_catalog_item_id, inverse_of: :item
       has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
+      scope :not_deleted, -> { where(deleted_at: nil) }
+
       AGENT_TYPE = :agent
       FLOW_TYPE = :flow
 
@@ -25,6 +27,10 @@ module Ai
         AGENT_TYPE => 1,
         FLOW_TYPE => 2
       }
+
+      def deleted?
+        deleted_at.present?
+      end
     end
   end
 end

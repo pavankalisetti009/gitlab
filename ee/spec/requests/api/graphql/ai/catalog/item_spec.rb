@@ -69,6 +69,18 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
         )
       )
     end
+
+    context 'with a deleted catalog item' do
+      let_it_be(:catalog_item) { create(:ai_catalog_item, project: project, deleted_at: 1.day.ago) }
+
+      context 'when owner' do
+        let(:current_user) do
+          create(:user).tap { |user| project.add_owner(user) }
+        end
+
+        it_behaves_like 'an unsuccessful query'
+      end
+    end
   end
 
   shared_examples 'an unsuccessful query' do

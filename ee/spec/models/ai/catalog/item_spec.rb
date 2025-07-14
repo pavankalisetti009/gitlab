@@ -28,4 +28,33 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   describe 'enums' do
     it { is_expected.to define_enum_for(:item_type).with_values(agent: 1, flow: 2) }
   end
+
+  describe 'scopes' do
+    let_it_be(:items) { create_list(:ai_catalog_item, 2) }
+    let_it_be(:deleted_items) { create_list(:ai_catalog_item, 2, deleted_at: 1.day.ago) }
+
+    it 'returns not deleted items' do
+      expect(described_class.not_deleted).to match_array(items)
+    end
+  end
+
+  describe '#deleted?' do
+    let(:item) { build_stubbed(:ai_catalog_item, deleted_at: deleted_at) }
+
+    context 'when deleted_at is not nil' do
+      let(:deleted_at) { 1.day.ago }
+
+      it 'returns true' do
+        expect(item).to be_deleted
+      end
+    end
+
+    context 'when deleted_at is nil' do
+      let(:deleted_at) { nil }
+
+      it 'returns false' do
+        expect(item).not_to be_deleted
+      end
+    end
+  end
 end

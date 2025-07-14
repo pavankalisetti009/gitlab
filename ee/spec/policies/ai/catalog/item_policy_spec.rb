@@ -52,6 +52,12 @@ RSpec.describe Ai::Catalog::ItemPolicy, feature_category: :duo_chat do
         it { is_expected.to be_disallowed(:read_ai_catalog_item) }
       end
     end
+
+    context 'with deleted item' do
+      let_it_be(:item) { create(:ai_catalog_item, project: project, deleted_at: 1.day.ago) }
+
+      it { is_expected.to be_disallowed(:read_ai_catalog_item) }
+    end
   end
 
   describe 'admin_ai_catalog_item' do
@@ -74,6 +80,12 @@ RSpec.describe Ai::Catalog::ItemPolicy, feature_category: :duo_chat do
       end
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+    end
+
+    context 'with deleted item' do
+      let_it_be(:item) { create(:ai_catalog_item, project: project, deleted_at: 1.day.ago) }
+
+      it { is_expected.to be_disallowed(:read_ai_catalog_item) }
     end
   end
 end
