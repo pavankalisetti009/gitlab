@@ -555,8 +555,8 @@ describe('Duo Agentic Chat', () => {
     });
 
     describe('@chat-cancel', () => {
-      it('cancels the active connection and resets state', async () => {
-        wrapper.vm.workflowId = '456';
+      it('cancels the active connection, does not reset the workflowID', async () => {
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
         wrapper.vm.socketManager = mockSocketManager;
 
         findDuoChat().vm.$emit('chat-cancel');
@@ -564,7 +564,7 @@ describe('Duo Agentic Chat', () => {
 
         expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
         expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
-        expect(wrapper.vm.workflowId).toBe(null);
+        expect(wrapper.vm.workflowId).toBe(MOCK_WORKFLOW_ID);
         expect(wrapper.vm.socketManager).toBe(null);
       });
     });

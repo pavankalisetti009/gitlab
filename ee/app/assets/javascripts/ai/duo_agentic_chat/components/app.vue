@@ -167,10 +167,12 @@ export default {
       }
     },
 
-    cleanupState() {
+    cleanupState(resetWorkflowId = true) {
       this.setLoading(false);
       this.cleanupSocket();
-      this.workflowId = null;
+      if (resetWorkflowId) {
+        this.workflowId = null;
+      }
       this.workflowStatus = null;
       this.pendingToolCall = null;
     },
@@ -204,7 +206,7 @@ export default {
       this.cleanupState();
     },
     onChatCancel() {
-      this.cleanupState();
+      this.cleanupState(false);
     },
     startWorkflow(goal, approval = {}, additionalContext) {
       this.cleanupSocket();
