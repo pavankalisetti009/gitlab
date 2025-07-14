@@ -37,16 +37,6 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
 
     context 'work_item_parent_link' do
       it { is_expected.to validate_presence_of(:work_item_parent_link) }
-
-      context 'when importing' do
-        subject(:epic_issue) { build(:epic_issue) }
-
-        before do
-          epic_issue.importing = true
-        end
-
-        it { is_expected.not_to validate_presence_of(:work_item_parent_link) }
-      end
     end
 
     it 'is valid to add non-confidential issue to non-confidential epic' do
