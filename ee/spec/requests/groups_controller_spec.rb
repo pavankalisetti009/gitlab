@@ -645,7 +645,15 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
     end
 
     context 'when setting allow_enterprise_bypass_placeholder_confirmation' do
-      let(:params) { { group: { allow_enterprise_bypass_placeholder_confirmation: true } } }
+      let(:expiry_date) { 30.days.from_now }
+      let(:params) do
+        {
+          group: {
+            allow_enterprise_bypass_placeholder_confirmation: true,
+            enterprise_bypass_expires_at: expiry_date
+          }
+        }
+      end
 
       before do
         group.add_owner(user)
@@ -658,6 +666,7 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
           group.reload.namespace_settings.allow_enterprise_bypass_placeholder_confirmation?
         }.from(false).to(true)
 
+        expect(group.reload.namespace_settings.enterprise_bypass_expires_at).to be_within(1.second).of(expiry_date)
         expect(response).to have_gitlab_http_status(:found)
       end
 
@@ -701,6 +710,16 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
           }.from(false)
 
           expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+
+      context 'when enabling bypass with invalid expiry date' do
+        let(:expiry_date) { 1.day.ago }
+
+        it 'fails validation and does not update the setting' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.allow_enterprise_bypass_placeholder_confirmation?
+          }
         end
       end
     end

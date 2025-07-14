@@ -52,6 +52,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:security_policy_management_project).to(:security_orchestration_policy_configuration) }
   it { is_expected.to delegate_method(:allow_enterprise_bypass_placeholder_confirmation).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:allow_enterprise_bypass_placeholder_confirmation=).to(:namespace_settings).with_arguments(:args) }
+  it { is_expected.to delegate_method(:enterprise_bypass_expires_at).to(:namespace_settings).allow_nil }
+  it { is_expected.to delegate_method(:enterprise_bypass_expires_at=).to(:namespace_settings).with_arguments(:args) }
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled).to(:ai_settings).allow_nil }
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
   it { is_expected.to accept_nested_attributes_for(:ai_settings).update_only(true) }

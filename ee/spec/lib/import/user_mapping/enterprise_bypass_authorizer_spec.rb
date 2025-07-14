@@ -21,6 +21,7 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
 
       group.namespace_settings.allow_enterprise_bypass_placeholder_confirmation =
         allow_enterprise_bypass_placeholder_confirmation
+      group.namespace_settings.enterprise_bypass_expires_at = enterprise_bypass_expires_at
     end
 
     subject(:authorizer) { described_class.new(group, assignee_user, reassigned_by_user).allowed? }
@@ -31,6 +32,7 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:feature_flag_status) { true }
       let(:domain_verification_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { 30.days.from_now }
 
       it { is_expected.to be true }
     end
@@ -41,6 +43,7 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:feature_flag_status) { false }
       let(:domain_verification_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { 30.days.from_now }
 
       it { is_expected.to be false }
     end
@@ -51,6 +54,7 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:feature_flag_status) { true }
       let(:domain_verification_status) { false }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { 30.days.from_now }
 
       it { is_expected.to be false }
     end
@@ -61,6 +65,7 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:domain_verification_status) { true }
       let(:feature_flag_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { 30.days.from_now }
 
       it { is_expected.to be false }
     end
@@ -71,6 +76,7 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:feature_flag_status) { true }
       let(:domain_verification_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { 30.days.from_now }
 
       it { is_expected.to be false }
     end
@@ -81,6 +87,7 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:domain_verification_status) { true }
       let(:feature_flag_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { false }
+      let(:enterprise_bypass_expires_at) { nil }
 
       it { is_expected.to be false }
     end
@@ -91,6 +98,40 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:domain_verification_status) { false }
       let(:feature_flag_status) { false }
       let(:allow_enterprise_bypass_placeholder_confirmation) { false }
+      let(:enterprise_bypass_expires_at) { nil }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass is enabled but expired' do
+      let(:assignee_user) { user }
+      let(:reassigned_by_user) { maintainer }
+      let(:domain_verification_status) { false }
+      let(:feature_flag_status) { false }
+      let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { 1.day.ago }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass is enabled with expiry at current time' do
+      let(:assignee_user) { user }
+      let(:reassigned_by_user) { maintainer }
+      let(:domain_verification_status) { false }
+      let(:feature_flag_status) { false }
+      let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { Time.current }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass is enabled without expiry date' do
+      let(:assignee_user) { user }
+      let(:reassigned_by_user) { maintainer }
+      let(:domain_verification_status) { false }
+      let(:feature_flag_status) { false }
+      let(:allow_enterprise_bypass_placeholder_confirmation) { true }
+      let(:enterprise_bypass_expires_at) { nil }
 
       it { is_expected.to be false }
     end

@@ -221,7 +221,10 @@ module EE
 
       delegate :allow_enterprise_bypass_placeholder_confirmation,
         :allow_enterprise_bypass_placeholder_confirmation=,
-        to: :namespace_settings, allow_nil: true
+        :enterprise_bypass_expires_at,
+        :enterprise_bypass_expires_at=,
+        to: :namespace_settings,
+        allow_nil: true
 
       before_create :sync_membership_lock_with_parent
 

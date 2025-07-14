@@ -95,7 +95,10 @@ module EE
             params_ee << :disable_invite_members
           end
 
-          params_ee << :allow_enterprise_bypass_placeholder_confirmation if enterprise_bypass_placeholders_allowed?
+          if enterprise_bypass_placeholders_allowed?
+            params_ee << :allow_enterprise_bypass_placeholder_confirmation
+            params_ee << :enterprise_bypass_expires_at
+          end
         end
       end
       # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
