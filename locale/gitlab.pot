@@ -8973,7 +8973,7 @@ msgstr ""
 msgid "Assign some issues to this milestone."
 msgstr ""
 
-msgid "Assign to commenting user"
+msgid "Assign to comment author"
 msgstr ""
 
 msgid "Assign to me"
@@ -66375,7 +66375,7 @@ msgstr ""
 msgid "Unassign all"
 msgstr ""
 
-msgid "Unassign from commenting user"
+msgid "Unassign comment author"
 msgstr ""
 
 msgid "Unassigned"
