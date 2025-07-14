@@ -89,11 +89,7 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def render_as_work_item
-    @work_item = ::WorkItems::WorkItemsFinder
-      .new(current_user, group_id: group.id)
-      .execute
-      .with_work_item_type
-      .find_by_iid(epic.iid)
+    @work_item = epic.work_item
 
     render 'work_items_index'
   end
