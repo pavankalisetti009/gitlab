@@ -53241,6 +53241,9 @@ msgstr ""
 msgid "Runners|Configuration"
 msgstr ""
 
+msgid "Runners|Container"
+msgstr ""
+
 msgid "Runners|Containers"
 msgstr ""
 
@@ -53655,6 +53658,9 @@ msgid "Runners|Online"
 msgstr ""
 
 msgid "Runners|Only administrators can view this."
+msgstr ""
+
+msgid "Runners|Operating System"
 msgstr ""
 
 msgid "Runners|Operating systems"
@@ -54160,6 +54166,9 @@ msgstr ""
 msgid "Runners|View installation instructions"
 msgstr ""
 
+msgid "Runners|View instructions in %{helpLink}."
+msgstr ""
+
 msgid "Runners|View metrics"
 msgstr ""
 
@@ -54209,6 +54218,9 @@ msgid "Runners|Zone is required."
 msgstr ""
 
 msgid "Runners|Zone must have the right format."
+msgstr ""
+
+msgid "Runners|documentation"
 msgstr ""
 
 msgid "Runner|1 day selected"
