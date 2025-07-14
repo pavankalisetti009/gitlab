@@ -134,10 +134,6 @@ module Epics
       Epics::CloseService
     end
 
-    def reopen_service
-      Epics::ReopenService
-    end
-
     def track_epic_parent_updated
       ::Gitlab::UsageDataCounters::EpicActivityUniqueCounter.track_epic_parent_updated_action(
         author: current_user,
