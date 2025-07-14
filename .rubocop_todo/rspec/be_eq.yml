@@ -803,7 +803,6 @@ RSpec/BeEq:
     - 'spec/lib/gitlab/git/attributes_parser_spec.rb'
     - 'spec/lib/gitlab/git/blob_spec.rb'
     - 'spec/lib/gitlab/git/changed_path_spec.rb'
-    - 'spec/lib/gitlab/git/commit_spec.rb'
     - 'spec/lib/gitlab/git/compare_spec.rb'
     - 'spec/lib/gitlab/git/diff_collection_spec.rb'
     - 'spec/lib/gitlab/git/diff_spec.rb'
