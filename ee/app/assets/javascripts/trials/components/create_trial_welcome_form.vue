@@ -1,5 +1,14 @@
 <script>
-import { GlForm, GlButton, GlSprintf, GlLink, GlFormFields, GlFormSelect } from '@gitlab/ui';
+import {
+  GlForm,
+  GlButton,
+  GlFormInput,
+  GlSprintf,
+  GlLink,
+  GlFormFields,
+  GlFormGroup,
+  GlFormSelect,
+} from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/dist/utils';
 import csrf from '~/lib/utils/csrf';
 import { __, s__ } from '~/locale';
@@ -33,6 +42,8 @@ export default {
     GlLink,
     GlFormFields,
     GlFormSelect,
+    GlFormGroup,
+    GlFormInput,
   },
   props: {
     userData: {
@@ -152,7 +163,7 @@ export default {
       }
 
       result.group_name = {
-        label: __('Group name'),
+        label: ' ',
         groupAttrs: {
           class: 'gl-col-span-12',
         },
@@ -165,7 +176,7 @@ export default {
       };
 
       result.project_name = {
-        label: __('Project name'),
+        label: ' ',
         groupAttrs: {
           class: 'gl-col-span-12',
         },
@@ -279,6 +290,42 @@ export default {
           text-field="name"
           data-testid="state-dropdown"
         />
+      </template>
+      <template #input(group_name)="{ id, value }">
+        <div class="gl-flex">
+          <gl-form-group
+            class="gl-mb-0 gl-flex-grow"
+            :label-description="__('You use groups to organize your projects')"
+            :label="__('Group Name')"
+            data-testid="group-name-group"
+          >
+            <gl-form-input :id="id" />
+          </gl-form-group>
+          <div
+            class="gl-z-1 gl-ml-6 gl-mt-2 gl-flex gl-w-11 gl-items-center gl-justify-center gl-rounded-lg gl-bg-gray-50 gl-px-8 gl-text-size-h1-xl gl-font-semibold"
+            data-testid="group-name-letter"
+          >
+            {{ (value.length > 0 ? value : __('Group'))[0].toUpperCase() }}
+          </div>
+        </div>
+      </template>
+
+      <template #input(project_name)="{ id }">
+        <div class="gl-flex">
+          <gl-form-group
+            class="gl-mb-0 gl-flex-grow"
+            :label-description="__('Projects contain the resources for your repository')"
+            :label="__('Project Name')"
+            data-testid="project-name-group"
+          >
+            <gl-form-input :id="id" />
+          </gl-form-group>
+          <div class="gl-relative gl-ml-8 gl-w-11">
+            <div
+              class="gl-absolute gl-bottom-5 gl-right-8 gl-z-0 gl-h-20 gl-w-6 gl-border-b-2 gl-border-r-2 gl-border-gray-600 gl-border-b-solid gl-border-r-solid"
+            ></div>
+          </div>
+        </div>
       </template>
     </gl-form-fields>
 
