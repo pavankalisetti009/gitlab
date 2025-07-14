@@ -41,11 +41,25 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   end
 
   describe 'scopes' do
-    let_it_be(:items) { create_list(:ai_catalog_item, 2) }
-    let_it_be(:deleted_items) { create_list(:ai_catalog_item, 2, deleted_at: 1.day.ago) }
+    describe '.not_deleted' do
+      let_it_be(:items) { create_list(:ai_catalog_item, 2) }
+      let_it_be(:deleted_items) { create_list(:ai_catalog_item, 2, deleted_at: 1.day.ago) }
 
-    it 'returns not deleted items' do
-      expect(described_class.not_deleted).to match_array(items)
+      it 'returns not deleted items' do
+        expect(described_class.not_deleted).to match_array(items)
+      end
+    end
+
+    describe '.with_item_type' do
+      let_it_be(:agent_type_item) { create(:ai_catalog_item, item_type: :agent, public: true) }
+      let_it_be(:flow_type_item) { create(:ai_catalog_item, item_type: :flow, public: true) }
+
+      it 'returns items of the specified item type' do
+        result = described_class.with_item_type(described_class::AGENT_TYPE)
+
+        expect(described_class.count).to eq(2)
+        expect(result).to contain_exactly(agent_type_item)
+      end
     end
   end
 

@@ -21,6 +21,7 @@ module Ai
       has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
       scope :not_deleted, -> { where(deleted_at: nil) }
+      scope :with_item_type, ->(item_type) { where(item_type: item_type) }
 
       AGENT_TYPE = :agent
       FLOW_TYPE = :flow
