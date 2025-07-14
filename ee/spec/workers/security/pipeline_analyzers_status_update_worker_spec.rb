@@ -38,11 +38,88 @@ RSpec.describe Security::PipelineAnalyzersStatusUpdateWorker, feature_category: 
         stub_licensed_features(security_dashboard: true)
       end
 
-      it 'calls `Security::AnalyzerStatusUpdateService`' do
-        run_worker
+      context 'when analyzer_status_update_worker_lock feature flag is enabled' do
+        before do
+          stub_feature_flags(analyzer_status_update_worker_lock: true)
+        end
 
-        expect(Security::AnalyzersStatus::UpdateService).to have_received(:new).with(pipeline)
-        expect(analyzer_status_service).to have_received(:execute)
+        it 'calls `Security::AnalyzerStatusUpdateService`' do
+          run_worker
+
+          expect(Security::AnalyzersStatus::UpdateService).to have_received(:new).with(pipeline)
+          expect(analyzer_status_service).to have_received(:execute)
+        end
+
+        describe 'parallel execution' do
+          include ExclusiveLeaseHelpers
+
+          let(:worker) { described_class.new }
+          let(:root_namespace_id) { pipeline.project.root_namespace.id }
+          let(:lease_key) { "security:pipeline_analyzers_status_update_worker:#{root_namespace_id}" }
+          let(:lease_ttl) { 5.minutes }
+
+          before do
+            stub_const("#{described_class}::LEASE_TRY_AFTER", 0.001)
+            stub_exclusive_lease_taken(lease_key, timeout: lease_ttl)
+          end
+
+          context 'when the lock is locked' do
+            it 'does not run the service logic' do
+              expect(worker).to receive(:in_lock)
+                .with(lease_key,
+                  ttl: described_class::LEASE_TTL,
+                  retries: described_class::LEASE_RETRIES,
+                  sleep_sec: described_class::LEASE_TRY_AFTER)
+
+              expect(Security::AnalyzersStatus::UpdateService).not_to receive(:new)
+              expect(analyzer_status_service).not_to receive(:execute)
+
+              worker.perform(pipeline.id)
+            end
+
+            it 'schedules a new job when lock fails' do
+              expect(worker).to receive(:in_lock)
+                .with(lease_key,
+                  ttl: described_class::LEASE_TTL,
+                  retries: described_class::LEASE_RETRIES,
+                  sleep_sec: described_class::LEASE_TRY_AFTER)
+                .and_raise(Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError)
+
+              expect(described_class).to receive(:perform_in)
+                .with(described_class::RETRY_IN_IF_LOCKED, pipeline.id)
+
+              worker.perform(pipeline.id)
+            end
+          end
+        end
+      end
+
+      context 'when analyzer_status_update_worker_lock feature flag is disabled' do
+        before do
+          stub_feature_flags(analyzer_status_update_worker_lock: false)
+        end
+
+        it 'calls `Security::AnalyzerStatusUpdateService` without locking' do
+          run_worker
+
+          expect(Security::AnalyzersStatus::UpdateService).to have_received(:new).with(pipeline)
+          expect(analyzer_status_service).to have_received(:execute)
+        end
+
+        it 'does not attempt to acquire a lock' do
+          worker = described_class.new
+          expect(worker).not_to receive(:in_lock)
+          worker.perform(pipeline.id)
+          expect(worker).not_to receive(:in_lock)
+        end
+
+        it 'does not schedule retry jobs when service raises an exception' do
+          allow(analyzer_status_service).to receive(:execute).and_raise(StandardError.new('Some error'))
+
+          expect(described_class).not_to receive(:perform_in)
+
+          expect { run_worker }.to raise_error(StandardError, 'Some error')
+        end
       end
     end
   end
