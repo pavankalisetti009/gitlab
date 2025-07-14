@@ -6,7 +6,6 @@ import createDefaultClient from '~/lib/graphql';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_FORBIDDEN } from '~/lib/utils/http_status';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import vulnerabilitiesOverTimeResolvers from './resolvers/vulnerabilities_over_time_resolvers';
 
 Vue.use(VueApollo);
 
@@ -66,7 +65,7 @@ export const cacheConfig = {
   },
 };
 
-// Create Apollo client with cache config and security dashboard local resolvers
-export const defaultClient = createDefaultClient(vulnerabilitiesOverTimeResolvers, { cacheConfig });
+// Create Apollo client with cache config
+export const defaultClient = createDefaultClient({}, { cacheConfig });
 
 export default new VueApollo({ defaultClient });
