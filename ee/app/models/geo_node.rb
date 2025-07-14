@@ -51,7 +51,7 @@ class GeoNode < ApplicationRecord
 
   alias_method :repair, :save # the `update_dependents_attributes` hook will take care of it
 
-  scope :with_url_prefix, ->(prefix) { where('url LIKE ?', "#{prefix}%") }
+  scope :with_url_prefix, ->(prefix) { where('url LIKE ?', "#{sanitize_sql_like(prefix.to_s)}%") }
   scope :secondary_nodes, -> { where(primary: false) }
   scope :name_in, ->(names) { where(name: names) }
   scope :ordered, -> { order(:id) }
