@@ -6,7 +6,7 @@ import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import ExpandedChatFeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
+import FeatureSettings from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings.vue';
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import BetaFeaturesAlert from 'ee/ai/duo_self_hosted/feature_settings/components/beta_features_alert.vue';
 import FeatureSettingsBlock from 'ee/ai/shared/feature_settings/feature_settings_block.vue';
@@ -21,7 +21,7 @@ Vue.use(VueApollo);
 
 jest.mock('~/alert');
 
-describe('ExpandedChatFeatureSettingsTable', () => {
+describe('FeatureSettings', () => {
   let wrapper;
 
   const duoConfigurationSettingsPath = '/admin/gitlab_duo/configuration';
@@ -40,7 +40,7 @@ describe('ExpandedChatFeatureSettingsTable', () => {
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
-    wrapper = shallowMountExtended(ExpandedChatFeatureSettingsTable, {
+    wrapper = shallowMountExtended(FeatureSettings, {
       apolloProvider: mockApollo,
       provide: {
         betaModelsEnabled: true,
@@ -50,7 +50,7 @@ describe('ExpandedChatFeatureSettingsTable', () => {
     });
   };
 
-  const findFeatureSettingsTable = () => wrapper.findComponent(ExpandedChatFeatureSettingsTable);
+  const findFeatureSettings = () => wrapper.findComponent(FeatureSettings);
   const findDuoChatTable = () => wrapper.findByTestId('duo-chat-table');
   const findCodeSuggestionsTable = () => wrapper.findByTestId('code-suggestions-table');
   const findOtherDuoFeaturesTable = () => wrapper.findByTestId('other-duo-features-table');
@@ -67,7 +67,7 @@ describe('ExpandedChatFeatureSettingsTable', () => {
   });
 
   it('renders the component', () => {
-    expect(findFeatureSettingsTable().exists()).toBe(true);
+    expect(findFeatureSettings().exists()).toBe(true);
   });
 
   describe('when feature settings data is loading', () => {

@@ -1,12 +1,13 @@
 <script>
 import { GlLink, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import ModelSelectionFeatureSettingsTable from 'ee/ai/model_selection/feature_settings_table.vue';
-import FeatureSettingsBlock from './feature_settings_block.vue';
-import { DUO_MAIN_FEATURES } from './constants';
+import FeatureSettingsBlock from 'ee/ai/shared/feature_settings/feature_settings_block.vue';
+import { DUO_MAIN_FEATURES } from 'ee/ai/shared/feature_settings/constants';
+
+import ModelSelectionFeatureSettingsTable from './feature_settings_table.vue';
 
 export default {
-  name: 'FeatureSettingsTable',
+  name: 'FeatureSettings',
   components: {
     ModelSelectionFeatureSettingsTable,
     FeatureSettingsBlock,

@@ -9,7 +9,8 @@ import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_drop
 import updateAiNamespaceFeatureSettingsMutation from 'ee/ai/model_selection/graphql/update_ai_namespace_feature_settings.mutation.graphql';
 import getAiNamespaceFeatureSettingsQuery from 'ee/ai/model_selection/graphql/get_ai_namepace_feature_settings.query.graphql';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { mockDuoChatFeatureSettings } from '../shared/feature_settings/mock_data';
+
+import { mockDuoChatFeatureSettings } from './mock_data';
 
 Vue.use(VueApollo);
 

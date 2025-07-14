@@ -3,14 +3,15 @@ import { GlExperimentBadge } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
-import FeatureSettingsTable from 'ee/ai/shared/feature_settings/feature_settings_table.vue';
+
+import FeatureSettings from './feature_settings.vue';
 import aiNamespaceFeatureSettingsQuery from './graphql/get_ai_namepace_feature_settings.query.graphql';
 
 export default {
   name: 'ModelSelectionApp',
   components: {
     GlExperimentBadge,
-    FeatureSettingsTable,
+    FeatureSettings,
     PageHeading,
   },
   inject: ['groupId'],
@@ -63,9 +64,6 @@ export default {
         )
       }}</template>
     </page-heading>
-    <feature-settings-table
-      :feature-settings="aiNamespaceFeatureSettings"
-      :is-loading="isLoading"
-    />
+    <feature-settings :feature-settings="aiNamespaceFeatureSettings" :is-loading="isLoading" />
   </div>
 </template>

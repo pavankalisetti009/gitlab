@@ -8,7 +8,8 @@ import updateNamespaceFeatureSettingsMutation from 'ee/ai/model_selection/graphq
 import getAiNamespaceFeatureSettingsQuery from 'ee/ai/model_selection/graphql/get_ai_namepace_feature_settings.query.graphql';
 import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/batch_settings_updater.vue';
 import BatchUpdateButton from 'ee/ai/shared/feature_settings/batch_update_button.vue';
-import { mockCodeSuggestionsFeatureSettings } from '../shared/feature_settings/mock_data';
+
+import { mockCodeSuggestionsFeatureSettings } from './mock_data';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');

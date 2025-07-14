@@ -3,7 +3,7 @@ import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import SelfHostedModelsTable from './self_hosted_models/components/self_hosted_models_table.vue';
-import ExpandedChatFeatureSettingsTable from './feature_settings/components/expanded_chat_feature_settings_table.vue';
+import FeatureSettings from './feature_settings/components/feature_settings.vue';
 import { SELF_HOSTED_DUO_TABS, SELF_HOSTED_ROUTE_NAMES } from './constants';
 
 export default {
@@ -13,7 +13,7 @@ export default {
     GlTab,
     GlButton,
     SelfHostedModelsTable,
-    ExpandedChatFeatureSettingsTable,
+    FeatureSettings,
     PageHeading,
   },
   i18n: {
@@ -114,7 +114,7 @@ export default {
       <self-hosted-models-table />
     </div>
     <div v-else>
-      <expanded-chat-feature-settings-table />
+      <feature-settings />
     </div>
   </div>
 </template>

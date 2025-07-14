@@ -1,7 +1,7 @@
 import { nextTick } from 'vue';
 import { GlButton, GlTab } from '@gitlab/ui';
 import DuoSelfHostedApp from 'ee/ai/duo_self_hosted/app.vue';
-import ExpandedChatFeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
+import FeatureSettings from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { SELF_HOSTED_DUO_TABS, SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 
@@ -25,8 +25,7 @@ describe('DuoSelfHostedApp', () => {
   };
 
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
-  const findExpandedChatFeatureSettingsTable = () =>
-    wrapper.findComponent(ExpandedChatFeatureSettingsTable);
+  const findFeatureSettings = () => wrapper.findComponent(FeatureSettings);
   const findFeatureSettingsTab = () => wrapper.findByTestId('ai-feature-settings-tab');
   const findSelfHostedModelsTab = () => wrapper.findByTestId('self-hosted-models-tab');
   const findAddModelButton = () => wrapper.findComponent(GlButton);
@@ -103,12 +102,12 @@ describe('DuoSelfHostedApp', () => {
       expect($router.push).toHaveBeenCalledWith({ name: SELF_HOSTED_ROUTE_NAMES.FEATURES });
     });
 
-    it('renders the expanded chat sub-features table', () => {
+    it('renders feature settings', () => {
       createComponent({
         props: { tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS },
       });
 
-      expect(findExpandedChatFeatureSettingsTable().exists()).toBe(true);
+      expect(findFeatureSettings().exists()).toBe(true);
     });
   });
 });
