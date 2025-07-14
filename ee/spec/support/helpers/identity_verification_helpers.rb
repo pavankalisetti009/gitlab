@@ -8,7 +8,6 @@ module IdentityVerificationHelpers
   def stub_arkose_token_verification(
     risk: :low, token_verification_response: :success, challenge_shown: false, service_down: false
   )
-
     response_body = case token_verification_response
                     when :error
                       nil
