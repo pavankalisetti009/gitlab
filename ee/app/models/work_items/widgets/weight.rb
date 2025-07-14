@@ -35,15 +35,15 @@ module WorkItems
       end
 
       def rolled_up_weight
-        return unless widget_options[:rollup] && rolled_up_weight_by_state.present?
+        return unless widget_options[:rollup]
 
-        rolled_up_weight_by_state.sum { |_, weight| weight }
+        use_cached_rolled_up_weight? ? cached_rolled_up_weight : calculated_rolled_up_weight
       end
 
       def rolled_up_completed_weight
-        return unless widget_options[:rollup] && rolled_up_weight_by_state.present?
+        return unless widget_options[:rollup]
 
-        rolled_up_weight_by_state.fetch(WorkItem.available_states[:closed], 0)
+        use_cached_rolled_up_weight? ? cached_rolled_up_completed_weight : calculated_rolled_up_completed_weight
       end
 
       private
@@ -59,6 +59,30 @@ module WorkItems
           .compact
       end
       strong_memoize_attr :rolled_up_weight_by_state
+
+      def use_cached_rolled_up_weight?
+        Feature.enabled?(:use_cached_rolled_up_weights, work_item.resource_parent.root_ancestor)
+      end
+
+      def cached_rolled_up_weight
+        work_item.weights_source&.rolled_up_weight
+      end
+
+      def cached_rolled_up_completed_weight
+        work_item.weights_source&.rolled_up_completed_weight
+      end
+
+      def calculated_rolled_up_weight
+        return unless rolled_up_weight_by_state.present?
+
+        rolled_up_weight_by_state.sum { |_, weight| weight }
+      end
+
+      def calculated_rolled_up_completed_weight
+        return unless rolled_up_weight_by_state.present?
+
+        rolled_up_weight_by_state.fetch(WorkItem.available_states[:closed], 0)
+      end
     end
   end
 end

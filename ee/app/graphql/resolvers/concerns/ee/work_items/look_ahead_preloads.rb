@@ -16,7 +16,8 @@ module EE
           test_reports: :test_reports,
           feature_flags: { feature_flags: :project },
           iteration: { iteration: :group },
-          status: { current_status: :custom_status }
+          status: { current_status: :custom_status },
+          weight: :weights_source
         )
       end
 
