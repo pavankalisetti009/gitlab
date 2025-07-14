@@ -3542,9 +3542,6 @@ msgstr ""
 msgid "Active Sessions"
 msgstr ""
 
-msgid "Active chat names"
-msgstr ""
-
 msgid "Active group access tokens"
 msgstr ""
 
@@ -12719,9 +12716,6 @@ msgstr ""
 msgid "Characters over limit"
 msgstr ""
 
-msgid "Chat"
-msgstr ""
-
 msgid "ChatMessage|%{project_link}: Pipeline %{pipeline_link} of %{ref_type} %{ref_link} by %{user_combined_name} %{humanized_status} in %{duration}"
 msgstr ""
 
@@ -18790,9 +18784,6 @@ msgstr ""
 msgid "Could not apply iteration command. There are multiple cadences but no cadence is specified."
 msgstr ""
 
-msgid "Could not authorize chat nickname. Try again!"
-msgstr ""
-
 msgid "Could not be moved. Select another project or try again."
 msgstr ""
 
@@ -18817,7 +18808,7 @@ msgstr ""
 msgid "Could not create wiki template"
 msgstr ""
 
-msgid "Could not delete chat nickname %{chat_name}."
+msgid "Could not delete account nickname %{chat_name}."
 msgstr ""
 
 msgid "Could not delete the label %{labelName}. Please try again."
@@ -21579,7 +21570,7 @@ msgstr ""
 msgid "Deleted"
 msgstr ""
 
-msgid "Deleted chat nickname: %{chat_name}!"
+msgid "Deleted account nickname: %{chat_name}!"
 msgstr ""
 
 msgid "Deleted commits:"
@@ -21621,7 +21612,7 @@ msgstr ""
 msgid "DeletionSettings|Period that deleted groups and projects will remain restorable for."
 msgstr ""
 
-msgid "Denied authorization of chat nickname %{user_name}."
+msgid "Denied authorization of account nickname %{user_name}."
 msgstr ""
 
 msgid "Deny"
@@ -33662,6 +33653,9 @@ msgstr ""
 msgid "Integrations|Confirm %{type} exclusion removal"
 msgstr ""
 
+msgid "Integrations|Connected integration accounts"
+msgstr ""
+
 msgid "Integrations|Connection details"
 msgstr ""
 
@@ -33669,6 +33663,9 @@ msgid "Integrations|Connection failed. Check your integration settings."
 msgstr ""
 
 msgid "Integrations|Connection successful."
+msgstr ""
+
+msgid "Integrations|Could not authorize integration account nickname. Try again!"
 msgstr ""
 
 msgid "Integrations|Create new issue in Jira"
@@ -33749,6 +33746,9 @@ msgstr ""
 msgid "Integrations|Instance-level integration management"
 msgstr ""
 
+msgid "Integrations|Integration accounts"
+msgstr ""
+
 msgid "Integrations|Integration cannot be reset."
 msgstr ""
 
@@ -33759,6 +33759,9 @@ msgid "Integrations|Issues created in Jira are shown here once you have created 
 msgstr ""
 
 msgid "Integrations|Keep your PHP dependencies updated on Packagist."
+msgstr ""
+
+msgid "Integrations|Manage your integration accounts in GitLab. Use these connected integrations to perform actions in GitLab."
 msgstr ""
 
 msgid "Integrations|Mattermost slash commands"
@@ -33855,6 +33858,9 @@ msgid "Integrations|You can close this window."
 msgstr ""
 
 msgid "Integrations|You can use this alias in your Slack commands"
+msgstr ""
+
+msgid "Integrations|You do not have any connected integration accounts."
 msgstr ""
 
 msgid "Integrations|You haven't activated any integrations yet."
@@ -72557,9 +72563,6 @@ msgid "You do not have permissions to run the import."
 msgstr ""
 
 msgid "You don't have any WebAuthn devices registered yet."
-msgstr ""
-
-msgid "You don't have any active chat names."
 msgstr ""
 
 msgid "You don't have any applications."
