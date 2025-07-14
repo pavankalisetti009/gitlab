@@ -3,6 +3,8 @@
 module Search
   module Elastic
     module Filters
+      include Search::Elastic::Filters::ConfidentialityFilters
+
       ALLOWED_SEARCH_LEVELS = %i[global group project].freeze
       DEFAULT_RELATED_SIZE = 100
       PROJECT_ID_FIELD = :project_id
@@ -12,6 +14,7 @@ module Search
       class << self
         include ::Elastic::Latest::QueryContext::Aware
         include Search::Elastic::Concerns::FilterUtils
+        include Search::Elastic::Concerns::AuthorizationUtils
         include Search::Concerns::FeatureCustomAbilityMap
 
         def by_search_level_and_membership(query_hash:, options:)
@@ -463,115 +466,6 @@ module Search
           query_hash.deep_merge(knn: { filter: filters })
         end
 
-        def by_group_level_confidentiality(query_hash:, options:)
-          user = options[:current_user]
-          return query_hash if user&.can_read_all_resources?
-
-          context.name(:filters, :confidentiality, :groups) do
-            traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
-            filter = Search::Elastic::BoolExpr.new
-            filter.minimum_should_match = 1
-
-            # anonymous user, public groups, non-confidential
-            add_filter(filter, :should) do
-              {
-                bool: {
-                  _name: context.name(:non_confidential, :public),
-                  must: [
-                    { term: { confidential: { value: false } } },
-                    { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
-                  ]
-                }
-              }
-            end
-
-            if user && !user.external?
-              # logged in user, public groups, non-confidential
-              add_filter(filter, :should) do
-                {
-                  bool: {
-                    _name: context.name(:non_confidential, :internal),
-                    must: [
-                      { term: { confidential: { value: false } } },
-                      { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
-                    ]
-                  }
-                }
-              end
-            end
-
-            if user
-              # logged in user, private groups, non-confidential
-              add_filter(filter, :should) do
-                min_access_for_non_confidential = options[:min_access_level_non_confidential]
-                non_confidential_options = options.merge(min_access_level: min_access_for_non_confidential)
-                traversal_ids = traversal_ids_for_user(user, non_confidential_options)
-                next if traversal_ids.empty?
-
-                context.name(:non_confidential, :private) do
-                  {
-                    bool: {
-                      _name: context.name,
-                      must: [
-                        { term: { confidential: { value: false } } }
-                      ],
-                      should: ancestry_filter(traversal_ids, traversal_id_field: traversal_ids_prefix),
-                      minimum_should_match: 1
-                    }
-                  }
-                end
-              end
-
-              # logged-in user, private projects ancestor hierarchy, non-confidential
-              add_filter(filter, :should) do
-                authorized_project_ancestry_namespace_ids = authorized_namespace_ids_for_project_group_ancestry(user)
-                next if authorized_project_ancestry_namespace_ids.empty?
-
-                context.name(:non_confidential, :private) do
-                  {
-                    bool: {
-                      _name: context.name,
-                      must: [
-                        { term: { confidential: { value: false } } },
-                        { terms: {
-                          _name: context.name(:project, :membership),
-                          namespace_id: authorized_project_ancestry_namespace_ids
-                        } }
-                      ]
-                    }
-                  }
-                end
-              end
-
-              # logged in user, private groups, confidential
-              add_filter(filter, :should) do
-                min_access_for_confidential = options[:min_access_level_confidential]
-                confidential_options = options.merge(min_access_level: min_access_for_confidential)
-                traversal_ids = traversal_ids_for_user(user, confidential_options)
-
-                next if traversal_ids.empty?
-
-                context.name(:confidential, :private) do
-                  {
-                    bool: {
-                      _name: context.name,
-                      must: [
-                        { term: { confidential: { value: true } } }
-                      ],
-                      should: ancestry_filter(traversal_ids, traversal_id_field: traversal_ids_prefix),
-                      minimum_should_match: 1
-                    }
-                  }
-                end
-              end
-            end
-
-            add_filter(query_hash, :query, :bool, :filter) do
-              filter.to_bool_query
-            end
-          end
-        end
-
         def by_search_level_and_group_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
 
@@ -637,73 +531,6 @@ module Search
                   minimum_should_match: 1
                 }
               }
-            end
-          end
-        end
-
-        def by_project_confidentiality(query_hash:, options:)
-          confidential = options[:confidential]
-          user = options[:current_user]
-          project_ids = options[:project_ids]
-
-          context.name(:filters) do
-            if [true, false].include?(confidential)
-              add_filter(query_hash, :query, :bool, :filter) do
-                { term: { confidential: confidential } }
-              end
-            end
-
-            # There might be an option to not add confidentiality filter for project level search
-            next query_hash if user&.can_read_all_resources?
-
-            scoped_project_ids = scoped_project_ids(user, project_ids)
-            authorized_project_ids = authorized_project_ids(user, scoped_project_ids)
-
-            non_confidential_filter = {
-              term: { confidential: { _name: context.name(:non_confidential), value: false } }
-            }
-
-            filter = if user
-                       confidential_filter = {
-                         bool: {
-                           must: [
-                             { term: { confidential: { _name: context.name(:confidential), value: true } } },
-                             {
-                               bool: {
-                                 should: [
-                                   { term:
-                                    { author_id: {
-                                      _name: context.name(:confidential, :as_author),
-                                      value: user.id
-                                    } } },
-                                   { term:
-                                    { assignee_id: {
-                                      _name: context.name(:confidential, :as_assignee),
-                                      value: user.id
-                                    } } },
-                                   { terms: { _name: context.name(:confidential, :project, :membership, :id),
-                                              project_id: authorized_project_ids } }
-                                 ]
-                               }
-                             }
-                           ]
-                         }
-                       }
-
-                       {
-                         bool: {
-                           should: [
-                             non_confidential_filter,
-                             confidential_filter
-                           ]
-                         }
-                       }
-                     else
-                       non_confidential_filter
-                     end
-
-            add_filter(query_hash, :query, :bool, :filter) do
-              filter
             end
           end
         end
@@ -788,18 +615,6 @@ module Search
           ::GroupsFinder.new(user, finder_params).execute.pluck("#{Group.table_name}.#{Group.primary_key}") # rubocop:disable CodeReuse/ActiveRecord -- we need pluck only the ids from the finder
         end
 
-        def scoped_project_ids(current_user, project_ids)
-          return :any if project_ids == :any
-
-          project_ids ||= []
-
-          # When reading cross project is not allowed, only allow searching a
-          # a single project, so the `:read_*` ability is only checked once.
-          return [] if !Ability.allowed?(current_user, :read_cross_project) && project_ids.size > 1
-
-          project_ids
-        end
-
         def projects_for_user(user, options)
           return [] unless user
 
@@ -828,81 +643,6 @@ module Search
               authorized_projects.id_in(project_ids)
             end
           end
-        end
-
-        def traversal_ids_for_user(user, options)
-          return [] unless user
-
-          finder_params = {
-            features: Array.wrap(options[:features]),
-            min_access_level: options[:min_access_level]
-          }
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
-
-          get_traversal_ids_for_search_level(authorized_groups, options)
-        end
-
-        def authorized_namespace_ids_for_project_group_ancestry(user)
-          authorized_groups = ::Search::GroupsFinder.new(user: user).execute
-          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
-          authorized_project_namespaces = Namespace.id_in(authorized_projects.select(:namespace_id))
-
-          # shortcut the filter if the user is authorized to see a namespace in the hierarchy already
-          return [] unless authorized_project_namespaces.id_not_in(authorized_groups).exists?
-
-          authorized_trie = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
-          not_covered_namespaces = authorized_project_namespaces.reject do |namespace|
-            authorized_trie.covered?(namespace.traversal_ids)
-          end
-
-          not_covered_namespaces.pluck(:traversal_ids).flatten.uniq # rubocop:disable CodeReuse/ActiveRecord -- traversal_ids are needed to generate namespace_id array
-        end
-
-        def authorized_traversal_ids_for_global(authorized_groups)
-          ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
-        end
-
-        def authorized_traversal_ids_for_groups(authorized_groups, namespace_ids)
-          namespaces = Namespace.id_in(namespace_ids)
-
-          return namespaces.map(&:traversal_ids) unless namespaces.id_not_in(authorized_groups).exists?
-
-          authorized_trie = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
-
-          [].tap do |allowed_traversal_ids|
-            namespaces.map do |namespace|
-              traversal_ids = namespace.traversal_ids
-              if authorized_trie.covered?(traversal_ids)
-                allowed_traversal_ids << traversal_ids
-                next
-              end
-
-              allowed_traversal_ids.concat(authorized_trie.prefix_search(traversal_ids))
-            end
-          end
-        end
-
-        def authorized_traversal_ids_for_projects(authorized_groups, project_ids)
-          namespace_ids = Project.id_in(project_ids).select(:namespace_id)
-          namespaces = Namespace.id_in(namespace_ids)
-
-          return namespaces.map(&:traversal_ids) unless namespaces.id_not_in(authorized_groups).exists?
-
-          authorized_trie = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
-
-          namespaces.map(&:traversal_ids).select { |s| authorized_trie.covered?(s) }
-        end
-
-        def authorized_project_ids(current_user, scoped_project_ids)
-          return [] unless current_user
-
-          authorized_project_ids = current_user.authorized_projects(Gitlab::Access::REPORTER).pluck_primary_key.to_set
-
-          # if the current search is limited to a subset of projects, we should do
-          # confidentiality check for these projects.
-          authorized_project_ids &= scoped_project_ids.to_set unless scoped_project_ids == :any
-
-          authorized_project_ids.to_a
         end
 
         def authorized_namespace_ids(user, group_ids)
@@ -1152,21 +892,6 @@ module Search
                   should: ancestry_filter(namespace_ancestry,
                     traversal_id_field: options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)),
                   minimum_should_match: 1
-                }
-              }
-            end
-          end
-        end
-
-        def ancestry_filter(namespace_ancestry, traversal_id_field:)
-          context.name(:ancestry_filter) do
-            namespace_ancestry.map do |namespace_ids|
-              {
-                prefix: {
-                  "#{traversal_id_field}": {
-                    _name: context.name(:descendants),
-                    value: namespace_ids
-                  }
                 }
               }
             end
@@ -1647,19 +1372,6 @@ module Search
             }
             access_groups[item_id][:access_contexts].merge(Array.wrap(access_contexts))
           end
-        end
-
-        def get_traversal_ids_for_search_level(authorized_groups, options)
-          search_level = options.fetch(:search_level).to_sym
-
-          case search_level
-          when :global
-            authorized_traversal_ids_for_global(authorized_groups)
-          when :group
-            authorized_traversal_ids_for_groups(authorized_groups, options[:group_ids])
-          when :project
-            authorized_traversal_ids_for_projects(authorized_groups, options[:project_ids])
-          end.map { |id| "#{id.join('-')}-" }
         end
 
         # @deprecated - will be removed with search_refactor_membership_filter feature flag
