@@ -2,7 +2,7 @@
 
 module Ai
   module Catalog
-    module Agents
+    module Flows
       class CreateService < Ai::Catalog::BaseService
         SCHEMA_VERSION = 1
 
@@ -11,17 +11,14 @@ module Ai
 
           item_params = params.slice(:name, :description, :public)
           item_params.merge!(
-            item_type: Ai::Catalog::Item::AGENT_TYPE,
+            item_type: Ai::Catalog::Item::FLOW_TYPE,
             organization_id: project.organization_id,
             project_id: project.id
           )
           version_params = {
             schema_version: SCHEMA_VERSION,
             version: DEFAULT_VERSION,
-            definition: {
-              system_prompt: params[:system_prompt],
-              user_prompt: params[:user_prompt]
-            }
+            definition: { triggers: [] }
           }
 
           item = Ai::Catalog::Item.new(item_params)
@@ -35,7 +32,7 @@ module Ai
         private
 
         def error_creating(item)
-          error(item.errors.full_messages.presence || 'Failed to create agent')
+          error(item.errors.full_messages.presence || 'Failed to create flow')
         end
       end
     end

@@ -2277,6 +2277,33 @@ Input type: `AiCatalogAgentDeleteInput`
 | <a id="mutationaicatalogagentdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationaicatalogagentdeletesuccess"></a>`success` | [`Boolean!`](#boolean) | Returns true if catalog Agent was successfully deleted. |
 
+### `Mutation.aiCatalogFlowCreate`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AiCatalogFlowCreateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogflowcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogflowcreatedescription"></a>`description` | [`String!`](#string) | Description for the flow. |
+| <a id="mutationaicatalogflowcreatename"></a>`name` | [`String!`](#string) | Name for the flow. |
+| <a id="mutationaicatalogflowcreateprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project for the flow. |
+| <a id="mutationaicatalogflowcreatepublic"></a>`public` | [`Boolean!`](#boolean) | Whether the flow is publicly visible in the catalog. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogflowcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogflowcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationaicatalogflowcreateitem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Item created. |
+
 ### `Mutation.aiDuoWorkflowCreate`
 
 {{< details >}}

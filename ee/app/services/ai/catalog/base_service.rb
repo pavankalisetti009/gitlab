@@ -3,6 +3,8 @@
 module Ai
   module Catalog
     class BaseService < ::BaseContainerService
+      DEFAULT_VERSION = 'v1.0.0-draft'
+
       def initialize(project:, current_user:, params: {})
         super(container: project, current_user: current_user, params: params)
       end
