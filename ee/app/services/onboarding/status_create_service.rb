@@ -47,8 +47,9 @@ module Onboarding
         onboarding_status_glm_content: glm_content,
         onboarding_status_glm_source: glm_source
       }
-      experiment(:lightweight_trial_registration_redesign, actor: user) do |e|
-        e.candidate { attrs.merge!({ onboarding_status_version: LIGHTWEIGHT_REGISTRATION_EXPERIMENT_VERSION }) }
+
+      if experiment(:lightweight_trial_registration_redesign).assigned.name == :candidate
+        attrs[:onboarding_status_version] = LIGHTWEIGHT_REGISTRATION_EXPERIMENT_VERSION
       end
 
       attrs

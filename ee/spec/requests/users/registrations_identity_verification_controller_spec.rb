@@ -166,7 +166,10 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       end
 
       context 'when user is on trial registration' do
-        let(:user) { create(:user, :unconfirmed, onboarding_status_initial_registration_type: 'trial') }
+        let(:user) do
+          create(:user, :unconfirmed, onboarding_status_initial_registration_type: 'trial',
+            onboarding_status_version: 1)
+        end
 
         before do
           stub_session(session_data: { verification_user_id: user.id })
