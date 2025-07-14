@@ -234,7 +234,9 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
 
   describe '#build_user_params_for_non_admin' do
     let(:service) { described_class.new(current_user, params) }
-    let(:current_user) { create(:user) }
+    let(:current_user) do
+      create(:user, onboarding_status_version: 1, onboarding_status_initial_registration_type: 'trial')
+    end
 
     context 'with lightweight_trial_registration_redesign experiment' do
       context 'when experiment is in control variant' do
