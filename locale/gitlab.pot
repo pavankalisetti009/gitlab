@@ -69207,6 +69207,9 @@ msgstr ""
 msgid "VulnerabilityExport|Vulnerability"
 msgstr ""
 
+msgid "VulnerabilityExport|Vulnerability ID"
+msgstr ""
+
 msgid "VulnerabilityManagement|%{statusStart}Confirmed%{statusEnd} · %{timeago} by %{user}"
 msgstr ""
 
