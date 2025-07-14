@@ -7,9 +7,7 @@ RSpec.describe Resolvers::Vulnerabilities::FindingTokenStatusResolver, feature_c
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
-  let_it_be(:vulnerability) { create(:vulnerability, project: project) }
-
-  let(:validity_checks_ff) { true }
+  let_it_be(:vulnerability) { create(:vulnerability, project: project, report_type: 'secret_detection') }
 
   specify do
     expect(described_class)
@@ -21,18 +19,50 @@ RSpec.describe Resolvers::Vulnerabilities::FindingTokenStatusResolver, feature_c
       project.add_developer(user)
     end
 
+    before do
+      stub_feature_flags(validity_checks: true)
+      stub_licensed_features(secret_detection_validity_checks: true)
+      project.security_setting.update!(validity_checks_enabled: true)
+    end
+
     subject(:result) { resolve_status }
 
-    context 'when the feature flag is off' do
-      let(:validity_checks_ff) { false }
-
+    shared_examples 'does not expose token status' do
       it { is_expected.to be_nil }
     end
 
-    context 'when the vulnerability has no finding' do
-      let(:vulnerability) { create(:vulnerability, project: project) }
+    context 'when report_type is not secret_detection' do
+      let(:vulnerability) { create(:vulnerability, project: project, report_type: 'sast') }
 
-      it { is_expected.to be_nil }
+      it_behaves_like 'does not expose token status'
+    end
+
+    context 'when validity_checks feature flag is disabled' do
+      before do
+        stub_feature_flags(validity_checks: false)
+      end
+
+      it_behaves_like 'does not expose token status'
+    end
+
+    context 'when project is not licensed for secret_detection_validity_checks' do
+      before do
+        stub_licensed_features(secret_detection_validity_checks: false)
+      end
+
+      it_behaves_like 'does not expose token status'
+    end
+
+    context 'when project setting validity_checks_enabled is false' do
+      before do
+        project.security_setting.update!(validity_checks_enabled: false)
+      end
+
+      it_behaves_like 'does not expose token status'
+    end
+
+    context 'when the vulnerability has no finding' do
+      it_behaves_like 'does not expose token status'
     end
 
     context 'when there is a finding but no token status record' do
@@ -46,7 +76,7 @@ RSpec.describe Resolvers::Vulnerabilities::FindingTokenStatusResolver, feature_c
     end
 
     context 'when a token status exists' do
-      let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+      let_it_be(:vulnerability) { create(:vulnerability, project: project, report_type: 'secret_detection') }
       let_it_be(:finding) do
         create(
           :vulnerabilities_finding,
@@ -64,8 +94,8 @@ RSpec.describe Resolvers::Vulnerabilities::FindingTokenStatusResolver, feature_c
     end
 
     context 'when multiple token status records exist for different findings' do
-      let_it_be(:vulnerability1) { create(:vulnerability, project: project) }
-      let_it_be(:vulnerability2) { create(:vulnerability, project: project) }
+      let_it_be(:vulnerability1) { create(:vulnerability, project: project, report_type: 'secret_detection') }
+      let_it_be(:vulnerability2) { create(:vulnerability, project: project, report_type: 'secret_detection') }
 
       let_it_be(:finding1) do
         create(
@@ -96,7 +126,6 @@ RSpec.describe Resolvers::Vulnerabilities::FindingTokenStatusResolver, feature_c
   end
 
   def resolve_status(obj = vulnerability)
-    stub_feature_flags(validity_checks: validity_checks_ff)
     resolve(
       described_class,
       obj: obj,

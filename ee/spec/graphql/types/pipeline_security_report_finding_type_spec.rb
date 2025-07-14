@@ -43,6 +43,7 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
       state
       details
       vulnerability
+      finding_token_status
       issueLinks
       merge_request
       remediations
