@@ -26,44 +26,17 @@ module GitlabSubscriptions
     def new
       return ensure_registered! unless current_user.present?
 
-      namespace = find_eligible_namespace(id: params[:namespace_id])
+      namespace = find_eligible_namespace(id: params[:namespace_id], any_self_service_plan: true)
 
-      redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
-        plan_id: sanitize(params[:plan_id]),
-        namespace: namespace
-      ).build
+      redirect_to purchase_url(plan_id: sanitize(params[:plan_id]), namespace: namespace)
     end
 
     def buy_minutes
-      return render_404 unless ci_minutes_plan_data.present?
-
-      # At the moment of this comment the account id is directly available to the view.
-      # This might change in the future given the intention to associate the account id to the namespace.
-      # See: https://gitlab.com/gitlab-org/gitlab/-/issues/338546#note_684762160
-      result = find_group(plan_id: ci_minutes_plan_data["id"])
-
-      return render_404 if result[:namespace].nil?
-
-      redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
-        plan_id: ci_minutes_plan_data['id'],
-        namespace: result[:namespace]
-      ).build(transaction: 'ci_minutes')
+      add_on_purchase_flow(plan_tag: 'CI_1000_MINUTES_PLAN', transaction_param: 'ci_minutes')
     end
 
     def buy_storage
-      return render_404 unless storage_plan_data.present?
-
-      # At the moment of this comment the account id is directly available to the view.
-      # This might change in the future given the intention to associate the account id to the namespace.
-      # See: https://gitlab.com/gitlab-org/gitlab/-/issues/338546#note_684762160
-      result = find_group(plan_id: storage_plan_data["id"])
-
-      return render_404 if result[:namespace].nil?
-
-      redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
-        plan_id: storage_plan_data["id"],
-        namespace: result[:namespace]
-      ).build(transaction: 'storage')
+      add_on_purchase_flow(plan_tag: 'STORAGE_PLAN', transaction_param: 'storage')
     end
 
     def payment_form
@@ -114,6 +87,22 @@ module GitlabSubscriptions
     end
 
     private
+
+    def purchase_url(plan_id:, namespace:, **params)
+      GitlabSubscriptions::PurchaseUrlBuilder.new(plan_id: plan_id, namespace: namespace).build(**params)
+    end
+
+    def add_on_purchase_flow(plan_tag:, transaction_param:)
+      plan_id = plan_id_for_tag(tag: plan_tag)
+
+      return render_404 unless plan_id.present?
+
+      namespace = find_eligible_namespace(id: params[:selected_group], plan_id: plan_id)
+
+      return render_404 unless namespace.present?
+
+      redirect_to purchase_url(plan_id: plan_id, namespace: namespace, transaction: transaction_param)
+    end
 
     def track_purchase(message:, namespace: nil)
       Gitlab::Tracking.event(
@@ -167,13 +156,14 @@ module GitlabSubscriptions
       result.payload.first || {}
     end
 
-    def find_eligible_namespace(id:)
+    def find_eligible_namespace(id:, any_self_service_plan: nil, plan_id: nil)
       namespace = current_user.owned_groups.top_level.with_counts(archived: false).find_by_id(id)
 
       return unless namespace.present? && GitlabSubscriptions::FetchPurchaseEligibleNamespacesService.eligible?(
         user: current_user,
         namespace: namespace,
-        any_self_service_plan: true
+        any_self_service_plan: any_self_service_plan,
+        plan_id: plan_id
       )
 
       namespace
@@ -198,20 +188,10 @@ module GitlabSubscriptions
       Gitlab::SubscriptionPortal::Client
     end
 
-    def ci_minutes_plan_data
-      strong_memoize(:ci_minutes_plan_data) do
-        plan_response = client.get_plans(tags: ['CI_1000_MINUTES_PLAN'])
+    def plan_id_for_tag(tag:)
+      plan_response = client.get_plans(tags: [tag])
 
-        plan_response[:success] ? plan_response[:data].first : nil
-      end
-    end
-
-    def storage_plan_data
-      strong_memoize(:storage_plan_data) do
-        plan_response = client.get_plans(tags: ['STORAGE_PLAN'])
-
-        plan_response[:success] ? plan_response[:data].first : nil
-      end
+      plan_response[:success] ? plan_response[:data].first['id'] : nil
     end
 
     def ensure_registered!

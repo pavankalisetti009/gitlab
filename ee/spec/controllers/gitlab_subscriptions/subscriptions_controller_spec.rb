@@ -129,6 +129,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
               GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
               user: user,
               plan_id: 'ci_minutes',
+              any_self_service_plan: nil,
               namespaces: [group]
             ) do |instance|
               allow(instance).to receive(:execute).and_return(
@@ -150,6 +151,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
               GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
               user: user,
               plan_id: 'ci_minutes',
+              any_self_service_plan: nil,
               namespaces: [group]
             ) do |instance|
               allow(instance).to receive(:execute).and_return(
@@ -223,6 +225,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
               GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
               user: user,
               plan_id: 'storage',
+              any_self_service_plan: nil,
               namespaces: [group]
             ) do |instance|
               allow(instance).to receive(:execute).and_return(
@@ -244,6 +247,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
               GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
               user: user,
               plan_id: 'storage',
+              any_self_service_plan: nil,
               namespaces: [group]
             ) do |instance|
               allow(instance).to receive(:execute).and_return(
