@@ -80,7 +80,7 @@ export default {
   },
   labelsTableFields: [
     {
-      key: 'label',
+      key: 'name',
       label: __('Label'),
       // eslint-disable-next-line @gitlab/require-i18n-strings
       tdClass: '!gl-border-b-0 gl-w-1/5',
@@ -195,8 +195,8 @@ export default {
         </gl-form-group>
         <crud-component header-class="gl-hidden">
           <gl-table-lite :items="labels" :fields="$options.labelsTableFields" class="gl-mb-0">
-            <template #cell(label)="{ item: { label, color } }">
-              <gl-label :background-color="color" :title="label" />
+            <template #cell(name)="{ item: { name, color } }">
+              <gl-label :background-color="color" :title="name" />
             </template>
             <template #cell(usedBy)="{ item: { projectCount } }">
               <gl-link v-if="!isNaN(projectCount)">

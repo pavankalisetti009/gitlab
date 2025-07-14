@@ -16,7 +16,7 @@ query getSecurityLabels($fullPath: ID!, $categoryId: ID) {
       nodes {
         id
         categoryId
-        label
+        name
         description
         color
         projectCount
