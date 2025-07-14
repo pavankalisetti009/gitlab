@@ -36,7 +36,7 @@ export default {
       v-else
       :title="s__('AICatalog|Get started with the AI Catalog')"
       :description="
-        s__('AICatalog|Build AI workflows and agents to automate repetitive tasks and processes.')
+        s__('AICatalog|Build AI agents and flows to automate repetitive tasks and processes.')
       "
       :svg-path="$options.EMPTY_SVG_URL"
     />
