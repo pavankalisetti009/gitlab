@@ -757,9 +757,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       where(permission: %i[
         read_vulnerability_feedback
-              create_vulnerability_feedback
-              update_vulnerability_feedback
-              destroy_vulnerability_feedback
+        create_vulnerability_feedback
+        update_vulnerability_feedback
+        destroy_vulnerability_feedback
       ])
 
       with_them do
@@ -2223,13 +2223,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         # real abilities.
         let(:abilities_not_currently_enabled) do
           %i[create_merge_request create_issue_board_list create_issue_board update_issue_board
-             update_issue_board_list create_label update_label create_milestone
-             update_milestone update_wiki update_design admin_design update_note
-             update_pipeline_schedule admin_pipeline_schedule create_trigger update_trigger
-             admin_trigger create_pages admin_release request_access create_board update_board
-             create_issue_link update_issue_link create_approvers admin_approvers
-             admin_vulnerability_feedback create_feature_flags_client
-             update_feature_flags_client update_iteration update_vulnerability create_vulnerability]
+            update_issue_board_list create_label update_label create_milestone
+            update_milestone update_wiki update_design admin_design update_note
+            update_pipeline_schedule admin_pipeline_schedule create_trigger update_trigger
+            admin_trigger create_pages admin_release request_access create_board update_board
+            create_issue_link update_issue_link create_approvers admin_approvers
+            admin_vulnerability_feedback create_feature_flags_client
+            update_feature_flags_client update_iteration update_vulnerability create_vulnerability]
         end
 
         it { is_expected.to(be_allowed(*(abilities - abilities_not_currently_enabled))) }
@@ -2389,9 +2389,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:all_read_analytics_permissions) do
           %i[
             read_project_merge_request_analytics
-          read_code_review_analytics
-          read_cycle_analytics
-          read_issue_analytics
+            read_code_review_analytics
+            read_cycle_analytics
+            read_issue_analytics
           ]
         end
 
@@ -3100,7 +3100,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:licensed_features) { { security_orchestration_policies: true } }
         let(:allowed_abilities) do
           [:read_security_orchestration_policies, :update_security_orchestration_policy_project,
-           :access_security_and_compliance]
+            :access_security_and_compliance]
         end
 
         let(:disallowed_abilities) do
@@ -3277,7 +3277,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:member_role_abilities) { { admin_protected_branch: true } }
         let(:allowed_abilities) do
           [:admin_protected_branch, :read_protected_branch, :create_protected_branch,
-           :update_protected_branch, :destroy_protected_branch]
+            :update_protected_branch, :destroy_protected_branch]
         end
 
         it_behaves_like 'custom roles abilities'

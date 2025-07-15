@@ -42,7 +42,7 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
     def query(params = {})
       graphql_query_for("group", { "fullPath" => group.full_path },
         ['epicsEnabled',
-         query_graphql_field("epics", params, epic_node)]
+          query_graphql_field("epics", params, epic_node)]
       )
     end
 
@@ -269,7 +269,7 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
             post_graphql(query(params), current_user: user)
 
             expect_array_response([label_epic2.to_global_id.to_s, label_epic1.to_global_id.to_s,
-                                   epic2.to_global_id.to_s, epic.to_global_id.to_s])
+              epic2.to_global_id.to_s, epic.to_global_id.to_s])
           end
         end
       end
@@ -309,7 +309,7 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
             post_graphql(query(params), current_user: user)
 
             expect_array_response([epic4.to_global_id.to_s, epic3.to_global_id.to_s,
-                                   epic2.to_global_id.to_s, epic.to_global_id.to_s])
+              epic2.to_global_id.to_s, epic.to_global_id.to_s])
           end
         end
       end
@@ -402,8 +402,8 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
     let(:query) do
       graphql_query_for('group', { 'fullPath' => group.full_path },
         ['epicsEnabled',
-        query_graphql_field('epic', { iid: epic.iid },
-          all_graphql_fields_for('Epic', excluded: %w[runners ciQueueingHistory]))]
+          query_graphql_field('epic', { iid: epic.iid },
+            all_graphql_fields_for('Epic', excluded: %w[runners ciQueueingHistory]))]
       )
     end
 

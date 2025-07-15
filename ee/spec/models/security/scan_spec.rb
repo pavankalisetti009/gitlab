@@ -319,7 +319,7 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
 
     let(:expected_scans) do
       [ninety_days_stale_succeeded_scan, stale_failed_scan, stale_created_scan,
-       stale_job_failed_scan, stale_report_errored_scan, stale_preparing_scan]
+        stale_job_failed_scan, stale_report_errored_scan, stale_preparing_scan]
     end
 
     subject { described_class.stale }
@@ -339,8 +339,8 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
 
       let(:expected_scans) do
         [ninety_days_stale_succeeded_scan, stale_failed_scan, stale_created_scan,
-         stale_job_failed_scan, stale_report_errored_scan, stale_preparing_scan,
-         sixty_days_stale_succeeded_scan, thirty_days_stale_succeeded_scan]
+          stale_job_failed_scan, stale_report_errored_scan, stale_preparing_scan,
+          sixty_days_stale_succeeded_scan, thirty_days_stale_succeeded_scan]
       end
 
       it { is_expected.to match_array(expected_scans) }

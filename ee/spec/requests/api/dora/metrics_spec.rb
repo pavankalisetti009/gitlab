@@ -64,7 +64,7 @@ RSpec.describe API::Dora::Metrics, feature_category: :dora_metrics do
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response).to match_array([{ 'date' => '2021-01-01', 'value' => value1 },
-                                              { 'date' => '2021-01-02', 'value' => value2 }])
+          { 'date' => '2021-01-02', 'value' => value2 }])
       end
     end
 
@@ -76,7 +76,7 @@ RSpec.describe API::Dora::Metrics, feature_category: :dora_metrics do
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response).to match_array([{ 'date' => '2021-01-01', 'value' => 1 },
-                                              { 'date' => '2021-01-02', 'value' => 102 }])
+          { 'date' => '2021-01-02', 'value' => 102 }])
       end
     end
 

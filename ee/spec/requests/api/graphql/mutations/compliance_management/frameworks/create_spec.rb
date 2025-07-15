@@ -103,7 +103,7 @@ RSpec.describe 'Create a Compliance Framework', feature_category: :compliance_ma
         let(:current_user) { namespace.owner }
 
         it_behaves_like 'a mutation that returns errors in the response', errors: ['Failed to create framework',
-                                                                                   'Namespace must be a group, user namespaces are not supported.']
+          'Namespace must be a group, user namespaces are not supported.']
 
         it 'does not create a new compliance framework' do
           expect { subject }.not_to change { namespace.compliance_management_frameworks.count }
