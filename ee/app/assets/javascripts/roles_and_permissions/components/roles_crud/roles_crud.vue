@@ -9,8 +9,8 @@ import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import groupRolesQuery from '../../graphql/group_roles.query.graphql';
 import instanceRolesQuery from '../../graphql/instance_roles.query.graphql';
 import DeleteRoleModal from '../delete_role_modal.vue';
-import RolesTable from './roles_table.vue';
-import RolesExport from './roles_export.vue';
+import RolesTable from '../roles_table/roles_table.vue';
+import RolesExport from '../roles_table/roles_export.vue';
 
 export default {
   i18n: {

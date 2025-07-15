@@ -6,7 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import groupRolesQuery from 'ee/roles_and_permissions/graphql/group_roles.query.graphql';
 import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.query.graphql';
-import RolesCrud from 'ee/roles_and_permissions/components/roles_table/roles_crud.vue';
+import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import RolesTable from 'ee/roles_and_permissions/components/roles_table/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 import RolesExport from 'ee/roles_and_permissions/components/roles_table/roles_export.vue';
