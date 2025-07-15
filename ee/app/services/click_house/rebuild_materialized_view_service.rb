@@ -115,7 +115,7 @@ module ClickHouse
     end
 
     def iterator
-      builder = ClickHouse::QueryBuilder.new(source_table_name)
+      builder = ClickHouse::Client::QueryBuilder.new(source_table_name)
       ClickHouse::Iterator.new(query_builder: builder, connection: connection, min_value: next_value,
         min_max_strategy: :order_limit)
     end
