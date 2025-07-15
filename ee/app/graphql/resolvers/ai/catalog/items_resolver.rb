@@ -10,10 +10,16 @@ module Resolvers
 
         type ::Types::Ai::Catalog::ItemInterface.connection_type, null: false
 
-        def resolve_with_lookahead
+        argument :item_type, ::Types::Ai::Catalog::ItemTypeEnum,
+          required: false,
+          description: 'Type of items to retrieve.'
+
+        def resolve_with_lookahead(item_type: nil)
           return ::Ai::Catalog::Item.none unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
-          apply_lookahead(::Ai::Catalog::Item.not_deleted)
+          items = ::Ai::Catalog::Item.not_deleted
+          items = items.with_item_type(item_type) if item_type
+          apply_lookahead(items)
         end
 
         def preloads

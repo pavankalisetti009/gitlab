@@ -9,9 +9,10 @@ RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog d
   let_it_be(:deleted_catalog_item) { create(:ai_catalog_item, project: project, public: true, deleted_at: 1.day.ago) }
   let(:nodes) { graphql_data_at(:ai_catalog_items, :nodes) }
   let(:current_user) { nil }
+  let(:args) { {} }
 
   let(:query) do
-    "{ #{query_nodes('AiCatalogItems', max_depth: 3)} }"
+    "{ #{query_nodes('AiCatalogItems', max_depth: 3, args: args)} }"
   end
 
   shared_examples 'a successful query' do
@@ -87,5 +88,28 @@ RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog d
 
     expect(graphql_data_at(:ai_catalog_items, :nodes, :versions, :nodes).size).to eq(4)
     expect(graphql_data_at(:ai_catalog_items, :nodes, :latest_version).compact.size).to eq(2)
+  end
+
+  describe 'item_type argument' do
+    let_it_be(:agent_type_item) { create(:ai_catalog_item, item_type: :agent, project: project, public: true) }
+    let_it_be(:flow_type_item) { create(:ai_catalog_item, item_type: :flow, project: project, public: true) }
+
+    context 'when not provided' do
+      it 'returns all catalog items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(nodes).to contain_exactly(a_graphql_entity_for(agent_type_item), a_graphql_entity_for(flow_type_item))
+      end
+    end
+
+    context 'when agent' do
+      let(:args) { { item_type: :AGENT } }
+
+      it 'returns only agents' do
+        post_graphql(query, current_user: current_user)
+
+        expect(nodes).to contain_exactly(a_graphql_entity_for(agent_type_item))
+      end
+    end
   end
 end
