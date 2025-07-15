@@ -9,7 +9,7 @@ scope module: :gitlab_subscriptions do
   resources :groups, only: [:new, :edit, :update, :create], path: 'subscriptions/groups',
     as: :gitlab_subscriptions_groups
   resources :trials, only: [:new, :create]
-  resource :subscriptions, only: [:new, :create] do
+  resource :subscriptions, only: [:new] do
     get :buy_minutes
     get :buy_storage
     get :payment_form

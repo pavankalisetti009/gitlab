@@ -48,10 +48,6 @@ module World
   def supported_countries
     ISO3166::Country.all.reject { |item| country_deny_list.include?(item.alpha2) }
   end
-
-  def alpha3_from_alpha2(alpha2)
-    ISO3166::Country[alpha2]&.alpha3
-  end
 end
 
 World.prepend_mod
