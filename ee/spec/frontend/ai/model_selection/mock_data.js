@@ -1,3 +1,10 @@
+export const mockListItems = [
+  { value: 'claude_3_5_sonnet_20240620', text: 'Claude Sonnet 3.5 - Anthropic' },
+  { value: 'claude_3_7_sonnet_20240620', text: 'Claude Sonnet 3.7 - Anthropic' },
+  { value: 'claude_3_haiku_20240307', text: 'Claude Haiku 3 - Anthropic' },
+  { value: '', text: 'GitLab Default (Claude Sonnet 3.7 - Anthropic)' },
+];
+
 export const mockCodeSuggestionsFeatureSettings = [
   {
     feature: 'code_completions',

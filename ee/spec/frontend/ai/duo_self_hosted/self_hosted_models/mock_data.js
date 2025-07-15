@@ -1,5 +1,13 @@
 import { BEDROCK_DUMMY_ENDPOINT } from 'ee/ai/duo_self_hosted/self_hosted_models/constants';
 
+export const mockListItems = [
+  { value: 'CLAUDE_3', text: 'Claude 3', releaseState: 'GA' },
+  { value: 'CODELLAMA', text: 'Code Llama', releaseState: 'BETA' },
+  { value: 'CODEGEMMA', text: 'CodeGemma', releaseState: 'BETA' },
+  { value: 'DEEPSEEKCODER', text: 'DeepSeek Coder', releaseState: 'BETA' },
+  { value: 'GPT', text: 'GPT', releaseState: 'GA' },
+];
+
 export const mockSelfHostedModel = {
   id: 'gid://gitlab/Ai::SelfHostedModel/1',
   name: 'mock-self-hosted-model',
