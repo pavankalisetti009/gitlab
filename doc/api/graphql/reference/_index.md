@@ -27678,6 +27678,7 @@ GitLab Duo Agent Platform session.
 | <a id="duoworkflowgoal"></a>`goal` | [`String`](#string) | Goal of the session. |
 | <a id="duoworkflowhumanstatus"></a>`humanStatus` | [`String!`](#string) | Human-readable status of the session. |
 | <a id="duoworkflowid"></a>`id` | [`ID!`](#id) | ID of the session. |
+| <a id="duoworkflowlastexecutorlogsurl"></a>`lastExecutorLogsUrl` | [`String`](#string) | URL to the latest executor logs of the workflow. |
 | <a id="duoworkflowmcpenabled"></a>`mcpEnabled` | [`Boolean`](#boolean) | Has MCP been enabled for the namespace. |
 | <a id="duoworkflowpreapprovedagentprivilegesnames"></a>`preApprovedAgentPrivilegesNames` | [`[String!]`](#string) | Privileges pre-approved for the agent during execution. |
 | <a id="duoworkflowproject"></a>`project` | [`Project!`](#project) | Project that the session is in. |
