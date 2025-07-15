@@ -11,7 +11,6 @@ import {
   addActivationCode,
   licensedToHeaderText,
   subscriptionDetailsHeaderText,
-  subscriptionTypes,
 } from '../constants';
 import SubscriptionActivationModal from './subscription_activation_modal.vue';
 import SubscriptionDetailsCard from './subscription_details_card.vue';
@@ -96,9 +95,6 @@ export default {
     subscriptionHistory() {
       return this.hasSubscriptionHistory ? this.subscriptionList : [this.subscription];
     },
-    isLegacySubscription() {
-      return this.hasSubscription && this.subscription.type === subscriptionTypes.LEGACY_LICENSE;
-    },
   },
   watch: {
     licenseError(error, prevError) {
@@ -111,9 +107,6 @@ export default {
   },
   methods: {
     ...mapActions(['removeLicense']),
-    showActivationModal() {
-      this.activationModalVisible = true;
-    },
     showAlert(errorMsg) {
       createAlert({ message: errorMsg });
     },
