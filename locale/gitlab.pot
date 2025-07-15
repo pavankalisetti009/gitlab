@@ -77536,6 +77536,9 @@ msgstr ""
 msgid "is read-only"
 msgstr ""
 
+msgid "is reserved and cannot be used"
+msgstr ""
+
 msgid "is too large. Maximum size allowed is %{size}"
 msgstr ""
 
