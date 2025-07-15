@@ -16,7 +16,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       goal: 'test-goal',
       workflow: workflow,
       workflow_oauth_token: 'test-oauth-token',
-      workflow_service_token: 'test-service-token'
+      workflow_service_token: 'test-service-token',
+      workflow_metadata: { key: 'val' }.to_json
     }
   end
 
