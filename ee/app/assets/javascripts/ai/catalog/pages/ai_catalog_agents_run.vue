@@ -16,12 +16,12 @@ export default {
   },
   data() {
     return {
-      aiCatalogItem: {},
+      aiCatalogAgent: {},
       isSubmitting: false,
     };
   },
   apollo: {
-    aiCatalogItem: {
+    aiCatalogAgent: {
       query: aiCatalogAgentQuery,
       variables() {
         return {
@@ -35,13 +35,10 @@ export default {
   },
   computed: {
     isLoading() {
-      return this.$apollo.queries.aiCatalogItem.loading;
+      return this.$apollo.queries.aiCatalogAgent.loading;
     },
     pageTitle() {
-      return `${s__('AICatalog|Run agent')}: ${this.aiCatalogItem.name}`;
-    },
-    defaultUserPrompt() {
-      return this.aiCatalogItem?.userPrompt || '';
+      return `${s__('AICatalog|Run agent')}: ${this.aiCatalogAgent.name}`;
     },
   },
   methods: {
@@ -70,7 +67,7 @@ export default {
 
       <ai-catalog-agent-run-form
         :is-submitting="isSubmitting"
-        :default-user-prompt="defaultUserPrompt"
+        :ai-catalog-agent="aiCatalogAgent"
         @submit="onSubmit"
       />
     </template>

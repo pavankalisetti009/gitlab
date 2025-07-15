@@ -8,7 +8,7 @@ import createAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/create_ai_cata
 import AiCatalogAgentsNew from 'ee/ai/catalog/pages/ai_catalog_agents_new.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import {
-  mockAgentProject,
+  mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
   mockCreateAiCatalogAgentErrorMutation,
 } from '../mock_data';
@@ -39,7 +39,7 @@ describe('AiCatalogAgentsNew', () => {
   describe('Form Submit', () => {
     let mockModalShow;
 
-    const { name, description, project } = mockAgentProject;
+    const { name, description, project } = mockAgent;
     const formValues = {
       name,
       description,

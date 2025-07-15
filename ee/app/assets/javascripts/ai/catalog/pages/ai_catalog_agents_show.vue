@@ -17,12 +17,15 @@ export default {
     PageHeading,
   },
   apollo: {
-    aiCatalogItem: {
+    aiCatalogAgent: {
       query: aiCatalogAgentQuery,
       variables() {
         return {
           id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
         };
+      },
+      update(data) {
+        return data?.aiCatalogItem;
       },
       result(res) {
         this.onAgentQueryResult(res);
@@ -31,7 +34,7 @@ export default {
   },
   data() {
     return {
-      aiCatalogItem: null,
+      aiCatalogAgent: null,
       isLoading: false,
       updatedValues: {
         name: '',
@@ -43,7 +46,13 @@ export default {
   },
   computed: {
     agentName() {
-      return this.aiCatalogItem?.name || '';
+      return this.aiCatalogAgent?.name || '';
+    },
+    agentSystemPrompt() {
+      return this.aiCatalogAgent?.versions?.nodes?.[0]?.systemPrompt;
+    },
+    agentUserPrompt() {
+      return this.aiCatalogAgent?.versions?.nodes?.[0]?.userPrompt;
     },
     pageTitle() {
       return `${s__('AICatalog|Edit agent')}: ${this.agentName}`;
@@ -73,19 +82,19 @@ export default {
 </script>
 
 <template>
-  <div v-if="aiCatalogItem">
+  <div v-if="aiCatalogAgent">
     <page-heading :heading="pageTitle" />
     <p>
       {{ s__('AICatalog|Modify the agent settings and configuration.') }}
     </p>
     <ai-catalog-agent-form
-      v-if="aiCatalogItem"
+      v-if="aiCatalogAgent"
       mode="edit"
-      :project-id="aiCatalogItem.project.id"
-      :name="aiCatalogItem.name"
-      :description="aiCatalogItem.description"
-      :system-prompt="aiCatalogItem.systemPrompt"
-      :user-prompt="aiCatalogItem.userPrompt"
+      :project-id="aiCatalogAgent.project.id"
+      :name="aiCatalogAgent.name"
+      :description="aiCatalogAgent.description"
+      :system-prompt="agentSystemPrompt"
+      :user-prompt="agentUserPrompt"
       :is-loading="isLoading"
       @submit="handleSubmit"
     />
