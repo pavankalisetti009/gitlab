@@ -288,12 +288,8 @@ export default {
               parameters: lastMessage.tool_info.args || {},
             };
           }
-          // DON'T send actionResponse - wait for user approval
         } else {
           this.pendingToolCall = null;
-
-          // Only send actionResponse when NOT waiting for approval
-          this.socketManager?.send({ actionResponse: { requestID: action.requestID } });
         }
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
