@@ -4,8 +4,7 @@ module Mutations
   module SecurityPolicy # rubocop:disable Gitlab/BoundedContexts -- Matches CreateSecurityPolicyProject and should be fixed together
     class CreateSecurityPolicyProjectAsync < BaseMutation
       graphql_name 'SecurityPolicyProjectCreateAsync'
-      description '**Status**: Experiment. ' \
-        'Creates and assigns a security policy project for the given project or group (`full_path`) async'
+      description 'Creates and assigns a security policy project for the given project or group (`full_path`) async'
 
       include FindsProjectOrGroupForSecurityPolicies
 
