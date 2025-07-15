@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class EpicIssue < ApplicationRecord
-  include Importable
   include EpicTreeSorting
   include EachBatch
   include AfterCommitQueue
@@ -9,7 +8,7 @@ class EpicIssue < ApplicationRecord
 
   validates :epic, :issue, presence: true
   validates :issue, uniqueness: true
-  validates :work_item_parent_link, presence: true, on: :create, unless: :importing?
+  validates :work_item_parent_link, presence: true, on: :create
 
   belongs_to :epic
   belongs_to :issue
