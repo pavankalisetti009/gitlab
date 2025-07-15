@@ -1,11 +1,15 @@
 import { GlForm, GlFormFields } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogAgentRunForm from 'ee/ai/catalog/components/ai_catalog_agent_run_form.vue';
+import { mockAgent } from '../mock_data';
 
 describe('AiCatalogAgentRunForm', () => {
   let wrapper;
 
-  const mockUserPrompt = 'Mock user prompt';
+  const defaultProps = {
+    isSubmitting: false,
+    aiCatalogAgent: mockAgent,
+  };
 
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
@@ -15,6 +19,7 @@ describe('AiCatalogAgentRunForm', () => {
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogAgentRunForm, {
       propsData: {
+        ...defaultProps,
         ...props,
       },
       stubs: {
@@ -32,25 +37,19 @@ describe('AiCatalogAgentRunForm', () => {
     expect(findSubmitButton().text()).toBe('Run (Coming soon)');
   });
 
-  it('renders form fields', () => {
+  it('renders form fields with correct initial values', () => {
     expect(findFormFields().props('fields')).toEqual({
       userPrompt: expect.any(Object),
     });
-    expect(findFormFields().props('values')).toEqual({
-      userPrompt: '',
-    });
-  });
-
-  it('renders form fields with correct initial values', () => {
-    createComponent({
-      props: { defaultUserPrompt: mockUserPrompt },
-    });
-
-    expect(findFormFields().props('values').userPrompt).toBe(mockUserPrompt);
+    expect(findFormFields().props('values').userPrompt).toBe(
+      mockAgent.versions.nodes[0].userPrompt,
+    );
   });
 
   describe('form submission', () => {
     it('emits form values on form submit', () => {
+      const mockUserPrompt = 'Mock user prompt';
+
       findUserPromptField().vm.$emit('update', mockUserPrompt);
       findForm().vm.$emit('submit', {
         preventDefault: jest.fn(),

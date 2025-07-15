@@ -1,10 +1,27 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
+#import "../fragments/ai_catalog_agent_version.fragment.graphql"
 
-query aiCatalogAgent($id: AiCatalogItemID!) {
+query aiCatalogAgent(
+  $id: AiCatalogItemID!
+  $firstVersions: Int = 1
+  $lastVersions: Int
+  $afterVersions: String
+  $beforeVersions: String
+) {
   aiCatalogItem(id: $id) {
     ...BaseAiCatalogItem
     project {
       id
+    }
+    versions(
+      first: $firstVersions
+      last: $lastVersions
+      after: $afterVersions
+      before: $beforeVersions
+    ) {
+      nodes {
+        ...BaseAiCatalogAgentVersion
+      }
     }
   }
 }

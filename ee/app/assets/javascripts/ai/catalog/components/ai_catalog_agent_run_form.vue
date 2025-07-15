@@ -21,16 +21,16 @@ export default {
       required: false,
       default: false,
     },
-    defaultUserPrompt: {
-      type: String,
+    aiCatalogAgent: {
+      type: Object,
       required: false,
-      default: '',
+      default: () => ({}),
     },
   },
   data() {
     return {
       formValues: {
-        userPrompt: this.defaultUserPrompt,
+        userPrompt: this.aiCatalogAgent.versions?.nodes?.[0]?.userPrompt,
       },
     };
   },
