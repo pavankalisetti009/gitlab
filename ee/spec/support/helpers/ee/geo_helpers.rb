@@ -105,9 +105,13 @@ module EE
         event :test
         event :another_test
 
+        # rubocop:disable Gitlab/ModuleWithInstanceVariables -- we're in a stubbed class definition
+        @model_class = model_class
+
         def self.model
-          model_class.constantize
+          @model_class.constantize
         end
+        # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
         def self.replicable_title
           s_('Geo|Dummy')
