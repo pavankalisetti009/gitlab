@@ -232,6 +232,10 @@ module EE
 
       has_many :configured_ai_catalog_items, class_name: '::Ai::Catalog::ItemConsumer', inverse_of: :project
 
+      has_one :ready_active_context_code_repository,
+        -> { ready_with_active_connection },
+        class_name: 'Ai::ActiveContext::Code::Repository'
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level
@@ -443,6 +447,18 @@ module EE
       scope :without_zoekt_repositories_for_index, ->(index_id) {
         where("NOT EXISTS (SELECT 1 FROM zoekt_repositories WHERE zoekt_repositories.project_id = projects.id " \
           "AND zoekt_repositories.zoekt_index_id = ?)", index_id)
+      }
+
+      # can't filter with id on projects because project_id is used as partitioning key
+      # on p_ai_active_context_code_repositories, query by project_id enables partition pruning
+      scope :with_ready_active_context_code_repository_project_ids, ->(project_ids) {
+        unless project_ids.present?
+          raise ArgumentError, "project_ids must be a non-empty array to enable " \
+            "partition scan on active_context_code_repository"
+        end
+
+        joins(:ready_active_context_code_repository)
+          .where(p_ai_active_context_code_repositories: { project_id: project_ids })
       }
 
       delegate :shared_runners_seconds, to: :statistics, allow_nil: true

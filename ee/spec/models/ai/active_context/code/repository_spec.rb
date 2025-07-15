@@ -157,6 +157,32 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
         expect(result).to contain_exactly(repository_with_active_connection)
       end
     end
+
+    describe '.ready_with_active_connection' do
+      it 'does not return repositories with inactive connection' do
+        expect(described_class.ready_with_active_connection).to be_empty
+      end
+
+      context 'when connection is active' do
+        before do
+          repository.active_context_connection.update!(active: true)
+        end
+
+        it 'returns repositories with active connection' do
+          expect(described_class.ready_with_active_connection).to be_empty
+        end
+
+        context 'when connection is active and repository is ready' do
+          before do
+            repository.update!(state: :ready)
+          end
+
+          it 'returns repositories with active connection' do
+            expect(described_class.ready_with_active_connection).to contain_exactly(repository)
+          end
+        end
+      end
+    end
   end
 
   describe 'table partitioning' do
