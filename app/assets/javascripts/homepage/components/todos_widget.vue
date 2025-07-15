@@ -105,7 +105,7 @@ export default {
 <template>
   <visibility-change-detector @visible="reload">
     <div class="gl-flex gl-items-center gl-justify-between gl-gap-2">
-      <h4 class="gl-grow">{{ __('To-do items') }}</h4>
+      <h4 class="gl-heading-4 gl-my-4 gl-grow">{{ __('To-do items') }}</h4>
 
       <gl-collapsible-listbox v-model="filter" :items="$options.FILTER_OPTIONS" />
     </div>
