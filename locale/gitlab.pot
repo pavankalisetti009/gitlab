@@ -58250,6 +58250,9 @@ msgstr ""
 msgid "SecurityReports|Undo dismiss"
 msgstr ""
 
+msgid "SecurityReports|Vulnerabilities over time"
+msgstr ""
+
 msgid "SecurityReports|Vulnerability Resolution available"
 msgstr ""
 

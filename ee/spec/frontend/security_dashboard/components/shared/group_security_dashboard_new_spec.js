@@ -6,7 +6,7 @@ import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/consta
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/group_security_dashboard_new.vue';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
-import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
+import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
 
 jest.mock('~/alert');
 
@@ -52,7 +52,7 @@ describe('Group Security Dashboard (new version) - Component', () => {
     it('renders the panels with the correct configuration', () => {
       const firstPanel = getFirstPanel();
 
-      expect(firstPanel.component).toBe(VulnerabilitiesOverTimePanel);
+      expect(firstPanel.component).toBe(GroupVulnerabilitiesOverTimePanel);
       expect(firstPanel.gridAttributes).toEqual({
         width: 6,
         height: 4,
