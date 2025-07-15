@@ -20,13 +20,8 @@ export default {
     };
   },
   methods: {
-    async handleSubmit(formValues) {
+    async handleSubmit(input) {
       this.isSubmitting = true;
-      // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/555081
-      const input = {
-        ...formValues,
-        public: true,
-      };
       try {
         const { data } = await this.$apollo.mutate({
           mutation: createAiCatalogAgent,

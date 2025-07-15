@@ -1,17 +1,21 @@
-import { GlAlert, GlFormFields } from '@gitlab/ui';
+import { GlFormFields, GlFormRadioGroup } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 
 describe('AiCatalogAgentForm', () => {
   let wrapper;
 
-  const findGlAlert = () => wrapper.findComponent(GlAlert);
+  const findErrorAlert = () => wrapper.findByTestId('agent-form-error-alert');
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findProjectIdField = () => wrapper.findByTestId('agent-form-input-project-id');
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('agent-form-textarea-description');
   const findSystemPromptField = () => wrapper.findByTestId('agent-form-textarea-system-prompt');
   const findUserPromptField = () => wrapper.findByTestId('agent-form-textarea-user-prompt');
+  const findVisibilityLevel = () => wrapper.findByTestId('agent-form-radio-group-visibility-level');
+  const findVisibilityLevelAlert = () => wrapper.findByTestId('agent-form-visibility-level-alert');
+  const findFormRadioGroup = () => findVisibilityLevel().findComponent(GlFormRadioGroup);
   const findSubmitButton = () => wrapper.findByTestId('agent-form-submit-button');
 
   const defaultProps = {
@@ -19,12 +23,13 @@ describe('AiCatalogAgentForm', () => {
     isLoading: false,
   };
 
-  const defaultFormValues = {
+  const initialValues = {
     projectId: 'gid://gitlab/Project/1000000',
     name: 'My AI Agent',
     description: 'A helpful AI assistant',
     systemPrompt: 'You are a helpful assistant',
     userPrompt: 'Help me with coding',
+    public: true,
   };
 
   const createWrapper = (props = {}) => {
@@ -43,25 +48,21 @@ describe('AiCatalogAgentForm', () => {
     it('does not render error alert', () => {
       createWrapper();
 
-      expect(findGlAlert().exists()).toBe(false);
+      expect(findErrorAlert().exists()).toBe(false);
     });
 
     it('renders the form with the correct initial values when props are provided', () => {
-      const initialProps = {
-        ...defaultFormValues,
-        mode: 'edit',
-      };
+      createWrapper({ initialValues, mode: 'edit' });
 
-      createWrapper(initialProps);
-
-      expect(findProjectIdField().props('value')).toBe(defaultFormValues.projectId);
-      expect(findNameField().props('value')).toBe(defaultFormValues.name);
-      expect(findDescriptionField().props('value')).toBe(defaultFormValues.description);
-      expect(findSystemPromptField().props('value')).toBe(defaultFormValues.systemPrompt);
-      expect(findUserPromptField().props('value')).toBe(defaultFormValues.userPrompt);
+      expect(findProjectIdField().props('value')).toBe(initialValues.projectId);
+      expect(findNameField().props('value')).toBe(initialValues.name);
+      expect(findDescriptionField().props('value')).toBe(initialValues.description);
+      expect(findSystemPromptField().props('value')).toBe(initialValues.systemPrompt);
+      expect(findUserPromptField().props('value')).toBe(initialValues.userPrompt);
+      expect(findVisibilityLevel().attributes('checked')).toBe(String(VISIBILITY_LEVEL_PUBLIC));
     });
 
-    it('renders the form with empty values (except tmp project ID) when no props are provided', () => {
+    it('renders the form with default values when no props are provided', () => {
       createWrapper();
 
       expect(findProjectIdField().props('value')).toBe('gid://gitlab/Project/1000000');
@@ -69,7 +70,64 @@ describe('AiCatalogAgentForm', () => {
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
       expect(findUserPromptField().props('value')).toBe('');
+      expect(findVisibilityLevel().attributes('checked')).toBe(String(VISIBILITY_LEVEL_PRIVATE));
     });
+  });
+
+  describe('Visibility Level', () => {
+    describe.each`
+      selectedVisibility | expectedAlertText
+      ${'private'}       | ${false}
+      ${'public'}        | ${'A public agent can be made private only if it is not used.'}
+    `(
+      'when creating an agent and "$selectedVisibility" visibility is selected',
+      ({ selectedVisibility, expectedAlertText }) => {
+        beforeEach(() => {
+          createWrapper();
+          const visibilityLevel =
+            selectedVisibility === 'public' ? VISIBILITY_LEVEL_PUBLIC : VISIBILITY_LEVEL_PRIVATE;
+          findFormRadioGroup().vm.$emit('input', visibilityLevel);
+        });
+
+        it(`${expectedAlertText ? 'renders' : 'does not render'} visibility alert`, () => {
+          expect(findVisibilityLevelAlert().exists()).toBe(Boolean(expectedAlertText));
+          if (expectedAlertText) {
+            expect(findVisibilityLevelAlert().text()).toBe(expectedAlertText);
+          }
+        });
+      },
+    );
+
+    describe.each`
+      initialVisibility | selectedVisibility | expectedAlertText
+      ${'private'}      | ${'private'}       | ${false}
+      ${'private'}      | ${'public'}        | ${'A public agent can be made private only if it is not used.'}
+      ${'public'}       | ${'private'}       | ${'This agent can be made private if it is not used.'}
+      ${'public'}       | ${'public'}        | ${false}
+    `(
+      'when editing a $initialVisibility agent and "$selectedVisibility" visibility is selected',
+      ({ initialVisibility, selectedVisibility, expectedAlertText }) => {
+        beforeEach(() => {
+          createWrapper({
+            mode: 'edit',
+            initialValues: {
+              ...initialValues,
+              public: initialVisibility === 'public',
+            },
+          });
+          const visibilityLevel =
+            selectedVisibility === 'public' ? VISIBILITY_LEVEL_PUBLIC : VISIBILITY_LEVEL_PRIVATE;
+          findFormRadioGroup().vm.$emit('input', visibilityLevel);
+        });
+
+        it(`${expectedAlertText ? 'renders' : 'does not render'} visibility alert`, () => {
+          expect(findVisibilityLevelAlert().exists()).toBe(Boolean(expectedAlertText));
+          if (expectedAlertText) {
+            expect(findVisibilityLevelAlert().text()).toBe(expectedAlertText);
+          }
+        });
+      },
+    );
   });
 
   describe('Loading Prop', () => {
@@ -88,34 +146,30 @@ describe('AiCatalogAgentForm', () => {
 
   describe('Form Submission', () => {
     it('emits form values when user clicks submit', async () => {
-      const initialProps = {
-        ...defaultFormValues,
-        mode: 'edit',
-      };
-
-      createWrapper(initialProps);
+      createWrapper({ initialValues, mode: 'edit' });
 
       await findFormFields().vm.$emit('submit');
 
-      expect(wrapper.emitted('submit')).toEqual([[defaultFormValues]]);
+      expect(wrapper.emitted('submit')).toEqual([[initialValues]]);
     });
 
     it('trims the form values before emitting them', async () => {
       const addRandomSpacesToString = (value) => `  ${value}  `;
 
       const formValuesWithRandomSpaces = {
-        projectId: addRandomSpacesToString(defaultFormValues.projectId),
-        name: addRandomSpacesToString(defaultFormValues.name),
-        description: addRandomSpacesToString(defaultFormValues.description),
-        systemPrompt: addRandomSpacesToString(defaultFormValues.systemPrompt),
-        userPrompt: addRandomSpacesToString(defaultFormValues.userPrompt),
+        ...initialValues,
+        projectId: addRandomSpacesToString(initialValues.projectId),
+        name: addRandomSpacesToString(initialValues.name),
+        description: addRandomSpacesToString(initialValues.description),
+        systemPrompt: addRandomSpacesToString(initialValues.systemPrompt),
+        userPrompt: addRandomSpacesToString(initialValues.userPrompt),
       };
 
-      createWrapper(formValuesWithRandomSpaces);
+      createWrapper({ initialValues: formValuesWithRandomSpaces });
 
       await findFormFields().vm.$emit('submit');
 
-      expect(wrapper.emitted('submit')).toEqual([[defaultFormValues]]);
+      expect(wrapper.emitted('submit')).toEqual([[initialValues]]);
     });
   });
 
@@ -127,17 +181,17 @@ describe('AiCatalogAgentForm', () => {
     });
 
     it('renders error alert', () => {
-      expect(findGlAlert().text()).toBe(mockErrorMessage);
+      expect(findErrorAlert().text()).toBe(mockErrorMessage);
     });
 
     it('renders error alert with list for multiple errors', () => {
       createWrapper({ errorMessages: ['error1', 'error2'] });
 
-      expect(findGlAlert().findAll('li')).toHaveLength(2);
+      expect(findErrorAlert().findAll('li')).toHaveLength(2);
     });
 
     it('emits dismiss-error event', () => {
-      findGlAlert().vm.$emit('dismiss');
+      findErrorAlert().vm.$emit('dismiss');
 
       expect(wrapper.emitted('dismiss-error')).toHaveLength(1);
     });
