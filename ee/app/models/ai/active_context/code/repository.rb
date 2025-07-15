@@ -54,6 +54,8 @@ module Ai
           joins(:active_context_connection).where(active_context_connection: { active: true })
         }
 
+        scope :ready_with_active_connection, -> { ready.with_active_connection }
+
         private
 
         def set_last_commit
