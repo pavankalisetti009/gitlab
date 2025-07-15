@@ -60,36 +60,9 @@ RSpec.describe 'Groups > Billing', :js, :saas, feature_category: :subscription_m
         expect(page).not_to have_link("Renew")
       end
 
-      context 'with targeted message' do
-        before do
-          create(:targeted_message_namespace, namespace: group)
-        end
-
-        it 'is not shown to non-owner' do
-          sign_in(auditor)
-          visit group_billings_path(group)
-
-          expect(page).not_to have_content("Get access to both GitLab Premium and Duo Pro")
-        end
-
-        it 'is shown to owner' do
-          visit group_billings_path(group)
-
-          expect(page).to have_content("Get access to both GitLab Premium and Duo Pro")
-        end
-      end
-
-      context 'with disabled targeted message' do
-        before do
-          stub_feature_flags(targeted_messages_admin_ui: false)
-          create(:targeted_message_namespace, namespace: group)
-        end
-
-        it 'is not shown' do
-          visit group_billings_path(group)
-
-          expect(page).not_to have_content("Get access to both GitLab Premium and Duo Pro")
-        end
+      it_behaves_like 'targeted message interactions' do
+        let(:non_owner) { auditor }
+        let(:path) { group_billings_path(group) }
       end
     end
 
