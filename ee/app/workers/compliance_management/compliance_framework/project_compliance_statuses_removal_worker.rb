@@ -15,9 +15,6 @@ module ComplianceManagement
       def perform(project_id, framework_id, params = {})
         return unless project_id && framework_id
 
-        return unless Feature.enabled?(:enable_stale_compliance_status_removal,
-          ComplianceManagement::Framework.find_by_id(framework_id)&.namespace)
-
         # In case the framework was reapplied to the project till the time this job started,
         # don't delete any of the compliance statuses
         return if !params["skip_framework_check"] &&
