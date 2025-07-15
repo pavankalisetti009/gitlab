@@ -57,7 +57,8 @@ module API
               workflow_oauth_token: oauth_token.plaintext_token,
               workflow_service_token: duo_workflow_token[:token],
               use_service_account: params[:use_service_account],
-              source_branch: params[:source_branch]
+              source_branch: params[:source_branch],
+              workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
             }
           end
 
