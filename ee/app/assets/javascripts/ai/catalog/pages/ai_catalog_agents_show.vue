@@ -6,13 +6,13 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
-import AiCatalogAgentCreateEditForm from '../components/ai_catalog_agent_create_edit_form.vue';
+import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 import { TYPENAME_AI_CATALOG_ITEM } from '../constants';
 
 export default {
   name: 'AiCatalogAgentsShow',
   components: {
-    AiCatalogAgentCreateEditForm,
+    AiCatalogAgentForm,
     GlModal,
     PageHeading,
   },
@@ -78,9 +78,10 @@ export default {
     <p>
       {{ s__('AICatalog|Modify the agent settings and configuration.') }}
     </p>
-    <ai-catalog-agent-create-edit-form
+    <ai-catalog-agent-form
       v-if="aiCatalogItem"
       mode="edit"
+      :project-id="aiCatalogItem.project.id"
       :name="aiCatalogItem.name"
       :description="aiCatalogItem.description"
       :system-prompt="aiCatalogItem.systemPrompt"

@@ -10,6 +10,8 @@ import { __, s__ } from '~/locale';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
+const tmpProjectId = 'gid://gitlab/Project/1000000';
+
 export default {
   components: {
     AiCatalogFormButtons,
@@ -27,6 +29,11 @@ export default {
     isLoading: {
       type: Boolean,
       required: true,
+    },
+    projectId: {
+      type: String,
+      required: false,
+      default: tmpProjectId,
     },
     name: {
       type: String,
@@ -52,6 +59,7 @@ export default {
   data() {
     return {
       formValues: {
+        projectId: this.projectId,
         name: this.name,
         description: this.description,
         systemPrompt: this.systemPrompt,
@@ -61,20 +69,90 @@ export default {
   },
   computed: {
     formId() {
-      return uniqueId('ai-catalog-agent-create-edit-form-');
+      return uniqueId('ai-catalog-agent-form-');
     },
     submitButtonText() {
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      const tmpComingSoonLabel = ' (Coming soon)';
       if (this.mode === 'create') {
-        return s__('AICatalog|Create agent') + tmpComingSoonLabel;
+        return s__('AICatalog|Create agent');
       }
-      return s__('AICatalog|Save changes') + tmpComingSoonLabel;
+      // eslint-disable-next-line @gitlab/require-i18n-strings
+      return `${s__('AICatalog|Save changes')} (Coming soon)`;
+    },
+    fields() {
+      return {
+        projectId: {
+          label: s__('AICatalog|Project ID'),
+          validators: createFieldValidators({
+            requiredLabel: s__('AICatalog|Project ID is required.'),
+          }),
+          inputAttrs: {
+            'data-testid': 'agent-form-input-project-id',
+            placeholder: tmpProjectId,
+            disabled: this.mode === 'edit',
+          },
+          groupAttrs: {
+            labelDescription: s__(
+              'AICatalog|Select a project for your AI agent to be associated with.',
+            ),
+          },
+        },
+        name: {
+          label: __('Name'),
+          validators: createFieldValidators({
+            requiredLabel: s__('AICatalog|Name is required.'),
+            maxLength: MAX_LENGTH_NAME,
+          }),
+          inputAttrs: {
+            'data-testid': 'agent-form-input-name',
+            placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
+          },
+          groupAttrs: {
+            labelDescription: s__('AICatalog|Choose a memorable name for your AI agent.'),
+          },
+        },
+        description: {
+          label: __('Description'),
+          validators: createFieldValidators({
+            requiredLabel: s__('AICatalog|Description is required.'),
+            maxLength: MAX_LENGTH_DESCRIPTION,
+          }),
+          groupAttrs: {
+            labelDescription: s__(
+              'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
+            ),
+          },
+        },
+        systemPrompt: {
+          label: s__('AICatalog|System Prompt'),
+          validators: createFieldValidators({
+            requiredLabel: s__('AICatalog|System Prompt is required.'),
+            maxLength: MAX_LENGTH_PROMPT,
+          }),
+          groupAttrs: {
+            labelDescription: s__(
+              "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
+            ),
+          },
+        },
+        userPrompt: {
+          label: s__('AICatalog|User Prompt'),
+          validators: createFieldValidators({
+            requiredLabel: s__('AICatalog|User Prompt is required.'),
+            maxLength: MAX_LENGTH_PROMPT,
+          }),
+          groupAttrs: {
+            labelDescription: s__(
+              'AICatalog|Provide default instructions or context that will be included with every user interaction.',
+            ),
+          },
+        },
+      };
     },
   },
   methods: {
     handleSubmit() {
       const trimmedFormValues = {
+        projectId: this.formValues.projectId.trim(),
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         systemPrompt: this.formValues.systemPrompt.trim(),
@@ -83,68 +161,11 @@ export default {
       this.$emit('submit', trimmedFormValues);
     },
   },
-  fields: {
-    name: {
-      label: __('Name'),
-      validators: createFieldValidators({
-        requiredLabel: s__('AICatalog|Name is required.'),
-        maxLength: MAX_LENGTH_NAME,
-      }),
-      inputAttrs: {
-        'data-testid': 'agent-form-input-name',
-        placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
-      },
-      groupAttrs: {
-        labelDescription: s__('AICatalog|Choose a memorable name for your AI agent.'),
-      },
-    },
-    description: {
-      label: __('Description'),
-      validators: createFieldValidators({
-        requiredLabel: s__('AICatalog|Description is required.'),
-        maxLength: MAX_LENGTH_DESCRIPTION,
-      }),
-      groupAttrs: {
-        labelDescription: s__(
-          'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
-        ),
-      },
-    },
-    systemPrompt: {
-      label: s__('AICatalog|System Prompt'),
-      validators: createFieldValidators({
-        requiredLabel: s__('AICatalog|System Prompt is required.'),
-        maxLength: MAX_LENGTH_PROMPT,
-      }),
-      groupAttrs: {
-        labelDescription: s__(
-          "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
-        ),
-      },
-    },
-    userPrompt: {
-      label: s__('AICatalog|User Prompt'),
-      validators: createFieldValidators({
-        requiredLabel: s__('AICatalog|User Prompt is required.'),
-        maxLength: MAX_LENGTH_PROMPT,
-      }),
-      groupAttrs: {
-        labelDescription: s__(
-          'AICatalog|Provide default instructions or context that will be included with every user interaction.',
-        ),
-      },
-    },
-  },
 };
 </script>
 <template>
   <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
-    <gl-form-fields
-      v-model="formValues"
-      :form-id="formId"
-      :fields="$options.fields"
-      @submit="handleSubmit"
-    >
+    <gl-form-fields v-model="formValues" :form-id="formId" :fields="fields" @submit="handleSubmit">
       <template #input(description)="{ id, input, value, blur, validation }">
         <gl-form-textarea
           :id="id"

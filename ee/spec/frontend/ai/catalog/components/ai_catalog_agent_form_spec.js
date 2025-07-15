@@ -1,11 +1,12 @@
 import { GlFormFields } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import AiCatalogAgentCreateEditForm from 'ee/ai/catalog/components/ai_catalog_agent_create_edit_form.vue';
+import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 
 describe('AiCatalogAgentForm', () => {
   let wrapper;
 
   const findFormFields = () => wrapper.findComponent(GlFormFields);
+  const findProjectIdField = () => wrapper.findByTestId('agent-form-input-project-id');
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('agent-form-textarea-description');
   const findSystemPromptField = () => wrapper.findByTestId('agent-form-textarea-system-prompt');
@@ -18,6 +19,7 @@ describe('AiCatalogAgentForm', () => {
   };
 
   const defaultFormValues = {
+    projectId: 'gid://gitlab/Project/1000000',
     name: 'My AI Agent',
     description: 'A helpful AI assistant',
     systemPrompt: 'You are a helpful assistant',
@@ -25,7 +27,7 @@ describe('AiCatalogAgentForm', () => {
   };
 
   const createWrapper = (props = {}) => {
-    wrapper = shallowMountExtended(AiCatalogAgentCreateEditForm, {
+    wrapper = shallowMountExtended(AiCatalogAgentForm, {
       propsData: {
         ...defaultProps,
         ...props,
@@ -45,15 +47,17 @@ describe('AiCatalogAgentForm', () => {
 
       createWrapper(initialProps);
 
+      expect(findProjectIdField().props('value')).toBe(defaultFormValues.projectId);
       expect(findNameField().props('value')).toBe(defaultFormValues.name);
       expect(findDescriptionField().props('value')).toBe(defaultFormValues.description);
       expect(findSystemPromptField().props('value')).toBe(defaultFormValues.systemPrompt);
       expect(findUserPromptField().props('value')).toBe(defaultFormValues.userPrompt);
     });
 
-    it('renders the form with empty values when no props are provided', () => {
+    it('renders the form with empty values (except tmp project ID) when no props are provided', () => {
       createWrapper();
 
+      expect(findProjectIdField().props('value')).toBe('gid://gitlab/Project/1000000');
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
@@ -93,6 +97,7 @@ describe('AiCatalogAgentForm', () => {
       const addRandomSpacesToString = (value) => `  ${value}  `;
 
       const formValuesWithRandomSpaces = {
+        projectId: addRandomSpacesToString(defaultFormValues.projectId),
         name: addRandomSpacesToString(defaultFormValues.name),
         description: addRandomSpacesToString(defaultFormValues.description),
         systemPrompt: addRandomSpacesToString(defaultFormValues.systemPrompt),

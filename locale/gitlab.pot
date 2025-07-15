@@ -2442,6 +2442,12 @@ msgstr ""
 msgid "AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include..."
 msgstr ""
 
+msgid "AICatalog|Project ID"
+msgstr ""
+
+msgid "AICatalog|Project ID is required."
+msgstr ""
+
 msgid "AICatalog|Provide default instructions or context that will be included with every user interaction."
 msgstr ""
 
@@ -2457,10 +2463,16 @@ msgstr ""
 msgid "AICatalog|Save changes"
 msgstr ""
 
+msgid "AICatalog|Select a project for your AI agent to be associated with."
+msgstr ""
+
 msgid "AICatalog|System Prompt"
 msgstr ""
 
 msgid "AICatalog|System Prompt is required."
+msgstr ""
+
+msgid "AICatalog|The agent could not be added. Please try again."
 msgstr ""
 
 msgid "AICatalog|This agent specializes in... It can help you with... Best suited for..."
