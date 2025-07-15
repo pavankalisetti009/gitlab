@@ -30,6 +30,10 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
     shared_examples 'returning a service response success response' do
       shared_examples 'creating a new cache entry' do |with_md5: 'd8e8fca2dc0f896fd7cb4cb0031ba249'|
         it 'returns a success service response', :freeze_time do
+          expect_next_instance_of(::VirtualRegistries::Packages::Maven::Cache::Entry) do |expected_cache_entry|
+            expect(expected_cache_entry).to receive(:bump_downloads_count)
+          end
+
           expect { execute }.to change { upstream.cache_entries.count }.by(1)
           expect(execute).to be_success
 
@@ -94,13 +98,14 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
           )
         end
 
-        it 'updates it', :freeze_time do
-          expect { execute }.to not_change { upstream.cache_entries.count }
-
-          expect(execute).to be_success
-
+        it 'updates it', :freeze_time, :sidekiq_inline do
           last_cache_entry = upstream.cache_entries.last
-          expect(execute.payload).to eq(cache_entry: last_cache_entry)
+
+          expect { execute }.to not_change { upstream.cache_entries.count }
+            .and change { last_cache_entry.reset.downloads_count }.by(1)
+            .and change { last_cache_entry.downloaded_at }.to(Time.current)
+
+          is_expected.to be_success.and have_attributes(payload: { cache_entry: last_cache_entry })
 
           expect(last_cache_entry).to have_attributes(
             upstream_checked_at: Time.zone.now,

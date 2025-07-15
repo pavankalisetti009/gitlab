@@ -25,6 +25,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
         event_data = event_data_from(action)
         expect(service).to receive(:can?).and_call_original
 
+        if action.in?(%i[download_file download_digest])
+          expect_next_found_instance_of(::VirtualRegistries::Packages::Maven::Cache::Entry) do |expected_cache_entry|
+            expect(expected_cache_entry).to receive(:bump_downloads_count)
+          end
+        end
+
         expect { execute }
           .to trigger_internal_events('pull_maven_package_file_through_virtual_registry')
           .with(**event_data[:args])
