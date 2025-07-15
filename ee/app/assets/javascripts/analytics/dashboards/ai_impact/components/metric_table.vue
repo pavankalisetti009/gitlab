@@ -69,10 +69,6 @@ import {
 } from '../../api';
 import { extractGraphqlAiData } from '../api';
 
-const NOW = generateValueStreamDashboardStartDate();
-const DASHBOARD_TIME_PERIODS = generateDateRanges(NOW);
-const CHART_TIME_PERIODS = generateChartTimePeriods(NOW);
-
 export default {
   name: 'MetricTable',
   components: {
@@ -110,8 +106,17 @@ export default {
     };
   },
   computed: {
+    dashboardStartDate() {
+      return generateValueStreamDashboardStartDate();
+    },
+    dashboardTimePeriods() {
+      return generateDateRanges(this.dashboardStartDate);
+    },
+    chartTimePeriods() {
+      return generateChartTimePeriods(this.dashboardStartDate);
+    },
     dashboardTableFields() {
-      return generateTableColumns(NOW);
+      return generateTableColumns(this.dashboardStartDate);
     },
     tableQueries() {
       return [
@@ -200,7 +205,7 @@ export default {
 
     async fetchTableMetrics({ metrics, queryFn }) {
       try {
-        const data = await fetchMetricsForTimePeriods(DASHBOARD_TIME_PERIODS, queryFn);
+        const data = await fetchMetricsForTimePeriods(this.dashboardTimePeriods, queryFn);
         this.tableData = mergeTableData(this.tableData, generateTableRows(data));
       } catch (error) {
         throw metrics;
@@ -209,7 +214,7 @@ export default {
 
     async fetchSparklineCharts({ metrics, queryFn }) {
       try {
-        const data = await fetchMetricsForTimePeriods(CHART_TIME_PERIODS, queryFn);
+        const data = await fetchMetricsForTimePeriods(this.chartTimePeriods, queryFn);
         this.tableData = mergeTableData(
           this.tableData,
           generateSparklineCharts(data, AI_IMPACT_TABLE_METRICS),

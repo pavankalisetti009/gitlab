@@ -37,6 +37,7 @@ import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cel
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
+import { useFakeDate } from 'helpers/fake_date';
 import {
   mockGraphqlMergeRequestsResponse,
   mockGraphqlContributorCountResponse,
@@ -281,6 +282,8 @@ describe('Metric table', () => {
     });
 
     describe('when the data is loaded', () => {
+      useFakeDate('2024-01-01');
+
       beforeEach(() => {
         return createWrapper();
       });
@@ -300,6 +303,23 @@ describe('Metric table', () => {
         expect(findSparklineChart(testId).exists()).toBe(true);
         expect(findSparklineChart(testId).props()).toMatchSnapshot();
       });
+    });
+  });
+
+  describe.each`
+    identifier                                | testId                            | startDate
+    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE} | ${codeSuggestionsUsageRateTestId} | ${'2024-07-15'}
+    ${AI_METRICS.DUO_RCA_USAGE_RATE}          | ${duoRcaUsageRateTestId}          | ${'2025-07-15'}
+  `('for the $identifier table row', ({ startDate, testId }) => {
+    useFakeDate(startDate);
+
+    beforeEach(() => {
+      return createWrapper();
+    });
+
+    it('renders the correct metric values and tooltips pre- and post-release', () => {
+      const metricCells = findValueTableCells(testId).wrappers;
+      expect(metricCells.map((w) => w.text().replace(/\s+/g, ' '))).toMatchSnapshot();
     });
   });
 
