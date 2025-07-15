@@ -154,7 +154,7 @@ module QA
         Page::Group::Menu.perform(&:go_to_security_dashboard)
 
         # Check if new dashboard is being used by looking for the test-id element
-        is_new_dashboard = has_element?('data-testid': 'security-dashboard-new')
+        is_new_dashboard = has_element?('data-testid': 'group-security-dashboard-new')
 
         if is_new_dashboard
           # Handle the new dashboard implementation

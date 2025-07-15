@@ -3,29 +3,23 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
-import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
-import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_vulnerabilities_over_time.query.graphql';
+import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_over_time_panel.vue';
+import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { useFakeDate } from 'helpers/fake_date';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
-describe('VulnerabilitiesOverTimePanel', () => {
-  const todayInIsoFormat = '2020-07-06';
-  const ninetyDaysAgoInIsoFormat = '2020-04-07';
-  useFakeDate(todayInIsoFormat);
-
+describe('ProjectVulnerabilitiesOverTimePanel', () => {
   let wrapper;
 
-  const mockGroupFullPath = 'group/subgroup';
-  const mockFilters = { projectId: 'gid://gitlab/Project/123' };
+  const mockProjectFullPath = 'project-1';
 
   const defaultMockVulnerabilitiesOverTimeData = {
     data: {
-      group: {
-        id: 'gid://gitlab/Group/1',
+      project: {
+        id: 'gid://gitlab/Project/1',
         securityMetrics: {
           vulnerabilitiesOverTime: {
             nodes: [
@@ -54,7 +48,7 @@ describe('VulnerabilitiesOverTimePanel', () => {
     },
   };
 
-  const createComponent = ({ props = {}, mockVulnerabilitiesOverTimeHandler = null } = {}) => {
+  const createComponent = ({ mockVulnerabilitiesOverTimeHandler = null } = {}) => {
     const vulnerabilitiesOverTimeHandler =
       mockVulnerabilitiesOverTimeHandler ||
       jest.fn().mockResolvedValue(defaultMockVulnerabilitiesOverTimeData);
@@ -63,14 +57,10 @@ describe('VulnerabilitiesOverTimePanel', () => {
       [getVulnerabilitiesOverTime, vulnerabilitiesOverTimeHandler],
     ]);
 
-    wrapper = shallowMountExtended(VulnerabilitiesOverTimePanel, {
+    wrapper = shallowMountExtended(ProjectVulnerabilitiesOverTimePanel, {
       apolloProvider,
-      propsData: {
-        filters: mockFilters,
-        ...props,
-      },
       provide: {
-        groupFullPath: mockGroupFullPath,
+        projectFullPath: mockProjectFullPath,
       },
     });
 
@@ -100,39 +90,7 @@ describe('VulnerabilitiesOverTimePanel', () => {
       const { vulnerabilitiesOverTimeHandler } = createComponent();
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
-        fullPath: mockGroupFullPath,
-        projectId: mockFilters.projectId,
-        startDate: ninetyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
-      });
-    });
-
-    it('passes filters to the GraphQL query', () => {
-      const { vulnerabilitiesOverTimeHandler } = createComponent({
-        props: {
-          filters: { projectId: 'gid://gitlab/Project/456' },
-        },
-      });
-
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
-        fullPath: mockGroupFullPath,
-        projectId: 'gid://gitlab/Project/456',
-        startDate: ninetyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
-      });
-    });
-
-    it('does not include projectId when filters are empty', () => {
-      const { vulnerabilitiesOverTimeHandler } = createComponent({
-        props: {
-          filters: {},
-        },
-      });
-
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
-        fullPath: mockGroupFullPath,
-        startDate: ninetyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
+        fullPath: mockProjectFullPath,
       });
     });
   });
@@ -180,8 +138,8 @@ describe('VulnerabilitiesOverTimePanel', () => {
     it('returns empty chart data when no vulnerabilities data is available', async () => {
       const emptyResponse = {
         data: {
-          group: {
-            id: 'gid://gitlab/Group/1',
+          project: {
+            id: 'gid://gitlab/Project/1',
             securityMetrics: {
               vulnerabilitiesOverTime: {
                 nodes: [],
@@ -235,7 +193,7 @@ describe('VulnerabilitiesOverTimePanel', () => {
       });
 
       it('renders the correct error message', () => {
-        expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+        expect(wrapper.text()).toBe('Something went wrong. Please try again.');
       });
     });
   });

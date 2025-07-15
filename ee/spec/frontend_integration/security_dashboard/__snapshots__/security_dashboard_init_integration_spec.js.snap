@@ -128,7 +128,7 @@ exports[`Security Dashboard default states sets up group-level 1`] = `
 exports[`Security Dashboard default states sets up group-level with \`groupSecurityDashboardNew\` feature flag set to \`true\` 1`] = `
 <div>
   <div
-    data-testid="security-dashboard-new"
+    data-testid="group-security-dashboard-new"
   >
     <section
       class="gl-flex gl-items-center gl-my-4"
@@ -505,7 +505,74 @@ exports[`Security Dashboard default states sets up project-level with \`projectS
     >
       <div
         class="gl-flex gl-flex-col gl-grow"
-      />
+      >
+        <div
+          class="-gl-mx-3 grid-stack grid-stack-static gs-12"
+          data-testid="gridstack-grid"
+          gs-current-row="4"
+          gs-static="true"
+          style="--gs-item-margin-top: 8px; --gs-item-margin-bottom: 8px; --gs-item-margin-right: 8px; --gs-item-margin-left: 8px; --gs-column-width: 8.333333333333334%; --gs-cell-height: 125px; height: 500px;"
+        >
+          <div
+            class="grid-stack-item ui-draggable-disabled ui-resizable-disabled"
+            gs-h="4"
+            gs-id="1"
+            gs-w="6"
+          >
+            <div
+              class="grid-stack-item-content"
+            />
+          </div>
+          <div
+            class="gl-h-full"
+            data-testid="grid-stack-panel"
+            id="reference-0"
+          >
+            <div
+              class="!gl-overflow-visible gl-bg-white gl-border gl-h-full gl-p-4 gl-rounded-base grid-stack-item-content"
+              id="reference-1"
+            >
+              <div
+                class="gl-flex gl-flex-col gl-h-full"
+              >
+                <div
+                  class="gl-flex gl-items-start gl-justify-between"
+                  data-testid="panel-title"
+                >
+                  <div
+                    class="gl-flex gl-items-center gl-overflow-hidden gl-pb-3"
+                  >
+                    <span
+                      class="gl-font-bold gl-text-default gl-truncate-component"
+                      data-testid="truncate-end-container"
+                      title="Vulnerabilities over time"
+                    >
+                      <span
+                        class="gl-truncate-end"
+                      >
+                        Vulnerabilities over time
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="gl-content-center gl-flex gl-flex-wrap gl-text-center"
+                >
+                  <div
+                    aria-label="Loading"
+                    class="gl-min-h-8 gl-spinner-container gl-w-full"
+                    role="status"
+                  >
+                    <span
+                      class="!gl-align-text-bottom gl-spinner gl-spinner-dark gl-spinner-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

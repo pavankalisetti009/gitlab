@@ -1,0 +1,16 @@
+query getProjectVulnerabilitiesOverTime($fullPath: ID!) {
+  project(fullPath: $fullPath) {
+    id
+    securityMetrics @client {
+      vulnerabilitiesOverTime {
+        nodes {
+          date
+          bySeverity {
+            count
+            severity
+          }
+        }
+      }
+    }
+  }
+}
