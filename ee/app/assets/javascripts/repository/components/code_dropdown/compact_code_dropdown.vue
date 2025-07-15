@@ -24,6 +24,10 @@ export default {
       type: String,
       required: true,
     },
+    gitRef: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -81,6 +85,7 @@ export default {
           :project-id="projectIdAsInt"
           :project-full-path="projectPath"
           :supports-workspaces="supportsWorkspaces"
+          :git-ref="gitRef"
           border-position="top"
         />
         <div v-else class="gl-my-3 gl-w-full gl-text-center">

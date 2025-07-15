@@ -13,6 +13,7 @@ describe('EE Compact Code Dropdown component', () => {
   const currentPath = null;
   const projectPath = 'group/project';
   const projectId = '123';
+  const gitRef = 'v1.0.0';
   const newWorkspacePath = '/workspaces/new';
   const organizationId = '1';
   const directoryDownloadLinks = [
@@ -28,6 +29,7 @@ describe('EE Compact Code Dropdown component', () => {
     directoryDownloadLinks,
     projectPath,
     projectId,
+    gitRef,
   };
 
   // Helper functions to find components
@@ -105,6 +107,7 @@ describe('EE Compact Code Dropdown component', () => {
         projectFullPath: projectPath,
         supportsWorkspaces: true,
         newWorkspacePath,
+        gitRef: 'v1.0.0',
       });
     });
 
