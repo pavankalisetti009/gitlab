@@ -33,6 +33,17 @@ module EE
       end
     end
 
+    def user_duo_namespace_assignment_options
+      duo_namespace_add_on_assignments = current_user.user_preference.eligible_duo_add_on_assignments
+
+      duo_namespace_add_on_assignments.map do |duo_namespace_add_on_assignment|
+        [
+          duo_namespace_add_on_assignment.add_on_purchase.namespace.name,
+          duo_namespace_add_on_assignment.id
+        ]
+      end
+    end
+
     def group_view_choices
       strong_memoize(:group_view_choices) do
         choices = []
