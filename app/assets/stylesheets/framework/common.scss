@@ -374,14 +374,6 @@ li.note {
 
 .gl-font-size-0 { font-size: 0; }
 
-.border-section {
-  padding-top: $gl-spacing-scale-6;
-  padding-bottom: $gl-spacing-scale-6;
-  margin: 0;
-
-  @apply gl-border-t;
-}
-
 .gl-pseudo-placeholder:empty::before {
   content: attr(data-placeholder);
   font-weight: $gl-font-weight-normal;
