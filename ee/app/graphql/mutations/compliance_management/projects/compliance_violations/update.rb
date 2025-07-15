@@ -26,12 +26,28 @@ module Mutations
           def resolve(id:, **args)
             violation = authorized_find!(id: id)
 
-            audit_event(violation) if violation.update(status: args[:status])
+            if violation.update(status: args[:status])
+              audit_event(violation)
+
+              create_system_note(violation)
+            end
 
             { compliance_violation: violation, errors: errors_on_object(violation) }
           end
 
           private
+
+          def create_system_note(violation)
+            old_status = violation.status_before_last_save
+            new_status = violation.status
+
+            return if old_status == new_status
+
+            ::SystemNotes::ComplianceViolationsService.new(
+              container: violation.project,
+              noteable: violation,
+              author: current_user).change_violation_status
+          end
 
           def audit_event(violation)
             old_status = violation.status_before_last_save
