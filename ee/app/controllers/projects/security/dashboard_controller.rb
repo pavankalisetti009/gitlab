@@ -9,6 +9,7 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:vulnerabilities_pdf_export, project)
+        push_frontend_feature_flag(:project_security_dashboard_new, project)
       end
 
       alias_method :vulnerable, :project

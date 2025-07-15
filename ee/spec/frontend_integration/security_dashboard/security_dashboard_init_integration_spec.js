@@ -87,6 +87,21 @@ describe('Security Dashboard', () => {
 
       expect(root).toMatchSnapshot();
     });
+
+    it('sets up project-level with `projectSecurityDashboardNew` feature flag set to `true`', async () => {
+      window.gon.features.projectSecurityDashboardNew = true;
+
+      await createComponent({
+        data: {
+          projectFullPath: '/test/project',
+          hasVulnerabilities: 'true',
+          securityConfigurationPath: '/test/configuration',
+        },
+        type: DASHBOARD_TYPE_PROJECT,
+      });
+
+      expect(root).toMatchSnapshot();
+    });
   });
 
   describe('error states', () => {
