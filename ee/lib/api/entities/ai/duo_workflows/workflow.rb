@@ -15,6 +15,7 @@ module API
           expose :status_name, as: :status
           expose :allow_agent_to_request_user
           expose :image
+          expose :environment
 
           def agent_privileges_names
             object.agent_privileges.map do |privilege|

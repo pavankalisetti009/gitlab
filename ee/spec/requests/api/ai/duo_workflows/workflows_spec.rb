@@ -32,7 +32,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         pre_approved_agent_privileges: pre_approved_agent_privileges,
         workflow_definition: workflow_definition,
         allow_agent_to_request_user: allow_agent_to_request_user,
-        image: "example.com/example-image:latest"
+        image: "example.com/example-image:latest",
+        environment: "web"
       }
     end
 
@@ -71,7 +72,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           post api(path, user), params: params
           expect(response).to have_gitlab_http_status(:created)
         end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
         expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+        expect(json_response['environment']).to eq("web")
         expect(response.headers['X-Gitlab-Enabled-Feature-Flags']).to include('test-feature')
 
         created_workflow = Ai::DuoWorkflows::Workflow.last
@@ -81,6 +84,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         expect(created_workflow.workflow_definition).to eq(workflow_definition)
         expect(created_workflow.allow_agent_to_request_user).to eq(allow_agent_to_request_user)
         expect(created_workflow.image).to eq("example.com/example-image:latest")
+        expect(created_workflow.environment).to eq("web")
       end
 
       context 'when agent_privileges is not provided' do
@@ -340,25 +344,14 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         end
       end
 
-      context 'when environment is provided' do
-        let(:params) do
-          {
-            project_id: project.id,
-            start_workflow: true,
-            goal: 'Print hello world',
-            environment: 'web'
-          }
-        end
+      context 'when environment argument has invalid value' do
+        let(:params) { super().merge(environment: 'invalid') }
 
-        it 'passes environment to StartWorkflowService' do
-          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).with(
-            params: anything,
-            workflow: have_attributes(environment: 'web')
-          ).and_call_original
-
+        it 'returns bad request' do
           post api(path, user), params: params
 
-          expect(response).to have_gitlab_http_status(:created)
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response).to eq({ "error" => "environment does not have a valid value" })
         end
       end
     end
