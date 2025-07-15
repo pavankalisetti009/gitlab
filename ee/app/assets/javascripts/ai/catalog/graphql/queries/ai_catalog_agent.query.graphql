@@ -3,5 +3,8 @@
 query aiCatalogAgent($id: AiCatalogItemID!) {
   aiCatalogItem(id: $id) {
     ...BaseAiCatalogItem
+    project {
+      id
+    }
   }
 }
