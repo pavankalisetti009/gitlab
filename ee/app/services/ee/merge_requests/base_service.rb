@@ -88,6 +88,14 @@ module EE
         approvals = filter_approvals(approvals, patch_id_sha) if patch_id_sha.present?
         approver_ids = approvals.map(&:user_id)
 
+        # Only return early if there are no approvals at all, not just empty approver_ids
+        return if approvals.empty?
+
+        # Check if merge request is approved BEFORE deleting any approvals
+        # We need to clear the approval state cache to get the current state
+        merge_request.reset_approval_cache!
+        was_approved = merge_request.approval_state.all_approval_rules_approved?
+
         approvals.delete_all
 
         # In case there is still a temporary flag on the MR
@@ -98,6 +106,22 @@ module EE
         trigger_merge_request_merge_status_updated(merge_request)
         trigger_merge_request_approval_state_updated(merge_request)
         publish_approvals_reset_event(merge_request, cause, approver_ids)
+
+        # Trigger webhook events for system-initiated approval resets
+        return unless cause == :new_push
+
+        # Check approval state AFTER deletion to determine correct webhook event
+        # Clear the approval state cache again to ensure we get the updated state after deletion
+        merge_request.reset_approval_cache!
+        is_currently_approved = merge_request.approval_state.all_approval_rules_approved?
+
+        # Only send 'unapproved' if the MR transitioned from approved to not approved
+        if was_approved && !is_currently_approved
+          execute_hooks(merge_request, 'unapproved', system: true, system_action: 'approvals_reset_on_push')
+        else
+          # Send 'unapproval' for individual approval removal that doesn't change overall approval state
+          execute_hooks(merge_request, 'unapproval', system: true, system_action: 'approvals_reset_on_push')
+        end
       end
 
       def filter_approvals(approvals, patch_id_sha)

@@ -453,6 +453,58 @@ RSpec.describe ApprovalState do
       end
     end
 
+    describe '#all_approval_rules_approved?' do
+      context 'when all rules are approved' do
+        before do
+          approve_rules(subject.wrapped_approval_rules)
+        end
+
+        it 'returns true' do
+          expect(subject.all_approval_rules_approved?).to eq(true)
+        end
+
+        context 'when merge request is temporarily unapproved' do
+          before do
+            subject.temporarily_unapprove!
+          end
+
+          it 'still returns true (ignoring temporary flag)' do
+            expect(subject.all_approval_rules_approved?).to eq(true)
+          end
+        end
+      end
+
+      context 'when some rules are not approved' do
+        before do
+          create_rule(approvals_required: 1, users: users(1))
+          allow(subject.wrapped_approval_rules.first).to receive(:approved?).and_return(false)
+        end
+
+        it 'returns false' do
+          expect(subject.all_approval_rules_approved?).to eq(false)
+        end
+
+        context 'when merge request is temporarily unapproved' do
+          before do
+            subject.temporarily_unapprove!
+          end
+
+          it 'still returns false' do
+            expect(subject.all_approval_rules_approved?).to eq(false)
+          end
+        end
+      end
+
+      context 'when approval feature is unavailable' do
+        it 'returns true' do
+          disable_feature
+          create_rule(users: users(1), approvals_required: 1)
+
+          expect(subject.all_approval_rules_approved?).to eq(true)
+        end
+      end
+    end
+
     describe '#approvals_left' do
       before do
         create_rule(approvals_required: 5)
