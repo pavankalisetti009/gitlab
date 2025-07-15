@@ -15,7 +15,7 @@ module Gitlab
         # Used by the Replicator to format a model name for API usage
         # @return [String] the snake_case representation of the passed Model class
         def convert_to_name(model)
-          model.name.underscore.tr('/', '_')
+          ::Gitlab::Utils::ClassNameConverter.new(model).string_representation
         end
 
         # Used by the controller to get an ActiveRecord model from a passed parameter
