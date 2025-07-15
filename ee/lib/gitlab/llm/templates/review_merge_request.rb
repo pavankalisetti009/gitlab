@@ -27,17 +27,20 @@ module Gitlab
         private
 
         def full_file_intro_text
-          " You will also be provided with the original content of modified files (before changes). " \
+          " You will also be provided with the original content of modified files (before changes) " \
+            "to help you better understand the context and scope of changes. " \
             "Newly added files are not included as their full content is already in the diffs."
         end
 
         def full_content_section_text
           <<~SECTION.chomp
+            <original_files>
+            Use this context to better understand the changes and identify genuine issues in the code.
+
             Original file content (before changes):
 
-            Check for code duplication, redundancies, and inconsistencies.
-
             #{all_files_content_formatted}
+            </original_files>
           SECTION
         end
 
@@ -45,21 +48,19 @@ module Gitlab
           return "" if custom_instructions.empty?
 
           <<~SECTION
-            Custom Review Instructions:
             <custom_instructions>
-            You must also apply the following custom review instructions. Each instruction specifies which files it applies to:
+            Apply these additional review instructions to matching files:
 
             #{format_custom_instructions_list}
 
             IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
 
-            FORMATTING REQUIREMENT: When generating a comment based on a custom instruction, you MUST format it as follows:
+            When commenting based on custom instructions, format as:
             "According to custom instructions in '[instruction_name]': [your comment here]"
 
-            For example:
-            "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
+            Example: "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
 
-            This formatting is ONLY required for comments that are triggered by custom instructions. Regular review comments based on standard review criteria should NOT include this prefix.
+            This formatting is only required for custom instruction comments. Regular review comments based on standard review criteria should NOT include this prefix.
             </custom_instructions>
           SECTION
         end
