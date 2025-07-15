@@ -14,6 +14,43 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
 
   let(:subject_traits) { [] }
 
+  let(:abstract_class) do
+    Class.new do
+      def self.table_name
+        'abstract_table'
+      end
+
+      def self.has_and_belongs_to_many(*); end
+      def self.has_many(*); end
+      def self.belongs_to(*); end
+      def self.enum(*); end
+      def self.validates(*); end
+      def self.scope(*); end
+
+      include ApprovalRuleLike
+    end
+  end
+
+  describe 'abstract methods' do
+    subject { abstract_class.new }
+
+    %i[code_owner? regular? report_approver? any_approver?].each do |method|
+      describe "##{method}" do
+        it 'raises NotImplementedError' do
+          expect { subject.public_send(method) }.to raise_error(NotImplementedError)
+        end
+      end
+    end
+
+    %i[audit_add audit_remove].each do |method|
+      describe "##{method}" do
+        it 'raises NotImplementedError' do
+          expect { subject.public_send(method, anything) }.to raise_error(NotImplementedError)
+        end
+      end
+    end
+  end
+
   shared_examples 'approval rule like' do
     let(:group1_user) { create(:user) }
     let(:group2_user) { create(:user) }
@@ -29,6 +66,17 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
     end
 
     it { is_expected.to respond_to(:rule_project) }
+
+    describe 'abstract method implementations' do
+      it 'implements all required abstract methods' do
+        expect { subject.audit_add(subject) }.not_to raise_error
+        expect { subject.audit_remove(subject) }.not_to raise_error
+        expect { subject.code_owner? }.not_to raise_error
+        expect { subject.regular? }.not_to raise_error
+        expect { subject.report_approver? }.not_to raise_error
+        expect { subject.any_approver? }.not_to raise_error
+      end
+    end
 
     describe '#approvers_include_user?' do
       let(:rule) { subject.class.find(subject.id) }

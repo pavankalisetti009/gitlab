@@ -91,11 +91,11 @@ module ApprovalRuleLike
     nil
   end
 
-  def audit_add
+  def audit_add(_model)
     raise NotImplementedError
   end
 
-  def audit_remove
+  def audit_remove(_model)
     raise NotImplementedError
   end
 
