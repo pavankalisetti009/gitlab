@@ -70257,6 +70257,9 @@ msgstr ""
 msgid "Weight - %{maxIssueWeight}"
 msgstr ""
 
+msgid "Welcome %{name},"
+msgstr ""
+
 msgid "Welcome back! Your account had been deactivated due to inactivity but is now reactivated."
 msgstr ""
 
