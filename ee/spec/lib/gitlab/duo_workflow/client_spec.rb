@@ -98,4 +98,10 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       expect(described_class.cloud_connector_token(user: user)).to eq(token)
     end
   end
+
+  describe '.metadata' do
+    it 'returns workflow related user metadata' do
+      expect(described_class.metadata(user)).to eq({ extended_logging: true, is_team_member: nil })
+    end
+  end
 end

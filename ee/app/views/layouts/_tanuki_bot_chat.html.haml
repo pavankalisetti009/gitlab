@@ -6,6 +6,9 @@
 - is_agentic_available = Feature.enabled?(:duo_workflow_workhorse, current_user) && project_id.present? && current_user.can?(:access_duo_agentic_chat, @project)
 
 - if Feature.enabled?(:duo_workflow_workhorse, current_user) && project_id.present?
-  #js-duo-agentic-chat-app{ data: { project_id: project_id, resource_id: resource_id } }
+  #js-duo-agentic-chat-app{ data: {
+    project_id: project_id,
+    resource_id: resource_id,
+    metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json } }
 
 #js-tanuki-bot-chat-app{ data: { user_id: current_user.to_global_id, resource_id: resource_id, project_id: project_id, root_namespace_id: root_namespace_id, chat_title: chat_title, agentic_available: is_agentic_available.to_s } }

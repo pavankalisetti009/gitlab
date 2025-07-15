@@ -44,6 +44,7 @@ jest.mock('~/lib/utils/websocket_utils', () => ({
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
 const MOCK_RESOURCE_ID = 'gid://gitlab/Resource/789';
+const MOCK_METADATA = '{"extended_logging":false,"is_team_member":null}';
 const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflow/456';
 const MOCK_USER_MESSAGE = {
   content: 'How can I optimize my CI pipeline?',
@@ -123,7 +124,11 @@ describe('Duo Agentic Chat', () => {
 
   const createComponent = ({
     initialState = {},
-    propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
+    propsData = {
+      projectId: MOCK_PROJECT_ID,
+      resourceId: MOCK_RESOURCE_ID,
+      metadata: MOCK_METADATA,
+    },
     data = {},
   } = {}) => {
     const store = new Vuex.Store({
@@ -300,6 +305,7 @@ describe('Duo Agentic Chat', () => {
             workflowID: '456',
             clientVersion: '1.0',
             workflowDefinition: 'chat',
+            workflowMetadata: MOCK_METADATA,
             goal: MOCK_USER_MESSAGE.content,
             approval: {},
             additionalContext: expectedAdditionalContext,
@@ -630,6 +636,7 @@ describe('Duo Agentic Chat', () => {
             workflowID: '456',
             clientVersion: '1.0',
             workflowDefinition: 'chat',
+            workflowMetadata: MOCK_METADATA,
             goal: '',
             approval: { approval: {} },
             additionalContext: expectedAdditionalContext,
@@ -649,6 +656,7 @@ describe('Duo Agentic Chat', () => {
             workflowID: '456',
             clientVersion: '1.0',
             workflowDefinition: 'chat',
+            workflowMetadata: MOCK_METADATA,
             goal: '',
             approval: {
               approval: undefined,

@@ -50,6 +50,11 @@ export default {
       required: false,
       default: null,
     },
+    metadata: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   apollo: {
     contextPresets: {
@@ -214,6 +219,7 @@ export default {
           workflowID: this.workflowId,
           clientVersion: DUO_WORKFLOW_CLIENT_VERSION,
           workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
+          workflowMetadata: this.metadata,
           goal,
           approval,
         },

@@ -17,7 +17,7 @@ export const initDuoAgenticChat = () => {
     return false;
   }
 
-  const { projectId, resourceId } = el.dataset;
+  const { projectId, resourceId, metadata } = el.dataset;
 
   return new Vue({
     el,
@@ -28,6 +28,7 @@ export const initDuoAgenticChat = () => {
         props: {
           projectId,
           resourceId,
+          metadata,
         },
       });
     },

@@ -19,7 +19,11 @@ RSpec.describe 'layouts/_tanuki_bot_chat', feature_category: :duo_chat do
   it 'renders duo agentic chat app with attributes' do
     render
 
+    expected_metadata = { extended_logging: true, is_team_member: nil }.to_json
+
     expect(rendered).to have_css("#js-duo-agentic-chat-app[data-project-id='test_project_id']")
+    expect(rendered).to have_css("#js-duo-agentic-chat-app[data-resource-id='test_resource_id']")
+    expect(rendered).to have_css("#js-duo-agentic-chat-app[data-metadata='#{expected_metadata}']")
   end
 
   context 'when the page is not in project scope' do
