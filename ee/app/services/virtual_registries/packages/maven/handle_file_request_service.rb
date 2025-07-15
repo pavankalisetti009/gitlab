@@ -101,6 +101,7 @@ module VirtualRegistries
           return ERRORS[:fips_unsupported_md5] if digest_format == 'md5' && Gitlab::FIPS.enabled?
 
           create_event(from_upstream: false)
+          cache_entry.bump_downloads_count
 
           ServiceResponse.success(
             payload: {
@@ -148,6 +149,7 @@ module VirtualRegistries
 
         def download_cache_entry
           create_event(from_upstream: false)
+          cache_entry.bump_downloads_count
 
           ServiceResponse.success(
             payload: {

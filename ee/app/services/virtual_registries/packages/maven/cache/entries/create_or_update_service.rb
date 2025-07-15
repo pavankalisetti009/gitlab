@@ -41,6 +41,8 @@ module VirtualRegistries
                 updates: updates
               )
 
+              ce.bump_downloads_count
+
               ServiceResponse.success(payload: { cache_entry: ce })
             rescue StandardError => e
               Gitlab::ErrorTracking.track_exception(

@@ -309,6 +309,22 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
     end
   end
 
+  describe '#bump_downloads_count' do
+    let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_entry) }
+
+    subject(:bump) { cache_entry.bump_downloads_count }
+
+    it 'enqueues the update', :sidekiq_inline do
+      expect(FlushCounterIncrementsWorker)
+        .to receive(:perform_in)
+        .with(Gitlab::Counters::BufferedCounter::WORKER_DELAY, described_class.name, cache_entry.id, 'downloads_count')
+        .and_call_original
+
+      expect { bump }.to change { cache_entry.reload.downloads_count }.by(1)
+        .and change { cache_entry.downloaded_at }
+    end
+  end
+
   context 'with loose foreign key on virtual_registries_packages_maven_cache_entries.upstream_id' do
     it_behaves_like 'update by a loose foreign key' do
       let_it_be(:parent) { create(:virtual_registries_packages_maven_upstream) }

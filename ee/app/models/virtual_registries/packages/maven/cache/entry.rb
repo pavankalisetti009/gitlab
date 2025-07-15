@@ -9,6 +9,7 @@ module VirtualRegistries
           include Gitlab::SQL::Pattern
           include ::UpdateNamespaceStatistics
           include ShaAttribute
+          include CounterAttribute
 
           self.primary_key = %i[upstream_id relative_path status]
 
@@ -27,6 +28,8 @@ module VirtualRegistries
 
           sha_attribute :file_sha1
           sha_attribute :file_md5
+
+          counter_attribute :downloads_count, touch: :downloaded_at
 
           validates :group, top_level_group: true, presence: true
           validates :relative_path,
@@ -99,6 +102,10 @@ module VirtualRegistries
               relative_path: "#{relative_path}/deleted/#{SecureRandom.uuid}",
               updated_at: Time.current
             )
+          end
+
+          def bump_downloads_count
+            increment_downloads_count(1)
           end
 
           private
