@@ -3,19 +3,20 @@ import { mount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { selfHostedModelslistItems, modelSelectionListItems } from './mock_data';
+import { mockListItems as mockSelfHostedModelsItems } from '../../duo_self_hosted/self_hosted_models/mock_data';
+import { mockListItems as mockModelSelectionItems } from '../../model_selection/mock_data';
 
 describe('ModelSelectDropdown', () => {
   let wrapper;
 
   const placeholderDropdownText = 'Select model';
-  const selectedOption = selfHostedModelslistItems[0];
+  const selectedOption = mockSelfHostedModelsItems[0];
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = extendedWrapper(
       mount(ModelSelectDropdown, {
         propsData: {
-          items: selfHostedModelslistItems,
+          items: mockSelfHostedModelsItems,
           placeholderDropdownText,
           selectedOption,
           ...props,
@@ -60,13 +61,13 @@ describe('ModelSelectDropdown', () => {
     it('renders list items', () => {
       createComponent();
 
-      expect(findGLCollapsibleListbox().props('items')).toBe(selfHostedModelslistItems);
+      expect(findGLCollapsibleListbox().props('items')).toBe(mockSelfHostedModelsItems);
     });
 
-    it('can handle items with no `releaseState`', () => {
-      createComponent({ props: { items: modelSelectionListItems } });
+    it('can handle model selection items', () => {
+      createComponent({ props: { items: mockModelSelectionItems } });
 
-      expect(findGLCollapsibleListbox().props('items')).toBe(modelSelectionListItems);
+      expect(findGLCollapsibleListbox().props('items')).toBe(mockModelSelectionItems);
       expect(findDropdownListItems().at(0).text()).toEqual('Claude Sonnet 3.5 - Anthropic');
       expect(findDropdownListItems().at(1).text()).toEqual('Claude Sonnet 3.7 - Anthropic');
     });
@@ -135,7 +136,7 @@ describe('ModelSelectDropdown', () => {
     });
 
     it('displays the beta badge when beta option is selected', () => {
-      const betaModel = selfHostedModelslistItems[1];
+      const betaModel = mockSelfHostedModelsItems[1];
 
       createComponent({ props: { selectedOption: betaModel } });
 
@@ -145,7 +146,7 @@ describe('ModelSelectDropdown', () => {
 
   describe('default model items', () => {
     it('displays the default model badge with dropdown option', () => {
-      createComponent({ props: { items: modelSelectionListItems } });
+      createComponent({ props: { items: mockModelSelectionItems } });
 
       const defaultModel = findDropdownListItems().at(3);
 
