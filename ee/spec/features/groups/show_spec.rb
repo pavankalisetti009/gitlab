@@ -57,4 +57,12 @@ RSpec.describe 'Group show page', :js, :saas, feature_category: :groups_and_proj
       expect(page).not_to have_css('[data-testid="enable-duo-banner"]')
     end
   end
+
+  context 'with targeted messages' do
+    let_it_be(:non_owner) { create(:user) }
+
+    it_behaves_like 'targeted message interactions' do
+      let(:path) { group_path(group) }
+    end
+  end
 end

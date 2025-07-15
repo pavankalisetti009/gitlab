@@ -4,6 +4,7 @@ import VueApollo from 'vue-apollo';
 import initVueAlerts from '~/vue_alerts';
 import initTierBadgeTrigger from 'ee/groups/init_tier_badge_trigger';
 import createDefaultClient from '~/lib/graphql';
+import initTargetedMessages from 'ee/admin/init_targeted_message';
 import ComplianceInfo from './components/compliance_info.vue';
 
 const apolloProvider = new VueApollo({
@@ -32,3 +33,4 @@ const initComplianceInfo = () => {
 initVueAlerts();
 initTierBadgeTrigger();
 initComplianceInfo();
+initTargetedMessages();

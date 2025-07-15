@@ -40,4 +40,14 @@ RSpec.describe 'Project show page', :js, :saas, feature_category: :groups_and_pr
       end
     end
   end
+
+  context 'with targeted message' do
+    let_it_be(:group) { create(:group, owners: user) }
+    let_it_be(:project) { create(:project, :repository, namespace: group) }
+    let_it_be(:non_owner) { create(:user) }
+
+    it_behaves_like 'targeted message interactions' do
+      let(:owner) { user }
+    end
+  end
 end
