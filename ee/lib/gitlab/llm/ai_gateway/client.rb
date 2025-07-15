@@ -53,7 +53,7 @@ module Gitlab
             resp
           end
 
-          log_response_received(response.parsed_response) if response&.success?
+          log_response_received(response.body) if response&.success?
 
           response
         end

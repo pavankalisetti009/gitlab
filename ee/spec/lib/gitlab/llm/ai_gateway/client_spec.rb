@@ -130,7 +130,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
           url: url, stream: false))
       expect(logger).to have_received(:conditional_info)
         .with(user, a_hash_including(message: "Received response from AI Gateway",
-          response_from_llm: expected_response))
+          response_from_llm: response_body))
     end
 
     context 'when request is a 500 error with text body' do
