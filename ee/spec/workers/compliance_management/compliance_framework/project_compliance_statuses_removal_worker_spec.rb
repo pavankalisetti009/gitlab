@@ -30,14 +30,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectComplianceStatu
       end
     end
 
-    context 'when the feature flag is disabled' do
-      before do
-        stub_feature_flags(enable_stale_compliance_status_removal: false)
-      end
-
-      it_behaves_like 'returns early without processing'
-    end
-
     context 'when given valid parameters' do
       context 'when framework is applied to the project' do
         before do
