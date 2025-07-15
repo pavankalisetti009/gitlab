@@ -752,14 +752,6 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
           let(:branches) { ["release/production"] }
 
           it { is_expected.to be(false) }
-
-          context 'with feature disabled' do
-            before do
-              stub_feature_flags(merge_request_approval_policies_target_branch_matching: false)
-            end
-
-            it { is_expected.to be(true) }
-          end
         end
       end
 
@@ -787,14 +779,6 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
             let(:default_branch) { "release/production" }
 
             it { is_expected.to be(false) }
-
-            context 'with feature disabled' do
-              before do
-                stub_feature_flags(merge_request_approval_policies_target_branch_matching: false)
-              end
-
-              it { is_expected.to be(true) }
-            end
           end
         end
       end
