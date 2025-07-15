@@ -8,7 +8,7 @@ class EpicIssue < ApplicationRecord
 
   validates :epic, :issue, presence: true
   validates :issue, uniqueness: true
-  validates :work_item_parent_link, presence: true, on: :create
+  validates :work_item_parent_link, presence: true
 
   belongs_to :epic
   belongs_to :issue

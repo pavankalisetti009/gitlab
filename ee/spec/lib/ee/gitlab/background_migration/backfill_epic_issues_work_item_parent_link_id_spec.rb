@@ -3,6 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::BackfillEpicIssuesWorkItemParentLinkId, feature_category: :team_planning do
+  before do
+    ApplicationRecord.connection.execute("ALTER TABLE epic_issues DROP CONSTRAINT IF EXISTS check_048dce81f3")
+  end
+
+  after do
+    ApplicationRecord.connection.execute(
+      "ALTER TABLE epic_issues ADD CONSTRAINT check_048dce81f3 CHECK (work_item_parent_link_id IS NOT NULL) NOT VALID"
+    )
+  end
+
   let(:namespaces) { table(:namespaces) }
   let(:issues) { table(:issues) }
   let(:epics) { table(:epics) }
@@ -247,9 +257,10 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillEpicIssuesWorkItemParentLink
         )
       end
 
-      it 'does not execute any updates' do
-        expect(described_class::EpicIssues.connection).not_to receive(:execute)
-        migration.perform
+      it 'does not change any records when no backfill is needed' do
+        expect do
+          migration.perform
+        end.not_to change { epic_issue.reload.work_item_parent_link_id }
       end
     end
   end

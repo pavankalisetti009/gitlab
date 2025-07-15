@@ -24,22 +24,24 @@ FactoryBot.define do
       epic = evaluator.epic
       issue = evaluator.issue
 
-      if epic.present? && issue.nil?
-        epic_issue.epic = epic
-        epic_issue.issue = create(:issue, project: create(:project, group: epic.group))
-      elsif issue.present? && epic.nil?
-        unless issue.project.group.present?
-          raise 'Failed to create epic_issue. The issue needs to exist under a project with a parent group'
-        end
+      epic_issue.epic = case
+                        when epic.present?
+                          epic
+                        when issue.present?
+                          create(:epic, group: issue.project.group)
+                        else
+                          create(:epic)
+                        end
 
-        epic_issue.issue = issue
-        epic_issue.epic = create(:epic, group: issue.project.group)
-      elsif issue.nil? && epic.nil?
-        epic_issue.epic = create(:epic)
-        epic_issue.issue = create(:issue, project: create(:project, group: epic_issue.epic.group))
+      epic_issue.issue = issue.presence || create(:issue, project: create(:project, group: epic_issue.epic.group))
+
+      # Update parent link relationships
+      epic_issue.work_item_parent_link.work_item_parent = epic_issue.epic.work_item
+      if epic_issue.issue.persisted?
+        epic_issue.work_item_parent_link.work_item = WorkItem.find(epic_issue.issue.id)
       else
-        epic_issue.epic = epic
-        epic_issue.issue = issue
+        work_item = WorkItem.new(epic_issue.issue.attributes)
+        epic_issue.work_item_parent_link.work_item = work_item
       end
     end
   end
