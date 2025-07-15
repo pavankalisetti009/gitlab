@@ -130,7 +130,7 @@ describe('Category form', () => {
           mockSecurityLabels
             .filter((label) => label.categoryId === category.id)
             .forEach((label, index) => {
-              expect(wrapper.findAllComponents(GlLabel).at(index).props('title')).toBe(label.label);
+              expect(wrapper.findAllComponents(GlLabel).at(index).props('title')).toBe(label.name);
               expect(
                 wrapper.findComponent(GlTableLite).find('tbody').findAll('tr').at(index).text(),
               ).toContain(label.description);
@@ -155,7 +155,7 @@ describe('Category form', () => {
 
           await nextTick();
 
-          expect(wrapper.emitted()).toMatchObject({ editLabel: [[{ label: 'Asset Track' }]] });
+          expect(wrapper.emitted()).toMatchObject({ editLabel: [[{ name: 'Asset Track' }]] });
         });
       }
       if (!canEditLabels) {

@@ -48,10 +48,7 @@ export default {
       this.$refs.labelDrawer.open(mode, item);
     },
     editLabel(label) {
-      this.openDrawer('edit', {
-        name: label.label,
-        ...label,
-      });
+      this.openDrawer('edit', label);
     },
     addLabel() {
       this.openDrawer('add');

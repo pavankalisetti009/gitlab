@@ -50,7 +50,7 @@ export const mockSecurityLabels = [
   {
     id: 1,
     categoryId: 11,
-    label: 'Asset Track',
+    name: 'Asset Track',
     description:
       'A comprehensive portfolio management system that monitors client investments and tracks asset performance across multiple markets.',
     color: '#3478C6',
@@ -59,7 +59,7 @@ export const mockSecurityLabels = [
   {
     id: 2,
     categoryId: 11,
-    label: 'Bank Branch',
+    name: 'Bank Branch',
     description:
       'A branch operations management platform that streamlines teller workflows, queue management, and daily transaction reconciliation.',
     color: '#67AD5C',
@@ -68,7 +68,7 @@ export const mockSecurityLabels = [
   {
     id: 3,
     categoryId: 11,
-    label: 'Capital Commit',
+    name: 'Capital Commit',
     description:
       'An enterprise lending solution that manages the complete lifecycle of commercial loans from application to disbursement.',
     color: '#EC6337',
@@ -77,7 +77,7 @@ export const mockSecurityLabels = [
   {
     id: 4,
     categoryId: 11,
-    label: 'Deposit Source',
+    name: 'Deposit Source',
     description:
       'A savings account management system that handles interest calculations, automatic transfers, and customer-facing deposit operations.',
     color: '#613CB1',
@@ -86,7 +86,7 @@ export const mockSecurityLabels = [
   {
     id: 5,
     categoryId: 11,
-    label: 'Fiscal Flow',
+    name: 'Fiscal Flow',
     description:
       'A cash management solution that optimizes liquidity forecasting and treasury operations across the banking network.',
     color: '#4994EC',
@@ -95,7 +95,7 @@ export const mockSecurityLabels = [
   {
     id: 6,
     categoryId: 11,
-    label: 'Ledger Link',
+    name: 'Ledger Link',
     description:
       'A general ledger system that maintains financial records, facilitates account reconciliation, and generates regulatory reports.',
     color: '#F6C444',
@@ -104,7 +104,7 @@ export const mockSecurityLabels = [
   {
     id: 7,
     categoryId: 11,
-    label: 'Vault Version',
+    name: 'Vault Version',
     description:
       'A secure document management system for handling sensitive financial agreements, contracts, and compliance documentation.',
     color: '#9031AA',
@@ -113,7 +113,7 @@ export const mockSecurityLabels = [
   {
     id: 8,
     categoryId: 11,
-    label: 'Wealth Ware',
+    name: 'Wealth Ware',
     description:
       'A private banking platform that provides personalized financial planning tools and investment advisory services for high-net-worth clients.',
     color: '#D63865',
@@ -122,7 +122,7 @@ export const mockSecurityLabels = [
   {
     id: 9,
     categoryId: 12,
-    label: 'Mission Critical',
+    name: 'Mission Critical',
     description: 'Essential for core business functions',
     color: '#A16522',
     projectCount: 3,
@@ -130,7 +130,7 @@ export const mockSecurityLabels = [
   {
     id: 10,
     categoryId: 12,
-    label: 'Business Critical',
+    name: 'Business Critical',
     description: 'Important for key business operations',
     color: '#B8802F',
     projectCount: 45,
@@ -138,7 +138,7 @@ export const mockSecurityLabels = [
   {
     id: 11,
     categoryId: 12,
-    label: 'Business Operational',
+    name: 'Business Operational',
     description: 'Standard operational systems',
     color: '#CF9846',
     projectCount: 2,
@@ -146,7 +146,7 @@ export const mockSecurityLabels = [
   {
     id: 12,
     categoryId: 12,
-    label: 'Business Administrative',
+    name: 'Business Administrative',
     description: 'Supporting administrative functions',
     color: '#E2C07F',
     projectCount: 3,
@@ -154,7 +154,7 @@ export const mockSecurityLabels = [
   {
     id: 13,
     categoryId: 12,
-    label: 'Non-essential',
+    name: 'Non-essential',
     description: 'Minimal business impact',
     color: '#F1DAAE',
     projectCount: 24,
@@ -162,7 +162,7 @@ export const mockSecurityLabels = [
   {
     id: 14,
     categoryId: 15,
-    label: 'Canada::Toronto',
+    name: 'Canada::Toronto',
     description: 'Distributed team coordination center for Canadian remote workforce.',
     color: '#9B1EC5',
     projectCount: 58,
@@ -170,7 +170,7 @@ export const mockSecurityLabels = [
   {
     id: 15,
     categoryId: 15,
-    label: 'Singapore::Singapore',
+    name: 'Singapore::Singapore',
     description: 'Asia-Pacific regional office covering Southeast Asian operations.',
     color: '#D3875B',
     projectCount: 31,
@@ -178,7 +178,7 @@ export const mockSecurityLabels = [
   {
     id: 16,
     categoryId: 15,
-    label: 'UK::London',
+    name: 'UK::London',
     description: 'European headquarters serving UK and European markets.',
     color: '#5FC975',
     projectCount: 13,
@@ -186,7 +186,7 @@ export const mockSecurityLabels = [
   {
     id: 17,
     categoryId: 15,
-    label: 'USA::Austin',
+    name: 'USA::Austin',
     description:
       'Secondary engineering office focused on backend infrastructure and platform development.',
     color: '#3878C2',
@@ -195,7 +195,7 @@ export const mockSecurityLabels = [
   {
     id: 18,
     categoryId: 15,
-    label: 'USA::Denver',
+    name: 'USA::Denver',
     description: 'Dedicated facility for infrastructure monitoring and cloud services management.',
     color: '#3878C2',
     projectCount: 94,
@@ -203,7 +203,7 @@ export const mockSecurityLabels = [
   {
     id: 19,
     categoryId: 15,
-    label: 'USA::New York',
+    name: 'USA::New York',
     description: 'East Coast sales and business development operations center.',
     color: '#3878C2',
     projectCount: 28,
@@ -211,7 +211,7 @@ export const mockSecurityLabels = [
   {
     id: 20,
     categoryId: 15,
-    label: 'USA::San Francisco',
+    name: 'USA::San Francisco',
     description: 'Primary headquarters and main engineering hub in California.',
     color: '#3878C2',
     projectCount: 1,
