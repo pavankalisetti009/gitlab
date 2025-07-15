@@ -259,6 +259,26 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
     end
   end
 
+  describe '#last_executor_logs_url' do
+    context 'when workloads exist' do
+      before do
+        workload = create(:ci_workload, project: workflow.project)
+        workflow.workflows_workloads.create!(workload: workload, project: workflow.project)
+        allow(workflow.last_workload).to receive(:logs_url).and_return('url_to_logs')
+      end
+
+      it 'returns the URL to the last workload pipeline' do
+        expect(workflow.last_executor_logs_url).to eq('url_to_logs')
+      end
+    end
+
+    context 'when no workloads exist' do
+      it 'returns nil' do
+        expect(workflow.last_executor_logs_url).to be_nil
+      end
+    end
+  end
+
   describe '#project_level?' do
     subject { workflow.project_level? }
 

@@ -88,6 +88,10 @@ module Types
 
         field :stalled, GraphQL::Types::Boolean, method: :stalled?,
           description: 'Workflow got created but has no checkpoints.'
+
+        field :last_executor_logs_url, GraphQL::Types::String,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          description: "URL to the latest executor logs of the workflow."
       end
     end
   end

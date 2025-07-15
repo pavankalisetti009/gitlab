@@ -10,7 +10,10 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
   let_it_be(:project_2) { create(:project, :public, group: group) }
   let_it_be(:user) { create(:user, developer_of: group) }
   let_it_be(:workflow_without_environment) do
-    create(:duo_workflows_workflow, project: project, user: user, created_at: 1.day.ago)
+    create(:duo_workflows_workflow, project: project, user: user, created_at: 1.day.ago).tap do |workflow|
+      workload = create(:ci_workload, project: project)
+      workflow.workflows_workloads.create!(workload: workload, project: project)
+    end
   end
 
   let_it_be(:workflow_with_ide_environment) do
@@ -86,6 +89,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
           timestamp
           workflowStatus
         }
+        lastExecutorLogsUrl
       }
     GRAPHQL
   end
@@ -190,6 +194,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
           expect(returned_workflow['mcpEnabled']).to eq(
             matching_workflow.project.root_ancestor.duo_workflow_mcp_enabled)
           expect(returned_workflow['allowAgentToRequestUser']).to eq(matching_workflow.allow_agent_to_request_user)
+          expect(returned_workflow['lastExecutorLogsUrl']).to eq(matching_workflow.last_executor_logs_url)
 
           expect(returned_workflow).to have_key('firstCheckpoint')
         end
@@ -273,6 +278,10 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
             specific_workflow.project.root_ancestor.duo_workflow_mcp_enabled)
           expect(returned_workflows.first['allowAgentToRequestUser']).to eq(
             specific_workflow.allow_agent_to_request_user
+          )
+          expect(returned_workflows.first['lastExecutorLogsUrl']).not_to be_nil
+          expect(returned_workflows.first['lastExecutorLogsUrl']).to eq(
+            specific_workflow.last_executor_logs_url
           )
           expect(returned_workflows.first).to have_key('firstCheckpoint')
         end

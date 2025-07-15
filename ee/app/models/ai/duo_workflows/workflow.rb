@@ -98,6 +98,14 @@ module Ai
         !created? && !checkpoints.exists?
       end
 
+      def last_executor_logs_url
+        last_workload&.logs_url
+      end
+
+      def last_workload
+        @last_workload ||= workloads.order(created_at: :desc).first
+      end
+
       def project_level?
         project_id.present?
       end
