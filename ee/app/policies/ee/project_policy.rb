@@ -825,9 +825,7 @@ module EE
         @user.duo_code_review_bot?
       end
 
-      # NOTE: This condition does not use :subject scope because it needs to be evaluated for each request,
-      # as the request IP can change
-      condition(:ip_enforcement_prevents_access) do
+      condition(:ip_enforcement_prevents_access, scope: :subject) do
         !::Gitlab::IpRestriction::Enforcer.new(subject.group).allows_current_ip? if subject.group
       end
 
