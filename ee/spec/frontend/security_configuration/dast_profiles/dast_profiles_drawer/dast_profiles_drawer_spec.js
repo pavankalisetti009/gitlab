@@ -1,4 +1,4 @@
-import { GlDrawer, GlLink } from '@gitlab/ui';
+import { GlDrawer, GlEmptyState, GlLink } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import DastProfilesDrawer from 'ee/security_configuration/dast_profiles/dast_profiles_drawer/dast_profiles_drawer.vue';
@@ -44,6 +44,7 @@ describe('DastProfilesDrawer', () => {
   const findCancelButton = () => wrapper.findByTestId('dast-profile-form-cancel-button');
   const findSkeletonLoader = () => wrapper.findComponent(DastProfilesLoader);
   const findGlDrawer = () => wrapper.findComponent(GlDrawer);
+  const findGlEmptyState = () => wrapper.findComponent(GlEmptyState);
 
   const openEditForm = async () => {
     findEditButton().vm.$emit('click');
@@ -59,6 +60,7 @@ describe('DastProfilesDrawer', () => {
 
     await waitForPromises();
 
+    expect(findGlEmptyState().exists()).toBe(true);
     expect(findEmptyStateHeader().exists()).toBe(true);
     expect(findEmptyStateHeader().text()).toContain(`No ${SCANNER_TYPE} profiles found for DAST`);
     expect(findDrawerHeader().text()).toContain('Scanner profile library');
