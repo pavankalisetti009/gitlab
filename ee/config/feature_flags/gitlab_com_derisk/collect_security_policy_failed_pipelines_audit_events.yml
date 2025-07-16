@@ -1,0 +1,10 @@
+---
+name: collect_security_policy_failed_pipelines_audit_events
+description: Collects audit events for failed pipelines with security policy jobs or pipelines created by security policies.
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/539232
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196628
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/554064
+milestone: '18.3'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false

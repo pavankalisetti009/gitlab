@@ -2,15 +2,15 @@
 
 module Security
   module SecurityOrchestrationPolicies
-    class PipelineSkippedAuditor < PipelineAuditor
+    class PipelineFailedAuditor < PipelineAuditor
       private
 
       def event_name
-        'policy_pipeline_skipped'
+        'policy_pipeline_failed'
       end
 
       def event_message
-        "Pipeline: #{pipeline.id} with security policy jobs skipped"
+        "Pipeline: #{pipeline.id} created by security policies or with security policy jobs failed"
       end
     end
   end

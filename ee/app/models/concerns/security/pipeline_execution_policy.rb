@@ -8,8 +8,15 @@ module Security
       pipeline_execution_policy.select { |config| config[:enabled] }.first(pipeline_execution_policy_limit)
     end
 
-    def active_pipeline_execution_policy_names
-      active_pipeline_execution_policies.pluck(:name) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- not an ActiveRecord model and active_pipeline_execution_policies has limit
+    def active_pipeline_execution_policy_names(project)
+      policy_scope_checker = ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
+
+      applicable_policies = active_pipeline_execution_policies
+        .select { |policy| policy_scope_checker.policy_applicable?(policy) }
+
+      return [] if applicable_policies.empty?
+
+      applicable_policies.pluck(:name) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- not an ActiveRecord model and active_pipeline_execution_policies has limit
     end
 
     def pipeline_execution_policy
