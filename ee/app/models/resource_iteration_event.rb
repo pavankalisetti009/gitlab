@@ -27,8 +27,6 @@ class ResourceIterationEvent < ResourceTimeboxEvent
   private
 
   def ensure_namespace_id
-    return if namespace_id && namespace_id > 0
-
     self.namespace_id = iteration&.group_id
   end
 end
