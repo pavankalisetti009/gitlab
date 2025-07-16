@@ -85,9 +85,9 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::ModelSwitching::AiGatew
             )
           end
 
-          it 'returns params with the gitlab provided haiku model' do
-            haiku_model_name = described_class::GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME
-            expect(request_params).to include(expected_params.merge(model_name: haiku_model_name))
+          it 'returns params with the gitlab provided Sonnet 3.5 model' do
+            sonnet_35_model_name = described_class::GITLAB_PROVIDED_CLAUDE_SONNET_35_MODEL_NAME
+            expect(request_params).to include(expected_params.merge(model_name: sonnet_35_model_name))
           end
         end
 
@@ -106,9 +106,9 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::ModelSwitching::AiGatew
         end
 
         context "when the claude group has no feature setting" do
-          it 'returns params with the gitlab provided haiku model' do
-            haiku_model_name = described_class::GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME
-            expect(request_params).to include(expected_params.merge(model_name: haiku_model_name))
+          it 'returns params with the gitlab provided Sonnet 3.5 model' do
+            sonnet_35_model_name = described_class::GITLAB_PROVIDED_CLAUDE_SONNET_35_MODEL_NAME
+            expect(request_params).to include(expected_params.merge(model_name: sonnet_35_model_name))
           end
         end
       end
@@ -124,7 +124,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::ModelSwitching::AiGatew
             message: 'Model switching executed for code completion without a feature setting',
             root_namespace_id: params[:project]&.root_namespace&.id,
             user_group_with_claude_code_completion_id: user_group_with_claude_code_completion.id,
-            model_to_be_used: described_class::GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME
+            model_to_be_used: described_class::GITLAB_PROVIDED_CLAUDE_SONNET_35_MODEL_NAME
           }.stringify_keys
 
           expect(Gitlab::AppJsonLogger).to receive(:debug).with(debug_params)
