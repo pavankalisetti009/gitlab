@@ -1,7 +1,6 @@
 import Vue, { nextTick } from 'vue';
-
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import inlineFindingsGutterIconDropdown from 'ee/diffs/components/inline_findings_gutter_icon_dropdown.vue';
 import inlineFindingsDropdown from 'ee/diffs/components/inline_findings_dropdown.vue';
@@ -12,13 +11,12 @@ import {
   singularSastFinding,
   filePath,
 } from 'jest/diffs/mock_data/inline_findings';
+import { useFindingsDrawer } from '~/mr_notes/store/findings_drawer';
 
-jest.mock('~/mr_notes/stores', () => jest.requireActual('helpers/mocks/mr_notes/stores'));
-Vue.use(Vuex);
+Vue.use(PiniaVuePlugin);
 
-let store;
+let pinia;
 let wrapper;
-const mockSetDrawer = jest.fn();
 
 const findInlineFindingsDropdown = () => wrapper.findComponent(inlineFindingsDropdown);
 const findMoreCount = () => wrapper.findByTestId('inline-findings-more-count');
@@ -29,14 +27,14 @@ const createComponent = (
     codeQuality: singularCodeQualityFinding,
   },
 ) => {
-  const payload = {
-    propsData: props,
-    store,
-  };
-  wrapper = mountExtended(inlineFindingsGutterIconDropdown, payload);
+  wrapper = mountExtended(inlineFindingsGutterIconDropdown, { propsData: props, pinia });
 };
 
 describe('EE inlineFindingsGutterIconDropdown', () => {
+  beforeEach(() => {
+    pinia = createTestingPinia({ stubActions: false });
+  });
+
   describe('code Quality gutter icon', () => {
     ignoreConsoleMessages([/\[Vue warn\]: \(deprecation TRANSITION_GROUP_ROOT\)/]);
 
@@ -77,23 +75,6 @@ describe('EE inlineFindingsGutterIconDropdown', () => {
     });
 
     describe('groupedFindings', () => {
-      beforeEach(() => {
-        mockSetDrawer.mockReset();
-
-        const findingsDrawerModule = {
-          namespaced: true,
-          actions: {
-            setDrawer: mockSetDrawer,
-          },
-        };
-
-        store = new Vuex.Store({
-          modules: {
-            findingsDrawer: findingsDrawerModule,
-          },
-        });
-      });
-
       it('calls setDrawer action when an item action is triggered', async () => {
         createComponent({
           filePath,
@@ -105,11 +86,11 @@ describe('EE inlineFindingsGutterIconDropdown', () => {
 
         // check for CodeQuality
         await itemElements.at(0).trigger('click');
-        expect(mockSetDrawer).toHaveBeenCalledTimes(1);
+        expect(useFindingsDrawer().setDrawer).toHaveBeenCalledTimes(1);
 
         // check for SAST
         await itemElements.at(1).trigger('click');
-        expect(mockSetDrawer).toHaveBeenCalledTimes(2);
+        expect(useFindingsDrawer().setDrawer).toHaveBeenCalledTimes(2);
       });
 
       it('calls setDrawer action with correct allLineFindings and index when an item action is triggered', async () => {
@@ -121,9 +102,8 @@ describe('EE inlineFindingsGutterIconDropdown', () => {
 
         const itemElements = findDropdownItems();
         await itemElements.at(0).trigger('click');
-        const firstCallFirstArg = mockSetDrawer.mock.calls[0][1];
 
-        expect(firstCallFirstArg).toEqual({
+        expect(useFindingsDrawer().setDrawer).toHaveBeenNthCalledWith(1, {
           findings: [
             {
               ...singularCodeQualityFinding[0],
@@ -142,9 +122,8 @@ describe('EE inlineFindingsGutterIconDropdown', () => {
         });
 
         await itemElements.at(1).trigger('click');
-        const secondCall = mockSetDrawer.mock.calls[1][1];
 
-        expect(secondCall).toEqual({
+        expect(useFindingsDrawer().setDrawer).toHaveBeenNthCalledWith(2, {
           findings: [
             {
               ...singularCodeQualityFinding[0],

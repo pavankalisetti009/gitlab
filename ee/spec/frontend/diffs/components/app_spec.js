@@ -3,18 +3,17 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { PiniaVuePlugin } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import getMRCodequalityAndSecurityReports from 'ee_else_ce/diffs/components/graphql/get_mr_codequality_and_security_reports.query.graphql';
 import { TEST_HOST } from 'spec/test_constants';
 import App, { FINDINGS_POLL_INTERVAL } from '~/diffs/components/app.vue';
 import DiffFile from '~/diffs/components/diff_file.vue';
-import vuexStore from 'helpers/mocks/mr_notes/stores';
 import { globalAccessorPlugin } from '~/pinia/plugins';
 import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 import { useNotes } from '~/notes/store/legacy_notes';
+import { useBatchComments } from '~/batch_comments/store';
+import { useFindingsDrawer } from '~/mr_notes/store/findings_drawer';
 import {
   codeQualityNewErrorsHandler,
   SASTParsedHandler,
@@ -27,7 +26,6 @@ import {
 
 const TEST_ENDPOINT = `${TEST_HOST}/diff/endpoint`;
 
-Vue.use(Vuex);
 Vue.use(VueApollo);
 Vue.use(PiniaVuePlugin);
 
@@ -38,17 +36,6 @@ describe('diffs/components/app', () => {
   let store;
 
   const createComponent = ({ props = {}, queryHandler = codeQualityNewErrorsHandler } = {}) => {
-    vuexStore.reset();
-    vuexStore.getters.isNotesFetched = false;
-    vuexStore.getters.getNoteableData = {
-      current_user: {
-        can_create_note: true,
-      },
-    };
-    vuexStore.getters['findingsDrawer/activeDrawer'] = {};
-
-    vuexStore.state.findingsDrawer = { activeDrawer: false };
-
     fakeApollo = createMockApollo([[getMRCodequalityAndSecurityReports, queryHandler]]);
 
     wrapper = shallowMount(App, {
@@ -61,9 +48,6 @@ describe('diffs/components/app', () => {
         currentUser: {},
         changesEmptyStateIllustration: '',
         ...props,
-      },
-      mocks: {
-        $store: vuexStore,
       },
       pinia,
     });
@@ -93,6 +77,8 @@ describe('diffs/components/app', () => {
     store.assignDiscussionsToDiff.mockResolvedValue();
 
     useNotes();
+    useBatchComments();
+    useFindingsDrawer();
   });
 
   describe('EE codequality diff', () => {

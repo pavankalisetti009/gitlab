@@ -1,10 +1,10 @@
 <script>
-// eslint-disable-next-line no-restricted-imports
-import { mapActions } from 'vuex';
+import { mapActions } from 'pinia';
 import { GlIcon } from '@gitlab/ui';
 import { n__ } from '~/locale';
 import { getSeverity } from '~/ci/reports/utils';
 import { SAST_SCALE_KEY, CODE_QUALITY_SCALE_KEY } from '~/ci/reports/constants';
+import { useFindingsDrawer } from '~/mr_notes/store/findings_drawer';
 import InlineFindingsDropdown from './inline_findings_dropdown.vue';
 import { scaleFindings } from './inline_findings_gutter_icon_utils';
 
@@ -113,7 +113,7 @@ export default {
     toggleDrawer(findings, index) {
       this.setDrawer({ findings, index });
     },
-    ...mapActions('findingsDrawer', ['setDrawer']),
+    ...mapActions(useFindingsDrawer, ['setDrawer']),
   },
 };
 </script>

@@ -1,10 +1,17 @@
 import { getByTestId as getByTestIdHelper, within } from '@testing-library/dom';
 import { createWrapper, shallowMount } from '@vue/test-utils';
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
+import { createTestingPinia } from '@pinia/testing';
+import { PiniaVuePlugin } from 'pinia';
 import CveIdRequest from 'ee/sidebar/components/cve_id_request/cve_id_request.vue';
-import { store } from '~/notes/stores';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+import { useNotes } from '~/notes/store/legacy_notes';
+
+Vue.use(PiniaVuePlugin);
 
 describe('CveIdRequest', () => {
+  let pinia;
   let wrapper;
 
   const provide = {
@@ -16,7 +23,7 @@ describe('CveIdRequest', () => {
   const createComponent = () => {
     wrapper = shallowMount(CveIdRequest, {
       provide,
-      store,
+      pinia,
     });
   };
 
@@ -25,7 +32,9 @@ describe('CveIdRequest', () => {
   const queryByTestId = (id, options) => within(wrapper.element).queryByTestId(id, options);
 
   beforeEach(() => {
-    store.state.noteableData.confidential = true;
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
+    useLegacyDiffs();
+    useNotes().noteableData.confidential = true;
 
     createComponent();
   });
