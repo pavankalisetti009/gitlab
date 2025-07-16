@@ -19,7 +19,7 @@ module Dora
       query = deployments
         .project(
           Arel.sql(
-            'PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY EXTRACT(EPOCH FROM (deployments.finished_at - merge_request_metrics.merged_at)))'
+            'PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY GREATEST(0, EXTRACT(EPOCH FROM (deployments.finished_at - merge_request_metrics.merged_at))))'
           )
         )
         .join(deployment_merge_requests).on(
