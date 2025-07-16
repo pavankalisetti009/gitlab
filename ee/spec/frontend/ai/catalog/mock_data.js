@@ -1,6 +1,7 @@
 const TYPENAME_AI_CATALOG_ITEM = 'AiCatalogItem';
 const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
-const TYPENAME_AI_CATALOG_ITEM_VERSION = 'AiCatalogAgentVersion';
+const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
+const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_PROJECT = 'Project';
 
 const mockProject = {
@@ -22,7 +23,7 @@ const mockAgentVersions = [
   {
     id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
     versionName: 'v1.0.0-draft',
-    __typename: TYPENAME_AI_CATALOG_ITEM_VERSION,
+    __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
     systemPrompt: 'The system prompt',
     userPrompt: 'The user prompt',
   },
@@ -88,6 +89,58 @@ export const mockCreateAiCatalogAgentErrorMutation = {
     aiCatalogAgentCreate: {
       errors: ['Some error'],
       item: null,
+    },
+  },
+};
+
+const mockFlowVersions = [
+  {
+    id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+    versionName: 'v1.0.0-draft',
+    __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
+  },
+];
+
+const mockFlowFactory = (overrides = {}) => ({
+  id: 'gid://gitlab/Ai::Catalog::Item/4',
+  name: 'Test AI Flow 1',
+  itemType: 'FLOW',
+  description: 'A helpful AI flow for testing purposes',
+  createdAt: '2024-01-15T10:30:00Z',
+  versions: {
+    nodes: mockFlowVersions,
+  },
+  __typename: TYPENAME_AI_CATALOG_ITEM,
+  ...overrides,
+});
+
+export const mockFlow = mockFlowFactory({
+  versions: {
+    nodes: mockFlowVersions,
+  },
+});
+
+export const mockFlows = [
+  mockFlow,
+  mockFlowFactory({
+    id: 'gid://gitlab/Ai::Catalog::Item/5',
+    name: 'Test AI Flow 2',
+    description: 'Another AI flow',
+    createdAt: '2024-02-10T14:20:00Z',
+  }),
+  mockFlowFactory({
+    id: 'gid://gitlab/Ai::Catalog::Item/6',
+    name: 'Test AI Flow 3',
+    description: 'Another AI flow',
+    createdAt: '2024-02-10T14:20:00Z',
+  }),
+];
+
+export const mockCatalogFlowsResponse = {
+  data: {
+    aiCatalogItems: {
+      nodes: mockFlows,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONNECTION,
     },
   },
 };

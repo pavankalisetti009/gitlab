@@ -2,7 +2,7 @@ import { GlTab, GlTabs } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import AiCatalogNavTabs from 'ee/ai/catalog/components/ai_catalog_nav_tabs.vue';
-import { AI_CATALOG_AGENTS_ROUTE } from 'ee/ai/catalog/router/constants';
+import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_FLOWS_ROUTE } from 'ee/ai/catalog/router/constants';
 
 describe('AiCatalogNavTabs', () => {
   let wrapper;
@@ -34,13 +34,31 @@ describe('AiCatalogNavTabs', () => {
   });
 
   it('renders the correct number of tabs', () => {
-    expect(findAllTabs()).toHaveLength(1);
+    expect(findAllTabs()).toHaveLength(2);
   });
 
   it('renders the Agents tab', () => {
     const agentsTab = findAllTabs().at(0);
 
     expect(agentsTab.attributes('title')).toBe('Agents');
+  });
+
+  it('renders the Flows tab', () => {
+    const flowsTab = findAllTabs().at(1);
+
+    expect(flowsTab.attributes('title')).toBe('Flows');
+  });
+
+  describe('when on Flows route', () => {
+    beforeEach(() => {
+      createComponent({ routePath: AI_CATALOG_FLOWS_ROUTE });
+    });
+
+    it('renders the Flows tab as active', () => {
+      const flowsTab = findAllTabs().at(1);
+
+      expect(flowsTab.attributes('active')).toBe('true');
+    });
   });
 
   describe('navigation', () => {

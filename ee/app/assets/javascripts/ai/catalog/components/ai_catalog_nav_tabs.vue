@@ -1,7 +1,7 @@
 <script>
 import { GlTab, GlTabs } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
+import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 
 export default {
   components: {
@@ -14,6 +14,12 @@ export default {
         {
           text: s__('AICatalog|Agents'),
           route: AI_CATALOG_AGENTS_ROUTE,
+          active: this.$route.path.startsWith(AI_CATALOG_AGENTS_ROUTE),
+        },
+        {
+          text: s__('AICatalog|Flows'),
+          route: AI_CATALOG_FLOWS_ROUTE,
+          active: this.$route.path.startsWith(AI_CATALOG_FLOWS_ROUTE),
         },
       ];
     },
@@ -35,6 +41,7 @@ export default {
         v-for="tab in tabs"
         :key="tab.text"
         :title="tab.text"
+        :active="tab.active"
         @click="navigateTo(tab.route)"
       />
     </gl-tabs>
