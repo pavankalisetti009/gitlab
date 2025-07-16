@@ -156,7 +156,7 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
             expect(page).to have_button('Cancel')
 
             expect(page).to have_selector('form#work-item-list-bulk-edit')
-            expect(page).to have_button('Select labels')
+            expect(page).to have_button('Select labels', disabled: true)
           end
         end
 
