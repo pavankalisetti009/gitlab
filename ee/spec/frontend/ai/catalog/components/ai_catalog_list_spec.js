@@ -118,6 +118,11 @@ describe('AiCatalogList', () => {
         expect(listItem.props('item')).toEqual(mockItems[index]);
       });
     });
+
+    it('passes select-item event up from item components', () => {
+      findListItems().at(0).vm.$emit('select-item');
+      expect(wrapper.emitted('select-item')).toEqual([[mockItems[0]]]);
+    });
   });
 
   describe('empty items', () => {

@@ -6,12 +6,17 @@ import {
   GlDisclosureDropdownGroup,
   GlDisclosureDropdownItem,
   GlIcon,
+  GlLink,
   GlMarkdown,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { s__ } from '~/locale';
-import { AI_CATALOG_AGENTS_SHOW_ROUTE, AI_CATALOG_AGENTS_RUN_ROUTE } from '../router/constants';
+import {
+  AI_CATALOG_AGENTS_SHOW_ROUTE,
+  AI_CATALOG_AGENTS_RUN_ROUTE,
+  AI_CATALOG_SHOW_QUERY_PARAM,
+} from '../router/constants';
 import { ENUM_TO_NAME_MAP } from '../constants';
 
 export default {
@@ -23,6 +28,7 @@ export default {
     GlDisclosureDropdownGroup,
     GlDisclosureDropdownItem,
     GlIcon,
+    GlLink,
     GlMarkdown,
   },
   directives: {
@@ -35,14 +41,16 @@ export default {
     },
   },
   computed: {
-    items() {
-      const formattedId = getIdFromGraphQLId(this.item.id);
+    formattedItemId() {
+      return getIdFromGraphQLId(this.item.id);
+    },
+    actionItems() {
       return [
         {
           text: s__('AICatalog|Run'),
           to: this.$router.resolve({
             name: AI_CATALOG_AGENTS_RUN_ROUTE,
-            params: { id: formattedId },
+            params: { id: this.formattedItemId },
           }).route.path,
           icon: 'rocket-launch',
         },
@@ -50,11 +58,17 @@ export default {
           text: s__('AICatalog|Edit'),
           to: this.$router.resolve({
             name: AI_CATALOG_AGENTS_SHOW_ROUTE,
-            params: { id: formattedId },
+            params: { id: this.formattedItemId },
           }).route.path,
           icon: 'pencil',
         },
       ];
+    },
+    showItemRoute() {
+      return {
+        name: this.$route.name,
+        query: { [AI_CATALOG_SHOW_QUERY_PARAM]: this.formattedItemId },
+      };
     },
   },
   ENUM_TO_NAME_MAP,
@@ -75,7 +89,9 @@ export default {
       />
       <div class="gl-flex gl-grow gl-flex-col gl-gap-1">
         <div class="gl-mb-1 gl-flex gl-flex-wrap gl-items-center gl-gap-2">
-          {{ item.name }}
+          <gl-link :to="showItemRoute" @click="$emit('select-item')">
+            {{ item.name }}
+          </gl-link>
           <gl-badge variant="neutral" class="gl-self-center">
             {{ $options.ENUM_TO_NAME_MAP[item.itemType] }}
           </gl-badge>
@@ -95,7 +111,7 @@ export default {
     >
       <gl-disclosure-dropdown-group>
         <gl-disclosure-dropdown-item
-          v-for="(listItem, index) in items"
+          v-for="(listItem, index) in actionItems"
           :key="index"
           :item="listItem"
           :to="listItem.to"
