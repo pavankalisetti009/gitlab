@@ -10,11 +10,10 @@ module CodeSuggestions
 
           GATEWAY_PROMPT_VERSION = 3
           MODEL_PROVIDER = 'gitlab'
-          GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME = 'claude_3_5_haiku_20241022'
+          GITLAB_PROVIDED_CLAUDE_SONNET_35_MODEL_NAME = 'claude_3_5_sonnet_20240620'
           GITLAB_PROVIDED_ANTHROPIC_MODELS_FOR_CODE_COMPLETION = [
-            GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME,
             'claude_sonnet_3_7_20250219',
-            'claude_3_5_sonnet_20240620'
+            GITLAB_PROVIDED_CLAUDE_SONNET_35_MODEL_NAME
           ].freeze
 
           def initialize(params, current_user, feature_setting, user_group_with_claude_code_completion)
@@ -57,7 +56,7 @@ module CodeSuggestions
 
               model_to_be_used = if namespace_feature_setting_from_user_group.nil? ||
                   namespace_feature_setting_from_user_group.set_to_gitlab_default?
-                                   GITLAB_PROVIDED_CLAUDE_HAIKU_MODEL_NAME
+                                   GITLAB_PROVIDED_CLAUDE_SONNET_35_MODEL_NAME
                                  else
                                    namespace_feature_setting_from_user_group.offered_model_ref
                                  end

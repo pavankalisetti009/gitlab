@@ -31,7 +31,7 @@ module CodeSuggestions
         return if self_hosted?
 
         if user_group_with_claude_code_completion.present?
-          return CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeHaiku
+          return CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeSonnet
         end
 
         return CodeSuggestions::Prompts::CodeCompletion::VertexCodestral if code_completion_opt_out_fireworks?

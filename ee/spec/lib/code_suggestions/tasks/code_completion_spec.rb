@@ -201,7 +201,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
             let(:expected_feature_name) { :code_suggestions }
             let(:expected_body) do
               unsafe_params.merge(
-                model_name: 'claude_3_5_haiku_20241022',
+                model_name: 'claude_3_5_sonnet_20240620',
                 model_provider: 'gitlab',
                 prompt: anthropic_prompt,
                 prompt_version: 3
@@ -296,9 +296,9 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           let(:expected_feature_name) { :code_suggestions }
           let(:model_engine) { nil }
           let(:expected_body) do
-            # explicitly uses the gitlab provided haiku model
+            # explicitly uses the gitlab provided Sonnet 3.5 model
             unsafe_params.merge(
-              model_name: 'claude_3_5_haiku_20241022',
+              model_name: 'claude_3_5_sonnet_20240620',
               model_provider: 'gitlab',
               prompt: anthropic_prompt,
               prompt_version: 3
@@ -345,8 +345,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           let(:model_engine) { nil }
           let(:expected_body) do
             unsafe_params.merge(
-              # it explicitly uses Claude Haiku 3.5 as the model
-              model_name: 'claude_3_5_haiku_20241022',
+              # it explicitly uses Claude Sonnet 3.5 as the model
+              model_name: 'claude_3_5_sonnet_20240620',
               model_provider: 'gitlab',
               prompt: anthropic_prompt,
               prompt_version: 3

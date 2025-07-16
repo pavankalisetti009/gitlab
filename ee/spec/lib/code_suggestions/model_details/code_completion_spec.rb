@@ -59,6 +59,16 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
             expect(actual_result).to eq(expected_codestral_result)
           end
         end
+
+        context 'when opted into claude for code completion' do
+          before do
+            stub_feature_flags(use_claude_code_completion: true)
+          end
+
+          it 'returns the claude model' do
+            expect(actual_result).to eq(expected_claude_result) if expected_claude_result.present?
+          end
+        end
       end
 
       context 'on GitLab saas' do
@@ -88,6 +98,16 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
               # 3 - for Group.by_id(<group ids>) in ModelDetails::Completions#user_duo_groups
               expect { actual_result }.not_to exceed_query_limit(3)
             end
+          end
+        end
+
+        context 'when opted into claude for code completion' do
+          before do
+            stub_feature_flags(use_claude_code_completion: true)
+          end
+
+          it 'returns the claude model' do
+            expect(actual_result).to eq(expected_claude_result) if expected_claude_result.present?
           end
         end
       end
@@ -147,7 +167,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       end
 
       let(:expected_claude_result) do
-        CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeHaiku
+        CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeSonnet
       end
 
       let(:expected_self_hosted_model_result) { nil }
