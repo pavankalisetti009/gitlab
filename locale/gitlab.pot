@@ -27188,6 +27188,24 @@ msgstr ""
 msgid "FeatureFlag|User List"
 msgstr ""
 
+msgid "FeaturedUpdate|%{current} / %{total}"
+msgstr ""
+
+msgid "FeaturedUpdate|Discover AI-native features including Code Suggestions and Chat in your IDE in GitLab Premium and Ultimate."
+msgstr ""
+
+msgid "FeaturedUpdate|Featured updates"
+msgstr ""
+
+msgid "FeaturedUpdate|GitLab Premium and Ultimate with Duo"
+msgstr ""
+
+msgid "FeaturedUpdate|Granular access controls for GitLab Duo Core"
+msgstr ""
+
+msgid "FeaturedUpdate|Set detailed permissions for GitLab Duo Core across projects and groups to fit your workflow."
+msgstr ""
+
 msgid "Feb"
 msgstr ""
 
@@ -43982,6 +44000,9 @@ msgid "Other labels"
 msgstr ""
 
 msgid "Other merge requests block this MR"
+msgstr ""
+
+msgid "Other updates"
 msgstr ""
 
 msgid "Other versions"
@@ -70336,6 +70357,9 @@ msgid "What would you like to do?"
 msgstr ""
 
 msgid "What's new"
+msgstr ""
+
+msgid "What's new at GitLab"
 msgstr ""
 
 msgid "What's new moved to Help."
