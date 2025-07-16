@@ -3,6 +3,8 @@
 module Authz
   module AdminRoles
     class DeleteService < ::Authz::CustomRoles::BaseService
+      include Gitlab::InternalEventsTracking
+
       def execute(role)
         @role = role
 
@@ -10,6 +12,7 @@ module Authz
 
         if role.destroy
           log_audit_event(action: :deleted)
+          collect_metrics
 
           success
         else
@@ -21,6 +24,15 @@ module Authz
 
       def allowed?
         can?(current_user, :delete_admin_role, role)
+      end
+
+      def collect_metrics
+        track_internal_event(
+          'delete_admin_custom_role',
+          project: nil,
+          namespace: nil,
+          user: current_user
+        )
       end
     end
   end

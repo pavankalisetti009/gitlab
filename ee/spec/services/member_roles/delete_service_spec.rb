@@ -29,6 +29,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
         let_it_be(:user) { admin }
 
         it_behaves_like 'deleting a role'
+        it_behaves_like 'tracking regular custom role deletion'
 
         context 'when the member role is linked to a security policy' do
           before do
@@ -53,6 +54,8 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
             let(:audit_event_type) { 'admin_role_deleted' }
             let(:audit_event_abilities) { 'read_admin_users' }
           end
+
+          it_behaves_like 'tracking admin custom role deletion'
         end
       end
     end
@@ -76,6 +79,8 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
             let(:audit_entity_id) { group.id }
             let(:audit_entity_type) { group.class.name }
           end
+
+          it_behaves_like 'tracking regular custom role deletion'
         end
       end
 
@@ -88,6 +93,8 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
           let(:audit_event_type) { 'admin_role_deleted' }
           let(:audit_event_abilities) { 'read_admin_users' }
         end
+
+        it_behaves_like 'tracking admin custom role deletion'
       end
     end
   end

@@ -245,6 +245,38 @@ RSpec.shared_examples 'deleting a role' do
   end
 end
 
+RSpec.shared_examples 'tracking regular custom role deletion' do
+  it 'tracks internal event and increments the metrics', :clean_gitlab_redis_shared_state do
+    expect { result }.to trigger_internal_events('delete_custom_role').with(
+      user: user,
+      namespace: nil,
+      project: nil
+    ).and increment_usage_metrics(
+      'redis_hll_counters.count_distinct_user_id_from_delete_custom_role_monthly',
+      'redis_hll_counters.count_distinct_user_id_from_delete_custom_role_weekly',
+      'counts.count_total_delete_custom_role_monthly',
+      'counts.count_total_delete_custom_role_weekly',
+      'counts.count_total_delete_custom_role'
+    )
+  end
+end
+
+RSpec.shared_examples 'tracking admin custom role deletion' do
+  it 'tracks internal event and increments the metrics', :clean_gitlab_redis_shared_state do
+    expect { result }.to trigger_internal_events('delete_admin_custom_role').with(
+      user: user,
+      namespace: nil,
+      project: nil
+    ).and increment_usage_metrics(
+      'redis_hll_counters.count_distinct_user_id_from_delete_admin_custom_role_monthly',
+      'redis_hll_counters.count_distinct_user_id_from_delete_admin_custom_role_weekly',
+      'counts.count_total_delete_admin_custom_role_monthly',
+      'counts.count_total_delete_admin_custom_role_weekly',
+      'counts.count_total_delete_admin_custom_role'
+    )
+  end
+end
+
 RSpec.shared_examples 'does not call custom role query' do
   it 'detects zero queries to projects preloader' do
     recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { subject }

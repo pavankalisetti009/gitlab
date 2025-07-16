@@ -27,6 +27,8 @@ RSpec.describe Authz::AdminRoles::DeleteService, feature_category: :permissions 
         let(:audit_event_type) { 'admin_role_deleted' }
         let(:audit_event_abilities) { enabled_permissions.join(' ') }
       end
+
+      it_behaves_like 'tracking admin custom role deletion'
     end
 
     context 'with an unauthorized user' do
