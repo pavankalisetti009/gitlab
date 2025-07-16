@@ -1034,10 +1034,6 @@ module EE
         prevent :invite_group_members
       end
 
-      condition(:duo_workflow_enabled, scope: :user) do
-        ::Feature.enabled?(:duo_workflow, @user)
-      end
-
       with_scope :subject
       condition(:duo_workflow_available) do
         @subject.duo_features_enabled &&
@@ -1045,7 +1041,7 @@ module EE
           @user&.allowed_to_use?(:duo_agent_platform)
       end
 
-      rule { duo_workflow_enabled & duo_workflow_available & can?(:admin_group) }.policy do
+      rule { duo_workflow_available & can?(:admin_group) }.policy do
         enable :admin_duo_workflow
       end
 
