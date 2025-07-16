@@ -205,6 +205,28 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
             end
           end
         end
+
+        context 'without the dora4_analytics ability' do
+          before do
+            stub_licensed_features(combined_project_analytics_dashboards: true, project_level_analytics_dashboard: true,
+              dora4_analytics: false)
+
+            visit_project_value_streams_dashboard(project)
+          end
+
+          it_behaves_like 'renders unlicensed DORA metrics table visualization'
+        end
+
+        context 'without the security_dashboard ability' do
+          before do
+            stub_licensed_features(combined_project_analytics_dashboards: true, project_level_analytics_dashboard: true,
+              security_dashboard: false)
+
+            visit_project_value_streams_dashboard(project)
+          end
+
+          it_behaves_like 'renders unlicensed security metrics visualization'
+        end
       end
 
       context 'for DORA metrics analytics dashboard' do

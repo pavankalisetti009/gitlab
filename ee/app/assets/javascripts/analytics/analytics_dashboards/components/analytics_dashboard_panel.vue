@@ -4,6 +4,7 @@ import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import isString from 'lodash/isString';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { isEmptyPanelData } from '~/vue_shared/components/customizable_dashboard/utils';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { VARIANT_DANGER, VARIANT_INFO, VARIANT_WARNING } from '~/alert';
 import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import { __, s__, sprintf } from '~/locale';
@@ -74,6 +75,7 @@ export default {
         'ee/analytics/analytics_dashboards/components/visualizations/merge_requests/throughput_table.vue'
       ),
   },
+  mixins: [glAbilitiesMixin()],
   inject: [
     'namespaceId',
     'namespaceFullPath',
@@ -83,7 +85,6 @@ export default {
     'rootNamespaceFullPath',
     'dataSourceClickhouse',
     'overviewCountsAggregationEnabled',
-    'licensedFeatures',
   ],
   props: {
     visualization: {
@@ -188,11 +189,11 @@ export default {
     showLicenseRequiredState() {
       switch (this.visualization.slug) {
         case VISUALIZATION_SLUG_VSD_SECURITY_METRICS_TABLE:
-          return !this.licensedFeatures?.hasSecurityDashboard;
+          return !this.glAbilities?.readSecurityResource;
         case VISUALIZATION_SLUG_VSD_DORA_METRICS_TABLE:
         case VISUALIZATION_SLUG_DORA_PROJECTS_COMPARISON:
         case VISUALIZATION_SLUG_DORA_PERFORMERS_SCORE:
-          return !this.licensedFeatures?.hasDoraMetrics;
+          return !this.glAbilities?.readDora4Analytics;
         default:
           return false;
       }

@@ -19,21 +19,6 @@ const buildAnalyticsDashboardPointer = (analyticsDashboardPointerJSON = '') => {
     : null;
 };
 
-// The licensed features are passed as a JSON from ruby, we need to parse the JSON
-// then explicitly convert the feature flags into Booleans for use in JS.
-const buildLicensedFeatures = (features = '') => {
-  const parsed = features.length ? rawJSONtoObject(features) : {};
-  return Object.entries(parsed).reduce(
-    (acc, [k, v]) => {
-      acc[k] = parseBoolean(v);
-      return acc;
-    },
-    {
-      hasScopedLabelsFeature: false,
-    },
-  );
-};
-
 export default () => {
   const el = document.getElementById('js-analytics-dashboards-list-app');
 
@@ -65,12 +50,11 @@ export default () => {
     isInstanceConfiguredWithSelfManagedAnalyticsProvider,
     defaultUseInstanceConfiguration,
     overviewCountsAggregationEnabled,
-    licensedFeatures: licensedFeaturesJSON = '',
+    hasScopedLabelsFeature,
   } = el.dataset;
 
   const analyticsDashboardPointer = buildAnalyticsDashboardPointer(analyticsDashboardPointerJSON);
   const canConfigureProjectSettings = parseBoolean(canConfigureProjectSettingsString);
-  const licensedFeatures = buildLicensedFeatures(licensedFeaturesJSON);
 
   Vue.use(VueApollo);
 
@@ -154,10 +138,9 @@ export default () => {
       ),
       defaultUseInstanceConfiguration: parseBoolean(defaultUseInstanceConfiguration),
       overviewCountsAggregationEnabled: parseBoolean(overviewCountsAggregationEnabled),
+      hasScopedLabelsFeature: parseBoolean(hasScopedLabelsFeature),
       canCreateNewDashboard,
       customizableDashboardsAvailable,
-      licensedFeatures,
-      hasScopedLabelsFeature: licensedFeatures.hasScopedLabelsFeature,
     },
     render(h) {
       return h(DashboardsApp);
