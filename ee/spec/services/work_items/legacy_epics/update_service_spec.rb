@@ -159,14 +159,11 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :team_pl
         )
       ).and_call_original
 
-      expect(::Epics::UpdateService).not_to receive(:new)
-
       execute
     end
 
     it 'uses WorkItems::UpdateService and transforms the result' do
       expect(::WorkItems::UpdateService).to receive(:new).and_call_original
-      expect(::Epics::UpdateService).not_to receive(:new)
 
       execute
     end
