@@ -27,21 +27,86 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       described_class.by_full_text(query: query, options: options)
     end
 
-    context 'when advanced query syntax is not matched' do
-      it 'calls by_multi_match_query' do
-        expect(described_class).to receive(:by_multi_match_query).with(fields: options[:fields], query: query,
-          options: options)
-        by_full_text
+    context 'when advanced query syntax is matched' do
+      where(:query, :description) do
+        [
+          # Characters that always match (no spacing required)
+          ['"gem sidekiq"', 'exact phrase search with quotes'],
+          ['bug error 50*', 'wildcard asterisk'],
+          ['test|case', 'pipe character'],
+          ['(foo bar)', 'parentheses grouping'],
+          ['foo~bar', 'tilde character'],
+          ['\*md', 'escape character'],
+
+          # + and - operators
+          ['display +banner', 'required operator with spaces'],
+          ['display -banner', 'exclusion operator with spaces'],
+          ['foo +bar -baz', 'multiple operators with spaces'],
+          [' + ', 'plus with spaces'],
+          [' - ', 'minus with spaces'],
+          ['+required', 'plus at start without space'],
+          ['-excluded', 'minus at start without space'],
+
+          # Mixed cases
+          ['rails -filename:gemfile.lock', 'text with exclusion operator'],
+          ['"exact phrase" +required', 'quotes with required operator'],
+          ['search* +term', 'wildcard and required operator'],
+          ['RSpec.describe Resolvers -*builder', 'wildcard and exclusion operator'],
+          ['(group) -exclude', 'parentheses and exclusion operator'],
+
+          # GitLab syntax
+          ['#23456', 'issue reference'],
+          ['!23456', 'merge request reference']
+        ]
+      end
+
+      with_them do
+        it "calls by_simple_query_string for #{description}" do
+          expect(described_class).to receive(:by_simple_query_string)
+            .with(fields: options[:fields], query: query, options: options)
+
+          by_full_text
+        end
       end
     end
 
-    context 'when advanced query syntax is matched' do
-      let(:query) { 'foo ~bar' }
+    context 'when advanced query syntax is NOT matched' do
+      where(:query, :description) do
+        [
+          # project paths (hyphens without spaces)
+          ['gitlab-org/gitlab', 'project path with hyphen'],
+          ['my-awesome-project', 'project name with hyphens'],
+          ['user-123/repo-name', 'user and repo with hyphens'],
 
-      it 'calls by_simple_query_string' do
-        expect(described_class).to receive(:by_simple_query_string).with(fields: options[:fields], query: query,
-          options: options)
-        by_full_text
+          # + and - operators without proper spacing
+          ['display+banner', 'plus without spaces'],
+          ['display-banner', 'minus without spaces'],
+
+          ['display \+banner', 'backslash escaped plus with spaces'],
+          ['display\-banner', 'backslash escaped plus without spaces'],
+
+          # text terms
+          ['simple search', 'simple words'],
+          ['ruby programming', 'multiple words'],
+          ['gitlab', 'single word'],
+
+          # other characters that don't match
+          ['version 1.2.3', 'version number'],
+          ['user@example.com', 'email address'],
+          ['key=value', 'equals sign'],
+          ['hello, world', 'comma separated'],
+          ['question?', 'question mark'],
+          ['ruby-on-rails framework', 'hyphenated terms']
+        ]
+      end
+
+      with_them do
+        it "calls by_multi_match_query for #{description}" do
+          expect(described_class).to receive(:by_multi_match_query)
+            .with(fields: options[:fields], query: query, options: options)
+
+          by_full_text
+        end
       end
     end
   end

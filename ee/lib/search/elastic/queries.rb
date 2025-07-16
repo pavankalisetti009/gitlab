@@ -3,7 +3,11 @@
 module Search
   module Elastic
     module Queries
-      ADVANCED_QUERY_SYNTAX_REGEX = /[+*"\-|()~\\]/
+      # advanced search syntax is built off Elasticsearch simple_query_string syntax
+      BASIC_OPERATORS_REGEX = /[*"~#!()|]/
+      INCLUDE_EXCLUDE_REGEX = /(?:^|\s)[+\-]/
+      ADVANCED_QUERY_SYNTAX_REGEX = /#{BASIC_OPERATORS_REGEX}|#{INCLUDE_EXCLUDE_REGEX}/
+
       DEFAULT_RELATED_ID_BOOST = 0.7
       UNIT_PRIMITIVE = 'semantic_search_issue'
       KNN_K = 25
