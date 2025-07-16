@@ -124,6 +124,8 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
         'uuid' => uuid,
         'node.url' => 'http://localhost:6090',
         'node.name' => 'm1.local',
+        'node.schema_version' => 2531,
+        'node.knowledge_graph_schema_version' => 2542,
         'disk.all' => 994662584320,
         'disk.indexed' => 2416879,
         'disk.used' => 532673712128

@@ -28,6 +28,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to validate_presence_of(:total_bytes) }
     it { is_expected.to validate_presence_of(:usable_storage_bytes) }
     it { is_expected.to validate_presence_of(:schema_version) }
+    it { is_expected.to validate_presence_of(:knowledge_graph_schema_version) }
     it { is_expected.to validate_uniqueness_of(:uuid).case_insensitive }
 
     describe 'metadata JSON schema validation' do
@@ -449,6 +450,14 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
       it 'sets schema_version' do
         expect(tasked_node.schema_version).to eq(2525)
+      end
+    end
+
+    context 'when node.knowledge_graph_schema_version is present' do
+      let(:params) { base_params.merge('node.knowledge_graph_schema_version' => 2542) }
+
+      it 'sets schema_version' do
+        expect(tasked_node.knowledge_graph_schema_version).to eq(2542)
       end
     end
   end

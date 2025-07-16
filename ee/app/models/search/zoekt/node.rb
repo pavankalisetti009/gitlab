@@ -51,7 +51,7 @@ module Search
       validates :total_bytes, presence: true
       validates :metadata, json_schema: { filename: 'zoekt_node_metadata' }
       validates :usable_storage_bytes, presence: true, numericality: { only_integer: true }
-      validates :schema_version, presence: true
+      validates :schema_version, :knowledge_graph_schema_version, presence: true
       validate :valid_services
 
       attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
@@ -123,6 +123,10 @@ module Search
           s.metadata['concurrency'] = params['node.concurrency'].to_i if params['node.concurrency'].present?
           s.schema_version = params['node.schema_version'] if params['node.schema_version'].present?
           s.metadata['version'] = params['node.version'] if params['node.version'].present?
+
+          if params['node.knowledge_graph_schema_version'].present?
+            s.knowledge_graph_schema_version = params['node.knowledge_graph_schema_version']
+          end
         end
       end
 

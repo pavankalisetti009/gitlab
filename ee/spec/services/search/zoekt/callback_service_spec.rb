@@ -21,12 +21,13 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
     subject(:execute) { service.execute }
 
     let(:service_type) { 'zoekt' }
+    let(:additional_payload) { { 'repo_stats' => { index_file_count: 1, size_in_bytes: 582790 } } }
     let(:params) do
       {
         'name' => task_type,
         'success' => success,
         'payload' => { 'task_id' => task_id, 'service_type' => service_type },
-        'additional_payload' => { 'repo_stats' => { index_file_count: 1, size_in_bytes: 582790 } }
+        'additional_payload' => additional_payload
       }
     end
 
@@ -133,8 +134,10 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
 
         context 'when the task type is graph_index' do
           let_it_be_with_reload(:task) { create(:knowledge_graph_task, task_type: 'index_graph_repo', node: node) }
+
           let(:task_id) { task.id }
           let(:task_type) { 'index_graph_repo' }
+          let(:additional_payload) { { schema_version: 2 } }
 
           before do
             task.knowledge_graph_replica.update!(retries_left: 2)
@@ -145,6 +148,8 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
               expect { execute }.to change { task.reload.state }.to('done')
                 .and change { task.knowledge_graph_replica.state }.to('ready')
                   .and change { task.knowledge_graph_replica.retries_left }.from(2).to(5)
+                    .and change { task.knowledge_graph_replica.schema_version }.from(0).to(2)
+                      .and change { task.knowledge_graph_replica.indexed_at }.from(nil).to(Time.current)
             end
           end
         end

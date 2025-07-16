@@ -84,6 +84,9 @@ module Search
           else
             replica.state = :ready if replica.pending? || replica.initializing?
             replica.retries_left = Ai::KnowledgeGraph::Replica::RETRIES
+            schema_version = params.dig(:additional_payload, :schema_version)
+            replica.schema_version = schema_version if schema_version
+            replica.indexed_at = Time.current
             replica.save!
           end
 
