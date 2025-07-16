@@ -20,21 +20,32 @@
         },
         {
           "bool": {
-            "_name": "filters:permissions:group",
             "should": [
               {
                 "bool": {
                   "filter": [
                     {
                       "terms": {
-                        "_name": "filters:permissions:group:visibility_level:public_and_internal",
-                        "visibility_level": [
+                        "_name": "filters:permissions:group:private_access:repository_access_level:enabled_or_private",
+                        "repository_access_level": [
                           20,
                           10
                         ]
                       }
+                    },
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:group:private_access:project:member",
+                        "project_id": [
+                          PROJECT_ID
+                        ]
+                      }
                     }
-                  ],
+                  ]
+                }
+              },
+              {
+                "bool": {
                   "should": [
                     {
                       "terms": {
@@ -45,36 +56,14 @@
                       }
                     }
                   ],
-                  "minimum_should_match": 1
-                }
-              },
-              {
-                "bool": {
-                  "should": [
-                    {
-                      "terms": {
-                        "_name": "filters:permissions:group:project:member",
-                        "project_id": [
-                          PROJECT_ID
-                        ]
-                      }
-                    }
-                  ],
                   "filter": [
                     {
-                      "bool": {
-                        "should": [
-                          {
-                            "terms": {
-                              "_name": "filters:permissions:group:repository_access_level:enabled_or_private",
-                              "repository_access_level": [
-                                20,
-                                10
-                              ]
-                            }
-                          }
-                        ],
-                        "minimum_should_match": 1
+                      "terms": {
+                        "_name": "filters:permissions:group:visibility_level:public_and_internal",
+                        "visibility_level": [
+                          20,
+                          10
+                        ]
                       }
                     }
                   ],

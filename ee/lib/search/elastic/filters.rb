@@ -26,12 +26,8 @@ module Search
 
           query_hash = search_level_filter(query_hash: query_hash, options: options)
 
-          if Feature.enabled?(:search_refactor_membership_filter, options[:current_user])
-            add_filter(query_hash, :query, :bool, :filter) do
-              build_membership_filter_v2(options:).to_bool_query
-            end
-          else
-            membership_filter(query_hash: query_hash, options: options)
+          add_filter(query_hash, :query, :bool, :filter) do
+            build_membership_filter(options:).to_bool_query
           end
         end
 
@@ -1021,7 +1017,7 @@ module Search
           end
         end
 
-        def build_membership_filter_v2(options:)
+        def build_membership_filter(options:)
           user = options[:current_user]
           search_level = options[:search_level].to_sym
 
@@ -1035,36 +1031,6 @@ module Search
           end
 
           membership_filter
-        end
-
-        # @deprecated - will be removed with search_refactor_membership_filter feature flag
-        def membership_filter(query_hash:, options:)
-          features = Array.wrap(options[:features])
-          user = options[:current_user]
-          search_level = options[:search_level].to_sym
-          visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
-
-          add_filter(query_hash, :query, :bool, :filter) do
-            context.name(:filters, :permissions, search_level) do
-              permissions_filters = Search::Elastic::BoolExpr.new
-              add_visibility_level_filter(filter: permissions_filters, user: user,
-                visibility_level_field: visibility_level_field)
-              add_project_feature_visibility_filter(filter: permissions_filters, features: features, user: user)
-
-              membership_filters = build_membership_filters(user, options, features)
-
-              should = [permissions_filters.to_bool_query]
-              should << membership_filters.to_bool_query unless membership_filters.empty?
-
-              {
-                bool: {
-                  _name: context.name,
-                  should: should,
-                  minimum_should_match: 1
-                }
-              }
-            end
-          end
         end
 
         # add visibility level filter for public and internal visibility, does not include group or project membership
@@ -1147,21 +1113,6 @@ module Search
           add_project_membership_filters(new_filter, user, options)
 
           new_filter
-        end
-
-        # @deprecated - will be removed with search_refactor_membership_filter flag
-        def build_membership_filters(user, options, features)
-          membership_filters = Search::Elastic::BoolExpr.new
-          return membership_filters if user&.can_read_all_resources?
-
-          has_traversal_ids_filter = add_traversal_ids_filters(membership_filters, user, options)
-          has_project_ids_filter = add_project_ids_filters(membership_filters, user, options)
-
-          if (has_traversal_ids_filter || has_project_ids_filter) && features.present?
-            add_feature_access_level_filter(membership_filters, features)
-          end
-
-          membership_filters
         end
 
         def add_group_membership_filters(membership_filters, user, options)
@@ -1374,19 +1325,6 @@ module Search
           end
         end
 
-        # @deprecated - will be removed with search_refactor_membership_filter feature flag
-        def add_traversal_ids_filters(membership_filters, user, options)
-          traversal_ids = traversal_ids_for_user(user, options)
-          return false if traversal_ids.blank?
-
-          traversal_id_field_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
-          membership_filters.minimum_should_match = 1
-          # ancestry_filter returns an array so add_filter cannot be used
-          membership_filters.should += ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field_prefix)
-
-          true
-        end
-
         def add_project_membership_filters(membership_filters, user, options)
           return unless user
 
@@ -1552,83 +1490,6 @@ module Search
         def build_access_contexts(access_levels)
           [:public, :internal].tap do |access_contexts|
             access_contexts << :private if access_levels[:project] == access_levels[:private_project]
-          end
-        end
-
-        # @deprecated - will be removed with search_refactor_membership_filter feature flag
-        def add_project_ids_filters(membership_filters, user, options)
-          project_ids = project_ids_for_user(user, options)
-          return false if project_ids.blank?
-
-          # the builder queries set project_id_field, but legacy class proxy queries do not
-          project_id_field = options.fetch(:project_id_field, PROJECT_ID_FIELD)
-          membership_filters.minimum_should_match = 1
-          add_filter(membership_filters, :should) do
-            {
-              terms: {
-                _name: context.name(:project, :member),
-                "#{project_id_field}": project_ids
-              }
-            }
-          end
-
-          true
-        end
-
-        # @deprecated - will be removed with search_refactor_membership_filter feature flag
-        def project_ids_for_user(user, options)
-          return [] unless user
-
-          search_level = options.fetch(:search_level).to_sym
-          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
-
-          projects = case search_level
-                     when :global
-                       authorized_projects
-                     when :group
-                       namespace_ids = options[:group_ids]
-                       namespace_projects = Project.in_namespace(namespace_ids)
-                       if namespace_projects.present? && !namespace_projects.id_not_in(authorized_projects).exists?
-                         namespace_projects
-                       else
-                         Project.from_union([
-                           authorized_projects.in_namespace(namespace_ids),
-                           authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
-                         ])
-                       end
-                     when :project
-                       project_ids = options[:project_ids]
-                       projects_searched = Project.id_in(project_ids)
-                       if projects_searched.present? && !projects_searched.id_not_in(authorized_projects).exists?
-                         projects_searched
-                       else
-                         authorized_projects.id_in(project_ids)
-                       end
-                     end
-
-          features = Array.wrap(options[:features])
-          return projects.pluck_primary_key unless features.present?
-
-          project_ids_for_features(projects, user, features)
-        end
-
-        def add_feature_access_level_filter(membership_filters, features)
-          feature_access_level_filter = Search::Elastic::BoolExpr.new
-
-          features.each do |feature|
-            add_filter(feature_access_level_filter, :should) do
-              {
-                terms: {
-                  _name: context.name(:"#{feature}_access_level", :enabled_or_private),
-                  "#{feature}_access_level": [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
-                }
-              }
-            end
-          end
-
-          membership_filters.minimum_should_match = 1
-          add_filter(membership_filters, :filter) do
-            feature_access_level_filter.to_bool_query
           end
         end
 

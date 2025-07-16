@@ -20,27 +20,26 @@
         },
         {
           "bool": {
-            "_name": "filters:permissions:group",
             "should": [
               {
                 "bool": {
-                  "filter": [
+                  "should": [
                     {
-                      "terms": {
-                        "_name": "filters:permissions:group:visibility_level:public_and_internal",
-                        "visibility_level": [
-                          20,
-                          10
-                        ]
+                      "prefix": {
+                        "traversal_ids": {
+                          "_name": "filters:permissions:group:private_access:ancestry_filter:descendants",
+                          "value": "NAMESPACE_ANCESTRY"
+                        }
                       }
                     }
                   ],
-                  "should": [
+                  "filter": [
                     {
                       "terms": {
-                        "_name": "filters:permissions:group:repository_access_level:enabled",
+                        "_name": "filters:permissions:group:private_access:repository_access_level:enabled_or_private",
                         "repository_access_level": [
-                          20
+                          20,
+                          10
                         ]
                       }
                     }
@@ -52,29 +51,22 @@
                 "bool": {
                   "should": [
                     {
-                      "prefix": {
-                        "traversal_ids": {
-                          "_name": "filters:permissions:group:ancestry_filter:descendants",
-                          "value": "NAMESPACE_ANCESTRY"
-                        }
+                      "terms": {
+                        "_name": "filters:permissions:group:repository_access_level:enabled",
+                        "repository_access_level": [
+                          20
+                        ]
                       }
                     }
                   ],
                   "filter": [
                     {
-                      "bool": {
-                        "should": [
-                          {
-                            "terms": {
-                              "_name": "filters:permissions:group:repository_access_level:enabled_or_private",
-                              "repository_access_level": [
-                                20,
-                                10
-                              ]
-                            }
-                          }
-                        ],
-                        "minimum_should_match": 1
+                      "terms": {
+                        "_name": "filters:permissions:group:visibility_level:public_and_internal",
+                        "visibility_level": [
+                          20,
+                          10
+                        ]
                       }
                     }
                   ],

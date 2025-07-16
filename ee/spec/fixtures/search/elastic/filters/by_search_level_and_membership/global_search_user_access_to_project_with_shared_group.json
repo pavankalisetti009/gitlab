@@ -4,21 +4,58 @@
       "filter": [
         {
           "bool": {
-            "_name": "filters:permissions:global",
             "should": [
               {
                 "bool": {
+                  "should": [
+                    {
+                      "prefix": {
+                        "traversal_ids": {
+                          "_name": "filters:permissions:global:private_access:ancestry_filter:descendants",
+                          "value": "NAMESPACE_ANCESTRY"
+                        }
+                      }
+                    }
+                  ],
                   "filter": [
                     {
                       "terms": {
-                        "_name": "filters:permissions:global:visibility_level:public_and_internal",
-                        "visibility_level": [
+                        "_name": "filters:permissions:global:private_access:repository_access_level:enabled_or_private",
+                        "repository_access_level": [
                           20,
                           10
                         ]
                       }
                     }
                   ],
+                  "minimum_should_match": 1
+                }
+              },
+              {
+                "bool": {
+                  "filter": [
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:global:private_access:repository_access_level:enabled_or_private",
+                        "repository_access_level": [
+                          20,
+                          10
+                        ]
+                      }
+                    },
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:global:private_access:project:member",
+                        "project_id": [
+                          PROJECT_ID
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "bool": {
                   "should": [
                     {
                       "terms": {
@@ -29,44 +66,14 @@
                       }
                     }
                   ],
-                  "minimum_should_match": 1
-                }
-              },
-              {
-                "bool": {
-                  "should": [
-                    {
-                      "prefix": {
-                        "traversal_ids": {
-                          "_name": "filters:permissions:global:ancestry_filter:descendants",
-                          "value": "NAMESPACE_ANCESTRY"
-                        }
-                      }
-                    },
-                    {
-                      "terms": {
-                        "_name": "filters:permissions:global:project:member",
-                        "project_id": [
-                          PROJECT_ID
-                        ]
-                      }
-                    }
-                  ],
                   "filter": [
                     {
-                      "bool": {
-                        "should": [
-                          {
-                            "terms": {
-                              "_name": "filters:permissions:global:repository_access_level:enabled_or_private",
-                              "repository_access_level": [
-                                20,
-                                10
-                              ]
-                            }
-                          }
-                        ],
-                        "minimum_should_match": 1
+                      "terms": {
+                        "_name": "filters:permissions:global:visibility_level:public_and_internal",
+                        "visibility_level": [
+                          20,
+                          10
+                        ]
                       }
                     }
                   ],

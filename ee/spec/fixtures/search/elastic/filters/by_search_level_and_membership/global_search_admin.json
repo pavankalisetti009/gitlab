@@ -4,22 +4,14 @@
       "filter": [
         {
           "bool": {
-            "_name": "filters:permissions:global",
             "should": [
               {
-                "bool": {
-                  "should": [
-                    {
-                      "terms": {
-                        "_name": "filters:permissions:global:repository_access_level:enabled_or_private",
-                        "repository_access_level": [
-                          20,
-                          10
-                        ]
-                      }
-                    }
-                  ],
-                  "minimum_should_match": 1
+                "terms": {
+                  "_name": "filters:permissions:global:repository_access_level:enabled_or_private",
+                  "repository_access_level": [
+                    20,
+                    10
+                  ]
                 }
               }
             ],
