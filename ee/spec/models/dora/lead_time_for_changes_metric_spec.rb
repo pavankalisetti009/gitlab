@@ -66,5 +66,26 @@ RSpec.describe Dora::LeadTimeForChangesMetric do
         end
       end
     end
+
+    context 'with deployment time before merge request time' do
+      subject(:data_queries) { described_class.new(environment, date.to_date).data_queries }
+
+      let(:query_result) { Deployment.connection.execute(data_queries[:lead_time_for_changes_in_seconds]).first['percentile_cont'] }
+
+      let_it_be(:project) { create(:project, :repository) }
+      let_it_be(:environment) { create(:environment, project: project) }
+      let_it_be(:date) { 1.day.ago }
+
+      before_all do
+        merge_requests = [
+          create(:merge_request, :with_merged_metrics, project: project, target_branch: 'main', merged_at: date + 1.day)
+        ]
+        create(:deployment, :success, environment: environment, finished_at: date, merge_requests: merge_requests)
+      end
+
+      it 'returns 0' do
+        expect(query_result).to eql 0.days.to_f
+      end
+    end
   end
 end
