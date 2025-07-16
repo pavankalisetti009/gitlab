@@ -63,7 +63,9 @@ module Security
           delay = Random.rand(time_window)
 
           with_context(project: schedule.project_id) do
-            Security::PipelineExecutionPolicies::RunScheduleWorker.perform_in(delay, schedule.id, { branch: branch })
+            Security::PipelineExecutionPolicies::RunScheduleWorker.perform_in(
+              delay, schedule.id, { 'branch' => branch }
+            )
           end
         end
       end

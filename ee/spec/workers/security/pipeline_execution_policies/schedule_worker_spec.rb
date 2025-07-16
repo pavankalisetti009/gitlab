@@ -22,7 +22,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
   it_behaves_like 'an idempotent worker' do
     it 'enqueues the run worker' do
       expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
-        .to receive(:perform_in).with(delay, schedule.id, { branch: 'master' })
+        .to receive(:perform_in).with(delay, schedule.id, { 'branch' => 'master' })
 
       perform
     end
@@ -87,7 +87,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
 
       it 'enqueues the run worker' do
         expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
-          .to receive(:perform_in).with(delay, schedule.id, { branch: 'master' })
+          .to receive(:perform_in).with(delay, schedule.id, { 'branch' => 'master' })
 
         perform
       end
@@ -127,7 +127,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
       it 'enqueues one worker for each branch' do
         branches.each do |branch|
           expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
-            .to receive(:perform_in).with(delay, schedule.id, { branch: branch })
+            .to receive(:perform_in).with(delay, schedule.id, { 'branch' => branch })
         end
 
         perform
@@ -187,7 +187,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
 
     it 'enqueues the run worker for valid schedules' do
       expect(Security::PipelineExecutionPolicies::RunScheduleWorker).to(
-        receive(:perform_in).with(delay, valid_schedule.id, { branch: 'master' })
+        receive(:perform_in).with(delay, valid_schedule.id, { 'branch' => 'master' })
       )
 
       perform
