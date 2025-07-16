@@ -39,7 +39,7 @@ module EE
               add_item(group_work_items_menu_item)
               add_menu_item_for_abilities(repository_menu_item, [:admin_push_rules, :manage_deploy_tokens])
               add_menu_item_for_abilities(ci_cd_menu_item, [:admin_cicd_variables,
-                :admin_protected_environments, :admin_runner])
+                :admin_protected_environments, :admin_runners])
               add_menu_item_for_abilities(billing_menu_item, :read_billing)
               add_menu_item_for_abilities(workspaces_menu_item, :read_namespace_cluster_agent_mapping)
             end

@@ -46,7 +46,7 @@ module Ci
           )
         end
 
-        if runner.nil? && !Ability.allowed?(current_user, :create_runner, container)
+        if runner.nil? && !Ability.allowed?(current_user, :create_runners, container)
           return ServiceResponse.error(
             message: s_('Runners|The user is not allowed to create a runner'),
             reason: :insufficient_permissions

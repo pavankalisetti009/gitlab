@@ -824,8 +824,8 @@ module EE
       end
 
       rule { custom_role_enables_admin_runners }.policy do
-        enable :admin_runner
-        enable :create_runner
+        enable :admin_runners
+        enable :create_runners
         enable :read_group_all_available_runners
         enable :read_group_runners
       end
@@ -930,7 +930,7 @@ module EE
         prevent :update_epic
         prevent :admin_pipeline
         prevent :register_group_runners
-        prevent :create_runner
+        prevent :create_runners
         prevent :update_runner
         prevent :add_cluster
         prevent :create_cluster

@@ -3620,7 +3620,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_allowed(:read_group_runners) }
       it { is_expected.to be_allowed(:read_group_all_available_runners) }
       it { is_expected.to be_disallowed(:register_group_runners) }
-      it { is_expected.to be_disallowed(:create_runner) }
+      it { is_expected.to be_disallowed(:create_runners) }
     end
   end
 
@@ -4461,8 +4461,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:member_role_abilities) { { admin_runners: true } }
       let(:allowed_abilities) do
         [
-          :admin_runner,
-          :create_runner,
+          :admin_runners,
+          :create_runners,
           :read_group_all_available_runners,
           :read_group_runners
         ]

@@ -293,7 +293,7 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
       end
     end
 
-    context 'without the admin_runner permission' do
+    context 'without the admin_runners permission' do
       let_it_be(:role) { create(:member_role, :guest, namespace: group) }
       let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: group) }
 

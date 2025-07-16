@@ -111,7 +111,7 @@ RSpec.describe Ci::Runners::CreateGoogleCloudProvisioningStepsService, feature_c
         context 'when user does not have permissions to create runner' do
           before do
             allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?).with(current_user, :create_runner, anything).and_return(false)
+            allow(Ability).to receive(:allowed?).with(current_user, :create_runners, anything).and_return(false)
           end
 
           it 'returns an error' do

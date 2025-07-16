@@ -26,7 +26,7 @@ module EE
             ci_cd_menu_item: [
               :admin_cicd_variables,
               :admin_protected_environments,
-              :admin_runner
+              :admin_runners
             ],
             integrations_menu_item: [
               :admin_integrations
