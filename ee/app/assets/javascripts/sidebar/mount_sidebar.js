@@ -7,6 +7,7 @@ import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import SidebarDropdown from '~/sidebar/components/sidebar_dropdown.vue';
 import * as CEMountSidebar from '~/sidebar/mount_sidebar';
+import { pinia } from '~/pinia/instance';
 import CveIdRequest from './components/cve_id_request/cve_id_request.vue';
 import IterationDropdown from './components/iteration/iteration_dropdown.vue';
 import SidebarIterationWidget from './components/iteration/sidebar_iteration_widget.vue';
@@ -118,7 +119,7 @@ export function mountHealthStatusDropdown() {
   });
 }
 
-function mountSidebarCveIdRequest(store, pinia) {
+function mountSidebarCveIdRequest() {
   const el = document.querySelector('.js-sidebar-cve-id-request-root');
 
   if (!el) {
@@ -128,7 +129,6 @@ function mountSidebarCveIdRequest(store, pinia) {
   const { iid, fullPath } = CEMountSidebar.getSidebarOptions();
 
   return new Vue({
-    store,
     pinia,
     el,
     name: 'SidebarCveIdRequestRoot',
@@ -349,13 +349,13 @@ export function mountSidebarCustomStatusWidget() {
 
 export const { getSidebarOptions } = CEMountSidebar;
 
-export function mountSidebar(mediator, store, pinia) {
-  CEMountSidebar.mountSidebar(mediator, store, pinia);
+export function mountSidebar(mediator) {
+  CEMountSidebar.mountSidebar(mediator);
   mountSidebarWeightWidget();
   mountSidebarHealthStatusWidget();
   mountSidebarEpicWidget();
   mountSidebarIterationWidget();
   mountSidebarEscalationPolicy();
   mountSidebarCustomStatusWidget();
-  mountSidebarCveIdRequest(store, pinia);
+  mountSidebarCveIdRequest();
 }

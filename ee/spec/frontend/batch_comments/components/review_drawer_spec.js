@@ -1,6 +1,4 @@
 import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import { createTestingPinia } from '@pinia/testing';
 import { PiniaVuePlugin } from 'pinia';
 import VueApollo from 'vue-apollo';
@@ -18,43 +16,15 @@ jest.mock('~/autosave');
 jest.mock('~/vue_shared/components/markdown/eventhub');
 
 Vue.use(PiniaVuePlugin);
-Vue.use(Vuex);
 Vue.use(VueApollo);
 
 describe('ReviewDrawer', () => {
   let wrapper;
   let pinia;
-  let getCurrentUserLastNote;
 
   const findPlaceholderField = () => wrapper.findByTestId('placeholder-input-field');
 
-  const createComponent = ({ canApprove = true, requirePasswordToApprove = false } = {}) => {
-    getCurrentUserLastNote = Vue.observable({ id: 1 });
-
-    const store = new Vuex.Store({
-      getters: {
-        getNotesData: () => ({
-          markdownDocsPath: '/markdown/docs',
-          quickActionsDocsPath: '/quickactions/docs',
-        }),
-        getNoteableData: () => ({
-          id: 1,
-          preview_note_path: '/preview',
-          require_password_to_approve: requirePasswordToApprove,
-        }),
-        noteableType: () => 'merge_request',
-        getCurrentUserLastNote: () => getCurrentUserLastNote,
-        getDiscussion: () => jest.fn(),
-      },
-      modules: {
-        diffs: {
-          namespaced: true,
-          state: {
-            projectPath: 'gitlab-org/gitlab',
-          },
-        },
-      },
-    });
+  const createComponent = ({ canApprove = true } = {}) => {
     const requestHandlers = [
       [
         userCanApproveQuery,
@@ -76,15 +46,19 @@ describe('ReviewDrawer', () => {
     ];
     const apolloProvider = createMockApollo(requestHandlers);
 
-    wrapper = mountExtended(ReviewDrawer, { pinia, store, apolloProvider });
+    wrapper = mountExtended(ReviewDrawer, { pinia, apolloProvider });
   };
 
   beforeEach(() => {
     pinia = createTestingPinia({
       plugins: [globalAccessorPlugin],
     });
-    useLegacyDiffs();
-    useNotes();
+    useLegacyDiffs().projectPath = 'gitlab-org/gitlab';
+    useNotes().noteableData.id = 1;
+    useNotes().noteableData.preview_note_path = '/preview';
+    useNotes().noteableData.noteableType = 'merge_request';
+    useNotes().notesData.markdownDocsPath = '/markdown/docs';
+    useNotes().notesData.quickActionsDocsPath = '/quickactions/docs';
     useBatchComments();
   });
 
@@ -95,6 +69,7 @@ describe('ReviewDrawer', () => {
   `(
     '$existsText approve password if require_password_to_approve is $requirePasswordToApprove',
     async ({ requirePasswordToApprove, exists }) => {
+      useNotes().noteableData.require_password_to_approve = requirePasswordToApprove;
       useBatchComments().drawerOpened = true;
 
       createComponent({ requirePasswordToApprove });

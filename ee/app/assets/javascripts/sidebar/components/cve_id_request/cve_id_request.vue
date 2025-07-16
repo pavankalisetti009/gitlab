@@ -1,10 +1,10 @@
 <script>
 import { GlButton, GlIcon, GlTooltipDirective } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapState } from 'vuex';
+import { mapState } from 'pinia';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createCveIdRequestIssueBody } from '~/helpers/cve_id_request_helper';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import { useNotes } from '~/notes/store/legacy_notes';
 import { CVE_ID_REQUEST_SIDEBAR_I18N } from '../../constants';
 
 export default {
@@ -40,7 +40,10 @@ export default {
   },
 
   computed: {
-    ...mapState({ confidential: (state) => state.noteableData.confidential }),
+    ...mapState(useNotes, ['noteableData']),
+    confidential() {
+      return this.noteableData.confidential;
+    },
     helpHref() {
       return helpPagePath('user/application_security/cve_id_request');
     },

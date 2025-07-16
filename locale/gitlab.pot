@@ -37497,9 +37497,6 @@ msgstr ""
 msgid "Lock the discussion"
 msgstr ""
 
-msgid "Lock this discussion? Only %{strongStart}project members%{strongEnd} will be able to comment."
-msgstr ""
-
 msgid "Lock to current projects"
 msgstr ""
 
@@ -60192,9 +60189,6 @@ msgstr ""
 msgid "Something went wrong trying to change the locked state of the discussion"
 msgstr ""
 
-msgid "Something went wrong trying to change the locked state of this %{issuableDisplayName}"
-msgstr ""
-
 msgid "Something went wrong trying to load issue contacts."
 msgstr ""
 
@@ -66657,9 +66651,6 @@ msgid "Unlock that directory in order to unlock this"
 msgstr ""
 
 msgid "Unlock the discussion"
-msgstr ""
-
-msgid "Unlock this discussion? %{strongStart}Everyone%{strongEnd} will be able to comment."
 msgstr ""
 
 msgid "Unlock this in order to proceed"
