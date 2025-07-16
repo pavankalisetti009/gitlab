@@ -5,6 +5,10 @@ module WorkItems
     class UpdateService
       include ErrorMapping
 
+      def self.constructor_container_arg(value)
+        { group: value }
+      end
+
       def initialize(group:, perform_spam_check: true, current_user: nil, params: {})
         @group = group
         @current_user = current_user

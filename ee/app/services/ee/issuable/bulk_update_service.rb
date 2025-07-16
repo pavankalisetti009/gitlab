@@ -5,6 +5,13 @@ module EE
     module BulkUpdateService
       extend ::Gitlab::Utils::Override
 
+      override :update_class
+      def update_class(type)
+        return super unless type.classify.constantize == ::Epic
+
+        ::WorkItems::LegacyEpics::UpdateService
+      end
+
       private
 
       override :find_issuables
