@@ -121,4 +121,10 @@ namespace :admin do
   end
 
   resources :targeted_messages, only: [:index, :new, :create, :edit, :update]
+
+  resource :data_management do
+    get '/', to: 'data_management#index'
+    get '/:model_name', to: 'data_management#index'
+    get '/:model_name/:id', to: 'data_management#show'
+  end
 end

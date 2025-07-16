@@ -1,0 +1,10 @@
+
+---
+name: geo_primary_verification_view
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/537677
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/197160
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/537681
+milestone: '18.3'
+group: group::geo
+type: wip
+default_enabled: false
