@@ -40,6 +40,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
       )
 
       meta = execute_task[:payload][:Metadata]
+      expect(meta[:project_id]).to eq(project.id.to_s)
       expect(meta[:traversal_ids]).to eq(project.namespace_ancestry)
       expect(meta[:visibility_level]).to eq(project.visibility_level.to_s)
       expect(meta[:repository_access_level]).to eq(project.repository_access_level.to_s)
