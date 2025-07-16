@@ -26,6 +26,7 @@ query groupVulnerabilities(
   $owaspTopTen: [VulnerabilityOwaspTop10!]
   $owaspTopTen2021: [VulnerabilityOwasp2021Top10!]
   $includeSeverityOverrides: Boolean = false
+  $reachability: ReachabilityType
 ) {
   group(fullPath: $fullPath) {
     id
@@ -51,6 +52,7 @@ query groupVulnerabilities(
       owaspTopTen: $owaspTopTen
       owaspTopTen2021: $owaspTopTen2021
       identifierName: $identifierName
+      reachability: $reachability
     ) {
       nodes {
         ...VulnerabilityFragment
