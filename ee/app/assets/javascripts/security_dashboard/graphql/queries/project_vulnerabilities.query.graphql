@@ -27,6 +27,7 @@ query projectVulnerabilities(
   $owaspTopTen: [VulnerabilityOwaspTop10!]
   $owaspTopTen2021: [VulnerabilityOwasp2021Top10!]
   $includeSeverityOverrides: Boolean = false
+  $reachability: ReachabilityType
 ) {
   project(fullPath: $fullPath) {
     id
@@ -52,6 +53,7 @@ query projectVulnerabilities(
       image: $image
       identifierName: $identifierName
       owaspTopTen2021: $owaspTopTen2021
+      reachability: $reachability
     ) {
       nodes {
         ...VulnerabilityFragment

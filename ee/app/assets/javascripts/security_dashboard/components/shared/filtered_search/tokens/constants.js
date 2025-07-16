@@ -9,6 +9,7 @@ import ClusterToken from './cluster_token.vue';
 import ProjectToken from './project_token.vue';
 import IdentifierToken from './identifier_token.vue';
 import ScannerToken from './scanner_token.vue';
+import ReachabilityToken from './reachability_token.vue';
 
 export const STATUS_TOKEN_DEFINITION = {
   type: 'state',
@@ -97,5 +98,14 @@ export const IDENTIFIER_TOKEN_DEFINITION = {
   multiSelect: false,
   unique: true,
   token: IdentifierToken,
+  operators: OPERATORS_IS,
+};
+
+export const REACHABILITY_TOKEN_DEFINITION = {
+  type: 'reachability',
+  title: ReachabilityToken.i18n.label,
+  multiSelect: false,
+  unique: true,
+  token: ReachabilityToken,
   operators: OPERATORS_IS,
 };
