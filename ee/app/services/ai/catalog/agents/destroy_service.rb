@@ -21,7 +21,7 @@ module Ai
         attr_reader :agent
 
         def valid_agent?
-          agent&.item_type&.to_sym == Ai::Catalog::Item::AGENT_TYPE
+          agent && agent.agent?
         end
 
         def success

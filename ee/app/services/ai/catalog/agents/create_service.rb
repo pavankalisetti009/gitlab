@@ -4,8 +4,6 @@ module Ai
   module Catalog
     module Agents
       class CreateService < Ai::Catalog::BaseService
-        SCHEMA_VERSION = 1
-
         def execute
           return error_no_permissions unless allowed?
 
@@ -16,7 +14,7 @@ module Ai
             project_id: project.id
           )
           version_params = {
-            schema_version: SCHEMA_VERSION,
+            schema_version: Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION,
             version: DEFAULT_VERSION,
             definition: {
               system_prompt: params[:system_prompt],

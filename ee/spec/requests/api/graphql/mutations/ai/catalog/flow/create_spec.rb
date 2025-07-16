@@ -69,7 +69,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
 
       expect(graphql_data_at(:ai_catalog_flow_create, :errors)).to contain_exactly(
         "Description can't be blank",
-        "Name can't be blank"
+        "Name can't be blank",
+        "Versions is invalid"
       )
       expect(graphql_data_at(:ai_catalog_flow_create, :item)).to be_nil
     end

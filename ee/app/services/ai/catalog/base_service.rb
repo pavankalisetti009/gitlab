@@ -12,15 +12,15 @@ module Ai
       private
 
       def allowed?
-        current_user.can?(:admin_ai_catalog_item, project)
+        Ability.allowed?(current_user, :admin_ai_catalog_item, project)
       end
 
-      def error(message)
-        ServiceResponse.error(message: Array(message))
+      def error(message, payload: {})
+        ServiceResponse.error(message: Array(message), payload: payload)
       end
 
-      def error_no_permissions
-        error('You have insufficient permissions')
+      def error_no_permissions(payload: {})
+        error('You have insufficient permissions', payload:)
       end
     end
   end

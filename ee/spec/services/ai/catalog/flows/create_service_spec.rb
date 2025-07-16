@@ -57,7 +57,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
 
         expect { response }.not_to change { Ai::Catalog::Item.count }
         expect(response).to be_error
-        expect(response.message).to match_array(["Name can't be blank"])
+        expect(response.message).to contain_exactly("Name can't be blank", 'Versions is invalid')
       end
     end
 
