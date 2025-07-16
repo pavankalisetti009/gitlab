@@ -22,16 +22,6 @@ module EE
             super.push('epic_id')
           end
 
-          override :namespace_id_for_new_entity
-          def namespace_id_for_new_entity(new_entity)
-            case new_entity
-            when Epic
-              new_entity.group_id
-            else
-              super
-            end
-          end
-
           def copy_resource_weight_events
             return unless both_respond_to?(:resource_weight_events)
 
