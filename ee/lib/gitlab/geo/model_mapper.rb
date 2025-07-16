@@ -15,7 +15,7 @@ module Gitlab
         # Used by the Replicator to format a model name for API usage
         # @return [String] the snake_case representation of the passed Model class
         def convert_to_name(model)
-          ::Gitlab::Utils::ClassNameConverter.new(model).string_representation
+          model_name_converter(model)
         end
 
         # Used by the controller to get an ActiveRecord model from a passed parameter
@@ -26,12 +26,25 @@ module Gitlab
           model_matching_hash[model_name.downcase]
         end
 
+        def available_models
+          list_of_available_models
+        end
+
         private
 
         def model_matching_hash
-          Gitlab::Geo::Replicator.subclasses.map(&:model).index_by { |model| convert_to_name(model) }
+          list_of_available_models.index_by { |model| model_name_converter(model) }
         end
         strong_memoize_attr :model_matching_hash
+
+        def list_of_available_models
+          Gitlab::Geo::Replicator.subclasses.map(&:model)
+        end
+        strong_memoize_attr :list_of_available_models
+
+        def model_name_converter(model_class)
+          ::Gitlab::Utils::ClassNameConverter.new(model_class).string_representation
+        end
       end
     end
   end
