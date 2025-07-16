@@ -48,8 +48,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
           stub_application_setting(product_analytics_enabled: product_analytics_enabled_setting)
           stub_feature_flags(product_analytics_features: feature_flag_enabled)
-          stub_licensed_features(product_analytics: licensed_feature_enabled, scoped_labels: licensed_feature_enabled,
-            dora4_analytics: licensed_feature_enabled, security_dashboard: licensed_feature_enabled)
+          stub_licensed_features(product_analytics: licensed_feature_enabled, scoped_labels: licensed_feature_enabled)
 
           allow(helper).to receive(:can?).with(user, :read_product_analytics, project).and_return(user_has_permission)
           allow(helper).to receive(:can?).with(user, :admin_project, project).and_return(user_can_admin_project)
@@ -86,12 +85,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
             is_instance_configured_with_self_managed_analytics_provider: 'true',
             default_use_instance_configuration: 'true',
             overview_counts_aggregation_enabled: "false",
-            data_source_clickhouse: 'false',
-            licensed_features: {
-              has_dora_metrics: licensed_feature_enabled.to_s,
-              has_security_dashboard: licensed_feature_enabled.to_s,
-              has_scoped_labels_feature: licensed_feature_enabled.to_s
-            }.to_json
+            has_scoped_labels_feature: licensed_feature_enabled.to_s,
+            data_source_clickhouse: 'false'
           }
         end
 
@@ -163,11 +158,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false",
-          licensed_features: {
-            has_dora_metrics: 'false',
-            has_security_dashboard: 'false',
-            has_scoped_labels_feature: 'false'
-          }.to_json,
+          has_scoped_labels_feature: 'false',
           data_source_clickhouse: 'false'
         }
       end
@@ -188,8 +179,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
         end
 
         it 'returns the expected data' do
-          expect(data[:licensed_features]).to eq({ has_dora_metrics: "false", has_security_dashboard: "false",
-                                                   has_scoped_labels_feature: "true" }.to_json)
+          expect(data).to include({ has_scoped_labels_feature: "true" })
         end
       end
 
@@ -255,11 +245,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false",
-          licensed_features: {
-            has_dora_metrics: 'false',
-            has_security_dashboard: 'false',
-            has_scoped_labels_feature: 'false'
-          }.to_json,
+          has_scoped_labels_feature: 'false',
           data_source_clickhouse: 'false'
         }
       end
@@ -280,8 +266,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
         end
 
         it 'returns the expected data' do
-          expect(data[:licensed_features]).to eq({ has_dora_metrics: "false", has_security_dashboard: "false",
-                                                   has_scoped_labels_feature: "true" }.to_json)
+          expect(data).to include({ has_scoped_labels_feature: "true" })
         end
       end
 

@@ -42,8 +42,8 @@ describe('AnalyticsDashboardPanel', () => {
         isProject: true,
         dataSourceClickhouse: true,
         overviewCountsAggregationEnabled: true,
-        licensedFeatures: {
-          hasDoraMetrics: true,
+        glAbilities: {
+          readDora4Analytics: true,
         },
         ...provide,
       },
@@ -153,8 +153,8 @@ describe('AnalyticsDashboardPanel', () => {
         createWrapper({
           props: { visualization: licensedVisualization },
           provide: {
-            licensedFeatures: {
-              hasDoraMetrics: false,
+            glAbilities: {
+              readDora4Analytics: false,
             },
           },
         });
