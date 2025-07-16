@@ -42,10 +42,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       %i[push_code_to_protected_branches]
     end
 
-    let(:additional_owner_permissions) do
-      %i[create_container_registry_protection_immutable_tag_rule]
-    end
-
     let(:auditor_permissions) do
       %i[
         download_code download_wiki_code read_project read_project_metadata read_issue_board read_issue_board_list
@@ -5489,28 +5485,33 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   end
 
   describe 'creating container registry protection immutable tag rules' do
-    using RSpec::Parameterized::TableSyntax
+    let(:current_user) { public_send(user_role) }
 
-    where(:user_role, :expected_result) do
-      :admin      | :be_allowed
-      :owner      | :be_allowed
-      :maintainer | :be_disallowed
-      :developer  | :be_disallowed
-      :reporter   | :be_disallowed
-      :planner    | :be_disallowed
-      :guest      | :be_disallowed
-      :anonymous  | :be_disallowed
+    before do
+      stub_licensed_features(container_registry_immutable_tag_rules: feature_available)
+      enable_admin_mode!(current_user) if user_role == :admin
+    end
+
+    where(:feature_available, :user_role, :expected_result) do
+      true  | :admin      | :be_allowed
+      true  | :owner      | :be_allowed
+      true  | :maintainer | :be_disallowed
+      true  | :developer  | :be_disallowed
+      true  | :reporter   | :be_disallowed
+      true  | :planner    | :be_disallowed
+      true  | :guest      | :be_disallowed
+      true  | :anonymous  | :be_disallowed
+      false | :admin      | :be_disallowed
+      false | :owner      | :be_disallowed
+      false | :maintainer | :be_disallowed
+      false | :developer  | :be_disallowed
+      false | :reporter   | :be_disallowed
+      false | :planner    | :be_disallowed
+      false | :guest      | :be_disallowed
+      false | :anonymous  | :be_disallowed
     end
 
     with_them do
-      let(:current_user) do
-        public_send(user_role)
-      end
-
-      before do
-        enable_admin_mode!(current_user) if user_role == :admin
-      end
-
       it { is_expected.to send(expected_result, :create_container_registry_protection_immutable_tag_rule) }
     end
   end
