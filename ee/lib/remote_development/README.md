@@ -1490,6 +1490,33 @@ Guidelines for these domain-specific standards:
 Existing standards:
 
 1. Prefer double-quotes over single-quotes for delimiting String literals, even non-interpolated ones. For more context see: [Workspaces team decision](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/124398#note_1444988985), [GitLab development Ruby style guide](https://docs.gitlab.com/development/backend/ruby_style_guide/#quoting-string-literals), [historical GitLab team member discussions](https://gitlab.com/gitlab-org/gitlab/-/issues/198046)
+2. When used as part of a larger value, consider making `kind` values of Kubernetes resources be considered a single value, if it helps avoid ambiguity or makes the meaning clearer. Examples:
+
+```ruby
+# Ambiguous (Are we adding scripts to the config? Are we mapping data?) ❌
+def self.add_devfile_command_scripts_to_config_map_data(configmap_data:, ...)
+# Ambiguous (Is it a scripts config? Or the name of a map for scripts config?) ❌
+scripts_config_map_name = "#{workspace_name}-scripts-configmap"
+
+# Better ✅
+def self.add_devfile_command_scripts_to_configmap_data(configmap_data:, devfile_commands:, devfile_events:)
+# Better ✅
+scripts_configmap_name = "#{workspace_name}-scripts-configmap"
+
+# Not a problem (because it is not ambiguous) ✅
+resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == "ResourceQuota" }
+```
+
+3. Any method that takes more than one argument must use keyword arguments for those parameters.
+
+```ruby
+# Bad ❌
+def foo(id, name, address)
+
+# Good ✅
+def foo(id:, name:, address:)
+```
+
 
 ## FAQ
 
