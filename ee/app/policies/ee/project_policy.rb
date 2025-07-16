@@ -1242,6 +1242,13 @@ module EE
 
       rule { can?(:owner_access) }.policy do
         enable :admin_project_secrets_manager
+      end
+
+      condition(:container_registry_immutable_tag_rules_available, scope: :subject) do
+        @subject.feature_available?(:container_registry_immutable_tag_rules)
+      end
+
+      rule { can?(:owner_access) & container_registry_immutable_tag_rules_available }.policy do
         enable :create_container_registry_protection_immutable_tag_rule
       end
 
