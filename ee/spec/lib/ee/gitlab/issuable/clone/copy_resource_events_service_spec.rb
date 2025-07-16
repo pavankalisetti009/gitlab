@@ -75,7 +75,8 @@ RSpec.describe Gitlab::Issuable::Clone::CopyResourceEventsService, feature_categ
 
   context 'when a new object is a group entity' do
     context 'when entity is an epic' do
-      let_it_be_with_reload(:new_epic) { create(:epic, :with_synced_work_item, group: group) }
+      let_it_be(:group2) { create(:group) }
+      let_it_be_with_reload(:new_epic) { create(:epic, :with_synced_work_item, group: group2) }
 
       subject { described_class.new(user, original_issue, new_epic) }
 
@@ -124,14 +125,16 @@ RSpec.describe Gitlab::Issuable::Clone::CopyResourceEventsService, feature_categ
 
         subject { described_class.new(user, original_epic_work_item, new_epic_work_item) }
 
-        it 'copies resource_label_events, including those associated with the legacy epic' do
+        it 'copies resource_label_events, including those associated with the legacy epic', :aggregate_failures do
           expect do
             subject.execute
           end.to change { ResourceLabelEvent.count }.by(2)
 
-          expect(ResourceLabelEvent.where(issue: new_epic_work_item).pluck(:label_id)).to contain_exactly(
-            label1.id,
-            label2.id
+          expect(
+            ResourceLabelEvent.where(issue: new_epic_work_item).pluck(:label_id, :namespace_id)
+          ).to contain_exactly(
+            [label1.id, group2.id],
+            [label2.id, group2.id]
           )
         end
       end
