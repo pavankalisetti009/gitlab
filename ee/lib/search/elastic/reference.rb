@@ -54,7 +54,7 @@ module Search
         def init(klass, id, es_id, es_parent)
           ref_class = Gitlab::Elastic::Helper.ref_class(klass.to_s)
 
-          return ref_class.new(id, es_parent) if ref_class && klass == WorkItem
+          return ref_class.new(id, es_parent) if ref_class && [WorkItem, Vulnerability].include?(klass)
 
           ::Search::Elastic::References::Legacy.init(klass.to_s, id, es_id, es_parent)
         end

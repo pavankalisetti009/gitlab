@@ -137,9 +137,9 @@ RSpec.shared_examples 'migration backfills fields' do
   end
 
   def update_by_query(objects, script)
-    object_ids = objects.map(&:id)
+    primary_key = objects.first&.class&.primary_key || "id"
+    primary_key_ids = objects.map(&primary_key.to_sym)
 
-    client = klass.__elasticsearch__.client
     client.update_by_query({
       index: index_name,
       wait_for_completion: true, # run synchronously
@@ -151,7 +151,7 @@ RSpec.shared_examples 'migration backfills fields' do
             must: [
               {
                 terms: {
-                  id: object_ids
+                  "#{primary_key}": primary_key_ids
                 }
               }
             ]
@@ -345,7 +345,8 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
   private
 
   def update_by_query(objects, script)
-    object_ids = objects.map(&:id)
+    primary_key = objects.first&.class&.primary_key || "id"
+    primary_key_ids = objects.map(&primary_key.to_sym)
 
     client.update_by_query({
       index: index_name,
@@ -358,7 +359,7 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
             must: [
               {
                 terms: {
-                  id: object_ids
+                  "#{primary_key}": primary_key_ids
                 }
               }
             ]
@@ -802,7 +803,9 @@ RSpec.shared_examples 'migration deletes documents based on schema version' do
   private
 
   def update_by_query(objects, script)
-    object_ids = objects.map(&:id)
+    primary_key = objects.first&.class&.primary_key || "id"
+    primary_key_ids = objects.map(&primary_key.to_sym)
+
     client.update_by_query({
       index: migration.index_name,
       wait_for_completion: true, # run synchronously
@@ -814,7 +817,7 @@ RSpec.shared_examples 'migration deletes documents based on schema version' do
             must: [
               {
                 terms: {
-                  id: object_ids
+                  "#{primary_key}": primary_key_ids
                 }
               }
             ]
