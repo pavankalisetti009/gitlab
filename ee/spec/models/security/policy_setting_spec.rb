@@ -9,6 +9,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
   describe 'associations' do
     it { is_expected.to belong_to(:organization).class_name('Organizations::Organization') }
+    it { is_expected.to validate_uniqueness_of(:organization) }
     it { is_expected.to belong_to(:csp_namespace).optional.class_name('Group') }
   end
 

@@ -5,6 +5,7 @@ module Security
     self.table_name = 'security_policy_settings'
 
     validates :csp_namespace, top_level_group: true
+    validates :organization, uniqueness: true
 
     validate :validate_csp_is_group
 
