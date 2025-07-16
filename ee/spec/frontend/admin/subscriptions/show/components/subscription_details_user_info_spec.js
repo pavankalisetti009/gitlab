@@ -87,7 +87,7 @@ describe('Subscription Details User Info', () => {
       createComponent({ stubGlSprintf: true });
 
       expect(findBillableUsersCard().findComponent(HelpPageLink).attributes('href')).toBe(
-        '/help/subscriptions/self_managed/_index#billable-users',
+        '/help/subscriptions/manage_users_and_seats#billable-users',
       );
     });
   });
