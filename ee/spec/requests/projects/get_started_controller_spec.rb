@@ -41,6 +41,23 @@ RSpec.describe Projects::GetStartedController, :saas, feature_category: :onboard
 
           it { is_expected.to have_gitlab_http_status(:not_found) }
         end
+
+        context 'with experiment lightweight_trial_registration_redesign' do
+          let(:experiment) { instance_double(ApplicationExperiment) }
+
+          before do
+            allow_next_instance_of(described_class) do |controller|
+              allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+                actor: user).and_return(experiment)
+            end
+          end
+
+          it 'tracks landing on Get Started' do
+            expect(experiment).to receive(:track).with(:render_get_started)
+
+            get_show
+          end
+        end
       end
 
       context 'when namespace is not onboarding' do

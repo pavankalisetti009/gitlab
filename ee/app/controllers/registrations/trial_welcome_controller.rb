@@ -13,6 +13,9 @@ module Registrations
     layout 'minimal'
 
     def new
+      experiment(:lightweight_trial_registration_redesign,
+        actor: current_user).track(:render_welcome)
+
       render GitlabSubscriptions::Trials::Welcome::TrialFormComponent.new(user: current_user,
         params: params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS))
     end

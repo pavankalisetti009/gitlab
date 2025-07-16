@@ -8,7 +8,7 @@ module Users
     include ::Gitlab::InternalEventsTracking
     extend ::Gitlab::Utils::Override
 
-    helper_method :onboarding_status_presenter
+    helper_method :onboarding_status_presenter, :trial_registration?
 
     skip_before_action :authenticate_user!
 
@@ -17,16 +17,7 @@ module Users
     before_action :require_arkose_verification!, except: [:arkose_labs_challenge, :verify_arkose_labs_session,
       :restricted]
 
-    def show
-      return render :show unless trial_registration?
-
-      experiment(:lightweight_trial_registration_redesign, actor: @user) do |e|
-        e.candidate do
-          @html_class = 'gl-dark'
-          @hide_empty_navbar = true
-        end
-      end
-    end
+    def show; end
 
     def arkose_labs_challenge; end
 
@@ -78,6 +69,8 @@ module Users
 
       # order matters here because set_redirect_url removes our ability to detect trial in the tracking label
       @tracking_label = onboarding_status_presenter.tracking_label
+
+      experiment(:lightweight_trial_registration_redesign, actor: current_user).track(:completed_identity_verification)
 
       set_redirect_url
     end

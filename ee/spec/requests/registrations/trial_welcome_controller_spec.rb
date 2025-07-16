@@ -30,6 +30,23 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
 
         expect(assigns(:html_class)).to eq('gl-dark')
       end
+
+      context 'with experiment lightweight_trial_registration_redesign' do
+        let(:experiment) { instance_double(ApplicationExperiment) }
+
+        before do
+          allow_next_instance_of(described_class) do |controller|
+            allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+              actor: user).and_return(experiment)
+          end
+        end
+
+        it 'tracks complete_identity_verification_success' do
+          expect(experiment).to receive(:track).with(:render_welcome)
+
+          get_new
+        end
+      end
     end
   end
 end

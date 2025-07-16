@@ -94,6 +94,8 @@ module EE
       def build_user_params_for_non_admin
         super
 
+        return unless params[:trial_registration]
+
         experiment(:lightweight_trial_registration_redesign, actor: current_user) do |e|
           e.candidate { @user_params[:name] = user_params[:username] } # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Needed to assign the user_params[:name] in the experiment block
         end

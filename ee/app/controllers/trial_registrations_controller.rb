@@ -55,7 +55,7 @@ class TrialRegistrationsController < RegistrationsController
   override :resource
   def resource
     @resource ||= Users::AuthorizedBuildService.new(
-      current_user, sign_up_params.merge(organization_id: Current.organization.id)
+      current_user, sign_up_params.merge(organization_id: Current.organization.id, trial_registration: true)
     ).execute
   end
 
@@ -70,6 +70,13 @@ class TrialRegistrationsController < RegistrationsController
       e.control { super }
       e.candidate { next }
     end
+  end
+
+  override :after_successful_create_hook
+  def after_successful_create_hook(user)
+    super
+
+    experiment(:lightweight_trial_registration_redesign, actor: current_user).track(:completed_trial_registration_form)
   end
 end
 
