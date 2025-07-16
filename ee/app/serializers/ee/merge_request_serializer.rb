@@ -8,6 +8,8 @@ module EE
     def identified_entity(opts)
       if opts[:serializer] == 'ai'
         MergeRequestAiEntity
+      elsif opts[:serializer] == 'sidebar'
+        ::MergeRequests::SidebarBasicEntity
       else
         super(opts)
       end
