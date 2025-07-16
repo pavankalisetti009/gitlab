@@ -69,7 +69,7 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
         'x-gitlab-host-name' => 'localhost',
         'x-gitlab-instance-id' => 'uuid-not-set',
         'x-gitlab-realm' => 'self-managed',
-        'x-gitlab-version' => '18.2.0',
+        'x-gitlab-version' => Gitlab.version_info.to_s,
         'x-gitlab-enabled-instance-verbose-ai-logs' => 'true',
         'x-gitlab-enabled-feature-flags' => '',
         'x-gitlab-feature-enablement-type' => ''
