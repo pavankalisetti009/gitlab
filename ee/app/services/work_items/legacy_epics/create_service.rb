@@ -42,16 +42,18 @@ module WorkItems
       def transform_result(result)
         # The legacy service Epics::CreateService returns an epic record instead of a service response
         # so in case of failing to create the work item we create a new epic that includes the service errors
-        new_epic = result.payload[:work_item]&.reload&.synced_epic || Epic.new
 
         if result.try(:error?)
+          new_epic = Epic.new
+
           new_epic.errors.add(:base,
             result[:message].include?(
               WORK_ITEM_NOT_FOUND_ERROR
             ) ? EPIC_NOT_FOUND_ERROR : result[:message])
+          return new_epic
         end
 
-        new_epic
+        result.payload[:work_item]&.reload&.synced_epic
       end
 
       attr_reader :group, :current_user, :params, :perform_spam_check
