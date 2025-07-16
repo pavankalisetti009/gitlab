@@ -18,10 +18,6 @@ RSpec.describe Ci::JobTokenScope::RemoveGroupService, feature_category: :continu
     )
   end
 
-  before do
-    allow(project).to receive(:job_token_policies_enabled?).and_return(true)
-  end
-
   subject(:service_result) { described_class.new(project, current_user).execute(target_group) }
 
   describe '#execute' do
@@ -49,22 +45,6 @@ RSpec.describe Ci::JobTokenScope::RemoveGroupService, feature_category: :continu
       expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_event)
 
       service_result
-    end
-
-    context 'when job token policies are disabled' do
-      let(:expected_audit_message) do
-        "Group #{target_group.full_path} was removed from list of allowed groups for #{project.full_path}"
-      end
-
-      before do
-        allow(project).to receive(:job_token_policies_enabled?).and_return(false)
-      end
-
-      it 'audits the event without policies' do
-        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_event)
-
-        service_result
-      end
     end
 
     context 'when deleting the group link fails' do

@@ -20,11 +20,8 @@ module EE
         def audit(scope, target, author, policies)
           audit_message =
             "Project #{target.full_path} was removed from inbound list of allowed projects for #{scope.full_path}"
+          audit_message += ", with job token policies: #{policies.join(', ')}" if policies.present?
           event_name = 'secure_ci_job_token_project_removed'
-
-          if scope.job_token_policies_enabled? && policies.present?
-            audit_message += ", with job token policies: #{policies.join(', ')}"
-          end
 
           audit_context = {
             name: event_name,

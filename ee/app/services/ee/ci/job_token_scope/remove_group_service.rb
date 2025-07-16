@@ -18,11 +18,8 @@ module EE
         def audit(scope, target, author, policies)
           audit_message =
             "Group #{target.full_path} was removed from list of allowed groups for #{scope.full_path}"
+          audit_message += ", with job token policies: #{policies.join(', ')}" if policies.present?
           event_name = 'secure_ci_job_token_group_removed'
-
-          if scope.job_token_policies_enabled? && policies.present?
-            audit_message += ", with job token policies: #{policies.join(', ')}"
-          end
 
           audit_context = {
             name: event_name,
