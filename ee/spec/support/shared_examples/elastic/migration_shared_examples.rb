@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'migration backfills fields' do
+  let_it_be(:client) { Gitlab::Search::Client.new }
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
   let(:index_name) { migration.index_name }
