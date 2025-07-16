@@ -5,6 +5,8 @@ module Ai
     class ItemVersion < ApplicationRecord
       include SafelyChangeColumnDefault
 
+      AGENT_SCHEMA_VERSION = 1
+
       self.table_name = "ai_catalog_item_versions"
 
       columns_changing_default :definition
@@ -17,7 +19,7 @@ module Ai
       validates :definition, json_schema: { filename: 'ai_catalog_item_version_definition', size_limit: 64.kilobytes }
 
       belongs_to :item, class_name: 'Ai::Catalog::Item',
-        foreign_key: :ai_catalog_item_id, inverse_of: :versions, optional: false
+        foreign_key: :ai_catalog_item_id, inverse_of: :versions, optional: false, autosave: true
       belongs_to :organization, class_name: 'Organizations::Organization'
 
       before_create :populate_organization

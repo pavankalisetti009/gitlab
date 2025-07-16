@@ -39,7 +39,7 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
 
       context 'when catalog item is not an agent' do
         before do
-          allow(agent).to receive(:item_type).and_return('flow')
+          allow(agent).to receive(:agent?).and_return(false)
         end
 
         it_behaves_like 'returns agent not found error'

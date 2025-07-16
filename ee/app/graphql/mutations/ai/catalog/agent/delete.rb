@@ -7,8 +7,6 @@ module Mutations
         class Delete < BaseMutation
           graphql_name 'AiCatalogAgentDelete'
 
-          include Gitlab::Graphql::Authorize::AuthorizeResource
-
           field :success, GraphQL::Types::Boolean,
             null: false,
             description: 'Returns true if catalog Agent was successfully deleted.'
