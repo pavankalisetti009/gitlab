@@ -233,10 +233,7 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
   end
 
   describe '#build_user_params_for_non_admin' do
-    let(:service) { described_class.new(current_user, params) }
-    let(:current_user) do
-      create(:user, onboarding_status_version: 1, onboarding_status_initial_registration_type: 'trial')
-    end
+    let(:service) { described_class.new(nil, params) }
 
     context 'with lightweight_trial_registration_redesign experiment' do
       context 'when experiment is in control variant' do
@@ -244,18 +241,19 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
           {
             username: 'jduser',
             name: 'John Doe',
-            email: 'jd@example.com'
+            email: 'jd@example.com',
+            trial_registration: true
           }
         end
 
         before do
           stub_experiments(lightweight_trial_registration_redesign: :control)
-
-          service.send(:build_user_params_for_non_admin)
         end
 
         it 'keeps the existing name' do
-          expect(service.instance_variable_get(:@user_params)[:name]).to eq('John Doe')
+          user = service.execute
+
+          expect(user.name).to eq('John Doe')
         end
       end
 
@@ -263,19 +261,40 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
         let(:params) do
           {
             username: 'jduser',
-            email: 'jd@example.com'
+            email: 'jd@example.com',
+            trial_registration: true
           }
         end
 
         before do
           stub_experiments(lightweight_trial_registration_redesign: :candidate)
-
-          service.send(:build_user_params_for_non_admin)
         end
 
         it 'overwrites name with username' do
-          expect(service.instance_variable_get(:@user_params)[:name]).to eq('jduser')
+          user = service.execute
+
+          expect(user.name).to eq('jduser')
         end
+      end
+    end
+
+    context 'with non-trial-registration use case' do
+      let(:params) do
+        {
+          username: 'jduser',
+          name: 'John Doe',
+          email: 'jd@example.com'
+        }
+      end
+
+      before do
+        stub_experiments(lightweight_trial_registration_redesign: true)
+      end
+
+      it 'keeps the existing name' do
+        user = service.execute
+
+        expect(user.name).to eq('John Doe')
       end
     end
   end

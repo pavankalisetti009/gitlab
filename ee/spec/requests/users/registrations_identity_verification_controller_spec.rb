@@ -150,39 +150,6 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         expect(request.session.has_key?(:verification_user_id)).to eq(false)
       end
     end
-
-    context 'with lightweight_trial_registration_redesign experiment' do
-      before do
-        stub_experiments(lightweight_trial_registration_redesign: :candidate)
-      end
-
-      context 'when user is not on trial registration' do
-        it 'does not set html_class and hide_empty_nav_bar' do
-          do_request
-
-          expect(assigns(:html_class)).to be_nil
-          expect(assigns(:hide_empty_navbar)).to be_nil
-        end
-      end
-
-      context 'when user is on trial registration' do
-        let(:user) do
-          create(:user, :unconfirmed, onboarding_status_initial_registration_type: 'trial',
-            onboarding_status_version: 1)
-        end
-
-        before do
-          stub_session(session_data: { verification_user_id: user.id })
-        end
-
-        it 'sets html_class to gl-dark and hide_empty_navbar to true' do
-          do_request
-
-          expect(assigns(:html_class)).to eq('gl-dark')
-          expect(assigns(:hide_empty_navbar)).to be true
-        end
-      end
-    end
   end
 
   describe 'GET restricted' do
@@ -643,6 +610,23 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         get success_signup_identity_verification_path
 
         expect(assigns(:tracking_label)).to eq(::Onboarding::TrialRegistration.tracking_label)
+      end
+    end
+
+    context 'with experiment lightweight_trial_registration_redesign' do
+      let(:experiment) { instance_double(ApplicationExperiment) }
+
+      before do
+        allow_next_instance_of(described_class) do |controller|
+          allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+            actor: user).and_return(experiment)
+        end
+      end
+
+      it 'tracks identity verification completion' do
+        expect(experiment).to receive(:track).with(:completed_identity_verification)
+
+        get success_signup_identity_verification_path
       end
     end
   end

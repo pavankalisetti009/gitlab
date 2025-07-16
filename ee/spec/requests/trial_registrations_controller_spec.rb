@@ -232,6 +232,23 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
         end
       end
     end
+
+    context 'with experiment lightweight_trial_registration_redesign' do
+      let(:experiment) { instance_double(ApplicationExperiment) }
+
+      before do
+        allow_next_instance_of(described_class) do |controller|
+          allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+            actor: nil).and_return(experiment)
+        end
+      end
+
+      it 'tracks registration completion' do
+        expect(experiment).to receive(:track).with(:completed_trial_registration_form)
+
+        post_create
+      end
+    end
   end
 
   def expect_successful_post_create
