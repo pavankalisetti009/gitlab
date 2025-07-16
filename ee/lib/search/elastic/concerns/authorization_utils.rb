@@ -6,6 +6,43 @@ module Search
       module AuthorizationUtils
         private
 
+        def project_ids_for_user(user, options)
+          return [] unless user
+
+          search_level = options.fetch(:search_level).to_sym
+          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+
+          projects = case search_level
+                     when :global
+                       authorized_projects
+                     when :group
+                       namespace_ids = options[:group_ids]
+                       namespace_projects = Project.in_namespace(namespace_ids)
+                       if namespace_projects.present? && !namespace_projects.id_not_in(authorized_projects).exists?
+                         namespace_projects
+                       else
+                         Project.from_union([
+                           authorized_projects.in_namespace(namespace_ids),
+                           authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
+                         ])
+                       end
+                     when :project
+                       project_ids = options[:project_ids]
+                       projects_searched = Project.id_in(project_ids)
+                       if projects_searched.present? && !projects_searched.id_not_in(authorized_projects).exists?
+                         projects_searched
+                       else
+                         authorized_projects.id_in(project_ids)
+                       end
+                     end
+
+          features = Array.wrap(options[:features])
+          return projects.pluck_primary_key unless features.present?
+
+          project_ids_for_features(projects, user, features)
+        end
+
+        # @deprecated - use by_search_level_and_membership - this method is kept for legacy authorization
         def scoped_project_ids(current_user, project_ids)
           return :any if project_ids == :any
 

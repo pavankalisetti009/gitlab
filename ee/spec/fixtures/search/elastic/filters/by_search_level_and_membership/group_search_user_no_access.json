@@ -20,10 +20,19 @@
         },
         {
           "bool": {
-            "_name": "filters:permissions:group",
             "should": [
               {
                 "bool": {
+                  "should": [
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:group:repository_access_level:enabled",
+                        "repository_access_level": [
+                          20
+                        ]
+                      }
+                    }
+                  ],
                   "filter": [
                     {
                       "terms": {
@@ -31,16 +40,6 @@
                         "visibility_level": [
                           20,
                           10
-                        ]
-                      }
-                    }
-                  ],
-                  "should": [
-                    {
-                      "terms": {
-                        "_name": "filters:permissions:group:repository_access_level:enabled",
-                        "repository_access_level": [
-                          20
                         ]
                       }
                     }

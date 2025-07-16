@@ -20,14 +20,32 @@
         },
         {
           "bool": {
-            "_name": "filters:permissions:group",
             "should": [
               {
                 "bool": {
+                  "should": [
+                    {
+                      "prefix": {
+                        "traversal_ids": {
+                          "_name": "filters:permissions:group:public_and_internal_access:ancestry_filter:descendants",
+                          "value": "NAMESPACE_ANCESTRY"
+                        }
+                      }
+                    }
+                  ],
                   "filter": [
                     {
                       "terms": {
-                        "_name": "filters:permissions:group:visibility_level:public_and_internal",
+                        "_name": "filters:permissions:group:public_and_internal_access:repository_access_level:enabled_or_private",
+                        "repository_access_level": [
+                          20,
+                          10
+                        ]
+                      }
+                    },
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:group:public_and_internal_access:project_visibility_level:public_or_internal",
                         "visibility_level": [
                           20,
                           10
@@ -35,12 +53,28 @@
                       }
                     }
                   ],
+                  "minimum_should_match": 1
+                }
+              },
+              {
+                "bool": {
                   "should": [
                     {
                       "terms": {
                         "_name": "filters:permissions:group:repository_access_level:enabled",
                         "repository_access_level": [
                           20
+                        ]
+                      }
+                    }
+                  ],
+                  "filter": [
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:group:visibility_level:public_and_internal",
+                        "visibility_level": [
+                          20,
+                          10
                         ]
                       }
                     }
