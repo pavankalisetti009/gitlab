@@ -10,6 +10,7 @@ module Search
 
       UPDATE_BATCH_SIZE = 100
       QUEUE_THRESHOLD = 50_000
+      DOC_TYPES_WITH_NON_ID_PK = [Vulnerability].freeze
 
       def migrate
         if completed?
@@ -77,7 +78,7 @@ module Search
         results = client.search(index: index_name, body: query_with_old_schema_version.merge(size: query_batch_size))
         hits = results.dig('hits', 'hits') || []
         document_references = hits.map! do |hit|
-          id = hit.dig('_source', 'id')
+          id = hit.dig('_source', reference_primary_key)
           es_id = hit['_id']
 
           # es_parent attribute is used for routing but is nil for some records, e.g., projects, users
@@ -101,6 +102,15 @@ module Search
 
       def update_batch_size
         self.class.const_defined?(:UPDATE_BATCH_SIZE) ? self.class::UPDATE_BATCH_SIZE : UPDATE_BATCH_SIZE
+      end
+
+      def reference_primary_key
+        if DOC_TYPES_WITH_NON_ID_PK.include?(self.class::DOCUMENT_TYPE)
+          ::Search::Elastic::References.const_get(self.class::DOCUMENT_TYPE.to_s,
+            false).model_klass.primary_key
+        else
+          'id'
+        end
       end
     end
   end
