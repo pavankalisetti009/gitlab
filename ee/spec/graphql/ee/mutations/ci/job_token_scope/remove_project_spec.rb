@@ -44,12 +44,6 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveProject, feature_category: :c
       described_class.new(object: nil, context: query_context, field: nil)
     end
 
-    before do
-      allow_next_found_instance_of(Project) do |project|
-        allow(project).to receive(:job_token_policies_enabled?).and_return(true)
-      end
-    end
-
     subject(:resolver) do
       mutation.resolve(**mutation_args)
     end
@@ -74,24 +68,6 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveProject, feature_category: :c
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
 
         resolver
-      end
-
-      context 'when job token policies are disabled' do
-        let(:expected_audit_message) do
-          "Project #{target_project_path} was removed from inbound list of allowed projects for #{project_path}"
-        end
-
-        before do
-          allow_next_found_instance_of(Project) do |project|
-            allow(project).to receive(:job_token_policies_enabled?).and_return(false)
-          end
-        end
-
-        it 'logs an audit event without job token policies' do
-          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
-
-          resolver
-        end
       end
 
       context 'when service returns an error' do

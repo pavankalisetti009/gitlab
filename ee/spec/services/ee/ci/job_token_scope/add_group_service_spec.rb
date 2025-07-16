@@ -30,10 +30,6 @@ RSpec.describe Ci::JobTokenScope::AddGroupService, feature_category: :continuous
       }
     end
 
-    before do
-      allow(project).to receive(:job_token_policies_enabled?).and_return(true)
-    end
-
     it 'returns a success response', :aggregate_failures do
       expect { service_result }.to change { Ci::JobToken::GroupScopeLink.count }.by(1)
       expect(service_result).to be_success
@@ -43,22 +39,6 @@ RSpec.describe Ci::JobTokenScope::AddGroupService, feature_category: :continuous
       expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_event)
 
       service_result
-    end
-
-    context 'when job token policies are disabled' do
-      let(:expected_audit_message) do
-        "Group #{target_group.full_path} was added to list of allowed groups for #{project.full_path}"
-      end
-
-      before do
-        allow(project).to receive(:job_token_policies_enabled?).and_return(false)
-      end
-
-      it 'audits the event without policies' do
-        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_event)
-
-        service_result
-      end
     end
 
     context 'when adding a group fails' do

@@ -12,10 +12,6 @@ RSpec.describe Ci::JobTokenScope::AddProjectService, feature_category: :continuo
 
   let_it_be(:direction) { :inbound }
 
-  before do
-    allow(project).to receive(:job_token_policies_enabled?).and_return(true)
-  end
-
   subject(:service_result) do
     described_class.new(project, current_user).execute(target_project, default_permissions: false, policies: policies,
       direction: direction)
@@ -47,22 +43,6 @@ RSpec.describe Ci::JobTokenScope::AddProjectService, feature_category: :continuo
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_event)
 
         service_result
-      end
-
-      context 'when job token policies are disabled' do
-        let(:expected_audit_message) do
-          "Project #{target_project.full_path} was added to inbound list of allowed projects for #{project.full_path}"
-        end
-
-        before do
-          allow(project).to receive(:job_token_policies_enabled?).and_return(false)
-        end
-
-        it 'audits the event without policies' do
-          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_event)
-
-          service_result
-        end
       end
     end
 
