@@ -9,7 +9,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
   let(:group) { create(:group, :public) }
   let(:project) { create(:project, :public, namespace: group) }
   let(:new_group) { create(:group, :public) }
-  let(:transfer_service) { described_class.new(group, user) }
+
+  subject(:transfer_service) { described_class.new(group, user) }
 
   before do
     group.add_owner(user)
@@ -27,7 +28,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
       let_it_be(:group) { create(:group) }
       let_it_be(:parent_group) { create(:group, :private) }
 
-      before do
+      before_all do
         group.add_owner(user)
         parent_group.add_owner(user)
       end
@@ -44,7 +45,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         it 'does not add saml provider error' do
           transfer_service.execute(parent_group)
 
-          expect(transfer_service.error).not_to eq('Transfer failed: SAML Provider or SCIM Token is configured for this group.')
+          expect(transfer_service.error)
+            .not_to eq('Transfer failed: SAML Provider or SCIM Token is configured for this group.')
         end
       end
 
@@ -58,7 +60,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         it 'adds an error on group' do
           transfer_service.execute(parent_group)
 
-          expect(transfer_service.error).to eq('Transfer failed: SAML Provider or SCIM Token is configured for this group.')
+          expect(transfer_service.error)
+            .to eq('Transfer failed: SAML Provider or SCIM Token is configured for this group.')
         end
       end
 
@@ -72,7 +75,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         it 'adds an error on group' do
           transfer_service.execute(parent_group)
 
-          expect(transfer_service.error).to eq('Transfer failed: SAML Provider or SCIM Token is configured for this group.')
+          expect(transfer_service.error)
+            .to eq('Transfer failed: SAML Provider or SCIM Token is configured for this group.')
         end
       end
     end
@@ -109,6 +113,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
       let(:namespace_ids) { group.all_projects.pluck(:project_namespace_id) }
 
       it 'delegates transfer to WorkItems::Widgets::Statuses::TransferService' do
+        project # load the project in order the group to has projects.
         expect(WorkItems::Widgets::Statuses::TransferService).to receive(:new).with(
           old_root_namespace: group.root_ancestor,
           new_root_namespace: new_group.root_ancestor,
@@ -126,6 +131,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         let(:transfer_lifecycle_service) { instance_double(WorkItems::Widgets::Statuses::TransferLifecycleService) }
 
         it 'delegates transfer to TransferLifecycleService and to TransferService' do
+          project # load the project in order the group to has projects.
           expect(WorkItems::Widgets::Statuses::TransferLifecycleService).to receive(:new).with(
             old_root_namespace: root_group,
             new_root_namespace: group
@@ -151,7 +157,9 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
           let!(:work_item) { create(:work_item, :issue, project: project) }
           let!(:custom_lifecycle) { create(:work_item_custom_lifecycle, :for_issues, namespace: root_group) }
           let!(:custom_status) { custom_lifecycle.default_open_status }
-          let!(:current_status) { create(:work_item_current_status, work_item: work_item, custom_status: custom_status) }
+          let!(:current_status) do
+            create(:work_item_current_status, work_item: work_item, custom_status: custom_status)
+          end
 
           it "ensures that the custom_status changes to the corresponding status of the new lifecycle" do
             expect { transfer_service.execute(new_group) }.to change { current_status.reload.custom_status_id }
@@ -297,10 +305,14 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
           expect(project).not_to receive(:maintain_elasticsearch_update)
           expect(project).not_to receive(:maintain_elasticsearch_destroy)
           expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project)
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { 'force' => true })
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { 'force' => true })
-          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_project!).with(project.id).and_call_original
-          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_namespace!).with(group.id).and_call_original
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range,
+            group.id, group.class.name, { 'force' => true })
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range,
+            sub_g.id, sub_g.class.name, { 'force' => true })
+          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
+            .with(project.id).and_call_original
+          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_namespace!)
+            .with(group.id).and_call_original
 
           transfer_service.execute(new_group)
         end
@@ -316,10 +328,14 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
           expect(project).not_to receive(:maintain_elasticsearch_update)
           expect(project).not_to receive(:maintain_elasticsearch_destroy)
           expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project)
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { 'force' => true })
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { 'force' => true })
-          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_project!).with(project.id).and_call_original
-          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_namespace!).with(group.id).and_call_original
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range,
+            group.id, group.class.name, { 'force' => true })
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range,
+            sub_g.id, sub_g.class.name, { 'force' => true })
+          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
+            .with(project.id).and_call_original
+          expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_namespace!)
+            .with(group.id).and_call_original
 
           transfer_service.execute(new_group)
         end
@@ -339,8 +355,10 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project1)
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project2)
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project3)
-        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { 'force' => true })
-        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { 'force' => true })
+        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range,
+          group.id, group.class.name, { 'force' => true })
+        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range,
+          sub_g.id, sub_g.class.name, { 'force' => true })
 
         transfer_service.execute(new_group)
 
@@ -420,7 +438,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
 
       context 'when group is moved completely out of the main group' do
         it 'keeps relations between all epics' do
-          expect(::Search::ElasticGroupAssociationDeletionWorker).to receive(:perform_async).with(subgroup_group_level_1.id, root_group.id, { include_descendants: true }).once
+          expect(::Search::ElasticGroupAssociationDeletionWorker).to receive(:perform_async).with(
+            subgroup_group_level_1.id, root_group.id, { include_descendants: true }).once
           expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).once
           described_class.new(subgroup_group_level_1, user).execute(new_group)
 
@@ -451,12 +470,10 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
       end
 
       describe 'update cached metadata' do
-        subject { described_class.new(subgroup_group_level_1, user).execute(new_group) }
-
         it 'does not schedule update of issue counts' do
           expect(::Epics::UpdateCachedMetadataWorker).not_to receive(:bulk_perform_in)
 
-          subject
+          described_class.new(subgroup_group_level_1, user).execute(new_group)
         end
       end
     end

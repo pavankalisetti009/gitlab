@@ -127,21 +127,32 @@ module EE
           ).execute
         end
 
-        ::WorkItems::Widgets::Statuses::TransferService.new(
-          old_root_namespace: old_root_ancestor,
-          # Reset to include lifecycles created in previous iterations
-          new_root_namespace: new_root_namespace.reset,
-          project_namespace_ids: group.all_projects.map(&:project_namespace_id)
-        ).execute
+        group.all_projects.each_batch(of: PROJECT_QUERY_BATCH_SIZE) do |projects|
+          # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- There is a limit from each_batch, for better performance
+          project_namespace_ids = projects.pluck(:project_namespace_id)
+          transfer_statuses(old_root_ancestor, new_root_namespace, project_namespace_ids)
+          # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
+        end
       end
 
       override :remove_paid_features_for_projects
       def remove_paid_features_for_projects(old_root_ancestor_id)
         return if old_root_ancestor_id == group.root_ancestor.id
 
-        group.all_projects.each do |project|
-          ::EE::Projects::RemovePaidFeaturesService.new(project).execute(new_parent_group)
+        group.all_projects.each_batch(of: PROJECT_QUERY_BATCH_SIZE) do |projects|
+          projects.each do |project|
+            ::EE::Projects::RemovePaidFeaturesService.new(project).execute(new_parent_group)
+          end
         end
+      end
+
+      def transfer_statuses(old_root_ancestor, new_root_namespace, project_namespace_ids)
+        ::WorkItems::Widgets::Statuses::TransferService.new(
+          old_root_namespace: old_root_ancestor,
+          # Reset to include lifecycles created in previous iterations
+          new_root_namespace: new_root_namespace.reset,
+          project_namespace_ids: project_namespace_ids
+        ).execute
       end
     end
   end
