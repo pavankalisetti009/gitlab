@@ -1146,7 +1146,7 @@ msgstr ""
 msgid "%{linkStart}Advanced search%{linkEnd} is enabled."
 msgstr ""
 
-msgid "%{linkStart}View%{linkEnd} powered by GLQL"
+msgid "%{linkStart}Embedded view%{linkEnd} powered by GLQL"
 msgstr ""
 
 msgid "%{link_start}Communication Preference Center%{link_end}."
@@ -7201,7 +7201,7 @@ msgstr ""
 msgid "An error occurred restoring this group. Please refresh the page to try again."
 msgstr ""
 
-msgid "An error occurred when trying to display this GLQL view:"
+msgid "An error occurred when trying to display this embedded view:"
 msgstr ""
 
 msgid "An error occurred when updating the title"
@@ -24658,6 +24658,24 @@ msgstr ""
 msgid "Embed"
 msgstr ""
 
+msgid "Embedded list view"
+msgstr ""
+
+msgid "Embedded table view"
+msgstr ""
+
+msgid "Embedded view"
+msgstr ""
+
+msgid "Embedded view options"
+msgstr ""
+
+msgid "Embedded view timed out. Add more filters to reduce the number of results."
+msgstr ""
+
+msgid "Embedded view timed out. Try again later."
+msgstr ""
+
 msgid "Emoji"
 msgstr ""
 
@@ -27883,21 +27901,6 @@ msgstr ""
 msgid "GCP region configured"
 msgstr ""
 
-msgid "GLQL list"
-msgstr ""
-
-msgid "GLQL table"
-msgstr ""
-
-msgid "GLQL view options"
-msgstr ""
-
-msgid "GLQL view timed out. Add more filters to reduce the number of results."
-msgstr ""
-
-msgid "GLQL view timed out. Try again later."
-msgstr ""
-
 msgid "GPG Key ID:"
 msgstr ""
 
@@ -28914,9 +28917,6 @@ msgid "GitLab Pages"
 msgstr ""
 
 msgid "GitLab Premium"
-msgstr ""
-
-msgid "GitLab Query Language (GLQL) view"
 msgstr ""
 
 msgid "GitLab Security"
@@ -37410,7 +37410,7 @@ msgstr ""
 msgid "Load %{count} more"
 msgstr ""
 
-msgid "Load GLQL view"
+msgid "Load embedded view"
 msgstr ""
 
 msgid "Load more"
@@ -43492,7 +43492,7 @@ msgstr ""
 msgid "Online license"
 msgstr ""
 
-msgid "Only %{n} GLQL views can be automatically displayed on a page. Click the button below to manually display this block."
+msgid "Only %{n} embedded views can be automatically displayed on a page. Click the button below to manually display this block."
 msgstr ""
 
 msgid "Only %{workspaceType} members with %{permissions} can view or be notified about this %{issuableType}."
