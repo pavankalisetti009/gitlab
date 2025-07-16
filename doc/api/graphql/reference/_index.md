@@ -8120,6 +8120,32 @@ Input type: `LifecycleUpdateInput`
 | <a id="mutationlifecycleupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationlifecycleupdatelifecycle"></a>`lifecycle` | [`WorkItemLifecycle`](#workitemlifecycle) | Lifecycle updated. |
 
+### `Mutation.linkProjectComplianceViolationIssue`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `LinkProjectComplianceViolationIssueInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationlinkprojectcomplianceviolationissueclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationlinkprojectcomplianceviolationissueissueiid"></a>`issueIid` | [`String!`](#string) | IID of the issue to be linked. |
+| <a id="mutationlinkprojectcomplianceviolationissueprojectpath"></a>`projectPath` | [`ID!`](#id) | Full path of the project the issue belongs to. |
+| <a id="mutationlinkprojectcomplianceviolationissueviolationid"></a>`violationId` | [`ComplianceManagementProjectsComplianceViolationID!`](#compliancemanagementprojectscomplianceviolationid) | Global ID of the project compliance violation. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationlinkprojectcomplianceviolationissueclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationlinkprojectcomplianceviolationissueerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationlinkprojectcomplianceviolationissueviolation"></a>`violation` | [`ProjectComplianceViolation`](#projectcomplianceviolation) | Updated project compliance violation. |
+
 ### `Mutation.markAsSpamSnippet`
 
 Input type: `MarkAsSpamSnippetInput`

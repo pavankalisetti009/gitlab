@@ -327,6 +327,9 @@ module EE
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::Update,
           experiment: { milestone: '18.2' }
+        mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::LinkIssue, experiment: {
+          milestone: '18.3'
+        }
 
         prepend(Types::DeprecatedMutations)
       end
