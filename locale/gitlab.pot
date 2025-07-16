@@ -42735,12 +42735,6 @@ msgstr ""
 msgid "OKRs|An update is due on: %{update_due_date}"
 msgstr ""
 
-msgid "OWASP Top 10 2017"
-msgstr ""
-
-msgid "OWASP Top 10 2021"
-msgstr ""
-
 msgid "Object does not exist on the server or you don't have permissions to access it"
 msgstr ""
 
@@ -58077,10 +58071,19 @@ msgstr ""
 msgid "SecurityReports|No vulnerabilities to report"
 msgstr ""
 
+msgid "SecurityReports|None"
+msgstr ""
+
 msgid "SecurityReports|Not available"
 msgstr ""
 
 msgid "SecurityReports|Not found"
+msgstr ""
+
+msgid "SecurityReports|OWASP Top 10 2017"
+msgstr ""
+
+msgid "SecurityReports|OWASP Top 10 2021"
 msgstr ""
 
 msgid "SecurityReports|Oops, something doesn't seem right."
