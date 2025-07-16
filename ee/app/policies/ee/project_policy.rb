@@ -362,15 +362,15 @@ module EE
       end
 
       rule { custom_role_enables_admin_runners }.policy do
-        enable :admin_runner
-        enable :create_runner
+        enable :admin_runners
+        enable :create_runners
       end
 
-      rule { can?(:admin_runner) }.enable :read_runner
+      rule { can?(:admin_runners) }.enable :read_runners
 
       rule { custom_role_enables_read_runners }.policy do
         enable :read_project_runners
-        enable :read_runner
+        enable :read_runners
       end
 
       rule { admin_custom_role_enables_read_admin_cicd }.policy do

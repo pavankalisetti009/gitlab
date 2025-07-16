@@ -4,12 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Projects::RunnersController, feature_category: :fleet_visibility do
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project) }
+  let_it_be(:project) { create(:project, maintainers: user) }
   let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
-
-  before_all do
-    project.add_maintainer(user)
-  end
 
   before do
     sign_in(user)

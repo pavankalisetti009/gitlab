@@ -2983,9 +2983,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:member_role_abilities) { { admin_runners: true } }
         let(:allowed_abilities) do
           [
-            :admin_runner,
-            :create_runner,
-            :read_runner
+            :admin_runners,
+            :create_runners,
+            :read_runners
           ]
         end
 
@@ -3264,7 +3264,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for a custom role with the `read_runners` ability' do
         let(:member_role_abilities) { { read_runners: true } }
-        let(:allowed_abilities) { [:read_project_runners, :read_runner] }
+        let(:allowed_abilities) { [:read_project_runners, :read_runners] }
 
         it_behaves_like 'custom roles abilities'
       end

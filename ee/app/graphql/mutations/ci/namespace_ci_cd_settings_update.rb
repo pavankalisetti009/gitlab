@@ -7,7 +7,7 @@ module Mutations
 
       include ResolvesNamespace
 
-      authorize :admin_runner
+      authorize :admin_runners
 
       argument :allow_stale_runner_pruning, GraphQL::Types::Boolean,
         required: false,
