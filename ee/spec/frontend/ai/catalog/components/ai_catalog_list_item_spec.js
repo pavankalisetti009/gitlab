@@ -1,4 +1,4 @@
-import { GlBadge, GlMarkdown, GlAvatar, GlDisclosureDropdownItem } from '@gitlab/ui';
+import { GlBadge, GlLink, GlMarkdown, GlAvatar, GlDisclosureDropdownItem } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -30,13 +30,9 @@ describe('AiCatalogListItem', () => {
         item,
       },
       mocks: {
-        $options: {
-          routes: {
-            show: '/agents/:id',
-            run: '/agents/:id/run',
-          },
+        $route: {
+          path: '/agents/:id',
         },
-
         $router: mockRouter,
       },
     });
@@ -47,6 +43,7 @@ describe('AiCatalogListItem', () => {
   const findTypeBadge = () => findBadges().at(0);
   const findMarkdown = () => wrapper.findComponent(GlMarkdown);
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
+  const findLink = () => wrapper.findComponent(GlLink);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -95,6 +92,19 @@ describe('AiCatalogListItem', () => {
       expect(markdown.exists()).toBe(true);
       expect(markdown.text()).toBe('A helpful AI assistant for testing purposes');
       expect(markdown.props('compact')).toBe(true);
+    });
+
+    it('emits select-item event when clicking agent name', () => {
+      const link = findLink();
+
+      expect(link.exists()).toBe(true);
+      expect(link.text()).toBe('Test AI Agent');
+      expect(link.props('to')).toEqual({
+        query: { show: 1 },
+      });
+
+      link.vm.$emit('click');
+      expect(wrapper.emitted('select-item')).toHaveLength(1);
     });
   });
 });

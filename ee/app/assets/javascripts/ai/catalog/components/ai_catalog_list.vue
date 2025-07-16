@@ -29,7 +29,12 @@ export default {
     <gl-skeleton-loader v-if="isLoading" :lines="2" />
 
     <ul v-else-if="items.length > 0" class="gl-list-style-none gl-m-0 gl-p-0">
-      <ai-catalog-list-item v-for="item in items" :key="item.id" :item="item" />
+      <ai-catalog-list-item
+        v-for="item in items"
+        :key="item.id"
+        :item="item"
+        @select-item="$emit('select-item', item)"
+      />
     </ul>
 
     <gl-empty-state
