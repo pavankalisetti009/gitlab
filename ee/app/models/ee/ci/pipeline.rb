@@ -57,6 +57,9 @@ module EE
           cyclonedx: %i[dependency_scanning container_scanning]
         }.freeze
 
+        PIPELINE_EXECUTION_POLICIES_BUILD_SOURCES = %w[pipeline_execution_policy scan_execution_policy].freeze
+        SECURITY_POLICIES_PIPELINE_SOURCES = %w[security_orchestration_policy security_policies_default_source pipeline_execution_policy_forced pipeline_execution_policy_schedule].freeze
+
         def self.latest_limited_pipeline_ids_per_source(pipelines, sha)
           pipelines_for_sha = pipelines.complete_or_manual.for_sha(sha).order(id: :desc).limit(LATEST_PIPELINES_LIMIT)
 
@@ -132,6 +135,14 @@ module EE
             pipeline.run_after_commit do
               if ::Feature.enabled?(:collect_security_policy_skipped_pipelines_audit_events, pipeline.project)
                 Security::Policies::SkipPipelinesAuditWorker.perform_async(pipeline.id)
+              end
+            end
+          end
+
+          after_transition any => :failed do |pipeline|
+            pipeline.run_after_commit do
+              if should_audit_security_policy_pipeline_failure?(pipeline)
+                Security::Policies::FailedPipelinesAuditWorker.perform_async(pipeline.id)
               end
             end
           end
@@ -352,6 +363,19 @@ module EE
 
       def sbom_report_ingestion_errors_redis_key
         "sbom_report_ingestion_errors/#{id}"
+      end
+
+      def should_audit_security_policy_pipeline_failure?(pipeline)
+        ::Feature.enabled?(:collect_security_policy_failed_pipelines_audit_events, pipeline.project) &&
+          (pipeline_created_by_security_policies?(pipeline.source) || pipeline_with_security_policy_jobs?)
+      end
+
+      def pipeline_created_by_security_policies?(source)
+        SECURITY_POLICIES_PIPELINE_SOURCES.include?(source)
+      end
+
+      def pipeline_with_security_policy_jobs?
+        builds.joins(:build_source).where(p_ci_build_sources: { source: PIPELINE_EXECUTION_POLICIES_BUILD_SOURCES }).exists?
       end
     end
   end

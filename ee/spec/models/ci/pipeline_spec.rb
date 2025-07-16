@@ -727,6 +727,65 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         end
       end
     end
+
+    context 'Security::Policies::FailedPipelinesAuditWorker' do
+      let(:source) { :push }
+      let(:pipeline) { create(:ci_empty_pipeline, project: project, status: from_status, source: source) }
+      let(:from_status) { Ci::HasStatus::ACTIVE_STATUSES[-1] }
+
+      context 'on pipeline failed' do
+        subject(:transition_pipeline) { pipeline.drop }
+
+        shared_examples 'does not enqueue FailedPipelinesAuditWorker' do
+          specify do
+            expect(Security::Policies::FailedPipelinesAuditWorker).not_to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
+          end
+        end
+
+        shared_examples 'enqueues FailedPipelinesAuditWorker' do
+          specify do
+            expect(Security::Policies::FailedPipelinesAuditWorker).to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
+          end
+        end
+
+        context 'when the feature flag `collect_security_policy_skipped_pipelines_audit_events` is disabled' do
+          before do
+            stub_feature_flags(collect_security_policy_failed_pipelines_audit_events: false)
+          end
+
+          it_behaves_like 'does not enqueue FailedPipelinesAuditWorker'
+        end
+
+        context 'when the pipeline was not created by a security policy' do
+          let(:source) { :web }
+
+          context 'when the pipeline has no builds created by security policies' do
+            it_behaves_like 'does not enqueue FailedPipelinesAuditWorker'
+          end
+
+          context 'when the pipeline has builds created by security policies' do
+            let!(:build) { create(:ci_build, pipeline: pipeline, project: project) }
+            let!(:build_source) { create(:ci_build_source, build: build, source: 'scan_execution_policy') }
+
+            it_behaves_like 'enqueues FailedPipelinesAuditWorker'
+          end
+        end
+
+        context 'when the pipeline was created by a security policy' do
+          let(:source) { :security_orchestration_policy }
+
+          it 'enqueues FailedPipelinesAuditWorker' do
+            expect(Security::Policies::FailedPipelinesAuditWorker).to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
+          end
+        end
+      end
+    end
   end
 
   describe '#latest_merged_result_pipeline?' do

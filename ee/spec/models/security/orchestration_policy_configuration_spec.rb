@@ -3713,21 +3713,39 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
   end
 
   describe '#active_pipeline_execution_policy_names' do
+    include_context 'for policies with pipeline and scheduled rules'
+
     let(:policy_yaml) { fixture_file('security_orchestration.yml', dir: 'ee') }
 
-    subject(:active_pipeline_execution_policy_names) { security_orchestration_policy_configuration.active_pipeline_execution_policy_names }
+    subject(:active_pipeline_execution_policy_names) { security_orchestration_policy_configuration.active_pipeline_execution_policy_names(project) }
 
     before do
       allow(security_policy_management_project).to receive(:repository).and_return(repository)
       allow(repository).to receive(:blob_data_at).with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH).and_return(policy_yaml)
     end
 
-    it 'returns active pipeline execution policy names' do
-      expect(active_pipeline_execution_policy_names).to contain_exactly('Run custom pipeline configuration',
-        'Second pipeline execution policy',
-        'Third pipeline execution policy',
-        'Fourth pipeline execution policy',
-        'Fifth pipeline execution policy')
+    context 'when policies are applicable to the project' do
+      it 'returns active pipeline execution policy names' do
+        expect(active_pipeline_execution_policy_names).to contain_exactly('Run custom pipeline configuration',
+          'Second pipeline execution policy',
+          'Third pipeline execution policy',
+          'Fourth pipeline execution policy',
+          'Fifth pipeline execution policy')
+      end
+    end
+
+    context 'when policies are not applicable to the project' do
+      let(:policy_scope_checker) { instance_double(Security::SecurityOrchestrationPolicies::PolicyScopeChecker) }
+
+      before do
+        allow(Security::SecurityOrchestrationPolicies::PolicyScopeChecker).to receive(:new)
+          .with(project: project).and_return(policy_scope_checker)
+        allow(policy_scope_checker).to receive(:policy_applicable?).and_return(false)
+      end
+
+      it 'returns active pipeline execution policy names' do
+        expect(active_pipeline_execution_policy_names).to be_empty
+      end
     end
   end
 
