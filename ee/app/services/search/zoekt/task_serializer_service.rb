@@ -60,6 +60,7 @@ module Search
           Timeout: "#{::Search::Zoekt::Settings.indexing_timeout.to_i}s",
           FileCountLimit: ::Gitlab::CurrentSettings.zoekt_maximum_files,
           Metadata: {
+            project_id: project.id,
             traversal_ids: project.namespace_ancestry,
             visibility_level: project.visibility_level,
             repository_access_level: project.repository_access_level,
