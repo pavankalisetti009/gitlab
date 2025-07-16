@@ -4,12 +4,14 @@ import AiCatalogAgents from '../pages/ai_catalog_agents.vue';
 import AiCatalogAgentsShow from '../pages/ai_catalog_agents_show.vue';
 import AiCatalogAgentsRun from '../pages/ai_catalog_agents_run.vue';
 import AiCatalogAgentsNew from '../pages/ai_catalog_agents_new.vue';
+import AiCatalogFlows from '../pages/ai_catalog_flows.vue';
 import {
   AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
+  AI_CATALOG_FLOWS_ROUTE,
 } from './constants';
 
 Vue.use(VueRouter);
@@ -43,6 +45,11 @@ export const createRouter = (base) => {
         name: AI_CATALOG_AGENTS_RUN_ROUTE,
         path: '/agents/:id/run',
         component: AiCatalogAgentsRun,
+      },
+      {
+        name: AI_CATALOG_FLOWS_ROUTE,
+        path: '/flows',
+        component: AiCatalogFlows,
       },
     ],
   });

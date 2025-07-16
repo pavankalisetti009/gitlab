@@ -71,7 +71,7 @@ describe('AiCatalogListItem', () => {
 
       expect(typeBadge.exists()).toBe(true);
       expect(typeBadge.props('variant')).toBe('neutral');
-      expect(typeBadge.text()).toBe('agent');
+      expect(typeBadge.text()).toBe('Agent');
     });
 
     it('displays three actions in a disclosure dropdown', () => {

@@ -1,7 +1,6 @@
-import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogApp from 'ee/ai/catalog/ai_catalog_app.vue';
-import { AI_CATALOG_AGENTS_NEW_ROUTE } from 'ee/ai/catalog/router/constants';
+import AiCatalogNavActions from 'ee/ai/catalog/components/ai_catalog_nav_actions.vue';
 
 describe('AiCatalogApp', () => {
   let wrapper;
@@ -21,10 +20,7 @@ describe('AiCatalogApp', () => {
     });
   });
 
-  it('renders the New Agent button', () => {
-    const button = wrapper.findComponent(GlButton);
-    expect(button.exists()).toBe(true);
-
-    expect(button.props('to')).toEqual({ name: AI_CATALOG_AGENTS_NEW_ROUTE });
+  it('renders AiCatalogNavActions component', () => {
+    expect(wrapper.findComponent(AiCatalogNavActions).exists()).toBe(true);
   });
 });

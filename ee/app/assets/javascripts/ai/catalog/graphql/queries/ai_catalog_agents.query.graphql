@@ -1,7 +1,7 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
 
 query aiCatalogAgents {
-  aiCatalogItems {
+  aiCatalogItems(itemType: AGENT) {
     nodes {
       ...BaseAiCatalogItem
     }
