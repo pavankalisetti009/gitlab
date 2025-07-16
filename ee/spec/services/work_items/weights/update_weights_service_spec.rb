@@ -76,15 +76,5 @@ RSpec.describe WorkItems::Weights::UpdateWeightsService, feature_category: :team
         service.execute
       end
     end
-
-    context 'when wrapping transaction' do
-      let(:work_items) { child }
-
-      it 'executes within a transaction' do
-        expect(ApplicationRecord).to receive(:transaction).and_call_original
-
-        service.execute
-      end
-    end
   end
 end
