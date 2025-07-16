@@ -7477,6 +7477,9 @@ msgstr ""
 msgid "An error occurred while searching for labels, please try again."
 msgstr ""
 
+msgid "An error occurred while subscribing to this page. Please try again later."
+msgstr ""
+
 msgid "An error occurred while triggering the job."
 msgstr ""
 
@@ -7499,6 +7502,9 @@ msgid "An error occurred while trying to update the registries: '%{error_message
 msgstr ""
 
 msgid "An error occurred while trying to update the registry: '%{error_message}'."
+msgstr ""
+
+msgid "An error occurred while unsubscribing from this page. Please try again later."
 msgstr ""
 
 msgid "An error occurred while updating approvers"
@@ -42255,6 +42261,12 @@ msgstr ""
 msgid "Notifications"
 msgstr ""
 
+msgid "Notifications Off"
+msgstr ""
+
+msgid "Notifications On"
+msgstr ""
+
 msgid "Notifications for %{project_or_group} are rate-limited due to the high volume of notifications sent."
 msgstr ""
 
@@ -42270,7 +42282,13 @@ msgstr ""
 msgid "Notifications temporarily disabled"
 msgstr ""
 
+msgid "Notifications turned off"
+msgstr ""
+
 msgid "Notifications turned off."
+msgstr ""
+
+msgid "Notifications turned on"
 msgstr ""
 
 msgid "Notifications turned on."
