@@ -1,6 +1,6 @@
 <script>
 import { GlEmptyState, GlSkeletonLoader } from '@gitlab/ui';
-import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-catalog-md.svg';
+import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg';
 import AiCatalogListItem from './ai_catalog_list_item.vue';
 
 export default {
