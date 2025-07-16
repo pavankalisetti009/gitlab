@@ -4132,6 +4132,9 @@ export const mockWorkItemNotesResponse = {
                 resolved: false,
                 resolvable: false,
                 resolvedBy: null,
+                userPermissions: {
+                  resolveNote: true,
+                },
                 notes: {
                   nodes: [
                     {
@@ -4153,7 +4156,6 @@ export const mockWorkItemNotesResponse = {
                       userPermissions: {
                         adminNote: false,
                         awardEmoji: true,
-                        resolveNote: true,
                         __typename: 'NotePermissions',
                       },
                       systemNoteMetadata: {
@@ -4182,6 +4184,9 @@ export const mockWorkItemNotesResponse = {
                 resolved: false,
                 resolvable: false,
                 resolvedBy: null,
+                userPermissions: {
+                  resolveNote: true,
+                },
                 notes: {
                   nodes: [
                     {
@@ -4203,7 +4208,6 @@ export const mockWorkItemNotesResponse = {
                       userPermissions: {
                         adminNote: false,
                         awardEmoji: true,
-                        resolveNote: true,
                         __typename: 'NotePermissions',
                       },
                       systemNoteMetadata: {
@@ -4232,6 +4236,9 @@ export const mockWorkItemNotesResponse = {
                 resolved: false,
                 resolvable: false,
                 resolvedBy: null,
+                userPermissions: {
+                  resolveNote: true,
+                },
                 notes: {
                   nodes: [
                     {
@@ -4252,7 +4259,6 @@ export const mockWorkItemNotesResponse = {
                       userPermissions: {
                         adminNote: false,
                         awardEmoji: true,
-                        resolveNote: true,
                         __typename: 'NotePermissions',
                       },
                       systemNoteMetadata: {
@@ -4319,6 +4325,9 @@ export const mockWorkItemNotesByIidResponse = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -4340,7 +4349,6 @@ export const mockWorkItemNotesByIidResponse = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -4372,6 +4380,9 @@ export const mockWorkItemNotesByIidResponse = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -4393,7 +4404,6 @@ export const mockWorkItemNotesByIidResponse = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -4425,6 +4435,9 @@ export const mockWorkItemNotesByIidResponse = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -4446,7 +4459,6 @@ export const mockWorkItemNotesByIidResponse = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -4515,6 +4527,9 @@ export const mockMoreWorkItemNotesResponse = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -4536,7 +4551,6 @@ export const mockMoreWorkItemNotesResponse = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -4568,6 +4582,9 @@ export const mockMoreWorkItemNotesResponse = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -4589,7 +4606,6 @@ export const mockMoreWorkItemNotesResponse = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -4621,6 +4637,9 @@ export const mockMoreWorkItemNotesResponse = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -4641,7 +4660,6 @@ export const mockMoreWorkItemNotesResponse = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -4695,6 +4713,9 @@ export const createWorkItemNoteResponse = ({
           resolved: false,
           resolvable: true,
           resolvedBy: null,
+          userPermissions: {
+            resolveNote: true,
+          },
           notes: {
             nodes: [
               {
@@ -4726,7 +4747,6 @@ export const createWorkItemNoteResponse = ({
                 userPermissions: {
                   adminNote: true,
                   awardEmoji: true,
-                  resolveNote: true,
                   __typename: 'NotePermissions',
                 },
                 awardEmoji: {
@@ -4770,7 +4790,6 @@ export const mockWorkItemCommentNote = {
   userPermissions: {
     adminNote: false,
     awardEmoji: true,
-    resolveNote: true,
     __typename: 'NotePermissions',
   },
   systemNoteMetadata: null,
@@ -4803,6 +4822,9 @@ export const mockWorkItemDiscussion = {
   resolved: false,
   resolvable: true,
   resolvedBy: null,
+  userPermissions: {
+    resolveNote: true,
+  },
   notes: {
     nodes: [mockWorkItemCommentNote],
   },
@@ -4838,6 +4860,9 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                     resolved,
                     resolvable: true,
                     resolvedBy: null,
+                    userPermissions: {
+                      resolveNote: true,
+                    },
                     notes: {
                       nodes: [
                         {
@@ -4869,7 +4894,6 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                           userPermissions: {
                             adminNote: true,
                             awardEmoji: true,
-                            resolveNote: true,
                             __typename: 'NotePermissions',
                           },
                           awardEmoji: {
@@ -4906,7 +4930,6 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                           userPermissions: {
                             adminNote: true,
                             awardEmoji: true,
-                            resolveNote: true,
                             __typename: 'NotePermissions',
                           },
                           awardEmoji: {
@@ -4924,6 +4947,9 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                     resolved,
                     resolvable: true,
                     resolvedBy: null,
+                    userPermissions: {
+                      resolveNote: true,
+                    },
                     notes: {
                       nodes: [
                         {
@@ -4944,7 +4970,6 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                           userPermissions: {
                             adminNote: false,
                             awardEmoji: true,
-                            resolveNote: true,
                             __typename: 'NotePermissions',
                           },
                           systemNoteMetadata: null,
@@ -5000,6 +5025,9 @@ export const workItemNotesCreateSubscriptionResponse = {
         resolved: false,
         resolvable: false,
         resolvedBy: null,
+        userPermissions: {
+          resolveNote: true,
+        },
         notes: {
           nodes: [
             {
@@ -5020,7 +5048,6 @@ export const workItemNotesCreateSubscriptionResponse = {
               userPermissions: {
                 adminNote: false,
                 awardEmoji: true,
-                resolveNote: true,
                 __typename: 'NotePermissions',
               },
               systemNoteMetadata: {
@@ -5048,7 +5075,6 @@ export const workItemNotesCreateSubscriptionResponse = {
       userPermissions: {
         adminNote: false,
         awardEmoji: true,
-        resolveNote: true,
         __typename: 'NotePermissions',
       },
       systemNoteMetadata: {
@@ -5093,7 +5119,6 @@ export const workItemNotesUpdateSubscriptionResponse = {
       userPermissions: {
         adminNote: false,
         awardEmoji: true,
-        resolveNote: true,
         __typename: 'NotePermissions',
       },
       systemNoteMetadata: {
@@ -5156,7 +5181,6 @@ export const workItemSystemNoteWithMetadata = {
   userPermissions: {
     adminNote: false,
     awardEmoji: true,
-    resolveNote: true,
     __typename: 'NotePermissions',
   },
   systemNoteMetadata: {
@@ -5206,6 +5230,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -5237,7 +5264,6 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -5269,6 +5295,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -5300,7 +5329,6 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -5332,6 +5360,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                   resolved: false,
                   resolvable: false,
                   resolvedBy: null,
+                  userPermissions: {
+                    resolveNote: true,
+                  },
                   notes: {
                     nodes: [
                       {
@@ -5363,7 +5394,6 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
-                          resolveNote: true,
                           __typename: 'NotePermissions',
                         },
                         systemNoteMetadata: {
@@ -6499,6 +6529,9 @@ export const mockToggleResolveDiscussionResponse = {
           name: 'Administrator',
           __typename: 'UserCore',
         },
+        userPermissions: {
+          resolveNote: true,
+        },
         notes: {
           nodes: [
             {
@@ -6532,7 +6565,6 @@ export const mockToggleResolveDiscussionResponse = {
               userPermissions: {
                 adminNote: true,
                 awardEmoji: true,
-                resolveNote: true,
                 __typename: 'NotePermissions',
               },
               systemNoteMetadata: null,
@@ -6569,7 +6601,6 @@ export const mockToggleResolveDiscussionResponse = {
               userPermissions: {
                 adminNote: true,
                 awardEmoji: true,
-                resolveNote: true,
                 __typename: 'NotePermissions',
               },
               systemNoteMetadata: null,
