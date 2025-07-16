@@ -29,6 +29,10 @@ RSpec.describe Ai::DuoWorkflows::Checkpoint, feature_category: :duo_workflow do
   it { is_expected.to validate_presence_of(:checkpoint) }
   it { is_expected.to validate_presence_of(:metadata) }
 
+  it_behaves_like 'sync workflow attributes' do
+    subject { build(:duo_workflows_checkpoint) }
+  end
+
   it "touches workflow on save" do
     workflow = create(:duo_workflows_workflow)
     expect(workflow.created_at).to eq(workflow.updated_at)

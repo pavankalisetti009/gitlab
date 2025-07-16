@@ -95,7 +95,7 @@ module API
                   post do
                     workflow = find_workflow!(params[:id])
                     checkpoint_params = declared_params(include_missing: false).except(:id)
-                    service = ::Ai::DuoWorkflows::CreateCheckpointService.new(project: workflow.project,
+                    service = ::Ai::DuoWorkflows::CreateCheckpointService.new(
                       workflow: workflow, params: checkpoint_params)
                     result = service.execute
 
@@ -164,7 +164,6 @@ module API
                     workflow = find_workflow!(params[:id])
                     event_params = declared_params(include_missing: false).except(:id)
                     service = ::Ai::DuoWorkflows::CreateEventService.new(
-                      project: workflow.project,
                       workflow: workflow,
                       params: event_params.merge(event_status: :queued)
                     )

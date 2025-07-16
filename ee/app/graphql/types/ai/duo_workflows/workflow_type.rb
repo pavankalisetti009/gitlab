@@ -25,11 +25,19 @@ module Types
 
         field :project_id, Types::GlobalIDType[Project],
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          null: false, description: 'ID of the project.'
+          null: true, description: 'ID of the project.'
 
         field :project, Types::ProjectType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          null: false, description: "Project that the session is in."
+          null: true, description: "Project that the session is in."
+
+        field :namespace_id, Types::GlobalIDType[Namespace],
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          null: true, description: 'ID of the namespace.'
+
+        field :namespace, Types::NamespaceType,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          null: true, description: "namespace that the session is in."
 
         field :human_status, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],

@@ -22,10 +22,7 @@ module Ai
       def writes_batch
         @params[:checkpoint_writes].map do |attrs|
           @workflow.checkpoint_writes.new(
-            attrs.merge(
-              thread_ts: @params[:thread_ts],
-              project_id: @workflow.project_id
-            )
+            attrs.merge(thread_ts: @params[:thread_ts])
           )
         end
       end

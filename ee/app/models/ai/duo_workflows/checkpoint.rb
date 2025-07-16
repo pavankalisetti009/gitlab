@@ -5,6 +5,7 @@ module Ai
     CHECKPOINT_RETENTION_DAYS = 30
 
     class Checkpoint < ::ApplicationRecord
+      include ::Ai::DuoWorkflows::SyncWorkflowAttributes
       include PartitionedTable
 
       partitioned_by :created_at, strategy: :daily, retain_for: CHECKPOINT_RETENTION_DAYS.days

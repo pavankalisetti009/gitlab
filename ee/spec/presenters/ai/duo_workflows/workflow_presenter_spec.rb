@@ -15,11 +15,29 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowPresenter, feature_category: :duo_wor
   end
 
   describe 'mcp_enabled' do
+    let_it_be(:ai_settings) { build_stubbed(:namespace_ai_settings, duo_workflow_mcp_enabled: true) }
+
     it 'returns the mcp_enabled status from the root ancestor' do
       root_ancestor = instance_double(Group, duo_workflow_mcp_enabled: true)
       allow(workflow.project).to receive(:root_ancestor).and_return(root_ancestor)
 
       expect(presenter.mcp_enabled).to be(true)
+    end
+
+    context 'with namespace-level workflow' do
+      let(:group) { build_stubbed(:group) }
+      let(:workflow) { build_stubbed(:duo_workflows_workflow, namespace: group, project: nil) }
+
+      it { expect(presenter.mcp_enabled).to be(false) }
+
+      context 'when duo_workflow_mcp_enabled is enabled on root ancestor' do
+        before do
+          root_ancestor = instance_double(Group, duo_workflow_mcp_enabled: true)
+          allow(workflow.namespace).to receive(:root_ancestor).and_return(root_ancestor)
+        end
+
+        it { expect(presenter.mcp_enabled).to be(true) }
+      end
     end
   end
 

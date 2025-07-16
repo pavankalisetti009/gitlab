@@ -16,6 +16,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let(:workflow_definition) { 'software_development' }
   let(:allow_agent_to_request_user) { false }
 
+  before_all do
+    group.add_developer(user)
+  end
+
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
     # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
@@ -25,16 +29,16 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
+    let(:container) { { project_id: project.id } }
     let(:params) do
       {
-        project_id: project.id,
         agent_privileges: agent_privileges,
         pre_approved_agent_privileges: pre_approved_agent_privileges,
         workflow_definition: workflow_definition,
         allow_agent_to_request_user: allow_agent_to_request_user,
         image: "example.com/example-image:latest",
         environment: "web"
-      }
+      }.merge(container)
     end
 
     context 'when workflow is chat' do
@@ -57,6 +61,35 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         created_workflow = Ai::DuoWorkflows::Workflow.last
 
         expect(created_workflow.workflow_definition).to eq(workflow_definition)
+      end
+
+      context 'with namespace-level workflow' do
+        let(:container) { { namespace_id: group.id } }
+
+        before do
+          allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, group).and_return(true)
+        end
+
+        it 'creates a workflow' do
+          post api(path, user), params: params
+
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(json_response['id']).to eq(created_workflow.id)
+          expect(json_response['namespace_id']).to eq(created_workflow.namespace.id)
+          expect(json_response['namespace_id']).to eq(group.id)
+          expect(json_response['project_id']).to be_nil
+        end
+      end
+
+      context 'when both project_id and namespace_id are specified' do
+        let(:container) { { project_id: project.id, namespace_id: group.id } }
+
+        it 'returns error' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(response.body).to include('project_id, namespace_id are mutually exclusive')
+        end
       end
     end
 
@@ -85,6 +118,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         expect(created_workflow.allow_agent_to_request_user).to eq(allow_agent_to_request_user)
         expect(created_workflow.image).to eq("example.com/example-image:latest")
         expect(created_workflow.environment).to eq("web")
+      end
+
+      context 'with namespace-level workflow' do
+        let(:container) { { namespace_id: group.id } }
+
+        # NOTE: Non-chat types do not support namespace-level workflow yet.
+        # See https://gitlab.com/gitlab-org/gitlab/-/issues/554952.
+        it 'does not support a namespace-level workflow yet' do
+          post api(path, user), params: params
+
+          expect(json_response['message']).to eq('403 Forbidden - forbidden to access duo workflow')
+        end
       end
 
       context 'when agent_privileges is not provided' do
@@ -220,6 +265,17 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         before do
           project.project_setting.update!(duo_features_enabled: false)
           project.reload
+        end
+
+        it_behaves_like 'workflow access is forbidden'
+      end
+
+      context 'with namespace-level workflow' do
+        let(:container) { { namespace_id: group.id } }
+
+        before do
+          group.namespace_settings.update!(duo_features_enabled: false)
+          group.reload
         end
 
         it_behaves_like 'workflow access is forbidden'

@@ -6,13 +6,18 @@ module Ai
       IMAGE = 'registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.4'
 
       def initialize(workflow:, params:)
-        @project = workflow.project
         @workflow = workflow
         @current_user = workflow.user
         @params = params
       end
 
       def execute
+        unless @workflow.project_level?
+          return ServiceResponse.error(
+            message: 'Only project-level workflow is supported',
+            reason: :unprocessable_entity)
+        end
+
         unless @current_user.can?(:execute_duo_workflow_in_ci, @workflow)
           return ServiceResponse.error(message: 'Can not execute workflow in CI',
             reason: :feature_unavailable)
@@ -30,7 +35,7 @@ module Ai
         end
 
         service = ::Ci::Workloads::RunWorkloadService.new(
-          project: @project,
+          project: project,
           current_user: workload_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
@@ -41,7 +46,7 @@ module Ai
 
         workload = response.payload
         if response.success?
-          @workflow.workflows_workloads.create(project_id: @project.id, workload_id: workload.id)
+          @workflow.workflows_workloads.create(project_id: project.id, workload_id: workload.id)
           ServiceResponse.success(payload: { workload_id: workload.id })
         else
           ServiceResponse.error(message: response.message, reason: :workload_failure)
@@ -98,7 +103,11 @@ module Ai
       end
 
       def add_service_account_to_project
-        ::Ai::ServiceAccountMemberAddService.new(@project, duo_workflow_service_account).execute
+        ::Ai::ServiceAccountMemberAddService.new(project, duo_workflow_service_account).execute
+      end
+
+      def project
+        @workflow.project
       end
 
       def link_composite_identity
