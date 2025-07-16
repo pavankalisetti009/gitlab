@@ -60,6 +60,8 @@ module API
                   requires 'disk.used', type: Integer, desc: 'Total disk space utilized'
                   requires 'node.name', type: String, desc: 'Name of indexer node'
                   optional 'node.schema_version', type: Integer, desc: 'Schema version of the node'
+                  optional 'node.knowledge_graph_schema_version', type: Integer,
+                    desc: 'Knowledge graph schema version of the node'
                   optional 'disk.indexed', type: Integer, desc: 'Total indexed space'
                 end
                 post 'heartbeat' do

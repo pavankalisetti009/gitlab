@@ -18,6 +18,10 @@ RSpec.describe ::Ai::KnowledgeGraph::Replica, feature_category: :knowledge_graph
 
     subject(:replica) { create(:knowledge_graph_replica, knowledge_graph_enabled_namespace: namespace) }
 
+    it { is_expected.to validate_presence_of(:zoekt_node_id) }
+    it { is_expected.to validate_presence_of(:state) }
+    it { is_expected.to validate_presence_of(:schema_version) }
+
     specify do
       expect(replica).to validate_uniqueness_of(:knowledge_graph_enabled_namespace_id)
         .scoped_to(:zoekt_node_id).allow_nil

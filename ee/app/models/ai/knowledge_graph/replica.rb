@@ -32,7 +32,7 @@ module Ai
 
       before_validation :set_namespace_id
 
-      validates_presence_of :zoekt_node_id, :state, :namespace_id
+      validates_presence_of :zoekt_node_id, :state, :namespace_id, :schema_version
       validates :knowledge_graph_enabled_namespace_id, uniqueness: { scope: :zoekt_node_id }, allow_nil: true
       validate :namespace_id_matches_enabled_namespace
 
