@@ -99,7 +99,7 @@ export default {
           "
         >
           <template #billableUsersLink="{ content }">
-            <help-page-link href="subscriptions/self_managed/_index#billable-users">
+            <help-page-link href="subscriptions/manage_users_and_seats#billable-users">
               {{ content }}
             </help-page-link>
           </template>
