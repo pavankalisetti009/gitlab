@@ -42,6 +42,11 @@ module EE
       end
       strong_memoize_attr :root_group_entity
 
+      def streamable_namespace
+        project.project_namespace
+      end
+      strong_memoize_attr :streamable_namespace
+
       private
 
       def lazy_project

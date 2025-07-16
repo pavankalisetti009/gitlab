@@ -74,6 +74,20 @@ module EE
       %w[Group Project].include?(entity_type)
     end
 
+    def streamable_namespace
+      case entity_type
+      when 'Project'
+        entity&.project_namespace || entity&.namespace
+      when 'User'
+        nil
+      when 'Gitlab::Audit::InstanceScope'
+        load_target_namespace
+      else
+        entity if entity.is_a?(::Namespace)
+      end
+    end
+    strong_memoize_attr :streamable_namespace
+
     private
 
     def lazy_entity
@@ -104,6 +118,27 @@ module EE
 
     def streaming_json
       ::Gitlab::Json.generate(self, methods: [:root_group_entity_id])
+    end
+
+    def load_target_namespace
+      return unless target_type && target_id
+
+      case target_type
+      when 'Project'
+        lazy_load_target.then { |project| project&.project_namespace }
+      when 'Group', 'Namespaces::ProjectNamespace'
+        lazy_load_target
+      end
+    end
+
+    def lazy_load_target
+      BatchLoader.for(target_id).batch(
+        key: target_type,
+        default_value: nil
+      ) do |ids, loader, args|
+        model = Object.const_get(args[:key], false)
+        model.where(id: ids).find_each { |record| loader.call(record.id, record) }
+      end
     end
   end
 end

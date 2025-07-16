@@ -478,4 +478,179 @@ RSpec.describe AuditEvent, type: :model, feature_category: :audit_events do
       it { is_expected.to be false }
     end
   end
+
+  describe '#streamable_namespace' do
+    let(:audit_event) { build(:audit_event) }
+
+    context 'when entity_type is Group' do
+      let(:group) { create(:group) }
+      let(:audit_event) { build(:group_audit_event, target_group: group) }
+
+      it 'returns the entity' do
+        expect(audit_event.streamable_namespace).to eq(group)
+      end
+    end
+
+    context 'when entity_type is Namespaces::ProjectNamespace' do
+      let(:project) { create(:project) }
+      let(:project_namespace) { project.project_namespace }
+      let(:audit_event) do
+        build(:audit_event,
+          entity_type: 'Namespaces::ProjectNamespace',
+          entity_id: project_namespace.id)
+      end
+
+      before do
+        allow(audit_event).to receive(:entity).and_return(project_namespace)
+      end
+
+      it 'returns the entity' do
+        expect(audit_event.streamable_namespace).to eq(project_namespace)
+      end
+    end
+
+    context 'when entity_type is Project' do
+      let(:project) { create(:project) }
+      let(:audit_event) { build(:project_audit_event, target_project: project) }
+
+      it 'returns the project namespace when it exists' do
+        expect(audit_event.streamable_namespace).to eq(project.project_namespace)
+      end
+    end
+
+    context 'when entity_type is User' do
+      let(:user) { create(:user) }
+      let(:audit_event) { build(:user_audit_event, target_user: user) }
+
+      it 'returns nil' do
+        expect(audit_event.streamable_namespace).to be_nil
+      end
+    end
+
+    context 'when entity_type is Gitlab::Audit::InstanceScope' do
+      let(:audit_event) { build(:instance_audit_event) }
+
+      context 'when target_type or target_id is missing' do
+        it 'returns nil when target_type is nil' do
+          audit_event.target_type = nil
+          audit_event.details[:target_type] = nil
+          audit_event.details[:target_id] = 1
+
+          expect(audit_event.streamable_namespace).to be_nil
+        end
+
+        it 'returns nil when target_id is nil' do
+          audit_event.target_type = 'Project'
+          audit_event.details[:target_type] = 'Project'
+          audit_event.details[:target_id] = nil
+
+          expect(audit_event.streamable_namespace).to be_nil
+        end
+      end
+
+      context 'when target_type is Project' do
+        let(:project) { create(:project) }
+
+        before do
+          audit_event.target_type = 'Project'
+          audit_event.details[:target_type] = 'Project'
+          audit_event.details[:target_id] = project.id
+        end
+
+        it 'returns the project namespace' do
+          expect(audit_event.streamable_namespace).to eq(project.project_namespace)
+        end
+
+        it 'returns nil when project does not exist' do
+          audit_event.details[:target_id] = non_existing_record_id
+
+          expect(audit_event.streamable_namespace).to be_nil
+        end
+      end
+
+      context 'when target_type is Group' do
+        let(:group) { create(:group) }
+
+        before do
+          audit_event.target_type = 'Group'
+          audit_event.details[:target_type] = 'Group'
+          audit_event.details[:target_id] = group.id
+        end
+
+        it 'returns the group' do
+          expect(audit_event.streamable_namespace).to eq(group)
+        end
+
+        it 'returns nil when group does not exist' do
+          audit_event.details[:target_id] = non_existing_record_id
+
+          expect(audit_event.streamable_namespace).to be_nil
+        end
+      end
+
+      context 'when target_type is Namespaces::ProjectNamespace' do
+        let(:project) { create(:project) }
+        let(:project_namespace) { project.project_namespace }
+
+        before do
+          audit_event.target_type = 'Namespaces::ProjectNamespace'
+          audit_event.details[:target_type] = 'Namespaces::ProjectNamespace'
+          audit_event.details[:target_id] = project_namespace.id
+        end
+
+        it 'returns the project namespace' do
+          expect(audit_event.streamable_namespace).to eq(project_namespace)
+        end
+
+        it 'returns nil when project namespace does not exist' do
+          audit_event.details[:target_id] = non_existing_record_id
+
+          expect(audit_event.streamable_namespace).to be_nil
+        end
+      end
+
+      context 'when target_type is unsupported' do
+        before do
+          audit_event.target_type = 'UnknownType'
+          audit_event.details[:target_type] = 'UnknownType'
+          audit_event.details[:target_id] = 1
+        end
+
+        it 'returns nil' do
+          expect(audit_event.streamable_namespace).to be_nil
+        end
+      end
+    end
+
+    context 'when entity_type is another Namespace type' do
+      let(:namespace) { create(:namespace) }
+      let(:audit_event) do
+        build(:audit_event,
+          entity_type: 'SomeNamespaceType',
+          entity_id: namespace.id)
+      end
+
+      context 'when entity is a Namespace' do
+        before do
+          allow(audit_event).to receive(:entity).and_return(namespace)
+        end
+
+        it 'returns entity' do
+          expect(audit_event.streamable_namespace).to eq(namespace)
+        end
+      end
+
+      context 'when entity is not a Namespace' do
+        let(:non_namespace_entity) { build(:user) }
+
+        before do
+          allow(audit_event).to receive(:entity).and_return(non_namespace_entity)
+        end
+
+        it 'returns nil' do
+          expect(audit_event.streamable_namespace).to be_nil
+        end
+      end
+    end
+  end
 end

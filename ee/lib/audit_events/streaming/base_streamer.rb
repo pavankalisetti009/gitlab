@@ -31,7 +31,7 @@ module AuditEvents
         return unless streamable?
 
         destinations.each do |destination|
-          track_and_stream(destination)
+          track_and_stream(destination) if destination.allowed_to_stream?(event_type, audit_event)
         end
       end
 

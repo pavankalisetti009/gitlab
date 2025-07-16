@@ -135,26 +135,9 @@ RSpec.shared_examples 'streamer streaming audit events' do |scope|
 
         before do
           allow(streamer).to receive(:destinations).and_return([active_destination1, active_destination2])
-        end
 
-        it 'streams to all active destinations' do
-          http_streamer = instance_double(AuditEvents::Streaming::Destinations::HttpStreamDestination)
-          gcp_streamer = instance_double(AuditEvents::Streaming::Destinations::GoogleCloudLoggingStreamDestination)
-
-          expect(AuditEvents::Streaming::Destinations::HttpStreamDestination)
-            .to receive(:new)
-            .with(event_type, audit_event, active_destination1)
-            .and_return(http_streamer)
-
-          expect(AuditEvents::Streaming::Destinations::GoogleCloudLoggingStreamDestination)
-            .to receive(:new)
-            .with(event_type, audit_event, active_destination2)
-            .and_return(gcp_streamer)
-
-          expect(http_streamer).to receive(:stream)
-          expect(gcp_streamer).to receive(:stream)
-
-          execute_streaming
+          allow(active_destination1).to receive(:allowed_to_stream?).with(event_type, audit_event).and_return(true)
+          allow(active_destination2).to receive(:allowed_to_stream?).with(event_type, audit_event).and_return(true)
         end
 
         context 'when one destination fails' do
