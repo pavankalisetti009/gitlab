@@ -30530,9 +30530,6 @@ msgstr ""
 msgid "Group compute minutes were successfully reset."
 msgstr ""
 
-msgid "Group deletion is in progress"
-msgstr ""
-
 msgid "Group description (optional)"
 msgstr ""
 
@@ -30552,12 +30549,6 @@ msgid "Group export requests"
 msgstr ""
 
 msgid "Group export started. A download link will be sent by email and made available on this page."
-msgstr ""
-
-msgid "Group has been already marked for deletion"
-msgstr ""
-
-msgid "Group has not been marked for deletion"
 msgstr ""
 
 msgid "Group import could not be scheduled"
@@ -48604,9 +48595,6 @@ msgstr ""
 msgid "Project access tokens"
 msgstr ""
 
-msgid "Project already deleted"
-msgstr ""
-
 msgid "Project already forked"
 msgstr ""
 
@@ -48659,12 +48647,6 @@ msgid "Project feature"
 msgstr ""
 
 msgid "Project groups"
-msgstr ""
-
-msgid "Project has been already marked for deletion"
-msgstr ""
-
-msgid "Project has not been marked for deletion"
 msgstr ""
 
 msgid "Project import requests"

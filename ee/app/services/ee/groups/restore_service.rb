@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EE
-  module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level module
+  module Groups
     module RestoreService
       extend ::Gitlab::Utils::Override
 

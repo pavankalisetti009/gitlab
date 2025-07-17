@@ -14,8 +14,14 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
       expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
         hash_including(name: 'group_deletion_marked')
       ).and_call_original
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+        hash_including(name: 'group_name_updated')
+      ).and_call_original
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+        hash_including(name: 'group_path_updated')
+      ).and_call_original
 
-      expect { result }.to change { AuditEvent.count }
+      expect { result }.to change { AuditEvent.count }.by(3)
     end
   end
 end

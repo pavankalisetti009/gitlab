@@ -2,6 +2,12 @@
 
 module Projects
   class MarkForDeletionService < BaseService
+    LEGACY_DELETION_SCHEDULED_PATH_IDENTIFIER = 'deleted'
+    DELETION_SCHEDULED_PATH_IDENTIFIER = 'deletion_scheduled'
+
+    UnauthorizedError = ServiceResponse.error(message: 'You are not authorized to perform this action')
+    AlreadyMarkedForDeletionError = ServiceResponse.error(message: 'Project has been already marked for deletion')
+
     def execute
       result = preconditions_checks
       return result if result.error?
@@ -31,19 +37,14 @@ module Projects
     private
 
     def preconditions_checks
-      unless can?(current_user, :remove_project, project)
-        return ServiceResponse.error(message: _('You are not authorized to perform this action'))
-      end
-
-      if project.self_deletion_scheduled?
-        return ServiceResponse.error(message: _('Project has been already marked for deletion'))
-      end
+      return UnauthorizedError unless can?(current_user, :remove_project, project)
+      return AlreadyMarkedForDeletionError if project.self_deletion_scheduled?
 
       ServiceResponse.success
     end
 
     def send_project_deletion_notification
-      ::NotificationService.new.project_scheduled_for_deletion(project)
+      notification_service.project_scheduled_for_deletion(project)
     end
 
     def log_event
@@ -61,10 +62,10 @@ module Projects
     end
 
     def suffixed_identifier(original_identifier)
-      if Feature.enabled?(:rename_group_path_upon_deletion_scheduling, project)
-        "#{original_identifier}-deletion_scheduled-#{project.id}"
+      if Feature.enabled?(:rename_group_path_upon_deletion_scheduling, project.root_ancestor)
+        "#{original_identifier}-#{DELETION_SCHEDULED_PATH_IDENTIFIER}-#{project.id}"
       else
-        "#{original_identifier}-deleted-#{project.id}"
+        "#{original_identifier}-#{LEGACY_DELETION_SCHEDULED_PATH_IDENTIFIER}-#{project.id}"
       end
     end
   end

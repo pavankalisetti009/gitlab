@@ -113,7 +113,7 @@ RSpec.describe Projects::RestoreService, feature_category: :groups_and_projects 
       result = execute
 
       expect(result).to be_error
-      expect(result.message).to eq('Project already deleted')
+      expect(result.message).to eq('Project deletion is in progress')
     end
   end
 

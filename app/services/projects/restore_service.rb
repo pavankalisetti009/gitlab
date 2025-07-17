@@ -4,28 +4,23 @@ module Projects
   class RestoreService < BaseService
     include Gitlab::Utils::StrongMemoize
 
-    DELETED_SUFFIX_REGEX = /-(deleted|deletion_scheduled)-[a-zA-Z0-9]+\z/
+    DELETED_SUFFIX_REGEX = /
+      -
+      (#{Projects::MarkForDeletionService::LEGACY_DELETION_SCHEDULED_PATH_IDENTIFIER}
+        |#{Projects::MarkForDeletionService::DELETION_SCHEDULED_PATH_IDENTIFIER})
+      -
+      \d+\z
+    /x
+
+    UnauthorizedError = ServiceResponse.error(message: 'You are not authorized to perform this action')
+    NotMarkedForDeletionError = ServiceResponse.error(message: 'Project has not been marked for deletion')
+    DeletionInProgressError = ServiceResponse.error(message: 'Project deletion is in progress')
 
     def execute
       result = preconditions_checks
       return result if result.error?
 
-      result = ServiceResponse.from_legacy_hash(
-        ::Projects::UpdateService.new(
-          project,
-          current_user,
-          {
-            archived: false,
-            hidden: false,
-            name: updated_value(project.name),
-            path: updated_value(project.path),
-            remove_deletion_schedule: true,
-            # These deletion parameters must be removed as part of https://gitlab.com/gitlab-org/gitlab/-/issues/492405
-            marked_for_deletion_at: nil,
-            deleting_user: nil
-          }
-        ).execute
-      )
+      result = rename_resource
 
       if result.success?
         log_event
@@ -41,21 +36,38 @@ module Projects
     private
 
     def preconditions_checks
-      unless can?(current_user, :remove_project, project)
-        return ServiceResponse.error(message: _('You are not authorized to perform this action'))
-      end
-
-      unless project.self_deletion_scheduled?
-        return ServiceResponse.error(message: _('Project has not been marked for deletion'))
-      end
-
-      return ServiceResponse.error(message: _('Project already deleted')) if project.self_deletion_in_progress?
+      return UnauthorizedError unless can?(current_user, :remove_project, project)
+      return NotMarkedForDeletionError unless project.self_deletion_scheduled?
+      return DeletionInProgressError if project.self_deletion_in_progress?
 
       ServiceResponse.success
     end
 
-    def log_event
-      log_info("User #{current_user.id} restored project #{project.full_path}")
+    def rename_resource
+      ServiceResponse.from_legacy_hash(
+        ::Projects::UpdateService.new(
+          project,
+          current_user,
+          {
+            archived: false,
+            hidden: false,
+            name: updated_value(project.name),
+            path: updated_value(project.path),
+            remove_deletion_schedule: true,
+            # These deletion parameters must be removed as part of https://gitlab.com/gitlab-org/gitlab/-/issues/492405
+            marked_for_deletion_at: nil,
+            deleting_user: nil
+          }
+        ).execute
+      )
+    end
+
+    def updated_value(value)
+      "#{original_value(value)}#{suffix}"
+    end
+
+    def original_value(value)
+      value.sub(DELETED_SUFFIX_REGEX, '')
     end
 
     def suffix
@@ -69,12 +81,8 @@ module Projects
       existing_project.present? && existing_project.id != project.id
     end
 
-    def original_value(value)
-      value.sub(DELETED_SUFFIX_REGEX, '')
-    end
-
-    def updated_value(value)
-      "#{original_value(value)}#{suffix}"
+    def log_event
+      log_info("User #{current_user.id} restored project #{project.full_path}")
     end
   end
 end

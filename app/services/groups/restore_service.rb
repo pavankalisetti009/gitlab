@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
-module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level module
+module Groups
   class RestoreService < Groups::BaseService
     include Gitlab::Utils::StrongMemoize
 
-    DELETED_SUFFIX_REGEX = /-deletion_scheduled-[a-zA-Z0-9]+\z/
+    DELETED_SUFFIX_REGEX = /-#{Groups::MarkForDeletionService::DELETION_SCHEDULED_PATH_IDENTIFIER}-\d+\z/
+
+    UnauthorizedError = ServiceResponse.error(message: 'You are not authorized to perform this action')
+    NotMarkedForDeletionError = ServiceResponse.error(message: 'Group has not been marked for deletion')
+    DeletionInProgressError = ServiceResponse.error(message: 'Group deletion is in progress')
+
     RenamingFailedError = Class.new(StandardError)
     DeletionScheduleDestroyingFailedError = Class.new(StandardError)
 
@@ -12,45 +17,38 @@ module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level mod
       result = preconditions_checks
       return result if result.error?
 
-      error = nil
+      result = ServiceResponse.success
 
       group.transaction do
-        rename_group_for_restore!
+        rename_resource!
         destroy_deletion_schedule!
       rescue RenamingFailedError
-        error = group.errors.full_messages.to_sentence
+        result = ServiceResponse.error(message: group.errors.full_messages.to_sentence)
         raise ActiveRecord::Rollback
       rescue DeletionScheduleDestroyingFailedError
-        error = _('Could not restore the group')
+        result = ServiceResponse.error(message: _('Could not restore the group'))
         raise ActiveRecord::Rollback
       end
 
-      if error
-        ServiceResponse.error(message: error)
-      else
+      if result.success?
         log_event
         group.reset
-        ServiceResponse.success
       end
+
+      result
     end
 
     private
 
     def preconditions_checks
-      unless can?(current_user, :remove_group, group)
-        return ServiceResponse.error(message: _('You are not authorized to perform this action'))
-      end
-
-      unless group.self_deletion_scheduled?
-        return ServiceResponse.error(message: _('Group has not been marked for deletion'))
-      end
-
-      return ServiceResponse.error(message: _('Group deletion is in progress')) if group.self_deletion_in_progress?
+      return UnauthorizedError unless can?(current_user, :remove_group, group)
+      return NotMarkedForDeletionError unless group.self_deletion_scheduled?
+      return DeletionInProgressError if group.self_deletion_in_progress?
 
       ServiceResponse.success
     end
 
-    def rename_group_for_restore!
+    def rename_resource!
       successful = ::Groups::UpdateService.new(
         group,
         current_user,

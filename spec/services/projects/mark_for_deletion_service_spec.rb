@@ -53,6 +53,21 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
       end
     end
 
+    context 'when a project under the group has a container image' do
+      before do
+        allow(project).to receive(:has_container_registry_tags?).and_return(true)
+      end
+
+      it 'returns error' do
+        expect(result).to be_error
+        expect(result.message).to include('Cannot rename or delete project because it contains container registry tags')
+      end
+    end
+
+    it 'returns success' do
+      expect(result).to be_success
+    end
+
     it 'renames project name' do
       expect { result }.to change {
         project.name

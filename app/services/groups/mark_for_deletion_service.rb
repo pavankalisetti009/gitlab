@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
-module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level module
+module Groups
   class MarkForDeletionService < BaseService
+    DELETION_SCHEDULED_PATH_IDENTIFIER = 'deletion_scheduled'
+
+    UnauthorizedError = ServiceResponse.error(message: 'You are not authorized to perform this action')
+    AlreadyMarkedForDeletionError = ServiceResponse.error(message: 'Group has been already marked for deletion')
+
     RenamingFailedError = Class.new(StandardError)
     DeletionScheduleSavingFailedError = Class.new(StandardError)
 
@@ -39,19 +44,14 @@ module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level mod
     private
 
     def preconditions_checks
-      unless can?(current_user, :remove_group, group)
-        return ServiceResponse.error(message: _('You are not authorized to perform this action'))
-      end
-
-      if group.self_deletion_scheduled?
-        return ServiceResponse.error(message: _('Group has been already marked for deletion'))
-      end
+      return UnauthorizedError unless can?(current_user, :remove_group, group)
+      return AlreadyMarkedForDeletionError if group.self_deletion_scheduled?
 
       ServiceResponse.success
     end
 
     def rename_group_for_deletion?
-      Feature.enabled?(:rename_group_path_upon_deletion_scheduling, group) &&
+      Feature.enabled?(:rename_group_path_upon_deletion_scheduling, group.root_ancestor) &&
         !group.has_container_repository_including_subgroups?
     end
 
@@ -67,7 +67,7 @@ module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level mod
     end
 
     def suffixed_identifier(original_identifier)
-      "#{original_identifier}-deletion_scheduled-#{group.id}"
+      "#{original_identifier}-#{DELETION_SCHEDULED_PATH_IDENTIFIER}-#{group.id}"
     end
 
     def save_deletion_schedule!(deletion_schedule)
@@ -81,7 +81,7 @@ module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level mod
     end
 
     def send_group_deletion_notification
-      ::NotificationService.new.group_scheduled_for_deletion(group)
+      notification_service.group_scheduled_for_deletion(group)
     end
   end
 end
