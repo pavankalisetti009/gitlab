@@ -144,7 +144,7 @@ module Ai
         return unless active? && !bot?
         return unless service.add_on_names.include?("duo_core") && duo_core_add_on?
 
-        if saas? && Feature.enabled?(:duo_core_saas, self)
+        if saas?
           groups = groups_with_duo_core_enabled
           return unless groups.any?
 
@@ -154,7 +154,7 @@ module Ai
             enablement_type: duo_core_add_on_purchase.normalized_add_on_name,
             authorized_by_duo_core: true
           )
-        elsif !saas? && ::Ai::Setting.instance.duo_core_features_enabled?
+        elsif ::Ai::Setting.instance.duo_core_features_enabled?
           Response.new(
             allowed?: true,
             namespace_ids: [],
