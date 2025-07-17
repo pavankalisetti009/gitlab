@@ -81,6 +81,36 @@ RSpec.describe 'creating escalation policy', feature_category: :incident_managem
         expect(mutation_response['errors'][0]).to eq('Escalation policies must have at least one rule')
       end
     end
+
+    context 'with invalid rule input' do
+      it 'raises validation error when both username and schedule are present' do
+        params[:rules] = [{
+          oncallScheduleIid: schedule.iid,
+          username: current_user.username,
+          elapsedTimeSeconds: 60,
+          status: 'ACKNOWLEDGED'
+        }]
+
+        resolve
+
+        expect_graphql_errors_to_include(
+          'One and only one of [oncallScheduleIid, username] arguments is required.'
+        )
+      end
+
+      it 'raises validation error when both username and schedule are missing' do
+        params[:rules] = [{
+          elapsedTimeSeconds: 60,
+          status: 'ACKNOWLEDGED'
+        }]
+
+        resolve
+
+        expect_graphql_errors_to_include(
+          'One and only one of [oncallScheduleIid, username] arguments is required.'
+        )
+      end
+    end
   end
 
   def mutation_response
