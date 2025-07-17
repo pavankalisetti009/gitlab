@@ -42330,6 +42330,9 @@ msgstr ""
 msgid "Notify|%{singular_or_plural_line} %{error_lines}: Work item type is not available. Please check your license and permissions."
 msgstr ""
 
+msgid "Notify|%{skipped_count} have used pipeline variables in the past. These projects' CI/CD settings were not updated as there is a risk the setting change would impact pipelines."
+msgstr ""
+
 msgid "Notify|%{strong_open}%{user_name}%{strong_close} updated the custom email address credentials for the Service Desk of %{project_link_start}%{project_name}%{project_link_end} and triggered the verification process."
 msgstr ""
 
@@ -42342,7 +42345,16 @@ msgstr ""
 msgid "Notify|%{updated_by_user_name} pushed new commits to merge request %{mr_link}"
 msgstr ""
 
+msgid "Notify|%{updated_count} projects were not using pipeline variables. CI/CD settings were updated to prevent future pipeline variable usage."
+msgstr ""
+
 msgid "Notify|%{work_items} successfully imported."
+msgstr ""
+
+msgid "Notify|1 project has used pipeline variables in the past. This project's CI/CD settings were not updated as there is a risk the setting change would impact pipelines."
+msgstr ""
+
+msgid "Notify|1 project was not using pipeline variables. CI/CD settings were updated to prevent future pipeline variable usage."
 msgstr ""
 
 msgid "Notify|A new GPG key was added to your account:"
@@ -42358,6 +42370,12 @@ msgid "Notify|All assignees were removed."
 msgstr ""
 
 msgid "Notify|All discussions on merge request %{mr_link} were resolved by %{name}"
+msgstr ""
+
+msgid "Notify|All projects in the %{group_name} group were checked for pipeline variables usage."
+msgstr ""
+
+msgid "Notify|All projects in this group have CI/CD setting set to prevent pipeline variable usage. 🎉"
 msgstr ""
 
 msgid "Notify|And %{total_stripped_new_commits_count} more"
@@ -42523,6 +42541,9 @@ msgid "Notify|Project %{project_name} couldn't be exported."
 msgstr ""
 
 msgid "Notify|Project %{project_name} was exported successfully."
+msgstr ""
+
+msgid "Notify|Projects that could not be updated need manual review. You can check the documentation for more information about the pipeline variable setting migration tool."
 msgstr ""
 
 msgid "Notify|Read timeout:"
