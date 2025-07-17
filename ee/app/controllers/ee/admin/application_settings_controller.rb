@@ -161,7 +161,10 @@ module EE
             :allow_top_level_group_owners_to_create_service_accounts],
           security_orchestration_policies: [
             :scan_execution_policies_action_limit,
-            :pipeline_execution_policies_per_configuration_limit
+            :pipeline_execution_policies_per_configuration_limit,
+            :scan_execution_policies_per_configuration_limit,
+            :security_approval_policies_limit,
+            :vulnerability_management_policies_per_configuration_limit
           ],
           disable_personal_access_tokens: :disable_personal_access_tokens,
           integrations_allow_list: :allowed_integrations_raw,

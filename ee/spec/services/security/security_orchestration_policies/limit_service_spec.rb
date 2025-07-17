@@ -6,22 +6,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::LimitService, feature_ca
   let_it_be(:group) { create(:group) }
   let(:service) { described_class.new(container: group) }
 
-  describe '#pipeline_execution_policies_per_pipeline_limit' do
-    subject(:limit) { service.pipeline_execution_policies_per_pipeline_limit }
-
-    it 'returns the default limit' do
-      expect(limit).to eq(5)
-    end
-  end
-
-  describe '#pipeline_execution_policies_per_configuration_limit' do
-    subject(:limit) { service.pipeline_execution_policies_per_configuration_limit }
-
+  shared_examples 'per configuration limit' do |namespace_setting:, instance_setting:|
     context 'when both root ancestor and current settings have limits set' do
       before do
-        allow(group.root_ancestor).to receive(:pipeline_execution_policies_per_configuration_limit)
+        allow(group.root_ancestor).to receive(namespace_setting)
           .and_return(group_level_setting)
-        allow(Gitlab::CurrentSettings).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(7)
+        allow(Gitlab::CurrentSettings).to receive(instance_setting).and_return(7)
       end
 
       context 'when current setting is set to non-zero value' do
@@ -43,8 +33,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::LimitService, feature_ca
 
     context 'when only root ancestor limit is set' do
       before do
-        allow(group.root_ancestor).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(4)
-        allow(Gitlab::CurrentSettings).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(nil)
+        allow(group.root_ancestor).to receive(namespace_setting).and_return(4)
+        allow(Gitlab::CurrentSettings).to receive(instance_setting).and_return(nil)
       end
 
       it 'returns the root ancestor limit' do
@@ -54,8 +44,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::LimitService, feature_ca
 
     context 'when only current settings limit is set' do
       before do
-        allow(group.root_ancestor).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(nil)
-        allow(Gitlab::CurrentSettings).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(6)
+        allow(group.root_ancestor).to receive(namespace_setting).and_return(nil)
+        allow(Gitlab::CurrentSettings).to receive(instance_setting).and_return(6)
       end
 
       it 'returns the current settings limit' do
@@ -65,13 +55,53 @@ RSpec.describe Security::SecurityOrchestrationPolicies::LimitService, feature_ca
 
     context 'when no limits are set' do
       before do
-        allow(group.root_ancestor).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(nil)
-        allow(Gitlab::CurrentSettings).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(nil)
+        allow(group.root_ancestor).to receive(namespace_setting).and_return(nil)
+        allow(Gitlab::CurrentSettings).to receive(instance_setting).and_return(nil)
       end
 
       it 'returns the default limit' do
         expect(limit).to eq(5)
       end
     end
+  end
+
+  describe '#pipeline_execution_policies_per_pipeline_limit' do
+    subject(:limit) { service.pipeline_execution_policies_per_pipeline_limit }
+
+    it 'returns the default limit' do
+      expect(limit).to eq(5)
+    end
+  end
+
+  describe '#pipeline_execution_policies_per_configuration_limit' do
+    subject(:limit) { service.pipeline_execution_policies_per_configuration_limit }
+
+    it_behaves_like 'per configuration limit',
+      namespace_setting: :pipeline_execution_policies_per_configuration_limit,
+      instance_setting: :pipeline_execution_policies_per_configuration_limit
+  end
+
+  describe '#scan_execution_policies_per_configuration_limit' do
+    subject(:limit) { service.scan_execution_policies_per_configuration_limit }
+
+    it_behaves_like 'per configuration limit',
+      namespace_setting: :scan_execution_policies_per_configuration_limit,
+      instance_setting: :scan_execution_policies_per_configuration_limit
+  end
+
+  describe '#approval_policies_per_configuration_limit' do
+    subject(:limit) { service.approval_policies_per_configuration_limit }
+
+    it_behaves_like 'per configuration limit',
+      namespace_setting: :approval_policies_per_configuration_limit,
+      instance_setting: :security_approval_policies_limit
+  end
+
+  describe '#vulnerability_management_policies_per_configuration_limit' do
+    subject(:limit) { service.vulnerability_management_policies_per_configuration_limit }
+
+    it_behaves_like 'per configuration limit',
+      namespace_setting: :vulnerability_management_policies_per_configuration_limit,
+      instance_setting: :vulnerability_management_policies_per_configuration_limit
   end
 end

@@ -381,7 +381,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
     context 'when a source reached the limit of active scan execution policies' do
       before do
-        stub_const('::Security::ScanExecutionPolicy::POLICY_LIMIT', 1)
+        allow_next_instance_of(Security::SecurityOrchestrationPolicies::LimitService) do |service|
+          allow(service).to receive(:scan_execution_policies_per_configuration_limit).and_return(1)
+        end
       end
 
       it_behaves_like 'when source has active scan policies', limit_reached: true
@@ -449,7 +451,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
     context 'when a source reached the limit of active vulnerability management policies' do
       before do
-        stub_const('::Security::VulnerabilityManagementPolicy::POLICY_LIMIT', 1)
+        allow_next_instance_of(Security::SecurityOrchestrationPolicies::LimitService) do |service|
+          allow(service).to receive(:vulnerability_management_policies_per_configuration_limit).and_return(1)
+        end
       end
 
       it_behaves_like 'when source has active scan policies', limit_reached: true

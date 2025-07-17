@@ -109,7 +109,7 @@ module Security
       end
 
       def approval_policies_limit
-        Gitlab::CurrentSettings.security_approval_policies_limit
+        limit_service.approval_policies_per_configuration_limit
       end
 
       def applicable_scan_result_policies_for_project(project)

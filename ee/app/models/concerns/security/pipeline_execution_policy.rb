@@ -5,7 +5,8 @@ module Security
     POLICY_TYPE_NAME = 'Pipeline execution policy'
 
     def active_pipeline_execution_policies
-      pipeline_execution_policy.select { |config| config[:enabled] }.first(pipeline_execution_policy_limit)
+      policy_limit = limit_service.pipeline_execution_policies_per_configuration_limit
+      pipeline_execution_policy.select { |config| config[:enabled] }.first(policy_limit)
     end
 
     def active_pipeline_execution_policy_names(project)
@@ -21,14 +22,6 @@ module Security
 
     def pipeline_execution_policy
       policy_by_type(:pipeline_execution_policy)
-    end
-
-    private
-
-    def pipeline_execution_policy_limit
-      Security::SecurityOrchestrationPolicies::LimitService
-        .new(container: source)
-        .pipeline_execution_policies_per_configuration_limit
     end
   end
 end

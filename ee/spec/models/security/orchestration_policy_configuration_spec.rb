@@ -4433,6 +4433,40 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
       end
 
+      context 'for :scan_execution_policy' do
+        let(:policy_type) { :scan_execution_policy }
+        let(:limit_service) { instance_double(Security::SecurityOrchestrationPolicies::LimitService) }
+
+        before do
+          allow(Security::SecurityOrchestrationPolicies::LimitService)
+            .to receive(:new)
+            .with(container: security_orchestration_policy_configuration.source)
+            .and_return(limit_service)
+          allow(limit_service).to receive(:scan_execution_policies_per_configuration_limit).and_return(10)
+        end
+
+        it 'returns the policy limit from LimitService' do
+          expect(subject).to eq(10)
+        end
+      end
+
+      context 'for :vulnerability_management_policy' do
+        let(:policy_type) { :vulnerability_management_policy }
+        let(:limit_service) { instance_double(Security::SecurityOrchestrationPolicies::LimitService) }
+
+        before do
+          allow(Security::SecurityOrchestrationPolicies::LimitService)
+            .to receive(:new)
+            .with(container: security_orchestration_policy_configuration.source)
+            .and_return(limit_service)
+          allow(limit_service).to receive(:vulnerability_management_policies_per_configuration_limit).and_return(10)
+        end
+
+        it 'returns the policy limit from LimitService' do
+          expect(subject).to eq(10)
+        end
+      end
+
       context 'for :pipeline_execution_policy' do
         let(:policy_type) { :pipeline_execution_policy }
         let(:limit_service) { instance_double(Security::SecurityOrchestrationPolicies::LimitService) }
@@ -4451,9 +4485,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
 
       where(:policy_type, :expected_policy_limit) do
-        :scan_execution_policy                | lazy { Security::ScanExecutionPolicy::POLICY_LIMIT }
         :pipeline_execution_schedule_policy   | lazy { Security::PipelineExecutionSchedulePolicy::POLICY_LIMIT }
-        :vulnerability_management_policy      | lazy { Security::VulnerabilityManagementPolicy::POLICY_LIMIT }
         :ci_component_publishing_policy       | lazy { Security::CiComponentPublishingPolicy::POLICY_LIMIT }
       end
 

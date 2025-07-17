@@ -133,13 +133,13 @@ module Security
       when :approval_policy
         approval_policies_limit
       when :pipeline_execution_policy
-        pipeline_execution_policy_limit
+        limit_service.pipeline_execution_policies_per_configuration_limit
       when :scan_execution_policy
-        ScanExecutionPolicy::POLICY_LIMIT
+        limit_service.scan_execution_policies_per_configuration_limit
       when :pipeline_execution_schedule_policy
         PipelineExecutionSchedulePolicy::POLICY_LIMIT
       when :vulnerability_management_policy
-        VulnerabilityManagementPolicy::POLICY_LIMIT
+        limit_service.vulnerability_management_policies_per_configuration_limit
       when :ci_component_publishing_policy
         CiComponentPublishingPolicy::POLICY_LIMIT
       end
@@ -380,6 +380,10 @@ module Security
         yield ids if ids.present?
         # rubocop: enable Database/AvoidUsingPluckWithoutLimit
       end
+    end
+
+    def limit_service
+      ::Security::SecurityOrchestrationPolicies::LimitService.new(container: source) # rubocop:disable CodeReuse/ServiceClass -- needs refactor
     end
   end
 end

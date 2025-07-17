@@ -29,6 +29,9 @@ module EE
           :repository_size_limit,
           :shared_runners_minutes_limit,
           :pipeline_execution_policies_per_configuration_limit,
+          :scan_execution_policies_per_configuration_limit,
+          :approval_policies_per_configuration_limit,
+          :vulnerability_management_policies_per_configuration_limit,
           { gitlab_subscription_attributes: [:hosted_plan_id] }
         ]
       end

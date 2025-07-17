@@ -65,12 +65,29 @@ module EE
 
       attribute :security_policies, default: -> { {} }
       validates :security_policies, json_schema: { filename: "application_setting_security_policies" }
+
       validates :pipeline_execution_policies_per_configuration_limit,
+        numericality: {
+          only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, allow_nil: true
+        }
+      validates :scan_execution_policies_per_configuration_limit,
+        numericality: {
+          only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, allow_nil: true
+        }
+      validates :approval_policies_per_configuration_limit,
+        numericality: {
+          only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, allow_nil: true
+        }
+      validates :vulnerability_management_policies_per_configuration_limit,
         numericality: {
           only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, allow_nil: true
         }
 
       jsonb_accessor :security_policies, pipeline_execution_policies_per_configuration_limit: [:integer, { default: 0 }]
+      jsonb_accessor :security_policies, scan_execution_policies_per_configuration_limit: [:integer, { default: 0 }]
+      jsonb_accessor :security_policies, approval_policies_per_configuration_limit: [:integer, { default: 0 }]
+      jsonb_accessor :security_policies,
+        vulnerability_management_policies_per_configuration_limit: [:integer, { default: 0 }]
 
       before_save :clear_new_user_signups_cap, unless: -> { seat_control_user_cap? }
       before_save :set_prevent_sharing_groups_outside_hierarchy

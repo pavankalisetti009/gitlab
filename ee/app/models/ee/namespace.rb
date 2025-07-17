@@ -180,7 +180,10 @@ module EE
         :lock_duo_features_enabled, :duo_availability,
         to: :namespace_settings, allow_nil: true
       delegate :pipeline_execution_policies_per_configuration_limit,
-        :pipeline_execution_policies_per_configuration_limit=,
+        :pipeline_execution_policies_per_configuration_limit=, :scan_execution_policies_per_configuration_limit,
+        :scan_execution_policies_per_configuration_limit=, :approval_policies_per_configuration_limit,
+        :approval_policies_per_configuration_limit=, :vulnerability_management_policies_per_configuration_limit,
+        :vulnerability_management_policies_per_configuration_limit=,
         to: :namespace_settings, allow_nil: true
       delegate :duo_workflow_mcp_enabled, :duo_workflow_mcp_enabled=, to: :ai_settings,
         allow_nil: true
