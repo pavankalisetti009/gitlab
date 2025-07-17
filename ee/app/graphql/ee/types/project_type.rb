@@ -652,6 +652,14 @@ module EE
           resolver: ::Resolvers::Ai::ProjectAgenticChatAccessResolver,
           experiment: { milestone: '18.1' },
           description: 'User access to Duo agentic Chat feature.'
+
+        field :security_metrics,
+          ::Types::Security::SecurityMetricsType,
+          null: true,
+          description: 'Security metrics.' \
+          'This feature is currently under development and not yet available for general use.',
+          resolver: ::Resolvers::Security::SecurityMetricsResolver,
+          experiment: { milestone: '18.3' }
       end
 
       def tracking_key

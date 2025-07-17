@@ -27,7 +27,13 @@ module Resolvers
       def resolve(**_args)
         authorize!(object)
 
-        return unless Feature.enabled?(:group_security_dashboard_new, object)
+        if object.is_a?(Project)
+          return unless Feature.enabled?(:project_security_dashboard_new, object)
+        elsif object.is_a?(Group)
+          return unless Feature.enabled?(:group_security_dashboard_new, object)
+        else
+          return
+        end
 
         object
       end
