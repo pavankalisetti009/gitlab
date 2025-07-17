@@ -12,6 +12,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   let_it_be(:assignee_user)   { create(:user) }
   let_it_be(:other_user)      { create(:user) }
   let_it_be(:milestone)       { create(:milestone, project: project) }
+  let_it_be(:work_item1)      { create(:work_item, project: project, author: current_user) }
 
   let(:context)        { instance_double(GraphQL::Query::Context) }
   let(:request_params) { { 'operationName' => 'GLQL' } }
@@ -34,6 +35,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
       author_username: current_user.username,
       milestone_title: [milestone.title],
       assignee_usernames: [assignee_user.username],
+      weight: work_item1.weight,
       not: {}
     }
   end
@@ -189,7 +191,6 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   end
 
   describe '#execute' do
-    let_it_be(:work_item1) { create(:work_item, project: project, author: current_user) }
     let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
     let(:search_params) do
       {
@@ -214,7 +215,11 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         not_assignee_ids: nil,
         or_assignee_ids: nil,
         any_assignees: false,
-        none_assignees: false
+        none_assignees: false,
+        weight: work_item1.weight,
+        not_weight: nil,
+        none_weight: false,
+        any_weight: false
       }
     end
 
@@ -272,6 +277,33 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         before do
           params[:not][:milestone_title] = [milestone.title]
           search_params.merge!(not_milestone_title: [milestone.title])
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when not_weight param provided' do
+        before do
+          params[:not][:weight] = work_item1.weight
+          search_params.merge!(not_weight: work_item1.weight)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when any_weight param provided' do
+        before do
+          params[:weight_wildcard_id] = described_class::FILTER_ANY
+          search_params.merge!(any_weight: true)
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when none_weight param provided' do
+        before do
+          params[:weight_wildcard_id] = described_class::FILTER_NONE
+          search_params.merge!(none_weight: true)
         end
 
         it_behaves_like 'executes ES search with expected params'

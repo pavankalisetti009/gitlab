@@ -17,7 +17,8 @@ module EE
           **milestone_filters,
           **assignee_filters,
           **code_search_filters,
-          **knn_filters
+          **knn_filters,
+          **weight_filters
         )
       end
 
@@ -89,6 +90,15 @@ module EE
         {
           hybrid_similarity: params[:hybrid_similarity]&.to_f,
           hybrid_boost: params[:hybrid_boost]&.to_f
+        }
+      end
+
+      def weight_filters
+        {
+          weight: params[:weight],
+          not_weight: params[:not_weight],
+          none_weight: params[:none_weight],
+          any_weight: params[:any_weight]
         }
       end
     end

@@ -20,6 +20,8 @@
 #                              (cannot be simultaneously used with milestone_title)
 #     assignee_usernames:    - Array of strings
 #     assignee_wildcard_id:  - String with possible values of  'none', 'any'
+#     weight:                - String containing integer representing work item's weight
+#     weight_wildcard_id:    - String with possible values of  'none', 'any'
 #     not                    - Hash with keys that can be negated
 #     or                     - Hash with keys that can be combined using OR logic
 
@@ -33,9 +35,11 @@ module EE
         CONTROL_KEYS = [:sort, :include_ancestors, :include_descendants, :exclude_projects].freeze
         ALLOWED_ES_FILTERS = [
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
-          :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or
+          :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or,
+          :weight, :weight_wildcard_id
         ].freeze
-        NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name].freeze
+        NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name, :weight,
+          :weight_wildcard_id].freeze
         OR_FILTERS = [:assignee_usernames, :label_names].freeze
 
         FILTER_NONE = 'none'
@@ -112,7 +116,12 @@ module EE
             not_assignee_ids: assignee_ids(params.dig(:not, :assignee_usernames)),
             or_assignee_ids: assignee_ids(params.dig(:or, :assignee_usernames)),
             none_assignees: none_assignees?,
-            any_assignees: any_assignees?
+            any_assignees: any_assignees?,
+            # NOTE: We receive weight as a string on the API level, but ES stores weight as integer
+            weight: params[:weight]&.to_i,
+            not_weight: params.dig(:not, :weight)&.to_i,
+            none_weight: none_weight?,
+            any_weight: any_weight?
           }
         end
 
@@ -228,6 +237,14 @@ module EE
           return if any_labels?(names) || none_labels?(names)
 
           names
+        end
+
+        def none_weight?
+          params[:weight_wildcard_id].to_s.downcase == FILTER_NONE
+        end
+
+        def any_weight?
+          params[:weight_wildcard_id].to_s.downcase == FILTER_ANY
         end
       end
     end

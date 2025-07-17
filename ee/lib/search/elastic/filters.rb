@@ -276,6 +276,71 @@ module Search
           query_hash
         end
 
+        def by_weight(query_hash:, options:)
+          weight = options[:weight]
+          not_weight = options[:not_weight]
+          none_weight = options[:none_weight]
+          any_weight = options[:any_weight]
+
+          return query_hash unless weight || not_weight || none_weight || any_weight
+
+          context.name(:filters) do
+            if weight
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  term: {
+                    weight: {
+                      _name: context.name(:weight),
+                      value: weight
+                    }
+                  }
+                }
+              end
+            end
+
+            if not_weight
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must_not: {
+                      term: {
+                        weight: {
+                          _name: context.name(:not_weight),
+                          value: not_weight
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if none_weight
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:none_weight),
+                    must_not: { exists: { field: 'weight' } }
+                  }
+                }
+              end
+            end
+
+            if any_weight
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:any_weight),
+                    must: { exists: { field: 'weight' } }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
         def by_work_item_type_ids(query_hash:, options:)
           work_item_type_ids = options[:work_item_type_ids]
           not_work_item_type_ids = options[:not_work_item_type_ids]
