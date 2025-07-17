@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: :global_search do
+RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt_settings_enabled, feature_category: :global_search do
   let_it_be(:project) { create(:project, :public, :repository) }
   let_it_be(:repository) { project.repository }
 
@@ -12,9 +12,7 @@ RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: 
     let_it_be(:private_project) { create(:project, :repository, namespace: project.namespace) }
     let(:private_repository) { private_project.repository }
 
-    before do
-      stub_licensed_features(zoekt_code_search: true)
-      stub_ee_application_setting(zoekt_indexing_enabled: true)
+    before_all do
       zoekt_ensure_project_indexed!(project)
     end
 
