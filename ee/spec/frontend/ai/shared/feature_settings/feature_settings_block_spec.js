@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import FeatureSettingsBlock from 'ee/ai/shared/feature_settings/feature_settings_block.vue';
@@ -43,5 +44,18 @@ describe('FeatureSettingsBlock', () => {
 
   it('renders content slot', () => {
     expect(wrapper.findByTestId('slot-content').html()).toBe(MOCK_SLOT_CONTENT);
+  });
+
+  describe('toggle state', () => {
+    it('is in expanded state when the component is first rendered', () => {
+      expect(findSettingsBlock().props('expanded')).toBe(true);
+    });
+
+    it('correctly updates toggle state', async () => {
+      findSettingsBlock().vm.$emit('toggle-expand', false);
+      await nextTick();
+
+      expect(findSettingsBlock().props('expanded')).toBe(false);
+    });
   });
 });
