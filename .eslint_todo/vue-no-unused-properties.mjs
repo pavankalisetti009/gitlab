@@ -215,7 +215,6 @@ export default {
     'app/assets/javascripts/tags/components/delete_tag_modal.vue',
     'app/assets/javascripts/token_access/components/outbound_token_access.vue',
     'app/assets/javascripts/token_access/components/token_permissions.vue',
-    'app/assets/javascripts/usage_quotas/components/search_and_sort_bar/search_and_sort_bar.vue',
     'app/assets/javascripts/user_lists/components/user_lists.vue',
     'app/assets/javascripts/wikis/components/wiki_content.vue',
     'app/assets/javascripts/wikis/components/wiki_form.vue',
