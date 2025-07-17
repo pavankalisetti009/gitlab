@@ -88,7 +88,7 @@ module Namespaces
               ),
               {
                 **tag_pair(link_to('', manage_storage_link), :manage_storage_link_start, :link_end),
-                **tag_pair(link_to('', "https://support.gitlab.com"), :support_link_start, :link_end)
+                **tag_pair(link_to('', Gitlab::Saas.customer_support_url), :support_link_start, :link_end)
               }
             )
           ]
@@ -129,7 +129,7 @@ module Namespaces
             **tag_pair(link_to('', group_member_link), :group_member_link_start, :link_end),
             **tag_pair(link_to('', purchase_more_link), :purchase_more_link_start, :link_end),
             **tag_pair(link_to('', manage_storage_link), :manage_storage_link_start, :link_end),
-            **tag_pair(link_to('', "https://support.gitlab.com"), :support_link_start, :link_end)
+            **tag_pair(link_to('', Gitlab::Saas.customer_support_url), :support_link_start, :link_end)
           }
 
           unless root_storage_size.above_size_limit?
