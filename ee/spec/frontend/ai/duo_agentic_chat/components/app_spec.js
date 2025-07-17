@@ -368,10 +368,6 @@ describe('Duo Agentic Chat', () => {
             }),
           ]),
         );
-
-        expect(mockSocketManager.send).toHaveBeenCalledWith({
-          actionResponse: { requestID: 'request-id-1' },
-        });
       });
 
       it('handles tool approval flow', async () => {
@@ -406,11 +402,6 @@ describe('Duo Agentic Chat', () => {
         expect(findToolApprovalFlow().props('toolDetails')).toEqual({
           name: 'run_command',
           parameters: { command: 'ls -la' },
-        });
-
-        // Should NOT send actionResponse when waiting for approval
-        expect(mockSocketManager.send).not.toHaveBeenCalledWith({
-          actionResponse: { requestID: 'request-id-1' },
         });
       });
 
@@ -450,10 +441,6 @@ describe('Duo Agentic Chat', () => {
             }),
           ]),
         );
-
-        expect(mockSocketManager.send).toHaveBeenCalledWith({
-          actionResponse: { requestID: 'request-id-2' },
-        });
       });
 
       it.each([
@@ -512,10 +499,6 @@ describe('Duo Agentic Chat', () => {
             }),
           ]),
         );
-
-        expect(mockSocketManager.send).toHaveBeenCalledWith({
-          actionResponse: { requestID: 'request-id-3' },
-        });
       });
 
       it('sets loading to false when workflow status is INPUT_REQUIRED', async () => {
@@ -543,9 +526,6 @@ describe('Duo Agentic Chat', () => {
         });
 
         expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
-        expect(mockSocketManager.send).toHaveBeenCalledWith({
-          actionResponse: { requestID: 'request-id-4' },
-        });
       });
 
       it('handles errors from WebSocket', () => {

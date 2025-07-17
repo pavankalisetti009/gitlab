@@ -195,7 +195,8 @@ module API
               push_feature_flags
 
               headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
-                'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token
+                'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
+                'x-gitlab-unidirectional-streaming' => 'enabled'
               )
 
               {

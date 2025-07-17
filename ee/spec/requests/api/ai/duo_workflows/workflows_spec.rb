@@ -643,7 +643,8 @@ expires_at: duo_workflow_service_token_expires_at })
           'x-gitlab-authentication-type' => 'oidc',
           'x-gitlab-enabled-feature-flags' => anything,
           'x-gitlab-instance-id' => anything,
-          'x-gitlab-version' => Gitlab.version_info.to_s
+          'x-gitlab-version' => Gitlab.version_info.to_s,
+          'x-gitlab-unidirectional-streaming' => 'enabled'
         )
 
         expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
