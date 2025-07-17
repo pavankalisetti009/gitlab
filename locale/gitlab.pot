@@ -15479,6 +15479,9 @@ msgstr ""
 msgid "CompareRevisions|%{source_branch} and %{target_branch} are the same."
 msgstr ""
 
+msgid "CompareRevisions|An error occurred while retrieving target projects."
+msgstr ""
+
 msgid "CompareRevisions|Branches"
 msgstr ""
 
