@@ -120,6 +120,7 @@ describe('TanukiBot Store Actions', () => {
         action: actions.setMessages,
         payload: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
         state,
+        expectedMutations: [{ type: types.CLEAN_MESSAGES }],
         expectedActions: [
           { type: 'addDuoChatMessage', payload: MOCK_USER_MESSAGE },
           { type: 'addDuoChatMessage', payload: MOCK_TANUKI_MESSAGE },

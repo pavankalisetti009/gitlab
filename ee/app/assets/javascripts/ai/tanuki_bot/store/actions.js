@@ -25,12 +25,12 @@ export const addDuoChatMessage = async ({ commit }, messageData = { content: '' 
 };
 
 export const setMessages = ({ dispatch, commit }, messages = []) => {
+  commit(types.CLEAN_MESSAGES);
+
   if (messages.length) {
     messages.forEach((msg) => {
       dispatch('addDuoChatMessage', msg);
     });
-  } else {
-    commit(types.CLEAN_MESSAGES);
   }
 };
 
