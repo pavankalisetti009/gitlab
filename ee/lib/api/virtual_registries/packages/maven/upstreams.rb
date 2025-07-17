@@ -7,15 +7,26 @@ module API
         class Upstreams < ::API::Base
           include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedSetup
           include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedAuthentication
+          include ::API::PaginationParams
 
           helpers do
             include ::Gitlab::Utils::StrongMemoize
 
-            delegate :group, to: :registry
-
             def target_group
-              request.path.include?('/registries') ? group : upstream.group
+              case route.origin
+              when %r{groups/:id}
+                group
+              when %r{registries/:id}
+                registry.group
+              when %r{upstreams/:id}
+                upstream.group
+              end
             end
+
+            def group
+              find_group!(params[:id])
+            end
+            strong_memoize_attr :group
 
             def registry
               ::VirtualRegistries::Packages::Maven::Registry.find(params[:id])
@@ -28,11 +39,42 @@ module API
             strong_memoize_attr :upstream
           end
 
+          resource :groups, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
+            params do
+              requires :id, types: [String, Integer], desc: 'The group ID or full group path. Must be a top-level group'
+              use :pagination
+            end
+
+            namespace ':id/-/virtual_registries/packages/maven/upstreams' do
+              desc 'List all maven virtual registry upstreams for a group' do
+                detail 'This feature was introduced in GitLab 18.3. \
+                    This feature is currently in experiment state. \
+                    This feature is behind the `maven_virtual_registry` feature flag.'
+                success code: 200, model: Entities::VirtualRegistries::Packages::Maven::Upstream
+                failure [
+                  { code: 400, message: 'Bad Request' },
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 403, message: 'Forbidden' },
+                  { code: 404, message: 'Not found' }
+                ]
+                tags %w[maven_virtual_registries]
+                hidden true
+              end
+              get do
+                bad_request!(_('only available on top-level groups.')) unless group.root?
+                authorize! :read_virtual_registry, group.virtual_registry_policy_subject
+
+                present paginate(::VirtualRegistries::Packages::Maven::Upstream.for_group(group)),
+                  with: Entities::VirtualRegistries::Packages::Maven::Upstream
+              end
+            end
+          end
+
           namespace 'virtual_registries/packages/maven' do
             namespace :registries do
               route_param :id, type: Integer, desc: 'The ID of the maven virtual registry' do
                 namespace :upstreams do
-                  desc 'List all maven virtual registry upstreams' do
+                  desc 'List all maven virtual registry upstreams for a registry' do
                     detail 'This feature was introduced in GitLab 17.4. \
                         This feature is currently in experiment state. \
                         This feature behind the `maven_virtual_registry` feature flag.'
@@ -83,7 +125,9 @@ module API
                   post do
                     authorize! :create_virtual_registry, registry
 
-                    new_upstream = registry.upstreams.create(declared_params(include_missing: false).merge(group:))
+                    new_upstream = registry.upstreams.create(
+                      declared_params(include_missing: false).merge(group: registry.group)
+                    )
 
                     render_validation_error!(new_upstream) unless new_upstream.persisted?
 

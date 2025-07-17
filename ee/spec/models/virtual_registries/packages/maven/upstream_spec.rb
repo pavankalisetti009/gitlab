@@ -202,6 +202,16 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
 
       it { is_expected.to contain_exactly(upstream) }
     end
+
+    describe '.for_group' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, group:) }
+      let_it_be(:other_upstream) { create(:virtual_registries_packages_maven_upstream) }
+
+      subject { described_class.for_group(group) }
+
+      it { is_expected.to eq([upstream]) }
+    end
   end
 
   context 'for credentials persistence' do

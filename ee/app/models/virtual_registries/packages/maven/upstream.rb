@@ -44,6 +44,7 @@ module VirtualRegistries
             .order('registry_upstreams.position ASC')
         }
 
+        scope :for_group, ->(group) { where(group:) }
         scope :for_id_and_group, ->(id:, group:) { where(id:, group:) }
 
         def url_for(path)
