@@ -65,7 +65,7 @@ RSpec.describe Search::Zoekt::Query, feature_category: :global_search do
       where(:query, :result) do
         'test extension:rb'       | 'test file:\.rb$'
         'test -extension:go'      | 'test -file:\.go$'
-        'hello filename:foobar'   | 'hello file:/([^/]*foobar[^/]*)$'
+        'hello filename:foobar'   | 'hello file:(?:^|/)([^/]*foobar[^/]*)$'
         'te.* -path:hello/world'  | 'te.* -file:(?:^|/)hello/world'
         'test lang:rb'            | 'test lang:rb' # No transpilation required because syntax is exact code search
       end
