@@ -126,6 +126,12 @@ module EE
         License.feature_available?(:remote_development)
       end
 
+      condition(:has_admin_custom_role, scope: :user) do
+        MemberRole.all_customizable_admin_permission_keys.any? do |ability|
+          custom_role_ability(@user).allowed?(ability)
+        end
+      end
+
       MemberRole.all_customizable_admin_permission_keys.each do |ability|
         desc "Admin custom role that enables #{ability.to_s.tr('_', ' ')}"
         condition(:"custom_role_enables_#{ability}") do
@@ -227,15 +233,16 @@ module EE
         enable :access_git
       end
 
-      rule { custom_role_enables_read_admin_cicd }.policy do
+      rule { has_admin_custom_role }.policy do
         enable :access_admin_area
         enable :read_application_statistics
+      end
+
+      rule { custom_role_enables_read_admin_cicd }.policy do
         enable :read_admin_cicd
       end
 
       rule { custom_role_enables_read_admin_monitoring }.policy do
-        enable :access_admin_area
-        enable :read_application_statistics
         enable :read_admin_audit_log
         enable :read_admin_background_migrations
         enable :read_admin_gitaly_servers
@@ -244,17 +251,21 @@ module EE
       end
 
       rule { custom_role_enables_read_admin_subscription }.policy do
-        enable :access_admin_area
-        enable :read_application_statistics
         enable :read_admin_subscription
         enable :read_billable_member
         enable :read_licenses
       end
 
       rule { custom_role_enables_read_admin_users }.policy do
-        enable :access_admin_area
-        enable :read_application_statistics
         enable :read_admin_users
+      end
+
+      rule { custom_role_enables_read_admin_groups }.policy do
+        enable :read_admin_groups
+      end
+
+      rule { custom_role_enables_read_admin_projects }.policy do
+        enable :read_admin_projects
       end
 
       rule { admin & duo_core_features_available }.policy do
