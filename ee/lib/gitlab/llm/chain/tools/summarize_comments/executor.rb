@@ -75,6 +75,7 @@ module Gitlab
             }.freeze
 
             ADDITIONAL_HTML_TAG_BLOCK_LIST = %w[img].freeze
+            SUPPORTED_ISSUABLE_TYPES = %w[issue work_item epic].freeze
 
             def self.slash_commands
               SLASH_COMMANDS
@@ -141,8 +142,7 @@ module Gitlab
                 ai_component: 'feature',
                 allowed: ability)
 
-              ::Llm::GenerateSummaryService::SUPPORTED_ISSUABLE_TYPES.include?(resource.to_ability_name) &&
-                ability
+              SUPPORTED_ISSUABLE_TYPES.include?(resource.to_ability_name) && ability
             end
 
             def authorize

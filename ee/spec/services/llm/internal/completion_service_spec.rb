@@ -8,7 +8,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:resource) { create(:issue, project: project) }
+  let_it_be(:resource) { create(:merge_request, source_project: project, target_project: project, author: user) }
   let_it_be(:add_on_purchase) do
     create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
   end
@@ -22,10 +22,10 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
   end
 
   let(:options) { { 'key' => 'value' } }
-  let(:ai_action_name) { :summarize_comments }
+  let(:ai_action_name) { :summarize_review }
   let(:referer_url) { nil }
   let(:extra_resource) { {} }
-  let(:completion) { instance_double(Gitlab::Llm::Completions::SummarizeAllOpenNotes) }
+  let(:completion) { instance_double(::Gitlab::Llm::AiGateway::Completions::SummarizeReview) }
   let(:logger) { instance_double(Gitlab::Llm::Logger) }
 
   let(:prompt_message) do
@@ -45,14 +45,14 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
       allow(logger).to receive(:conditional_info)
       allow(logger).to receive(:debug)
-      stub_licensed_features(summarize_comments: true)
+      stub_licensed_features(summarize_review: true)
     end
 
     subject(:execute) { service.execute }
 
     shared_examples 'performs successfully' do
       it 'calls Gitlab::Llm::CompletionsFactory', :aggregate_failures do
-        completion = instance_double(Gitlab::Llm::Completions::SummarizeAllOpenNotes)
+        completion = instance_double(::Gitlab::Llm::AiGateway::Completions::SummarizeReview)
         extra_resource_finder = instance_double(::Llm::ExtraResourceFinder)
 
         expect(::Llm::ExtraResourceFinder).to receive(:new).with(user, referer_url).and_return(extra_resource_finder)
@@ -196,8 +196,6 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
       end
 
       context 'for a merge request' do
-        let_it_be(:resource) { create(:merge_request, source_project: project) }
-
         it_behaves_like 'performs successfully'
       end
 
@@ -236,9 +234,9 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
           stub_feature_flags(ai_global_switch: false)
           stub_const(
             "::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST",
-            summarize_comments: {
+            summarize_review: {
               self_managed: true,
-              service_class: ::Gitlab::Llm::Completions::SummarizeAllOpenNotes,
+              service_class: ::Gitlab::Llm::AiGateway::Completions::SummarizeReview,
               prompt_class: nil
             }
           )
@@ -263,7 +261,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
           .to receive(:increment)
           .with(labels: {
             feature_category: :ai_abstraction_layer,
-            service_class: 'Gitlab::Llm::Completions::SummarizeAllOpenNotes'
+            service_class: 'Gitlab::Llm::AiGateway::Completions::SummarizeReview'
           }, error: true)
 
         expect do
@@ -279,7 +277,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
             .to receive(:increment)
               .with(labels: {
                 feature_category: :ai_abstraction_layer,
-                service_class: 'Gitlab::Llm::Completions::SummarizeAllOpenNotes'
+                service_class: 'Gitlab::Llm::AiGateway::Completions::SummarizeReview'
               }, error: true)
 
           expect do

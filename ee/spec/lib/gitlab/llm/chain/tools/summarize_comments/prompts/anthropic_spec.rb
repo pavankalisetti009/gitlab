@@ -19,7 +19,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic,
 
       expect(prompt[1][:role]).to eq(:user)
       expect(prompt[1][:content]).to eq(format(
-        Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld::USER_PROMPT[1], variables).to_s)
+        Gitlab::Llm::Chain::Tools::SummarizeComments::Executor::USER_PROMPT[1], variables).to_s)
 
       expect(prompt[2][:role]).to eq(:assistant)
       expect(prompt[2][:content]).to be_empty
@@ -33,6 +33,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic,
   end
 
   def system_prompt_content
-    Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld::SYSTEM_PROMPT[1]
+    Gitlab::Llm::Chain::Tools::SummarizeComments::Executor::SYSTEM_PROMPT[1]
   end
 end
