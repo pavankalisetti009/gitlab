@@ -1,6 +1,7 @@
 <script>
 import { GlBadge, GlButton, GlCollapsibleListbox, GlExperimentBadge, GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 import { RELEASE_STATES } from './constants';
 
 export default {
@@ -38,6 +39,7 @@ export default {
       default: false,
     },
   },
+  SELF_HOSTED_ROUTE_NAMES,
   computed: {
     selected() {
       return this.selectedOption?.value || '';
@@ -128,7 +130,11 @@ export default {
 
     <template v-if="isFeatureSettingDropdown" #footer>
       <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
-        <gl-button data-testid="add-self-hosted-model-button" category="tertiary" to="new">
+        <gl-button
+          data-testid="add-self-hosted-model-button"
+          category="tertiary"
+          :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }"
+        >
           {{ s__('AdminAIPoweredFeatures|Add self-hosted model') }}
         </gl-button>
       </div>

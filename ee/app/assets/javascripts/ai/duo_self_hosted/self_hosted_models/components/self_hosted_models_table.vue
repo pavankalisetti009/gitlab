@@ -121,9 +121,11 @@ export default {
   },
   methods: {
     editModelItem(model) {
+      const modelId = getIdFromGraphQLId(model.id);
+
       return {
         text: __('Edit'),
-        to: `${getIdFromGraphQLId(model.id)}/edit`,
+        to: `models/${modelId}/edit`,
       };
     },
     getModelEndpointText(endpoint) {

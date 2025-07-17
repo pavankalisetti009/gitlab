@@ -208,7 +208,7 @@ describe('SelfHostedModelsTable', () => {
 
         expect(findEditButtons().at(0).props('item')).toEqual({
           text: 'Edit',
-          to: `${modelIdAtIdx0}/edit`,
+          to: `models/${modelIdAtIdx0}/edit`,
         });
       });
     });

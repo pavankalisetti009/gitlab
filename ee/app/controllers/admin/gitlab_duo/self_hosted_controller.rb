@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
+# EE:Self Managed
 module Admin
-  module Ai
-    class DuoSelfHostedController < Admin::ApplicationController
+  module GitlabDuo
+    class SelfHostedController < Admin::ApplicationController
       feature_category :"self-hosted_models"
       urgency :low
 

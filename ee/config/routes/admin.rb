@@ -49,11 +49,15 @@ namespace :admin do
   namespace :gitlab_duo do
     resources :seat_utilization, only: [:index]
     resources :configuration, only: [:index]
+    resources :self_hosted, only: [:index]
+
+    get 'self_hosted(/*vueroute)', to: 'self_hosted#index'
   end
   get '/code_suggestions', to: redirect('admin/gitlab_duo/seat_utilization')
 
   namespace :ai do
-    get 'duo_self_hosted(/*vueroute)', to: 'duo_self_hosted#index', as: :duo_self_hosted
+    ## Support redirection until next major release https://docs.gitlab.com/development/routing/#changing-existing-routes
+    get 'duo_self_hosted(/*vueroute)', to: redirect('admin/gitlab_duo/self_hosted', status: 301)
     post 'duo_self_hosted/toggle_beta_models', to: 'terms_and_conditions#toggle_beta_models'
 
     resources :duo_workflow_settings, only: [:create] do

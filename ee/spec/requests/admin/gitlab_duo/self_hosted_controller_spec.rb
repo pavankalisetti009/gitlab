@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::Ai::DuoSelfHostedController, :enable_admin_mode, feature_category: :"self-hosted_models" do
+RSpec.describe Admin::GitlabDuo::SelfHostedController, :enable_admin_mode, feature_category: :"self-hosted_models" do
   let(:admin) { create(:admin) }
   let(:duo_features_enabled) { true }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
@@ -32,7 +32,7 @@ RSpec.describe Admin::Ai::DuoSelfHostedController, :enable_admin_mode, feature_c
     let(:page) { Nokogiri::HTML(response.body) }
 
     subject :perform_request do
-      get admin_ai_duo_self_hosted_path
+      get admin_gitlab_duo_self_hosted_index_path
     end
 
     it 'returns 200' do
