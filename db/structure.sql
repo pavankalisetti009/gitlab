@@ -21940,6 +21940,7 @@ CREATE TABLE project_security_settings (
     pre_receive_secret_detection_enabled boolean DEFAULT false NOT NULL,
     secret_push_protection_enabled boolean DEFAULT false,
     validity_checks_enabled boolean DEFAULT false NOT NULL,
+    license_configuration_source smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_20a23efdb6 CHECK ((secret_push_protection_enabled IS NOT NULL))
 );
 

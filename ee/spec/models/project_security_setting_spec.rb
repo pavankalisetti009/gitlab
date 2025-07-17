@@ -5,6 +5,12 @@ require 'spec_helper'
 RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_analysis do
   using RSpec::Parameterized::TableSyntax
 
+  describe 'validations' do
+    subject { build(:project_security_setting) }
+
+    it { is_expected.to validate_presence_of(:license_configuration_source) }
+  end
+
   describe 'associations' do
     subject { create(:project).security_setting }
 
