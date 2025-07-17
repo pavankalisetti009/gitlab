@@ -90,7 +90,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     )
     expect(item.versions.first).to have_attributes(
       schema_version: 1,
-      version: 'v1.0.0-draft',
+      version: '1.0.0',
       definition: {
         system_prompt: params[:system_prompt],
         user_prompt: params[:user_prompt]

@@ -21,7 +21,7 @@ module Types
         field :created_at, Types::TimeType, null: false, description: 'Timestamp of when the item version was created.'
         field :published_at, Types::TimeType, null: true, method: :release_date,
           description: 'Timestamp of when the item version was published.'
-        field :version_name, GraphQL::Types::String, null: true, method: :version,
+        field :version_name, GraphQL::Types::String, null: true, method: :human_version,
           description: 'Version name of the item version.'
 
         orphan_types ::Types::Ai::Catalog::AgentVersionType

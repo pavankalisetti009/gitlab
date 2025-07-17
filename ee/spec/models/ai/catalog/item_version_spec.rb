@@ -32,4 +32,40 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
       end
     end
   end
+
+  describe '#human_version' do
+    it 'returns nil when version is nil' do
+      expect(build(:ai_catalog_item_version, version: nil).human_version).to be_nil
+    end
+
+    it 'returns version prefixed with v' do
+      expect(
+        build(:ai_catalog_item_version, release_date: Time.zone.now, version: '1.2.3').human_version
+      ).to eq('v1.2.3')
+    end
+
+    it 'returns version suffixed with -draft when draft' do
+      expect(build(:ai_catalog_item_version, release_date: nil, version: '1.2.3').human_version).to eq('v1.2.3-draft')
+    end
+  end
+
+  describe '#released?' do
+    it 'returns false when release_date is nil' do
+      expect(build(:ai_catalog_item_version, release_date: nil)).not_to be_released
+    end
+
+    it 'returns true when release_date is present' do
+      expect(build(:ai_catalog_item_version, release_date: Time.zone.now)).to be_released
+    end
+  end
+
+  describe '#draft?' do
+    it 'returns true when release_date is nil' do
+      expect(build(:ai_catalog_item_version, release_date: nil)).to be_draft
+    end
+
+    it 'returns false when release_date is present' do
+      expect(build(:ai_catalog_item_version, release_date: Time.zone.now)).not_to be_draft
+    end
+  end
 end

@@ -47,7 +47,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       )
       expect(item.versions.first).to have_attributes(
         schema_version: 1,
-        version: 'v1.0.0-draft',
+        version: '1.0.0',
         definition: {
           system_prompt: params[:system_prompt],
           user_prompt: params[:user_prompt]
