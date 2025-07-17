@@ -16,6 +16,7 @@ import VueDraggable from 'vuedraggable';
 import { s__, __, sprintf } from '~/locale';
 import { validateHexColor } from '~/lib/utils/color_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
 import StatusForm from './status_form.vue';
 
@@ -89,6 +90,7 @@ export default {
     GlSprintf,
     StatusForm,
     VueDraggable,
+    HelpPageLink,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -529,6 +531,13 @@ export default {
               >
             </template>
           </gl-sprintf>
+          <help-page-link
+            data-testid="help-page-link"
+            href="user/work_items/status"
+            target="_blank"
+          >
+            {{ s__('WorkItems|How do I use statuses?') }}
+          </help-page-link>
         </div>
 
         <gl-alert
