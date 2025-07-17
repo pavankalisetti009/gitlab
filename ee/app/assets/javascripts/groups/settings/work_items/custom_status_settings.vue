@@ -2,12 +2,13 @@
 import { GlAlert, GlButton, GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import StatusModal from './status_modal.vue';
 import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
 
 export default {
-  components: { GlAlert, GlButton, GlIcon, StatusModal, WorkItemStatusBadge },
+  components: { GlAlert, GlButton, GlIcon, StatusModal, WorkItemStatusBadge, HelpPageLink },
   props: {
     fullPath: {
       type: String,
@@ -72,6 +73,13 @@ export default {
           'WorkItem|Statuses are used to manage workflow of planning items, helping you and your team understand how far an item has progressed.',
         )
       }}
+      <help-page-link
+        data-testid="settings-help-page-link"
+        href="user/work_items/status"
+        target="_blank"
+      >
+        {{ s__('WorkItems|How do I use statuses?') }}
+      </help-page-link>
     </p>
 
     <gl-alert

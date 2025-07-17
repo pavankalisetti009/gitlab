@@ -109,6 +109,7 @@ describe('StatusLifecycleModal', () => {
   const findStatusInfo = () => wrapper.findByTestId('status-info-alert');
   const findCategorySection = (category) => wrapper.findByTestId(`category-${category}`);
   const findStatusBadges = () => wrapper.findAllByTestId('status-badge');
+  const findHelpPageLink = () => wrapper.findByTestId('help-page-link');
   const findDefaultStatusBadges = () => wrapper.findAllByTestId('default-status-badge');
   const findStatusForm = () => wrapper.findComponent(StatusForm);
   const findEditStatusButton = (statusId) => wrapper.findByTestId(`edit-status-${statusId}`);
@@ -227,6 +228,11 @@ describe('StatusLifecycleModal', () => {
         const section = findCategorySection(category);
         expect(section.find('[data-testid="add-status-button"]').exists()).toBe(true);
       });
+    });
+
+    it('shows the status help page link', () => {
+      expect(findHelpPageLink().exists()).toBe(true);
+      expect(findHelpPageLink().props('href')).toBe('user/work_items/status');
     });
   });
 

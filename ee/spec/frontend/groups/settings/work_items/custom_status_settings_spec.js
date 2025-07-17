@@ -65,6 +65,7 @@ describe('CustomStatusSettings', () => {
   const findLifecycleContainers = () => wrapper.findAll('[data-testid="lifecycle-container"]');
   const findStatusBadges = () => wrapper.findAllComponents(WorkItemStatusBadge);
   const findEditButtons = () => wrapper.findAllComponents(GlButton);
+  const findHelpPageLink = () => wrapper.findByTestId('settings-help-page-link');
 
   const createComponent = ({
     props = {},
@@ -80,6 +81,15 @@ describe('CustomStatusSettings', () => {
       apolloProvider,
     });
   };
+
+  describe('Default', () => {
+    it('renders the help page link', async () => {
+      createComponent();
+      await waitForPromises();
+      expect(findHelpPageLink().exists()).toBe(true);
+      expect(findHelpPageLink().props('href')).toBe('user/work_items/status');
+    });
+  });
 
   describe('query success', () => {
     beforeEach(() => {

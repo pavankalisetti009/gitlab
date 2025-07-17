@@ -70873,6 +70873,9 @@ msgstr ""
 msgid "WorkItems|Fields"
 msgstr ""
 
+msgid "WorkItems|How do I use statuses?"
+msgstr ""
+
 msgid "WorkItems|Open items in side panel"
 msgstr ""
 
