@@ -17,6 +17,10 @@ module Vulnerabilities
         notes_ids = Note.insert_all!(system_note_attributes_for(event), returning: %w[id])
         SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
       end
+
+      vulnerability_ids = event.data[:vulnerabilities].pluck(:vulnerability_id) # rubocop:disable CodeReuse/ActiveRecord -- pluck used on hash
+      vulnerabilities = Vulnerability.with_projects.id_in(vulnerability_ids)
+      vulnerabilities.each(&:trigger_webhook_event)
     end
 
     def system_note_attributes_for(event)

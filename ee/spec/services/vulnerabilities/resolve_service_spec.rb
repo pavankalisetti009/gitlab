@@ -30,6 +30,7 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
       it_behaves_like 'calls vulnerability statistics utility services in order'
 
       it_behaves_like 'removes dismissal feedback from associated findings'
+      it_behaves_like 'triggering vulnerability webhook event'
 
       it 'resolves a vulnerability' do
         freeze_time do
@@ -93,10 +94,15 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
   end
 
   context 'when vulnerability state is not different from the requested state' do
-    let(:state) { :resolved }
+    let(:vulnerability) { create(:vulnerability, :resolved, :with_findings, project: project) }
     let(:action) { resolve_vulnerability }
 
+    before do
+      project.add_maintainer(user)
+    end
+
     it_behaves_like 'does not create state transition for same state'
+    it_behaves_like 'not triggering vulnerability webhook event'
   end
 
   describe 'permissions' do
