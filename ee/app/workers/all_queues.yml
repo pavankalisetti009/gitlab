@@ -4254,16 +4254,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: work_items_validate_epic_work_item_sync
-  :worker_name: WorkItems::ValidateEpicWorkItemSyncWorker
-  :feature_category: :team_planning
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: work_items_weights_update_rolled_up_weights_event_handler
   :worker_name: WorkItems::Weights::UpdateRolledUpWeightsEventHandler
   :feature_category: :team_planning
