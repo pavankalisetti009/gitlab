@@ -81,7 +81,6 @@ export function mountGitlabDuoHomeApp() {
       duoWorkflowSettingsPath,
       redirectPath,
       duoWorkflowDisablePath,
-      showDuoWorkflowSettings: parseBoolean(isSaas),
     },
     render: (h) => h(GitlabDuoHome),
   });

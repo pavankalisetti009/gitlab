@@ -9,7 +9,6 @@ import {
   GlCard,
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
@@ -17,7 +16,6 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 export default {
   name: 'DuoWorkflowSettings',
   components: {
-    PageHeading,
     GlButton,
     GlLink,
     GlModal,
@@ -33,17 +31,6 @@ export default {
     'redirectPath',
     'duoWorkflowDisablePath',
   ],
-  props: {
-    title: {
-      type: String,
-      required: true,
-    },
-    subtitle: {
-      type: String,
-      required: false,
-      default: null,
-    },
-  },
   data() {
     return {
       showConfirmModal: false,
@@ -65,14 +52,14 @@ export default {
               message: username
                 ? sprintf(
                     s__(
-                      'AiPowered|GitLab Duo Workflow is now on for the instance and the service account (%{accountId}) was created. To use Workflow in your groups, you must turn on AI features for specific groups.',
+                      'AiPowered|GitLab Duo Agent Platform is now on for the instance and the service account (%{accountId}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
                     ),
                     {
                       accountId: `@${username}`,
                     },
                   )
                 : s__(
-                    'AiPowered|GitLab Duo Workflow is now on for the instance. To use Workflow in your groups, you must turn on AI features for specific groups.',
+                    'AiPowered|GitLab Duo Agent Platform is now on for the instance. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
                   ),
               variant: 'success',
             },
@@ -82,7 +69,7 @@ export default {
           createAlert({
             message:
               error.response?.data?.message ||
-              s__('AiPowered|Failed to enable GitLab Duo Workflow.'),
+              s__('AiPowered|Failed to enable GitLab Duo Agent Platform.'),
             captureError: true,
             error,
           });
@@ -131,20 +118,6 @@ export default {
 
 <template>
   <div>
-    <page-heading>
-      <template #heading>
-        <span class="gl-flex gl-items-center gl-gap-3">
-          <span data-testid="duo-workflow-settings-title">{{ title }}</span>
-        </span>
-      </template>
-
-      <template #description>
-        <span data-testid="duo-workflow-settings-subtitle">
-          {{ subtitle }}
-        </span>
-      </template>
-    </page-heading>
-
     <gl-card
       header-class="gl-bg-transparent gl-border-none gl-pb-0"
       footer-class="gl-bg-transparent gl-border-none gl-flex-end"

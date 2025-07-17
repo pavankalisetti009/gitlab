@@ -26,7 +26,6 @@ export default {
     isSaaS: {},
     modelSwitchingEnabled: { default: false },
     modelSwitchingPath: { default: '' },
-    showDuoWorkflowSettings: { default: false },
   },
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
@@ -76,13 +75,7 @@ export default {
 
 <template>
   <div>
-    <duo-workflow-settings
-      v-if="showDuoWorkflowSettings"
-      :title="$options.i18n.gitlabDuoHomeTitle"
-      :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
-    />
     <code-suggestions-usage
-      v-else
       :title="$options.i18n.gitlabDuoHomeTitle"
       :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
       :force-hide-title="false"
@@ -109,5 +102,6 @@ export default {
         />
       </template>
     </code-suggestions-usage>
+    <duo-workflow-settings />
   </div>
 </template>
