@@ -9,7 +9,7 @@ module Ai
         TASKS = {
           process_pending_enabled_namespace: {
             period: 30.minutes,
-            if: -> { ActiveContext::Code::EnabledNamespace.pending.with_active_connection.exists? },
+            if: -> { ::Ai::ActiveContext::Code::EnabledNamespace.pending.with_active_connection.exists? },
             dispatch: { event: ProcessPendingEnabledNamespaceEvent }
           },
           index_repository: {
