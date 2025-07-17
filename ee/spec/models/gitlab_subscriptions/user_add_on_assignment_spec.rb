@@ -153,14 +153,6 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
       end
     end
 
-    describe '.for_active_gitlab_duo_pro_purchase' do
-      it_behaves_like 'filters for active gitlab duo purchase' do
-        subject(:scope_result) { described_class.for_active_gitlab_duo_pro_purchase }
-
-        let(:tested_add_on_type) { :duo_pro }
-      end
-    end
-
     describe '.for_active_gitlab_duo_purchase' do
       context 'for duo pro add-ons' do
         it_behaves_like 'filters for active gitlab duo purchase' do

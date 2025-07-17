@@ -675,6 +675,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       context 'when user belongs to a namespace with an active code suggestions purchase' do
         let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+        let_it_be(:duo_core_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
+        let_it_be(:duo_enterprise_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
 
         let(:current_user) { authorized_user }
 
@@ -787,16 +789,37 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               post_api
             end
 
-            it 'includes additional headers for SaaS', :freeze_time do
+            it 'includes additional headers for SaaS with all subscription tiers', :freeze_time do
               group = create(:group)
               group.add_developer(authorized_user)
+
+              create(
+                :gitlab_subscription_user_add_on_assignment,
+                user: authorized_user,
+                add_on_purchase: duo_core_add_on_purchase
+              )
+              create(
+                :gitlab_subscription_user_add_on_assignment,
+                user: authorized_user,
+                add_on_purchase: duo_enterprise_add_on_purchase
+              )
 
               post_api
 
               _, params = workhorse_send_data
+
+              x_gitlab_saas_duo_pro_header = params['Header']['X-Gitlab-Saas-Duo-Pro-Namespace-Ids'].first
+
+              namespace_ids = x_gitlab_saas_duo_pro_header.split(',').map(&:to_i)
+
+              expect(namespace_ids).to contain_exactly(
+                add_on_purchase.namespace.id,
+                duo_core_add_on_purchase.namespace.id,
+                duo_enterprise_add_on_purchase.namespace.id
+              )
+
               expect(params['Header']).to include(
                 'X-Gitlab-Saas-Namespace-Ids' => [''],
-                'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => [add_on_purchase.namespace.id.to_s],
                 'X-Gitlab-Rails-Send-Start' => [Time.now.to_f.to_s]
               )
             end
