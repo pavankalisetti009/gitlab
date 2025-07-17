@@ -3,7 +3,7 @@ import { GlButton, GlDrawer, GlTooltipDirective } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
-import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
+import { AI_CATALOG_AGENTS_EDIT_ROUTE } from '../router/constants';
 
 export default {
   name: 'AiCatalogItemDrawer',
@@ -34,7 +34,7 @@ export default {
     },
   },
   DRAWER_Z_INDEX,
-  showRoute: AI_CATALOG_AGENTS_SHOW_ROUTE,
+  showRoute: AI_CATALOG_AGENTS_EDIT_ROUTE,
 };
 </script>
 <template>

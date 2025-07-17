@@ -1,7 +1,7 @@
 import { GlButton, GlDrawer } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
-import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
+import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
 import { mockAgent } from '../mock_data';
 
 describe('CatalogItemDrawer', () => {
@@ -43,7 +43,7 @@ describe('CatalogItemDrawer', () => {
       expect(button.exists()).toBe(true);
 
       expect(button.props('to')).toEqual({
-        name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+        name: AI_CATALOG_AGENTS_EDIT_ROUTE,
         params: { id: 1 },
       });
     });

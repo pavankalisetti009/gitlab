@@ -3,7 +3,7 @@ import Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
+import AiCatalogAgentsEdit from 'ee/ai/catalog/pages/ai_catalog_agents_edit.vue';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import { AI_CATALOG_AGENTS_ROUTE } from 'ee/ai/catalog/router/constants';
@@ -11,7 +11,7 @@ import { mockCatalogItemResponse, mockCatalogItemNullResponse, mockAgent } from 
 
 Vue.use(VueApollo);
 
-describe('AiCatalogAgentsShow', () => {
+describe('AiCatalogAgentsEdit', () => {
   let wrapper;
   let mockApollo;
   const agentId = 1;
@@ -26,7 +26,7 @@ describe('AiCatalogAgentsShow', () => {
   const createComponent = ({ catalogItemQueryHandler = mockCatalogItemQueryHandler } = {}) => {
     mockApollo = createMockApollo([[aiCatalogAgentQuery, catalogItemQueryHandler]]);
 
-    wrapper = shallowMount(AiCatalogAgentsShow, {
+    wrapper = shallowMount(AiCatalogAgentsEdit, {
       apolloProvider: mockApollo,
       mocks: {
         $route: {
