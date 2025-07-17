@@ -1,7 +1,7 @@
 - @html_class = 'gl-dark'
 - content_for :hide_empty_navbar, true
 
-= render Pajamas::CardComponent.new(card_options: { class: 'gl-max-w-xl gl-mx-auto gl-rounded-lg'}, body_options: { class: 'gl-p-8' }, footer_options: { class: 'gl-rounded-b-lg' }) do |c|
+= render Pajamas::CardComponent.new(card_options: { class: 'gl-max-w-xl gl-mx-auto gl-rounded-lg gl-mt-6'}, body_options: { class: 'gl-p-8' }, footer_options: { class: 'gl-rounded-b-lg' }) do |c|
   - c.with_body do
     .gl-text-center.gl-mb-6
       = image_tag 'illustrations/gitlab_logo.svg', class: 'gl-h-9', alt: 'GitLab'
