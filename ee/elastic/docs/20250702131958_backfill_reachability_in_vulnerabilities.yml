@@ -1,10 +1,10 @@
 ---
-name: BackfillReachabilityInVulnerability
-version: '20250702131957'
-description: Backfill the vulnerability index with reachability field values
+name: BackfillReachabilityInVulnerabilities
+version: '20250702131958'
+description: Backfills Vulnerabilities Index from PostgreSQL to backfill reachability
 group: group::security infrastructure
 milestone: '18.3'
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/197007
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198141
 obsolete: false
 marked_obsolete_by_url:
 marked_obsolete_in_milestone:
