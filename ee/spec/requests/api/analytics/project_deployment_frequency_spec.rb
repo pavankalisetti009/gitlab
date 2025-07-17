@@ -10,14 +10,6 @@ RSpec.describe API::Analytics::ProjectDeploymentFrequency, feature_category: :va
   let_it_be(:anonymous_user) { create(:user) }
   let_it_be(:reporter) { create(:user, reporter_of: project) }
 
-  def make_deployment(finished_at, env)
-    create(:deployment,
-      status: :success,
-      project: project,
-      environment: env,
-      finished_at: finished_at)
-  end
-
   let_it_be(:deployment_2020_01_01) { make_deployment(DateTime.new(2020, 1, 1), prod) }
   let_it_be(:deployment_2020_01_02) { make_deployment(DateTime.new(2020, 1, 2), prod) }
   let_it_be(:deployment_2020_01_03) { make_deployment(DateTime.new(2020, 1, 3), dev) }
@@ -48,6 +40,14 @@ RSpec.describe API::Analytics::ProjectDeploymentFrequency, feature_category: :va
   let(:path) { api("/projects/#{project.id}/analytics/deployment_frequency", current_user) }
   let(:request) { get path, params: params }
   let(:request_time) { nil }
+
+  def make_deployment(finished_at, env)
+    create(:deployment,
+      status: :success,
+      project: project,
+      environment: env,
+      finished_at: finished_at)
+  end
 
   before do
     stub_licensed_features(dora4_analytics: dora4_analytics_enabled)

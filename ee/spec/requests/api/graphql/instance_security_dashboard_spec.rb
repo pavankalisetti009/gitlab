@@ -9,15 +9,15 @@ RSpec.describe 'Query.instanceSecurityDashboard.projects', feature_category: :vu
   let_it_be(:other_project) { create(:project) }
   let_it_be(:user) { create(:user, security_dashboard_projects: [project]) }
 
+  let(:query) do
+    graphql_query_for(:instance_security_dashboard, dashboard_fields)
+  end
+
   before do
     project.add_developer(user)
     other_project.add_developer(user)
 
     stub_licensed_features(security_dashboard: true)
-  end
-
-  let(:query) do
-    graphql_query_for(:instance_security_dashboard, dashboard_fields)
   end
 
   context 'with logged in user' do

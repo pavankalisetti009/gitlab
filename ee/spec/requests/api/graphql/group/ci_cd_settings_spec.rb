@@ -6,6 +6,7 @@ RSpec.describe 'Ci/Cd settings through GroupQuery', feature_category: :continuou
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
+  let(:group_data) { graphql_data_at(:group) }
 
   let(:query) do
     graphql_query_for(
@@ -16,8 +17,6 @@ RSpec.describe 'Ci/Cd settings through GroupQuery', feature_category: :continuou
   end
 
   subject(:request) { post_graphql(query) }
-
-  let(:group_data) { graphql_data_at(:group) }
 
   context 'when group has no associated ci_cd_settings' do
     let(:group) { create(:group) }

@@ -10,10 +10,9 @@ RSpec.describe 'Project Environments query', feature_category: :continuous_deliv
   let_it_be(:environment) { create(:environment, project: project) }
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:guest) { create(:user, guest_of: project) }
+  let(:user) { developer }
 
   subject { post_graphql(query, current_user: user) }
-
-  let(:user) { developer }
 
   context 'with protected environments' do
     let!(:protected_environment) do

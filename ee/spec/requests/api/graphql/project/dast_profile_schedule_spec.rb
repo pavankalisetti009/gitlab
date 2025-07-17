@@ -10,6 +10,8 @@ RSpec.describe 'Query.project(fullPath).dastProfiles.dastProfileSchedule',
   let_it_be(:current_user) { create(:user) }
   let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: project.default_branch) }
   let_it_be(:dast_profile_schedule) { create(:dast_profile_schedule, project: project, dast_profile: dast_profile, owner: current_user) }
+  let(:project_data) { graphql_data_at(:project) }
+  let(:dast_profile_data) { graphql_data_at(:project, :dast_profiles, :edges) }
 
   let(:query) do
     %(
@@ -36,9 +38,6 @@ RSpec.describe 'Query.project(fullPath).dastProfiles.dastProfileSchedule',
   end
 
   subject { post_graphql(query, current_user: current_user) }
-
-  let(:project_data) { graphql_data_at(:project) }
-  let(:dast_profile_data) { graphql_data_at(:project, :dast_profiles, :edges) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)

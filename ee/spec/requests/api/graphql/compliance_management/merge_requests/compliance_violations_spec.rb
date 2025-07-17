@@ -49,6 +49,16 @@ RSpec.describe 'getting the compliance violations for a group', feature_category
     GRAPHQL
   end
 
+  let(:violation_output) do
+    get_violation_values(compliance_violation)
+  end
+
+  let(:violation2_output) do
+    get_violation_values(compliance_violation2)
+  end
+
+  let(:compliance_violations) { graphql_data_at(:group, :merge_request_violations, :nodes) }
+
   def get_violation_values(violation)
     {
       'id' => violation.to_global_id.to_s,
@@ -63,21 +73,11 @@ RSpec.describe 'getting the compliance violations for a group', feature_category
     }
   end
 
-  let(:violation_output) do
-    get_violation_values(compliance_violation)
-  end
-
-  let(:violation2_output) do
-    get_violation_values(compliance_violation2)
-  end
-
   def query(params = {})
     graphql_query_for(
       :group, { full_path: group.full_path }, query_graphql_field("mergeRequestViolations", params, fields)
     )
   end
-
-  let(:compliance_violations) { graphql_data_at(:group, :merge_request_violations, :nodes) }
 
   before do
     stub_licensed_features(group_level_compliance_violations_report: true)
