@@ -45,7 +45,7 @@ module Search
             filter: [
               {
                 term: {
-                  type: document_type
+                  type: es_document_type
                 }
               }
             ]
@@ -62,7 +62,7 @@ module Search
           query: {
             term: {
               type: {
-                value: document_type
+                value: es_document_type
               }
             }
           },
@@ -70,7 +70,8 @@ module Search
             remaining: {
               filter: {
                 bool: {
-                  should: fields_exist_query
+                  should: fields_exist_query,
+                  minimum_should_match: 1
                 }
               }
             }

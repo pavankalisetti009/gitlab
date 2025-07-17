@@ -915,7 +915,14 @@ RSpec.shared_examples 'migration removes field' do
 
   def add_field_value_to_documents!(count, value)
     client.update_by_query(index: index_name, refresh: true, body: {
-      script: { source: "ctx._source.#{field}=#{value}" }, max_docs: count
+      script: {
+        source: "ctx._source.#{field}=params.content",
+        lang: 'painless',
+        params: {
+          content: value
+        }
+      },
+      max_docs: count
     })
   end
 

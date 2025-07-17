@@ -33,6 +33,24 @@ RSpec.describe Search::Elastic::DocumentType, feature_category: :global_search d
     end
   end
 
+  describe '#es_document_type' do
+    context 'when class has DOCUMENT_TYPE constant' do
+      before do
+        test_klass.const_set(:DOCUMENT_TYPE, Project)
+      end
+
+      it 'returns the document_type in lowercase and underscored' do
+        expect(instance.send(:es_document_type)).to eq('project')
+      end
+    end
+
+    context 'when class does not have DOCUMENT_TYPE constant' do
+      it 'raises NotImplementedError' do
+        expect { instance.send(:es_document_type) }.to raise_error(NotImplementedError)
+      end
+    end
+  end
+
   describe '#document_type_fields' do
     context 'when class has document_type_fields method defined' do
       let(:test_klass) do

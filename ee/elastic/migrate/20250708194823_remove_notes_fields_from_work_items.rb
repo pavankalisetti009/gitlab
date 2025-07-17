@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class RemoveCorrectWorkItemTypeIdFromWorkItem < Elastic::Migration
+class RemoveNotesFieldsFromWorkItems < Elastic::Migration
   include ::Search::Elastic::MigrationRemoveFieldsHelper
 
   DOCUMENT_TYPE = WorkItem
@@ -10,7 +10,7 @@ class RemoveCorrectWorkItemTypeIdFromWorkItem < Elastic::Migration
 
   private
 
-  def field_to_remove
-    'correct_work_item_type_id'
+  def fields_to_remove
+    %w[notes notes_internal]
   end
 end
