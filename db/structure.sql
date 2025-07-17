@@ -11270,6 +11270,7 @@ CREATE TABLE bulk_import_failures (
     CONSTRAINT check_c7dba8398e CHECK ((char_length(exception_class) <= 255)),
     CONSTRAINT check_e035a720ad CHECK ((char_length(source_url) <= 255)),
     CONSTRAINT check_e787285882 CHECK ((char_length(correlation_id_value) <= 255)),
+    CONSTRAINT check_ebd770e350 CHECK ((num_nonnulls(namespace_id, organization_id, project_id) = 1)),
     CONSTRAINT check_f99665a440 CHECK ((char_length(subrelation) <= 255))
 );
 
