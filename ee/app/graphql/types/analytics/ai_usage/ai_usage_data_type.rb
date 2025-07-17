@@ -14,6 +14,10 @@ module Types
         field :code_suggestion_events,
           description: 'Events related to code suggestions.',
           resolver: ::Resolvers::Analytics::AiUsage::CodeSuggestionEventsResolver
+
+        field :all,
+          description: 'All Duo usage events.',
+          resolver: ::Resolvers::Analytics::AiUsage::UsageEventsResolver
       end
     end
   end

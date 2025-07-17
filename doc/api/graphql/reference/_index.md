@@ -14251,6 +14251,29 @@ The edge type for [`AiSelfHostedModel`](#aiselfhostedmodel).
 | <a id="aiselfhostedmodeledgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aiselfhostedmodeledgenode"></a>`node` | [`AiSelfHostedModel`](#aiselfhostedmodel) | The item at the end of the edge. |
 
+#### `AiUsageEventConnection`
+
+The connection type for [`AiUsageEvent`](#aiusageevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiusageeventconnectionedges"></a>`edges` | [`[AiUsageEventEdge]`](#aiusageeventedge) | A list of edges. |
+| <a id="aiusageeventconnectionnodes"></a>`nodes` | [`[AiUsageEvent]`](#aiusageevent) | A list of nodes. |
+| <a id="aiusageeventconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiUsageEventEdge`
+
+The edge type for [`AiUsageEvent`](#aiusageevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiusageeventedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aiusageeventedgenode"></a>`node` | [`AiUsageEvent`](#aiusageevent) | The item at the end of the edge. |
+
 #### `AiUserMetricsConnection`
 
 The connection type for [`AiUserMetrics`](#aiusermetrics).
@@ -22347,7 +22370,19 @@ Usage data for events stored in the default PostgreSQL database. Data retained f
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aiusagedataall"></a>`all` | [`AiUsageEventConnection`](#aiusageeventconnection) | All Duo usage events. (see [Connections](#connections)) |
 | <a id="aiusagedatacodesuggestionevents"></a>`codeSuggestionEvents` | [`CodeSuggestionEventConnection`](#codesuggestioneventconnection) | Events related to code suggestions. (see [Connections](#connections)) |
+
+### `AiUsageEvent`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiusageeventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
+| <a id="aiusageeventid"></a>`id` | [`ID!`](#id) | ID of the code suggestion event. |
+| <a id="aiusageeventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
+| <a id="aiusageeventuser"></a>`user` | [`UserCore!`](#usercore) | User associated with the event. |
 
 ### `AiUserMetrics`
 
@@ -44857,6 +44892,20 @@ Type of code suggestion event.
 | <a id="aiusagecodesuggestioneventcode_suggestion_accepted_in_ide"></a>`CODE_SUGGESTION_ACCEPTED_IN_IDE` | Code suggestion accepted. |
 | <a id="aiusagecodesuggestioneventcode_suggestion_rejected_in_ide"></a>`CODE_SUGGESTION_REJECTED_IN_IDE` | Code suggestion rejected. |
 | <a id="aiusagecodesuggestioneventcode_suggestion_shown_in_ide"></a>`CODE_SUGGESTION_SHOWN_IN_IDE` | Code suggestion shown. |
+
+### `AiUsageEventType`
+
+Type of AI usage event.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="aiusageeventtypecode_suggestion_accepted_in_ide"></a>`CODE_SUGGESTION_ACCEPTED_IN_IDE` | Code Suggestion was accepted in IDE. |
+| <a id="aiusageeventtypecode_suggestion_direct_access_token_refresh"></a>`CODE_SUGGESTION_DIRECT_ACCESS_TOKEN_REFRESH` | Code Suggestion token was refreshed (old data only). |
+| <a id="aiusageeventtypecode_suggestion_rejected_in_ide"></a>`CODE_SUGGESTION_REJECTED_IN_IDE` | Code Suggestion was rejected in IDE. |
+| <a id="aiusageeventtypecode_suggestion_requested"></a>`CODE_SUGGESTION_REQUESTED` | Code Suggestion was requested (old data only). |
+| <a id="aiusageeventtypecode_suggestion_shown_in_ide"></a>`CODE_SUGGESTION_SHOWN_IN_IDE` | Code Suggestion was shown in IDE. |
+| <a id="aiusageeventtyperequest_duo_chat_response"></a>`REQUEST_DUO_CHAT_RESPONSE` | Duo Chat response was requested. |
+| <a id="aiusageeventtypetroubleshoot_job"></a>`TROUBLESHOOT_JOB` | Troubleshoot job feature was used. |
 
 ### `AlertManagementAlertSort`
 
