@@ -13,7 +13,7 @@ import {
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { s__ } from '~/locale';
 import {
-  AI_CATALOG_AGENTS_SHOW_ROUTE,
+  AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from '../router/constants';
@@ -57,7 +57,7 @@ export default {
         {
           text: s__('AICatalog|Edit'),
           to: this.$router.resolve({
-            name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+            name: AI_CATALOG_AGENTS_EDIT_ROUTE,
             params: { id: this.formattedItemId },
           }).route.path,
           icon: 'pencil',

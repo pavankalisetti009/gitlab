@@ -10,7 +10,7 @@ import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 import { TYPENAME_AI_CATALOG_ITEM } from '../constants';
 
 export default {
-  name: 'AiCatalogAgentsShow',
+  name: 'AiCatalogAgentsEdit',
   components: {
     AiCatalogAgentForm,
     GlModal,
