@@ -19,15 +19,6 @@ module Ai
     Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, :authorized_by_duo_core, keyword_init: true)
 
     included do
-      def duo_pro_add_on_available_namespace_ids
-        cache_key = format(DUO_PRO_ADD_ON_CACHE_KEY, user_id: id)
-
-        Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-          GitlabSubscriptions::UserAddOnAssignment.by_user(self).for_active_gitlab_duo_pro_purchase
-            .pluck('subscription_add_on_purchases.namespace_id') # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's purchases
-        end
-      end
-
       def duo_available_namespace_ids
         cache_key = duo_addons_cache_key_formatted
 

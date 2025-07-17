@@ -616,14 +616,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
-  describe '#duo_pro_add_on_available_namespace_ids', :saas do
-    it_behaves_like 'returns IDs of namespaces with duo add-on' do
-      subject(:duo_namespace_ids) { user.duo_pro_add_on_available_namespace_ids }
-
-      let_it_be(:add_on_type) { :duo_pro }
-    end
-  end
-
   describe '#duo_available_namespace_ids' do
     context 'when user has duo pro add-on' do
       it_behaves_like 'returns IDs of namespaces with duo add-on' do

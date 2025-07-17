@@ -31,10 +31,6 @@ module GitlabSubscriptions
       joins(:add_on_purchase).merge(add_on_purchases.active)
     end
 
-    scope :for_active_gitlab_duo_pro_purchase, -> do
-      for_active_add_on_purchases(::GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro)
-    end
-
     scope :for_active_gitlab_duo_purchase, -> do
       for_active_add_on_purchases(::GitlabSubscriptions::AddOnPurchase.for_duo_add_ons)
     end

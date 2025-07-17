@@ -59,9 +59,11 @@ module API
 
         {
           'X-Gitlab-Saas-Namespace-Ids' => '', # TODO: remove this header entirely once confirmed safe to do so
-          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => current_user
-                                                     .duo_pro_add_on_available_namespace_ids
-                                                     .join(',')
+          # We're reusing the existing 'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' header name
+          # even though we're now combining duo_pro with duo_core_and_ent_namespace_ids.
+          # This avoids the need for the data team to combine columns in reporting,
+          # allowing the existing reporting pipeline to continue working seamlessly.
+          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => current_user.duo_available_namespace_ids.join(',')
         }
       end
 
