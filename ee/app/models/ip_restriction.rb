@@ -12,9 +12,14 @@ class IpRestriction < ApplicationRecord
   validate :allow_root_group_only
 
   def allows_address?(address)
-    IPAddr.new(range).include?(address)
-  rescue *INVALID_SUBNET_ERRORS
-    false
+    begin
+      ranges = [IPAddr.new(range)]
+    rescue *INVALID_SUBNET_ERRORS
+      return false
+    end
+    ranges += ranges.select(&:ipv4?).map(&:ipv4_mapped)
+
+    ranges.any? { |r| r.include?(address) }
   end
 
   private

@@ -64,6 +64,12 @@ RSpec.describe IpRestriction do
       it { is_expected.to be_truthy }
     end
 
+    context 'mapped address is within the range' do
+      let(:address) { '::ffff:192.168.0.1' }
+
+      it { is_expected.to be_truthy }
+    end
+
     context 'address is outside the range' do
       let(:range) { '10.0.0.0/8' }
 
