@@ -36,7 +36,7 @@ module Search
 
             zoekt_syntax = case filter_name
                            when 'extension' then '\1file:\.\2$'
-                           when 'filename' then '\1file:/([^/]*\2[^/]*)$'
+                           when 'filename' then '\1file:(?:^|/)([^/]*\2[^/]*)$'
                            when 'path' then '\1file:(?:^|/)\2'
                            end
             filter.gsub!(%r{^(-?)#{filter_name}:\s*(.+)}, zoekt_syntax)
