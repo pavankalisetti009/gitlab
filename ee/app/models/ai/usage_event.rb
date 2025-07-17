@@ -28,6 +28,14 @@ module Ai
     before_validation :floor_timestamp
 
     scope :with_namespace, -> { includes(:namespace) }
+    scope :exclude_future_events, -> { where(arel_table[:timestamp].lteq(Time.current)) }
+    scope :sort_by_timestamp_id, ->(dir: :desc) { order(timestamp: dir, id: dir) }
+
+    # Keyset pagination optimization scopes
+    scope :in_optimization_array_mapping_scope, ->(id_expression) { where(arel_table[:namespace_id].eq(id_expression)) }
+    scope :in_optimization_finder_query, ->(timestamp_expression, id_expression) do
+      where(arel_table[:timestamp].eq(timestamp_expression)).where(arel_table[:id].eq(id_expression))
+    end
 
     def store_to_pg
       return false unless valid?

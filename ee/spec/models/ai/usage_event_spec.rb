@@ -6,8 +6,8 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
   subject(:event) { described_class.new(attributes) }
 
   let(:attributes) { { event: 'troubleshoot_job' } }
-  let_it_be(:personal_namespace) { create(:namespace) }
-  let_it_be(:user) { create(:user, namespace: personal_namespace, organizations: [personal_namespace.organization]) }
+  let_it_be(:namespace) { create(:namespace) }
+  let_it_be(:user) { create(:user, namespace: namespace, organizations: [namespace.organization]) }
 
   it { is_expected.to belong_to(:user) }
 
@@ -21,10 +21,74 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
     end
   end
 
+  describe 'scopes' do
+    describe 'order by timestamp and id' do
+      let_it_be(:old_event) do
+        create(:ai_usage_event, user: user, namespace: namespace, timestamp: 2.days.ago)
+      end
+
+      let_it_be(:new_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 1.day.ago) }
+
+      it 'returns the usage events in default desc order' do
+        result = described_class.sort_by_timestamp_id.to_a
+
+        expect(result).to eq([new_event, old_event])
+      end
+
+      it 'the order can be changed' do
+        result = described_class.sort_by_timestamp_id(dir: :asc).to_a
+
+        expect(result).to eq([old_event, new_event])
+      end
+    end
+
+    describe 'exclude future events' do
+      let_it_be(:old_event) do
+        create(:ai_usage_event, user: user, namespace: namespace, timestamp: 2.days.ago)
+      end
+
+      let_it_be(:today_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: Time.current) }
+      let_it_be(:future_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 2.days.from_now) }
+
+      it 'does not return future event' do
+        result = described_class.exclude_future_events
+
+        expect(result).to match_array([old_event, today_event])
+      end
+    end
+
+    describe 'keyset pagination optimization scopes' do
+      describe '.in_optimization_array_mapping_scope' do
+        let_it_be(:namespace2) { create(:namespace) }
+        let_it_be(:usage_event1) { create(:ai_usage_event, user: user, namespace: namespace) }
+        let_it_be(:usage_event2) { create(:ai_usage_event, user: user, namespace: namespace2) }
+
+        it 'filters by namespace_id using the provided expression' do
+          result = described_class.in_optimization_array_mapping_scope(namespace.id)
+
+          expect(result).to contain_exactly(usage_event1)
+          expect(result).not_to include(usage_event2)
+        end
+      end
+
+      describe '.in_optimization_finder_query' do
+        let_it_be(:usage_event1) { create(:ai_usage_event, user: user, namespace: namespace) }
+        let_it_be(:usage_event2) { create(:ai_usage_event, user: user, namespace: namespace) }
+
+        it 'finds record by timestamp and id using the provided expressions' do
+          result = described_class.in_optimization_finder_query(usage_event1.timestamp, usage_event1.id)
+
+          expect(result).to contain_exactly(usage_event1)
+          expect(result).not_to include(usage_event2)
+        end
+      end
+    end
+  end
+
   describe '#organization_id' do
     subject(:event) { described_class.new(user: user) }
 
-    it { is_expected.to populate_sharding_key(:organization_id).with(personal_namespace.organization.id) }
+    it { is_expected.to populate_sharding_key(:organization_id).with(namespace.organization.id) }
   end
 
   describe '#timestamp', :freeze_time do
@@ -57,7 +121,7 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
 
     context 'when the model is valid' do
       let(:attributes) do
-        super().merge(namespace: personal_namespace, user: user, timestamp: 1.day.ago)
+        super().merge(namespace: namespace, user: user, timestamp: 1.day.ago)
       end
 
       it 'adds model attributes to write buffer' do
@@ -67,7 +131,7 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
                                                  timestamp: 1.day.ago,
                                                  user_id: user.id,
                                                  organization_id: user.organizations.first.id,
-                                                 namespace_id: personal_namespace.id,
+                                                 namespace_id: namespace.id,
                                                  extras: {}
                                                }.with_indifferent_access)
 
@@ -87,7 +151,7 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
 
     context 'when the model is valid' do
       let(:attributes) do
-        super().merge(user: user, namespace: personal_namespace, timestamp: 1.day.ago, extras: { foo: 'bar' })
+        super().merge(user: user, namespace: namespace, timestamp: 1.day.ago, extras: { foo: 'bar' })
       end
 
       it 'adds model attributes to write buffer' do
@@ -96,7 +160,7 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
                                                event: described_class.events['troubleshoot_job'],
                                                timestamp: 1.day.ago.to_f,
                                                user_id: user.id,
-                                               namespace_path: personal_namespace.traversal_path,
+                                               namespace_path: namespace.traversal_path,
                                                extras: { foo: 'bar' }.to_json
                                              })
 
