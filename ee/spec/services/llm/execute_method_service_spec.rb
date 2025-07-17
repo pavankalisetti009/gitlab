@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_layer do
   let_it_be(:user) { build_stubbed(:user) }
-  let_it_be(:issue) { build_stubbed(:issue) }
+  let_it_be(:merge_request) { build_stubbed(:merge_request) }
 
-  let(:method) { :summarize_comments }
+  let(:method) { :summarize_review }
   let(:resource) { nil }
   let(:params) { {} }
   let(:options) { { request_id: 'uuid' }.merge(params) }
@@ -34,7 +34,7 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
 
     context 'with a valid method' do
       where(:method, :resource, :service_class, :params) do
-        :summarize_comments | issue | Llm::GenerateSummaryService | {}
+        :summarize_review | merge_request | ::Llm::MergeRequests::SummarizeReviewService | {}
         :resolve_vulnerability | build_stubbed(:vulnerability,
           :with_findings) | Llm::ResolveVulnerabilityService | {}
         :categorize_question | user | Llm::Internal::CategorizeChatQuestionService | {}
@@ -61,7 +61,7 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
       end
 
       it 'returns an error' do
-        expect_next_instance_of(Llm::GenerateSummaryService, user, resource, options) do |instance|
+        expect_next_instance_of(::Llm::MergeRequests::SummarizeReviewService, user, resource, options) do |instance|
           expect(instance).to receive(:execute).and_return(service_response)
         end
 
@@ -81,16 +81,16 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
       let_it_be(:epic) { create(:epic, group: group) }
       let_it_be(:user) { create(:user) }
 
-      let(:resource) { create(:issue, project: project) }
-      let(:method) { :summarize_comments }
-      let(:service_class) { Llm::GenerateSummaryService }
+      let(:resource) { create(:merge_request, source_project: project, target_project: project) }
+      let(:method) { :summarize_review }
+      let(:service_class) { ::Llm::MergeRequests::SummarizeReviewService }
 
       let_it_be(:default_params) do
         {
           category: described_class.to_s,
           action: 'execute_llm_method',
           property: 'success',
-          label: 'summarize_comments',
+          label: 'summarize_review',
           user: user,
           namespace: group,
           project: project,
@@ -116,7 +116,7 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
         end
       end
 
-      context 'when resource is an issue' do
+      context 'when resource is a merge request' do
         let(:expected_params) { default_params }
 
         it_behaves_like 'successful tracking'

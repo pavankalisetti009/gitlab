@@ -571,7 +571,6 @@ RSpec/BeforeAllRoleAssignment:
     - 'ee/spec/services/llm/chat_service_spec.rb'
     - 'ee/spec/services/llm/generate_commit_message_service_spec.rb'
     - 'ee/spec/services/llm/generate_description_service_spec.rb'
-    - 'ee/spec/services/llm/generate_summary_service_spec.rb'
     - 'ee/spec/services/llm/merge_requests/summarize_review_service_spec.rb'
     - 'ee/spec/services/members/activate_service_spec.rb'
     - 'ee/spec/services/merge_trains/create_pipeline_service_spec.rb'

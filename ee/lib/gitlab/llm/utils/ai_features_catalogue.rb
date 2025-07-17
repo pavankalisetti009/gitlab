@@ -23,15 +23,6 @@ module Gitlab
             self_managed: true,
             internal: false
           },
-          summarize_comments: {
-            service_class: ::Gitlab::Llm::Completions::SummarizeAllOpenNotes,
-            prompt_class: nil,
-            feature_category: :ai_abstraction_layer,
-            execute_method: ::Llm::GenerateSummaryService,
-            maturity: :ga,
-            self_managed: true,
-            internal: false
-          },
           summarize_review: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::SummarizeReview,
             prompt_class: ::Gitlab::Llm::Templates::SummarizeReview,
@@ -235,6 +226,15 @@ module Gitlab
             internal: true
           },
           ask_commit: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_chat,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          summarize_comments: {
             service_class: nil,
             prompt_class: nil,
             feature_category: :duo_chat,

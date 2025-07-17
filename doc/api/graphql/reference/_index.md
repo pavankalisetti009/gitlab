@@ -2159,7 +2159,6 @@ Input type: `AiActionInput`
 | <a id="mutationaiactionprojectid"></a>`projectId` | [`ProjectID`](#projectid) | Global ID of the project the user is acting on. |
 | <a id="mutationaiactionresolvevulnerability"></a>`resolveVulnerability` | [`AiResolveVulnerabilityInput`](#airesolvevulnerabilityinput) | Input for resolve_vulnerability AI action. |
 | <a id="mutationaiactionrootnamespaceid"></a>`rootNamespaceId` | [`NamespaceID`](#namespaceid) | Global ID of the top-level namespace the user is acting on. |
-| <a id="mutationaiactionsummarizecomments"></a>`summarizeComments` | [`AiSummarizeCommentsInput`](#aisummarizecommentsinput) | Input for summarize_comments AI action. |
 | <a id="mutationaiactionsummarizenewmergerequest"></a>`summarizeNewMergeRequest` | [`AiSummarizeNewMergeRequestInput`](#aisummarizenewmergerequestinput) | Input for summarize_new_merge_request AI action. |
 | <a id="mutationaiactionsummarizereview"></a>`summarizeReview` | [`AiSummarizeReviewInput`](#aisummarizereviewinput) | Input for summarize_review AI action. |
 | <a id="mutationaiactionthreadid"></a>`threadId` | [`AiConversationThreadID`](#aiconversationthreadid) | Global Id of the existing thread to continue the conversation. If it is not specified, a new thread will be created for the specified conversation_type. |
@@ -51895,14 +51894,6 @@ see the associated mutation type above.
 | ---- | ---- | ----------- |
 | <a id="airesolvevulnerabilityinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
 | <a id="airesolvevulnerabilityinputvulnerablemergerequestid"></a>`vulnerableMergeRequestId` | [`MergeRequestID`](#mergerequestid) | Global ID of the merge request which the merge request containing the vulnerability resolution will target. |
-
-### `AiSummarizeCommentsInput`
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="aisummarizecommentsinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
 
 ### `AiSummarizeNewMergeRequestInput`
 

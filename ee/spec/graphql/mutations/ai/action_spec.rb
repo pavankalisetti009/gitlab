@@ -45,7 +45,7 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
 
   describe '#ready?' do
     let(:arguments) do
-      { summarize_comments: { resource_id: resource_id }, client_subscription_id: 'id' }
+      { summarize_review: { resource_id: resource_id }, client_subscription_id: 'id' }
     end
 
     it { is_expected.to be_ready(**arguments) }
@@ -257,7 +257,7 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
       it_behaves_like 'an AI action'
     end
 
-    context 'when summarize_comments input is set' do
+    context 'when generate_description input is set' do
       let(:input) { { generate_description: { resource_id: resource_id } } }
       let(:expected_method) { :generate_description }
       let(:expected_options) do
@@ -396,8 +396,8 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
     end
 
     context 'when input is set for feature in self-managed' do
-      let(:input) { { summarize_comments: { resource_id: resource_id }, client_subscription_id: 'id' } }
-      let(:expected_method) { :summarize_comments }
+      let(:input) { { summarize_review: { resource_id: resource_id }, client_subscription_id: 'id' } }
+      let(:expected_method) { :summarize_review }
       let(:expected_options) do
         {
           client_subscription_id: 'id',
@@ -413,9 +413,9 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
       before do
         stub_const(
           "::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST",
-          summarize_comments: {
+          summarize_review: {
             self_managed: true,
-            execute_method: ::Llm::GenerateSummaryService,
+            execute_method: ::Llm::MergeRequests::SummarizeReviewService,
             internal: false
           }
         )
