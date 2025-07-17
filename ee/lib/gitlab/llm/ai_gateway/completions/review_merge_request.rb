@@ -134,8 +134,7 @@ module Gitlab
             end
 
             mr_diff_refs = merge_request.diff_refs
-
-            process_files(diff_files, mr_diff_refs)
+            return unless process_files(diff_files, mr_diff_refs)
 
             if @draft_notes.empty?
               update_progress_note(review_summary, with_todo: true)
@@ -162,9 +161,21 @@ module Gitlab
             end
 
             response = process_review_with_retry(diffs_and_paths, files_content)
-            if note_not_required?(response)
+
+            if invalid_response?(response)
+              if duo_code_review_logging_enabled?
+                Gitlab::AppLogger.info(
+                  message: "Review merge request encountered an invalid response",
+                  event: "review_merge_request_invalid_response",
+                  unit_primitive: UNIT_PRIMITIVE,
+                  merge_request_id: merge_request&.id,
+                  errors: response.errors
+                )
+              end
+
+              update_progress_note(self.class.error_msg, with_todo: true)
               log_duo_code_review_internal_event('encounter_duo_code_review_error_during_review')
-              return
+              return false
             end
 
             parsed_body = ResponseBodyParser.new(response.response_body)
@@ -174,6 +185,7 @@ module Gitlab
             @comment_metrics[:total_comments] = comments.count
 
             comments_by_file = comments.group_by(&:file)
+
             diff_files.each do |diff_file|
               file_comments = comments_by_file[diff_file.new_path]
               next if file_comments.blank?
@@ -182,6 +194,8 @@ module Gitlab
 
               process_comments(file_comments, diff_file, mr_diff_refs)
             end
+
+            true
           end
 
           def process_review_with_retry(diffs_and_paths, files_content)
@@ -442,8 +456,8 @@ module Gitlab
             )
           end
 
-          def note_not_required?(response_modifier)
-            response_modifier.errors.any? || response_modifier.response_body.blank?
+          def invalid_response?(response)
+            response.errors.any? || response.response_body.blank?
           end
 
           def build_draft_note_params(comment, diff_file, line, diff_refs)
