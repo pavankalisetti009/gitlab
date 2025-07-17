@@ -87,7 +87,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
     )
     expect(item.versions.first).to have_attributes(
       schema_version: 1,
-      version: 'v1.0.0-draft',
+      version: '1.0.0',
       definition: {
         triggers: []
       }.stringify_keys

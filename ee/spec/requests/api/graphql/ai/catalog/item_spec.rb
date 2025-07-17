@@ -71,7 +71,7 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
                 'userPrompt' => latest_version.definition['user_prompt'],
                 'updatedAt' => latest_version.updated_at.iso8601,
                 'publishedAt' => latest_version.release_date&.iso8601,
-                'versionName' => latest_version.version,
+                'versionName' => latest_version.human_version,
                 'createdAt' => latest_version.created_at.iso8601
               )
             )

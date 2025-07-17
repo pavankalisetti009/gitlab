@@ -22,6 +22,23 @@ module Ai
 
       before_create :populate_organization
 
+      def human_version
+        return if version.nil?
+
+        human_version = "v#{version}"
+        return human_version if released?
+
+        "#{human_version}-draft"
+      end
+
+      def released?
+        release_date.present?
+      end
+
+      def draft?
+        !released?
+      end
+
       private
 
       def populate_organization

@@ -44,7 +44,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       )
       expect(item.versions.first).to have_attributes(
         schema_version: 1,
-        version: 'v1.0.0-draft',
+        version: '1.0.0',
         definition: {
           triggers: []
         }.stringify_keys
