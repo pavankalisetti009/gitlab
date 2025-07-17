@@ -6,6 +6,75 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
   using RSpec::Parameterized::TableSyntax
   include_context 'for maven virtual registry api setup'
 
+  describe 'GET /api/v4/groups/:id/-/virtual_registries/packages/maven/upstreams' do
+    let(:group_id) { group.id }
+    let(:url) { "/groups/#{group_id}/-/virtual_registries/packages/maven/upstreams" }
+
+    subject(:api_request) { get api(url), headers: headers }
+
+    shared_examples 'successful response' do
+      it 'returns a successful response' do
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(Gitlab::Json.parse(response.body)).to contain_exactly(upstream.as_json)
+      end
+    end
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    it_behaves_like 'disabled maven_virtual_registry feature flag'
+    it_behaves_like 'maven virtual registry disabled dependency proxy'
+    it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'maven virtual registry feature not licensed'
+
+    context 'with valid group_id' do
+      it_behaves_like 'successful response'
+    end
+
+    context 'with invalid group_id' do
+      where(:group_id, :status) do
+        non_existing_record_id | :not_found
+        'foo'                  | :not_found
+        ''                     | :not_found
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'with a non top level group' do
+      let(:group) { create(:group, :nested) }
+
+      before do
+        group.parent.add_maintainer(user)
+      end
+
+      it_behaves_like 'returning response status', :bad_request
+    end
+
+    context 'with a non member user' do
+      let_it_be(:user) { create(:user) }
+
+      where(:group_access_level, :status) do
+        'PUBLIC'   | :forbidden
+        'INTERNAL' | :forbidden
+        'PRIVATE'  | :not_found
+      end
+
+      with_them do
+        before do
+          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
+        end
+
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    it_behaves_like 'an authenticated virtual registry REST API'
+  end
+
   describe 'GET /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
