@@ -800,11 +800,11 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       context 'when there were no comments' do
         let(:combined_review_response) { {} }
 
-        it 'creates a note with a success message' do
+        it 'creates a note with an error message' do
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
-          expect(merge_request.notes.last.note).to eq(described_class.no_comment_msg)
+          expect(merge_request.notes.last.note).to eq(described_class.error_msg)
         end
 
         it 'creates a new todo' do
@@ -819,11 +819,11 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       context 'when review response is blank' do
         let(:combined_review_response) { '' }
 
-        it 'creates a note with a success message' do
+        it 'creates a note with an error message' do
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
-          expect(merge_request.notes.last.note).to eq(described_class.no_comment_msg)
+          expect(merge_request.notes.last.note).to eq(described_class.error_msg)
         end
 
         it 'creates a new todo' do
@@ -1012,6 +1012,48 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
     end
 
+    context 'when AI Gateway returns an error' do
+      before do
+        allow_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:request!).and_return({ 'detail' => 'Connection timeout' })
+        end
+      end
+
+      it 'creates a note with error message' do
+        completion.execute
+
+        expect(merge_request.notes.count).to eq 1
+        expect(merge_request.notes.last.note).to eq(described_class.error_msg)
+      end
+
+      it 'creates a new todo' do
+        expect_any_instance_of(TodoService) do |service|
+          expect(service).to receive(:new_review).with(merge_request, duo_code_review_bot)
+        end
+
+        completion.execute
+      end
+
+      it 'logs error details when logging is enabled' do
+        expect(Gitlab::AppLogger).to receive(:info).with(
+          hash_including(
+            message: "Review request failed with files content, retrying without file content",
+            event: "review_merge_request_retry_without_content"
+          )
+        )
+
+        expect(Gitlab::AppLogger).to receive(:info).with(
+          message: "Review merge request encountered an invalid response",
+          event: "review_merge_request_invalid_response",
+          unit_primitive: 'review_merge_request',
+          merge_request_id: merge_request.id,
+          errors: ['Connection timeout']
+        )
+
+        completion.execute
+      end
+    end
+
     context 'when logging LLM response comments metrics' do
       let(:expected_hash) do
         {
@@ -1112,11 +1154,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       context 'with a successful response containing no comments' do
-        let(:combined_review_answer) do
-          <<~RESPONSE
-            <review></review>
-          RESPONSE
-        end
+        let(:combined_review_response) { '<review></review>' }
 
         it 'log comment metrics' do
           expect(Gitlab::AppLogger).to receive(:info).with(hash_including(expected_hash))
