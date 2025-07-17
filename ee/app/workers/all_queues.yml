@@ -2853,16 +2853,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: new_epic
-  :worker_name: NewEpicWorker
-  :feature_category: :portfolio_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :cpu
-  :weight: 2
-  :idempotent: false
-  :tags: []
-  :queue_namespace:
 - :name: onboarding_add_on_seat_assignment_iterable_trigger
   :worker_name: Onboarding::AddOnSeatAssignmentIterableTriggerWorker
   :feature_category: :onboarding
