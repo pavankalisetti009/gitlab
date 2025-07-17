@@ -76,7 +76,7 @@ RSpec.describe ClickHouse::RebuildMaterializedViewCronWorker, :clean_gitlab_redi
         end
       end
 
-      it 'continues from the the previously persisted next_value' do
+      it 'continues from the previously persisted next_value' do
         service = instance_double('ClickHouse::RebuildMaterializedViewService',
           execute: ServiceResponse.success(payload: { status: :finished }))
 
