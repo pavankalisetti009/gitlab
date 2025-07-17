@@ -127,7 +127,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         duo_availability: 'default_off',
         duo_configuration_path: '/admin/gitlab_duo/configuration',
         duo_seat_utilization_path: '/admin/gitlab_duo/seat_utilization',
-        duo_self_hosted_path: '/admin/ai/duo_self_hosted',
+        duo_self_hosted_path: '/admin/gitlab_duo/self_hosted',
         duo_workflow_disable_path: '/admin/ai/duo_workflow_settings/disconnect',
         duo_workflow_enabled: 'true',
         duo_workflow_settings_path: '/admin/ai/duo_workflow_settings',

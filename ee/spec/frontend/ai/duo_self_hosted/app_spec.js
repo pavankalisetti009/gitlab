@@ -49,6 +49,7 @@ describe('DuoSelfHostedApp', () => {
     createComponent();
 
     expect(findAddModelButton().text()).toBe('Add self-hosted model');
+    expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
   });
 
   it.each`

@@ -20,12 +20,12 @@ export default function createRouter(base) {
       },
       {
         name: SELF_HOSTED_ROUTE_NAMES.NEW,
-        path: '/new',
+        path: '/models/new',
         component: NewSelfHostedModel,
       },
       {
         name: SELF_HOSTED_ROUTE_NAMES.EDIT,
-        path: '/:id/edit',
+        path: '/models/:id/edit',
         component: EditSelfHostedModel,
         props: ({ params: { id } }) => {
           return { modelId: Number(id) };

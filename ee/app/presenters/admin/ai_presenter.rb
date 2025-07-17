@@ -58,7 +58,7 @@ module Admin
         add_duo_pro_seats_url: add_duo_pro_seats_url(subscription_name),
         duo_configuration_path: url_helpers.admin_gitlab_duo_configuration_index_path,
         duo_seat_utilization_path: url_helpers.admin_gitlab_duo_seat_utilization_index_path,
-        duo_self_hosted_path: url_helpers.admin_ai_duo_self_hosted_path,
+        duo_self_hosted_path: url_helpers.admin_gitlab_duo_self_hosted_index_path,
         duo_workflow_disable_path: url_helpers.disconnect_admin_ai_duo_workflow_settings_path,
         duo_workflow_settings_path: url_helpers.admin_ai_duo_workflow_settings_path,
         redirect_path: url_helpers.admin_gitlab_duo_path

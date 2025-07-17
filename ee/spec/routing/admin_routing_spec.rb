@@ -40,13 +40,13 @@ RSpec.describe 'EE-specific admin routing' do
     end
   end
 
-  describe Admin::Ai::DuoSelfHostedController, 'routing' do
-    it 'routes /duo_self_hosted to #index' do
-      expect(get('/admin/ai/duo_self_hosted/')).to route_to('admin/ai/duo_self_hosted#index')
+  describe Admin::GitlabDuo::SelfHostedController, 'routing' do
+    it 'routes / to #index' do
+      expect(get('/admin/gitlab_duo/self_hosted')).to route_to('admin/gitlab_duo/self_hosted#index')
     end
 
-    it 'routes /duo_self_hosted with vue route params to #index' do
-      expect(get('/admin/ai/duo_self_hosted/features')).to route_to('admin/ai/duo_self_hosted#index',
+    it 'routes / with vue route params to #index' do
+      expect(get('/admin/gitlab_duo/self_hosted/features')).to route_to('admin/gitlab_duo/self_hosted#index',
         vueroute: 'features')
     end
 

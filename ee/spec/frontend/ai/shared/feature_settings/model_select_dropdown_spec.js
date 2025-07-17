@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 import { mockListItems as mockSelfHostedModelsItems } from '../../duo_self_hosted/self_hosted_models/mock_data';
 import { mockListItems as mockModelSelectionItems } from '../../model_selection/mock_data';
 
@@ -114,6 +115,7 @@ describe('ModelSelectDropdown', () => {
 
     it('renders a button to add a self-hosted model', () => {
       expect(findAddModelButton().text()).toBe('Add self-hosted model');
+      expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
     });
   });
 

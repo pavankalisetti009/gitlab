@@ -9,7 +9,7 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
 });
 
-function mountSelfHostedModelsApp() {
+function mountSelfHostedDuoRootApp() {
   const el = document.getElementById('js-duo-self-hosted');
 
   if (!el) {
@@ -24,7 +24,7 @@ function mountSelfHostedModelsApp() {
 
   return new Vue({
     el,
-    name: 'SelfHostedDuoConfigurationApp',
+    name: 'SelfHostedDuoRootApp',
     apolloProvider,
     router,
     provide: {
@@ -39,4 +39,4 @@ function mountSelfHostedModelsApp() {
   });
 }
 
-mountSelfHostedModelsApp();
+mountSelfHostedDuoRootApp();

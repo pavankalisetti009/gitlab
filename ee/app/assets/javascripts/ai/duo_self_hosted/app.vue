@@ -29,6 +29,7 @@ export default {
       default: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
     },
   },
+  SELF_HOSTED_ROUTE_NAMES,
   tabs: [
     {
       id: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
@@ -86,7 +87,7 @@ export default {
       </template>
       <template #description>{{ $options.i18n.description }}</template>
       <template #actions>
-        <gl-button variant="confirm" to="new">
+        <gl-button variant="confirm" :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }">
           {{ s__('AdminSelfHostedModels|Add self-hosted model') }}
         </gl-button>
       </template>
