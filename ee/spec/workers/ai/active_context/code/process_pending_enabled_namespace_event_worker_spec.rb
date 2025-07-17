@@ -26,7 +26,7 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
     end
 
     context 'when there are enabled namespaces to process' do
-      let_it_be(:enabled_namespace) do
+      let!(:enabled_namespace) do
         create(:ai_active_context_code_enabled_namespace, namespace: namespace, connection_id: connection.id,
           state: :pending)
       end
@@ -39,7 +39,7 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
         end
 
         it 'creates repository records for the namespace projects and sets enabled_namespace to ready' do
-          expect(enabled_namespace.reload.state).to eq('pending')
+          expect(enabled_namespace.state).to eq('pending')
 
           expect { execute }.to change { Ai::ActiveContext::Code::Repository.count }.by(2)
 
@@ -52,13 +52,13 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
         end
 
         context 'when some repositories already exist' do
-          let_it_be(:existing_repository) do
+          before do
             create(:ai_active_context_code_repository, project: project_1, enabled_namespace: enabled_namespace,
               connection_id: connection.id)
           end
 
           it 'creates repository records for records that do not exist only' do
-            expect(enabled_namespace.reload.state).to eq('pending')
+            expect(enabled_namespace.state).to eq('pending')
 
             expect { execute }.to change { Ai::ActiveContext::Code::Repository.count }.by(1)
 
@@ -68,6 +68,35 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
             expect(klass.pluck(:project_id)).to contain_exactly(project_1.id, project_2.id)
             expect(klass.distinct.pluck(:enabled_namespace_id)).to contain_exactly(enabled_namespace.id)
             expect(klass.distinct.pluck(:connection_id)).to contain_exactly(connection.id)
+          end
+        end
+
+        context 'when the `active_context_code_index_project` FF is disabled for some projects' do
+          before do
+            # override default test setting and disable `active_context_code_index_project`
+            stub_feature_flags(active_context_code_index_project: false)
+
+            # enable FF for some projects only
+            # project_1 is under the specified namespace, with FF enabled
+            #   - this is the only project where an Ai::ActiveContext::Code::Repository record will be created
+            # project_2 is under the specified namespace, with FF disabled
+            #   - no Ai::ActiveContext::Code::Repository will be created for this project
+            # project_3 is under a different namespace, with FF enabled
+            #   - no Ai::ActiveContext::Code::Repository will be created for this project
+            stub_feature_flags(active_context_code_index_project: [project_1, project_3])
+          end
+
+          it 'creates repository records only for the projects with `active_context_code_index_project` enabled' do
+            expect(enabled_namespace.state).to eq('pending')
+
+            expect { execute }.to change { Ai::ActiveContext::Code::Repository.count }.by(1)
+
+            expect(enabled_namespace.reload.state).to eq('ready')
+
+            klass = Ai::ActiveContext::Code::Repository
+            expect(klass.pluck(:project_id)).to contain_exactly(project_1.id)
+            expect(klass.pluck(:enabled_namespace_id).uniq).to contain_exactly(enabled_namespace.id)
+            expect(klass.pluck(:connection_id).uniq).to contain_exactly(connection.id)
           end
         end
 
@@ -92,7 +121,7 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
         end
 
         it 'does not create repositories but marks enabled namespace as ready' do
-          expect(enabled_namespace.reload.state).to eq('pending')
+          expect(enabled_namespace.state).to eq('pending')
 
           expect { execute }.not_to change { Ai::ActiveContext::Code::Repository.count }
 
@@ -101,7 +130,7 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
       end
 
       context 'when there are more enabled namespaces to process' do
-        let_it_be(:another_enabled_namespace) do
+        before do
           create(:ai_active_context_code_enabled_namespace, connection_id: connection.id, state: :pending)
         end
 
