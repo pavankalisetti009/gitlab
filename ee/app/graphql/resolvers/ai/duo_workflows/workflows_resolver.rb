@@ -32,13 +32,6 @@ module Resolvers
         def resolve(**args)
           return [] unless current_user
 
-          workflows = ::Ai::DuoWorkflows::Workflow.for_user(current_user.id)
-
-          if args[:project_path].present?
-            project = Project.find_by_full_path(args[:project_path])
-            workflows = workflows.for_project(project)
-          end
-
           if args[:workflow_id].present?
             return Gitlab::Graphql::Lazy.with_value(find_object(id: args[:workflow_id])) do |workflow|
               if workflow.nil?
@@ -49,6 +42,13 @@ module Resolvers
                 ::Ai::DuoWorkflows::Workflow.id_in([workflow.id])
               end
             end
+          end
+
+          workflows = ::Ai::DuoWorkflows::Workflow.for_user(current_user.id)
+
+          if args[:project_path].present?
+            project = Project.find_by_full_path(args[:project_path])
+            workflows = workflows.for_project(project)
           end
 
           workflows = workflows.with_workflow_definition(args[:type]) if args[:type].present?
