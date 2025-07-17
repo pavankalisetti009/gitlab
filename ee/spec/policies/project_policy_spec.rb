@@ -3264,7 +3264,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for a custom role with the `read_runners` ability' do
         let(:member_role_abilities) { { read_runners: true } }
-        let(:allowed_abilities) { [:read_project_runners, :read_runners] }
+        let(:allowed_abilities) { [:read_runners] }
 
         it_behaves_like 'custom roles abilities'
       end
@@ -3313,7 +3313,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :build_download_code,
             :read_merge_request,
             :download_code,
-            :read_project_runners,
+            :read_runners,
             :read_secret_push_protection_info,
             :update_secret_detection_validity_checks_status
           ]
@@ -3436,11 +3436,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'read_project_runners' do
+    describe 'read_runners' do
       context 'with auditor' do
         let(:current_user) { auditor }
 
-        it { is_expected.to be_allowed(:read_project_runners) }
+        it { is_expected.to be_allowed(:read_runners) }
       end
     end
 

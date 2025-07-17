@@ -34,7 +34,7 @@ module Projects::OnDemandScansHelper
       'new-site-profile-path' => new_project_security_configuration_profile_library_dast_site_profile_path(project),
       'timezones' => timezone_data(format: :full).to_json,
       'additional-variable-options' => Gitlab::Security::DastVariables.additional_site_variables.to_json,
-      'can_edit_runner_tags' => Ability.allowed?(current_user, :admin_project_runners, project).to_s
+      'can_edit_runner_tags' => Ability.allowed?(current_user, :admin_runners, project).to_s
     })
   end
 

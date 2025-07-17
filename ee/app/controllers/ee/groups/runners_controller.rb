@@ -8,14 +8,14 @@ module EE
       class_methods do
         extend ::Gitlab::Utils::Override
 
-        override :needs_authorize_read_group_runners
-        def needs_authorize_read_group_runners
+        override :needs_authorize_read_runners
+        def needs_authorize_read_runners
           super.concat([:dashboard])
         end
       end
 
       prepended do
-        before_action :authorize_read_group_runners!, only: needs_authorize_read_group_runners
+        before_action :authorize_read_runners!, only: needs_authorize_read_runners
 
         before_action do
           next unless ::Gitlab::Ci::RunnerReleases.instance.enabled?

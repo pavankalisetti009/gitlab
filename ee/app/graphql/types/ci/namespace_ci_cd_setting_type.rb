@@ -8,7 +8,7 @@ module Types
       authorize :read_namespace
 
       field :allow_stale_runner_pruning, GraphQL::Types::Boolean,
-        authorize: :read_group_runners,
+        authorize: :read_runners,
         null: true,
         method: :allow_stale_runner_pruning?,
         description: 'Indicates if stale runners directly belonging to the namespace should be periodically pruned.'
