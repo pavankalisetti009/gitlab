@@ -9,9 +9,9 @@ class Groups::EpicsController < Groups::ApplicationController
   include DescriptionDiffActions
 
   before_action :check_epics_available!
-  before_action :epic, except: [:index, :create, :new, :bulk_update]
+  before_action :epic, except: [:index, :new, :bulk_update]
   before_action :authorize_update_issuable!, only: :update
-  before_action :authorize_create_epic!, only: [:create, :new]
+  before_action :authorize_create_epic!, only: [:new]
   before_action :verify_group_bulk_edit_enabled!, only: [:bulk_update]
   before_action :set_summarize_notes_feature_flag, only: :show
   before_action :enforce_work_item_epics_feature_flags, only: [:new, :show]
@@ -54,19 +54,6 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def index
     render 'work_items_index'
-  end
-
-  def create
-    @epic = ::WorkItems::LegacyEpics::CreateService.new(group: @group, current_user: current_user,
-      params: epic_params).execute
-
-    if @epic.persisted?
-      render json: {
-        web_url: group_epic_path(@group, @epic)
-      }
-    else
-      head :unprocessable_entity
-    end
   end
 
   private

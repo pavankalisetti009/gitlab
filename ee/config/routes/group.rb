@@ -148,7 +148,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
 
     resources :comment_templates, only: [:index, :show], action: :index
 
-    resources :epics, concerns: :awardable, constraints: { id: /\d+/ } do
+    resources :epics, concerns: :awardable, constraints: { id: /\d+/ }, except: [:create] do
       member do
         get '/descriptions/:version_id/diff', action: :description_diff, as: :description_diff
         delete '/descriptions/:version_id', action: :delete_description_version, as: :delete_description_version
