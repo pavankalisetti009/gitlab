@@ -57,7 +57,7 @@ module Gitlab
           #    `package.licenses_for` method.
           components.each_slice(BATCH_SIZE).each do |components_batch|
             components_with_licenses, components_without_licenses = components_batch.partition do |c|
-              c.licenses.present?
+              license_configuration_source_sbom? && c.licenses.present?
             end
 
             add_components_with_license(components_with_licenses)
@@ -265,6 +265,13 @@ module Gitlab
           'unknown'
         end
       end
+
+      def license_configuration_source_sbom?
+        return true unless project
+
+        project.security_setting&.sbom_license_configuration_source?
+      end
+      strong_memoize_attr :license_configuration_source_sbom?
     end
   end
 end

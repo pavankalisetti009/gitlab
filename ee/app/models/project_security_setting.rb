@@ -4,6 +4,9 @@ class ProjectSecuritySetting < ApplicationRecord
   self.primary_key = :project_id
 
   belongs_to :project, inverse_of: :security_setting
+  validates :license_configuration_source, presence: true
+
+  enum :license_configuration_source, ::Enums::Security.configuration_source_types, suffix: true
 
   scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
 

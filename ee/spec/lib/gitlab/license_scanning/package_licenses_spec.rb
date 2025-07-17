@@ -690,6 +690,76 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
           )
         end
       end
+
+      context 'when project_security_setting is set to sbom' do
+        before do
+          allow(project).to receive_message_chain(:security_setting,
+            :sbom_license_configuration_source?).and_return(true)
+        end
+
+        it 'returns the license information provided by PMDB' do
+          expect(fetch).to contain_exactly(
+            have_attributes(name: 'beego',
+              purl_type: 'golang',
+              version: 'v1.10.0',
+              licenses: component_licenses
+            )
+          )
+        end
+
+        context 'when license information is not present' do
+          let_it_be(:component_licenses) { [] }
+
+          it 'returns the license information provided by PMDB' do
+            expect(fetch).to contain_exactly(
+              have_attributes(name: 'beego',
+                purl_type: 'golang',
+                version: 'v1.10.0',
+                licenses: [
+                  {
+                    "name" => 'Open LDAP Public License v2.1',
+                    "spdx_identifier" => 'OLDAP-2.1',
+                    "url" => 'https://spdx.org/licenses/OLDAP-2.1.html'
+                  },
+                  {
+                    "name" => 'Open LDAP Public License v2.2',
+                    "spdx_identifier" => 'OLDAP-2.2',
+                    "url" => 'https://spdx.org/licenses/OLDAP-2.2.html'
+                  }
+                ]
+              )
+            )
+          end
+        end
+      end
+
+      context 'when project_security_setting is not set to sbom' do
+        before do
+          allow(project).to receive_message_chain(:security_setting,
+            :sbom_license_configuration_source?).and_return(false)
+        end
+
+        it 'returns the license information provided by PMDB' do
+          expect(fetch).to contain_exactly(
+            have_attributes(name: 'beego',
+              purl_type: 'golang',
+              version: 'v1.10.0',
+              licenses: [
+                {
+                  "name" => 'Open LDAP Public License v2.1',
+                  "spdx_identifier" => 'OLDAP-2.1',
+                  "url" => 'https://spdx.org/licenses/OLDAP-2.1.html'
+                },
+                {
+                  "name" => 'Open LDAP Public License v2.2',
+                  "spdx_identifier" => 'OLDAP-2.2',
+                  "url" => 'https://spdx.org/licenses/OLDAP-2.2.html'
+                }
+              ]
+            )
+          )
+        end
+      end
     end
 
     context 'when processing identical components' do
