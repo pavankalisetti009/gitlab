@@ -16,7 +16,6 @@ module Projects
         push_frontend_feature_flag(:security_policies_bypass_options, project)
         push_frontend_feature_flag(:security_policies_bypass_options_tokens_accounts, project)
         push_frontend_feature_flag(:security_policies_bypass_options_group_roles, project)
-        push_frontend_feature_flag(:approval_policy_branch_exceptions, project)
         push_frontend_feature_flag(:security_policies_split_view, project.group)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, project.group)
         push_frontend_feature_flag(:flexible_scan_execution_policy, project.group)

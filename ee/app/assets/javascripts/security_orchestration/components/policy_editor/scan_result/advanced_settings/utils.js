@@ -2,7 +2,6 @@ import { uniqueId, get } from 'lodash';
 import {
   ACCOUNTS,
   EXCEPTIONS_FULL_OPTIONS_MAP,
-  SOURCE_BRANCH_PATTERNS,
   GROUPS,
   ROLES,
   TOKENS,
@@ -43,15 +42,10 @@ export const removeIds = (items = []) => {
 };
 
 export const renderOptionsList = ({
-  approvalPolicyBranchExceptions = false,
   securityPoliciesBypassOptionsTokensAccounts = false,
   securityPoliciesBypassOptionsGroupRoles = false,
 }) => {
   const allOptions = { ...EXCEPTIONS_FULL_OPTIONS_MAP };
-
-  if (!approvalPolicyBranchExceptions) {
-    delete allOptions[SOURCE_BRANCH_PATTERNS];
-  }
 
   if (!securityPoliciesBypassOptionsTokensAccounts) {
     delete allOptions[ACCOUNTS];
@@ -72,15 +66,11 @@ export const renderOptionsList = ({
  * @returns {string[]};
  */
 export const onlyValidKeys = (keys) => {
-  const {
-    approvalPolicyBranchExceptions,
-    securityPoliciesBypassOptionsTokensAccounts,
-    securityPoliciesBypassOptionsGroupRoles,
-  } = window.gon?.features || {};
+  const { securityPoliciesBypassOptionsTokensAccounts, securityPoliciesBypassOptionsGroupRoles } =
+    window.gon?.features || {};
 
   const validKeys = Object.keys(
     renderOptionsList({
-      approvalPolicyBranchExceptions,
       securityPoliciesBypassOptionsTokensAccounts,
       securityPoliciesBypassOptionsGroupRoles,
     }),

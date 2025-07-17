@@ -27,7 +27,6 @@ describe('PolicyExceptionsSelectedList', () => {
 
   beforeEach(() => {
     window.gon.features = {
-      approvalPolicyBranchExceptions: true,
       securityPoliciesBypassOptionsTokensAccounts: true,
       securityPoliciesBypassOptionsGroupRoles: true,
     };
@@ -88,7 +87,6 @@ describe('PolicyExceptionsSelectedList', () => {
   describe('rendering with flags', () => {
     beforeEach(() => {
       window.gon.features = {
-        approvalPolicyBranchExceptions: true,
         securityPoliciesBypassOptionsTokensAccounts: false,
         securityPoliciesBypassOptionsGroupRoles: false,
       };
