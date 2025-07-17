@@ -4989,9 +4989,9 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   describe 'admin_duo_workflow' do
     let(:policy) { :admin_duo_workflow }
 
-    context 'when the feature flag is disabled' do
+    context 'when duo_features is not enabled for the group' do
       before do
-        stub_feature_flags(duo_workflow: false)
+        group.namespace_settings.update!(duo_features_enabled: false)
       end
 
       where(:role) do
@@ -5005,10 +5005,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when the feature flag is enabled' do
-      context 'when duo_features is not enabled for the group' do
+    context 'when duo_features is enabled for the group' do
+      before do
+        group.namespace_settings.update!(duo_features_enabled: true)
+
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
+      end
+
+      context 'when stage check says workflow is not available' do
         before do
-          group.namespace_settings.update!(duo_features_enabled: false)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(false)
         end
 
         where(:role) do
@@ -5022,70 +5028,46 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         end
       end
 
-      context 'when duo_features is enabled for the group' do
+      context 'when stage check says workflow is available' do
         before do
-          group.namespace_settings.update!(duo_features_enabled: true)
-
           allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
         end
 
-        context 'when stage check says workflow is not available' do
-          before do
-            allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(false)
-          end
-
-          where(:role) do
-            %i[guest planner reporter developer maintainer owner]
+        context 'when user cannot use duo_agent_platform' do
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | false
+            :maintainer | false
+            :owner      | true
           end
 
           with_them do
             let(:current_user) { public_send(role) }
 
-            it { is_expected.to be_disallowed(policy) }
+            it { is_expected.to(be_disallowed(policy)) }
           end
         end
 
-        context 'when stage check says workflow is available' do
+        context 'when user can use duo_agent_platform' do
           before do
-            allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
+            allow(current_user).to receive(:allowed_to_use?).and_return(true)
           end
 
-          context 'when user cannot use duo_agent_platform' do
-            where(:role, :allowed) do
-              :guest      | false
-              :planner    | false
-              :reporter   | false
-              :developer  | false
-              :maintainer | false
-              :owner      | true
-            end
-
-            with_them do
-              let(:current_user) { public_send(role) }
-
-              it { is_expected.to(be_disallowed(policy)) }
-            end
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | false
+            :maintainer | false
+            :owner      | true
           end
 
-          context 'when user can use duo_agent_platform' do
-            before do
-              allow(current_user).to receive(:allowed_to_use?).and_return(true)
-            end
+          with_them do
+            let(:current_user) { public_send(role) }
 
-            where(:role, :allowed) do
-              :guest      | false
-              :planner    | false
-              :reporter   | false
-              :developer  | false
-              :maintainer | false
-              :owner      | true
-            end
-
-            with_them do
-              let(:current_user) { public_send(role) }
-
-              it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
-            end
+            it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
           end
         end
       end
