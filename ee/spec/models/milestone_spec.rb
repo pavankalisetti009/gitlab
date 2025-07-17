@@ -68,6 +68,11 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
             association_name: :issues,
             on_change: :start_date,
             depends_on_finished_migration: :add_extra_fields_to_work_items
+          },
+          {
+            association_name: :issues,
+            on_change: :state,
+            depends_on_finished_migration: :index_work_items_milestone_state
           }
         )
       end
@@ -114,6 +119,14 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
           include_examples 'tracks ES changes', :due_date, 1.week.from_now
           include_examples 'does not track ES changes', :description, 'new description'
         end
+
+        context 'when index_work_items_milestone_state migration finished' do
+          before do
+            set_elasticsearch_migration_to(:index_work_items_milestone_state, including: true)
+          end
+
+          include_examples 'tracks ES changes', :state, 'closed'
+        end
       end
 
       context 'when ES is not enabled' do
@@ -124,6 +137,7 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
         include_examples 'does not track ES changes', :title, 'new title'
         include_examples 'does not track ES changes', :start_date, Date.tomorrow
         include_examples 'does not track ES changes', :due_date, 1.week.from_now
+        include_examples 'does not track ES changes', :state, 'closed'
       end
 
       context 'when add_work_item_milestone_data migration has not finished' do

@@ -62,6 +62,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         weight: object.weight,
         milestone_start_date: object.milestone&.start_date,
         milestone_due_date: object.milestone&.due_date,
+        milestone_state: object.milestone&.state,
         label_names: object.label_names,
         closed_at: object.closed_at
       }
@@ -117,7 +118,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
             it 'serializes work_item as a hash without all new fields' do
               expect(indexed_json).to match(expected_hash.except(
                 :milestone_id, :milestone_title, :milestone_due_date, :milestone_start_date,
-                :closed_at, :weight, :health_status, :label_names
+                :closed_at, :weight, :health_status, :label_names, :milestone_state
               ))
             end
           end

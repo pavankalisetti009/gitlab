@@ -11,7 +11,7 @@ module Search
         # Only applies after migration completes to prevent indexing documents
         # with new schema before data migration finishes, which would result in
         # documents not being indexed properly and missing data.
-        SCHEMA_VERSION = 25_27
+        SCHEMA_VERSION = 25_29
         DEFAULT_INDEX_ATTRIBUTES = %i[
           id
           iid
@@ -91,8 +91,10 @@ module Search
         end
 
         def schema_version
-          if ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
+          if ::Elastic::DataMigrationService.migration_has_finished?(:index_work_items_milestone_state)
             SCHEMA_VERSION
+          elsif ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
+            25_27
           else
             25_22 # Previous stable version until migration completes
           end
@@ -195,12 +197,15 @@ module Search
             })
           end
 
-          unless ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
-            return milestone_data
+          if ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
+            milestone_data['milestone_start_date'] = target.milestone&.start_date
+            milestone_data['milestone_due_date'] = target.milestone&.due_date
           end
 
-          milestone_data['milestone_start_date'] = target.milestone&.start_date
-          milestone_data['milestone_due_date'] = target.milestone&.due_date
+          if ::Elastic::DataMigrationService.migration_has_finished?(:index_work_items_milestone_state)
+            milestone_data['milestone_state'] = target.milestone&.state
+          end
+
           milestone_data
         end
       end
