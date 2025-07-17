@@ -13,7 +13,8 @@ RSpec.describe Vulnerabilities::RevertToDetectedService, feature_category: :vuln
   let_it_be(:comment) { "wheee" }
 
   let(:project) { create(:project) } # cannot use let_it_be here: caching causes problems with permission-related tests
-  let(:vulnerability) { create(:vulnerability, :with_findings, project: project) }
+  let(:state) { :detected }
+  let(:vulnerability) { create(:vulnerability, state, :with_findings, project: project) }
   let(:state_transition) { create(:vulnerability_state_transition, vulnerability: vulnerability) }
   let(:service) { described_class.new(user, vulnerability, comment) }
 
@@ -56,28 +57,28 @@ RSpec.describe Vulnerabilities::RevertToDetectedService, feature_category: :vuln
 
     context 'when vulnerability state is different from the requested state' do
       context 'when vulnerability is dismissed' do
-        let(:vulnerability) { create(:vulnerability, :dismissed, :with_findings, project: project) }
+        let(:state) { :dismissed }
 
         include_examples 'reverts vulnerability'
 
         it_behaves_like 'removes dismissal feedback from associated findings'
-
+        it_behaves_like 'triggering vulnerability webhook event'
         it_behaves_like 'nullifies dismissal fields from associated vulnerability read'
       end
 
       context 'when vulnerability is confirmed' do
-        let(:vulnerability) { create(:vulnerability, :confirmed, :with_findings, project: project) }
+        let(:state) { :confirmed }
 
         include_examples 'reverts vulnerability'
-
+        it_behaves_like 'triggering vulnerability webhook event'
         it_behaves_like 'removes dismissal feedback from associated findings'
       end
 
       context 'when vulnerability is resolved' do
-        let(:vulnerability) { create(:vulnerability, :resolved, :with_findings, project: project) }
+        let(:state) { :resolved }
 
         include_examples 'reverts vulnerability'
-
+        it_behaves_like 'triggering vulnerability webhook event'
         it_behaves_like 'removes dismissal feedback from associated findings'
       end
 
@@ -94,10 +95,15 @@ RSpec.describe Vulnerabilities::RevertToDetectedService, feature_category: :vuln
   end
 
   context 'when vulnerability state is not different from the requested state' do
-    let(:state) { :detected }
+    let(:vulnerability) { create(:vulnerability, :detected, :with_findings, project: project) }
     let(:action) { revert_vulnerability_to_detected }
 
+    before do
+      project.add_maintainer(user)
+    end
+
     it_behaves_like 'does not create state transition for same state'
+    it_behaves_like 'not triggering vulnerability webhook event'
   end
 
   describe 'permissions' do

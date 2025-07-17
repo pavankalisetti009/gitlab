@@ -23,7 +23,6 @@ module Vulnerabilities
           update_vulnerability!
           update_vulnerability_reads!
         end
-        @vulnerability.trigger_webhook_event
       end
 
       @vulnerability

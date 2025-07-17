@@ -19,6 +19,7 @@ module Vulnerabilities
         raise ActiveRecord::Rollback unless @vulnerability.update(params)
 
         @changed = @vulnerability.previous_changes.present?
+        @vulnerability.trigger_webhook_event
 
         # run_after_commit runs in the scope of the calling object, hence @user needs to be captured
         user = @user

@@ -10,6 +10,8 @@ RSpec.describe Vulnerabilities::ProcessBulkDismissedEventsWorker, feature_catego
     create_list(:vulnerability, 3, :with_findings, :detected, :high_severity, project: project)
   end
 
+  let_it_be(:vulnerability_ids) { vulnerabilities.map(&:id) }
+
   let(:comment) { "i prefer lowercase." }
   let(:dismissal_reason) { 'used_in_tests' }
 
@@ -28,9 +30,9 @@ RSpec.describe Vulnerabilities::ProcessBulkDismissedEventsWorker, feature_catego
     })
   end
 
-  it_behaves_like 'worker with data consistency', described_class, data_consistency: :always
-
   subject(:use_event) { consume_event(subscriber: described_class, event: bulk_dismissed_event) }
+
+  it_behaves_like 'worker with data consistency', described_class, data_consistency: :always
 
   it 'inserts a system note for each vulnerability' do
     use_event
@@ -72,5 +74,15 @@ RSpec.describe Vulnerabilities::ProcessBulkDismissedEventsWorker, feature_catego
       note_id: notes[2].id,
       action: "vulnerability_dismissed"
     )
+  end
+
+  it 'triggers webhook events for each vulnerability' do
+    3.times do
+      expect_next_found_instance_of(Vulnerability) do |found_vulnerability|
+        expect(found_vulnerability).to receive(:trigger_webhook_event)
+      end
+    end
+
+    use_event
   end
 end

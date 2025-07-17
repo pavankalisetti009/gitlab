@@ -14,17 +14,19 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
   let(:project) { create(:project) } # cannot use let_it_be here: caching causes problems with permission-related tests
   let!(:pipeline) { create(:ee_ci_pipeline, :with_dast_report, :success, project: project) }
   let!(:build) { create(:ee_ci_build, :sast, pipeline: pipeline) }
-  let(:vulnerability) { create(:vulnerability, :detected, :with_findings, project: project) }
+  let(:state) { :detected }
+  let(:vulnerability) { create(:vulnerability, state, :with_findings, project: project) }
   let(:state_transition) { create(:vulnerability_state_transition, vulnerability: vulnerability) }
   let(:dismiss_findings) { true }
-  let(:service) { described_class.new(user, vulnerability, dismiss_findings: dismiss_findings) }
+  let(:comment) { nil }
+  let(:dismissal_reason) { nil }
+  let(:service) { described_class.new(user, vulnerability, comment, dismissal_reason, dismiss_findings: dismiss_findings) }
 
   subject(:dismiss_vulnerability) { service.execute }
 
   shared_examples 'creates a vulnerability state transition record' do
     let(:comment) { "Dismissal comment" }
     let(:dismissal_reason) { 'false_positive' }
-    let(:service) { described_class.new(user, vulnerability, comment, dismissal_reason, dismiss_findings: dismiss_findings) }
 
     context 'when a vulnerability read record exists' do
       let(:vulnerability_read) { Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) }
@@ -67,6 +69,7 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
       it_behaves_like 'calls vulnerability statistics utility services in order'
 
       it_behaves_like 'creates a vulnerability state transition record'
+      it_behaves_like 'triggering vulnerability webhook event'
 
       context 'when the `dismiss_findings` argument is false' do
         let(:dismiss_findings) { false }
@@ -146,6 +149,8 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
 
         let(:broken_finding) { vulnerability.findings.first }
 
+        it_behaves_like 'not triggering vulnerability webhook event'
+
         it 'responds with error' do
           expect(dismiss_vulnerability.errors.messages).to eq(
             base: ["failed to dismiss associated finding(id=#{broken_finding.id}): something went wrong"])
@@ -165,24 +170,26 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
   end
 
   context 'when vulnerability state is not different from the requested state' do
-    let(:vulnerability) { create(:vulnerability, :with_state_transition, :dismissed, project: project, to_state: :dismissed) }
+    let(:state) { :dismissed }
 
     before do
+      create(:vulnerability_state_transition, :to_dismissed, vulnerability: vulnerability, dismissal_reason: 'false_positive')
       project.add_maintainer(user)
     end
 
     it { expect { dismiss_vulnerability }.not_to raise_error }
 
-    it 'creates a valid state transition' do
-      dismiss_vulnerability
+    it_behaves_like 'creates a vulnerability state transition record'
+    it_behaves_like 'triggering vulnerability webhook event'
 
-      expect(vulnerability.reload.latest_state_transition).to be_valid
+    it 'does not create a note' do
+      expect(SystemNoteService).to receive(:change_vulnerability_state).with(vulnerability, user)
+
+      dismiss_vulnerability
     end
 
     context 'with a different dismissal reason' do
-      before do
-        vulnerability.latest_state_transition.update!(dismissal_reason: :false_positive)
-      end
+      let(:dismissal_reason) { 'used_in_tests' }
 
       it 'creates note' do
         expect(SystemNoteService).to receive(:change_vulnerability_state).with(vulnerability, user)
