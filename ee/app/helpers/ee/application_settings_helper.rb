@@ -88,6 +88,8 @@ module EE
         :scan_execution_policies_action_limit,
         :scan_execution_policies_schedule_limit,
         :pipeline_execution_policies_per_configuration_limit,
+        :scan_execution_policies_per_configuration_limit,
+        :vulnerability_management_policies_per_configuration_limit,
         :secret_detection_service_auth_token,
         :secret_detection_service_url,
         :fetch_observability_alerts_from_cloud,

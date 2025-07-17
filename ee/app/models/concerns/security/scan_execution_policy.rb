@@ -5,7 +5,6 @@ module Security
     extend ActiveSupport::Concern
     include ::Gitlab::Utils::StrongMemoize
 
-    POLICY_LIMIT = 5
     POLICY_TYPE_NAME = 'Scan execution policy'
 
     RULE_TYPES = {
@@ -29,7 +28,9 @@ module Security
     end
 
     def active_scan_execution_policies
-      scan_execution_policy.select { |config| config[:enabled] }.first(POLICY_LIMIT)
+      policy_limit = limit_service.scan_execution_policies_per_configuration_limit
+
+      scan_execution_policy.select { |config| config[:enabled] }.first(policy_limit)
     end
 
     def active_scan_execution_policies_for_pipelines
