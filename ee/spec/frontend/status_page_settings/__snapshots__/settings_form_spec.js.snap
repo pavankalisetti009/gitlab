@@ -17,7 +17,7 @@ exports[`Status Page settings form default state should match the default snapsh
         aria-label="Expand Status page"
         buttontextclasses=""
         category="tertiary"
-        class="!gl-px-0 gl-shrink-0 settings-toggle"
+        class="!gl-pl-2 !gl-px-0 gl-shrink-0 settings-toggle"
         data-testid="settings-block-toggle"
         icon=""
         size="small"
