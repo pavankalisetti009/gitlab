@@ -33,7 +33,7 @@ module Search
               filter: {
                 term: {
                   type: {
-                    value: document_type
+                    value: es_document_type
                   }
                 }
               }
@@ -85,7 +85,7 @@ module Search
             _source: document_type_fields,
             query: {
               match: {
-                type: document_type
+                type: es_document_type
               }
             },
             slice: {

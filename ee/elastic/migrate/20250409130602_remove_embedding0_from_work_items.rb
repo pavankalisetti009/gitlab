@@ -8,15 +8,9 @@ class RemoveEmbedding0FromWorkItems < Elastic::Migration
   batched!
   throttle_delay 1.minute
 
+  DOCUMENT_TYPE = WorkItem
+
   private
-
-  def index_name
-    ::Search::Elastic::References::WorkItem.index
-  end
-
-  def document_type
-    'work_item'
-  end
 
   def field_to_remove
     'embedding_0'

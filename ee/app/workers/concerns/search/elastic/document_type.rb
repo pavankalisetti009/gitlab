@@ -11,6 +11,10 @@ module Search
         raise NotImplementedError
       end
 
+      def es_document_type
+        document_type.name.underscore
+      end
+
       def document_type_fields
         raise NotImplementedError
       end
