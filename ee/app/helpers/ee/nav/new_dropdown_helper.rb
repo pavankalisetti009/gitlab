@@ -15,6 +15,7 @@ module EE
           ::Gitlab::Nav::TopNavMenuItem.build(
             id: 'create_epic',
             title: _('New epic'),
+            href: new_group_epic_path(group),
             component: 'create_new_work_item_modal',
             data: {
               track_action: 'click_link_new_epic',

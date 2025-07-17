@@ -24,7 +24,7 @@ RSpec.describe Nav::NewDropdownHelper, feature_category: :navigation do
             ::Gitlab::Nav::TopNavMenuItem.build(
               id: 'new_group_work_item',
               title: 'New work item',
-              component: 'create_new_group_work_item_modal',
+              component: 'create_new_work_item_modal',
               data: {
                 track_action: 'click_link_new_group_work_item',
                 track_label: 'plus_menu_dropdown',
@@ -47,6 +47,7 @@ RSpec.describe Nav::NewDropdownHelper, feature_category: :navigation do
             ::Gitlab::Nav::TopNavMenuItem.build(
               id: 'create_epic',
               title: 'New epic',
+              href: new_group_epic_path(group),
               component: 'create_new_work_item_modal',
               data: {
                 track_action: 'click_link_new_epic',
