@@ -43,6 +43,15 @@ describe('RecentlyViewedWidget', () => {
             },
           },
           {
+            viewedAt: '2025-06-19T20:30:00Z',
+            item: {
+              __typename: 'Epic',
+              id: 'epic-1',
+              title: 'All the things!',
+              webUrl: '/group/-/epic/1',
+            },
+          },
+          {
             viewedAt: '2025-06-19T15:30:00Z',
             item: {
               __typename: 'Issue',
@@ -184,7 +193,7 @@ describe('RecentlyViewedWidget', () => {
       createComponent();
       await waitForPromises();
 
-      expect(findItemLinks()).toHaveLength(4); // 4 items total
+      expect(findItemLinks()).toHaveLength(5);
     });
 
     it('handles empty response gracefully', async () => {
@@ -228,7 +237,7 @@ describe('RecentlyViewedWidget', () => {
     });
 
     it('renders the correct number of items', () => {
-      expect(findItemLinks()).toHaveLength(4);
+      expect(findItemLinks()).toHaveLength(5);
     });
 
     it('sorts items by viewedAt in descending order (most recent first)', () => {
@@ -237,8 +246,9 @@ describe('RecentlyViewedWidget', () => {
       // Should be sorted by viewedAt (backend already sorts): mr-1, issue-1, issue-2, mr-2
       expect(items[0].id).toBe('mr-1');
       expect(items[1].id).toBe('issue-1');
-      expect(items[2].id).toBe('issue-2');
-      expect(items[3].id).toBe('mr-2');
+      expect(items[2].id).toBe('epic-1');
+      expect(items[3].id).toBe('issue-2');
+      expect(items[4].id).toBe('mr-2');
     });
 
     it('limits items to MAX_ITEMS', async () => {
@@ -281,6 +291,13 @@ describe('RecentlyViewedWidget', () => {
       expect(mrItems[0].id).toBe('mr-1');
     });
 
+    it('adds correct icon to epics', () => {
+      const epicItems = wrapper.vm.items.filter((item) => item.icon === 'epic');
+
+      expect(epicItems).toHaveLength(1);
+      expect(epicItems[0].id).toBe('epic-1');
+    });
+
     it('renders items with correct URLs', () => {
       const links = findItemLinks();
 
@@ -298,7 +315,7 @@ describe('RecentlyViewedWidget', () => {
     it('renders tooltip components for each item', () => {
       const tooltips = findTooltipComponents();
 
-      expect(tooltips).toHaveLength(4);
+      expect(tooltips).toHaveLength(5);
       expect(tooltips.at(0).props('title')).toBe('Implement authentication improvements');
     });
   });
