@@ -41,7 +41,7 @@ module Resolvers
           description: 'Sort registries by given criteria.'
 
         def resolve(**args)
-          return registry_class.none unless geo_node_is_current?
+          return registry_class.none unless geo_node_is_current? && replicator_class.replication_enabled?
 
           registry_finder_class.new(
             context[:current_user],

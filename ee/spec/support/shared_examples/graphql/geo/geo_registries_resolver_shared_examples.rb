@@ -8,6 +8,7 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
 
   before do
     stub_current_geo_node(secondary)
+    stub_geo_setting(registry_replication: { enabled: true })
   end
 
   describe '#resolve' do
@@ -73,6 +74,16 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
               expected = [registry4, registry3, registry2, registry1]
 
               expect(resolve_registries(args).to_a).to eq(expected)
+            end
+          end
+
+          context 'when replication is disabled' do
+            before do
+              stub_feature_flags(replicator_class.replication_enabled_feature_key => false)
+            end
+
+            it 'returns nothing' do
+              expect(resolve_registries).to be_empty
             end
           end
 
