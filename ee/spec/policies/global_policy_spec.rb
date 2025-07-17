@@ -911,18 +911,21 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
   end
 
   context 'custom permissions', :enable_admin_mode do
+    let_it_be(:enabled_for_all) { %i[access_admin_area read_application_statistics] }
+
     where(:custom_ability, :enabled_permissions) do
-      :read_admin_cicd         | %i[access_admin_area read_admin_cicd]
+      :read_admin_cicd         | %i[read_admin_cicd]
       :read_admin_monitoring   | %i[
-        access_admin_area
         read_admin_audit_log
         read_admin_background_migrations
         read_admin_gitaly_servers
         read_admin_health_check
         read_admin_system_information
       ]
-      :read_admin_subscription | %i[access_admin_area read_admin_subscription read_billable_member read_licenses]
-      :read_admin_users        | %i[access_admin_area read_admin_users]
+      :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
+      :read_admin_users        | %i[read_admin_users]
+      :read_admin_groups       | %i[read_admin_groups]
+      :read_admin_projects     | %i[read_admin_projects]
     end
 
     with_them do
@@ -936,7 +939,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             stub_licensed_features(custom_roles: true)
           end
 
-          it { is_expected.to be_allowed(*enabled_permissions) }
+          it { is_expected.to be_allowed(*(enabled_permissions + enabled_for_all)) }
         end
 
         context 'when custom_roles feature is disabled' do
@@ -944,7 +947,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             stub_licensed_features(custom_roles: false)
           end
 
-          it { is_expected.to be_disallowed(*enabled_permissions) }
+          it { is_expected.to be_disallowed(*(enabled_permissions + enabled_for_all)) }
         end
       end
     end
