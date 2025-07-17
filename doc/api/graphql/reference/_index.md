@@ -34860,7 +34860,7 @@ Product analytics events for a specific month and year.
 | <a id="namespacetotalrepositorysizeexcess"></a>`totalRepositorySizeExcess` | [`Float`](#float) | Total excess repository size of all projects in the root namespace in bytes. This only applies to namespaces under Project limit enforcement. |
 | <a id="namespaceuserpermissions"></a>`userPermissions` | [`NamespacePermissions!`](#namespacepermissions) | Permissions for the current user on the resource. |
 | <a id="namespacevisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
-| <a id="namespaceweburl"></a>`webUrl` | [`String`](#string) | URL of the object. |
+| <a id="namespaceweburl"></a>`webUrl` | [`String`](#string) | URL of the namespace. |
 
 #### Fields with arguments
 
