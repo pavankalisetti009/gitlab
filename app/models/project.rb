@@ -3457,10 +3457,6 @@ class Project < ApplicationRecord
       licensed_feature_available?(:work_item_status)
   end
 
-  def glql_integration_feature_flag_enabled?
-    group&.glql_integration_feature_flag_enabled? || Feature.enabled?(:glql_integration, self)
-  end
-
   def glql_load_on_click_feature_flag_enabled?
     group&.glql_load_on_click_feature_flag_enabled? || Feature.enabled?(:glql_load_on_click, self)
   end
