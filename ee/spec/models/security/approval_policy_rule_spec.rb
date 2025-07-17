@@ -303,14 +303,6 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
       let(:bypass_settings) { { branches: [{ source: { name: source_branch }, target: { name: target_branch } }] } }
 
       it { is_expected.to be true }
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(approval_policy_branch_exceptions: false)
-        end
-
-        it { is_expected.to be false }
-      end
     end
 
     context 'when bypass_settings uses a pattern for source and target branches' do
@@ -319,14 +311,6 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
       end
 
       it { is_expected.to be true }
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(approval_policy_branch_exceptions: false)
-        end
-
-        it { is_expected.to be false }
-      end
 
       context 'when source does not match the pattern' do
         let(:source_branch) { 'bugfix' }

@@ -202,13 +202,6 @@ export default {
     };
   },
   computed: {
-    hasBypassOptions() {
-      return (
-        this.glFeatures.approvalPolicyBranchExceptions ||
-        this.glFeatures.securityPoliciesBypassOptionsTokensAccounts ||
-        this.glFeatures.securityPoliciesBypassOptionsGroupRoles
-      );
-    },
     actionError() {
       const actionErrors = this.errorSources.filter(([primaryKey]) => primaryKey === 'action');
       if (actionErrors.length) {
@@ -678,11 +671,7 @@ export default {
           <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />
         </disabled-section>
 
-        <policy-exceptions
-          v-if="hasBypassOptions"
-          :exceptions="policy.bypass_settings"
-          @changed="handleUpdateProperty"
-        />
+        <policy-exceptions :exceptions="policy.bypass_settings" @changed="handleUpdateProperty" />
 
         <fallback-and-edge-cases-section
           :has-error="parsingError.fallback"

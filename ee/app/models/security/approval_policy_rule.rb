@@ -52,8 +52,6 @@ module Security
     end
 
     def branches_exempted_by_policy?(source_branch, target_branch)
-      return false unless Feature.enabled?(:approval_policy_branch_exceptions, security_policy_management_project)
-
       branch_exceptions = security_policy.policy_content.dig(:bypass_settings, :branches)
       return false if branch_exceptions.blank?
 

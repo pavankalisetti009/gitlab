@@ -196,7 +196,7 @@ describe('EditorComponent', () => {
       factory({ provide: { namespaceType } });
       expect(findPolicyEditorLayout().props('policy')).toStrictEqual(policy);
       expect(findPolicyEditorLayout().props('hasParsingError')).toBe(false);
-      expect(findPolicyExceptions().exists()).toBe(false);
+      expect(findPolicyExceptions().exists()).toBe(true);
     });
 
     it.each`
@@ -946,8 +946,8 @@ describe('EditorComponent', () => {
   });
 
   describe('bypass options', () => {
-    it('renders bypass policy exceptions when ff is true', () => {
-      factory({ provide: { glFeatures: { approvalPolicyBranchExceptions: true } } });
+    it('renders bypass policy exceptions', () => {
+      factory();
 
       expect(findPolicyExceptions().exists()).toBe(true);
     });
