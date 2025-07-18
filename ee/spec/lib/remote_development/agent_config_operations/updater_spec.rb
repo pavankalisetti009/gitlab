@@ -13,6 +13,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   let(:unlimited_quota) { -1 }
   let(:saved_quota) { 5 }
   let(:quota) { 5 }
+  let(:logger) { instance_double(::Logger) }
 
   let(:network_policy_present) { false }
   let(:network_policy_egress) do
@@ -112,7 +113,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   end
 
   subject(:result) do
-    described_class.update(agent: agent, config: config) # rubocop:disable Rails/SaveBang -- this isn't ActiveRecord
+    described_class.update(agent: agent, config: config, logger: logger) # rubocop:disable Rails/SaveBang -- this isn't ActiveRecord
   end
 
   context 'when config passed is empty' do
@@ -377,34 +378,40 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
     end
 
     context 'when config file is invalid' do
-      context 'when dns_zone is invalid' do
-        let(:dns_zone) { "invalid dns zone" }
+      before do
+        allow(logger).to receive(:warn)
+      end
 
-        it 'does not create the record and returns error' do
+      shared_examples 'failed agent config update' do
+        it 'does not create the record, logs and returns error' do
+          expect(logger).to receive(:warn).with(
+            message: "Failed to save agent configuration file",
+            agent_id: agent.id,
+            error: satisfy { |arg| arg.match?(error_pattern) }
+          )
           expect { result }.to not_change { RemoteDevelopment::WorkspacesAgentConfig.count }
           expect(agent.reload.unversioned_latest_workspaces_agent_config).to be_nil
 
           expect(result).to be_err_result do |message|
             expect(message).to be_a(RemoteDevelopment::Messages::AgentConfigUpdateFailed)
             message.content => { errors: ActiveModel::Errors => errors }
-            expect(errors.full_messages.join(', ')).to match(/dns zone/i)
+            expect(errors.full_messages.join(', ')).to match(error_pattern)
           end
         end
       end
 
+      context 'when dns_zone is invalid' do
+        let(:dns_zone) { "invalid dns zone" }
+        let(:error_pattern) { /dns zone/i }
+
+        it_behaves_like 'failed agent config update'
+      end
+
       context 'when allow_privilege_escalation is explicitly specified in the config passed' do
         let(:allow_privilege_escalation) { true }
+        let(:error_pattern) { /allow privilege escalation/i }
 
-        it 'does not create the record and returns error' do
-          expect { result }.to not_change { RemoteDevelopment::WorkspacesAgentConfig.count }
-          expect(agent.reload.unversioned_latest_workspaces_agent_config).to be_nil
-
-          expect(result).to be_err_result do |message|
-            expect(message).to be_a(RemoteDevelopment::Messages::AgentConfigUpdateFailed)
-            message.content => { errors: ActiveModel::Errors => errors }
-            expect(errors.full_messages.join(', ')).to match(/allow privilege escalation/i)
-          end
-        end
+        it_behaves_like 'failed agent config update'
       end
     end
   end

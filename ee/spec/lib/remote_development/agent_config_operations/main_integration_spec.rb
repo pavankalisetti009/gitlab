@@ -8,6 +8,11 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
 
   let(:enabled) { true }
   let(:dns_zone) { 'my-awesome-domain.me' }
+  let(:logger) do
+    instance_double(::Logger).tap do |logger|
+      allow(logger).to receive(:warn)
+    end
+  end
 
   let(:config) do
     yaml = read_fixture_file("example.agent_config.yaml")
@@ -16,7 +21,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
     YAML.safe_load(yaml)
   end
 
-  let(:context) { { agent: agent, config: config } }
+  let(:context) { { agent: agent, config: config, logger: logger } }
 
   subject(:response) do
     described_class.main(context)

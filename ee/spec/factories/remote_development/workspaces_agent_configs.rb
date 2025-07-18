@@ -20,11 +20,15 @@ FactoryBot.define do
       after(:create) do |workspaces_agent_config, _evaluator|
         config_yaml = File.read("ee/spec/fixtures/remote_development/example.agent_config.yaml")
         config = YAML.safe_load(config_yaml)
+        logger = instance_double(::Logger).tap do |logger|
+          allow(logger).to receive(:warn)
+        end
 
         # Use the actual updater class to parse the YAML and set the values
         context = {
           agent: workspaces_agent_config.agent,
-          config: config
+          config: config,
+          logger: logger
         }
 
         result = RemoteDevelopment::AgentConfigOperations::Updater.update(context)
