@@ -51,13 +51,6 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
     }
   }
   ... on WorkItemWidgetLinkedItems {
-    linkedItems {
-      nodes {
-        linkId
-        linkType
-        workItemState
-      }
-    }
     blockedByCount
     blockingCount
   }

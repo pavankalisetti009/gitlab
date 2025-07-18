@@ -145,12 +145,6 @@ fragment WorkItemWidgets on WorkItemWidget {
   ... on WorkItemWidgetLinkedItems {
     blockedByCount
     blockingCount
-    linkedItems {
-      nodes {
-        linkId
-        linkType
-      }
-    }
   }
   ... on WorkItemWidgetCrmContacts {
     contactsAvailable
