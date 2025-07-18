@@ -38,8 +38,8 @@ module EE
         end
 
         override :find_parent_by_full_path
-        def find_parent_by_full_path(full_path)
-          namespace = ::Gitlab::Graphql::Loaders::FullPathModelLoader.new(::Namespace, full_path).find.sync
+        def find_parent_by_full_path(full_path, model = ::Namespace)
+          namespace = super
 
           case namespace
           when ::Namespaces::UserNamespace
