@@ -18,7 +18,7 @@ module EE
 
           override :render_with_abilities
           def render_with_abilities
-            super + %i[read_admin_audit_log]
+            super + %i[read_admin_system_information]
           end
 
           private

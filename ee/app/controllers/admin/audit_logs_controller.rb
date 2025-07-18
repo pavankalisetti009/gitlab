@@ -10,7 +10,6 @@ class Admin::AuditLogsController < Admin::ApplicationController
   include ProductAnalyticsTracking
   include GovernUsageTracking
 
-  authorize! :read_admin_audit_log, only: :index
   before_action :check_license_admin_audit_event_available!
 
   track_event :index,

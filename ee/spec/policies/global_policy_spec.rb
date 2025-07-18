@@ -916,7 +916,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     where(:custom_ability, :enabled_permissions) do
       :read_admin_cicd         | %i[read_admin_cicd]
       :read_admin_monitoring   | %i[
-        read_admin_audit_log
         read_admin_background_migrations
         read_admin_gitaly_servers
         read_admin_health_check

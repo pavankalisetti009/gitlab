@@ -12,23 +12,6 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
     sign_in(current_user)
   end
 
-  describe Admin::AuditLogsController do
-    it "GET #index" do
-      get admin_audit_logs_path
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response).to render_template(:index)
-    end
-  end
-
-  describe Admin::AuditLogReportsController do
-    it "GET #index" do
-      get admin_audit_log_reports_path(format: :csv)
-
-      expect(response).to have_gitlab_http_status(:ok)
-    end
-  end
-
   describe Admin::BackgroundMigrationsController do
     it "GET #index" do
       get admin_background_migrations_path

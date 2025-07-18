@@ -37,7 +37,6 @@ RSpec.describe Sidebars::Admin::Menus::MonitoringMenu, feature_category: :naviga
 
       it 'includes the expected menu items' do
         is_expected.to contain_exactly(
-          _('Audit events'),
           _('Background migrations'),
           _('Health check'),
           _('System information')
