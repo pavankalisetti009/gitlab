@@ -130,10 +130,6 @@ module Epics
       group
     end
 
-    def close_service
-      Epics::CloseService
-    end
-
     def track_epic_parent_updated
       ::Gitlab::UsageDataCounters::EpicActivityUniqueCounter.track_epic_parent_updated_action(
         author: current_user,
