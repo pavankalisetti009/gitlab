@@ -119,19 +119,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
         it { is_expected.to eq expected_response }
 
-        context 'when duo_core_saas feature flag is disabled' do
-          let(:allowed_by_namespace_ids) { [] }
-          let(:expected_allowed) { !feature_flag_blocks_access }
-          let(:expected_enablement_type) { 'duo_core' unless feature_flag_blocks_access }
-          let(:expected_authorized_by_duo_core) { !feature_flag_blocks_access }
-
-          before do
-            stub_feature_flags(duo_core_saas: false)
-          end
-
-          it { is_expected.to eq expected_response }
-        end
-
         context 'when access is denied' do
           let(:allowed_by_namespace_ids) { [] }
           let(:expected_allowed) { false }
@@ -193,8 +180,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       end
 
       include_examples 'checking assigned seats' do
-        let(:feature_flag_blocks_access) { true }
-
         before do
           namespace.namespace_settings.update!(
             duo_core_features_enabled: duo_core_features_enabled
@@ -300,7 +285,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
       include_examples 'checking assigned seats' do
         let(:allowed_by_namespace_ids) { [] }
-        let(:feature_flag_blocks_access) { false }
 
         before do
           # AddOnPurchase.for_user scope (used for Duo Core)
