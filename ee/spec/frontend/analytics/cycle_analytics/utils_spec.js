@@ -20,6 +20,7 @@ import {
   formatDurationOverviewChartData,
   getValueStreamGraphQLId,
   getValueStreamStageGraphQLId,
+  formatDurationChartDate,
 } from 'ee/analytics/cycle_analytics/utils';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
@@ -516,6 +517,12 @@ describe('Value Stream Analytics utils', () => {
       expect(getValueStreamStageGraphQLId(120)).toBe(
         'gid://gitlab/Analytics::CycleAnalytics::Stage/120',
       );
+    });
+  });
+
+  describe('formatDurationChartDate', () => {
+    it('returns the formatted date as expected', () => {
+      expect(formatDurationChartDate('2025-07-16')).toBe('Jul 16, 2025');
     });
   });
 });
