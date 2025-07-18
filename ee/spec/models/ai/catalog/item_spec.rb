@@ -63,6 +63,29 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     end
   end
 
+  describe 'callbacks' do
+    describe '.prevent_deletion_if_consumers_exist' do
+      let_it_be(:item) { create(:ai_catalog_item, deleted_at: 1.day.ago) }
+
+      it 'allows deletion if no consumers exist' do
+        expect(item.destroy).to be_truthy
+        expect { item.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+
+      context 'when consumers exist' do
+        before do
+          allow(item).to receive(:consumers).and_return([build_stubbed(:ai_catalog_item_consumer, item: item)])
+        end
+
+        it 'prevents deletion' do
+          expect(item.destroy).to be(false)
+          expect(item.errors[:base]).to contain_exactly('Cannot delete an item that has consumers')
+          expect { item.reload }.not_to raise_error
+        end
+      end
+    end
+  end
+
   describe '#deleted?' do
     let(:item) { build_stubbed(:ai_catalog_item, deleted_at: deleted_at) }
 
@@ -80,6 +103,14 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       it 'returns false' do
         expect(item).not_to be_deleted
       end
+    end
+  end
+
+  describe '#soft_delete' do
+    it 'updates deleted_at attribute' do
+      item = create(:ai_catalog_item)
+
+      expect { item.soft_delete }.to change { item.deleted_at }.from(nil)
     end
   end
 end

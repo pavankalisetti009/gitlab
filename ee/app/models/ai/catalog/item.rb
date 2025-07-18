@@ -23,6 +23,8 @@ module Ai
       scope :not_deleted, -> { where(deleted_at: nil) }
       scope :with_item_type, ->(item_type) { where(item_type: item_type) }
 
+      before_destroy :prevent_deletion_if_consumers_exist
+
       AGENT_TYPE = :agent
       FLOW_TYPE = :flow
 
@@ -33,6 +35,19 @@ module Ai
 
       def deleted?
         deleted_at.present?
+      end
+
+      def soft_delete
+        update(deleted_at: Time.zone.now)
+      end
+
+      private
+
+      def prevent_deletion_if_consumers_exist
+        return unless consumers.any?
+
+        errors.add(:base, 'Cannot delete an item that has consumers')
+        throw :abort # rubocop:disable Cop/BanCatchThrow -- We handle soft deleting in `ee/app/services/ai/catalog/agents/destroy_service.rb`
       end
     end
   end
