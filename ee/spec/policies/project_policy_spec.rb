@@ -4152,39 +4152,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'generate_cube_query policy' do
-      let(:current_user) { owner }
-      let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
-
-      where(:ai_global_switch, :flag_enabled, :licensed, :allowed) do
-        true | true | true | true
-        true | true | false | false
-        true | false | true | false
-        true | false | false | false
-        false | true | true | false
-        false | true | false | false
-        false | false | true | false
-        false | false | false | false
-      end
-
-      with_them do
-        before do
-          stub_feature_flags(ai_global_switch: ai_global_switch)
-          stub_feature_flags(generate_cube_query: flag_enabled)
-          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
-          allow(authorizer).to receive(:allowed?).and_return(licensed)
-        end
-
-        it 'permits the correct abilities' do
-          if allowed
-            is_expected.to be_allowed(:generate_cube_query)
-          else
-            is_expected.to be_disallowed(:generate_cube_query)
-          end
-        end
-      end
-    end
-
     describe 'read_ai_agents' do
       where(:feature_flag_enabled, :licensed_feature, :current_user, :allowed) do
         true  | true  | ref(:owner)      | true

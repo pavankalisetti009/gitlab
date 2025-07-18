@@ -6,7 +6,6 @@ module Analytics
       is_project = project?(namespace)
       is_group = group?(namespace)
       can_read_product_analytics = can?(current_user, :read_product_analytics, namespace)
-      ai_generate_cube_query_enabled = is_project && can?(current_user, :generate_cube_query, namespace)
 
       {
         namespace_id: namespace.id,
@@ -26,7 +25,6 @@ module Analytics
         router_base: router_base(namespace),
         root_namespace_name: namespace.root_ancestor.name,
         root_namespace_full_path: namespace.root_ancestor.full_path,
-        ai_generate_cube_query_enabled: ai_generate_cube_query_enabled.to_s,
         is_instance_configured_with_self_managed_analytics_provider:
           instance_configured_with_self_managed_analytics_provider?(namespace).to_s,
         default_use_instance_configuration: default_use_instance_configuration?(namespace).to_s,

@@ -15,7 +15,7 @@ import { fetchFilterOptions } from 'ee/analytics/analytics_dashboards/data_sourc
 
 import AnalyticsDataExplorer from 'ee/analytics/analytics_dashboards/components/analytics_data_explorer.vue';
 import VisualizationTypeSelector from 'ee/analytics/analytics_dashboards/components/data_explorer/analytics_visualization_type_selector.vue';
-import AiCubeQueryGenerator from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_generator.vue';
+
 import {
   EVENT_LABEL_USER_VIEWED_DATA_EXPLORER,
   EVENT_LABEL_USER_CREATED_CUSTOM_VISUALIZATION,
@@ -56,7 +56,6 @@ describe('AnalyticsDataExplorer', () => {
   const findPageTitle = () => wrapper.findByTestId('page-title');
   const findPageDescription = () => wrapper.findByTestId('page-description');
   const findPageDescriptionLink = () => findPageDescription().findComponent(GlLink);
-  const findAiQueryGenerator = () => wrapper.findComponent(AiCubeQueryGenerator);
 
   const setVisualizationTitle = async (newTitle = '') => {
     await findTitleInput().vm.$emit('input', newTitle);
@@ -123,7 +122,7 @@ describe('AnalyticsDataExplorer', () => {
       mocks,
       provide: {
         customDashboardsProject: TEST_CUSTOM_DASHBOARDS_PROJECT,
-        aiGenerateCubeQueryEnabled: false,
+
         ...options.provide,
       },
     });
@@ -461,49 +460,6 @@ describe('AnalyticsDataExplorer', () => {
     });
   });
 
-  describe('natural language querying', () => {
-    it.each`
-      providedFlagState | visibility
-      ${true}           | ${'shows'}
-      ${false}          | ${'hides'}
-    `(
-      '$visibility the AI cube query generator when "aiGenerateCubeQueryEnabled" is "$providedFlagState"',
-      async ({ providedFlagState }) => {
-        await createWrapper('', {
-          provide: {
-            aiGenerateCubeQueryEnabled: providedFlagState,
-          },
-          setMetaResponse: true,
-        });
-
-        expect(findAiQueryGenerator().exists()).toBe(providedFlagState);
-      },
-    );
-
-    it('will not prompt user when there are no existing changes to the query', async () => {
-      await createWrapper('', {
-        provide: {
-          aiGenerateCubeQueryEnabled: true,
-        },
-        setMetaResponse: true,
-      });
-
-      expect(findAiQueryGenerator().props('warnBeforeReplacingQuery')).toBe(false);
-    });
-
-    it('ensures user will be prompted before generating when there are unsaved changes', async () => {
-      await createWrapper('', {
-        provide: {
-          aiGenerateCubeQueryEnabled: true,
-        },
-        setMetaResponse: true,
-      });
-      await setAllRequiredFieldsWithFilter();
-
-      expect(findAiQueryGenerator().props('warnBeforeReplacingQuery')).toBe(true);
-    });
-  });
-
   describe('clear fields after saving', () => {
     const expectTitleAndTypeReset = () => {
       expect(findTitleInput().attributes('value')).toBe('');
@@ -521,28 +477,6 @@ describe('AnalyticsDataExplorer', () => {
         expectTitleAndTypeReset();
 
         expect(findFilteredSearch().props('query')).toStrictEqual({ limit: 100 });
-      });
-    });
-
-    describe('when "aiGenerateCubeQueryEnabled" feature is enabled', () => {
-      beforeEach(async () => {
-        await createWrapper('', {
-          provide: {
-            aiGenerateCubeQueryEnabled: true,
-          },
-          setMetaResponse: true,
-        });
-        await setAllRequiredFieldsWithFilter();
-        await findAiQueryGenerator().vm.$emit('input', 'Hello world');
-        return saveVisualization();
-      });
-
-      it('resets the designer fields + AI prompt to their initial state', () => {
-        expectTitleAndTypeReset();
-
-        expect(findFilteredSearch().props('query')).toStrictEqual({ limit: 100 });
-
-        expect(findAiQueryGenerator().props('value')).toBe('');
       });
     });
   });

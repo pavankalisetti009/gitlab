@@ -38,7 +38,6 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
         :resolve_vulnerability | build_stubbed(:vulnerability,
           :with_findings) | Llm::ResolveVulnerabilityService | {}
         :categorize_question | user | Llm::Internal::CategorizeChatQuestionService | {}
-        :generate_cube_query | user | Llm::ProductAnalytics::GenerateCubeQueryService | {}
       end
 
       with_them do
