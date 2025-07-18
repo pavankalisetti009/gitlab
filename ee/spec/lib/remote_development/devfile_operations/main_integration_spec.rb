@@ -72,4 +72,22 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::Main, feature_category: :
 
     it_behaves_like "tracks failed devfile validated event", "DevfileRestrictionsFailed"
   end
+
+  context "when multiple params are invalid" do
+    let(:devfile_fixture_name) { "example.invalid-multiple-errors-devfile.yaml.erb" }
+
+    it "returns failure" do
+      err1 =
+        "Endpoint name 'gl-example-invalid-second-endpoint' of component 'example-invalid-second-component' " \
+          "must not start with 'gl-'"
+      err2 = "Event 'gl-example' of type 'preStart' must not start with 'gl-'"
+      expected_message = "Devfile restrictions failed: #{err1},  #{err2}"
+
+      expect(response).to eq({
+        status: :error,
+        message: expected_message,
+        reason: :bad_request
+      })
+    end
+  end
 end

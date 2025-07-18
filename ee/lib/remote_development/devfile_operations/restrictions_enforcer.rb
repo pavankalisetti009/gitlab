@@ -32,50 +32,64 @@ module RemoteDevelopment
       # Currently, we only support the default value `false` for the `hotReloadCapable` option
       SUPPORTED_HOT_RELOAD_VALUE = false
 
-      # @param [Hash] context
+      # @param [Hash] parent_context
       # @return [Gitlab::Fp::Result]
-      def self.enforce(context)
-        Gitlab::Fp::Result.ok(context)
-                          .and_then(method(:validate_devfile_size))
-                          .and_then(method(:validate_schema_version))
-                          .and_then(method(:validate_parent))
-                          .and_then(method(:validate_projects))
-                          .and_then(method(:validate_root_attributes))
-                          .and_then(method(:validate_components))
-                          .and_then(method(:validate_containers))
-                          .and_then(method(:validate_endpoints))
-                          .and_then(method(:validate_commands))
-                          .and_then(method(:validate_events))
-                          .and_then(method(:validate_variables))
-      end
+      def self.enforce(parent_context)
+        context = {
+          # NOTE: `processed_devfile` is not available in the context until the devfile has been flattened.
+          #       If the devfile is flattened, use `processed_devfile`. Else, use `devfile`.
+          devfile: parent_context[:processed_devfile] || parent_context[:devfile],
+          errors: []
+        }
 
-      private
+        initial_result = Gitlab::Fp::Result.ok(context)
 
-      # @param [Hash] context
-      # @return [Hash] the `processed_devfile` out of the `context` if it exists, otherwise the `devfile`
-      def self.devfile_to_validate(context)
-        # NOTE: `processed_devfile` is not available in the context until the devfile has been flattened.
-        #       If the devfile is flattened, use `processed_devfile`. Else, use `devfile`.
-        context[:processed_devfile] || context[:devfile]
+        result =
+          initial_result
+            .and_then(method(:validate_devfile_size))
+            .map(method(:validate_schema_version))
+            .map(method(:validate_parent))
+            .map(method(:validate_projects))
+            .map(method(:validate_root_attributes))
+            .map(method(:validate_components))
+            .map(method(:validate_containers))
+            .map(method(:validate_endpoints))
+            .map(method(:validate_commands))
+            .map(method(:validate_events))
+            .map(method(:validate_variables))
+
+        case result
+        in { ok: { errors: [] } }
+          Gitlab::Fp::Result.ok(parent_context)
+        in { ok: { errors: errors } }
+          Gitlab::Fp::Result.err(DevfileRestrictionsFailed.new({ details: errors, context: parent_context }))
+        in { err: DevfileSizeLimitExceeded => message }
+          Gitlab::Fp::Result.err(
+            DevfileRestrictionsFailed.new({ details: message.content[:details], context: parent_context })
+          )
+        else
+          raise Gitlab::Fp::UnmatchedResultError.new(result: result)
+        end
       end
 
       # @param [Hash] context
       # @return [Gitlab::Fp::Result]
       def self.validate_devfile_size(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
 
         # Calculate the size of the devfile by converting it to JSON
         devfile_json = devfile.to_json
         devfile_size_bytes = devfile_json.bytesize
 
         if devfile_size_bytes > MAX_DEVFILE_SIZE_BYTES
-          return err(
-            format(
-              _("Devfile size (%{current_size}) exceeds the maximum allowed size of %{max_size}"),
-              current_size: ActiveSupport::NumberHelper.number_to_human_size(devfile_size_bytes),
-              max_size: ActiveSupport::NumberHelper.number_to_human_size(MAX_DEVFILE_SIZE_BYTES)
-            ),
-            context
+          details = format(_("Devfile size (%{current_size}) exceeds the maximum allowed size of %{max_size}"),
+            current_size: ActiveSupport::NumberHelper.number_to_human_size(devfile_size_bytes),
+            max_size: ActiveSupport::NumberHelper.number_to_human_size(MAX_DEVFILE_SIZE_BYTES)
+          )
+          return Gitlab::Fp::Result.err(
+            DevfileSizeLimitExceeded.new(
+              { details: details, context: context }
+            )
           )
         end
 
@@ -83,15 +97,20 @@ module RemoteDevelopment
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_schema_version(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
 
-        devfile_schema_version_string = devfile.fetch(:schemaVersion)
+        devfile_schema_version_string = devfile.fetch(:schemaVersion, "")
+
+        unless devfile_schema_version_string.is_a?(String)
+          return append_err(_("'schemaVersion' must be a String"), context)
+        end
+
         begin
           devfile_schema_version = Gem::Version.new(devfile_schema_version_string)
         rescue ArgumentError
-          return err(
+          append_err(
             format(_("Invalid 'schemaVersion' '%{schema_version}'"), schema_version: devfile_schema_version_string),
             context
           )
@@ -99,9 +118,8 @@ module RemoteDevelopment
 
         minimum_schema_version = Gem::Version.new(REQUIRED_DEVFILE_SCHEMA_VERSION)
         unless devfile_schema_version == minimum_schema_version
-          return err(
-            format(
-              _("'schemaVersion' '%{given_version}' is not supported, it must be '%{required_version}'"),
+          append_err(
+            format(_("'schemaVersion' '%{given_version}' is not supported, it must be '%{required_version}'"),
               given_version: devfile_schema_version_string,
               required_version: REQUIRED_DEVFILE_SCHEMA_VERSION
             ),
@@ -109,64 +127,73 @@ module RemoteDevelopment
           )
         end
 
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_parent(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
+        append_err(_("Inheriting from 'parent' is not yet supported"), context) if devfile.has_key?(:parent)
 
-        return err(format(_("Inheriting from 'parent' is not yet supported")), context) if devfile[:parent]
-
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_projects(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
+        append_err(_("'starterProjects' is not yet supported"), context) if devfile.has_key?(:starterProjects)
+        append_err(_("'projects' is not yet supported"), context) if devfile.has_key?(:projects)
 
-        return err(_("'starterProjects' is not yet supported"), context) if devfile[:starterProjects]
-        return err(_("'projects' is not yet supported"), context) if devfile[:projects]
-
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_root_attributes(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
+        root_attributes = devfile.fetch(:attributes, {})
 
-        return err(_("Attribute 'pod-overrides' is not yet supported"), context) if devfile.dig(:attributes,
-          :"pod-overrides")
+        return append_err(_("'Attributes' must be a Hash"), context) unless root_attributes.is_a?(Hash)
 
-        Gitlab::Fp::Result.ok(context)
+        if devfile.dig(:attributes, :"pod-overrides")
+          append_err(_("Attribute 'pod-overrides' is not yet supported"), context)
+        end
+
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_components(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
 
-        components = devfile[:components]
+        components = devfile.fetch(:components, [])
+        return append_err(_("'Components' must be an Array"), context) unless components.is_a?(Array)
+        return append_err(_("No components present in devfile"), context) if components.blank?
 
-        return err(_("No components present in devfile"), context) if components.blank?
+        append_err(_("Each element in 'components' must be a Hash"), context) unless components.all?(Hash)
 
-        injected_main_components = components.select do |component|
-          component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
+        injected_main_components = []
+
+        components.each do |component|
+          validate_component(context, component)
+          next unless component.is_a?(Hash)
+          next unless component.fetch(:attributes, {}).is_a?(Hash)
+
+          injected_main_components << component if component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
         end
 
         if injected_main_components.empty?
-          return err(
+          append_err(
             format(_("No component has '%{attribute}' attribute"), attribute: MAIN_COMPONENT_INDICATOR_ATTRIBUTE),
             context
           )
         end
 
         if injected_main_components.length > 1
-          # noinspection RailsParamDefResolve -- this pluck isn't from ActiveRecord, it's from ActiveSupport
-          return err(
+          append_err(
             format(
               _("Multiple components '%{name}' have '%{attribute}' attribute"),
               name: injected_main_components.pluck(:name), # rubocop:disable CodeReuse/ActiveRecord -- this pluck isn't from ActiveRecord, it's from ActiveSupport
@@ -176,88 +203,67 @@ module RemoteDevelopment
           )
         end
 
-        components_all_have_names = components.all? { |component| component[:name].present? }
-        return err(_("Components must have a 'name'"), context) unless components_all_have_names
-
-        components.each do |component|
-          component_name = component.fetch(:name)
-          # Ensure no component name starts with restricted_prefix
-          if component_name.downcase.start_with?(RESTRICTED_PREFIX)
-            return err(
-              format(
-                _("Component name '%{component}' must not start with '%{prefix}'"),
-                component: component_name,
-                prefix: RESTRICTED_PREFIX
-              ),
-              context
-            )
-          end
-
-          UNSUPPORTED_COMPONENT_TYPES.each do |unsupported_component_type|
-            if component[unsupported_component_type]
-              return err(
-                format(_("Component type '%{type}' is not yet supported"), type: unsupported_component_type),
-                context
-              )
-            end
-          end
-
-          return err(_("Attribute 'container-overrides' is not yet supported"), context) if component.dig(
-            :attributes, :"container-overrides")
-
-          return err(_("Attribute 'pod-overrides' is not yet supported"), context) if component.dig(:attributes,
-            :"pod-overrides")
-        end
-
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_containers(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
 
-        components = devfile.fetch(:components)
+        components = devfile.fetch(:components, [])
+
+        # There is no need to append an error here since it has already been done before this code is executed.
+        return context unless components.is_a?(Array)
 
         components.each do |component|
-          container = component[:container]
-          next unless container
+          # There is no need to append an error here since it has already been done before this code is executed.
+          return context unless component.is_a?(Hash)
+
+          container = component.fetch(:container, {})
+          component_name = component.fetch(:name, "")
+
+          # There is no need to append an error here since it has already been done before this code is executed.
+          unless container.is_a?(Hash)
+            return append_err(
+              format(_("'container' in component '%{component}' must be a Hash"), component: component_name), context)
+          end
 
           if container[:dedicatedPod]
-            return err(
-              format(
-                _("Property 'dedicatedPod' of component '%{name}' is not yet supported"),
-                name: component.fetch(:name)
-              ),
-              context
-            )
+            append_err(format(_("Property 'dedicatedPod' of component '%{component}' is not yet supported"),
+              component: component_name), context)
           end
         end
 
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_endpoints(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
 
-        components = devfile.fetch(:components)
-
-        err_result = nil
+        components = devfile.fetch(:components, [])
+        # There is no need to append an error here since it has already been done before this code is executed.
+        return context unless components.is_a?(Array)
 
         components.each do |component|
-          next unless component.dig(:container, :endpoints)
+          # There is no need to append an error here since it has already been done before this code is executed.
+          return context unless component.is_a?(Hash)
 
-          container = component.fetch(:container)
+          container = component.fetch(:container, {})
+          # There is no need to append an error here since it has already been done before this code is executed.
+          return context unless container.is_a?(Hash)
 
-          container.fetch(:endpoints).each do |endpoint|
-            endpoint_name = endpoint.fetch(:name)
+          endpoints = container.fetch(:endpoints, [])
+          return append_err(_("'Endpoints' must be an Array"), context) unless endpoints.is_a?(Array)
+
+          endpoints.each do |endpoint|
+            endpoint_name = endpoint.fetch(:name, "")
             next unless endpoint_name.downcase.start_with?(RESTRICTED_PREFIX)
 
-            err_result = err(
-              format(
-                _("Endpoint name '%{endpoint}' of component '%{component}' must not start with '%{prefix}'"),
+            append_err(
+              format(_("Endpoint name '%{endpoint}' of component '%{component}' must not start with '%{prefix}'"),
                 endpoint: endpoint_name,
                 component: component.fetch(:name),
                 prefix: RESTRICTED_PREFIX
@@ -267,107 +273,30 @@ module RemoteDevelopment
           end
         end
 
-        return err_result if err_result
-
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_commands(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
 
-        devfile.fetch(:commands, []).each do |command|
-          command_id = command.fetch(:id)
+        commands = devfile.fetch(:commands, [])
+        return append_err(_("'Commands' must be an Array"), context) unless commands.is_a?(Array)
 
-          # Check command_id for restricted prefix
-          error_result = validate_restricted_prefix(command_id, 'command_id', context)
-          return error_result if error_result
-
-          supported_command_type = SUPPORTED_COMMAND_TYPES.find { |type| command[type].present? }
-
-          unless supported_command_type
-            return err(
-              format(
-                _("Command '%{command}' must have one of the supported command types: %{supported_types}"),
-                command: command_id,
-                supported_types: SUPPORTED_COMMAND_TYPES.join(", ")
-              ),
-              context
-            )
-          end
-
-          # Ensure no command is referring to a component with restricted_prefix
-          command_type = command[supported_command_type]
-
-          # Check if component is present (required for both exec and apply)
-          unless command_type[:component].present?
-            return err(
-              format(
-                _("'%{type}' command '%{command}' must specify a 'component'"),
-                type: supported_command_type,
-                command: command_id
-              ),
-              context
-            )
-          end
-
-          # Check component name for restricted prefix
-          component_name = command_type.fetch(:component)
-
-          error_result = validate_restricted_prefix(component_name, 'component_name', context,
-            { command: command_id })
-          return error_result if error_result
-
-          # Check label for restricted prefix
-          command_label = command_type.fetch(:label, "")
-
-          error_result = validate_restricted_prefix(command_label, 'label', context,
-            { command: command_id })
-          return error_result if command_label.present? && error_result
-
-          # Type-specicific validations for `exec` commands
-          # Since we only support the exec command type for user defined poststart events
-          # We don't need to have validation for other command types
-          next unless supported_command_type == :exec
-
-          exec_command = command_type
-
-          # Validate that only the supported options are used
-          unsupported_options = exec_command.keys - SUPPORTED_EXEC_COMMAND_OPTIONS
-          if unsupported_options.any?
-            return err(
-              format(
-                _("Unsupported options '%{options}' for exec command '%{command}'. " \
-                  "Only '%{supported_options}' are supported."),
-                options: unsupported_options.join(", "),
-                command: command_id,
-                supported_options: SUPPORTED_EXEC_COMMAND_OPTIONS.join(", ")
-              ),
-              context
-            )
-          end
-
-          if exec_command.key?(:hotReloadCapable) && exec_command[:hotReloadCapable] != SUPPORTED_HOT_RELOAD_VALUE
-            return err(
-              format(
-                _("Property 'hotReloadCapable' for exec command '%{command}' must be false when specified"),
-                command: command_id
-              ),
-              context
-            )
-          end
+        commands.each do |command|
+          validate_command(context, command)
         end
 
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [String] value
       # @param [String] type
       # @param [Hash] context
       # @param [Hash] additional_params
-      # @return [Gitlab::Fp::Result.err]
-      def self.validate_restricted_prefix(value, type, context, additional_params = {})
+      # @return [Hash]
+      def self.validate_command_restricted_prefix(value, type, context, additional_params = {})
         return unless value.downcase.start_with?(RESTRICTED_PREFIX)
 
         error_messages = {
@@ -392,30 +321,32 @@ module RemoteDevelopment
           params[:command_label] = value
         end
 
-        err(format(message_template, params), context)
+        append_err(format(message_template, params), context)
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_events(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
         commands = devfile.fetch(:commands, [])
+        events = devfile.fetch(:events, {})
 
-        devfile.fetch(:events, {}).each do |event_type, event_type_events|
+        return append_err(_("'Events' must be a Hash"), context) unless events.is_a?(Hash)
+
+        events.each do |event_type, event_type_events|
           # Ensure no event type other than "preStart" are allowed
 
           if SUPPORTED_EVENTS.exclude?(event_type) && event_type_events.present?
             err_msg = format(_("Event type '%{type}' is not yet supported"), type: event_type)
             # The entries for unsupported events may be defined, but they must be blank.
-            return err(err_msg, context)
+            append_err(err_msg, context)
           end
 
           # Ensure no event starts with restricted_prefix
           event_type_events.each do |command_name|
             if command_name.downcase.start_with?(RESTRICTED_PREFIX)
-              return err(
-                format(
-                  _("Event '%{event}' of type '%{event_type}' must not start with '%{prefix}'"),
+              append_err(
+                format(_("Event '%{event}' of type '%{event_type}' must not start with '%{prefix}'"),
                   event: command_name,
                   event_type: event_type,
                   prefix: RESTRICTED_PREFIX
@@ -430,37 +361,39 @@ module RemoteDevelopment
 
             # Check if the referenced command is an exec command
             referenced_command = commands.find { |cmd| cmd[:id] == command_name }
-            unless referenced_command[:exec].present?
-              return err(
-                format(
-                  _("PostStart event references command '%{command}' which is not an exec command. Only exec " \
-                    "commands are supported in postStart events"),
-                  command: command_name
-                ),
-                context
-              )
-            end
+            next if referenced_command[:exec].present?
+
+            append_err(
+              format(_("PostStart event references command '%{command}' which is not an exec command. Only exec " \
+                "commands are supported in postStart events"),
+                command: command_name
+              ),
+              context
+            )
           end
         end
 
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
+      # @return [Hash]
       def self.validate_variables(context)
-        devfile = devfile_to_validate(context)
+        context => { devfile: Hash => devfile }
 
         restricted_prefix_underscore = RESTRICTED_PREFIX.tr("-", "_")
 
         # Ensure no variable name starts with restricted_prefix
-        devfile.fetch(:variables, {}).each_key do |variable|
+        variables = devfile.fetch(:variables, {})
+
+        return append_err(_("'Variables' must be a Hash"), context) unless variables.is_a?(Hash)
+
+        variables.each_key do |variable|
           [RESTRICTED_PREFIX, restricted_prefix_underscore].each do |prefix|
             next unless variable.downcase.start_with?(prefix)
 
-            return err( # rubocop:disable Cop/AvoidReturnFromBlocks -- We want to use a return here - it works fine, and the alternative is unnecessarily complex.
-              format(
-                _("Variable name '%{variable}' must not start with '%{prefix}'"),
+            append_err(
+              format(_("Variable name '%{variable}' must not start with '%{prefix}'"),
                 variable: variable,
                 prefix: prefix
               ),
@@ -469,19 +402,153 @@ module RemoteDevelopment
           end
         end
 
-        Gitlab::Fp::Result.ok(context)
+        context
       end
 
-      # @param [String] details
       # @param [Hash] context
-      # @return [Gitlab::Fp::Result]
-      def self.err(details, context)
-        Gitlab::Fp::Result.err(DevfileRestrictionsFailed.new({ details: details, context: context }))
+      # @param [Hash] component
+      # @return [Hash]
+      def self.validate_component(context, component)
+        return unless component.is_a?(Hash)
+
+        append_err(_("A component must have a 'name'"), context) unless component.has_key?(:name)
+
+        component_name = component.fetch(:name, "")
+        if component_name.is_a?(String)
+          # Ensure no component name starts with restricted_prefix
+          if component_name.downcase.start_with?(RESTRICTED_PREFIX)
+            append_err(
+              format(_("Component name '%{component}' must not start with '%{prefix}'"),
+                component: component_name,
+                prefix: RESTRICTED_PREFIX
+              ),
+              context
+            )
+          end
+        else
+          append_err(_("'Component name' must be a String"), context)
+        end
+
+        attributes = component.fetch(:attributes, {})
+
+        if attributes.is_a?(Hash)
+          if component.dig(:attributes, :"container-overrides")
+            append_err(_("Attribute 'container-overrides' is not yet supported"), context)
+          end
+
+          if component.dig(:attributes, :"pod-overrides")
+            append_err(_("Attribute 'pod-overrides' is not yet supported"), context)
+          end
+        else
+          append_err(
+            format(_("'attributes' for component '%{component_name}' must be a Hash"),
+              component_name: component_name), context)
+        end
+
+        # Ensure component type is supported
+        UNSUPPORTED_COMPONENT_TYPES.each do |unsupported_component_type|
+          if component[unsupported_component_type] # rubocop: disable Style/Next -- No need to change to next
+            append_err(
+              format(_("Component type '%{type}' is not yet supported"), type: unsupported_component_type),
+              context
+            )
+          end
+        end
+
+        context
       end
-      private_class_method :devfile_to_validate, :validate_devfile_size, :validate_schema_version, :validate_parent,
-        :validate_projects, :validate_components, :validate_containers,
-        :validate_endpoints, :validate_commands, :validate_restricted_prefix, :validate_events,
-        :validate_variables, :err, :validate_root_attributes
+
+      # @param [Hash] context
+      # @param [Hash] command
+      # @return [Hash]
+      def self.validate_command(context, command)
+        return append_err(_("'command' must be a Hash"), context) unless command.is_a?(Hash)
+
+        command_id = command.fetch(:id, "")
+
+        # Check command_id for restricted prefix
+        validate_command_restricted_prefix(command_id, 'command_id', context)
+
+        supported_command_type = SUPPORTED_COMMAND_TYPES.find { |type| command[type].present? }
+
+        unless supported_command_type
+          return append_err(
+            format(_("Command '%{command}' must have one of the supported command types: %{supported_types}"),
+              command: command_id,
+              supported_types: SUPPORTED_COMMAND_TYPES.join(", ")
+            ),
+            context
+          )
+        end
+
+        command_type = command[supported_command_type]
+
+        unless command_type[:component].present?
+          append_err(
+            format(_("'%{type}' command '%{command}' must specify a 'component'"),
+              type: supported_command_type,
+              command: command_id
+            ),
+            context
+          )
+        end
+
+        # Check component name for restricted prefix
+        component_name = command_type.fetch(:component, "")
+
+        validate_command_restricted_prefix(component_name, 'component_name', context,
+          { command: command_id })
+
+        # Check label for restricted prefix
+        command_label = command_type.fetch(:label, "")
+
+        validate_command_restricted_prefix(command_label, 'label', context,
+          { command: command_id })
+
+        # Type-specific validations for `exec` commands
+        # Since we only support the exec command type for user defined poststart events
+        # We don't need to have validation for other command types
+        return unless supported_command_type == :exec
+
+        exec_command = command_type
+
+        # Validate that only the supported options are used
+        unsupported_options = exec_command.keys - SUPPORTED_EXEC_COMMAND_OPTIONS
+        if unsupported_options.any?
+          append_err(
+            format(_("Unsupported options '%{options}' for exec command '%{command}'. " \
+              "Only '%{supported_options}' are supported."),
+              options: unsupported_options.join(", "),
+              command: command_id,
+              supported_options: SUPPORTED_EXEC_COMMAND_OPTIONS.join(", ")
+            ),
+            context
+          )
+        end
+
+        if exec_command.key?(:hotReloadCapable) && exec_command[:hotReloadCapable] != SUPPORTED_HOT_RELOAD_VALUE
+          append_err(
+            format(_("Property 'hotReloadCapable' for exec command '%{command}' must be false when specified"),
+              command: command_id
+            ),
+            context
+          )
+        end
+      end
+
+      # @param [String] message
+      # @param [Hash] context
+      # @return [Hash]
+      def self.append_err(message, context)
+        context.fetch(:errors).append(message)
+
+        context
+      end
+
+      private_class_method :validate_devfile_size, :validate_schema_version, :validate_parent,
+        :validate_projects, :validate_root_attributes, :validate_components, :validate_containers,
+        :validate_endpoints, :validate_commands, :validate_command_restricted_prefix, :validate_events,
+        :validate_variables, :validate_component, :validate_command, :append_err
     end
   end
 end

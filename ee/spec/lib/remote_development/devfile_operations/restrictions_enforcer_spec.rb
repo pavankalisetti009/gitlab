@@ -39,12 +39,6 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
 
     with_them do
       it_behaves_like "an ok result"
-
-      context "when both devfile and processed_devfile are passed in the context" do
-        let(:context) { { devfile: {}, processed_devfile: input_devfile } }
-
-        it_behaves_like "an ok result"
-      end
     end
   end
 
@@ -53,12 +47,27 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
       it "returns an err Result containing error details" do
         is_expected.to be_err_result do |message|
           expect(message).to be_a(RemoteDevelopment::Messages::DevfileRestrictionsFailed)
-          message.content => { details: String => error_details, context: Hash => actual_context }
-          expect(error_details).to eq(error_str)
+          message.content => { details: Array => error_details, context: Hash => actual_context }
+          expect(error_details).to include(error_str)
           expect(actual_context).to eq(context)
         end
       end
     end
+
+    # rubocop:disable Layout/LineLength -- we want single lines for RSpec::Parameterized::TableSyntax
+    context "when multiple errors are returned" do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:input_devfile_name, :error_str) do
+        "example.invalid-multiple-errors-devfile.yaml.erb" | "Endpoint name 'gl-example-invalid-second-endpoint' of component 'example-invalid-second-component' must not start with 'gl-'"
+        "example.invalid-multiple-errors-devfile.yaml.erb" | "Event 'gl-example' of type 'preStart' must not start with 'gl-'"
+      end
+
+      with_them do
+        it_behaves_like "an err result"
+      end
+    end
+    # rubocop:enable Layout/LineLength
 
     context "for single-array-entry devfiles" do
       using RSpec::Parameterized::TableSyntax
@@ -67,7 +76,7 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
       where(:input_devfile_name, :error_str) do
         "example.invalid-attributes-tools-injector-absent-devfile.yaml.erb" | "No component has '#{main_component_indicator_attribute}' attribute"
         "example.invalid-attributes-tools-injector-multiple-devfile.yaml.erb" | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have '#{main_component_indicator_attribute}' attribute"
-        "example.invalid-component-missing-name.yaml.erb" | "Components must have a 'name'"
+        "example.invalid-component-missing-name.yaml.erb" | "A component must have a 'name'"
         "example.invalid-command-missing-component-devfile.yaml.erb" | "'exec' command 'missing-component-command' must specify a 'component'"
         "example.invalid-components-attributes-container-overrides-devfile.yaml.erb" | "Attribute 'container-overrides' is not yet supported"
         "example.invalid-components-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported"
@@ -81,6 +90,18 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
         "example.invalid-restricted-prefix-command-name-devfile.yaml.erb" | "Command id 'gl-example' must not start with 'gl-'"
         "example.invalid-restricted-prefix-component-container-endpoint-name-devfile.yaml.erb" | "Endpoint name 'gl-example' of component 'example' must not start with 'gl-'"
         "example.invalid-restricted-prefix-component-name-devfile.yaml.erb" | "Component name 'gl-example' must not start with 'gl-'"
+        "example.invalid-component-name-field-type-devfile.yaml.erb" | "'Component name' must be a String"
+        "example.invalid-variables-field-type-devfile.yaml.erb" | "'Variables' must be a Hash"
+        "example.invalid-events-field-type-devfile.yaml.erb" | "'Events' must be a Hash"
+        "example.invalid-endpoints-field-type-devfile.yaml.erb" | "'Endpoints' must be an Array"
+        "example.invalid-commands-field-type-devfile.yaml.erb" | "'Commands' must be an Array"
+        "example.invalid-command-field-type-devfile.yaml.erb" | "'command' must be a Hash"
+        "example.invalid-container-field-type-devfile.yaml.erb" | "'container' in component 'gl-example' must be a Hash"
+        "example.invalid-component-field-type-devfile.yaml.erb" | "Each element in 'components' must be a Hash"
+        "example.invalid-components-field-type-devfile.yaml.erb" | "'Components' must be an Array"
+        "example.invalid-schema-version-field-type-devfile.yaml.erb" | "'schemaVersion' must be a String"
+        "example.invalid-root-attributes-field-type-devfile.yaml.erb" | "'Attributes' must be a Hash"
+        "example.invalid-component-attributes-field-type-devfile.yaml.erb" | "'attributes' for component 'gl-example' must be a Hash"
         "example.invalid-restricted-prefix-event-type-prestart-name-devfile.yaml.erb" | "Event 'gl-example' of type 'preStart' must not start with 'gl-'"
         "example.invalid-restricted-prefix-variable-name-devfile.yaml.erb" | "Variable name 'gl-example' must not start with 'gl-'"
         "example.invalid-restricted-prefix-command-apply-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'"
@@ -106,12 +127,6 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
 
       with_them do
         it_behaves_like "an err result"
-
-        context "when both devfile and processed_devfile are passed in the context" do
-          let(:context) { { devfile: {}, processed_devfile: input_devfile } }
-
-          it_behaves_like "an err result"
-        end
       end
     end
 
@@ -154,11 +169,39 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
           is_expected.to be_err_result do |message|
             expect(message).to be_a(RemoteDevelopment::Messages::DevfileRestrictionsFailed)
             message.content => { details: String => error_details, context: Hash => actual_context }
-            expect(error_details).to match(/Devfile size .* exceeds the maximum allowed size/)
+            expect(error_details).to include(/Devfile size .* exceeds the maximum allowed size/)
             expect(actual_context).to eq(context)
           end
         end
       end
+    end
+  end
+
+  context "when both devfile and processed_devfile are passed in the context" do
+    let(:context) do
+      {
+        # invalid, but ignored because processed_devfile is present
+        devfile: read_devfile("example.invalid-no-elements-devfile.yaml.erb"),
+        # valid, and takes precedence over devfile since it is present
+        processed_devfile: read_devfile("example.devfile.yaml.erb")
+      }
+    end
+
+    it "gives precedence to the processed_devfile over the devfile" do
+      expect(result).to eq(Gitlab::Fp::Result.ok(context))
+    end
+  end
+
+  context "when an unmatched error is returned" do
+    let(:context) { { devfile: {} } }
+
+    it "raises an UnmatchedResultError" do
+      allow(described_class).to receive(:validate_devfile_size)
+                                  .and_return(Gitlab::Fp::Result.err(Class.new(Gitlab::Fp::Message).new({
+                                    details: "UnmatchedErrorResult", context: context
+                                  })))
+
+      expect { described_class.enforce(context) }.to raise_error(Gitlab::Fp::UnmatchedResultError)
     end
   end
 end

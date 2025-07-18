@@ -44,6 +44,7 @@ module RemoteDevelopment
     OrganizationClusterAgentMappingNotFound = Class.new(Gitlab::Fp::Message)
 
     # Devfile errors
+    DevfileSizeLimitExceeded = Class.new(Gitlab::Fp::Message)
     DevfileYamlParseFailed = Class.new(Gitlab::Fp::Message)
     DevfileRestrictionsFailed = Class.new(Gitlab::Fp::Message)
     DevfileFlattenFailed = Class.new(Gitlab::Fp::Message)
