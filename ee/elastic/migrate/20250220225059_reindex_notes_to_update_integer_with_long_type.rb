@@ -7,3 +7,5 @@ class ReindexNotesToUpdateIntegerWithLongType < Elastic::Migration
     %w[Note]
   end
 end
+
+ReindexNotesToUpdateIntegerWithLongType.prepend ::Search::Elastic::MigrationObsolete
