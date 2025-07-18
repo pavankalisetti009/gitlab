@@ -1,5 +1,6 @@
 const TYPENAME_AI_CATALOG_ITEM = 'AiCatalogItem';
 const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
+const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_PROJECT = 'Project';
@@ -89,6 +90,26 @@ export const mockCreateAiCatalogAgentErrorMutation = {
     aiCatalogAgentCreate: {
       errors: ['Some error'],
       item: null,
+    },
+  },
+};
+
+export const mockCatalogItemDeleteResponse = {
+  data: {
+    aiCatalogAgentDelete: {
+      errors: [],
+      success: true,
+      __typename: TYPENAME_AI_CATALOG_AGENT_DELETE,
+    },
+  },
+};
+
+export const mockCatalogItemDeleteErrorResponse = {
+  data: {
+    aiCatalogAgentDelete: {
+      errors: ['You do not have permission to delete this AI agent.'],
+      success: false,
+      __typename: TYPENAME_AI_CATALOG_AGENT_DELETE,
     },
   },
 };
