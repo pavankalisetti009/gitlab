@@ -11,6 +11,10 @@ module EE
           description: 'Retrieve all active add-on purchases. ' \
                        'This query can be used in GitLab.com and self-managed environments.',
           resolver: ::Resolvers::GitlabSubscriptions::AddOnPurchasesResolver
+        field :ai_catalog_built_in_tools, ::Types::Ai::Catalog::BuiltInToolType.connection_type,
+          null: false,
+          description: 'List of AI Catalog built-in tools.',
+          experiment: { milestone: '18.3' }
         field :ai_catalog_item,
           resolver: ::Resolvers::Ai::Catalog::ItemResolver,
           null: true,
@@ -405,6 +409,12 @@ module EE
 
       def project_compliance_violation(id:)
         ::GitlabSchema.find_by_gid(id)
+      end
+
+      def ai_catalog_built_in_tools
+        return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
+
+        ::Ai::Catalog::BuiltInTool.all
       end
 
       private
