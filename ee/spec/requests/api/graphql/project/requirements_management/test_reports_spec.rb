@@ -63,14 +63,14 @@ RSpec.describe 'getting test reports of a requirement', feature_category: :requi
       let_it_be(:data_path) { [:project, :requirement, :testReports] }
       let_it_be(:test_report_3) { create(:test_report, requirement_issue: requirement, created_at: 4.days.ago) }
 
+      let(:in_creation_order) do
+        [test_report_3, test_report_2, test_report_1]
+      end
+
       def pagination_query(params)
         graphql_query_for(:project, { full_path: project.full_path },
           "requirement { testReports(#{params}) { #{page_info} nodes { id } } }"
         )
-      end
-
-      let(:in_creation_order) do
-        [test_report_3, test_report_2, test_report_1]
       end
 
       it_behaves_like 'sorted paginated query' do

@@ -24,6 +24,10 @@ RSpec.describe Vulnerabilities::SecurityFinding::CreateIssueService, '#execute',
   let_it_be(:user) { create(:user) }
   let_it_be(:sast_security_findings) { [] }
 
+  let(:security_finding) { sast_security_findings.first }
+  let(:security_finding_uuid) { security_finding.uuid }
+  let(:params) { { security_finding_uuid: security_finding_uuid } }
+
   before_all do
     sast_content = File.read(artifact_sast.file.path)
     Gitlab::Ci::Parsers::Security::Sast.parse!(sast_content, report_sast)
@@ -31,11 +35,7 @@ RSpec.describe Vulnerabilities::SecurityFinding::CreateIssueService, '#execute',
     sast_security_findings.push(*insert_security_findings(report_sast, scan_sast))
   end
 
-  let(:security_finding) { sast_security_findings.first }
-  let(:security_finding_uuid) { security_finding.uuid }
-  let(:params) { { security_finding_uuid: security_finding_uuid } }
-
-  let(:subject) { described_class.new(project: project, current_user: user, params: params).execute }
+  subject { described_class.new(project: project, current_user: user, params: params).execute }
 
   context 'when user does not have permission to read_security_resource' do
     let(:user_not_member_of_project) { create(:user) }

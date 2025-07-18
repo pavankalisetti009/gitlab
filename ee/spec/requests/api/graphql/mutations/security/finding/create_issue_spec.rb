@@ -22,13 +22,6 @@ RSpec.describe 'Creating an Issue from a Security::Finding', feature_category: :
 
   let_it_be(:security_findings) { [] }
 
-  before_all do
-    sast_content = File.read(artifact_sast.file.path)
-    Gitlab::Ci::Parsers::Security::Sast.parse!(sast_content, report)
-    report.merge!(report)
-    security_findings.push(*insert_security_findings)
-  end
-
   let(:security_finding) { security_findings.first }
   let(:security_finding_uuid) { security_finding.uuid }
   let(:project_gid) { GitlabSchema.id_from_object(project) }
@@ -40,6 +33,13 @@ RSpec.describe 'Creating an Issue from a Security::Finding', feature_category: :
       project: project_gid,
       uuid: security_finding_uuid
     )
+  end
+
+  before_all do
+    sast_content = File.read(artifact_sast.file.path)
+    Gitlab::Ci::Parsers::Security::Sast.parse!(sast_content, report)
+    report.merge!(report)
+    security_findings.push(*insert_security_findings)
   end
 
   context 'when the user does not have permission' do

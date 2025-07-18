@@ -144,14 +144,6 @@ RSpec.describe 'getting a requirement list for a project', feature_category: :re
       let_it_be(:requirement1) { create(:work_item, :requirement, iid: 27, project: filter_project, author: current_user, title: 'solve the halting problem') }
       let_it_be(:requirement2) { create(:work_item, :requirement, iid: 75, project: filter_project, author: other_user, title: 'something about kubernetes') }
 
-      before do
-        create(:test_report, requirement_issue: requirement1, state: :failed)
-        create(:test_report, requirement_issue: requirement1, state: :passed)
-        create(:test_report, requirement_issue: requirement2, state: :failed)
-
-        post_graphql(query, current_user: current_user)
-      end
-
       let(:requirements_data) { graphql_data['project']['requirements']['nodes'] }
       let(:params) { "" }
 
@@ -167,6 +159,14 @@ RSpec.describe 'getting a requirement list for a project', feature_category: :re
             }
           REQUIREMENTS
         )
+      end
+
+      before do
+        create(:test_report, requirement_issue: requirement1, state: :failed)
+        create(:test_report, requirement_issue: requirement1, state: :passed)
+        create(:test_report, requirement_issue: requirement2, state: :failed)
+
+        post_graphql(query, current_user: current_user)
       end
 
       it_behaves_like 'a working graphql query'

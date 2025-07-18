@@ -82,12 +82,11 @@ RSpec.describe 'getting Incident Management on-call shifts', feature_category: :
 
   context 'adding participants' do
     let(:new_user) { create(:user) }
+    let(:params) { { participants: [*existing_participant_params, participant_params(new_user)] } }
 
     before do
       project.add_reporter(new_user)
     end
-
-    let(:params) { { participants: [*existing_participant_params, participant_params(new_user)] } }
 
     it 'updates the rotation and adds participants' do
       resolve

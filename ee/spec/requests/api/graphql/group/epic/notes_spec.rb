@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'getting notes for an epic', feature_category: :portfolio_management do
   let(:noteable) { create(:epic) }
+  let(:noteable_data) { graphql_data['group']['epic'] }
 
   before do
     stub_licensed_features(epics: true)
@@ -20,7 +21,6 @@ RSpec.describe 'getting notes for an epic', feature_category: :portfolio_managem
       }
     QRY
   end
-  let(:noteable_data) { graphql_data['group']['epic'] }
 
   it_behaves_like "exposing regular notes on a noteable in GraphQL"
 end

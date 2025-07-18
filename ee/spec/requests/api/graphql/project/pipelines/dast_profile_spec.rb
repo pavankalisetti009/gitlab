@@ -29,10 +29,10 @@ RSpec.describe 'Query.project(fullPath).pipelines.dastProfile',
     )
   end
 
-  subject { post_graphql(query, current_user: current_user) }
-
   let(:pipelines_data) { graphql_data_at(:project, :pipelines, :edges, :node) }
   let(:dast_profile_data) { graphql_dig_at(pipelines_data, :dastProfile) }
+
+  subject { post_graphql(query, current_user: current_user) }
 
   context 'when feature is not licensed' do
     it 'does not return dast profile data' do

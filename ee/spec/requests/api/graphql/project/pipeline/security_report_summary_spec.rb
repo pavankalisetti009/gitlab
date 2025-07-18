@@ -18,30 +18,6 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportSummary', fe
 
   let_it_be(:user) { create(:user) }
 
-  before_all do
-    sast_content = File.read(artifact_sast.file.path)
-    Gitlab::Ci::Parsers::Security::Sast.parse!(sast_content, report_sast)
-    report_sast.merge!(report_sast)
-
-    dast_content = File.read(artifact_dast.file.path)
-    Gitlab::Ci::Parsers::Security::Dast.parse!(dast_content, report_dast)
-    report_dast.merge!(report_dast)
-
-    { artifact_dast => report_dast, artifact_sast => report_sast }.each do |artifact, report|
-      scan = create(:security_scan, scan_type: artifact.job.name, build: artifact.job)
-
-      report.findings.each_with_index do |finding, index|
-        create(
-          :security_finding,
-          severity: finding.severity,
-          uuid: finding.uuid,
-          deduplicated: true,
-          scan: scan
-        )
-      end
-    end
-  end
-
   let_it_be(:query) do
     %(
       query {
@@ -69,6 +45,30 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportSummary', fe
   end
 
   let(:security_report_summary) { subject.dig('project', 'pipeline', 'securityReportSummary') }
+
+  before_all do
+    sast_content = File.read(artifact_sast.file.path)
+    Gitlab::Ci::Parsers::Security::Sast.parse!(sast_content, report_sast)
+    report_sast.merge!(report_sast)
+
+    dast_content = File.read(artifact_dast.file.path)
+    Gitlab::Ci::Parsers::Security::Dast.parse!(dast_content, report_dast)
+    report_dast.merge!(report_dast)
+
+    { artifact_dast => report_dast, artifact_sast => report_sast }.each do |artifact, report|
+      scan = create(:security_scan, scan_type: artifact.job.name, build: artifact.job)
+
+      report.findings.each_with_index do |finding, index|
+        create(
+          :security_finding,
+          severity: finding.severity,
+          uuid: finding.uuid,
+          deduplicated: true,
+          scan: scan
+        )
+      end
+    end
+  end
 
   subject do
     post_graphql(query, current_user: user)

@@ -162,6 +162,12 @@ RSpec.describe 'Query.vulnerabilities.details', feature_category: :vulnerability
     )
   end
 
+  let(:expected_details) do
+    Gitlab::Json.parse(
+      File.read(Rails.root.join('ee/spec/fixtures/api/graphql/vulnerabilities/details_expectation.json'))
+    )
+  end
+
   subject { graphql_data.dig('vulnerabilities', 'nodes') }
 
   before do
@@ -169,12 +175,6 @@ RSpec.describe 'Query.vulnerabilities.details', feature_category: :vulnerability
     stub_licensed_features(security_dashboard: true)
 
     post_graphql(query, current_user: user)
-  end
-
-  let(:expected_details) do
-    Gitlab::Json.parse(
-      File.read(Rails.root.join('ee/spec/fixtures/api/graphql/vulnerabilities/details_expectation.json'))
-    )
   end
 
   it 'returns a vulnerability details' do
