@@ -48,6 +48,17 @@ RSpec.describe Gitlab::Geo::ModelMapper, feature_category: :geo_replication do
   end
 
   describe '.find_from_name' do
+    before do
+      # We remove the `Dummy` replicator from the list as it is not a valid Replicator we want to test
+      # It was causing flaky order-dependent test failures:
+      # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198143
+      allow(described_class).to receive(:list_of_available_models).and_return(
+        Gitlab::Geo::Replicator.subclasses
+          .reject { |r| r.name.include?('Dummy') }
+          .map(&:model)
+      )
+    end
+
     context 'when model name is valid' do
       where(:replicator) { Gitlab::Geo::Replicator.subclasses }
       with_them do
