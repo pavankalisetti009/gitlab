@@ -53,7 +53,7 @@ export const mockGetAgentFlowResponse = {
             __typename: 'DuoWorkflow',
             id: 'gid://gitlab/DuoWorkflow::Workflow/1',
             updatedAt: '2024-01-01T00:00:00Z',
-            firstCheckpoint: { checkpoint: mockAgentFlowCheckpoint },
+            latestCheckpoint: { checkpoint: mockAgentFlowCheckpoint },
             errors: null,
             humanStatus: 'running',
             workflowDefinition: 'software_development',

@@ -71,7 +71,7 @@ describe('DuoAgentsPlatformShow', () => {
         status: 'Running',
         agentFlowDefinition: 'Software development',
         agentFlowCheckpoint:
-          mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.firstCheckpoint
+          mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.latestCheckpoint
             .checkpoint,
       });
     });

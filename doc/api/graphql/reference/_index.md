@@ -27827,6 +27827,7 @@ GitLab Duo Agent Platform session.
 | <a id="duoworkflowhumanstatus"></a>`humanStatus` | [`String!`](#string) | Human-readable status of the session. |
 | <a id="duoworkflowid"></a>`id` | [`ID!`](#id) | ID of the session. |
 | <a id="duoworkflowlastexecutorlogsurl"></a>`lastExecutorLogsUrl` | [`String`](#string) | URL to the latest executor logs of the workflow. |
+| <a id="duoworkflowlatestcheckpoint"></a>`latestCheckpoint` | [`DuoWorkflowEvent`](#duoworkflowevent) | Latest checkpoint of the session. |
 | <a id="duoworkflowmcpenabled"></a>`mcpEnabled` | [`Boolean`](#boolean) | Has MCP been enabled for the namespace. |
 | <a id="duoworkflownamespace"></a>`namespace` | [`Namespace`](#namespace) | namespace that the session is in. |
 | <a id="duoworkflownamespaceid"></a>`namespaceId` | [`TypesNamespaceID`](#typesnamespaceid) | ID of the namespace. |

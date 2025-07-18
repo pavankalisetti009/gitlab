@@ -48,7 +48,7 @@ export default {
       return formatAgentDefinition(this.agentFlow?.workflowDefinition);
     },
     agentFlowCheckpoint() {
-      return this.agentFlow?.firstCheckpoint?.checkpoint || '';
+      return this.agentFlow?.latestCheckpoint?.checkpoint || '';
     },
   },
 };

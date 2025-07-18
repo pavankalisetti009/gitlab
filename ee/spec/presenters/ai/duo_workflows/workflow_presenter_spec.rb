@@ -78,4 +78,21 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowPresenter, feature_category: :duo_wor
       expect(presenter.first_checkpoint).to be_nil
     end
   end
+
+  describe 'latest_checkpoint' do
+    it 'returns the last checkpoint of the workflow' do
+      latest_checkpoint = instance_double(::Ai::DuoWorkflows::Checkpoint)
+      checkpoints = [instance_double(::Ai::DuoWorkflows::Checkpoint), latest_checkpoint]
+
+      allow(workflow).to receive(:checkpoints).and_return(checkpoints)
+
+      expect(presenter.latest_checkpoint).to eq(latest_checkpoint)
+    end
+
+    it 'returns nil when there are no checkpoints' do
+      allow(workflow).to receive(:checkpoints).and_return([])
+
+      expect(presenter.latest_checkpoint).to be_nil
+    end
+  end
 end

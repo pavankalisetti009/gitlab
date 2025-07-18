@@ -28,6 +28,10 @@ module Ai
       def first_checkpoint
         workflow.checkpoints.first
       end
+
+      def latest_checkpoint
+        workflow.checkpoints.last
+      end
     end
   end
 end
