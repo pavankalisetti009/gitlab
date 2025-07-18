@@ -47,14 +47,19 @@ module Security
       attr_reader :security_policy, :project, :user, :branch_name
 
       def log_bypass_audit!(type, id)
+        message = <<~MSG.squish
+          Branch push restriction on '#{branch_name}' for project '#{project.full_path}'
+          has been bypassed by #{type} with ID: #{id}
+        MSG
+
         Gitlab::Audit::Auditor.audit(
           name: "security_policy_#{type}_push_bypass",
           author: user,
-          scope: project,
+          scope: security_policy.security_policy_management_project,
           target: security_policy,
-          message:
-            "Blocked branch push is bypassed by security policy '#{security_policy.name}' for #{type} with ID: #{id}",
+          message: message,
           additional_details: {
+            project_id: project.id,
             security_policy_name: security_policy.name,
             security_policy_id: security_policy.id,
             branch_name: branch_name

@@ -30,8 +30,12 @@ RSpec.shared_examples 'audits security policy branch bypass' do
       expect { execute }.to change { AuditEvent.count }.by(1)
 
       event = AuditEvent.last
-      expect(event.details[:custom_message]).to include('Approvals bypassed by security policy')
-      expect(event.entity).to eq(merge_request.target_project)
+      merge_request_reference = "#{merge_request.project.full_path}!#{merge_request.iid}"
+      expect(event.details[:custom_message]).to eq(
+        "Approvals in merge request (#{merge_request_reference}) with source branch '#{merge_request.source_branch}' " \
+          "and target branch '#{merge_request.target_branch}' was bypassed by security policy"
+      )
+      expect(event.entity).to eq(security_policy.security_policy_management_project)
     end
   end
 
