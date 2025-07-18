@@ -1,58 +1,39 @@
 # frozen_string_literal: true
 
 module Projects
-  class RestoreService < BaseService
-    include Gitlab::Utils::StrongMemoize
-
-    DELETED_SUFFIX_REGEX = /
-      -
-      (#{Projects::MarkForDeletionService::LEGACY_DELETION_SCHEDULED_PATH_IDENTIFIER}
-        |#{Projects::MarkForDeletionService::DELETION_SCHEDULED_PATH_IDENTIFIER})
-      -
-      \d+\z
-    /x
-
-    UnauthorizedError = ServiceResponse.error(message: 'You are not authorized to perform this action')
-    NotMarkedForDeletionError = ServiceResponse.error(message: 'Project has not been marked for deletion')
-    DeletionInProgressError = ServiceResponse.error(message: 'Project deletion is in progress')
-
-    def execute
-      result = preconditions_checks
-      return result if result.error?
-
-      result = rename_resource
-
-      if result.success?
-        log_event
-
-        ## Trigger root namespace statistics refresh, to add project_statistics of
-        ## projects restored from deletion
-        Namespaces::ScheduleAggregationWorker.perform_async(project.namespace_id)
-      end
-
-      result
-    end
-
+  class RestoreService < ::Namespaces::RestoreBaseService
     private
 
-    def preconditions_checks
-      return UnauthorizedError unless can?(current_user, :remove_project, project)
-      return NotMarkedForDeletionError unless project.self_deletion_scheduled?
-      return DeletionInProgressError if project.self_deletion_in_progress?
+    def remove_permission
+      :remove_project
+    end
 
-      ServiceResponse.success
+    def resource_name
+      'project'
+    end
+
+    def execute_restore
+      rename_resource
+    end
+
+    def post_success
+      super
+
+      ## Trigger root namespace statistics refresh, to add project_statistics of
+      ## projects restored from deletion
+      Namespaces::ScheduleAggregationWorker.perform_async(resource.namespace_id)
     end
 
     def rename_resource
       ServiceResponse.from_legacy_hash(
         ::Projects::UpdateService.new(
-          project,
+          resource,
           current_user,
           {
             archived: false,
             hidden: false,
-            name: updated_value(project.name),
-            path: updated_value(project.path),
+            name: updated_value(resource.name),
+            path: updated_value(resource.path),
             remove_deletion_schedule: true,
             # These deletion parameters must be removed as part of https://gitlab.com/gitlab-org/gitlab/-/issues/492405
             marked_for_deletion_at: nil,
@@ -61,30 +42,5 @@ module Projects
         ).execute
       )
     end
-
-    def updated_value(value)
-      "#{original_value(value)}#{suffix}"
-    end
-
-    def original_value(value)
-      value.sub(DELETED_SUFFIX_REGEX, '')
-    end
-
-    def suffix
-      original_path_taken?(project) ? "-#{SecureRandom.alphanumeric(5)}" : ""
-    end
-    strong_memoize_attr :suffix
-
-    def original_path_taken?(project)
-      existing_project = ::Project.find_by_full_path(original_value(project.full_path))
-
-      existing_project.present? && existing_project.id != project.id
-    end
-
-    def log_event
-      log_info("User #{current_user.id} restored project #{project.full_path}")
-    end
   end
 end
-
-Projects::RestoreService.prepend_mod

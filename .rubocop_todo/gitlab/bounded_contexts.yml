@@ -3112,8 +3112,6 @@ Gitlab/BoundedContexts:
     - 'ee/app/services/ee/groups/group_links/update_service.rb'
     - 'ee/app/services/ee/groups/import_export/export_service.rb'
     - 'ee/app/services/ee/groups/import_export/import_service.rb'
-    - 'ee/app/services/ee/groups/mark_for_deletion_service.rb'
-    - 'ee/app/services/ee/groups/restore_service.rb'
     - 'ee/app/services/ee/groups/ssh_certificates/create_service.rb'
     - 'ee/app/services/ee/groups/ssh_certificates/destroy_service.rb'
     - 'ee/app/services/ee/groups/transfer_service.rb'

@@ -47,9 +47,7 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
       expect(group.deleting_user).to eq(user)
     end
 
-    it 'returns success' do
-      expect(result).to be_success
-    end
+    it { is_expected.to be_success }
 
     it 'renames group name' do
       expect { result }.to change {
@@ -80,6 +78,31 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
       result
     end
 
+    shared_examples 'handles failure gracefully' do
+      it 'returns error' do
+        expect(result).to be_error
+        expect(result.message).to eq('error message')
+      end
+
+      it 'does not send notification' do
+        expect(NotificationService).not_to receive(:new)
+
+        result
+      end
+    end
+
+    context 'when group renaming fails' do
+      before do
+        allow_next_instance_of(Groups::UpdateService) do |group_update_service|
+          allow(group_update_service).to receive(:execute).and_return(false)
+          allow(group).to receive_message_chain(:errors, :full_messages)
+            .and_return(['error message'])
+        end
+      end
+
+      it_behaves_like 'handles failure gracefully'
+    end
+
     context 'when deletion schedule creation fails' do
       before do
         group_deletion_schedule = instance_double(GroupDeletionSchedule)
@@ -89,16 +112,7 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
           .and_return(['error message'])
       end
 
-      it 'returns error' do
-        expect(result).to be_error
-        expect(result.errors).to eq(['error message'])
-      end
-
-      it 'does not send notification' do
-        expect(NotificationService).not_to receive(:new)
-
-        result
-      end
+      it_behaves_like 'handles failure gracefully'
     end
   end
 

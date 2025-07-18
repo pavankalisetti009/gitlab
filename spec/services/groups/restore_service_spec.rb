@@ -88,10 +88,29 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
           end
         end
 
-        context 'when restoring fails' do
-          it 'returns error' do
-            allow(group.deletion_schedule).to receive(:destroy).and_return(false)
+        context 'when group renaming fails' do
+          before do
+            allow_next_instance_of(Groups::UpdateService) do |group_update_service|
+              allow(group_update_service).to receive(:execute).and_return(false)
+              allow(group).to receive_message_chain(:errors, :full_messages)
+                .and_return(['error message'])
+            end
+          end
 
+          it 'returns error' do
+            result = execute
+
+            expect(result).to be_error
+            expect(result.message).to eq('error message')
+          end
+        end
+
+        context 'when deletion schedule destroy fails' do
+          before do
+            allow(group.deletion_schedule).to receive(:destroy).and_return(false)
+          end
+
+          it 'returns error' do
             result = execute
 
             expect(result).to be_error

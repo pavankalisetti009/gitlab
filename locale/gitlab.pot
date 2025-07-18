@@ -1691,9 +1691,6 @@ msgstr ""
 msgid "'%{group_name}' has been scheduled for deletion and will be deleted on %{date}."
 msgstr ""
 
-msgid "'%{group_name}' has been scheduled for removal on %{removal_time}."
-msgstr ""
-
 msgid "'%{level}' is not a valid visibility level"
 msgstr ""
 

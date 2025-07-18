@@ -20,32 +20,19 @@ module EE
         ServiceResponse.success
       end
 
-      override :log_event
-      def log_event
-        log_audit_event
-
-        super
+      def reject_security_policy_project_deletion?
+        security_configurations_preventing_project_deletion(resource).exists?
       end
 
-      def log_audit_event
-        audit_context = {
-          name: 'project_deletion_marked',
-          author: current_user,
-          scope: project,
-          target: project,
-          message: 'Project marked for deletion',
+      override :extra_log_audit_event_context
+      def extra_log_audit_event_context
+        {
           additional_details: {
-            project_id: project.id,
-            namespace_id: project.namespace_id,
-            root_namespace_id: project.root_namespace.id
+            project_id: resource.id,
+            namespace_id: resource.namespace_id,
+            root_namespace_id: resource.root_namespace.id
           }
         }
-
-        ::Gitlab::Audit::Auditor.audit(audit_context)
-      end
-
-      def reject_security_policy_project_deletion?
-        security_configurations_preventing_project_deletion(project).exists?
       end
     end
   end

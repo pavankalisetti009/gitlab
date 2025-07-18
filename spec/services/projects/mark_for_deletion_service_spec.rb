@@ -64,9 +64,7 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
       end
     end
 
-    it 'returns success' do
-      expect(result).to be_success
-    end
+    it { is_expected.to be_success }
 
     it 'renames project name' do
       expect { result }.to change {
