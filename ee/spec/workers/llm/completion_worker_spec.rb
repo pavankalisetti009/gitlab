@@ -35,7 +35,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
           user: user,
           resource: resource,
           request_id: 'uuid',
-          ai_action: ai_action_name,
+          ai_action: ai_action_name.to_s,
           thread: thread
         ),
         options
@@ -46,7 +46,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
 
     it 'calls Llm::Internal::CompletionService and tracks event' do
       expect_completion_service_call
-      expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
+      expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name.to_s)
 
       subject
 
@@ -62,7 +62,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
 
     it 'tracks user AI feature utilization' do
       expect_completion_service_call
-      expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
+      expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name.to_s)
       expect(Gitlab::Tracking::AiTracking).to receive(:track_user_activity).with(user)
 
       subject
@@ -71,7 +71,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
     context 'when warden.user.user.key is nil' do
       it 'simulates it' do
         expect_completion_service_call
-        expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
+        expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name.to_s)
 
         Gitlab::Session.with_session(session) do
           subject
@@ -83,13 +83,37 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
       context 'when sessionless' do
         it 'does nothing' do
           expect_completion_service_call
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
+          expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name.to_s)
 
           subject
 
           expect(Gitlab::Session.current).to eq(nil)
         end
       end
+    end
+  end
+
+  describe '.serialize_message' do
+    it 'returns a JSON-compatbile hash' do
+      serialized_message = described_class.serialize_message(prompt_message)
+
+      expect(serialized_message).to be_a(Hash)
+      expect(serialized_message['user']).to eq(user.to_gid.to_s)
+      expect(serialized_message['context']['resource']).to eq(resource.to_gid.to_s)
+      expect(serialized_message['context']['project']).to eq(project.to_gid.to_s)
+      expect(serialized_message['thread_id']).to eq(thread.id)
+      expect(serialized_message['ai_action']).to eq(ai_action_name.to_s)
+    end
+
+    it 'can serialize and deserialize message' do
+      serialized_message = described_class.serialize_message(prompt_message)
+      deserialized_message = described_class.send(:deserialize_message, serialized_message, options)
+
+      expect(deserialized_message).to be_a(Gitlab::Llm::AiMessage)
+      expect(deserialized_message.user).to eq(prompt_message.user)
+      expect(deserialized_message.resource).to eq(prompt_message.resource)
+      expect(deserialized_message.thread).to eq(prompt_message.thread)
+      expect(deserialized_message.ai_action).to eq(prompt_message.ai_action.to_s)
     end
   end
 
@@ -109,7 +133,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
         'ip_address_state' => ip_address,
         'args' => [
           hash_including("ai_action" => ai_action_name.to_s),
-          options
+          options.as_json
         ]
       )
     end
@@ -126,7 +150,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
         'set_session_id' => 'abc',
         'args' => [
           hash_including("ai_action" => ai_action_name.to_s),
-          options
+          options.as_json
         ]
       )
     end
