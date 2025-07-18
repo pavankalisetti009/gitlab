@@ -7,3 +7,5 @@ class ReindexMergeRequestsToUpdateIntegerWithLongType < Elastic::Migration
     %w[MergeRequest]
   end
 end
+
+ReindexMergeRequestsToUpdateIntegerWithLongType.prepend ::Search::Elastic::MigrationObsolete
