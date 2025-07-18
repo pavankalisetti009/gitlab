@@ -4,6 +4,8 @@ module Security
   module PolicyRule
     extend ActiveSupport::Concern
 
+    SUPPORTED_POLICY_TYPES = [:approval_policy, :scan_execution_policy, :vulnerability_management_policy].freeze
+
     def self.for_policy_type(policy_type)
       case policy_type
       when :approval_policy then Security::ApprovalPolicyRule

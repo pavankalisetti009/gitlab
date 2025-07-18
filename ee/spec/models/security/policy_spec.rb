@@ -328,6 +328,19 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           end
         end
       end
+
+      unless Security::PolicyRule::SUPPORTED_POLICY_TYPES.include?(policy_type.to_sym)
+        context 'when upserting with unsupported rules in policy hash' do
+          let(:upserted_policy) { policy_configuration.security_policies.last }
+          let(:policy_hash) { super().merge(rules: [{ type: 'pipeline', branches: [] }]) }
+
+          it 'creates the policy without policy rules and does not raise' do
+            expect { upsert! }.to change { policies.count }.by(1)
+            expect(upserted_policy.name).to eq(policy_hash[:name])
+            expect(upserted_rules.count).to be_zero
+          end
+        end
+      end
     end
 
     context "with approval policies" do
