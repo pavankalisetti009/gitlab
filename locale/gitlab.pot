@@ -47365,6 +47365,9 @@ msgstr ""
 msgid "Preferences|Dark color scheme"
 msgstr ""
 
+msgid "Preferences|Default GitLab Duo namespace"
+msgstr ""
+
 msgid "Preferences|Default text editor"
 msgstr ""
 
@@ -47411,6 +47414,9 @@ msgid "Preferences|Gitpod"
 msgstr ""
 
 msgid "Preferences|Homepage"
+msgstr ""
+
+msgid "Preferences|If you are assigned a GitLab Duo seat in multiple namespaces, you must select a default namespace."
 msgstr ""
 
 msgid "Preferences|Instead of all the files changed, show only one file at a time. To switch between files, use the file browser."

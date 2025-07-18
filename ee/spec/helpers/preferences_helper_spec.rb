@@ -116,16 +116,27 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
 
     subject { helper.user_duo_namespace_assignment_options }
 
-    before do
-      allow(user.user_preference).to receive(:eligible_duo_add_on_assignments)
-         .and_return([user_assignments.first, user_assignments.second])
+    context "when ai_model_switching flag is disabled" do
+      before do
+        stub_feature_flags(ai_model_switching: false)
+      end
+
+      it { is_expected.to match_array([]) }
     end
 
-    it 'returns an array of namespace name and user assignment id tuples' do
-      is_expected.to match_array([
-        ['Group 1', user_assignments.first.id],
-        ['Group 2', user_assignments.second.id]
-      ])
+    context "when ai_model_switching flag is enabled" do
+      before do
+        stub_feature_flags(ai_model_switching: true)
+        allow(user.user_preference).to receive(:eligible_duo_add_on_assignments)
+           .and_return([user_assignments.first, user_assignments.second])
+      end
+
+      it 'returns an array of namespace name and user assignment id tuples' do
+        is_expected.to match_array([
+          ['Group 1', user_assignments.first.id],
+          ['Group 2', user_assignments.second.id]
+        ])
+      end
     end
   end
 
