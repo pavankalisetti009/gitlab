@@ -35,7 +35,7 @@ describe('DuoWorkflowSettingsForm', () => {
 
   it('renders the help text correctly', () => {
     expect(findFormCheckbox().text()).toContain(
-      'Turn on MCP support for GitLab Duo Agentic Chat and GitLab Duo Workflow',
+      'Turn on MCP support for GitLab Duo Agentic Chat and GitLab Duo Agent Platform',
     );
   });
 

@@ -35,7 +35,7 @@ export default {
       <template #help>
         {{
           s__(
-            'DuoWorkflowSettings|Turn on MCP support for GitLab Duo Agentic Chat and GitLab Duo Workflow',
+            'DuoWorkflowSettings|Turn on MCP support for GitLab Duo Agentic Chat and GitLab Duo Agent Platform',
           )
         }}
       </template>
