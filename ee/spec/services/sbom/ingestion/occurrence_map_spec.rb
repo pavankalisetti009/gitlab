@@ -145,7 +145,7 @@ RSpec.describe Sbom::Ingestion::OccurrenceMap, feature_category: :dependency_man
 
   describe '#input_file_path' do
     context 'when component was found by trivy' do
-      let_it_be(:report_source) { build_stubbed(:ci_reports_sbom_source, :container_scanning) }
+      let_it_be(:report_source) { build_stubbed(:ci_reports_sbom_source, :container_scanning, image_tag: '5.1-1234') }
 
       subject(:input_file_path) { occurrence_map.input_file_path }
 
@@ -159,8 +159,7 @@ RSpec.describe Sbom::Ingestion::OccurrenceMap, feature_category: :dependency_man
         end
 
         it 'returns a container-image path' do
-          expect(input_file_path).to eq(
-            'container-image:photon:5.1-12345678')
+          expect(input_file_path).to eq('container-image:photon:5.1-1234')
         end
       end
 
@@ -177,7 +176,7 @@ RSpec.describe Sbom::Ingestion::OccurrenceMap, feature_category: :dependency_man
         end
 
         it 'returns a container-image path' do
-          expect(input_file_path).to eq('container-image:photon:5.1-12345678')
+          expect(input_file_path).to eq('container-image:photon:5.1-1234')
         end
       end
 
