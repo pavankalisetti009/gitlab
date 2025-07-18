@@ -6120,6 +6120,9 @@ msgstr ""
 msgid "AiPowered|Get started with GitLab Duo Core"
 msgstr ""
 
+msgid "AiPowered|GitLab Duo Agent Platform"
+msgstr ""
+
 msgid "AiPowered|GitLab Duo Agent Platform is now on for the instance and the service account (%{accountId}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups."
 msgstr ""
 
@@ -6139,9 +6142,6 @@ msgid "AiPowered|GitLab Duo Pro or Enterprise"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Self-Hosted"
-msgstr ""
-
-msgid "AiPowered|GitLab Duo Workflow"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Workflow has successfully been turned off."

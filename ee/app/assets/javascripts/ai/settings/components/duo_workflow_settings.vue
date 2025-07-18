@@ -125,7 +125,7 @@ export default {
     >
       <template #default>
         <h2 class="gl-heading-3 gl-mb-3 gl-font-bold">
-          {{ s__('AiPowered|GitLab Duo Workflow') }}
+          {{ s__('AiPowered|GitLab Duo Agent Platform') }}
         </h2>
 
         <h3 class="gl-font-lg gl-mb-3">
