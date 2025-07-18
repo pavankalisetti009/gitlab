@@ -17,6 +17,10 @@ module EE
       elastic_index_dependant_association :issues,
         on_change: [:due_date, :start_date],
         depends_on_finished_migration: :add_extra_fields_to_work_items
+
+      elastic_index_dependant_association :issues,
+        on_change: :state,
+        depends_on_finished_migration: :index_work_items_milestone_state
     end
 
     class_methods do

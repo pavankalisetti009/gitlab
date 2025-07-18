@@ -118,6 +118,7 @@ module Search
               milestone_id: { type: 'long' },
               milestone_start_date: { type: 'date' },
               milestone_due_date: { type: 'date' },
+              milestone_state: { type: 'keyword' },
               closed_at: { type: 'date' },
               weight: { type: 'integer' },
               health_status: { type: 'short' },
