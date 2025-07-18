@@ -16,6 +16,7 @@ const mockAgentFactory = (overrides = {}) => ({
   itemType: 'AGENT',
   description: 'A helpful AI assistant for testing purposes',
   createdAt: '2024-01-15T10:30:00Z',
+  public: true,
   __typename: TYPENAME_AI_CATALOG_ITEM,
   ...overrides,
 });
@@ -128,6 +129,7 @@ const mockFlowFactory = (overrides = {}) => ({
   itemType: 'FLOW',
   description: 'A helpful AI flow for testing purposes',
   createdAt: '2024-01-15T10:30:00Z',
+  public: true,
   versions: {
     nodes: mockFlowVersions,
   },
