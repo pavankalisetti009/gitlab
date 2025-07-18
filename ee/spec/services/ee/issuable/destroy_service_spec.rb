@@ -10,16 +10,16 @@ RSpec.describe Issuable::DestroyService, feature_category: :team_planning do
   describe '#execute' do
     context 'when destroying an epic' do
       let_it_be(:group) { create(:group) }
+      let_it_be(:label1) { create(:group_label, group: group) }
+      let_it_be(:label2) { create(:group_label, group: group) }
+
+      let_it_be(:epic, refind: true) { create(:epic, group: group, labels: [label1]) }
+      let_it_be(:work_item, refind: true) { epic.sync_object }
 
       context 'when deleting the epic' do
         context 'and deletes epic, epic work item and label links', :sidekiq_inline do
-          let_it_be(:label1) { create(:group_label, group: group) }
-          let_it_be(:label2) { create(:group_label, group: group) }
-          let_it_be(:epic) { create(:epic, group: group, labels: [label1]) }
-          let_it_be(:work_item) { epic.sync_object }
-
-          let_it_be(:issuable) { epic }
-          let_it_be(:sync_object) { work_item }
+          let(:issuable) { epic }
+          let(:sync_object) { work_item }
 
           before do
             sync_object.labels << label2
@@ -45,35 +45,20 @@ RSpec.describe Issuable::DestroyService, feature_category: :team_planning do
         end
 
         it_behaves_like 'service deleting todos' do
-          let_it_be(:label1) { create(:group_label, group: group) }
-          let_it_be(:label2) { create(:group_label, group: group) }
-          let_it_be(:epic) { create(:epic, group: group, labels: [label1]) }
-          let_it_be(:work_item) { epic.sync_object }
-
-          let_it_be(:issuable) { epic }
-          let_it_be(:sync_object) { work_item }
+          let(:issuable) { epic }
+          let(:sync_object) { work_item }
         end
 
         it_behaves_like 'service deleting label links' do
-          let_it_be(:label1) { create(:group_label, group: group) }
-          let_it_be(:label2) { create(:group_label, group: group) }
-          let_it_be(:epic) { create(:epic, group: group, labels: [label1]) }
-          let_it_be(:work_item) { epic.sync_object }
-
-          let_it_be(:issuable) { epic }
-          let_it_be(:sync_object) { work_item }
+          let(:issuable) { epic }
+          let(:sync_object) { work_item }
         end
       end
 
       context 'when deleting the epic work item' do
         context 'and deletes epic, epic work item and label links', :sidekiq_inline do
-          let_it_be(:label1) { create(:group_label, group: group) }
-          let_it_be(:label2) { create(:group_label, group: group) }
-          let_it_be(:epic) { create(:epic, group: group, labels: [label1]) }
-          let_it_be(:work_item) { epic.sync_object }
-
-          let_it_be(:issuable) { work_item.reload }
-          let_it_be(:sync_object) { epic.reload }
+          let(:issuable) { work_item }
+          let(:sync_object) { epic }
 
           before do
             sync_object.labels << label2
@@ -92,23 +77,13 @@ RSpec.describe Issuable::DestroyService, feature_category: :team_planning do
         end
 
         it_behaves_like 'service deleting todos' do
-          let_it_be(:label1) { create(:group_label, group: group) }
-          let_it_be(:label2) { create(:group_label, group: group) }
-          let_it_be(:epic) { create(:epic, group: group, labels: [label1]) }
-          let_it_be(:work_item) { epic.sync_object }
-
-          let_it_be(:issuable) { work_item.reload }
-          let_it_be(:sync_object) { epic.reload }
+          let(:issuable) { work_item }
+          let(:sync_object) { epic }
         end
 
         it_behaves_like 'service deleting label links' do
-          let_it_be(:label1) { create(:group_label, group: group) }
-          let_it_be(:label2) { create(:group_label, group: group) }
-          let_it_be(:epic) { create(:epic, group: group, labels: [label1]) }
-          let_it_be(:work_item) { epic.sync_object }
-
-          let_it_be(:issuable) { work_item.reload }
-          let_it_be(:sync_object) { epic.reload }
+          let(:issuable) { work_item }
+          let(:sync_object) { epic }
         end
       end
 
