@@ -34,6 +34,8 @@ module EE
     end
 
     def user_duo_namespace_assignment_options
+      return [] unless ::Feature.enabled?(:ai_model_switching, current_user)
+
       duo_namespace_add_on_assignments = current_user.user_preference.eligible_duo_add_on_assignments
 
       duo_namespace_add_on_assignments.map do |duo_namespace_add_on_assignment|
