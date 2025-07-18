@@ -6,14 +6,14 @@ FactoryBot.define do
     class: '::Security::PipelineExecutionPolicy::Config'
   ) do
     policy factory: :pipeline_execution_policy
-    policy_project_id { 123456 }
+    policy_config factory: :security_orchestration_policy_configuration, security_policy_management_project_id: 123456
     policy_index { 0 }
 
     skip_create
     initialize_with do
       policy = attributes[:policy]
       policy[:content] = attributes[:content] if attributes[:content].present?
-      new(policy: policy, policy_project_id: attributes[:policy_project_id], policy_index: attributes[:policy_index])
+      new(policy: policy, policy_config: attributes[:policy_config], policy_index: attributes[:policy_index])
     end
 
     trait :override_project_ci do

@@ -21,9 +21,9 @@ module Gitlab
           applicable_execution_policies_by_hierarchy
             .first(policy_limit)
             .reverse # reverse the order to apply the policy highest in the hierarchy as last
-            .map do |(policy, policy_project_id, index)|
+            .map do |(policy, config, index)|
               ::Security::PipelineExecutionPolicy::Config.new(
-                policy: policy, policy_project_id: policy_project_id, policy_index: index)
+                policy: policy, policy_config: config, policy_index: index)
             end
         end
 
@@ -36,7 +36,7 @@ module Gitlab
             config.active_pipeline_execution_policies.filter_map.with_index do |policy, index|
               next unless policy_scope_checker.policy_applicable?(policy)
 
-              [policy, config.security_policy_management_project_id, index]
+              [policy, config, index]
             end
           end
         end
