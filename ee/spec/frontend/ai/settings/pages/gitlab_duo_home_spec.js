@@ -147,9 +147,14 @@ describe('GitLab Duo Home', () => {
         expect(findDuoCoreUpgradeCard().exists()).toBe(true);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
       });
+    });
+
+    describe('when showDuoWorkflowSettings is true', () => {
+      beforeEach(() => {
+        createComponent({ showDuoWorkflowSettings: true });
+      });
 
       it('renders DuoWorkflowSettings', () => {
-        createComponent({ showDuoWorkflowSettings: true });
         expect(findDuoWorkflowSettings().exists()).toBe(true);
       });
     });

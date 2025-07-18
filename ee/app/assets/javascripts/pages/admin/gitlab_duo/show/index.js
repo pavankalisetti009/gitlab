@@ -81,6 +81,7 @@ export function mountGitlabDuoHomeApp() {
       duoWorkflowSettingsPath,
       redirectPath,
       duoWorkflowDisablePath,
+      showDuoWorkflowSettings: true,
     },
     render: (h) => h(GitlabDuoHome),
   });
