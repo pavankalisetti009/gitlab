@@ -8,7 +8,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Gitlab::Fp::Result]
       def self.update(context)
-        context => { agent: Clusters::Agent => agent, config: Hash => raw_config_from_params }
+        context => { agent: Clusters::Agent => agent, config: Hash => raw_config_from_params, logger: logger }
         config = raw_config_from_params.deep_symbolize_keys
         config_from_agent_config_file = config[:remote_development]
 
@@ -25,7 +25,14 @@ module RemoteDevelopment
 
         model_errors = workspaces_agent_config.errors unless workspaces_agent_config.save
 
-        return Gitlab::Fp::Result.err(AgentConfigUpdateFailed.new({ errors: model_errors })) if model_errors.present?
+        if model_errors.present?
+          logger.warn(
+            message: "Failed to save agent configuration file",
+            agent_id: agent.id,
+            error: model_errors.full_messages.join(', ')
+          )
+          return Gitlab::Fp::Result.err(AgentConfigUpdateFailed.new({ errors: model_errors }))
+        end
 
         Gitlab::Fp::Result.ok(
           AgentConfigUpdateSuccessful.new({ workspaces_agent_config: workspaces_agent_config })

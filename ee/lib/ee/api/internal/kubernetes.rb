@@ -73,6 +73,8 @@ module EE
               before { check_agent_token }
 
               namespace 'modules/remote_development' do
+                before  { set_agent_on_context(agent: agent) }
+
                 desc 'GET remote development prerequisites request' do
                   detail 'Remote development prerequisites request'
                 end
