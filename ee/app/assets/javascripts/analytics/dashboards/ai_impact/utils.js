@@ -9,12 +9,7 @@ import {
 } from '~/lib/utils/datetime_utility';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import { formatMetric, percentChange, isMetricInTimePeriods } from '../utils';
-import {
-  AI_IMPACT_TABLE_METRICS,
-  SUPPORTED_DORA_METRICS,
-  SUPPORTED_FLOW_METRICS,
-  SUPPORTED_VULNERABILITY_METRICS,
-} from './constants';
+import { AI_IMPACT_TABLE_METRICS } from './constants';
 
 const getColumnKeyForMonth = (monthsAgo) => `${monthsAgo}-months-ago`;
 const getStartOfMonth = (now) => dateAtFirstDayOfMonth(getStartOfDay(now));
@@ -198,39 +193,6 @@ export const calculateRate = ({ numerator, denominator }) => {
   if (!hasValidCounts) return null;
 
   return (numerator / denominator) * 100;
-};
-
-/**
- * @typedef {Object} Permissions
- * @property {Boolean} readDora4Analytics
- * @property {Boolean} readCycleAnalytics
- * @property {Boolean} readSecurityResource
- */
-
-/**
- * Determines the metrics that should not be rendered in the comparison table due to
- * lack of permissions. The returned list will be mutually exclusive from the metrics
- * already excluded from the table (`exludeMetrics`)
- *
- * @param {Array} excludeMetrics List of metric identifiers that are already removed
- * @param {Permissions}
- * @returns {Array} The metrics restricted due to lack of permissions
- */
-export const getRestrictedTableMetrics = (
-  excludeMetrics,
-  { readDora4Analytics, readCycleAnalytics, readSecurityResource },
-) => {
-  const restricted = [
-    [SUPPORTED_DORA_METRICS, readDora4Analytics],
-    [SUPPORTED_FLOW_METRICS, readCycleAnalytics],
-    [SUPPORTED_VULNERABILITY_METRICS, readSecurityResource],
-  ].reduce((restrictedMetrics, [metrics, isAllowed]) => {
-    return isAllowed ? restrictedMetrics : [...restrictedMetrics, ...metrics];
-  }, []);
-
-  // Excluded/restricted metric sets should be mutually exclusive,
-  // so we need to remove any overlap.
-  return restricted.filter((metric) => !excludeMetrics.includes(metric));
 };
 
 /**

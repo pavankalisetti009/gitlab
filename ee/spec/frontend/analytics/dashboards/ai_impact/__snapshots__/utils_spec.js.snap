@@ -146,22 +146,22 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
   {
     "invertTrendColor": undefined,
     "metric": {
-      "identifier": "contributor_count",
-      "value": "Contributor count",
+      "identifier": "deployment_frequency",
+      "value": "Deployment frequency",
     },
   },
   {
     "invertTrendColor": true,
     "metric": {
-      "identifier": "vulnerability_critical",
-      "value": "Critical vulnerabilities over time",
+      "identifier": "lead_time_for_changes",
+      "value": "Lead time for changes",
     },
   },
   {
-    "invertTrendColor": undefined,
+    "invertTrendColor": true,
     "metric": {
-      "identifier": "deployment_frequency",
-      "value": "Deployment frequency",
+      "identifier": "time_to_restore_service",
+      "value": "Time to restore service",
     },
   },
   {
@@ -174,15 +174,43 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
   {
     "invertTrendColor": true,
     "metric": {
-      "identifier": "cycle_time",
-      "value": "Cycle time",
+      "identifier": "lead_time",
+      "value": "Lead time",
     },
   },
   {
     "invertTrendColor": true,
     "metric": {
-      "identifier": "lead_time",
-      "value": "Lead time",
+      "identifier": "cycle_time",
+      "value": "Cycle time",
+    },
+  },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "issues",
+      "value": "Issues created",
+    },
+  },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "issues_completed",
+      "value": "Issues closed",
+    },
+  },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "deploys",
+      "value": "Deploys",
+    },
+  },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "merge_request_throughput",
+      "value": "Merge request throughput",
     },
   },
   {
@@ -195,8 +223,22 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
   {
     "invertTrendColor": undefined,
     "metric": {
-      "identifier": "merge_request_throughput",
-      "value": "Merge request throughput",
+      "identifier": "contributor_count",
+      "value": "Contributor count",
+    },
+  },
+  {
+    "invertTrendColor": true,
+    "metric": {
+      "identifier": "vulnerability_critical",
+      "value": "Critical vulnerabilities over time",
+    },
+  },
+  {
+    "invertTrendColor": true,
+    "metric": {
+      "identifier": "vulnerability_high",
+      "value": "High vulnerabilities over time",
     },
   },
   {

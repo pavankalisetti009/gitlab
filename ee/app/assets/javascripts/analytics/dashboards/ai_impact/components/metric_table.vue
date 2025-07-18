@@ -16,10 +16,10 @@ import { dasherize } from '~/lib/utils/text_utility';
 import { formatNumber } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
+import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
-import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
-import FlowMetricsQuery from '../graphql/flow_metrics.query.graphql';
-import DoraMetricsQuery from '../graphql/dora_metrics.query.graphql';
+import VulnerabilitiesQuery from '../../graphql/vulnerabilities.query.graphql';
 import AiMetricsQuery from '../graphql/ai_metrics.query.graphql';
 import MergeRequestsQuery from '../../graphql/merge_requests.query.graphql';
 import ContributorCountQuery from '../../graphql/contributor_count.query.graphql';
@@ -27,6 +27,11 @@ import { MERGE_REQUESTS_STATE_MERGED } from '../../graphql/constants';
 import MetricTableCell from '../../components/metric_table_cell.vue';
 import TrendIndicator from '../../components/trend_indicator.vue';
 import {
+  SUPPORTED_DORA_METRICS,
+  SUPPORTED_VULNERABILITY_METRICS,
+  SUPPORTED_CONTRIBUTOR_METRICS,
+  SUPPORTED_MERGE_REQUEST_METRICS,
+  SUPPORTED_FLOW_METRICS,
   DASHBOARD_LOADING_FAILURE,
   RESTRICTED_METRIC_ERROR,
   CHART_LOADING_FAILURE,
@@ -38,6 +43,7 @@ import {
   generateValueStreamDashboardStartDate,
   generateChartTimePeriods,
   generateSparklineCharts,
+  getRestrictedTableMetrics,
   formatMetric,
 } from '../../utils';
 import {
@@ -45,15 +51,9 @@ import {
   generateTableColumns,
   generateSkeletonTableData,
   generateTableRows,
-  getRestrictedTableMetrics,
   generateTableAlerts,
 } from '../utils';
 import {
-  SUPPORTED_DORA_METRICS,
-  SUPPORTED_FLOW_METRICS,
-  SUPPORTED_MERGE_REQUEST_METRICS,
-  SUPPORTED_VULNERABILITY_METRICS,
-  SUPPORTED_CONTRIBUTOR_METRICS,
   SUPPORTED_AI_METRICS,
   HIDE_METRIC_DRILL_DOWN,
   AI_IMPACT_TABLE_METRICS,

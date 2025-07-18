@@ -1,3 +1,4 @@
+import { SUPPORTED_DORA_METRICS, SUPPORTED_FLOW_METRICS } from 'ee/analytics/dashboards/constants';
 import {
   generateDateRanges,
   generateTableColumns,
@@ -5,15 +6,9 @@ import {
   calculateChange,
   generateTableRows,
   calculateRate,
-  getRestrictedTableMetrics,
   generateTableAlerts,
   generateMetricTableTooltip,
 } from 'ee/analytics/dashboards/ai_impact/utils';
-import {
-  SUPPORTED_DORA_METRICS,
-  SUPPORTED_FLOW_METRICS,
-  SUPPORTED_VULNERABILITY_METRICS,
-} from 'ee/analytics/dashboards/ai_impact/constants';
 import { mockTimePeriods } from './mock_data';
 
 describe('AI impact Dashboard utils', () => {
@@ -93,32 +88,6 @@ describe('AI impact Dashboard utils', () => {
     });
   });
 
-  describe('getRestrictedTableMetrics', () => {
-    it('restricts DORA metrics when the permission is disabled', () => {
-      const permissions = { readCycleAnalytics: true, readSecurityResource: true };
-      expect(getRestrictedTableMetrics([], permissions)).toEqual(SUPPORTED_DORA_METRICS);
-    });
-
-    it('restricts flow metrics when the permission is disabled', () => {
-      const permissions = { readDora4Analytics: true, readSecurityResource: true };
-      expect(getRestrictedTableMetrics([], permissions)).toEqual(SUPPORTED_FLOW_METRICS);
-    });
-
-    it('restricts vulnerability metrics when the permission is disabled', () => {
-      const permissions = { readDora4Analytics: true, readCycleAnalytics: true };
-      expect(getRestrictedTableMetrics([], permissions)).toEqual(SUPPORTED_VULNERABILITY_METRICS);
-    });
-
-    it('does not restrict metrics that are already excluded', () => {
-      const excludeMetrics = SUPPORTED_DORA_METRICS.slice(1);
-      expect(getRestrictedTableMetrics(excludeMetrics, {})).toEqual([
-        SUPPORTED_DORA_METRICS[0],
-        ...SUPPORTED_FLOW_METRICS,
-        ...SUPPORTED_VULNERABILITY_METRICS,
-      ]);
-    });
-  });
-
   describe('generateTableAlerts', () => {
     it('returns the list of alerts that have associated metrics', () => {
       const errors = 'errors';
@@ -130,8 +99,8 @@ describe('AI impact Dashboard utils', () => {
           ['no error', []],
         ]),
       ).toEqual([
-        `${errors}: Cycle time, Lead time, Median time to merge`,
-        `${warnings}: Deployment frequency, Change failure rate`,
+        `${errors}: Lead time, Cycle time, Issues created, Issues closed, Deploys, Median time to merge`,
+        `${warnings}: Deployment frequency, Lead time for changes, Time to restore service, Change failure rate`,
       ]);
     });
   });

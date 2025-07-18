@@ -1,6 +1,6 @@
 export const mockDoraMetricsResponse = (values = []) =>
   values.reduce(
-    (acc, { deploymentFrequency, changeFailureRate }) =>
+    (acc, { deploymentFrequency, changeFailureRate, leadTimeForChanges, timeToRestoreService }) =>
       acc.mockResolvedValueOnce({
         data: {
           project: null,
@@ -12,6 +12,8 @@ export const mockDoraMetricsResponse = (values = []) =>
                   date: null,
                   deployment_frequency: deploymentFrequency,
                   change_failure_rate: changeFailureRate,
+                  lead_time_for_changes: leadTimeForChanges,
+                  time_to_restore_service: timeToRestoreService,
                   __typename: 'DoraMetric',
                 },
               ],
@@ -25,7 +27,7 @@ export const mockDoraMetricsResponse = (values = []) =>
 
 export const mockFlowMetricsResponse = (values = []) =>
   values.reduce(
-    (acc, { cycleTime, leadTime, medianTimeToMerge }) =>
+    (acc, { cycleTime, leadTime, issues, issuesCompleted, deploys, medianTimeToMerge }) =>
       acc.mockResolvedValueOnce({
         data: {
           project: null,
@@ -63,6 +65,30 @@ export const mockFlowMetricsResponse = (values = []) =>
                 title: 'Lead time',
                 __typename: 'ValueStreamAnalyticsMetric',
               },
+              issues: {
+                unit: 'count',
+                value: issues,
+                identifier: 'issues',
+                links: [],
+                title: 'Issues created',
+                __typename: 'ValueStreamAnalyticsMetric',
+              },
+              issues_completed: {
+                unit: 'count',
+                value: issuesCompleted,
+                identifier: 'issues_completed',
+                links: [],
+                title: 'Issues completed',
+                __typename: 'ValueStreamAnalyticsMetric',
+              },
+              deploys: {
+                unit: 'count',
+                value: deploys,
+                identifier: 'deploys',
+                links: [],
+                title: 'Deploys',
+                __typename: 'ValueStreamAnalyticsMetric',
+              },
               median_time_to_merge: {
                 unit: 'days',
                 value: medianTimeToMerge,
@@ -96,7 +122,7 @@ export const mockFlowMetricsResponse = (values = []) =>
 
 export const mockVulnerabilityMetricsResponse = (values = []) =>
   values.reduce(
-    (acc, { criticalVulnerabilities }) =>
+    (acc, { criticalVulnerabilities, highVulnerabilities }) =>
       acc.mockResolvedValueOnce({
         data: {
           project: null,
@@ -107,6 +133,7 @@ export const mockVulnerabilityMetricsResponse = (values = []) =>
                 {
                   date: null,
                   critical: criticalVulnerabilities,
+                  high: highVulnerabilities,
                 },
               ],
             },
