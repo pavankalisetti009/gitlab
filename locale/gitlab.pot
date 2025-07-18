@@ -16136,6 +16136,9 @@ msgstr ""
 msgid "ComplianceReport|Action"
 msgstr ""
 
+msgid "ComplianceReport|Activity"
+msgstr ""
+
 msgid "ComplianceReport|All frameworks"
 msgstr ""
 
@@ -22836,7 +22839,7 @@ msgstr ""
 msgid "Details block"
 msgstr ""
 
-msgid "Details of vio-%{violationId}"
+msgid "Details of violation-%{violationId}"
 msgstr ""
 
 msgid "Detect host keys"
