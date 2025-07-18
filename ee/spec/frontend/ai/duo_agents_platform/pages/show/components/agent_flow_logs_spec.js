@@ -1,6 +1,6 @@
 import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { AgentMessage, SystemMessage } from '@gitlab/duo-ui';
+import { MessageMap } from '@gitlab/duo-ui';
 import { createAlert } from '~/alert';
 import AgentFlowLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_logs.vue';
 import { mockAgentFlowCheckpoint } from '../../../../mocks';
@@ -20,8 +20,7 @@ describe('AgentFlowLogs', () => {
     });
   };
 
-  const findAllToolMessages = () => wrapper.findAllComponents(SystemMessage);
-  const findAllAgentMessages = () => wrapper.findAllComponents(AgentMessage);
+  const findAllMessages = () => wrapper.findAllComponents(MessageMap);
 
   describe('when loading', () => {
     beforeEach(() => {
@@ -60,19 +59,16 @@ describe('AgentFlowLogs', () => {
 
     it('displays all messages in the ui_chat_log', () => {
       // There are 4 tool calls in the mocks
-      expect(findAllToolMessages()).toHaveLength(4);
-      // There are 2 agents calls in the mocks
-      expect(findAllAgentMessages()).toHaveLength(2);
-      expect(findAllAgentMessages().at(0).props().message).toEqual({
+      expect(findAllMessages()).toHaveLength(6);
+      expect(findAllMessages().at(0).props().message).toEqual({
         additional_context: null,
-        content:
-          'I\'ll help you explore the GitLab project to understand the context for "Hello world in JS". Let me start by checking the current working directory and gathering information about the project structure.',
+        content: 'Starting workflow with goal: Hello world i nJS',
         context_elements: null,
         correlation_id: null,
         message_sub_type: null,
-        message_type: 'agent',
+        message_type: 'tool',
         status: 'success',
-        timestamp: '2025-07-03T13:24:18.019182+00:00',
+        timestamp: '2025-07-03T13:24:14.467716+00:00',
         tool_info: null,
       });
     });

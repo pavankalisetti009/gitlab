@@ -1,12 +1,13 @@
 <script>
-import { AgentMessage as DuoAgentMessage, SystemMessage as DuoSystemMessage } from '@gitlab/duo-ui';
+import { MessageMap } from '@gitlab/duo-ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 
-import { AGENT_MESSAGE_TYPE } from '../../../constants';
-
 export default {
   name: 'AgentFlowLogs',
+  components: {
+    MessageMap,
+  },
   props: {
     isLoading: {
       type: Boolean,
@@ -37,11 +38,6 @@ export default {
       return this.parsedCheckpoint?.channel_values?.ui_chat_log || [];
     },
   },
-  methods: {
-    messageComponent(log) {
-      return log?.message_type === AGENT_MESSAGE_TYPE ? DuoAgentMessage : DuoSystemMessage;
-    },
-  },
 };
 </script>
 <template>
@@ -53,7 +49,7 @@ export default {
         s__('DuoAgentsPlatform|No logs available yet.')
       }}</template>
       <template v-else>
-        <component :is="messageComponent(log)" v-for="log in logs" :key="log.id" :message="log" />
+        <message-map v-for="log in logs" :key="log.id" :message="log" />
       </template>
     </div>
   </div>
