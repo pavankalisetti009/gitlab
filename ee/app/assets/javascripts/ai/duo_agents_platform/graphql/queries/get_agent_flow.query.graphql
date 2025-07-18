@@ -5,7 +5,7 @@ query getAgentFlow($workflowId: AiDuoWorkflowsWorkflowID!) {
     edges {
       node {
         ...FlowFragment
-        firstCheckpoint {
+        latestCheckpoint {
           checkpoint
         }
       }
