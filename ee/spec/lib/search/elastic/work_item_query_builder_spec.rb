@@ -640,6 +640,54 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+
+    describe 'weight' do
+      before do
+        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
+      end
+
+      it 'does not apply weight filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:weight
+            filters:not_weight
+            filters:none_weight
+            filters:any_weight
+          ])
+      end
+
+      context 'when weight option is provided' do
+        let(:options) { base_options.merge(weight: 3) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:weight])
+        end
+      end
+
+      context 'when not_weight option is provided' do
+        let(:options) { base_options.merge(not_weight: 2) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_weight])
+        end
+      end
+
+      context 'when none_weight option is provided' do
+        let(:options) { base_options.merge(none_weight: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:none_weight])
+        end
+      end
+
+      context 'when any_weight option is provided' do
+        let(:options) { base_options.merge(any_weight: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:any_weight])
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'

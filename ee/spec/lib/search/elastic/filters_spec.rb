@@ -3771,4 +3771,78 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it_behaves_like 'adds filter to query_hash'
     end
   end
+
+  describe '.by_weight' do
+    subject(:by_weight) { described_class.by_weight(query_hash: query_hash, options: options) }
+
+    context 'when all weight options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:weight] is provided' do
+      let(:options) { { weight: 3 } }
+      let(:expected_filter) do
+        [{
+          term: {
+            weight: {
+              _name: 'filters:weight',
+              value: 3
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:not_weight] is provided' do
+      let(:options) { { not_weight: 2 } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            must_not: {
+              term: {
+                weight: {
+                  _name: 'filters:not_weight',
+                  value: 2
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:any_weight] is provided' do
+      let(:options) { { any_weight: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:any_weight',
+            must: { exists: { field: 'weight' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:none_weight] is provided' do
+      let(:options) { { none_weight: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:none_weight',
+            must_not: { exists: { field: 'weight' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
 end

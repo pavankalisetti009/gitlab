@@ -50,6 +50,10 @@ module Search
           or_assignee_ids
           none_assignees
           any_assignees
+          weight
+          not_weight
+          none_weight
+          any_weight
         ].freeze
 
         override :serialize
