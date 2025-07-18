@@ -22,7 +22,7 @@ module Llm
           hash['context']['project'] = project.to_gid if project
           hash['context']['resource'] &&= hash['context']['resource'].to_gid
           hash['thread_id'] = hash['thread'].id if hash['thread']
-        end
+        end.as_json
       end
 
       def deserialize_message(message_hash, options)
@@ -45,7 +45,7 @@ module Llm
         # set SESSION_ID_HASH_KEY to ensure inside Sidekiq `Gitlab::Session.current` is not nil
         with_ip_address_state.set(
           Gitlab::SidekiqMiddleware::SetSession::Server::SESSION_ID_HASH_KEY => ::Gitlab::Session.session_id_for_worker
-        ).perform_async(serialize_message(message), options)
+        ).perform_async(serialize_message(message), options.as_json)
       end
 
       def resource(message_hash)
