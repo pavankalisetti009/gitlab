@@ -30,6 +30,14 @@ module Security
 
       def run_tasks_in_sec_db
         ::SecApplicationRecord.transaction do
+          project = pipeline&.project
+
+          feature_enabled = Feature.enabled?(:turn_off_vulnerability_read_create_db_trigger_function,
+            project || :instance)
+
+          ::SecApplicationRecord.connection.execute("SELECT set_config(
+          'vulnerability_management.dont_execute_db_trigger', '#{feature_enabled}', true);")
+
           self.class::SEC_DB_TASKS.each { |task| execute_task(task) }
         end
       end
