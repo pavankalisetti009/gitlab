@@ -15,23 +15,18 @@ RSpec.describe 'Zoekt search', :js, :disable_rate_limiter, :zoekt_settings_enabl
   before_all do
     group.add_owner(user)
     group2.add_owner(user)
-  end
-
-  before do
     zoekt_ensure_project_indexed!(project1)
     zoekt_ensure_project_indexed!(project2)
     zoekt_ensure_project_indexed!(project3)
+  end
 
+  before do
     sign_in(user)
     visit(search_path)
     wait_for_requests
     choose_group(group)
     select_search_scope(_('Code'))
     wait_for_all_requests
-  end
-
-  after do
-    zoekt_truncate_index!
   end
 
   shared_examples 'zoekt search results' do |result_count|
