@@ -244,8 +244,19 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
 
         it_behaves_like 'triggers policy bot comment', false
 
-        it 'updates violation status' do
-          expect { execute }.to change { violation.reload.status }.from('running').to('failed')
+        it 'removes violations' do
+          expect { execute }.to change { Security::ScanResultPolicyViolation.exists?(violation.id) }
+                                  .from(true).to(false)
+        end
+
+        context 'with feature disabled' do
+          before do
+            stub_feature_flags(merge_request_approval_policies_inapplicable_rule_evaluation: false)
+          end
+
+          it 'updates violation status' do
+            expect { execute }.to change { violation.reload.status }.from('running').to('failed')
+          end
         end
       end
     end

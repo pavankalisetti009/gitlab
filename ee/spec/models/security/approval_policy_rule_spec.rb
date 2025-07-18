@@ -203,10 +203,15 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
     let(:target_branch) { 'main' }
     let(:default_branch) { 'master' }
 
+    let_it_be(:project) { build_stubbed(:project) }
     let_it_be(:security_policy) { create(:security_policy) }
 
+    before do
+      allow(project).to receive(:default_branch).and_return(default_branch)
+    end
+
     subject(:policy_applies_to_target_branch?) do
-      approval_policy_rule.policy_applies_to_target_branch?(target_branch, default_branch)
+      approval_policy_rule.policy_applies_to_target_branch?(target_branch, project)
     end
 
     context 'with `branches`' do
@@ -259,7 +264,21 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
       context 'with `protected`' do
         let(:branch_type) { 'protected' }
 
-        it { is_expected.to be(true) }
+        before do
+          allow(ProtectedBranch).to receive(:protected?).with(project, target_branch).and_return(branch_protected?)
+        end
+
+        context 'with protected branch' do
+          let(:branch_protected?) { true }
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'with unprotected branch' do
+          let(:branch_protected?) { false }
+
+          it { is_expected.to be(false) }
+        end
       end
     end
   end

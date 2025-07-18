@@ -43,12 +43,12 @@ module Security
       typed_content['license_types']
     end
 
-    def policy_applies_to_target_branch?(target_branch, default_branch)
+    def policy_applies_to_target_branch?(target_branch, project)
       branches, branch_type = content.values_at("branches", "branch_type")
 
       return branches_apply_to_target_branch?(target_branch, branches) if branches
 
-      branch_type_applies_to_target_branch?(target_branch, branch_type, default_branch)
+      branch_type_applies_to_target_branch?(target_branch, branch_type, project)
     end
 
     def branches_exempted_by_policy?(source_branch, target_branch)
@@ -76,10 +76,12 @@ module Security
       end
     end
 
-    def branch_type_applies_to_target_branch?(target_branch, branch_type, default_branch)
-      return true unless branch_type == 'default'
-
-      target_branch == default_branch
+    def branch_type_applies_to_target_branch?(target_branch, branch_type, project)
+      if branch_type == 'default'
+        target_branch == project.default_branch
+      else # MRAP's `branch_type` only support `default` or `protected`
+        ::ProtectedBranch.protected?(project, target_branch)
+      end
     end
 
     def branch_matches_exception?(branch, exception)

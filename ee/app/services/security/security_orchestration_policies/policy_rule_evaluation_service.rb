@@ -63,6 +63,7 @@ module Security
       delegate :project, to: :merge_request
 
       def excluded?(rule)
+        return true unless rule_applies_to_target_branch?(rule)
         return false unless rule.scan_result_policy_read&.unblock_rules_using_execution_policies?
         return false unless rule_excludable?(rule)
 
@@ -72,6 +73,15 @@ module Security
         end
 
         false
+      end
+
+      def rule_applies_to_target_branch?(rule)
+        if ::Feature.disabled?(
+          :merge_request_approval_policies_inapplicable_rule_evaluation, merge_request.project)
+          return true
+        end
+
+        rule.applicable_to_branch?(merge_request.target_branch)
       end
 
       def process_default_behaviour(rule)

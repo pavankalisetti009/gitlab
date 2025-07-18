@@ -770,6 +770,22 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
           end
         end
 
+        context 'with `protected` branch type' do
+          let(:branch_type) { 'protected' }
+
+          context 'when MR targets protected branch' do
+            it { is_expected.to be(true) }
+          end
+
+          context 'when MR targets unprotected branch' do
+            before do
+              merge_request.update!(target_branch: "unprotected")
+            end
+
+            it { is_expected.to be(false) }
+          end
+        end
+
         context 'with `default` branch type' do
           let(:branch_type) { 'default' }
 

@@ -157,6 +157,49 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
       end
 
       context 'when rule is excluded' do
+        context 'when security policy does not apply to target branch' do
+          let_it_be(:security_policy) { create(:security_policy) }
+
+          let_it_be(:approval_policy_rule) do
+            build(:approval_policy_rule, :scan_finding, security_policy: security_policy) do |policy_rule|
+              policy_rule.update!(content: policy_rule.content.merge("branches" => ["foobar"]))
+            end
+          end
+
+          before do
+            approval_rule_1.update!(approval_policy_rule: approval_policy_rule)
+          end
+
+          subject(:execute_with_inapplicable_error) do
+            service.error!(approval_rule_1, :scan_removed, missing_scans: rule_scanners)
+            execute
+          end
+
+          it 'does not create violations' do
+            expect { execute_with_inapplicable_error }.not_to change { violated_policies }.from(be_empty)
+          end
+
+          it 'does not require approval' do
+            expect { execute_with_inapplicable_error }.to change { approval_rule_1.reload.approvals_required }
+                                                            .from(1).to(0)
+          end
+
+          context 'with feature disabled' do
+            before do
+              stub_feature_flags(merge_request_approval_policies_inapplicable_rule_evaluation: false)
+            end
+
+            it 'creates violations' do
+              expect { execute_with_inapplicable_error }.to change { violated_policies.count }.by(1)
+            end
+
+            it 'requires approval' do
+              expect { execute_with_inapplicable_error }.not_to change { approval_rule_1.reload.approvals_required }
+                                                                  .from(1)
+            end
+          end
+        end
+
         context 'when rule should fail open' do
           it 'creates a warning violation' do
             policy_a.update!(fallback_behavior: { fail: 'open' })
