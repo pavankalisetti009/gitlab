@@ -23,6 +23,8 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   end
 
   describe 'validations' do
+    it { expect(build(:ai_catalog_item)).to be_valid }
+
     it { is_expected.to validate_presence_of(:organization) }
     it { is_expected.to validate_presence_of(:item_type) }
     it { is_expected.to validate_presence_of(:description) }
@@ -31,9 +33,59 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
     it { is_expected.to validate_length_of(:description).is_at_most(1_024) }
 
-    it { is_expected.to validate_inclusion_of(:public).in_array([true, false]) }
+    describe 'changing from public to private' do
+      let_it_be(:project) { create(:project) }
+      let_it_be_with_refind(:item) { create(:ai_catalog_item, public: true, project: project) }
 
-    it { expect(build(:ai_catalog_item)).to be_valid }
+      before do
+        item.public = false
+      end
+
+      it 'can be changed from public to private' do
+        expect(item).to be_valid
+      end
+
+      context 'when the project itself is the only consumer' do
+        before_all do
+          create(:ai_catalog_item_consumer, item: item, project: project)
+        end
+
+        it 'can be changed from public to private' do
+          expect(item).to be_valid
+        end
+
+        context 'when there are other consumers' do
+          before_all do
+            create(:ai_catalog_item_consumer, item: item, project: create(:project))
+          end
+
+          it 'cannot be changed from public to private' do
+            expect(item).not_to be_valid
+            expect(item.errors[:public]).to include(
+              'cannot be changed from public to private as it has catalog consumers'
+            )
+          end
+
+          context 'when item is not associated with a project' do
+            before do
+              item.project = nil
+            end
+
+            it 'can be changed from private to public' do
+              expect(item).to be_valid
+            end
+          end
+
+          context 'when item was private' do
+            let_it_be_with_refind(:item) { create(:ai_catalog_item, public: false, project: project) }
+
+            it 'can be changed from private to public' do
+              expect(item).to be_valid
+            end
+          end
+        end
+      end
+    end
   end
 
   describe 'enums' do

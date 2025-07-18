@@ -18,6 +18,8 @@ module Ai
       belongs_to :group
       belongs_to :project
 
+      scope :not_for_projects, ->(project) { where.not(project: project) }
+
       private
 
       def validate_exactly_one_sharding_key_present
