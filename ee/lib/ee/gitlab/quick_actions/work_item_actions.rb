@@ -35,7 +35,7 @@ module EE
             format(s_("WorkItemStatus|Set status to %{status_name}."), status_name: status_name)
           end
           types WorkItem
-          params 'Name of the status'
+          params '"Name of the status"'
           condition do
             quick_action_target.resource_parent&.root_ancestor&.work_item_status_feature_available? &&
               current_user.can?(:"update_#{quick_action_target.to_ability_name}", quick_action_target)
