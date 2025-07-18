@@ -1,13 +1,13 @@
 /* eslint-disable @gitlab/require-i18n-strings */
-export const mockSecurityLabelCategories = [
+export const mockSecurityAttributeCategories = [
   {
     id: 11,
     name: 'Application',
     description: 'Categorize projects by application type and technology stack.',
     multipleSelection: true,
     canEditCategory: false,
-    canEditLabels: true,
-    labelCount: 8,
+    canEditAttributes: true,
+    attributeCount: 8,
   },
   {
     id: 12,
@@ -15,8 +15,8 @@ export const mockSecurityLabelCategories = [
     description: 'Classify projects by their importance to business operations.',
     multipleSelection: false,
     canEditCategory: false,
-    canEditLabels: false,
-    labelCount: 5,
+    canEditAttributes: false,
+    attributeCount: 5,
   },
   {
     id: 13,
@@ -24,8 +24,8 @@ export const mockSecurityLabelCategories = [
     description: 'Organize projects by owning teams and departments.',
     multipleSelection: true,
     canEditCategory: false,
-    canEditLabels: true,
-    labelCount: 4,
+    canEditAttributes: true,
+    attributeCount: 4,
   },
   {
     id: 14,
@@ -33,8 +33,8 @@ export const mockSecurityLabelCategories = [
     description: 'Tag systems based on network accessibility and exposure risk.',
     multipleSelection: false,
     canEditCategory: false,
-    canEditLabels: true,
-    labelCount: 4,
+    canEditAttributes: true,
+    attributeCount: 4,
   },
   {
     id: 15,
@@ -42,11 +42,11 @@ export const mockSecurityLabelCategories = [
     description: 'Track system hosting locations and geographic deployment.',
     multipleSelection: false,
     canEditCategory: true,
-    canEditLabels: true,
-    labelCount: 7,
+    canEditAttributes: true,
+    attributeCount: 7,
   },
 ];
-export const mockSecurityLabels = [
+export const mockSecurityAttributes = [
   {
     id: 1,
     categoryId: 11,
@@ -220,14 +220,14 @@ export const mockSecurityLabels = [
 
 export default {
   Group: {
-    securityLabelCategories() {
+    securityAttributeCategories() {
       return {
-        nodes: mockSecurityLabelCategories,
+        nodes: mockSecurityAttributeCategories,
       };
     },
-    securityLabels(_, { categoryId }) {
+    securityAttributes(_, { categoryId }) {
       return {
-        nodes: mockSecurityLabels.filter(
+        nodes: mockSecurityAttributes.filter(
           (node) => categoryId === undefined || node.categoryId === categoryId,
         ),
       };

@@ -1,10 +1,10 @@
 import { GlBadge, GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CategoryList from 'ee/security_configuration/components/security_labels/category_list.vue';
-import { mockSecurityLabelCategories } from 'ee/security_configuration/graphql/resolvers';
+import CategoryList from 'ee/security_configuration/components/security_attributes/category_list.vue';
+import { mockSecurityAttributeCategories } from 'ee/security_configuration/graphql/resolvers';
 
-const firstCategory = mockSecurityLabelCategories[0];
-const secondCategory = mockSecurityLabelCategories[1];
+const firstCategory = mockSecurityAttributeCategories[0];
+const secondCategory = mockSecurityAttributeCategories[1];
 
 describe('Category list', () => {
   let wrapper;
@@ -12,7 +12,7 @@ describe('Category list', () => {
   const createComponent = () => {
     wrapper = shallowMountExtended(CategoryList, {
       propsData: {
-        securityLabelCategories: mockSecurityLabelCategories,
+        securityAttributeCategories: mockSecurityAttributeCategories,
         selectedCategory: firstCategory,
       },
     });
@@ -22,14 +22,14 @@ describe('Category list', () => {
     createComponent();
   });
 
-  it('renders the category name, description, and labelled project count for each category', () => {
+  it('renders the category name, description, and project count for each category', () => {
     expect(wrapper.text()).toContain(firstCategory.name);
     expect(wrapper.text()).toContain(firstCategory.description);
-    expect(wrapper.findComponent(GlBadge).text()).toBe(firstCategory.labelCount.toString());
+    expect(wrapper.findComponent(GlBadge).text()).toBe(firstCategory.attributeCount.toString());
   });
 
   it('emits selectCategory on category click', () => {
-    wrapper.findByTestId(`label-category-${secondCategory.id}`).trigger('click');
+    wrapper.findByTestId(`attribute-category-${secondCategory.id}`).trigger('click');
 
     expect(wrapper.emitted('selectCategory')[0][0]).toBe(secondCategory);
   });

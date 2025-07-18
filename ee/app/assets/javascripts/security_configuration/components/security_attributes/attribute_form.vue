@@ -6,11 +6,11 @@ import { s__ } from '~/locale';
 import { DRAWER_MODES } from './constants';
 
 const i18ns = {
-  nameLabel: s__('SecurityLabels|Name'),
-  descriptionLabel: s__('SecurityLabels|Description'),
-  colorInputLabel: s__('SecurityLabels|Color'),
-  nameRequired: s__('SecurityLabels|Name is required'),
-  descriptionRequired: s__('SecurityLabels|Description is required'),
+  nameLabel: s__('SecurityAttributes|Name'),
+  descriptionLabel: s__('SecurityAttributes|Description'),
+  colorInputLabel: s__('SecurityAttributes|Color'),
+  nameRequired: s__('SecurityAttributes|Name is required'),
+  descriptionRequired: s__('SecurityAttributes|Description is required'),
 };
 
 export default {
@@ -22,7 +22,7 @@ export default {
     ColorPicker,
   },
   props: {
-    label: {
+    attribute: {
       type: Object,
       required: true,
     },
@@ -34,9 +34,9 @@ export default {
   },
   data() {
     return {
-      name: this.label?.name || '',
-      description: this.label?.description || '',
-      color: this.label?.color || '#dc143c',
+      name: this.attribute?.name || '',
+      description: this.attribute?.description || '',
+      color: this.attribute?.color || '#dc143c',
       validationState: {
         name: true,
         description: true,
@@ -62,7 +62,7 @@ export default {
       }
 
       const payload = {
-        id: this.label.id,
+        id: this.attribute.id,
         name: this.name.trim(),
         description: this.description.trim(),
         color: this.color,

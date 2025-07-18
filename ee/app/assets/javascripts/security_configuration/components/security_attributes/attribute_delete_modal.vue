@@ -3,11 +3,11 @@ import { GlModal } from '@gitlab/ui';
 import { s__, __, sprintf } from '~/locale';
 
 const i18ns = {
-  title: s__('SecurityLabels|Delete security label?'),
+  title: s__('SecurityAttributes|Delete security attribute?'),
   cancelButton: __('Cancel'),
-  deleteButton: s__('SecurityLabels|Delete security label'),
+  deleteButton: s__('SecurityAttributes|Delete security attribute'),
   deleteMessageTemplate: s__(
-    'SecurityLabels|Deleting the "%{labelName}" Security Label will permanently remove it from its category and any projects where it is applied. This action cannot be undone.',
+    'SecurityAttributes|Deleting the "%{attributeName}" Security Attribute will permanently remove it from its category and any projects where it is applied. This action cannot be undone.',
   ),
 };
 
@@ -20,7 +20,7 @@ export default {
       type: Boolean,
       required: true,
     },
-    label: {
+    attribute: {
       type: Object,
       required: true,
     },
@@ -28,7 +28,7 @@ export default {
   computed: {
     deleteMessage() {
       return sprintf(i18ns.deleteMessageTemplate, {
-        labelName: this.label.name,
+        attributeName: this.attribute.name,
       });
     },
   },
@@ -47,7 +47,7 @@ export default {
 <template>
   <gl-modal
     :visible="visible"
-    modal-id="delete-security-label-modal"
+    modal-id="delete-security-attribute-modal"
     :title="$options.i18ns.title"
     :ok-title="$options.i18ns.deleteButton"
     :cancel-title="$options.i18ns.cancelButton"

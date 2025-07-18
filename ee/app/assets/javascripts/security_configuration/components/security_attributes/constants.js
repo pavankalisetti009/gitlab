@@ -8,5 +8,5 @@ export const defaultCategory = {
   description: '',
   multipleSelection: false,
   canEditCategory: true,
-  canEditLabels: true,
+  canEditAttributes: true,
 };

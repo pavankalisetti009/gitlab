@@ -4495,9 +4495,9 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it_behaves_like 'custom roles abilities'
     end
 
-    context 'for a member role with admin_security_labels true' do
-      let(:member_role_abilities) { { admin_security_labels: true } }
-      let(:allowed_abilities) { [:admin_security_labels] }
+    context 'for a member role with admin_security_attributes true' do
+      let(:member_role_abilities) { { admin_security_attributes: true } }
+      let(:allowed_abilities) { [:admin_security_attributes] }
 
       it_behaves_like 'custom roles abilities'
     end
@@ -5114,22 +5114,22 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'security labels' do
-    context 'when security labels are available' do
+  describe 'security attributes' do
+    context 'when security attributes are available' do
       before do
-        stub_licensed_features(security_labels: true)
+        stub_licensed_features(security_attributes: true)
       end
 
       context 'when user is maintainer' do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(:admin_security_labels) }
+        it { is_expected.to be_allowed(:admin_security_attributes) }
       end
 
       context 'when user is developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_disallowed(:admin_security_labels) }
+        it { is_expected.to be_disallowed(:admin_security_attributes) }
       end
     end
   end

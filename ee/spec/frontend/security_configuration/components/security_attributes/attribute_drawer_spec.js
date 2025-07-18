@@ -1,18 +1,18 @@
 import { GlDrawer } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import LabelDrawer from 'ee/security_configuration/components/security_labels/label_drawer.vue';
-import SecurityLabelForm from 'ee/security_configuration/components/security_labels/label_form.vue';
-import LabelDeleteModal from 'ee/security_configuration/components/security_labels/label_delete_modal.vue';
-import { DRAWER_MODES } from 'ee/security_configuration/components/security_labels/constants';
+import AttributeDrawer from 'ee/security_configuration/components/security_attributes/attribute_drawer.vue';
+import SecurityAttributeForm from 'ee/security_configuration/components/security_attributes/attribute_form.vue';
+import AttributeDeleteModal from 'ee/security_configuration/components/security_attributes/attribute_delete_modal.vue';
+import { DRAWER_MODES } from 'ee/security_configuration/components/security_attributes/constants';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 
-describe('LabelDrawer', () => {
+describe('AttributeDrawer', () => {
   let wrapper;
 
-  const label = { name: 'Label 1', color: '#fff', description: 'A label' };
+  const attribute = { name: 'Attribute 1', color: '#fff', description: 'A attribute' };
 
   const createComponent = () => {
-    wrapper = shallowMountExtended(LabelDrawer, {
+    wrapper = shallowMountExtended(AttributeDrawer, {
       stubs: {
         GlDrawer,
       },
@@ -20,15 +20,15 @@ describe('LabelDrawer', () => {
   };
 
   const findDrawer = () => wrapper.findComponent(GlDrawer);
-  const findForm = () => wrapper.findComponent(SecurityLabelForm);
-  const findDeleteModal = () => wrapper.findComponent(LabelDeleteModal);
+  const findForm = () => wrapper.findComponent(SecurityAttributeForm);
+  const findDeleteModal = () => wrapper.findComponent(AttributeDeleteModal);
   const findSubmitButton = () => wrapper.findByTestId('submit-btn');
   const findCancelButton = () => wrapper.findByTestId('cancel-btn');
   const findDeleteButton = () => wrapper.findByTestId('delete-btn');
 
   beforeEach(() => {
     createComponent();
-    wrapper.vm.open(DRAWER_MODES.ADD, label);
+    wrapper.vm.open(DRAWER_MODES.ADD, attribute);
   });
 
   it('renders GlDrawer open with correct props', () => {
@@ -39,17 +39,17 @@ describe('LabelDrawer', () => {
     });
   });
 
-  it('renders LabelForm with correct props', () => {
+  it('renders AttributeForm with correct props', () => {
     expect(findForm().props()).toMatchObject({
-      label,
+      attribute,
       mode: DRAWER_MODES.ADD,
     });
   });
 
-  it('renders LabelDeleteModal with correct visibility and label', () => {
+  it('renders AttributeDeleteModal with correct visibility and attribute', () => {
     expect(findDeleteModal().props()).toMatchObject({
       visible: false,
-      label,
+      attribute,
     });
   });
 

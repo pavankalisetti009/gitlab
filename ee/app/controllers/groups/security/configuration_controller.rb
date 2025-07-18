@@ -5,7 +5,7 @@ module Groups
     class ConfigurationController < Groups::ApplicationController
       layout 'group'
 
-      before_action :authorize_admin_security_labels!
+      before_action :authorize_admin_security_attributes!
 
       feature_category :security_asset_inventories
 
@@ -13,11 +13,11 @@ module Groups
 
       private
 
-      def authorize_admin_security_labels!
+      def authorize_admin_security_attributes!
         render_403 unless
-          can?(current_user, :admin_security_labels, group) &&
+          can?(current_user, :admin_security_attributes, group) &&
             Feature.enabled?(:security_context_labels, group.root_ancestor) &&
-            group.licensed_feature_available?(:security_labels)
+            group.licensed_feature_available?(:security_attributes)
       end
     end
   end

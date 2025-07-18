@@ -4,30 +4,30 @@ import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { s__ } from '~/locale';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { DRAWER_MODES } from './constants';
-import SecurityLabelForm from './label_form.vue';
-import LabelDeleteModal from './label_delete_modal.vue';
+import SecurityAttributeForm from './attribute_form.vue';
+import AttributeDeleteModal from './attribute_delete_modal.vue';
 
 export default {
   components: {
     GlDrawer,
     GlButton,
-    SecurityLabelForm,
-    LabelDeleteModal,
+    SecurityAttributeForm,
+    AttributeDeleteModal,
   },
   DRAWER_Z_INDEX,
   i18n: {
-    addLabelTitle: s__('SecurityLabels|Add security label'),
-    editLabelTitle: s__('SecurityLabels|Edit security label'),
-    updateLabelButton: s__('SecurityLabels|Update label'),
-    createLabelButton: s__('SecurityLabels|Add label'),
-    cancelButton: s__('SecurityLabels|Cancel'),
-    deleteButton: s__('SecurityLabels|Delete'),
+    addAttributeTitle: s__('SecurityAttributes|Add security attribute'),
+    editAttributeTitle: s__('SecurityAttributes|Edit security attribute'),
+    updateAttributeButton: s__('SecurityAttributes|Update attribute'),
+    createAttributeButton: s__('SecurityAttributes|Add attribute'),
+    cancelButton: s__('SecurityAttributes|Cancel'),
+    deleteButton: s__('SecurityAttributes|Delete'),
   },
   data() {
     return {
       isOpen: false,
       mode: DRAWER_MODES.ADD,
-      label: {},
+      attribute: {},
       showDeleteModal: false,
     };
   },
@@ -37,18 +37,18 @@ export default {
     },
     drawerTitle() {
       return this.mode === DRAWER_MODES.EDIT
-        ? this.$options.i18n.editLabelTitle
-        : this.$options.i18n.addLabelTitle;
+        ? this.$options.i18n.editAttributeTitle
+        : this.$options.i18n.addAttributeTitle;
     },
-    primaryButtonLabel() {
+    primaryButtonText() {
       return this.mode === DRAWER_MODES.EDIT
-        ? this.$options.i18n.updateLabelButton
-        : this.$options.i18n.createLabelButton;
+        ? this.$options.i18n.updateAttributeButton
+        : this.$options.i18n.createAttributeButton;
     },
-    secondaryButtonLabel() {
+    secondaryButtonText() {
       return this.$options.i18n.cancelButton;
     },
-    deleteButtonLabel() {
+    deleteButtonText() {
       return this.$options.i18n.deleteButton;
     },
     isAddMode() {
@@ -57,8 +57,8 @@ export default {
   },
   methods: {
     // eslint-disable-next-line vue/no-unused-properties -- `open()` is called from the parent component
-    open(mode = DRAWER_MODES.ADD, label = {}) {
-      this.label = label;
+    open(mode = DRAWER_MODES.ADD, attribute = {}) {
+      this.attribute = attribute;
       this.mode = mode;
       this.isOpen = true;
     },
@@ -70,7 +70,7 @@ export default {
       this.close();
     },
     onDelete() {
-      this.$emit('delete', this.label);
+      this.$emit('delete', this.attribute);
       this.showDeleteModal = false;
       this.close();
     },
@@ -85,7 +85,7 @@ export default {
     :header-sticky="true"
     :open="isOpen"
     size="md"
-    class="security-label-form-drawer"
+    class="security-attribute-form-drawer"
     :z-index="$options.DRAWER_Z_INDEX"
     @close="close"
   >
@@ -93,10 +93,16 @@ export default {
       <h4 class="gl-my-0 gl-mr-3 gl-text-size-h2">{{ drawerTitle }}</h4>
     </template>
 
-    <security-label-form ref="form" :label="label" :mode="mode" @saved="onSubmit" @cancel="close" />
-    <label-delete-modal
+    <security-attribute-form
+      ref="form"
+      :attribute="attribute"
+      :mode="mode"
+      @saved="onSubmit"
+      @cancel="close"
+    />
+    <attribute-delete-modal
       :visible="showDeleteModal"
-      :label="label"
+      :attribute="attribute"
       @confirm="onDelete"
       @cancel="showDeleteModal = false"
     />
@@ -110,10 +116,10 @@ export default {
             data-testid="submit-btn"
             @click="$refs.form.onSubmit()"
           >
-            {{ primaryButtonLabel }}
+            {{ primaryButtonText }}
           </gl-button>
           <gl-button data-testid="cancel-btn" class="gl-ml-2" @click="close">
-            {{ secondaryButtonLabel }}
+            {{ secondaryButtonText }}
           </gl-button>
         </div>
 
@@ -124,7 +130,7 @@ export default {
           data-testid="delete-btn"
           @click="showDeleteModal = true"
         >
-          {{ deleteButtonLabel }}
+          {{ deleteButtonText }}
         </gl-button>
       </div>
     </template>

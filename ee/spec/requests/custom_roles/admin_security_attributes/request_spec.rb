@@ -2,14 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe 'User with admin_security_labels custom role', feature_category: :security_asset_inventories do
+RSpec.describe 'User with admin_security_attributes custom role', feature_category: :security_asset_inventories do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:role) { create(:member_role, :reporter, :admin_security_labels, namespace: group) }
+  let_it_be(:role) { create(:member_role, :reporter, :admin_security_attributes, namespace: group) }
   let_it_be(:membership) { create(:group_member, :reporter, member_role: role, user: user, group: group) }
 
   before do
-    stub_licensed_features(custom_roles: true, security_labels: true)
+    stub_licensed_features(custom_roles: true, security_attributes: true)
 
     sign_in(user)
   end
