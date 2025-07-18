@@ -151,6 +151,21 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryadminmemberrolesorderby"></a>`orderBy` | [`MemberRolesOrderBy`](#memberrolesorderby) | Ordering column. Default is NAME. |
 | <a id="queryadminmemberrolessort"></a>`sort` | [`SortDirectionEnum`](#sortdirectionenum) | Ordering column. Default is ASC. |
 
+### `Query.aiCatalogBuiltInTools`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+List of AI Catalog built-in tools.
+
+Returns [`AiCatalogBuiltInToolConnection!`](#aicatalogbuiltintoolconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
 ### `Query.aiCatalogItem`
 
 {{< details >}}
@@ -14063,6 +14078,29 @@ The edge type for [`AiAgent`](#aiagent).
 | <a id="aiagentedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aiagentedgenode"></a>`node` | [`AiAgent`](#aiagent) | The item at the end of the edge. |
 
+#### `AiCatalogBuiltInToolConnection`
+
+The connection type for [`AiCatalogBuiltInTool`](#aicatalogbuiltintool).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogbuiltintoolconnectionedges"></a>`edges` | [`[AiCatalogBuiltInToolEdge]`](#aicatalogbuiltintooledge) | A list of edges. |
+| <a id="aicatalogbuiltintoolconnectionnodes"></a>`nodes` | [`[AiCatalogBuiltInTool]`](#aicatalogbuiltintool) | A list of nodes. |
+| <a id="aicatalogbuiltintoolconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiCatalogBuiltInToolEdge`
+
+The edge type for [`AiCatalogBuiltInTool`](#aicatalogbuiltintool).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogbuiltintooledgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aicatalogbuiltintooledgenode"></a>`node` | [`AiCatalogBuiltInTool`](#aicatalogbuiltintool) | The item at the end of the edge. |
+
 #### `AiCatalogItemConnection`
 
 The connection type for [`AiCatalogItem`](#aicatalogitem).
@@ -22169,6 +22207,19 @@ An AI catalog agent version.
 | <a id="aicatalogagentversionupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item version was updated. |
 | <a id="aicatalogagentversionuserprompt"></a>`userPrompt` | [`String`](#string) | User prompt for the agent. |
 | <a id="aicatalogagentversionversionname"></a>`versionName` | [`String`](#string) | Version name of the item version. |
+
+### `AiCatalogBuiltInTool`
+
+An AI catalog built-in tool.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogbuiltintooldescription"></a>`description` | [`String!`](#string) | Description of the built-in tool. |
+| <a id="aicatalogbuiltintoolid"></a>`id` | [`AiCatalogBuiltInToolID!`](#aicatalogbuiltintoolid) | Global ID of the built-in tool. |
+| <a id="aicatalogbuiltintoolname"></a>`name` | [`String!`](#string) | Name of the built-in tool. |
+| <a id="aicatalogbuiltintooltitle"></a>`title` | [`String!`](#string) | Title of the built-in tool. |
 
 ### `AiCatalogFlow`
 
@@ -48937,6 +48988,12 @@ An example `AiAgentID` is: `"gid://gitlab/Ai::Agent/1"`.
 A `AiAgentVersionID` is a global ID. It is encoded as a string.
 
 An example `AiAgentVersionID` is: `"gid://gitlab/Ai::AgentVersion/1"`.
+
+### `AiCatalogBuiltInToolID`
+
+A `AiCatalogBuiltInToolID` is a global ID. It is encoded as a string.
+
+An example `AiCatalogBuiltInToolID` is: `"gid://gitlab/Ai::Catalog::BuiltInTool/1"`.
 
 ### `AiCatalogItemID`
 
