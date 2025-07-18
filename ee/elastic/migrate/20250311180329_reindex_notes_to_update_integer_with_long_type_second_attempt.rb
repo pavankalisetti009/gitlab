@@ -7,3 +7,5 @@ class ReindexNotesToUpdateIntegerWithLongTypeSecondAttempt < Elastic::Migration
     %w[Note]
   end
 end
+
+ReindexNotesToUpdateIntegerWithLongTypeSecondAttempt.prepend ::Search::Elastic::MigrationObsolete
