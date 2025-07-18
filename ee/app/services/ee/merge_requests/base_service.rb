@@ -145,12 +145,32 @@ module EE
         return if matching_policies.empty?
 
         matching_policies.each do |policy|
-          log_audit_event(
-            merge_request,
-            'merge_request_branch_bypassed_by_security_policy',
-            "Approvals bypassed by security policy #{policy.name}"
-          )
+          log_audit_event_for_policy_bypass(merge_request, policy)
         end
+      end
+
+      def log_audit_event_for_policy_bypass(merge_request, policy)
+        project = merge_request.project
+        message = <<~MSG.squish
+          Approvals in merge request (#{project.full_path}!#{merge_request.iid}) with source branch
+          '#{merge_request.source_branch}' and target branch '#{merge_request.target_branch}'
+          was bypassed by security policy
+        MSG
+
+        ::Gitlab::Audit::Auditor.audit({
+          name: 'merge_request_branch_bypassed_by_security_policy',
+          author: current_user,
+          scope: policy.security_policy_management_project,
+          target: policy,
+          message: message,
+          additional_details: {
+            merge_request_id: merge_request.id,
+            merge_request_iid: merge_request.iid,
+            source_branch: merge_request.source_branch,
+            target_branch: merge_request.target_branch,
+            project_id: project.id
+          }
+        })
       end
 
       def log_audit_event(merge_request, event_name, message)

@@ -31,9 +31,9 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
         result = bypass_allowed?
 
         expect(result).to be false
-        expect(Gitlab::Audit::Auditor).not_to have_received(:audit).with(
-          hash_including(message: a_string_including("Blocked branch push is bypassed by security policy"))
-        )
+        expect(Gitlab::Audit::Auditor).not_to have_received(:audit).with(hash_including(message: a_string_including(
+          "Branch push restriction on '#{branch_name}' for project '#{project.full_path}' has been bypassed by"
+        )))
       end
     end
 
@@ -72,9 +72,11 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
           expect(Gitlab::Audit::Auditor).to have_received(:audit).with(hash_including(
             name: 'security_policy_access_token_push_bypass',
             author: user,
-            scope: project,
+            scope: security_policy.security_policy_management_project,
             target: security_policy,
-            message: a_string_including("Blocked branch push is bypassed by security policy"),
+            message:
+              "Branch push restriction on '#{branch_name}' for project '#{project.full_path}' " \
+              "has been bypassed by access_token with ID: [#{personal_access_token.id}]",
             additional_details: hash_including(
               security_policy_name: security_policy.name,
               security_policy_id: security_policy.id,
@@ -118,9 +120,11 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
           expect(Gitlab::Audit::Auditor).to have_received(:audit).with(hash_including(
             name: 'security_policy_service_account_push_bypass',
             author: service_account,
-            scope: project,
+            scope: security_policy.security_policy_management_project,
             target: security_policy,
-            message: a_string_including("Blocked branch push is bypassed by security policy"),
+            message:
+              "Branch push restriction on '#{branch_name}' for project '#{project.full_path}' " \
+              "has been bypassed by service_account with ID: #{service_account.id}",
             additional_details: hash_including(
               security_policy_name: security_policy.name,
               security_policy_id: security_policy.id,
