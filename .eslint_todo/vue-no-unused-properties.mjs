@@ -234,7 +234,6 @@ export default {
     'ee/app/assets/javascripts/analytics/productivity_analytics/components/app.vue',
     'ee/app/assets/javascripts/analytics/repository_analytics/components/test_coverage_summary.vue',
     'ee/app/assets/javascripts/analytics/repository_analytics/components/test_coverage_table.vue',
-    'ee/app/assets/javascripts/audit_events/components/stream/stream_delete_modal.vue',
     'ee/app/assets/javascripts/billings/components/zuora_simple.vue',
     'ee/app/assets/javascripts/billings/subscriptions/components/subscription_table.vue',
     'ee/app/assets/javascripts/ci/merge_trains/components/merge_trains_table.vue',
