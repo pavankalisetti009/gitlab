@@ -17,7 +17,7 @@ describe('Agents Platform Router', () => {
     });
 
     it('has the correct number of routes', () => {
-      expect(router.options.routes).toHaveLength(4);
+      expect(router.options.routes).toHaveLength(5);
     });
 
     describe('when examining the index route', () => {
