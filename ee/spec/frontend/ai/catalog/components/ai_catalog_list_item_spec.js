@@ -45,11 +45,11 @@ describe('AiCatalogListItem', () => {
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
   const findLink = () => wrapper.findComponent(GlLink);
 
-  describe('component rendering', () => {
-    beforeEach(() => {
-      createComponent();
-    });
+  beforeEach(() => {
+    createComponent();
+  });
 
+  describe('component rendering', () => {
     it('renders the list item container with correct attributes', () => {
       const listItem = wrapper.findByTestId('ai-catalog-list-item');
 
@@ -82,7 +82,7 @@ describe('AiCatalogListItem', () => {
       expect(items.at(0).attributes('to')).toBe(mockRoute);
       expect(items.at(1).text()).toBe('Edit');
       expect(items.at(1).attributes('to')).toBe(mockRoute);
-      expect(items.at(2).text()).toBe('Delete (Coming soon)');
+      expect(items.at(2).text()).toBe('Delete');
       expect(items.at(2).attributes('variant')).toBe('danger');
     });
 
@@ -105,6 +105,16 @@ describe('AiCatalogListItem', () => {
 
       link.vm.$emit('click');
       expect(wrapper.emitted('select-item')).toHaveLength(1);
+    });
+  });
+
+  describe('on delete action', () => {
+    it('emits delete event', () => {
+      const deleteAction = findDisclosureDropdownItems().at(2);
+
+      deleteAction.vm.$emit('action');
+
+      expect(wrapper.emitted('delete')[0]).toEqual([]);
     });
   });
 });

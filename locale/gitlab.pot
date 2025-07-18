@@ -2430,7 +2430,13 @@ msgstr ""
 msgid "AICatalog|Agent"
 msgstr ""
 
+msgid "AICatalog|Agent deleted successfully."
+msgstr ""
+
 msgid "AICatalog|Agents"
+msgstr ""
+
+msgid "AICatalog|Are you sure you want to delete agent %{name}?"
 msgstr ""
 
 msgid "AICatalog|Briefly describe what this agent is designed to do and its key capabilities."
@@ -2451,6 +2457,9 @@ msgstr ""
 msgid "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks."
 msgstr ""
 
+msgid "AICatalog|Delete agent"
+msgstr ""
+
 msgid "AICatalog|Description is required."
 msgstr ""
 
@@ -2458,6 +2467,9 @@ msgid "AICatalog|Edit"
 msgstr ""
 
 msgid "AICatalog|Edit agent"
+msgstr ""
+
+msgid "AICatalog|Failed to delete agent. %{error}"
 msgstr ""
 
 msgid "AICatalog|Failed to run agent."

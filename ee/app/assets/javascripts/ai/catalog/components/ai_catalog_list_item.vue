@@ -111,26 +111,30 @@ export default {
     >
       <gl-disclosure-dropdown-group>
         <gl-disclosure-dropdown-item
-          v-for="(listItem, index) in actionItems"
+          v-for="(actionItem, index) in actionItems"
           :key="index"
-          :item="listItem"
-          :to="listItem.to"
+          :item="actionItem"
+          :to="actionItem.to"
         >
           <template #list-item>
             <span>
-              <gl-icon :name="listItem.icon" class="gl-mr-2" variant="subtle" aria-hidden="true" />
-              {{ listItem.text }}
+              <gl-icon
+                :name="actionItem.icon"
+                class="gl-mr-2"
+                variant="subtle"
+                aria-hidden="true"
+              />
+              {{ actionItem.text }}
             </span>
           </template>
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown-group>
       <gl-disclosure-dropdown-group bordered>
-        <gl-disclosure-dropdown-item variant="danger">
+        <gl-disclosure-dropdown-item variant="danger" @action="$emit('delete')">
           <template #list-item>
             <span>
               <gl-icon name="remove" class="gl-mr-2" variant="current" aria-hidden="true" />
-              <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
-              {{ __('Delete') }} (Coming soon)
+              {{ __('Delete') }}
             </span>
           </template>
         </gl-disclosure-dropdown-item>

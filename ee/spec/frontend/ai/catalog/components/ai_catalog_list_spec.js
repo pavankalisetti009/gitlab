@@ -1,43 +1,15 @@
-import { GlEmptyState, GlSkeletonLoader } from '@gitlab/ui';
-
+import { GlEmptyState, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
+import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
+import { mockAgents } from '../mock_data';
 
 describe('AiCatalogList', () => {
   let wrapper;
 
-  const mockItems = [
-    {
-      id: 1,
-      name: 'Test AI Agent 1',
-      model: 'gpt-4',
-      type: 'Assistant',
-      version: 'v1.2.0',
-      description: 'A helpful AI assistant for testing purposes',
-      releasedAt: '2024-01-15T10:30:00Z',
-      verified: true,
-    },
-    {
-      id: 2,
-      name: 'Test AI Agent 2',
-      model: 'claude-3',
-      type: 'Chatbot',
-      version: 'v1.0.0',
-      description: 'Another AI assistant',
-      releasedAt: '2024-02-10T14:20:00Z',
-      verified: false,
-    },
-    {
-      id: 3,
-      name: 'Test AI Agent 3',
-      model: 'gemini-pro',
-      type: 'Helper',
-      version: 'v2.1.0',
-      verified: true,
-    },
-  ];
+  const mockItems = mockAgents;
 
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(AiCatalogList, {
@@ -45,6 +17,9 @@ describe('AiCatalogList', () => {
         items: mockItems,
         isLoading: false,
         ...props,
+      },
+      stubs: {
+        GlSprintf,
       },
     });
   };
@@ -54,6 +29,7 @@ describe('AiCatalogList', () => {
   const findList = () => wrapper.find('ul');
   const findListItems = () => wrapper.findAllComponents(AiCatalogListItem);
   const findContainer = () => wrapper.findByTestId('ai-catalog-list');
+  const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -123,6 +99,10 @@ describe('AiCatalogList', () => {
       findListItems().at(0).vm.$emit('select-item');
       expect(wrapper.emitted('select-item')).toEqual([[mockItems[0]]]);
     });
+
+    it('does not render confirm modal', () => {
+      expect(findConfirmModal().exists()).toBe(false);
+    });
   });
 
   describe('empty items', () => {
@@ -134,6 +114,37 @@ describe('AiCatalogList', () => {
       expect(findEmptyState().exists()).toBe(true);
       expect(findList().exists()).toBe(false);
       expect(findSkeletonLoader().exists()).toBe(false);
+    });
+  });
+
+  describe('deleting an item', () => {
+    const mockDeleteTitle = 'Delete item';
+    const mockDeleteMessage = 'Are you sure you want to delete item %{name}?';
+    const mockDeleteFn = jest.fn();
+
+    beforeEach(() => {
+      createComponent({
+        deleteConfirmTitle: mockDeleteTitle,
+        deleteConfirmMessage: mockDeleteMessage,
+        deleteFn: mockDeleteFn,
+      });
+
+      const secondItem = findListItems().at(1);
+
+      secondItem.vm.$emit('delete');
+    });
+
+    it('opens confirm modal on delete', () => {
+      expect(findConfirmModal().props('title')).toBe(mockDeleteTitle);
+      expect(findConfirmModal().text()).toBe(
+        `Are you sure you want to delete item ${mockItems[1].name}?`,
+      );
+    });
+
+    it('calls delete function on confirm', () => {
+      findConfirmModal().props('actionFn')();
+
+      expect(mockDeleteFn).toHaveBeenCalledWith(mockItems[1].id);
     });
   });
 });
