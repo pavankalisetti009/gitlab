@@ -24871,10 +24871,15 @@ CREATE TABLE user_details (
     bot_namespace_id bigint,
     orcid text DEFAULT ''::text NOT NULL,
     github text DEFAULT ''::text NOT NULL,
+    email_otp text,
+    email_otp_last_sent_to text,
+    email_otp_last_sent_at timestamp with time zone,
+    email_otp_required_after timestamp with time zone,
     CONSTRAINT check_18a53381cd CHECK ((char_length(bluesky) <= 256)),
     CONSTRAINT check_245664af82 CHECK ((char_length(webauthn_xid) <= 100)),
     CONSTRAINT check_444573ee52 CHECK ((char_length(skype) <= 500)),
     CONSTRAINT check_466a25be35 CHECK ((char_length(twitter) <= 500)),
+    CONSTRAINT check_4925cf9fd2 CHECK ((char_length(email_otp_last_sent_to) <= 511)),
     CONSTRAINT check_4ef1de1a15 CHECK ((char_length(discord) <= 500)),
     CONSTRAINT check_7b246dad73 CHECK ((char_length(organization) <= 500)),
     CONSTRAINT check_7d6489f8f3 CHECK ((char_length(linkedin) <= 500)),
@@ -24883,6 +24888,7 @@ CREATE TABLE user_details (
     CONSTRAINT check_99b0365865 CHECK ((char_length(orcid) <= 256)),
     CONSTRAINT check_a73b398c60 CHECK ((char_length(phone) <= 50)),
     CONSTRAINT check_bbe110f371 CHECK ((char_length(github) <= 500)),
+    CONSTRAINT check_ec514a06ad CHECK ((char_length(email_otp) <= 64)),
     CONSTRAINT check_eeeaf8d4f0 CHECK ((char_length(pronouns) <= 50)),
     CONSTRAINT check_f1a8a05b9a CHECK ((char_length(mastodon) <= 500)),
     CONSTRAINT check_f932ed37db CHECK ((char_length(pronunciation) <= 255))
@@ -24891,6 +24897,8 @@ CREATE TABLE user_details (
 COMMENT ON COLUMN user_details.phone IS 'JiHu-specific column';
 
 COMMENT ON COLUMN user_details.password_last_changed_at IS 'JiHu-specific column';
+
+COMMENT ON COLUMN user_details.email_otp IS 'SHA256 hash (64 hex characters)';
 
 CREATE SEQUENCE user_details_user_id_seq
     START WITH 1
