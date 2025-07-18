@@ -1116,6 +1116,79 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     end
   end
 
+  describe 'skip insert_vulnerability_reads_from_vulnerability() with feature flag' do
+    let(:user) { create(:user) }
+    let(:identifier) { create(:vulnerabilities_identifier, project: project) }
+    let(:scanner) { create(:vulnerabilities_scanner, project: project) }
+    let(:vulnerability) { create(:vulnerability, project: project, present_on_default_branch: false) }
+    let!(:finding) { create_finding(vulnerability: vulnerability) }
+
+    context 'when vulnerability_management.dont_execute_db_trigger is true' do
+      before do
+        ::SecApplicationRecord.connection.execute(
+          "SELECT set_config('vulnerability_management.dont_execute_db_trigger', 'true', true);"
+        )
+      end
+
+      it 'database trigger returns NULL and does not create vulnerability_reads record' do
+        expect do
+          # This will hit trigger_insert_vulnerability_reads_from_vulnerability
+          vulnerability.update!(present_on_default_branch: true)
+        end.not_to change { Vulnerabilities::Read.count }
+      end
+    end
+
+    context 'when vulnerability_management.dont_execute_db_trigger is false or unset' do
+      before do
+        ::SecApplicationRecord.connection.execute(
+          "SELECT set_config('vulnerability_management.dont_execute_db_trigger', 'false', true);"
+        )
+      end
+
+      it 'database trigger proceeds normally and creates vulnerability_reads record' do
+        expect do
+          vulnerability.update!(present_on_default_branch: true)
+        end.to change { Vulnerabilities::Read.count }.by(1)
+      end
+    end
+  end
+
+  describe 'skip insert_or_update_vulnerability_reads() with feature flag' do
+    let(:user) { create(:user) }
+    let(:identifier) { create(:vulnerabilities_identifier, project: project) }
+    let(:scanner) { create(:vulnerabilities_scanner, project: project) }
+    let(:vulnerability) { create(:vulnerability, project: project, present_on_default_branch: true) }
+
+    context 'when vulnerability_management.dont_execute_db_trigger is true' do
+      before do
+        ::SecApplicationRecord.connection.execute(
+          "SELECT set_config('vulnerability_management.dont_execute_db_trigger', 'true', true);"
+        )
+      end
+
+      it 'database trigger returns NULL and does not create vulnerability_reads record' do
+        expect do
+          # This will hit trigger_insert_or_update_vulnerability_reads_from_occurrences
+          create_finding(vulnerability: vulnerability)
+        end.not_to change { Vulnerabilities::Read.count }
+      end
+    end
+
+    context 'when vulnerability_management.dont_execute_db_trigger is false or unset' do
+      before do
+        ::SecApplicationRecord.connection.execute(
+          "SELECT set_config('vulnerability_management.dont_execute_db_trigger', 'false', true);"
+        )
+      end
+
+      it 'database trigger proceeds normally and creates vulnerability_reads record' do
+        expect do
+          create_finding(vulnerability: vulnerability)
+        end.to change { Vulnerabilities::Read.count }.by(1)
+      end
+    end
+  end
+
   private
 
   def create_vulnerability(severity: 7, report_type: 0)

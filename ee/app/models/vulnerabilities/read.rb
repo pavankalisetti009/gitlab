@@ -306,7 +306,7 @@ module Vulnerabilities
     end
 
     def set_default_values
-      self.owasp_top_10 = 'undefined'
+      self.owasp_top_10 ||= 'undefined'
     end
   end
 end
