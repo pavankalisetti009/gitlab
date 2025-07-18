@@ -8,6 +8,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ComplianceViolationDetailsApp from 'ee/compliance_violations/components/compliance_violation_details_app.vue';
 import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
 import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
+import SystemNote from '~/work_items/components/notes/system_note.vue';
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import complianceViolationQuery from 'ee/compliance_violations/graphql/compliance_violation.query.graphql';
@@ -80,6 +81,36 @@ describe('ComplianceViolationDetailsApp', () => {
             name: 'John Doe',
           },
         },
+        notes: {
+          nodes: [
+            {
+              id: 'gid://gitlab/Note/1',
+              body: 'Status changed to resolved',
+              bodyHtml: '<p>Status changed to resolved</p>',
+              createdAt: '2025-06-17T10:00:00Z',
+              author: {},
+              discussion: {
+                id: 'gid://gitlab/Discussion/1',
+              },
+              systemNoteIconName: 'status',
+              system: true,
+              internal: false,
+            },
+            {
+              id: 'gid://gitlab/Note/2',
+              body: 'Violation reviewed',
+              bodyHtml: '<p>Violation reviewed</p>',
+              createdAt: '2025-06-16T15:30:00Z',
+              author: {},
+              discussion: {
+                id: 'gid://gitlab/Discussion/2',
+              },
+              systemNoteIconName: null,
+              system: false,
+              internal: false,
+            },
+          ],
+        },
         __typename: 'ComplianceManagement::Projects::ComplianceViolation',
       },
     },
@@ -108,6 +139,64 @@ describe('ComplianceViolationDetailsApp', () => {
       projectComplianceViolation: {
         ...mockComplianceViolation,
         auditEvent: null,
+      },
+    },
+  };
+
+  const mockDataWithoutNotes = {
+    data: {
+      projectComplianceViolation: {
+        ...mockComplianceViolation,
+        notes: {
+          nodes: [],
+        },
+      },
+    },
+  };
+
+  const mockDataWithNullNotes = {
+    data: {
+      projectComplianceViolation: {
+        ...mockComplianceViolation,
+        notes: null,
+      },
+    },
+  };
+
+  const mockDataWithOnlyNonSystemNotes = {
+    data: {
+      projectComplianceViolation: {
+        ...mockComplianceViolation,
+        notes: {
+          nodes: [
+            {
+              id: 'gid://gitlab/Note/3',
+              body: 'Regular comment',
+              bodyHtml: '<p>Regular comment</p>',
+              createdAt: '2025-06-16T12:00:00Z',
+              author: {},
+              discussion: {
+                id: 'gid://gitlab/Discussion/3',
+              },
+              systemNoteIconName: null,
+              system: false,
+              internal: false,
+            },
+            {
+              id: 'gid://gitlab/Note/4',
+              body: 'Another regular comment',
+              bodyHtml: '<p>Another regular comment</p>',
+              createdAt: '2025-06-16T13:00:00Z',
+              author: {},
+              discussion: {
+                id: 'gid://gitlab/Discussion/4',
+              },
+              systemNoteIconName: null,
+              system: false,
+              internal: false,
+            },
+          ],
+        },
       },
     },
   };
@@ -143,6 +232,9 @@ describe('ComplianceViolationDetailsApp', () => {
   const findViolationSection = () => wrapper.findComponent(ViolationSection);
   const findFixSuggestionSection = () => wrapper.findComponent(FixSuggestionSection);
   const findErrorMessage = () => wrapper.findComponent(GlAlert);
+  const findSystemNotes = () => wrapper.findAllComponents(SystemNote);
+  const findActivitySection = () => wrapper.find('.issuable-discussion');
+  const findActivityHeader = () => wrapper.find('.issuable-discussion h2');
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -200,7 +292,7 @@ describe('ComplianceViolationDetailsApp', () => {
 
     it('displays the correct title', () => {
       const title = wrapper.findByTestId('compliance-violation-title');
-      expect(title.text()).toBe(`Details of vio-${violationId}`);
+      expect(title.text()).toBe(`Details of violation-${violationId}`);
     });
 
     it('renders the status dropdown with correct props', () => {
@@ -233,7 +325,7 @@ describe('ComplianceViolationDetailsApp', () => {
       const fixSuggestionSectionComponent = findFixSuggestionSection();
       expect(fixSuggestionSectionComponent.exists()).toBe(true);
       expect(fixSuggestionSectionComponent.props('controlId')).toBe(
-        mockComplianceViolation.complianceControl.id,
+        mockComplianceViolation.complianceControl.name,
       );
       expect(fixSuggestionSectionComponent.props('projectPath')).toBe(
         mockComplianceViolation.project.webUrl,
@@ -257,6 +349,104 @@ describe('ComplianceViolationDetailsApp', () => {
 
         const auditEventComponent = findAuditEvent();
         expect(auditEventComponent.exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('system notes section', () => {
+    describe('when violation has notes', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('renders the activity section', () => {
+        expect(findActivitySection().exists()).toBe(true);
+      });
+
+      it('displays the activity header', () => {
+        expect(findActivityHeader().text()).toBe('Activity');
+      });
+
+      it('renders only system notes', () => {
+        const systemNotes = findSystemNotes();
+        expect(systemNotes).toHaveLength(1);
+      });
+
+      it('filters out non-system notes', () => {
+        const systemNotes = findSystemNotes();
+        const nonSystemNotes = mockComplianceViolation.notes.nodes.filter((note) => !note.system);
+
+        expect(nonSystemNotes).toHaveLength(1);
+
+        systemNotes.wrappers.forEach((noteWrapper) => {
+          const noteId = noteWrapper.props('note').id;
+          const isSystemNote = mockComplianceViolation.notes.nodes.find(
+            (note) => note.id === noteId,
+          ).system;
+          expect(isSystemNote).toBe(true);
+        });
+      });
+
+      it('passes correct props to each system note', () => {
+        const systemNotes = findSystemNotes();
+        const systemNotesData = mockComplianceViolation.notes.nodes.filter((note) => note.system);
+
+        systemNotes.wrappers.forEach((noteWrapper, index) => {
+          expect(noteWrapper.props('note')).toEqual(systemNotesData[index]);
+        });
+      });
+
+      it('renders notes in a timeline list', () => {
+        const timeline = wrapper.find('.timeline.main-notes-list.notes');
+        expect(timeline.exists()).toBe(true);
+      });
+    });
+
+    describe('when violation has only non-system notes', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithOnlyNonSystemNotes),
+        });
+        await waitForPromises();
+      });
+
+      it('does not render the activity section when there are no system notes', () => {
+        expect(findActivitySection().exists()).toBe(false);
+      });
+
+      it('does not render any system notes', () => {
+        expect(findSystemNotes()).toHaveLength(0);
+      });
+    });
+
+    describe('when violation has no notes', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithoutNotes),
+        });
+        await waitForPromises();
+      });
+
+      it('does not render the activity section', () => {
+        expect(findActivitySection().exists()).toBe(false);
+      });
+
+      it('does not render any system notes', () => {
+        expect(findSystemNotes()).toHaveLength(0);
+      });
+    });
+
+    describe('when violation notes is null', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithNullNotes),
+        });
+        await waitForPromises();
+      });
+
+      it('does not render the activity section', () => {
+        expect(findActivitySection().exists()).toBe(false);
       });
     });
   });

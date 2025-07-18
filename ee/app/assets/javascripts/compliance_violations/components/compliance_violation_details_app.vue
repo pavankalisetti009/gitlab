@@ -4,6 +4,7 @@ import Vue from 'vue';
 import { s__, __, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
+import SystemNote from '~/work_items/components/notes/system_note.vue';
 import updateProjectComplianceViolation from '../graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
@@ -21,6 +22,7 @@ export default {
     GlAlert,
     GlLoadingIcon,
     ViolationSection,
+    SystemNote,
   },
   props: {
     violationId: {
@@ -68,9 +70,22 @@ export default {
     },
     title() {
       if (!this.hasViolationData) return '';
-      return sprintf(__('Details of vio-%{violationId}'), {
+      return sprintf(__('Details of violation-%{violationId}'), {
         violationId: this.violationId,
       });
+    },
+    hasNotes() {
+      return this.projectComplianceViolation?.notes?.nodes?.length > 0;
+    },
+    notesNodes() {
+      if (!this.hasNotes) return [];
+      return this.projectComplianceViolation.notes.nodes;
+    },
+    systemNotes() {
+      return this.notesNodes.filter((note) => note.system);
+    },
+    hasSystemNotes() {
+      return this.systemNotes.length > 0;
     },
   },
   methods: {
@@ -113,6 +128,7 @@ export default {
       'ComplianceReport|Failed to update compliance violation status. Please try again later.',
     ),
     statusUpdateSuccess: s__('ComplianceReport|Violation status updated successfully.'),
+    activity: s__('ComplianceReport|Activity'),
   },
 };
 </script>
@@ -159,8 +175,14 @@ export default {
     />
     <fix-suggestion-section
       class="gl-mt-5"
-      :control-id="projectComplianceViolation.complianceControl.id"
+      :control-id="projectComplianceViolation.complianceControl.name"
       :project-path="projectComplianceViolation.project.webUrl"
     />
+    <section v-if="hasSystemNotes" class="issuable-discussion gl-pt-6">
+      <h2 class="gl-mb-4 gl-mt-0 gl-text-size-h1">{{ $options.i18n.activity }}</h2>
+      <ul class="timeline main-notes-list notes">
+        <system-note v-for="note in systemNotes" :key="note.id" :note="note" />
+      </ul>
+    </section>
   </div>
 </template>
