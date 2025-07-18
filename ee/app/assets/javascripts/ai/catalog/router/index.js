@@ -12,6 +12,7 @@ import {
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_SHOW_QUERY_PARAM,
 } from './constants';
 
 Vue.use(VueRouter);
@@ -38,7 +39,7 @@ export const createRouter = (base) => {
       },
       {
         name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-        path: '/agents/:id',
+        path: '/agents/:id/edit',
         component: AiCatalogAgentsEdit,
       },
       {
@@ -50,6 +51,14 @@ export const createRouter = (base) => {
         name: AI_CATALOG_FLOWS_ROUTE,
         path: '/flows',
         component: AiCatalogFlows,
+      },
+      // Catch-all route for /agents/:id - redirect to /agents?show=:id
+      {
+        path: '/agents/:id',
+        redirect: (to) => ({
+          path: '/agents',
+          query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
+        }),
       },
     ],
   });
