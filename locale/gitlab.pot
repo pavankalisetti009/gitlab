@@ -15162,10 +15162,10 @@ msgstr ""
 msgid "Color"
 msgstr ""
 
-msgid "ColorMode|Auto (Beta)"
+msgid "ColorMode|Auto"
 msgstr ""
 
-msgid "ColorMode|Dark (Beta)"
+msgid "ColorMode|Dark"
 msgstr ""
 
 msgid "ColorMode|Light"
