@@ -461,6 +461,24 @@ module EE
           .where(p_ai_active_context_code_repositories: { project_id: project_ids })
       }
 
+      scope :order_by_id_list, ->(ids) do
+        ids = Array(ids).compact
+        next all if ids.blank?
+
+        case_statements = ids.map.with_index do |id, index|
+          "WHEN #{id.to_i} THEN #{index}"
+        end
+
+        order_sql = <<~SQL.squish
+          CASE projects.id
+            #{case_statements.join(' ')}
+            ELSE #{ids.size}
+          END
+        SQL
+
+        order(Arel.sql(order_sql))
+      end
+
       delegate :shared_runners_seconds, to: :statistics, allow_nil: true
 
       delegate :ci_minutes_usage, to: :shared_runners_limit_namespace

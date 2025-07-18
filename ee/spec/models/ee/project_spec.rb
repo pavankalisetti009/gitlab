@@ -5473,4 +5473,30 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe '.order_by_id_list' do
+    let_it_be(:project1) { create(:project) }
+    let_it_be(:project2) { create(:project) }
+    let_it_be(:project3) { create(:project) }
+
+    it 'orders projects by the given ID list order' do
+      ids_in_custom_order = [project2.id, project3.id, project1.id]
+
+      result = described_class.order_by_id_list(ids_in_custom_order)
+
+      expect(result.map(&:id)).to eq(ids_in_custom_order)
+    end
+
+    it 'returns all records if ids are blank' do
+      result = described_class.order_by_id_list([])
+
+      expect(result).to match_array(described_class.all)
+    end
+
+    it 'returns all records if ids are nil' do
+      result = described_class.order_by_id_list(nil)
+
+      expect(result).to match_array(described_class.all)
+    end
+  end
 end
