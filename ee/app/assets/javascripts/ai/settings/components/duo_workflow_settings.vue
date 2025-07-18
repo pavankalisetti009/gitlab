@@ -88,7 +88,9 @@ export default {
             visitUrlWithAlerts(this.redirectPath, [
               {
                 id: 'duo-workflow-successfully-disabled',
-                message: s__('AiPowered|GitLab Duo Workflow has successfully been turned off.'),
+                message: s__(
+                  'AiPowered|GitLab Duo Agent Platform has successfully been turned off.',
+                ),
                 variant: 'success',
               },
             ]);
@@ -98,7 +100,7 @@ export default {
           createAlert({
             message:
               error.response?.data?.message ||
-              s__('AiPowered|Failed to disable GitLab Duo Workflow.'),
+              s__('AiPowered|Failed to disable GitLab Duo Agent Platform.'),
             captureError: true,
             error,
           });
@@ -160,7 +162,7 @@ export default {
             <p class="gl-mb-0">
               {{
                 s__(
-                  'AiPowered|Workflow is an AI-native coding agent in the Visual Studio Code (VS Code) IDE.',
+                  'AiPowered|GitLab Duo Agent Platform is an AI-native coding agent in the Visual Studio Code (VS Code) IDE.',
                 )
               }}
             </p>
@@ -177,7 +179,7 @@ export default {
             @click="showDisableConfirmation"
           >
             <gl-loading-icon v-if="isLoading" inline size="sm" class="gl-mr-2" />
-            {{ s__('AiPowered|Turn off GitLab Duo Workflow') }}
+            {{ s__('AiPowered|Turn off GitLab Duo Agent Platform') }}
           </gl-button>
         </div>
 
@@ -190,15 +192,17 @@ export default {
             @click="enableWorkflow"
           >
             <gl-loading-icon v-if="isLoading" inline size="sm" class="gl-mr-2" />
-            {{ s__('AiPowered|Turn on GitLab Duo Workflow') }}
+            {{ s__('AiPowered|Turn on GitLab Duo Agent Platform') }}
           </gl-button>
 
           <p class="gl-mb-0 gl-mt-5">
             {{
-              s__('AiPowered|When you turn on GitLab Duo Workflow, a service account is created.')
+              s__(
+                'AiPowered|When you turn on GitLab Duo Agent Platform, a service account is created.',
+              )
             }}
             <gl-link href="#" class="gl-ml-1" data-testid="service-account-link">
-              {{ s__('AiPowered|What is this service account?') }}
+              {{ s__('AiPowered|What is the Duo Agent Platform service account?') }}
             </gl-link>
           </p>
         </div>
@@ -207,7 +211,7 @@ export default {
 
     <gl-modal
       :visible="showConfirmModal"
-      :title="s__('AiPowered|Are you sure you want to turn off GitLab Duo Workflow?')"
+      :title="s__('AiPowered|Are you sure you want to turn off GitLab Duo Agent Platform?')"
       modal-id="disable-workflow-modal"
       size="sm"
       @primary="disableWorkflow"
@@ -217,7 +221,7 @@ export default {
       <p>
         {{
           s__(
-            'AiPowered|When you turn off Workflow, users can no longer use it to solve coding tasks. Are you sure?',
+            'AiPowered|When you turn off GitLab Duo Agent Platform, users can no longer use it to solve coding tasks. Are you sure?',
           )
         }}
       </p>
@@ -231,7 +235,7 @@ export default {
           data-testid="confirm-disable-button"
           @click="disableWorkflow"
         >
-          {{ s__('AiPowered|Turn off Workflow') }}
+          {{ s__('AiPowered|Turn off GitLab Duo Agent Platform') }}
         </gl-button>
       </template>
     </gl-modal>

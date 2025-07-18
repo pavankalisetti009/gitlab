@@ -82,7 +82,7 @@ describe('DuoWorkflowSettings', () => {
   });
 
   describe('workflow operations', () => {
-    describe('enabling GitLab Duo Workflow', () => {
+    describe('enabling GitLab Duo Agent Platform', () => {
       it('shows success message with new service account when created', async () => {
         createWrapper();
 
@@ -154,7 +154,7 @@ describe('DuoWorkflowSettings', () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: 'duo-workflow-successfully-disabled',
-            message: 'GitLab Duo Workflow has successfully been turned off.',
+            message: 'GitLab Duo Agent Platform has successfully been turned off.',
             variant: 'success',
           }),
         ]),
@@ -166,7 +166,7 @@ describe('DuoWorkflowSettings', () => {
         duoWorkflowEnabled: true,
         duoWorkflowServiceAccount: SERVICE_ACCOUNT,
       });
-      expect(findDisableButton().text()).toContain('Turn off GitLab Duo Workflow');
+      expect(findDisableButton().text()).toContain('Turn off GitLab Duo Agent Platform');
     });
 
     it('clicking disable button shows the confirmation modal', async () => {
