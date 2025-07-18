@@ -60849,6 +60849,9 @@ msgstr ""
 msgid "SquashTmIntegration|Update Squash TM requirements when GitLab issues are modified."
 msgstr ""
 
+msgid "Squashing combines multiple commits into a single commit on merge. This keeps your repository history clean and makes it easier to revert changes."
+msgstr ""
+
 msgid "Stack trace"
 msgstr ""
 
