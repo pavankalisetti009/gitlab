@@ -65,6 +65,30 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
 
           expect(result.success?).to be(true)
         end
+
+        context 'when agent is already being used (has consumers)' do
+          before do
+            create(:ai_catalog_item_consumer, item: agent, project: project)
+          end
+
+          it 'soft deletes the agent' do
+            expect { execute_service }.to change { agent.deleted_at }.from(nil)
+          end
+
+          it 'does not destroy the agent' do
+            expect { execute_service }.not_to change { Ai::Catalog::Item.count }
+          end
+
+          it 'does not destroy agent versions' do
+            expect { execute_service }.not_to change { Ai::Catalog::ItemVersion.count }
+          end
+
+          it 'returns success response' do
+            result = execute_service
+
+            expect(result.success?).to be(true)
+          end
+        end
       end
 
       context 'when agent destruction fails' do

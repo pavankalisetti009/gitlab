@@ -13,7 +13,7 @@ module Ai
           return error_no_permissions unless allowed?
           return error_no_agent unless valid_agent?
 
-          agent.destroy ? success : error_response
+          delete_agent ? success : error_response
         end
 
         private
@@ -34,6 +34,12 @@ module Ai
 
         def error_no_agent
           error('Agent not found')
+        end
+
+        def delete_agent
+          return agent.soft_delete if agent.consumers.any?
+
+          agent.destroy
         end
       end
     end
