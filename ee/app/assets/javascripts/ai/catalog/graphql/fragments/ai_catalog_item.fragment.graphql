@@ -4,4 +4,6 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   itemType
   description
   name
+  public
+  __typename
 }
