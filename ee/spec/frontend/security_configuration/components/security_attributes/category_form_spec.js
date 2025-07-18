@@ -13,13 +13,13 @@ import {
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
-import CategoryForm from 'ee/security_configuration/components/security_labels/category_form.vue';
+import CategoryForm from 'ee/security_configuration/components/security_attributes/category_form.vue';
 import {
-  mockSecurityLabelCategories,
-  mockSecurityLabels,
+  mockSecurityAttributeCategories,
+  mockSecurityAttributes,
 } from 'ee/security_configuration/graphql/resolvers';
 
-const category = mockSecurityLabelCategories[0];
+const category = mockSecurityAttributeCategories[0];
 
 describe('Category form', () => {
   let wrapper;
@@ -27,7 +27,7 @@ describe('Category form', () => {
   const createComponent = (props, mountFn = shallowMountExtended) => {
     wrapper = mountFn(CategoryForm, {
       propsData: {
-        securityLabels: mockSecurityLabels,
+        securityAttributes: mockSecurityAttributes,
         category,
         ...props,
       },
@@ -40,12 +40,12 @@ describe('Category form', () => {
   };
 
   describe.each`
-    description                  | id           | canEditCategory | canEditLabels | multipleSelection
-    ${'locked category'}         | ${1}         | ${false}        | ${false}      | ${false}
-    ${'limited edits category'}  | ${2}         | ${false}        | ${true}       | ${true}
-    ${'fully editable category'} | ${3}         | ${true}         | ${true}       | ${true}
-    ${'new category'}            | ${undefined} | ${true}         | ${true}       | ${false}
-  `('$description', ({ id, canEditCategory, canEditLabels, multipleSelection }) => {
+    description                  | id           | canEditCategory | canEditAttributes | multipleSelection
+    ${'locked category'}         | ${1}         | ${false}        | ${false}          | ${false}
+    ${'limited edits category'}  | ${2}         | ${false}        | ${true}           | ${true}
+    ${'fully editable category'} | ${3}         | ${true}         | ${true}           | ${true}
+    ${'new category'}            | ${undefined} | ${true}         | ${true}           | ${false}
+  `('$description', ({ id, canEditCategory, canEditAttributes, multipleSelection }) => {
     describe('category metadata', () => {
       beforeEach(() => {
         createComponent({
@@ -53,24 +53,24 @@ describe('Category form', () => {
             ...category,
             id,
             canEditCategory,
-            canEditLabels,
+            canEditAttributes,
             multipleSelection,
           },
         });
       });
 
       describe('badge', () => {
-        if (canEditCategory && canEditLabels) {
+        if (canEditCategory && canEditAttributes) {
           it('is not shown', () => {
             expect(wrapper.findComponent(GlBadge).exists()).toBe(false);
           });
         }
-        if (canEditCategory && !canEditLabels) {
+        if (canEditCategory && !canEditAttributes) {
           it('shows "limited edits allowed"', () => {
             expect(wrapper.findComponent(GlBadge).text()).toBe('Limited edits allowed');
           });
         }
-        if (!canEditCategory && !canEditLabels) {
+        if (!canEditCategory && !canEditAttributes) {
           it('shows "category locked"', () => {
             expect(wrapper.findComponent(GlBadge).text()).toBe('Category locked');
           });
@@ -108,7 +108,7 @@ describe('Category form', () => {
       });
     });
 
-    describe('labels', () => {
+    describe('attributes', () => {
       beforeEach(() => {
         createComponent(
           {
@@ -116,7 +116,7 @@ describe('Category form', () => {
               ...category,
               id,
               canEditCategory,
-              canEditLabels,
+              canEditAttributes,
               multipleSelection,
             },
           },
@@ -126,40 +126,42 @@ describe('Category form', () => {
 
       // if category is not new (empty)
       if (id !== undefined) {
-        it('renders the labels in the category', () => {
-          mockSecurityLabels
-            .filter((label) => label.categoryId === category.id)
-            .forEach((label, index) => {
-              expect(wrapper.findAllComponents(GlLabel).at(index).props('title')).toBe(label.name);
+        it('renders the attributes in the category', () => {
+          mockSecurityAttributes
+            .filter((attribute) => attribute.categoryId === category.id)
+            .forEach((attribute, index) => {
+              expect(wrapper.findAllComponents(GlLabel).at(index).props('title')).toBe(
+                attribute.name,
+              );
               expect(
                 wrapper.findComponent(GlTableLite).find('tbody').findAll('tr').at(index).text(),
-              ).toContain(label.description);
+              ).toContain(attribute.description);
               expect(wrapper.findAllComponents(GlLink).at(index).text()).toContain(
-                `${label.projectCount} project`,
+                `${attribute.projectCount} project`,
               );
             });
         });
       }
 
-      if (canEditLabels) {
-        it('shows a label create button that emits addLabel', async () => {
+      if (canEditAttributes) {
+        it('shows an attribute create button that emits addAttribute', async () => {
           wrapper.findComponent(GlButton).vm.$emit('click');
           await nextTick();
 
-          expect(wrapper.emitted('addLabel')).toStrictEqual([[]]);
+          expect(wrapper.emitted('addAttribute')).toStrictEqual([[]]);
         });
       }
-      if (canEditLabels && id !== undefined) {
-        it('shows a label edit dropdown item that emits editLabel', async () => {
+      if (canEditAttributes && id !== undefined) {
+        it('shows an attribute edit dropdown item that emits editAttribute', async () => {
           wrapper.findAllComponents(GlDisclosureDropdownItem).at(0).vm.$emit('action');
 
           await nextTick();
 
-          expect(wrapper.emitted()).toMatchObject({ editLabel: [[{ name: 'Asset Track' }]] });
+          expect(wrapper.emitted()).toMatchObject({ editAttribute: [[{ name: 'Asset Track' }]] });
         });
       }
-      if (!canEditLabels) {
-        it('does not show label create/edit actions', () => {
+      if (!canEditAttributes) {
+        it('does not show attribute create/edit actions', () => {
           expect(wrapper.findComponent(GlButton).exists()).toBe(false);
           expect(wrapper.findComponent(GlDisclosureDropdownItem).exists()).toBe(false);
         });

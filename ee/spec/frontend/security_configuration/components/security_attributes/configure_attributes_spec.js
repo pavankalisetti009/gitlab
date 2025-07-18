@@ -1,36 +1,36 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
-import ConfigureLabels from 'ee/security_configuration/components/security_labels/configure_labels.vue';
-import CategoryList from 'ee/security_configuration/components/security_labels/category_list.vue';
-import CategoryForm from 'ee/security_configuration/components/security_labels/category_form.vue';
+import ConfigureAttributes from 'ee/security_configuration/components/security_attributes/configure_attributes.vue';
+import CategoryList from 'ee/security_configuration/components/security_attributes/category_list.vue';
+import CategoryForm from 'ee/security_configuration/components/security_attributes/category_form.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import getSecurityLabelsQuery from 'ee/security_configuration/graphql/client/security_labels.query.graphql';
+import getSecurityAttributesQuery from 'ee/security_configuration/graphql/client/security_attributes.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
-  mockSecurityLabelCategories,
-  mockSecurityLabels,
+  mockSecurityAttributeCategories,
+  mockSecurityAttributes,
 } from 'ee/security_configuration/graphql/resolvers';
 
 Vue.use(VueApollo);
 
-const firstCategory = mockSecurityLabelCategories[0];
-const secondCategory = mockSecurityLabelCategories[1];
+const firstCategory = mockSecurityAttributeCategories[0];
+const secondCategory = mockSecurityAttributeCategories[1];
 
-describe('Configure labels', () => {
+describe('Configure attributes', () => {
   let wrapper;
 
   const queryHandler = jest.fn().mockResolvedValue({
     data: {
       group: {
         id: 'gid://gitlab/Group/group',
-        securityLabelCategories: { nodes: mockSecurityLabelCategories },
-        securityLabels: { nodes: mockSecurityLabels },
+        securityAttributeCategories: { nodes: mockSecurityAttributeCategories },
+        securityAttributes: { nodes: mockSecurityAttributes },
       },
     },
   });
 
-  const createComponent = (requestHandlers = [[getSecurityLabelsQuery, queryHandler]]) => {
+  const createComponent = (requestHandlers = [[getSecurityAttributesQuery, queryHandler]]) => {
     const apolloProvider = createMockApollo(requestHandlers, [], {
       typePolicies: {
         Query: {
@@ -42,7 +42,7 @@ describe('Configure labels', () => {
         },
       },
     });
-    wrapper = shallowMount(ConfigureLabels, {
+    wrapper = shallowMount(ConfigureAttributes, {
       provide: { groupFullPath: 'path/to/group' },
       apolloProvider,
     });
@@ -53,7 +53,7 @@ describe('Configure labels', () => {
     await waitForPromises();
   });
 
-  it('queries for the security label categories', () => {
+  it('queries for the security attribute categories', () => {
     expect(queryHandler).toHaveBeenCalledWith({
       categoryId: undefined,
       fullPath: 'path/to/group',
@@ -62,7 +62,7 @@ describe('Configure labels', () => {
 
   it('renders the list of categories', () => {
     expect(wrapper.findComponent(CategoryList).props()).toStrictEqual({
-      securityLabelCategories: mockSecurityLabelCategories,
+      securityAttributeCategories: mockSecurityAttributeCategories,
       selectedCategory: firstCategory,
     });
   });
@@ -78,27 +78,27 @@ describe('Configure labels', () => {
 
   it('renders the category details form', () => {
     expect(wrapper.findComponent(CategoryForm).props()).toStrictEqual({
-      securityLabels: mockSecurityLabels,
+      securityAttributes: mockSecurityAttributes,
       category: firstCategory,
     });
   });
 
-  it('opens the drawer when form emits addLabel', async () => {
-    wrapper.vm.$refs.labelDrawer.open = jest.fn();
+  it('opens the drawer when form emits addAttribute', async () => {
+    wrapper.vm.$refs.attributeDrawer.open = jest.fn();
 
-    wrapper.findComponent(CategoryForm).vm.$emit('addLabel');
+    wrapper.findComponent(CategoryForm).vm.$emit('addAttribute');
     await nextTick();
 
-    expect(wrapper.vm.$refs.labelDrawer.open).toHaveBeenCalledWith('add', undefined);
+    expect(wrapper.vm.$refs.attributeDrawer.open).toHaveBeenCalledWith('add', undefined);
   });
 
-  it('opens the drawer when form emits editLabel', async () => {
-    wrapper.vm.$refs.labelDrawer.open = jest.fn();
+  it('opens the drawer when form emits editAttribute', async () => {
+    wrapper.vm.$refs.attributeDrawer.open = jest.fn();
 
-    wrapper.findComponent(CategoryForm).vm.$emit('editLabel', mockSecurityLabels[0]);
+    wrapper.findComponent(CategoryForm).vm.$emit('editAttribute', mockSecurityAttributes[0]);
     await nextTick();
 
-    expect(wrapper.vm.$refs.labelDrawer.open).toHaveBeenCalledWith(
+    expect(wrapper.vm.$refs.attributeDrawer.open).toHaveBeenCalledWith(
       'edit',
       expect.objectContaining({ name: 'Asset Track' }),
     );

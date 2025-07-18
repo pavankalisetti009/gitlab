@@ -1,13 +1,13 @@
 import { GlFormInput, GlFormTextarea, GlFormGroup, GlForm } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import LabelForm from 'ee/security_configuration/components/security_labels/label_form.vue';
+import AttributeForm from 'ee/security_configuration/components/security_attributes/attribute_form.vue';
 import ColorPicker from '~/vue_shared/components/color_picker/color_picker.vue';
 
-describe('LabelForm', () => {
+describe('AttributeForm', () => {
   let wrapper;
 
-  const label = {
+  const attribute = {
     id: 101,
     name: 'Internal::Finance',
     description: 'Sensitive Finance Data',
@@ -15,9 +15,9 @@ describe('LabelForm', () => {
   };
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMountExtended(LabelForm, {
+    wrapper = shallowMountExtended(AttributeForm, {
       propsData: {
-        label,
+        attribute,
         mode: 'edit',
         ...props,
       },
@@ -38,9 +38,9 @@ describe('LabelForm', () => {
 
   describe('initial render', () => {
     it('sets initial form values from props', () => {
-      expect(findNameInput().attributes('value')).toBe(label.name);
-      expect(findDescriptionTextarea().attributes('value')).toBe(label.description);
-      expect(findColorPicker().props('value')).toBe(label.color);
+      expect(findNameInput().attributes('value')).toBe(attribute.name);
+      expect(findDescriptionTextarea().attributes('value')).toBe(attribute.description);
+      expect(findColorPicker().props('value')).toBe(attribute.color);
     });
   });
 
@@ -92,7 +92,7 @@ describe('LabelForm', () => {
     });
 
     it('emits saved with correct payload when valid', async () => {
-      findNameInput().vm.$emit('input', 'NewLabel');
+      findNameInput().vm.$emit('input', 'NewAttribute');
       findDescriptionTextarea().vm.$emit('input', 'New description');
       findColorPicker().vm.$emit('input', '#ff0000');
       await nextTick();
@@ -101,8 +101,8 @@ describe('LabelForm', () => {
 
       const emittedData = wrapper.emitted('saved')[0][0];
       expect(emittedData).toEqual({
-        id: label.id,
-        name: 'NewLabel',
+        id: attribute.id,
+        name: 'NewAttribute',
         description: 'New description',
         color: '#ff0000',
       });

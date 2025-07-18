@@ -266,20 +266,20 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
     describe 'Security configuration' do
       let(:item_id) { :configuration }
 
-      context 'when security_labels feature is available' do
+      context 'when security_attributes feature is available' do
         before do
-          stub_licensed_features(security_labels: true)
+          stub_licensed_features(security_attributes: true)
         end
 
         it { is_expected.not_to be_nil }
 
-        context 'when user is authorized to admin_security_labels' do
+        context 'when user is authorized to admin_security_attributes' do
           it 'lists Security configuration in the menu list' do
             expect(menu_items).to include("Security configuration")
           end
         end
 
-        context 'when user is not authorized to admin_security_labels' do
+        context 'when user is not authorized to admin_security_attributes' do
           let(:user) { guest }
 
           it 'does not list Security configuration in the menu list' do
@@ -288,9 +288,9 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
         end
       end
 
-      context 'when security_labels feature is not available' do
+      context 'when security_attributes feature is not available' do
         before do
-          stub_licensed_features(security_labels: false)
+          stub_licensed_features(security_attributes: false)
         end
 
         it { is_expected.to be_nil }
@@ -298,7 +298,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
 
       context 'when security_context_labels feature flag is not enabled' do
         before do
-          stub_licensed_features(security_labels: true)
+          stub_licensed_features(security_attributes: true)
           stub_feature_flags(security_context_labels: false)
         end
 

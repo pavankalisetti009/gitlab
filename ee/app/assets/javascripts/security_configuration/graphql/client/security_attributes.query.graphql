@@ -1,18 +1,18 @@
-query getSecurityLabels($fullPath: ID!, $categoryId: ID) {
+query getSecurityAttributes($fullPath: ID!, $categoryId: ID) {
   group(fullPath: $fullPath) {
     id
-    securityLabelCategories @client {
+    securityAttributeCategories @client {
       nodes {
         id
         name
         description
         multipleSelection
         canEditCategory
-        canEditLabels
-        labelCount
+        canEditAttributes
+        attributeCount
       }
     }
-    securityLabels(categoryId: $categoryId) @client {
+    securityAttributes(categoryId: $categoryId) @client {
       nodes {
         id
         categoryId

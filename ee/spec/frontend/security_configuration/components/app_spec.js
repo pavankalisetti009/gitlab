@@ -12,7 +12,7 @@ import { TAB_VULNERABILITY_MANAGEMENT_INDEX } from '~/security_configuration/con
 import { REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY } from '~/vue_shared/security_reports/constants';
 import FeatureCard from '~/security_configuration/components/feature_card.vue';
 import ContainerScanningForRegistryFeatureCard from 'ee_component/security_configuration/components/container_scanning_for_registry_feature_card.vue';
-import ApplySecurityLabels from 'ee/security_configuration/security_labels/components/apply_security_labels.vue';
+import ApplySecurityAttributes from 'ee/security_configuration/security_attributes/components/apply_security_attributes.vue';
 import { stubComponent } from 'helpers/stub_component';
 
 jest.mock('~/api.js');
@@ -196,19 +196,19 @@ describe('~/security_configuration/components/app', () => {
     });
   });
 
-  describe('Security labels tab', () => {
+  describe('Security attributes tab', () => {
     describe.each`
-      securityLabels | securityContextLabels | result
-      ${false}       | ${false}              | ${false}
-      ${false}       | ${true}               | ${false}
-      ${true}        | ${false}              | ${false}
-      ${true}        | ${true}               | ${true}
+      securityAttributes | securityContextLabels | result
+      ${false}           | ${false}              | ${false}
+      ${false}           | ${true}               | ${false}
+      ${true}            | ${false}              | ${false}
+      ${true}            | ${true}               | ${true}
     `(
-      'with licensed feature set to $securityLabels and feature flag set to $securityContextLabels',
-      ({ securityLabels, securityContextLabels, result }) => {
+      'with licensed feature set to $securityAttributes and feature flag set to $securityContextLabels',
+      ({ securityAttributes, securityContextLabels, result }) => {
         beforeEach(async () => {
           window.gon = {
-            licensed_features: { securityLabels },
+            licensed_features: { securityAttributes },
           };
 
           createComponent({
@@ -230,7 +230,7 @@ describe('~/security_configuration/components/app', () => {
         });
 
         it('renders the tab when correctly licensed', () => {
-          expect(wrapper.findComponent(ApplySecurityLabels).exists()).toBe(result);
+          expect(wrapper.findComponent(ApplySecurityAttributes).exists()).toBe(result);
         });
       },
     );

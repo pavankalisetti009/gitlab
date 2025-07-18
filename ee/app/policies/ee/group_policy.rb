@@ -640,10 +640,10 @@ module EE
       end
 
       rule { can?(:maintainer_access) }.policy do
-        enable :admin_security_labels
+        enable :admin_security_attributes
       end
 
-      rule { custom_role_enables_admin_security_labels }.enable(:admin_security_labels)
+      rule { custom_role_enables_admin_security_attributes }.enable(:admin_security_attributes)
 
       rule { ~security_inventory_available }.prevent :read_security_inventory
 

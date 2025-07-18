@@ -7,7 +7,7 @@ export default {
     GlBadge,
   },
   props: {
-    securityLabelCategories: {
+    securityAttributeCategories: {
       type: Array,
       required: true,
     },
@@ -22,21 +22,21 @@ export default {
 <template>
   <div>
     <div class="gl-mb-4 gl-flex gl-items-center gl-justify-between">
-      <h4 class="gl-text-lg">{{ s__('SecurityLabels|Categories') }}</h4>
+      <h4 class="gl-text-lg">{{ s__('SecurityAttributes|Categories') }}</h4>
       <gl-button
         category="primary"
         variant="confirm"
         size="small"
         @click="$emit('selectCategory', {})"
-        >{{ s__('SecurityLabels|Create category') }}</gl-button
+        >{{ s__('SecurityAttributes|Create category') }}</gl-button
       >
     </div>
     <div
-      v-for="category in securityLabelCategories"
+      v-for="category in securityAttributeCategories"
       :key="category.id"
       class="gl-my-1 gl-flex gl-cursor-pointer gl-items-center gl-rounded-base gl-p-3 hover:!gl-bg-status-neutral"
       :class="{ 'gl-bg-strong': selectedCategory.id === category.id }"
-      :data-testid="`label-category-${category.id}`"
+      :data-testid="`attribute-category-${category.id}`"
       @click="$emit('selectCategory', category)"
     >
       <div>
@@ -47,7 +47,7 @@ export default {
           {{ category.description }}
         </div>
       </div>
-      <gl-badge>{{ category.labelCount }}</gl-badge>
+      <gl-badge>{{ category.attributeCount }}</gl-badge>
     </div>
   </div>
 </template>

@@ -42,7 +42,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    securityLabels: {
+    securityAttributes: {
       type: Array,
       required: true,
     },
@@ -57,16 +57,16 @@ export default {
       return !this.category?.id;
     },
     isLocked() {
-      return !this.category?.canEditCategory && !this.category?.canEditLabels;
+      return !this.category?.canEditCategory && !this.category?.canEditAttributes;
     },
     isLimited() {
-      return !this.category?.canEditCategory && this.category?.canEditLabels;
+      return !this.category?.canEditCategory && this.category?.canEditAttributes;
     },
     isCategoryEditable() {
       return this.category?.canEditCategory || this.isNew;
     },
-    areLabelsEditable() {
-      return this.category?.canEditLabels || this.isNew;
+    areAttributesEditable() {
+      return this.category?.canEditAttributes || this.isNew;
     },
     categoryName() {
       return this.category?.name;
@@ -74,14 +74,14 @@ export default {
     categoryDescription() {
       return this.category?.description;
     },
-    labels() {
-      return this.category?.id ? this.securityLabels : [];
+    attributes() {
+      return this.category?.id ? this.securityAttributes : [];
     },
   },
-  labelsTableFields: [
+  attributesTableFields: [
     {
       key: 'name',
-      label: __('Label'),
+      label: __('Attribute'),
       // eslint-disable-next-line @gitlab/require-i18n-strings
       tdClass: '!gl-border-b-0 gl-w-1/5',
       // eslint-disable-next-line @gitlab/require-i18n-strings
@@ -119,25 +119,27 @@ export default {
           v-if="isLocked"
           v-gl-tooltip="
             s__(
-              'SecurityLabels|You cannot delete or edit this category. You cannot modify the labels.',
+              'SecurityAttributes|You cannot delete or edit this category. You cannot modify the attributes.',
             )
           "
           icon="lock"
         >
-          {{ s__('SecurityLabels|Category locked') }}
+          {{ s__('SecurityAttributes|Category locked') }}
         </gl-badge>
         <gl-badge
           v-else-if="isLimited"
           v-gl-tooltip="
-            s__('SecurityLabels|You cannot delete this category, but you can edit the labels.')
+            s__(
+              'SecurityAttributes|You cannot delete this category, but you can edit the attributes.',
+            )
           "
           icon="pencil"
         >
-          {{ s__('SecurityLabels|Limited edits allowed') }}
+          {{ s__('SecurityAttributes|Limited edits allowed') }}
         </gl-badge>
       </div>
-      <h3 class="gl-heading-3">{{ s__('SecurityLabels|Category details') }}</h3>
-      <p>{{ s__('SecurityLabels|View category settings and associated labels.') }}</p>
+      <h3 class="gl-heading-3">{{ s__('SecurityAttributes|Category details') }}</h3>
+      <p>{{ s__('SecurityAttributes|View category settings and associated attributes.') }}</p>
       <gl-form>
         <gl-form-group :label="__('Name')">
           <gl-form-input v-if="isCategoryEditable" :value="categoryName" />
@@ -149,11 +151,11 @@ export default {
         </gl-form-group>
         <gl-form-group>
           <template #label>
-            {{ s__('SecurityLabels|Selection type') }}
+            {{ s__('SecurityAttributes|Selection type') }}
             <gl-icon
               v-gl-tooltip="
                 s__(
-                  'SecurityLabels|You cannot change the selection type after the category is created. To use a different selection type, create a new category.',
+                  'SecurityAttributes|You cannot change the selection type after the category is created. To use a different selection type, create a new category.',
                 )
               "
               variant="info"
@@ -162,10 +164,10 @@ export default {
           </template>
           <gl-form-radio-group v-if="isNew">
             <gl-form-radio :value="false">
-              {{ s__('SecurityLabels|Single selection') }}
+              {{ s__('SecurityAttributes|Single selection') }}
             </gl-form-radio>
             <gl-form-radio :value="true">
-              {{ s__('SecurityLabels|Multiple selection') }}
+              {{ s__('SecurityAttributes|Multiple selection') }}
             </gl-form-radio>
           </gl-form-radio-group>
           <span v-else>{{
@@ -173,28 +175,32 @@ export default {
           }}</span>
         </gl-form-group>
         <gl-button
-          v-if="areLabelsEditable"
+          v-if="areAttributesEditable"
           category="secondary"
           variant="confirm"
           size="small"
           class="gl-float-right"
-          @click="$emit('addLabel')"
+          @click="$emit('addAttribute')"
         >
-          {{ s__('SecurityLabels|Create label') }}
+          {{ s__('SecurityAttributes|Create attribute') }}
         </gl-button>
         <gl-form-group
-          :description="s__('SecurityLabels|View the labels available in this category')"
+          :description="s__('SecurityAttributes|View the attributes available in this category')"
         >
           <template #label>
-            {{ __('Labels') }}
+            {{ __('Attributes') }}
             <span class="gl-font-normal gl-text-subtle">
               <gl-icon name="label" />
-              {{ labels.length }}
+              {{ attributes.length }}
             </span>
           </template>
         </gl-form-group>
         <crud-component header-class="gl-hidden">
-          <gl-table-lite :items="labels" :fields="$options.labelsTableFields" class="gl-mb-0">
+          <gl-table-lite
+            :items="attributes"
+            :fields="$options.attributesTableFields"
+            class="gl-mb-0"
+          >
             <template #cell(name)="{ item: { name, color } }">
               <gl-label :background-color="color" :title="name" />
             </template>
@@ -203,11 +209,11 @@ export default {
                 {{ n__('%d project', '%d projects', projectCount) }}
               </gl-link>
             </template>
-            <template v-if="areLabelsEditable" #cell(actions)="{ item }">
+            <template v-if="areAttributesEditable" #cell(actions)="{ item }">
               <gl-disclosure-dropdown category="tertiary" icon="ellipsis_v" no-caret>
                 <gl-disclosure-dropdown-item
                   :item="$options.editItem"
-                  @action="$emit('editLabel', item)"
+                  @action="$emit('editAttribute', item)"
                 />
               </gl-disclosure-dropdown>
             </template>
@@ -217,7 +223,7 @@ export default {
     </div>
     <div v-if="!isLocked" class="gl-border-t gl-sticky gl-bottom-0 gl-w-full gl-bg-default gl-p-6">
       <gl-button category="primary" variant="confirm">
-        {{ s__('SecurityLabels|Save changes') }}
+        {{ s__('SecurityAttributes|Save changes') }}
       </gl-button>
     </div>
   </div>

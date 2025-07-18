@@ -7,7 +7,7 @@ RSpec.describe Groups::Security::ConfigurationController, feature_category: :sec
   let_it_be(:group) { create(:group, owners: user) }
 
   before do
-    stub_licensed_features(security_labels: true, security_dashboard: true)
+    stub_licensed_features(security_attributes: true, security_dashboard: true)
     stub_feature_flags(security_context_labels: true)
 
     sign_in(user)
@@ -46,14 +46,14 @@ RSpec.describe Groups::Security::ConfigurationController, feature_category: :sec
       end
     end
 
-    context 'when security labels feature is not available' do
+    context 'when security attributes feature is not available' do
       before_all do
         group.add_maintainer(user)
         sign_in(user)
       end
 
       before do
-        stub_licensed_features(security_labels: false)
+        stub_licensed_features(security_attributes: false)
       end
 
       it 'returns 403 response' do
@@ -63,7 +63,7 @@ RSpec.describe Groups::Security::ConfigurationController, feature_category: :sec
       end
     end
 
-    context 'when security labels feature flag is disabled' do
+    context 'when security attributes feature flag is disabled' do
       before_all do
         group.add_maintainer(user)
         sign_in(user)

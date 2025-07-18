@@ -1,5 +1,5 @@
 ---
-name: custom_ability_admin_security_labels
+name: custom_ability_admin_security_attributes
 description:
 feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/18010
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/195554
