@@ -106,8 +106,10 @@ module Security
       policy = policies.find_or_initialize_by(policy_index: policy_index, type: policy_type)
       policy.update!(attributes_from_policy_hash(policy_type, policy_hash, policy_configuration))
 
-      Array.wrap(policy_hash[:rules]).map.with_index do |rule_hash, rule_index|
-        policy.upsert_rule(rule_index, rule_hash)
+      if policy.supports_policy_rules?
+        Array.wrap(policy_hash[:rules]).map.with_index do |rule_hash, rule_index|
+          policy.upsert_rule(rule_index, rule_hash)
+        end
       end
 
       policy.update_pipeline_execution_policy_config_link!
@@ -323,17 +325,18 @@ module Security
     end
     strong_memoize_attr :bypass_settings
 
+    def supports_policy_rules?
+      Security::PolicyRule::SUPPORTED_POLICY_TYPES.include?(type.to_sym)
+    end
+
     private
 
     def content_by_type
       content_hash = content.deep_symbolize_keys.slice(*POLICY_CONTENT_FIELDS[type.to_sym])
 
-      case type
-      when 'approval_policy', 'scan_execution_policy', 'vulnerability_management_policy'
-        content_hash.merge(rules: rules.map(&:typed_content).map(&:deep_symbolize_keys))
-      when 'pipeline_execution_policy', 'pipeline_execution_schedule_policy'
-        content_hash
-      end
+      return content_hash unless supports_policy_rules?
+
+      content_hash.merge(rules: rules.map(&:typed_content).map(&:deep_symbolize_keys))
     end
 
     def link_policy_rules_project!(project, policy_rules = approval_policy_rules.undeleted)
