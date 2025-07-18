@@ -1,7 +1,7 @@
 import { GlIcon } from '@gitlab/ui';
 import { safeDump } from 'js-yaml';
 import AnalyticsVisualizationPreview from 'ee/analytics/analytics_dashboards/components/data_explorer/analytics_visualization_preview.vue';
-import AiCubeQueryFeedback from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_feedback.vue';
+
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 
 import {
@@ -21,7 +21,7 @@ describe('AnalyticsVisualizationPreview', () => {
 
   const findVisualizationButton = () => wrapper.findByTestId('select-visualization-button');
   const findCodeButton = () => wrapper.findByTestId('select-code-button');
-  const findAiCubeQueryFeedback = () => wrapper.findComponent(AiCubeQueryFeedback);
+
   const findHelpIcon = () => wrapper.findComponent(GlIcon);
 
   const selectDisplayType = jest.fn();
@@ -94,34 +94,6 @@ describe('AnalyticsVisualizationPreview', () => {
           'The visualization preview displays only the last 7 days. Dashboard visualizations can display the entire date range.',
         );
         expect(tooltip).toBeDefined();
-      });
-    });
-
-    describe('when there is an AI prompt correlation id', () => {
-      beforeEach(() => {
-        createWrapper({
-          isQueryPresent: true,
-          aiPromptCorrelationId: 'some-prompt-id',
-        });
-      });
-
-      it('should render the AI cube query feedback component', () => {
-        expect(findAiCubeQueryFeedback().props()).toMatchObject({
-          correlationId: 'some-prompt-id',
-        });
-      });
-    });
-
-    describe('when there is no AI prompt correlation id', () => {
-      beforeEach(() => {
-        createWrapper({
-          isQueryPresent: true,
-          aiPromptCorrelationId: null,
-        });
-      });
-
-      it('should not render the AI cube query feedback component', () => {
-        expect(findAiCubeQueryFeedback().exists()).toBe(false);
       });
     });
   });

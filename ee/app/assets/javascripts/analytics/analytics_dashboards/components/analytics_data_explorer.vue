@@ -27,13 +27,12 @@ import {
 } from '../constants';
 import VisualizationPreview from './data_explorer/analytics_visualization_preview.vue';
 import VisualizationTypeSelector from './data_explorer/analytics_visualization_type_selector.vue';
-import AiCubeQueryGenerator from './data_explorer/ai_cube_query_generator.vue';
+
 import VisualizationFilteredSearch from './data_explorer/filters/visualization_filtered_search.vue';
 
 export default {
   name: 'AnalyticsDataExplorer',
   components: {
-    AiCubeQueryGenerator,
     GlButton,
     GlFormInput,
     GlFormGroup,
@@ -45,9 +44,6 @@ export default {
   },
   mixins: [InternalEvents.mixin()],
   inject: {
-    aiGenerateCubeQueryEnabled: {
-      type: Boolean,
-    },
     customDashboardsProject: {
       type: Object,
       default: null,
@@ -68,8 +64,6 @@ export default {
       selectedVisualizationType: VISUALIZATION_TYPE_DATA_TABLE,
       isSaving: false,
       alert: null,
-      aiPromptCorrelationId: null,
-      aiPrompt: '',
       filterOptions: {
         availableMeasures: [],
         availableDimensions: [],
@@ -270,18 +264,11 @@ export default {
         captureError,
       });
     },
-    onQueryGenerated(query, correlationId) {
-      this.queryState.query = {
-        ...query,
-      };
-      this.aiPromptCorrelationId = correlationId;
-    },
+
     resetToInitialState() {
       this.queryState = DEFAULT_VISUALIZATION_QUERY_STATE();
       this.visualizationTitle = '';
       this.selectedVisualizationType = VISUALIZATION_TYPE_DATA_TABLE;
-      this.aiPromptCorrelationId = null;
-      this.aiPrompt = '';
     },
   },
   i18n: {
@@ -337,13 +324,7 @@ export default {
         </gl-form-group>
       </div>
     </section>
-    <ai-cube-query-generator
-      v-if="aiGenerateCubeQueryEnabled"
-      v-model="aiPrompt"
-      :warn-before-replacing-query="queryStateHasChanges"
-      class="gl-mb-4"
-      @query-generated="onQueryGenerated"
-    />
+
     <section
       class="gl-border-t gl-border-b gl-mb-6 gl-flex gl-flex-wrap"
       data-testid="query-builder"
@@ -381,7 +362,6 @@ export default {
           :loading="false"
           :result-visualization="queryStateHasChanges ? resultVisualization : null"
           :title="visualizationTitle"
-          :ai-prompt-correlation-id="aiPromptCorrelationId"
           @selectedDisplayType="selectDisplayType"
         />
       </div>

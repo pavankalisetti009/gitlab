@@ -55,16 +55,6 @@ module EE
         ::Feature.enabled?(:ai_global_switch, type: :ops)
       end
 
-      with_scope :subject
-      condition(:generate_cube_query_enabled) do
-        ::Feature.enabled?(:generate_cube_query, @subject) &&
-          ::Gitlab::Llm::FeatureAuthorizer.new(
-            container: subject,
-            feature_name: :generate_cube_query,
-            user: @user
-          ).allowed?
-      end
-
       with_scope :global
       condition(:locked_approvers_rules) do
         !@user.can_admin_all_resources? &&
@@ -1125,8 +1115,6 @@ module EE
       end
 
       rule { guest | admin }.enable :read_limit_alert
-
-      rule { ai_available & generate_cube_query_enabled }.enable :generate_cube_query
 
       rule { guest & agent_registry_enabled }.policy do
         enable :read_ai_agents

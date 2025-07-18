@@ -233,7 +233,6 @@ module GitlabSubscriptions
       external_audit_events
       experimental_features
       generate_test_file
-      ai_generate_cube_query
       git_abuse_rate_limit
       group_ci_cd_analytics
       group_level_compliance_adherence_report

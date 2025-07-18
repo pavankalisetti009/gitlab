@@ -8,14 +8,12 @@ import {
   PANEL_DISPLAY_TYPE_ITEMS,
   PANEL_VISUALIZATION_HEIGHT,
 } from '../../constants';
-import AiCubeQueryFeedback from './ai_cube_query_feedback.vue';
 
 export default {
   name: 'AnalyticsVisualizationPreview',
   PANEL_DISPLAY_TYPES,
   PANEL_DISPLAY_TYPE_ITEMS,
   components: {
-    AiCubeQueryFeedback,
     GlButton,
     GlButtonGroup,
     GlIcon,
@@ -46,11 +44,6 @@ export default {
       type: String,
       required: false,
       default: '',
-    },
-    aiPromptCorrelationId: {
-      type: String,
-      required: false,
-      default: null,
     },
   },
   computed: {
@@ -99,11 +92,6 @@ export default {
             variant="subtle"
           />
         </div>
-        <ai-cube-query-feedback
-          v-if="aiPromptCorrelationId"
-          :correlation-id="aiPromptCorrelationId"
-          class="gl-ml-auto gl-h-full"
-        />
       </div>
       <div class="border-light gl-border gl-m-5 gl-overflow-auto gl-rounded-base gl-shadow-sm">
         <div v-if="displayType === $options.PANEL_DISPLAY_TYPES.VISUALIZATION">

@@ -43,7 +43,6 @@ export default () => {
     rootNamespaceName,
     rootNamespaceFullPath,
     dataSourceClickhouse,
-    aiGenerateCubeQueryEnabled,
     topicsExploreProjectsPath,
     isInstanceConfiguredWithSelfManagedAnalyticsProvider,
     defaultUseInstanceConfiguration,
@@ -109,7 +108,6 @@ export default () => {
     apolloProvider,
     router,
     provide: {
-      aiGenerateCubeQueryEnabled: parseBoolean(aiGenerateCubeQueryEnabled),
       breadcrumbState,
       customDashboardsProject,
       canConfigureProjectSettings,

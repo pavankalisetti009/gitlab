@@ -97,15 +97,7 @@ module Gitlab
             self_managed: true,
             internal: false
           },
-          generate_cube_query: {
-            service_class: ::Gitlab::Llm::VertexAi::Completions::GenerateCubeQuery,
-            prompt_class: ::Gitlab::Llm::VertexAi::Templates::GenerateCubeQuery,
-            feature_category: :product_analytics,
-            execute_method: ::Llm::ProductAnalytics::GenerateCubeQueryService,
-            maturity: :experimental,
-            self_managed: false,
-            internal: false
-          },
+
           categorize_question: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::CategorizeQuestion,
             prompt_class: ::Gitlab::Llm::Templates::CategorizeQuestion,
