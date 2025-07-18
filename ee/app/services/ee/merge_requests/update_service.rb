@@ -61,6 +61,7 @@ module EE
       override :delete_approvals_on_target_branch_change
       def delete_approvals_on_target_branch_change(merge_request)
         delete_approvals(merge_request) if reset_approvals?(merge_request, nil)
+        schedule_policy_synchronization(merge_request)
         sync_any_merge_request_approval_rules(merge_request)
         notify_for_policy_violations(merge_request)
         audit_security_policy_branch_bypass(merge_request)
@@ -72,7 +73,21 @@ module EE
         merge_request.approval_rules.regular_or_any_approver.delete_all
       end
 
+      def schedule_policy_synchronization(merge_request)
+        if ::Feature.disabled?(:merge_request_approval_policies_inapplicable_rule_evaluation, merge_request.project)
+          return
+        end
+
+        merge_request.synchronize_approval_rules_from_target_project
+        merge_request.schedule_policy_synchronization
+      end
+
       def sync_any_merge_request_approval_rules(merge_request)
+        # `MergeRequest#schedule_policy_synchronization` enqueues `SyncAnyMergeRequestApprovalRulesWorker` already
+        if ::Feature.enabled?(:merge_request_approval_policies_inapplicable_rule_evaluation, merge_request.project)
+          return
+        end
+
         return if merge_request.project.scan_result_policy_reads.targeting_commits.none?
 
         ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(merge_request.id)

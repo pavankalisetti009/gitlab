@@ -547,6 +547,88 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       end
     end
 
+    describe '#schedule_policy_synchronization' do
+      let_it_be(:project) { create(:project) }
+      let_it_be_with_reload(:merge_request) { create(:ee_merge_request, source_project: project) }
+      let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+      let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read) }
+
+      let_it_be(:approval_project_rule) do
+        create(
+          :approval_project_rule,
+          :scan_finding,
+          project: project,
+          scanners: %w[sast],
+          security_orchestration_policy_configuration: policy_configuration,
+          scan_result_policy_read: scan_result_policy_read,
+          approvals_required: 1)
+      end
+
+      let_it_be(:other_approval_project_rule) do
+        create(
+          :approval_project_rule,
+          :regular,
+          project: project,
+          approvals_required: 1)
+      end
+
+      let_it_be_with_reload(:approval_merge_request_rule) do
+        create(
+          :report_approver_rule,
+          :scan_finding, merge_request: merge_request,
+          approval_project_rule: approval_project_rule,
+          scan_result_policy_read: scan_result_policy_read,
+          approvals_required: 0)
+      end
+
+      let_it_be_with_reload(:other_approval_merge_request_rule) do
+        create(
+          :any_approver_rule,
+          merge_request: merge_request,
+          approval_project_rule: other_approval_project_rule,
+          approvals_required: 0)
+      end
+
+      context 'with target branch change' do
+        let(:opts) { { target_branch: 'feature-2' } }
+
+        it 'does not reset security policy approval rules' do
+          expect { update_merge_request(opts) }
+            .not_to change { approval_merge_request_rule.reload.approvals_required }.from(0)
+        end
+
+        it 'does not reset other approval rules' do
+          expect { update_merge_request(opts) }
+            .not_to change { other_approval_merge_request_rule.reload.approvals_required }
+                      .from(0)
+        end
+
+        it 'recreates violations' do
+          expect { update_merge_request(opts) }
+            .to change { Security::ScanResultPolicyViolation.count }
+                  .from(0).to(1)
+        end
+
+        it 'schedules policy synchronization' do
+          expect(merge_request).to receive(:schedule_policy_synchronization).and_call_original
+
+          update_merge_request(opts)
+        end
+
+        context 'with feature disabled' do
+          before do
+            stub_feature_flags(merge_request_approval_policies_inapplicable_rule_evaluation: false)
+          end
+
+          it 'does not schedule policy synchronization' do
+            expect(merge_request).not_to receive(:schedule_policy_synchronization)
+
+            update_merge_request(opts)
+          end
+        end
+      end
+    end
+
     describe '#sync_any_merge_request_approval_rules' do
       let(:opts) { { target_branch: 'feature-2' } }
       let!(:scan_result_policy_read) { create(:scan_result_policy_read, :targeting_commits, project: project) }
