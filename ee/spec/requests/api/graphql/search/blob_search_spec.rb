@@ -15,13 +15,8 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, feature
 
   let(:query) { graphql_query_for(:blobSearch, arguments, fields) }
 
-  before do
-    stub_licensed_features(zoekt_code_search: true)
-  end
-
   context 'when zoekt is enabled for a group' do
     before_all do
-      zoekt_truncate_index!
       zoekt_ensure_project_indexed!(project)
     end
 
@@ -29,10 +24,6 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, feature
       before do
         post_graphql(query, current_user: current_user)
       end
-    end
-
-    after(:all) do
-      zoekt_truncate_index!
     end
 
     describe 'validation for verify_repository_ref!' do
@@ -191,7 +182,7 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, feature
       let_it_be(:forked_project) { fork_project(project, nil, repository: true, namespace: group2) }
       let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group2.id}" } }
 
-      before do
+      before_all do
         zoekt_ensure_project_indexed!(forked_project)
       end
 
