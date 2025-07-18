@@ -56,6 +56,8 @@ module EE
 
             process_elasticsearch_project(project, elasticsearch_limit_indexing_enabled)
             delete_vulnerabilities_with_old_routing(project)
+
+            remove_project_compliance_frameworks(project) if should_remove_compliance_frameworks?(old_root_ancestor_id)
           end
         end
 
@@ -162,6 +164,26 @@ module EE
           new_root_namespace: new_root_namespace.reset,
           project_namespace_ids: project_namespace_ids
         ).execute
+      end
+
+      def should_remove_compliance_frameworks?(old_root_ancestor_id)
+        return false unless group.licensed_feature_available?(:custom_compliance_frameworks)
+
+        old_root_ancestor_id && old_root_ancestor_id != group.root_ancestor.id
+      end
+
+      def remove_project_compliance_frameworks(project)
+        project.compliance_framework_settings.each do |framework_setting|
+          framework_id = framework_setting.framework_id
+
+          framework_setting.delete
+          ComplianceManagement::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting,
+            project).execute
+
+          ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker.perform_async(
+            project.id, framework_id, { "skip_framework_check" => true }
+          )
+        end
       end
     end
   end
