@@ -42,40 +42,40 @@ RSpec.describe 'Query.instanceSecurityDashboard.projects', feature_category: :vu
     context 'when loading vulnerabilityGrades alongside with Vulnerability.userNotesCount' do
       let(:fields) do
         <<~QUERY
-          allGrades: vulnerabilityGrades {
-            grade
-            count
-            projects {
+      allGrades: vulnerabilityGrades {
+        grade
+        count
+        projects {
+          nodes {
+            vulnerabilities {
               nodes {
-                vulnerabilities {
-                  nodes {
-                    id
-                    userNotesCount
-                  }
-                }
+                id
+                userNotesCount
               }
             }
           }
-          withVulnerabilitiesByState: vulnerabilityGrades {
-            grade
-            count
-            projects {
+        }
+      }
+      withVulnerabilitiesByState: vulnerabilityGrades {
+        grade
+        count
+        projects {
+          nodes {
+            confirmedVulnerabilities: vulnerabilities(state: CONFIRMED) {
               nodes {
-                confirmedVulnerabilities: vulnerabilities(state: CONFIRMED) {
-                  nodes {
-                    id
-                    userNotesCount
-                  }
-                }
-                dismissedVulnerabilities: vulnerabilities(state: DISMISSED) {
-                  nodes {
-                    id
-                    userNotesCount
-                  }
-                }
+                id
+                userNotesCount
+              }
+            }
+            dismissedVulnerabilities: vulnerabilities(state: DISMISSED) {
+              nodes {
+                id
+                userNotesCount
               }
             }
           }
+        }
+      }
         QUERY
       end
 
@@ -92,8 +92,18 @@ RSpec.describe 'Query.instanceSecurityDashboard.projects', feature_category: :vu
 
       it_behaves_like 'a working graphql query that returns data' do
         let(:expected_response) do
+          empty_grade_entry = ->(grade) do
+            {
+              'grade' => grade,
+              'count' => 0,
+              'projects' => { 'nodes' => [] }
+            }
+          end
+
           {
             'allGrades' => [
+              empty_grade_entry.call('A'),
+              empty_grade_entry.call('B'),
               {
                 'count' => 1,
                 'grade' => 'C',
@@ -124,9 +134,12 @@ RSpec.describe 'Query.instanceSecurityDashboard.projects', feature_category: :vu
                     }
                   ]
                 }
-              }
+              },
+              empty_grade_entry.call('F')
             ],
             'withVulnerabilitiesByState' => [
+              empty_grade_entry.call('A'),
+              empty_grade_entry.call('B'),
               {
                 'count' => 1,
                 'grade' => 'C',
@@ -162,7 +175,8 @@ RSpec.describe 'Query.instanceSecurityDashboard.projects', feature_category: :vu
                     }
                   ]
                 }
-              }
+              },
+              empty_grade_entry.call('F')
             ]
           }
         end

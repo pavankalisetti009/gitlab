@@ -5,6 +5,22 @@ module Vulnerabilities
     include EachBatch
     include ::Namespaces::Traversal::Traversable
 
+    SEVERITY_LEVELS = Enums::Vulnerability.severity_levels.freeze
+
+    SEVERITY_LEVELS_ORDER = [
+      SEVERITY_LEVELS.key(SEVERITY_LEVELS[:critical]),
+      SEVERITY_LEVELS.key(SEVERITY_LEVELS[:high]),
+      SEVERITY_LEVELS.key(SEVERITY_LEVELS[:medium]),
+      SEVERITY_LEVELS.key(SEVERITY_LEVELS[:low]),
+      SEVERITY_LEVELS.key(SEVERITY_LEVELS[:unknown]),
+      SEVERITY_LEVELS.key(SEVERITY_LEVELS[:info])
+    ].freeze
+
+    ORDER_DIRECTIONS = [
+      *SEVERITY_LEVELS_ORDER.map { |severity| [severity, :desc] },
+      [:project_id, :asc].freeze
+    ].freeze
+
     self.table_name = 'vulnerability_statistics'
 
     belongs_to :project, optional: false, inverse_of: :vulnerability_statistic
@@ -30,6 +46,27 @@ module Vulnerabilities
     scope :by_group_excluding_subgroups, ->(group) { where(traversal_ids: group.traversal_ids) }
     scope :by_group, ->(group) { within(group.traversal_ids) }
     scope :unarchived, -> { where(archived: false) }
+    scope :ordered_by_severity, -> {
+      severity_cols = ORDER_DIRECTIONS.map(&:first).uniq
+      select(:project_id, :letter_grade, *severity_cols)
+        .order(Arel.sql(order_by_severity_counts_sql))
+    }
+
+    scope :aggregate_by_grade, -> {
+      select(:letter_grade)
+        .select(Vulnerabilities::Statistic.array_agg_ordered_by_severity)
+        .group(:letter_grade)
+    }
+
+    scope :from_statistics, ->(relation) do
+      raise ArgumentError, "Expected ActiveRecord::Relation" unless relation.is_a?(ActiveRecord::Relation)
+
+      ordered_stats_sql = relation
+                            .select(:id, :project_id, :letter_grade, *SEVERITY_LEVELS_ORDER)
+                            .to_sql
+
+      from(Arel.sql("(#{ordered_stats_sql}) AS vulnerability_statistics"))
+    end
 
     class << self
       # Takes an object which responds to `#[]` method call
@@ -88,6 +125,14 @@ module Vulnerabilities
           bulk_upsert_sql = bulk_upsert_latest_pipeline_id_sql(batch)
           connection.execute(bulk_upsert_sql)
         end
+      end
+
+      def order_by_severity_counts_sql
+        severity_order_sql
+      end
+
+      def array_agg_ordered_by_severity
+        Arel.sql("array_agg(project_id ORDER BY #{severity_order_sql}) AS project_ids")
       end
 
       private
@@ -150,6 +195,10 @@ module Vulnerabilities
           table_name: table_name,
           values: values_expression
         )
+      end
+
+      def severity_order_sql
+        ORDER_DIRECTIONS.map { |col, dir| "#{col} #{dir.to_s.upcase}" }.join(', ')
       end
     end
 

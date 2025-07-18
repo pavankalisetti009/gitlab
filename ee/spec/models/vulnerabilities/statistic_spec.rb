@@ -159,6 +159,131 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
     end
   end
 
+  describe '.ordered_by_severity' do
+    it 'orders by critical count when critical differs' do
+      higher_stat = create(:vulnerability_statistic, project: create(:project), critical: 5)
+
+      lower_stat = create(:vulnerability_statistic, project: create(:project), critical: 2, high: 10)
+
+      result = described_class
+                 .where(id: [higher_stat.id, lower_stat.id])
+                 .ordered_by_severity
+
+      expect(result.first.project_id).to eq(higher_stat.project_id)
+    end
+
+    it 'orders by high count when critical is equal' do
+      higher_stat = create(:vulnerability_statistic, project: create(:project), critical: 3, high: 7)
+
+      lower_stat = create(:vulnerability_statistic, project: create(:project), critical: 3, high: 2)
+
+      result = described_class
+                 .where(id: [lower_stat.id, higher_stat.id])
+                 .ordered_by_severity
+
+      expect(result.first.project_id).to eq(higher_stat.project_id)
+    end
+
+    it 'orders by project_id when all severity counts are equal' do
+      project_1 = create(:project)
+      project_2 = create(:project)
+
+      stat_1 = create(:vulnerability_statistic, project: project_1)
+
+      stat_2 = create(:vulnerability_statistic, project: project_2)
+
+      result = described_class
+                 .where(id: [stat_1.id, stat_2.id])
+                 .ordered_by_severity
+
+      expect(result.map(&:project_id)).to eq([project_1.id, project_2.id].sort)
+    end
+
+    it 'works when there is only one record' do
+      stat = create(:vulnerability_statistic,
+        project: create(:project),
+        critical: 2,
+        high: 1
+      )
+
+      result = described_class
+                 .where(id: stat.id)
+                 .ordered_by_severity
+
+      expect(result).to contain_exactly(an_object_having_attributes(
+        project_id: stat.project_id,
+        critical: stat.critical,
+        high: stat.high
+      ))
+    end
+  end
+
+  describe '.aggregate_by_grade' do
+    let_it_be(:project_1) { create(:project) }
+    let_it_be(:project_2) { create(:project) }
+    let_it_be(:project_3) { create(:project) }
+
+    let_it_be(:stat_a) { create(:vulnerability_statistic, project: project_1, letter_grade: :a) }
+
+    let_it_be(:stat_b1) { create(:vulnerability_statistic, project: project_2, letter_grade: :b, low: 1) }
+
+    let_it_be(:stat_b2) { create(:vulnerability_statistic, project: project_3, letter_grade: :b, low: 2) }
+
+    it 'groups by letter_grade' do
+      result = described_class.unarchived.aggregate_by_grade.load
+      aggregated = result.index_by(&:letter_grade)
+
+      expect(aggregated.keys).to contain_exactly('a', 'b')
+
+      expect(aggregated['a'].project_ids).to match_array([project_1.id])
+
+      expect(aggregated['b'].project_ids).to match_array([project_2.id, project_3.id])
+    end
+  end
+
+  describe '.from_statistics' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:statistic) do
+      create(:vulnerability_statistic,
+        project: project,
+        letter_grade: :c,
+        critical: 1,
+        high: 2,
+        medium: 3,
+        low: 4,
+        unknown: 0,
+        info: 0
+      )
+    end
+
+    it 'returns a relation built from the SQL of the given relation' do
+      ordered_scope = described_class.ordered_by_severity
+      from_stats = described_class.from_statistics(ordered_scope)
+
+      result = from_stats.first
+
+      expect(result.project_id).to eq(statistic.project_id)
+      expect(result.letter_grade).to eq(statistic.letter_grade)
+      expect(result.critical).to eq(statistic.critical)
+    end
+
+    it 'raises an error when called with a non-AR relation' do
+      expect do
+        described_class.from_statistics(["not an AR relation"])
+      end.to raise_error(ArgumentError, /Expected ActiveRecord::Relation/)
+    end
+  end
+
+  describe '.array_agg_ordered_by_severity' do
+    it 'returns a SQL snippet for array aggregation' do
+      sql = described_class.array_agg_ordered_by_severity.to_s
+
+      expect(sql).to include('array_agg')
+      expect(sql).to include('project_id')
+      expect(sql).to include('ORDER BY')
+    end
+  end
+
   describe 'consistency between singular and bulk upsert' do
     let_it_be(:pipeline) { create(:ci_pipeline) }
     let(:dynamic_attributes) { [:id, :created_at, :updated_at] }

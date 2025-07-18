@@ -118,64 +118,86 @@ RSpec.describe 'getting group information', feature_category: :groups_and_projec
         json_response.last['data']
       end
 
-      let(:expected_private_group_response) do
-        [
+      let(:empty_grade_entry) do
+        ->(grade) do
           {
-            'count' => 1,
-            'grade' => 'D',
-            'projects' => {
-              'nodes' => [
-                {
-                  'confirmedVulnerabilities' => {
-                    'nodes' => [
-                      { 'id' => vulnerability_4.to_global_id.to_s, 'userNotesCount' => 7 }
-                    ]
-                  },
-                  'dismissedVulnerabilities' => {
-                    'nodes' => [
-                      { 'id' => vulnerability_3.to_global_id.to_s, 'userNotesCount' => 4 }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
+            'grade' => grade,
             'count' => 0,
-            'grade' => 'C',
-            'projects' => {
-              'nodes' => []
-            }
+            'projects' => { 'nodes' => [] }
           }
-        ]
+        end
+      end
+
+      let(:expected_private_group_response) do
+        grades = %w[A B C D F]
+
+        grades.map do |grade|
+          case grade
+          when 'D'
+            {
+              'grade' => 'D',
+              'count' => 1,
+              'projects' => {
+                'nodes' => [
+                  {
+                    'confirmedVulnerabilities' => {
+                      'nodes' => [
+                        { 'id' => vulnerability_4.to_global_id.to_s, 'userNotesCount' => 7 }
+                      ]
+                    },
+                    'dismissedVulnerabilities' => {
+                      'nodes' => [
+                        { 'id' => vulnerability_3.to_global_id.to_s, 'userNotesCount' => 4 }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          when 'C'
+            {
+              'grade' => 'C',
+              'count' => 0,
+              'projects' => { 'nodes' => [] }
+            }
+          else
+            empty_grade_entry.call(grade)
+          end
+        end
       end
 
       let(:expected_public_group_response) do
-        [
-          {
-            'count' => 0,
-            'grade' => 'D',
-            'projects' => {
-              'nodes' => []
-            }
-          },
-          {
-            'count' => 1,
-            'grade' => 'C',
-            'projects' => {
-              'nodes' => [
-                {
-                  'vulnerabilities' => {
-                    'nodes' => [
-                      { 'id' => vulnerability_1.to_global_id.to_s, 'userNotesCount' => 2 },
-                      { 'id' => vulnerability_2.to_global_id.to_s, 'userNotesCount' => 3 }
-                    ]
+        grades = %w[A B C D F]
+
+        grades.map do |grade|
+          case grade
+          when 'C'
+            {
+              'grade' => 'C',
+              'count' => 1,
+              'projects' => {
+                'nodes' => [
+                  {
+                    'vulnerabilities' => {
+                      'nodes' => [
+                        { 'id' => vulnerability_1.to_global_id.to_s, 'userNotesCount' => 2 },
+                        { 'id' => vulnerability_2.to_global_id.to_s, 'userNotesCount' => 3 }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             }
-          }
-        ]
+          when 'D'
+            {
+              'grade' => 'D',
+              'count' => 0,
+              'projects' => { 'nodes' => [] }
+            }
+          else
+            empty_grade_entry.call(grade)
+          end
+        end
       end
 
       before do

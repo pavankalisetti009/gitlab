@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Resolvers::VulnerabilitiesGradeResolver do
   include GraphqlHelpers
 
-  subject do
-    force(resolve(described_class, obj: group, args: args, ctx: { current_user: user }))
+  subject(:result) do
+    force(resolve(described_class, obj: group, args: args, ctx: { current_user: current_user }))
   end
 
   let_it_be(:group) { create(:group) }
@@ -14,116 +14,102 @@ RSpec.describe Resolvers::VulnerabilitiesGradeResolver do
   let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:project_in_subgroup) { create(:project, namespace: subgroup) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:include_subgroups) { nil }
 
-  let_it_be(:vulnerability_statistic_1) { create(:vulnerability_statistic, :grade_f, project: project) }
-  let_it_be(:vulnerability_statistic_2) { create(:vulnerability_statistic, :grade_d, project: project_in_subgroup) }
+  let_it_be(:vulnerability_statistic_1) do
+    create(:vulnerability_statistic, :grade_f, project: project)
+  end
 
-  describe '#resolve' do
-    let(:letter_grade) { nil }
-    let(:args) { { include_subgroups: include_subgroups, letter_grade: letter_grade } }
+  let_it_be(:vulnerability_statistic_2) do
+    create(:vulnerability_statistic, :grade_d, project: project_in_subgroup)
+  end
 
-    context 'when security_dashboards are disabled' do
-      context 'when user is not logged in' do
-        let(:current_user) { nil }
+  let_it_be(:project_with_grade_d) do
+    create(:project, namespace: group)
+  end
 
-        it { is_expected.to be_blank }
-      end
+  let_it_be(:vulnerability_statistic_3) do
+    create(:vulnerability_statistic, :grade_d, project: project_with_grade_d)
+  end
 
-      context 'when user is logged in' do
-        let(:current_user) { user }
+  let(:args) do
+    { include_subgroups: include_subgroups, letter_grade: letter_grade }.compact
+  end
 
-        context 'when user does not have permissions' do
-          it { is_expected.to be_blank }
-        end
+  let(:current_user) { user }
 
-        context 'when user has permission to access vulnerabilities' do
-          before do
-            project.add_developer(current_user)
-            group.add_developer(current_user)
-          end
+  shared_examples "returns nil when not allowed" do
+    it "returns nil" do
+      expect(result).to be_nil
+    end
+  end
 
-          context 'when include_subgroups is set to true' do
-            let(:include_subgroups) { true }
-
-            it { is_expected.to be_blank }
-
-            context 'when the letter grade is given' do
-              let(:letter_grade) { :d }
-
-              it { is_expected.to be_blank }
-            end
-          end
-
-          context 'when include_subgroups is set to true' do
-            let(:include_subgroups) { false }
-
-            it { is_expected.to be_blank }
-
-            context 'when the letter grade is given' do
-              let(:letter_grade) { :d }
-
-              it { is_expected.to be_blank }
-            end
-          end
-        end
-      end
+  context "when security dashboards are disabled" do
+    before do
+      stub_licensed_features(security_dashboard: false)
     end
 
-    context 'when security_dashboards are enabled' do
-      before do
-        stub_licensed_features(security_dashboard: true)
+    let(:include_subgroups) { false }
+    let(:letter_grade) { nil }
+
+    include_examples "returns nil when not allowed"
+  end
+
+  context "when security dashboards are enabled" do
+    before do
+      stub_licensed_features(security_dashboard: true)
+    end
+
+    context "when user is not logged in" do
+      let(:current_user) { nil }
+      let(:include_subgroups) { false }
+      let(:letter_grade) { nil }
+
+      include_examples "returns nil when not allowed"
+    end
+
+    context "when user is logged in" do
+      context "when user does not have permissions" do
+        let(:include_subgroups) { false }
+        let(:letter_grade) { nil }
+
+        include_examples "returns nil when not allowed"
       end
 
-      context 'when user is not logged in' do
-        let(:current_user) { nil }
-
-        it { is_expected.to be_blank }
-      end
-
-      context 'when user is logged in' do
-        let(:current_user) { user }
-
-        context 'when user does not have permissions' do
-          it { is_expected.to be_blank }
+      context "when user has permission to access vulnerabilities" do
+        before do
+          project.add_developer(current_user)
+          group.add_developer(current_user)
+          project_with_grade_d.add_developer(current_user)
         end
 
-        context 'when user has permission to access vulnerabilities' do
-          before do
-            project.add_developer(current_user)
-            group.add_developer(current_user)
+        describe "#resolve" do
+          using RSpec::Parameterized::TableSyntax
+
+          where(:include_subgroups, :letter_grade, :expected_grades) do
+            true  | nil | %w[a b c d f]
+            true  | :d  | %w[d]
+            false | nil | %w[a b c d f]
+            false | :d  | %w[d]
           end
 
-          context 'when include_subgroups is set to true' do
-            let(:include_subgroups) { true }
+          with_them do
+            it "returns the correct grades" do
+              loaded_result = force(result)
 
-            it 'returns project grades for projects in group and its subgroups' do
-              expect(subject.map(&:grade)).to match_array(%w[d f])
-            end
+              grades = loaded_result.map(&:grade)
 
-            context 'when the letter grade is given' do
-              let(:letter_grade) { :d }
-
-              it 'returns only the requested grade' do
-                expect(subject.map(&:grade)).to match_array(%w[d])
-              end
+              expect(grades).to match_array(expected_grades)
             end
           end
+        end
 
-          context 'when include_subgroups is set to true' do
-            let(:include_subgroups) { false }
+        describe "#resolve with letter_grade filter" do
+          let(:letter_grade) { :d }
+          let(:include_subgroups) { true }
 
-            it 'returns project grades for projects in group only' do
-              expect(subject.map(&:grade)).to match_array(%w[f])
-            end
-
-            context 'when the letter grade is given' do
-              let(:letter_grade) { :d }
-
-              it 'returns only the requested grade' do
-                expect(subject.map(&:grade)).to be_empty
-              end
-            end
+          it "returns only the requested grade if it has data" do
+            grades = result.map(&:grade)
+            expect(grades).to match_array(%w[d])
           end
         end
       end
