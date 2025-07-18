@@ -31926,10 +31926,16 @@ msgstr ""
 msgid "Home page URL"
 msgstr ""
 
+msgid "HomePageMergeRequestsWidget|The number of merge requests is not available. Please refresh the page to try again, or visit the %{linkStart}dashboard%{linkEnd}."
+msgstr ""
+
 msgid "HomePageWorkItemsWidget|Assigned to you"
 msgstr ""
 
 msgid "HomePageWorkItemsWidget|Authored by you"
+msgstr ""
+
+msgid "HomePageWorkItemsWidget|The number of issues is not available. Please refresh the page to try again, or visit the %{linkStart}issue list%{linkEnd}."
 msgstr ""
 
 msgid "Homepage"
@@ -31939,12 +31945,6 @@ msgid "HomepageActivityWidget|The activity feed is not available. Please refresh
 msgstr ""
 
 msgid "Homepage|Start creating merge requests, pushing code, commenting in issues, and doing other work to view a feed of your activity here."
-msgstr ""
-
-msgid "Homepage|The number of issues is not available. Please refresh the page to try again."
-msgstr ""
-
-msgid "Homepage|The number of merge requests is not available. Please refresh the page to try again."
 msgstr ""
 
 msgid "Hook execution failed. %{error}"
