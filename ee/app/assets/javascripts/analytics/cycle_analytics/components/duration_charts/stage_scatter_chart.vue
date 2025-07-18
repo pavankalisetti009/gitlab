@@ -11,18 +11,16 @@ import {
   TYPENAME_MERGE_REQUEST,
   TYPENAME_WORK_ITEM,
 } from '~/graphql_shared/constants';
-import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 import {
   getDatesInRange,
   millisecondsToSeconds,
-  newDate,
 } from '~/lib/utils/datetime/date_calculation_utility';
 import { humanizeTimeInterval } from '~/lib/utils/datetime/date_format_utility';
+import { formatDurationChartDate } from 'ee/analytics/cycle_analytics/utils';
 import NoDataAvailableState from '../no_data_available_state.vue';
 
 const formatChartValue = (value) =>
   humanizeTimeInterval(millisecondsToSeconds(value), { abbreviated: true });
-const formatDate = (date) => localeDateFormat.asDate.format(newDate(date));
 
 export default {
   name: 'StageScatterChart',
@@ -106,7 +104,7 @@ export default {
         {
           type: 'scatter',
           name: this.timeInStageSeriesName,
-          data: this.plottableData.map(([date, value]) => [formatDate(date), value]),
+          data: this.plottableData.map(([date, value]) => [formatDurationChartDate(date), value]),
         },
       ];
     },
@@ -130,7 +128,7 @@ export default {
         },
         xAxis: {
           type: 'category',
-          data: getDatesInRange(this.startDate, this.endDate, formatDate),
+          data: getDatesInRange(this.startDate, this.endDate, formatDurationChartDate),
         },
       };
     },

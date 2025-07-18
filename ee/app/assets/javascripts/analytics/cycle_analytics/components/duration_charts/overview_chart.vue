@@ -2,11 +2,10 @@
 import { GlAreaChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import { GlAlert, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
-import { dateFormats } from '~/analytics/shared/constants';
-import dateFormat from '~/lib/dateformat';
 import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { buildNullSeries } from 'ee/analytics/shared/utils';
 import { isNumeric } from '~/lib/utils/number_utils';
+import { formatDurationChartDate } from 'ee/analytics/cycle_analytics/utils';
 import {
   DURATION_CHART_Y_AXIS_TITLE,
   DURATION_TOTAL_TIME_DESCRIPTION,
@@ -98,7 +97,7 @@ export default {
           name: '',
           type: 'time',
           axisLabel: {
-            formatter: (date) => dateFormat(date, dateFormats.defaultDate),
+            formatter: formatDurationChartDate,
           },
         },
         yAxis: {
@@ -145,7 +144,7 @@ export default {
     },
     formatTooltipText({ seriesData }) {
       const [dateTime] = seriesData[0].data;
-      this.tooltipTitle = dateFormat(dateTime, dateFormats.defaultDate);
+      this.tooltipTitle = formatDurationChartDate(dateTime);
 
       const nonNullSeries = this.getNonNullSeriesData(seriesData);
 

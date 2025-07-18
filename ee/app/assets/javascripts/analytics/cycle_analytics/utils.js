@@ -6,7 +6,13 @@ import { toYmd } from '~/analytics/shared/utils';
 import { medianTimeToParsedSeconds } from '~/analytics/cycle_analytics/utils';
 import { createAlert } from '~/alert';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { cloneDate, dayAfter, getDatesInRange } from '~/lib/utils/datetime_utility';
+import {
+  cloneDate,
+  dayAfter,
+  getDatesInRange,
+  localeDateFormat,
+  newDate,
+} from '~/lib/utils/datetime_utility';
 import { isNumeric } from '~/lib/utils/number_utils';
 import {
   HTTP_STATUS_FORBIDDEN,
@@ -547,3 +553,10 @@ export const getValueStreamGraphQLId = (id) =>
  */
 export const getValueStreamStageGraphQLId = (id) =>
   convertToGraphQLId('Analytics::CycleAnalytics::Stage', id);
+
+/**
+ * Formats date for display in Value Stream Analytics duration charts
+ * @param {Date|string|number} date - The date to format
+ * @returns {string} The formatted date string
+ */
+export const formatDurationChartDate = (date) => localeDateFormat.asDate.format(newDate(date));

@@ -4,13 +4,12 @@ import { GlLineChart } from '@gitlab/ui/dist/charts';
 import { GlAlert, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import ChartTooltipText from 'ee/analytics/shared/components/chart_tooltip_text.vue';
 import { buildNullSeries } from 'ee/analytics/shared/utils';
-import { dateFormats } from '~/analytics/shared/constants';
-import dateFormat from '~/lib/dateformat';
 import { isNumeric } from '~/lib/utils/number_utils';
 import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { sprintf, __ } from '~/locale';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
+import { formatDurationChartDate } from 'ee/analytics/cycle_analytics/utils';
 import {
   DURATION_STAGE_TIME_DESCRIPTION,
   DURATION_STAGE_TIME_LABEL,
@@ -19,8 +18,6 @@ import {
   DURATION_CHART_TOOLTIP_NO_DATA,
 } from '../../constants';
 import NoDataAvailableState from '../no_data_available_state.vue';
-
-const formatTooltipDate = (date) => dateFormat(date, dateFormats.defaultDate);
 
 export default {
   name: 'StageChart',
@@ -98,7 +95,7 @@ export default {
           name: this.$options.i18n.xAxisTitle,
           type: 'time',
           axisLabel: {
-            formatter: formatTooltipDate,
+            formatter: formatDurationChartDate,
           },
         },
         yAxis: {
@@ -122,7 +119,7 @@ export default {
   methods: {
     renderTooltip({ seriesData }) {
       const [dateTime, metric] = seriesData[0].data;
-      this.tooltipTitle = formatTooltipDate(dateTime);
+      this.tooltipTitle = formatDurationChartDate(dateTime);
       this.tooltipContent = isNumeric(metric)
         ? [
             {
