@@ -41,9 +41,6 @@ module UpdateOrchestrationPolicyConfiguration
   end
 
   def audit_invalid_policy_yaml(configuration)
-    return if Feature.disabled?(:collect_policy_yaml_invalidated_audit_event,
-      configuration.security_policy_management_project)
-
     Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService.new(configuration).execute
   rescue StandardError => e
     Gitlab::ErrorTracking.track_exception(e,

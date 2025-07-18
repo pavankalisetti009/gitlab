@@ -792,21 +792,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
   end
 
   describe "collect policy audit events" do
-    context "when feature is disabled" do
-      let(:policies) { [build(:approval_policy)] }
-      let(:policy_type) { :approval_policy }
-
-      before do
-        stub_feature_flags(collect_security_policy_manage_audit_events: false)
-      end
-
-      it 'does not call CollectPoliciesAuditService' do
-        expect(Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEvents).not_to receive(:new)
-
-        persist!(policies)
-      end
-    end
-
     context "when policy project is linked to multiple projects" do
       let_it_be(:another_policy_configuration) do
         create(:security_orchestration_policy_configuration, security_policy_management_project: policy_project)

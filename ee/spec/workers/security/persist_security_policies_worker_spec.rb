@@ -145,22 +145,6 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
 
         perform
       end
-
-      context 'if the collect_policies_limit_audit_events feature is disabled' do
-        before do
-          stub_feature_flags(collect_policies_limit_audit_events: false)
-        end
-
-        it 'persists policies' do
-          expect { perform }.to change { policy_configuration.security_policies.count }
-        end
-
-        it 'does not call CollectPoliciesLimitAuditEventsWorker' do
-          expect(Security::CollectPoliciesLimitAuditEventsWorker).not_to receive(:perform_async)
-
-          perform
-        end
-      end
     end
 
     describe 'CSP usage tracking' do
