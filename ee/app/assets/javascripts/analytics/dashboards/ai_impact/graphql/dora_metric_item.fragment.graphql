@@ -1,5 +1,0 @@
-fragment AiImpactDoraMetricItem on DoraMetric {
-  date
-  deployment_frequency: deploymentFrequency
-  change_failure_rate: changeFailureRate
-}

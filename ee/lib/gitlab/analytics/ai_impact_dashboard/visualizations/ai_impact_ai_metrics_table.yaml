@@ -8,9 +8,15 @@ data:
       excludeMetrics:
         - cycle_time
         - lead_time
+        - issues
+        - issues_completed
+        - deploys
         - deployment_frequency
+        - lead_time_for_changes
+        - time_to_restore_service
         - change_failure_rate
         - vulnerability_critical
+        - vulnerability_high
         - merge_request_throughput
         - median_time_to_merge
         - contributor_count

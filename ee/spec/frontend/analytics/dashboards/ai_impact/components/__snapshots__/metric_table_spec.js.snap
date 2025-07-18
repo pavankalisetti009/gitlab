@@ -317,6 +317,57 @@ exports[`Metric table for the deployment_frequency table row when the data is lo
 }
 `;
 
+exports[`Metric table for the deploys table row when the data is loaded renders the metric values 1`] = `
+[
+  "5",
+  "10",
+  "20",
+  "5",
+  "10",
+  "20",
+]
+`;
+
+exports[`Metric table for the deploys table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jul 1 - Jul 31",
+      5,
+    ],
+    [
+      "Jul 31 - Aug 31",
+      10,
+    ],
+    [
+      "Aug 31 - Oct 1",
+      20,
+    ],
+    [
+      "Oct 1 - Oct 31",
+      5,
+    ],
+    [
+      "Oct 31 - Dec 1",
+      10,
+    ],
+    [
+      "Dec 1 - Dec 31",
+      20,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "",
+}
+`;
+
 exports[`Metric table for the duo_chat_usage_rate table row when the data is loaded renders the metric values 1`] = `
 [
   "20.0% 3/15",
@@ -430,6 +481,108 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
 }
 `;
 
+exports[`Metric table for the issues table row when the data is loaded renders the metric values 1`] = `
+[
+  "1",
+  "2",
+  "4",
+  "1",
+  "2",
+  "4",
+]
+`;
+
+exports[`Metric table for the issues table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jul 1 - Jul 31",
+      1,
+    ],
+    [
+      "Jul 31 - Aug 31",
+      2,
+    ],
+    [
+      "Aug 31 - Oct 1",
+      4,
+    ],
+    [
+      "Oct 1 - Oct 31",
+      1,
+    ],
+    [
+      "Oct 31 - Dec 1",
+      2,
+    ],
+    [
+      "Dec 1 - Dec 31",
+      4,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "",
+}
+`;
+
+exports[`Metric table for the issues_completed table row when the data is loaded renders the metric values 1`] = `
+[
+  "5",
+  "10",
+  "20",
+  "5",
+  "10",
+  "20",
+]
+`;
+
+exports[`Metric table for the issues_completed table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jul 1 - Jul 31",
+      5,
+    ],
+    [
+      "Jul 31 - Aug 31",
+      10,
+    ],
+    [
+      "Aug 31 - Oct 1",
+      20,
+    ],
+    [
+      "Oct 1 - Oct 31",
+      5,
+    ],
+    [
+      "Oct 31 - Dec 1",
+      10,
+    ],
+    [
+      "Dec 1 - Dec 31",
+      20,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "",
+}
+`;
+
 exports[`Metric table for the lead_time table row when the data is loaded renders the metric values 1`] = `
 [
   "1.0 d",
@@ -468,6 +621,57 @@ exports[`Metric table for the lead_time table row when the data is loaded render
     [
       "Dec 1 - Dec 31",
       4,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "days",
+}
+`;
+
+exports[`Metric table for the lead_time_for_changes table row when the data is loaded renders the metric values 1`] = `
+[
+  "1.2 d",
+  "2.3 d",
+  "4.6 d",
+  "1.2 d",
+  "2.3 d",
+  "4.6 d",
+]
+`;
+
+exports[`Metric table for the lead_time_for_changes table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jul 1 - Jul 31",
+      1.2,
+    ],
+    [
+      "Jul 31 - Aug 31",
+      2.3,
+    ],
+    [
+      "Aug 31 - Oct 1",
+      4.6,
+    ],
+    [
+      "Oct 1 - Oct 31",
+      1.2,
+    ],
+    [
+      "Oct 31 - Dec 1",
+      2.3,
+    ],
+    [
+      "Dec 1 - Dec 31",
+      4.6,
     ],
   ],
   "gradient": [
@@ -583,6 +787,57 @@ exports[`Metric table for the merge_request_throughput table row when the data i
 }
 `;
 
+exports[`Metric table for the time_to_restore_service table row when the data is loaded renders the metric values 1`] = `
+[
+  "1.2 d",
+  "2.3 d",
+  "4.6 d",
+  "1.2 d",
+  "2.3 d",
+  "4.6 d",
+]
+`;
+
+exports[`Metric table for the time_to_restore_service table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jul 1 - Jul 31",
+      1.2,
+    ],
+    [
+      "Jul 31 - Aug 31",
+      2.3,
+    ],
+    [
+      "Aug 31 - Oct 1",
+      4.6,
+    ],
+    [
+      "Oct 1 - Oct 31",
+      1.2,
+    ],
+    [
+      "Oct 31 - Dec 1",
+      2.3,
+    ],
+    [
+      "Dec 1 - Dec 31",
+      4.6,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "days",
+}
+`;
+
 exports[`Metric table for the vulnerability_critical table row when the data is loaded renders the metric values 1`] = `
 [
   "40",
@@ -595,6 +850,57 @@ exports[`Metric table for the vulnerability_critical table row when the data is 
 `;
 
 exports[`Metric table for the vulnerability_critical table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jul 1 - Jul 31",
+      40,
+    ],
+    [
+      "Jul 31 - Aug 31",
+      20,
+    ],
+    [
+      "Aug 31 - Oct 1",
+      10,
+    ],
+    [
+      "Oct 1 - Oct 31",
+      40,
+    ],
+    [
+      "Oct 31 - Dec 1",
+      20,
+    ],
+    [
+      "Dec 1 - Dec 31",
+      10,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "",
+}
+`;
+
+exports[`Metric table for the vulnerability_high table row when the data is loaded renders the metric values 1`] = `
+[
+  "40",
+  "20",
+  "10",
+  "40",
+  "20",
+  "10",
+]
+`;
+
+exports[`Metric table for the vulnerability_high table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
   "connectNulls": true,
   "data": [

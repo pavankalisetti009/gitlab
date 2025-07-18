@@ -10,6 +10,8 @@ import {
   CONTRIBUTOR_METRICS,
   AI_METRICS,
 } from '~/analytics/shared/constants';
+import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
+import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -17,22 +19,18 @@ import waitForPromises from 'helpers/wait_for_promises';
 import {
   DASHBOARD_LOADING_FAILURE,
   CHART_LOADING_FAILURE,
+  SUPPORTED_DORA_METRICS,
+  SUPPORTED_VULNERABILITY_METRICS,
+  SUPPORTED_CONTRIBUTOR_METRICS,
+  SUPPORTED_MERGE_REQUEST_METRICS,
+  SUPPORTED_FLOW_METRICS,
 } from 'ee/analytics/dashboards/constants';
-import FlowMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/flow_metrics.query.graphql';
-import DoraMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/dora_metrics.query.graphql';
-import VulnerabilitiesQuery from 'ee/analytics/dashboards/ai_impact/graphql/vulnerabilities.query.graphql';
+import VulnerabilitiesQuery from 'ee/analytics/dashboards/graphql/vulnerabilities.query.graphql';
 import MergeRequestsQuery from 'ee/analytics/dashboards/graphql/merge_requests.query.graphql';
 import ContributorCountQuery from 'ee/analytics/dashboards/graphql/contributor_count.query.graphql';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import MetricTable from 'ee/analytics/dashboards/ai_impact/components/metric_table.vue';
-import {
-  SUPPORTED_FLOW_METRICS,
-  SUPPORTED_DORA_METRICS,
-  SUPPORTED_VULNERABILITY_METRICS,
-  SUPPORTED_MERGE_REQUEST_METRICS,
-  SUPPORTED_CONTRIBUTOR_METRICS,
-  SUPPORTED_AI_METRICS,
-} from 'ee/analytics/dashboards/ai_impact/constants';
+import { SUPPORTED_AI_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
 import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
@@ -158,11 +156,17 @@ describe('Metric table', () => {
   };
 
   const deploymentFrequencyTestId = 'ai-impact-metric-deployment-frequency';
+  const leadTimeForChangesTestId = 'ai-impact-metric-lead-time-for-changes';
+  const timeToRestoreServiceTestId = 'ai-impact-metric-time-to-restore-service';
   const changeFailureRateTestId = 'ai-impact-metric-change-failure-rate';
   const cycleTimeTestId = 'ai-impact-metric-cycle-time';
   const leadTimeTestId = 'ai-impact-metric-lead-time';
+  const issuesTestId = 'ai-impact-metric-issues';
+  const issuesCompletedTestId = 'ai-impact-metric-issues-completed';
+  const deploysTestId = 'ai-impact-metric-deploys';
   const medianTimeToMergeTestId = 'ai-impact-metric-median-time-to-merge';
   const vulnerabilityCriticalTestId = 'ai-impact-metric-vulnerability-critical';
+  const vulnerabilityHighTestId = 'ai-impact-metric-vulnerability-high';
   const mergeRequestThroughputTestId = 'ai-impact-metric-merge-request-throughput';
   const contributorCountTestId = 'ai-impact-metric-contributor-count';
   const codeSuggestionsUsageRateTestId = 'ai-impact-metric-code-suggestions-usage-rate';
@@ -195,11 +199,17 @@ describe('Metric table', () => {
   describe.each`
     identifier                                     | testId                                 | requestPath  | trackingProperty
     ${DORA_METRICS.DEPLOYMENT_FREQUENCY}           | ${deploymentFrequencyTestId}           | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${DORA_METRICS.LEAD_TIME_FOR_CHANGES}          | ${leadTimeForChangesTestId}            | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${DORA_METRICS.TIME_TO_RESTORE_SERVICE}        | ${timeToRestoreServiceTestId}          | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${DORA_METRICS.CHANGE_FAILURE_RATE}            | ${changeFailureRateTestId}             | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${FLOW_METRICS.CYCLE_TIME}                     | ${cycleTimeTestId}                     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${FLOW_METRICS.LEAD_TIME}                      | ${leadTimeTestId}                      | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.ISSUES}                         | ${issuesTestId}                        | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.ISSUES_COMPLETED}               | ${issuesCompletedTestId}               | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.DEPLOYS}                        | ${deploysTestId}                       | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${FLOW_METRICS.MEDIAN_TIME_TO_MERGE}           | ${medianTimeToMergeTestId}             | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${VULNERABILITY_METRICS.CRITICAL}              | ${vulnerabilityCriticalTestId}         | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${VULNERABILITY_METRICS.HIGH}                  | ${vulnerabilityHighTestId}             | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${MERGE_REQUEST_METRICS.THROUGHPUT}            | ${mergeRequestThroughputTestId}        | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${CONTRIBUTOR_METRICS.COUNT}                   | ${contributorCountTestId}              | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${codeSuggestionsUsageRateTestId}      | ${''}        | ${''}
@@ -221,11 +231,17 @@ describe('Metric table', () => {
   describe.each`
     identifier                                     | name                                    | testId
     ${DORA_METRICS.DEPLOYMENT_FREQUENCY}           | ${'Deployment frequency'}               | ${deploymentFrequencyTestId}
+    ${DORA_METRICS.LEAD_TIME_FOR_CHANGES}          | ${'Lead time for changes'}              | ${leadTimeForChangesTestId}
+    ${DORA_METRICS.TIME_TO_RESTORE_SERVICE}        | ${'Time to restore service'}            | ${timeToRestoreServiceTestId}
     ${DORA_METRICS.CHANGE_FAILURE_RATE}            | ${'Change failure rate'}                | ${changeFailureRateTestId}
     ${FLOW_METRICS.CYCLE_TIME}                     | ${'Cycle time'}                         | ${cycleTimeTestId}
     ${FLOW_METRICS.LEAD_TIME}                      | ${'Lead time'}                          | ${leadTimeTestId}
+    ${FLOW_METRICS.ISSUES}                         | ${'Issues created'}                     | ${issuesTestId}
+    ${FLOW_METRICS.ISSUES_COMPLETED}               | ${'Issues closed'}                      | ${issuesCompletedTestId}
+    ${FLOW_METRICS.DEPLOYS}                        | ${'Deploys'}                            | ${deploysTestId}
     ${FLOW_METRICS.MEDIAN_TIME_TO_MERGE}           | ${'Median time to merge'}               | ${medianTimeToMergeTestId}
     ${VULNERABILITY_METRICS.CRITICAL}              | ${'Critical vulnerabilities over time'} | ${vulnerabilityCriticalTestId}
+    ${VULNERABILITY_METRICS.HIGH}                  | ${'High vulnerabilities over time'}     | ${vulnerabilityHighTestId}
     ${MERGE_REQUEST_METRICS.THROUGHPUT}            | ${'Merge request throughput'}           | ${mergeRequestThroughputTestId}
     ${CONTRIBUTOR_METRICS.COUNT}                   | ${'Contributor count'}                  | ${contributorCountTestId}
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions: Usage'}            | ${codeSuggestionsUsageRateTestId}
@@ -410,12 +426,14 @@ describe('Metric table', () => {
       });
     });
 
-    it.each([deploymentFrequencyTestId, changeFailureRateTestId])(
-      'does not render the `%s` metric',
-      (testId) => {
-        expect(findTableRow(testId).exists()).toBe(false);
-      },
-    );
+    it.each([
+      deploymentFrequencyTestId,
+      leadTimeForChangesTestId,
+      timeToRestoreServiceTestId,
+      changeFailureRateTestId,
+    ])('does not render the `%s` metric', (testId) => {
+      expect(findTableRow(testId).exists()).toBe(false);
+    });
 
     it('emits `set-alerts` warning with the restricted metrics', () => {
       expect(wrapper.emitted('set-alerts')).toHaveLength(1);
@@ -423,7 +441,7 @@ describe('Metric table', () => {
         canRetry: false,
         warnings: [],
         alerts: expect.arrayContaining([
-          'You have insufficient permissions to view: Deployment frequency, Change failure rate',
+          'You have insufficient permissions to view: Deployment frequency, Lead time for changes, Time to restore service, Change failure rate',
         ]),
       });
     });
@@ -453,7 +471,12 @@ describe('Metric table', () => {
       {
         group: 'DORA metrics',
         excludeMetrics: SUPPORTED_DORA_METRICS,
-        testIds: [deploymentFrequencyTestId, changeFailureRateTestId],
+        testIds: [
+          deploymentFrequencyTestId,
+          leadTimeForChangesTestId,
+          timeToRestoreServiceTestId,
+          changeFailureRateTestId,
+        ],
         apiRequest: doraMetricsRequest,
       },
       {
