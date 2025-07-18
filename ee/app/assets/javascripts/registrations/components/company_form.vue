@@ -1,42 +1,61 @@
 <script>
-import { GlForm, GlButton, GlFormGroup, GlFormInput } from '@gitlab/ui';
+import { GlForm, GlButton, GlFormFields } from '@gitlab/ui';
+import { formValidators } from '@gitlab/ui/dist/utils';
 import {
+  COUNTRIES_WITH_STATES_ALLOWED,
   LEADS_COMPANY_NAME_LABEL,
+  LEADS_COUNTRY_LABEL,
+  LEADS_COUNTRY_PROMPT,
   LEADS_FIRST_NAME_LABEL,
   LEADS_LAST_NAME_LABEL,
   LEADS_PHONE_NUMBER_LABEL,
 } from 'ee/vue_shared/leads/constants';
 import csrf from '~/lib/utils/csrf';
-import { s__ } from '~/locale';
+import { __, s__ } from '~/locale';
 import FormErrorTracker from '~/pages/shared/form_error_tracker';
-import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
-import { TRIAL_PHONE_DESCRIPTION } from 'ee/trials/constants';
+import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
+import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
+import {
+  TRIAL_PHONE_DESCRIPTION,
+  TRIAL_STATE_PROMPT,
+  TRIAL_STATE_LABEL,
+} from 'ee/trials/constants';
 import { trackCompanyForm } from 'ee/google_tag_manager';
+import Tracking from '~/tracking';
+import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 
 export default {
   csrf,
   components: {
+    ListboxInput,
     GlForm,
     GlButton,
-    GlFormGroup,
-    GlFormInput,
-    CountryOrRegionSelector,
+    GlFormFields,
   },
   inject: {
     user: {
-      default: {},
+      type: Object,
+      required: true,
     },
     submitPath: {
       type: String,
-      default: '',
+      required: true,
     },
     showFormFooter: {
       type: Boolean,
+      required: true,
     },
     trackActionForErrors: {
       type: String,
-      required: false,
+      required: true,
     },
+  },
+  data() {
+    return {
+      formValues: {},
+      countries: [],
+      states: [],
+    };
   },
   computed: {
     formSubmitText() {
@@ -46,104 +65,236 @@ export default {
 
       return s__('Trial|Continue');
     },
+    showCountry() {
+      return !this.$apollo.queries.countries.loading;
+    },
+    stateRequired() {
+      return COUNTRIES_WITH_STATES_ALLOWED.includes(this.formValues.country);
+    },
+    showState() {
+      return !this.$apollo.queries.states.loading && this.formValues.country && this.stateRequired;
+    },
+    fields() {
+      const result = {};
+
+      if (this.user.showNameFields) {
+        Object.assign(result, {
+          first_name: {
+            label: LEADS_FIRST_NAME_LABEL,
+            groupAttrs: {
+              class: 'gl-col-span-12 md:gl-col-span-6',
+            },
+            inputAttrs: {
+              name: 'first_name',
+              'data-testid': 'first-name-field',
+            },
+            validators: [formValidators.required(__('First name is required.'))],
+          },
+          last_name: {
+            label: LEADS_LAST_NAME_LABEL,
+            groupAttrs: {
+              class: 'gl-col-span-12 md:gl-col-span-6',
+            },
+            inputAttrs: {
+              name: 'last_name',
+              'data-testid': 'last-name-field',
+            },
+            validators: [formValidators.required(__('Last name is required.'))],
+          },
+        });
+      }
+
+      Object.assign(result, {
+        company_name: {
+          label: LEADS_COMPANY_NAME_LABEL,
+          groupAttrs: {
+            class: 'gl-col-span-12',
+          },
+          inputAttrs: {
+            name: 'company_name',
+          },
+          validators: [formValidators.required(__('Company name is required.'))],
+        },
+      });
+
+      if (this.showCountry) {
+        result.country = {
+          label: LEADS_COUNTRY_LABEL,
+          groupAttrs: {
+            class: 'gl-col-span-12',
+          },
+          validators: [formValidators.required(__('Country or region is required.'))],
+        };
+
+        if (this.showState) {
+          result.state = {
+            label: TRIAL_STATE_LABEL,
+            groupAttrs: {
+              class: 'gl-col-span-12',
+            },
+            validators: [
+              formValidators.factory(__('State or province is required.'), (fieldValue) => {
+                return !this.stateRequired || (this.stateRequired && fieldValue);
+              }),
+            ],
+          };
+        }
+      }
+
+      result.phone_number = {
+        label: LEADS_PHONE_NUMBER_LABEL,
+        groupAttrs: {
+          optional: true,
+          class: 'gl-col-span-12',
+        },
+        inputAttrs: {
+          name: 'phone_number',
+        },
+        validators: [
+          formValidators.factory(TRIAL_PHONE_DESCRIPTION, (val) => {
+            if (!val || val.trim() === '') {
+              return true;
+            }
+
+            return /^\+?[0-9\-\s]+$/.test(val);
+          }),
+        ],
+      };
+
+      return result;
+    },
   },
   mounted() {
-    new FormErrorTracker(); // eslint-disable-line no-new
+    this.formValues = {
+      first_name: this.user.firstName,
+      last_name: this.user.lastName,
+      company_name: this.user.companyName,
+      phone_number: this.user.phoneNumber,
+      country: this.user.country,
+      state: this.user.state,
+    };
   },
   methods: {
-    trackCompanyForm() {
+    onSubmit() {
       trackCompanyForm('ultimate_trial', this.user.emailDomain);
+      this.$refs.form.$el.submit();
+    },
+    onCountrySelect(value, formFieldsInput) {
+      if (!this.showState) {
+        this.formValues.state = '';
+      }
+
+      // On initialization this can be undefined
+      formFieldsInput?.(value);
+    },
+    onFieldValidation(event) {
+      if (!event.state) {
+        this.trackFieldError(event);
+      }
+    },
+    trackFieldError(event) {
+      const { fieldName } = event;
+      const action = FormErrorTracker.formattedAction(this.trackActionForErrors);
+      const label = FormErrorTracker.formattedLabel(fieldName);
+
+      Tracking.event(undefined, action, { label });
+    },
+  },
+  apollo: {
+    countries: {
+      query: countriesQuery,
+      update(data) {
+        return data.countries.map((country) => ({
+          value: country.id,
+          text: country.name,
+        }));
+      },
+    },
+    states: {
+      query: statesQuery,
+      update(data) {
+        return data.states.map((state) => ({
+          value: state.id,
+          text: state.name,
+        }));
+      },
+      skip() {
+        return !this.formValues.country;
+      },
+      variables() {
+        return {
+          countryId: this.formValues.country,
+        };
+      },
     },
   },
   i18n: {
-    firstNameLabel: LEADS_FIRST_NAME_LABEL,
-    lastNameLabel: LEADS_LAST_NAME_LABEL,
-    companyNameLabel: LEADS_COMPANY_NAME_LABEL,
-    phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
-    phoneNumberDescription: TRIAL_PHONE_DESCRIPTION,
+    countryPrompt: LEADS_COUNTRY_PROMPT,
+    statePrompt: TRIAL_STATE_PROMPT,
   },
+  formId: 'company-form',
 };
 </script>
 
 <template>
   <gl-form
+    :id="$options.formId"
+    ref="form"
     :action="submitPath"
-    class="gl-show-field-errors gl-border-1 gl-border-solid gl-border-default gl-p-6"
+    class="gl-border-1 gl-border-solid gl-border-default gl-p-6"
     method="post"
-    @submit="trackCompanyForm"
   >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-    <div v-show="user.showNameFields" class="gl-flex gl-flex-col sm:gl-flex-row">
-      <gl-form-group
-        :label="$options.i18n.firstNameLabel"
-        label-size="sm"
-        label-for="first_name"
-        class="gl-mr-5 gl-w-full sm:gl-w-1/2"
-      >
-        <gl-form-input
-          id="first_name"
+
+    <gl-form-fields
+      v-model="formValues"
+      :form-id="$options.formId"
+      :fields="fields"
+      class="gl-grid md:gl-gap-x-4"
+      @field-validation="onFieldValidation"
+      @submit="onSubmit"
+    >
+      <template v-if="!user.showNameFields" #after(company_name)>
+        <input
+          type="hidden"
           :value="user.firstName"
           name="first_name"
-          class="js-track-error"
-          data-testid="first_name"
-          :data-track-action-for-errors="trackActionForErrors"
-          required
+          data-testid="hidden-first-name"
         />
-      </gl-form-group>
-      <gl-form-group
-        :label="$options.i18n.lastNameLabel"
-        label-size="sm"
-        label-for="last_name"
-        class="gl-w-full sm:gl-w-1/2"
-      >
-        <gl-form-input
-          id="last_name"
+        <input
+          type="hidden"
           :value="user.lastName"
           name="last_name"
-          class="js-track-error"
-          data-testid="last_name"
-          :data-track-action-for-errors="trackActionForErrors"
-          required
+          data-testid="hidden-last-name"
         />
-      </gl-form-group>
-    </div>
-    <gl-form-group :label="$options.i18n.companyNameLabel" label-size="sm" label-for="company_name">
-      <gl-form-input
-        id="company_name"
-        :value="user.companyName"
-        name="company_name"
-        class="js-track-error"
-        data-testid="company_name"
-        :data-track-action-for-errors="trackActionForErrors"
-        required
-      />
-    </gl-form-group>
+      </template>
+      <template #input(country)="{ value, input }">
+        <listbox-input
+          :selected="value"
+          name="country"
+          :items="countries"
+          :default-toggle-text="$options.i18n.countryPrompt"
+          :block="true"
+          :aria-label="$options.i18n.countryPrompt"
+          data-testid="country-dropdown"
+          @select="onCountrySelect($event, input)"
+        />
+      </template>
+      <template #input(state)="{ value, input }">
+        <listbox-input
+          :selected="value"
+          name="state"
+          :items="states"
+          :default-toggle-text="$options.i18n.statePrompt"
+          :block="true"
+          :aria-label="$options.i18n.statePrompt"
+          data-testid="state-dropdown"
+          @select="(val) => input && input(val)"
+        />
+      </template>
+    </gl-form-fields>
 
-    <country-or-region-selector
-      :country="user.country"
-      :state="user.state"
-      data-testid="country"
-      :track-action-for-errors="trackActionForErrors"
-      required
-    />
-
-    <gl-form-group
-      :label="$options.i18n.phoneNumberLabel"
-      label-size="sm"
-      label-for="phone_number"
-      optional
-    >
-      <gl-form-input
-        id="phone_number"
-        :value="user.phoneNumber"
-        name="phone_number"
-        type="tel"
-        data-testid="phone_number"
-        pattern="^(\+)*[0-9\-\s]+$"
-        :title="$options.i18n.phoneNumberDescription"
-      />
-    </gl-form-group>
-    <gl-button type="submit" variant="confirm" class="gl-w-full">
+    <gl-button type="submit" variant="confirm" class="js-no-auto-disable gl-w-full">
       {{ formSubmitText }}
     </gl-button>
 

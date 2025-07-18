@@ -29,7 +29,6 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
 
       # success
       resubmit_company_form
-      click_on 'Continue'
 
       ensure_onboarding { expect_to_see_group_and_project_creation_form }
 
@@ -56,10 +55,10 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       fill_company_form_fields
       click_on 'Continue'
 
-      expect(page).to have_native_text_validation_message('last_name')
+      expect(page).to have_content('Last name is required')
 
-      # success
-      fill_in_company_form(with_last_name: true)
+      # success and only need to fill out last_name, the rest are remembered and filled.
+      fill_in_company_form(with_last_name: true, last_name_only: true)
       click_on 'Continue'
 
       ensure_onboarding { expect_to_see_group_and_project_creation_form }
@@ -76,6 +75,10 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       user: user,
       params: company_params(user)
     ).and_return(instance_double(GitlabSubscriptions::CreateCompanyLeadService, execute: ServiceResponse.success))
+
+    wait_for_all_requests
+
+    click_on 'Continue'
   end
 
   def fills_in_welcome_form

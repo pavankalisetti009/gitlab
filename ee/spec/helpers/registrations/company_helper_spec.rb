@@ -38,11 +38,11 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
         trackActionForErrors: 'trial_registration'
       }.deep_stringify_keys
 
-      expect(::Gitlab::Json.parse(form_data)).to match(attributes)
+      expect(form_data).to match(::Gitlab::Json.generate(attributes))
     end
 
     context 'when params are provided on failure' do
-      let(:params) { super().merge(company_name: '_some_company_', country: 'US', state: 'CA') }
+      let(:params) { super().merge('company_name' => '_some_company_', 'country' => 'US', 'state' => 'CA') }
 
       it 'allows overriding default data with params' do
         attributes = {
@@ -61,7 +61,7 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
           trackActionForErrors: 'trial_registration'
         }.deep_stringify_keys
 
-        expect(::Gitlab::Json.parse(form_data)).to match(attributes)
+        expect(form_data).to match(::Gitlab::Json.generate(attributes))
       end
     end
   end

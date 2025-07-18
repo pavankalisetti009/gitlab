@@ -52,10 +52,10 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
       fill_company_form_fields
       click_on s_('Trial|Continue with trial')
 
-      expect(page).to have_native_text_validation_message('last_name')
+      expect(page).to have_content('Last name is required')
 
-      # success
-      fill_in_company_form(with_last_name: true)
+      # success and only need to fill out last_name, the rest are remembered and filled.
+      fill_in_company_form(with_last_name: true, last_name_only: true)
       click_on s_('Trial|Continue with trial')
 
       ensure_onboarding { expect_to_see_group_and_project_creation_form }

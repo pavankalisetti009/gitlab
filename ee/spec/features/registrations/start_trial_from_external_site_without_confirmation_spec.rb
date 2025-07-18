@@ -39,7 +39,8 @@ RSpec.describe 'Start trial from external site without confirmation', :with_curr
       .and_call_original
 
     fill_in 'company_name', with: 'Company name'
-    select 'Australia', from: 'country'
+    select_from_listbox 'Australia', from: 'Select a country or region'
+
     click_button 'Continue'
 
     fill_in 'group_name', with: 'Group name'

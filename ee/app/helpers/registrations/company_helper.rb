@@ -14,9 +14,9 @@ module Registrations
             state: '',
             showNameFields: current_user.last_name.blank?,
             emailDomain: current_user.email_domain
-          }.merge(
+          }.with_indifferent_access.merge(
             params.permit(:first_name, :last_name, :company_name, :phone_number, :country, :state)
-                  .transform_keys { |key| key.to_s.camelize(:lower).to_sym }
+                  .transform_keys { |key| key.to_s.camelize(:lower) }
           ),
           submitPath: users_sign_up_company_path(::Onboarding::StatusPresenter.passed_through_params(params)),
           showFormFooter: onboarding_status_presenter.show_company_form_footer?,
