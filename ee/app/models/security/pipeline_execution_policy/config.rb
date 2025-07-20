@@ -13,11 +13,14 @@ module Security
       POLICY_JOB_SUFFIX = ':policy'
 
       attr_reader :content, :config_strategy, :suffix_strategy, :policy_project_id, :policy_index, :name,
-        :skip_ci_strategy, :variables_override_strategy
+        :skip_ci_strategy, :variables_override_strategy, :policy_config
 
-      def initialize(policy:, policy_project_id:, policy_index:)
+      delegate :experiment_enabled?, to: :policy_config
+
+      def initialize(policy:, policy_config:, policy_index:)
         @content = policy.fetch(:content).to_yaml
-        @policy_project_id = policy_project_id
+        @policy_config = policy_config
+        @policy_project_id = policy_config.security_policy_management_project_id
         @policy_index = policy_index
         @config_strategy = policy.fetch(:pipeline_config_strategy).to_sym
         @suffix_strategy = policy[:suffix] || DEFAULT_SUFFIX_STRATEGY

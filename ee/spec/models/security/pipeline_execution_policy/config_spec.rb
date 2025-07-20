@@ -3,8 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :security_policy_management do
+  let(:security_orchestration_policy_configuration) do
+    build_stubbed(:security_orchestration_policy_configuration, security_policy_management_project_id: 123)
+  end
+
   let(:config) { described_class.new(**params) }
-  let(:params) { { policy_project_id: 123, policy_index: 1, policy: policy } }
+  let(:params) { { policy_config: security_orchestration_policy_configuration, policy_index: 1, policy: policy } }
 
   describe '#strategy_override_project_ci?' do
     subject { config.strategy_override_project_ci? }
@@ -114,6 +118,26 @@ RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :sec
       it 'returns false for non-allowed users' do
         expect(config.skip_ci_allowed?(789)).to be false
       end
+    end
+  end
+
+  describe '#experiment_enabled?' do
+    let(:policy) { build(:pipeline_execution_policy) }
+    let(:security_orchestration_policy_configuration) do
+      build_stubbed(:security_orchestration_policy_configuration, security_policy_management_project_id: 123,
+        experiments: { policy_test_experiment: { enabled: experiment_enabled } })
+    end
+
+    let(:experiment_enabled) { true }
+
+    subject { config.experiment_enabled?(:policy_test_experiment) }
+
+    it { is_expected.to be(true) }
+
+    context 'when the experiment is disabled' do
+      let(:experiment_enabled) { false }
+
+      it { is_expected.to be(false) }
     end
   end
 end
