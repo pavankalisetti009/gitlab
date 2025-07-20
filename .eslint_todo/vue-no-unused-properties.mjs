@@ -83,7 +83,6 @@ export default {
     'app/assets/javascripts/feature_flags/components/feature_flags_table.vue',
     'app/assets/javascripts/feature_flags/components/form.vue',
     'app/assets/javascripts/feature_flags/components/strategies/gitlab_user_list.vue',
-    'app/assets/javascripts/google_cloud/gcp_regions/list.vue',
     'app/assets/javascripts/groups/components/group_item.vue',
     'app/assets/javascripts/groups/components/invite_members_banner.vue',
     'app/assets/javascripts/import_entities/import_groups/components/import_actions_cell.vue',
