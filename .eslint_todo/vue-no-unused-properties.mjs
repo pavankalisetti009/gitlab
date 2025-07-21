@@ -74,7 +74,6 @@ export default {
     'app/assets/javascripts/diffs/components/diff_row.vue',
     'app/assets/javascripts/diffs/components/diff_view.vue',
     'app/assets/javascripts/diffs/components/image_diff_overlay.vue',
-    'app/assets/javascripts/emoji/components/picker.vue',
     'app/assets/javascripts/error_tracking/components/error_details.vue',
     'app/assets/javascripts/error_tracking/components/error_tracking_list.vue',
     'app/assets/javascripts/feature_flags/components/empty_state.vue',
