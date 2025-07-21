@@ -47,6 +47,7 @@ export default {
   extends: CEWidgetOptions,
   mixins: [reportsMixin],
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- overrides parent CEWidgetOptions method, called by parent component lifecycle
     getServiceEndpoints(store) {
       const base = CEWidgetOptions.methods.getServiceEndpoints(store);
 

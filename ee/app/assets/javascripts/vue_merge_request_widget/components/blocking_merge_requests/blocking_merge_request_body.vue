@@ -13,14 +13,6 @@ export default {
       type: Object,
       required: true,
     },
-    status: {
-      type: String,
-      required: true,
-    },
-    isNew: {
-      type: Boolean,
-      required: true,
-    },
   },
   computed: {
     hiddenBlockingMRsText() {

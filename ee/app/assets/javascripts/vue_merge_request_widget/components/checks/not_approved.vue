@@ -11,6 +11,7 @@ export default {
   },
   mixins: [assignReviewersActionButton],
   props: {
+    // eslint-disable-next-line vue/no-unused-properties -- mr prop is used by assignReviewersActionButton mixin
     mr: {
       type: Object,
       required: false,

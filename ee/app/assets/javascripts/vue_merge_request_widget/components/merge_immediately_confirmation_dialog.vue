@@ -24,6 +24,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API for programmatic modal display
     show() {
       this.$refs.modal.show();
     },

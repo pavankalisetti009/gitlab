@@ -33,6 +33,7 @@ export default {
     },
   },
   props: {
+    // eslint-disable-next-line vue/no-unused-properties -- mr prop is used by mergeRequestQueryVariablesMixin
     mr: {
       type: Object,
       required: false,
