@@ -7,3 +7,5 @@ class ReindexUsersToUpdateIntegerWithLongTypeSecondAttempt < Elastic::Migration
     %w[User]
   end
 end
+
+ReindexUsersToUpdateIntegerWithLongTypeSecondAttempt.prepend ::Search::Elastic::MigrationObsolete
