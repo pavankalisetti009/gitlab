@@ -1,10 +1,10 @@
 <script>
+import { GlDashboardLayout } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { getSystemColorScheme } from '~/lib/utils/css_utils';
 
-import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 
 import { isTopLevelGroup } from '../../utils';
@@ -26,7 +26,7 @@ const ATTENTION_FRAMEWORKS_PER_UNIT = 7;
 
 export default {
   components: {
-    DashboardLayout,
+    GlDashboardLayout,
     ExtendedDashboardPanel,
     FrameworkCoverage,
     FrameworksNeedsAttention,
@@ -231,7 +231,7 @@ export default {
 </script>
 
 <template>
-  <dashboard-layout :config="dashboardConfig">
+  <gl-dashboard-layout :config="dashboardConfig">
     <template #panel="{ panel }">
       <extended-dashboard-panel v-bind="panel.extendedDashboardPanelProps">
         <template #body>
@@ -243,5 +243,5 @@ export default {
         </template>
       </extended-dashboard-panel>
     </template>
-  </dashboard-layout>
+  </gl-dashboard-layout>
 </template>

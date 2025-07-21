@@ -1,5 +1,5 @@
+import { GlDashboardLayout } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import ProjectSecurityDashboardNew from 'ee/security_dashboard/components/shared/project_security_dashboard_new.vue';
 import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_over_time_panel.vue';
 
@@ -18,7 +18,7 @@ describe('Project Security Dashboard (new version) - Component', () => {
     });
   };
 
-  const findDashboardLayout = () => wrapper.findComponent(DashboardLayout);
+  const findDashboardLayout = () => wrapper.findComponent(GlDashboardLayout);
   const getDashboardConfig = () => findDashboardLayout().props('config');
   const getFirstPanel = () => getDashboardConfig().panels[0];
 

@@ -1,12 +1,12 @@
 <script>
+import { GlDashboardLayout } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
-import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_over_time_panel.vue';
 
 export default {
   components: {
-    DashboardLayout,
+    GlDashboardLayout,
   },
   computed: {
     dashboard() {
@@ -35,9 +35,9 @@ export default {
 </script>
 
 <template>
-  <dashboard-layout :config="dashboard" data-testid="project-security-dashboard-new">
+  <gl-dashboard-layout :config="dashboard" data-testid="project-security-dashboard-new">
     <template #panel="{ panel }">
       <component :is="panel.component" v-bind="panel.componentProps" />
     </template>
-  </dashboard-layout>
+  </gl-dashboard-layout>
 </template>

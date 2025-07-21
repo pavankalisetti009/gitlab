@@ -1,7 +1,7 @@
 import { nextTick } from 'vue';
+import { GlDashboardLayout } from '@gitlab/ui';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/group_security_dashboard_new.vue';
@@ -26,7 +26,7 @@ describe('Group Security Dashboard (new version) - Component', () => {
     });
   };
 
-  const findDashboardLayout = () => wrapper.findComponent(DashboardLayout);
+  const findDashboardLayout = () => wrapper.findComponent(GlDashboardLayout);
   const findFilteredSearch = () => wrapper.findComponent(FilteredSearch);
   const getDashboardConfig = () => findDashboardLayout().props('config');
   const getFirstPanel = () => getDashboardConfig().panels[0];
