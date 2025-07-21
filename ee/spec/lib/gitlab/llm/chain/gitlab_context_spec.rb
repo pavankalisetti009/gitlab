@@ -80,6 +80,40 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
         expect { context.resource_serialized(content_limit: content_limit) }.to raise_error(ArgumentError)
       end
     end
+
+    context 'when is_duo_code_review is provided' do
+      let(:content_limit) { 500 }
+
+      it 'serializes merge request resources' do
+        mr = create(:merge_request, source_project: project)
+        context = described_class.new(
+          current_user: user,
+          container: nil,
+          resource: mr,
+          ai_request: ai_request,
+          is_duo_code_review: true
+        )
+
+        xml = context.resource_serialized(content_limit: content_limit)
+        expect(xml).to include('<root>')
+        expect(xml).to include('<target-branch>')
+      end
+
+      it 'serializes issue resources' do
+        issue = create(:issue, project: project)
+        context = described_class.new(
+          current_user: user,
+          container: nil,
+          resource: issue,
+          ai_request: ai_request,
+          is_duo_code_review: true
+        )
+
+        xml = context.resource_serialized(content_limit: content_limit)
+        expect(xml).to include('<root>')
+        expect(xml).to include('<title>')
+      end
+    end
   end
 
   describe '#current_page_params' do

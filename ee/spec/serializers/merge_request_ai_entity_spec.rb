@@ -76,4 +76,24 @@ RSpec.describe EE::MergeRequestAiEntity, feature_category: :ai_abstraction_layer
       expect(diff_index).to be < mr_comments_index
     end
   end
+
+  context 'when is_duo_code_review option is provided' do
+    let(:entity) do
+      described_class.new(merge_request,
+        user: user,
+        resource: Ai::AiResource::MergeRequest.new(user, merge_request),
+        notes_limit: notes_limit,
+        is_duo_code_review: true)
+    end
+
+    it 'passes is_duo_code_review to notes_with_limit' do
+      resource = entity.options[:resource]
+
+      expect(resource).to receive(:notes_with_limit)
+                            .with(notes_limit: notes_limit / 2, is_duo_code_review: true)
+                            .and_return([])
+
+      entity.as_json[:mr_comments]
+    end
+  end
 end
