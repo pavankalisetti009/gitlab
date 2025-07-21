@@ -1,8 +1,6 @@
 
 - return unless user_duo_namespace_assignment_options.any?
 
-
-return [] unless
 = f.fields_for :user_preference do |preference|
   .form-group.gl-mt-5.gl-mb-6
     = preference.label :default_duo_add_on_assignment_id, class: 'label-bold' do
