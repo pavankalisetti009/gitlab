@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlDashboardLayout } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { getSystemColorScheme } from '~/lib/utils/css_utils';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -10,7 +11,6 @@ import FrameworkCoverage from 'ee/compliance_dashboard/components/dashboard/fram
 import FailedRequirements from 'ee/compliance_dashboard/components/dashboard/failed_requirements.vue';
 import FailedControls from 'ee/compliance_dashboard/components/dashboard/failed_controls.vue';
 import FrameworksNeedsAttention from 'ee/compliance_dashboard/components/dashboard/frameworks_needs_attention.vue';
-import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import frameworkCoverageQuery from 'ee/compliance_dashboard/components/dashboard/graphql/framework_coverage.query.graphql';
 import failedRequirementsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_requirements.query.graphql';
 import failedControlsQuery from 'ee/compliance_dashboard/components/dashboard/graphql/failed_controls.query.graphql';
@@ -122,7 +122,7 @@ describe('Compliance dashboard', () => {
     .fn()
     .mockImplementation(() => new Promise(() => {}));
 
-  const getDashboardConfig = () => wrapper.findComponent(DashboardLayout).props('config');
+  const getDashboardConfig = () => wrapper.findComponent(GlDashboardLayout).props('config');
 
   function createComponent() {
     const apolloProvider = createMockApollo([
