@@ -19,6 +19,7 @@ module Authz
 
         if role.save
           log_audit_event(action: :updated)
+          collect_metrics
 
           success
         else
@@ -28,6 +29,10 @@ module Authz
 
       def allowed?
         can?(current_user, :update_admin_role, role)
+      end
+
+      def event_name
+        'update_admin_custom_role'
       end
     end
   end
