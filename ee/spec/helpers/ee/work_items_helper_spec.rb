@@ -11,16 +11,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
     before do
       stub_licensed_features(
         blocked_issues: feature_available,
-        group_bulk_edit: feature_available,
-        issuable_health_status: feature_available,
-        iterations: feature_available,
-        issue_weights: feature_available,
-        okrs: feature_available,
-        subepics: feature_available,
-        epics: feature_available,
-        quality_management: feature_available,
-        scoped_labels: feature_available,
-        linked_items_epics: feature_available
+        group_bulk_edit: feature_available
       )
       allow(helper).to receive(:can?).and_call_original
       allow(helper).to receive(:can?).with(current_user, :bulk_admin_epic, project).and_return(feature_available)
@@ -38,14 +29,6 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
           {
             has_blocked_issues_feature: "true",
             has_group_bulk_edit_feature: "true",
-            has_issuable_health_status_feature: "true",
-            has_issue_weights_feature: "true",
-            has_iterations_feature: "true",
-            has_okrs_feature: "true",
-            has_subepics_feature: "true",
-            has_epics_feature: "true",
-            has_scoped_labels_feature: "true",
-            has_quality_management_feature: "true",
             can_bulk_edit_epics: "true",
             group_issues_path: issues_group_path(project),
             labels_fetch_path: group_labels_path(
@@ -53,8 +36,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             ),
             new_comment_template_paths: include({ text: "Your comment templates",
                                                   href: profile_comment_templates_path }.to_json),
-            epics_list_path: group_epics_path(project),
-            has_linked_items_epics_feature: "true"
+            epics_list_path: group_epics_path(project)
           })
       end
     end
@@ -66,17 +48,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
         expect(work_items_data).to include(
           {
             has_blocked_issues_feature: "false",
-            has_group_bulk_edit_feature: "false",
-            has_issuable_health_status_feature: "false",
-            has_issue_weights_feature: "false",
-            has_iterations_feature: "false",
-            has_okrs_feature: "false",
-            has_subepics_feature: "false",
-            has_epics_feature: "false",
-            has_scoped_labels_feature: "false",
-            has_quality_management_feature: "false",
-            can_bulk_edit_epics: "false",
-            has_linked_items_epics_feature: "false"
+            has_group_bulk_edit_feature: "false"
           }
         )
       end
