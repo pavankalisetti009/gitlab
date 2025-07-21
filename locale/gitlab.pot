@@ -411,6 +411,11 @@ msgid_plural "%d months"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d more assignee"
+msgid_plural "%d more assignees"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d more comment"
 msgid_plural "%d more comments"
 msgstr[0] ""

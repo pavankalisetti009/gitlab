@@ -1,3 +1,6 @@
+#import "~/graphql_shared/fragments/user.fragment.graphql"
+#import "ee/work_items/graphql/work_item_status.fragment.graphql"
+
 query workItemPopoverEE($fullPath: ID!, $iid: String!) {
   namespace(fullPath: $fullPath) {
     id
@@ -15,6 +18,14 @@ query workItemPopoverEE($fullPath: ID!, $iid: String!) {
         iconName
       }
       widgets {
+        ... on WorkItemWidgetAssignees {
+          type
+          assignees {
+            nodes {
+              ...User
+            }
+          }
+        }
         ... on WorkItemWidgetMilestone {
           type
           milestone {
@@ -32,6 +43,12 @@ query workItemPopoverEE($fullPath: ID!, $iid: String!) {
         ... on WorkItemWidgetWeight {
           type
           weight
+        }
+        ... on WorkItemWidgetStatus {
+          type
+          status {
+            ...WorkItemStatusFragment
+          }
         }
       }
     }
