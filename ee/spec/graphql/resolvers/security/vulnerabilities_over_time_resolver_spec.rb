@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, feature_category: :vulnerability_management do
+RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_delete_by_query, :sidekiq_inline, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   subject(:resolved_metrics) do
@@ -13,6 +13,29 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, feature_cat
   let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:current_user) { create(:user) }
 
+  let_it_be(:vulnerabilities) do
+    dates = ['2019-10-15T00:00:00Z', '2019-10-16T00:00:00Z', '2019-10-17T00:00:00Z']
+    severity_report_pairs = [
+      { severity: :low, report_type: :sast },
+      { severity: :medium, report_type: :dast },
+      { severity: :high, report_type: :dependency_scanning },
+      { severity: :critical, report_type: :sast }
+    ]
+
+    dates.flat_map do |date|
+      severity_report_pairs.map do |config|
+        create(
+          :vulnerability,
+          :with_finding,
+          severity: config[:severity],
+          report_type: config[:report_type],
+          project: project,
+          created_at: date
+        )
+      end
+    end
+  end
+
   describe '#resolve' do
     let(:start_date) { Date.new(2019, 10, 15) }
     let(:end_date) { Date.new(2019, 10, 21) }
@@ -21,6 +44,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, feature_cat
     before do
       stub_licensed_features(security_dashboard: true)
       stub_feature_flags(group_security_dashboard_new: true)
+      stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     end
 
     context 'when operated on a group' do
@@ -31,8 +55,12 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, feature_cat
           group.add_maintainer(current_user)
         end
 
+        before do
+          Elastic::ProcessBookkeepingService.track!(*vulnerabilities)
+          ensure_elasticsearch_index!
+        end
+
         it 'returns vulnerability metrics data' do
-          expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
           expect(resolved_metrics.items).not_to be_empty
         end
 
@@ -61,15 +89,17 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, feature_cat
       end
 
       context 'when group_security_dashboard_new feature flag is disabled' do
+        before_all do
+          group.add_maintainer(current_user)
+          Elastic::ProcessBookkeepingService.track!(*vulnerabilities)
+          ensure_elasticsearch_index!
+        end
+
         before do
           stub_feature_flags(group_security_dashboard_new: false)
         end
 
-        before_all do
-          group.add_maintainer(current_user)
-        end
-
-        it 'returns an empty connection' do
+        it 'returns an empty array connection' do
           expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
           expect(resolved_metrics.items).to be_empty
         end
@@ -103,6 +133,9 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, feature_cat
     before do
       stub_licensed_features(security_dashboard: true)
       stub_feature_flags(group_security_dashboard_new: true)
+      stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+      Elastic::ProcessBookkeepingService.track!(*vulnerabilities)
+      ensure_elasticsearch_index!
     end
 
     context 'when start_date is after end_date' do
