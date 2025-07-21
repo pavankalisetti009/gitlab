@@ -16637,7 +16637,8 @@ ALTER SEQUENCE issuable_slas_id_seq OWNED BY issuable_slas.id;
 CREATE TABLE issue_assignees (
     user_id bigint NOT NULL,
     issue_id bigint NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_d88fe18cfa CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE TABLE issue_assignment_events (
