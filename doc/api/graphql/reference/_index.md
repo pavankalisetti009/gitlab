@@ -11248,6 +11248,46 @@ Input type: `SetGroupSecretPushProtectionInput`
 | <a id="mutationsetgroupsecretpushprotectionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationsetgroupsecretpushprotectionerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 
+### `Mutation.setPagesForceHttps`
+
+Input type: `SetPagesForceHttpsInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetpagesforcehttpsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetpagesforcehttpsprojectpath"></a>`projectPath` | [`ID!`](#id) | Path of the project to set the pages force HTTPS. |
+| <a id="mutationsetpagesforcehttpsvalue"></a>`value` | [`Boolean!`](#boolean) | Indicates user wants to enforce HTTPS on their pages. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetpagesforcehttpsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetpagesforcehttpserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationsetpagesforcehttpsproject"></a>`project` | [`Project`](#project) | Project that was updated. |
+
+### `Mutation.setPagesUseUniqueDomain`
+
+Input type: `SetPagesUseUniqueDomainInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetpagesuseuniquedomainclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetpagesuseuniquedomainprojectpath"></a>`projectPath` | [`ID!`](#id) | Path of the project to set the pages to use unique domains. |
+| <a id="mutationsetpagesuseuniquedomainvalue"></a>`value` | [`Boolean!`](#boolean) | Indicates user wants to use unique subdomains for their pages. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetpagesuseuniquedomainclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetpagesuseuniquedomainerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationsetpagesuseuniquedomainproject"></a>`project` | [`Project`](#project) | Project that was updated. |
+
 ### `Mutation.setPreReceiveSecretDetection`
 
 Enable/disable secret push protection for the given project.
