@@ -49,7 +49,24 @@ describe('WorkItemStatus component', () => {
     }),
   );
 
-  const workItemUpdateErrorHandler = jest.fn().mockRejectedValue('Oops ! Problem');
+  const workItemUpdateNetworkErrorHandler = jest.fn().mockRejectedValue('Oops ! Problem');
+  const workItemUpdateBackendErrorHandler = jest.fn().mockResolvedValue({
+    errors: [
+      {
+        message: "Status doesn't exist.",
+        locations: [
+          {
+            line: 2,
+            column: 3,
+          },
+        ],
+        path: ['workItemUpdate'],
+      },
+    ],
+    data: {
+      workItemUpdate: null,
+    },
+  });
 
   const createComponent = ({
     mountFn = shallowMountExtended,
@@ -232,7 +249,7 @@ describe('WorkItemStatus component', () => {
     });
 
     it('calls error handler when there is an error in updating', async () => {
-      createComponent({ mutationHandler: workItemUpdateErrorHandler });
+      createComponent({ mutationHandler: workItemUpdateNetworkErrorHandler });
       await waitForPromises();
 
       showDropdown();
@@ -245,7 +262,23 @@ describe('WorkItemStatus component', () => {
       await waitForPromises();
 
       expect(successUpdateWorkItemMutationHandler).not.toHaveBeenCalledWith();
-      expect(workItemUpdateErrorHandler).toHaveBeenCalled();
+      expect(workItemUpdateNetworkErrorHandler).toHaveBeenCalled();
+    });
+
+    it('emits error from the backend rather than general error when there is an error', async () => {
+      createComponent({ mutationHandler: workItemUpdateBackendErrorHandler });
+      await waitForPromises();
+
+      showDropdown();
+      await waitForPromises();
+
+      const firstStatus = allowedStatus[0];
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', firstStatus.id);
+      await nextTick();
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toStrictEqual([["Status doesn't exist."]]);
     });
 
     it('calls the update work item local mutation for new work items', async () => {

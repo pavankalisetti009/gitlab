@@ -210,9 +210,11 @@ export default {
           throw new Error(errors.join('\n'));
         }
       } catch (error) {
-        const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
-          workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
-        });
+        const msg =
+          error.message ||
+          sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+            workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+          });
         this.localStatus = this.workItemStatus.status || {};
         this.$emit('error', msg);
         Sentry.captureException(error);
