@@ -4833,6 +4833,12 @@ msgstr ""
 msgid "AdminSettings|Enable the external redirect warning page for job artifacts"
 msgstr ""
 
+msgid "AdminSettings|Enable unique domains by default"
+msgstr ""
+
+msgid "AdminSettings|Enable unique domains by default for Pages sites to avoid cookie sharing between sites under a given namespace."
+msgstr ""
+
 msgid "AdminSettings|Enabled"
 msgstr ""
 
