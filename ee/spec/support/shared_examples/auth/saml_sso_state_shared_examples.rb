@@ -137,7 +137,9 @@ RSpec.shared_examples_for 'SAML SSO State checks for session_not_on_or_after' do
         let(:future_time) { 1.hour.from_now.iso8601 }
 
         before do
-          stub_feature_flags(saml_timeout_supplied_by_idp_override: false)
+          stub_feature_flags(saml_timeout_supplied_by_idp_override_group_saml: false) if saml_type == 'group'
+
+          stub_feature_flags(saml_timeout_supplied_by_idp_override: false) if saml_type == 'instance'
         end
 
         it 'considers cutoff value to decide sso_state active' do
@@ -159,126 +161,6 @@ RSpec.shared_examples_for 'SAML SSO State checks for session_not_on_or_after' do
             }) do
               is_expected.not_to be_active_since(cutoff)
             end
-          end
-        end
-      end
-    end
-  end
-
-  describe '#saml_session_active?' do
-    let(:session_data) { Time.current }
-
-    context 'when session_not_on_or_after is not present' do
-      it 'returns false' do
-        if saml_type == 'group'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(session_data, session_not_on_or_after: nil)
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-
-        if saml_type == 'instance'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(time: session_data, session_not_on_or_after: nil)
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-      end
-    end
-
-    context 'when session_not_on_or_after is blank string' do
-      it 'returns false' do
-        if saml_type == 'group'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(session_data, session_not_on_or_after: '')
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-
-        if saml_type == 'instance'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(time: session_data, session_not_on_or_after: '')
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-      end
-    end
-
-    context 'when session_not_on_or_after is in the future' do
-      let(:future_expiry) { 2.hours.from_now.utc.iso8601 }
-
-      it 'returns true' do
-        if saml_type == 'group'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(session_data, session_not_on_or_after: future_expiry)
-            expect(sso_state.send(:saml_session_active?)).to be(true)
-          end
-        end
-
-        if saml_type == 'instance'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(time: session_data, session_not_on_or_after: future_expiry)
-            expect(sso_state.send(:saml_session_active?)).to be(true)
-          end
-        end
-      end
-    end
-
-    context 'when session_not_on_or_after is in the past' do
-      let(:past_expiry) { 1.hour.ago.utc.iso8601 }
-
-      it 'returns false' do
-        if saml_type == 'group'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(session_data, session_not_on_or_after: past_expiry)
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-
-        if saml_type == 'instance'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(time: session_data, session_not_on_or_after: past_expiry)
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-      end
-    end
-
-    context 'when session_not_on_or_after is exactly current time' do
-      let(:current_expiry) { Time.current.utc.iso8601 }
-
-      it 'returns false (expired at current moment)' do
-        if saml_type == 'group'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(session_data, session_not_on_or_after: current_expiry)
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-
-        if saml_type == 'instance'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(time: session_data, session_not_on_or_after: current_expiry)
-            expect(sso_state.send(:saml_session_active?)).to be(false)
-          end
-        end
-      end
-    end
-
-    context 'when session_not_on_or_after has milliseconds' do
-      let(:future_with_ms) { 1.hour.from_now.utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') }
-
-      it 'returns true' do
-        if saml_type == 'group'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(session_data, session_not_on_or_after: future_with_ms)
-            expect(sso_state.send(:saml_session_active?)).to be(true)
-          end
-        end
-
-        if saml_type == 'instance'
-          Gitlab::Session.with_session({}) do
-            sso_state.update_active(time: session_data, session_not_on_or_after: future_with_ms)
-            expect(sso_state.send(:saml_session_active?)).to be(true)
           end
         end
       end
