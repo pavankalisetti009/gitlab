@@ -7,7 +7,9 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
 
   let_it_be(:project) { create(:project) }
   let_it_be_with_reload(:catalog_item) do
-    create(:ai_catalog_item, :with_version, project: project, public: true)
+    create(:ai_catalog_item, project: project, public: true).tap do |item|
+      create(:ai_catalog_item_version, item: item, release_date: nil)
+    end
   end
 
   let(:latest_version) { catalog_item.latest_version }
