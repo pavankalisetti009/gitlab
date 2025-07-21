@@ -10,8 +10,6 @@ module EE
       include GitlabSubscriptions::SeatCountAlert
 
       before_action :log_download_export_audit_event, only: [:download_export]
-      before_action :log_archive_audit_event, only: [:archive]
-      before_action :log_unarchive_audit_event, only: [:unarchive]
 
       before_action only: :show do
         @seat_count_data = generate_seat_count_alert_data(@project)
@@ -178,14 +176,6 @@ module EE
       return if current_user.can_admin_all_resources? && ::Gitlab::CurrentSettings.silent_admin_exports_enabled?
 
       log_audit_event(message: 'Export file download started', event_type: 'project_export_file_download_started')
-    end
-
-    def log_archive_audit_event
-      log_audit_event(message: 'Project archived', event_type: 'project_archived')
-    end
-
-    def log_unarchive_audit_event
-      log_audit_event(message: 'Project unarchived', event_type: 'project_unarchived')
     end
   end
 end
