@@ -19,6 +19,10 @@ export default {
     GlToggle,
     PermissionsSettings,
   },
+  provide() {
+    const { fullPath, projectId } = this;
+    return { fullPath, projectId };
+  },
   props: {
     canManageSecretsManager: {
       type: Boolean,
@@ -26,6 +30,10 @@ export default {
     },
     fullPath: {
       type: String,
+      required: true,
+    },
+    projectId: {
+      type: Number,
       required: true,
     },
   },

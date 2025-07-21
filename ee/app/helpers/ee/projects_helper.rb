@@ -36,7 +36,8 @@ module EE
         cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request.md'),
         sppRepositoryPipelineAccessLocked: project.project_setting.spp_repository_pipeline_access_locked?,
         policySettingsAvailable: project.licensed_feature_available?(:security_orchestration_policies) &&
-          ::Security::OrchestrationPolicyConfiguration.policy_management_project?(project)
+          ::Security::OrchestrationPolicyConfiguration.policy_management_project?(project),
+        projectId: project.id
       })
     end
 
