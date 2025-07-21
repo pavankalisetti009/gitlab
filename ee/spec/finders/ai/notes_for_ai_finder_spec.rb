@@ -49,6 +49,19 @@ RSpec.describe Ai::NotesForAiFinder, feature_category: :duo_chat do
           end
         end
 
+        context 'when is_duo_code_review is true' do
+          let_it_be(:internal_note) { create(:note, noteable: issue, project: issue.project, internal: true) }
+
+          subject(:finder) { described_class.new(user, resource: issue, is_duo_code_review: true).execute }
+
+          it 'excludes internal notes even when user can see them' do
+            issue.project.add_developer(user)
+
+            expect(finder).to contain_exactly(note)
+            expect(finder).not_to include(internal_note)
+          end
+        end
+
         context 'when there are support_bot notes for the noteable' do
           let_it_be(:bot_note) do
             create(:note, author: Users::Internal.support_bot, noteable: issue, project: issue.project)

@@ -122,7 +122,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
           extra_resource: extra_resource, request_id: 'uuid', current_file: current_file, agent_version: agent_version,
           started_at: started_at,
-          additional_context: additional_context)
+          additional_context: additional_context, is_duo_code_review: nil)
         .and_return(context)
       expect(categorize_service).to receive(:execute)
       expect(::Llm::ExecuteMethodService).to receive(:new)
@@ -453,7 +453,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
           .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
             extra_resource: extra_resource, request_id: 'uuid', current_file: current_file,
             started_at: started_at,
-            agent_version: agent_version, additional_context: additional_context)
+            agent_version: agent_version, additional_context: additional_context, is_duo_code_review: nil)
           .and_return(context)
 
         expect(categorize_service).not_to receive(:execute)
@@ -560,6 +560,35 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         stub_feature_flags(enable_anthropic_prompt_caching: false)
 
         expect(::Gitlab::AiGateway).not_to receive(:push_feature_flag).with(:enable_anthropic_prompt_caching, user)
+
+        subject
+      end
+    end
+
+    context 'when is_duo_code_review is true' do
+      let(:options) do
+        {
+          content: content,
+          extra_resource: extra_resource,
+          current_file: current_file,
+          agent_version_id: agent_version.id,
+          started_at: started_at,
+          additional_context: additional_context,
+          is_duo_code_review: true
+        }
+      end
+
+      it 'passes is_duo_code_review to GitlabContext' do
+        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
+          allow(instance).to receive(:execute).and_return(answer)
+        end
+
+        expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
+                                                         .with(hash_including(is_duo_code_review: true))
+                                                         .and_return(context)
+
+        expect(categorize_service).to receive(:execute)
+        expect(::Llm::ExecuteMethodService).to receive(:new).and_return(categorize_service)
 
         subject
       end

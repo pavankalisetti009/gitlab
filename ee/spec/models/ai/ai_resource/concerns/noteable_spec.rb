@@ -31,6 +31,19 @@ RSpec.describe Ai::AiResource::Concerns::Noteable, feature_category: :duo_chat d
             expect(notes).to contain_exactly(note.note)
           end
         end
+
+        it 'passes is_duo_code_review parameter to NotesForAiFinder' do
+          finder_double = instance_double(Ai::NotesForAiFinder, execute: [])
+
+          expect(Ai::NotesForAiFinder).to receive(:new)
+                                            .with(user, resource: issue, is_duo_code_review: true)
+                                            .and_return(finder_double)
+
+          Ai::AiResource::Issue.new(user, issue).notes_with_limit(
+            notes_limit: content_limit,
+            is_duo_code_review: true
+          )
+        end
       end
     end
   end
