@@ -195,7 +195,10 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
     let(:push_rule_second) { create(:push_rule) }
 
     it 'memoizes the right push rules' do
-      expect(described_class).to receive(:global).twice.and_return(global_push_rule)
+      finder_double = instance_double(PushRuleFinder, execute: global_push_rule)
+
+      allow(PushRuleFinder).to receive(:new).and_return(finder_double)
+
       expect(global_push_rule).to receive(:public_send).with(:commit_committer_check).and_return(false)
       expect(global_push_rule).to receive(:public_send).with(:reject_unsigned_commits).and_return(true)
 

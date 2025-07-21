@@ -1398,7 +1398,7 @@ module EE
       if group
         group.predefined_push_rule
       else
-        PushRule.global
+        PushRuleFinder.new.execute
       end
     end
 

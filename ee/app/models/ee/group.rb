@@ -713,7 +713,7 @@ module EE
         if has_parent?
           parent.predefined_push_rule
         else
-          PushRule.global
+          PushRuleFinder.new.execute
         end
       end
     end

@@ -13,9 +13,6 @@ class PushRule < ApplicationRecord
   has_one :group, inverse_of: :push_rule, autosave: true
 
   before_save :convert_to_re2
-  def self.global
-    find_by(is_sample: true)
-  end
 
   def global?
     is_sample?
@@ -82,11 +79,11 @@ class PushRule < ApplicationRecord
     # return if value is true/false or if current object is the global setting
     return value if global? || !value.nil?
 
-    PushRule.global&.public_send(setting)
+    PushRuleFinder.new.execute&.public_send(setting)
   end
 
   def write_setting_with_global_default(setting, value)
-    enabled_globally = PushRule.global&.public_send(setting)
+    enabled_globally = PushRuleFinder.new.execute&.public_send(setting)
     is_disabled = !Gitlab::Utils.to_boolean(value)
 
     # If setting is globally disabled and user disable it at project level,
