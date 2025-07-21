@@ -619,6 +619,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
     describe 'Secrets Manager settings' do
       it { is_expected.to include(canManageSecretManager: false) }
+      it { is_expected.to include(projectId: project.id) }
 
       context 'when feature is licensed' do
         before do

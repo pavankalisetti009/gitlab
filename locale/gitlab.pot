@@ -3120,6 +3120,9 @@ msgstr ""
 msgid "Access denied for your LDAP account."
 msgstr ""
 
+msgid "Access expiration date"
+msgstr ""
+
 msgid "Access expires"
 msgstr ""
 
@@ -3845,6 +3848,9 @@ msgstr ""
 msgid "Add files"
 msgstr ""
 
+msgid "Add group"
+msgstr ""
+
 msgid "Add group or project"
 msgstr ""
 
@@ -3935,6 +3941,9 @@ msgstr ""
 msgid "Add request manually"
 msgstr ""
 
+msgid "Add role"
+msgstr ""
+
 msgid "Add search filter"
 msgstr ""
 
@@ -3975,6 +3984,9 @@ msgid "Add token"
 msgstr ""
 
 msgid "Add topics to projects to help users find them."
+msgstr ""
+
+msgid "Add user"
 msgstr ""
 
 msgid "Add variable"
@@ -51350,6 +51362,9 @@ msgstr ""
 msgid "Reachability|Yes"
 msgstr ""
 
+msgid "Read"
+msgstr ""
+
 msgid "Read documentation"
 msgstr ""
 
@@ -55392,6 +55407,9 @@ msgstr ""
 msgid "Search groups"
 msgstr ""
 
+msgid "Search groups..."
+msgstr ""
+
 msgid "Search iterations"
 msgstr ""
 
@@ -55444,6 +55462,9 @@ msgid "Search to add %{title}"
 msgstr ""
 
 msgid "Search users"
+msgstr ""
+
+msgid "Search users..."
 msgstr ""
 
 msgid "Search within"
@@ -55682,6 +55703,21 @@ msgstr ""
 msgid "Secrets|Are you sure you want to update secret %{secretName}? Saving these changes can cause disruptions, such as loss of access to connected services or failed deployments."
 msgstr ""
 
+msgid "Secrets|Can add new secrets"
+msgstr ""
+
+msgid "Secrets|Can authenticate with the Secrets Manager and related API endpoints."
+msgstr ""
+
+msgid "Secrets|Can permanently delete secrets."
+msgstr ""
+
+msgid "Secrets|Can read secret metadata but not the secret value."
+msgstr ""
+
+msgid "Secrets|Can update details of existing secrets."
+msgstr ""
+
 msgid "Secrets|Created"
 msgstr ""
 
@@ -55739,6 +55775,9 @@ msgstr ""
 msgid "Secrets|Secret %{secretName} was successfully updated."
 msgstr ""
 
+msgid "Secrets|Secret Manager permissions were successfully updated."
+msgstr ""
+
 msgid "Secrets|Secret manager user permissions"
 msgstr ""
 
@@ -55758,6 +55797,9 @@ msgid "Secrets|Secure your sensitive information"
 msgstr ""
 
 msgid "Secrets|Select a reminder interval"
+msgstr ""
+
+msgid "Secrets|Select the access scopes to grant to this user for the Secret Manager and related API endpoints."
 msgstr ""
 
 msgid "Secrets|Stored secrets"
@@ -68343,6 +68385,9 @@ msgid "Username of the Jenkins server."
 msgstr ""
 
 msgid "Username or email"
+msgstr ""
+
+msgid "Username or name"
 msgstr ""
 
 msgid "Username or primary email"

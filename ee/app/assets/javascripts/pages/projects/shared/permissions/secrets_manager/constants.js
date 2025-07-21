@@ -1,3 +1,3 @@
-export const PERMISSION_CATEGORY_GROUP = 'group';
-export const PERMISSION_CATEGORY_ROLE = 'role';
-export const PERMISSION_CATEGORY_USER = 'user';
+export const PERMISSION_CATEGORY_GROUP = 'GROUP';
+export const PERMISSION_CATEGORY_ROLE = 'ROLE';
+export const PERMISSION_CATEGORY_USER = 'USER';
