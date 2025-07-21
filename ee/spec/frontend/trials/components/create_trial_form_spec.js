@@ -101,7 +101,6 @@ describe('CreateTrialForm', () => {
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const fieldsProps = () => findFormFields().props('fields');
   const findHiddenInput = (name) => wrapper.findByTestId(`hidden-${name}`);
-  const findNewGroupNameInput = () => wrapper.findByTestId('new-group-name-input');
 
   describe('rendering', () => {
     describe('initialization', () => {
@@ -167,11 +166,11 @@ describe('CreateTrialForm', () => {
         });
       });
 
-      it('correctly binds initialFormValues to GlFormFields via v-model', async () => {
-        expect(findFormFields().props('values')).toEqual(wrapper.vm.initialFormValues);
+      it('correctly binds formValues to GlFormFields via v-model', async () => {
+        expect(findFormFields().props('values')).toEqual(wrapper.vm.formValues);
 
         const updatedValues = {
-          ...wrapper.vm.initialFormValues,
+          ...wrapper.vm.formValues,
           company_name: 'New Company Name',
         };
 
@@ -192,7 +191,9 @@ describe('CreateTrialForm', () => {
       it('is set with initial value', async () => {
         wrapper = await createComponent();
 
-        expect(findGroupListboxInput().props('selected')).toBe(defaultNamespaceData.initialValue);
+        await nextTick();
+
+        expect(wrapper.vm.formValues.group).toBe(defaultNamespaceData.initialValue);
       });
 
       it('is unset when initialValue is null', async () => {
@@ -200,7 +201,7 @@ describe('CreateTrialForm', () => {
           namespaceData: { ...defaultNamespaceData, initialValue: '' },
         });
 
-        expect(findGroupListboxInput().props('selected')).toBe('');
+        expect(wrapper.vm.formValues.group).toBe('');
       });
 
       it('does not exist when there are no eligible namespaces', async () => {
@@ -254,15 +255,23 @@ describe('CreateTrialForm', () => {
             },
           });
 
-          findCreateGroupButton().vm.$emit('click');
-
           await nextTick();
 
-          expect(findGroupListboxInput().props('selected')).toBe('0');
+          expect(wrapper.vm.formValues.group).toBe('2');
+          expect(findCreateGroupButton().exists()).toBe(true);
+
+          const updatedValues = {
+            ...wrapper.vm.formValues,
+            group: '0',
+          };
+          findFormFields().vm.$emit('input', updatedValues);
+          await nextTick();
+
+          expect(wrapper.vm.formValues.group).toBe('0');
           expect(findGroupListboxInput().props('items')[0].text).toBe('Create group');
         });
 
-        it('removes create group option when selectedGroup changes from create group to another option', async () => {
+        it('removes create group option when group changes from create group to another option', async () => {
           wrapper = await createComponent({
             namespaceData: {
               ...defaultNamespaceData,
@@ -270,17 +279,27 @@ describe('CreateTrialForm', () => {
             },
           });
 
-          findCreateGroupButton().vm.$emit('click');
-
           await nextTick();
 
-          expect(wrapper.vm.selectedGroup).toBe('0');
+          const createGroupValues = {
+            ...wrapper.vm.formValues,
+            group: '0',
+          };
+          findFormFields().vm.$emit('input', createGroupValues);
+          await nextTick();
+
+          expect(wrapper.vm.formValues.group).toBe('0');
           expect(findGroupListboxInput().props('items')).toHaveLength(items.length + 1);
+          expect(findGroupListboxInput().props('items')[0].text).toBe('Create group');
 
-          findGroupListboxInput().vm.$emit('select', '2');
-
+          const regularGroupValues = {
+            ...wrapper.vm.formValues,
+            group: '2',
+          };
+          findFormFields().vm.$emit('input', regularGroupValues);
           await nextTick();
 
+          expect(wrapper.vm.formValues.group).toBe('2');
           expect(findGroupListboxInput().props('items')).toEqual(items);
         });
       });
@@ -413,14 +432,16 @@ describe('CreateTrialForm', () => {
         });
 
         const groupValidator = fieldsProps().group.validators[0];
-        expect(groupValidator()).toBe('Please select a group for your trial.');
+        expect(groupValidator(wrapper.vm.formValues.group)).toBe(
+          'Please select a group for your trial.',
+        );
       });
 
       it('returns no error if group is selected', async () => {
         wrapper = await createComponent();
 
         const groupValidator = fieldsProps().group.validators[0];
-        expect(groupValidator()).toBe('');
+        expect(groupValidator(wrapper.vm.formValues.group)).toBe('');
       });
     });
 
@@ -435,15 +456,8 @@ describe('CreateTrialForm', () => {
 
         const newGroupNameValidator = fieldsProps().new_group_name.validators[0];
 
-        findNewGroupNameInput().vm.$emit('input', '');
-        await nextTick();
-
         expect(newGroupNameValidator('')).toBe('You must enter a new group name.');
-
-        findNewGroupNameInput().vm.$emit('input', 'My New Group');
-        await nextTick();
-
-        expect(newGroupNameValidator()).toBe('');
+        expect(newGroupNameValidator('My new Group')).toBe('');
       });
     });
 
@@ -521,12 +535,21 @@ describe('CreateTrialForm', () => {
       wrapper = await createComponent();
       await nextTick();
 
-      await findCountrySelect().vm.$emit('select', 'NL');
+      const updatedValuesNL = {
+        ...wrapper.vm.formValues,
+        country: 'NL',
+      };
+
+      findFormFields().vm.$emit('input', updatedValuesNL);
       await nextTick();
 
       expect(fieldsProps()).not.toHaveProperty('state');
 
-      await findCountrySelect().vm.$emit('select', COUNTRY_WITH_STATES);
+      const updatedValuesUS = {
+        ...wrapper.vm.formValues,
+        country: COUNTRY_WITH_STATES,
+      };
+      findFormFields().vm.$emit('input', updatedValuesUS);
       await nextTick();
 
       expect(fieldsProps()).toHaveProperty('state');
@@ -550,7 +573,7 @@ describe('CreateTrialForm', () => {
 
         if (hasStateField) {
           const stateValidator = fieldsProps().state.validators[0];
-          expect(stateValidator()).toBe(result);
+          expect(stateValidator(selectedState)).toBe(result);
         }
       },
     );
@@ -567,7 +590,7 @@ describe('CreateTrialForm', () => {
       });
 
       const countryValidator = fieldsProps().country.validators[0];
-      expect(countryValidator()).toBe(result);
+      expect(countryValidator(countryValue)).toBe(result);
     });
   });
 
@@ -576,7 +599,7 @@ describe('CreateTrialForm', () => {
       wrapper = await createComponent();
       await nextTick();
 
-      findFormFields().vm.$emit('input', wrapper.vm.initialFormValues);
+      findFormFields().vm.$emit('input', wrapper.vm.formValues);
     });
 
     it('tracks the saas Trial submitting', async () => {
