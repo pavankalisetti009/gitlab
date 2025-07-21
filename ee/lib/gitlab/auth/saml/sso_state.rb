@@ -32,7 +32,9 @@ module Gitlab
           return true if sessionless?
           return false unless active?
 
-          return saml_session_active? if session_not_on_or_after_value.present?
+          session_not_on_or_after = session_not_on_or_after_value.presence
+
+          return Time.current <= session_not_on_or_after if session_not_on_or_after
 
           cutoff ? last_signin_at >= cutoff : active?
         end
@@ -54,13 +56,6 @@ module Gitlab
           return if active_session_data[provider_id].nil?
 
           active_session_data[provider_id]['last_signin_at']
-        end
-
-        def saml_session_active?
-          return false unless session_not_on_or_after_value.present?
-
-          # Compare current time with SAML session expiry
-          Time.current <= session_not_on_or_after_value
         end
       end
     end

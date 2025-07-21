@@ -10,38 +10,25 @@ module Gitlab
           def sessions_time_remaining_for_expiry
             active_sessions = SsoState.active_saml_sessions
 
-            if ::Feature.enabled?(:saml_timeout_supplied_by_idp_override, :instance)
-              active_sessions.filter_map do |key, last_sign_in_at|
-                # Skip session expiry keys - we only want provider sessions
-                next if key.to_s.end_with?(SsoState::SESSION_EXPIRY_SUFFIX)
-                next unless last_sign_in_at
+            active_sessions.filter_map do |key, last_sign_in_at|
+              # Skip session expiry keys - we only want provider sessions
+              next if key.to_s.end_with?(SsoState::SESSION_EXPIRY_SUFFIX)
+              next unless last_sign_in_at
 
-                expires_at = last_sign_in_at + DEFAULT_SESSION_TIMEOUT
+              # rubocop: disable CodeReuse/ActiveRecord -- This method is not dealing with many records and can still be optimized in one query
+              group = SamlProvider.includes(:group).where(id: key).first&.group
+              # rubocop: enable CodeReuse/ActiveRecord
 
-                provider_id = key
-
+              if ::Feature.enabled?(:saml_timeout_supplied_by_idp_override_group_saml, group)
                 # Check for SAML-specific session expiry
-                saml_expiry_key = "#{provider_id}#{SsoState::SESSION_EXPIRY_SUFFIX}"
+                saml_expiry_key = "#{key}#{SsoState::SESSION_EXPIRY_SUFFIX}"
                 saml_expires_at = active_sessions[saml_expiry_key]
 
-                # If SessionNotOnOrAfter attribute is present use the same value to determine session expiry
-                expires_at = saml_expires_at if saml_expires_at
-
-                time_remaining_for_expiry = expires_at.to_time - Time.current
-
-                # expires_at is DateTime; convert to Time; Time - Time yields a Float
-                { provider_id: key, time_remaining: time_remaining_for_expiry }
-              end
-            else
-              active_sessions.filter_map do |key, last_sign_in_at|
-                # Skip session expiry keys - we only want provider sessions
-                next if key.to_s.end_with?(SsoState::SESSION_EXPIRY_SUFFIX)
-                next unless last_sign_in_at
-
-                expires_at = last_sign_in_at + DEFAULT_SESSION_TIMEOUT
-                # expires_at is DateTime; convert to Time; Time - Time yields a Float
-                time_remaining_for_expiry = expires_at.to_time - Time.current
-                { provider_id: key, time_remaining: time_remaining_for_expiry }
+                determine_time_remaining_with_session_not_on_or_after(
+                  key, last_sign_in_at, saml_expires_at
+                )
+              else
+                determine_time_remaining(key, last_sign_in_at)
               end
             end
           end
@@ -85,6 +72,25 @@ module Gitlab
           def resource_member?(resource, user)
             user && user.is_a?(::User) && resource.member?(user)
           end
+
+          def determine_time_remaining_with_session_not_on_or_after(key, last_sign_in_at, saml_expires_at)
+            # If SessionNotOnOrAfter attribute is present use the same value to determine session expiry
+            expires_at = saml_expires_at.presence || (last_sign_in_at + DEFAULT_SESSION_TIMEOUT)
+
+            # expires_at is DateTime; convert to Time; Time - Time yields a Float
+            time_remaining_for_expiry = expires_at.to_time - Time.current
+
+            { provider_id: key, time_remaining: time_remaining_for_expiry }
+          end
+
+          def determine_time_remaining(key, last_sign_in_at)
+            expires_at = last_sign_in_at + DEFAULT_SESSION_TIMEOUT
+
+            # expires_at is DateTime; convert to Time; Time - Time yields a Float
+            time_remaining_for_expiry = expires_at.to_time - Time.current
+
+            { provider_id: key, time_remaining: time_remaining_for_expiry }
+          end
         end
 
         attr_reader :saml_provider, :user, :session_timeout
@@ -100,7 +106,7 @@ module Gitlab
         end
 
         def active_session?
-          SsoState.new(saml_provider.id).active_since?(session_timeout.ago)
+          SsoState.new(saml_provider.id).active_since?(session_timeout.ago, group: group)
         end
 
         def access_restricted?

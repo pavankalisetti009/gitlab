@@ -1,6 +1,6 @@
 ---
 name: saml_timeout_supplied_by_idp_override
-description:
+description: SessionNotOnOrAfter saml response attribute should be considered to decide session timeout for instance
 feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/262074
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/194914
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/553931

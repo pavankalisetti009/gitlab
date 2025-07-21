@@ -679,7 +679,7 @@ RSpec.describe Gitlab::Auth::GroupSaml::SsoEnforcer, feature_category: :system_a
 
       context 'when saml_timeout_supplied_by_idp_override feature flag is disabled' do
         before do
-          stub_feature_flags(saml_timeout_supplied_by_idp_override: false)
+          stub_feature_flags(saml_timeout_supplied_by_idp_override_group_saml: false)
         end
 
         it 'returns data for existing sessions using default timeout only' do
