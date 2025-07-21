@@ -122,6 +122,8 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
         let(:decorated_mock) { double(:decorated_mock) }
         let(:message_mock) { double(:message_mock) }
         let(:user) { double(:user_mock) }
+        let(:root_namespace) { create(:group_with_plan) }
+        let(:namespace) { create(:group, :nested, parent: root_namespace) }
 
         shared_examples 'subscription message' do
           it 'calls Gitlab::ExpiringSubscriptionMessage and SubscriptionPresenter if is Gitlab.com?' do
@@ -141,9 +143,6 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
             expect(subject).to eq('hey yay yay yay')
           end
         end
-
-        let(:root_namespace) { create(:group_with_plan) }
-        let(:namespace) { create(:group, :nested, parent: root_namespace) }
 
         context 'when a project is present' do
           let(:entity) { create(:project, namespace: namespace) }
