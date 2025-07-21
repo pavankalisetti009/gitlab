@@ -1063,6 +1063,7 @@ export default {
           :is-valid="isTitleValid"
           :title="workItemTitle"
           @updateDraft="updateDraftData('title', $event)"
+          @isTitleValid="isTitleValid = $event"
         />
         <title-suggestions
           :project-path="selectedProjectFullPath"
@@ -1296,6 +1297,7 @@ export default {
               <gl-button
                 variant="confirm"
                 :loading="loading"
+                :disabled="!isTitleValid"
                 data-testid="create-button"
                 @click="createWorkItem"
               >
@@ -1330,6 +1332,7 @@ export default {
             </gl-button>
             <gl-button
               variant="confirm"
+              :disabled="!isTitleValid"
               :loading="loading"
               data-testid="create-button"
               @click="createWorkItem"
