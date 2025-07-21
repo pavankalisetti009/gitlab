@@ -190,6 +190,16 @@ module EE
       false
     end
 
+    def update_user_group_member_roles
+      return unless source.is_a?(Group)
+      return unless ::Feature.enabled?(:cache_user_group_member_roles, source.root_ancestor)
+      return unless member_role || ::GroupGroupLink.for_shared_with_groups(source.id).with_custom_role.exists?
+
+      run_after_commit_or_now do
+        ::Authz::UserGroupMemberRoles::UpdateForGroupWorker.perform_async(id)
+      end
+    end
+
     private
 
     def group_allowed_email_domains
@@ -296,6 +306,20 @@ module EE
         data = ::Gitlab::HookData::GroupMemberBuilder.new(self).build(event)
         source.execute_hooks(data, :member_hooks)
       end
+    end
+
+    override :after_accept_invite
+    def after_accept_invite
+      super
+
+      update_user_group_member_roles
+    end
+
+    override :after_accept_request
+    def after_accept_request
+      super
+
+      update_user_group_member_roles
     end
   end
 end

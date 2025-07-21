@@ -886,4 +886,93 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe "user's Authz::UserGroupMemberRole records" do
+    shared_examples "updates the user's Authz::UserGroupMemberRole records" do |factory_args = []|
+      let_it_be(:group) { create(:group) }
+
+      before do
+        stub_feature_flags(cache_user_group_member_roles: group)
+      end
+
+      shared_examples 'enqueues an UpdateForGroupWorker job' do
+        it 'enqueues an ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to receive(:perform_async).with(member.id)
+
+          call_method
+        end
+      end
+
+      shared_examples 'does not enqueue UpdateForGroupWorker job' do
+        it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).not_to receive(:perform_async)
+
+          call_method
+        end
+      end
+
+      context 'when source is a group' do
+        let_it_be(:member_role) { create(:member_role, namespace: group) }
+        let_it_be(:member) { create(:group_member, *factory_args, source: group, member_role: member_role) }
+
+        it_behaves_like 'enqueues an UpdateForGroupWorker job'
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(cache_user_group_member_roles: false)
+          end
+
+          it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+        end
+
+        context 'when no member role was assigned' do
+          let_it_be(:member) { create(:group_member, *factory_args, source: group) }
+
+          it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+        end
+
+        context 'when source has been invited to another group with a member role' do
+          let_it_be(:member) { create(:group_member, *factory_args, source: group) }
+          let_it_be(:other_group) { create(:group) }
+
+          before do
+            create(:group_group_link,
+              shared_group: other_group,
+              shared_with_group: member.source,
+              member_role: create(:member_role, namespace: other_group)
+            )
+          end
+
+          it_behaves_like 'enqueues an UpdateForGroupWorker job'
+        end
+      end
+
+      context 'when source is a project' do
+        let_it_be(:project) { create(:project, group: group) }
+        let_it_be(:member) { create(:project_member, *factory_args, source: project) }
+
+        it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+      end
+    end
+
+    describe '#update_user_group_member_roles' do
+      subject(:call_method) { member.update_user_group_member_roles }
+
+      it_behaves_like "updates the user's Authz::UserGroupMemberRole records"
+    end
+
+    context "after invite is accepted" do
+      let(:user) { build(:user, email: member.invite_email) }
+
+      subject(:call_method) { member.accept_invite!(user) }
+
+      it_behaves_like "updates the user's Authz::UserGroupMemberRole records", [:invited]
+    end
+
+    context "after access request is granted" do
+      subject(:call_method) { member.accept_request(create(:user)) }
+
+      it_behaves_like "updates the user's Authz::UserGroupMemberRole records", [:access_request]
+    end
+  end
 end
