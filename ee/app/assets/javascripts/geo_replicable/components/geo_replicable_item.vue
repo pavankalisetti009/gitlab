@@ -92,9 +92,7 @@ export default {
       return getIdFromGraphQLId(this.registryId);
     },
     detailsPath() {
-      return this.glFeatures.geoReplicablesShowView
-        ? `${this.replicableBasePath}/${getIdFromGraphQLId(this.id)}`
-        : null;
+      return `${this.replicableBasePath}/${getIdFromGraphQLId(this.id)}`;
     },
     name() {
       return `${this.graphqlRegistryClass}/${this.id}`;

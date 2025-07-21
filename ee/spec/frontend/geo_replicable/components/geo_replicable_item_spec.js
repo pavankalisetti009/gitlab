@@ -67,26 +67,13 @@ describe('GeoReplicableItem', () => {
   const findReplicableItemModelRecordId = () => wrapper.findComponent(GlSprintf);
 
   describe('replicable item details path', () => {
-    describe('when geoReplicablesShowView is false', () => {
-      beforeEach(() => {
-        createComponent({ featureFlags: { geoReplicablesShowView: false } });
-      });
-
-      it('renders GeoListItem with the correct name but no detailsPath', () => {
-        expect(findGeoListItem().props('name')).toBe(MOCK_NAME);
-        expect(findGeoListItem().props('detailsPath')).toBeNull();
-      });
+    beforeEach(() => {
+      createComponent();
     });
 
-    describe('when geoReplicablesShowView is true', () => {
-      beforeEach(() => {
-        createComponent({ featureFlags: { geoReplicablesShowView: true } });
-      });
-
-      it('renders GeoListItem with the correct name and detailsPath', () => {
-        expect(findGeoListItem().props('name')).toBe(MOCK_NAME);
-        expect(findGeoListItem().props('detailsPath')).toBe(MOCK_DETAILS_PATH);
-      });
+    it('renders GeoListItem with the correct name and detailsPath', () => {
+      expect(findGeoListItem().props('name')).toBe(MOCK_NAME);
+      expect(findGeoListItem().props('detailsPath')).toBe(MOCK_DETAILS_PATH);
     });
   });
 

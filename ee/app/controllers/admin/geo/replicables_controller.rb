@@ -6,7 +6,6 @@ class Admin::Geo::ReplicablesController < Admin::Geo::ApplicationController
   before_action :set_replicator_with_id, only: :show
   before_action :load_node_data, only: [:index, :show]
   before_action only: :index do
-    push_frontend_feature_flag(:geo_replicables_show_view, current_user)
     push_frontend_feature_flag(:geo_replicables_filtered_list_view, current_user)
   end
 
@@ -27,9 +26,7 @@ class Admin::Geo::ReplicablesController < Admin::Geo::ApplicationController
     end
   end
 
-  def show
-    render_404 unless Feature.enabled?(:geo_replicables_show_view, current_user)
-  end
+  def show; end
 
   def set_replicator_class
     replicable_name = params[:replicable_name_plural].singularize
