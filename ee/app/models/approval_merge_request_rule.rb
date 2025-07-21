@@ -238,7 +238,6 @@ class ApprovalMergeRequestRule < ApplicationRecord
   end
 
   def policy_applies_to_target_branch?(branch)
-    return true unless Feature.enabled?(:merge_request_approval_policies_target_branch_matching, merge_request.project)
     return true unless approval_policy_rule
 
     approval_policy_rule.policy_applies_to_target_branch?(branch, project)
