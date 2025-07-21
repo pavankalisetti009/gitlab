@@ -84,7 +84,7 @@ module ProductAnalytics
     end
 
     def has_access?
-      can?(current_user, :read_product_analytics, project)
+      can?(current_user, :read_customizable_dashboards, project)
     end
 
     def cube_server_url(endpoint)

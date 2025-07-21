@@ -50,7 +50,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           stub_feature_flags(product_analytics_features: feature_flag_enabled)
           stub_licensed_features(product_analytics: licensed_feature_enabled, scoped_labels: licensed_feature_enabled)
 
-          allow(helper).to receive(:can?).with(user, :read_product_analytics, project).and_return(user_has_permission)
+          allow(helper).to receive(:can?).with(user, :read_customizable_dashboards,
+            project).and_return(user_has_permission)
           allow(helper).to receive(:can?).with(user, :admin_project, project).and_return(user_can_admin_project)
         end
 
@@ -184,7 +185,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
       context 'when user does not have permission' do
         before do
-          allow(helper).to receive(:can?).with(user, :read_product_analytics, sub_group).and_return(false)
+          allow(helper).to receive(:can?).with(user, :read_customizable_dashboards, sub_group).and_return(false)
         end
 
         it 'returns the expected data' do
@@ -194,7 +195,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
       context 'when user has permission' do
         before do
-          allow(helper).to receive(:can?).with(user, :read_product_analytics, sub_group).and_return(true)
+          allow(helper).to receive(:can?).with(user, :read_customizable_dashboards, sub_group).and_return(true)
         end
 
         it 'returns the expected data' do
@@ -271,7 +272,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
       context 'when user does not have permission' do
         before do
-          allow(helper).to receive(:can?).with(user, :read_product_analytics, group).and_return(false)
+          allow(helper).to receive(:can?).with(user, :read_customizable_dashboards, group).and_return(false)
         end
 
         it 'returns the expected data' do
@@ -281,7 +282,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
       context 'when user has permission' do
         before do
-          allow(helper).to receive(:can?).with(user, :read_product_analytics, group).and_return(true)
+          allow(helper).to receive(:can?).with(user, :read_customizable_dashboards, group).and_return(true)
         end
 
         it 'returns the expected data' do
@@ -302,7 +303,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
     describe 'tracking_key' do
       where(
-        :can_read_product_analytics,
+        :can_read_customizable_dashboards,
         :project_instrumentation_key,
         :expected
       ) do
@@ -316,12 +317,12 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           project.project_setting.update!(product_analytics_instrumentation_key: project_instrumentation_key)
 
           stub_application_setting(product_analytics_configurator_connection_string: 'https://configurator.example.com')
-          stub_application_setting(product_analytics_enabled: can_read_product_analytics)
-          stub_licensed_features(product_analytics: can_read_product_analytics)
-          stub_feature_flags(product_analytics_features: can_read_product_analytics)
+          stub_application_setting(product_analytics_enabled: can_read_customizable_dashboards)
+          stub_licensed_features(product_analytics: can_read_customizable_dashboards)
+          stub_feature_flags(product_analytics_features: can_read_customizable_dashboards)
           allow(helper).to receive(:can?)
-                       .with(user, :read_product_analytics, project)
-                       .and_return(can_read_product_analytics)
+                       .with(user, :read_customizable_dashboards, project)
+                       .and_return(can_read_customizable_dashboards)
           allow(helper).to receive(:can?).with(user, :admin_project, project).and_return(true)
         end
 
@@ -464,7 +465,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
   describe '#analytics_project_settings_data' do
     where(
-      :can_read_product_analytics,
+      :can_read_customizable_dashboards,
       :project_instrumentation_key,
       :expected_tracking_key,
       :use_project_level
@@ -486,13 +487,13 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           cube_api_key: 'thisisasecretkey'
         )
 
-        stub_application_setting(product_analytics_enabled: can_read_product_analytics)
+        stub_application_setting(product_analytics_enabled: can_read_customizable_dashboards)
 
-        stub_licensed_features(product_analytics: can_read_product_analytics)
-        stub_feature_flags(product_analytics_features: can_read_product_analytics)
+        stub_licensed_features(product_analytics: can_read_customizable_dashboards)
+        stub_feature_flags(product_analytics_features: can_read_customizable_dashboards)
 
-        allow(helper).to receive(:can?).with(user, :read_product_analytics,
-          project).and_return(can_read_product_analytics)
+        allow(helper).to receive(:can?).with(user, :read_customizable_dashboards,
+          project).and_return(can_read_customizable_dashboards)
       end
 
       subject(:data) { helper.analytics_project_settings_data(project) }
@@ -501,8 +502,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
         expected_collector = use_project_level ? 'https://project-collector.example.com' : 'https://new-collector.example.com'
 
         expect(data).to eq({
-          tracking_key: can_read_product_analytics ? expected_tracking_key : nil,
-          collector_host: can_read_product_analytics ? expected_collector : nil,
+          tracking_key: can_read_customizable_dashboards ? expected_tracking_key : nil,
+          collector_host: can_read_customizable_dashboards ? expected_collector : nil,
           dashboards_path: '/-/analytics/dashboards'
         })
       end

@@ -6,7 +6,7 @@ module Types
       class DashboardType < BaseObject
         graphql_name 'CustomizableDashboard'
         description 'Represents a customizable dashboard.'
-        authorize :read_product_analytics
+        authorize :read_customizable_dashboards
 
         field :title,
           type: GraphQL::Types::String,

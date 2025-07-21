@@ -8,7 +8,7 @@ module Projects
       feature_category :product_analytics
 
       before_action :dashboards_enabled!, only: [:index]
-      before_action :authorize_read_product_analytics!
+      before_action :authorize_read_customizable_dashboards!
       before_action :authorize_read_combined_project_analytics_dashboards!
       before_action do
         push_frontend_feature_flag(:customizable_dashboards, project.group)

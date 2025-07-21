@@ -5,7 +5,7 @@ module Analytics
     def analytics_dashboards_list_app_data(namespace)
       is_project = project?(namespace)
       is_group = group?(namespace)
-      can_read_product_analytics = can?(current_user, :read_product_analytics, namespace)
+      can_read_customizable_dashboards = can?(current_user, :read_customizable_dashboards, namespace)
 
       {
         namespace_id: namespace.id,
@@ -15,8 +15,8 @@ module Analytics
         can_configure_project_settings: can_configure_project_settings?(namespace).to_s,
         can_select_gitlab_managed_provider: can_select_gitlab_managed_provider?(namespace).to_s,
         managed_cluster_purchased: managed_cluster_purchased?(namespace).to_s,
-        tracking_key: can_read_product_analytics && is_project ? tracking_key(namespace) : nil,
-        collector_host: can_read_product_analytics ? collector_host(namespace) : nil,
+        tracking_key: can_read_customizable_dashboards && is_project ? tracking_key(namespace) : nil,
+        collector_host: can_read_customizable_dashboards ? collector_host(namespace) : nil,
         dashboard_empty_state_illustration_path: image_path('illustrations/empty-state/empty-dashboard-md.svg'),
         analytics_settings_path: analytics_settings_path(namespace),
         namespace_name: namespace.name,
@@ -35,11 +35,11 @@ module Analytics
     end
 
     def analytics_project_settings_data(project)
-      can_read_product_analytics = can?(current_user, :read_product_analytics, project)
+      can_read_customizable_dashboards = can?(current_user, :read_customizable_dashboards, project)
 
       {
-        tracking_key: can_read_product_analytics ? tracking_key(project) : nil,
-        collector_host: can_read_product_analytics ? collector_host(project) : nil,
+        tracking_key: can_read_customizable_dashboards ? tracking_key(project) : nil,
+        collector_host: can_read_customizable_dashboards ? collector_host(project) : nil,
         dashboards_path: project_analytics_dashboards_path(project)
       }
     end
@@ -76,7 +76,7 @@ module Analytics
       ::ProductAnalytics::Settings.for_project(project).enabled? &&
         ::Feature.enabled?(:product_analytics_features, project) &&
         project.licensed_feature_available?(:product_analytics) &&
-        can?(current_user, :read_product_analytics, project)
+        can?(current_user, :read_customizable_dashboards, project)
     end
 
     def overview_counts_aggregation_enabled?(namespace)
