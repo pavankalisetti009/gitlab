@@ -38020,6 +38020,8 @@ CREATE INDEX index_sbom_graph_paths_on_ancestor_id ON sbom_graph_paths USING btr
 
 CREATE INDEX index_sbom_graph_paths_on_descendant_id ON sbom_graph_paths USING btree (descendant_id);
 
+CREATE INDEX index_sbom_graph_paths_on_descendant_id_created_at_top_level ON sbom_graph_paths USING btree (descendant_id, created_at) WHERE (top_level_ancestor = true);
+
 CREATE INDEX index_sbom_graph_paths_on_project_id_and_descendant_id ON sbom_graph_paths USING btree (project_id, descendant_id);
 
 CREATE INDEX index_sbom_graph_paths_on_project_id_and_id ON sbom_graph_paths USING btree (project_id, id);

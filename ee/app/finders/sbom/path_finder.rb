@@ -1,5 +1,41 @@
 # frozen_string_literal: true
 
+# Finds all dependency paths from a root node to target SBOM occurrence.
+#
+# This class performs a bottom-up depth-first search (DFS) traversal of the dependency graph
+# to find all possible paths from root dependencies to a specified target occurrence.
+# It supports cursor-based pagination for efficient handling of large dependency trees.
+#
+# The dependency graph is built from the `sbom_graph_paths` closure table, which stores
+# both direct and transitive relationships between SBOM occurrences. Root nodes are
+# identified as occurrences with no parents or as top-level ancestors.
+#
+# @example Basic usage
+#   result = Sbom::PathFinder.execute(target_occurrence)
+#   result[:paths] # Array of path objects with occurrence chains
+#   result[:has_next_page] # Boolean indicating more results available
+#   result[:has_previous_page] # Boolean indicating previous results available
+#
+# @example With pagination
+#   # Forward pagination
+#   result = Sbom::PathFinder.execute(
+#     target_occurrence,
+#     after_graph_ids: [1, 2, 3], # Cursor for pagination
+#     limit: 10
+#   )
+#
+#   # Backward pagination
+#   result = Sbom::PathFinder.execute(
+#     target_occurrence,
+#     before_graph_ids: [4, 5, 6], # Cursor for pagination
+#     limit: 10
+#   )
+#
+# @see Sbom::GraphPath for the underlying graph structure
+# @see Sbom::Occurrence for the dependency occurrence mode
+
+# TODO: We should create a class to represent a dependency path
+# and encapsulate cursor calculation in it too.
 module Sbom
   class PathFinder
     include Gitlab::Utils::StrongMemoize
@@ -13,8 +49,8 @@ module Sbom
 
     def initialize(sbom_occurrence, after_graph_ids:, before_graph_ids:, limit:)
       @occurrence = sbom_occurrence
-      @after_graph_ids = after_graph_ids || []
-      @before_graph_ids = before_graph_ids || []
+      @after_graph_ids = (after_graph_ids || []).reverse
+      @before_graph_ids = (before_graph_ids || []).reverse
       @limit = limit || 20
     end
 
@@ -23,8 +59,9 @@ module Sbom
         project_id = occurrence.project_id
         target_id = occurrence.id
 
-        parents = build_parent_mapping(project_id)
-        paths_data = find_all_id_paths(target_id, parents)
+        @graph = build_adjacency_list(project_id)
+        @root_nodes = find_root_nodes
+        paths_data = find_all_id_paths(target_id)
         occurrence_paths = convert_id_paths_to_occurrences(paths_data[:paths])
 
         {
@@ -40,19 +77,26 @@ module Sbom
 
     private
 
-    def build_parent_mapping(project_id)
-      parents = {}
+    attr_accessor :graph, :root_nodes
+
+    def build_adjacency_list(project_id)
+      graph = {}
 
       Sbom::GraphPath
-        .adjacency_matrix_for_project_and_timestamp(project_id, latest_timestamp)
+        .by_project_and_timestamp(project_id, latest_timestamp)
         .each_batch(of: 1000) do |batch|
         batch.each do |path|
-          parents[path.descendant_id] ||= []
-          parents[path.descendant_id] << path.ancestor_id
+          graph[path.descendant_id] ||= []
+          graph[path.descendant_id] << path.ancestor_id
         end
       end
 
-      parents
+      # Sort the parents for consistent pagination
+      graph.each_key do |key|
+        graph[key].sort!
+      end
+
+      graph
     end
 
     def latest_timestamp
@@ -60,9 +104,34 @@ module Sbom
     end
     strong_memoize_attr :latest_timestamp
 
-    def find_all_id_paths(target_id, parents)
-      root_nodes = find_root_nodes(parents)
+    def find_root_nodes
+      root_nodes = Set.new
 
+      all_nodes = Set.new
+      graph.each do |child, parent_list|
+        all_nodes.add(child)
+        parent_list.each { |parent| all_nodes.add(parent) }
+      end
+
+      # nodes which have no parents
+      all_nodes.each do |node|
+        root_nodes.add(node) if graph[node].nil? || graph[node].empty?
+      end
+
+      # sbom_graph_path table is actually a closure table, where we
+      # not just store direct links but also links from all top_level occurrences
+      # to all their descendants. We can use this info to fetch all top level nodes.
+      top_level_nodes = Sbom::GraphPath
+                        .top_level_ancestor_nodes_for_timestamp_and_descendant(
+                          latest_timestamp,
+                          occurrence.id
+                        )
+                        .pluck(:ancestor_id).to_set # rubocop:disable CodeReuse/ActiveRecord,Database/AvoidUsingPluckWithoutLimit -- Only need the ancestor_id here, without limit
+
+      root_nodes + top_level_nodes
+    end
+
+    def find_all_id_paths(target_id)
       @mode = if before_graph_ids.blank? && after_graph_ids.blank?
                 :unscoped
               elsif before_graph_ids.any?
@@ -71,35 +140,13 @@ module Sbom
                 :after
               end
 
-      collect_paths(root_nodes, target_id, parents)
+      collect_paths(target_id)
     end
 
-    def find_root_nodes(parents)
-      # Get all nodes mentioned in the graph
-      all_nodes = Set.new
-
-      parents.each do |child, parent_list|
-        all_nodes.add(child)
-        parent_list.each { |parent| all_nodes.add(parent) }
-      end
-
-      # Nodes that aren't children of any other node are roots
-      root_nodes = all_nodes.select do |node|
-        !parents.key?(node) || parents[node].empty?
-      end
-
-      # Sort root nodes for deterministic traversal order
-      root_nodes.sort
-    end
-
-    def collect_paths(root_nodes, target_id, parents)
+    def collect_paths(target_id)
       @collector = create_collector
 
-      root_nodes.each do |root_id|
-        break unless should_continue_traversal?
-
-        traverse_graph(root_id, target_id, parents, [], Set.new)
-      end
+      traverse_graph(target_id, [], Set.new)
 
       if should_add_top_level_path?(@collector[:paths], occurrence)
         @collector[:paths].prepend({ path: [target_id], is_cyclic: false })
@@ -131,18 +178,20 @@ module Sbom
       }
     end
 
-    def traverse_graph(current, target, parents, path_so_far, visited)
+    # Bottom-up DFS: start from target and find paths
+    # to all root nodes.
+    def traverse_graph(current, path_so_far, visited)
       current_path = path_so_far + [current]
 
       return if should_prune_branch?(current_path)
 
       return if handle_cursor_path(current_path)
 
-      # If we've reached the target, we have a complete path
-      if current == target
-        handle_target_reached(current_path, false)
-        return
-      end
+      # If we've reached the target, we have a complete path.
+      # Don't return here since this root node might be a top_level
+      # node, which has parents.
+      # Also reverse the array, since we traverse from target to roots
+      handle_path_finished(current_path.reverse, false) if @root_nodes.include?(current)
 
       # Skip if we've already visited this node on this path to avoid cycles
       return if visited.include?(current)
@@ -152,12 +201,12 @@ module Sbom
 
       # Continue traversal
       visited_for_branch = visited.clone.add(current)
-      children = find_children(current, parents)
+      parents = graph[current] || []
 
-      children.each do |child|
+      parents.each do |parent|
         break unless should_continue_traversal?
 
-        traverse_graph(child, target, parents, current_path, visited_for_branch)
+        traverse_graph(parent, current_path, visited_for_branch)
       end
     end
 
@@ -190,7 +239,7 @@ module Sbom
       end
     end
 
-    def handle_target_reached(current_path, is_cyclic)
+    def handle_path_finished(current_path, is_cyclic)
       path_entry = { path: current_path, is_cyclic: is_cyclic }
 
       # Add path based on mode and cursor status
@@ -223,15 +272,6 @@ module Sbom
       return false if path1.length != path2.length
 
       path1.each_with_index.all? { |node, i| node == path2[i] }
-    end
-
-    def find_children(current, parents)
-      children = []
-      parents.each do |child, parent_list|
-        children << child if parent_list.include?(current)
-      end
-      # Sort children for deterministic traversal order
-      children.sort
     end
 
     def convert_id_paths_to_occurrences(id_paths)
