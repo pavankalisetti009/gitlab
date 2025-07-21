@@ -32,6 +32,11 @@ module Mutations
             required: false,
             description: 'System prompt for the agent.'
 
+          argument :tools, [::Types::GlobalIDType[::Ai::Catalog::BuiltInTool]],
+            required: false,
+            loads: Types::Ai::Catalog::BuiltInToolType,
+            description: 'List of GitLab-defined tools for the agent.'
+
           argument :user_prompt, GraphQL::Types::String,
             required: false,
             description: 'User prompt for the agent.'
@@ -39,9 +44,8 @@ module Mutations
           authorize :admin_ai_catalog_item
 
           def resolve(args)
-            agent = authorized_find!(id: args[:id])
-
-            params = args.slice(:name, :description, :public, :system_prompt, :user_prompt).merge(agent: agent)
+            agent = authorized_find!(id: args.delete(:id))
+            params = args.merge(agent: agent)
 
             result = ::Ai::Catalog::Agents::UpdateService.new(
               project: agent.project,

@@ -14,7 +14,9 @@ module Ai
           return error('Agent not found', payload: agent) unless valid_agent?
 
           agent_params = params.slice(:name, :description, :public)
-          version_params = params.slice(:system_prompt, :user_prompt).stringify_keys
+
+          version_params = params.slice(:system_prompt, :tools, :user_prompt).stringify_keys
+          version_params['tools']&.map!(&:id)
 
           agent.assign_attributes(agent_params)
 

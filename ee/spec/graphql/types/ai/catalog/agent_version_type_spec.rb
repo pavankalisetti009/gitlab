@@ -14,6 +14,7 @@ RSpec.describe Types::Ai::Catalog::AgentVersionType, feature_category: :workflow
   it 'has the expected fields' do
     expected_fields = %w[
       system_prompt
+      tools
       user_prompt
     ]
 
