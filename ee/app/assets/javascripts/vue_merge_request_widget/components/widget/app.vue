@@ -80,7 +80,7 @@ export default {
 
       return this.mr.canReadVulnerabilities ? 'MrSecurityWidgetEE' : 'MrSecurityWidgetCE';
     },
-
+    // eslint-disable-next-line vue/no-unused-properties -- used by parent component CEWidgetApp render function
     widgets() {
       return [
         this.licenseComplianceWidget,
@@ -95,6 +95,7 @@ export default {
         this.accessibilityWidget,
       ].filter((w) => w);
     },
+    // eslint-disable-next-line vue/no-unused-properties -- overrides parent CEWidgetApp computed property
     collapsedSummaryText() {
       if (this.mr.hasPolicies && this.violationsCount !== null) {
         return n__('%d policy violations', '%d policy violations', this.violationsCount);
@@ -102,6 +103,7 @@ export default {
 
       return CEWidgetApp.computed.collapsedSummaryText.call(this);
     },
+    // eslint-disable-next-line vue/no-unused-properties -- overrides parent CEWidgetApp computed property
     statusIcon() {
       if (this.mr.hasPolicies && this.violationsCount !== null) {
         return this.violationsCount > 0 ? 'failed' : 'success';
@@ -109,6 +111,7 @@ export default {
 
       return CEWidgetApp.computed.statusIcon.call(this);
     },
+    // eslint-disable-next-line vue/no-unused-properties -- overrides parent CEWidgetApp computed property
     isLoadingSummary() {
       return (
         this.$apollo.queries.violationsCount.loading ||

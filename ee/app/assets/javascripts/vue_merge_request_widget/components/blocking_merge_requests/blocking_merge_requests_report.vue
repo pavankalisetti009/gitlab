@@ -71,9 +71,6 @@ export default {
     shouldRenderBlockingMergeRequests() {
       return this.blockingMergeRequests?.totalCount > 0;
     },
-    openBlockingMergeRequests() {
-      return this.visibleMergeRequests.opened || [];
-    },
     closedBlockingMergeRequests() {
       return this.visibleMergeRequests.closed || [];
     },
