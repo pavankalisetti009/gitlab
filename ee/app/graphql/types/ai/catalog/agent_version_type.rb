@@ -12,11 +12,21 @@ module Types
 
         field :system_prompt, GraphQL::Types::String, null: true,
           description: 'System prompt for the agent.'
+        field :tools, ::Types::Ai::Catalog::BuiltInToolType.connection_type,
+          null: false,
+          description: 'GitLab-defined tools belonging to the agent.'
         field :user_prompt, GraphQL::Types::String, null: true,
           description: 'User prompt for the agent.'
 
         def system_prompt
           object.definition['system_prompt']
+        end
+
+        def tools
+          tool_ids = Array(object.definition['tools'])
+          return [] if tool_ids.empty?
+
+          ::Ai::Catalog::BuiltInTool.where(id: tool_ids) # rubocop:disable CodeReuse/ActiveRecord -- Not a database query
         end
 
         def user_prompt

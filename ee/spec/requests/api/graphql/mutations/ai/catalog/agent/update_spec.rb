@@ -24,6 +24,11 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
           id
           ...on AiCatalogAgentVersion {
             userPrompt
+            tools {
+              nodes {
+                id
+              }
+            }
             systemPrompt
           }
         }
@@ -33,6 +38,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
   end
 
   let(:mutation_response) { graphql_data_at(:ai_catalog_agent_update) }
+  let(:tools) { Ai::Catalog::BuiltInTool.where(id: [1, 9]) }
   let(:params) do
     {
       id: agent.to_global_id,
@@ -40,6 +46,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       public: true,
       description: 'New description',
       system_prompt: 'New system prompt',
+      tools: tools.map { |tool| global_id_of(tool) },
       user_prompt: 'New user prompt'
     }
   end
@@ -121,8 +128,9 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
         schema_version: 1,
         version: '1.1.0',
         definition: {
-          user_prompt: 'New user prompt',
-          system_prompt: 'New system prompt'
+          system_prompt: 'New system prompt',
+          tools: tools.map(&:id),
+          user_prompt: 'New user prompt'
         }.stringify_keys
       )
 
@@ -132,8 +140,13 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
           :description,
           :public,
           latest_version: a_graphql_entity_for(latest_version,
-            user_prompt: latest_version.definition['user_prompt'],
-            system_prompt: latest_version.definition['system_prompt']
+            system_prompt: latest_version.definition['system_prompt'],
+            tools: {
+              'nodes' => match_array(
+                tools.map { |tool| a_graphql_entity_for(tool) }
+              )
+            },
+            user_prompt: latest_version.definition['user_prompt']
           )
         )
       )

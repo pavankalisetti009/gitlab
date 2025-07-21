@@ -8,12 +8,14 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
   let_it_be_with_reload(:agent) { create(:ai_catalog_item, :with_version, public: false, project: project) }
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_item_version, version: '1.1.0', item: agent) }
 
+  let(:tools) { Ai::Catalog::BuiltInTool.where(id: [1, 9]) }
   let(:params) do
     {
       agent: agent,
       name: 'New name',
       description: 'New description',
       public: true,
+      tools: tools,
       user_prompt: 'New user prompt',
       system_prompt: 'New system prompt'
     }
@@ -71,6 +73,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
           version: '1.1.0',
           definition: {
             user_prompt: 'New user prompt',
+            tools: [1, 9],
             system_prompt: 'New system prompt'
           }.stringify_keys
         )

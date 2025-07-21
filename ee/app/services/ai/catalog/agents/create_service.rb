@@ -13,10 +13,12 @@ module Ai
             organization_id: project.organization_id,
             project_id: project.id
           )
+
           version_params = {
             schema_version: Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION,
             version: DEFAULT_VERSION,
             definition: {
+              tools: Array(params[:tools]).map(&:id),
               system_prompt: params[:system_prompt],
               user_prompt: params[:user_prompt]
             }
