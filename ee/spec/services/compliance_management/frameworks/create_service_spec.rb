@@ -10,8 +10,7 @@ RSpec.describe ComplianceManagement::Frameworks::CreateService, feature_category
     {
       name: 'GDPR',
       description: 'The EUs data protection directive',
-      color: '#abc123',
-      source_id: '12345'
+      color: '#abc123'
     }
   end
 
@@ -117,7 +116,6 @@ RSpec.describe ComplianceManagement::Frameworks::CreateService, feature_category
         expect(framework.name).to eq('GDPR')
         expect(framework.description).to eq('The EUs data protection directive')
         expect(framework.color).to eq('#abc123')
-        expect(framework.source_id).to eq(12345)
       end
 
       context 'when compliance pipeline configuration is available' do
