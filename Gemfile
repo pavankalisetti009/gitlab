@@ -345,7 +345,7 @@ gem 'atlassian-jwt', '~> 0.2.1', feature_category: :integrations
 gem 'slack-messenger', '~> 2.3.5', feature_category: :integrations
 
 # Kubernetes integration
-gem 'kubeclient', '~> 4.11.0', feature_category: :shared
+gem 'kubeclient', '~> 4.12.0', feature_category: :shared
 
 # AI
 gem 'circuitbox', '2.0.0', feature_category: :shared
