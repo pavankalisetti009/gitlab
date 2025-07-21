@@ -19,12 +19,24 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
   end
 
   let(:indexer) { described_class.new(repository) }
+  let(:block) { proc { |id| processed_ids << id } }
+  let(:processed_ids) { [] }
 
-  subject(:run) { indexer.run }
+  subject(:run) { indexer.run(&block) }
 
   before do
     allow(::ActiveContext).to receive(:adapter).and_return(adapter)
     allow(indexer).to receive(:to_commit).and_return(instance_double(Commit, id: '000'))
+  end
+
+  describe '.run!' do
+    it 'delegates to the instance method #run' do
+      indexer_double = instance_double(described_class, run: nil)
+      allow(described_class).to receive(:new).with(repository).and_return(indexer_double)
+
+      expect(indexer_double).to receive(:run).and_yield('test_value')
+      described_class.run!(repository, &block)
+    end
   end
 
   describe '#run' do
@@ -58,48 +70,54 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
         end
 
         it 'calls the indexer with the correct command' do
-          expect(Gitlab::Popen).to receive(:popen)
+          expect(Gitlab::Popen).to receive(:popen_with_streaming)
             .with(expected_command, nil, env_vars)
-            .and_return(['output', 0])
+            .and_return(0)
 
           run
         end
       end
 
       context 'when indexer command succeeds' do
-        let(:indexer_output) do
-          <<~OUTPUT
-            Some output
-            --section-start--
-            id
-            chunk_id_1
-            chunk_id_2
-            chunk_id_3
-            --section-start--
-            Other section
-          OUTPUT
-        end
-
         before do
-          allow(Gitlab::Popen).to receive(:popen).and_return([indexer_output, 0])
+          allow(Gitlab::Popen).to receive(:popen_with_streaming) do |_cmd, _dir, _env, &stream_block|
+            stream_block.call(:stdout, "--section-start--\n")
+            stream_block.call(:stdout, "version,build_time\n")
+            stream_block.call(:stdout, "v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC\n")
+            stream_block.call(:stdout, "--section-start--\n")
+            stream_block.call(:stdout, "id\n")
+            stream_block.call(:stdout, "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\n")
+            stream_block.call(:stdout, "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890\n")
+            0
+          end
         end
 
-        it 'sets the last_commit and returns extracted chunk IDs' do
+        it 'processes streamed output and calls block for each hash ID' do
           expect(repository).to receive(:update!).with(last_commit: '000')
 
-          expect(run).to eq(%w[chunk_id_1 chunk_id_2 chunk_id_3])
+          run
+
+          expect(processed_ids).to eq(%w[
+            1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+            abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+          ])
         end
       end
 
       context 'when indexer command fails' do
-        let(:error_output) { 'Command failed with error' }
-
         before do
-          allow(Gitlab::Popen).to receive(:popen).and_return([error_output, 1])
+          allow(Gitlab::Popen).to receive(:popen_with_streaming) do |_cmd, _dir, _env, &stream_block|
+            stream_block.call(:stderr, "Command failed with error\n")
+            stream_block.call(:stderr, "Additional error details\n")
+            1
+          end
         end
 
-        it 'raises an exception' do
-          expect { run }.to raise_error(described_class::Error, "Indexer failed: #{error_output}")
+        it 'raises an exception with stderr output' do
+          expect { run }.to raise_error(
+            described_class::Error,
+            "Indexer failed with status: 1 and error: Command failed with error\nAdditional error details\n"
+          )
         end
       end
     end

@@ -9,8 +9,8 @@ module Ai
         TIMEOUT = '30m'
         Error = Class.new(StandardError)
 
-        def self.run!(repository)
-          new(repository).run
+        def self.run!(repository, &block)
+          new(repository).run(&block)
         end
 
         attr_reader :repository, :project
@@ -20,19 +20,25 @@ module Ai
           @project = repository.project
         end
 
-        def run
+        def run(&block)
           raise Error, 'Adapter not set' unless adapter
           raise Error, 'Commit not found' unless to_commit
 
-          # Response from indexer is currently processed all at once but should be handled as it is streamed in batches
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/551837
-          output, status = Gitlab::Popen.popen(command, nil, environment_variables)
+          response_processor = IndexerResponseModifier.new(&block)
+          stderr_output = []
 
-          raise Error, "Indexer failed: #{output}" unless status == 0
+          status = Gitlab::Popen.popen_with_streaming(command, nil, environment_variables) do |stream_type, line|
+            case stream_type
+            when :stdout
+              response_processor.process_line(line)
+            when :stderr
+              stderr_output << line
+            end
+          end
+
+          raise Error, "Indexer failed with status: #{status} and error: #{stderr_output.join}" unless status == 0
 
           repository.update!(last_commit: to_commit.id)
-
-          IndexerResponseModifier.extract_ids(output)
         end
 
         private

@@ -5,12 +5,12 @@ module Ai
     module Code
       class IndexerResponseModifier
         SECTION_BREAK = '--section-start--'
-        # This regex extracts chunk IDs from the indexer output.
-        # It matches the section containing IDs between the SECTION_BREAK markers,
-        # specifically looking for a section that has "id" as its header.
-        # It captures all lines between the "id" header and either the next section marker
-        # or a JSON object (lines starting with '{').
-        # The 'match[1]' will contain all the IDs with newlines, which are then split and stripped.
+        VERSION_HEADER_REGEX = /^version,build_time$/  # Matches: "version,build_time"
+        VERSION_DATA_REGEX = /^v[\d\.]+-.*,.*UTC$/     # Matches: "v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC"
+        ID_SECTION_HEADER = 'id'
+        HASH_ID_REGEX = /^[a-f0-9]{64}$/               # Matches: SHA-256 hashes (64 hex chars)
+
+        # Extracts hash IDs from indexer output, skipping section headers and metadata
         #
         # Example output:
         #
@@ -21,17 +21,26 @@ module Ai
         # id
         # hash123
         # hash456
-        ID_REGEX = /#{SECTION_BREAK}\s*\nid\n([\s\S]*?)(?=\s*#{SECTION_BREAK}|\s*\{|\z)/m
 
-        def self.extract_ids(result)
-          return [] if result.nil? || result.empty?
-
-          match = result.match(ID_REGEX)
-
-          return [] unless match
-
-          match[1].split("\n").map(&:strip).reject(&:empty?)
+        def initialize(&block)
+          @block = block
         end
+
+        def process_line(line)
+          line = line.strip
+          return if line.empty?
+          return if line == SECTION_BREAK              # --section-start--
+          return if line.match?(VERSION_HEADER_REGEX)  # version,build_time
+          return if line.match?(VERSION_DATA_REGEX)    # v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC
+          return if line == ID_SECTION_HEADER          # id
+          return unless line.match?(HASH_ID_REGEX)
+
+          block.call(line)
+        end
+
+        private
+
+        attr_reader :block
       end
     end
   end

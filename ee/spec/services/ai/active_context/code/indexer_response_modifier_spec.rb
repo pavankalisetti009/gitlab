@@ -3,113 +3,134 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Code::IndexerResponseModifier, feature_category: :global_search do
-  describe '.extract_ids' do
-    subject(:extract_ids) { described_class.extract_ids(result) }
+  let(:processed_ids) { [] }
+  let(:block) { proc { |id| processed_ids << id } }
+  let(:modifier) { described_class.new(&block) }
 
-    context 'with valid indexer output containing string IDs' do
-      let(:result) do
-        <<~OUTPUT
-          --section-start--
-          version,build_time
-          v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC
-          --section-start--
-          id
-          hash123
-          hash456
-          {"time":"2025-06-24T10:02:09.778727+02:00","level":"ERROR","msg":"failed"}
-        OUTPUT
-      end
+  describe '#process_line' do
+    subject(:process_line) { modifier.process_line(line) }
 
-      it 'extracts only the IDs' do
-        expect(extract_ids).to contain_exactly('hash123', 'hash456')
+    context 'with valid hash IDs' do
+      let(:line) { '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef' }
+
+      it 'calls the block with the hash ID' do
+        process_line
+        expect(processed_ids).to eq([line])
       end
     end
 
-    context 'with multiple section markers' do
-      let(:result) do
-        <<~OUTPUT
-          --section-start--
-          version,build_time
-          v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC
-          --section-start--
-          id
-          hash123
-          hash456
-          --section-start--
-          another_section
-          some_data
-        OUTPUT
-      end
+    context 'with hash IDs containing whitespace' do
+      let(:line) { '  1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef  ' }
 
-      it 'extracts only the IDs from the correct section' do
-        expect(extract_ids).to contain_exactly('hash123', 'hash456')
+      it 'strips whitespace and calls the block' do
+        process_line
+        expect(processed_ids).to eq(['1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'])
       end
     end
 
-    context 'with IDs containing whitespace' do
-      let(:result) do
-        <<~OUTPUT
-          --section-start--
-          id
-           hash123
-          	hash456
-        OUTPUT
-      end
+    context 'with section break' do
+      let(:line) { '--section-start--' }
 
-      it 'strips whitespace from IDs' do
-        expect(extract_ids).to contain_exactly('hash123', 'hash456')
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
       end
     end
 
-    context 'with empty lines in the ID section' do
-      let(:result) do
-        <<~OUTPUT
-          --section-start--
-          id
-          hash123
+    context 'with version header' do
+      let(:line) { 'version,build_time' }
 
-          hash456
-
-        OUTPUT
-      end
-
-      it 'filters out empty lines' do
-        expect(extract_ids).to contain_exactly('hash123', 'hash456')
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
       end
     end
 
-    context 'with no ID section' do
-      let(:result) do
-        <<~OUTPUT
-          --section-start--
-          version,build_time
-          v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC
-          --section-start--
-          not_id
-          hash123
-          hash456
-        OUTPUT
-      end
+    context 'with version data' do
+      let(:line) { 'v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC' }
 
-      it 'returns an empty array' do
-        expect(extract_ids).to eq([])
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
       end
     end
 
-    context 'with empty output' do
-      let(:result) { '' }
+    context 'with ID section header' do
+      let(:line) { 'id' }
 
-      it 'returns an empty array' do
-        expect(extract_ids).to eq([])
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
       end
     end
 
-    context 'with nil output' do
-      let(:result) { nil }
+    context 'with empty line' do
+      let(:line) { '' }
 
-      it 'returns an empty array' do
-        expect(extract_ids).to eq([])
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
       end
+    end
+
+    context 'with whitespace-only line' do
+      let(:line) { '   ' }
+
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
+      end
+    end
+
+    context 'with invalid hash (too short)' do
+      let(:line) { 'hash123' }
+
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
+      end
+    end
+
+    context 'with invalid hash (contains non-hex characters)' do
+      let(:line) { '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdeg' }
+
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
+      end
+    end
+
+    context 'with JSON output' do
+      let(:line) { '{"time":"2025-06-24T10:02:09.778727+02:00","level":"ERROR","msg":"failed"}' }
+
+      it 'does not call the block' do
+        process_line
+        expect(processed_ids).to be_empty
+      end
+    end
+  end
+
+  describe 'processing multiple lines' do
+    it 'processes a complete indexer output stream' do
+      lines = [
+        '--section-start--',
+        'version,build_time',
+        'v5.6.0-16-gb587744-dev,2025-06-24-0800 UTC',
+        '--section-start--',
+        'id',
+        '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+        '--section-start--',
+        'other_section',
+        'some_data'
+      ]
+
+      lines.each { |line| modifier.process_line(line) }
+
+      expect(processed_ids).to eq(%w[
+        1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+        abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+      ])
     end
   end
 end
