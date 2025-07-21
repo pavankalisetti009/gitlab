@@ -68,7 +68,8 @@ module Sbom
             project_id: project.id,
             path_length: 1,
             created_at: timestamp,
-            updated_at: timestamp
+            updated_at: timestamp,
+            top_level_ancestor: parent_occurrence.top_level?
           )
         end
       end
@@ -140,7 +141,8 @@ module Sbom
             project_id: project.id,
             path_length: new_length,
             created_at: timestamp,
-            updated_at: timestamp
+            updated_at: timestamp,
+            top_level_ancestor: true # path start is always a top_level occurrence here.
           )
         end
 

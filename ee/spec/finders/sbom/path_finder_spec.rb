@@ -55,7 +55,8 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
   let_it_be(:grandchild) do
     create(:sbom_occurrence, ancestors: [
       { name: descendant.component_name, version: descendant.version },
-      { name: other_descendant.component_name, version: other_descendant.version }
+      { name: other_descendant.component_name, version: other_descendant.version },
+      {}
     ], input_file_path: descendant.input_file_path, project: project)
   end
 
@@ -89,6 +90,18 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
             {
               path: [ancestor, other_descendant, grandchild, grandgrandchild],
               is_cyclic: false
+            },
+            {
+              path: [descendant, grandchild, grandgrandchild],
+              is_cyclic: false
+            },
+            {
+              path: [other_descendant, grandchild, grandgrandchild],
+              is_cyclic: false
+            },
+            {
+              path: [grandchild, grandgrandchild],
+              is_cyclic: false
             }
           ]),
           has_previous_page: false,
@@ -112,6 +125,18 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
               },
               {
                 path: [ancestor, other_descendant, grandchild, grandgrandchild, deep_one],
+                is_cyclic: false
+              },
+              {
+                path: [descendant, grandchild, grandgrandchild, deep_one],
+                is_cyclic: false
+              },
+              {
+                path: [other_descendant, grandchild, grandgrandchild, deep_one],
+                is_cyclic: false
+              },
+              {
+                path: [grandchild, grandgrandchild, deep_one],
                 is_cyclic: false
               }
             ]),
@@ -424,7 +449,7 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
           .and_return(counter_double)
 
         expect(counter_double).to receive(:increment)
-          .with({ cyclic: false }, 3)
+          .with({ cyclic: false }, 6)
         expect(counter_double).to receive(:increment)
           .with({ cyclic: true }, 0)
 
