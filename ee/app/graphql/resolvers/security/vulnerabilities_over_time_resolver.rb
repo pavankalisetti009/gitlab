@@ -21,20 +21,32 @@ module Resolvers
 
       def resolve(start_date:, end_date:, **args)
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
-
         validate_date_range!(start_date, end_date)
 
         return [] if !vulnerable || Feature.disabled?(:group_security_dashboard_new, vulnerable)
-        return [] unless Feature.enabled?(:group_security_dashboard_new, vulnerable)
 
-        project_id = args[:project_id]
-        severity = args[:severity]
-        scanner = args[:scanner]
+        base_params = build_base_params(start_date, end_date, args)
 
-        generate_dummy_data(start_date, end_date, project_id: project_id, severity: severity, scanner: scanner)
+        severity_results = fetch_grouped_results(base_params.merge(group_by: 'severity'))
+        report_type_results = fetch_grouped_results(base_params.merge(group_by: 'report_type'))
+
+        transform_results(severity_results, report_type_results)
       end
 
       private
+
+      def build_base_params(start_date, end_date, args)
+        {
+          start_date: start_date,
+          end_date: end_date,
+          project_id: args[:project_id]
+        }.compact
+      end
+
+      def fetch_grouped_results(params)
+        finder = ::Security::VulnerabilityElasticCountOverTimeFinder.new(vulnerable, params)
+        finder.execute
+      end
 
       def validate_date_range!(start_date, end_date)
         raise Gitlab::Graphql::Errors::ArgumentError, "start date cannot be after end date" if start_date > end_date
@@ -44,44 +56,67 @@ module Resolvers
         raise Gitlab::Graphql::Errors::ArgumentError, "maximum date range is #{MAX_DATE_RANGE_DAYS} days"
       end
 
-      # rubocop: disable Lint/UnusedMethodArgument -- to do
-      def generate_dummy_data(start_date, end_date, project_id: nil, severity: nil, scanner: nil)
-        # rubocop: enable Lint/UnusedMethodArgument
-        # project_id to be done in future MR
-        (start_date..end_date).map do |current_date|
-          total_count = rand(20..50)
+      def transform_results(severity_results, report_type_results)
+        return [] if severity_results.empty? && report_type_results.empty?
 
-          severity_counts = [
-            { "count" => rand(1..5), "severity" => "critical" },
-            { "count" => rand(3..8), "severity" => "high" },
-            { "count" => rand(5..15), "severity" => "medium" },
-            { "count" => rand(10..20), "severity" => "low" },
-            { "count" => rand(0..3), "severity" => "unknown" }
-          ]
+        date_map = {}
 
-          severity_counts = severity_counts.select { |s| severity.include?(s["severity"]) } if severity.present?
+        process_results(severity_results, date_map) do |result, entry|
+          entry[:by_severity] = transform_severity_data(result[:by_severity])
+        end
 
-          report_type_counts = [
-            { "count" => rand(5..15), "report_type" => "sast" },
-            { "count" => rand(3..10), "report_type" => "dast" },
-            { "count" => rand(2..8), "report_type" => "dependency_scanning" },
-            { "count" => rand(1..5), "report_type" => "container_scanning" },
-            { "count" => rand(0..3), "report_type" => "secret_detection" }
-          ]
+        process_results(report_type_results, date_map) do |result, entry|
+          entry[:by_report_type] = transform_report_type_data(result[:by_report_type])
+        end
 
-          if scanner.present?
-            report_type_counts = report_type_counts.select do |s|
-              scanner.include?(s["report_type"])
-            end
-          end
+        date_map.values
+      end
+
+      def get_value(hash, key)
+        return unless hash
+
+        hash[key.to_s] || hash[key]
+      end
+
+      def process_results(results, date_map)
+        results.each do |result|
+          date_value = result[:date] || Time.zone.today # todo: what do we do if date is missing?
+          date_key = date_value.to_s
+
+          date_map[date_key] ||= {
+            date: date_value,
+            count: 0,
+            by_severity: [],
+            by_report_type: []
+          }
+
+          count = result[:count]
+          date_map[date_key][:count] = count if date_map[date_key][:count] == 0
+
+          yield(result, date_map[date_key]) if block_given?
+        end
+      end
+
+      def transform_grouped_data(data, field_name)
+        return [] unless data
+
+        data.map do |item|
+          value = get_value(item, field_name)
+          value = value.downcase if value.is_a?(String)
 
           {
-            "date" => current_date,
-            "count" => total_count,
-            :by_severity => severity_counts,
-            :by_report_type => report_type_counts
+            field_name.to_sym => value,
+            count: get_value(item, :count).to_i || 0
           }
         end
+      end
+
+      def transform_severity_data(severity_data)
+        transform_grouped_data(severity_data, :severity)
+      end
+
+      def transform_report_type_data(report_type_data)
+        transform_grouped_data(report_type_data, :report_type)
       end
     end
   end
