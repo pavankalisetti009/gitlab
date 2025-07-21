@@ -49,6 +49,7 @@ module Search
 
         # Pause indexing
         ::Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: true)
+        log_info('elasticsearch_pause_indexing set to true')
 
         return false unless elasticsearch_alias_exists?
         return false unless sufficient_storage_available?
@@ -101,7 +102,6 @@ module Search
 
       def indexing_paused!
         items_to_reindex = []
-
         current_task.target_classes.each do |klass|
           alias_name = elastic_helper.klass_to_alias_name(klass: klass)
           index_names = elastic_helper.target_index_names(target: alias_name).keys
@@ -119,6 +119,7 @@ module Search
           end
         end
 
+        log_info('kicking off subtasks')
         launch_subtasks(items_to_reindex)
 
         current_task.update!(state: :reindexing)
@@ -251,13 +252,12 @@ module Search
           max_slice: slice.elastic_max_slice, slice: slice.elastic_slice, scroll: REINDEX_SCROLL)
         retry_attempt = slice.retry_attempt + 1
 
-        logger.info(build_structured_payload(
-          message: 'Retrying reindex task',
+        log_info('Retrying reindex task',
           retry_attempt: retry_attempt,
           task_id: task_id,
           index_from: subtask.index_name_from,
           index_to: subtask.index_name_to,
-          slice: slice.elastic_slice))
+          slice: slice.elastic_slice)
 
         slice.update!(elastic_task: task_id, retry_attempt: retry_attempt)
       end
@@ -295,13 +295,13 @@ module Search
           subtask.slices.not_started.limit(slices_to_start).each do |slice|
             task_id = elastic_helper.reindex(from: subtask.index_name_from, to: subtask.index_name_to,
               max_slice: slice.elastic_max_slice, slice: slice.elastic_slice, scroll: REINDEX_SCROLL)
-            logger.info(build_structured_payload(
-              message: 'Reindex task started',
+
+            log_info('Reindex task started',
               task_id: task_id,
               index_from: subtask.index_name_from,
               index_to: subtask.index_name_to,
               slice: slice.elastic_slice
-            ))
+            )
 
             slice.update!(elastic_task: task_id)
             slices_in_progress += 1
@@ -358,6 +358,14 @@ module Search
         true
       end
 
+      def log_info(msg, params = {})
+        logger.info(build_structured_payload(
+          message: msg,
+          gitlab_task_id: current_task.id,
+          gitlab_task_state: current_task.state,
+          **params))
+      end
+
       def abort_reindexing!(reason, additional_logs: {}, unpause_indexing: true)
         logger.error(build_structured_payload(
           message: 'elasticsearch_reindex_error',
@@ -369,8 +377,12 @@ module Search
 
         current_task.update!(state: :failure, error_message: reason)
 
+        return unless unpause_indexing
+
         # Unpause indexing
-        ::Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: false) if unpause_indexing
+        ::Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: false)
+
+        log_info('elasticsearch_pause_indexing set to false')
       end
 
       def logger

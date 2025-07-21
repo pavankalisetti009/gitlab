@@ -22,7 +22,10 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
       end
 
       it 'aborts and returns an error' do
-        expect { cluster_reindexing_service.execute }.to change { task.reload.state }.from('initial').to('failure')
+        expect { cluster_reindexing_service.execute }
+          .to change { task.reload.state }.from('initial').to('failure')
+          .and not_change { Gitlab::CurrentSettings.elasticsearch_pause_indexing }
+
         expect(task.reload.error_message).to match(/Elasticsearch indexing is disabled/)
       end
     end
@@ -30,14 +33,20 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
     it 'aborts if the main index does not use aliases' do
       allow(helper).to receive(:alias_exists?).and_return(false)
 
-      expect { cluster_reindexing_service.execute }.to change { task.reload.state }.from('initial').to('failure')
+      expect { cluster_reindexing_service.execute }
+        .to change { task.reload.state }.from('initial').to('failure')
+        .and not_change { Gitlab::CurrentSettings.elasticsearch_pause_indexing }
+
       expect(task.reload.error_message).to match(/use aliases/)
     end
 
     it 'aborts if there are pending ES migrations' do
       allow(Elastic::DataMigrationService).to receive(:pending_migrations?).and_return(true)
 
-      expect { cluster_reindexing_service.execute }.to change { task.reload.state }.from('initial').to('failure')
+      expect { cluster_reindexing_service.execute }
+        .to change { task.reload.state }.from('initial').to('failure')
+        .and not_change { Gitlab::CurrentSettings.elasticsearch_pause_indexing }
+
       expect(task.reload.error_message).to match(/unapplied advanced search migrations/)
     end
 
@@ -53,17 +62,17 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
     it 'errors when there is not enough space' do
       allow(helper).to receive_messages(index_size_bytes: 100.megabytes, cluster_free_size_bytes: 30.megabytes)
 
-      expect { cluster_reindexing_service.execute }.to change { task.reload.state }.from('initial').to('failure')
+      expect { cluster_reindexing_service.execute }
+        .to change { task.reload.state }.from('initial').to('failure')
+        .and not_change { Gitlab::CurrentSettings.elasticsearch_pause_indexing }
+
       expect(task.reload.error_message).to match(/storage available/)
     end
 
     it 'pauses elasticsearch indexing' do
-      expect(Gitlab::CurrentSettings.elasticsearch_pause_indexing).to be(false)
-
       expect { cluster_reindexing_service.execute }
         .to change { task.reload.state }.from('initial').to('indexing_paused')
-
-      expect(Gitlab::CurrentSettings.elasticsearch_pause_indexing).to be(true)
+        .and change { Gitlab::CurrentSettings.elasticsearch_pause_indexing? }.from(false).to(true)
     end
 
     context 'when partial reindexing' do
