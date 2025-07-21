@@ -135,9 +135,14 @@ module EE
         user.assume_high_risk_if_phone_verification_limit_exceeded!
       end
 
+      step_url = onboarding_first_step_path
+      if experiment(:lightweight_trial_registration_redesign).assigned.name == :candidate
+        step_url = new_users_sign_up_trial_welcome_path
+      end
+
       store_duration(:ee_onboarding_status_create_service_instantiate) do
         ::Onboarding::StatusCreateService
-        .new(onboarding_status_params, session['user_return_to'], resource, onboarding_first_step_path).execute
+        .new(onboarding_status_params, session['user_return_to'], resource, step_url).execute
         clear_memoization(:onboarding_status_presenter) # clear since registration_type is now set
       end
 
