@@ -240,10 +240,13 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
         allow_next_instance_of(described_class) do |controller|
           allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
             actor: nil).and_return(experiment)
+          allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign)
+            .and_return(experiment)
         end
       end
 
       it 'tracks registration completion' do
+        expect(experiment).to receive_message_chain(:assigned, :name).and_return(:candidate)
         expect(experiment).to receive(:track).with(:completed_trial_registration_form)
 
         post_create

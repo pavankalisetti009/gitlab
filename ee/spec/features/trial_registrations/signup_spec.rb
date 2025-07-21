@@ -112,6 +112,7 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
         # Step 4
         # To be updated once Step 4 is completed in https://gitlab.com/gitlab-org/gitlab/-/issues/550313
         expect(page).to have_content('Welcome to GitLab')
+        expect(page).to have_current_path(new_users_sign_up_trial_welcome_path)
       end
     end
   end
