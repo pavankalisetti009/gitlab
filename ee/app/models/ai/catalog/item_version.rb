@@ -18,6 +18,8 @@ module Ai
 
       validates :definition, json_schema: { filename: 'ai_catalog_item_version_definition', size_limit: 64.kilobytes }
 
+      validate :validate_readonly
+
       belongs_to :item, class_name: 'Ai::Catalog::Item',
         foreign_key: :ai_catalog_item_id, inverse_of: :versions, optional: false, autosave: true
       belongs_to :organization, class_name: 'Organizations::Organization'
@@ -41,7 +43,17 @@ module Ai
         !released?
       end
 
+      def readonly?
+        super || release_date_was.present?
+      end
+
       private
+
+      def validate_readonly
+        return unless readonly? && changed?
+
+        errors.add(:base, s_('AICatalog|cannot change a released item version'))
+      end
 
       def populate_organization
         self.organization ||= item.organization
