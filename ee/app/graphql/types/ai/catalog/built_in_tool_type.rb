@@ -3,7 +3,7 @@
 module Types
   module Ai
     module Catalog
-      # rubocop: disable Graphql/AuthorizeTypes -- Permissions are still to be determined https://gitlab.com/gitlab-org/gitlab/-/issues/553928
+      # rubocop: disable Graphql/AuthorizeTypes -- Always public
       class BuiltInToolType < ::Types::BaseObject
         graphql_name 'AiCatalogBuiltInTool'
         description 'An AI catalog built-in tool'
