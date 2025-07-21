@@ -7,3 +7,5 @@ class ReindexProjectsToUpdateIntegerWithLongTypeSecondAttempt < Elastic::Migrati
     %w[Project]
   end
 end
+
+ReindexProjectsToUpdateIntegerWithLongTypeSecondAttempt.prepend ::Search::Elastic::MigrationObsolete
