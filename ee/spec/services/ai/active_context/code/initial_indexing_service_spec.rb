@@ -13,14 +13,19 @@ RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category
   describe '.execute' do
     subject(:execute) { described_class.execute(repository) }
 
-    it 'calls the indexer to get ids and then tracks refs for the ids' do
+    it 'calls the indexer with a block and tracks refs for each id as it processes' do
       expect(repository.reload.state).to eq('pending')
 
-      expect(Ai::ActiveContext::Code::Indexer).to receive(:run!)
-        .with(repository).and_return(%w[hash1 hash2])
+      expect(Ai::ActiveContext::Code::Indexer).to receive(:run!) do |repo, &block|
+        expect(repo).to eq(repository)
+        block.call('hash1')
+        block.call('hash2')
+      end
 
       expect(::Ai::ActiveContext::Collections::Code).to receive(:track_refs!)
-        .with(hashes: %w[hash1 hash2], routing: repository.project_id)
+        .with(hashes: ['hash1'], routing: repository.project_id)
+      expect(::Ai::ActiveContext::Collections::Code).to receive(:track_refs!)
+        .with(hashes: ['hash2'], routing: repository.project_id)
 
       execute
 

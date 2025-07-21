@@ -14,14 +14,16 @@ module Ai
 
         def execute
           repository.code_indexing_in_progress!
-          indexed_ids = run_indexer!
 
-          return unless indexed_ids.any?
+          last_indexed_id = nil
+
+          run_indexer! do |indexed_id|
+            enqueue_refs!([indexed_id])
+            last_indexed_id = indexed_id
+          end
 
           repository.embedding_indexing_in_progress!
-          enqueue_refs!(indexed_ids)
-
-          set_highest_enqueued_item!(indexed_ids.last)
+          set_highest_enqueued_item!(last_indexed_id) if last_indexed_id
         rescue StandardError => e
           repository.update!(state: :failed, last_error: e.message)
           raise e
@@ -29,8 +31,10 @@ module Ai
 
         private
 
-        def run_indexer!
-          Indexer.run!(repository)
+        attr_reader :repository
+
+        def run_indexer!(&block)
+          Indexer.run!(repository, &block)
         end
 
         def enqueue_refs!(ids)
@@ -43,8 +47,6 @@ module Ai
             indexed_at: Time.current
           )
         end
-
-        attr_reader :repository
       end
     end
   end
