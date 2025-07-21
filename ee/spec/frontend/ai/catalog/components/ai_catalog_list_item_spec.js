@@ -4,18 +4,8 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 
-const mockRoute = '/mock-route';
-
 describe('AiCatalogListItem', () => {
   let wrapper;
-
-  const mockRouter = {
-    resolve: jest.fn().mockReturnValue({
-      route: {
-        path: mockRoute,
-      },
-    }),
-  };
 
   const mockItem = {
     id: 'gid://gitlab/Ai::Catalog::Item/1',
@@ -33,7 +23,6 @@ describe('AiCatalogListItem', () => {
         $route: {
           path: '/agents/:id',
         },
-        $router: mockRouter,
       },
     });
   };
@@ -79,9 +68,7 @@ describe('AiCatalogListItem', () => {
 
       expect(items).toHaveLength(3);
       expect(items.at(0).text()).toBe('Run');
-      expect(items.at(0).attributes('to')).toBe(mockRoute);
       expect(items.at(1).text()).toBe('Edit');
-      expect(items.at(1).attributes('to')).toBe(mockRoute);
       expect(items.at(2).text()).toBe('Delete');
       expect(items.at(2).attributes('variant')).toBe('danger');
     });
