@@ -34,7 +34,7 @@ module Gitlab
           timeout = options.delete(:timeout) || DEFAULT_TIMEOUT
 
           response = Gitlab::HTTP.post(
-            "#{Gitlab::AiGateway.url}/v1/search/gitlab-docs",
+            "#{base_url}/v1/search/gitlab-docs",
             headers: Gitlab::AiGateway.headers(user: user, service: service),
             body: request_body(query: query).to_json,
             timeout: timeout,
@@ -48,6 +48,14 @@ module Gitlab
             response_from_llm: response)
 
           response
+        end
+
+        def base_url
+          feature_setting&.base_url || Gitlab::AiGateway.url
+        end
+
+        def feature_setting
+          ::Ai::FeatureSetting.find_by_feature(:duo_chat)
         end
 
         def service
