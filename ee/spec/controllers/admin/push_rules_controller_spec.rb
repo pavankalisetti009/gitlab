@@ -43,7 +43,7 @@ RSpec.describe Admin::PushRulesController, :with_current_organization, feature_c
       it 'assigns correct organization' do
         patch :update, params: { push_rule: params }
 
-        expect(PushRule.global.organization).to eq(current_organization)
+        expect(PushRuleFinder.new.execute.organization).to eq(current_organization)
       end
     end
 

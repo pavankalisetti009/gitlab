@@ -38,7 +38,7 @@ module PushRulesHelper
     if push_rule.global?
       messages << s_("ProjectSettings|This setting will be applied to all projects unless overridden for a project.")
     else
-      enabled_globally = PushRule.global&.public_send(rule)
+      enabled_globally = PushRuleFinder.new.execute&.public_send(rule)
 
       messages << s_("ProjectSettings|This setting is on for the instance.") if enabled_globally
     end

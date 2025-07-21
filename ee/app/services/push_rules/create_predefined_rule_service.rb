@@ -22,7 +22,7 @@ module PushRules
       if project.group
         project.group.predefined_push_rule
       else
-        PushRule.global
+        PushRuleFinder.new.execute
       end
     end
 
