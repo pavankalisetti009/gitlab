@@ -285,20 +285,6 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
             expect { execute }.not_to raise_error
           end
         end
-
-        context 'when the collect policy yaml invalidated audit event feature is disabled' do
-          before do
-            stub_feature_flags(collect_policy_yaml_invalidated_audit_event: false)
-          end
-
-          it 'does not audit the invalid policy yaml' do
-            expect(
-              Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService
-            ).not_to receive(:new)
-
-            execute
-          end
-        end
       end
 
       context 'with existing policy reads' do

@@ -53,7 +53,7 @@ module Security
           )
         )
 
-        if collect_audit_events_feature_enabled? && collect_audit_events_for_the_config?
+        if collect_audit_events_for_the_config?
           CollectPoliciesAuditEvents.new(
             policy_configuration: policy_configuration,
             created_policies: created_policies,
@@ -125,11 +125,6 @@ module Security
         when :vulnerability_management_policy then Security::Policy.type_vulnerability_management_policy
         when :pipeline_execution_schedule_policy then Security::Policy.type_pipeline_execution_schedule_policy
         end
-      end
-
-      def collect_audit_events_feature_enabled?
-        Feature.enabled?(:collect_security_policy_manage_audit_events,
-          policy_configuration.security_policy_management_project)
       end
 
       def collect_audit_events_for_the_config?
