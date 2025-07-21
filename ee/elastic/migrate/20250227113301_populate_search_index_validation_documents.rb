@@ -10,3 +10,5 @@ class PopulateSearchIndexValidationDocuments < Elastic::Migration
     true
   end
 end
+
+PopulateSearchIndexValidationDocuments.prepend ::Search::Elastic::MigrationObsolete
