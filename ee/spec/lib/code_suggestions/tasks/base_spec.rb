@@ -59,4 +59,32 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
       end
     end
   end
+
+  describe '#vendored?' do
+    subject(:vendored?) { klass.new(current_user: user).vendored? }
+
+    it 'returns false' do
+      expect(vendored?).to eq(false)
+    end
+
+    context 'when the feature is self-hosted' do
+      include RSpec::Parameterized::TableSyntax
+
+      where(:provider, :expected_result) do
+        [
+          [:self_hosted, false],
+          [:vendored, true],
+          [:disabled, false]
+        ]
+      end
+
+      with_them do
+        let!(:feature_setting) { create(:ai_feature_setting, provider: provider) }
+
+        it 'returns the expected result' do
+          expect(vendored?).to eq(expected_result)
+        end
+      end
+    end
+  end
 end

@@ -24,6 +24,10 @@ module Ai
       raise NotImplementedError, '#disabled? method must be implemented'
     end
 
+    def vendored?
+      raise NotImplementedError, '#vendored? method must be implemented'
+    end
+
     def model_metadata_params
       raise NotImplementedError, '#model_metadata_params method must be implemented'
     end

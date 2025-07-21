@@ -46,6 +46,10 @@ module CodeSuggestions
         !!feature_setting&.self_hosted?
       end
 
+      def vendored?
+        !!feature_setting&.vendored?
+      end
+
       def namespace_feature_setting?
         feature_setting.is_a?(::Ai::ModelSelection::NamespaceFeatureSetting)
       end

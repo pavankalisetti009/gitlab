@@ -30,6 +30,15 @@ RSpec.describe ::Ai::FeatureConfigurable, feature_category: :"self-hosted_models
     end
   end
 
+  describe '#vendored?' do
+    it 'raises NotImplementedError when not implemented' do
+      expect { included_instance.vendored? }.to raise_error(
+        NotImplementedError,
+        "#vendored? method must be implemented"
+      )
+    end
+  end
+
   describe '#model_metadata_params' do
     it 'raises NotImplementedError when not implemented' do
       expect { included_instance.model_metadata_params }.to raise_error(
