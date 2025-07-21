@@ -9263,7 +9263,7 @@ CREATE TABLE application_settings (
     push_event_hooks_limit integer DEFAULT 3 NOT NULL,
     push_event_activities_limit integer DEFAULT 3 NOT NULL,
     custom_http_clone_url_root character varying(511),
-    deletion_adjourned_period integer DEFAULT 7 NOT NULL,
+    deletion_adjourned_period integer DEFAULT 30 NOT NULL,
     license_trial_ends_on date,
     eks_integration_enabled boolean DEFAULT false NOT NULL,
     eks_account_id character varying(128),
