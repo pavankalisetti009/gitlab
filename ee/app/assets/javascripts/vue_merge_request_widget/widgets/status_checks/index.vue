@@ -31,7 +31,6 @@ export default {
   },
   data() {
     return {
-      collapsedError: null,
       collapsedData: {},
       loadingState: undefined,
       hasError: false,
