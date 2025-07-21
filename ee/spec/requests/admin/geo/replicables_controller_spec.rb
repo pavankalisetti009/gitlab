@@ -146,18 +146,6 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
             expect(response).to have_gitlab_http_status(:not_found)
           end
         end
-
-        context 'with feature flag :geo_replicables_show_view off' do
-          before do
-            stub_feature_flags(geo_replicables_show_view: false)
-          end
-
-          it 'renders 404' do
-            get url
-
-            expect(response).to have_gitlab_http_status(:not_found)
-          end
-        end
       end
     end
   end
