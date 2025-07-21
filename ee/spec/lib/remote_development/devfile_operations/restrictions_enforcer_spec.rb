@@ -198,7 +198,7 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
     it "raises an UnmatchedResultError" do
       allow(described_class).to receive(:validate_devfile_size)
                                   .and_return(Gitlab::Fp::Result.err(Class.new(Gitlab::Fp::Message).new({
-                                    details: "UnmatchedErrorResult", context: context
+                                    details: "unknown error", context: context
                                   })))
 
       expect { described_class.enforce(context) }.to raise_error(Gitlab::Fp::UnmatchedResultError)
