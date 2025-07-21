@@ -191,7 +191,7 @@ export default {
 
     <template #candidate>
       <div class="gl-flex gl-items-center gl-justify-center">
-        <div class="gl-max-w-xl gl-grow gl-rounded-pill gl-bg-subtle gl-p-8">
+        <div class="gl-mt-6 gl-max-w-xl gl-grow gl-rounded-pill gl-bg-subtle gl-p-8">
           <header class="gl-text-center">
             <img :src="$options.gitlabLogo" :alt="$options.gitlabLogoAlt" class="gl-h-9" />
             <h2>{{ $options.i18n.pageTitle }}</h2>

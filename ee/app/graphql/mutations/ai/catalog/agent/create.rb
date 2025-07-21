@@ -32,6 +32,11 @@ module Mutations
             required: true,
             description: 'System prompt for the agent.'
 
+          argument :tools, [::Types::GlobalIDType[::Ai::Catalog::BuiltInTool]],
+            required: false,
+            loads: Types::Ai::Catalog::BuiltInToolType,
+            description: 'List of GitLab-defined tools for the agent.'
+
           argument :user_prompt, GraphQL::Types::String,
             required: true,
             description: 'User prompt for the agent.'
@@ -42,6 +47,7 @@ module Mutations
             project = authorized_find!(id: args[:project_id])
 
             service_args = args.except(:project_id)
+
             result = ::Ai::Catalog::Agents::CreateService.new(
               project: project,
               current_user: current_user,

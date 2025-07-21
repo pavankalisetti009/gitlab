@@ -7,7 +7,7 @@ FactoryBot.define do
     sequence(:description) { |n| "Item #{n}" }
 
     trait :with_version do
-      versions { [association(:ai_catalog_item_version)] }
+      versions { build_list(:ai_catalog_item_version, 1) }
     end
 
     after(:build) do |item, _|

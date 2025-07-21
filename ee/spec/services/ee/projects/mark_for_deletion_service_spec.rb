@@ -10,23 +10,6 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
 
   subject(:result) { described_class.new(project, user).execute }
 
-  it 'does not hide the project', :aggregate_failures do
-    expect(result[:status]).to eq(:success)
-    expect(project).to be_self_deletion_scheduled
-    expect(project).not_to be_hidden
-  end
-
-  context 'when the project is already marked for deletion' do
-    let(:marked_for_deletion_at) { 2.days.ago }
-
-    it 'does not change original date', :freeze_time, :aggregate_failures do
-      project.update!(marked_for_deletion_at: marked_for_deletion_at)
-
-      expect(result[:status]).to eq(:success)
-      expect(project.marked_for_deletion_at).to eq(marked_for_deletion_at.to_date)
-    end
-  end
-
   context 'when attempting to mark security policy project for deletion' do
     before do
       stub_licensed_features(security_orchestration_policies: true)
@@ -34,9 +17,8 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
     end
 
     it 'errors' do
-      expect(result).to eq(
-        status: :error,
-        message: 'Project cannot be deleted because it is linked as a security policy project')
+      expect(result).to be_error
+      expect(result.message).to eq('Project cannot be deleted because it is linked as a security policy project')
     end
 
     it "doesn't mark the project for deletion" do

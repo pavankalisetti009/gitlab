@@ -9,9 +9,36 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
   let_it_be(:project) { create(:project, maintainers: maintainer) }
 
   let(:current_user) { maintainer }
-  let(:mutation) { graphql_mutation(:ai_catalog_agent_create, params) }
+  let(:mutation) do
+    graphql_mutation(:ai_catalog_agent_create, params) do
+      <<~FIELDS
+        errors
+        item {
+          name
+          description
+          project {
+            id
+          }
+          public
+          latestVersion {
+            ... on AiCatalogAgentVersion {
+              systemPrompt
+              tools {
+                nodes {
+                  id
+                }
+              }
+              userPrompt
+            }
+          }
+        }
+      FIELDS
+    end
+  end
+
   let(:name) { 'Name' }
   let(:description) { 'Description' }
+  let(:tools) { Ai::Catalog::BuiltInTool.where(id: [1, 9]) }
   let(:params) do
     {
       project_id: project.to_global_id,
@@ -19,6 +46,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       description: description,
       public: true,
       system_prompt: 'A',
+      tools: tools.map { |tool| global_id_of(tool) },
       user_prompt: 'B'
     }
   end
@@ -82,6 +110,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     execute
 
     item = Ai::Catalog::Item.last
+
     expect(item).to have_attributes(
       name: params[:name],
       description: params[:description],
@@ -93,6 +122,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       version: '1.0.0',
       definition: {
         system_prompt: params[:system_prompt],
+        tools: tools.map(&:id),
         user_prompt: params[:user_prompt]
       }.stringify_keys
     )
@@ -103,8 +133,30 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
 
     expect(graphql_data_at(:ai_catalog_agent_create, :item)).to match a_hash_including(
       'name' => name,
-      'project' => a_hash_including('id' => project.to_global_id.to_s),
-      'description' => description
+      'description' => description,
+      'project' => a_graphql_entity_for(project),
+      'public' => true,
+      'latestVersion' => {
+        'systemPrompt' => params[:system_prompt],
+        'tools' => {
+          'nodes' => match_array(
+            tools.map { |tool| a_graphql_entity_for(tool) }
+          )
+        },
+        'userPrompt' => params[:user_prompt]
+      }
     )
+  end
+
+  context 'when tools argument is missing' do
+    let(:params) { super().except(:tools) }
+
+    it 'creates an agent with empty tools array' do
+      execute
+
+      item = Ai::Catalog::Item.last
+
+      expect(item.versions.first.definition['tools']).to eq([])
+    end
   end
 end

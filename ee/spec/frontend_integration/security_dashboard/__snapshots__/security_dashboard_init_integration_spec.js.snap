@@ -235,51 +235,52 @@ exports[`Security Dashboard default states sets up group-level with \`groupSecur
           >
             <div
               class="grid-stack-item-content"
-            />
-          </div>
-          <div
-            class="gl-h-full"
-            data-testid="grid-stack-panel"
-            id="reference-0"
-          >
-            <div
-              class="!gl-overflow-visible gl-bg-white gl-border gl-h-full gl-p-4 gl-rounded-base grid-stack-item-content"
-              id="reference-1"
             >
               <div
-                class="gl-flex gl-flex-col gl-h-full"
+                class="gl-h-full"
+                data-testid="gridstack-panel"
+                id="reference-0"
               >
                 <div
-                  class="gl-flex gl-items-start gl-justify-between"
-                  data-testid="panel-title"
+                  class="!gl-overflow-visible gl-bg-white gl-border gl-h-full gl-p-4 gl-rounded-base grid-stack-item-content"
+                  id="reference-1"
                 >
                   <div
-                    class="gl-flex gl-items-center gl-overflow-hidden gl-pb-3"
+                    class="gl-flex gl-flex-col gl-h-full"
                   >
-                    <span
-                      class="gl-font-bold gl-text-default gl-truncate-component"
-                      data-testid="truncate-end-container"
-                      title="Vulnerabilities over time"
+                    <div
+                      class="gl-flex gl-items-start gl-justify-between"
+                      data-testid="panel-title"
                     >
-                      <span
-                        class="gl-truncate-end"
+                      <div
+                        class="gl-flex gl-items-center gl-overflow-hidden gl-pb-3"
                       >
-                        Vulnerabilities over time
-                      </span>
-                    </span>
-                  </div>
-                </div>
-                <div
-                  class="gl-content-center gl-flex gl-flex-wrap gl-text-center"
-                >
-                  <div
-                    aria-label="Loading"
-                    class="gl-min-h-8 gl-spinner-container gl-w-full"
-                    role="status"
-                  >
-                    <span
-                      class="!gl-align-text-bottom gl-spinner gl-spinner-dark gl-spinner-lg"
-                    />
+                        <span
+                          class="gl-font-bold gl-text-default gl-truncate-component"
+                          data-testid="truncate-end-container"
+                          title="Vulnerabilities over time"
+                        >
+                          <span
+                            class="gl-truncate-end"
+                          >
+                            Vulnerabilities over time
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      class="gl-content-center gl-flex gl-flex-wrap gl-text-center"
+                    >
+                      <div
+                        aria-label="Loading"
+                        class="gl-min-h-8 gl-spinner-container gl-w-full"
+                        role="status"
+                      >
+                        <span
+                          class="!gl-align-text-bottom gl-spinner gl-spinner-dark gl-spinner-lg"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -521,51 +522,52 @@ exports[`Security Dashboard default states sets up project-level with \`projectS
           >
             <div
               class="grid-stack-item-content"
-            />
-          </div>
-          <div
-            class="gl-h-full"
-            data-testid="grid-stack-panel"
-            id="reference-0"
-          >
-            <div
-              class="!gl-overflow-visible gl-bg-white gl-border gl-h-full gl-p-4 gl-rounded-base grid-stack-item-content"
-              id="reference-1"
             >
               <div
-                class="gl-flex gl-flex-col gl-h-full"
+                class="gl-h-full"
+                data-testid="gridstack-panel"
+                id="reference-0"
               >
                 <div
-                  class="gl-flex gl-items-start gl-justify-between"
-                  data-testid="panel-title"
+                  class="!gl-overflow-visible gl-bg-white gl-border gl-h-full gl-p-4 gl-rounded-base grid-stack-item-content"
+                  id="reference-1"
                 >
                   <div
-                    class="gl-flex gl-items-center gl-overflow-hidden gl-pb-3"
+                    class="gl-flex gl-flex-col gl-h-full"
                   >
-                    <span
-                      class="gl-font-bold gl-text-default gl-truncate-component"
-                      data-testid="truncate-end-container"
-                      title="Vulnerabilities over time"
+                    <div
+                      class="gl-flex gl-items-start gl-justify-between"
+                      data-testid="panel-title"
                     >
-                      <span
-                        class="gl-truncate-end"
+                      <div
+                        class="gl-flex gl-items-center gl-overflow-hidden gl-pb-3"
                       >
-                        Vulnerabilities over time
-                      </span>
-                    </span>
-                  </div>
-                </div>
-                <div
-                  class="gl-content-center gl-flex gl-flex-wrap gl-text-center"
-                >
-                  <div
-                    aria-label="Loading"
-                    class="gl-min-h-8 gl-spinner-container gl-w-full"
-                    role="status"
-                  >
-                    <span
-                      class="!gl-align-text-bottom gl-spinner gl-spinner-dark gl-spinner-lg"
-                    />
+                        <span
+                          class="gl-font-bold gl-text-default gl-truncate-component"
+                          data-testid="truncate-end-container"
+                          title="Vulnerabilities over time"
+                        >
+                          <span
+                            class="gl-truncate-end"
+                          >
+                            Vulnerabilities over time
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      class="gl-content-center gl-flex gl-flex-wrap gl-text-center"
+                    >
+                      <div
+                        aria-label="Loading"
+                        class="gl-min-h-8 gl-spinner-container gl-w-full"
+                        role="status"
+                      >
+                        <span
+                          class="!gl-align-text-bottom gl-spinner gl-spinner-dark gl-spinner-lg"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

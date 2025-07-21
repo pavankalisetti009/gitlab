@@ -6,7 +6,9 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
-  let_it_be(:catalog_item) { create(:ai_catalog_item, :with_version, project: project, public: true) }
+  let_it_be_with_reload(:catalog_item) do
+    create(:ai_catalog_item, :with_version, project: project, public: true)
+  end
 
   let(:latest_version) { catalog_item.latest_version }
   let(:data) { graphql_data_at(:ai_catalog_item) }
@@ -23,6 +25,11 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
         versionName
         ... on AiCatalogAgentVersion {
           systemPrompt
+          tools {
+            nodes {
+              id
+            }
+          }
           userPrompt
         }
       }
@@ -69,6 +76,13 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
                 'id' => latest_version.to_global_id.to_s,
                 'systemPrompt' => latest_version.definition['system_prompt'],
                 'userPrompt' => latest_version.definition['user_prompt'],
+                'tools' => {
+                  'nodes' => match_array(
+                    latest_version.definition['tools'].map do |id|
+                      a_graphql_entity_for(Ai::Catalog::BuiltInTool.find(id))
+                    end
+                  )
+                },
                 'updatedAt' => latest_version.updated_at.iso8601,
                 'publishedAt' => latest_version.release_date&.iso8601,
                 'versionName' => latest_version.human_version,
@@ -152,5 +166,13 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
         'latestVersion' => a_graphql_entity_for(latest_version)
       )
     )
+  end
+
+  it 'returns an empty array when definition.tools is nil' do
+    latest_version.update!(definition: latest_version.definition.except('tools'))
+
+    post_graphql(query, current_user: nil)
+
+    expect(graphql_dig_at(data, :latest_version, :tools, :nodes)).to be_empty
   end
 end

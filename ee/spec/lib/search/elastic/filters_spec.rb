@@ -917,6 +917,42 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
     end
 
+    context 'when read_cross_project is not allowed for user' do
+      let(:fixtures_path) { 'ee/spec/fixtures/search/elastic/filters/by_search_level_and_group_membership' }
+      let(:expected_query) do
+        json = File.read(Rails.root.join(fixtures_path, fixture_file))
+        # the traversal_id for the group the user has access to
+        json.gsub!('NAMESPACE_ANCESTRY', namespace_ancestry) if defined?(namespace_ancestry)
+        # the project for the project the user has access to
+        json.gsub!('PROJECT_ID', project_id) if defined?(project_id)
+        # group search: the traversal_id for the searched group
+        json.gsub!('SEARCHED_GROUP', searched_group) if defined?(searched_group)
+        # project search: the project_id for the searched project
+        json.gsub!('SEARCHED_PROJECT', searched_project) if defined?(searched_project)
+        ::Gitlab::Json.parse(json).deep_symbolize_keys
+      end
+
+      let_it_be(:user) { create(:user) }
+      let(:fixture_file) { 'global_search_user_no_read_cross_project.json' }
+
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :read_cross_project).and_return(false)
+      end
+
+      it { is_expected.to eq(expected_query) }
+
+      context 'when search_refactor_membership_filter feature flag is false' do
+        let(:fixture_file) { 'global_search_user_no_read_cross_project.json' }
+
+        before do
+          stub_feature_flags(search_refactor_membership_filter: false)
+        end
+
+        it { is_expected.to eq(expected_query) }
+      end
+    end
+
     context 'when user.can_read_all_resources? is true' do
       before do
         allow(user).to receive(:can_read_all_resources?).and_return(true)
@@ -2958,6 +2994,28 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         let(:fixture_file) { 'global_search_user_no_access.json' }
 
         it { is_expected.to eq(expected_query) }
+      end
+
+      context 'when read_cross_project is not allowed for user' do
+        let_it_be(:user) { create(:user) }
+        let(:fixture_file) { 'global_search_user_no_read_cross_project.json' }
+
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(user, :read_cross_project).and_return(false)
+        end
+
+        it { is_expected.to eq(expected_query) }
+
+        context 'when search_refactor_membership_filter feature flag is false' do
+          let(:fixture_file) { 'global_search_user_no_read_cross_project.json' }
+
+          before do
+            stub_feature_flags(search_refactor_membership_filter: false)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when user has access' do

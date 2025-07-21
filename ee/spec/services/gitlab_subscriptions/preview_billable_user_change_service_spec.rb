@@ -462,5 +462,52 @@ RSpec.describe ::GitlabSubscriptions::PreviewBillableUserChangeService, feature_
 
       it_behaves_like 'preview billable user change service'
     end
+
+    context 'with different instance types' do
+      let_it_be(:target_namespace) { create(:group) }
+
+      subject(:service) do
+        described_class.new(
+          current_user: current_user,
+          target_namespace: target_namespace,
+          role: role,
+          add_user_ids: [non_existing_record_id]
+        )
+      end
+
+      before do
+        allow(GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService)
+          .to receive(:new).and_return(
+            instance_double(GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService, execute: true)
+          )
+      end
+
+      context 'with SaaS instance', :saas do
+        it 'calls saas_billable_role_change?' do
+          expect(service).to receive(:saas_billable_role_change?).with(
+            target_namespace: target_namespace,
+            role: Gitlab::Access::DEVELOPER,
+            member_role_id: nil
+          ).at_least(:once)
+
+          expect(service).not_to receive(:sm_billable_role_change?)
+
+          service.execute
+        end
+      end
+
+      context 'with self-managed instance' do
+        it 'calls sm_billable_role_change?' do
+          expect(service).to receive(:sm_billable_role_change?).with(
+            role: Gitlab::Access::DEVELOPER,
+            member_role_id: nil
+          ).at_least(:once)
+
+          expect(service).not_to receive(:saas_billable_role_change?)
+
+          service.execute
+        end
+      end
+    end
   end
 end

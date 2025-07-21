@@ -12,6 +12,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       name: 'Agent',
       description: 'Description',
       public: true,
+      tools: [Ai::Catalog::BuiltInTool.find(1)],
       system_prompt: 'A',
       user_prompt: 'B'
     }
@@ -50,6 +51,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
         version: '1.0.0',
         definition: {
           system_prompt: params[:system_prompt],
+          tools: [1],
           user_prompt: params[:user_prompt]
         }.stringify_keys
       )

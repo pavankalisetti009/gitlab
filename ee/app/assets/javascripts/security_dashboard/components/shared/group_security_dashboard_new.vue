@@ -1,7 +1,7 @@
 <script>
+import { GlDashboardLayout } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
-import DashboardLayout from '~/vue_shared/components/customizable_dashboard/dashboard_layout.vue';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
@@ -18,7 +18,7 @@ const PROJECT_TOKEN_DEFINITION = {
 
 export default {
   components: {
-    DashboardLayout,
+    GlDashboardLayout,
     FilteredSearch,
   },
   inject: ['groupFullPath'],
@@ -67,12 +67,12 @@ export default {
 </script>
 
 <template>
-  <dashboard-layout :config="dashboard" data-testid="group-security-dashboard-new">
+  <gl-dashboard-layout :config="dashboard" data-testid="group-security-dashboard-new">
     <template #filters>
       <filtered-search :tokens="$options.filteredSearchTokens" @filters-changed="updateFilters" />
     </template>
     <template #panel="{ panel }">
       <component :is="panel.component" v-bind="panel.componentProps" />
     </template>
-  </dashboard-layout>
+  </gl-dashboard-layout>
 </template>
