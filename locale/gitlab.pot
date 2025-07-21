@@ -9122,6 +9122,9 @@ msgstr ""
 msgid "At risk"
 msgstr ""
 
+msgid "At this moment, it is only possible to move work items to projects."
+msgstr ""
+
 msgid "Attach a file or image"
 msgstr ""
 
