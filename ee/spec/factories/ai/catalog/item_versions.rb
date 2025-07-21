@@ -13,5 +13,9 @@ FactoryBot.define do
       }
     end
     item { association :ai_catalog_item }
+
+    trait :draft do
+      release_date { nil }
+    end
   end
 end
