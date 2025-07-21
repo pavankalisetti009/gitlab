@@ -24,7 +24,7 @@ module Namespaces
 
       private
 
-      delegate :usage_quotas_path, :buy_storage_path, :promo_url, :link_button_to, to: :helpers
+      delegate :usage_quotas_path, :buy_storage_path, :link_button_to, to: :helpers
       attr_reader :context, :root_namespace, :user, :root_storage_size
 
       def render?

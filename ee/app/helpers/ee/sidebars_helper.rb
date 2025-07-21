@@ -85,7 +85,7 @@ module EE
       if target_group && can?(user, :read_billing, target_group)
         group_billings_path(target_group)
       else
-        "#{promo_url}/pricing"
+        promo_pricing_url
       end
     end
 

@@ -9,7 +9,7 @@ module GitlabSubscriptions
 
     def build(params = {})
       if plan_id.blank?
-        Gitlab::Saas.about_pricing_url
+        Gitlab::Routing.url_helpers.promo_pricing_url
       elsif namespace.blank?
         Gitlab::Routing.url_helpers.new_gitlab_subscriptions_group_path(plan_id: plan_id)
       else

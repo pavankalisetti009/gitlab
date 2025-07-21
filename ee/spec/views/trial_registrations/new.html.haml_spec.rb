@@ -41,8 +41,8 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
     it { is_expected.to have_content(s_('InProductMarketing|Want to host GitLab on your servers?')) }
 
     it 'has start self-managed link' do
-      is_expected
-        .to have_link(s_('InProductMarketing|Start with Self-Managed'), href: about_trial_url(hosted: 'self-managed'))
+      href = promo_url(path: '/free-trial', query: { hosted: 'self-managed' })
+      is_expected.to have_link(s_('InProductMarketing|Start with Self-Managed'), href: href)
     end
   end
 

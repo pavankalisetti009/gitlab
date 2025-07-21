@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-direct :subscriptions_comparison do
-  Gitlab::Saas.about_feature_comparison_url
-end
-
 direct :subscription_portal_legacy_sign_in do
   Addressable::URI.join(subscription_portal_url, '/customers/sign_in?legacy=true').to_s
 end

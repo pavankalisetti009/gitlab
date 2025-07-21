@@ -20,7 +20,6 @@
       = render 'top_level_billing_plan_header', namespace: @group, current_plan: current_plan
       = render 'shared/targeted_message_banner', group: @group
 
-
     = render GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent.new(namespace: @group, user: current_user)
     = render GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent.new(namespace: @group, user: current_user)
 

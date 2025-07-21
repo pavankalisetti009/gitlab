@@ -80,7 +80,7 @@ module Billing
     end
 
     def learn_more_url
-      "https://about.gitlab.com/pricing/#{plan_name}"
+      promo_pricing_url(path: "/#{plan_name}")
     end
 
     def price_per_month

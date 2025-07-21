@@ -35,14 +35,6 @@ RSpec.describe 'Custom URLs', 'Subscription Portal', feature_category: :subscrip
     it { is_expected.to eq("#{staging_customers_url}/graphql") }
   end
 
-  describe 'subscriptions_comparison_url' do
-    subject { subscriptions_comparison_url }
-
-    link_match = %r{\Ahttps://about\.gitlab\.((cn/pricing/saas)|(com/pricing/gitlab-com))/feature-comparison\z}
-
-    it { is_expected.to match(link_match) }
-  end
-
   describe 'subscription_portal_more_minutes_url' do
     subject { subscription_portal_more_minutes_url }
 

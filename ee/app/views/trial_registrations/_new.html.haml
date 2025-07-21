@@ -13,7 +13,7 @@
     %p.gl-text-subtle
       = sprite_icon('question-o', css_class: 'gl-mr-1')
       = s_('InProductMarketing|Want to host GitLab on your servers?')
-      = link_to s_('InProductMarketing|Start with Self-Managed'), about_trial_url(hosted: 'self-managed'),
+      = link_to s_('InProductMarketing|Start with Self-Managed'), promo_url(path: '/free-trial', query: { hosted: 'self-managed'}),
         data: { track_action: 'click_link', track_label: 'start_self-managed_trial' }
 
     .signup-box.gl-max-w-75

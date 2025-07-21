@@ -33,7 +33,7 @@ RSpec.describe "Admin add license", :js, feature_category: :plan_provisioning do
     end
 
     it 'redirects to current Subscription terms' do
-      expect(page).to have_link('Terms of Service', href: "#{ApplicationHelper.promo_url}/terms/#subscription")
+      expect(page).to have_link('Terms of Service', href: promo_url(path: '/terms/', anchor: 'subscription'))
     end
 
     it 'enables button "Add license" when EULA checkbox is selected' do

@@ -56,7 +56,7 @@ module LicenseHelper
   # EE:Self Managed
   def cloud_license_view_data
     {
-      buy_subscription_path: Gitlab::Saas.about_pricing_url,
+      buy_subscription_path: promo_pricing_url,
       customers_portal_url: subscription_portal_manage_url,
       free_trial_path: self_managed_new_trial_url,
       has_active_license: (has_active_license? ? 'true' : 'false'),
