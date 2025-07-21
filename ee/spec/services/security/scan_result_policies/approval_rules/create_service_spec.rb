@@ -28,13 +28,22 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
   let_it_be_with_reload(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
   let_it_be_with_reload(:approval_policy_rules) { [approval_policy_rule] }
 
-  subject(:execute_service) do
+  let(:service) do
     described_class.new(
       project: project,
       security_policy: security_policy,
       approval_policy_rules: approval_policy_rules,
       author: author
-    ).execute
+    )
+  end
+
+  subject(:execute_service) do
+    service.execute
+  end
+
+  before do
+    service.clear_memoization(:approval_actions)
+    security_policy.clear_memoization(:policy_content)
   end
 
   describe '#execute' do
@@ -71,6 +80,33 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
       it 'creates scan result policy read and approval rule' do
         expect { execute_service }.to change { project.scan_result_policy_reads.count }.by(1)
           .and change { project.approval_rules.count }.by(1)
+      end
+
+      it 'tracks approval rule creation event' do
+        expect { execute_service }
+          .to trigger_internal_events('create_approval_rule_from_merge_request_approval_policy')
+          .with(project: project, additional_properties: { label: approval_policy_rule.type })
+      end
+
+      context 'with multiple approval actions' do
+        before do
+          security_policy.update!(content: {
+            actions: [
+              { type: 'require_approval', approvals_required: 1, user_approvers: ['admin'] },
+              { type: 'require_approval', approvals_required: 2, user_approvers: ['owner'] }
+            ]
+          })
+        end
+
+        it 'tracks multiple approval actions event' do
+          expect { execute_service }
+            .to trigger_internal_events('check_multiple_approval_actions_for_approval_policy')
+            .with(project: project)
+            .and increment_usage_metrics(
+              "redis_hll_counters." \
+                "count_distinct_project_id_from_check_multiple_approval_actions_for_approval_policy_monthly"
+            )
+        end
       end
 
       context 'when rule type is license_finding' do
