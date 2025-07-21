@@ -23,6 +23,6 @@ RSpec.describe EE::Projects::Security::ConfigurationHelper do
   context 'when user can not access discover security' do
     let(:can_access_discover_security) { false }
 
-    it { is_expected.to eq("#{ApplicationHelper.promo_url}/pricing/") }
+    it { is_expected.to eq(promo_pricing_url) }
   end
 end

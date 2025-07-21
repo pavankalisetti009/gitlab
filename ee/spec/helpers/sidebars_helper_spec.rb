@@ -337,10 +337,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
   end
 
   describe '#compare_plans_url' do
-    let(:promo_url) { 'https://about.gitlab.com' }
-
     before do
-      allow(helper).to receive(:promo_url).and_return(promo_url)
       allow(helper).to receive(:group_billings_path) { |group| "/groups/#{group.full_path}/-/billings" }
     end
 
@@ -348,7 +345,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       it 'returns promo pricing URL' do
         result = helper.compare_plans_url(user: nil)
 
-        expect(result).to eq("#{promo_url}/pricing")
+        expect(result).to eq(promo_pricing_url)
       end
 
       it 'returns promo pricing URL even when project and group are present' do
@@ -357,7 +354,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
 
         result = helper.compare_plans_url(user: nil, project: project, group: group)
 
-        expect(result).to eq("#{promo_url}/pricing")
+        expect(result).to eq(promo_pricing_url)
       end
     end
 
@@ -395,7 +392,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           it 'returns promo pricing URL' do
             result = helper.compare_plans_url(user: user, group: group)
 
-            expect(result).to eq("#{promo_url}/pricing")
+            expect(result).to eq(promo_pricing_url)
           end
         end
       end
@@ -406,7 +403,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'returns promo pricing URL' do
           result = helper.compare_plans_url(user: user, group: group)
 
-          expect(result).to eq("#{promo_url}/pricing")
+          expect(result).to eq(promo_pricing_url)
         end
       end
 
@@ -434,7 +431,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           it 'returns promo pricing URL' do
             result = helper.compare_plans_url(user: user, project: project)
 
-            expect(result).to eq("#{promo_url}/pricing")
+            expect(result).to eq(promo_pricing_url)
           end
         end
       end
@@ -446,7 +443,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'returns promo pricing URL since user namespaces are not Groups' do
           result = helper.compare_plans_url(user: user, project: project)
 
-          expect(result).to eq("#{promo_url}/pricing")
+          expect(result).to eq(promo_pricing_url)
         end
       end
 
@@ -456,7 +453,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'returns promo pricing URL' do
           result = helper.compare_plans_url(user: user, project: project)
 
-          expect(result).to eq("#{promo_url}/pricing")
+          expect(result).to eq(promo_pricing_url)
         end
       end
 
@@ -464,7 +461,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'returns promo pricing URL' do
           result = helper.compare_plans_url(user: user)
 
-          expect(result).to eq("#{promo_url}/pricing")
+          expect(result).to eq(promo_pricing_url)
         end
       end
 
@@ -472,13 +469,13 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'handles nil values gracefully' do
           result = helper.compare_plans_url(user: user, project: nil, group: nil)
 
-          expect(result).to eq("#{promo_url}/pricing")
+          expect(result).to eq(promo_pricing_url)
         end
 
         it 'handles authorization check with nil target_group' do
           result = helper.compare_plans_url(user: user)
 
-          expect(result).to eq("#{promo_url}/pricing")
+          expect(result).to eq(promo_pricing_url)
         end
       end
 

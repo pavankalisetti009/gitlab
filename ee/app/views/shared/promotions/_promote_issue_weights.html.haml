@@ -26,7 +26,7 @@
             = s_('Promotions|When you have a lot of issues, it can be hard to get an overview. By adding a weight to your issues, you can get a better idea of the effort, cost, required time, or value of each, and so better manage them.')
           %p
             - if Gitlab::CurrentSettings.should_check_namespace_plan?
-              - subscription_link = link_button_to s_('Premium plan'), Gitlab::Saas.about_pricing_url, variant: :link, target: '_blank', rel: 'noopener noreferrer', class: 'tr-issue-weights-bronze-features-cta'
+              - subscription_link = link_button_to s_('Premium plan'), promo_pricing_url, variant: :link, target: '_blank', rel: 'noopener noreferrer', class: 'tr-issue-weights-bronze-features-cta'
               = s_("Promotions|See the other features in the %{subscription_link}").html_safe % { subscription_link: subscription_link }
             - else
               = s_('Promotions|Improve issues management with Issue weight and GitLab Enterprise Edition.')

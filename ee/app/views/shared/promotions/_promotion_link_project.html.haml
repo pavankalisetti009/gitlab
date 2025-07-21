@@ -15,7 +15,7 @@
 - elsif current_user&.admin?
   -# EE:Self Managed
   - if License.current&.expired?
-    = link_button_to (!short_form ? s_('Promotions|Buy GitLab Enterprise Edition') : s_('Promotions|Buy EE')), Gitlab::Saas.about_pricing_url, variant: :confirm
+    = link_button_to (!short_form ? s_('Promotions|Buy GitLab Enterprise Edition') : s_('Promotions|Buy EE')), promo_pricing_url, variant: :confirm
   - else
     = link_button_to s_('Promotions|Start GitLab Ultimate trial'), new_trial_url, class: 'gl-mb-3', variant: :confirm
 - else

@@ -68,7 +68,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
           get :new
         end
 
-        it { is_expected.to redirect_to "https://about.gitlab.com/pricing/" }
+        it { is_expected.to redirect_to promo_pricing_url }
       end
     end
   end

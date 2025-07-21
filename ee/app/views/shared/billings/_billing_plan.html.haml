@@ -3,7 +3,7 @@
 - show_deprecated_plan = plan.deprecated?
 - if show_deprecated_plan
   - plan_name      += ' (Legacy)'
-  - faq_link_url   = "#{ApplicationHelper.promo_url}/pricing/faq-new-product-subscription-tiers"
+  - faq_link_url   = promo_pricing_url(path: '/faq-new-product-subscription-tiers')
   - faq_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: faq_link_url }
 
 .card-wrapper{ data: { testid: "plan-card-#{plan.code}" } }
@@ -37,7 +37,7 @@
           %li.gl-p-0.gl-pt-3
             - if plan.about_page_href
               = link_to s_("BillingPlans|See all %{plan_name} features") % { plan_name: plan.name },
-                subscriptions_comparison_url,
+                promo_pricing_url(path: '/gitlab-com/feature-comparison'),
                 data: { track_action: 'click_link',
                         track_label: 'plan_features',
                         track_property: plan.code }

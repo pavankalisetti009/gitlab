@@ -10,7 +10,7 @@ RSpec.describe GitlabSubscriptions::PurchaseUrlBuilder, feature_category: :subsc
       it 'generates the marketing page URL' do
         builder = described_class.new(plan_id: nil, namespace: nil)
 
-        expect(builder.build).to eq "https://about.gitlab.com/pricing/"
+        expect(builder.build).to eq Gitlab::Routing.url_helpers.promo_pricing_url
       end
     end
 
