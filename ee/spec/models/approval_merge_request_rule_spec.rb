@@ -305,7 +305,7 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
 
     describe '.matching_pattern' do
       it 'returns the correct rules' do
-        expect(described_class.matching_pattern(['*.rb', '*.js']))
+        expect(described_class.matching_pattern(%w[*.rb *.js]))
           .to contain_exactly(rb_rule, js_rule)
       end
     end
@@ -328,6 +328,45 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
       it 'returns the correct rules' do
         expect(described_class.coverage)
           .to contain_exactly(coverage_rule)
+      end
+    end
+
+    describe '.with_projects_that_can_override_rules' do
+      let_it_be(:disabled_project) do
+        create(:project, :repository, disable_overriding_approvers_per_merge_request: true)
+      end
+
+      let_it_be(:enabled_project) do
+        create(:project, :repository, disable_overriding_approvers_per_merge_request: false)
+      end
+
+      let_it_be(:nil_project) do
+        create(:project, :repository, disable_overriding_approvers_per_merge_request: nil)
+      end
+
+      let_it_be(:disabled_rule) do
+        create(:approval_merge_request_rule,
+          merge_request: create(:merge_request, source_project: disabled_project, target_project: disabled_project),
+          approval_project_rule: create(:approval_project_rule, project: disabled_project))
+      end
+
+      let_it_be(:enabled_rule) do
+        create(:approval_merge_request_rule,
+          merge_request: create(:merge_request, source_project: enabled_project, target_project: enabled_project),
+          approval_project_rule: create(:approval_project_rule, project: enabled_project))
+      end
+
+      let_it_be(:nil_rule) do
+        create(:approval_merge_request_rule,
+          merge_request: create(:merge_request, source_project: nil_project, target_project: nil_project),
+          approval_project_rule: create(:approval_project_rule, project: nil_project))
+      end
+
+      it 'returns the correct rules' do
+        results = described_class.with_projects_that_can_override_rules
+
+        expect(results).to contain_exactly(enabled_rule, nil_rule)
+        expect(results).not_to include(disabled_rule)
       end
     end
   end
