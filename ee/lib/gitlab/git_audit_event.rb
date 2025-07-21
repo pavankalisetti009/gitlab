@@ -11,11 +11,9 @@ module Gitlab
     end
 
     def enabled?
-      return false if ::Gitlab::Saas.enabled?
-      return false if user.blank? || project&.group.blank?
+      return false if user.blank? || project.blank?
 
-      ::Feature.enabled?(:log_git_streaming_audit_events, project) &&
-        project.group.external_audit_event_destinations.exists?
+      ::Feature.enabled?(:log_git_streaming_audit_events, project)
     end
 
     def send_audit_event(message)

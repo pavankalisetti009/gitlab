@@ -36,7 +36,8 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
           username: key.user.username,
           gl_repository: gl_repository,
           packfile_stats: packfile_stats,
-          check_ip: allowed_ip
+          check_ip: allowed_ip,
+          changes: '_any'
         }
       end
 
@@ -65,10 +66,6 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
         'git-upload-pack'  | 'pull'     | {}                     #=> { wants: 0, haves: 0 }
       end
 
-      before do
-        valid_params.merge!({ changes: '_any' }) if verb == 'push'
-      end
-
       with_them do
         it "logs git #{params[:verb]} streaming audit event for #{params[:action]}" do
           audit_message[:message][:ip_address] = allowed_ip if protocol == 'ssh'
@@ -93,6 +90,7 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
             subject
 
             expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response["message"]).to eq('No git audit event needed')
           end
         end
       end
@@ -189,10 +187,6 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
             let(:action) { 'git-receive-pack' }
             let(:verb) { 'push' }
 
-            before do
-              valid_params.merge!({ changes: '_any' })
-            end
-
             it 'responsed with none access' do
               subject
 
@@ -206,6 +200,10 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
           it 'responds with 500' do
             allow_next_instance_of(Gitlab::GitAccess) do |access|
               allow(access).to receive(:check).and_return(nil)
+            end
+
+            allow_next_instance_of(::Gitlab::GitAuditEvent) do |audit|
+              allow(audit).to receive(:enabled?).and_return(true)
             end
 
             subject

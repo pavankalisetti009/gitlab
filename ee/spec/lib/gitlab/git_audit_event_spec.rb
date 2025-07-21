@@ -10,71 +10,43 @@ RSpec.describe Gitlab::GitAuditEvent, feature_category: :source_code_management 
   subject { described_class.new(player, project) }
 
   describe '#enabled?' do
-    context 'with successfully sending' do
-      let_it_be(:project) { create(:project, namespace: group) }
+    let_it_be(:user) { player }
+    let_it_be(:key) { create(:key, user: user) }
+    let_it_be(:project) { create(:project, namespace: group) }
 
-      before do
-        create(:external_audit_event_destination, group: project.group)
-      end
-
-      context 'when player is a regular user' do
-        it 'is enable' do
-          expect(subject.enabled?).to be_truthy
-        end
-      end
-
+    context 'with different players' do
       context 'when player is ::API::Support::GitAccessActor' do
-        let_it_be(:user) { player }
-        let_it_be(:key) { create(:key, user: user) }
         let_it_be(:git_access_actor) { ::API::Support::GitAccessActor.new(user: user, key: key) }
 
         subject { described_class.new(git_access_actor, project) }
 
-        it 'is enable too' do
+        it 'is enabled' do
           expect(subject.enabled?).to be_truthy
+        end
+      end
+
+      context 'when player is a regular user' do
+        it 'is enabled' do
+          expect(subject.enabled?).to be_truthy
+        end
+      end
+
+      context 'when player is nil' do
+        let(:player) { nil }
+
+        it 'is disabled' do
+          expect(subject.enabled?).to be_falsey
         end
       end
     end
 
-    context 'with disallowed scenarios' do
-      context 'when feature flag is disabled' do
-        it 'is disallowed' do
-          stub_feature_flags(log_git_streaming_audit_events: false)
-
-          expect(subject.enabled?).to be_falsey
-        end
+    context 'when feature flag `log_git_streaming_audit_events` is disabled' do
+      before do
+        stub_feature_flags(log_git_streaming_audit_events: false)
       end
 
-      context 'when group is blank' do
-        it 'is disable' do
-          expect(subject.enabled?).to be_falsey
-        end
-      end
-
-      context 'when group audit streaming event is not set' do
-        let_it_be(:project) { create(:project, namespace: group) }
-
-        it 'is disable' do
-          expect(subject.enabled?).to be_falsey
-        end
-      end
-
-      context 'when user is blank' do
-        let_it_be(:player) { nil }
-
-        it 'is disable' do
-          expect(subject.enabled?).to be_falsey
-        end
-      end
-
-      context 'when Gitlab.com? is true' do
-        before do
-          allow(Gitlab).to receive(:com?).and_return(true)
-        end
-
-        it 'is disable' do
-          expect(subject.enabled?).to be_falsey
-        end
+      it 'is disabled' do
+        expect(subject.enabled?).to be_falsey
       end
     end
   end
@@ -82,7 +54,7 @@ RSpec.describe Gitlab::GitAuditEvent, feature_category: :source_code_management 
   describe '#send_audit_event' do
     let(:msg) { 'valid_msg' }
 
-    context 'with successfully sending' do
+    context 'with audit event' do
       let_it_be(:project) { create(:project, namespace: group) }
 
       before do
@@ -124,25 +96,45 @@ RSpec.describe Gitlab::GitAuditEvent, feature_category: :source_code_management 
           subject.send_audit_event(msg)
         end
       end
-    end
 
-    context 'when user is blank' do
-      let_it_be(:player) { nil }
+      context 'when message contains ip_address' do
+        let(:msg) { { action: 'push', ip_address: '192.168.1.1' } }
 
-      it 'does not send git audit event' do
-        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+        it 'extracts ip_address and includes it in audit context' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(
+            name: 'repository_git_operation',
+            stream_only: true,
+            author: player,
+            scope: project,
+            target: project,
+            message: { action: 'push' },
+            ip_address: '192.168.1.1'
+          )).once
 
-        subject.send_audit_event(msg)
+          subject.send_audit_event(msg)
+        end
       end
     end
 
-    context 'when project is blank' do
-      let_it_be(:project) { nil }
+    context 'without audit event' do
+      context 'when user is blank' do
+        let_it_be(:player) { nil }
 
-      it 'does not send git audit event' do
-        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+        it 'does not send git audit event' do
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
-        subject.send_audit_event(msg)
+          subject.send_audit_event(msg)
+        end
+      end
+
+      context 'when project is blank' do
+        let_it_be(:project) { nil }
+
+        it 'does not send git audit event' do
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+          subject.send_audit_event(msg)
+        end
       end
     end
   end
