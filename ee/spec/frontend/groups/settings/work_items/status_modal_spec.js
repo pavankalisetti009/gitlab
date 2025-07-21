@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import Draggable from 'vuedraggable';
-import { GlModal, GlSprintf, GlDisclosureDropdown } from '@gitlab/ui';
+import { GlModal, GlSprintf, GlDisclosureDropdown, GlLink } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -9,6 +9,8 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import StatusLifecycleModal from 'ee/groups/settings/work_items/status_modal.vue';
 import StatusForm from 'ee/groups/settings/work_items/status_form.vue';
 import lifecycleUpdateMutation from 'ee/groups/settings/work_items/lifecycle_update.mutation.graphql';
+import namespaceMetadataQuery from 'ee/groups/settings/work_items/namespace_metadata.query.graphql';
+import { mockNamespaceMetadata, deleteStatusErrorResponse } from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -107,6 +109,8 @@ describe('StatusLifecycleModal', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findStatusInfo = () => wrapper.findByTestId('status-info-alert');
+  const findConfirmationModal = () => wrapper.findByTestId('remove-status-confirmation-modal');
+  const findIssuesPathLink = () => wrapper.findComponent(GlLink);
   const findCategorySection = (category) => wrapper.findByTestId(`category-${category}`);
   const findStatusBadges = () => wrapper.findAllByTestId('status-badge');
   const findHelpPageLink = () => wrapper.findByTestId('help-page-link');
@@ -125,6 +129,7 @@ describe('StatusLifecycleModal', () => {
     wrapper.find(`[data-testid="make-default-${nonDefaultStatus.id}"]`);
 
   const updateLifecycleHandler = jest.fn().mockResolvedValue(mockUpdateResponse);
+  const metadataQueryHandler = jest.fn().mockResolvedValue(mockNamespaceMetadata);
 
   const addStatus = async (save = true) => {
     const addButton = findCategorySection('triage').find('[data-testid="add-status-button"]');
@@ -137,6 +142,17 @@ describe('StatusLifecycleModal', () => {
     if (save) {
       findStatusForm().vm.$emit('save');
     }
+  };
+
+  const findStatusAndDelete = async (status) => {
+    const findFirstStatus = wrapper.find(`[data-testid="remove-status-${status.id}"]`);
+
+    findFirstStatus.vm.$emit('action', status);
+    await nextTick();
+
+    expect(findConfirmationModal().exists()).toBe(true);
+    findConfirmationModal().vm.$emit('primary');
+    await waitForPromises();
   };
 
   const emitDragEnd = async (oldIndex, newIndex) => {
@@ -154,7 +170,10 @@ describe('StatusLifecycleModal', () => {
     lifecycle = mockLifecycle,
     updateHandler = updateLifecycleHandler,
   } = {}) => {
-    mockApollo = createMockApollo([[lifecycleUpdateMutation, updateHandler]]);
+    mockApollo = createMockApollo([
+      [lifecycleUpdateMutation, updateHandler],
+      [namespaceMetadataQuery, metadataQueryHandler],
+    ]);
 
     wrapper = shallowMountExtended(StatusLifecycleModal, {
       apolloProvider: mockApollo,
@@ -734,6 +753,38 @@ describe('StatusLifecycleModal', () => {
 
     it('all statuses of the lifecycle have the three dot options', () => {
       expect(findAllDropdowns()).toHaveLength(mockLifecycle.statuses.length);
+    });
+
+    describe('Delete action', () => {
+      let lifecycleUpdateHandler;
+      beforeEach(async () => {
+        lifecycleUpdateHandler = jest.fn().mockResolvedValue(deleteStatusErrorResponse);
+        createComponent({ updateHandler: lifecycleUpdateHandler });
+        const status = mockLifecycle.statuses[0];
+        await findStatusAndDelete(status);
+      });
+
+      it('should show remove confirmation modal when `Remove status` is clicked', async () => {
+        expect(lifecycleUpdateHandler).toHaveBeenCalled();
+        await nextTick();
+        expect(findErrorMessage().exists()).toBe(true);
+      });
+
+      it('should have sticky class for error message', () => {
+        expect(findErrorMessage().text()).toContain(
+          deleteStatusErrorResponse.data.lifecycleUpdate.errors[0],
+        );
+        expect(findErrorMessage().attributes('class')).toContain('gl-sticky gl-top-0');
+      });
+
+      it('should show the link for the group issues path when showing the error', () => {
+        expect(findIssuesPathLink().exists()).toBe(true);
+
+        expect(findIssuesPathLink().text()).toContain('View items using status.');
+        expect(findIssuesPathLink().attributes('href')).toContain(
+          mockNamespaceMetadata.data.namespace.linkPaths.groupIssues,
+        );
+      });
     });
 
     describe('Default action', () => {

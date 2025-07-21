@@ -11,6 +11,7 @@ import {
   GlLoadingIcon,
   GlSprintf,
   GlTooltipDirective,
+  GlLink,
 } from '@gitlab/ui';
 import VueDraggable from 'vuedraggable';
 import { s__, __, sprintf } from '~/locale';
@@ -19,6 +20,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
 import StatusForm from './status_form.vue';
+import namespaceMetadataQuery from './namespace_metadata.query.graphql';
 
 const STATUS_CATEGORIES = {
   TRIAGE: 'TRIAGE',
@@ -90,6 +92,7 @@ export default {
     GlSprintf,
     StatusForm,
     VueDraggable,
+    GlLink,
     HelpPageLink,
   },
   directives: {
@@ -116,6 +119,7 @@ export default {
       editingStatusId: null,
       addingToCategory: null,
       removingStatusId: null,
+      removingStatusName: '',
       showRemoveConfirmation: false,
       formData: {
         name: '',
@@ -126,7 +130,26 @@ export default {
         name: null,
         color: null,
       },
+      namespaceMetadata: null,
     };
+  },
+  apollo: {
+    namespaceMetadata: {
+      query: namespaceMetadataQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        return data.namespace;
+      },
+      error(error) {
+        this.errorText = s__('WorkItem|Failed to fetch namespace metadata.');
+        this.errorDetail = error.message;
+        Sentry.captureException(error);
+      },
+    },
   },
   computed: {
     modalTitle() {
@@ -150,9 +173,14 @@ export default {
     isEditing() {
       return Boolean(this.editingStatusId);
     },
-
     removingStatus() {
       return this.lifecycle.statuses?.find((status) => status.id === this.removingStatusId);
+    },
+    groupWorkItemsPath() {
+      return this.namespaceMetadata?.linkPaths?.groupIssues;
+    },
+    groupWorkItemsPathWithStatusFilter() {
+      return `${this.groupWorkItemsPath}?status=${this.removingStatusName}`;
     },
   },
   methods: {
@@ -192,6 +220,7 @@ export default {
     },
     startRemovingStatus(status) {
       this.removingStatusId = status.id;
+      this.removingStatusName = status.name;
       this.showRemoveConfirmation = true;
     },
     async startDefaultingStatus(status, defaultState) {
@@ -233,7 +262,6 @@ export default {
         this.errorMessage = s__('WorkItem|An error occurred while making status default.');
       }
     },
-
     confirmRemoveStatus() {
       if (this.removingStatusId) {
         this.removeStatus(this.removingStatusId);
@@ -357,6 +385,9 @@ export default {
       } catch (error) {
         Sentry.captureException(error);
         this.errorMessage = error.message || errorMessage;
+        if (error.message.indexOf('because it is in use') !== -1 && this.groupWorkItemsPath) {
+          this.errorMessage += '. %{linkStart}View items using status.%{linkEnd}';
+        }
       }
     },
     async onStatusReorder({ oldIndex, newIndex }) {
@@ -482,6 +513,10 @@ export default {
       this.cancelForm();
       this.$emit('close');
     },
+    dismissError() {
+      this.errorMessage = '';
+      this.removingStatusName = '';
+    },
   },
   CATEGORY_ORDER,
   CATEGORY_MAP,
@@ -543,11 +578,15 @@ export default {
         <gl-alert
           v-if="errorMessage"
           variant="danger"
-          class="gl-my-5"
+          class="gl-sticky gl-top-0 gl-my-5"
           data-testid="error-alert"
-          @dismiss="errorMessage = ''"
+          @dismiss="dismissError"
         >
-          {{ errorMessage }}
+          <gl-sprintf :message="errorMessage">
+            <template #link="{ content }">
+              <gl-link :href="groupWorkItemsPathWithStatusFilter">{{ content }}</gl-link>
+            </template>
+          </gl-sprintf>
         </gl-alert>
 
         <div
