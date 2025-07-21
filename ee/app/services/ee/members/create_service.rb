@@ -135,7 +135,7 @@ module EE
       def after_execute(member:)
         super
 
-        update_user_group_member_roles(member)
+        member.update_user_group_member_roles
         append_added_member_ids_with_users(member: member)
         log_audit_event(member: member)
         auto_assign_duo_pro_seat(member: member)
@@ -257,14 +257,6 @@ module EE
         member_promotion_management_enabled? &&
           current_user&.can_admin_all_resources? &&
           at_least_one_member_created?
-      end
-
-      def update_user_group_member_roles(member)
-        return unless member.source.is_a?(Group)
-        return unless ::Feature.enabled?(:cache_user_group_member_roles, member.source.root_ancestor)
-        return unless member.member_role
-
-        ::Authz::UserGroupMemberRoles::UpdateForGroupWorker.perform_async(member.id)
       end
     end
   end
