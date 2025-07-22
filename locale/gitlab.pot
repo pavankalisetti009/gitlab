@@ -11754,10 +11754,16 @@ msgstr ""
 msgid "BulkImport|Placeholder reassignments completed with errors"
 msgstr ""
 
+msgid "BulkImport|Please re-enter your credentials to reconnect."
+msgstr ""
+
 msgid "BulkImport|Project import history"
 msgstr ""
 
 msgid "BulkImport|Re-import creates a new group and does not sync with the existing group."
+msgstr ""
+
+msgid "BulkImport|Reconnect to instance"
 msgstr ""
 
 msgid "BulkImport|Review results"
@@ -11776,6 +11782,9 @@ msgid "BulkImport|Showing %{start} - %{end} of %{total}"
 msgstr ""
 
 msgid "BulkImport|Some groups are imported without projects."
+msgstr ""
+
+msgid "BulkImport|Something went wrong"
 msgstr ""
 
 msgid "BulkImport|Source"
