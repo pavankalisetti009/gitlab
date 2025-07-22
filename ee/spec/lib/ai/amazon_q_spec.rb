@@ -41,11 +41,9 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
 
     with_them do
       before do
-        create(:cloud_connector_access, data: {
-          available_services: [
-            { name: "amazon_q_integration", serviceStartTime: cut_off_date }
-          ]
-        })
+        allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name).and_return(
+          build(:cloud_connector_unit_primitive, name: 'amazon_q_integration', cut_off_date: cut_off_date)
+        )
 
         stub_licensed_features(amazon_q: amazon_q_license_available)
 

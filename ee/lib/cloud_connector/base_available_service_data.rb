@@ -10,17 +10,11 @@ module CloudConnector
       @add_on_names = map_duo_pro(add_on_names)
     end
 
-    # Returns whether the service is free to access (no addon purchases is required)
-    def free_access?
-      cut_off_date.nil? || cut_off_date&.future?
-    end
-
     # Returns CloudConnector access JWT token.
     #
     # For Gitlab.com it will self-issue a token with scopes based on provided resource:
     # - For provided user, it will self-issue a token with scopes based on user assigment permissions
     # - For provided namespace, it will self-issue a token with scopes based on add-on purchased permissions
-    # - If service has free_access?, it will self-issue a token with all available scopes
     #
     # For SM, it will return :CloudConnector::ServiceAccessToken instance token
     #
