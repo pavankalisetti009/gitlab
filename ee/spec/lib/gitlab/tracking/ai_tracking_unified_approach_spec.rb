@@ -98,6 +98,16 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       end
     end
 
+    describe 'deprecated events' do
+      events = %w[code_suggestions_requested code_suggestion_direct_access_token_refresh]
+
+      events.each do |e|
+        it "declares `#{e} as deprecated" do
+          expect(described_class.deprecated_event?(e)).to be_truthy
+        end
+      end
+    end
+
     %w[code_suggestion_shown_in_ide code_suggestion_accepted_in_ide code_suggestion_rejected_in_ide].each do |e|
       context "for `#{e}` event" do
         let(:event_name) { e }

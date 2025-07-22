@@ -40,6 +40,8 @@ RSpec.describe Gitlab::Tracking::AiUsageEventsRegistryDsl, feature_category: :va
 
           events(no_block_event: 3)
 
+          deprecated_events(old_event: 4)
+
           transformation(:multi_event) do
             { a: 'b' }
           end
@@ -69,7 +71,8 @@ RSpec.describe Gitlab::Tracking::AiUsageEventsRegistryDsl, feature_category: :va
           expect(registry_module.registered_events).to eq({
             'simple_event' => 1,
             'multi_event' => 2,
-            'no_block_event' => 3
+            'no_block_event' => 3,
+            'old_event' => 4
           })
         end
       end
@@ -79,6 +82,15 @@ RSpec.describe Gitlab::Tracking::AiUsageEventsRegistryDsl, feature_category: :va
           expect(registry_module.registered_transformations(:no_block_event).size).to eq(0)
           expect(registry_module.registered_transformations(:simple_event).size).to eq(1)
           expect(registry_module.registered_transformations(:multi_event).size).to eq(2)
+        end
+      end
+
+      describe '.deprecated_event?' do
+        it 'returns true for events declared as deprecated' do
+          expect(registry_module.deprecated_event?(:simple_event)).to be_falsey
+          expect(registry_module.deprecated_event?(:multi_event)).to be_falsey
+          expect(registry_module.deprecated_event?(:no_block_event)).to be_falsey
+          expect(registry_module.deprecated_event?(:old_event)).to be_truthy
         end
       end
     end
