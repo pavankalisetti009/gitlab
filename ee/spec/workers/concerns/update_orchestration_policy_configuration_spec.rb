@@ -285,6 +285,36 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
             expect { execute }.not_to raise_error
           end
         end
+
+        context 'when policy project is linked to multiple projects' do
+          let_it_be(:policy_project) { create(:project) }
+          let_it_be(:policy_configuration) do
+            create(:security_orchestration_policy_configuration,
+              created_at: 5.minutes.ago,
+              security_policy_management_project: policy_project)
+          end
+
+          let_it_be(:another_policy_configuration) do
+            create(:security_orchestration_policy_configuration,
+              created_at: 10.minutes.ago,
+              security_policy_management_project: policy_project)
+          end
+
+          subject(:execute) do
+            worker.update_policy_configuration(policy_configuration)
+            worker.update_policy_configuration(another_policy_configuration)
+          end
+
+          it 'collects invalid policy yaml event for the first policy configuration only' do
+            expect(Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService)
+              .to receive(:new).once.with(another_policy_configuration)
+
+            expect(Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalidatedAuditEventService)
+              .not_to receive(:new).with(policy_configuration)
+
+            execute
+          end
+        end
       end
 
       context 'with existing policy reads' do

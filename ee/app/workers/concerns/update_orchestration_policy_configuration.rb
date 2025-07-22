@@ -9,7 +9,7 @@ module UpdateOrchestrationPolicyConfiguration
       Security::ScanResultPolicies::DeleteScanResultPolicyReadsWorker.perform_async(configuration.id)
 
       update_configuration_timestamp!(configuration)
-      audit_invalid_policy_yaml(configuration)
+      audit_invalid_policy_yaml(configuration) if collect_invalid_policy_yaml_event?(configuration)
       return
     end
 
@@ -47,6 +47,10 @@ module UpdateOrchestrationPolicyConfiguration
       security_policy_management_project_id: configuration.security_policy_management_project.id,
       configuration_id: configuration.id
     )
+  end
+
+  def collect_invalid_policy_yaml_event?(configuration)
+    configuration.first_configuration_for_the_management_project?
   end
 
   def update_configuration_timestamp!(configuration)
