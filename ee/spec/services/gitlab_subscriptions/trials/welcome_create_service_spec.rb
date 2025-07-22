@@ -38,7 +38,8 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
           setup_for_company: false,
           skip_email_confirmation: true,
           gitlab_com_trial: true,
-          provider: 'gitlab'
+          provider: 'gitlab',
+          product_interaction: 'Experiment - SaaS Trial'
         }
       )
     }

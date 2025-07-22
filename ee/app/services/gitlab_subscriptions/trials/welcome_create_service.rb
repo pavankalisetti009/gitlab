@@ -3,6 +3,9 @@
 module GitlabSubscriptions
   module Trials
     class WelcomeCreateService
+      EXPERIMENT_SAAS_TRIAL_PRODUCT_INTERACTION = 'Experiment - SaaS Trial'
+      private_constant :EXPERIMENT_SAAS_TRIAL_PRODUCT_INTERACTION
+
       include Gitlab::Allowable
 
       def initialize(params:, user:, namespace_id: nil, project_id: nil, lead_created: false)
@@ -111,7 +114,8 @@ module GitlabSubscriptions
           setup_for_company: false,
           skip_email_confirmation: true,
           gitlab_com_trial: true,
-          provider: 'gitlab'
+          provider: 'gitlab',
+          product_interaction: EXPERIMENT_SAAS_TRIAL_PRODUCT_INTERACTION
         }
 
         params.slice(
