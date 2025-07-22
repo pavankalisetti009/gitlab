@@ -65,12 +65,12 @@ RSpec.describe EE::API::Helpers::MembersHelpers do
       klazz.prepend(API::Helpers::MembersHelpers)
     end
 
-    subject(:retrieve_members) { klazz.new(user).retrieve_members(group, params: params) }
-
     let_it_be(:group) { create(:group) }
     let_it_be(:user) { create(:user) }
     let_it_be(:group_member) { create(:group_member, group: group, user: user) }
     let_it_be(:params) { {} }
+
+    subject(:retrieve_members) { klazz.new(user).retrieve_members(group, params: params) }
 
     it 'includes user as member' do
       expect(retrieve_members).to include(group_member)
