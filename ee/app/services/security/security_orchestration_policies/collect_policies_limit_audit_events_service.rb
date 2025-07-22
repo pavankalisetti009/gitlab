@@ -2,13 +2,7 @@
 
 module Security
   module SecurityOrchestrationPolicies
-    class CollectPoliciesLimitAuditEventsService
-      include Gitlab::Utils::StrongMemoize
-
-      def initialize(policy_configuration)
-        @policy_configuration = policy_configuration
-      end
-
+    class CollectPoliciesLimitAuditEventsService < BaseSecurityPolicyAuditEventService
       def execute
         OrchestrationPolicyConfiguration::AVAILABLE_POLICY_TYPES.each do |policy_type|
           policy_limit = policy_configuration.policy_limit_by_type(policy_type)
@@ -23,8 +17,6 @@ module Security
 
       private
 
-      attr_reader :policy_configuration
-
       def filter_enabled_policies(policies)
         policies.select { |policy| policy[:enabled] }
       end
@@ -37,7 +29,7 @@ module Security
         policy_names = policies.pluck(:name) # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- pluck used on hash
         {
           name: 'security_policy_limit_exceeded',
-          author: commit&.author || Gitlab::Audit::DeletedAuthor.new(id: -4, name: 'Unknown User'),
+          author: policy_audit_event_author,
           scope: policy_management_project,
           target: policy_management_project,
           message: audit_message(policy_type_name(policy_type), policy_limit),
@@ -48,22 +40,12 @@ module Security
             active_skipped_policies_count: policies.count - policy_limit,
             active_policies_names: policy_names.first(policy_limit),
             active_skipped_policies_names: policy_names.drop(policy_limit),
-            security_policy_project_commit_sha: commit&.sha,
-            security_policy_management_project_id: policy_management_project.id,
+            security_policy_project_commit_sha: policy_commit&.sha,
             security_orchestration_policy_configuration_id: policy_configuration.id,
             security_policy_configured_at: policy_configuration.configured_at
           }
         }
       end
-
-      def commit
-        policy_configuration.latest_commit_before_configured_at
-      end
-
-      def policy_management_project
-        policy_configuration.security_policy_management_project
-      end
-      strong_memoize_attr :policy_management_project
 
       def audit_message(type_name, policy_limit)
         "Policies limit exceeded for '#{type_name}' type. " \

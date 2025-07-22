@@ -2,12 +2,10 @@
 
 module Security
   module SecurityOrchestrationPolicies
-    class CollectPoliciesAuditEvents
-      include BaseServiceUtility
-      include Gitlab::Utils::StrongMemoize
-
+    class CollectPoliciesAuditEvents < BaseSecurityPolicyAuditEventService
       def initialize(policy_configuration:, created_policies: [], updated_policies: [], deleted_policies: [])
-        @policy_configuration = policy_configuration
+        super(policy_configuration)
+
         @created_policies = created_policies
         @updated_policies = updated_policies
         @deleted_policies = deleted_policies
@@ -21,16 +19,7 @@ module Security
 
       private
 
-      attr_reader :created_policies, :updated_policies, :deleted_policies, :policy_configuration
-
-      def commit
-        policy_configuration.latest_commit_before_configured_at
-      end
-
-      def policy_management_project
-        policy_configuration.security_policy_management_project
-      end
-      strong_memoize_attr :policy_management_project
+      attr_reader :created_policies, :updated_policies, :deleted_policies
 
       def bulk_audit_policies(policies, event_name, action)
         policies.each do |policy|
@@ -43,19 +32,18 @@ module Security
       def build_audit_context(policy, event_name, action)
         {
           name: event_name,
-          author: commit&.author || Gitlab::Audit::DeletedAuthor.new(id: -3, name: 'Unknown User'),
+          author: policy_audit_event_author,
           scope: policy_management_project,
           target: policy,
           target_details: policy.name,
           message: audit_message(policy, action),
           created_at: Time.current,
           additional_details: {
+            policy_id: policy.id,
             policy_name: policy.name,
-            event_name: event_name,
             policy_type: policy.type,
-            security_policy_project_commit_sha: commit&.sha,
-            security_policy_project_id: policy_management_project.id,
-            policy_configured_at: policy_configuration.configured_at
+            security_policy_project_commit_sha: policy_commit&.sha,
+            security_policy_configured_at: policy_configuration.configured_at
           }
         }
       end

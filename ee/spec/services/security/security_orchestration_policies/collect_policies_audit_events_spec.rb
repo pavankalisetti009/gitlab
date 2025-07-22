@@ -69,12 +69,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEven
               message: expected_message,
               created_at: fixed_time,
               additional_details: {
+                policy_id: policy.id,
                 policy_name: policy.name,
-                event_name: 'security_policy_create',
                 policy_type: policy.type,
                 security_policy_project_commit_sha: commit_sha,
-                security_policy_project_id: policy_project.id,
-                policy_configured_at: policy_configuration.configured_at
+                security_policy_configured_at: policy_configuration.configured_at
               }
             )
           )
@@ -100,12 +99,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEven
               message: expected_message,
               created_at: fixed_time,
               additional_details: {
+                policy_id: policy.id,
                 policy_name: policy.name,
-                event_name: 'security_policy_update',
                 policy_type: policy.type,
                 security_policy_project_commit_sha: commit_sha,
-                security_policy_project_id: policy_project.id,
-                policy_configured_at: policy_configuration.configured_at
+                security_policy_configured_at: policy_configuration.configured_at
               }
             )
           )
@@ -131,12 +129,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEven
               message: expected_message,
               created_at: fixed_time,
               additional_details: {
+                policy_id: policy.id,
                 policy_name: policy.name,
-                event_name: 'security_policy_delete',
                 policy_type: policy.type,
                 security_policy_project_commit_sha: commit_sha,
-                security_policy_project_id: policy_project.id,
-                policy_configured_at: policy_configuration.configured_at
+                security_policy_configured_at: policy_configuration.configured_at
               }
             )
           )
@@ -175,12 +172,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPoliciesAuditEven
               message: expected_message,
               created_at: fixed_time,
               additional_details: {
+                policy_id: policy.id,
                 policy_name: policy.name,
-                event_name: 'security_policy_create',
                 policy_type: policy.type,
                 security_policy_project_commit_sha: nil,
-                security_policy_project_id: policy_project.id,
-                policy_configured_at: policy_configuration.configured_at
+                security_policy_configured_at: policy_configuration.configured_at
               }
             )
           )

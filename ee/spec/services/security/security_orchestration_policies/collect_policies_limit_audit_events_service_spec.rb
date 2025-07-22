@@ -78,7 +78,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPoliciesLimitAudi
             active_policies_names: policies.first(mock_policy_limit).pluck(:name),
             active_skipped_policies_names: policies.drop(mock_policy_limit).pluck(:name),
             security_policy_project_commit_sha: latest_commit.sha,
-            security_policy_management_project_id: policy_management_project.id,
             security_orchestration_policy_configuration_id: policy_configuration.id,
             security_policy_configured_at: policy_configuration.configured_at
           }
