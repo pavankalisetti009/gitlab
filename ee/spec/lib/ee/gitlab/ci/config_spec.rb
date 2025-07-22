@@ -248,11 +248,10 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
     end
   end
 
-  describe '#inject_pipeline_execution_policy_stages' do
+  describe '#enforce_pipeline_execution_policy_stages' do
     subject(:config) { described_class.new(ci_yml, project: project, pipeline_policy_context: pipeline_policy_context) }
 
-    include_context 'with pipeline policy context'
-
+    let_it_be(:project) { create(:project, :repository) }
     let(:default_stages) { %w[.pre build test deploy .post] }
     let(:ci_yml) do
       YAML.dump(
@@ -262,91 +261,60 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
       )
     end
 
-    it 'does not inject the reserved stages by default' do
-      expect(config.stages).to match_array(default_stages)
-    end
+    context 'without pipeline_policy_context' do
+      let(:pipeline_policy_context) { nil }
 
-    shared_examples_for 'injects reserved policy stages' do
-      it 'injects reserved stages into yaml_processor_result' do
-        expect(config.stages).to eq(['.pipeline-policy-pre', *default_stages, '.pipeline-policy-post'])
-      end
-
-      context 'when the config already specifies reserved stages' do
-        let(:ci_yml) do
-          YAML.dump(
-            stages: ['.pipeline-policy-pre', *default_stages, '.pipeline-policy-post'],
-            rspec: {
-              script: 'rspec'
-            }
-          )
-        end
-
-        it 'does not inject the reserved stages multiple times' do
-          expect(config.stages).to eq(['.pipeline-policy-pre', *default_stages, '.pipeline-policy-post'])
-        end
+      it 'does not inject the policy stages' do
+        expect(config.stages).to match_array(default_stages)
       end
     end
 
-    context 'when execution_policy_mode is true' do
-      let(:creating_policy_pipeline) { true }
+    context 'with pipeline_policy_context' do
+      include_context 'with pipeline policy context'
 
-      it_behaves_like 'injects reserved policy stages'
-    end
+      shared_examples_for 'uses policy context to enforce stages' do
+        it 'uses policy context to enforce the stages' do
+          expect(pipeline_policy_context.pipeline_execution_context)
+            .to receive(:enforce_stages!).with(
+              config: an_instance_of(Hash)
+            ).and_call_original
 
-    context 'when execution_policy_pipelines are present' do
-      let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
-
-      it_behaves_like 'injects reserved policy stages'
-
-      describe 'custom policy stages' do
-        before do
-          allow(pipeline_policy_context.pipeline_execution_context)
-            .to receive(:injected_policy_stages)
-                  .and_return([%w[.pipeline-policy-pre .pre test policy-test deploy .post .pipeline-policy-post]])
+          config.stages
         end
 
-        it 'injects policy stages into yaml_processor_result' do
-          expect(config.stages)
-            .to eq(%w[.pipeline-policy-pre .pre build test policy-test deploy .post .pipeline-policy-post])
-        end
+        it 're-raises errors as ConfigError' do
+          expect(pipeline_policy_context.pipeline_execution_context)
+            .to receive(:enforce_stages!).with(
+              config: an_instance_of(Hash)
+            ).and_raise(Gitlab::Ci::Config::StagesMerger::InvalidStageConditionError.new('invalid stage condition'))
 
-        context 'when the config specifies a policy stage in incorrect order' do
+          expect { config.stages }.to raise_error Gitlab::Ci::Config::ConfigError, 'invalid stage condition'
+        end
+      end
+
+      context 'when building policy pipeline' do
+        let(:creating_policy_pipeline) { true }
+
+        it_behaves_like 'uses policy context to enforce stages'
+      end
+
+      context 'when execution_policy_pipelines are present' do
+        let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
+
+        it_behaves_like 'uses policy context to enforce stages'
+
+        context 'when stages are injected before .pre' do
           let(:ci_yml) do
             YAML.dump(
-              stages: %w[build policy-test test],
+              stages: %w[test .pre],
               rspec: {
                 script: 'rspec'
               }
             )
           end
 
-          it 'raises an error' do
-            expect { config.stages }
-              .to raise_error(Gitlab::Ci::Config::ConfigError, /Cyclic dependencies/)
-          end
-        end
-      end
-
-      describe 'overriding policies' do
-        let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
-
-        before do
-          allow(pipeline_policy_context.pipeline_execution_context)
-            .to receive(:override_policy_stages)
-                  .and_return(%w[.pipeline-policy-pre .pre policy-test .post .pipeline-policy-post])
-        end
-
-        it 'overrides the stages in yaml_processor_result' do
-          expect(config.stages)
-            .to eq(%w[.pipeline-policy-pre .pre policy-test .post .pipeline-policy-post])
-        end
-
-        context 'when creating a policy pipeline' do
-          let(:creating_policy_pipeline) { true }
-
-          it 'only injects reserved stages but does not override the project stages' do
-            expect(config.stages)
-              .to eq(['.pipeline-policy-pre', *default_stages, '.pipeline-policy-post'])
+          it 'rearranges the .pre stage' do
+            expect(config.stages).to eq(%w[.pipeline-policy-pre .pre test .post .pipeline-policy-post])
           end
         end
       end

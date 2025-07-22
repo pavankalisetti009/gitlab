@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::CustomStagesInjector, feature_category: :security_policy_management do
+RSpec.describe Gitlab::Ci::Config::StagesMerger, feature_category: :security_policy_management do
   using RSpec::Parameterized::TableSyntax
 
   subject(:injected_stages) { described_class.inject(wrap_stages(project_stages), injected_policy_stages) }

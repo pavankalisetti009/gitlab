@@ -117,7 +117,25 @@ module Gitlab
           def valid_stage?(stage)
             return true if creating_policy_pipeline? || scheduled_execution_policy_pipeline?
 
-            ReservedStagesInjector::STAGES.exclude?(stage)
+            ::Gitlab::Ci::Config::Stages::RESERVED.exclude?(stage)
+          end
+
+          def enforce_stages!(config:)
+            return config unless inject_policy_stages?
+
+            config = ::Gitlab::Ci::Config::Stages.new(config).inject_reserved_stages!
+            return config if creating_policy_pipeline?
+
+            config[:stages] = override_policy_stages if has_override_stages?
+
+            if has_injected_stages?
+              config[:stages] = ::Gitlab::Ci::Config::StagesMerger.inject(config[:stages], injected_policy_stages)
+            end
+
+            config
+          rescue ::Gitlab::Ci::Config::StagesMerger::InvalidStageConditionError => e
+            raise e, 'Pipeline execution policy error: Cyclic dependencies detected when enforcing policies. ' \
+              'Ensure stages across the project and policies are aligned.'
           end
 
           def job_options
