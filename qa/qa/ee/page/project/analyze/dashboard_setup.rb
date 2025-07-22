@@ -6,14 +6,15 @@ module QA
       module Project
         module Analyze
           class DashboardSetup < QA::Page::Base
-            view 'app/assets/javascripts/vue_shared/components/customizable_dashboard/customizable_dashboard.vue' do
+            view 'ee/app/assets/javascripts/analytics/analytics_dashboards/components/' \
+                   'analytics_customizable_dashboard.vue' do
               element 'dashboard-title-input'
               element 'dashboard-description-input'
               element 'add-visualization-button'
               element 'dashboard-save-btn'
             end
 
-            view 'app/assets/javascripts/vue_shared/components/customizable_dashboard/' \
+            view 'ee/app/assets/javascripts/analytics/analytics_dashboards/components/' \
                  'dashboard_editor/available_visualizations_drawer.vue' do
               element 'list-item-total_events', %q(:data-testid="`list-item-${visualization.slug}`") # rubocop:disable QA/ElementWithPattern -- parametrised testid
               element 'list-item-events_over_time', %q(:data-testid="`list-item-${visualization.slug}`") # rubocop:disable QA/ElementWithPattern -- parametrised testid

@@ -8,17 +8,17 @@ import { s__, __ } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
-import { EVENT_LABEL_VIEWED_DASHBOARD_DESIGNER } from './constants';
-import GridstackWrapper from './gridstack_wrapper.vue';
-import AvailableVisualizationsDrawer from './dashboard_editor/available_visualizations_drawer.vue';
+import GridstackWrapper from '~/vue_shared/components/customizable_dashboard/gridstack_wrapper.vue';
+import { EVENT_LABEL_VIEWED_DASHBOARD_DESIGNER } from '../constants';
 import {
   getDashboardConfig,
-  availableVisualizationsValidator,
   createNewVisualizationPanel,
-} from './utils';
+  availableVisualizationsValidator,
+} from '../utils';
+import AvailableVisualizationsDrawer from './dashboard_editor/available_visualizations_drawer.vue';
 
 export default {
-  name: 'CustomizableDashboard',
+  name: 'AnalyticsCustomizableDashboard',
   components: {
     GlButton,
     GlFormInput,

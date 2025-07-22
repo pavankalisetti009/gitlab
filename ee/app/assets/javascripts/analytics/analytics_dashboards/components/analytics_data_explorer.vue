@@ -14,16 +14,14 @@ import { InternalEvents } from '~/tracking';
 import { fetchFilterOptions } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
 import { saveProductAnalyticsVisualization } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import {
-  NEW_DASHBOARD_SLUG,
-  VISUALIZATION_TYPE_DATA_TABLE,
-} from '~/vue_shared/components/customizable_dashboard/constants';
-import {
   FILE_ALREADY_EXISTS_SERVER_RESPONSE,
   PANEL_DISPLAY_TYPES,
   EVENT_LABEL_USER_VIEWED_DATA_EXPLORER,
   EVENT_LABEL_USER_CREATED_CUSTOM_VISUALIZATION,
   DEFAULT_VISUALIZATION_QUERY_STATE,
   DEFAULT_VISUALIZATION_TITLE,
+  VISUALIZATION_TYPE_DATA_TABLE,
+  NEW_DASHBOARD_SLUG,
 } from '../constants';
 import VisualizationPreview from './data_explorer/analytics_visualization_preview.vue';
 import VisualizationTypeSelector from './data_explorer/analytics_visualization_type_selector.vue';

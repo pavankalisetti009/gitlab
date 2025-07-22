@@ -19,8 +19,8 @@ import VisualizationTypeSelector from 'ee/analytics/analytics_dashboards/compone
 import {
   EVENT_LABEL_USER_VIEWED_DATA_EXPLORER,
   EVENT_LABEL_USER_CREATED_CUSTOM_VISUALIZATION,
+  NEW_DASHBOARD_SLUG,
 } from 'ee/analytics/analytics_dashboards/constants';
-import { NEW_DASHBOARD_SLUG } from '~/vue_shared/components/customizable_dashboard/constants';
 
 import { mockFilterOptions, TEST_CUSTOM_DASHBOARDS_PROJECT } from '../mock_data';
 

@@ -2,8 +2,9 @@ import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DORA_METRICS } from '~/analytics/shared/constants';
-import { DASHBOARD_SCHEMA_VERSION } from '~/vue_shared/components/customizable_dashboard/constants';
 import { formatAsPercentage } from 'ee/analytics/dora/components/util';
+
+export const DASHBOARD_SCHEMA_VERSION = '2';
 
 export const EVENTS_TYPES = ['pageViews', 'linkClickEvents', 'events'];
 
@@ -200,3 +201,16 @@ export const VISUALIZATION_DOCUMENTATION_LINKS = {
     'user/analytics/value_streams_dashboard.md#devsecops-metrics-comparison',
   ),
 };
+
+export const EVENT_LABEL_VIEWED_DASHBOARD_DESIGNER = 'user_viewed_dashboard_designer';
+
+export const VISUALIZATION_TYPE_DATA_TABLE = 'DataTable';
+export const VISUALIZATION_TYPE_LINE_CHART = 'LineChart';
+export const VISUALIZATION_TYPE_COLUMN_CHART = 'ColumnChart';
+export const VISUALIZATION_TYPE_SINGLE_STAT = 'SingleStat';
+
+export const CATEGORY_SINGLE_STATS = 'singleStats';
+export const CATEGORY_TABLES = 'tables';
+export const CATEGORY_CHARTS = 'charts';
+
+export const NEW_DASHBOARD_SLUG = 'new';

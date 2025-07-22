@@ -5,8 +5,12 @@ import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { s__ } from '~/locale';
 import { toggleArrayItem } from '~/lib/utils/array_utility';
-import { getVisualizationCategory } from '../utils';
-import { CATEGORY_SINGLE_STATS, CATEGORY_CHARTS, CATEGORY_TABLES } from '../constants';
+import {
+  CATEGORY_SINGLE_STATS,
+  CATEGORY_CHARTS,
+  CATEGORY_TABLES,
+} from 'ee/analytics/analytics_dashboards/constants';
+import { getVisualizationCategory } from '../../utils';
 
 export default {
   name: 'AvailableVisualizatiosnDrawer',

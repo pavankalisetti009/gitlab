@@ -36,6 +36,15 @@ module EE
         errors.add(:default_duo_add_on_assignment_id,
           "No Duo seat assignments with namespace found with ID #{default_duo_add_on_assignment_id}")
       end
+
+      def get_default_duo_namespace
+        return default_duo_add_on_assignment.add_on_purchase.namespace if default_duo_add_on_assignment.present?
+
+        assignments = eligible_duo_add_on_assignments.limit(2).to_a
+        return if assignments.size != 1
+
+        assignments.first.add_on_purchase.namespace
+      end
     end
   end
 end

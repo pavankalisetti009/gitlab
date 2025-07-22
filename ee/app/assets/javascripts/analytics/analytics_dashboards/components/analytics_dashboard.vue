@@ -6,13 +6,8 @@ import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CREATED } from '~/lib/utils/http_s
 import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
-import CustomizableDashboard from '~/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
 import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
-import {
-  getDashboardConfig,
-  getUniquePanelId,
-} from '~/vue_shared/components/customizable_dashboard/utils';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
@@ -20,7 +15,7 @@ import UrlSync, {
   HISTORY_REPLACE_UPDATE_METHOD,
   URL_SET_PARAMS_STRATEGY,
 } from '~/vue_shared/components/url_sync.vue';
-import { updateApolloCache } from '../utils';
+import { updateApolloCache, getDashboardConfig, getUniquePanelId } from '../utils';
 import {
   AI_IMPACT_DASHBOARD,
   BUILT_IN_VALUE_STREAM_DASHBOARD,
@@ -43,6 +38,7 @@ import {
   filtersToQueryParams,
   isDashboardFilterEnabled,
 } from './filters/utils';
+import AnalyticsCustomizableDashboard from './analytics_customizable_dashboard.vue';
 import AnalyticsDashboardPanel from './analytics_dashboard_panel.vue';
 
 export default {
@@ -52,8 +48,8 @@ export default {
     AnonUsersFilter: () => import('./filters/anon_users_filter.vue'),
     ProjectsFilter: () => import('./filters/projects_filter.vue'),
     FilteredSearchFilter: () => import('./filters/filtered_search_filter.vue'),
+    AnalyticsCustomizableDashboard,
     AnalyticsDashboardPanel,
-    CustomizableDashboard,
     ProductAnalyticsFeedbackBanner,
     ValueStreamFeedbackBanner,
     GlEmptyState,
@@ -529,7 +525,7 @@ export default {
       <value-stream-feedback-banner v-if="showValueStreamFeedbackBanner" />
       <product-analytics-feedback-banner v-if="showProductAnalyticsFeedbackBanner" />
 
-      <customizable-dashboard
+      <analytics-customizable-dashboard
         ref="dashboard"
         :initial-dashboard="currentDashboard"
         :available-visualizations="availableVisualizations"
@@ -615,7 +611,7 @@ export default {
             @delete="deletePanel"
           />
         </template>
-      </customizable-dashboard>
+      </analytics-customizable-dashboard>
     </template>
     <gl-empty-state
       v-else-if="showEmptyState"
