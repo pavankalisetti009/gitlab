@@ -40,6 +40,31 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance' do
           expect(subject).not_to disallow_request
         end
       end
+
+      context 'when the content type is a text/plain' do
+        let(:response) { request.patch('/test_request') }
+
+        it 'redirect with read only instance error message' do
+          expect(Gitlab::AppLogger).to receive(:error)
+            .with(described_class::Controller::READ_ONLY_INSTANCE_ERROR_MESSAGE)
+
+          expect(response).to be_redirect
+          expect(readonly_middleware).to disallow_request
+        end
+      end
+
+      context 'when the content type is application/json' do
+        let(:fake_app) { ->(_env) { [200, { 'Content-Type' => 'application/json' }, ['OK']] } }
+        let(:response) { request.patch('/test_request', { 'CONTENT_TYPE' => 'application/json' }) }
+
+        it 'returns forbidden with read only instance error message' do
+          expect(Gitlab::AppLogger).to receive(:error)
+            .with(described_class::Controller::READ_ONLY_INSTANCE_ERROR_MESSAGE)
+
+          expect(response).to disallow_request_in_json
+          expect(response).to be_forbidden
+        end
+      end
     end
   end
 end

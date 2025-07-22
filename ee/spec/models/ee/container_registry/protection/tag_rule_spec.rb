@@ -40,6 +40,47 @@ RSpec.describe ContainerRegistry::Protection::TagRule, type: :model, feature_cat
         end
       end
     end
+
+    describe '#tag_name_pattern' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:tag_name_pattern) { 'v*' }
+
+      # existing mutable rule to assert the conditional uniqueness validation
+      before_all do
+        create(:container_registry_protection_tag_rule, project:, tag_name_pattern:)
+      end
+
+      context 'when immutable' do
+        subject { build(:container_registry_protection_tag_rule, :immutable, project:, tag_name_pattern:) }
+
+        it { is_expected.to be_valid }
+
+        context 'with duplicate tag_name_pattern in the same project' do
+          before do
+            create(:container_registry_protection_tag_rule, :immutable, project:, tag_name_pattern:)
+          end
+
+          it 'is invalid' do
+            is_expected.to be_invalid.and have_attributes(
+              errors: match_array(['Tag name pattern has already been taken'])
+            )
+          end
+        end
+
+        context 'with duplicate tag_name_pattern in a different project' do
+          subject do
+            build(
+              :container_registry_protection_tag_rule,
+              :immutable,
+              project: build_stubbed(:project),
+              tag_name_pattern: tag_name_pattern
+            )
+          end
+
+          it { is_expected.to be_valid }
+        end
+      end
+    end
   end
 
   describe '.for_actions_and_access' do

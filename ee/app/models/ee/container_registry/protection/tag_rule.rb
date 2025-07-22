@@ -47,6 +47,11 @@ module EE
           immutable? ? immutable_restriction? : super
         end
 
+        override :uniqueness_scope
+        def uniqueness_scope
+          immutable? ? self.class.immutable : super
+        end
+
         private
 
         override :validate_access_levels

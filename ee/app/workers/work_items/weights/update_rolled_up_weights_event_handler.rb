@@ -20,8 +20,6 @@ module WorkItems
       ].freeze
 
       def self.can_handle?(event)
-        return false unless Feature.enabled?(:update_rolled_up_weights, :instance)
-
         # For update events, check if weight-related attributes/widgets were updated
         if event.data.key?(:updated_widgets) || event.data.key?(:updated_attributes)
           return UPDATE_TRIGGER_WIDGETS.any? { |widget| event.data.fetch(:updated_widgets, []).include?(widget) } ||
