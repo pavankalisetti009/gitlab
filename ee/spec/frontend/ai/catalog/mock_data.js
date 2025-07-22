@@ -5,6 +5,7 @@ const TYPENAME_AI_CATALOG_AGENT_UPDATE = 'AiCatalogAgentUpdatePayload';
 const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
+const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_PROJECT = 'Project';
 
 const mockProject = {
@@ -161,6 +162,8 @@ export const mockFlow = mockFlowFactory({
   },
 });
 
+export const mockBaseFlow = { ...mockFlow, project: mockProject };
+
 export const mockFlows = [
   mockFlow,
   mockFlowFactory({
@@ -182,6 +185,25 @@ export const mockCatalogFlowsResponse = {
     aiCatalogItems: {
       nodes: mockFlows,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONNECTION,
+    },
+  },
+};
+
+export const mockCreateAiCatalogFlowSuccessMutation = {
+  data: {
+    aiCatalogFlowCreate: {
+      errors: [],
+      item: mockBaseFlow,
+      __typename: TYPENAME_AI_CATALOG_FLOW_CREATE,
+    },
+  },
+};
+
+export const mockCreateAiCatalogFlowErrorMutation = {
+  data: {
+    aiCatalogFlowCreate: {
+      errors: ['Some error'],
+      item: null,
     },
   },
 };

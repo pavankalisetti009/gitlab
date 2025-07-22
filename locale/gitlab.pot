@@ -2443,16 +2443,37 @@ msgstr ""
 msgid "AICatalog|Briefly describe what this agent is designed to do and its key capabilities."
 msgstr ""
 
+msgid "AICatalog|Briefly describe what this flow is designed to do and its key capabilities."
+msgstr ""
+
 msgid "AICatalog|Build AI agents and flows to automate repetitive tasks and processes."
 msgstr ""
 
 msgid "AICatalog|Choose a memorable name for your AI agent."
 msgstr ""
 
+msgid "AICatalog|Choose a memorable name for your AI flow."
+msgstr ""
+
 msgid "AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog."
 msgstr ""
 
+msgid "AICatalog|Create a flow"
+msgstr ""
+
 msgid "AICatalog|Create agent"
+msgstr ""
+
+msgid "AICatalog|Create an agent"
+msgstr ""
+
+msgid "AICatalog|Create flow"
+msgstr ""
+
+msgid "AICatalog|Create new agent"
+msgstr ""
+
+msgid "AICatalog|Create new flow"
 msgstr ""
 
 msgid "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks."
@@ -2479,6 +2500,9 @@ msgstr ""
 msgid "AICatalog|Flow"
 msgstr ""
 
+msgid "AICatalog|Flow created successfully."
+msgstr ""
+
 msgid "AICatalog|Flows"
 msgstr ""
 
@@ -2492,9 +2516,6 @@ msgid "AICatalog|Modify the agent settings and configuration."
 msgstr ""
 
 msgid "AICatalog|Name is required."
-msgstr ""
-
-msgid "AICatalog|New agent"
 msgstr ""
 
 msgid "AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners  of this project can edit or delete the agent."
@@ -2533,6 +2554,9 @@ msgstr ""
 msgid "AICatalog|Select a project for your AI agent to be associated with."
 msgstr ""
 
+msgid "AICatalog|Select a project for your AI flow to be associated with."
+msgstr ""
+
 msgid "AICatalog|System Prompt"
 msgstr ""
 
@@ -2551,10 +2575,16 @@ msgstr ""
 msgid "AICatalog|The agent could not be updated. Please try again."
 msgstr ""
 
+msgid "AICatalog|The flow could not be added. Please try again."
+msgstr ""
+
 msgid "AICatalog|This agent can be made private if it is not used."
 msgstr ""
 
 msgid "AICatalog|This agent specializes in... It can help you with... Best suited for..."
+msgstr ""
+
+msgid "AICatalog|This flow specializes in... It can help you with... Best suited for..."
 msgstr ""
 
 msgid "AICatalog|User Prompt"

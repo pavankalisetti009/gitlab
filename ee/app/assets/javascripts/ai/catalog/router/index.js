@@ -8,6 +8,8 @@ import AiCatalogAgentsEdit from '../pages/ai_catalog_agents_edit.vue';
 import AiCatalogAgentsRun from '../pages/ai_catalog_agents_run.vue';
 import AiCatalogAgentsNew from '../pages/ai_catalog_agents_new.vue';
 import AiCatalogFlows from '../pages/ai_catalog_flows.vue';
+import AiCatalogFlowsEdit from '../pages/ai_catalog_flows_edit.vue';
+import AiCatalogFlowsNew from '../pages/ai_catalog_flows_new.vue';
 import {
   AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
@@ -15,6 +17,8 @@ import {
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_FLOWS_NEW_ROUTE,
+  AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from './constants';
 
@@ -30,6 +34,7 @@ export const createRouter = (base) => {
         path: '',
         component: AiCatalogAgents,
       },
+      // AGENTS
       {
         component: NestedRouteApp,
         path: '/agents',
@@ -82,6 +87,8 @@ export const createRouter = (base) => {
           },
         ],
       },
+      // FLOWS
+      // Catch-all route for /agents/:id - redirect to /agents?show=:id
       {
         name: AI_CATALOG_FLOWS_ROUTE,
         path: '/flows',
@@ -89,6 +96,29 @@ export const createRouter = (base) => {
         meta: {
           text: s__('AICatalog|Flows'),
         },
+      },
+      {
+        name: AI_CATALOG_FLOWS_NEW_ROUTE,
+        path: '/flows/new',
+        component: AiCatalogFlowsNew,
+      },
+      {
+        path: '/flows/:id',
+        redirect: (to) => ({
+          path: '/flows',
+          query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
+        }),
+      },
+      {
+        path: '/flows/:id',
+        component: AiCatalogAgent,
+        children: [
+          {
+            name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+            path: 'edit',
+            component: AiCatalogFlowsEdit,
+          },
+        ],
       },
     ],
   });

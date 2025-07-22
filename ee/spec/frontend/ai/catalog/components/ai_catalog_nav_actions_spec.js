@@ -6,6 +6,7 @@ import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_FLOWS_NEW_ROUTE,
 } from 'ee/ai/catalog/router/constants';
 
 describe('AiCatalogNavTabs', () => {
@@ -40,6 +41,20 @@ describe('AiCatalogNavTabs', () => {
   describe('when on flows route', () => {
     beforeEach(() => {
       createComponent({ routePath: AI_CATALOG_FLOWS_ROUTE });
+    });
+
+    it('renders button', () => {
+      expect(findButton().exists()).toBe(true);
+    });
+
+    it('passes correct route to button', () => {
+      expect(findButton().props('to')).toEqual({ name: AI_CATALOG_FLOWS_NEW_ROUTE });
+    });
+  });
+
+  describe('When on other route', () => {
+    beforeEach(() => {
+      createComponent({ routePath: AI_CATALOG_FLOWS_NEW_ROUTE });
     });
 
     it('does not render button', () => {

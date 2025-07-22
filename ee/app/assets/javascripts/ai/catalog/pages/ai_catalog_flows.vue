@@ -1,5 +1,4 @@
 <script>
-import { isEmpty } from 'lodash';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
@@ -33,9 +32,6 @@ export default {
   computed: {
     isLoading() {
       return this.$apollo.queries.aiCatalogFlows.loading;
-    },
-    isItemSelected() {
-      return !isEmpty(this.activeItem);
     },
   },
   watch: {
@@ -78,7 +74,7 @@ export default {
   <div>
     <ai-catalog-list :is-loading="isLoading" :items="aiCatalogFlows" @select-item="selectItem" />
     <ai-catalog-item-drawer
-      :is-open="isItemSelected"
+      :is-open="activeItem !== null"
       :active-item="activeItem"
       :edit-route="$options.editRoute"
       @close="closeDrawer"
