@@ -1660,7 +1660,11 @@
                         }
                       ]
                     }
-                  }
+                  },
+                  "required": [
+                    "source",
+                    "target"
+                  ]
                 }
               },
               "access_tokens": {

@@ -2262,6 +2262,111 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           end
         end
       end
+
+      describe "bypass_settings" do
+        let(:approval_policy) do
+          build(:approval_policy, rules: [], actions: actions, bypass_settings: bypass_settings)
+        end
+
+        context 'with empty object' do
+          let(:bypass_settings) { {} }
+
+          specify { expect(errors).to be_empty }
+        end
+
+        context 'with valid access_tokens and service_accounts' do
+          let(:bypass_settings) do
+            {
+              access_tokens: [{ id: 1 }, { id: 2 }],
+              service_accounts: [{ id: 10 }, { id: 20 }]
+            }
+          end
+
+          specify { expect(errors).to be_empty }
+        end
+
+        context 'with valid branches' do
+          let(:bypass_settings) do
+            {
+              branches: [
+                { source: { name: 'main' }, target: { pattern: 'release-*' } },
+                { source: { pattern: 'feature-*' }, target: { name: 'develop' } }
+              ]
+            }
+          end
+
+          specify { expect(errors).to be_empty }
+        end
+
+        context 'with missing id in access_tokens' do
+          let(:bypass_settings) { { access_tokens: [{}] } }
+
+          specify do
+            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/access_tokens/0' is missing required keys: id")
+          end
+        end
+
+        context 'with non-integer id in service_accounts' do
+          let(:bypass_settings) { { service_accounts: [{ id: 'foo' }] } }
+
+          specify do
+            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/service_accounts/0/id' is not of type: integer")
+          end
+        end
+
+        context 'with missing source in branches' do
+          let(:bypass_settings) { { branches: [{ target: { name: 'main' } }] } }
+
+          specify do
+            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0' is missing required keys: source")
+          end
+        end
+
+        context 'with missing target in branches' do
+          let(:bypass_settings) { { branches: [{ source: { name: 'main' } }] } }
+
+          specify do
+            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0' is missing required keys: target")
+          end
+        end
+
+        context 'with missing required key in source' do
+          let(:bypass_settings) { { branches: [{ source: {}, target: { name: 'main' } }] } }
+
+          specify do
+            expect(errors).to contain_exactly(
+              "property '/approval_policy/0/bypass_settings/branches/0/source' is missing required keys: name",
+              "property '/approval_policy/0/bypass_settings/branches/0/source' is missing required keys: pattern"
+            )
+          end
+        end
+
+        context 'with both name and pattern in source' do
+          let(:bypass_settings) { { branches: [{ source: { name: 'main', pattern: 'main*' }, target: { name: 'main' } }] } }
+
+          specify do
+            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0/source' is invalid: error_type=oneOf")
+          end
+        end
+
+        context 'with empty branches array' do
+          let(:bypass_settings) { { branches: [] } }
+
+          specify { expect(errors).to be_empty }
+        end
+
+        context 'with empty access_tokens array' do
+          let(:bypass_settings) { { access_tokens: [] } }
+
+          specify { expect(errors).to be_empty }
+        end
+
+        context 'with empty service_accounts array' do
+          let(:bypass_settings) { { service_accounts: [] } }
+
+          specify { expect(errors).to be_empty }
+        end
+      end
     end
 
     shared_examples_for "pipeline_execution_policy_content" do |policy_type|
