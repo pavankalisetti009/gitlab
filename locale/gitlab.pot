@@ -24586,9 +24586,6 @@ msgstr ""
 msgid "Email patch"
 msgstr ""
 
-msgid "Email reset removed at:"
-msgstr ""
-
 msgid "Email sent"
 msgstr ""
 
@@ -32189,9 +32186,6 @@ msgid_plural "IdentityVerification|%d countries found"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "IdentityVerification|A code has already been sent to this email address. Check your spam folder or enter another email address."
-msgstr ""
-
 msgid "IdentityVerification|A new code has been sent."
 msgstr ""
 
@@ -32223,9 +32217,6 @@ msgid "IdentityVerification|Country or region"
 msgstr ""
 
 msgid "IdentityVerification|Email Verification"
-msgstr ""
-
-msgid "IdentityVerification|Email update is only offered once."
 msgstr ""
 
 msgid "IdentityVerification|Enter a code."
