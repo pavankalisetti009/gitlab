@@ -41582,6 +41582,9 @@ msgstr ""
 msgid "No approvers"
 msgstr ""
 
+msgid "No archived labels"
+msgstr ""
+
 msgid "No artifacts found"
 msgstr ""
 
