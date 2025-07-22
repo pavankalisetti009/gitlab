@@ -41,6 +41,9 @@ RSpec.describe Admin::PushRulesController, :with_current_organization, feature_c
     context 'when a sample rule does not exist' do
       it_behaves_like 'successful push rule update', count_change: 1
       it 'assigns correct organization' do
+        expect(::PushRules::CreateOrUpdateService)
+          .to receive(:new).with(hash_including(container: current_organization)).and_call_original
+
         patch :update, params: { push_rule: params }
 
         expect(PushRuleFinder.new.execute.organization).to eq(current_organization)

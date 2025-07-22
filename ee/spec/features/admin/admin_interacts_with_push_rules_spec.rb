@@ -41,7 +41,7 @@ RSpec.describe "Admin interacts with push rules", feature_category: :source_code
     end
   end
 
-  context "when creating push rule" do
+  context "when creating push rule", :with_current_organization do
     before do
       visit(admin_push_rule_path)
     end
