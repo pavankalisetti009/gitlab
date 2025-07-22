@@ -12,13 +12,11 @@ import {
   RETURNING_USERS_TABLE_NAME,
   SESSIONS_TABLE_NAME,
   TRACKED_EVENTS_KEY,
-} from 'ee/analytics/analytics_dashboards/constants';
-import {
   VISUALIZATION_TYPE_DATA_TABLE,
   VISUALIZATION_TYPE_LINE_CHART,
   VISUALIZATION_TYPE_COLUMN_CHART,
   VISUALIZATION_TYPE_SINGLE_STAT,
-} from '~/vue_shared/components/customizable_dashboard/constants';
+} from 'ee/analytics/analytics_dashboards/constants';
 
 // This can be any value because the cube proxy adds the real API token.
 const CUBE_API_TOKEN = '1';

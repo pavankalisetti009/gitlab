@@ -14,7 +14,7 @@ import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/gra
 import getAvailableVisualizations from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_visualizations.query.graphql';
 import AnalyticsDashboard from 'ee/analytics/analytics_dashboards/components/analytics_dashboard.vue';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
-import CustomizableDashboard from '~/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
+import AnalyticsCustomizableDashboard from 'ee/analytics/analytics_dashboards/components/analytics_customizable_dashboard.vue';
 import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import { updateApolloCache } from 'ee/analytics/analytics_dashboards/utils';
@@ -43,10 +43,6 @@ import {
   CUSTOM_VALUE_STREAM_DASHBOARD,
 } from 'ee/analytics/analytics_dashboards/constants';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
-import {
-  dashboard,
-  TEST_EMPTY_DASHBOARD_SVG_PATH,
-} from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 import { stubComponent } from 'helpers/stub_component';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import UrlSync, {
@@ -55,6 +51,7 @@ import UrlSync, {
 } from '~/vue_shared/components/url_sync.vue';
 import FilteredSearchFilter from 'ee/analytics/analytics_dashboards/components/filters/filtered_search_filter.vue';
 import {
+  dashboard,
   TEST_CUSTOM_DASHBOARDS_GROUP,
   TEST_ROUTER_BACK_HREF,
   TEST_DASHBOARD_GRAPHQL_404_RESPONSE,
@@ -73,6 +70,7 @@ import {
   getGraphQLDashboardWithPanels,
   mockDateRangeFilterChangePayload,
   mockFilteredSearchChangePayload,
+  TEST_EMPTY_DASHBOARD_SVG_PATH,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -88,7 +86,10 @@ jest.mock('ee/analytics/analytics_dashboards/api/dashboards_api', () => ({
   saveCustomDashboard: jest.fn(),
 }));
 
-jest.mock('ee/analytics/analytics_dashboards/utils');
+jest.mock('ee/analytics/analytics_dashboards/utils', () => ({
+  ...jest.requireActual('ee/analytics/analytics_dashboards/utils'),
+  updateApolloCache: jest.fn(),
+}));
 
 const showToast = jest.fn();
 
@@ -102,7 +103,7 @@ describe('AnalyticsDashboard', () => {
 
   const namespaceId = '1';
 
-  const findDashboard = () => wrapper.findComponent(CustomizableDashboard);
+  const findDashboard = () => wrapper.findComponent(AnalyticsCustomizableDashboard);
   const findAllPanels = () => wrapper.findAllComponents(AnalyticsDashboardPanel);
   const findPanelByTitle = (title) =>
     findAllPanels().wrappers.find((w) => w.props('title') === title);
@@ -207,7 +208,7 @@ describe('AnalyticsDashboard', () => {
         RouterLink: true,
         RouterView: true,
         ProjectsFilter,
-        CustomizableDashboard: stubComponent(CustomizableDashboard, {
+        AnalyticsCustomizableDashboard: stubComponent(AnalyticsCustomizableDashboard, {
           methods: {
             ...stubMockMethods,
             deletePanel: mockCustomizableDashboardDeletePanel,

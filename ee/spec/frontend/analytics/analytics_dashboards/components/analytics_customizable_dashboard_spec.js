@@ -4,23 +4,23 @@ import { GlLink, GlSprintf, GlExperimentBadge } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { mockTracking } from 'helpers/tracking_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CustomizableDashboard from '~/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
 import GridstackWrapper from '~/vue_shared/components/customizable_dashboard/gridstack_wrapper.vue';
 import waitForPromises from 'helpers/wait_for_promises';
-import AvailableVisualizationsDrawer from '~/vue_shared/components/customizable_dashboard/dashboard_editor/available_visualizations_drawer.vue';
+import AvailableVisualizationsDrawer from 'ee/analytics/analytics_dashboards/components/dashboard_editor/available_visualizations_drawer.vue';
+import AnalyticsCustomizableDashboard from 'ee/analytics/analytics_dashboards/components/analytics_customizable_dashboard.vue';
 import {
   EVENT_LABEL_VIEWED_DASHBOARD_DESIGNER,
   DASHBOARD_SCHEMA_VERSION,
-} from '~/vue_shared/components/customizable_dashboard/constants';
+} from 'ee/analytics/analytics_dashboards/constants';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import { stubComponent } from 'helpers/stub_component';
 import { trimText } from 'helpers/text_helper';
 import {
+  TEST_EMPTY_DASHBOARD_SVG_PATH,
+  createVisualization,
   dashboard,
   betaDashboard,
-  createVisualization,
-  TEST_EMPTY_DASHBOARD_SVG_PATH,
-} from './mock_data';
+} from '../mock_data';
 
 jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal');
 
@@ -41,7 +41,7 @@ const NEW_DASHBOARD = () => ({
   errors: null,
 });
 
-describe('CustomizableDashboard', () => {
+describe('AnalyticsCustomizableDashboard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   let trackingSpy;
@@ -61,7 +61,7 @@ describe('CustomizableDashboard', () => {
   ) => {
     const loadDashboard = { ...loadedDashboard };
 
-    wrapper = shallowMountExtended(CustomizableDashboard, {
+    wrapper = shallowMountExtended(AnalyticsCustomizableDashboard, {
       propsData: {
         initialDashboard: loadDashboard,
         availableVisualizations: {

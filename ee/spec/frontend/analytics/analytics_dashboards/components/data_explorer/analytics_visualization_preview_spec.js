@@ -9,7 +9,7 @@ import {
   PANEL_VISUALIZATION_HEIGHT,
 } from 'ee/analytics/analytics_dashboards/constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { createVisualization } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
+import { createVisualization } from '../../mock_data';
 
 jest.mock('js-yaml', () => ({
   safeDump: jest.fn().mockImplementation(() => 'yaml: mock-code'),

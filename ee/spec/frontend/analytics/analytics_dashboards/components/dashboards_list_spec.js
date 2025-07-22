@@ -16,8 +16,10 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
-import { getDashboardConfig } from '~/vue_shared/components/customizable_dashboard/utils';
-import { updateApolloCache } from 'ee/analytics/analytics_dashboards/utils';
+import {
+  getDashboardConfig,
+  updateApolloCache,
+} from 'ee/analytics/analytics_dashboards/utils/index';
 import {
   TEST_COLLECTOR_HOST,
   TEST_TRACKING_KEY,
