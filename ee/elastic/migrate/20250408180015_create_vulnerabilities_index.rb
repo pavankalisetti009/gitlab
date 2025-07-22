@@ -14,3 +14,5 @@ class CreateVulnerabilitiesIndex < Elastic::Migration
     ::Vulnerability
   end
 end
+
+CreateVulnerabilitiesIndex.prepend ::Search::Elastic::MigrationObsolete
