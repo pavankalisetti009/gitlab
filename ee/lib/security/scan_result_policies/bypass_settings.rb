@@ -19,6 +19,11 @@ module Security
       end
       strong_memoize_attr :service_account_ids
 
+      def branches
+        bypass_settings[:branches] || []
+      end
+      strong_memoize_attr :branches
+
       private
 
       attr_reader :bypass_settings

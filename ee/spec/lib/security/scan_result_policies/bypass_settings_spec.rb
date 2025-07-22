@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :security_policy_management do
-  let_it_be(:bypass_settings) do
+  let(:bypass_settings) do
     {
       access_tokens: [
         { id: 1 },
@@ -24,7 +24,7 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     end
 
     context 'when access_tokens is nil' do
-      let_it_be(:bypass_settings) { {} }
+      let(:bypass_settings) { {} }
 
       it 'returns nil' do
         expect(bypass_settings_instance.access_token_ids).to be_nil
@@ -38,10 +38,34 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     end
 
     context 'when service_accounts is nil' do
-      let_it_be(:bypass_settings) { {} }
+      let(:bypass_settings) { {} }
 
       it 'returns nil' do
         expect(bypass_settings_instance.service_account_ids).to be_nil
+      end
+    end
+  end
+
+  describe '#branches' do
+    context 'when branches are present' do
+      let(:bypass_settings) do
+        {
+          branches: [{ target: { name: 'main' } }, { source: { name: 'develop' } }]
+        }
+      end
+
+      it 'returns the branches array' do
+        expect(bypass_settings_instance.branches).to match_array([
+          { target: { name: 'main' } }, { source: { name: 'develop' } }
+        ])
+      end
+    end
+
+    context 'when branches are nil or missing' do
+      let(:bypass_settings) { {} }
+
+      it 'returns an empty array' do
+        expect(bypass_settings_instance.branches).to be_empty
       end
     end
   end
