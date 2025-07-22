@@ -6,6 +6,7 @@ RSpec.describe Vulnerabilities::PartialScan, feature_category: :vulnerability_ma
   describe 'validations' do
     subject(:partial_scan) { build(:vulnerabilities_partial_scan) }
 
+    it { is_expected.to validate_presence_of(:scan) }
     it { is_expected.to validate_presence_of(:mode) }
   end
 
