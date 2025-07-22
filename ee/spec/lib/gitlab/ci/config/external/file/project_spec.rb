@@ -80,6 +80,17 @@ RSpec.describe Gitlab::Ci::Config::External::File::Project, feature_category: :p
 
             it_behaves_like 'user has access to the project'
 
+            context 'when user is authenticated via CI_JOB_TOKEN', :request_store do
+              let(:parent_project) { build_stubbed(:project) }
+              let(:job) { build_stubbed(:ci_build, project: parent_project, user: context_user) }
+
+              before do
+                context_user.set_ci_job_token_scope!(job)
+              end
+
+              it_behaves_like 'user has access to the project'
+            end
+
             context 'when creating_policy_pipeline? is false' do
               let(:creating_policy_pipeline) { false }
 
