@@ -66468,6 +66468,9 @@ msgstr ""
 msgid "Unable to apply suggestions to a deleted line."
 msgstr ""
 
+msgid "Unable to authenticate with the observability service. Please check your configuration and try again."
+msgstr ""
+
 msgid "Unable to build Slack link."
 msgstr ""
 
