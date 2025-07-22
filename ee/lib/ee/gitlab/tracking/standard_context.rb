@@ -22,14 +22,11 @@ module EE
           ::Gitlab::Com.gitlab_com_group_member?(user_id)
         end
 
+        private
+
         override :realm
         def realm
           ::CloudConnector.gitlab_realm
-        end
-
-        override :instance_id
-        def instance_id
-          ::Gitlab::GlobalAnonymousId.instance_id
         end
 
         override :tracked_user_id

@@ -79,7 +79,7 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
 
     context 'when on self-managed' do
       it 'sets the realm to self-managed' do
-        expect(json_data[:realm]).to eq('self-managed')
+        expect(json_data[:realm]).to eq(::CloudConnector::GITLAB_REALM_SELF_MANAGED)
       end
 
       it 'hashes user_id' do
