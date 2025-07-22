@@ -9,7 +9,7 @@ module MergeRequests
     end
 
     def audit_event_name
-      'policy_violations_detected'
+      'security_policy_violations_detected'
     end
 
     def audit_message

@@ -36,7 +36,7 @@ module Security
       def audit_context(policy_type, policy_limit, policies)
         policy_names = policies.pluck(:name) # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- pluck used on hash
         {
-          name: 'policies_limit_exceeded',
+          name: 'security_policy_limit_exceeded',
           author: commit&.author || Gitlab::Audit::DeletedAuthor.new(id: -4, name: 'Unknown User'),
           scope: policy_management_project,
           target: policy_management_project,

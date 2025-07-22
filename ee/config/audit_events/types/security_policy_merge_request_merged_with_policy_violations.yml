@@ -1,5 +1,5 @@
 ---
-name: merge_request_merged_with_policy_violations
+name: security_policy_merge_request_merged_with_policy_violations
 description: A merge request merged with security policy violations
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/work_items/549813
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/195775

@@ -1,5 +1,5 @@
 ---
-name: policies_limit_exceeded
+name: security_policy_limit_exceeded
 description: Enabled policies count exceeded the maximum allowed limit for policy type
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/work_items/550891
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196005

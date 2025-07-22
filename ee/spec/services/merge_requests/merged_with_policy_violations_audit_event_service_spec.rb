@@ -59,7 +59,7 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
 
     let(:audit_context) do
       {
-        name: 'merge_request_merged_with_policy_violations',
+        name: 'security_policy_merge_request_merged_with_policy_violations',
         author: merger,
         scope: policy_project,
         target: security_policy,
@@ -81,7 +81,7 @@ RSpec.describe MergeRequests::MergedWithPolicyViolationsAuditEventService, featu
     end
 
     shared_examples 'not recording the audit event' do
-      it 'does not record a merge_request_merged_with_policy_violations audit event' do
+      it 'does not record a security_policy_merge_request_merged_with_policy_violations audit event' do
         expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(anything)
 
         execute_service

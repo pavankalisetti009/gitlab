@@ -198,7 +198,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
     end
 
-    describe 'policy_violations_detected audit event' do
+    describe 'security_policy_violations_detected audit event' do
       shared_examples 'not enqueuing the PolicyViolationsDetectedAuditEventWorker' do
         it 'does not enqueue MergeRequests::PolicyViolationsDetectedAuditEventWorker' do
           expect(::MergeRequests::PolicyViolationsDetectedAuditEventWorker).not_to receive(:perform_async)
@@ -249,7 +249,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
     end
 
-    describe 'policy_violations_resolved audit event' do
+    describe 'security_policy_violations_resolved audit event' do
       shared_examples 'not enqueuing the PolicyViolationsResolvedAuditEventWorker' do
         it 'does not enqueue MergeRequests::PolicyViolationsResolvedAuditEventWorker' do
           expect(::MergeRequests::PolicyViolationsResolvedAuditEventWorker).not_to receive(:perform_async)
