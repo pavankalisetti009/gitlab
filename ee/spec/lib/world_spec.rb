@@ -19,7 +19,7 @@ RSpec.describe World, feature_category: :subscription_management do
 
     # this spec exists to catch relevant changes in the gem's upstream data
     it 'returns exactly 239 countries' do
-      expect(supported_countries.count).to eq(239)
+      expect(supported_countries.count).to eq(240)
     end
   end
 

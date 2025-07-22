@@ -5,24 +5,34 @@ module Ai
     module Code
       class Indexer
         include Gitlab::Utils::StrongMemoize
+        include Gitlab::Loggable
 
         TIMEOUT = '30m'
         Error = Class.new(StandardError)
 
-        def self.run!(repository, &block)
-          new(repository).run(&block)
+        def self.run!(active_context_repository, &block)
+          new(active_context_repository).run(&block)
         end
 
-        attr_reader :repository, :project
+        def initialize(active_context_repository)
+          # `active_context_repository` refers to `Ai::ActiveContext::Code::Repository`
+          # object used for tracking the state of embeddings indexing for a project
+          # `project_repository` refers to the `Repository` object that points to the
+          # actual git repository in Gitaly.
+          @active_context_repository = active_context_repository
+          @project = active_context_repository.project
+          @project_repository = project.repository
 
-        def initialize(repository)
-          @repository = repository
-          @project = repository.project
+          # get the from and to shas on initialize to ensure consistent values
+          @from_sha = active_context_repository.last_commit
+          @to_sha = project_repository.commit&.id
         end
 
         def run(&block)
           raise Error, 'Adapter not set' unless adapter
-          raise Error, 'Commit not found' unless to_commit
+          raise Error, 'Commit not found' unless to_sha
+
+          log_info('Start indexer')
 
           response_processor = IndexerResponseModifier.new(&block)
           stderr_output = []
@@ -36,12 +46,23 @@ module Ai
             end
           end
 
-          raise Error, "Indexer failed with status: #{status} and error: #{stderr_output.join}" unless status == 0
+          unless status == 0
+            log_error(
+              "Indexer failed",
+              status: status,
+              error_details: stderr_output.join
+            )
+            raise Error, "Indexer failed with status: #{status} and error: #{stderr_output.join}"
+          end
 
-          repository.update!(last_commit: to_commit.id)
+          log_info('Indexer successful', status: status)
+
+          active_context_repository.update!(last_commit: to_sha)
         end
 
         private
+
+        attr_reader :active_context_repository, :project, :project_repository, :to_sha, :from_sha
 
         def command
           [
@@ -62,8 +83,8 @@ module Ai
 
         def options
           {
-            from_sha: repository.last_commit,
-            to_sha: to_commit.id,
+            from_sha: from_sha,
+            to_sha: to_sha,
             project_id: project.id,
             partition_name: collection_class.partition_name,
             partition_number: collection_class.partition_number(project.id),
@@ -76,13 +97,9 @@ module Ai
           {
             address: Gitlab::GitalyClient.address(project.repository_storage),
             storage: project.repository_storage,
-            relative_path: project.repository.relative_path,
+            relative_path: project_repository.relative_path,
             project_path: project.full_path
           }
-        end
-
-        def to_commit
-          project.repository.commit
         end
 
         def collection_class
@@ -93,6 +110,30 @@ module Ai
           ::ActiveContext.adapter
         end
         strong_memoize_attr :adapter
+
+        def log_info(message, extra_params = {})
+          logger.info(build_log_payload(message, extra_params))
+        end
+
+        def log_error(message, extra_params = {})
+          logger.error(build_log_payload(message, extra_params))
+        end
+
+        def build_log_payload(message, extra_params = {})
+          params = {
+            message: message,
+            ai_active_context_code_repository_id: active_context_repository.id,
+            project_id: project.id,
+            from_sha: from_sha,
+            to_sha: to_sha
+          }.merge(extra_params)
+
+          build_structured_payload(**params)
+        end
+
+        def logger
+          @logger ||= ::ActiveContext::Config.logger
+        end
       end
     end
   end
