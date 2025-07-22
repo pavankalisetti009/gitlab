@@ -158,7 +158,7 @@ module Security
     end
 
     scope :with_api_scopes, -> do
-      preload(scan: { project: { project_namespace: :namespace_settings_with_ancestors_inherited_settings } })
+      preload(scan: { project: { namespace: :namespace_settings_with_ancestors_inherited_settings } })
     end
 
     delegate :scan_type, :project, :pipeline, :remediations_proxy, to: :scan, allow_nil: true

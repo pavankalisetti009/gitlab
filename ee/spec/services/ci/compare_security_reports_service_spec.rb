@@ -6,7 +6,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
   subject { service.execute(base_pipeline, head_pipeline) }
 
   let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:current_user) { project.owner }
+  let_it_be(:current_user) { project.owner.tap { |user| user.namespace.create_namespace_settings } }
   let_it_be(:test_pipelines) do
     {
       default_base: create(:ee_ci_pipeline),

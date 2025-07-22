@@ -2951,8 +2951,7 @@ class Project < ApplicationRecord
   end
 
   def self_or_ancestors_archived?
-    # We can remove `archived?` once we move the project archival to the `namespaces.archived` column
-    archived? || project_namespace.self_or_ancestors_archived?
+    archived? || namespace.self_or_ancestors_archived?
   end
 
   def ancestors_archived?
