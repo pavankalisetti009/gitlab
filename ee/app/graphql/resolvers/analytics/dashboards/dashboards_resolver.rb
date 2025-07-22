@@ -8,7 +8,7 @@ module Resolvers
 
         calls_gitaly!
         authorizes_object!
-        authorize :read_product_analytics
+        authorize :read_customizable_dashboards
 
         type [::Types::Analytics::Dashboards::DashboardType], null: true
 

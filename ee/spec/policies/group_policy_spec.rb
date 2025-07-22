@@ -546,7 +546,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     it { is_expected.not_to be_allowed(:read_dora4_analytics) }
   end
 
-  describe ':read_product_analytics', :enable_admin_mode do
+  describe ':read_customizable_dashboards', :enable_admin_mode do
     where(:role, :allowed) do
       :guest     | false
       :planner   | false
@@ -558,7 +558,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     with_them do
       let(:current_user) { public_send(role) }
 
-      it { is_expected.to(allowed ? be_allowed(:read_product_analytics) : be_disallowed(:read_product_analytics)) }
+      it { is_expected.to(allowed ? be_allowed(:read_customizable_dashboards) : be_disallowed(:read_customizable_dashboards)) }
     end
   end
 

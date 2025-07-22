@@ -46,7 +46,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
   describe 'product analytics' do
     describe 'tracking_key' do
       where(
-        :can_read_product_analytics,
+        :product_analytics_enabled,
         :project_instrumentation_key,
         :expected
       ) do
@@ -62,9 +62,9 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
         before do
           project.project_setting.update!(product_analytics_instrumentation_key: project_instrumentation_key)
 
-          stub_application_setting(product_analytics_enabled: can_read_product_analytics)
-          stub_licensed_features(product_analytics: can_read_product_analytics)
-          stub_feature_flags(product_analytics_features: can_read_product_analytics)
+          stub_application_setting(product_analytics_enabled: product_analytics_enabled)
+          stub_licensed_features(product_analytics: product_analytics_enabled)
+          stub_feature_flags(product_analytics_features: product_analytics_enabled)
         end
 
         let(:query) do
