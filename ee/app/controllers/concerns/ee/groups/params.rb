@@ -6,7 +6,6 @@ module EE
       extend ::Gitlab::Utils::Override
       include PreventForkingHelper
       include ServiceAccessTokenExpirationHelper
-      include GitlabSubscriptions::SubscriptionHelper
 
       override :group_params_attributes
       def group_params_attributes
@@ -74,7 +73,6 @@ module EE
           end
 
           params_ee << :disable_personal_access_tokens if current_group&.disable_personal_access_tokens_available?
-          params_ee << :enable_auto_assign_gitlab_duo_pro_seats if allow_update_enable_auto_assign_gitlab_duo_pro_seats?
 
           if current_group&.can_manage_extensions_marketplace_for_enterprise_users?
             params_ee << :enterprise_users_extensions_marketplace_enabled
@@ -102,12 +100,6 @@ module EE
         end
       end
       # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
-
-      def allow_update_enable_auto_assign_gitlab_duo_pro_seats?
-        ::Feature.enabled?(:auto_assign_gitlab_duo_pro_seats, current_group) &&
-          gitlab_com_subscription? && current_group&.root? &&
-          can?(current_user, :admin_group, current_group) && current_group.code_suggestions_purchased?
-      end
 
       def experiment_settings_allowed?
         current_group&.experiment_settings_allowed?

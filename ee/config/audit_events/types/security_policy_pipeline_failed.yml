@@ -1,5 +1,5 @@
 ---
-name: policy_pipeline_failed
+name: security_policy_pipeline_failed
 description: A pipeline with security policy jobs failed
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/539232
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196628

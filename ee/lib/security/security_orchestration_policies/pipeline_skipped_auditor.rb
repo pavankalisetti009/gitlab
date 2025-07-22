@@ -6,7 +6,7 @@ module Security
       private
 
       def event_name
-        'policy_pipeline_skipped'
+        'security_policy_pipeline_skipped'
       end
 
       def event_message

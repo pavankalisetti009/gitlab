@@ -1,5 +1,5 @@
 ---
-name: policy_pipeline_skipped
+name: security_policy_pipeline_skipped
 description: A security policy pipeline is skipped
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/539232
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/195325

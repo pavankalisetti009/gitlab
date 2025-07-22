@@ -22,7 +22,7 @@ module MergeRequests
 
     def audit_context
       {
-        name: 'policy_violations_resolved',
+        name: 'security_policy_violations_resolved',
         message: "All merge request approval policy violation(s) resolved " \
           "in merge request with title '#{merge_request.title}'",
         author: merge_request.author,

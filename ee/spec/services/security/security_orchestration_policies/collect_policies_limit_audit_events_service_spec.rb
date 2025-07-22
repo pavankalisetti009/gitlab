@@ -64,7 +64,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPoliciesLimitAudi
     context 'when policy limits are exceeded' do
       let(:audit_context) do
         {
-          name: 'policies_limit_exceeded',
+          name: 'security_policy_limit_exceeded',
           message: "Policies limit exceeded for '#{type_name}' type. " \
             "Only the first #{mock_policy_limit} enabled policies will be applied",
           scope: policy_management_project,

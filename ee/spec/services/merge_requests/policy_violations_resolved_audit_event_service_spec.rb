@@ -27,7 +27,7 @@ RSpec.describe MergeRequests::PolicyViolationsResolvedAuditEventService, feature
 
     let(:audit_context) do
       {
-        name: 'policy_violations_resolved',
+        name: 'security_policy_violations_resolved',
         author: merge_request.author,
         scope: project,
         target: merge_request,
@@ -47,7 +47,7 @@ RSpec.describe MergeRequests::PolicyViolationsResolvedAuditEventService, feature
     end
 
     context 'when there are no existing violations' do
-      it 'records a policy_violations_detected audit event' do
+      it 'records a security_policy_violations_detected audit event' do
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context)
 
         execute_service
@@ -68,7 +68,7 @@ RSpec.describe MergeRequests::PolicyViolationsResolvedAuditEventService, feature
           scan_result_policy_read: policy_read, approval_policy_rule: approval_policy_rule)
       end
 
-      it 'does not record a policy_violations_detected audit event' do
+      it 'does not record a security_policy_violations_detected audit event' do
         expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(anything)
 
         execute_service

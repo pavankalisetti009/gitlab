@@ -41,7 +41,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalid
 
         let(:audit_context) do
           {
-            name: 'policy_yaml_invalidated',
+            name: 'security_policy_yaml_invalidated',
             author: user,
             scope: project,
             target: project,
@@ -67,7 +67,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CollectPolicyYamlInvalid
         it 'creates an audit event with an unknown author' do
           expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
             hash_including(
-              name: 'policy_yaml_invalidated',
+              name: 'security_policy_yaml_invalidated',
               author: a_kind_of(::Gitlab::Audit::DeletedAuthor),
               additional_details: hash_including(security_policy_project_commit_sha: be_nil)
             )
