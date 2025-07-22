@@ -95,6 +95,7 @@ export default {
 
     <security-attribute-form
       ref="form"
+      :key="attribute.id || 'new'"
       :attribute="attribute"
       :mode="mode"
       @saved="onSubmit"
