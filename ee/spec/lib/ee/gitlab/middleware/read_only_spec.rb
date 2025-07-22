@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Middleware::ReadOnly do
+RSpec.describe Gitlab::Middleware::ReadOnly, :geo, feature_category: :geo_replication do
+  include DisallowRequestMatchers
+
   context 'when maintenance mode is on' do
     before do
       stub_maintenance_mode_setting(true)

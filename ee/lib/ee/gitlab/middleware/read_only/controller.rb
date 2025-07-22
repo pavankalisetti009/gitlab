@@ -162,6 +162,17 @@ module EE
           def read_only?
             ::Gitlab.maintenance_mode? || super
           end
+
+          override :handle_read_only_error
+          def handle_read_only_error
+            return service_unavailable_maintenance_response if ::Gitlab.maintenance_mode?
+
+            super
+          end
+
+          def service_unavailable_maintenance_response
+            error_response(503, ::Gitlab::MaintenanceModeHelper.maintenance_mode_message, { 'Retry-After' => '900' })
+          end
         end
       end
     end
