@@ -43,10 +43,9 @@ export default {
     },
   },
   data() {
-    const { colorWeight, backgroundStyle, textClass } = this.color;
+    const { backgroundStyle, textClass } = this.color;
 
     return {
-      colorWeight,
       backgroundStyle,
       textClass,
       shiftWidth: parseInt(this.containerStyle.width, 10),
