@@ -1,10 +1,11 @@
-import { GlFormFields } from '@gitlab/ui';
+import { GlAlert, GlFormFields } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 
 describe('AiCatalogAgentForm', () => {
   let wrapper;
 
+  const findGlAlert = () => wrapper.findComponent(GlAlert);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findProjectIdField = () => wrapper.findByTestId('agent-form-input-project-id');
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
@@ -39,6 +40,12 @@ describe('AiCatalogAgentForm', () => {
   };
 
   describe('Initial Rendering', () => {
+    it('does not render error alert', () => {
+      createWrapper();
+
+      expect(findGlAlert().exists()).toBe(false);
+    });
+
     it('renders the form with the correct initial values when props are provided', () => {
       const initialProps = {
         ...defaultFormValues,
@@ -109,6 +116,30 @@ describe('AiCatalogAgentForm', () => {
       await findFormFields().vm.$emit('submit');
 
       expect(wrapper.emitted('submit')).toEqual([[defaultFormValues]]);
+    });
+  });
+
+  describe('with error message', () => {
+    const mockErrorMessage = 'The agent could not be created';
+
+    beforeEach(() => {
+      createWrapper({ errorMessages: [mockErrorMessage] });
+    });
+
+    it('renders error alert', () => {
+      expect(findGlAlert().text()).toBe(mockErrorMessage);
+    });
+
+    it('renders error alert with list for multiple errors', () => {
+      createWrapper({ errorMessages: ['error1', 'error2'] });
+
+      expect(findGlAlert().findAll('li')).toHaveLength(2);
+    });
+
+    it('emits dismiss-error event', () => {
+      findGlAlert().vm.$emit('dismiss');
+
+      expect(wrapper.emitted('dismiss-error')).toHaveLength(1);
     });
   });
 });

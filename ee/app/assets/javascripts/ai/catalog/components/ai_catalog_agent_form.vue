@@ -1,6 +1,6 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
+import { GlAlert, GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
 import {
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
@@ -15,6 +15,7 @@ const tmpProjectId = 'gid://gitlab/Project/1000000';
 export default {
   components: {
     AiCatalogFormButtons,
+    GlAlert,
     GlButton,
     GlForm,
     GlFormFields,
@@ -29,6 +30,11 @@ export default {
     isLoading: {
       type: Boolean,
       required: true,
+    },
+    errorMessages: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
     projectId: {
       type: String,
@@ -164,67 +170,90 @@ export default {
 };
 </script>
 <template>
-  <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
-    <gl-form-fields v-model="formValues" :form-id="formId" :fields="fields" @submit="handleSubmit">
-      <template #input(description)="{ id, input, value, blur, validation }">
-        <gl-form-textarea
-          :id="id"
-          :no-resize="false"
-          :placeholder="
-            s__('AICatalog|This agent specializes in... It can help you with... Best suited for...')
-          "
-          :state="validation.state"
-          :value="value"
-          data-testid="agent-form-textarea-description"
-          @blur="blur"
-          @update="input"
-        />
-      </template>
-      <template #input(systemPrompt)="{ id, input, value, blur, validation }">
-        <gl-form-textarea
-          :id="id"
-          :no-resize="false"
-          :placeholder="
-            s__(
-              'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
-            )
-          "
-          :state="validation.state"
-          :value="value"
-          data-testid="agent-form-textarea-system-prompt"
-          @blur="blur"
-          @update="input"
-        />
-      </template>
-      <template #input(userPrompt)="{ id, input, value, blur, validation }">
-        <gl-form-textarea
-          :id="id"
-          :no-resize="false"
-          :placeholder="
-            s__(
-              'AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include...',
-            )
-          "
-          :rows="10"
-          :state="validation.state"
-          :value="value"
-          data-testid="agent-form-textarea-user-prompt"
-          @blur="blur"
-          @update="input"
-        />
-      </template>
-    </gl-form-fields>
-    <ai-catalog-form-buttons :is-disabled="isLoading">
-      <gl-button
-        class="js-no-auto-disable"
-        type="submit"
-        variant="confirm"
-        category="primary"
-        data-testid="agent-form-submit-button"
-        :loading="isLoading"
+  <div>
+    <gl-alert
+      v-if="errorMessages.length"
+      class="gl-mb-3 gl-mt-5"
+      variant="danger"
+      @dismiss="$emit('dismiss-error')"
+    >
+      <span v-if="errorMessages.length === 1">{{ errorMessages[0] }}</span>
+      <ul v-else class="!gl-mb-0 gl-pl-5">
+        <li v-for="(errorMessage, index) in errorMessages" :key="index">
+          {{ errorMessage }}
+        </li>
+      </ul>
+    </gl-alert>
+
+    <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
+      <gl-form-fields
+        v-model="formValues"
+        :form-id="formId"
+        :fields="fields"
+        @submit="handleSubmit"
       >
-        {{ submitButtonText }}
-      </gl-button>
-    </ai-catalog-form-buttons>
-  </gl-form>
+        <template #input(description)="{ id, input, value, blur, validation }">
+          <gl-form-textarea
+            :id="id"
+            :no-resize="false"
+            :placeholder="
+              s__(
+                'AICatalog|This agent specializes in... It can help you with... Best suited for...',
+              )
+            "
+            :state="validation.state"
+            :value="value"
+            data-testid="agent-form-textarea-description"
+            @blur="blur"
+            @update="input"
+          />
+        </template>
+        <template #input(systemPrompt)="{ id, input, value, blur, validation }">
+          <gl-form-textarea
+            :id="id"
+            :no-resize="false"
+            :placeholder="
+              s__(
+                'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
+              )
+            "
+            :state="validation.state"
+            :value="value"
+            data-testid="agent-form-textarea-system-prompt"
+            @blur="blur"
+            @update="input"
+          />
+        </template>
+        <template #input(userPrompt)="{ id, input, value, blur, validation }">
+          <gl-form-textarea
+            :id="id"
+            :no-resize="false"
+            :placeholder="
+              s__(
+                'AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include...',
+              )
+            "
+            :rows="10"
+            :state="validation.state"
+            :value="value"
+            data-testid="agent-form-textarea-user-prompt"
+            @blur="blur"
+            @update="input"
+          />
+        </template>
+      </gl-form-fields>
+      <ai-catalog-form-buttons :is-disabled="isLoading">
+        <gl-button
+          class="js-no-auto-disable"
+          type="submit"
+          variant="confirm"
+          category="primary"
+          data-testid="agent-form-submit-button"
+          :loading="isLoading"
+        >
+          {{ submitButtonText }}
+        </gl-button>
+      </ai-catalog-form-buttons>
+    </gl-form>
+  </div>
 </template>

@@ -4,6 +4,7 @@ import { GlAlert } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { fetchPolicies } from '~/lib/graphql';
 import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
@@ -21,6 +22,7 @@ export default {
   apollo: {
     aiCatalogAgents: {
       query: aiCatalogAgentsQuery,
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data.aiCatalogItems.nodes,
       result() {
         this.checkDrawerParams();

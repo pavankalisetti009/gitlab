@@ -1,20 +1,23 @@
 <script>
-import { GlModal } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { createAlert } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createAiCatalogAgent from '../graphql/mutations/create_ai_catalog_agent.mutation.graphql';
+import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 
 export default {
   name: 'AiCatalogAgentsNew',
   components: {
     AiCatalogAgentForm,
-    GlModal,
     PageHeading,
   },
   data() {
-    return { newAgent: null, isSubmitting: false };
+    return {
+      errorMessages: [],
+      isSubmitting: false,
+    };
   },
   methods: {
     async handleSubmit(formValues) {
@@ -35,23 +38,21 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogAgentCreate;
           if (errors.length > 0) {
-            createAlert({
-              message: errors[0],
-            });
-            this.isSubmitting = false;
+            this.errorMessages = errors;
             return;
           }
 
-          this.newAgent = data.aiCatalogAgentCreate.item;
-          this.$refs.modal.show();
-          this.isSubmitting = false;
+          const newAgentId = getIdFromGraphQLId(data.aiCatalogAgentCreate.item.id);
+          this.$toast.show(s__('AICatalog|Agent created successfully.'));
+          this.$router.push({
+            name: AI_CATALOG_AGENTS_ROUTE,
+            query: { [AI_CATALOG_SHOW_QUERY_PARAM]: newAgentId },
+          });
         }
       } catch (error) {
-        createAlert({
-          message: s__('AICatalog|The agent could not be added. Please try again.'),
-          error,
-          captureError: true,
-        });
+        this.errorMessages = [s__('AICatalog|The agent could not be added. Please try again.')];
+        Sentry.captureException(error);
+      } finally {
         this.isSubmitting = false;
       }
     },
@@ -63,11 +64,12 @@ export default {
   <div>
     <page-heading :heading="s__('AICatalog|Create new agent')" />
 
-    <ai-catalog-agent-form mode="create" :is-loading="isSubmitting" @submit="handleSubmit" />
-
-    <gl-modal ref="modal" modal-id="TEMPORARY-MODAL">
-      <h2 class="gl-heading-2">{{ __('Success') }}</h2>
-      <pre>{{ JSON.stringify(newAgent) }}</pre>
-    </gl-modal>
+    <ai-catalog-agent-form
+      mode="create"
+      :is-loading="isSubmitting"
+      :error-messages="errorMessages"
+      @dismiss-error="errorMessages = []"
+      @submit="handleSubmit"
+    />
   </div>
 </template>

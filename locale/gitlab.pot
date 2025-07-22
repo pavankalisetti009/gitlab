@@ -2427,6 +2427,9 @@ msgstr ""
 msgid "AICatalog|Agent"
 msgstr ""
 
+msgid "AICatalog|Agent created successfully."
+msgstr ""
+
 msgid "AICatalog|Agent deleted successfully."
 msgstr ""
 
