@@ -38,7 +38,7 @@ export default {
 </script>
 <template>
   <div class="gl-my-10">
-    <h1 class="gl-font-size-h1 gl-mb-0">
+    <h1 class="gl-heading-1 gl-mb-0">
       {{ s__('DuoAgentsPlatform|Start an agent session') }}
     </h1>
     <div class="gl-mt-6">
