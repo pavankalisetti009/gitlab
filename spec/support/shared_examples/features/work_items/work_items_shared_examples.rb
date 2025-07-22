@@ -713,6 +713,32 @@ RSpec.shared_examples 'work items time tracking' do
     expect(page).to have_text 'Spent 1d'
     expect(page).to have_button '1d'
   end
+
+  it 'checks for progess bar with both time entries and estimate', :aggregate_failures do
+    click_button 'estimate'
+    within_testid 'set-time-estimate-modal' do
+      fill_in 'Estimate', with: '5d'
+      click_button 'Save'
+    end
+
+    expect(page).to have_text 'Estimate 5d'
+    expect(page).to have_button '5d'
+    expect(page).not_to have_button 'estimate'
+
+    click_button 'Add time entry'
+
+    within_testid 'create-timelog-modal' do
+      fill_in 'Time spent', with: '1d'
+      click_button 'Save'
+    end
+
+    expect(page).to have_text 'Spent 1d'
+    expect(page).to have_button '1d'
+
+    within_testid 'time-tracking-body' do
+      expect(page).to have_selector('[role="progressbar"][aria-valuenow="20"]')
+    end
+  end
 end
 
 RSpec.shared_examples 'work items crm contacts' do
