@@ -1726,6 +1726,15 @@ entry.
 - [Change users_preferences.organization_groups_projects_display defaults](https://gitlab.com/gitlab-org/gitlab/-/commit/c0bed48fc7a755413edf1090c86a33a798771d37) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/190331))
 - [Quarantine a flaky test](https://gitlab.com/gitlab-org/gitlab/-/commit/06fdc6c5fb9a7490c5fe8e6b1eb3a8b0f065f950) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/189248))
 
+## 18.0.5 (2025-07-22)
+
+### Security (4 changes)
+
+- [Sensitive Information Disclosure via resource_group API Despite Repository and...](https://gitlab.com/gitlab-org/security/gitlab/-/commit/473718bbd85174f8f9c60b9fa8ba6028a00d3ac1) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5157))
+- [Prevent Duo Code Review from Showing Internal Notes](https://gitlab.com/gitlab-org/security/gitlab/-/commit/7e057275a4ccc5b03270a37822f0bd5906379bc7) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5087))
+- [Restrict Service Desk email visibility to reporter+ role](https://gitlab.com/gitlab-org/security/gitlab/-/commit/b8e10067cdaa6f2fcb8e737ff98cbbda7a3c1c42) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5152))
+- [Add authorization to job field on deployment type](https://gitlab.com/gitlab-org/security/gitlab/-/commit/14ccab850f5a380811dd495aeec0b035dadfc288) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5132))
+
 ## 18.0.4 (2025-07-09)
 
 ### Fixed (8 changes)
