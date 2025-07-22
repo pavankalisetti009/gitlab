@@ -10,7 +10,6 @@ module EE
       prepended do
         before_action :authorize_read_work_item!, only: [:description_diff, :delete_description_version]
         before_action :set_application_context!, only: [:show]
-
         include DescriptionDiffActions
       end
 
