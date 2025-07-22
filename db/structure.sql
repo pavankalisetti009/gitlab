@@ -39620,7 +39620,9 @@ CREATE UNIQUE INDEX unique_postgres_async_fk_validations_name_and_table_name ON 
 
 CREATE UNIQUE INDEX unique_projects_on_name_namespace_id ON projects USING btree (name, namespace_id);
 
-CREATE UNIQUE INDEX unique_protection_tag_rules_project_id_and_tag_name_pattern ON container_registry_protection_tag_rules USING btree (project_id, tag_name_pattern);
+CREATE UNIQUE INDEX unique_protection_tag_rules_immutable ON container_registry_protection_tag_rules USING btree (project_id, tag_name_pattern) WHERE ((minimum_access_level_for_push IS NULL) AND (minimum_access_level_for_delete IS NULL));
+
+CREATE UNIQUE INDEX unique_protection_tag_rules_mutable ON container_registry_protection_tag_rules USING btree (project_id, tag_name_pattern) WHERE ((minimum_access_level_for_push IS NOT NULL) AND (minimum_access_level_for_delete IS NOT NULL));
 
 CREATE UNIQUE INDEX unique_scim_group_memberships_user_id_and_scim_group_uid ON scim_group_memberships USING btree (user_id, scim_group_uid);
 
