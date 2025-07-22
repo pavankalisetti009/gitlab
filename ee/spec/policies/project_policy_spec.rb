@@ -2744,6 +2744,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let_it_be(:guest) { create(:user) }
       let_it_be(:project) { private_project_in_group }
       let_it_be(:resource) { private_project_in_group }
+      let_it_be(:resource_parent) { resource.root_ancestor }
       let_it_be(:group_member_guest) do
         create(
           :group_member,
@@ -2856,13 +2857,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for a member role with the `admin_runners` ability' do
         let(:member_role_abilities) { { admin_runners: true } }
-        let(:allowed_abilities) do
-          [
-            :admin_runners,
-            :create_runners,
-            :read_runners
-          ]
-        end
+        let(:allowed_abilities) { [:admin_runners, :create_runners, :read_runners] }
 
         it_behaves_like 'custom roles abilities'
 

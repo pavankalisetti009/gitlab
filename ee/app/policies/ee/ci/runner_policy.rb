@@ -11,11 +11,13 @@ module EE
           enable :read_builds
         end
 
-        condition(:custom_role_enables_admin_runners) do
+        # score needs to be higher than maintainer / owner
+        # so access_level condition is evaluated before any custom_role conditions
+        condition(:custom_role_enables_admin_runners, score: 32) do
           ::Authz::CustomAbility.allowed?(@user, :admin_runners, @subject)
         end
 
-        condition(:custom_role_enables_read_runners) do
+        condition(:custom_role_enables_read_runners, score: 32) do
           ::Authz::CustomAbility.allowed?(@user, :read_runners, @subject)
         end
 

@@ -265,17 +265,27 @@ end
 
 RSpec.shared_examples 'does not call custom role query' do |roles|
   before do
-    stub_licensed_features(licensed_features.merge(custom_roles: true))
+    stub_licensed_features(custom_roles: true)
+
+    if defined?(licensed_features)
+      stub_licensed_features(licensed_features)
+    end
   end
 
-  where(:role) { roles }
+  where(role: roles)
 
   with_them do
-    let(:current_user) { create(:user, "#{role}_of": resource.root_ancestor) }
+    let(:current_user) { create(:user, "#{role}_of": resource_parent) }
 
-    let(:ability) { member_role_abilities.keys.last }
+    let(:allowed_ability) do
+      if defined?(member_role_abilities)
+        member_role_abilities.keys.last
+      else
+        ability
+      end
+    end
 
-    subject(:allowed) { Ability.allowed?(current_user, ability, resource, cache: {}) }
+    subject(:allowed) { Ability.allowed?(current_user, allowed_ability, resource, cache: {}) }
 
     it 'detects zero queries to the projects & groups preloader', :use_sql_query_cache do
       recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { allowed }
