@@ -19,22 +19,6 @@ RSpec.describe CloudConnector::BaseAvailableServiceData, feature_category: :plan
 
   subject(:service_data) { described_class.new(service_name, cut_off_date, purchased_add_ons) }
 
-  describe '#free_access?' do
-    subject(:free_access) { service_data.free_access? }
-
-    context 'when cut_off_date is in the past' do
-      let_it_be(:cut_off_date) { 1.day.ago }
-
-      it { is_expected.to be false }
-    end
-
-    context 'when cut_off_date is in the future' do
-      let_it_be(:cut_off_date) { 1.day.from_now }
-
-      it { is_expected.to be true }
-    end
-  end
-
   describe '#name' do
     subject(:name) { service_data.name }
 

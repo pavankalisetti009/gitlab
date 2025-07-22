@@ -6,9 +6,9 @@ module Ai
       def feature_available?
         return false unless License.feature_available?(:amazon_q)
 
-        service = CloudConnector::AvailableServices.find_by_name(:amazon_q_integration)
+        amazon_q_unit_primitive = Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(:amazon_q_integration)
 
-        if service.free_access?
+        if amazon_q_free_access?(amazon_q_unit_primitive)
           !::GitlabSubscriptions::AddOnPurchase.for_duo_pro_or_duo_enterprise.active.exists?
         else
           ::GitlabSubscriptions::AddOnPurchase.for_duo_amazon_q.active.exists?
@@ -54,6 +54,10 @@ module Ai
       end
 
       private
+
+      def amazon_q_free_access?(unit_primitive)
+        unit_primitive.cut_off_date.nil? || unit_primitive.cut_off_date.future?
+      end
 
       def ai_settings
         Ai::Setting.instance

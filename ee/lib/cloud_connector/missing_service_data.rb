@@ -8,10 +8,6 @@ module CloudConnector
       :missing_service
     end
 
-    def free_access?
-      false
-    end
-
     def access_token(_resource = nil, **)
       nil
     end

@@ -38,6 +38,11 @@ module CloudConnector
         @gitlab_org_group ||= Group.find_by_path_or_name('gitlab-org')
       end
 
+      # Returns whether the service is free to access (no addon purchases is required)
+      def free_access?
+        cut_off_date.nil? || cut_off_date&.future?
+      end
+
       def scopes_for(resource)
         free_access? ? allowed_scopes_during_free_access : allowed_scopes_from_purchased_bundles_for(resource)
       end

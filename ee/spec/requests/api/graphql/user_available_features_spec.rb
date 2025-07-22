@@ -33,7 +33,7 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
 
     let(:service) do
       instance_double(::CloudConnector::BaseAvailableServiceData,
-        name: :any_name, add_on_names: ['code_suggestions'], free_access?: true)
+        name: :any_name, add_on_names: ['code_suggestions'])
     end
 
     before do
