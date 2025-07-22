@@ -3,7 +3,6 @@
 module EE
   module Members
     module CreateService
-      include ::Gitlab::Utils::StrongMemoize
       include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
       extend ::Gitlab::Utils::Override
 
@@ -138,7 +137,6 @@ module EE
         member.update_user_group_member_roles
         append_added_member_ids_with_users(member: member)
         log_audit_event(member: member)
-        auto_assign_duo_pro_seat(member: member)
         convert_invited_user_to_invite_onboarding(member: member)
         finish_onboarding_user(member: member)
       end
@@ -198,26 +196,6 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
-      end
-
-      def auto_assign_duo_pro_seat(member:)
-        return unless auto_assign_duo_pro?
-
-        ::GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService.new(add_on_purchase: add_on_purchase,
-          user: member.user).execute
-      end
-
-      def auto_assign_duo_pro?
-        root_namespace = source.root_ancestor
-
-        root_namespace&.group_namespace? &&
-          root_namespace.enable_auto_assign_gitlab_duo_pro_seats? &&
-          add_on_purchase.present?
-      end
-      strong_memoize_attr :auto_assign_duo_pro?
-
-      def add_on_purchase
-        @add_on_purchase ||= GitlabSubscriptions::DuoPro.add_on_purchase_for_namespace(source.root_ancestor)
       end
 
       override :process_result

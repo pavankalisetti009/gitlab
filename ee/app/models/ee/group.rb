@@ -117,7 +117,6 @@ module EE
       delegate :enterprise_users_extensions_marketplace_enabled=, to: :namespace_settings
 
       delegate :wiki_access_level, :wiki_access_level=, to: :group_feature, allow_nil: true
-      delegate :enable_auto_assign_gitlab_duo_pro_seats, :enable_auto_assign_gitlab_duo_pro_seats=, :enable_auto_assign_gitlab_duo_pro_seats_human_readable, :enable_auto_assign_gitlab_duo_pro_seats_human_readable=, to: :namespace_settings, allow_nil: true
 
       delegate :extended_grat_expiry_webhooks_execute, :extended_grat_expiry_webhooks_execute=, to: :namespace_settings
 
@@ -1040,10 +1039,6 @@ module EE
       access_level > current_user_role
     end
 
-    def code_suggestions_purchased?
-      ::GitlabSubscriptions::AddOnPurchase.active_duo_add_ons_exist?(self)
-    end
-
     def can_manage_extensions_marketplace_for_enterprise_users?
       root? &&
         licensed_feature_available?(:disable_extensions_marketplace_for_enterprise_users) &&
@@ -1078,12 +1073,6 @@ module EE
       [[default_compliance_framework] + compliance_management_frameworks].flatten.compact.uniq.any? do |framework|
         framework.projects.any?
       end
-    end
-
-    def enable_auto_assign_gitlab_duo_pro_seats?
-      return false unless ::Feature.enabled?(:auto_assign_gitlab_duo_pro_seats, self) && root?
-
-      namespace_settings.enable_auto_assign_gitlab_duo_pro_seats? if namespace_settings
     end
 
     def groups_for_extended_webhook_execution_on_token_expiry
