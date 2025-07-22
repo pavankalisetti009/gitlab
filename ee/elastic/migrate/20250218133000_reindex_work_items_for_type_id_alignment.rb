@@ -18,3 +18,5 @@ class ReindexWorkItemsForTypeIdAlignment < Elastic::Migration
     Search::Elastic::Types::WorkItem.index_name
   end
 end
+
+ReindexWorkItemsForTypeIdAlignment.prepend ::Search::Elastic::MigrationObsolete
