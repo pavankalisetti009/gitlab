@@ -99,7 +99,7 @@ RSpec.describe Gitlab::Ci::Reports::Security::Finding, feature_category: :vulner
       end
     end
 
-    %i[identifiers location metadata_version name original_data report_type scanner uuid].each do |attribute|
+    %i[identifiers location metadata_version name original_data report_type scanner scan uuid].each do |attribute|
       context "when attribute #{attribute} is missing" do
         before do
           params.delete(attribute)
