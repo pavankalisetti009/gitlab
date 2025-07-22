@@ -417,7 +417,7 @@ module EE
 
       rule { can?(:reporter_access) }.policy do
         enable :admin_issue_board
-        enable :read_product_analytics
+        enable :read_customizable_dashboards
       end
 
       rule { monitor_disabled }.policy do
@@ -876,10 +876,10 @@ module EE
         ::Ai::AmazonQ.enabled?
       end
 
-      rule { can?(:read_product_analytics) & (amazon_q_enabled | assigned_to_duo_pro) }.enable :read_pro_ai_analytics
-      rule { can?(:read_product_analytics) & (amazon_q_enabled | assigned_to_duo_enterprise) }.enable :read_enterprise_ai_analytics
+      rule { can?(:read_customizable_dashboards) & (amazon_q_enabled | assigned_to_duo_pro) }.enable :read_pro_ai_analytics
+      rule { can?(:read_customizable_dashboards) & (amazon_q_enabled | assigned_to_duo_enterprise) }.enable :read_enterprise_ai_analytics
 
-      rule { can?(:read_product_analytics) & duo_usage_analytics_enabled }.enable :read_duo_usage_analytics
+      rule { can?(:read_customizable_dashboards) & duo_usage_analytics_enabled }.enable :read_duo_usage_analytics
 
       rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
 

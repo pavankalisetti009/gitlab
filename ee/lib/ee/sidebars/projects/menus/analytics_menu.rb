@@ -92,7 +92,7 @@ module EE
           def dashboards_analytics_menu_item
             unless context.project.licensed_feature_available?(:combined_project_analytics_dashboards) &&
                 can?(context.current_user, :read_combined_project_analytics_dashboards, context.project) &&
-                can?(context.current_user, :read_product_analytics, context.project) && !context.project.personal?
+                can?(context.current_user, :read_customizable_dashboards, context.project) && !context.project.personal?
               return ::Sidebars::NilMenuItem.new(item_id: :dashboards_analytics)
             end
 
