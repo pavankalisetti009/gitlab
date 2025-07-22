@@ -37,10 +37,7 @@ export default {
 </script>
 <template>
   <section v-if="itemsToRender.length > 0">
-    <header
-      class="gl-font-size-h3 gl-inline-flex gl-cursor-pointer gl-items-center"
-      @click="toggleShowSection"
-    >
+    <header class="gl-inline-flex gl-cursor-pointer gl-items-center" @click="toggleShowSection">
       <gl-icon name="chevron-lg-right" class="gl-mr-2" :class="{ 'gl-rotate-90': showSection }" />
       <h3 class="!gl-my-0 gl-text-lg">
         {{ $options.i18n.heading }}

@@ -1619,9 +1619,6 @@ msgstr ""
 msgid "%{url} (optional)"
 msgstr ""
 
-msgid "%{userName}'s avatar"
-msgstr ""
-
 msgid "%{user_link} added this OAuth application "
 msgstr ""
 
