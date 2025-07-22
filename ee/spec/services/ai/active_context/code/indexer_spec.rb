@@ -3,20 +3,23 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_search do
-  let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:user) { project.first_owner }
   let_it_be(:connection) { create(:ai_active_context_connection) }
-  let_it_be(:repository) do
-    create(:ai_active_context_code_repository, active_context_connection: connection, project: project)
-  end
-
   let_it_be(:collection) do
     create(:ai_active_context_collection, name: 'gitlab_active_context_code', connection: connection)
+  end
+
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:user) { project.first_owner }
+
+  let_it_be_with_reload(:repository) do
+    create(:ai_active_context_code_repository, active_context_connection: connection, project: project)
   end
 
   let(:adapter) do
     instance_double(::ActiveContext::Databases::Elasticsearch::Adapter, name: 'elasticsearch', connection: connection)
   end
+
+  let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
 
   let(:indexer) { described_class.new(repository) }
   let(:block) { proc { |id| processed_ids << id } }
@@ -26,7 +29,18 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
 
   before do
     allow(::ActiveContext).to receive(:adapter).and_return(adapter)
-    allow(indexer).to receive(:to_commit).and_return(instance_double(Commit, id: '000'))
+    allow(::ActiveContext::Config).to receive(:logger).and_return(logger)
+  end
+
+  def build_log_payload(message, extra_params = {})
+    {
+      class: described_class.to_s,
+      message: message,
+      ai_active_context_code_repository_id: repository.id,
+      project_id: repository.project.id,
+      from_sha: Gitlab::Git::SHA1_BLANK_SHA,
+      to_sha: project.repository.commit.id
+    }.merge(extra_params).stringify_keys
   end
 
   describe '.run!' do
@@ -41,12 +55,14 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
 
   describe '#run' do
     context 'when adapter is available' do
+      let(:expected_to_commit) { project.repository.commit.id }
+
       context 'when command is executed' do
         let(:env_vars) { { "GITLAB_INDEXER_MODE" => "chunk" } }
         let(:expected_options) do
           {
             from_sha: Gitlab::Git::SHA1_BLANK_SHA,
-            to_sha: '000',
+            to_sha: expected_to_commit,
             project_id: project.id,
             partition_name: collection.name,
             partition_number: collection.partition_for(project.id),
@@ -93,7 +109,10 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
         end
 
         it 'processes streamed output and calls block for each hash ID' do
-          expect(repository).to receive(:update!).with(last_commit: '000')
+          expect(repository).to receive(:update!).with(last_commit: expected_to_commit)
+
+          expect(logger).to receive(:info).with(build_log_payload('Start indexer')).ordered
+          expect(logger).to receive(:info).with(build_log_payload('Indexer successful', status: 0)).ordered
 
           run
 
@@ -114,9 +133,17 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
         end
 
         it 'raises an exception with stderr output' do
+          stderr_error = "Command failed with error\nAdditional error details\n"
+
+          expect(logger).to receive(:error).with(build_log_payload(
+            "Indexer failed",
+            status: 1,
+            error_details: stderr_error
+          ))
+
           expect { run }.to raise_error(
             described_class::Error,
-            "Indexer failed with status: 1 and error: Command failed with error\nAdditional error details\n"
+            "Indexer failed with status: 1 and error: #{stderr_error}"
           )
         end
       end
