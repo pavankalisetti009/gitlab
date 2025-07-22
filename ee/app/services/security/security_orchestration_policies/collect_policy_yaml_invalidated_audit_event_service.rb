@@ -21,7 +21,7 @@ module Security
 
       def audit_context
         {
-          name: 'policy_yaml_invalidated',
+          name: 'security_policy_yaml_invalidated',
           author: commit&.author || Gitlab::Audit::DeletedAuthor.new(id: -4, name: 'Unknown User'),
           scope: policy_management_project,
           target: policy_management_project,
