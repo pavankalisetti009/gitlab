@@ -12,10 +12,12 @@ RSpec.describe Vulnerabilities::PartialScan, feature_category: :vulnerability_ma
   describe 'creation' do
     let_it_be(:scan) { create(:security_scan) }
 
-    it 'sets project to scan.project' do
+    it 'sets attributes from scan' do
       partial_scan = described_class.create!(mode: :differential, scan: scan)
 
       expect(partial_scan.project).to eq(scan.project)
+      expect(partial_scan.pipeline).to eq(scan.pipeline)
+      expect(partial_scan.scan_type).to eq(scan.scan_type)
     end
   end
 end

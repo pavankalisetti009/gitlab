@@ -25958,7 +25958,9 @@ CREATE TABLE vulnerability_partial_scans (
     updated_at timestamp with time zone NOT NULL,
     scan_id bigint NOT NULL,
     project_id bigint NOT NULL,
-    mode smallint NOT NULL
+    mode smallint NOT NULL,
+    pipeline_id bigint,
+    scan_type smallint
 );
 
 CREATE TABLE vulnerability_reads (
