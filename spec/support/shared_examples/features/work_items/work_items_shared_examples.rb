@@ -655,11 +655,7 @@ RSpec.shared_examples 'work items time tracking' do
   end
 
   it 'adds and removes an estimate', :aggregate_failures do
-    click_button 'estimate'
-    within_testid 'set-time-estimate-modal' do
-      fill_in 'Estimate', with: '5d'
-      click_button 'Save'
-    end
+    add_estimate('5d')
 
     expect(page).to have_text 'Estimate 5d'
     expect(page).to have_button '5d'
@@ -676,21 +672,9 @@ RSpec.shared_examples 'work items time tracking' do
   end
 
   it 'adds and deletes time entries and view report', :aggregate_failures do
-    click_button 'Add time entry'
+    add_time_entry('1d', 'First summary')
 
-    within_testid 'create-timelog-modal' do
-      fill_in 'Time spent', with: '1d'
-      fill_in 'Summary', with: 'First summary'
-      click_button 'Save'
-    end
-
-    click_button 'Add time entry'
-
-    within_testid 'create-timelog-modal' do
-      fill_in 'Time spent', with: '2d'
-      fill_in 'Summary', with: 'Second summary'
-      click_button 'Save'
-    end
+    add_time_entry('2d', 'Second summary')
 
     expect(page).to have_text 'Spent 3d'
     expect(page).to have_button '3d'
@@ -715,22 +699,13 @@ RSpec.shared_examples 'work items time tracking' do
   end
 
   it 'checks for progess bar with both time entries and estimate', :aggregate_failures do
-    click_button 'estimate'
-    within_testid 'set-time-estimate-modal' do
-      fill_in 'Estimate', with: '5d'
-      click_button 'Save'
-    end
+    add_estimate('5d')
 
     expect(page).to have_text 'Estimate 5d'
     expect(page).to have_button '5d'
     expect(page).not_to have_button 'estimate'
 
-    click_button 'Add time entry'
-
-    within_testid 'create-timelog-modal' do
-      fill_in 'Time spent', with: '1d'
-      click_button 'Save'
-    end
+    add_time_entry('1d')
 
     expect(page).to have_text 'Spent 1d'
     expect(page).to have_button '1d'
@@ -741,22 +716,13 @@ RSpec.shared_examples 'work items time tracking' do
   end
 
   it 'using quick actions', :aggregate_failures do
-    click_button 'estimate'
-    within_testid 'set-time-estimate-modal' do
-      fill_in 'Estimate', with: '5d'
-      click_button 'Save'
-    end
+    add_estimate('5d')
 
     expect(page).to have_text 'Estimate 5d'
     expect(page).to have_button '5d'
     expect(page).not_to have_button 'estimate'
 
-    click_button 'Add time entry'
-
-    within_testid 'create-timelog-modal' do
-      fill_in 'Time spent', with: '1d'
-      click_button 'Save'
-    end
+    add_time_entry('1d')
 
     expect(page).to have_text 'Spent 1d'
     expect(page).to have_button '1d'
@@ -775,6 +741,23 @@ RSpec.shared_examples 'work items time tracking' do
 
     within_testid 'time-tracking-body' do
       expect(page).to have_selector('[role="progressbar"][aria-valuenow="50"]')
+    end
+  end
+
+  def add_estimate(estimate)
+    click_button 'estimate'
+    within_testid 'set-time-estimate-modal' do
+      fill_in 'Estimate', with: estimate
+      click_button 'Save'
+    end
+  end
+
+  def add_time_entry(time, summary = '')
+    click_button 'Add time entry'
+    within_testid 'create-timelog-modal' do
+      fill_in 'Time spent', with: time
+      fill_in 'Summary', with: summary
+      click_button 'Save'
     end
   end
 end
