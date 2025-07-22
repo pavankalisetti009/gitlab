@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe PushRules::CreateOrUpdateService, '#execute' do
+RSpec.describe PushRules::CreateOrUpdateService, feature_category: :source_code_management do
   let_it_be_with_reload(:container) { create(:project) }
   let_it_be(:user) { create(:user) }
 
@@ -19,6 +19,87 @@ RSpec.describe PushRules::CreateOrUpdateService, '#execute' do
       expect(response).to be_error
       expect(response.message).to eq('Max file size must be greater than or equal to 0')
       expect(response.payload).to match(push_rule: container.push_rule)
+    end
+  end
+
+  context 'when container is an organization' do
+    let_it_be(:container) { create(:organization) }
+
+    context 'with existing global push rule' do
+      let_it_be(:push_rule) { create(:push_rule_sample, organization: container) }
+
+      it 'updates existing push rule' do
+        expect { subject.execute }
+          .to not_change { PushRule.count }
+          .and change { push_rule.reload.max_file_size }.to(28)
+      end
+
+      it 'responds with a successful service response', :aggregate_failures do
+        response = subject.execute
+
+        expect(response).to be_success
+        expect(response.payload).to match(push_rule: push_rule)
+      end
+    end
+
+    context 'without existing global push rule' do
+      it 'creates a new push rule', :aggregate_failures do
+        expect { subject.execute }.to change { PushRule.count }.by(1)
+
+        expect(PushRuleFinder.new.execute.max_file_size).to eq(28)
+      end
+
+      it 'responds with a successful service response', :aggregate_failures do
+        response = subject.execute
+
+        expect(response).to be_success
+        expect(response.payload).to match(push_rule: PushRuleFinder.new.execute)
+      end
+    end
+
+    context 'with filtering for organization containers' do
+      let_it_be(:push_rule) { create(:push_rule_sample, organization: container) }
+
+      before do
+        allow(subject).to receive(:push_rule).and_return(push_rule)
+      end
+
+      context 'with allowed and unsupported fields' do
+        let(:params) { { unsupported_field: 1, max_file_size: 20 } }
+
+        it 'filters out unsupported fields and keeps allowed fields' do
+          expect(push_rule).to receive(:update).with({ max_file_size: 20 })
+
+          subject.execute
+        end
+      end
+
+      context 'with conditional field when available' do
+        let(:params) { { max_file_size: 20, reject_unsigned_commits: true } }
+
+        it 'includes conditional field when license allows it' do
+          allow(push_rule).to receive(:available?).and_return(false)
+          allow(push_rule).to receive(:available?).with(:reject_unsigned_commits).and_return(true)
+
+          expect(push_rule).to receive(:update).with({ max_file_size: 20, reject_unsigned_commits: true })
+
+          subject.execute
+        end
+      end
+
+      context 'with conditional field when not available' do
+        let(:params) { { max_file_size: 20, reject_unsigned_commits: true } }
+
+        before do
+          stub_licensed_features(reject_unsigned_commits: false)
+        end
+
+        it 'excludes conditional field when license does not allow it' do
+          expect(push_rule).to receive(:update).with({ max_file_size: 20 })
+
+          subject.execute
+        end
+      end
     end
   end
 

@@ -12,6 +12,7 @@ import { s__, sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 export default {
   name: 'DuoWorkflowSettings',
@@ -36,6 +37,11 @@ export default {
       showConfirmModal: false,
       isLoading: false,
     };
+  },
+  computed: {
+    serviceAccountHelpPath() {
+      return helpPagePath('user/duo_agent_platform/security');
+    },
   },
   methods: {
     enableWorkflow() {
@@ -201,7 +207,11 @@ export default {
                 'AiPowered|When you turn on GitLab Duo Agent Platform, a service account is created.',
               )
             }}
-            <gl-link href="#" class="gl-ml-1" data-testid="service-account-link">
+            <gl-link
+              :href="serviceAccountHelpPath"
+              class="gl-ml-1"
+              data-testid="service-account-link"
+            >
               {{ s__('AiPowered|What is the Duo Agent Platform service account?') }}
             </gl-link>
           </p>
