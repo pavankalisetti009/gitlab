@@ -38,7 +38,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       stub_const("Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", { ai_feature => { maturity: maturity } })
 
       allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
-      allow(service).to receive(:free_access?).and_return(free_access)
+      allow(service).to receive(:cut_off_date).and_return(free_access ? nil : (Time.current - 1.month))
     end
 
     subject { user.allowed_to_use(ai_feature) }
@@ -352,6 +352,17 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       })
     end
 
+    # We need to stub both the service and the UP because:
+    # - We are not done migrating away from AvailableServices
+    # - The actual UP as defined in the library YAML does not specify a cut-off date
+    let_it_be(:amazon_q_unit_primitive) do
+      build(:cloud_connector_unit_primitive,
+        name: 'amazon_q_integration',
+        cut_off_date: Time.current - 1.month,
+        add_ons: build_list(:cloud_connector_add_on, 1, name: 'duo_amazon_q')
+      )
+    end
+
     let_it_be(:gitlab_subscription_add_on_purchase) do
       create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_amazon_q)
     end
@@ -378,6 +389,9 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       before do
         Ai::Setting.instance.update!(amazon_q_ready: amazon_q_connected)
         stub_licensed_features(amazon_q: true)
+
+        allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name)
+            .and_return(amazon_q_unit_primitive)
       end
 
       it 'checks whether the feature is available in Amazon Q' do

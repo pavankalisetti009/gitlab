@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'fast_spec_helper'
+require 'gitlab/cloud_connector'
 require_relative "../../../../../app/services/cloud_connector/status_checks/probes/probe_result"
 
 RSpec.describe CloudConnector::StatusChecks::Probes::ProbeResult, feature_category: :duo_setting do

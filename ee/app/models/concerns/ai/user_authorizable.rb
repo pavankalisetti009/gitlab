@@ -107,12 +107,16 @@ module Ai
 
         # If the user doesn't have access through Duo add-ons
         # and the service isn't free, they don't have access
-        return denied_response unless service.free_access?
+        return denied_response unless service_free_access?(service)
 
         check_free_access(feature_data, licensed_feature)
       end
 
       private
+
+      def service_free_access?(service)
+        service.cut_off_date.nil? || service.cut_off_date&.future?
+      end
 
       def check_add_on_purchases(service)
         # NOTE: We are passing `nil` as the resource to avoid filtering by namespace.
