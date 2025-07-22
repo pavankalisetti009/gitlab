@@ -7,6 +7,25 @@ RSpec.describe UserPreference do
 
   let(:user_preference) { create(:user_preference, user: user) }
 
+  shared_context 'with multiple user add-on assignments' do
+    let_it_be(:groups) do
+      create_list(:group_with_plan, 2, plan: :ultimate_plan)
+    end
+
+    let_it_be(:add_on_purchases) do
+      [
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups.first),
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: groups.second)
+      ]
+    end
+
+    let!(:user_assignments) do
+      add_on_purchases.map do |add_on|
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
+      end
+    end
+  end
+
   shared_examples 'updates roadmap_epics_state' do |state|
     it 'saves roadmap_epics_state in user_preference' do
       user_preference.update!(roadmap_epics_state: state)
@@ -38,22 +57,7 @@ RSpec.describe UserPreference do
   end
 
   describe '#eligible_duo_add_on_assignments', :saas do
-    let_it_be(:groups) do
-      create_list(:group_with_plan, 2, plan: :ultimate_plan)
-    end
-
-    let_it_be(:add_on_purchases) do
-      [
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups.first),
-        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: groups.second)
-      ]
-    end
-
-    let!(:eligible_user_assignments) do
-      add_on_purchases.map do |add_on|
-        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
-      end
-    end
+    include_context 'with multiple user add-on assignments'
 
     let!(:non_eligible_user_assignments) do
       [
@@ -61,6 +65,8 @@ RSpec.describe UserPreference do
         create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: groups.first)
       ]
     end
+
+    let(:eligible_user_assignments) { user_assignments }
 
     it 'only retrieves eligible user assignments' do
       expect(user_preference.eligible_duo_add_on_assignments).to match_array(eligible_user_assignments)
@@ -174,6 +180,67 @@ RSpec.describe UserPreference do
 
         expect(user_preference.errors[:default_duo_add_on_assignment_id])
           .to include("No Duo seat assignments with namespace found with ID #{user_assignment_id}")
+      end
+    end
+  end
+
+  describe '#get_default_duo_namespace', :saas do
+    context 'when there are multiple eligible duo add-on assignments' do
+      include_context 'with multiple user add-on assignments'
+
+      context 'when default_duo_add_on_assignment is present' do
+        let(:assignment) { user_assignments.second }
+        let(:assignment_namespace) { groups.second }
+
+        before do
+          user_preference.update!(default_duo_add_on_assignment: assignment)
+        end
+
+        it 'returns the namespace from the default assignment' do
+          expect(user_preference.get_default_duo_namespace).to eq(assignment_namespace)
+        end
+      end
+
+      context 'when default_duo_add_on_assignment is not present' do
+        it 'returns nil' do
+          expect(user_preference.get_default_duo_namespace).to be_nil
+        end
+      end
+    end
+
+    context 'when there is only single eligible duo add-on assignments' do
+      let_it_be(:group) do
+        create(:group_with_plan, plan: :ultimate_plan)
+      end
+
+      let_it_be(:add_on_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
+      end
+
+      let!(:user_assignment) do
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user)
+      end
+
+      context 'when default_duo_add_on_assignment is not present' do
+        it 'returns the namespace from the single eligible assignment' do
+          expect(user_preference.get_default_duo_namespace).to eq(group)
+        end
+      end
+
+      context 'when default_duo_add_on_assignment is present' do
+        before do
+          user_preference.update!(default_duo_add_on_assignment: user_assignment)
+        end
+
+        it 'returns the namespace from the default assignment' do
+          expect(user_preference.get_default_duo_namespace).to eq(group)
+        end
+      end
+    end
+
+    context 'when there are no eligible duo add-on assignments' do
+      it 'returns nil' do
+        expect(user_preference.get_default_duo_namespace).to be_nil
       end
     end
   end
