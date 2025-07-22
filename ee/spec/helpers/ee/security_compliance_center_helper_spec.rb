@@ -100,19 +100,6 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
       end
 
       it_behaves_like 'includes compliance center app data'
-
-      context 'with enable_standards_adherence_dashboard_v2 off' do
-        before do
-          stub_feature_flags(enable_standards_adherence_dashboard_v2: false)
-        end
-
-        it 'returns the expected value for attribues based on ff' do
-          is_expected.to include(
-            compliance_status_report_export_path: nil,
-            adherence_v2_enabled: "false"
-          )
-        end
-      end
     end
   end
 end

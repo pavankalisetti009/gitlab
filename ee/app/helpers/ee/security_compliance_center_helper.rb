@@ -8,10 +8,8 @@ module EE
       group = container.is_a?(Group) ? container : container.group
       adherence_report = can?(current_user, :read_compliance_adherence_report, container)
       violations_report = can?(current_user, :read_compliance_violations_report, container)
-      if ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group)
-        compliance_status_report_export_path =
-          group_security_compliance_dashboard_exports_compliance_status_report_path(group, format: :csv)
-      end
+      compliance_status_report_export_path =
+        group_security_compliance_dashboard_exports_compliance_status_report_path(group, format: :csv)
 
       if container.is_a?(Group)
         {
@@ -68,7 +66,7 @@ module EE
 
         can_access_root_ancestor_compliance_center: can_access_root_ancestor_compliance_center.to_s,
         feature_adherence_report_enabled: adherence_report.to_s,
-        adherence_v2_enabled: ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group).to_s,
+        adherence_v2_enabled: true.to_s,
 
         feature_violations_report_enabled: violations_report.to_s,
         violations_v2_enabled: ::Feature.enabled?(:compliance_violations_report, group).to_s,
