@@ -38833,6 +38833,8 @@ CREATE INDEX index_vulnerability_occurrences_on_vulnerability_id ON vulnerabilit
 
 CREATE INDEX index_vulnerability_occurrences_prim_iden_id_and_vuln_id ON vulnerability_occurrences USING btree (primary_identifier_id, vulnerability_id);
 
+CREATE INDEX index_vulnerability_partial_scans_on_pipeline_id ON vulnerability_partial_scans USING btree (pipeline_id);
+
 CREATE INDEX index_vulnerability_partial_scans_on_project_id ON vulnerability_partial_scans USING btree (project_id);
 
 CREATE INDEX index_vulnerability_partial_scans_on_scan_id ON vulnerability_partial_scans USING btree (scan_id);
