@@ -13,6 +13,24 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
     described_class.new(security_policy: security_policy, project: project, policy_changes: policy_changes)
   end
 
+  shared_examples 'with branch exceptions bypass settings for security policy' do
+    before do
+      security_policy.update!(content: {
+        bypass_settings: { branches: [{ source: { name: 'feature' }, target: { name: 'main' } }] }
+      })
+    end
+
+    it 'tracks internal event', :clean_gitlab_redis_shared_state do
+      expect { service.execute }
+        .to trigger_internal_events('check_branch_exceptions_bypass_settings_for_approval_policy')
+        .with(project: project)
+        .and increment_usage_metrics(
+          "redis_hll_counters." \
+            "count_distinct_project_id_from_check_branch_exceptions_bypass_settings_for_approval_policy_monthly"
+        )
+    end
+  end
+
   describe '#execute' do
     context 'when policy_changes is empty' do
       context 'when policy is disabled' do
@@ -114,6 +132,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
                   .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
               end
             end
+
+            include_examples 'with branch exceptions bypass settings for security policy'
           end
 
           context 'with updated policy rules' do
@@ -186,6 +206,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
                   .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
               end
             end
+
+            include_examples 'with branch exceptions bypass settings for security policy'
           end
         end
       end
