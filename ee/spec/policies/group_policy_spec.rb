@@ -4046,6 +4046,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let_it_be(:guest) { create(:user) }
     let_it_be(:parent_group) { create(:group) }
     let_it_be(:group) { create(:group, parent: parent_group) }
+    let_it_be(:resource) { parent_group }
 
     let_it_be(:parent_group_member_guest) do
       create(
@@ -4129,42 +4130,49 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'for a member role with read_vulnerability true' do
+    context 'for a member role with the `read_vulnerability` ability' do
       let(:member_role_abilities) { { read_vulnerability: true } }
-      let(:allowed_abilities) { [:read_group_security_dashboard] }
+      let(:licensed_features) { { security_dashboard: true } }
+
+      let(:allowed_abilities) { [:read_vulnerability, :read_group_security_dashboard] }
+      let(:disallowed_abilities) { [:admin_vulnerability, :read_dependency] }
 
       it_behaves_like 'custom roles abilities'
 
-      it 'does not enable to admin_vulnerability' do
-        expect(subject).to be_disallowed(:admin_vulnerability)
-      end
-
-      it { is_expected.to be_disallowed(:read_dependency) }
+      it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
     end
 
-    context 'for a member role with admin_vulnerability true' do
+    context 'for a member role with the `admin_vulnerability` ability' do
       let(:member_role_abilities) { { read_vulnerability: true, admin_vulnerability: true } }
-      let(:licensed_features) { { security_inventory: true } }
+      let(:licensed_features) { { security_dashboard: true, security_inventory: true } }
+
       let(:allowed_abilities) do
         [:read_group_security_dashboard, :read_security_inventory, :read_vulnerability, :admin_vulnerability]
       end
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:maintainer, :owner]
     end
 
-    context 'for a member role with read_dependency true' do
+    context 'for a member role with the `read_dependency` ability' do
       let(:member_role_abilities) { { read_dependency: true } }
+      let(:licensed_features) { { security_dashboard: true } }
       let(:allowed_abilities) { [:read_dependency, :read_licenses] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
     end
 
-    context 'for a member role with admin_group_member true' do
+    context 'for a member role with the `admin_group_member` ability' do
       let(:member_role_abilities) { { admin_group_member: true } }
       let(:allowed_abilities) { [:admin_group_member] }
       let(:disallowed_abilities) { [:activate_group_member] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
 
       context 'admin_service_account_member' do
         let_it_be(:guest) { create(:user) }
@@ -4205,7 +4213,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'for a member role with manage_group_access_tokens true' do
+    context 'for a member role with the `manage_group_access_tokens` ability' do
       let(:member_role_abilities) { { manage_group_access_tokens: true } }
       let(:allowed_abilities) do
         [:read_resource_access_tokens, :destroy_resource_access_tokens,
@@ -4213,6 +4221,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
 
       context 'when resource access token creation is not allowed' do
         before do
@@ -4236,21 +4246,25 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'for a custom role with the `admin_cicd_variables` ability' do
+    context 'for a member role with the `admin_cicd_variables` ability' do
       let(:member_role_abilities) { { admin_cicd_variables: true } }
       let(:allowed_abilities) { [:admin_cicd_variables] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
     end
 
-    context 'for a custom role with the `admin_protected_environments` ability' do
+    context 'for a member role with the `admin_protected_environments` ability' do
       let(:member_role_abilities) { { admin_protected_environments: true } }
       let(:allowed_abilities) { [:admin_protected_environments] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
     end
 
-    context 'for a member role with admin_compliance_framework true' do
+    context 'for a member role with the `admin_compliance_framework` ability' do
       let(:member_role_abilities) { { read_compliance_dashboard: true, admin_compliance_framework: true } }
 
       let(:allowed_abilities) do
@@ -4276,6 +4290,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         end
 
         it_behaves_like 'custom roles abilities'
+
+        it_behaves_like 'does not call custom role query', [:owner]
       end
 
       context 'when compliance framework features are unavailable' do
@@ -4296,7 +4312,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'for a member role with read_compliance_dashboard true' do
+    context 'for a member role with the `read_compliance_dashboard` ability' do
       let(:member_role_abilities) { { read_compliance_dashboard: true } }
 
       let(:allowed_abilities) do
@@ -4317,50 +4333,41 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         end
 
         it_behaves_like 'custom roles abilities'
-      end
 
-      context 'for a custom role with the `admin_security_testing` ability' do
-        let(:member_role_abilities) { { admin_security_testing: true } }
-        let(:licensed_features) do
-          { security_dashboard: true,
-            secret_push_protection: true,
-            group_level_compliance_dashboard: true }
-        end
-
-        let(:allowed_abilities) do
-          [
-            :access_security_and_compliance,
-            :read_security_configuration,
-            :read_group_security_dashboard,
-            :read_security_resource,
-            :enable_secret_push_protection
-          ]
-        end
-
-        it_behaves_like 'custom roles abilities'
-      end
-
-      context 'when compliance framework feature is unavailable' do
-        before do
-          create_member_role(group_member_guest)
-
-          stub_licensed_features(
-            custom_roles: true,
-            group_level_compliance_dashboard: false,
-            group_level_compliance_adherence_report: false,
-            group_level_compliance_violations_report: false
-          )
-        end
-
-        it { is_expected.to be_disallowed(*allowed_abilities) }
+        it_behaves_like 'does not call custom role query', [:owner]
       end
     end
 
-    context 'for a custom role with the `remove_group` ability' do
+    context 'for a member role with the `admin_security_testing` ability' do
+      let(:member_role_abilities) { { admin_security_testing: true } }
+      let(:licensed_features) do
+        { security_dashboard: true,
+          secret_push_protection: true,
+          group_level_compliance_dashboard: true }
+      end
+
+      let(:allowed_abilities) do
+        [
+          :access_security_and_compliance,
+          :read_security_configuration,
+          :read_group_security_dashboard,
+          :read_security_resource,
+          :enable_secret_push_protection
+        ]
+      end
+
+      it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:maintainer, :owner]
+    end
+
+    context 'for a member role with the `remove_group` ability' do
       let(:member_role_abilities) { { remove_group: true } }
       let(:allowed_abilities) { [:remove_group, :view_edit_page] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
 
       context 'when the group is a top level group' do
         before do
@@ -4374,39 +4381,37 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'for a custom role with the `admin_push_rules` ability' do
+    context 'for a member role with the `admin_push_rules` ability' do
       let(:member_role_abilities) { { admin_push_rules: true } }
-      let(:allowed_abilities) { [:admin_push_rules] }
+
+      let(:licensed_features) do
+        {
+          custom_roles: true,
+          push_rules: true,
+          commit_committer_check: true,
+          commit_committer_name_check: true,
+          reject_unsigned_commits: true,
+          reject_non_dco_commits: true
+        }
+      end
+
+      let(:allowed_abilities) do
+        [
+          :admin_push_rules,
+          :change_push_rules,
+          :change_commit_committer_check,
+          :change_commit_committer_name_check,
+          :change_reject_unsigned_commits,
+          :change_reject_non_dco_commits
+        ]
+      end
 
       it_behaves_like 'custom roles abilities'
 
-      context 'when push rules feature is enabled' do
-        before do
-          stub_licensed_features(
-            custom_roles: true,
-            push_rules: true,
-            commit_committer_check: true,
-            commit_committer_name_check: true,
-            reject_unsigned_commits: true,
-            reject_non_dco_commits: true
-          )
-
-          create_member_role(group_member_guest)
-        end
-
-        it do
-          is_expected.to be_allowed(
-            :change_push_rules,
-            :change_commit_committer_check,
-            :change_commit_committer_name_check,
-            :change_reject_unsigned_commits,
-            :change_reject_non_dco_commits
-          )
-        end
-      end
+      it_behaves_like 'does not call custom role query', [:maintainer, :owner]
     end
 
-    context 'for a custom role with the `manage_security_policy_link` ability' do
+    context 'for a member role with the `manage_security_policy_link` ability' do
       let(:member_role_abilities) { { manage_security_policy_link: true } }
       let(:licensed_features) { { security_orchestration_policies: true } }
 
@@ -4420,16 +4425,20 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
     end
 
-    context 'for a member role with admin_web_hook true' do
+    context 'for a member role with the `admin_web_hook` ability' do
       let(:member_role_abilities) { { admin_web_hook: true } }
       let(:allowed_abilities) { [:admin_web_hook, :read_web_hook] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
     end
 
-    context 'for a custom role with the `manage_deploy_tokens` permission' do
+    context 'for a member role with the `manage_deploy_tokens` ability' do
       let(:member_role_abilities) { { manage_deploy_tokens: true } }
 
       let(:allowed_abilities) do
@@ -4437,13 +4446,17 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
     end
 
-    context 'for a custom role with the `manage_merge_request_settings` ability' do
+    context 'for a member role with the `manage_merge_request_settings` ability' do
       let(:member_role_abilities) { { read_code: true, manage_merge_request_settings: true } }
       let(:allowed_abilities) { [:manage_merge_request_settings, :view_edit_page] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
 
       context 'when the group is a top level group and the `merge_request_approvers` feature is available' do
         before do
@@ -4457,7 +4470,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'for a member role with `admin_runners` true' do
+    context 'for a member role with the `admin_runners` ability' do
       let(:member_role_abilities) { { admin_runners: true } }
       let(:allowed_abilities) do
         [
@@ -4469,37 +4482,45 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
     end
 
-    context 'for a custom role with the `admin_integrations` permission' do
+    context 'for a member role with the `admin_integrations` ability' do
       let(:member_role_abilities) { { admin_integrations: true } }
 
-      let(:allowed_abilities) do
-        [:admin_integrations]
-      end
+      let(:allowed_abilities) { [:admin_integrations] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:owner]
     end
 
-    context 'for a member role with read_crm_contact true' do
+    context 'for a member role with the `read_crm_contact` ability' do
       let(:member_role_abilities) { { read_crm_contact: true } }
       let(:allowed_abilities) { [:read_crm_contact] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:planner, :reporter, :developer, :maintainer, :owner]
     end
 
-    context 'for a member role with read_runners true' do
+    context 'for a member role with the `read_runners` ability' do
       let(:member_role_abilities) { { read_runners: true } }
       let(:allowed_abilities) { [:read_runners] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:maintainer, :owner]
     end
 
-    context 'for a member role with admin_security_attributes true' do
+    context 'for a member role with the `admin_security_attributes` ability' do
       let(:member_role_abilities) { { admin_security_attributes: true } }
       let(:allowed_abilities) { [:admin_security_attributes] }
 
       it_behaves_like 'custom roles abilities'
+
+      it_behaves_like 'does not call custom role query', [:maintainer, :owner]
     end
   end
 

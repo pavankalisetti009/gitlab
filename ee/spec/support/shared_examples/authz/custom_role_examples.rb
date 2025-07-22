@@ -277,18 +277,28 @@ RSpec.shared_examples 'tracking admin custom role deletion' do
   end
 end
 
-RSpec.shared_examples 'does not call custom role query' do
-  it 'detects zero queries to projects preloader' do
-    recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { subject }
-    method_invocations = recorder.find_query(/.*user_member_roles_in_projects_preloader.rb.*/, 0)
-
-    expect(method_invocations).to be_empty
+RSpec.shared_examples 'does not call custom role query' do |roles|
+  before do
+    stub_licensed_features(licensed_features.merge(custom_roles: true))
   end
 
-  it 'detects zero queries to groups preloader' do
-    recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { subject }
-    method_invocations = recorder.find_query(/.*user_member_roles_in_groups_preloader.rb.*/, 0)
+  where(:role) { roles }
 
-    expect(method_invocations).to be_empty
+  with_them do
+    let(:current_user) { create(:user, "#{role}_of": resource.root_ancestor) }
+
+    let(:ability) { member_role_abilities.keys.last }
+
+    subject(:allowed) { Ability.allowed?(current_user, ability, resource, cache: {}) }
+
+    it 'detects zero queries to the projects & groups preloader', :use_sql_query_cache do
+      recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { allowed }
+
+      project_preloader_invocations = recorder.find_query(/.*user_member_roles_in_projects_preloader.rb.*/, 0)
+      group_preloader_invocations = recorder.find_query(/.*user_member_roles_in_groups_preloader.rb.*/, 0)
+
+      expect(project_preloader_invocations).to be_empty
+      expect(group_preloader_invocations).to be_empty
+    end
   end
 end
