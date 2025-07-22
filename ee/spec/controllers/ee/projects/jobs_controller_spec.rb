@@ -180,16 +180,6 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
             it_behaves_like 'returns nil quota'
           end
         end
-
-        context 'with custom roles' do
-          let(:project) { create(:project, :repository, :in_group) }
-
-          before do
-            stub_licensed_features(custom_roles: true)
-          end
-
-          it_behaves_like 'does not call custom role query'
-        end
       end
     end
 
