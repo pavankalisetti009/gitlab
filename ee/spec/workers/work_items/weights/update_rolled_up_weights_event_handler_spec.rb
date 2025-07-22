@@ -12,23 +12,6 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
   subject(:handler) { described_class.new }
 
   describe '.can_handle?' do
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(update_rolled_up_weights: false)
-      end
-
-      let(:event) do
-        instance_double(
-          WorkItems::WorkItemUpdatedEvent,
-          data: { updated_widgets: ['weight_widget'] }
-        )
-      end
-
-      it 'returns false' do
-        expect(described_class.can_handle?(event)).to be false
-      end
-    end
-
     context 'with update events' do
       context 'when weight widget is updated' do
         let(:event) do
