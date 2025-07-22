@@ -12,8 +12,7 @@ module EE
         def rescue_errors
           [
             *super,
-            ::Gitlab::Ci::Config::Required::Processor::RequiredError,
-            ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::CustomStagesInjector::InvalidStageConditionError
+            ::Gitlab::Ci::Config::Required::Processor::RequiredError
           ]
         end
 
@@ -31,32 +30,20 @@ module EE
           ::Gitlab::Ci::Config::Required::Processor.new(config).perform
         end
 
-        # Refactoring: https://gitlab.com/gitlab-org/gitlab/-/issues/514933
         def enforce_pipeline_execution_policy_stages(config)
-          return config unless pipeline_policy_context&.inject_policy_stages?
+          policy_context = pipeline_policy_context&.pipeline_execution_context
+          return config if policy_context.nil?
 
           logger.instrument(:config_pipeline_execution_policy_stages_inject, once: true) do
-            config = ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::ReservedStagesInjector
-                       .inject_reserved_stages(config)
-
-            if pipeline_policy_context.creating_project_pipeline?
-              if pipeline_policy_context.has_override_stages?
-                config[:stages] = pipeline_policy_context.override_policy_stages
-              end
-
-              if pipeline_policy_context.has_injected_stages?
-                config[:stages] = ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::CustomStagesInjector
-                           .inject(config[:stages], pipeline_policy_context.injected_policy_stages)
-              end
-            end
-
-            config
+            policy_context.enforce_stages!(config: config)
           end
+        rescue ::Gitlab::Ci::Config::StagesMerger::InvalidStageConditionError => e
+          raise ::Gitlab::Ci::Config::ConfigError, e.message
         end
 
         def process_security_orchestration_policy_includes(config)
           # We need to prevent SEP jobs from being injected into PEP pipelines
-          # because they need to be added into only the main pipeline.
+          # because they need to be added only into the main pipeline.
           return config if pipeline_policy_context&.creating_policy_pipeline?
 
           logger.instrument(:config_scan_execution_policy_processor, once: true) do

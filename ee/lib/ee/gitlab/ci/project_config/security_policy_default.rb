@@ -10,7 +10,7 @@ module EE
 
           DUMMY_CONTENT = {
             'Pipeline execution policy trigger' => {
-              'stage' => ::Gitlab::Ci::Config::EdgeStagesInjector::PRE_PIPELINE,
+              'stage' => ::Gitlab::Ci::Config::Stages::EDGE_PRE,
               'script' => ['echo "Forcing project pipeline to run policy jobs."']
             }
           }.freeze
