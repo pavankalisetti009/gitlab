@@ -7,7 +7,7 @@ describe('WorkItemStatusBadge', () => {
   let wrapper;
 
   const findIcon = () => wrapper.findComponent(GlIcon);
-  const findBadge = () => wrapper.find('[data-testid="work-item-status"]');
+  const findBadge = () => wrapper.find('[data-testid="work-item-status-badge"]');
   const findBadgeText = () => findBadge().text();
   const findTooltip = () => wrapper.findComponent(GlTooltip);
   const findTruncate = () => wrapper.findComponent(GlTruncate);
