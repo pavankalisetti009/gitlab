@@ -36,6 +36,7 @@ module Security
 
         if security_policy.type_approval_policy?
           sync_project_approval_policy_rules_service.sync_policy_diff(policy_diff)
+          track_branch_exceptions_bypass_settings
         elsif security_policy.type_pipeline_execution_schedule_policy?
           recreate_pipeline_execution_schedule_project_schedules(project, security_policy)
         end

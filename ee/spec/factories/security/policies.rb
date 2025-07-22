@@ -415,7 +415,7 @@ FactoryBot.define do
 
   factory :approval_policy,
     class: Struct.new(:name, :description, :enabled, :actions, :rules, :approval_settings, :policy_scope,
-      :fallback_behavior, :metadata, :policy_tuning) do
+      :fallback_behavior, :metadata, :policy_tuning, :bypass_settings) do
     skip_create
 
     initialize_with do
@@ -429,9 +429,10 @@ FactoryBot.define do
       fallback_behavior = attributes[:fallback_behavior]
       policy_tuning = attributes[:policy_tuning]
       metadata = attributes[:metadata]
+      bypass_settings = attributes[:bypass_settings]
 
       new(name, description, enabled, actions, rules, approval_settings, policy_scope, fallback_behavior, metadata,
-        policy_tuning).to_h
+        policy_tuning, bypass_settings).to_h
     end
 
     transient do
@@ -463,6 +464,7 @@ FactoryBot.define do
     policy_scope { {} }
     fallback_behavior { {} }
     policy_tuning { {} }
+    bypass_settings { {} }
 
     trait :license_finding do
       rules do

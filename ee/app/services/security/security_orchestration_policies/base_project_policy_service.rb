@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class BaseProjectPolicyService
       include Gitlab::Utils::StrongMemoize
+      include Gitlab::InternalEventsTracking
 
       def initialize(project:, security_policy:)
         @project = project
@@ -35,6 +36,8 @@ module Security
         return unless security_policy.type_approval_policy?
 
         sync_project_approval_policy_rules_service.create_rules
+
+        track_branch_exceptions_bypass_settings
       end
 
       def unlink_policy
@@ -62,6 +65,12 @@ module Security
         Security::SecurityOrchestrationPolicies::PipelineExecutionPolicies::CreateProjectSchedulesService
           .new(project: project, policy: security_policy)
           .execute
+      end
+
+      def track_branch_exceptions_bypass_settings
+        return unless security_policy.bypass_settings.branches.any?
+
+        track_internal_event('check_branch_exceptions_bypass_settings_for_approval_policy', project: project)
       end
     end
   end
