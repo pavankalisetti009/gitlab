@@ -46763,7 +46763,7 @@ definitions:
         type: string
         description: Whether the variable is protected
       masked_and_hidden:
-        type: string
+        type: boolean
         description: Whether the variable is masked and hidden
       masked:
         type: string
