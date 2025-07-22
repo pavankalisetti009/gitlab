@@ -16,7 +16,7 @@ RSpec.describe Security::AnalyzerProjectStatus, feature_category: :security_asse
 
   describe 'enums' do
     it { is_expected.to define_enum_for(:analyzer_type).with_values(Enums::Security.extended_analyzer_types) }
-    it { is_expected.to define_enum_for(:status).with_values(not_configured: 0, success: 1, failed: 2) }
+    it { is_expected.to define_enum_for(:status).with_values(Enums::Security.analyzer_statuses) }
   end
 
   describe 'scopes' do

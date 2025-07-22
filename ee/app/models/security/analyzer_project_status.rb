@@ -10,11 +10,7 @@ module Security
     belongs_to :build, class_name: 'Ci::Build', optional: true
 
     enum :analyzer_type, Enums::Security.extended_analyzer_types
-    enum :status, {
-      not_configured: 0,
-      success: 1,
-      failed: 2
-    }
+    enum :status, Enums::Security.analyzer_statuses
 
     validates :analyzer_type, presence: true
     validates :status, presence: true
