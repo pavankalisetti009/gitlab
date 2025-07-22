@@ -52412,6 +52412,7 @@ Field that are available while modifying the custom mapping attributes for an HT
 | <a id="boardissueinputepicwildcardid"></a>`epicWildcardId` | [`EpicWildcardId`](#epicwildcardid) | Filter by epic ID wildcard. Incompatible with epicId. |
 | <a id="boardissueinputhealthstatusfilter"></a>`healthStatusFilter` | [`HealthStatusFilter`](#healthstatusfilter) | Health status of the issue, "none" and "any" values are supported. |
 | <a id="boardissueinputiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of issues. For example `["1", "2"]`. |
+| <a id="boardissueinputincludesubepics"></a>`includeSubepics` | [`Boolean`](#boolean) | Whether to include subepics when filtering issues by epicId. |
 | <a id="boardissueinputiterationcadenceid"></a>`iterationCadenceId` | [`[IterationsCadenceID!]`](#iterationscadenceid) | Filter by a list of iteration cadence IDs. |
 | <a id="boardissueinputiterationid"></a>`iterationId` | [`[IterationID!]`](#iterationid) | Filter by a list of iteration IDs. Incompatible with iterationWildcardId. |
 | <a id="boardissueinputiterationtitle"></a>`iterationTitle` | [`String`](#string) | Filter by iteration title. |

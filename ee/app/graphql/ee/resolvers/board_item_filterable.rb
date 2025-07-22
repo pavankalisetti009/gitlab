@@ -21,6 +21,7 @@ module EE
       def filter_by_epic(filters)
         epic_id = filters.delete(:epic_id)
         epic_wildcard_id = filters.delete(:epic_wildcard_id)
+        include_subepics = filters.delete(:include_subepics)
 
         if epic_id && epic_wildcard_id
           raise ::Gitlab::Graphql::Errors::ArgumentError, 'Incompatible arguments: epicId, epicWildcardId.'
@@ -28,8 +29,11 @@ module EE
 
         if epic_id
           filters[:epic_id] = ::GitlabSchema.parse_gid(epic_id, expected_type: ::Epic).model_id
+          # Automatically include subepics when filtering by epic, unless explicitly set to false
+          filters[:include_subepics] = include_subepics.nil? ? true : include_subepics
         elsif epic_wildcard_id
           filters[:epic_id] = epic_wildcard_id
+          # For wildcard epic filters (none/any), we don't need include_subepics
         end
       end
 

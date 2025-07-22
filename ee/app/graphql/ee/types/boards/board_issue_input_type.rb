@@ -12,6 +12,10 @@ module EE
             required: false,
             description: 'Filter by epic ID wildcard. Incompatible with epicId.'
 
+          argument :include_subepics, GraphQL::Types::Boolean,
+            required: false,
+            description: 'Whether to include subepics when filtering issues by epicId.'
+
           argument :iteration_wildcard_id, ::Types::IterationWildcardIdEnum,
             required: false,
             description: 'Filter by iteration ID wildcard.'
