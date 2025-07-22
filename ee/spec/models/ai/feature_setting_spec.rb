@@ -348,7 +348,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           resolve_vulnerability: 11,
           summarize_review: 12,
           glab_ask_git_command: 13,
-          duo_chat_summarize_comments: 14
+          duo_chat_summarize_comments: 14,
+          duo_agent_platform: 15
         }.freeze)
       end
 
@@ -416,6 +417,9 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     it 'returns the feature' do
       expect(described_class.unit_primitive_to_feature_name_map).to eq(
         {
+          "agent_action" => "duo_agent_platform",
+          "agent_context" => "duo_agent_platform",
+          "agent_workflow" => "duo_agent_platform",
           "complete_code" => "code_completions",
           "code_suggestions" => "code_completions",
           "generate_code" => "code_generations",
