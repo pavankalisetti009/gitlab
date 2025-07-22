@@ -11,7 +11,7 @@ module EE
 
     override :read_only_message
     def read_only_message
-      return custom_maintenance_mode_message if ::Gitlab.maintenance_mode?
+      return ::Gitlab::MaintenanceModeHelper.maintenance_mode_message if ::Gitlab.maintenance_mode?
 
       return super unless ::Gitlab::Geo.secondary?
     end
@@ -107,11 +107,6 @@ module EE
     end
 
     private
-
-    def custom_maintenance_mode_message
-      sanitize(::Gitlab::CurrentSettings.maintenance_mode_message) ||
-        _('GitLab is undergoing maintenance')
-    end
 
     def db_lag
       return unless ::Gitlab::Geo::HealthCheck.new.replication_enabled?

@@ -17,14 +17,14 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance in main
         response = request.post(path)
 
         expect(response).to be_redirect
-        expect(subject).to disallow_request
+        expect(subject).to have_maintenance_mode_message
       end
 
       it "expects a POST #{description} URL with trailing backslash not to be allowed" do
         response = request.post("#{path}/")
 
         expect(response).to be_redirect
-        expect(subject).to disallow_request
+        expect(subject).to have_maintenance_mode_message
       end
     end
   end
@@ -60,14 +60,14 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance in main
         response = request.post(path)
 
         expect(response).not_to be_redirect
-        expect(subject).not_to disallow_request
+        expect(subject).not_to have_maintenance_mode_message
       end
 
       it "expects a POST to #{description} URL with trailing slash to be allowed" do
         response = request.post("#{path}/")
 
         expect(response).not_to be_redirect
-        expect(subject).not_to disallow_request
+        expect(subject).not_to have_maintenance_mode_message
       end
     end
   end
@@ -87,14 +87,14 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance in main
       response = request.send(:put, "/api/v4/application/settings")
 
       expect(response).not_to be_redirect
-      expect(subject).not_to disallow_request
+      expect(subject).not_to have_maintenance_mode_message
     end
 
     it "expects a POST request to /admin/application_settings/general to be allowed" do
       response = request.send(:post, "/admin/application_settings/general")
 
       expect(response).not_to be_redirect
-      expect(subject).not_to disallow_request
+      expect(subject).not_to have_maintenance_mode_message
     end
 
     context 'without Geo enabled' do
@@ -114,7 +114,7 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance in main
         response = request.post("/api/#{API::API.version}/geo/status")
 
         expect(response).not_to be_redirect
-        expect(subject).not_to disallow_request
+        expect(subject).not_to have_maintenance_mode_message
       end
     end
 
@@ -135,14 +135,14 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance in main
           response = request.post(path)
 
           expect(response).not_to be_redirect
-          expect(subject).not_to disallow_request
+          expect(subject).not_to have_maintenance_mode_message
         end
 
         it "expects a POST #{description} URL with trailing slash to be allowed" do
           response = request.post("#{path}/")
 
           expect(response).not_to be_redirect
-          expect(subject).not_to disallow_request
+          expect(subject).not_to have_maintenance_mode_message
         end
       end
 
@@ -159,14 +159,14 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance in main
           response = request.post(path)
 
           expect(response).to be_redirect
-          expect(subject).to disallow_request
+          expect(subject).to have_maintenance_mode_message
         end
 
-        it "expects a POST #{description} URL with traling slash to not be allowed" do
+        it "expects a POST #{description} URL with trailing slash to not be allowed" do
           response = request.post("#{path}/")
 
           expect(response).to be_redirect
-          expect(subject).to disallow_request
+          expect(subject).to have_maintenance_mode_message
         end
       end
 
@@ -174,14 +174,53 @@ RSpec.shared_examples 'write access for a read-only GitLab (EE) instance in main
         response = request.send(:put, "/api/v4/application/settings")
 
         expect(response).to be_redirect
-        expect(subject).to disallow_request
+        expect(subject).to have_maintenance_mode_message
       end
 
       it "allows Geo POST GraphQL requests" do
         response = request.post("/api/#{API::API.version}/geo/graphql")
 
         expect(response).not_to be_redirect
-        expect(subject).not_to disallow_request
+        expect(subject).not_to have_maintenance_mode_message
+      end
+    end
+  end
+
+  context 'when the content type is a text/plain' do
+    let(:fake_app) { ->(_env) { [200, { 'Content-Type' => 'text/plain' }, ['OK']] } }
+    let(:response) { request.patch('/test_request') }
+
+    it 'redirect with maintenance mode error message' do
+      expect(Gitlab::AppLogger).to receive(:error).with('GitLab is undergoing maintenance')
+
+      expect(response).to be_redirect
+      expect(readonly_middleware).to have_maintenance_mode_message
+    end
+  end
+
+  context 'when the content type is application/json' do
+    let(:fake_app) { ->(_env) { [200, { 'Content-Type' => 'application/json' }, ['OK']] } }
+    let(:response) { request.patch('/test_request', { 'CONTENT_TYPE' => 'application/json' }) }
+
+    it 'returns 503 with maintenance mode error message' do
+      expect(Gitlab::AppLogger).to receive(:error).with('GitLab is undergoing maintenance')
+
+      expect(response).to have_maintenance_mode_message_json
+      expect(response).to be_server_error
+    end
+
+    context 'when custom maintenance mode message is configured' do
+      let(:custom_message) { 'GitLab is currently under maintenance, please try again later.' }
+
+      before do
+        stub_application_setting(maintenance_mode_message: custom_message)
+      end
+
+      it 'returns 503 with the custom maintenance mode error message' do
+        expect(Gitlab::AppLogger).to receive(:error).with(custom_message)
+
+        expect(response).to have_maintenance_mode_message_json(custom_message)
+        expect(response).to be_server_error
       end
     end
   end
