@@ -12,8 +12,8 @@ module QA
                 element 'grid-stack-panel'
               end
 
-              view 'app/assets/javascripts/vue_shared/components/' \
-                   'customizable_dashboard/customizable_dashboard.vue' do
+              view 'ee/app/assets/javascripts/analytics/analytics_dashboards/components/' \
+                   'analytics_customizable_dashboard.vue' do
                 element 'dashboard-edit-btn'
               end
 

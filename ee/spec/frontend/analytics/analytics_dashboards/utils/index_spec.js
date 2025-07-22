@@ -2,14 +2,21 @@ import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/gra
 import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
 import * as utils from 'ee/analytics/analytics_dashboards/utils';
 import {
+  DASHBOARD_SCHEMA_VERSION,
+  CATEGORY_SINGLE_STATS,
+  CATEGORY_CHARTS,
+  CATEGORY_TABLES,
+} from 'ee/analytics/analytics_dashboards/constants';
+import {
+  dashboard,
   mockFilterOptions,
   TEST_CUSTOM_DASHBOARDS_PROJECT,
   getGraphQLDashboard,
   TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE,
   TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
+  createVisualization,
 } from 'ee_jest/analytics/analytics_dashboards/mock_data';
-import { dashboard } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 
 describe('Analytics dashboard utils', () => {
@@ -273,6 +280,102 @@ describe('Analytics dashboard utils', () => {
         expect(mockWriteQuery).not.toHaveBeenCalledWith(
           expect.objectContaining({ query: getAllCustomizableDashboardsQuery }),
         );
+      });
+    });
+  });
+
+  describe('getVisualizationCategory', () => {
+    it.each`
+      category                 | type
+      ${CATEGORY_SINGLE_STATS} | ${'SingleStat'}
+      ${CATEGORY_TABLES}       | ${'DataTable'}
+      ${CATEGORY_CHARTS}       | ${'LineChart'}
+      ${CATEGORY_CHARTS}       | ${'FooBar'}
+    `('returns $category when the visualization type is $type', ({ category, type }) => {
+      expect(utils.getVisualizationCategory({ type })).toBe(category);
+    });
+  });
+
+  describe('getDashboardConfig', () => {
+    it('maps dashboard to expected value', () => {
+      const result = utils.getDashboardConfig(dashboard);
+      const visualization = createVisualization();
+
+      expect(result).toMatchObject({
+        id: 'analytics_overview',
+        version: DASHBOARD_SCHEMA_VERSION,
+        panels: [
+          {
+            gridAttributes: {
+              height: 3,
+              width: 3,
+            },
+            queryOverrides: {},
+            title: 'Test A',
+            visualization,
+          },
+          {
+            gridAttributes: {
+              height: 4,
+              width: 2,
+            },
+            queryOverrides: {
+              limit: 200,
+            },
+            title: 'Test B',
+            visualization,
+          },
+        ],
+        title: 'Analytics Overview',
+        status: null,
+        errors: null,
+      });
+    });
+
+    ['userDefined', 'slug'].forEach((omitted) => {
+      it(`omits "${omitted}" dashboard property`, () => {
+        const result = utils.getDashboardConfig(dashboard);
+
+        expect(result[omitted]).not.toBeDefined();
+      });
+    });
+  });
+
+  describe('availableVisualizationsValidator', () => {
+    it('returns true when the object contains all properties', () => {
+      const result = utils.availableVisualizationsValidator({
+        loading: false,
+        hasError: false,
+        visualizations: [],
+      });
+      expect(result).toBe(true);
+    });
+
+    it.each([
+      { visualizations: [] },
+      { hasError: false },
+      { loading: true },
+      { loading: true, hasError: false },
+    ])('returns false when the object does not contain all properties', (testCase) => {
+      const result = utils.availableVisualizationsValidator(testCase);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('#createNewVisualizationPanel', () => {
+    it('returns the expected object', () => {
+      const visualization = createVisualization();
+      expect(utils.createNewVisualizationPanel(visualization)).toMatchObject({
+        visualization: {
+          ...visualization,
+          errors: null,
+        },
+        title: 'Test visualization',
+        gridAttributes: {
+          width: 4,
+          height: 3,
+        },
+        options: {},
       });
     });
   });

@@ -1,6 +1,17 @@
 import produce from 'immer';
-import { SESSIONS_TABLE_NAME } from 'ee/analytics/analytics_dashboards/constants';
+import uniqueId from 'lodash/uniqueId';
+import {
+  SESSIONS_TABLE_NAME,
+  DASHBOARD_SCHEMA_VERSION,
+  CATEGORY_SINGLE_STATS,
+  CATEGORY_CHARTS,
+  CATEGORY_TABLES,
+  VISUALIZATION_TYPE_DATA_TABLE,
+  VISUALIZATION_TYPE_SINGLE_STAT,
+} from 'ee/analytics/analytics_dashboards/constants';
 import { DATE_RANGE_FILTER_DIMENSIONS } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
+import { humanize } from '~/lib/utils/text_utility';
+import { cloneWithoutReferences } from '~/lib/utils/common_utils';
 import getAllCustomizableDashboardsQuery from '../graphql/queries/get_all_customizable_dashboards.query.graphql';
 import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
 import { TYPENAME_ANALYTICS_DASHBOARD_PANEL } from '../graphql/constants';
@@ -172,4 +183,62 @@ export const updateApolloCache = ({
     isGroup,
   });
   updateDashboardsListApolloCache({ apolloClient, slug, dashboard, fullPath, isProject, isGroup });
+};
+
+/**
+ * Get the category key for visualizations by their type. Default is "charts".
+ */
+export const getVisualizationCategory = (visualization) => {
+  if (visualization.type === VISUALIZATION_TYPE_SINGLE_STAT) {
+    return CATEGORY_SINGLE_STATS;
+  }
+  if (visualization.type === VISUALIZATION_TYPE_DATA_TABLE) {
+    return CATEGORY_TABLES;
+  }
+  return CATEGORY_CHARTS;
+};
+
+/**
+ * Maps a full hydrated dashboard (including GraphQL __typenames, and full visualization definitions) into a slimmed down version that complies with the dashboard schema definition
+ */
+export const getDashboardConfig = (hydratedDashboard) => {
+  const { __typename: dashboardTypename, userDefined, slug, ...dashboardRest } = hydratedDashboard;
+
+  return {
+    ...dashboardRest,
+    version: DASHBOARD_SCHEMA_VERSION,
+    panels: hydratedDashboard.panels.map((panel) => {
+      const { __typename: panelTypename, id, ...panelRest } = panel;
+      const { __typename: visualizationTypename, ...visualizationRest } = panel.visualization;
+
+      return {
+        ...panelRest,
+        queryOverrides: panel.queryOverrides ?? {},
+        visualization: visualizationRest,
+      };
+    }),
+  };
+};
+
+export const getUniquePanelId = () => uniqueId('panel-');
+
+export const createNewVisualizationPanel = (visualization) => ({
+  id: getUniquePanelId(),
+  title: humanize(visualization.slug),
+  gridAttributes: {
+    width: 4,
+    height: 3,
+  },
+  queryOverrides: {},
+  options: {},
+  visualization: cloneWithoutReferences({ ...visualization, errors: null }),
+});
+
+/**
+ * Validator for the availableVisualizations property
+ */
+export const availableVisualizationsValidator = ({ loading, hasError, visualizations }) => {
+  return (
+    typeof loading === 'boolean' && typeof hasError === 'boolean' && Array.isArray(visualizations)
+  );
 };

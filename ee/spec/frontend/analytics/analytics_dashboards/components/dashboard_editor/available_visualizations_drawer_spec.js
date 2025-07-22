@@ -1,12 +1,12 @@
 import { GlAlert, GlDrawer, GlLoadingIcon, GlFormCheckbox } from '@gitlab/ui';
-import AvailableVisualizationsDrawer from '~/vue_shared/components/customizable_dashboard/dashboard_editor/available_visualizations_drawer.vue';
+import AvailableVisualizationsDrawer from 'ee/analytics/analytics_dashboards/components/dashboard_editor/available_visualizations_drawer.vue';
 import api from '~/api';
 import { humanize } from '~/lib/utils/text_utility';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { stubComponent } from 'helpers/stub_component';
-import { createVisualization } from '../mock_data';
+import { mockPanel } from '../../mock_data';
 
 jest.mock('~/lib/utils/dom_utils', () => ({
   getContentWrapperHeight: () => '123px',
@@ -19,7 +19,7 @@ describe('AvailableVisualizationsDrawer', () => {
   const allTypes = ['SingleStat', 'LineChart', 'DataTable', 'BarChart'];
 
   const createVisualizations = (types = ['SingleStat']) => {
-    const visualization = createVisualization();
+    const { visualization } = mockPanel;
 
     return types.map((type, index) => ({
       ...visualization,
