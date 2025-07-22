@@ -1,0 +1,9 @@
+---
+name: agent_platform_model_selection
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/18583
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198260
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556185
+milestone: '18.3'
+group: group::custom models
+type: development
+default_enabled: false
