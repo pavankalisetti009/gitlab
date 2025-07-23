@@ -1,25 +1,22 @@
 <script>
-import { GlButton, GlBadge, GlPopover, GlCard, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlButton, GlCard, GlSprintf, GlLink } from '@gitlab/ui';
 import EmptyTodosAllDoneSvg from '@gitlab/svgs/dist/illustrations/empty-todos-all-done-md.svg';
 import {
   ROUTE_EDIT_FRAMEWORK,
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
-  FEEDBACK_ISSUE_URL,
 } from 'ee/compliance_dashboard/constants';
 import { s__ } from '~/locale';
 
 export default {
   name: 'NewFrameworkSuccess',
   components: {
-    GlBadge,
-    GlPopover,
     GlButton,
     GlCard,
     GlSprintf,
     GlLink,
   },
-  inject: ['groupSecurityPoliciesPath', 'adherenceV2Enabled'],
+  inject: ['groupSecurityPoliciesPath'],
   methods: {
     navigateToEditFramework() {
       this.$router.push({
@@ -46,11 +43,6 @@ export default {
     ),
     editFramework: s__('ComplianceFrameworksReport|Edit framework'),
     backtoComplianceCenter: s__('NewFramework|Back to compliance center'),
-    feedback: s__('NewFramework|Feedback?'),
-    feedbackTitle: s__('NewFramework|New improvements to creating compliance framework.'),
-    feedbackText: s__(
-      'NewFramework|Have questions or thoughts on the new improvements we made? %{linkStart}Please provide feedback on your experience%{linkEnd}.',
-    ),
     subTitle: s__('NewFramework|Suggested next steps'),
     policies: s__('NewFramework|Scope policies'),
     whyPoliciesTitle: s__('NewFramework|Why scope policies?'),
@@ -72,7 +64,6 @@ export default {
     ),
   },
   EmptyTodosAllDoneSvg,
-  FEEDBACK_ISSUE_URL,
 };
 </script>
 
@@ -93,18 +84,6 @@ export default {
         {{ $options.i18n.editFramework }}
       </gl-button>
     </section>
-    <gl-badge v-if="adherenceV2Enabled" id="feedback" variant="info" icon="comment-lines">
-      {{ $options.i18n.feedback }}
-    </gl-badge>
-    <gl-popover target="feedback" :title="$options.i18n.feedbackTitle" placement="right">
-      <div>
-        <gl-sprintf :message="$options.i18n.feedbackText">
-          <template #link="{ content }">
-            <gl-link :href="$options.FEEDBACK_ISSUE_URL" target="_blank">{{ content }}</gl-link>
-          </template>
-        </gl-sprintf>
-      </div>
-    </gl-popover>
     <h2 class="gl-heading-2 gl-mt-6">{{ $options.i18n.subTitle }}</h2>
     <gl-card
       data-testid="policies-card"

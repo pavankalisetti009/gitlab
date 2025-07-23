@@ -51,7 +51,6 @@ describe('Edit Framework Form', () => {
   let wrapper;
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const adherenceV2Enabled = true;
   const propsData = {
     id: '1',
   };
@@ -63,7 +62,6 @@ describe('Edit Framework Form', () => {
     featureSecurityPoliciesEnabled: true,
     migratePipelineToPolicyPath: '/migratepipelinetopolicypath',
     pipelineExecutionPolicyPath: '/policypath',
-    adherenceV2Enabled,
   };
   const requirementsData = [
     {
@@ -120,14 +118,11 @@ describe('Edit Framework Form', () => {
 
   function createComponent(
     mountFn = mountExtended,
-    { requestHandlers = [], routeParams = { id: '1' }, provide = {} } = {},
+    { requestHandlers = [], routeParams = { id: '1' } } = {},
   ) {
     return mountFn(EditFramework, {
       apolloProvider: createMockApollo(requestHandlers),
-      provide: {
-        ...provideData,
-        ...provide,
-      },
+      provide: provideData,
       propsData,
       stubs: {
         PoliciesSection: true,
@@ -534,9 +529,6 @@ describe('Edit Framework Form', () => {
           ...stubHandlers,
         ],
         routeParams: {},
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
       await waitForPromises();
 
@@ -580,9 +572,6 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: stubHandlers,
         routeParams: { id: '1' },
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
       await waitForPromises();
 
@@ -631,9 +620,6 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: stubHandlers,
         routeParams: { id: '1' },
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
       await waitForPromises();
 
@@ -678,9 +664,6 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: stubHandlers,
         routeParams: { id: '1' },
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
 
       await waitForPromises();
@@ -733,9 +716,6 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: stubHandlers,
         routeParams: { id: '1' },
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
 
       await waitForPromises();
@@ -837,9 +817,6 @@ describe('Edit Framework Form', () => {
           [updateRequirementMutation, updateRequirementMutationMock],
         ],
         routeParams: { id: '1' },
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
 
       await waitForPromises();
@@ -1013,9 +990,6 @@ describe('Edit Framework Form', () => {
         wrapper = createComponent(mountExtended, {
           requestHandlers: [],
           routeParams: {},
-          provide: {
-            adherenceV2Enabled: true,
-          },
         });
 
         await waitForPromises();
@@ -1064,9 +1038,6 @@ describe('Edit Framework Form', () => {
             [deleteRequirementMutation, deleteRequirementMutationMock],
           ],
           routeParams: { id: '1' },
-          provide: {
-            adherenceV2Enabled: true,
-          },
         });
 
         await waitForPromises();
@@ -1305,16 +1276,6 @@ describe('Edit Framework Form', () => {
       await waitForPromises();
       expect(wrapper.findComponent(RequirementsSection).exists()).toBe(true);
     });
-
-    it('does not render policies section if feature is disabled', async () => {
-      wrapper = createComponent(shallowMountExtended, {
-        provide: {
-          adherenceV2Enabled: false,
-        },
-      });
-      await waitForPromises();
-      expect(wrapper.findComponent(RequirementsSection).exists()).toBe(false);
-    });
   });
 
   describe('Policies section', () => {
@@ -1328,16 +1289,6 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(shallowMountExtended);
       await waitForPromises();
       expect(wrapper.findComponent(PoliciesSection).exists()).toBe(true);
-    });
-
-    it('does not render policies section if feature is disabled', async () => {
-      wrapper = createComponent(shallowMountExtended, {
-        provide: {
-          featureSecurityPoliciesEnabled: false,
-        },
-      });
-      await waitForPromises();
-      expect(wrapper.findComponent(PoliciesSection).exists()).toBe(false);
     });
   });
 
@@ -1415,9 +1366,6 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: stubHandlers,
         routeParams: { id: '1' },
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
       await waitForPromises();
 
@@ -1501,9 +1449,6 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: stubHandlers,
         routeParams: { id: '1' },
-        provide: {
-          adherenceV2Enabled: true,
-        },
       });
 
       await waitForPromises();

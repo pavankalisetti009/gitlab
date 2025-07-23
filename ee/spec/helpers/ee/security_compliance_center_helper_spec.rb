@@ -15,7 +15,6 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
       feature_projects_report_enabled: "true",
       can_admin_compliance_frameworks: "true",
       can_access_root_ancestor_compliance_center: "true",
-      adherence_v2_enabled: "true",
       policy_display_limit: 10
     }
   end

@@ -137,7 +137,6 @@ describe('FrameworkInfoDrawer component', () => {
       provide: {
         groupSecurityPoliciesPath: '/group-policies',
         canAccessRootAncestorComplianceCenter: true,
-        adherenceV2Enabled: true,
         ...provide,
       },
       mocks: {
@@ -428,25 +427,6 @@ describe('FrameworkInfoDrawer component', () => {
     it('displays requirement descriptions correctly', () => {
       const accordion = findRequirementsAccordion();
       expect(accordion.props('items')).toEqual(mockRequirements);
-    });
-
-    it('does not show requirements section when adherenceV2Enabled is false', () => {
-      createComponent({
-        props: {
-          groupPath: GROUP_PATH,
-          rootAncestor: {
-            path: GROUP_PATH,
-          },
-          framework: defaultFramework,
-        },
-        provide: {
-          groupSecurityPoliciesPath: '/group-policies',
-          canAccessRootAncestorComplianceCenter: true,
-          adherenceV2Enabled: false,
-        },
-      });
-
-      expect(findRequirementsSection().exists()).toBe(false);
     });
   });
 

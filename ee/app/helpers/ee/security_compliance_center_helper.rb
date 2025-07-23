@@ -66,7 +66,6 @@ module EE
 
         can_access_root_ancestor_compliance_center: can_access_root_ancestor_compliance_center.to_s,
         feature_adherence_report_enabled: adherence_report.to_s,
-        adherence_v2_enabled: true.to_s,
 
         feature_violations_report_enabled: violations_report.to_s,
         violations_v2_enabled: ::Feature.enabled?(:compliance_violations_report, group).to_s,
