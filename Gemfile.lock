@@ -725,7 +725,7 @@ GEM
     git (1.19.1)
       addressable (~> 2.8)
       rchardet (~> 1.8)
-    gitaly (18.2.0)
+    gitaly (18.2.1)
       grpc (~> 1.0)
     gitlab (4.19.0)
       httparty (~> 0.20)
@@ -2422,4 +2422,4 @@ DEPENDENCIES
   yard (~> 0.9)
 
 BUNDLED WITH
-   2.7.1
+   2.6.5
