@@ -11,7 +11,8 @@ import {
   GlButton,
 } from '@gitlab/ui';
 import { mapActions, mapState } from 'pinia';
-import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { s__, sprintf } from '~/locale';
 
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 
@@ -35,8 +36,8 @@ export default {
     DeleteServiceAccountModal,
     CreateEditServiceAccountModal,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
-    'isGroup',
     'serviceAccountsPath',
     'serviceAccountsEditPath',
     'serviceAccountsDeletePath',
@@ -82,7 +83,7 @@ export default {
       if (this.createEditType === 'create') {
         await this.createServiceAccount(this.serviceAccountsPath, values);
       } else {
-        await this.editServiceAccount(this.serviceAccountsEditPath, values, this.isGroup);
+        await this.editServiceAccount(this.serviceAccountsEditPath, values);
       }
     },
     routeToAccessTokensManagement(serviceAccountId) {
@@ -91,6 +92,24 @@ export default {
         params: { id: serviceAccountId },
         replace: true,
       });
+    },
+    showEmail(serviceAccount) {
+      return (
+        this.glFeatures.editServiceAccountEmail &&
+        (Boolean(serviceAccount.email) || Boolean(serviceAccount.unconfirmed_email))
+      );
+    },
+    email(addresses) {
+      if (addresses.unconfirmed_email) {
+        return sprintf(s__('ServiceAccounts|%{email} - unconfirmed'), {
+          email: addresses.unconfirmed_email,
+        });
+      }
+      // If server generated placeholder email ignore it - magic string :-(
+      if (addresses.email?.includes('@noreply.')) {
+        return '';
+      }
+      return addresses.email;
     },
     pageServiceAccounts(page) {
       this.fetchServiceAccounts(this.serviceAccountsPath, { page });
@@ -196,6 +215,9 @@ export default {
           <template #cell(name)="{ item }">
             <div class="gl-font-bold" data-testid="service-account-name">{{ item.name }}</div>
             <div data-testid="service-account-username">@{{ item.username }}</div>
+            <div v-if="showEmail(item)" data-testid="service-account-email">
+              {{ email({ email: item.email, unconfirmed_email: item.unconfirmed_email }) }}
+            </div>
           </template>
 
           <template #cell(options)="{ item }">

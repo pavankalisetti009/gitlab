@@ -18,12 +18,15 @@ describe('CreateEditServiceAccountModal', () => {
 
   const name = 'My Service Account';
 
-  const createComponent = (props = { deleteType: 'soft' }) => {
+  const createComponent = ({ props = { deleteType: 'soft' }, provide = {} } = {}) => {
     wrapper = mountExtended(CreateEditServiceAccountModal, {
       pinia,
       propsData: {
         name,
         ...props,
+      },
+      provide: {
+        ...provide,
       },
       stubs: {
         GlModal: stubComponent(GlModal),
@@ -83,13 +86,35 @@ describe('CreateEditServiceAccountModal', () => {
       createComponent();
     });
 
-    it('contains correct fields', () => {
+    it('contains correct fields with the editServiceAccountEmail feature flag off', () => {
       expect(findForm().props('fields')).toMatchObject({
         name: {
           label: 'Name',
         },
         username: {
           label: 'Username',
+        },
+      });
+    });
+
+    it('contains correct fields with the editServiceAccountEmail feature flag on', () => {
+      createComponent({
+        provide: {
+          glFeatures: {
+            editServiceAccountEmail: true,
+          },
+        },
+      });
+
+      expect(findForm().props('fields')).toMatchObject({
+        name: {
+          label: 'Name',
+        },
+        username: {
+          label: 'Username',
+        },
+        email: {
+          label: 'Email',
         },
       });
     });
