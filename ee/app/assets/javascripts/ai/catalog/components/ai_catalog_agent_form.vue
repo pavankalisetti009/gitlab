@@ -1,10 +1,21 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlAlert, GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlButton,
+  GlForm,
+  GlFormFields,
+  GlFormTextarea,
+  GlFormRadioGroup,
+  GlFormRadio,
+  GlIcon,
+} from '@gitlab/ui';
 import {
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
   MAX_LENGTH_PROMPT,
+  VISIBILITY_LEVEL_PRIVATE,
+  VISIBILITY_LEVEL_PUBLIC,
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
 import { createFieldValidators } from '../utils';
@@ -19,7 +30,10 @@ export default {
     GlButton,
     GlForm,
     GlFormFields,
+    GlFormRadioGroup,
+    GlFormRadio,
     GlFormTextarea,
+    GlIcon,
   },
   props: {
     mode: {
@@ -36,40 +50,28 @@ export default {
       required: false,
       default: () => [],
     },
-    projectId: {
-      type: String,
+    initialValues: {
+      type: Object,
       required: false,
-      default: tmpProjectId,
-    },
-    name: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    description: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    systemPrompt: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    userPrompt: {
-      type: String,
-      required: false,
-      default: '',
+      default() {
+        return {
+          projectId: tmpProjectId,
+          name: '',
+          description: '',
+          systemPrompt: '',
+          userPrompt: '',
+          public: false,
+        };
+      },
     },
   },
   data() {
     return {
       formValues: {
-        projectId: this.projectId,
-        name: this.name,
-        description: this.description,
-        systemPrompt: this.systemPrompt,
-        userPrompt: this.userPrompt,
+        ...this.initialValues,
+        visibilityLevel: this.initialValues.public
+          ? VISIBILITY_LEVEL_PUBLIC
+          : VISIBILITY_LEVEL_PRIVATE,
       },
     };
   },
@@ -78,11 +80,51 @@ export default {
       return uniqueId('ai-catalog-agent-form-');
     },
     submitButtonText() {
-      if (this.mode === 'create') {
-        return s__('AICatalog|Create agent');
+      return this.isEditMode
+        ? // eslint-disable-next-line @gitlab/require-i18n-strings
+          `${s__('AICatalog|Save changes')} (Coming soon)`
+        : s__('AICatalog|Create agent');
+    },
+    isEditMode() {
+      return this.mode === 'edit';
+    },
+    visibilityLevels() {
+      return [
+        {
+          value: VISIBILITY_LEVEL_PRIVATE,
+          label: s__('AICatalog|Private'),
+          text: s__(
+            'AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners  of this project can edit or delete the agent.',
+          ),
+          icon: 'lock',
+        },
+        {
+          value: VISIBILITY_LEVEL_PUBLIC,
+          label: s__('AICatalog|Public'),
+          text: s__(
+            'AICatalog|Anyone can view and use the agent without authorization. Only maintainers and owners of this project can edit or delete the agent.',
+          ),
+          icon: 'earth',
+        },
+      ];
+    },
+    visibilityLevelAlertText() {
+      if (
+        this.isEditMode &&
+        this.initialValues.public &&
+        this.formValues.visibilityLevel === VISIBILITY_LEVEL_PRIVATE
+      ) {
+        return s__('AICatalog|This agent can be made private if it is not used.');
       }
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      return `${s__('AICatalog|Save changes')} (Coming soon)`;
+
+      if (
+        !this.initialValues.public &&
+        this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC
+      ) {
+        return s__('AICatalog|A public agent can be made private only if it is not used.');
+      }
+
+      return '';
     },
     fields() {
       return {
@@ -94,7 +136,7 @@ export default {
           inputAttrs: {
             'data-testid': 'agent-form-input-project-id',
             placeholder: tmpProjectId,
-            disabled: this.mode === 'edit',
+            disabled: this.isEditMode,
           },
           groupAttrs: {
             labelDescription: s__(
@@ -152,6 +194,17 @@ export default {
             ),
           },
         },
+        visibilityLevel: {
+          label: __('Visibility level'),
+          validators: createFieldValidators({
+            requiredLabel: s__('AICatalog|Visibility level is required.'),
+          }),
+          groupAttrs: {
+            labelDescription: s__(
+              'AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog.',
+            ),
+          },
+        },
       };
     },
   },
@@ -163,6 +216,7 @@ export default {
         description: this.formValues.description.trim(),
         systemPrompt: this.formValues.systemPrompt.trim(),
         userPrompt: this.formValues.userPrompt.trim(),
+        public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
       };
       this.$emit('submit', trimmedFormValues);
     },
@@ -175,6 +229,7 @@ export default {
       v-if="errorMessages.length"
       class="gl-mb-3 gl-mt-5"
       variant="danger"
+      data-testid="agent-form-error-alert"
       @dismiss="$emit('dismiss-error')"
     >
       <span v-if="errorMessages.length === 1">{{ errorMessages[0] }}</span>
@@ -184,8 +239,7 @@ export default {
         </li>
       </ul>
     </gl-alert>
-
-    <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
+    <gl-form :id="formId" @submit.prevent="">
       <gl-form-fields
         v-model="formValues"
         :form-id="formId"
@@ -240,6 +294,42 @@ export default {
             @blur="blur"
             @update="input"
           />
+        </template>
+
+        <template #input(visibilityLevel)="{ id, input, validation, value }">
+          <gl-form-radio-group
+            :id="id"
+            :state="validation.state"
+            :checked="value"
+            data-testid="agent-form-radio-group-visibility-level"
+            @input="input"
+          >
+            <gl-form-radio
+              v-for="level in visibilityLevels"
+              :key="level.value"
+              :value="level.value"
+              :state="validation.state"
+              :data-testid="`${level.value}-radio`"
+              class="gl-mb-3"
+            >
+              <div class="gl-flex gl-items-center gl-gap-2">
+                <gl-icon :size="16" :name="level.icon" />
+                <span class="gl-font-semibold">
+                  {{ level.label }}
+                </span>
+              </div>
+              <template #help>{{ level.text }}</template>
+            </gl-form-radio>
+          </gl-form-radio-group>
+          <gl-alert
+            v-if="visibilityLevelAlertText"
+            :dismissible="false"
+            data-testid="agent-form-visibility-level-alert"
+            class="gl-mt-3"
+            variant="info"
+          >
+            {{ visibilityLevelAlertText }}
+          </gl-alert>
         </template>
       </gl-form-fields>
       <ai-catalog-form-buttons :is-disabled="isLoading">

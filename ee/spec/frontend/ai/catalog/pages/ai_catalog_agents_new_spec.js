@@ -60,6 +60,9 @@ describe('AiCatalogAgentsNew', () => {
       name,
       description,
       projectId: project.id,
+      systemPrompt: 'A new system prompt',
+      userPrompt: 'A new user prompt',
+      public: false,
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
@@ -69,7 +72,7 @@ describe('AiCatalogAgentsNew', () => {
 
       expect(createAiCatalogAgentMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogAgentMock).toHaveBeenCalledWith({
-        input: { ...formValues, public: true },
+        input: formValues,
       });
     });
 

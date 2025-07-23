@@ -41,6 +41,7 @@ export default {
         description: '',
         systemPrompt: '',
         userPrompt: '',
+        public: false,
       },
     };
   },
@@ -56,6 +57,16 @@ export default {
     },
     pageTitle() {
       return `${s__('AICatalog|Edit agent')}: ${this.agentName}`;
+    },
+    initialValues() {
+      return {
+        projectId: this.aiCatalogAgent?.project.id || null,
+        name: this.agentName,
+        description: this.aiCatalogAgent?.description || '',
+        systemPrompt: this.agentSystemPrompt,
+        userPrompt: this.agentUserPrompt,
+        public: this.aiCatalogAgent?.public || false,
+      };
     },
   },
   methods: {
@@ -90,11 +101,7 @@ export default {
     <ai-catalog-agent-form
       v-if="aiCatalogAgent"
       mode="edit"
-      :project-id="aiCatalogAgent.project.id"
-      :name="aiCatalogAgent.name"
-      :description="aiCatalogAgent.description"
-      :system-prompt="agentSystemPrompt"
-      :user-prompt="agentUserPrompt"
+      :initial-values="initialValues"
       :is-loading="isLoading"
       @submit="handleSubmit"
     />

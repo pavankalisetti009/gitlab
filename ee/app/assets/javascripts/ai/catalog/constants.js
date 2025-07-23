@@ -17,3 +17,6 @@ export const ENUM_TO_NAME_MAP = {
 export const MAX_LENGTH_NAME = 255;
 export const MAX_LENGTH_DESCRIPTION = 1024;
 export const MAX_LENGTH_PROMPT = 1000000;
+
+export const VISIBILITY_LEVEL_PRIVATE = 0;
+export const VISIBILITY_LEVEL_PUBLIC = 20;
