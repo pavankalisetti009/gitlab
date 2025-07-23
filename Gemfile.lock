@@ -2336,6 +2336,8 @@ DEPENDENCIES
   recaptcha (~> 5.12)
   redis (~> 5.4.0)
   redis-actionpack (~> 5.5.0)
+  redis-client (~> 0.25)
+  redis-cluster-client (~> 0.13)
   redis-clustering (~> 5.4.0)
   request_store (~> 1.7.0)
   responders (~> 3.0)
