@@ -12,7 +12,7 @@ RSpec.describe ResourceAccessTokens::InactiveTokensDeletionCronWorker, feature_c
         create(
           :resource_access_token,
           resource: resource,
-          expires_at: ApplicationSetting::INACTIVE_RESOURCE_ACCESS_TOKENS_DELETE_AFTER_DAYS.days.ago - 1.day
+          expires_at: Gitlab::CurrentSettings.inactive_resource_access_tokens_delete_after_days.days.ago - 1.day
         ).user
       end
 

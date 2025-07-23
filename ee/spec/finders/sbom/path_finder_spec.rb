@@ -308,6 +308,54 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
       end
     end
 
+    context 'with cycles' do
+      let_it_be(:cyclic_component_1) do
+        create(:sbom_occurrence, input_file_path: ancestor.input_file_path, project: project)
+      end
+
+      let_it_be(:cyclic_component_2) do
+        create(:sbom_occurrence,
+          ancestors: [{ name: cyclic_component_1.component_name, version: cyclic_component_1.version }],
+          input_file_path: ancestor.input_file_path, project: project)
+      end
+
+      let_it_be(:deep_component) do
+        create(:sbom_occurrence,
+          ancestors: [{ name: cyclic_component_2.component_name, version: cyclic_component_2.version }],
+          input_file_path: ancestor.input_file_path, project: project)
+      end
+
+      before do
+        cyclic_component_1.update!(
+          ancestors: [
+            { name: cyclic_component_2.component_name, version: cyclic_component_2.version },
+            { name: ancestor.component_name, version: ancestor.version }
+          ]
+        )
+
+        Sbom::BuildDependencyGraph.execute(project)
+      end
+
+      it 'detects cycles and includes them in results' do
+        result = described_class.execute(deep_component)
+
+        expect(result).to include(
+          paths: match_array([
+            {
+              path: [ancestor, cyclic_component_1, cyclic_component_2, deep_component],
+              is_cyclic: false
+            },
+            {
+              path: [cyclic_component_2, cyclic_component_1, cyclic_component_2, deep_component],
+              is_cyclic: true # Verify cycle detection
+            }
+          ]),
+          has_previous_page: false,
+          has_next_page: false
+        )
+      end
+    end
+
     context 'with deterministic ordering' do
       it 'returns paths in consistent order across multiple calls with multiple ingestions' do
         result1 = described_class.execute(deep_one)

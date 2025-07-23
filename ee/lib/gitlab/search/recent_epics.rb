@@ -7,8 +7,17 @@ module Gitlab
 
       override :search
       def search(term)
+        query_items_by_ids(term, latest_ids)
+      end
+
+      private
+
+      override :query_items_by_ids
+      def query_items_by_ids(term, ids)
+        return Epic.none if ids.empty?
+
         epics = Epic.full_search(term, matched_columns: 'title')
-          .id_in_ordered(latest_ids).limit(::Gitlab::Search::RecentItems::SEARCH_LIMIT)
+          .id_in_ordered(ids).limit(::Gitlab::Search::RecentItems::SEARCH_LIMIT)
 
         # Since EpicsFinder does not support searching globally (ie. applying
         # global permissions) the most efficient option is just to load the
@@ -20,8 +29,6 @@ module Gitlab
 
         epics.id_not_in(id: disallowed.map(&:id))
       end
-
-      private
 
       def type
         Epic

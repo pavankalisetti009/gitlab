@@ -3,8 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EE::PackagesHelper, feature_category: :package_registry do
-  let_it_be(:project_namespace) { build_stubbed(:project_namespace) }
-  let_it_be(:project) { build_stubbed(:project, project_namespace: project_namespace) }
+  let_it_be(:project) { build_stubbed(:project) }
   let_it_be(:user) { project.creator }
 
   describe '#settings_data' do

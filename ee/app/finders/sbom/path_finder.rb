@@ -190,11 +190,13 @@ module Sbom
       # If we've reached the target, we have a complete path.
       # Don't return here since this root node might be a top_level
       # node, which has parents.
-      # Also reverse the array, since we traverse from target to roots
-      handle_path_finished(current_path.reverse, false) if @root_nodes.include?(current)
+      handle_path_finished(current_path, false) if @root_nodes.include?(current)
 
       # Skip if we've already visited this node on this path to avoid cycles
-      return if visited.include?(current)
+      if visited.include?(current)
+        handle_cycle_detected(current_path)
+        return
+      end
 
       # Early termination checks
       return unless should_continue_traversal?
@@ -240,7 +242,8 @@ module Sbom
     end
 
     def handle_path_finished(current_path, is_cyclic)
-      path_entry = { path: current_path, is_cyclic: is_cyclic }
+      # reverse the array, since we traverse from target to roots
+      path_entry = { path: current_path.reverse, is_cyclic: is_cyclic }
 
       # Add path based on mode and cursor status
       if @mode == :unscoped ||
@@ -248,6 +251,10 @@ module Sbom
           (@mode == :before && !@collector[:cursor_found])
         add_path_to_collector(path_entry)
       end
+    end
+
+    def handle_cycle_detected(current_path)
+      handle_path_finished(current_path, true)
     end
 
     def add_path_to_collector(path_entry)

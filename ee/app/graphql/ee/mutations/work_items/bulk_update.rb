@@ -19,6 +19,12 @@ module EE
             required: false,
             description: 'Input for iteration widget.',
             experiment: { milestone: '18.2' }
+
+          argument :status_widget,
+            ::Types::WorkItems::Widgets::StatusInputType,
+            required: false,
+            description: 'Input for status widget.',
+            experiment: { milestone: '18.3' }
         end
 
         private

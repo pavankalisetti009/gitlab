@@ -52,8 +52,7 @@ RSpec.describe 'layouts/project', feature_category: :groups_and_projects do
   end
 
   describe '_unlimited_members_during_trial_alert' do
-    let(:project_namespace) { build_stubbed(:project_namespace) }
-    let(:project) { build_stubbed(:project, project_namespace: project_namespace) }
+    let(:project) { build_stubbed(:project) }
 
     context 'when alert is hidden' do
       before do
