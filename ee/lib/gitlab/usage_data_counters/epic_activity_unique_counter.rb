@@ -183,7 +183,6 @@ module Gitlab
         private
 
         def track_internal_action(event_name, author, namespace)
-          return unless Feature.enabled?(:track_epics_activity)
           return unless author
 
           Gitlab::InternalEvents.track_event(

@@ -10,16 +10,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
   let_it_be(:user2) { build(:user, id: 2) }
   let_it_be(:namespace) { build(:group) }
 
-  RSpec.shared_examples 'does not track when feature flag is disabled' do
-    context "when feature flag :track_epics_activity is disabled" do
-      it 'does not track action' do
-        stub_feature_flags(track_epics_activity: false)
-
-        expect(track_action(author: user1, namespace: namespace)).to be_nil
-      end
-    end
-  end
-
   context 'for epic created event' do
     def track_action(params)
       described_class.track_epic_created_action(**params)
@@ -28,8 +18,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_CREATED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic title changed event' do
@@ -40,8 +28,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_TITLE_CHANGED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic description changed event' do
@@ -52,8 +38,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_DESCRIPTION_CHANGED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic note created event' do
@@ -64,8 +48,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_NOTE_CREATED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic note updated event' do
@@ -76,8 +58,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_NOTE_UPDATED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic note destroyed event' do
@@ -88,8 +68,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_NOTE_DESTROYED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic emoji award event' do
@@ -100,8 +78,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_EMOJI_AWARDED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic emoji remove event' do
@@ -112,8 +88,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_EMOJI_REMOVED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic closing event' do
@@ -124,8 +98,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_CLOSED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic reopening event' do
@@ -136,8 +108,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_REOPENED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for making epic visible' do
@@ -148,8 +118,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_VISIBLE }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for making epic confidential' do
@@ -160,8 +128,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_CONFIDENTIAL }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic date modification events' do
@@ -174,8 +140,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
         it_behaves_like 'internal event tracking' do
           let(:event) { described_class::EPIC_START_DATE_SET_AS_FIXED }
         end
-
-        it_behaves_like 'does not track when feature flag is disabled'
       end
 
       context 'setting as fixed start date event' do
@@ -186,8 +150,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
         it_behaves_like 'internal event tracking' do
           let(:event) { described_class::EPIC_FIXED_START_DATE_UPDATED }
         end
-
-        it_behaves_like 'does not track when feature flag is disabled'
       end
 
       context 'setting as inherited event' do
@@ -198,8 +160,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
         it_behaves_like 'internal event tracking' do
           let(:event) { described_class::EPIC_START_DATE_SET_AS_INHERITED }
         end
-
-        it_behaves_like 'does not track when feature flag is disabled'
       end
     end
 
@@ -212,8 +172,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
         it_behaves_like 'internal event tracking' do
           let(:event) { described_class::EPIC_DUE_DATE_SET_AS_FIXED }
         end
-
-        it_behaves_like 'does not track when feature flag is disabled'
       end
 
       context 'setting as fixed due date event' do
@@ -224,8 +182,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
         it_behaves_like 'internal event tracking' do
           let(:event) { described_class::EPIC_FIXED_DUE_DATE_UPDATED }
         end
-
-        it_behaves_like 'does not track when feature flag is disabled'
       end
 
       context 'setting as inherited event' do
@@ -236,8 +192,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
         it_behaves_like 'internal event tracking' do
           let(:event) { described_class::EPIC_DUE_DATE_SET_AS_INHERITED }
         end
-
-        it_behaves_like 'does not track when feature flag is disabled'
       end
     end
   end
@@ -250,8 +204,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_ISSUE_ADDED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for changing labels epic event' do
@@ -262,8 +214,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_LABELS }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for removing issue from epic event' do
@@ -274,8 +224,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_ISSUE_REMOVED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for moving an issue that belongs to epic' do
@@ -286,8 +234,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_ISSUE_MOVED_FROM_PROJECT }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'updating epic parent' do
@@ -298,8 +244,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_PARENT_UPDATED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for promoting issue to epic' do
@@ -310,8 +254,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::ISSUE_PROMOTED_TO_EPIC }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for destroying epic' do
@@ -322,8 +264,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_DESTROYED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for margin epic task as checked' do
@@ -334,8 +274,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_TASK_CHECKED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for margin epic task as unchecked' do
@@ -346,8 +284,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_TASK_UNCHECKED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for epic cross reference' do
@@ -358,8 +294,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_CROSS_REFERENCED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for related epic added' do
@@ -370,8 +304,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_RELATED_ADDED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for related epic removed' do
@@ -382,8 +314,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_RELATED_REMOVED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for blocking epic added' do
@@ -394,8 +324,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_BLOCKING_ADDED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for blocking epic removed' do
@@ -406,8 +334,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_BLOCKING_REMOVED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for blocked epic added' do
@@ -418,8 +344,6 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_BLOCKED_ADDED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 
   context 'for blocked epic removed' do
@@ -430,7 +354,5 @@ RSpec.describe Gitlab::UsageDataCounters::EpicActivityUniqueCounter, :snowplow, 
     it_behaves_like 'internal event tracking' do
       let(:event) { described_class::EPIC_BLOCKED_REMOVED }
     end
-
-    it_behaves_like 'does not track when feature flag is disabled'
   end
 end
