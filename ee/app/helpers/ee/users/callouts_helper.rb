@@ -90,8 +90,6 @@ module EE
 
       def show_enable_duo_banner_sm?(callouts_feature_name)
         !::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
-          Date.current >= DUO_CORE_RELEASE_DATE &&
-          ::Feature.enabled?(:show_enable_duo_banner_sm, :instance) &&
           current_user.can_admin_all_resources? &&
           License.duo_core_features_available? &&
           ::Ai::Setting.instance.duo_core_features_enabled.nil? &&

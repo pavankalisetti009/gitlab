@@ -362,29 +362,24 @@ RSpec.describe EE::Users::CalloutsHelper do
   describe '.show_enable_duo_banner_sm?', :do_not_mock_admin_mode_setting do
     let_it_be(:admin) { create(:user, :admin) }
     let_it_be(:user) { create(:user) }
-    let(:release_date) { EE::Users::CalloutsHelper::DUO_CORE_RELEASE_DATE }
-    let(:day_before) { EE::Users::CalloutsHelper::DUO_CORE_RELEASE_DATE.prev_day }
 
     subject(:should_show_banner) { helper.show_enable_duo_banner_sm?('callouts_feature_name') }
 
-    where(:saas, :date, :show_enable_duo_banner_sm_enabled, :current_user, :license_plan, :trial, :duo_core_features_enabled, :amazon_q_enabled, :user_dismissed, :expected_result) do
-      false | ref(:release_date) | true  | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | false | true
-      false | ref(:release_date) | true  | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | true  | false
-      false | ref(:release_date) | true  | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | true  | false | false
-      false | ref(:release_date) | true  | ref(:admin) | License::ULTIMATE_PLAN | false | true  | false | false | false
-      false | ref(:release_date) | true  | ref(:admin) | License::ULTIMATE_PLAN | false | false | false | false | false
-      false | ref(:release_date) | true  | ref(:admin) | License::ULTIMATE_PLAN | true  | nil   | false | false | false
-      false | ref(:release_date) | true  | ref(:admin) | License::STARTER_PLAN  | false | nil   | false | false | false
-      false | ref(:release_date) | true  | ref(:user)  | License::ULTIMATE_PLAN | false | nil   | false | false | false
-      false | ref(:release_date) | false | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | false | false
-      false | ref(:day_before)   | true  | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | false | false
-      true  | ref(:release_date) | true  | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | false | false
+    where(:saas, :current_user, :license_plan, :trial, :duo_core_features_enabled, :amazon_q_enabled, :user_dismissed, :expected_result) do
+      false | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | false | true
+      false | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | true  | false
+      false | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | true  | false | false
+      false | ref(:admin) | License::ULTIMATE_PLAN | false | true  | false | false | false
+      false | ref(:admin) | License::ULTIMATE_PLAN | false | false | false | false | false
+      false | ref(:admin) | License::ULTIMATE_PLAN | true  | nil   | false | false | false
+      false | ref(:admin) | License::STARTER_PLAN  | false | nil   | false | false | false
+      false | ref(:user)  | License::ULTIMATE_PLAN | false | nil   | false | false | false
+      true  | ref(:admin) | License::ULTIMATE_PLAN | false | nil   | false | false | false
     end
 
     with_them do
       before do
         stub_saas_features(gitlab_duo_saas_only: saas)
-        stub_feature_flags(show_enable_duo_banner_sm: show_enable_duo_banner_sm_enabled)
         allow(helper).to receive(:current_user).and_return(current_user)
 
         create(:license, plan: license_plan, trial: trial)
@@ -395,9 +390,7 @@ RSpec.describe EE::Users::CalloutsHelper do
       end
 
       it 'returns the expected result' do
-        travel_to(date) do
-          expect(should_show_banner).to be(expected_result)
-        end
+        expect(should_show_banner).to be(expected_result)
       end
     end
   end
