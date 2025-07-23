@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class DatabaseReplicationWorkingCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class DatabaseReplicationWorkingCheck < ::SystemCheck::BaseCheck
       set_name 'Database replication working?'
       set_skip_reason skip_reason
 

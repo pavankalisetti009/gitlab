@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
+module Geo
+  module SystemCheck
     class HTTPCloneEnabledCheck < ::SystemCheck::BaseCheck
       set_name 'HTTP/HTTPS repository cloning is enabled'
 

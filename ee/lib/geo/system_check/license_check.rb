@@ -1,15 +1,9 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class LicenseCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class LicenseCheck < ::SystemCheck::BaseCheck
       set_name 'GitLab Geo is available'
-
-      def check?
-        return true unless Gitlab::Geo.enabled?
-
-        Gitlab::Geo.primary? ? Gitlab::Geo.license_allows? : true
-      end
 
       def self.check_pass
         if Gitlab::Geo.primary? && !Gitlab::Geo.enabled?
@@ -21,6 +15,12 @@ module SystemCheck
         end
 
         ""
+      end
+
+      def check?
+        return true unless Gitlab::Geo.enabled?
+
+        Gitlab::Geo.primary? ? Gitlab::Geo.license_allows? : true
       end
 
       def show_error

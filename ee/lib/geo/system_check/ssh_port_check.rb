@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class SshPortCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class SshPortCheck < ::SystemCheck::BaseCheck
       set_name 'GitLab Geo secondary Git SSH port is the same as the primary'
       set_skip_reason 'not a secondary site with Git over SSH enabled (Admin > Settings)'
 
@@ -17,12 +17,12 @@ module SystemCheck
       def show_error
         try_fixing_it(
           "This site's Git SSH port is: #{configured_ssh_port}, " \
-          "but the primary site's Git SSH port is: #{primary_ssh_port}.",
+            "but the primary site's Git SSH port is: #{primary_ssh_port}.",
           "Update this site's SSH port to match the primary's SSH port:",
           "- Omnibus GitLab: Update gitlab_rails['gitlab_shell_ssh_port'] in /etc/gitlab/gitlab.rb",
           "- GitLab Charts: See https://docs.gitlab.com/charts/charts/globals#port",
           "- GitLab Development Kit: See https://gitlab.com/gitlab-org/gitlab-development-kit/-/blob/main/doc/howto/" \
-          "ssh.md#change-the-listen-port-or-other-configuration"
+            "ssh.md#change-the-listen-port-or-other-configuration"
         )
 
         for_more_information('doc/administration/geo/index.md#limitations')

@@ -7,15 +7,15 @@ RSpec.describe SystemCheck::RakeTask::GeoTask, feature_category: :geo_replicatio
 
   let(:common_checks) do
     [
-      SystemCheck::Geo::LicenseCheck,
-      SystemCheck::Geo::EnabledCheck,
-      SystemCheck::Geo::CurrentNodeCheck,
-      SystemCheck::Geo::GeoDatabasePromotedCheck,
-      SystemCheck::Geo::HTTPCloneEnabledCheck,
-      SystemCheck::Geo::ClocksSynchronizationCheck,
+      Geo::SystemCheck::LicenseCheck,
+      Geo::SystemCheck::EnabledCheck,
+      Geo::SystemCheck::CurrentNodeCheck,
+      Geo::SystemCheck::GeoDatabasePromotedCheck,
+      Geo::SystemCheck::HTTPCloneEnabledCheck,
+      Geo::SystemCheck::ClocksSynchronizationCheck,
       SystemCheck::App::GitUserDefaultSSHConfigCheck,
-      SystemCheck::Geo::AuthorizedKeysCheck,
-      SystemCheck::Geo::AuthorizedKeysFlagCheck,
+      Geo::SystemCheck::AuthorizedKeysCheck,
+      Geo::SystemCheck::AuthorizedKeysFlagCheck,
       SystemCheck::App::HashedStorageEnabledCheck,
       SystemCheck::App::HashedStorageAllProjectsCheck
     ]
@@ -23,11 +23,11 @@ RSpec.describe SystemCheck::RakeTask::GeoTask, feature_category: :geo_replicatio
 
   let(:secondary_checks) do
     [
-      SystemCheck::Geo::GeoDatabaseConfiguredCheck,
-      SystemCheck::Geo::DatabaseReplicationEnabledCheck,
-      SystemCheck::Geo::DatabaseReplicationWorkingCheck,
-      SystemCheck::Geo::HttpConnectionCheck,
-      SystemCheck::Geo::SshPortCheck
+      Geo::SystemCheck::GeoDatabaseConfiguredCheck,
+      Geo::SystemCheck::DatabaseReplicationEnabledCheck,
+      Geo::SystemCheck::DatabaseReplicationWorkingCheck,
+      Geo::SystemCheck::HttpConnectionCheck,
+      Geo::SystemCheck::SshPortCheck
     ] + common_checks
   end
 
@@ -38,7 +38,7 @@ RSpec.describe SystemCheck::RakeTask::GeoTask, feature_category: :geo_replicatio
       end
 
       it 'returns only the GeoNodesCheck' do
-        expect(described_class.checks).to eq([SystemCheck::Geo::GeoNodesCheck])
+        expect(described_class.checks).to eq([Geo::SystemCheck::GeoNodesCheck])
       end
     end
 

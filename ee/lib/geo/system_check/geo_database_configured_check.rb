@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class GeoDatabaseConfiguredCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class GeoDatabaseConfiguredCheck < ::SystemCheck::BaseCheck
       set_name 'GitLab Geo tracking database is correctly configured'
       set_skip_reason 'not a secondary node'
 
@@ -10,9 +10,11 @@ module SystemCheck
         Rails does not appear to have the configuration necessary to connect to the Geo tracking database.
         If the tracking database is running on a node other than this one, then you may need to add configuration.
       MSG
-      UNHEALTHY_CONNECTION_MESSAGE = 'Check the tracking database configuration as the connection could not be established'
+      UNHEALTHY_CONNECTION_MESSAGE = "Check the tracking database configuration as the connection " \
+        "could not be established"
       NO_TABLES_MESSAGE = 'Run the tracking database migrations: gitlab-rake db:migrate:geo'
-      REUSING_EXISTING_DATABASE_MESSAGE = 'If you are reusing an existing tracking database, make sure you have reset it.'
+      REUSING_EXISTING_DATABASE_MESSAGE = "If you are reusing an existing tracking database, " \
+        "make sure you have reset it."
 
       def skip?
         !Gitlab::Geo.secondary?

@@ -12,7 +12,7 @@ module SystemCheck
 
       def self.checks
         # If geo_nodes table doesn't exist, only run the prerequisite check
-        return [SystemCheck::Geo::GeoNodesCheck] unless GeoNode.connection.table_exists?(:geo_nodes)
+        return [Geo::SystemCheck::GeoNodesCheck] unless GeoNode.connection.table_exists?(:geo_nodes)
         return secondary_checks if Gitlab::Geo.secondary? || Gitlab::Geo.current_node_misconfigured?
 
         common_checks
@@ -20,15 +20,15 @@ module SystemCheck
 
       def self.common_checks
         [
-          SystemCheck::Geo::LicenseCheck,
-          SystemCheck::Geo::EnabledCheck,
-          SystemCheck::Geo::CurrentNodeCheck,
-          SystemCheck::Geo::GeoDatabasePromotedCheck,
-          SystemCheck::Geo::HTTPCloneEnabledCheck,
-          SystemCheck::Geo::ClocksSynchronizationCheck,
+          Geo::SystemCheck::LicenseCheck,
+          Geo::SystemCheck::EnabledCheck,
+          Geo::SystemCheck::CurrentNodeCheck,
+          Geo::SystemCheck::GeoDatabasePromotedCheck,
+          Geo::SystemCheck::HTTPCloneEnabledCheck,
+          Geo::SystemCheck::ClocksSynchronizationCheck,
           SystemCheck::App::GitUserDefaultSSHConfigCheck,
-          SystemCheck::Geo::AuthorizedKeysCheck,
-          SystemCheck::Geo::AuthorizedKeysFlagCheck,
+          Geo::SystemCheck::AuthorizedKeysCheck,
+          Geo::SystemCheck::AuthorizedKeysFlagCheck,
           SystemCheck::App::HashedStorageEnabledCheck,
           SystemCheck::App::HashedStorageAllProjectsCheck
         ]
@@ -36,11 +36,11 @@ module SystemCheck
 
       def self.secondary_checks
         [
-          SystemCheck::Geo::GeoDatabaseConfiguredCheck,
-          SystemCheck::Geo::DatabaseReplicationEnabledCheck,
-          SystemCheck::Geo::DatabaseReplicationWorkingCheck,
-          SystemCheck::Geo::HttpConnectionCheck,
-          SystemCheck::Geo::SshPortCheck
+          Geo::SystemCheck::GeoDatabaseConfiguredCheck,
+          Geo::SystemCheck::DatabaseReplicationEnabledCheck,
+          Geo::SystemCheck::DatabaseReplicationWorkingCheck,
+          Geo::SystemCheck::HttpConnectionCheck,
+          Geo::SystemCheck::SshPortCheck
         ] + common_checks
       end
     end

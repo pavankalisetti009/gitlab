@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class ClocksSynchronizationCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class ClocksSynchronizationCheck < ::SystemCheck::BaseCheck
       include ::SystemCheck::MultiCheckHelpers
 
       set_name 'Machine clock is synchronized'
@@ -44,7 +44,7 @@ module SystemCheck
         try_fixing_it(
           "Check whether you have a connectivity problem or if there is a firewall blocking it",
           "If this is an offline environment, you can ignore this error, " \
-          "but make sure you have a way to keep clocks synced."
+            "but make sure you have a way to keep clocks synced."
         )
 
         for_more_information(help_replication_check)

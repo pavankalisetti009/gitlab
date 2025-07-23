@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck # rubocop:disable Gitlab/BoundedContexts -- Context refactoring needed in the future
-  module Geo
-    class GeoDatabasePromotedCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class GeoDatabasePromotedCheck < ::SystemCheck::BaseCheck
       set_name 'GitLab Geo tracking database is not configured after promotion'
       set_skip_reason 'not a primary node'
 

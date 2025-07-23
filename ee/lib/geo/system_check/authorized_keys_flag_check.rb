@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
+module Geo
+  module SystemCheck
     class AuthorizedKeysFlagCheck < ::SystemCheck::BaseCheck
       set_name 'GitLab configured to disable writing to authorized_keys file'
 

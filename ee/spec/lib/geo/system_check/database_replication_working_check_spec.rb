@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::DatabaseReplicationWorkingCheck, :silence_stdout, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::DatabaseReplicationWorkingCheck, :silence_stdout, feature_category: :geo_replication do
   include ::EE::GeoHelpers
 
   subject(:database_replication_working_check) { described_class.new }
@@ -112,8 +112,8 @@ RSpec.describe SystemCheck::Geo::DatabaseReplicationWorkingCheck, :silence_stdou
 
   def stub_database_state(replication_enabled: true, replication_working: true)
     allow_next_instance_of(::Gitlab::Geo::HealthCheck) do |health_check|
-      allow(health_check).to receive(:replication_enabled?).and_return(replication_enabled)
-      allow(health_check).to receive(:replication_working?).and_return(replication_working)
+      allow(health_check).to receive_messages(replication_enabled?: replication_enabled,
+        replication_working?: replication_working)
     end
   end
 end

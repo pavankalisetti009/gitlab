@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class EnabledCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class EnabledCheck < ::SystemCheck::BaseCheck
       set_name 'GitLab Geo is enabled'
 
       def check?

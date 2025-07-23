@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::HTTPCloneEnabledCheck, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::HTTPCloneEnabledCheck, feature_category: :geo_replication do
   describe '#check?' do
     subject { described_class.new.check? }
 

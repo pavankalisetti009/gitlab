@@ -2,13 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::CurrentNodeCheck, :geo, :silence_stdout, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::CurrentNodeCheck, :geo, :silence_stdout, feature_category: :geo_replication do
+  subject(:current_node_check) { described_class.new }
+
   describe '#check?' do
     context 'when the current machine has a matching GeoNode' do
       it 'returns true' do
         create(:geo_node, :primary, name: GeoNode.current_node_name)
 
-        expect(subject.check?).to be_truthy
+        expect(current_node_check.check?).to be_truthy
       end
     end
 
@@ -16,7 +18,7 @@ RSpec.describe SystemCheck::Geo::CurrentNodeCheck, :geo, :silence_stdout, featur
       it 'returns false' do
         expect(GeoNode).to receive(:current_node_name).twice.and_return('Foo')
 
-        expect(subject.check?).to be_falsey
+        expect(current_node_check.check?).to be_falsey
       end
     end
   end

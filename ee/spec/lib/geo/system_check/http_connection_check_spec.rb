@@ -1,26 +1,28 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::HttpConnectionCheck, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::HttpConnectionCheck, feature_category: :geo_replication do
   include EE::GeoHelpers
 
   let_it_be(:primary_node) { create(:geo_node, :primary) }
   let_it_be(:http_method) { :get }
 
+  subject(:http_connection_check) { described_class.new }
+
   describe 'skip?' do
     it 'skips when Geo is disabled' do
-      allow(Gitlab::Geo).to receive(:enabled?) { false }
+      allow(Gitlab::Geo).to receive(:enabled?).and_return(false)
 
-      expect(subject.skip?).to be_truthy
-      expect(subject.skip_reason).to eq('Geo is not enabled')
+      expect(http_connection_check.skip?).to be_truthy
+      expect(http_connection_check.skip_reason).to eq('Geo is not enabled')
     end
 
     it 'skips when Geo is enabled but its a primary node' do
-      allow(Gitlab::Geo).to receive(:enabled?) { true }
-      allow(Gitlab::Geo).to receive(:secondary?) { false }
+      allow(Gitlab::Geo).to receive_messages(enabled?: true, secondary?: false)
 
-      expect(subject.skip?).to be_truthy
-      expect(subject.skip_reason).to eq('not a secondary node')
+      expect(http_connection_check.skip?).to be_truthy
+      expect(http_connection_check.skip_reason).to eq('not a secondary node')
     end
   end
 
@@ -29,17 +31,17 @@ RSpec.describe SystemCheck::Geo::HttpConnectionCheck, feature_category: :geo_rep
       stub_current_geo_node(primary_node)
     end
 
-    context 'connection success' do
+    context 'with connection success' do
       it 'puts yes if check works' do
         stub_request(http_method, primary_node.internal_uri).to_return(status: 200, body: "", headers: {})
 
         expect do
-          subject.multi_check
+          http_connection_check.multi_check
         end.to output("\n* Can connect to the primary node ... yes\n").to_stdout
       end
     end
 
-    context 'redirects' do
+    context 'with redirects' do
       def stub_many_requests(num_redirects)
         url = primary_node.internal_uri
         location = "https://example.com"
@@ -53,43 +55,45 @@ RSpec.describe SystemCheck::Geo::HttpConnectionCheck, feature_category: :geo_rep
         stub_request(http_method, url).to_return(status: 200, body: "", headers: {})
       end
 
-      context 'connection succeeds after 9 redirects' do
+      context 'when connection succeeds after 9 redirects' do
         it 'puts yes' do
           stub_many_requests(9)
 
           expect do
-            subject.multi_check
+            http_connection_check.multi_check
           end.to output("\n* Can connect to the primary node ... yes\n").to_stdout
         end
       end
 
-      context 'connection would succeed after 10 redirects' do
+      context 'when connection would succeed after 10 redirects' do
         it 'puts no' do
           stub_many_requests(10)
 
           expect do
-            subject.multi_check
-          end.to output("\n* Can connect to the primary node ... no\n  Reason:\n  Gitlab::HTTP_V2::RedirectionTooDeep\n").to_stdout
+            http_connection_check.multi_check
+          end
+            .to output("\n* Can connect to the primary node ... no\n  Reason:\n  Gitlab::HTTP_V2::RedirectionTooDeep\n")
+              .to_stdout
         end
       end
     end
 
-    context 'connection errored' do
+    context 'when connection errored' do
       it 'puts no if check errored' do
         stub_request(http_method, primary_node.internal_uri).to_return(status: 400, body: "", headers: {})
 
         expect do
-          subject.multi_check
+          http_connection_check.multi_check
         end.to output("\n* Can connect to the primary node ... no\n").to_stdout
       end
     end
 
-    context 'connection exceptions' do
+    context 'when connection exceptions' do
       it 'calls try_fixing_it for econnrefused' do
         stub_request(http_method, primary_node.internal_uri).to_raise(Errno::ECONNREFUSED)
 
         expect do
-          subject.multi_check
+          http_connection_check.multi_check
         end.to output(econnrefused_help_messages).to_stdout
       end
 
@@ -97,7 +101,7 @@ RSpec.describe SystemCheck::Geo::HttpConnectionCheck, feature_category: :geo_rep
         stub_request(http_method, primary_node.internal_uri).to_raise(SocketError.new)
 
         expect do
-          subject.multi_check
+          http_connection_check.multi_check
         end.to output(socketerror_help_messages).to_stdout
       end
 
@@ -105,7 +109,7 @@ RSpec.describe SystemCheck::Geo::HttpConnectionCheck, feature_category: :geo_rep
         stub_request(http_method, primary_node.internal_uri).to_raise(OpenSSL::SSL::SSLError.new)
 
         expect do
-          subject.multi_check
+          http_connection_check.multi_check
         end.to output(openssl_error_help_messages).to_stdout
       end
     end
