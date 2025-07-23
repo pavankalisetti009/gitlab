@@ -7,6 +7,7 @@ module Ai
         return false unless License.feature_available?(:amazon_q)
 
         amazon_q_unit_primitive = Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(:amazon_q_integration)
+        return false unless amazon_q_unit_primitive
 
         if amazon_q_free_access?(amazon_q_unit_primitive)
           !::GitlabSubscriptions::AddOnPurchase.for_duo_pro_or_duo_enterprise.active.exists?
