@@ -6,6 +6,8 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
 
+  let(:namespace) { nil } # used in tracking custom role action shard examples
+
   describe '#execute' do
     let(:abilities) { { read_vulnerability: true } }
     let(:params) do
@@ -50,10 +52,14 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
         context 'with root group' do
           context 'when on SaaS', :saas do
+            let(:namespace) { group }
+
             it_behaves_like 'custom role creation', 'member_role_created', 'Member role was created' do
               let(:audit_entity_id) { group.id }
               let(:audit_entity_type) { 'Group' }
             end
+
+            it_behaves_like 'tracking custom role action', 'create'
 
             context 'with a missing param' do
               before do
@@ -120,6 +126,8 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
         context 'when on self-managed' do
           it_behaves_like 'custom role creation', 'member_role_created', 'Member role was created'
 
+          it_behaves_like 'tracking custom role action', 'create'
+
           context 'with a missing param' do
             before do
               params.delete(:base_access_level)
@@ -150,6 +158,8 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
             let(:audit_event_message) { 'Custom admin role was created' }
             let(:audit_event_type) { 'custom_admin_role_created' }
           end
+
+          it_behaves_like 'tracking custom role action', 'create_admin'
         end
       end
     end
