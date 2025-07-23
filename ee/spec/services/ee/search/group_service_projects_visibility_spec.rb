@@ -23,30 +23,22 @@ RSpec.describe Search::GroupService, '#visibility', feature_category: :global_se
 
     let(:projects) { [project, project2] }
     let(:search_level) { group }
+    let(:scope) { 'projects' }
+    let(:search) { project.name }
 
     context 'for projects' do
-      where(:project_level, :membership, :expected_count) do
+      where(:project_level, :membership, :admin_mode, :expected_count) do
         permission_table_for_project_access
       end
 
       with_them do
-        it 'respects visibility' do
+        before do
           project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
 
-          Elastic::ProcessInitialBookkeepingService.track!(project)
           ensure_elasticsearch_index!
-
-          expected_objects = expected_count == 1 ? [project] : []
-
-          expect_search_results(
-            user,
-            'projects',
-            expected_count: expected_count,
-            expected_objects: expected_objects
-          ) do |user|
-            described_class.new(user, group, search: project.name).execute
-          end
         end
+
+        it_behaves_like 'search respects visibility', project_feature_setup: false
       end
     end
   end
