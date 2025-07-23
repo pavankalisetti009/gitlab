@@ -13402,6 +13402,7 @@ Input type: `WorkItemBulkUpdateInput`
 | <a id="mutationworkitembulkupdatemilestonewidget"></a>`milestoneWidget` {{< icon name="warning-solid" >}} | [`WorkItemWidgetMilestoneInput`](#workitemwidgetmilestoneinput) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitembulkupdateparentid"></a>`parentId` {{< icon name="warning-solid" >}} | [`WorkItemsParentID`](#workitemsparentid) | **Deprecated**: Use full_path instead. Deprecated in GitLab 18.2. |
 | <a id="mutationworkitembulkupdatestateevent"></a>`stateEvent` {{< icon name="warning-solid" >}} | [`WorkItemStateEvent`](#workitemstateevent) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
+| <a id="mutationworkitembulkupdatestatuswidget"></a>`statusWidget` {{< icon name="warning-solid" >}} | [`WorkItemWidgetStatusInput`](#workitemwidgetstatusinput) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.3. |
 | <a id="mutationworkitembulkupdatesubscriptionevent"></a>`subscriptionEvent` {{< icon name="warning-solid" >}} | [`WorkItemSubscriptionEvent`](#workitemsubscriptionevent) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 
 #### Fields

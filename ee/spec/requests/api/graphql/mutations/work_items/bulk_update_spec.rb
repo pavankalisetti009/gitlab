@@ -383,6 +383,112 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
         end
       end
 
+      context 'when updating status' do
+        let(:system_defined_done_status) { build(:work_item_system_defined_status, :done) }
+        let(:status) { system_defined_done_status }
+
+        let(:work_item_ids) do
+          [work_item1, work_item2, work_item3, work_item4].map do |work_item|
+            work_item.to_gid.to_s
+          end
+        end
+
+        let(:widget_arguments) { { status_widget: { status: status.to_gid } } }
+
+        shared_examples 'updates work item statuses' do |expected_count|
+          it 'sets the status of the related work items' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { work_item1.reload.current_status&.status }.from(nil).to(status)
+              .and change { work_item2.reload.current_status&.status }.from(nil).to(status)
+              .and not_change { work_item3.reload.current_status&.status }
+              .and not_change { work_item4.reload.current_status&.status }
+
+            expect(mutation_response).to include(
+              'updatedWorkItemCount' => expected_count
+            )
+          end
+        end
+
+        shared_examples 'does not update work item statuses' do
+          it 'does not set the status of the related work items' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to not_change { work_item1.reload.current_status&.status }
+              .and not_change { work_item2.reload.current_status&.status }
+          end
+        end
+
+        context 'when work_item_status feature is enabled' do
+          before do
+            stub_licensed_features(epics: true, group_bulk_edit: true, work_item_status: true)
+          end
+
+          context 'with system-defined lifecycle' do
+            context 'with system-defined status' do
+              it_behaves_like 'updates work item statuses', 2
+            end
+
+            context 'with custom status' do
+              let(:custom_done_status) { create(:work_item_custom_status, :done, namespace: parent_group) }
+              let(:status) { custom_done_status }
+
+              it_behaves_like 'does not update work item statuses'
+            end
+          end
+
+          context 'with custom lifecycle' do
+            let(:lifecycle) { create(:work_item_custom_lifecycle, namespace: parent_group) }
+
+            let!(:type_custom_lifecycle) do
+              create(:work_item_type_custom_lifecycle,
+                lifecycle: lifecycle,
+                work_item_type: work_item1.work_item_type,
+                namespace: parent_group
+              )
+            end
+
+            context 'with custom status' do
+              let(:status) { lifecycle.default_closed_status }
+
+              it_behaves_like 'updates work item statuses', 2
+            end
+
+            context 'with system-defined status' do
+              it_behaves_like 'does not update work item statuses'
+            end
+          end
+
+          context 'when work item type does not support status' do
+            let(:work_item_ids) { [epic.to_gid.to_s] }
+
+            it 'does not set the status and fails gracefully' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.not_to change { epic.reload.current_status&.status }
+
+              expect_graphql_errors_to_be_empty
+            end
+          end
+
+          context 'when work_item_status_feature_flag is disabled' do
+            before do
+              stub_feature_flags(work_item_status_feature_flag: false)
+            end
+
+            it_behaves_like 'does not update work item statuses'
+          end
+        end
+
+        context 'when work_item_status feature is disabled' do
+          before do
+            stub_licensed_features(epics: true, group_bulk_edit: true, work_item_status: false)
+          end
+
+          it_behaves_like 'does not update work item statuses'
+        end
+      end
+
       context 'when group_bulk_edit feature is not available' do
         before do
           stub_licensed_features(epics: true, group_bulk_edit: false)
