@@ -21,18 +21,17 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
   describe '#execute' do
     subject(:execute_service) { service.execute }
 
-    shared_examples 'does not update the flow' do
-      it 'does not update the flow' do
-        expect { execute_service }.not_to change { flow.reload.attributes }
-      end
-    end
-
-    shared_examples 'returns error response' do |error:|
-      specify do
+    shared_examples 'an error response' do |errors|
+      it 'returns an error response' do
         result = execute_service
 
         expect(result).to be_error
-        expect(result.message).to contain_exactly(error)
+        expect(result.message).to match_array(Array(errors))
+        expect(result.payload[:flow]).to eq(flow)
+      end
+
+      it 'does not update the flow' do
+        expect { execute_service }.not_to change { flow.reload.attributes }
       end
     end
 
@@ -41,8 +40,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         project.add_developer(user)
       end
 
-      it_behaves_like 'does not update the flow'
-      it_behaves_like 'returns error response', error: 'You have insufficient permissions'
+      it_behaves_like 'an error response', 'You have insufficient permissions'
     end
 
     context 'when user has permissions' do
@@ -60,8 +58,11 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         )
       end
 
-      it 'returns success response' do
-        expect(execute_service).to be_success
+      it 'returns success response with flow in payload' do
+        result = execute_service
+
+        expect(result).to be_success
+        expect(result[:flow]).to eq(flow)
       end
 
       context 'when updated flow is invalid' do
@@ -72,8 +73,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
           }
         end
 
-        it_behaves_like 'does not update the flow'
-        it_behaves_like 'returns error response', error: "Name can't be blank"
+        it_behaves_like 'an error response', "Name can't be blank"
       end
 
       context 'when flow is not a flow' do
@@ -81,8 +81,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
           allow(flow).to receive(:flow?).and_return(false)
         end
 
-        it_behaves_like 'does not update the flow'
-        it_behaves_like 'returns error response', error: 'Flow not found'
+        it_behaves_like 'an error response', 'Flow not found'
       end
     end
   end

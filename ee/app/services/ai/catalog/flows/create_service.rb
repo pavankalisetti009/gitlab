@@ -24,7 +24,7 @@ module Ai
           item = Ai::Catalog::Item.new(item_params)
           item.versions.build(version_params)
 
-          return ServiceResponse.success(payload: item) if item.save
+          return ServiceResponse.success(payload: { item: item }) if item.save
 
           error_creating(item)
         end
