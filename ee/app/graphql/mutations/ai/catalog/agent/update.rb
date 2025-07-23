@@ -53,7 +53,7 @@ module Mutations
               params: params
             ).execute
 
-            item = result.payload
+            item = result.payload[:item]
             item.reset unless result.success?
 
             {

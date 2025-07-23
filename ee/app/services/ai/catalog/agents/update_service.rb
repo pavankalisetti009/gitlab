@@ -10,8 +10,8 @@ module Ai
         end
 
         def execute
-          return error_no_permissions(payload: agent) unless allowed?
-          return error('Agent not found', payload: agent) unless valid_agent?
+          return error_no_permissions(payload: payload) unless allowed?
+          return error('Agent not found', payload: payload) unless valid_agent?
 
           agent_params = params.slice(:name, :description, :public)
 
@@ -27,10 +27,10 @@ module Ai
           # Changes to the agent record are also saved through latest_version
           if latest_version.save
             track_ai_item_events('update_ai_catalog_item', agent.item_type)
-            return ServiceResponse.success(payload: agent)
+            return ServiceResponse.success(payload: payload)
           end
 
-          error(latest_version.errors.full_messages, payload: agent)
+          error(latest_version.errors.full_messages, payload: payload)
         end
 
         private
@@ -39,6 +39,10 @@ module Ai
 
         def valid_agent?
           agent && agent.agent?
+        end
+
+        def payload
+          { item: agent }
         end
       end
     end

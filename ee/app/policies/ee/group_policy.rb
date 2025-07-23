@@ -870,6 +870,7 @@ module EE
 
       rule { owner & group_saml_enabled }.policy do
         enable :read_group_saml_identity
+        enable :read_group_scim_identity
       end
 
       rule { ~(admin | allow_to_manage_default_branch_protection) }.policy do

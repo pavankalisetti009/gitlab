@@ -18,17 +18,21 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
   subject(:response) { described_class.new(project: project, current_user: user, params: params).execute }
 
   describe '#execute' do
-    shared_examples 'an authorization failure' do
-      it 'returns a permission error' do
-        expect { response }.not_to change { Ai::Catalog::Item.count }
+    shared_examples 'an error response' do |errors|
+      it 'returns an error response' do
         expect(response).to be_error
-        expect(response.message).to match_array(
-          ['You have insufficient permissions'])
+        expect(response.message).to match_array(Array(errors))
+        expect(response.payload).to be_empty
+      end
+
+      it 'does not create a flow' do
+        expect { response }.not_to change { Ai::Catalog::Item.count }
       end
     end
 
-    it 'returns success' do
+    it 'returns a success response with item in payload' do
       expect(response).to be_success
+      expect(response.payload[:item]).to be_a(Ai::Catalog::Item)
     end
 
     it 'creates a catalog item and version with expected data' do
@@ -52,19 +56,17 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
     end
 
     context 'when there is a validation issue' do
-      it 'returns the relevant error' do
+      before do
         params[:name] = nil
-
-        expect { response }.not_to change { Ai::Catalog::Item.count }
-        expect(response).to be_error
-        expect(response.message).to contain_exactly("Name can't be blank", 'Versions is invalid')
       end
+
+      it_behaves_like 'an error response', ["Name can't be blank", 'Versions is invalid']
     end
 
     context 'when user is a developer' do
       let(:user) { create(:user).tap { |user| project.add_developer(user) } }
 
-      it_behaves_like 'an authorization failure'
+      it_behaves_like 'an error response', 'You have insufficient permissions'
     end
 
     context 'when global_ai_catalog feature flag is disabled' do
@@ -72,7 +74,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
         stub_feature_flags(global_ai_catalog: false)
       end
 
-      it_behaves_like 'an authorization failure'
+      it_behaves_like 'an error response', 'You have insufficient permissions'
     end
   end
 end
