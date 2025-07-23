@@ -65,17 +65,7 @@ export default {
   data() {
     return {
       serverValidations: { new_group_name: this.namespaceData.createErrors },
-      selectedGroup: this.namespaceData.initialValue,
-      groupName: this.namespaceData.newGroupName,
-      initialFormValues: {
-        first_name: this.userData.firstName,
-        last_name: this.userData.lastName,
-        company_name: this.userData.companyName,
-        country: this.userData.country,
-        phone_number: this.userData.phoneNumber,
-      },
-      selectedCountry: this.userData.country,
-      selectedState: this.userData.state,
+      formValues: {},
       countries: [],
       states: [],
     };
@@ -90,21 +80,21 @@ export default {
     showNewGroupNameField() {
       return (
         !this.namespaceData.anyTrialEligibleNamespaces ||
-        this.selectedGroup === CREATE_GROUP_OPTION_VALUE
+        this.formValues.group === CREATE_GROUP_OPTION_VALUE
       );
     },
     showCreateGroupButton() {
-      return this.selectedGroup !== CREATE_GROUP_OPTION_VALUE;
+      return this.formValues.group !== CREATE_GROUP_OPTION_VALUE;
     },
     stateRequired() {
-      return COUNTRIES_WITH_STATES_ALLOWED.includes(this.selectedCountry);
+      return COUNTRIES_WITH_STATES_ALLOWED.includes(this.formValues.country);
     },
     showState() {
-      return !this.$apollo.queries.states.loading && this.selectedCountry && this.stateRequired;
+      return !this.$apollo.queries.states.loading && this.formValues.country && this.stateRequired;
     },
     groupOptions() {
       return [
-        ...(this.selectedGroup === CREATE_GROUP_OPTION_VALUE ? [this.createGroupOption] : []),
+        ...(this.formValues.group === CREATE_GROUP_OPTION_VALUE ? [this.createGroupOption] : []),
         ...this.namespaceData.items,
       ];
     },
@@ -120,8 +110,8 @@ export default {
             'data-testid': 'group-dropdown-container',
           },
           validators: [
-            formValidators.factory(__('Please select a group for your trial.'), () => {
-              return this.selectedGroup || !this.namespaceData.anyTrialEligibleNamespaces;
+            formValidators.factory(__('Please select a group for your trial.'), (fieldValue) => {
+              return fieldValue || !this.namespaceData.anyTrialEligibleNamespaces;
             }),
           ],
         };
@@ -133,11 +123,7 @@ export default {
           groupAttrs: {
             class: 'gl-col-span-12',
           },
-          validators: [
-            formValidators.factory(__('You must enter a new group name.'), () => {
-              return this.groupName;
-            }),
-          ],
+          validators: [formValidators.required(__('You must enter a new group name.'))],
         };
       }
 
@@ -189,11 +175,7 @@ export default {
             class: 'gl-col-span-12',
             'data-testid': 'country-dropdown-container',
           },
-          validators: [
-            formValidators.factory(__('Country or region is required.'), () => {
-              return this.selectedCountry;
-            }),
-          ],
+          validators: [formValidators.required(__('Country or region is required.'))],
         };
 
         if (this.showState) {
@@ -204,8 +186,8 @@ export default {
               'data-testid': 'state-dropdown-container',
             },
             validators: [
-              formValidators.factory(__('State or province is required.'), () => {
-                return !this.stateRequired || (this.stateRequired && this.selectedState);
+              formValidators.factory(__('State or province is required.'), (fieldValue) => {
+                return !this.stateRequired || (this.stateRequired && fieldValue);
               }),
             ],
           };
@@ -239,6 +221,18 @@ export default {
       return { value: CREATE_GROUP_OPTION_VALUE, text: __('Create group') };
     },
   },
+  mounted() {
+    this.formValues = {
+      group: this.namespaceData.initialValue,
+      new_group_name: this.namespaceData.newGroupName,
+      first_name: this.userData.firstName,
+      last_name: this.userData.lastName,
+      company_name: this.userData.companyName,
+      country: this.userData.country,
+      state: this.userData.state,
+      phone_number: this.userData.phoneNumber,
+    };
+  },
   methods: {
     onSubmit() {
       trackSaasTrialLeadSubmit(this.gtmSubmitEventLabel, this.userData.emailDomain);
@@ -247,10 +241,13 @@ export default {
     handleCreateGroupClick(onSelect) {
       onSelect(CREATE_GROUP_OPTION_VALUE);
     },
-    resetSelectedState() {
+    onCountrySelect(value, formFieldsInput) {
       if (!this.showState) {
-        this.selectedState = '';
+        this.formValues.state = '';
       }
+
+      // On initialization this can be undefined
+      formFieldsInput?.(value);
     },
   },
   apollo: {
@@ -272,11 +269,11 @@ export default {
         }));
       },
       skip() {
-        return !this.selectedCountry;
+        return !this.formValues.country;
       },
       variables() {
         return {
-          countryId: this.selectedCountry,
+          countryId: this.formValues.country,
         };
       },
     },
@@ -311,16 +308,16 @@ export default {
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
 
     <gl-form-fields
-      v-model="initialFormValues"
+      v-model="formValues"
       :form-id="$options.formId"
       :fields="fields"
       class="gl-grid md:gl-gap-x-4"
       :server-validations="serverValidations"
       @submit="onSubmit"
     >
-      <template #input(group)>
+      <template #input(group)="{ value, input }">
         <listbox-input
-          v-model="selectedGroup"
+          :selected="value"
           name="namespace_id"
           label-for="namespace_id"
           :items="groupOptions"
@@ -329,6 +326,7 @@ export default {
           :fluid-width="true"
           :aria-label="__('Select a group')"
           data-testid="namespace-dropdown"
+          @select="(val) => input && input(val)"
         >
           <template v-if="showCreateGroupButton" #footer="{ onSelect }">
             <div
@@ -348,13 +346,15 @@ export default {
         </listbox-input>
       </template>
 
-      <template #input(new_group_name)>
+      <template #input(new_group_name)="{ id, value, input, validation }">
         <gl-form-input
+          :id="id"
           ref="newGroupNameInput"
-          v-model="groupName"
           v-autofocusonshow
+          :value="value"
+          :state="validation.state"
           name="new_group_name"
-          data-testid="new-group-name-input"
+          @input="input"
         />
       </template>
 
@@ -372,27 +372,28 @@ export default {
           data-testid="hidden-last-name"
         />
       </template>
-      <template #input(country)>
+      <template #input(country)="{ value, input }">
         <listbox-input
-          v-model="selectedCountry"
+          :selected="value"
           name="country"
           :items="countries"
           :default-toggle-text="$options.i18n.countryPrompt"
           :block="true"
           :aria-label="$options.i18n.countryPrompt"
           data-testid="country-dropdown"
-          @select="resetSelectedState"
+          @select="onCountrySelect($event, input)"
         />
       </template>
-      <template #input(state)>
+      <template #input(state)="{ value, input }">
         <listbox-input
-          v-model="selectedState"
+          :selected="value"
           name="state"
           :items="states"
           :default-toggle-text="$options.i18n.statePrompt"
           :block="true"
           :aria-label="$options.i18n.statePrompt"
           data-testid="state-dropdown"
+          @select="(val) => input && input(val)"
         />
       </template>
     </gl-form-fields>
