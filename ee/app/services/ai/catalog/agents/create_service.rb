@@ -29,7 +29,7 @@ module Ai
 
           if item.save
             track_ai_item_events('create_ai_catalog_item', item.item_type)
-            return ServiceResponse.success(payload: item)
+            return ServiceResponse.success(payload: { item: item })
           end
 
           error_creating(item)

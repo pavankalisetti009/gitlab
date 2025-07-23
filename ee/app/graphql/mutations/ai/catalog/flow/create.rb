@@ -42,7 +42,7 @@ module Mutations
               params: service_args
             ).execute
 
-            { item: result.payload.presence, errors: result.errors }
+            { item: result.payload[:item], errors: result.errors }
           end
         end
       end

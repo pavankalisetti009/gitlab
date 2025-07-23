@@ -13,16 +13,22 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
   describe '#execute' do
     subject(:execute_service) { service.execute }
 
-    shared_examples 'returns agent not found error' do
-      it 'returns agent not found error' do
+    shared_examples 'an error response' do |errors|
+      it 'returns an error response' do
         result = execute_service
 
         expect(result).to be_error
-        expect(result.errors).to contain_exactly('Agent not found')
+        expect(result.errors).to match_array(Array(errors))
+        expect(result.payload).to be_empty
       end
 
       it 'does not destroy any agents' do
         expect { execute_service }.not_to change { Ai::Catalog::Item.count }
+      end
+
+      it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { execute_service }
+          .not_to trigger_internal_events('delete_ai_catalog_item')
       end
     end
 
@@ -34,7 +40,7 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
       context 'when agent is nil' do
         let(:params) { { agent: nil } }
 
-        it_behaves_like 'returns agent not found error'
+        it_behaves_like 'an error response', 'Agent not found'
       end
 
       context 'when catalog item is not an agent' do
@@ -42,7 +48,7 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
           allow(agent).to receive(:agent?).and_return(false)
         end
 
-        it_behaves_like 'returns agent not found error'
+        it_behaves_like 'an error response', 'Agent not found'
       end
     end
 
@@ -70,6 +76,7 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
           result = execute_service
 
           expect(result.success?).to be(true)
+          expect(result.payload).to be_empty
         end
 
         context 'when agent is already being used (has consumers)' do
@@ -103,21 +110,7 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
           agent.errors.add(:base, 'Agent cannot be destroyed')
         end
 
-        it 'does not destroy the agent' do
-          expect { execute_service }.not_to change { Ai::Catalog::Item.count }
-        end
-
-        it 'returns error response' do
-          result = execute_service
-
-          expect(result).to be_error
-          expect(result.errors).to contain_exactly('Agent cannot be destroyed')
-        end
-
-        it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
-          expect { execute_service }
-            .not_to trigger_internal_events('delete_ai_catalog_item')
-        end
+        it_behaves_like 'an error response', 'Agent cannot be destroyed'
       end
     end
 
@@ -126,16 +119,7 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
         project.add_developer(user)
       end
 
-      it 'returns permission error' do
-        result = execute_service
-
-        expect(result).to be_error
-        expect(result.errors).to contain_exactly('You have insufficient permissions')
-      end
-
-      it 'does not destroy the agent' do
-        expect { execute_service }.not_to change { Ai::Catalog::Item.count }
-      end
+      it_behaves_like 'an error response', 'You have insufficient permissions'
     end
   end
 end

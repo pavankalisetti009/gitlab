@@ -26,7 +26,15 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
   describe '#execute' do
     subject(:execute_service) { service.execute }
 
-    shared_examples 'does not update the agent' do
+    shared_examples 'an error response' do |error|
+      it 'returns an error response' do
+        result = execute_service
+
+        expect(result).to be_error
+        expect(result.message).to match_array(Array(error))
+        expect(result.payload[:item]).to eq(agent)
+      end
+
       it 'does not update the agent' do
         expect { execute_service }.not_to change { agent.reload.attributes }
       end
@@ -34,14 +42,10 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
       it 'does not update the latest version' do
         expect { execute_service }.not_to change { latest_version.reload.attributes }
       end
-    end
 
-    shared_examples 'returns error response' do |error:|
-      specify do
-        result = execute_service
-
-        expect(result).to be_error
-        expect(result.message).to eq([error])
+      it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { execute_service }
+          .not_to trigger_internal_events('update_ai_catalog_item')
       end
     end
 
@@ -50,8 +54,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         project.add_developer(user)
       end
 
-      it_behaves_like 'does not update the agent'
-      it_behaves_like 'returns error response', error: 'You have insufficient permissions'
+      it_behaves_like 'an error response', 'You have insufficient permissions'
     end
 
     context 'when user has permissions' do
@@ -79,8 +82,11 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         )
       end
 
-      it 'returns success response' do
-        expect(execute_service).to be_success
+      it 'returns success response with item in payload' do
+        result = execute_service
+
+        expect(result).to be_success
+        expect(result.payload[:item]).to eq(agent)
       end
 
       it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
@@ -123,13 +129,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
           }
         end
 
-        it_behaves_like 'does not update the agent'
-        it_behaves_like 'returns error response', error: "Item name can't be blank"
-
-        it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
-          expect { execute_service }
-            .not_to trigger_internal_events('update_ai_catalog_item')
-        end
+        it_behaves_like 'an error response', "Item name can't be blank"
       end
 
       context 'when updated latest version is invalid' do
@@ -137,8 +137,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
           stub_const('Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION', nil)
         end
 
-        it_behaves_like 'does not update the agent'
-        it_behaves_like 'returns error response', error: "Schema version can't be blank"
+        it_behaves_like 'an error response', "Schema version can't be blank"
       end
 
       context 'when agent is not an agent' do
@@ -146,8 +145,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
           allow(agent).to receive(:agent?).and_return(false)
         end
 
-        it_behaves_like 'does not update the agent'
-        it_behaves_like 'returns error response', error: 'Agent not found'
+        it_behaves_like 'an error response', 'Agent not found'
       end
     end
   end
