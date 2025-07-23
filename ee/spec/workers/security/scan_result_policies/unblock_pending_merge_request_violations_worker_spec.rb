@@ -135,15 +135,6 @@ RSpec.describe Security::ScanResultPolicies::UnblockPendingMergeRequestViolation
       end
     end
 
-    context 'when feature flag "policy_mergability_check" is disabled' do
-      before do
-        stub_feature_flags(policy_mergability_check: false)
-      end
-
-      it_behaves_like 'does not update merge request violations'
-      it_behaves_like 'does not update merge request report_approver approvals'
-    end
-
     context 'when feature is not licensed' do
       let(:feature_licensed) { false }
 

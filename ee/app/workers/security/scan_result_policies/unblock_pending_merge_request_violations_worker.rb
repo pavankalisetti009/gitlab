@@ -14,7 +14,6 @@ module Security
       def perform(pipeline_id)
         pipeline = ::Ci::Pipeline.find_by_id(pipeline_id) || return
         project = pipeline.project
-        return if ::Feature.disabled?(:policy_mergability_check, project)
         return unless project.licensed_feature_available?(:security_orchestration_policies)
 
         pipeline.opened_merge_requests_with_head_sha.each do |merge_request|

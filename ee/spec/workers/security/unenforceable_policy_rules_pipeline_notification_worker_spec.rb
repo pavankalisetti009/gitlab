@@ -68,14 +68,6 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
 
         it_behaves_like 'does not schedule UnblockPendingMergeRequestViolationsWorker'
       end
-
-      context 'when feature flag "policy_mergability_check" is disabled' do
-        before do
-          stub_feature_flags(policy_mergability_check: false)
-        end
-
-        it_behaves_like 'does not schedule UnblockPendingMergeRequestViolationsWorker'
-      end
     end
 
     context 'when pipeline is manual' do

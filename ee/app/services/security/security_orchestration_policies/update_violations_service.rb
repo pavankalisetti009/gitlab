@@ -113,8 +113,6 @@ module Security
       end
 
       def publish_violations_updated_event
-        return unless ::Feature.enabled?(:policy_mergability_check, merge_request.project)
-
         ::Gitlab::EventStore.publish(
           ::MergeRequests::ViolationsUpdatedEvent.new(
             data: { merge_request_id: merge_request.id }
