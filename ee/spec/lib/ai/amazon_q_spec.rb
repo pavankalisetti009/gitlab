@@ -54,6 +54,17 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
         expect(described_class.feature_available?).to eq(result)
       end
     end
+
+    context 'when :amazon_q_integration UP is missing even if licenced feature is available' do
+      before do
+        allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name).and_return(nil)
+        stub_licensed_features(amazon_q: true)
+      end
+
+      it 'returns false' do
+        expect(described_class.feature_available?).to be(false)
+      end
+    end
   end
 
   describe '#enabled?' do
