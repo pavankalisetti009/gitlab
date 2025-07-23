@@ -86,7 +86,7 @@ module Geo::SelectiveSync
 
     cte << Namespace
       .select(namespaces_table[:id], namespaces_table[:parent_id])
-      .where(id: ::Project.selective_sync_scope(self).select(:namespace_id))
+      .id_in(::Project.selective_sync_scope(self).select(:namespace_id))
 
     # Recursively get all the ancestors of the base set.
     cte << Namespace

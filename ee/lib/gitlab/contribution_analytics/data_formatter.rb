@@ -19,7 +19,7 @@ module Gitlab
           records = User
             .active
             .select(:id, :name, :username)
-            .where(id: ids)
+            .id_in(ids)
             .reorder(:id)
             .to_a
 

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module ClickHouse
-  # rubocop: disable CodeReuse/ActiveRecord -- Building worker-specific ActiveRecord and ClickHouse queries
   class EventPathsConsistencyCronWorker
     include ApplicationWorker
     include ClickHouseWorker
@@ -25,7 +24,7 @@ module ClickHouse
 
       namespaces_by_id = Namespace
         .select(:id, :traversal_ids)
-        .where(id: traversal_ids_by_id.keys)
+        .id_in(traversal_ids_by_id.keys)
         .index_by(&:id)
 
       traversal_ids_by_id.each do |id, old_traversal_ids|
@@ -113,5 +112,4 @@ module ClickHouse
       end
     end
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 end

@@ -136,7 +136,7 @@ module ProductAnalyticsHelpers
   def custom_dashboard_project?
     return false unless is_a?(Project)
 
-    targeting_dashboards_pointer_projects.where.not(id: id).any?
+    targeting_dashboards_pointer_projects.id_not_in(id).any?
   end
 
   private

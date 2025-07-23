@@ -51,7 +51,7 @@ module Ai
           ['users', id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY],
           expires_in: BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD
         ) do
-          group_ids_from_project_authorizaton = Project.where(id: project_authorizations.non_guests.select(:project_id))
+          group_ids_from_project_authorizaton = Project.id_in(project_authorizations.non_guests.select(:project_id))
             .pluck(:namespace_id)
           group_ids_from_memberships = GroupMember.with_user(self).active.non_guests.pluck(:source_id)
           group_ids_from_linked_groups = GroupGroupLink.non_guests
@@ -183,7 +183,7 @@ module Ai
       end
 
       def groups_with_duo_core_enabled
-        Namespace.where(id: billable_gitlab_duo_pro_root_group_ids)
+        Namespace.id_in(billable_gitlab_duo_pro_root_group_ids)
           .namespace_settings_with_duo_core_features_enabled
       end
 

@@ -61,7 +61,7 @@ module Members
     def activate_memberships
       @affected_members = memberships.to_a
 
-      ::Member.where(id: memberships).update_all(state: ::Member::STATE_ACTIVE, updated_at: Time.current) # rubocop: disable CodeReuse/ActiveRecord
+      ::Member.id_in(memberships).update_all(state: ::Member::STATE_ACTIVE, updated_at: Time.current)
     end
 
     def allowed?

@@ -48,7 +48,6 @@ module Gitlab
       end
 
       # accepts a block that should return whether the event was handled
-      # rubocop: disable CodeReuse/ActiveRecord
       def fill_gaps
         with_redis do |redis|
           redis.zremrangebyscore(GEO_EVENT_LOG_GAPS, '-inf', outdated_timestamp)
@@ -56,13 +55,12 @@ module Gitlab
           gap_ids = redis.zrangebyscore(GEO_EVENT_LOG_GAPS, '-inf', grace_timestamp).map(&:to_i)
           break if gap_ids.empty?
 
-          ::Geo::EventLog.where(id: gap_ids).each_batch do |batch|
+          ::Geo::EventLog.id_in(gap_ids).each_batch do |batch|
             batch.includes_events.each { |event_log| yield event_log }
             redis.zrem(GEO_EVENT_LOG_GAPS, batch.map(&:id))
           end
         end
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
       private
 

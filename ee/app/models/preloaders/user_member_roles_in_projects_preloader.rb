@@ -28,7 +28,7 @@ module Preloaders
     private
 
     def abilities_for_user_grouped_by_project(project_ids)
-      @projects_relation = Project.select(:id, :namespace_id).where(id: project_ids)
+      @projects_relation = Project.select(:id, :namespace_id).id_in(project_ids)
 
       ::Namespaces::Preloaders::ProjectRootAncestorPreloader.new(projects_relation, :namespace).execute
 

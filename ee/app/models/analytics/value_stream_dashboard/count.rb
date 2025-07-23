@@ -39,7 +39,7 @@ module Analytics
       end
 
       def self.descendant_namespace_ids_for(namespace, metric)
-        return Namespace.where(id: namespace.id) if namespace.is_a?(Namespaces::ProjectNamespace)
+        return Namespace.id_in(namespace.id) if namespace.is_a?(Namespaces::ProjectNamespace)
 
         metric_namespace_class = Analytics::ValueStreamDashboard::TopLevelGroupCounterService::COUNTS_TO_COLLECT
           .fetch(metric)
@@ -56,7 +56,7 @@ module Analytics
 
       def self.group_ids(group, metric)
         # Direct members are a special case, we don't look at the descendant groups when calculating the count
-        return Group.where(id: group.id) if metric == :direct_members
+        return Group.id_in(group.id) if metric == :direct_members
 
         group.self_and_descendant_ids
       end

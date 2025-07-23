@@ -28,7 +28,7 @@ module Preloaders
     private
 
     def abilities_for_user_grouped_by_group(group_ids)
-      @group_relation = Group.where(id: group_ids)
+      @group_relation = Group.id_in(group_ids)
 
       ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(group_relation).execute
 

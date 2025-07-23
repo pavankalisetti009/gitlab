@@ -45,10 +45,8 @@ module EE
       private
 
       def lazy_group
-        BatchLoader.for(group_id)
-                   .batch(default_value: ::Gitlab::Audit::NullEntity.new
-                         ) do |ids, loader|
-          ::Group.where(id: ids).find_each { |record| loader.call(record.id, record) }
+        BatchLoader.for(group_id).batch(default_value: ::Gitlab::Audit::NullEntity.new) do |ids, loader|
+          ::Group.id_in(ids).find_each { |record| loader.call(record.id, record) }
         end
       end
     end

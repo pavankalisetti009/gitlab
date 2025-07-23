@@ -41,9 +41,8 @@ module EE
       private
 
       def lazy_user
-        BatchLoader.for(user_id)
-                  .batch(default_value: ::Gitlab::Audit::NullEntity.new) do |ids, loader|
-          ::User.where(id: ids).find_each { |record| loader.call(record.id, record) }
+        BatchLoader.for(user_id).batch(default_value: ::Gitlab::Audit::NullEntity.new) do |ids, loader|
+          ::User.id_in(ids).find_each { |record| loader.call(record.id, record) }
         end
       end
     end
