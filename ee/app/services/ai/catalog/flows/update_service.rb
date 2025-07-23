@@ -16,7 +16,10 @@ module Ai
           item_params = params.slice(:name, :description, :public)
           flow.assign_attributes(item_params)
 
-          return ServiceResponse.success(payload: payload) if flow.save
+          if flow.save
+            track_ai_item_events('update_ai_catalog_item', flow.item_type)
+            return ServiceResponse.success(payload: payload)
+          end
 
           error(flow.errors.full_messages, payload: payload)
         end
