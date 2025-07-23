@@ -8,6 +8,10 @@ RSpec.describe Search::Elastic::DeleteWorker, :elastic_helpers, feature_category
       described_class.new.perform({ task: :delete_project_associations })
     end
 
+    it 'is a pause_control worker' do
+      expect(described_class.get_pause_control).to eq(:advanced_search)
+    end
+
     context 'when Elasticsearch is disabled' do
       before do
         stub_ee_application_setting(elasticsearch_indexing: false)
