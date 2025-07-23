@@ -114,6 +114,8 @@ module Ai
     end
 
     def base_url
+      return Gitlab::AiGateway.cloud_connector_url if vendored?
+
       Gitlab::AiGateway.url if self_hosted?
     end
 

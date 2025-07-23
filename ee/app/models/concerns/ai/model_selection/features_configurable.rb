@@ -109,6 +109,10 @@ module Ai
           false
         end
 
+        def vendored?
+          false
+        end
+
         def provider
           MODEL_PROVIDER
         end

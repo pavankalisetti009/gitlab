@@ -130,6 +130,47 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     end
   end
 
+  describe '#vendored?' do
+    subject(:vendored?) { model_details.vendored? }
+
+    it 'returns false' do
+      expect(vendored?).to be(false)
+    end
+
+    context 'when the feature is self-hosted, but set to vendored' do
+      let_it_be(:feature_setting) do
+        create(:ai_feature_setting, provider: :vendored, feature: feature_setting_name)
+      end
+
+      it 'returns true' do
+        expect(vendored?).to be(true)
+      end
+    end
+
+    context 'when the feature is governed via self-hosted models' do
+      it 'returns false' do
+        create(:ai_feature_setting, feature: feature_setting_name)
+
+        expect(vendored?).to be(false)
+      end
+    end
+
+    context 'for namespace feature setting' do
+      let(:root_namespace) { create(:group) }
+
+      before do
+        create(:ai_namespace_feature_setting,
+          namespace: root_namespace,
+          feature: feature_setting_name
+        )
+      end
+
+      it 'returns false' do
+        expect(vendored?).to be(false)
+      end
+    end
+  end
+
   describe '#base_url' do
     it 'returns correct URL' do
       expect(model_details.base_url).to eql('https://cloud.gitlab.com/ai')
