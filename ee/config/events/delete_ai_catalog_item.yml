@@ -1,0 +1,19 @@
+---
+description: AI Catalog item deleted successfully
+internal_events: true
+status: active
+action: delete_ai_catalog_item
+identifiers:
+- project
+- user
+additional_properties:
+  label:
+    description: Type of AI catalog item
+product_group: workflow_catalog
+product_categories:
+- workflow_catalog
+milestone: '18.3'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198512
+tiers:
+- premium
+- ultimate
