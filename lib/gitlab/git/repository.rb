@@ -1125,9 +1125,7 @@ module Gitlab
 
       def find_commits_by_message(query, ref, path, limit, offset)
         wrapped_gitaly_errors do
-          gitaly_commit_client
-            .commits_by_message(query, revision: ref, path: path, limit: limit, offset: offset)
-            .map { |c| commit(c) }
+          gitaly_commit_client.commits_by_message(query, revision: ref, path: path, limit: limit, offset: offset)
         end
       end
 
@@ -1143,9 +1141,7 @@ module Gitlab
         }
 
         wrapped_gitaly_errors do
-          gitaly_commit_client
-            .list_commits([ref], params)
-            .map { |c| commit(c) }
+          gitaly_commit_client.list_commits([ref], params)
         end
       end
 
