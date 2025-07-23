@@ -3,6 +3,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import RoleTabs from './components/role_tabs.vue';
 
 Vue.use(GlToast);
@@ -25,6 +26,7 @@ export const initCustomRolesApp = () => {
     newRolePath,
     currentUserEmail,
     ldapUsersPath,
+    isSaas,
     ldapServers = null,
   } = el.dataset;
 
@@ -40,6 +42,7 @@ export const initCustomRolesApp = () => {
       newRolePath,
       ldapUsersPath,
       ldapServers: JSON.parse(ldapServers),
+      isSaas: parseBoolean(isSaas),
     },
     mounted() {
       this.trackEvent('view_admin_application_settings_roles_and_permissions_pageload');

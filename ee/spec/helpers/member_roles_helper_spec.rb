@@ -35,6 +35,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
         expect(data[:group_full_path]).to be_nil
         expect(data[:group_id]).to be_nil
         expect(data[:current_user_email]).to eq user.notification_email_or_default
+        expect(data[:is_saas]).to eq('false')
       end
 
       context 'with admin member role rights' do
@@ -82,6 +83,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           expect(data[:group_full_path]).to eq source.full_path
           expect(data[:group_id]).to eq source.id
           expect(data[:current_user_email]).to eq user.notification_email_or_default
+          expect(data[:is_saas]).to eq('true')
         end
 
         context 'with admin member role rights' do
@@ -145,34 +147,104 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
   end
 
   describe '#member_role_edit_path' do
+    let_it_be(:regular_role) { build_stubbed(:member_role, id: 5, namespace: root_group) }
+    let_it_be(:admin_role) { build_stubbed(:member_role, :admin, id: 5) }
+    let_it_be(:standard_role) do
+      role_string = +'GUEST'
+      group = root_group
+      role_string.define_singleton_method(:namespace) { group }
+      role_string
+    end
+
+    let(:role) { regular_role }
+
+    subject { helper.member_role_edit_path(role) }
+
     context 'when on self-managed' do
-      subject { helper.member_role_edit_path(role) }
+      context 'for regular custom role' do
+        it { is_expected.to eq(edit_admin_application_settings_roles_and_permission_path(role)) }
+      end
 
-      let_it_be(:role) { build_stubbed(:member_role, id: 5) }
+      context 'for admin custom role' do
+        let(:role) { admin_role }
 
-      it { is_expected.to eq(edit_admin_application_settings_roles_and_permission_path(role)) }
+        it { is_expected.to eq(edit_admin_application_settings_roles_and_permission_path(role)) }
+      end
+
+      context 'for static role' do
+        let(:role) { standard_role }
+
+        it { is_expected.to eq(edit_admin_application_settings_roles_and_permission_path(role)) }
+      end
     end
 
     context 'when on Saas', :saas do
-      subject { helper.member_role_edit_path(role) }
+      context 'for regular custom role' do
+        it { is_expected.to eq(edit_group_settings_roles_and_permission_path(source, role)) }
+      end
 
-      let_it_be(:role) { build_stubbed(:member_role, id: 5, namespace: source) }
+      context 'for admin custom role' do
+        let(:role) { admin_role }
 
-      it { is_expected.to eq(edit_group_settings_roles_and_permission_path(source, role)) }
+        it { is_expected.to eq(edit_admin_application_settings_roles_and_permission_path(role)) }
+      end
+
+      context 'for static role' do
+        let(:role) { standard_role }
+
+        it { is_expected.to eq(edit_group_settings_roles_and_permission_path(source, role)) }
+      end
     end
   end
 
   describe '#member_role_details_path' do
-    subject { helper.member_role_details_path(role) }
+    subject(:role_path) { helper.member_role_details_path(role) }
 
-    let_it_be(:role) { build_stubbed(:member_role, id: 5, namespace: root_group) }
+    let_it_be(:regular_role) { build_stubbed(:member_role, id: 5, namespace: root_group) }
+    let_it_be(:admin_role) { build_stubbed(:member_role, :admin, id: 5, namespace: source) }
+    let_it_be(:standard_role) do
+      role_string = +'GUEST'
+      group = root_group
+      role_string.define_singleton_method(:namespace) { group }
+      role_string
+    end
+
+    let(:role) { regular_role }
 
     context 'when on self-managed' do
-      it { is_expected.to eq(admin_application_settings_roles_and_permission_path(role)) }
+      context 'for regular custom role' do
+        it { is_expected.to eq(admin_application_settings_roles_and_permission_path(role)) }
+      end
+
+      context 'for admin custom role' do
+        let(:role) { admin_role }
+
+        it { is_expected.to eq(admin_application_settings_roles_and_permission_path(role)) }
+      end
+
+      context 'for static role' do
+        let(:role) { standard_role }
+
+        it { is_expected.to eq(admin_application_settings_roles_and_permission_path(role)) }
+      end
     end
 
     context 'when on Saas', :saas do
-      it { is_expected.to eq(group_settings_roles_and_permission_path(root_group, role)) }
+      context 'for regular custom role' do
+        it { is_expected.to eq(group_settings_roles_and_permission_path(root_group, role)) }
+      end
+
+      context 'for admin custom role' do
+        let(:role) { admin_role }
+
+        it { is_expected.to eq(admin_application_settings_roles_and_permission_path(role)) }
+      end
+
+      context 'for static role' do
+        let(:role) { standard_role }
+
+        it { is_expected.to eq(group_settings_roles_and_permission_path(root_group, role)) }
+      end
     end
   end
 end
