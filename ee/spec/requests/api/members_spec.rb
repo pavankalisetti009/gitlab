@@ -1685,6 +1685,22 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
             expect(json_response.any? { |member| member['id'] == maintainer.id }).to be_falsey
           end
 
+          context 'when a user has a scim identity' do
+            before do
+              create :group_scim_identity, user: owner, group: group
+            end
+
+            it 'returns a list of users with group SCIM identities info' do
+              get api("/groups/#{group.to_param}/members", owner)
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.size).to eq(2)
+              expect(json_response.first['group_scim_identity']).to match(kind_of(Hash))
+              expect(json_response.first['group_scim_identity']).to have_key('extern_uid')
+              expect(json_response.second['group_scim_identity']).to eq(nil)
+            end
+          end
+
           context 'subgroup' do
             let(:subgroup) { create :group, parent: group }
 
@@ -1699,6 +1715,20 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
               expect(response).to have_gitlab_http_status(:ok)
               expect(json_response.size).to eq(2)
               expect(json_response.flat_map(&:keys)).not_to include('group_saml_identity')
+            end
+
+            context 'when a user has a scim identity' do
+              before do
+                create :group_scim_identity, user: owner, group: group
+              end
+
+              it 'returns a list of users without group SCIM identities info' do
+                get api("/groups/#{subgroup.id}/members", owner)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.size).to eq(2)
+                expect(json_response.flat_map(&:keys)).not_to include('group_scim_identity')
+              end
             end
 
             it 'ignores filter by linked identity presence' do

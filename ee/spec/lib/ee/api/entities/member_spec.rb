@@ -118,6 +118,52 @@ RSpec.describe API::Entities::Member, feature_category: :groups_and_projects do
     end
   end
 
+  context 'for group_scim_identity' do
+    let_it_be(:group_scim_identity) { build_stubbed(:group_scim_identity, extern_uid: 'TESTIDENTITY') }
+
+    before do
+      allow(member).to receive(:group_scim_identity).and_return(group_scim_identity)
+    end
+
+    context 'when current user is allowed to read group scim identity' do
+      before do
+        create(:group_member, :owner, user: current_user, group: group)
+      end
+
+      it 'exposes group_scim_identity' do
+        expect(entity_representation[:group_scim_identity]).to include(extern_uid: 'TESTIDENTITY')
+      end
+
+      context 'when member source is subgroup' do
+        let_it_be(:subgroup) { create :group, parent: group }
+        let_it_be(:member) { create(:group_member, :owner, user: user, group: subgroup) }
+
+        it 'does not expose group scim identity' do
+          expect(entity_representation.keys).not_to include(:group_scim_identity)
+        end
+      end
+
+      context 'when member source is project' do
+        let_it_be(:project) { create(:project, group: group) }
+        let_it_be(:member) { create(:project_member, :owner, user: user, project: project) }
+
+        it 'does not expose group scim identity' do
+          expect(entity_representation.keys).not_to include(:group_scim_identity)
+        end
+      end
+    end
+
+    context 'when current user is not allowed to read group saml identity' do
+      before do
+        create(:group_member, :maintainer, user: current_user, group: group)
+      end
+
+      it 'does not expose group saml identity' do
+        expect(entity_representation.keys).not_to include(:group_scim_identity)
+      end
+    end
+  end
+
   context 'for email' do
     shared_examples "exposes the user's email" do
       it "exposes the user's email" do

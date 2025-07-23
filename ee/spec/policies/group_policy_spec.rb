@@ -2469,6 +2469,32 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#read_group_scim_identity' do
+    let_it_be(:saml_provider) { create(:saml_provider, group: group, enabled: true) }
+
+    context 'for owner' do
+      let(:current_user) { owner }
+
+      it { is_expected.to be_allowed(:read_group_scim_identity) }
+
+      context 'without Group SAML enabled' do
+        before do
+          saml_provider.update!(enabled: false)
+        end
+
+        it { is_expected.to be_disallowed(:read_group_scim_identity) }
+      end
+    end
+
+    %w[maintainer developer reporter guest].each do |role|
+      context "for #{role}" do
+        let(:current_user) { public_send(role) }
+
+        it { is_expected.to be_disallowed(:read_group_scim_identity) }
+      end
+    end
+  end
+
   describe 'update_default_branch_protection' do
     context 'for an admin' do
       let(:current_user) { admin }
