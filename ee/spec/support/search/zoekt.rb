@@ -75,7 +75,10 @@ module Search
           Force: true
         }
         defaults = {
-          headers: { 'Content-Type' => 'application/json' },
+          headers: {
+            'Content-Type' => 'application/json',
+            'Gitlab-Zoekt-Api-Request' => ::Search::Zoekt::JwtAuth.authorization_header
+          },
           body: payload.to_json,
           allow_local_requests: true,
           timeout: 10.seconds.to_i

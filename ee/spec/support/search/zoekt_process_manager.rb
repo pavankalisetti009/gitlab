@@ -59,17 +59,10 @@ module Search
         stop if @indexer_pid || @webserver_pid
 
         zoekt_binary = Search::Zoekt.bin_path
-        # Create a test secret if it doesn't exist
-        secret_dir = Rails.root.join('tmp/tests').to_s
-        secret_path = File.join(secret_dir, '.gitlab_shell_secret')
-        unless File.exist?(secret_path)
-          FileUtils.mkdir_p(secret_dir)
-          File.open(secret_path, 'w') do |f|
-            f.write(SecureRandom.hex(32))
-            f.flush
-            f.fsync
-          end
-        end
+        # Use the same secret file as GitLab configuration
+        secret_path = Gitlab.config.gitlab_shell.secret_file.to_s
+        # Ensure the secret file exists
+        Gitlab::Shell.ensure_secret_token!
 
         # Create log files for stdout and stderr
         indexer_log = File.join(LOG_DIR, 'indexer.log')
@@ -79,6 +72,7 @@ module Search
         @indexer_pid = spawn(
           zoekt_binary,
           'indexer',
+          '-ci',
           '-index_dir', INDEX_DIR,
           '-listen', ":#{ZOEKT_INDEX_PORT}",
           '-secret_path', secret_path,
@@ -91,7 +85,6 @@ module Search
           zoekt_binary,
           'webserver',
           '-index_dir', INDEX_DIR,
-          '-rpc',
           '-listen', ":#{ZOEKT_SEARCH_PORT}",
           '-secret_path', secret_path,
           out: webserver_log,

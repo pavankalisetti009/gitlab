@@ -55,17 +55,92 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, feature_category: :global_search
 
       it 'includes JWT authorization header in the request' do
         headers = { described_class::JWT_HEADER => "Bearer #{auth_token}" }
+        mock_response = instance_double(HTTParty::Response, code: 200, success?: true, body: '{"Files": []}')
         expect(::Gitlab::HTTP).to receive(:post)
           .with(anything, hash_including(headers: hash_including(headers)))
-          .and_call_original
+          .and_return(mock_response)
 
         make_request
       end
 
       it 'includes basic auth even when JWT is enabled' do
+        mock_response = instance_double(HTTParty::Response, code: 200, success?: true, body: '{"Files": []}')
         expect(::Gitlab::HTTP).to receive(:post)
           .with(anything, hash_including(basic_auth: instance_of(Hash)))
-          .and_call_original
+          .and_return(mock_response)
+
+        make_request
+      end
+    end
+
+    context 'when JWT token is invalid or missing' do
+      it 'raises ClientConnectionError when server returns 401 Unauthorized' do
+        allow(Search::Zoekt::JwtAuth).to receive(:jwt_token).and_return('invalid-token')
+        mock_response = instance_double(HTTParty::Response,
+          code: 401,
+          success?: false,
+          body: 'Unauthorized: invalid JWT token'
+        )
+        allow(::Gitlab::HTTP).to receive(:post).and_return(mock_response)
+
+        expect { make_request }.to raise_error(Search::Zoekt::Errors::ClientConnectionError)
+      end
+
+      it 'raises ClientConnectionError when JWT generation fails' do
+        allow(Search::Zoekt::JwtAuth).to receive(:jwt_token).and_raise(StandardError.new('JWT generation failed'))
+
+        expect { make_request }.to raise_error(StandardError, 'JWT generation failed')
+      end
+
+      it 'still includes JWT header even if token is nil' do
+        allow(Search::Zoekt::JwtAuth).to receive(:jwt_token).and_return(nil)
+        headers = { described_class::JWT_HEADER => "Bearer " }
+        mock_response = instance_double(HTTParty::Response, code: 401, success?: false, body: 'Unauthorized')
+        expect(::Gitlab::HTTP).to receive(:post)
+          .with(anything, hash_including(headers: hash_including(headers)))
+          .and_return(mock_response)
+
+        expect { make_request }.to raise_error(Search::Zoekt::Errors::ClientConnectionError)
+      end
+
+      it 'handles server rejection when JWT header is missing entirely' do
+        # Simulate what would happen if JWT header was not included
+        allow(Search::Zoekt::JwtAuth).to receive(:authorization_header).and_return(nil)
+        mock_response = instance_double(HTTParty::Response,
+          code: 401,
+          success?: false,
+          body: 'Unauthorized: missing JWT token'
+        )
+        allow(::Gitlab::HTTP).to receive(:post).and_return(mock_response)
+
+        expect { make_request }.to raise_error(Search::Zoekt::Errors::ClientConnectionError, /missing JWT token/)
+      end
+    end
+
+    context 'when no authentication is configured' do
+      before do
+        # Clear any auth configuration
+        allow(client).to receive_messages(username: nil, password: nil)
+      end
+
+      it 'still includes JWT authorization header' do
+        auth_token = 'test-jwt-token'
+        allow(Search::Zoekt::JwtAuth).to receive(:jwt_token).and_return(auth_token)
+        headers = { described_class::JWT_HEADER => "Bearer #{auth_token}" }
+        mock_response = instance_double(HTTParty::Response, code: 200, success?: true, body: '{"Files": []}')
+
+        expect(::Gitlab::HTTP).to receive(:post)
+          .with(anything, hash_including(headers: hash_including(headers)))
+          .and_return(mock_response)
+
+        make_request
+      end
+
+      it 'includes empty basic_auth when no username/password configured' do
+        mock_response = instance_double(HTTParty::Response, code: 200, success?: true, body: '{"Files": []}')
+        expect(::Gitlab::HTTP).to receive(:post)
+          .with(anything, hash_including(basic_auth: {}))
+          .and_return(mock_response)
 
         make_request
       end
@@ -264,6 +339,84 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, feature_category: :global_search
       it_behaves_like 'with relative base_url', :post do
         let(:make_request) { search }
         let(:expected_path) { '/webserver/api/v2/search' }
+      end
+    end
+  end
+
+  describe 'JWT authentication enforcement', :aggregate_failures do
+    let(:client) { described_class.new }
+    let(:query) { 'test' }
+    let(:node) { ::Search::Zoekt::Node.last }
+    let(:node_id) { node.id }
+
+    context 'when making requests without JWT authentication' do
+      let(:missing_jwt_error_pattern) { /Unauthorized.*missing.*Gitlab-Zoekt-Api-Request/ }
+
+      before do
+        # Stub the JWT auth to return no header, simulating missing JWT
+        allow_next_instance_of(described_class) do |client_instance|
+          allow(client_instance).to receive(:request_headers).and_return({
+            'Content-Type' => 'application/json'
+          })
+        end
+      end
+
+      it 'search method is rejected by server without JWT' do
+        expect do
+          client.search(query, num: 10, project_ids: [project_1.id], node_id: node_id, search_mode: 'regex')
+        end.to raise_error(Search::Zoekt::Errors::ClientConnectionError, missing_jwt_error_pattern)
+      end
+
+      it 'search_zoekt_proxy method is rejected by server without JWT' do
+        targets = { node_id => [project_1.id] }
+        expect do
+          client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: 'regex')
+        end.to raise_error(Search::Zoekt::Errors::ClientConnectionError, missing_jwt_error_pattern)
+      end
+    end
+
+    context 'when making requests with invalid JWT token' do
+      before do
+        # Stub JWT auth to return an invalid token
+        allow(Search::Zoekt::JwtAuth).to receive(:jwt_token).and_return('invalid.jwt.token')
+      end
+
+      it 'search method is rejected by server with invalid JWT' do
+        expect do
+          client.search(query, num: 10, project_ids: [project_1.id], node_id: node_id, search_mode: 'regex')
+        end.to raise_error(Search::Zoekt::Errors::ClientConnectionError, /Unauthorized.*invalid JWT token/)
+      end
+
+      it 'search_zoekt_proxy method is rejected by server with invalid JWT' do
+        targets = { node_id => [project_1.id] }
+        expect do
+          client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: 'regex')
+        end.to raise_error(Search::Zoekt::Errors::ClientConnectionError, /Unauthorized.*invalid JWT token/)
+      end
+    end
+
+    context 'when making requests with malformed JWT authorization header' do
+      before do
+        # Stub the request headers to include a malformed JWT header
+        allow_next_instance_of(described_class) do |client_instance|
+          allow(client_instance).to receive(:request_headers).and_return({
+            'Content-Type' => 'application/json',
+            described_class::JWT_HEADER => 'Malformed header without Bearer prefix'
+          })
+        end
+      end
+
+      it 'search method is rejected by server with malformed JWT header' do
+        expect do
+          client.search(query, num: 10, project_ids: [project_1.id], node_id: node_id, search_mode: 'regex')
+        end.to raise_error(Search::Zoekt::Errors::ClientConnectionError, /Unauthorized.*invalid JWT token/)
+      end
+
+      it 'search_zoekt_proxy method is rejected by server with malformed JWT header' do
+        targets = { node_id => [project_1.id] }
+        expect do
+          client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: 'regex')
+        end.to raise_error(Search::Zoekt::Errors::ClientConnectionError, /Unauthorized.*invalid JWT token/)
       end
     end
   end
