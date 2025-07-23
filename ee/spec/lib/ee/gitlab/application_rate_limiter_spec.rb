@@ -20,6 +20,7 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
         :unique_project_downloads_for_application | 1 | 1.minute
         :code_suggestions_api_endpoint | 60 | 1.minute
         :code_suggestions_direct_access | 50 | 1.minute
+        :code_suggestions_connection_details | 10 | 1.minute
         :code_suggestions_x_ray_scan | 60 | 1.minute
         :code_suggestions_x_ray_dependencies | 60 | 1.minute
         :duo_workflow_direct_access | 50 | 1.minute

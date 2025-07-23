@@ -38,9 +38,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(Ability).to receive(:allowed?).with(unauthorized_user, :access_code_suggestions, :global)
                                         .and_return(false)
 
-    allow(Gitlab::InternalEvents).to receive(:track_event)
-    allow(Gitlab::Tracking::AiTracking).to receive(:track_event)
-
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
 
@@ -130,17 +127,19 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
   end
 
-  shared_examples_for 'rate limited and tracked endpoint' do |rate_limit_key:, event_name:|
+  shared_examples_for 'rate limited and tracked endpoint' do |rate_limit_key:, event_name:, metrics_names:|
     it_behaves_like 'rate limited endpoint', rate_limit_key: rate_limit_key
 
     it 'tracks rate limit exceeded event' do
       allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
 
-      request
-
-      expect(Gitlab::InternalEvents)
-        .to have_received(:track_event)
-        .with(event_name, user: current_user)
+      expect { request }
+        .to trigger_internal_events(event_name)
+        .with(
+          user: current_user,
+          category: 'InternalEventTracking'
+        )
+        .and increment_usage_metrics(*Array(metrics_names))
     end
   end
 
@@ -275,7 +274,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
         it_behaves_like 'rate limited and tracked endpoint',
           { rate_limit_key: :code_suggestions_api_endpoint,
-            event_name: 'code_suggestions_rate_limit_exceeded' } do
+            event_name: 'code_suggestions_rate_limit_exceeded',
+            metrics_names: %w[
+              count_code_suggestions_rate_limit_exceeded_7d
+              count_code_suggestions_rate_limit_exceeded_28d
+            ] } do
           def request
             post api('/code_suggestions/completions', current_user), headers: headers, params: body.to_json
           end
@@ -1070,7 +1073,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       it_behaves_like 'rate limited and tracked endpoint',
         { rate_limit_key: :code_suggestions_direct_access,
-          event_name: 'code_suggestions_direct_access_rate_limit_exceeded' } do
+          event_name: 'code_suggestions_direct_access_rate_limit_exceeded',
+          metrics_names: [
+            'counts.count_total_code_suggestions_direct_access_rate_limit_exceeded_weekly',
+            'counts.count_total_code_suggestions_direct_access_rate_limit_exceeded_monthly'
+          ] } do
         before do
           allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
             allow(client).to receive(:direct_access_token)
@@ -1259,50 +1266,143 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
   end
 
-  context 'when checking if project has duo features enabled' do
-    let_it_be(:enabled_project) { create(:project, :in_group, :private, :with_duo_features_enabled) }
-    let_it_be(:disabled_project) { create(:project, :in_group, :with_duo_features_disabled) }
+  describe 'POST /code_suggestions/enabled' do
+    context 'when checking if project has duo features enabled' do
+      let_it_be(:enabled_project) { create(:project, :in_group, :private, :with_duo_features_enabled) }
+      let_it_be(:disabled_project) { create(:project, :in_group, :with_duo_features_disabled) }
 
-    let(:current_user) { authorized_user }
+      let(:current_user) { authorized_user }
 
-    subject { post api("/code_suggestions/enabled", current_user), params: { project_path: project_path } }
+      subject { post api("/code_suggestions/enabled", current_user), params: { project_path: project_path } }
 
-    context 'when authorized to view project' do
-      before_all do
-        enabled_project.add_maintainer(authorized_user)
-        disabled_project.add_maintainer(authorized_user)
+      context 'when authorized to view project' do
+        before_all do
+          enabled_project.add_maintainer(authorized_user)
+          disabled_project.add_maintainer(authorized_user)
+        end
+
+        context 'when enabled' do
+          let(:project_path) { enabled_project.full_path }
+
+          it { is_expected.to eq(200) }
+        end
+
+        context 'when disabled' do
+          let(:project_path) { disabled_project.full_path }
+
+          it { is_expected.to eq(403) }
+        end
       end
 
-      context 'when enabled' do
+      context 'when not logged in' do
+        let(:current_user) { nil }
         let(:project_path) { enabled_project.full_path }
 
-        it { is_expected.to eq(200) }
+        it { is_expected.to eq(401) }
       end
 
-      context 'when disabled' do
-        let(:project_path) { disabled_project.full_path }
+      context 'when logged in but not authorized to view project' do
+        let(:project_path) { enabled_project.full_path }
 
-        it { is_expected.to eq(403) }
+        it { is_expected.to eq(404) }
+      end
+
+      context 'when project for project path does not exist' do
+        let(:project_path) { 'not_a_real_project' }
+
+        it { is_expected.to eq(404) }
       end
     end
+  end
 
-    context 'when not logged in' do
-      let(:current_user) { nil }
-      let(:project_path) { enabled_project.full_path }
+  describe 'POST /code_suggestions/connection_details' do
+    subject(:post_api) { post api('/code_suggestions/connection_details', current_user), params: params }
 
-      it { is_expected.to eq(401) }
+    let(:params) { {} }
+    let(:gitlab_host_name) { Gitlab.config.gitlab.host }
+    let(:gitlab_instance_version) { Gitlab.version_info.to_s }
+    let(:enablement_type) { 'duo_pro' }
+
+    context 'when unauthorized' do
+      let(:current_user) { unauthorized_user }
+
+      it_behaves_like 'an unauthorized response'
     end
 
-    context 'when logged in but not authorized to view project' do
-      let(:project_path) { enabled_project.full_path }
+    context 'when authorized' do
+      shared_examples_for 'user request with code suggestions allowed' do
+        let(:expected_response) do
+          {
+            'instance_id' => global_instance_id,
+            'instance_version' => gitlab_instance_version,
+            'realm' => gitlab_realm,
+            'global_user_id' => global_user_id,
+            'host_name' => gitlab_host_name,
+            'feature_enablement_type' => enablement_type,
+            'saas_duo_pro_namespace_ids' => enabled_by_namespace_ids
+          }
+        end
 
-      it { is_expected.to eq(404) }
-    end
+        it 'returns connection details' do
+          post_api
 
-    context 'when project for project path does not exist' do
-      let(:project_path) { 'not_a_real_project' }
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response).to match(expected_response)
+        end
+      end
 
-      it { is_expected.to eq(404) }
+      let(:current_user) { authorized_user }
+
+      context 'when rate limited' do
+        include_examples 'rate limited and tracked endpoint',
+          { rate_limit_key: :code_suggestions_connection_details,
+            event_name: 'code_suggestions_connection_details_rate_limit_exceeded',
+            metrics_names: [
+              'counts.count_total_code_suggestions_connection_details_rate_limit_exceeded_weekly',
+              'counts.count_total_code_suggestions_connection_details_rate_limit_exceeded_monthly'
+            ] } do
+          def request
+            post api('/code_suggestions/connection_details', current_user)
+          end
+        end
+      end
+
+      context 'when code completions is disabled' do
+        it 'returns unauthorized' do
+          create(:ai_feature_setting, provider: :disabled, feature: :code_completions)
+
+          post_api
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+
+      context 'when SaaS' do
+        it_behaves_like 'user request with code suggestions allowed'
+      end
+
+      context 'when not SaaS' do
+        let(:is_saas) { false }
+        let(:gitlab_realm) { 'self-managed' }
+
+        it_behaves_like 'user request with code suggestions allowed'
+      end
+
+      context 'when user belongs to a namespace with an active code suggestions purchase' do
+        let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+        let_it_be(:enabled_by_namespace_ids) { [add_on_purchase.namespace_id] }
+
+        before do
+          add_on_purchase.namespace.add_reporter(authorized_user)
+          create(
+            :gitlab_subscription_user_add_on_assignment,
+            user: authorized_user,
+            add_on_purchase: add_on_purchase
+          )
+        end
+
+        it_behaves_like 'user request with code suggestions allowed'
+      end
     end
   end
 end

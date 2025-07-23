@@ -200,7 +200,7 @@ module API
       end
 
       resources :direct_access do
-        desc 'Connection details for accessing code suggestions directly' do
+        desc 'Get connection details to access AI gateway directly to generate code suggestions' do
           success code: 201
           failure [
             { code: 401, message: 'Unauthorized' },
@@ -274,6 +274,48 @@ module API
           forbidden! unless projects.first.project_setting.duo_features_enabled?
 
           status :ok
+        end
+      end
+
+      resources :connection_details do
+        desc 'Get details of the GitLab instance the user is connected to' do
+          success code: 201
+          failure [
+            { code: 401, message: 'Unauthorized' },
+            { code: 404, message: 'Not found' },
+            { code: 429, message: 'Too many requests' }
+          ]
+        end
+
+        post do
+          unauthorized! if completion_model_details.feature_disabled?
+
+          check_rate_limit!(:code_suggestions_connection_details, scope: current_user) do
+            Gitlab::InternalEvents.track_event(
+              'code_suggestions_connection_details_rate_limit_exceeded',
+              user: current_user
+            )
+
+            render_api_error!({ error: _('This endpoint has been requested too many times. Try again later.') }, 429)
+          end
+
+          aigw_headers = Gitlab::AiGateway.public_headers(
+            user: current_user,
+            service_name: completion_model_details.feature_name
+          )
+
+          details = {
+            instance_id: aigw_headers['x-gitlab-instance-id'],
+            instance_version: Gitlab.version_info.to_s,
+            realm: aigw_headers['x-gitlab-realm'],
+            global_user_id: aigw_headers['x-gitlab-global-user-id'],
+            host_name: aigw_headers['x-gitlab-host-name'],
+            feature_enablement_type: aigw_headers['x-gitlab-feature-enablement-type'],
+            saas_duo_pro_namespace_ids:
+              saas_headers['X-Gitlab-Saas-Duo-Pro-Namespace-Ids'].to_s.split(',').compact.map(&:to_i)
+          }
+
+          present details, with: Grape::Presenters::Presenter
         end
       end
     end
