@@ -332,7 +332,7 @@ RSpec.describe EE::AuthHelper do
         is_group: 'false',
         service_accounts: {
           path: 'http://localhost/api/v4/service_accounts',
-          edit_path: 'http://localhost/api/v4/users',
+          edit_path: 'http://localhost/api/v4/service_accounts',
           delete_path: 'http://localhost/api/v4/users',
           docs_path: '/help/user/profile/service_accounts.md'
         },

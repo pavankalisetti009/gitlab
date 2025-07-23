@@ -173,6 +173,17 @@ describe('useAccessTokens store', () => {
         );
       });
 
+      it('calls the create endpoint with the correct params when using a user provided email', async () => {
+        await store.createServiceAccount(url, { ...values, email: 'test@gitlab.com' });
+
+        expect(mockAxios.history.post[0]).toEqual(
+          expect.objectContaining({
+            url,
+            data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user","email":"test@gitlab.com"}',
+          }),
+        );
+      });
+
       it('shows alert', async () => {
         mockAxios.onPost().replyOnce(HTTP_STATUS_CREATED);
         await store.createServiceAccount(url, values);
@@ -240,35 +251,31 @@ describe('useAccessTokens store', () => {
         expect(store.clearAlert).toHaveBeenCalledTimes(1);
       });
 
-      describe('admin level', () => {
-        it('calls the edit endpoint with the correct params', async () => {
-          await store.editServiceAccount(url, values, false);
+      it('calls the edit endpoint with the correct params', async () => {
+        await store.editServiceAccount(url, values);
 
-          expect(mockAxios.history.put[0]).toEqual(
-            expect.objectContaining({
-              url: `${url}/85`,
-              data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user"}',
-            }),
-          );
-        });
+        expect(mockAxios.history.patch[0]).toEqual(
+          expect.objectContaining({
+            url: `${url}/85`,
+            data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user"}',
+          }),
+        );
       });
 
-      describe('group level', () => {
-        it('calls the edit endpoint with the correct params', async () => {
-          await store.editServiceAccount(url, values, true);
+      it('calls the edit endpoint with the correct params when using a user provided email', async () => {
+        await store.editServiceAccount(url, { ...values, email: 'test@gitlab.com' });
 
-          expect(mockAxios.history.patch[0]).toEqual(
-            expect.objectContaining({
-              url: `${url}/85`,
-              data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user"}',
-            }),
-          );
-        });
+        expect(mockAxios.history.patch[0]).toEqual(
+          expect.objectContaining({
+            url: `${url}/85`,
+            data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user","email":"test@gitlab.com"}',
+          }),
+        );
       });
 
       it('shows alert', async () => {
-        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
-        await store.editServiceAccount(url, values, false);
+        mockAxios.onPatch().replyOnce(HTTP_STATUS_OK);
+        await store.editServiceAccount(url, values);
 
         expect(createAlert).toHaveBeenCalledWith({
           message: 'The service account was updated.',
@@ -278,37 +285,37 @@ describe('useAccessTokens store', () => {
 
       it('reset the createEditType', async () => {
         store.createEditType = 'edit';
-        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
-        await store.editServiceAccount(url, values, false);
+        mockAxios.onPatch().replyOnce(HTTP_STATUS_OK);
+        await store.editServiceAccount(url, values);
 
         expect(store.createEditType).toBe(null);
       });
 
       it('fetches service accounts', async () => {
-        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
+        mockAxios.onPatch().replyOnce(HTTP_STATUS_OK);
         mockAxios.onGet().replyOnce(HTTP_STATUS_OK, serviceAccounts, headers);
-        await store.editServiceAccount(url, values, false);
+        await store.editServiceAccount(url, values);
 
         expect(store.serviceAccounts).toHaveLength(1);
       });
 
       it('does not clear the alert on fetching service accounts', async () => {
-        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
+        mockAxios.onPatch().replyOnce(HTTP_STATUS_OK);
         mockAxios.onGet().replyOnce(HTTP_STATUS_OK, serviceAccounts, headers);
-        await store.editServiceAccount(url, values, false);
+        await store.editServiceAccount(url, values);
 
         expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
       });
 
       it('sets the createEditError', async () => {
-        mockAxios.onPut().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
-        await store.editServiceAccount(url, values, false);
+        mockAxios.onPatch().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.editServiceAccount(url, values);
 
         expect(store.createEditError).toBe('An error occurred updating the service account.');
       });
 
       it('reset the busy state', async () => {
-        await store.editServiceAccount(url, values, false);
+        await store.editServiceAccount(url, values);
 
         expect(store.busy).toBe(false);
       });

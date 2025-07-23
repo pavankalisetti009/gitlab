@@ -1,6 +1,7 @@
 <script>
 import { mapState } from 'pinia';
 import { GlModal, GlButton, GlForm, GlFormFields, GlAlert } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__, __ } from '~/locale';
 
 import { useServiceAccounts } from '../stores/service_accounts';
@@ -13,6 +14,7 @@ export default {
     GlFormFields,
     GlAlert,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     serviceAccount: {
       type: Object,
@@ -21,8 +23,15 @@ export default {
     },
   },
   data() {
+    const serviceAccount = { ...this.serviceAccount };
+
+    // If server generated placeholder email ignore it - magic string :-(
+    if (serviceAccount?.email?.includes('@noreply.')) {
+      serviceAccount.email = null;
+    }
+
     return {
-      values: { ...this.serviceAccount },
+      values: serviceAccount,
     };
   },
   computed: {
@@ -41,6 +50,15 @@ export default {
     onCancel() {
       this.$emit('cancel');
     },
+    featureFlaggedFields() {
+      const { email, ...fieldsWithoutEmail } = this.$options.fields;
+
+      if (this.glFeatures.editServiceAccountEmail) {
+        return { ...fieldsWithoutEmail, email };
+      }
+
+      return fieldsWithoutEmail;
+    },
   },
   fields: {
     name: {
@@ -48,6 +66,13 @@ export default {
     },
     username: {
       label: __('Username'),
+      groupAttrs: {
+        optional: true,
+        'optional-text': __('(optional)'),
+      },
+    },
+    email: {
+      label: __('Email'),
       groupAttrs: {
         optional: true,
         'optional-text': __('(optional)'),
@@ -83,7 +108,7 @@ export default {
       <gl-form-fields
         v-model="values"
         form-id="create-edit-service-account"
-        :fields="$options.fields"
+        :fields="featureFlaggedFields()"
         @submit="onSubmit"
       >
         <template #group(username)-description>

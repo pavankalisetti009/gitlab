@@ -126,7 +126,7 @@ module EE
         is_group: false.to_s,
         service_accounts: {
           path: expose_url(api_v4_service_accounts_path),
-          edit_path: expose_url(api_v4_users_path),
+          edit_path: expose_url(api_v4_service_accounts_path),
           docs_path: help_page_path('user/profile/service_accounts.md'),
           delete_path: expose_url(api_v4_users_path)
         },

@@ -9,6 +9,10 @@ module Admin
 
       before_action :authorize_admin_service_accounts!
 
+      before_action do
+        push_frontend_feature_flag(:edit_service_account_email, current_user)
+      end
+
       private
 
       def authorize_admin_service_accounts!

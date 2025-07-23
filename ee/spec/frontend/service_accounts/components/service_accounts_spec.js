@@ -26,12 +26,15 @@ const findDeleteModal = () => wrapper.findComponent(DeleteServiceAccountModal);
 const findCreateEditServiceAccountModal = () =>
   wrapper.findComponent(CreateEditServiceAccountModal);
 
+const findName = () => wrapper.findAllByTestId('service-account-name');
+const findUsername = () => wrapper.findAllByTestId('service-account-username');
+const findEmail = () => wrapper.findAllByTestId('service-account-email');
+
 describe('Service accounts', () => {
   const serviceAccountsPath = `${TEST_HOST}/service_accounts`;
   const serviceAccountsEditPath = `${TEST_HOST}/service_accounts`;
   const serviceAccountsDeletePath = `${TEST_HOST}/api/v4/users`;
   const serviceAccountsDocsPath = `${TEST_HOST}/ee/user/profile/service_accounts.html`;
-  const isGroup = false;
 
   const pinia = createTestingPinia();
   const store = useServiceAccounts();
@@ -47,7 +50,6 @@ describe('Service accounts', () => {
         $router,
       },
       provide: {
-        isGroup,
         serviceAccountsPath,
         serviceAccountsEditPath,
         serviceAccountsDeletePath,
@@ -60,10 +62,20 @@ describe('Service accounts', () => {
   const values = {
     name: 'Service Account 1',
     username: 'test_user',
+    email: 'service_account_50ea787017048435ccd1a82ee4a2012e@noreply.gdk.com',
   };
 
   beforeAll(() => {
-    store.serviceAccounts = [{ id: 1, ...values }];
+    store.serviceAccounts = [
+      { id: 1, ...values },
+      { id: 2, ...values, email: 'custom@gmail.com' },
+      {
+        id: 3,
+        ...values,
+        email: 'custom@gmail.com',
+        unconfirmed_email: 'unconfirmed_custon@gmail.com',
+      },
+    ];
   });
 
   beforeEach(() => {
@@ -120,11 +132,52 @@ describe('Service accounts', () => {
 
     describe('cells', () => {
       describe('name', () => {
-        it('shows the service account name and username', () => {
-          const name = wrapper.findByTestId('service-account-name');
-          const username = wrapper.findByTestId('service-account-username');
-          expect(name.text()).toBe('Service Account 1');
-          expect(username.text()).toBe('@test_user');
+        describe('editServiceAccountEmail feature flag off', () => {
+          it('shows the service account name and username and never shows email', () => {
+            expect(findName().at(0).text()).toBe('Service Account 1');
+            expect(findUsername().at(0).text()).toBe('@test_user');
+            expect(findEmail().exists()).toBe(false);
+
+            expect(findName().at(1).text()).toBe('Service Account 1');
+            expect(findUsername().at(1).text()).toBe('@test_user');
+            expect(findEmail().exists()).toBe(false);
+          });
+        });
+
+        describe('editServiceAccountEmail feature flag on', () => {
+          beforeEach(() => {
+            createComponent({ glFeatures: { editServiceAccountEmail: true } });
+          });
+
+          it.each([
+            {
+              description:
+                'shows the service account name and username and hides server generated email',
+              index: 0,
+              expectedName: 'Service Account 1',
+              expectedUsername: '@test_user',
+              expectedEmail: '',
+            },
+            {
+              description: 'shows the service account name and username and custom email',
+              index: 1,
+              expectedName: 'Service Account 1',
+              expectedUsername: '@test_user',
+              expectedEmail: 'custom@gmail.com',
+            },
+            {
+              description: 'shows the service account name and username and unconfirmed email',
+              index: 2,
+              expectedName: 'Service Account 1',
+              expectedUsername: '@test_user',
+              expectedEmail: 'unconfirmed_custon@gmail.com - unconfirmed',
+            },
+          ])('$description', ({ index, expectedName, expectedUsername, expectedEmail }) => {
+            expect(findName().at(index).text()).toBe(expectedName);
+            expect(findUsername().at(index).text()).toBe(expectedUsername);
+            expect(findEmail().at(index).text()).toBe(expectedEmail);
+            expect(findEmail().at(index).exists()).toBe(true);
+          });
         });
       });
 
@@ -176,6 +229,7 @@ describe('Service accounts', () => {
               id: 1,
               name: 'Service Account 1',
               username: 'test_user',
+              email: 'service_account_50ea787017048435ccd1a82ee4a2012e@noreply.gdk.com',
             });
             expect(store.setCreateEditType).toHaveBeenCalledWith('edit');
           });
@@ -196,6 +250,7 @@ describe('Service accounts', () => {
               id: 1,
               name: 'Service Account 1',
               username: 'test_user',
+              email: 'service_account_50ea787017048435ccd1a82ee4a2012e@noreply.gdk.com',
             });
             expect(store.setDeleteType).toHaveBeenCalledWith('soft');
           });
@@ -216,6 +271,7 @@ describe('Service accounts', () => {
               id: 1,
               name: 'Service Account 1',
               username: 'test_user',
+              email: 'service_account_50ea787017048435ccd1a82ee4a2012e@noreply.gdk.com',
             });
             expect(store.setDeleteType).toHaveBeenCalledWith('hard');
           });
@@ -327,16 +383,16 @@ describe('Service accounts', () => {
         it('call editServiceAccount when modal is submitted', () => {
           findCreateEditServiceAccountModal().vm.$emit('submit', values);
 
-          expect(store.editServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values, false);
+          expect(store.editServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values);
         });
       });
 
       describe('when in the group area', () => {
         it('call editServiceAccount when modal is submitted', () => {
-          createComponent({ isGroup: true });
+          createComponent();
           findCreateEditServiceAccountModal().vm.$emit('submit', values);
 
-          expect(store.editServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values, true);
+          expect(store.editServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values);
         });
       });
 

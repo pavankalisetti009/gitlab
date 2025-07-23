@@ -89,17 +89,14 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
         this.busy = false;
       }
     },
-    async editServiceAccount(url, values, isGroup) {
+    async editServiceAccount(url, values) {
       this.busy = true;
       this.clearAlert();
 
       try {
         const href = joinPaths(url, `${this.serviceAccount.id}`);
-        if (isGroup) {
-          await axios.patch(href, values);
-        } else {
-          await axios.put(href, values);
-        }
+
+        await axios.patch(href, values);
 
         this.alert = createAlert({
           message: s__('ServiceAccounts|The service account was updated.'),

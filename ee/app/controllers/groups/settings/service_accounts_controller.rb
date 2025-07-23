@@ -10,6 +10,10 @@ module Groups
       before_action :ensure_root_group!
       before_action :authorize_admin_service_accounts!
 
+      before_action do
+        push_frontend_feature_flag(:edit_service_account_email, group)
+      end
+
       private
 
       def authorize_admin_service_accounts!
