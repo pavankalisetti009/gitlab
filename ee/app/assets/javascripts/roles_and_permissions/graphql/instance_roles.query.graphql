@@ -1,13 +1,14 @@
 #import "./fragments/role.fragment.graphql"
 
-query getInstanceRoles {
+query getInstanceRoles($isSaas: Boolean!) {
   # Filter out the Minimal Access role (business requirement).
-  standardRoles(accessLevel: [GUEST, REPORTER, PLANNER, DEVELOPER, MAINTAINER, OWNER]) {
+  standardRoles(accessLevel: [GUEST, REPORTER, PLANNER, DEVELOPER, MAINTAINER, OWNER])
+    @skip(if: $isSaas) {
     nodes {
       ...Role
     }
   }
-  memberRoles {
+  memberRoles @skip(if: $isSaas) {
     nodes {
       ...Role
     }

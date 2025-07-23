@@ -47,7 +47,7 @@ module EE
           end
 
           def roles_and_permissions_available?
-            can?(current_user, :view_member_roles) && !gitlab_com_subscription?
+            can?(current_user, :view_member_roles)
           end
 
           def service_accounts_available?

@@ -118,10 +118,10 @@ RSpec.describe 'Admin roles', feature_category: :permissions do
         gitlab_sign_in(admin)
       end
 
-      it 'renders 404' do
+      it 'renders the page' do
         visit admin_application_settings_roles_and_permissions_path
 
-        expect(page).to have_gitlab_http_status(:not_found)
+        expect(page).to have_gitlab_http_status(:ok)
       end
     end
   end

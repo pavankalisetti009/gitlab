@@ -42,10 +42,6 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
         end
 
         it { is_expected.to be_present }
-
-        context 'when in SaaS mode', :saas do
-          it { is_expected.not_to be_present }
-        end
       end
     end
 

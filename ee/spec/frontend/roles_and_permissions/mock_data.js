@@ -186,6 +186,12 @@ export const instanceRolesResponse = {
   },
 };
 
+export const adminRolesResponse = {
+  data: {
+    adminMemberRoles: { nodes: adminRoles },
+  },
+};
+
 export const ldapAdminRoleLinks = [
   {
     id: 'gid://gitlab/Authz::LdapAdminRoleLink/1',

@@ -10,7 +10,8 @@ module MemberRolesHelper
       group_id: group&.id,
       current_user_email: current_user.notification_email_or_default,
       ldap_users_path: ldap_enabled? ? admin_users_path(filter: 'ldap_sync') : nil,
-      ldap_servers: ldap_servers&.to_json
+      ldap_servers: ldap_servers&.to_json,
+      is_saas: gitlab_com_subscription?.to_s
     }.compact
   end
 
@@ -26,7 +27,7 @@ module MemberRolesHelper
   end
 
   def member_role_edit_path(role)
-    if gitlab_com_subscription?
+    if use_group_path?(role)
       Gitlab::Routing.url_helpers.edit_group_settings_roles_and_permission_path(role.namespace, role)
     else
       Gitlab::Routing.url_helpers.edit_admin_application_settings_roles_and_permission_path(role)
@@ -34,7 +35,7 @@ module MemberRolesHelper
   end
 
   def member_role_details_path(role)
-    if gitlab_com_subscription?
+    if use_group_path?(role)
       Gitlab::Routing.url_helpers.group_settings_roles_and_permission_path(role.namespace, role)
     else
       Gitlab::Routing.url_helpers.admin_application_settings_roles_and_permission_path(role)
@@ -42,6 +43,13 @@ module MemberRolesHelper
   end
 
   private
+
+  def use_group_path?(role)
+    return false unless gitlab_com_subscription?
+    return true if role.is_a?(String)
+
+    !role.admin_related_role?
+  end
 
   def new_role_path(source)
     root_group = source&.root_ancestor

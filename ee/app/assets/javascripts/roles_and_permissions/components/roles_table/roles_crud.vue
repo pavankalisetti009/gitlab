@@ -31,7 +31,7 @@ export default {
     CrudComponent,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
-  inject: ['groupFullPath', 'newRolePath'],
+  inject: ['groupFullPath', 'newRolePath', 'isSaas'],
   data() {
     return {
       rolesData: null,
@@ -44,7 +44,7 @@ export default {
         return this.groupFullPath ? groupRolesQuery : instanceRolesQuery;
       },
       variables() {
-        return this.groupFullPath ? { fullPath: this.groupFullPath } : {};
+        return this.groupFullPath ? { fullPath: this.groupFullPath } : { isSaas: this.isSaas };
       },
       update(data) {
         return this.groupFullPath ? data.group : data;
@@ -59,13 +59,12 @@ export default {
       return this.$apollo.queries.rolesData.loading;
     },
     defaultRoles() {
-      return this.rolesData?.standardRoles.nodes || [];
+      return this.rolesData?.standardRoles?.nodes || [];
     },
     customRoles() {
       return this.rolesData?.memberRoles?.nodes || [];
     },
     adminRoles() {
-      // Only self-managed has admin roles, SaaS does not.
       return this.rolesData?.adminMemberRoles?.nodes || [];
     },
     roles() {

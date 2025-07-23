@@ -37,6 +37,7 @@ describe('RolesCrud component', () => {
     instanceRolesQueryHandler = instanceRolesSuccessQueryHandler,
     groupFullPath = 'test-group',
     newRolePath = 'new/role/path',
+    isSaas = false,
     membersPermissionsDetailedExport = true,
     exportGroupMemberships = true,
     customAdminRoles = true,
@@ -49,6 +50,7 @@ describe('RolesCrud component', () => {
       provide: {
         groupFullPath,
         newRolePath,
+        isSaas,
         glFeatures: { membersPermissionsDetailedExport, customAdminRoles },
         glAbilities: { exportGroupMemberships },
       },
@@ -123,7 +125,7 @@ describe('RolesCrud component', () => {
 
     it.each`
       phrase                                  | options
-      ${'for SaaS'}                           | ${{ groupFullPath: 'group' }}
+      ${'for groups'}                         | ${{ groupFullPath: 'group' }}
       ${'when admin roles cannot be created'} | ${{ customAdminRoles: false }}
     `('shows new role button $phrase', ({ options }) => {
       createComponent(options);
@@ -137,7 +139,7 @@ describe('RolesCrud component', () => {
   describe.each`
     type          | groupFullPath   | queryHandler                        | expectedQueryData
     ${'group'}    | ${'test-group'} | ${groupRolesSuccessQueryHandler}    | ${{ fullPath: 'test-group' }}
-    ${'instance'} | ${''}           | ${instanceRolesSuccessQueryHandler} | ${{}}
+    ${'instance'} | ${''}           | ${instanceRolesSuccessQueryHandler} | ${{ isSaas: false }}
   `('for $type-level roles', ({ groupFullPath, queryHandler, expectedQueryData }) => {
     beforeEach(() => createComponent({ groupFullPath }));
 
@@ -161,10 +163,14 @@ describe('RolesCrud component', () => {
     });
   });
 
-  describe('for Self-Managed', () => {
-    beforeEach(() => createComponent({ groupFullPath: '' }));
+  describe('for Self-Managed roles', () => {
+    beforeEach(() => createComponent({ groupFullPath: '', isSaas: false }));
 
-    it('shows role counts', () => {
+    it('fetches instance roles', () => {
+      expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledWith({ isSaas: false });
+    });
+
+    it('shows role counts with admin roles', () => {
       expect(findRoleCounts().text()).toBe('6 Default 2 Custom 2 Admin');
     });
 
@@ -173,21 +179,34 @@ describe('RolesCrud component', () => {
     });
   });
 
-  describe('for SaaS', () => {
-    beforeEach(() => createComponent({ customAdminRoles: false }));
+  describe('for SaaS instance-level roles', () => {
+    beforeEach(() => createComponent({ groupFullPath: '', isSaas: true }));
 
-    it('shows role counts', () => {
-      expect(findRoleCounts().text()).toBe('6 Default 2 Custom');
+    it('shows role counts with admin roles', () => {
+      expect(findRoleCounts().text()).toBe('0 Default 0 Custom 2 Admin');
     });
 
-    it('does not pass admin roles to roles table', () => {
-      expect(findRolesTable().props('roles')).not.toEqual(expect.arrayContaining(adminRoles));
+    it('passes admin roles to roles table', () => {
+      expect(findRolesTable().props('roles')).toEqual(expect.arrayContaining(adminRoles));
     });
   });
 
   describe('when there is a query error', () => {
-    it('shows an error message', async () => {
+    it('shows an error message for group roles', async () => {
       await createComponent({ groupRolesQueryHandler: jest.fn().mockRejectedValue() });
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Failed to fetch roles.',
+        dismissible: false,
+      });
+    });
+
+    it('shows an error message for admin roles', async () => {
+      await createComponent({
+        groupFullPath: '',
+        isSaas: true,
+        instanceRolesQueryHandler: jest.fn().mockRejectedValue(),
+      });
 
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Failed to fetch roles.',

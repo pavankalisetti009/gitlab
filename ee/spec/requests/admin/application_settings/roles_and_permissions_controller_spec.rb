@@ -64,7 +64,25 @@ RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enabl
               stub_saas_features(gitlab_com_subscriptions: true)
             end
 
-            it_behaves_like 'not found'
+            context 'when custom_admin_roles feature flag is enabled' do
+              before do
+                stub_feature_flags(custom_admin_roles: true)
+              end
+
+              it 'returns a 200 status code' do
+                get_method
+
+                expect(response).to have_gitlab_http_status(:ok)
+              end
+            end
+
+            context 'when custom_admin_roles feature flag is disabled' do
+              before do
+                stub_feature_flags(custom_admin_roles: false)
+              end
+
+              it_behaves_like 'not found'
+            end
           end
         end
       end
@@ -118,9 +136,26 @@ RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enabl
   end
 
   describe 'GET #new' do
-    subject(:get_method) { get new_admin_application_settings_roles_and_permission_path }
+    subject(:get_method) { get new_admin_application_settings_roles_and_permission_path, params: params }
+
+    let(:params) { { admin: true } }
 
     it_behaves_like 'access control', [:custom_roles]
+
+    context 'when on SaaS' do
+      before do
+        stub_licensed_features(custom_roles: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
+
+        sign_in(admin)
+      end
+
+      context 'without admin parameter' do
+        let(:params) { {} }
+
+        it_behaves_like 'not found'
+      end
+    end
 
     describe "Instrumentation" do
       before do

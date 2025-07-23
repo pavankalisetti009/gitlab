@@ -14,6 +14,7 @@ module Admin
 
       before_action :authorize_admin_member_roles!, except: [:index, :show]
       before_action :authorize_view_member_roles!, only: [:index, :show]
+      before_action :validate_creation_allowed!, only: [:new]
 
       before_action only: [:index] do
         push_frontend_feature_flag(:custom_admin_roles)
@@ -22,11 +23,23 @@ module Admin
       private
 
       def authorize_admin_member_roles!
-        render_404 if gitlab_com_subscription? || !can?(current_user, :admin_member_role)
+        render_404 if page_disabled? || !can?(current_user, :admin_member_role)
       end
 
       def authorize_view_member_roles!
-        render_404 if gitlab_com_subscription? || !can?(current_user, :view_member_roles)
+        render_404 if page_disabled? || !can?(current_user, :view_member_roles)
+      end
+
+      def page_disabled?
+        return false unless gitlab_com_subscription?
+
+        ::Feature.disabled?(:custom_admin_roles, :instance)
+      end
+
+      def validate_creation_allowed!
+        return unless gitlab_com_subscription?
+
+        render_404 unless params.permit(:admin).has_key?(:admin)
       end
 
       def tracking_namespace_source
