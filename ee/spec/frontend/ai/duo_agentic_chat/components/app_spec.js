@@ -1,4 +1,4 @@
-import { AgenticDuoChat, AgenticToolApprovalFlow } from '@gitlab/duo-ui';
+import { AgenticDuoChat } from '@gitlab/duo-ui';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
@@ -24,7 +24,6 @@ import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { getCookie } from '~/lib/utils/common_utils';
 
-// Mock the WebSocket utils - completely isolated
 const mockSocketManager = {
   connect: jest.fn(),
   send: jest.fn(),
@@ -44,7 +43,6 @@ jest.mock('~/lib/utils/websocket_utils', () => ({
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
 const MOCK_RESOURCE_ID = 'gid://gitlab/Resource/789';
-const MOCK_METADATA = '{"extended_logging":false,"is_team_member":null}';
 const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflow/456';
 const MOCK_USER_MESSAGE = {
   content: 'How can I optimize my CI pipeline?',
@@ -116,19 +114,18 @@ describe('Duo Agentic Chat', () => {
   const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
 
   const findDuoChat = () => wrapper.findComponent(AgenticDuoChat);
-  const findToolApprovalFlow = () => wrapper.findComponent(AgenticToolApprovalFlow);
   const getLastSocketCall = () => {
-    const [, socketCallbacks] = createWebSocket.mock.calls[0];
+    const { calls } = createWebSocket.mock;
+    if (calls.length === 0) {
+      throw new Error('No WebSocket calls made yet');
+    }
+    const [, socketCallbacks] = calls[calls.length - 1];
     return socketCallbacks;
   };
 
   const createComponent = ({
     initialState = {},
-    propsData = {
-      projectId: MOCK_PROJECT_ID,
-      resourceId: MOCK_RESOURCE_ID,
-      metadata: MOCK_METADATA,
-    },
+    propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
     data = {},
   } = {}) => {
     const store = new Vuex.Store({
@@ -177,8 +174,8 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().exists()).toBe(true);
       });
 
-      it('renders the AgenticToolApprovalFlow component', () => {
-        expect(findToolApprovalFlow().exists()).toBe(true);
+      it('passes isToolApprovalProcessing prop to AgenticDuoChat component', () => {
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
       });
 
       it('calls the context presets GraphQL query when component loads', () => {
@@ -242,7 +239,6 @@ describe('Duo Agentic Chat', () => {
           findDuoChat().vm.$emit('send-chat-prompt', command);
           await nextTick();
 
-          expect(wrapper.vm.workflowId).toBe(null);
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
           expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
         },
@@ -271,7 +267,7 @@ describe('Duo Agentic Chat', () => {
           expect.objectContaining({
             content: MOCK_USER_MESSAGE.content,
             role: 'user',
-            requestId: expect.stringContaining('-'),
+            requestId: `456-0`,
           }),
         );
       });
@@ -305,9 +301,9 @@ describe('Duo Agentic Chat', () => {
             workflowID: '456',
             clientVersion: '1.0',
             workflowDefinition: 'chat',
-            workflowMetadata: MOCK_METADATA,
             goal: MOCK_USER_MESSAGE.content,
             approval: {},
+            workflowMetadata: null,
             additionalContext: expectedAdditionalContext,
           },
         };
@@ -356,13 +352,13 @@ describe('Duo Agentic Chat', () => {
           expect.arrayContaining([
             expect.objectContaining({
               content: 'Hello, how can I help?',
-              message_type: 'assistant',
+              message_type: 'agent',
               role: 'assistant',
               requestId: '456-0',
             }),
             expect.objectContaining({
               content: 'I can assist with optimizing your CI pipeline.',
-              message_type: 'assistant',
+              message_type: 'agent',
               role: 'assistant',
               requestId: '456-1',
             }),
@@ -370,7 +366,7 @@ describe('Duo Agentic Chat', () => {
         );
       });
 
-      it('handles tool approval flow', async () => {
+      it('handles tool approval flow and sends actionResponse immediately', async () => {
         const mockCheckpointData = {
           requestID: 'request-id-1',
           newCheckpoint: {
@@ -379,7 +375,7 @@ describe('Duo Agentic Chat', () => {
                 ui_chat_log: [
                   {
                     content: 'I need to run a command.',
-                    role: 'assistant',
+                    message_type: 'assistant',
                     tool_info: {
                       name: 'run_command',
                       args: { command: 'ls -la' },
@@ -397,11 +393,16 @@ describe('Duo Agentic Chat', () => {
             text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
           },
         });
+        await nextTick();
 
-        expect(findToolApprovalFlow().props('visible')).toBe(true);
-        expect(findToolApprovalFlow().props('toolDetails')).toEqual({
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+        expect(wrapper.vm.pendingToolCall).toEqual({
           name: 'run_command',
           parameters: { command: 'ls -la' },
+        });
+
+        expect(mockSocketManager.send).toHaveBeenCalledWith({
+          actionResponse: { requestID: 'request-id-1' },
         });
       });
 
@@ -447,13 +448,13 @@ describe('Duo Agentic Chat', () => {
         {
           messageType: 'request',
           expectedRole: 'assistant',
-          expectedMessageType: 'assistant',
+          expectedMessageType: 'request',
           description: 'handles request message type correctly',
         },
         {
           messageType: 'agent',
           expectedRole: 'assistant',
-          expectedMessageType: 'assistant',
+          expectedMessageType: 'agent',
           description: 'handles agent message type correctly',
         },
         {
@@ -570,27 +571,50 @@ describe('Duo Agentic Chat', () => {
       });
     });
 
-    describe('tool approval flow', () => {
-      let socketCall;
+    describe('@approve-tool', () => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-      beforeEach(async () => {
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      it('handles tool approval via chat component event and updates processing state through workflow', async () => {
+        duoChatGlobalState.isAgenticChatShown = true;
         await waitForPromises();
-        socketCall = getLastSocketCall();
+        wrapper.vm.workflowId = '456';
 
-        // Set up pending tool call by simulating a message that requires approval
-        const mockCheckpointData = {
-          requestID: 'request-id-1',
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+
+        findDuoChat().vm.$emit('approve-tool');
+        await nextTick();
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+
+        const expectedStartRequest = {
+          startRequest: {
+            workflowID: '456',
+            clientVersion: '1.0',
+            workflowDefinition: 'chat',
+            goal: '',
+            approval: { approval: {} },
+            workflowMetadata: null,
+            additionalContext: expectedAdditionalContext,
+          },
+        };
+
+        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
+
+        const socketCall = getLastSocketCall();
+        const mockApprovalRequiredData = {
+          requestID: 'request-id-approval-1',
           newCheckpoint: {
             checkpoint: JSON.stringify({
               channel_values: {
                 ui_chat_log: [
                   {
-                    content: 'I need to run a command.',
-                    role: 'assistant',
+                    content: 'I need approval to execute this tool',
+                    message_type: 'assistant',
                     tool_info: {
-                      name: 'run_command',
-                      args: { command: 'ls -la' },
+                      name: 'some_tool',
+                      args: { param: 'value' },
                     },
                   },
                 ],
@@ -602,52 +626,201 @@ describe('Duo Agentic Chat', () => {
 
         await socketCall.onMessage({
           data: {
-            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
+            text: () => Promise.resolve(JSON.stringify(mockApprovalRequiredData)),
           },
         });
-      });
-
-      it('handles tool approval', async () => {
-        findToolApprovalFlow().vm.$emit('approve');
         await nextTick();
 
-        const expectedStartRequest = {
-          startRequest: {
-            workflowID: '456',
-            clientVersion: '1.0',
-            workflowDefinition: 'chat',
-            workflowMetadata: MOCK_METADATA,
-            goal: '',
-            approval: { approval: {} },
-            additionalContext: expectedAdditionalContext,
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+
+        const mockCompletedData = {
+          requestID: 'request-id-approval-2',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'Tool execution completed',
+                    message_type: 'agent',
+                  },
+                ],
+              },
+            }),
+            status: 'completed',
           },
         };
 
-        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockCompletedData)),
+          },
+        });
+        await nextTick();
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+      });
+    });
+
+    describe('@deny-tool', () => {
+      beforeEach(() => {
+        createComponent();
       });
 
-      it('handles tool denial', async () => {
+      it('handles tool denial via chat component event with message and updates processing state', async () => {
+        duoChatGlobalState.isAgenticChatShown = true;
+        await waitForPromises();
+        wrapper.vm.workflowId = '456';
         const denyMessage = 'I do not approve this action';
-        findToolApprovalFlow().vm.$emit('deny', denyMessage);
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+
+        findDuoChat().vm.$emit('deny-tool', denyMessage);
         await nextTick();
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
 
         const expectedStartRequest = {
           startRequest: {
             workflowID: '456',
             clientVersion: '1.0',
             workflowDefinition: 'chat',
-            workflowMetadata: MOCK_METADATA,
             goal: '',
             approval: {
               approval: undefined,
               rejection: { message: denyMessage },
             },
+            workflowMetadata: null,
+            additionalContext: expectedAdditionalContext,
+          },
+        };
+
+        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
+
+        const socketCall = getLastSocketCall();
+        const mockApprovalRequiredData = {
+          requestID: 'request-id-denial-1',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'Tool approval was required',
+                    message_type: 'assistant',
+                    tool_info: {
+                      name: 'some_tool',
+                      args: { param: 'value' },
+                    },
+                  },
+                ],
+              },
+            }),
+            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+          },
+        };
+
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockApprovalRequiredData)),
+          },
+        });
+        await nextTick();
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+
+        const mockDenialProcessedData = {
+          requestID: 'request-id-denial-2',
+          newCheckpoint: {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: [
+                  {
+                    content: 'Tool execution denied, proceeding with alternative approach',
+                    message_type: 'agent',
+                  },
+                ],
+              },
+            }),
+            status: 'processing',
+          },
+        };
+
+        await socketCall.onMessage({
+          data: {
+            text: () => Promise.resolve(JSON.stringify(mockDenialProcessedData)),
+          },
+        });
+        await nextTick();
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+      });
+
+      it('handles tool denial via chat component event with event object and updates processing state', async () => {
+        duoChatGlobalState.isAgenticChatShown = true;
+        await waitForPromises();
+        wrapper.vm.workflowId = '456';
+        const eventObject = { message: 'I do not approve this action' };
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+
+        findDuoChat().vm.$emit('deny-tool', eventObject);
+        await nextTick();
+
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+
+        const expectedStartRequest = {
+          startRequest: {
+            workflowID: '456',
+            clientVersion: '1.0',
+            workflowDefinition: 'chat',
+            goal: '',
+            approval: {
+              approval: undefined,
+              rejection: { message: 'I do not approve this action' },
+            },
+            workflowMetadata: null,
             additionalContext: expectedAdditionalContext,
           },
         };
 
         expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
       });
+    });
+  });
+
+  describe('workflowStatus watcher', () => {
+    beforeEach(async () => {
+      createComponent();
+      duoChatGlobalState.isAgenticChatShown = true;
+      await waitForPromises();
+    });
+
+    it('sets isProcessingToolApproval to false when workflow status changes from TOOL_CALL_APPROVAL_REQUIRED', () => {
+      wrapper.vm.isProcessingToolApproval = true;
+
+      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
+      watcherFunction.call(wrapper.vm, 'completed', 'TOOL_CALL_APPROVAL_REQUIRED');
+
+      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+    });
+
+    it('does not change isProcessingToolApproval when workflow status changes from other states', async () => {
+      wrapper.vm.isProcessingToolApproval = true;
+      await nextTick();
+
+      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
+      watcherFunction.call(wrapper.vm, 'completed', 'processing');
+
+      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+    });
+
+    it('does not change isProcessingToolApproval when workflow status changes to TOOL_CALL_APPROVAL_REQUIRED', async () => {
+      wrapper.vm.isProcessingToolApproval = false;
+      await nextTick();
+
+      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
+      watcherFunction.call(wrapper.vm, 'TOOL_CALL_APPROVAL_REQUIRED', 'processing');
+
+      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
     });
   });
 
@@ -751,7 +924,6 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         expect(onNewChatSpy).toHaveBeenCalled();
-        expect(wrapper.vm.workflowId).toBe(null);
       });
 
       it('does not create a new chat when Duo Chat is opened', async () => {
@@ -769,6 +941,10 @@ describe('Duo Agentic Chat', () => {
   });
 
   describe('Socket cleanup', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('cleans up socket on component destroy', () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
@@ -778,9 +954,51 @@ describe('Duo Agentic Chat', () => {
 
       expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
     });
+
+    it('sets isProcessingToolApproval to false on socket close when not waiting for approval', async () => {
+      duoChatGlobalState.isAgenticChatShown = true;
+      createComponent();
+      await waitForPromises();
+
+      wrapper.vm.isProcessingToolApproval = true;
+      wrapper.vm.workflowStatus = 'completed';
+      wrapper.vm.workflowId = '456';
+
+      wrapper.vm.startWorkflow('test question', {}, wrapper.vm.additionalContext);
+
+      expect(createWebSocket).toHaveBeenCalled();
+
+      const socketCall = getLastSocketCall();
+      socketCall.onClose();
+
+      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+      expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+    });
+
+    it('does not set isProcessingToolApproval to false on socket close when waiting for approval', async () => {
+      duoChatGlobalState.isAgenticChatShown = true;
+      createComponent();
+      await waitForPromises();
+
+      wrapper.vm.isProcessingToolApproval = true;
+      wrapper.vm.workflowStatus = 'TOOL_CALL_APPROVAL_REQUIRED';
+      wrapper.vm.workflowId = '456';
+
+      wrapper.vm.startWorkflow('test question', {}, wrapper.vm.additionalContext);
+
+      expect(createWebSocket).toHaveBeenCalled();
+
+      const socketCall = getLastSocketCall();
+      socketCall.onClose();
+
+      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+      expect(actionSpies.setLoading).not.toHaveBeenCalledWith(expect.anything(), false);
+    });
   });
 
   describe('duoAgenticModePreference toggle', () => {
+    const findGlToggle = () => wrapper.findComponent(GlToggle);
+
     beforeEach(() => {
       duoChatGlobalState.isAgenticChatShown = true;
       jest.clearAllMocks();
@@ -797,7 +1015,8 @@ describe('Duo Agentic Chat', () => {
         getCookie.mockReturnValue(cookieValue);
         createComponent();
 
-        expect(wrapper.vm.duoAgenticModePreference).toBe(expected);
+        expect(findGlToggle().props('value')).toBe(expected);
+
         expect(getCookie).toHaveBeenCalledWith('duo_agentic_mode_on');
       });
     });
@@ -834,9 +1053,7 @@ describe('Duo Agentic Chat', () => {
     });
 
     it('passes correct props to GlToggle', () => {
-      const toggle = findGlToggle();
-
-      expect(toggle.props()).toMatchObject({
+      expect(findGlToggle().props()).toMatchObject({
         label: 'Agentic mode (Beta)',
         labelPosition: 'left',
         value: false,
@@ -852,9 +1069,7 @@ describe('Duo Agentic Chat', () => {
     });
 
     it('calls setAgenticMode when toggle value changes', async () => {
-      const toggle = findGlToggle();
-
-      toggle.vm.$emit('change', true);
+      findGlToggle().vm.$emit('change', true);
       await nextTick();
 
       expect(setAgenticMode).toHaveBeenCalledWith(true, true);
