@@ -12,6 +12,7 @@ module Search
     data_consistency :delayed
     urgency :throttled
     idempotent!
+    pause_control :advanced_search
 
     def perform(group_id, ancestor_id, options = {})
       return unless Gitlab::CurrentSettings.elasticsearch_indexing?

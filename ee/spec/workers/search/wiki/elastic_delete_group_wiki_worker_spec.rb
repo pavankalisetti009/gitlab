@@ -11,47 +11,54 @@ RSpec.describe Search::Wiki::ElasticDeleteGroupWikiWorker, feature_category: :gl
     let(:group2) { wiki2.container }
     let_it_be(:project) { create(:project, :wiki_repo) }
 
-    before do
-      stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-      [wiki, wiki2, project_wiki].each.with_index do |wiki, idx|
-        wiki.create_page("index_page#{idx}", 'Bla bla term')
-        wiki.index_wiki_blobs
+    subject(:worker) { described_class.new }
+
+    it 'is a pause_control worker' do
+      expect(described_class.get_pause_control).to eq(:advanced_search)
+    end
+
+    context 'when elasticsearch_indexing is false' do
+      let_it_be(:helper) { Gitlab::Elastic::Helper.default }
+
+      before do
+        stub_ee_application_setting(elasticsearch_indexing: false)
+
+        allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
       end
-      ensure_elasticsearch_index!
+
+      it 'does nothing' do
+        expect(helper).not_to receive(:remove_wikis_from_the_standalone_index)
+
+        worker.perform(group.id)
+      end
     end
 
-    it 'removes all the wikis in the Elastic of the passed group' do
-      expect(get_wiki_documents_count(group)).to be 1
-      described_class.new.perform(group.id)
-      refresh_index!
-      expect(get_wiki_documents_count(group)).to be 0
-      expect(get_wiki_documents_count(group2)).to be 1
-      expect(get_wiki_documents_count(project)).to be 1
-    end
+    context 'when elasticsearch_indexing is true' do
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        [wiki, wiki2, project_wiki].each.with_index do |wiki, idx|
+          wiki.create_page("index_page#{idx}", 'Bla bla term')
+          wiki.index_wiki_blobs
+        end
+        ensure_elasticsearch_index!
+      end
 
-    def get_wiki_documents_count(container)
-      Gitlab::Elastic::Helper.default.client.search(
-        {
-          index: Elastic::Latest::WikiConfig.index_name,
-          routing: "n_#{container.root_ancestor.id}",
-          body: {
-            query: {
-              bool: {
-                filter: {
-                  term: {
-                    rid: "wiki_#{container.class.name.downcase}_#{container.id}"
-                  }
-                },
-                must_not: {
-                  term: {
-                    language: 'YAML'
-                  }
-                }
-              }
-            }
-          }
-        }
-      )['hits']['total']['value']
+      it_behaves_like 'an idempotent worker' do
+        let(:job_args) { [group.id] }
+
+        it 'removes all the wikis for the passed group' do
+          expect(items_in_index(Elastic::Latest::WikiConfig.index_name, 'rid')).to include("wiki_group_#{group.id}")
+
+          worker.perform(group.id)
+
+          refresh_index!
+
+          results = items_in_index(Elastic::Latest::WikiConfig.index_name, 'rid')
+          expect(results).not_to include("wiki_group_#{group.id}")
+          expect(results).to include("wiki_group_#{group2.id}")
+          expect(results).to include("wiki_project_#{project.id}")
+        end
+      end
     end
   end
 end

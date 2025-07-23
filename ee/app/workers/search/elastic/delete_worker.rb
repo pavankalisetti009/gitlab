@@ -11,6 +11,7 @@ module Search
       data_consistency :delayed
       urgency :throttled
       idempotent!
+      pause_control :advanced_search
 
       TASKS = {
         delete_project_work_items: ::Search::Elastic::Delete::ProjectWorkItemsService,

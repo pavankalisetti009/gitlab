@@ -13,6 +13,10 @@ RSpec.describe Search::ElasticGroupAssociationDeletionWorker, :elastic_helpers, 
     let(:client) { helper.client }
     let(:work_item_index) { ::Search::Elastic::Types::WorkItem.index_name }
 
+    it 'is a pause_control worker' do
+      expect(described_class.get_pause_control).to eq(:advanced_search)
+    end
+
     context 'when Elasticsearch is enabled', :elastic_delete_by_query do
       let(:group_work_item) { create(:work_item, namespace: group) }
       let(:sub_group_work_item) { create(:work_item, namespace: sub_group) }
