@@ -57,7 +57,6 @@ export default {
       loading: false,
       oldIid: null,
       localWeight: '',
-      previousWeight: null,
     };
   },
   apollo: {
