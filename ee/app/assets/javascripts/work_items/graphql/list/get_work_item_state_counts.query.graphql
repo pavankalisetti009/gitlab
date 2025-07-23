@@ -28,6 +28,8 @@ query EEgetWorkItemStateCounts(
   $in: [IssuableSearchableField!]
   $not: NegatedWorkItemFilterInput
   $or: UnionedWorkItemFilterInput
+  $weight: String
+  $weightWildcardId: WeightWildcardId
 ) {
   group(fullPath: $fullPath) @include(if: $isGroup) {
     id
@@ -92,6 +94,8 @@ query EEgetWorkItemStateCounts(
       in: $in
       not: $not
       or: $or
+      weight: $weight
+      weightWildcardId: $weightWildcardId
     ) {
       all
       closed

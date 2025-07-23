@@ -15,6 +15,10 @@ import {
   TOKEN_TYPE_CUSTOM_FIELD,
   OPERATORS_IS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
+import {
+  TOKEN_TITLE_WEIGHT,
+  TOKEN_TYPE_WEIGHT,
+} from 'ee/vue_shared/components/filtered_search_bar/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 
@@ -22,6 +26,8 @@ import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search
 
 const CustomFieldToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
+const WeightToken = () =>
+  import('ee/vue_shared/components/filtered_search_bar/tokens/weight_token.vue');
 
 export default {
   emptyStateSvg,
@@ -38,6 +44,7 @@ export default {
     'showNewWorkItem',
     'workItemType',
     'hasCustomFieldsFeature',
+    'hasIssueWeightsFeature',
   ],
   props: {
     withTabs: {
@@ -112,6 +119,16 @@ export default {
             operators: OPERATORS_IS,
             unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
           });
+        });
+      }
+
+      if (this.hasIssueWeightsFeature && !this.isEpicsList) {
+        tokens.push({
+          type: TOKEN_TYPE_WEIGHT,
+          title: TOKEN_TITLE_WEIGHT,
+          icon: 'weight',
+          token: WeightToken,
+          unique: true,
         });
       }
 

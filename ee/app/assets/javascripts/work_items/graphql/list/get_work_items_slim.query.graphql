@@ -35,6 +35,8 @@ query getWorkItemsSlimEE(
   $firstPageSize: Int
   $lastPageSize: Int
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
+  $weight: String
+  $weightWildcardId: WeightWildcardId
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -71,6 +73,8 @@ query getWorkItemsSlimEE(
       first: $firstPageSize
       last: $lastPageSize
       customField: $customField
+      weight: $weight
+      weightWildcardId: $weightWildcardId
     ) {
       pageInfo {
         ...PageInfo
