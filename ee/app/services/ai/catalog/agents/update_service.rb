@@ -25,7 +25,10 @@ module Ai
           latest_version.schema_version = Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION if latest_version.changed?
 
           # Changes to the agent record are also saved through latest_version
-          return ServiceResponse.success(payload: agent) if latest_version.save
+          if latest_version.save
+            track_ai_item_events('update_ai_catalog_item', agent.item_type)
+            return ServiceResponse.success(payload: agent)
+          end
 
           error(latest_version.errors.full_messages, payload: agent)
         end

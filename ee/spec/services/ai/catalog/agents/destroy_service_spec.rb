@@ -51,6 +51,12 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
         project.add_maintainer(user)
       end
 
+      it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { execute_service }
+         .to trigger_internal_events('delete_ai_catalog_item')
+         .with(user: user, project: project, additional_properties: { label: 'agent' })
+      end
+
       context 'when agent exists' do
         it 'destroys the agent successfully' do
           expect { execute_service }.to change { Ai::Catalog::Item.count }.by(-1)
@@ -106,6 +112,11 @@ RSpec.describe Ai::Catalog::Agents::DestroyService, feature_category: :workflow_
 
           expect(result).to be_error
           expect(result.errors).to contain_exactly('Agent cannot be destroyed')
+        end
+
+        it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+          expect { execute_service }
+            .not_to trigger_internal_events('delete_ai_catalog_item')
         end
       end
     end

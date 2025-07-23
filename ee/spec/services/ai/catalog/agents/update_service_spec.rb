@@ -83,6 +83,12 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         expect(execute_service).to be_success
       end
 
+      it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { execute_service }
+         .to trigger_internal_events('update_ai_catalog_item')
+         .with(user: user, project: project, additional_properties: { label: 'agent' })
+      end
+
       context 'when only agent properties are being updated' do
         let(:params) { { agent: agent, name: 'New name' } }
 
@@ -119,6 +125,11 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
 
         it_behaves_like 'does not update the agent'
         it_behaves_like 'returns error response', error: "Item name can't be blank"
+
+        it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+          expect { execute_service }
+            .not_to trigger_internal_events('update_ai_catalog_item')
+        end
       end
 
       context 'when updated latest version is invalid' do

@@ -13,7 +13,12 @@ module Ai
           return error_no_permissions unless allowed?
           return error_no_agent unless valid_agent?
 
-          delete_agent ? success : error_response
+          if delete_agent
+            track_ai_item_events('delete_ai_catalog_item', agent.item_type)
+            return ServiceResponse.success
+          end
+
+          error_response
         end
 
         private
@@ -22,10 +27,6 @@ module Ai
 
         def valid_agent?
           agent && agent.agent?
-        end
-
-        def success
-          ServiceResponse.success
         end
 
         def error_response
