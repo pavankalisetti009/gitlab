@@ -2,56 +2,97 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Admin Groups', feature_category: :hosted_runners do
-  include ::Ci::MinutesHelpers
-
+RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
   let_it_be(:group) { create :group }
-  let_it_be(:admin) { create(:admin) }
-  let_it_be(:project, reload: true) { create(:project, namespace: group) }
 
-  before do
-    sign_in(admin)
-    enable_admin_mode!(admin)
+  context 'when current user is an admin', feature_category: :hosted_runners do
+    include ::Ci::MinutesHelpers
+
+    let_it_be(:admin) { create(:admin) }
+    let_it_be(:project, reload: true) { create(:project, namespace: group) }
+
+    before do
+      sign_in(admin)
+      enable_admin_mode!(admin)
+    end
+
+    describe 'show a group' do
+      context 'with compute usage' do
+        before do
+          project.update!(shared_runners_enabled: true)
+          set_ci_minutes_used(group, 300)
+          group.update!(shared_runners_minutes_limit: 400)
+        end
+
+        context 'when gitlab saas', :saas do
+          it 'renders compute usage report' do
+            visit admin_group_path(group)
+
+            expect(page).to have_content('Compute quota: 300 / 400')
+          end
+
+          it 'renders additional compute minutes' do
+            group.update!(extra_shared_runners_minutes_limit: 100)
+
+            visit admin_group_path(group)
+
+            expect(page).to have_content('Additional compute minutes:')
+          end
+        end
+
+        context 'when self-managed' do
+          it 'renders compute usage report' do
+            visit admin_group_path(group)
+
+            expect(page).not_to have_content('Compute quota: 300 / 400')
+          end
+
+          it 'does not render additional compute minutes' do
+            group.update!(extra_shared_runners_minutes_limit: 100)
+
+            visit admin_group_path(group)
+
+            expect(page).not_to have_content('Additional compute minutes:')
+          end
+        end
+      end
+    end
   end
 
-  describe 'show a group' do
-    context 'with compute usage' do
+  context 'when current user is a regular user with read_admin_groups permission', :js do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:role) { create(:admin_member_role, :read_admin_groups, user: current_user) }
+
+    before do
+      stub_feature_flags(admin_groups_vue: false)
+      stub_licensed_features(custom_roles: true)
+
+      enable_admin_mode!(current_user)
+
+      sign_in(current_user)
+    end
+
+    describe 'list' do
       before do
-        project.update!(shared_runners_enabled: true)
-        set_ci_minutes_used(group, 300)
-        group.update!(shared_runners_minutes_limit: 400)
+        stub_feature_flags(admin_groups_vue: false)
       end
 
-      context 'when gitlab saas', :saas do
-        it 'renders compute usage report' do
-          visit admin_group_path(group)
+      it 'renders without admin-only buttons' do
+        visit admin_groups_path
 
-          expect(page).to have_content('Compute quota: 300 / 400')
-        end
-
-        it 'renders additional compute minutes' do
-          group.update!(extra_shared_runners_minutes_limit: 100)
-
-          visit admin_group_path(group)
-
-          expect(page).to have_content('Additional compute minutes:')
-        end
+        expect(page).to have_content(group.name)
+        expect(page).not_to have_content("New group")
+        expect(page).not_to have_content("Edit")
+        expect(page).not_to have_content("Delete")
       end
+    end
 
-      context 'when self-managed' do
-        it 'renders compute usage report' do
-          visit admin_group_path(group)
+    describe 'show', :aggregate_failures do
+      it 'shows the group without admin-only buttons' do
+        visit admin_group_path(group)
 
-          expect(page).not_to have_content('Compute quota: 300 / 400')
-        end
-
-        it 'does not render additional compute minutes' do
-          group.update!(extra_shared_runners_minutes_limit: 100)
-
-          visit admin_group_path(group)
-
-          expect(page).not_to have_content('Additional compute minutes:')
-        end
+        expect(page).to have_content group.name
+        expect(page).not_to have_content("Edit")
       end
     end
   end
