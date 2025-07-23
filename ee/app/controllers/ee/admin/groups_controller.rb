@@ -10,6 +10,8 @@ module EE
       prepended do
         feature_category :continuous_integration, [:reset_runners_minutes]
 
+        authorize! :read_admin_groups, only: %i[index show]
+
         before_action do
           push_saas_feature(:gitlab_com_subscriptions)
         end

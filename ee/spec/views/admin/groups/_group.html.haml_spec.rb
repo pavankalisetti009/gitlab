@@ -3,11 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe 'admin/groups/_group', feature_category: :system_access do
+  let_it_be(:user) { build(:admin) }
   let(:group) { build(:group) }
 
   before do
     assign(:group, group)
     allow(group).to receive(:storage_size)
+    allow(view).to receive(:current_user).and_return(user)
   end
 
   context 'for namespace plan badge' do
