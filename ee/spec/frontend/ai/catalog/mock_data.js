@@ -1,5 +1,7 @@
 const TYPENAME_AI_CATALOG_ITEM = 'AiCatalogItem';
 const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
+const TYPENAME_AI_CATALOG_AGENT_CREATE = 'AiCatalogAgentCreatePayload';
+const TYPENAME_AI_CATALOG_AGENT_UPDATE = 'AiCatalogAgentUpdatePayload';
 const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
@@ -37,6 +39,13 @@ export const mockAgent = mockAgentFactory({
   project: mockProject,
   versions: {
     nodes: mockAgentVersions,
+  },
+});
+
+export const mockLatestAgent = mockAgentFactory({
+  project: mockProject,
+  latestVersion: {
+    mockAgentVersions,
   },
 });
 
@@ -82,6 +91,7 @@ export const mockCreateAiCatalogAgentSuccessMutation = {
     aiCatalogAgentCreate: {
       errors: [],
       item: mockBaseAgent,
+      __typename: TYPENAME_AI_CATALOG_AGENT_CREATE,
     },
   },
 };
@@ -89,6 +99,25 @@ export const mockCreateAiCatalogAgentSuccessMutation = {
 export const mockCreateAiCatalogAgentErrorMutation = {
   data: {
     aiCatalogAgentCreate: {
+      errors: ['Some error'],
+      item: null,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogAgentSuccessMutation = {
+  data: {
+    aiCatalogAgentUpdate: {
+      errors: [],
+      item: mockLatestAgent,
+      __typename: TYPENAME_AI_CATALOG_AGENT_UPDATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogAgentErrorMutation = {
+  data: {
+    aiCatalogAgentUpdate: {
       errors: ['Some error'],
       item: null,
     },
