@@ -46,8 +46,8 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
     end
   end
 
-  describe Explore::DependenciesController, :enable_admin_mode do
-    let_it_be(:user) { create(:user, :admin) }
+  describe Explore::DependenciesController do
+    let_it_be(:user) { create(:user) }
     let_it_be(:role) { create(:member_role, :guest, namespace: project.group, read_dependency: true) }
 
     before do
