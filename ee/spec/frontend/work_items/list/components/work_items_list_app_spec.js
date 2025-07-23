@@ -10,12 +10,17 @@ import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import {
   WORK_ITEM_TYPE_NAME_EPIC,
+  WORK_ITEM_TYPE_NAME_ISSUE,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
 } from '~/work_items/constants';
 import {
   TOKEN_TYPE_CUSTOM_FIELD,
   OPERATORS_IS,
+} from '~/vue_shared/components/filtered_search_bar/constants';
+import {
+  TOKEN_TITLE_WEIGHT,
+  TOKEN_TYPE_WEIGHT,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
@@ -46,6 +51,8 @@ describeSkipVue3(skipReason, () => {
 
   const mountComponent = ({
     hasEpicsFeature = true,
+    hasIssueWeightsFeature = false,
+    hasCustomFieldsFeature = true,
     showNewWorkItem = true,
     isGroup = true,
     workItemType = WORK_ITEM_TYPE_NAME_EPIC,
@@ -55,7 +62,8 @@ describeSkipVue3(skipReason, () => {
       apolloProvider: createMockApollo([[namespaceCustomFieldsQuery, customFieldsQueryHandler]]),
       provide: {
         hasEpicsFeature,
-        hasCustomFieldsFeature: true,
+        hasCustomFieldsFeature,
+        hasIssueWeightsFeature,
         showNewWorkItem,
         isGroup,
         workItemType,
@@ -161,43 +169,117 @@ describeSkipVue3(skipReason, () => {
     });
   });
 
-  describe('custom field filter tokens', () => {
-    const mockCustomFields = mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes;
-    const allowedFields = mockCustomFields.filter(
-      (field) =>
-        [CUSTOM_FIELDS_TYPE_SINGLE_SELECT, CUSTOM_FIELDS_TYPE_MULTI_SELECT].includes(
-          field.fieldType,
-        ) && field.workItemTypes.some((type) => type.name === WORK_ITEM_TYPE_NAME_EPIC),
-    );
+  describe('filter tokens', () => {
+    describe('custom fields', () => {
+      const mockCustomFields = mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes;
+      const allowedFields = mockCustomFields.filter(
+        (field) =>
+          [CUSTOM_FIELDS_TYPE_SINGLE_SELECT, CUSTOM_FIELDS_TYPE_MULTI_SELECT].includes(
+            field.fieldType,
+          ) && field.workItemTypes.some((type) => type.name === WORK_ITEM_TYPE_NAME_EPIC),
+      );
 
-    it('fetches custom fields when component is mounted', async () => {
-      mountComponent();
-      await waitForPromises();
+      it('excludes custom field tokens when feature is disabled', async () => {
+        mountComponent({ hasCustomFieldsFeature: false });
+        await waitForPromises();
 
-      expect(customFieldsQueryHandler).toHaveBeenCalledWith({
-        fullPath: 'gitlab-org',
-        active: true,
+        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
+        const customFieldTokens = eeSearchTokens.filter((token) =>
+          token.type.startsWith(TOKEN_TYPE_CUSTOM_FIELD),
+        );
+
+        expect(customFieldTokens).toHaveLength(0);
+        expect(customFieldsQueryHandler).not.toHaveBeenCalled(); // Verify query was skipped
+      });
+
+      it('includes custom field tokens when feature is enabled', async () => {
+        mountComponent();
+        await waitForPromises();
+
+        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
+        const customFieldTokens = eeSearchTokens.filter((token) =>
+          token.type.startsWith(TOKEN_TYPE_CUSTOM_FIELD),
+        );
+
+        expect(customFieldTokens).toHaveLength(2);
+      });
+
+      it('fetches custom fields when component is mounted', async () => {
+        mountComponent();
+        await waitForPromises();
+
+        expect(customFieldsQueryHandler).toHaveBeenCalledWith({
+          fullPath: 'gitlab-org',
+          active: true,
+        });
+      });
+
+      it('passes custom field tokens to WorkItemsListApp and unique field is based on field type', async () => {
+        mountComponent();
+        await waitForPromises();
+
+        const expectedTokens = allowedFields.map((field) => ({
+          type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
+          title: field.name,
+          icon: 'multiple-choice',
+          field,
+          fullPath: 'gitlab-org',
+          token: expect.any(Function),
+          operators: OPERATORS_IS,
+          unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+        }));
+
+        expect(findWorkItemsListApp().props('eeSearchTokens')).toHaveLength(2);
+        expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(expectedTokens[0]);
+        expect(findWorkItemsListApp().props('eeSearchTokens')[1]).toMatchObject(expectedTokens[1]);
       });
     });
 
-    it('passes custom field tokens to WorkItemsListApp and unique field is based on field type', async () => {
-      mountComponent();
-      await waitForPromises();
+    describe('weight', () => {
+      it('excludes weight token when feature is disabled', async () => {
+        mountComponent({
+          hasIssueWeightsFeature: false,
+          workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+        });
+        await waitForPromises();
 
-      const expectedTokens = allowedFields.map((field) => ({
-        type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
-        title: field.name,
-        icon: 'multiple-choice',
-        field,
-        fullPath: 'gitlab-org',
-        token: expect.any(Function),
-        operators: OPERATORS_IS,
-        unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
-      }));
+        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
+        const weightToken = eeSearchTokens.find((token) => token.type === TOKEN_TYPE_WEIGHT);
 
-      expect(findWorkItemsListApp().props('eeSearchTokens')).toHaveLength(2);
-      expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(expectedTokens[0]);
-      expect(findWorkItemsListApp().props('eeSearchTokens')[1]).toMatchObject(expectedTokens[1]);
+        expect(weightToken).toBeUndefined();
+      });
+
+      it('excludes weight token when feature is enabled but on epics list', async () => {
+        mountComponent({
+          hasIssueWeightsFeature: true,
+          workItemType: WORK_ITEM_TYPE_NAME_EPIC,
+        });
+        await waitForPromises();
+
+        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
+        const weightToken = eeSearchTokens.find((token) => token.type === TOKEN_TYPE_WEIGHT);
+
+        expect(weightToken).toBeUndefined();
+      });
+
+      it('includes weight token when feature is enabled and not on epics list', async () => {
+        mountComponent({
+          hasIssueWeightsFeature: true,
+          workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+        });
+        await waitForPromises();
+
+        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
+        const weightToken = eeSearchTokens.find((token) => token.type === TOKEN_TYPE_WEIGHT);
+
+        expect(weightToken).toMatchObject({
+          type: TOKEN_TYPE_WEIGHT,
+          title: TOKEN_TITLE_WEIGHT,
+          icon: 'weight',
+          token: expect.any(Function),
+          unique: true,
+        });
+      });
     });
   });
 });
