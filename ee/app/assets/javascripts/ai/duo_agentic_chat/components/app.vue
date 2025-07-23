@@ -1,7 +1,7 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import { AgenticDuoChat, AgenticToolApprovalFlow } from '@gitlab/duo-ui';
+import { AgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle } from '@gitlab/ui';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { getCookie } from '~/lib/utils/common_utils';
@@ -31,7 +31,6 @@ export default {
   name: 'DuoAgenticChatApp',
   components: {
     AgenticDuoChat,
-    AgenticToolApprovalFlow,
     GlToggle,
   },
   provide() {
@@ -95,6 +94,7 @@ export default {
       workflowId: null,
       workflowStatus: null,
       pendingToolCall: null,
+      isProcessingToolApproval: false,
     };
   },
   computed: {
@@ -130,9 +130,6 @@ export default {
         },
       ];
     },
-    showToolApprovalModal() {
-      return this.workflowStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED;
-    },
     duoAgenticModePreference: {
       get() {
         return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
@@ -151,6 +148,14 @@ export default {
           this.onNewChat();
         }
       },
+    },
+    workflowStatus(newStatus, oldStatus) {
+      if (
+        oldStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED &&
+        newStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED
+      ) {
+        this.isProcessingToolApproval = false;
+      }
     },
   },
   mounted() {
@@ -241,6 +246,7 @@ export default {
           // Only set loading to false if we're not waiting for tool approval
           // and we don't have a pending workflow that will create a new connection
           if (this.workflowStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
+            this.isProcessingToolApproval = false;
             this.setLoading(false);
           }
         },
@@ -270,7 +276,7 @@ export default {
             ...msg,
             requestId,
             role,
-            message_type: role,
+            message_type: msg.message_type,
           };
         });
 
@@ -281,6 +287,7 @@ export default {
 
         // Check if we need to show tool approval modal
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
+          this.socketManager?.send({ actionResponse: { requestID: action.requestID } });
           const lastMessage = messages[messages.length - 1];
           if (lastMessage && lastMessage.tool_info) {
             this.pendingToolCall = {
@@ -290,6 +297,8 @@ export default {
           }
         } else {
           this.pendingToolCall = null;
+          // Only send actionResponse when NOT waiting for approval
+          this.socketManager?.send({ actionResponse: { requestID: action.requestID } });
         }
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
@@ -337,6 +346,7 @@ export default {
       }
 
       const requestId = `${this.workflowId}-${this.messages?.length || 0}`;
+
       const userMessage = { content: question, role: 'user', requestId };
 
       this.startWorkflow(question, {}, this.additionalContext);
@@ -349,9 +359,12 @@ export default {
       this.addDuoChatMessage({ errors: [err.toString()] });
     },
     handleApproveToolCall() {
+      this.isProcessingToolApproval = true;
       this.startWorkflow('', { approval: {} }, this.additionalContext);
     },
-    handleDenyToolCall(message) {
+    handleDenyToolCall(event) {
+      this.isProcessingToolApproval = true;
+      const message = event?.message || event;
       this.startWorkflow(
         '',
         {
@@ -380,11 +393,14 @@ export default {
         :show-header="true"
         badge-type="beta"
         :dimensions="dimensions"
+        :is-tool-approval-processing="isProcessingToolApproval"
         @new-chat="onNewChat"
         @send-chat-prompt="onSendChatPrompt"
         @chat-cancel="onChatCancel"
         @chat-hidden="onChatClose"
         @chat-resize="onChatResize"
+        @approve-tool="handleApproveToolCall"
+        @deny-tool="handleDenyToolCall"
         ><template #footer-controls>
           <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
             <gl-toggle
@@ -395,13 +411,6 @@ export default {
           </div>
         </template>
       </agentic-duo-chat>
-
-      <agentic-tool-approval-flow
-        :visible="showToolApprovalModal"
-        :tool-details="pendingToolCall"
-        @approve="handleApproveToolCall"
-        @deny="handleDenyToolCall"
-      />
     </div>
   </div>
 </template>
