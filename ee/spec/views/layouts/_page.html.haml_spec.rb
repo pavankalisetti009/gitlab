@@ -4,8 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'layouts/_page', feature_category: :global_search do
   let_it_be(:user) { build_stubbed(:user) }
-  let_it_be(:project_namespace) { build_stubbed(:project_namespace) }
-  let_it_be(:project) { build_stubbed(:project, project_namespace: project_namespace) }
+  let_it_be(:project) { build_stubbed(:project) }
 
   describe 'EE tanuki_bot_chat' do
     before do

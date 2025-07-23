@@ -5,8 +5,7 @@ require 'spec_helper'
 RSpec.describe TreeHelper, feature_category: :source_code_management do
   include Devise::Test::ControllerHelpers
 
-  let_it_be(:project_namespace) { build_stubbed(:project_namespace) }
-  let_it_be(:project) { build_stubbed(:project, :repository, project_namespace: project_namespace) }
+  let_it_be(:project) { build_stubbed(:project, :repository) }
   let(:repository) { project.repository }
   let(:sha) { 'c1c67abbaf91f624347bb3ae96eabe3a1b742478' }
 

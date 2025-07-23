@@ -5,8 +5,7 @@ require "spec_helper"
 RSpec.describe Epics::DiscussionEntity, feature_category: :team_planning do
   let_it_be(:user) { build_stubbed(:user) }
   let_it_be(:group) { build_stubbed(:group) }
-  let_it_be(:project_namespace) { build_stubbed(:project_namespace) }
-  let_it_be(:project) { build_stubbed(:project, namespace: group, project_namespace: project_namespace) }
+  let_it_be(:project) { build_stubbed(:project, namespace: group) }
 
   let(:note) { build_stubbed(:discussion_note_on_merge_request, project: project) }
   let(:discussion) { note.discussion }

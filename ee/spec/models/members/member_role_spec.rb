@@ -793,8 +793,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     end
 
     context 'for project abilities' do
-      let_it_be(:project_namespace) { build_stubbed(:project_namespace) }
-      let_it_be(:object) { build_stubbed(:project, project_namespace: project_namespace) }
+      let_it_be(:object) { build_stubbed(:project) }
       let_it_be(:abilities) do
         described_class.all_customizable_permissions.select do |_k, v|
           v[:project_ability] && v[:available_from_access_level]
