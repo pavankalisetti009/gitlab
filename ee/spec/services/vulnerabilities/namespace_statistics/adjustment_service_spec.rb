@@ -14,7 +14,8 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::AdjustmentService, feature_
                   .find_by(namespace_id: group.id)
     return unless statistic
 
-    statistic.reload.as_json(except: [:id, :created_at, :updated_at])
+    statistic.reload.as_json(except: [:id, :created_at, :updated_at, :age_average, :age_standard_deviation,
+      :risk_score])
   end
 
   describe '.execute' do
