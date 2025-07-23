@@ -26028,6 +26028,7 @@ The currently authenticated GitLab user.
 | <a id="currentuserpronouns"></a>`pronouns` | [`String`](#string) | Pronouns of the user. |
 | <a id="currentuserpublicemail"></a>`publicEmail` | [`String`](#string) | User's public email. |
 | <a id="currentuserrecentlyviewedissues"></a>`recentlyViewedIssues` {{< icon name="warning-solid" >}} | [`[Issue!]`](#issue) | **Introduced** in GitLab 17.9. **Status**: Experiment. Most-recently viewed issues for the current user. |
+| <a id="currentuserrecentlyvieweditems"></a>`recentlyViewedItems` | [`[RecentlyViewedItem!]`](#recentlyvieweditem) | Most-recently viewed items for the current user. |
 | <a id="currentuserrecentlyviewedmergerequests"></a>`recentlyViewedMergeRequests` {{< icon name="warning-solid" >}} | [`[MergeRequest!]`](#mergerequest) | **Introduced** in GitLab 17.10. **Status**: Experiment. Most-recently viewed merge requests for the current user. |
 | <a id="currentusersavedreplies"></a>`savedReplies` | [`SavedReplyConnection`](#savedreplyconnection) | Saved replies authored by the user. (see [Connections](#connections)) |
 | <a id="currentuserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
@@ -40292,6 +40293,15 @@ Recent failure history of a test case.
 | <a id="recentfailuresbasebranch"></a>`baseBranch` | [`String`](#string) | Name of the base branch of the project. |
 | <a id="recentfailurescount"></a>`count` | [`Int`](#int) | Number of times the test case has failed in the past 14 days. |
 
+### `RecentlyViewedItem`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="recentlyvieweditemitem"></a>`item` | [`RecentlyViewedItemUnion!`](#recentlyvieweditemunion) | Recently viewed item. |
+| <a id="recentlyvieweditemviewedat"></a>`viewedAt` | [`Time!`](#time) | When the item was last viewed. |
+
 ### `Release`
 
 Represents a release.
@@ -50407,6 +50417,13 @@ One of:
 - [`PipelineExecutionScheduledPolicyAttributesType`](#pipelineexecutionscheduledpolicyattributestype)
 - [`ScanExecutionPolicyAttributesType`](#scanexecutionpolicyattributestype)
 - [`VulnerabilityManagementPolicyAttributesType`](#vulnerabilitymanagementpolicyattributestype)
+
+#### `RecentlyViewedItemUnion`
+
+One of:
+
+- [`Issue`](#issue)
+- [`MergeRequest`](#mergerequest)
 
 #### `Registrable`
 
