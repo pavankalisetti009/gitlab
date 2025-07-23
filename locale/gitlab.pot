@@ -69657,6 +69657,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Could not process %{issueReference}: %{errorMessage}."
 msgstr ""
 
+msgid "VulnerabilityManagement|Could not refresh the validity check. Please try again."
+msgstr ""
+
 msgid "VulnerabilityManagement|Create Jira issue"
 msgstr ""
 
