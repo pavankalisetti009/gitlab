@@ -23,7 +23,13 @@
     .gl-mb-9.gl-mx-auto.billing-plan-divider
       #js-billing-plans{ data: subscription_plan_data_attributes(namespace, current_plan, read_only: read_only) }
 
-  = render 'trusted_by_logos'
+  .gl-text-lg.gl-mb-5
+    = s_("BillingPlans|Trusted by")
+  .gl-flex.gl-gap-5.gl-mb-5.gl-justify-center.gl-items-center
+    - logo_classes = 'dark:gl-invert'
+
+    - trusted_by_logos.each do |logo|
+      = image_tag(logo[:path], alt: logo[:name], title: logo[:name], class: logo[:no_invert] ? "" : logo_classes)
   - image_alt = s_('InProductMarketing|Team members collaborating')
   = image_tag 'marketing/free-trial-team-members.png', alt: image_alt, title: image_alt, width: 210, height: 90, class: 'gl-mb-3'
   .gl-text-size-h1.gl-font-bold.gl-leading-24.gl-mb-5
