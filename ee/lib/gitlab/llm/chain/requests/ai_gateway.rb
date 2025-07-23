@@ -152,8 +152,15 @@ module Gitlab
             ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
           end
 
+          # TODO: Remove the check for merge_request_reader
+          # See https://gitlab.com/gitlab-org/gitlab/-/issues/549647
           def namespace_feature_setting(unit_primitive)
-            feature = unit_primitive ? "duo_chat_#{unit_primitive}" : "duo_chat"
+            feature = if !unit_primitive || unit_primitive == 'merge_request_reader'
+                        'duo_chat'
+                      else
+                        "duo_chat_#{unit_primitive}"
+                      end
+
             ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(root_namespace, feature)
           end
 

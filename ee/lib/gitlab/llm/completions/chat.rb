@@ -49,7 +49,8 @@ module Gitlab
             started_at: options[:started_at],
             current_file: options.delete(:current_file),
             agent_version: options[:agent_version_id] && ::Ai::AgentVersion.find_by_id(options[:agent_version_id]),
-            additional_context: ::CodeSuggestions::Context.new(Array.wrap(options.delete(:additional_context))).trimmed
+            additional_context: ::CodeSuggestions::Context.new(Array.wrap(options.delete(:additional_context))).trimmed,
+            is_duo_code_review: options.delete(:is_duo_code_review)
           )
         end
 

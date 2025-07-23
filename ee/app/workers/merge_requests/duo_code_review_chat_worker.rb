@@ -101,7 +101,8 @@ module MergeRequests
         .new(
           prompt_message,
           nil,
-          additional_context: additional_context(note)
+          additional_context: additional_context(note),
+          is_duo_code_review: true
         )
         .execute
     end

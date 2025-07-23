@@ -5,8 +5,9 @@ module Ai
     module Concerns
       module Noteable
         extend ActiveSupport::Concern
-        def notes_with_limit(notes_limit:)
-          limited_notes = Ai::NotesForAiFinder.new(current_user, resource: resource).execute
+        def notes_with_limit(notes_limit:, is_duo_code_review: false)
+          finder_options = { is_duo_code_review: is_duo_code_review }
+          limited_notes = Ai::NotesForAiFinder.new(current_user, resource: resource, **finder_options).execute
 
           return [] if limited_notes.empty?
 

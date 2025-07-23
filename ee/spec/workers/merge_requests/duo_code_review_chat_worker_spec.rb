@@ -65,7 +65,8 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
         Gitlab::Llm::Completions::Chat,
         an_object_having_attributes(content: expected_note_content),
         nil,
-        additional_context: additional_context
+        additional_context: additional_context,
+        is_duo_code_review: true
       ) do |chat|
         allow(chat)
           .to receive(:execute)

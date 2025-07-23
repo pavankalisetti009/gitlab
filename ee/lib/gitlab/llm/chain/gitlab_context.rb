@@ -19,7 +19,7 @@ module Gitlab
         def initialize(
           current_user:, container:, resource:, ai_request:, extra_resource: {}, request_id: nil,
           started_at: nil,
-          current_file: {}, agent_version: nil, additional_context: []
+          current_file: {}, agent_version: nil, additional_context: [], is_duo_code_review: false
         )
           @current_user = current_user
           @container = container
@@ -33,14 +33,22 @@ module Gitlab
           @current_file = (current_file || {}).with_indifferent_access
           @agent_version = agent_version
           @additional_context = additional_context
+          @is_duo_code_review = is_duo_code_review
         end
         # rubocop:enable Metrics/ParameterLists
 
         def resource_serialized(content_limit:)
           return '' unless authorized_resource
 
-          authorized_resource.serialize_for_ai(content_limit: content_limit)
-            .to_xml(root: :root, skip_types: true, skip_instruct: true)
+          serialization_options = { content_limit: content_limit }
+
+          # Only pass is_duo_code_review for MergeRequest resources
+          if authorized_resource.is_a?(::Ai::AiResource::MergeRequest)
+            serialization_options[:is_duo_code_review] = @is_duo_code_review
+          end
+
+          authorized_resource.serialize_for_ai(**serialization_options)
+                             .to_xml(root: :root, skip_types: true, skip_instruct: true)
         end
 
         def language

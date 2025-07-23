@@ -10,7 +10,8 @@ module EE
     end
 
     expose :mr_comments do |_mr, options|
-      options[:resource].notes_with_limit(notes_limit: options[:notes_limit] / 2)
+      options[:resource].notes_with_limit(notes_limit: options[:notes_limit] / 2,
+        is_duo_code_review: options[:is_duo_code_review])
     end
   end
 end
