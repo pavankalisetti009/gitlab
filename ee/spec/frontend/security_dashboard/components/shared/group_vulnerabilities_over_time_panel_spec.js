@@ -37,6 +37,11 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
                   { severity: 'MEDIUM', count: 15 },
                   { severity: 'LOW', count: 8 },
                 ],
+                byReportType: [
+                  { reportType: 'SAST', count: 8 },
+                  { reportType: 'DEPENDENCY_SCANNING', count: 12 },
+                  { reportType: 'CONTAINER_SCANNING', count: 10 },
+                ],
               },
               {
                 date: '2025-06-02',
@@ -45,6 +50,11 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
                   { severity: 'HIGH', count: 9 },
                   { severity: 'MEDIUM', count: 14 },
                   { severity: 'LOW', count: 7 },
+                ],
+                byReportType: [
+                  { reportType: 'DAST', count: 5 },
+                  { reportType: 'API_FUZZING', count: 3 },
+                  { reportType: 'SAST', count: 6 },
                 ],
               },
             ],
@@ -80,6 +90,9 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
   const findVulnerabilitiesOverTimeChart = () =>
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
+  const findSeverityButton = () => wrapper.findByTestId('severity-button');
+  const findReportTypeButton = () => wrapper.findByTestId('report-type-button');
+  const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
 
   beforeEach(() => {
     createComponent();
@@ -90,8 +103,45 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(findExtendedDashboardPanel().props('title')).toBe('Vulnerabilities over time');
     });
 
-    it('renders the vulnerabilities over time chart', () => {
+    it('renders the vulnerabilities over time chart when data is available', async () => {
+      await waitForPromises();
       expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);
+    });
+
+    it('renders the group by buttons in the filters slot', () => {
+      expect(findSeverityButton().text()).toBe('Severity');
+      expect(findReportTypeButton().text()).toBe('Report Type');
+    });
+
+    it('sets severity button as selected by default', () => {
+      expect(findSeverityButton().props('selected')).toBe(true);
+      expect(findReportTypeButton().props('selected')).toBe(false);
+    });
+  });
+
+  describe('group by functionality', () => {
+    it('switches to report type grouping when report type button is clicked', async () => {
+      await waitForPromises();
+      const reportTypeButton = findReportTypeButton();
+
+      await reportTypeButton.vm.$emit('click');
+      await nextTick();
+
+      expect(reportTypeButton.props('selected')).toBe(true);
+      expect(findSeverityButton().props('selected')).toBe(false);
+    });
+
+    it('switches back to severity grouping when severity button is clicked', async () => {
+      await waitForPromises();
+
+      await findReportTypeButton().vm.$emit('click');
+      await nextTick();
+
+      await findSeverityButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findSeverityButton().props('selected')).toBe(true);
+      expect(findReportTypeButton().props('selected')).toBe(false);
     });
   });
 
@@ -104,6 +154,8 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
         projectId: mockFilters.projectId,
         startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
+        includeBySeverity: true,
+        includeByReportType: false,
       });
     });
 
@@ -121,6 +173,8 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
           startDate: ninetyDaysAgoInIsoFormat,
           endDate: todayInIsoFormat,
           [availableFilterType]: ['filterValue'],
+          includeBySeverity: true,
+          includeByReportType: false,
         });
       },
     );
@@ -140,13 +194,30 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
         fullPath: mockGroupFullPath,
         startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
+        includeBySeverity: true,
+        includeByReportType: false,
+      });
+    });
+
+    it('updates query variables when switching to report type grouping', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+
+      await findReportTypeButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
+        fullPath: mockGroupFullPath,
+        projectId: mockFilters.projectId,
+        startDate: ninetyDaysAgoInIsoFormat,
+        endDate: todayInIsoFormat,
+        includeBySeverity: false,
+        includeByReportType: true,
       });
     });
   });
 
   describe('chart data formatting', () => {
-    it('correctly formats chart data from the API response', async () => {
-      createComponent();
+    it('correctly formats chart data from the API response for severity grouping', async () => {
       await waitForPromises();
       await nextTick();
 
@@ -184,6 +255,40 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
     });
 
+    it('correctly formats chart data from the API response for report type grouping', async () => {
+      await findReportTypeButton().vm.$emit('click');
+      await waitForPromises();
+      await nextTick();
+
+      const expectedChartData = [
+        {
+          name: 'SAST',
+          data: [
+            ['2025-06-01', 8],
+            ['2025-06-02', 6],
+          ],
+        },
+        {
+          name: 'Dependency Scanning',
+          data: [['2025-06-01', 12]],
+        },
+        {
+          name: 'Container Scanning',
+          data: [['2025-06-01', 10]],
+        },
+        {
+          name: 'DAST',
+          data: [['2025-06-02', 5]],
+        },
+        {
+          name: 'API Fuzzing',
+          data: [['2025-06-02', 3]],
+        },
+      ];
+
+      expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
+    });
+
     it('returns empty chart data when no vulnerabilities data is available', async () => {
       const emptyResponse = {
         data: {
@@ -203,14 +308,13 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       });
       await waitForPromises();
 
-      expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual([]);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('No data available.');
     });
   });
 
   describe('loading state', () => {
     it('passes loading state to panels base', async () => {
-      createComponent();
-
       expect(findExtendedDashboardPanel().props('loading')).toBe(true);
 
       await waitForPromises();
@@ -242,7 +346,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       });
 
       it('renders the correct error message', () => {
-        expect(wrapper.text()).toBe('Something went wrong. Please try again.');
+        expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
       });
     });
   });

@@ -142,6 +142,43 @@ exports[`Security Dashboard default states \`groupSecurityDashboardNew\` feature
                           </span>
                         </span>
                       </div>
+                      <div
+                        class="gl-flex gl-flex-col gl-gap-2 gl-items-end"
+                        data-testid="panel-actions-filters-container"
+                      >
+                        <div
+                          class="gl-flex gl-items-center gl-justify-end gl-pb-2"
+                          data-testid="panel-filters-container"
+                        >
+                          <div
+                            class="btn-group gl-button-group"
+                            role="group"
+                          >
+                            <button
+                              class="btn btn-default btn-default-secondary btn-sm gl-button selected"
+                              data-testid="severity-button"
+                              type="button"
+                            >
+                              <span
+                                class="gl-button-text"
+                              >
+                                Severity
+                              </span>
+                            </button>
+                            <button
+                              class="btn btn-default btn-default-secondary btn-sm gl-button"
+                              data-testid="report-type-button"
+                              type="button"
+                            >
+                              <span
+                                class="gl-button-text"
+                              >
+                                Report Type
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div
                       class="gl-content-center gl-flex gl-flex-wrap gl-text-center"
@@ -434,6 +471,15 @@ exports[`Security Dashboard default states \`projectSecurityDashboardNew\` featu
                             Vulnerabilities over time
                           </span>
                         </span>
+                      </div>
+                      <div
+                        class="gl-flex gl-flex-col gl-gap-2 gl-items-end"
+                        data-testid="panel-actions-filters-container"
+                      >
+                        <div
+                          class="gl-flex gl-items-center gl-justify-end gl-pb-2"
+                          data-testid="panel-filters-container"
+                        />
                       </div>
                     </div>
                     <div
