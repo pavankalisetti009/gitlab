@@ -57,7 +57,6 @@ export default {
     'app/assets/javascripts/content_editor/components/wrappers/paragraph.vue',
     'app/assets/javascripts/content_editor/components/wrappers/table_of_contents.vue',
     'app/assets/javascripts/contribution_events/components/contribution_event/contribution_event_closed.vue',
-    'app/assets/javascripts/custom_emoji/pages/index.vue',
     'app/assets/javascripts/design_management/components/design_description/description_form.vue',
     'app/assets/javascripts/design_management/components/design_notes/design_discussion.vue',
     'app/assets/javascripts/design_management/components/design_notes/design_note.vue',
