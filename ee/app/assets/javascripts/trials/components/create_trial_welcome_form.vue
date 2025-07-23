@@ -58,20 +58,22 @@ export default {
       type: String,
       required: true,
     },
+    namespaceId: {
+      type: Number,
+      required: false,
+      default: null,
+    },
+    serverValidations: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   data() {
     return {
-      formValues: {
-        first_name: this.userData.firstName,
-        last_name: this.userData.lastName,
-        company_name: this.userData.companyName,
-        country: this.userData.country,
-        state: this.userData.state,
-        group_name: '',
-        project_name: '',
-      },
       countries: [],
       states: [],
+      formValues: {},
     };
   },
   computed: {
@@ -162,17 +164,19 @@ export default {
         }
       }
 
+      let groupNameValidators = [];
+      if (this.namespaceId === null)
+        groupNameValidators = [formValidators.required(__('Group name is required.'))];
+
       result.group_name = {
         label: ' ',
         groupAttrs: {
           class: 'gl-col-span-12',
         },
         inputAttrs: {
-          name: 'group_name',
-          'data-testid': 'group-name-input',
-          placeholder: __('You use groups to organize your projects'),
+          disabled: this.namespaceId !== null,
         },
-        validators: [formValidators.required(__('Group name is required.'))],
+        validators: groupNameValidators,
       };
 
       result.project_name = {
@@ -180,12 +184,13 @@ export default {
         groupAttrs: {
           class: 'gl-col-span-12',
         },
-        inputAttrs: {
-          name: 'project_name',
-          'data-testid': 'project-name-input',
-          placeholder: __('Projects contain the resources for your repository'),
-        },
         validators: [formValidators.required(__('Project name is required.'))],
+      };
+
+      result.namespace_id = {
+        groupAttrs: {
+          class: 'gl-hidden',
+        },
       };
 
       return result;
@@ -195,6 +200,18 @@ export default {
     'formValues.country': function handleCountryChange() {
       this.resetSelectedState();
     },
+  },
+  mounted() {
+    this.formValues = {
+      first_name: this.userData.firstName,
+      last_name: this.userData.lastName,
+      company_name: this.userData.companyName,
+      country: this.userData.country,
+      state: this.userData.state,
+      group_name: this.userData.groupName || '',
+      project_name: this.userData.projectName || '',
+      namespace_id: this.namespaceId,
+    };
   },
   methods: {
     onSubmit() {
@@ -266,6 +283,7 @@ export default {
       :form-id="$options.formId"
       :fields="fields"
       class="gl-grid md:gl-gap-x-4"
+      :server-validations="serverValidations"
       @submit="onSubmit"
     >
       <template #input(country)>
@@ -291,7 +309,8 @@ export default {
           data-testid="state-dropdown"
         />
       </template>
-      <template #input(group_name)="{ id, value }">
+
+      <template #input(group_name)="{ id, value, input = () => {}, blur = () => {} }">
         <div class="gl-flex">
           <gl-form-group
             class="gl-mb-0 gl-flex-grow"
@@ -299,7 +318,14 @@ export default {
             :label="__('Group Name')"
             data-testid="group-name-group"
           >
-            <gl-form-input :id="id" />
+            <gl-form-input
+              :id="id"
+              name="group_name"
+              :value="value"
+              :disabled="fields.group_name.inputAttrs.disabled"
+              @input="input"
+              @blur="blur"
+            />
           </gl-form-group>
           <div
             class="gl-z-1 gl-ml-6 gl-mt-2 gl-flex gl-w-11 gl-items-center gl-justify-center gl-rounded-lg gl-bg-gray-50 gl-px-8 gl-text-size-h1-xl gl-font-semibold"
@@ -310,7 +336,7 @@ export default {
         </div>
       </template>
 
-      <template #input(project_name)="{ id }">
+      <template #input(project_name)="{ id, value, input = () => {}, blur = () => {} }">
         <div class="gl-flex">
           <gl-form-group
             class="gl-mb-0 gl-flex-grow"
@@ -318,7 +344,13 @@ export default {
             :label="__('Project Name')"
             data-testid="project-name-group"
           >
-            <gl-form-input :id="id" />
+            <gl-form-input
+              :id="id"
+              name="project_name"
+              :value="value"
+              @input="input"
+              @blur="blur"
+            />
           </gl-form-group>
           <div class="gl-relative gl-ml-8 gl-w-11">
             <div
@@ -326,6 +358,10 @@ export default {
             ></div>
           </div>
         </div>
+      </template>
+
+      <template #input(namespace_id)="{ value }">
+        <input type="hidden" :value="value" name="namespace_id" />
       </template>
     </gl-form-fields>
 

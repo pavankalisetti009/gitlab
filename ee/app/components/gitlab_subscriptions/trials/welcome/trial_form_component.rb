@@ -18,28 +18,28 @@ module GitlabSubscriptions
             {
               userData: user_data,
               submitPath: submit_path,
-              gtmSubmitEventLabel: 'saasTrialSubmit'
+              gtmSubmitEventLabel: 'saasTrialSubmit',
+              namespaceId: params[:namespace_id],
+              serverValidations: params[:errors] || {}
             }
           )
         end
 
         def user_data
           {
-            firstName: user.first_name,
-            lastName: user.last_name,
+            firstName: params[:first_name] || user.first_name,
+            lastName: params[:last_name] || user.last_name,
             emailDomain: user.email_domain,
-            companyName: user.user_detail_organization,
-            country: '',
-            state: ''
+            companyName: params[:company_name] || user.user_detail_organization,
+            country: params[:country] || '',
+            state: params[:state] || '',
+            groupName: params[:group_name] || '',
+            projectName: params[:project_name] || ''
           }
         end
 
         def submit_path
-          # placeholder route
-          trials_path(
-            step: GitlabSubscriptions::Trials::UltimateCreateService::FULL,
-            **params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS)
-          )
+          users_sign_up_trial_welcome_path(**params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS))
         end
       end
     end

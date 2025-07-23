@@ -202,7 +202,7 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute).to be_error
         expect(execute.message).to eq("Trial creation failed in namespace stage")
         expect(execute.payload).to include({ namespace_id: nil, project_id: nil, lead_created: false })
-        expect(execute.payload.dig(:model_errors, :group)).to include(/^Name can't be blank/)
+        expect(execute.payload.dig(:model_errors, :group_name)).to include(/^Name can't be blank/)
       end
     end
 
@@ -216,7 +216,7 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute).to be_error
         expect(execute.message).to eq("Trial creation failed in project stage")
         expect(execute.payload).to include({ namespace_id: Group.last.id, project_id: nil, lead_created: false })
-        expect(execute.payload.dig(:model_errors, :project)).to include(/^Name can't be blank/)
+        expect(execute.payload.dig(:model_errors, :project_name)).to include(/name can't be blank/)
       end
     end
 

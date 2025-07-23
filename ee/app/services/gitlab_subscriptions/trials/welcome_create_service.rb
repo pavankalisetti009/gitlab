@@ -48,7 +48,7 @@ module GitlabSubscriptions
       attr_reader :user, :params, :namespace, :project, :namespace_id, :project_id, :lead_created
 
       def create_group
-        name = ActionController::Base.helpers.sanitize(params[:group_name])
+        name = ActionController::Base.helpers.sanitize(params[:group_name], tags: [])
         group_params = {
           name: name,
           path: Namespace.clean_path(name.parameterize),
@@ -66,7 +66,7 @@ module GitlabSubscriptions
 
       def create_project
         project_params = {
-          name: ActionController::Base.helpers.sanitize(params[:project_name]),
+          name: ActionController::Base.helpers.sanitize(params[:project_name], tags: []),
           namespace_id: namespace.id,
           organization_id: namespace.organization_id
         }
@@ -104,7 +104,7 @@ module GitlabSubscriptions
         }
 
         params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id)
-              .merge(gl_com_params, namespace_params).to_h.symbolize_keys
+          .merge(gl_com_params, namespace_params).to_h.symbolize_keys
       end
 
       def lead_params
@@ -126,8 +126,8 @@ module GitlabSubscriptions
 
       def model_errors
         {
-          group: namespace.try(:errors).try(:full_messages),
-          project: project.try(:errors).try(:full_messages)
+          group_name: namespace.try(:errors).try(:full_messages).try(:to_sentence),
+          project_name: project.try(:errors).try(:full_messages).try(:to_sentence)
         }.select { |_m, e| e.present? }
       end
 

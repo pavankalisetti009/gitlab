@@ -31,6 +31,9 @@ describe('CreateTrialWelcomeForm', () => {
     country: 'US',
     state: 'NY',
     emailDomain: 'example.com',
+    namespaceId: null,
+    groupName: '',
+    projectName: '',
   };
 
   const createComponent = async ({
@@ -38,6 +41,8 @@ describe('CreateTrialWelcomeForm', () => {
     propsData = {},
     countriesLoading = false,
     statesLoading = false,
+    serverValidations = {},
+    namespaceId,
     data,
   } = {}) => {
     const mockResolvers = {
@@ -63,6 +68,8 @@ describe('CreateTrialWelcomeForm', () => {
         userData,
         submitPath,
         gtmSubmitEventLabel,
+        serverValidations,
+        namespaceId,
         ...propsData,
       },
       stubs: {
@@ -96,8 +103,9 @@ describe('CreateTrialWelcomeForm', () => {
           company_name: defaultUserData.companyName,
           country: defaultUserData.country,
           state: defaultUserData.state,
-          group_name: '',
-          project_name: '',
+          group_name: defaultUserData.groupName,
+          project_name: defaultUserData.projectName,
+          namespace_id: defaultUserData.namespaceId,
         });
       });
 
@@ -114,6 +122,7 @@ describe('CreateTrialWelcomeForm', () => {
           company_name: undefined, // userData.companyName is undefined
           country: undefined, // userData.country is undefined
           state: undefined, // userData.state is undefined
+          namespace_id: null,
           group_name: '',
           project_name: '',
         });
@@ -153,8 +162,6 @@ describe('CreateTrialWelcomeForm', () => {
           { key: 'company_name', name: 'company_name' },
           { key: 'country', name: undefined },
           { key: 'state', name: undefined },
-          { key: 'group_name', name: 'group_name' },
-          { key: 'project_name', name: 'project_name' },
         ];
 
         expectedFields.forEach(({ key, name }) => {
@@ -173,8 +180,9 @@ describe('CreateTrialWelcomeForm', () => {
           company_name: defaultUserData.companyName,
           country: defaultUserData.country,
           state: defaultUserData.state,
-          group_name: '',
-          project_name: '',
+          group_name: defaultUserData.groupName,
+          project_name: defaultUserData.projectName,
+          namespace_id: null,
         };
         expect(formValues()).toEqual(initialValues);
 
@@ -396,6 +404,32 @@ describe('CreateTrialWelcomeForm', () => {
         defaultUserData.emailDomain,
       );
       expect(submitSpy).toHaveBeenCalled();
+    });
+
+    describe('namespace create errors', () => {
+      it('passes namespace create errors to GlFormFields when createErrors exist', async () => {
+        const serverValidations = { group_name: ['Error msg'] };
+        wrapper = await createComponent({ serverValidations });
+
+        expect(findFormFields().props('serverValidations')).toEqual(serverValidations);
+      });
+
+      it('passes empty server validations to GlFormFields when valid', async () => {
+        const serverValidations = {};
+        wrapper = await createComponent({ serverValidations });
+
+        expect(findFormFields().props('serverValidations')).toEqual(serverValidations);
+      });
+    });
+
+    describe('with hidden namespace_id field', () => {
+      it('value is rendered in hidden input and group name input is disabled', async () => {
+        wrapper = await createComponent({ namespaceId: 1234 });
+
+        expect(fieldsProps().group_name.validators).toHaveLength(0);
+        expect(fieldsProps()).toHaveProperty('namespace_id');
+        expect(fieldsProps().group_name.inputAttrs.disabled).toBe(true);
+      });
     });
   });
 });
