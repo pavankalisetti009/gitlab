@@ -84,7 +84,7 @@ module Explore
       return render_404 unless current_user.present?
       return render_404 unless Feature.enabled?(:explore_dependencies, current_user)
 
-      render_403 unless can?(current_user, :read_dependency, organization) && current_user.can_read_all_resources?
+      render_403 unless can?(current_user, :read_dependency, organization)
     end
 
     def page_info(paginator)
