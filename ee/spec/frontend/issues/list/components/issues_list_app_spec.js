@@ -93,7 +93,6 @@ describe('EE IssuesListApp component', () => {
     signInPath: 'sign/in/path',
     groupId: '',
     isGroup: false,
-    commentTemplatePaths: [],
     hasStatusFeature: true,
   };
 

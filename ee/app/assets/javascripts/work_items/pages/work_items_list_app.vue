@@ -45,11 +45,6 @@ export default {
       required: false,
       default: true,
     },
-    newCommentTemplatePaths: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
     rootPageFullPath: {
       type: String,
       required: true,
@@ -137,7 +132,6 @@ export default {
     :ee-search-tokens="searchTokens"
     :root-page-full-path="rootPageFullPath"
     :with-tabs="withTabs"
-    :new-comment-template-paths="newCommentTemplatePaths"
   >
     <template v-if="isEpicsList && hasEpicsFeature" #list-empty-state="{ hasSearch, isOpenTab }">
       <empty-state-with-any-issues

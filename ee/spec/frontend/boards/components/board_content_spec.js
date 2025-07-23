@@ -26,7 +26,6 @@ describe('ee/BoardContent', () => {
         allowSubEpics: isEpicBoard ?? false,
         isGroupBoard: true,
         disabled: false,
-        commentTemplatePaths: [],
       },
       propsData: {
         boardLists: {},
