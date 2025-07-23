@@ -6,6 +6,7 @@ import { mapLocalSettings } from '../utils/roadmap_utils';
 export default {
   mixins: [CommonMixin],
   props: {
+    // eslint-disable-next-line vue/no-unused-properties -- This is used in hasToday via CommonMixin.
     timeframeItem: {
       type: [Date, Object],
       required: true,
@@ -16,6 +17,7 @@ export default {
     currentDate.setHours(0, 0, 0, 0);
 
     return {
+      // eslint-disable-next-line vue/no-unused-properties -- Used in CommonMixin logic (isTimeframeForToday) to compare with timeframeItem.
       currentDate,
       indicatorStyles: {},
     };

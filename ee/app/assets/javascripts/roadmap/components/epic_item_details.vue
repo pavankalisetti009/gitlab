@@ -64,9 +64,6 @@ export default {
     hasFiltersApplied() {
       return !isEmpty(this.filterParams);
     },
-    itemId() {
-      return this.epic.id;
-    },
     epicIid() {
       return this.epic.iid;
     },

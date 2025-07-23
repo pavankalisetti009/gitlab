@@ -28,6 +28,7 @@ export default {
   },
   mixins: [CommonMixin, QuartersPresetMixin, MonthsPresetMixin, WeeksPresetMixin],
   props: {
+    // eslint-disable-next-line vue/no-unused-properties -- This is used in timelineBarWidth via MonthsPresetMixin, QuartersPresetMixin, and WeeksPresetMixin.
     timeframeItem: {
       type: [Date, Object],
       required: true,
@@ -36,10 +37,12 @@ export default {
       type: Object,
       required: true,
     },
+    // eslint-disable-next-line vue/no-unused-properties -- This is used in mixins
     startDate: {
       type: Date,
       required: true,
     },
+    // eslint-disable-next-line vue/no-unused-properties -- This is used in mixins
     endDate: {
       type: Date,
       required: true,
