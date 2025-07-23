@@ -1,11 +1,11 @@
 <script>
-import { GlModal } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
-import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
+import updateAiCatalogAgent from '../graphql/mutations/update_ai_catalog_agent.mutation.graphql';
+import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 import { TYPENAME_AI_CATALOG_ITEM } from '../constants';
 
@@ -13,7 +13,6 @@ export default {
   name: 'AiCatalogAgentsEdit',
   components: {
     AiCatalogAgentForm,
-    GlModal,
     PageHeading,
   },
   apollo: {
@@ -35,14 +34,8 @@ export default {
   data() {
     return {
       aiCatalogAgent: null,
-      isLoading: false,
-      updatedValues: {
-        name: '',
-        description: '',
-        systemPrompt: '',
-        userPrompt: '',
-        public: false,
-      },
+      errorMessages: [],
+      isSubmitting: false,
     };
   },
   computed: {
@@ -79,14 +72,48 @@ export default {
         this.$router.push({ name: AI_CATALOG_AGENTS_ROUTE });
       }
     },
-    handleSubmit(formValues) {
-      this.isLoading = true;
-      // TODO: Handle submission, dummy cody here. Replace with real implementation
-      setTimeout(() => {
-        this.updatedValues = formValues;
-        this.$refs.modal.show();
-        this.isLoading = false;
-      }, 1000);
+    async handleSubmit(formValues) {
+      this.isSubmitting = true;
+      this.resetErrorMessages();
+      try {
+        const { name, description, userPrompt, systemPrompt } = formValues;
+
+        const { data } = await this.$apollo.mutate({
+          mutation: updateAiCatalogAgent,
+          variables: {
+            input: {
+              id: this.aiCatalogAgent.id,
+              name,
+              description,
+              userPrompt,
+              systemPrompt,
+              public: formValues.public,
+            },
+          },
+        });
+
+        if (data) {
+          const { errors } = data.aiCatalogAgentUpdate;
+          if (errors.length > 0) {
+            this.errorMessages = errors;
+            return;
+          }
+
+          this.$toast.show(s__('AICatalog|Agent updated successfully.'));
+          this.$router.push({
+            name: AI_CATALOG_AGENTS_ROUTE,
+            query: { [AI_CATALOG_SHOW_QUERY_PARAM]: this.$route.params.id },
+          });
+        }
+      } catch (error) {
+        this.errorMessages = [s__('AICatalog|The agent could not be updated. Please try again.')];
+        Sentry.captureException(error);
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    resetErrorMessages() {
+      this.errorMessages = [];
     },
   },
 };
@@ -101,12 +128,11 @@ export default {
     <ai-catalog-agent-form
       v-if="aiCatalogAgent"
       mode="edit"
+      :error-messages="errorMessages"
       :initial-values="initialValues"
-      :is-loading="isLoading"
+      :is-loading="isSubmitting"
+      @dismiss-error="resetErrorMessages"
       @submit="handleSubmit"
     />
-    <gl-modal ref="modal" modal-id="TEMPORARY-MODAL">
-      <pre>{{ JSON.stringify(updatedValues) }}</pre>
-    </gl-modal>
   </div>
 </template>

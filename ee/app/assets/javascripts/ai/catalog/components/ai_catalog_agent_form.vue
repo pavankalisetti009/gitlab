@@ -79,14 +79,11 @@ export default {
     formId() {
       return uniqueId('ai-catalog-agent-form-');
     },
-    submitButtonText() {
-      return this.isEditMode
-        ? // eslint-disable-next-line @gitlab/require-i18n-strings
-          `${s__('AICatalog|Save changes')} (Coming soon)`
-        : s__('AICatalog|Create agent');
-    },
     isEditMode() {
       return this.mode === 'edit';
+    },
+    submitButtonText() {
+      return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create agent');
     },
     visibilityLevels() {
       return [
@@ -223,6 +220,7 @@ export default {
   },
 };
 </script>
+
 <template>
   <div>
     <gl-alert
@@ -295,7 +293,6 @@ export default {
             @update="input"
           />
         </template>
-
         <template #input(visibilityLevel)="{ id, input, validation, value }">
           <gl-form-radio-group
             :id="id"

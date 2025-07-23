@@ -22,6 +22,7 @@ export default {
   methods: {
     async handleSubmit(input) {
       this.isSubmitting = true;
+      this.resetErrorMessages();
       try {
         const { data } = await this.$apollo.mutate({
           mutation: createAiCatalogAgent,
@@ -51,6 +52,9 @@ export default {
         this.isSubmitting = false;
       }
     },
+    resetErrorMessages() {
+      this.errorMessages = [];
+    },
   },
 };
 </script>
@@ -63,7 +67,7 @@ export default {
       mode="create"
       :is-loading="isSubmitting"
       :error-messages="errorMessages"
-      @dismiss-error="errorMessages = []"
+      @dismiss-error="resetErrorMessages"
       @submit="handleSubmit"
     />
   </div>
