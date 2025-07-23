@@ -51503,6 +51503,9 @@ msgstr ""
 msgid "Recovery Codes"
 msgstr ""
 
+msgid "Recovery codes"
+msgstr ""
+
 msgid "Redirect to SAML provider to test configuration"
 msgstr ""
 
@@ -67647,9 +67650,6 @@ msgid "Use this integration to connect to Google Play with fastlane in CI/CD pip
 msgstr ""
 
 msgid "Use this integration to connect to the Apple App Store with fastlane in CI/CD pipelines."
-msgstr ""
-
-msgid "Use this section to disable your one-time password authenticator and WebAuthn devices. You can also generate new recovery codes."
 msgstr ""
 
 msgid "Use this token to validate received payloads."
