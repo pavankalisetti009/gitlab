@@ -101,6 +101,31 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         expect(scoped_node).to have_link('Upgrade to Ultimate')
       end
 
+      it 'renders the trusted by section with company logos' do
+        render
+
+        expect(rendered).to have_text('Trusted by')
+
+        expect(rendered).to have_css('img[alt="T-Mobile"][title="T-Mobile"]')
+        expect(rendered).to have_css('img[alt="Goldman Sachs"][title="Goldman Sachs"]')
+        expect(rendered).to have_css('img[alt="Airbus"][title="Airbus"]')
+        expect(rendered).to have_css('img[alt="Lockheed Martin"][title="Lockheed Martin"]')
+        expect(rendered).to have_css('img[alt="Carfax"][title="Carfax"]')
+        expect(rendered).to have_css('img[alt="NVIDIA"][title="NVIDIA"]')
+        expect(rendered).to have_css('img[alt="UBS"][title="UBS"]')
+      end
+
+      it 'applies correct CSS classes for dark mode support' do
+        render
+
+        ["T-Mobile", "Goldman Sachs", "Airbus", "Lockheed Martin", "NVIDIA", "UBS"].each do |name|
+          expect(rendered).to have_css("img[alt='#{name}'].dark\\:gl-invert")
+        end
+
+        expect(rendered).to have_css('img[alt="Carfax"]')
+        expect(rendered).not_to have_css('img[alt="Carfax"].dark\\:gl-invert')
+      end
+
       it 'has tracking items set as expected' do
         render
 
@@ -132,6 +157,19 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
           trial: true,
           trial_starts_on: 1.month.ago,
           trial_ends_on: 10.days.from_now)
+      end
+
+      it 'renders the trusted by section' do
+        render
+
+        expect(rendered).to have_text('Trusted by')
+        expect(rendered).to have_css('img[alt="T-Mobile"]')
+        expect(rendered).to have_css('img[alt="Goldman Sachs"]')
+        expect(rendered).to have_css('img[alt="Airbus"]')
+        expect(rendered).to have_css('img[alt="Lockheed Martin"]')
+        expect(rendered).to have_css('img[alt="Carfax"]')
+        expect(rendered).to have_css('img[alt="NVIDIA"]')
+        expect(rendered).to have_css('img[alt="UBS"]')
       end
 
       it_behaves_like 'without ultimate trial cta alert'

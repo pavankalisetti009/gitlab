@@ -134,6 +134,18 @@ module BillingPlansHelper
     end
   end
 
+  def trusted_by_logos
+    [
+      { name: 'T-Mobile', path: 'marketing/t-mobile.svg' },
+      { name: 'Goldman Sachs', path: 'marketing/goldman-sachs.svg' },
+      { name: 'Airbus', path: 'marketing/airbus.svg' },
+      { name: 'Lockheed Martin', path: 'marketing/lockheed-martin.svg' },
+      { name: 'Carfax', path: 'marketing/carfax.svg', no_invert: true },
+      { name: 'NVIDIA', path: 'marketing/nvidia.svg' },
+      { name: 'UBS', path: 'marketing/ubs.svg' }
+    ]
+  end
+
   private
 
   def seats_last_updated_value(namespace)

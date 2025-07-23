@@ -490,4 +490,20 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       end
     end
   end
+
+  describe '#trusted_by_logos' do
+    it 'returns the expected logos array' do
+      expected = [
+        { name: 'T-Mobile', path: 'marketing/t-mobile.svg' },
+        { name: 'Goldman Sachs', path: 'marketing/goldman-sachs.svg' },
+        { name: 'Airbus', path: 'marketing/airbus.svg' },
+        { name: 'Lockheed Martin', path: 'marketing/lockheed-martin.svg' },
+        { name: 'Carfax', path: 'marketing/carfax.svg', no_invert: true },
+        { name: 'NVIDIA', path: 'marketing/nvidia.svg' },
+        { name: 'UBS', path: 'marketing/ubs.svg' }
+      ]
+
+      expect(helper.trusted_by_logos).to eq(expected)
+    end
+  end
 end
