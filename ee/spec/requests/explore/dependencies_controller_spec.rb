@@ -37,7 +37,7 @@ RSpec.describe Explore::DependenciesController, :with_current_organization, feat
             sign_in(user)
           end
 
-          include_examples 'returning response status', :forbidden
+          include_examples 'returning response status', :ok
         end
 
         context 'when a user is not logged in' do
