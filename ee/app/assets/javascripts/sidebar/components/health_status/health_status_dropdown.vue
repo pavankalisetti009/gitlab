@@ -61,6 +61,7 @@ export default {
     onSelect(value) {
       this.$emit('change', value === '' ? null : value);
     },
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API.
     show() {
       this.$refs.dropdown.open();
     },
