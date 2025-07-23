@@ -65,7 +65,11 @@ To turn MCP on or off for your group:
 
 To specify the MCP servers you want the GitLab Duo feature to connect to:
 
-1. In VS Code, create an `mcp.json` file in `~/.gitlab/duo/`.
+1. In VS Code, create an `mcp.json` file:
+
+   - If you are not on Windows, create the file in `~/.gitlab/duo/`.
+   - If you are on Windows, create the file in `C:\Users\<username>\AppData\Roaming\GitLab\duo\`.
+
 1. Populate this file with the MCP servers you want the feature to connect to.
 
    For more information and examples, see the [MCP example servers documentation](https://modelcontextprotocol.io/examples). You can also find other example servers at [Smithery.ai](https://smithery.ai/)
@@ -107,3 +111,7 @@ to improve it. Share your experiences, suggestions, or issues in
 
 - [Get started with the Model Context Protocol](https://modelcontextprotocol.io/introduction)
 - [Demo - Agentic Chat MCP Tool Call Approval](https://www.youtube.com/watch?v=_cHoTmG8Yj8)
+
+## Troubleshooting
+
+For troubleshooting information, see [troubleshooting the GitLab Workflow extension for VS Code](../../../editor_extensions/visual_studio_code/troubleshooting.md).
