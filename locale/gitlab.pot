@@ -52837,6 +52837,12 @@ msgstr ""
 msgid "Resource link added"
 msgstr ""
 
+msgid "ResourceAccessTokensInstanceSettings|Defines how long, in days, to wait before deleting inactive project and group access tokens. If blank, inactive project and group access tokens are not deleted."
+msgstr ""
+
+msgid "ResourceAccessTokensInstanceSettings|Inactive project and group access token retention period"
+msgstr ""
+
 msgid "ResourceListItem|Scheduled for deletion on %{date}"
 msgstr ""
 
