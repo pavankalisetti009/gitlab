@@ -16,33 +16,27 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
 
     let_it_be_with_reload(:group) { create(:group, :wiki_enabled) }
     let_it_be_with_reload(:project) { create(:project, namespace: group) }
-    let(:projects) { [project] }
 
+    let(:scope) { 'projects' }
+    let(:search) { project.name }
+
+    let(:projects) { [project] }
     let(:user) { create_user_from_membership(project, membership) }
     let(:user_in_group) { create_user_from_membership(group, membership) }
 
     context 'for projects' do
-      where(:project_level, :membership, :expected_count) do
+      where(:project_level, :membership, :admin_mode, :expected_count) do
         permission_table_for_project_access
       end
 
       with_them do
-        it 'respects visibility' do
+        before do
           project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
 
           ensure_elasticsearch_index!
-
-          expected_objects = expected_count == 1 ? [project] : []
-
-          expect_search_results(
-            user,
-            'projects',
-            expected_count: expected_count,
-            expected_objects: expected_objects
-          ) do |user|
-            described_class.new(user, search: project.name).execute
-          end
         end
+
+        it_behaves_like 'search respects visibility', project_feature_setup: false
       end
     end
   end
