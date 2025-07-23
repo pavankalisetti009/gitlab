@@ -35920,6 +35920,9 @@ msgstr ""
 msgid "Job|Browse"
 msgstr ""
 
+msgid "Job|Build"
+msgstr ""
+
 msgid "Job|Cancel"
 msgstr ""
 
@@ -35978,6 +35981,9 @@ msgid "Job|Job has been erased by %{userLink}"
 msgstr ""
 
 msgid "Job|Keep"
+msgstr ""
+
+msgid "Job|Kind"
 msgstr ""
 
 msgid "Job|Log timestamps in UTC."
@@ -36080,6 +36086,9 @@ msgid "Job|This job is stuck because the project doesn't have any runners online
 msgstr ""
 
 msgid "Job|This job is stuck because you don't have any active runners that can run this job."
+msgstr ""
+
+msgid "Job|Trigger"
 msgstr ""
 
 msgid "Job|Update CI/CD variables"
