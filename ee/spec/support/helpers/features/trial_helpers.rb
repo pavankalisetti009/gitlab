@@ -170,6 +170,7 @@ module Features
         uid: user.id,
         setup_for_company: user.onboarding_status_setup_for_company,
         skip_email_confirmation: true,
+        existing_plan: defined?(group) ? group.actual_plan_name : 'free',
         gitlab_com_trial: true,
         provider: 'gitlab',
         state: form_data.dig(:state, :id)
