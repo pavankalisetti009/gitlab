@@ -12,6 +12,10 @@ module EE
             using: ::API::Entities::Identity,
             if: ->(member, options) { member.user && Ability.allowed?(options[:current_user], :read_group_saml_identity, member.source) }
 
+          expose :group_scim_identity,
+            using: ::API::Entities::ScimIdentity,
+            if: ->(member, options) { member.user && Ability.allowed?(options[:current_user], :read_group_scim_identity, member.source) }
+
           expose(
             :email,
             if: ->(member, options) {

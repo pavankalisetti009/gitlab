@@ -357,6 +357,110 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#group_scim_identity' do
+    shared_examples_for 'member with group scim identity' do
+      context 'without saml_provider' do
+        it { is_expected.to eq nil }
+      end
+
+      context 'with saml_provider enabled' do
+        let!(:saml_provider) { create(:saml_provider, group: member.group) }
+
+        context 'when member has no connected identity' do
+          it { is_expected.to eq nil }
+        end
+
+        context 'when member has connected identity' do
+          let!(:group_related_identity) do
+            create(:group_scim_identity, user: member.user, group: member.group)
+          end
+
+          it 'returns related identity' do
+            expect(group_scim_identity).to eq group_related_identity
+          end
+
+          context 'when group_scim_identities is preloaded' do
+            before do
+              member.user.group_scim_identities.load
+            end
+
+            it 'returns related identity' do
+              expect(group_scim_identity).to eq group_related_identity
+            end
+          end
+        end
+
+        context 'when member has connected identity of different group' do
+          before do
+            create(:group_scim_identity, user: member.user)
+          end
+
+          it { is_expected.to eq nil }
+        end
+      end
+    end
+
+    shared_examples_for 'member with group scim identity on the top level' do
+      let!(:saml_provider) { create(:saml_provider, group: parent_group) }
+
+      let!(:group_related_identity) do
+        create(:group_scim_identity, user: member.user, group: parent_group)
+      end
+
+      it 'does not return identity' do
+        expect(member.group_scim_identity).to eq nil
+      end
+    end
+
+    describe 'for group members' do
+      context 'when member is in a top-level group' do
+        let(:member) { create :group_member }
+
+        subject(:group_scim_identity) { member.group_scim_identity }
+
+        it_behaves_like 'member with group scim identity'
+      end
+
+      context 'when member is in a subgroup' do
+        let(:parent_group) { create(:group) }
+        let(:group) { create(:group, parent: parent_group) }
+        let(:member) { create(:group_member, source: group) }
+
+        it_behaves_like 'member with group scim identity on the top level'
+      end
+    end
+
+    describe 'for project members' do
+      context 'when project is nested in a group' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, namespace: group) }
+        let(:member) { create :project_member, source: project }
+
+        subject(:group_scim_identity) { member.group_scim_identity }
+
+        it_behaves_like 'member with group scim identity'
+      end
+
+      context 'when project is nested in a subgroup' do
+        let_it_be(:parent_group) { create(:group) }
+        let_it_be(:group) { create(:group, parent: parent_group) }
+        let_it_be(:project) { create(:project, namespace: group) }
+        let(:member) { create :project_member, source: project }
+
+        it_behaves_like 'member with group scim identity on the top level'
+      end
+
+      context 'when project is nested in a personal namespace' do
+        let_it_be(:project) { create(:project, namespace: create(:user).namespace) }
+        let(:member) { create :project_member, source: project }
+
+        it 'returns nothing' do
+          expect(member.group_scim_identity).to be_nil
+        end
+      end
+    end
+  end
+
   context 'when after_update :post_update_hook' do
     context 'for webhooks', :sidekiq_inline, :saas do
       let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }

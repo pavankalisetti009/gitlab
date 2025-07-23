@@ -195,6 +195,16 @@ module EE
       end
     end
 
+    def group_scim_identity
+      return unless group&.saml_provider
+
+      if user.group_scim_identities.loaded?
+        user.group_scim_identities.detect { |i| i.group_id == group.id }
+      else
+        user.group_scim_identities.find_by(group_id: group.id)
+      end
+    end
+
     def prevent_role_assignement?(_current_user, _params)
       false
     end
