@@ -535,6 +535,28 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
           expect(created_user).not_to be_onboarding_in_progress
           expect(created_user.onboarding_status_step_url).to be_nil
         end
+
+        context 'when the user is trying to sign-in from restricted country' do
+          let(:error_message) { "It looks like you are visiting GitLab from Mainland China, Macau, or Hong Kong" }
+
+          before do
+            request.env['HTTP_CF_IPCOUNTRY'] = 'CN'
+            stub_omniauth_setting(block_auto_created_users: false)
+          end
+
+          it 'allows sign ups even from restricted countries' do
+            expect(User.find_by_email(user.email)).to be_nil
+
+            post provider, params: { group_id: group }
+
+            expect(flash[:alert]).not_to eq(error_message)
+            expect(response).to redirect_to(group_path(group))
+
+            created_user = User.find_by_email(user.email)
+            expect(created_user).not_to be_onboarding_in_progress
+            expect(created_user.onboarding_status_step_url).to be_nil
+          end
+        end
       end
     end
 

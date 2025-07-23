@@ -25,6 +25,13 @@ class Groups::OmniauthCallbacksController < OmniauthCallbacksController
 
   private
 
+  override :allowed_new_user?
+  def allowed_new_user?(auth_user)
+    # Group SAML users should always be allowed to sign up regardless of country restrictions,
+    # so we only check if they are new users
+    auth_user.new?
+  end
+
   override :link_identity
   def link_identity(identity_linker)
     super.tap do
