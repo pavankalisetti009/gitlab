@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # This cron worker runs every minute
-# It enqueues a job for each `ActiveContext.raw_queues` if `ActiveContext::Config.indexing_enabled?` is true
+# It enqueues a job for each `ActiveContext.raw_queues` if `ActiveContext.indexing?` is true
 # For each job it fetches references from the queue, processes them and removes them from the queue
 # The job will re-enqueue itself until the queue is empty
 # Please see ActiveContext::Concerns::BulkAsyncProcess for the details
