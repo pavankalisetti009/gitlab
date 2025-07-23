@@ -36,7 +36,13 @@ module PushRules
     end
 
     def processed_params
-      organization_container? ? filtered_params : params
+      if organization_container?
+        filtered_params
+      elsif group_container?
+        params.merge(organization_id: group.organization_id)
+      else
+        params
+      end
     end
 
     def filtered_params

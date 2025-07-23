@@ -103,6 +103,50 @@ RSpec.describe PushRules::CreateOrUpdateService, feature_category: :source_code_
     end
   end
 
+  context 'when container is a group' do
+    let(:container) { create(:group, push_rule: push_rule) }
+
+    context 'with existing push rule' do
+      let_it_be(:push_rule) { create(:push_rule, project: nil, organization: nil) }
+
+      it 'updates existing push rule' do
+        expect { subject.execute }
+          .to not_change { PushRule.count }
+                .and change { push_rule.reload.max_file_size }.to(28)
+                .and change { push_rule.reload.organization_id }.to(container.organization_id)
+      end
+
+      it 'responds with a successful service response', :aggregate_failures do
+        response = subject.execute
+
+        expect(response).to be_success
+        expect(response.payload).to match(push_rule: push_rule)
+      end
+
+      it_behaves_like 'a failed update'
+    end
+
+    context 'without existing push rule' do
+      let(:push_rule) { nil }
+
+      it 'creates a new push rule', :aggregate_failures do
+        expect { subject.execute }.to change { PushRule.count }.by(1)
+
+        expect(container.push_rule.max_file_size).to eq(28)
+        expect(container.push_rule.organization_id).to eq(container.organization_id)
+      end
+
+      it 'responds with a successful service response', :aggregate_failures do
+        response = subject.execute
+
+        expect(response).to be_success
+        expect(response.payload).to match(push_rule: container.push_rule)
+      end
+
+      it_behaves_like 'a failed update'
+    end
+  end
+
   context 'with existing push rule' do
     let_it_be(:push_rule) { create(:push_rule, project: container) }
 
