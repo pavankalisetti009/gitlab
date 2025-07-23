@@ -29,10 +29,8 @@ module Security
       related_merge_requests = pipeline.opened_merge_requests_with_head_sha
       return if related_merge_requests.none?
 
-      if ::Feature.enabled?(:policy_mergability_check, project)
-        Security::ScanResultPolicies::UnblockPendingMergeRequestViolationsWorker
-          .perform_in(UNBLOCK_PENDING_VIOLATIONS_TIMEOUT, pipeline_id)
-      end
+      Security::ScanResultPolicies::UnblockPendingMergeRequestViolationsWorker
+        .perform_in(UNBLOCK_PENDING_VIOLATIONS_TIMEOUT, pipeline_id)
 
       related_merge_requests.each do |merge_request|
         Security::UnenforceablePolicyRulesNotificationService.new(merge_request).execute

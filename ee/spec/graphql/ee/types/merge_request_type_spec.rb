@@ -363,8 +363,6 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
         multiple_approval_rules: true,
         blocking_merge_requests: true
       )
-
-      stub_feature_flags(policy_mergability_check: true)
     end
 
     it_behaves_like 'avoids N+1 queries related to approval rules'

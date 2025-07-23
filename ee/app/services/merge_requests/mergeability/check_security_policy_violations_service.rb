@@ -7,9 +7,7 @@ module MergeRequests
       description 'Checks whether the security policies are satisfied'
 
       def execute
-        if ::Feature.disabled?(:policy_mergability_check,
-          merge_request.project) ||
-            !merge_request.project.licensed_feature_available?(:security_orchestration_policies) ||
+        if !merge_request.project.licensed_feature_available?(:security_orchestration_policies) ||
             merge_request.scan_result_policy_reads_through_approval_rules.none?
           return inactive
         end

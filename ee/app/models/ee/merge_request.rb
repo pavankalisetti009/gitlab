@@ -450,11 +450,10 @@ module EE
       return if merged?
 
       project_rules = target_project.approval_rules.report_approver.includes(:users, :groups)
-      feature_enabled = ::Feature.enabled?(:policy_mergability_check, project)
 
       project_rules.find_each do |project_rule|
         project_rule.apply_report_approver_rules_to(self) do |rule_attributes|
-          rule_attributes[:approvals_required] = 0 if feature_enabled && project_rule.from_scan_result_policy?
+          rule_attributes[:approvals_required] = 0 if project_rule.from_scan_result_policy?
         end
       end
     end

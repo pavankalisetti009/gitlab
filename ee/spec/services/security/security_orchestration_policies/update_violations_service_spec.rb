@@ -98,16 +98,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
           .to publish_event(::MergeRequests::ViolationsUpdatedEvent)
           .with(merge_request_id: merge_request.id)
       end
-
-      context 'when policy_mergability_check is off' do
-        before do
-          stub_feature_flags(policy_mergability_check: false)
-        end
-
-        it 'does not publish MergeRequests::ViolationsUpdatedEvent' do
-          expect { service.execute }.not_to publish_event(MergeRequests::ViolationsUpdatedEvent)
-        end
-      end
     end
 
     context 'with pre-existing violations' do
@@ -173,16 +163,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         expect { service.execute }
           .to publish_event(::MergeRequests::ViolationsUpdatedEvent)
           .with(merge_request_id: merge_request.id)
-      end
-
-      context 'when policy_mergability_check is off' do
-        before do
-          stub_feature_flags(policy_mergability_check: false)
-        end
-
-        it 'does not publish MergeRequests::ViolationsUpdatedEvent' do
-          expect { service.execute }.not_to publish_event(MergeRequests::ViolationsUpdatedEvent)
-        end
       end
     end
 

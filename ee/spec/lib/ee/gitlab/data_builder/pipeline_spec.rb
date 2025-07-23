@@ -196,8 +196,6 @@ RSpec.describe Gitlab::DataBuilder::Pipeline, feature_category: :continuous_inte
           merge_request_approvers: true,
           multiple_approval_rules: true
         )
-
-        stub_feature_flags(policy_mergability_check: true)
       end
 
       it_behaves_like 'avoids N+1 queries related to approval rules'

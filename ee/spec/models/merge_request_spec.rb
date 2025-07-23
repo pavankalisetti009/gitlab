@@ -2059,19 +2059,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       expect(merge_request.approval_rules.map { |rule| [rule.report_type, rule.approvals_required] })
         .to match_array([['license_scanning', 0], ['code_coverage', 2], ['scan_finding', 0], ['any_merge_request', 0]])
     end
-
-    context 'with feature flag policy_mergability_check false' do
-      before do
-        stub_feature_flags(policy_mergability_check: false)
-      end
-
-      it 'does not reset any approval rules' do
-        subject
-
-        expect(merge_request.approval_rules.map { |rule| [rule.report_type, rule.approvals_required] })
-          .to match_array([['license_scanning', 2], ['code_coverage', 2], ['scan_finding', 2], ['any_merge_request', 2]])
-      end
-    end
   end
 
   describe '#sync_project_approval_rules_for_policy_configuration' do

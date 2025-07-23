@@ -34,16 +34,6 @@ RSpec.describe MergeRequests::Mergeability::CheckSecurityPolicyViolationsService
           scan_result_policy_read: policy, name: 'Policy 1')
       end
 
-      context 'when policy_mergability_check is false' do
-        before do
-          stub_feature_flags(policy_mergability_check: false)
-        end
-
-        it 'returns a check result with inactive status' do
-          expect(result.status).to eq Gitlab::MergeRequests::Mergeability::CheckResult::INACTIVE_STATUS
-        end
-      end
-
       context 'when security_orchestration_policies license is false' do
         before do
           stub_licensed_features(security_orchestration_policies: false)
