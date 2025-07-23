@@ -57,13 +57,30 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       )
     end
 
-    context 'when there is a validation issue' do
-      it 'returns the relevant error' do
-        params[:name] = nil
+    it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+      expect { response }
+       .to trigger_internal_events('create_ai_catalog_item')
+       .with(user: user, project: project, additional_properties: { label: 'agent' })
+       .and increment_usage_metrics(
+         'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_weekly',
+         'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_monthly'
+       )
+    end
 
+    context 'when there is a validation issue' do
+      before do
+        params[:name] = nil
+      end
+
+      it 'returns the relevant error' do
         expect { response }.not_to change { Ai::Catalog::Item.count }
         expect(response).to be_error
         expect(response.message).to match_array(["Name can't be blank", 'Versions is invalid'])
+      end
+
+      it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { response }
+          .not_to trigger_internal_events('create_ai_catalog_item')
       end
     end
 
