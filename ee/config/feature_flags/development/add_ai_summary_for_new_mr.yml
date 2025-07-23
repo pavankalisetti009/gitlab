@@ -4,6 +4,6 @@ feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/429882
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/142739
 rollout_issue_url: https://gitlab.com/gitlab-com/gl-infra/production/-/issues/17533
 milestone: '16.9'
-group: group::code review
+group: group::code creation
 type: development
 default_enabled: true
