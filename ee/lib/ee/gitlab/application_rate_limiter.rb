@@ -23,6 +23,7 @@ module EE
             credit_card_verification_check_for_reuse: { threshold: 10, interval: 1.hour },
             code_suggestions_api_endpoint: { threshold: 60, interval: 1.minute },
             code_suggestions_direct_access: { threshold: 50, interval: 1.minute },
+            code_suggestions_connection_details: { threshold: 10, interval: 1.minute },
             code_suggestions_x_ray_scan: { threshold: 60, interval: 1.minute },
             code_suggestions_x_ray_dependencies: { threshold: 60, interval: 1.minute },
             duo_workflow_direct_access: { threshold: 50, interval: 1.minute },
