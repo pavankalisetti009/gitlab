@@ -347,13 +347,13 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
       context 'when there is a public project with a private repository' do
         let(:limit_projects) { ::Project.id_in(public_project_with_private_repo.id) }
-        let(:query) { ".*" }
-        let(:public_project_with_private_repo) do
+        let(:query) { '.*' }
+        let_it_be(:public_project_with_private_repo) do
           create(:project, :public, :repository, :repository_private, :custom_repo,
             files: { 'foo/a.txt' => 'foo', 'b.txt' => 'bar' })
         end
 
-        before do
+        before_all do
           zoekt_ensure_project_indexed!(public_project_with_private_repo)
         end
 
@@ -375,8 +375,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
               search_mode: :exact,
               source: nil
             ).and_call_original
-
-            expect(search).not_to be_empty
+            expect(search.map(&:project_id).uniq).to contain_exactly(project_1.id)
           end
         end
       end
