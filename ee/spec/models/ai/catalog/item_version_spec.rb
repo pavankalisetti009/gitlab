@@ -24,14 +24,14 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
     describe '#validate_readonly' do
       it 'can be changed if version is draft' do
-        version = create(:ai_catalog_item_version, release_date: nil)
+        version = create(:ai_catalog_item_version)
         version.release_date = Time.zone.now
 
         expect(version).to be_valid
       end
 
       it 'cannot be changed if version is released' do
-        version = create(:ai_catalog_item_version, release_date: 1.day.ago)
+        version = create(:ai_catalog_item_version, :released)
         version.release_date = Time.zone.now
 
         expect(version).not_to be_valid
@@ -55,27 +55,27 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
       expect(build(:ai_catalog_item_version, version: nil).human_version).to be_nil
     end
 
-    it 'returns version prefixed with v' do
+    it 'returns version prefixed with v when released' do
       expect(
-        build(:ai_catalog_item_version, release_date: Time.zone.now, version: '1.2.3').human_version
+        build(:ai_catalog_item_version, :released, version: '1.2.3').human_version
       ).to eq('v1.2.3')
     end
 
-    it 'returns version suffixed with -draft when draft' do
-      expect(build(:ai_catalog_item_version, release_date: nil, version: '1.2.3').human_version).to eq('v1.2.3-draft')
+    it 'returns version prefixed with v and suffixed with -draft when draft' do
+      expect(build(:ai_catalog_item_version, version: '1.2.3').human_version).to eq('v1.2.3-draft')
     end
   end
 
   describe '#read_only?' do
-    it 'returns false when release_date is nil and not read only' do
-      expect(create(:ai_catalog_item_version, release_date: nil)).not_to be_readonly
+    it 'returns false when draft' do
+      expect(create(:ai_catalog_item_version)).not_to be_readonly
     end
 
-    it 'returns true when release_date is present' do
-      expect(create(:ai_catalog_item_version, release_date: Time.zone.now)).to be_readonly
+    it 'returns true when released' do
+      expect(create(:ai_catalog_item_version, :released)).to be_readonly
     end
 
-    it 'returns true when record is read only' do
+    it 'returns true when draft record is read only' do
       item = create(:ai_catalog_item_version)
       item.readonly!
 

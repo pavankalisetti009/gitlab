@@ -4,7 +4,7 @@ FactoryBot.define do
   factory :ai_catalog_item_version, class: 'Ai::Catalog::ItemVersion' do
     version { '1.0.0' }
     schema_version { 1 }
-    release_date { Time.current }
+    release_date { nil }
     definition do
       {
         'system_prompt' => 'Talk like a pirate!',
@@ -14,8 +14,8 @@ FactoryBot.define do
     end
     item { association :ai_catalog_item }
 
-    trait :draft do
-      release_date { nil }
+    trait :released do
+      release_date { Time.current }
     end
   end
 end
