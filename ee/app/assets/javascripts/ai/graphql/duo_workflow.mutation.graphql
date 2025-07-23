@@ -1,5 +1,6 @@
 mutation createAiDuoWorkflow(
   $projectId: ProjectID
+  $namespaceId: NamespaceID
   $goal: String!
   $workflowDefinition: String!
   $agentPrivileges: [Int!]
@@ -9,6 +10,7 @@ mutation createAiDuoWorkflow(
   aiDuoWorkflowCreate(
     input: {
       projectId: $projectId
+      namespaceId: $namespaceId
       environment: WEB
       goal: $goal
       workflowDefinition: $workflowDefinition
