@@ -25,7 +25,7 @@ module Analytics
         return [] if super.nil?
         return super unless value_stream&.at_group_level?
 
-        value_stream.namespace.all_projects.where(id: super).pluck(:id)
+        value_stream.namespace.all_projects.id_in(super).pluck(:id)
       end
       # rubocop: enable Database/AvoidUsingPluckWithoutLimit
 

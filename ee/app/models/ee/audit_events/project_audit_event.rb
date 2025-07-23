@@ -45,10 +45,8 @@ module EE
       private
 
       def lazy_project
-        BatchLoader.for(project_id)
-                   .batch(default_value: ::Gitlab::Audit::NullEntity.new
-                         ) do |ids, loader|
-          ::Project.where(id: ids).find_each { |record| loader.call(record.id, record) }
+        BatchLoader.for(project_id).batch(default_value: ::Gitlab::Audit::NullEntity.new) do |ids, loader|
+          ::Project.id_in(ids).find_each { |record| loader.call(record.id, record) }
         end
       end
     end

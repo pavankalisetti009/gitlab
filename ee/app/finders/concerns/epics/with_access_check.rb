@@ -45,13 +45,11 @@ module Epics
       Group.groups_user_can(groups, current_user, ability)
     end
 
-    # rubocop: disable CodeReuse/ActiveRecord
     def epic_groups
       strong_memoize(:epic_groups) do
-        Group.for_epics(epics_collection_for_groups).where.not(id: groups_to_exclude).distinct
+        Group.for_epics(epics_collection_for_groups).id_not_in(groups_to_exclude).distinct # rubocop: disable CodeReuse/ActiveRecord
       end
     end
-    # rubocop: enable CodeReuse/ActiveRecord
 
     def epics_collection
       raise NotImplementedError

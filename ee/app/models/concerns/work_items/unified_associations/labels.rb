@@ -68,7 +68,7 @@ module WorkItems
               ]
             ).where(label_id: to_be_removed)
 
-            LabelLink.where(id: links_scope.select(:id)).delete_all unless to_be_removed.blank?
+            LabelLink.id_in(links_scope.select(:id)).delete_all unless to_be_removed.blank?
 
             proxy_association.target -= to_be_removed
             proxy_association.concat(to_be_added)

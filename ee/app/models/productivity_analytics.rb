@@ -47,7 +47,7 @@ class ProductivityAnalytics
     end
     columns.unshift(MergeRequest.arel_table[Arel.star])
 
-    MergeRequest.joins(:metrics).select(columns).where(id: merge_requests).order(sorting)
+    MergeRequest.joins(:metrics).select(columns).id_in(merge_requests).order(sorting)
   end
 
   private

@@ -117,16 +117,14 @@ module Epics
     end
     # rubocop: enable CodeReuse/ActiveRecord
 
-    # rubocop: disable CodeReuse/ActiveRecord
     def by_child(items)
       return items unless child_id?
 
       hierarchy_order = params[:hierarchy_order] || :asc
 
       ancestors = Epic.find(params[:child_id]).ancestors(hierarchy_order: hierarchy_order)
-      ancestors.where(id: items.select(:id))
+      ancestors.id_in(items.select(:id))
     end
-    # rubocop: enable CodeReuse/ActiveRecord
 
     def by_confidential(items)
       return items if params[:confidential].nil?

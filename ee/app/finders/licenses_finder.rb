@@ -24,6 +24,6 @@ class LicensesFinder
   def by_id(items)
     return items unless id
 
-    items.where(id: id) # rubocop:disable CodeReuse/ActiveRecord
+    items.id_in(id)
   end
 end

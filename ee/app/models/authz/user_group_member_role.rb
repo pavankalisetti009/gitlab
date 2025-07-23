@@ -40,7 +40,7 @@ module Authz
     end
 
     def self.delete_all_with_id(ids)
-      where(id: ids).delete_all
+      id_in(ids).delete_all
     end
 
     def self.for_user_in_group(user, group)

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Packages::CreateAuditEventsService, feature_category: :package_registry do
-  let_it_be(:group) { build_stubbed(:group) }
+  let_it_be(:group) { create(:group) }
   let_it_be(:namespace) { build_stubbed(:namespace) }
   let_it_be(:group_project) { build_stubbed(:project, group:) }
   let_it_be(:namespace_project) { build_stubbed(:project, namespace:) }
@@ -52,7 +52,6 @@ RSpec.describe Packages::CreateAuditEventsService, feature_category: :package_re
     before do
       allow(::Namespace::PackageSetting).to receive(:with_audit_events_enabled)
         .and_return([group_package_setting, namespace_package_setting])
-      allow(::Group).to receive(:id_in).and_return([group])
     end
 
     include_examples 'audit event logging'

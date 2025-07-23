@@ -50,7 +50,7 @@ module AuditEvents
         encode_iv: false
 
       scope :configs_of_parent, ->(record_id, category) {
-        where.not(id: record_id).where(category: category).limit(MAXIMUM_DESTINATIONS_PER_ENTITY).pluck(:config)
+        id_not_in(record_id).where(category: category).limit(MAXIMUM_DESTINATIONS_PER_ENTITY).pluck(:config)
       }
 
       def config
