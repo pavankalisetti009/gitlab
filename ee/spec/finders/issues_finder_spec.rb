@@ -442,7 +442,7 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
     end
 
     context 'when filtering on a select field' do
-      let(:params) { { project_id: project.id, custom_field: { select_field.id => select_option_2.id } } }
+      let(:params) { { project_id: project.id, custom_field: [{ custom_field_id: select_field.id, selected_option_ids: [select_option_2.id] }] } }
 
       before_all do
         create(:work_item_select_field_value, work_item_id: issues[0].id, custom_field: select_field, custom_field_select_option: select_option_1)
@@ -454,8 +454,24 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
         expect(results).to contain_exactly(issues[1], issues[2])
       end
 
+      context 'when passing in a field name' do
+        let(:params) { { project_id: project.id, custom_field: [{ custom_field_name: select_field.name, selected_option_ids: [select_option_2.id] }] } }
+
+        it 'returns issues matching the custom field value' do
+          expect(results).to contain_exactly(issues[1], issues[2])
+        end
+
+        context 'when field name does not exist' do
+          let(:params) { { project_id: project.id, custom_field: [{ custom_field_name: 'invalid_name', selected_option_ids: [select_option_2.id] }] } }
+
+          it 'returns an empty result' do
+            expect(results).to be_empty
+          end
+        end
+      end
+
       context 'when filtering without a parent' do
-        let(:params) { { custom_field: { select_field.id => select_option_2.id } } }
+        let(:params) { { custom_field: [{ custom_field_id: select_field.id, selected_option_ids: [select_option_2.id] }] } }
 
         it 'returns issues matching the custom field value' do
           expect(results).to contain_exactly(issues[1], issues[2])
@@ -474,7 +490,7 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
     end
 
     context 'filtering on a multi-select field' do
-      let(:params) { { project_id: project.id, custom_field: { multi_select_field.id => [multi_select_option_1.id, multi_select_option_2.id] } } }
+      let(:params) { { project_id: project.id, custom_field: [{ custom_field_id: multi_select_field.id, selected_option_ids: [multi_select_option_1.id, multi_select_option_2.id] }] } }
 
       before do
         create(:work_item_select_field_value, work_item_id: issues[0].id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_1)
@@ -485,6 +501,26 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
 
       it 'returns issues matching all the custom field values' do
         expect(results).to contain_exactly(issues[2])
+      end
+
+      context 'when passing in select option values' do
+        let(:params) do
+          { project_id: project.id, custom_field: [{ custom_field_id: multi_select_field.id, selected_option_values: [multi_select_option_1.value, multi_select_option_2.value] }] }
+        end
+
+        it 'returns issues matching all the custom field values' do
+          expect(results).to contain_exactly(issues[2])
+        end
+
+        context 'when select option value does not exist' do
+          let(:params) do
+            { project_id: project.id, custom_field: [{ custom_field_id: multi_select_field.id, selected_option_values: [multi_select_option_1.value, 'invalid_value'] }] }
+          end
+
+          it 'returns an empty result' do
+            expect(results).to be_empty
+          end
+        end
       end
     end
   end

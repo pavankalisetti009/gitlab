@@ -324,6 +324,12 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
       end
     end
 
+    describe '.find_by_case_insensitive_name' do
+      it 'returns field matching with matching name case-insensitively' do
+        expect(described_class.find_by_case_insensitive_name('cCc')).to eq(custom_field_2)
+      end
+    end
+
     describe 'work item type scopes' do
       let_it_be(:issue_type) { create(:work_item_type, :issue) }
       let_it_be(:task_type) { create(:work_item_type, :task) }
