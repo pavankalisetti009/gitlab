@@ -25491,6 +25491,7 @@ Represents a ComplianceFramework associated with a Project.
 | <a id="complianceframeworkeditpath"></a>`editPath` | [`String!`](#string) | Web UI path to edit the compliance framework. |
 | <a id="complianceframeworkid"></a>`id` | [`ID!`](#id) | Compliance framework ID. |
 | <a id="complianceframeworkname"></a>`name` | [`String!`](#string) | Name of the compliance framework. |
+| <a id="complianceframeworknamespaceid"></a>`namespaceId` | [`TypesNamespaceID!`](#typesnamespaceid) | Namespace ID. |
 | <a id="complianceframeworkpipelineconfigurationfullpath"></a>`pipelineConfigurationFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 17.4. Use pipeline execution policies instead. |
 | <a id="complianceframeworkpipelineexecutionpolicies"></a>`pipelineExecutionPolicies` | [`PipelineExecutionPolicyConnection`](#pipelineexecutionpolicyconnection) | Pipeline Execution Policies of the compliance framework. (see [Connections](#connections)) |
 | <a id="complianceframeworkprojects"></a>`projects` | [`ProjectConnection`](#projectconnection) | Projects associated with the compliance framework. (see [Connections](#connections)) |

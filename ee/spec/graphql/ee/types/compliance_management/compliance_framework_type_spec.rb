@@ -12,6 +12,7 @@ RSpec.describe GitlabSchema.types['ComplianceFramework'] do
     updated_at
     color
     default
+    namespace_id
     pipeline_configuration_full_path
     projects
     scan_result_policies

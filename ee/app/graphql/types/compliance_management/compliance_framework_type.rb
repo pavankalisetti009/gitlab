@@ -31,6 +31,10 @@ module Types
       field :default, GraphQL::Types::Boolean,
         null: true, description: 'Default compliance framework for the group.'
 
+      field :namespace_id, type: Types::GlobalIDType[Namespace],
+        null: false,
+        description: 'Namespace ID.'
+
       field :pipeline_configuration_full_path, GraphQL::Types::String,
         null: true,
         description: 'Full path of the compliance pipeline configuration stored in a project repository, such as `.gitlab/.compliance-gitlab-ci.yml@compliance/hipaa`. Ultimate only.',
