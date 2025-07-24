@@ -8,9 +8,9 @@ module EE
 
       override :render_ok
       def render_ok
-        set_workhorse_internal_api_content_type
-
-        render json: ::Gitlab::Workhorse.git_http_ok(repository, repo_type, user, action_name, show_all_refs: geo_request?, need_audit: need_git_audit_event?)
+        super do |params|
+          params.merge!(show_all_refs: geo_request?, need_audit: need_git_audit_event?)
+        end
       end
 
       override :info_refs
