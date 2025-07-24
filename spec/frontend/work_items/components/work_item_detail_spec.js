@@ -88,7 +88,9 @@ describe('WorkItemDetail component', () => {
     .fn()
     .mockResolvedValue({ data: { workItemUpdated: null } });
 
-  const allowedChildrenTypesHandler = jest.fn().mockResolvedValue(allowedChildrenTypesResponse);
+  const allowedChildrenTypesSuccessHandler = jest
+    .fn()
+    .mockResolvedValue(allowedChildrenTypesResponse);
   const workspacePermissionsAllowedHandler = jest
     .fn()
     .mockResolvedValue(mockProjectPermissionsQueryResponse());
@@ -163,6 +165,7 @@ describe('WorkItemDetail component', () => {
     modalIsGroup = null,
     workspacePermissionsHandler = workspacePermissionsAllowedHandler,
     uploadDesignMutationHandler = uploadSuccessDesignMutationHandler,
+    allowedChildrenTypesHandler = allowedChildrenTypesSuccessHandler,
     hasLinkedItemsEpicsFeature = true,
     showSidebar = true,
     lastRealtimeUpdatedAt = new Date('2023-01-01T12:00:00.000Z'),
@@ -252,7 +255,7 @@ describe('WorkItemDetail component', () => {
     });
 
     it('does not fetch allowed children types for current work item', () => {
-      expect(allowedChildrenTypesHandler).not.toHaveBeenCalled();
+      expect(allowedChildrenTypesSuccessHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -291,7 +294,32 @@ describe('WorkItemDetail component', () => {
     });
 
     it('fetches allowed children types for current work item', () => {
-      expect(allowedChildrenTypesHandler).toHaveBeenCalled();
+      expect(allowedChildrenTypesSuccessHandler).toHaveBeenCalled();
+    });
+
+    it('fetches and sets allowedChildTypes when workItem.id changes', async () => {
+      wrapper.vm.workItem = { id: 'gid://gitlab/WorkItem/123' };
+
+      await nextTick();
+
+      expect(allowedChildrenTypesSuccessHandler).toHaveBeenCalledWith({
+        id: 'gid://gitlab/WorkItem/123',
+      });
+    });
+
+    it('handles Apollo error when fetching allowedChildTypes', async () => {
+      const allowedChildrenTypesErrorHandler = jest
+        .fn()
+        .mockRejectedValue(new Error('Apollo error'));
+
+      createComponent({
+        workItemId: 'gid://gitlab/WorkItem/123',
+        allowedChildrenTypesHandler: allowedChildrenTypesErrorHandler,
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.vm.allowedChildTypes).toEqual([]);
     });
 
     it('passes `parentMilestone` prop to work item tree', () => {
