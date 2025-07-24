@@ -242,7 +242,7 @@ describe('StatusLifecycleModal', () => {
     });
 
     it('shows add status buttons for each category', () => {
-      const categories = ['triage', 'to_do', 'in_progress', 'done', 'cancelled'];
+      const categories = ['triage', 'to_do', 'in_progress', 'done', 'canceled'];
       categories.forEach((category) => {
         const section = findCategorySection(category);
         expect(section.find('[data-testid="add-status-button"]').exists()).toBe(true);
