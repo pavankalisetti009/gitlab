@@ -9,6 +9,10 @@ module Mutations
         "dismissed"
       end
 
+      def self.authorization_scopes
+        [:api, :read_api, :ai_workflows]
+      end
+
       prepend Mutations::VulnerabilityStateTransitions
 
       argument :dismissal_reason,

@@ -23,8 +23,15 @@ RSpec.describe Types::MutationType do
   end
 
   describe '.authorization' do
-    it 'allows ai_features scope token' do
-      expect(described_class.authorization.permitted_scopes).to include(:ai_features)
+    it 'allows ai_features and ai_workflows scope token' do
+      expect(described_class.authorization.permitted_scopes).to include(:ai_features, :ai_workflows)
+    end
+  end
+
+  describe 'vulnerabilities dismiss mutation scopes' do
+    it 'includes api, read_api scopes, ai_workflows scope for vulnerabilities dismiss mutation' do
+      dismiss_mutation = described_class.fields['vulnerabilityDismiss']
+      expect(dismiss_mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
     end
   end
 end
