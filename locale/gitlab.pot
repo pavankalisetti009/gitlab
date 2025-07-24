@@ -27248,9 +27248,6 @@ msgstr ""
 msgid "FeatureFlags|Inactive"
 msgstr ""
 
-msgid "FeatureFlags|Inactive flag for %{scope}"
-msgstr ""
-
 msgid "FeatureFlags|Install a %{docsLinkAnchoredStart}compatible client library%{docsLinkAnchoredEnd} and specify the API URL, application name, and instance ID during the configuration setup. %{docsLinkStart}More Information%{docsLinkEnd}"
 msgstr ""
 
