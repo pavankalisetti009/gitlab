@@ -26,7 +26,6 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
           canUpdate: permission,
           confidential: epic.confidential,
           endpoint: "/groups/#{@group.full_path}/-/epics/#{epic.iid}",
-          epicLinksEndpoint: "/groups/#{@group.full_path}/-/epics/#{epic.iid}/links",
           epicsWebUrl: "/groups/#{@group.full_path}/-/epics",
           fullPath: @group.full_path,
           groupPath: @group.path,

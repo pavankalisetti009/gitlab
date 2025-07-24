@@ -20,7 +20,10 @@ module EE
         end
 
         expose :relation_url do |epic|
-          ::Gitlab::Routing.url_helpers.group_epic_link_url(epic.parent.group, epic.parent.iid, epic.id)
+          # The URL pointed to an internal controller endpoint.
+          # We no longer have the EpicLinksController or routes, so we need to build the URL statically
+          # to not break the REST API.
+          "#{::Gitlab::Routing.url_helpers.group_epic_url(epic.parent.group, epic.parent)}/links/#{epic.id}"
         end
       end
     end

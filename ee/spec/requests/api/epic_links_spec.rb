@@ -223,6 +223,10 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           child_epic = Epic.last
           expect(response).to have_gitlab_http_status(:created)
           expect(response).to match_response_schema('public_api/v4/linked_epic', dir: 'ee')
+          expect(json_response["relation_url"]).to eq(
+            "#{::Gitlab.config.gitlab.url}/groups/#{group.full_path}/-/epics/" \
+              "#{child_epic.parent.iid}/links/#{child_epic.id}"
+          )
           expect(epic.reload.children).to include(child_epic)
           expect(epic.notes.last&.note).to eq("added #{child_epic.work_item.to_reference} as child epic")
           expect(child_epic.notes.last&.note).to eq("added #{epic.work_item.to_reference} as parent epic")

@@ -22,12 +22,6 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
     url_builder.build(epic)
   end
 
-  def group_epic_link_path
-    return unless epic.parent
-
-    url_builder.group_epic_link_path(epic.parent.group, epic.parent.iid, epic.id)
-  end
-
   def epic_reference(full: false)
     if full
       epic.to_reference(full: true)

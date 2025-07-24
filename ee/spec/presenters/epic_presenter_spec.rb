@@ -71,31 +71,6 @@ RSpec.describe EpicPresenter, feature_category: :portfolio_management do
     end
   end
 
-  describe '#group_epic_link_path' do
-    it 'returns correct path' do
-      expect(presenter.group_epic_link_path).to eq group_epic_link_path(epic.group, epic.parent.iid, epic.id)
-    end
-
-    context 'when in subgroups' do
-      let!(:subgroup) { create(:group, parent: group, path: "hedgehogs_subgroup") }
-      let(:child_epic) { create(:epic, group: subgroup, iid: 1, parent: epic) }
-
-      subject(:presenter) { described_class.new(child_epic, current_user: user) }
-
-      it 'returns the correct path' do
-        expected_result = "/groups/#{group.path}/-/epics/#{epic.iid}/links/#{child_epic.id}"
-
-        expect(presenter.group_epic_link_path).to eq expected_result
-      end
-    end
-
-    it 'returns nothing with nil parent' do
-      epic.parent = nil
-
-      expect(presenter.group_epic_link_path).to be_nil
-    end
-  end
-
   describe '#epic_reference' do
     it 'returns a reference' do
       expect(presenter.epic_reference).to eq "&#{epic.iid}"

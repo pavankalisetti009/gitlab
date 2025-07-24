@@ -24,7 +24,6 @@ module EE
 
       if parent.is_a?(Group)
         data[:confidential] = issuable.confidential
-        data[:epicLinksEndpoint] = group_epic_links_path(parent, issuable)
         data[:epicsWebUrl] = group_epics_path(parent)
         data[:fullPath] = parent.full_path
         data[:issueLinksEndpoint] = group_epic_issues_path(parent, issuable)

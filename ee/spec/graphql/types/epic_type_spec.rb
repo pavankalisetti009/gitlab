@@ -51,6 +51,50 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
 
   it { expect(described_class).to have_graphql_field(:linked_work_items, complexity: 5) }
 
+  describe 'relation_path' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:parent_epic) { create(:epic, group: group) }
+
+    context 'when the epic has a parent' do
+      shared_examples 'relation path when epic has a parent' do
+        it 'returns the correct URL' do
+          expect(resolve_field(:relation_path, object)).to eq(
+            "#{::Gitlab::Routing.url_helpers.group_epic_path(object.parent.group, object.parent.iid)}/links/" \
+              "#{object.id}"
+          )
+        end
+      end
+
+      context 'when epic is in same group' do
+        let_it_be(:object) { create(:epic, parent: parent_epic, group: group) }
+
+        it_behaves_like 'relation path when epic has a parent'
+      end
+
+      context 'when epic is in a subgroup' do
+        let_it_be(:subgroup) { create(:group, parent: group) }
+        let_it_be(:object) { create(:epic, parent: parent_epic, group: subgroup) }
+
+        it_behaves_like 'relation path when epic has a parent'
+      end
+
+      context 'when epic is in different group hierarchy' do
+        let_it_be(:group2) { create(:group) }
+        let_it_be(:object) { create(:epic, parent: parent_epic, group: group2) }
+
+        it_behaves_like 'relation path when epic has a parent'
+      end
+    end
+
+    context 'when the epic has no parent' do
+      let_it_be(:object) { create(:epic, group: group) }
+
+      it 'returns the correct URL' do
+        expect(resolve_field(:relation_path, object)).to be_nil
+      end
+    end
+  end
+
   describe 'healthStatus' do
     let_it_be(:object) { create(:epic) }
 

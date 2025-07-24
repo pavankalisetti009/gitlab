@@ -161,7 +161,6 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
 
       scope module: :epics do
         resources :notes, only: [:index, :create, :destroy, :update], concerns: :awardable, constraints: { id: /\d+/ }
-        resources :epic_links, only: [:index, :create, :destroy, :update], as: 'links', path: 'links'
       end
 
       collection do
