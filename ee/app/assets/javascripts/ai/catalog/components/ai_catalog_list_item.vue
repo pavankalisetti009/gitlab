@@ -48,18 +48,18 @@ export default {
       return [
         {
           text: s__('AICatalog|Run'),
-          to: this.$router.resolve({
+          to: {
             name: AI_CATALOG_AGENTS_RUN_ROUTE,
             params: { id: this.formattedItemId },
-          }).route.path,
+          },
           icon: 'rocket-launch',
         },
         {
           text: s__('AICatalog|Edit'),
-          to: this.$router.resolve({
+          to: {
             name: AI_CATALOG_AGENTS_EDIT_ROUTE,
             params: { id: this.formattedItemId },
-          }).route.path,
+          },
           icon: 'pencil',
         },
       ];
@@ -114,7 +114,6 @@ export default {
           v-for="(actionItem, index) in actionItems"
           :key="index"
           :item="actionItem"
-          :to="actionItem.to"
         >
           <template #list-item>
             <span>
