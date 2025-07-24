@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require File.expand_path('ee/elastic/migrate/20250708204823_reindex_work_items_to_remove_notes_fields.rb')
+require File.expand_path('ee/elastic/migrate/20250722204823_reindex_work_items_to_remove_notes_fields.rb')
 
 RSpec.describe ReindexWorkItemsToRemoveNotesFields, :elastic_delete_by_query, :sidekiq_inline, feature_category: :global_search do
-  let(:version) { 20250708204823 }
+  let(:version) { 20250722204823 }
   let(:migration) { described_class.new(version) }
 
   it 'does not have migration options set', :aggregate_failures do
