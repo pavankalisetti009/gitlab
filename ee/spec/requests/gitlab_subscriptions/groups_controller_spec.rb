@@ -81,14 +81,10 @@ RSpec.describe GitlabSubscriptions::GroupsController, feature_category: :subscri
           end
 
           allow_next_instance_of(
-            GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-            user: user,
-            namespaces: [owned_group],
-            plan_id: 'plan-id'
-          ) do |instance|
-            allow(instance).to receive(:execute).and_return(
-              instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
-            )
+            GitlabSubscriptions::PurchaseEligibleNamespacesFinder,
+            user: user, plan_id: 'plan-id'
+          ) do |finder|
+            allow(finder).to receive(:execute).and_return([owned_group])
           end
         end
 
