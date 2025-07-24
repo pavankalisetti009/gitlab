@@ -20,7 +20,7 @@ module SystemCheck
 
       def multi_check
         return error_message(WRONG_CONFIGURATION_MESSAGE) unless Gitlab::Geo.geo_database_configured?
-        return error_message(UNHEALTHY_CONNECTION_MESSAGE) unless ::Geo::TrackingBase.connected?
+        return error_message(UNHEALTHY_CONNECTION_MESSAGE) unless database_active?
         return error_message(NO_TABLES_MESSAGE) unless tables_present?
         return error_message(REUSING_EXISTING_DATABASE_MESSAGE, troubleshooting_docs) unless fresh_database?
 
@@ -46,6 +46,13 @@ module SystemCheck
         !(migrations.collect(&:version) - get_all_versions).empty?
       end
 
+      def database_active?
+        database_connection.active? || database_connection.select_value('SELECT 1')
+      rescue StandardError => e
+        $stdout.puts e.message
+        false
+      end
+
       def get_all_versions
         if schema_migration.table_exists?
           schema_migration.all_versions.map(&:to_i)
@@ -55,7 +62,7 @@ module SystemCheck
       end
 
       def migrations
-        ::Geo::TrackingBase.connection.migration_context.migrations
+        database_connection.migration_context.migrations
       end
 
       def schema_migration
@@ -68,6 +75,10 @@ module SystemCheck
 
       def fresh_database?
         !geo_health_check.reusing_existing_tracking_database?
+      end
+
+      def database_connection
+        @database_connection ||= ::Geo::TrackingBase.connection
       end
 
       def error_message(message, docs = database_docs)
