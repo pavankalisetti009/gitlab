@@ -94,6 +94,24 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
           end
         end
 
+        context 'when lightweight_trial_registration_redesign is candidate' do
+          before do
+            stub_experiments(lightweight_trial_registration_redesign: :candidate)
+          end
+
+          it 'places the user into onboarding' do
+            expect(execute[:user]).to be_onboarding_in_progress
+          end
+
+          context 'with trial' do
+            let(:params) { { trial: 'true' } }
+
+            it 'does not enter the user into onboarding' do
+              expect(execute[:user]).not_to be_onboarding_in_progress
+            end
+          end
+        end
+
         context 'when there is already value in the onboarding_status' do
           before do
             user.update!(onboarding_status_email_opt_in: true)
