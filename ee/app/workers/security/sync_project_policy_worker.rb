@@ -3,6 +3,7 @@
 module Security
   class SyncProjectPolicyWorker
     include ApplicationWorker
+    prepend ::Geo::SkipSecondary
 
     data_consistency :sticky
     idempotent!
