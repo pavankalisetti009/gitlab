@@ -1,37 +1,9 @@
-#import "~/graphql_shared/fragments/label.fragment.graphql"
-#import "~/graphql_shared/fragments/user.fragment.graphql"
-#import "~/work_items/graphql/milestone.fragment.graphql"
-#import "~/work_items/graphql/timelog.fragment.graphql"
 #import "./work_item_status.fragment.graphql"
+#import "~/work_items/graphql/base_work_item_widgets.fragment.graphql"
 
 fragment WorkItemWidgets on WorkItemWidget {
   type
-  ... on WorkItemWidgetDescription {
-    description
-    descriptionHtml
-    lastEditedAt
-    # @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
-    # ignoring the newly uncovered error on this fragment. Please consider addressing the violation
-    # if you are modifying this file and it turns out selecting the ID makes sense here.
-    # eslint-disable-next-line @graphql-eslint/require-selections
-    lastEditedBy {
-      name
-      webPath
-    }
-    taskCompletionStatus {
-      completedCount
-      count
-    }
-  }
-  ... on WorkItemWidgetAssignees {
-    allowsMultipleAssignees
-    canInviteMembers
-    assignees {
-      nodes {
-        ...User
-      }
-    }
-  }
+  ...BaseWorkItemWidgets
   ... on WorkItemWidgetLabels {
     allowsScopedLabels
     labels {
@@ -46,15 +18,6 @@ fragment WorkItemWidgets on WorkItemWidget {
     rollUp
     isFixed
   }
-  ... on WorkItemWidgetTimeTracking {
-    timeEstimate
-    timelogs {
-      nodes {
-        ...TimelogFragment
-      }
-    }
-    totalTimeSpent
-  }
   ... on WorkItemWidgetWeight {
     weight
     rolledUpWeight
@@ -67,38 +30,6 @@ fragment WorkItemWidgets on WorkItemWidget {
   ... on WorkItemWidgetProgress {
     progress
     updatedAt
-  }
-  ... on WorkItemWidgetHierarchy {
-    hasChildren
-    hasParent
-    rolledUpCountsByType {
-      countsByState {
-        opened
-        all
-        closed
-      }
-      workItemType {
-        id
-        name
-        iconName
-      }
-    }
-    parent {
-      id
-      iid
-      title
-      confidential
-      namespace {
-        id
-        fullPath
-      }
-      webUrl
-      workItemType {
-        id
-        name
-        iconName
-      }
-    }
   }
   ... on WorkItemWidgetIteration {
     iteration {
@@ -113,29 +44,11 @@ fragment WorkItemWidgets on WorkItemWidget {
       }
     }
   }
-  ... on WorkItemWidgetMilestone {
-    milestone {
-      ...MilestoneFragment
-    }
-  }
-  ... on WorkItemWidgetNotes {
-    discussionLocked
-  }
   ... on WorkItemWidgetHealthStatus {
     healthStatus
     rolledUpHealthStatus {
       count
       healthStatus
-    }
-  }
-  ... on WorkItemWidgetNotifications {
-    subscribed
-  }
-  ... on WorkItemWidgetCurrentUserTodos {
-    currentUserTodos(state: pending) {
-      nodes {
-        id
-      }
     }
   }
   ... on WorkItemWidgetColor {
@@ -152,30 +65,7 @@ fragment WorkItemWidgets on WorkItemWidget {
       }
     }
   }
-  ... on WorkItemWidgetCrmContacts {
-    contactsAvailable
-    contacts {
-      nodes {
-        id
-        email
-        firstName
-        lastName
-        phone
-        description
-        organization {
-          id
-          name
-          description
-          defaultRate
-        }
-      }
-    }
-  }
-  ... on WorkItemWidgetErrorTracking {
-    identifier
-  }
   ... on WorkItemWidgetCustomFields {
-    type
     customFieldValues {
       customField {
         id
@@ -196,9 +86,7 @@ fragment WorkItemWidgets on WorkItemWidget {
       }
     }
   }
-
   ... on WorkItemWidgetStatus {
-    type
     status {
       ...WorkItemStatusFragment
     }
