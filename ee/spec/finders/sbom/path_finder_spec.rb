@@ -484,7 +484,7 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
     describe "metric collection" do
       it 'records execution time metrics' do
         expect(Gitlab::Metrics).to receive(:measure)
-              .with(:build_dependency_paths)
+              .with(:find_dependency_paths)
               .and_call_original
 
         described_class.execute(deep_one)
@@ -493,7 +493,10 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
       it 'records metrics on paths' do
         counter_double = instance_double(Prometheus::Client::Counter)
         expect(Gitlab::Metrics).to receive(:counter)
-          .with(:dependency_paths_found, 'Count of Dependency Paths found')
+          .with(
+            :gitlab_dependency_paths_found_total,
+            'Counts the number of ancestor dependency paths found for a given dependency.'
+          )
           .and_return(counter_double)
 
         expect(counter_double).to receive(:increment)
