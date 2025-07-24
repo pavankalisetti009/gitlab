@@ -1,4 +1,5 @@
 <script>
+import { uniqueId } from 'lodash';
 import { GlSkeletonLoader, GlIcon, GlPopover, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { REPORT_TYPE_PRESETS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
@@ -47,6 +48,14 @@ export default {
         ? s__('ContainerRegistry|Container scanning for registry: On')
         : s__('ContainerRegistry|Container scanning for registry: Off');
     },
+    popoverContainerId() {
+      return uniqueId('container-scanning-metadata-popover-');
+    },
+  },
+  methods: {
+    popoverTarget() {
+      return this.$refs.shieldIcon?.$el;
+    },
   },
   containerScanningForRegistryHelpUrl: helpPagePath(
     'user/application_security/continuous_vulnerability_scanning/_index',
@@ -58,15 +67,20 @@ export default {
   <div class="gl-inline-flex gl-items-center">
     <gl-skeleton-loader v-if="$apollo.queries.containerScanningData.loading" :lines="1" />
     <template v-if="isMetaVisible">
-      <div id="popover-target" data-testid="container-scanning-metadata">
-        <gl-icon name="shield" class="gl-mr-3 gl-min-w-5" variant="subtle" /><span
-          class="gl-inline-flex"
-          >{{ metaText }}</span
-        >
+      <div :id="popoverContainerId" data-testid="container-scanning-metadata">
+        <gl-icon
+          ref="shieldIcon"
+          name="shield"
+          class="gl-mr-3 gl-min-w-5"
+          variant="subtle"
+          :aria-label="metaText"
+          data-testid="container-scanning-shield-icon"
+        /><span class="gl-inline-flex">{{ metaText }}</span>
       </div>
       <gl-popover
         data-testid="container-scanning-metadata-popover"
-        target="popover-target"
+        :target="popoverTarget"
+        :container="popoverContainerId"
         triggers="hover focus click"
         placement="bottom"
       >
