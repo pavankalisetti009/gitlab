@@ -27,7 +27,7 @@ const STATUS_CATEGORIES = {
   TO_DO: 'TO_DO',
   IN_PROGRESS: 'IN_PROGRESS',
   DONE: 'DONE',
-  CANCELLED: 'CANCELLED',
+  CANCELED: 'CANCELED',
 };
 
 const CATEGORY_MAP = {
@@ -63,7 +63,7 @@ const CATEGORY_MAP = {
       'WorkItem|Use for items that have been completed. Applying a done status will close the item.',
     ),
   },
-  [STATUS_CATEGORIES.CANCELLED]: {
+  [STATUS_CATEGORIES.CANCELED]: {
     icon: 'status-cancelled',
     color: '#dd2b0e',
     label: s__('WorkItem|Canceled'),
