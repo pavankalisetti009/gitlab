@@ -167,7 +167,7 @@ module Gitlab
           end
 
           def context_resource_class_name
-            ::Gitlab::Utils::ClassNameConverter.new(context.resource.class).string_representation
+            ::Gitlab::Utils.param_key(context.resource.class)
           end
         end
       end

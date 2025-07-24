@@ -43,7 +43,7 @@ module Gitlab
         strong_memoize_attr :list_of_available_models
 
         def model_name_converter(model_class)
-          ::Gitlab::Utils::ClassNameConverter.new(model_class).string_representation
+          ::Gitlab::Utils.param_key(model_class)
         end
       end
     end
