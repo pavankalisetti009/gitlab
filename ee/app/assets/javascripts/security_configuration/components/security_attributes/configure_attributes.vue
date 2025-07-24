@@ -66,7 +66,7 @@ export default {
 </script>
 <template>
   <div class="gl-border-t gl-flex">
-    <div class="gl-border-r gl-w-1/4 gl-p-5">
+    <div class="gl-border-r gl-w-1/4 gl-min-w-20 gl-p-5">
       <category-list
         :security-attribute-categories="group.securityAttributeCategories.nodes"
         :selected-category="selectedCategory"

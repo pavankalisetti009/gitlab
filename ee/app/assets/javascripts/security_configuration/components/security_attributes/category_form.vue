@@ -83,27 +83,27 @@ export default {
       key: 'name',
       label: __('Attribute'),
       // eslint-disable-next-line @gitlab/require-i18n-strings
-      tdClass: '!gl-border-b-0 gl-w-1/5',
+      tdClass: '!gl-border-b-0 gl-md-w-1/5',
       // eslint-disable-next-line @gitlab/require-i18n-strings
-      thClass: '!gl-border-t-0 gl-w-1/5',
+      thClass: '!gl-border-t-0 gl-md-w-1/5',
     },
     {
       key: 'description',
       label: __('Description'),
-      tdClass: '!gl-border-b-0 gl-w-[55%]',
-      thClass: '!gl-border-t-0 gl-w-[55%]',
+      tdClass: '!gl-border-b-0 gl-md-w-[55%]',
+      thClass: '!gl-border-t-0 gl-md-w-[55%]',
     },
     {
       key: 'usedBy',
       label: __('Used by'),
-      tdClass: '!gl-border-b-0 gl-w-[15%]',
-      thClass: '!gl-border-t-0 gl-w-[15%]',
+      tdClass: '!gl-border-b-0 gl-md-w-[15%]',
+      thClass: '!gl-border-t-0 gl-md-w-[15%]',
     },
     {
       key: 'actions',
       label: '',
-      tdClass: '!gl-border-b-0 gl-w-[10%]',
-      thClass: '!gl-border-t-0 gl-w-[10%]',
+      tdClass: '!gl-border-b-0 gl-md-w-[10%] gl-text-right',
+      thClass: '!gl-border-t-0 gl-md-w-[10%]',
     },
   ],
   editItem: {
@@ -199,6 +199,7 @@ export default {
           <gl-table-lite
             :items="attributes"
             :fields="$options.attributesTableFields"
+            stacked="md"
             class="gl-mb-0"
           >
             <template #cell(name)="{ item: { name, color } }">
