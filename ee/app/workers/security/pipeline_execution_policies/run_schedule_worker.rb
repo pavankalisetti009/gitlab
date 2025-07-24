@@ -30,7 +30,7 @@ module Security
           return
         end
 
-        branch = options.fetch(:branch, schedule.project.default_branch_or_main)
+        branch = options.fetch('branch', schedule.project.default_branch_or_main)
 
         result = execute(schedule, branch)
 

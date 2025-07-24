@@ -168,7 +168,7 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
           end
 
           context 'with branch option' do
-            let(:options) { { branch: 'feature-branch' } }
+            let(:options) { { 'branch' => 'feature-branch' } }
 
             context 'when the branch does not exist on the project' do
               let_it_be(:expected_log) do
