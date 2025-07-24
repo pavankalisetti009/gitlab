@@ -867,6 +867,7 @@ BEGIN
 
     IF FOUND THEN
       INSERT INTO group_push_rules (
+        id,
         group_id,
         max_file_size,
         member_check,
@@ -884,6 +885,7 @@ BEGIN
         created_at,
         updated_at
       ) VALUES (
+        push_rule.id,
         NEW.id,
         push_rule.max_file_size,
         push_rule.member_check,
@@ -902,6 +904,7 @@ BEGIN
         push_rule.updated_at
       )
       ON CONFLICT (group_id) DO UPDATE SET
+        id = push_rule.id,
         max_file_size = push_rule.max_file_size,
         member_check = push_rule.member_check,
         prevent_secrets = push_rule.prevent_secrets,
