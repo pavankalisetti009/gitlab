@@ -11010,9 +11010,6 @@ msgstr ""
 msgid "Branch target does not exist"
 msgstr ""
 
-msgid "BranchRules|%{linkStart}Wildcards%{linkEnd} such as *-stable or production/ are supported"
-msgstr ""
-
 msgid "BranchRules|%{linkStart}Wildcards%{linkEnd} such as *-stable or production/* are supported."
 msgstr ""
 
@@ -11296,6 +11293,9 @@ msgid "BranchRules|Users & groups"
 msgstr ""
 
 msgid "BranchRules|View details"
+msgstr ""
+
+msgid "BranchRules|Wildcards such as *-stable or production/* are supported. Branch names are case-sensitive. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
 msgid "BranchRules|You are about to delete the %{name} status check."
