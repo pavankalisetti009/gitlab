@@ -122,7 +122,7 @@ module Types
       null: false, method: :group_epic_url, description: 'Web URL of the epic.'
 
     field :relation_path, GraphQL::Types::String,
-      null: true, method: :group_epic_link_path,
+      null: true,
       description: 'URI path of the epic-issue relationship.'
 
     field :relative_position, GraphQL::Types::Int,
@@ -265,6 +265,15 @@ module Types
     # preloading target for events
     def events
       object.events.with_target
+    end
+
+    def relation_path
+      return unless object.parent
+
+      # The URL pointed to an internal controller endpoint.
+      # We no longer have the EpicLinksController or routes, so we need to build the URL statically
+      # to not break the REST API.
+      "#{::Gitlab::Routing.url_helpers.group_epic_path(object.parent.group, object.parent.iid)}/links/#{object.id}"
     end
   end
 end
