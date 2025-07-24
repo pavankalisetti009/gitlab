@@ -2,17 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_category: :global_search do
+RSpec.describe Note, :elastic_delete_by_query, feature_category: :global_search do
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
   end
 
   it_behaves_like 'limited indexing is enabled' do
-    let_it_be(:object) { create :note, project: project }
+    let_it_be(:object) { create(:note, project: project) }
 
     describe '#use_elasticsearch?' do
       before do
-        create :elasticsearch_indexed_project, project: project
+        create(:elasticsearch_indexed_project, project: project)
       end
 
       it 'supports diff notes' do
@@ -23,7 +23,7 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
         notes << create(:legacy_diff_note_on_commit, note: "term")
 
         notes.each do |note|
-          create :elasticsearch_indexed_project, project: note.noteable.project
+          create(:elasticsearch_indexed_project, project: note.noteable.project)
 
           expect(note.use_elasticsearch?).to eq(true)
         end
@@ -31,29 +31,26 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
     end
   end
 
-  it 'searches notes', :sidekiq_inline do
-    project = create :project, :public
-    issue = create :issue, project: project
+  it 'searches notes', :enable_admin_mode, :sidekiq_inline do
+    project = create(:project, :public)
+    issue = create(:issue, project: project)
 
-    note = create :note, note: 'bla-bla term1', project: issue.project
-    create :note, project: issue.project
+    note = create(:note, note: 'bla-bla term1', project: issue.project)
+    create(:note, project: issue.project)
 
     # The note in the project you have no access to except as an administrator
-    outside_note = create :note, note: 'bla-bla term2'
+    outside_note = create(:note, note: 'bla-bla term2')
 
     ensure_elasticsearch_index!
 
-    options = { project_ids: [issue.project.id] }
+    options = { project_ids: [issue.project.id], search_level: :global }
 
-    expect(described_class.elastic_search('term1 | term2', options: options).records).to contain_exactly(note)
-    expect(described_class.elastic_search('bla-bla', options: options).records).to contain_exactly(note)
-    expect(described_class.elastic_search('bla-bla', options: { project_ids: :any }).records).to contain_exactly(outside_note)
-  end
+    expect(described_class.elastic_search('term1 | term2', options:).records).to contain_exactly(note)
+    expect(described_class.elastic_search('bla-bla', options:).records).to contain_exactly(note)
 
-  it 'names elasticsearch queries' do
-    described_class.elastic_search('*').total_count
-
-    assert_named_queries("note:match:search_terms", "note:authorized")
+    options = { current_user: create(:admin), project_ids: :any, search_level: :global }
+    described_class.elastic_search('bla-bla', options: options).records
+    expect(described_class.elastic_search('bla-bla', options:).records).to contain_exactly(note, outside_note)
   end
 
   it 'indexes and searches diff notes', :sidekiq_inline do
@@ -71,7 +68,7 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
     ensure_elasticsearch_index!
 
     project_ids = notes.map { |note| note.noteable.project.id }
-    options = { project_ids: project_ids }
+    options = { project_ids: project_ids, search_level: :global }
 
     expect(described_class.elastic_search('term', options: options).total_count).to eq(4)
   end
@@ -92,46 +89,42 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
     end
   end
 
-  context 'for notes on confidential issues' do
+  context 'for notes on confidential issues', :sidekiq_inline do
     it 'does not find note' do
-      issue = create :issue, :confidential
+      issue = create(:issue, :confidential)
 
-      Sidekiq::Testing.inline! do
-        create_notes_for(issue, 'bla-bla term')
-        ensure_elasticsearch_index!
-      end
+      create_notes_for(issue, 'bla-bla term')
+      ensure_elasticsearch_index!
 
-      options = { project_ids: [issue.project.id] }
+      options = { project_ids: [issue.project.id], search_level: :global }
 
       expect(described_class.elastic_search('term', options: options).total_count).to eq(0)
     end
 
-    it 'finds note when user is authorized to see it', :sidekiq_might_not_need_inline do
-      user = create :user
-      issue = create :issue, :confidential, author: user
-      issue.project.add_guest user
+    it 'finds note when user is authorized to see it' do
+      user = create(:user)
+      issue = create(:issue, :confidential, author: user)
+      issue.project.add_guest(user)
 
-      Sidekiq::Testing.inline! do
-        create_notes_for(issue, 'bla-bla term')
-        ensure_elasticsearch_index!
-      end
+      create_notes_for(issue, 'bla-bla term')
 
-      options = { project_ids: [issue.project.id], current_user: user }
+      ensure_elasticsearch_index!
+
+      options = { project_ids: [issue.project.id], current_user: user, search_level: :global }
 
       expect(described_class.elastic_search('term', options: options).total_count).to eq(1)
     end
 
     shared_examples 'notes finder' do |user_type, no_of_notes|
-      it "finds #{no_of_notes} notes for #{user_type}", :sidekiq_might_not_need_inline do
+      it "finds #{no_of_notes} notes for #{user_type}" do
         superuser = create(user_type) # rubocop:disable Rails/SaveBang
         issue = create(:issue, :confidential, author: create(:user))
 
-        Sidekiq::Testing.inline! do
-          create_notes_for(issue, 'bla-bla term')
-          ensure_elasticsearch_index!
-        end
+        create_notes_for(issue, 'bla-bla term')
 
-        options = { project_ids: [issue.project.id], current_user: superuser }
+        ensure_elasticsearch_index!
+
+        options = { project_ids: [issue.project.id], current_user: superuser, search_level: :global }
 
         expect(described_class.elastic_search('term', options: options).total_count).to eq(no_of_notes)
       end
@@ -145,9 +138,9 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
 
     it_behaves_like 'notes finder', :auditor, 1
 
-    it 'return notes with matching content for project members', :sidekiq_inline do
-      user = create :user
-      issue = create :issue, :confidential, author: user
+    it 'return notes with matching content for project members' do
+      user = create(:user)
+      issue = create(:issue, :confidential, author: user)
 
       member = create(:user)
       issue.project.add_developer(member)
@@ -155,14 +148,14 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
       create_notes_for(issue, 'bla-bla term')
       ensure_elasticsearch_index!
 
-      options = { project_ids: [issue.project.id], current_user: member }
+      options = { project_ids: [issue.project.id], current_user: member, search_level: :global }
 
       expect(described_class.elastic_search('term', options: options).total_count).to eq(1)
     end
 
-    it 'does not return notes with matching content for project members with guest role', :sidekiq_inline do
-      user = create :user
-      issue = create :issue, :confidential, author: user
+    it 'does not return notes with matching content for project members with guest role' do
+      user = create(:user)
+      issue = create(:issue, :confidential, author: user)
 
       member = create(:user)
       issue.project.add_guest(member)
@@ -170,21 +163,36 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
       create_notes_for(issue, 'bla-bla term')
       ensure_elasticsearch_index!
 
-      options = { project_ids: [issue.project.id], current_user: member }
+      options = { project_ids: [issue.project.id], current_user: member, search_level: :global }
 
       expect(described_class.elastic_search('term', options: options).total_count).to eq(0)
     end
   end
 
-  it_behaves_like 'no results when the user cannot read cross project' do
+  it_behaves_like 'respects permission to read cross project' do
     let(:issue1) { create(:issue, project: project) }
     let(:issue2) { create(:issue, project: project2) }
-    let(:record1) { create :note, note: 'test-note', project: issue1.project, noteable: issue1 }
-    let(:record2) { create :note, note: 'test-note', project: issue2.project, noteable: issue2 }
+    let(:record1) { create(:note, note: 'test-note', project: issue1.project, noteable: issue1) }
+    let(:record2) { create(:note, note: 'test-note', project: issue2.project, noteable: issue2) }
+  end
+
+  # the behavior after the flag is removed till blocks cross project search but does not rely upon
+  # the project_ids being passed to the search service
+  context 'when search_notes_use_membership_filter ff is false' do
+    before do
+      stub_feature_flags(search_notes_use_membership_filter: false)
+    end
+
+    it_behaves_like 'no results when the user cannot read cross project' do
+      let(:issue1) { create(:issue, project: project) }
+      let(:issue2) { create(:issue, project: project2) }
+      let(:record1) { create(:note, note: 'test-note', project: issue1.project, noteable: issue1) }
+      let(:record2) { create(:note, note: 'test-note', project: issue2.project, noteable: issue2) }
+    end
   end
 
   def create_notes_for(issue, note)
-    create :note, note: note, project: issue.project, noteable: issue
-    create :note, project: issue.project, noteable: issue
+    create(:note, note: note, project: issue.project, noteable: issue)
+    create(:note, project: issue.project, noteable: issue)
   end
 end

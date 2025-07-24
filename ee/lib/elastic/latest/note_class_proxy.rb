@@ -5,6 +5,13 @@ module Elastic
     class NoteClassProxy < ApplicationClassProxy
       extend ::Gitlab::Utils::Override
 
+      NOTEABLE_TYPE_TO_FEATURE = {
+        Issue: :issues,
+        MergeRequest: :merge_requests,
+        Snippet: :snippets,
+        Commit: :repository
+      }.freeze
+
       def es_type
         'note'
       end
@@ -17,7 +24,7 @@ module Elastic
         query_hash = basic_query_hash(%w[note], query, options)
 
         context.name(:note) do
-          query_hash = context.name(:authorized) { project_ids_filter(query_hash, options) }
+          query_hash = get_authorization_filter(query_hash, options)
           query_hash = context.name(:confidentiality) { confidentiality_filter(query_hash, options) }
           query_hash = context.name(:archived) { archived_filter(query_hash) } if archived_filter_applicable?(options)
           query_hash = ::Search::Elastic::Filters.by_noteable_type(query_hash:, options:)
@@ -47,6 +54,20 @@ module Elastic
       # rubocop: enable CodeReuse/ActiveRecord
 
       private
+
+      def get_authorization_filter(query_hash, options)
+        if use_new_auth?(options[:current_user])
+          options[:features] = NOTEABLE_TYPE_TO_FEATURE.values
+          ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash, options: options)
+        else
+          context.name(:authorized) { project_ids_filter(query_hash, options) }
+        end
+      end
+
+      def use_new_auth?(user)
+        ::Elastic::DataMigrationService.migration_has_finished?(:backfill_traversal_ids_in_notes) &&
+          Feature.enabled?(:search_notes_use_membership_filter, user)
+      end
 
       def confidentiality_filter(query_hash, options)
         current_user = options[:current_user]
@@ -141,15 +162,6 @@ module Elastic
         query_hash
       end
 
-      def noteable_type_to_feature
-        {
-          Issue: :issues,
-          MergeRequest: :merge_requests,
-          Snippet: :snippets,
-          Commit: :repository
-        }
-      end
-
       def archived_filter_applicable?(options)
         !(options[:include_archived] || options[:search_level] == 'project')
       end
@@ -220,7 +232,7 @@ module Elastic
       # for base model filtering.
       override :pick_projects_by_membership
       def pick_projects_by_membership(project_ids, user, no_join_project, features: nil, project_id_field: nil)
-        noteable_type_to_feature.map do |noteable_type, feature|
+        NOTEABLE_TYPE_TO_FEATURE.map do |noteable_type, feature|
           context.name(feature) do
             condition =
               if project_ids == :any
@@ -242,7 +254,7 @@ module Elastic
       # for base model filtering.
       override :limit_by_feature
       def limit_by_feature(condition, _ = nil, include_members_only:)
-        noteable_type_to_feature.map do |noteable_type, feature|
+        NOTEABLE_TYPE_TO_FEATURE.map do |noteable_type, feature|
           context.name(feature) do
             limit =
               if include_members_only
