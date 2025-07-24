@@ -14,51 +14,6 @@ RSpec.describe Groups::ClustersController, feature_category: :deployment_managem
     sign_in(user)
   end
 
-  it_behaves_like 'cluster metrics' do
-    let(:user) { create(:user) }
-    let(:clusterable) { group }
-
-    let(:cluster) do
-      create(:cluster, :group, :provided_by_gcp, groups: [group])
-    end
-
-    let(:metrics_params) do
-      {
-        group_id: group,
-        id: cluster
-      }
-    end
-
-    before do
-      clusterable.add_maintainer(user)
-    end
-
-    describe 'security' do
-      let(:prometheus_adapter) { double(:prometheus_adapter, can_query?: true, query: nil) }
-
-      before do
-        sign_in(user)
-        allow(controller).to receive(:prometheus_adapter).and_return(prometheus_adapter)
-      end
-
-      context 'when admin mode is enabled', :enable_admin_mode do
-        it { expect { go }.to be_allowed_for(:admin) }
-      end
-
-      context 'when admin mode is disabled' do
-        it { expect { go }.to be_denied_for(:admin) }
-      end
-
-      it { expect { go }.to be_allowed_for(:owner).of(clusterable) }
-      it { expect { go }.to be_allowed_for(:maintainer).of(clusterable) }
-      it { expect { go }.to be_denied_for(:developer).of(clusterable) }
-      it { expect { go }.to be_denied_for(:reporter).of(clusterable) }
-      it { expect { go }.to be_denied_for(:guest).of(clusterable) }
-      it { expect { go }.to be_denied_for(:user) }
-      it { expect { go }.to be_denied_for(:external) }
-    end
-  end
-
   describe 'GET environments' do
     let(:cluster) { create(:cluster_for_group, groups: [group]) }
 

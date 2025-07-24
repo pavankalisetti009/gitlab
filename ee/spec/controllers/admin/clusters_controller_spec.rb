@@ -2,31 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::ClustersController do
+RSpec.describe Admin::ClustersController, feature_category: :deployment_management do
   include AccessMatchersForController
 
   let(:user) { create(:admin) }
 
   before do
     sign_in(user)
-  end
-
-  it_behaves_like 'cluster metrics' do
-    let(:clusterable) { Clusters::Instance.new }
-
-    let(:cluster) do
-      create(:cluster, :instance, :provided_by_gcp)
-    end
-
-    let(:metrics_params) do
-      {
-        id: cluster
-      }
-    end
-
-    before do
-      allow(::Clusters::Instance).to receive(:new).and_return(cluster.instance)
-    end
   end
 
   describe 'GET environments' do
