@@ -55,7 +55,7 @@ module Sbom
     end
 
     def execute
-      result = Gitlab::Metrics.measure(:build_dependency_paths) do
+      result = Gitlab::Metrics.measure(:find_dependency_paths) do
         project_id = occurrence.project_id
         target_id = occurrence.id
 
@@ -322,8 +322,8 @@ module Sbom
 
     def record_metrics(paths)
       counter = Gitlab::Metrics.counter(
-        :dependency_paths_found,
-        'Count of Dependency Paths found'
+        :gitlab_dependency_paths_found_total,
+        'Counts the number of ancestor dependency paths found for a given dependency.'
       )
 
       counter.increment(
