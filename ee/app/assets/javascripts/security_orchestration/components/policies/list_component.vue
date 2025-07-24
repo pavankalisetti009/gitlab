@@ -359,7 +359,7 @@ export default {
       this.selectedPolicy = null;
 
       // Refs are required by BTable to manipulate the selection
-      // issue: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/1531
+      // issue: https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/issues/2831
       const bTable = this.$refs.policiesTable.$children[0];
       bTable.clearSelected();
 

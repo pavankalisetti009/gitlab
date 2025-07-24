@@ -73,7 +73,7 @@ export default {
     /**
      * We're using `debounce` here as `GlSearchBoxByType` doesn't
      * support `lazy` or `debounce` props as per https://bootstrap-vue.js.org/docs/components/form-input/.
-     * This is a known GitLab UI issue https://gitlab.com/gitlab-org/gitlab-ui/-/issues/631
+     * This is a known GitLab UI issue https://gitlab.com/gitlab-org/gitlab-ui/-/issues/631 [CLOSED]
      */
     searchKey: debounce(function debounceSearch() {
       this.fetchProjects(this.searchKey);

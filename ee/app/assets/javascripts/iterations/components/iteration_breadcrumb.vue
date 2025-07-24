@@ -1,6 +1,6 @@
 <script>
 // We are using gl-breadcrumb only at the last child of the handwritten breadcrumb
-// until this gitlab-ui issue is resolved: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/1079
+// until this gitlab-ui issue is resolved: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/1079 [CLOSED]
 import { GlBreadcrumb, GlSkeletonLoader } from '@gitlab/ui';
 import { TYPENAME_ITERATIONS_CADENCE } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
