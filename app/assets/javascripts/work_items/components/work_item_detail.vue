@@ -276,20 +276,6 @@ export default {
         },
       },
     },
-    allowedChildTypes: {
-      query: getAllowedWorkItemChildTypes,
-      variables() {
-        return {
-          id: this.workItem.id,
-        };
-      },
-      skip() {
-        return !this.workItem?.id;
-      },
-      update(data) {
-        return findHierarchyWidgetDefinition(data.workItem)?.allowedChildTypes?.nodes || [];
-      },
-    },
     workspacePermissions: {
       query: workspacePermissionsQuery,
       variables() {
@@ -596,6 +582,18 @@ export default {
       return buildApiUrl(`/api/:version/ai/duo_workflows/workflows`);
     },
   },
+  watch: {
+    'workItem.id': {
+      immediate: true,
+      async handler(newId) {
+        // Update allowedChildTypes using manual query instead of a smart query to prevent cache inconsistency (issue: #521771)
+        const { workItem } = await this.fetchAllowedChildTypes(newId);
+        this.allowedChildTypes = workItem
+          ? findHierarchyWidgetDefinition(workItem)?.allowedChildTypes?.nodes
+          : [];
+      },
+    },
+  },
   beforeDestroy() {
     document.removeEventListener('actioncable:reconnected', this.refetchIfStale);
   },
@@ -604,6 +602,20 @@ export default {
     document.addEventListener('actioncable:reconnected', this.refetchIfStale);
   },
   methods: {
+    async fetchAllowedChildTypes(workItemId) {
+      if (!workItemId) return { workItem: null };
+
+      try {
+        const { data } = await this.$apollo.query({
+          query: getAllowedWorkItemChildTypes,
+          variables: { id: workItemId },
+        });
+
+        return data;
+      } catch (error) {
+        return { workItem: null };
+      }
+    },
     handleWorkItemCreated() {
       this.$apollo.queries.workItem.refetch();
     },
