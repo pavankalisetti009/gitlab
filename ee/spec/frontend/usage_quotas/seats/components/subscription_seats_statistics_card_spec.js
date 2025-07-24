@@ -93,7 +93,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
     it('renders the tooltip link', () => {
       expect(findTooltipLink().attributes('href')).toBe(
-        '/help/subscriptions/gitlab_com/_index#how-seat-usage-is-determined',
+        '/help/subscriptions/manage_users_and_seats#gitlabcom-billing-and-usage',
       );
     });
 
@@ -129,7 +129,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
     it('renders the tooltip link', () => {
       expect(findTooltipLink().attributes('href')).toBe(
-        '/help/subscriptions/gitlab_com/_index#how-seat-usage-is-determined',
+        '/help/subscriptions/manage_users_and_seats#gitlabcom-billing-and-usage',
       );
     });
 
@@ -164,7 +164,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
     it('renders the tooltip link', () => {
       expect(findTooltipLink().attributes('href')).toBe(
-        '/help/subscriptions/gitlab_com/_index#how-seat-usage-is-determined',
+        '/help/subscriptions/manage_users_and_seats#gitlabcom-billing-and-usage',
       );
     });
 
@@ -234,7 +234,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
     it('renders the tooltip link', () => {
       expect(findTooltipLink().attributes('href')).toBe(
-        '/help/subscriptions/gitlab_com/_index#how-seat-usage-is-determined',
+        '/help/subscriptions/manage_users_and_seats#gitlabcom-billing-and-usage',
       );
     });
 
