@@ -390,6 +390,71 @@ module Search
           end
         end
 
+        def by_health_status(query_hash:, options:)
+          health_status = options[:health_status]
+          not_health_status = options[:not_health_status]
+          none_health_status = options[:none_health_status]
+          any_health_status = options[:any_health_status]
+
+          return query_hash unless health_status || not_health_status || none_health_status || any_health_status
+
+          context.name(:filters) do
+            if health_status
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must: {
+                      terms: {
+                        _name: context.name(:health_status),
+                        health_status: health_status
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if not_health_status
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must_not: {
+                      terms: {
+                        _name: context.name(:not_health_status),
+                        health_status: not_health_status
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if none_health_status
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:none_health_status),
+                    must_not: { exists: { field: 'health_status' } }
+                  }
+                }
+              end
+            end
+
+            if any_health_status
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:any_health_status),
+                    must: { exists: { field: 'health_status' } }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
         def by_state(query_hash:, options:)
           state = options[:state]
           return query_hash if state.blank? || state == 'all'

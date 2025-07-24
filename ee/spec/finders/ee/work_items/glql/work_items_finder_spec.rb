@@ -12,8 +12,10 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   let_it_be(:assignee_user)   { create(:user) }
   let_it_be(:other_user)      { create(:user) }
   let_it_be(:milestone)       { create(:milestone, project: project) }
-  let_it_be(:work_item1) { create(:work_item, project: project, author: current_user) }
   let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
+  let_it_be(:work_item1) do
+    create(:work_item, health_status: 1, weight: 5, project: project, author: current_user)
+  end
 
   let(:context)        { instance_double(GraphQL::Query::Context) }
   let(:request_params) { { 'operationName' => 'GLQL' } }
@@ -38,6 +40,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
       assignee_usernames: [assignee_user.username],
       weight: work_item1.weight,
       issue_types: [work_item1.work_item_type.base_type, work_item2.work_item_type.base_type],
+      health_status_filter: work_item1.health_status,
       not: {}
     }
   end
@@ -221,24 +224,28 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         not_weight: nil,
         none_weight: false,
         any_weight: false,
-        work_item_type_ids: [work_item1.work_item_type.id, work_item2.work_item_type.id]
+        work_item_type_ids: [work_item1.work_item_type.id, work_item2.work_item_type.id],
+        health_status: [::WorkItem.health_statuses[work_item1.health_status]],
+        not_health_status: nil,
+        none_health_status: false,
+        any_health_status: false
       }
     end
 
     let(:search_results_double) { instance_double(Gitlab::Elastic::SearchResults, objects: [work_item1, work_item2]) }
-    let(:search_service_double) { instance_double(SearchService, search_results: search_results_double) }
 
     before do
       finder.parent_param = resource_parent
 
-      allow(SearchService)
-        .to receive(:new)
-        .with(current_user, search_params)
-        .and_return(search_service_double)
+      allow(SearchService).to receive(:new).and_call_original
+      allow_next_instance_of(SearchService) do |service_instance|
+        allow(service_instance).to receive(:search_results).and_return(search_results_double)
+      end
     end
 
     shared_examples 'executes ES search with expected params' do
       it 'executes ES search service' do
+        expect(SearchService).to receive(:new).with(current_user, search_params)
         expect(finder.execute).to contain_exactly(work_item1, work_item2)
       end
     end
@@ -517,6 +524,41 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
             label_names: ['workflow::complete'],
             not_label_names: ['group::*'],
             or_label_names: ['workflow::*', 'frontend']
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when not_health_status param provided' do
+        before do
+          params[:not][:health_status_filter] = work_item1.health_status
+          search_params.merge!(
+            not_health_status: [::WorkItem.health_statuses[work_item1.health_status]]
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when any_health_status param provided' do
+        before do
+          params[:health_status_filter] = described_class::FILTER_ANY
+          search_params.merge!(
+            health_status: nil,
+            any_health_status: true
+          )
+        end
+
+        it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when none_health_status param provided' do
+        before do
+          params[:health_status_filter] = described_class::FILTER_NONE
+          search_params.merge!(
+            health_status: nil,
+            none_health_status: true
           )
         end
 

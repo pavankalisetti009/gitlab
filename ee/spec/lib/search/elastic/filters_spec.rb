@@ -3903,4 +3903,78 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it_behaves_like 'adds filter to query_hash'
     end
   end
+
+  describe '.by_health_status' do
+    subject(:by_health_status) { described_class.by_health_status(query_hash: query_hash, options: options) }
+
+    context 'when all health_status options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:health_status] is provided' do
+      let(:options) { { health_status: [1] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            must: {
+              terms: {
+                _name: 'filters:health_status',
+                health_status: [1]
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:not_health_status] is provided' do
+      let(:options) { { not_health_status: [2] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            must_not: {
+              terms: {
+                _name: 'filters:not_health_status',
+                health_status: [2]
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:any_health_status] is provided' do
+      let(:options) { { any_health_status: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:any_health_status',
+            must: { exists: { field: 'health_status' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:none_health_status] is provided' do
+      let(:options) { { none_health_status: true } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:none_health_status',
+            must_not: { exists: { field: 'health_status' } }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
 end

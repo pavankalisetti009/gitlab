@@ -23,6 +23,8 @@
 #     weight:                - String containing integer representing work item's weight
 #     weight_wildcard_id:    - String with possible values of  'none', 'any'
 #     issue_types:           - Array of strings (one of WorkItems::Type.base_types)
+#     health_status_filter:  - String with possible values of 'on_track', 'needs_attention' and 'at_risk',
+#                              can also accept wildcard values of "NONE" or "ANY"
 #     not                    - Hash with keys that can be negated
 #     or                     - Hash with keys that can be combined using OR logic
 #
@@ -37,10 +39,10 @@ module EE
         ALLOWED_ES_FILTERS = [
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
           :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or,
-          :weight, :weight_wildcard_id, :issue_types
+          :weight, :weight_wildcard_id, :issue_types, :health_status_filter
         ].freeze
         NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name, :weight,
-          :weight_wildcard_id].freeze
+          :weight_wildcard_id, :health_status_filter].freeze
         OR_FILTERS = [:assignee_usernames, :label_names].freeze
 
         FILTER_NONE = 'none'
@@ -99,31 +101,79 @@ module EE
             source: GLQL_SOURCE,
             search: '*',
             per_page: 100,
+            sort: 'created_desc',
+            state: params[:state],
+            confidential: params[:confidential],
+            work_item_type_ids: type_ids_from(params[:issue_types])
+          }.merge(
+            label_params,
+            author_params,
+            milestone_params,
+            assignee_params,
+            weight_params,
+            health_status_params
+          )
+        end
+
+        def label_params
+          {
             label_names: label_names(params[:label_name]),
             not_label_names: label_names(params.dig(:not, :label_name)),
             or_label_names: label_names(params.dig(:or, :label_names)),
             none_label_names: none_labels?(params[:label_name]),
-            any_label_names: any_labels?(params[:label_name]),
-            sort: 'created_desc',
-            state: params[:state],
-            confidential: params[:confidential],
+            any_label_names: any_labels?(params[:label_name])
+          }
+        end
+
+        def author_params
+          {
             author_username: params[:author_username],
-            not_author_username: params.dig(:not, :author_username),
+            not_author_username: params.dig(:not, :author_username)
+          }
+        end
+
+        def milestone_params
+          {
             milestone_title: params[:milestone_title],
             not_milestone_title: params.dig(:not, :milestone_title),
             none_milestones: none_milestones?,
-            any_milestones: any_milestones?,
+            any_milestones: any_milestones?
+          }
+        end
+
+        def assignee_params
+          {
             assignee_ids: assignee_ids(params[:assignee_usernames]),
             not_assignee_ids: assignee_ids(params.dig(:not, :assignee_usernames)),
             or_assignee_ids: assignee_ids(params.dig(:or, :assignee_usernames)),
             none_assignees: none_assignees?,
-            any_assignees: any_assignees?,
+            any_assignees: any_assignees?
+          }
+        end
+
+        def weight_params
+          {
             # NOTE: We receive weight as a string on the API level, but ES stores weight as integer
             weight: params[:weight]&.to_i,
             not_weight: params.dig(:not, :weight)&.to_i,
             none_weight: none_weight?,
-            any_weight: any_weight?,
-            work_item_type_ids: type_ids_from(params[:issue_types])
+            any_weight: any_weight?
+          }
+        end
+
+        def health_status_params
+          # NOTE: health_status_filter receives different input types:
+          # - Positive queries (health = "value") receive a string
+          # - Negation queries (health != "value") receive an array
+          # Converting everything to array for consistent handling and ES query structure
+          status_filter = Array(params[:health_status_filter])
+          not_status_filter = Array(params.dig(:not, :health_status_filter))
+
+          {
+            health_status: health_status(status_filter),
+            not_health_status: health_status(not_status_filter),
+            none_health_status: none_health_status?(status_filter),
+            any_health_status: any_health_status?(status_filter)
           }
         end
 
@@ -253,6 +303,23 @@ module EE
 
         def any_weight?
           params[:weight_wildcard_id].to_s.downcase == FILTER_ANY
+        end
+
+        def none_health_status?(statuses)
+          statuses.any? { |status| status.to_s.downcase == FILTER_NONE }
+        end
+
+        def any_health_status?(statuses)
+          statuses.any? { |status| status.to_s.downcase == FILTER_ANY }
+        end
+
+        def health_status(statuses)
+          return unless statuses.present?
+          return if none_health_status?(statuses) || any_health_status?(statuses)
+
+          # NOTE: We receive health_status_filter as a 'string' on the API level,
+          # but health_status is defined as a 'short' in ES mappings.
+          statuses.filter_map { |status| ::WorkItem.health_statuses[status] }
         end
       end
     end
