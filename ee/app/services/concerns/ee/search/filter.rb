@@ -19,7 +19,8 @@ module EE
           **code_search_filters,
           **knn_filters,
           **work_item_filters,
-          **weight_filters
+          **weight_filters,
+          **health_status_filters
         )
       end
 
@@ -106,6 +107,15 @@ module EE
       def work_item_filters
         {
           work_item_type_ids: params[:work_item_type_ids]
+        }
+      end
+
+      def health_status_filters
+        {
+          health_status: params[:health_status],
+          not_health_status: params[:not_health_status],
+          none_health_status: params[:none_health_status],
+          any_health_status: params[:any_health_status]
         }
       end
     end

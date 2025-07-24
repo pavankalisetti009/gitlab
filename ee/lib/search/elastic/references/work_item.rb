@@ -55,6 +55,10 @@ module Search
           none_weight
           any_weight
           work_item_type_ids
+          health_status
+          not_health_status
+          none_health_status
+          any_health_status
         ].freeze
 
         override :serialize

@@ -688,6 +688,54 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+
+    describe 'health_status' do
+      before do
+        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
+      end
+
+      it 'does not apply health_status filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:health_status
+            filters:not_health_status
+            filters:none_health_status
+            filters:any_health_status
+          ])
+      end
+
+      context 'when health_status option is provided' do
+        let(:options) { base_options.merge(health_status: [1]) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:health_status])
+        end
+      end
+
+      context 'when not_health_status option is provided' do
+        let(:options) { base_options.merge(not_health_status: [2]) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_health_status])
+        end
+      end
+
+      context 'when none_health_status option is provided' do
+        let(:options) { base_options.merge(none_health_status: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:none_health_status])
+        end
+      end
+
+      context 'when any_health_status option is provided' do
+        let(:options) { base_options.merge(any_health_status: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:any_health_status])
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'
