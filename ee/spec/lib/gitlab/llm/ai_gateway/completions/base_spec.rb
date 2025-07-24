@@ -198,7 +198,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
         end
       end
 
-      context 'when feature setting is not set to self hosted' do
+      context 'when feature setting is set to vendored' do
         let(:ai_action) { :duo_chat_fix_code }
 
         let!(:feature_setting) do
@@ -210,7 +210,11 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
             base_url: ::Gitlab::AiGateway.url,
             prompt_name: ai_action,
             inputs: inputs,
-            model_metadata: nil,
+            model_metadata: {
+              identifier: '',
+              provider: 'gitlab',
+              feature_setting: 'duo_chat_fix_code'
+            },
             prompt_version: "2.0.0"
           ).and_return(http_response)
 

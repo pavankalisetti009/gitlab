@@ -330,7 +330,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
           expect(request).to eq(response)
         end
 
-        context 'if feature setting is not set for self_hosted' do
+        context 'if feature setting is set to vendored' do
           let(:unit_primitive) { :fix_code }
 
           let!(:sub_feature_setting) do
@@ -346,7 +346,12 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
             {
               stream: true,
               inputs: inputs,
-              prompt_version: "2.0.0"
+              prompt_version: "2.0.0",
+              model_metadata: {
+                feature_setting: 'duo_chat_fix_code',
+                identifier: '',
+                provider: 'gitlab'
+              }
             }
           end
 
