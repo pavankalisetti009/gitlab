@@ -63,7 +63,6 @@ spec/frontend/glql/components/common/facade_spec.js
 spec/frontend/glql/components/presenters/list_spec.js
 spec/frontend/glql/components/presenters/table_spec.js
 spec/frontend/glql/core/presenter_spec.js
-spec/frontend/groups/components/transfer_group_form_spec.js
 spec/frontend/helpers/init_simple_app_helper_spec.js
 spec/frontend/issuable/related_issues/components/related_issues_root_spec.js
 spec/frontend/issues/list/components/issues_list_app_spec.js
@@ -88,9 +87,7 @@ spec/frontend/projects/settings/components/branch_rule_modal_spec.js
 spec/frontend/projects/settings_service_desk/components/service_desk_root_spec.js
 spec/frontend/ref/init_ambiguous_ref_modal_spec.js
 spec/frontend/releases/components/asset_links_form_spec.js
-spec/frontend/sidebar/components/confidential/confidentiality_dropdown_spec.js
 spec/frontend/sidebar/components/confidential/sidebar_confidentiality_widget_spec.js
-spec/frontend/sidebar/components/subscriptions/subscriptions_dropdown_spec.js
 spec/frontend/tooltips/index_spec.js
 spec/frontend/vue_alerts_spec.js
 spec/frontend/vue_popovers_spec.js
