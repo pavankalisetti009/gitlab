@@ -5,11 +5,16 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   ALL_PROTECTED_BRANCHES,
   BRANCH_EXCEPTIONS_KEY,
+  SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
   SPECIFIC_BRANCHES,
   TARGET_BRANCHES,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { handleBranchTypeSelect } from '../lib';
-import { SCAN_EXECUTION_RULES_LABELS, SCAN_EXECUTION_RULES_PIPELINE_KEY } from '../constants';
+import {
+  SCAN_EXECUTION_RULES_LABELS,
+  SCAN_EXECUTION_RULES_PIPELINE_KEY,
+  SCAN_EXECUTION_RULES_SCHEDULE_KEY,
+} from '../constants';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import BranchTypeSelector from './branch_type_selector.vue';
 import PipelineSourceSelector from './pipeline_source_selector.vue';
@@ -93,9 +98,18 @@ export default {
         ? ''
         : this.initRule.branches?.filter((element) => element?.trim()).join(',');
     },
+    branchTypes() {
+      return SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({
+        namespaceType: this.namespaceType,
+        includeTargetTypes: !this.isScheduleType,
+      });
+    },
+    isScheduleType() {
+      return this.initRule.type === SCAN_EXECUTION_RULES_SCHEDULE_KEY;
+    },
     message() {
       // Handle non-pipeline rules first
-      if (this.initRule.type !== SCAN_EXECUTION_RULES_PIPELINE_KEY) {
+      if (this.isScheduleType) {
         return s__(
           'ScanExecutionPolicy|%{rules} actions for %{scopes} %{branches} %{agents} %{branchExceptions} %{namespaces} %{period}',
         );
@@ -192,6 +206,7 @@ export default {
             <template v-if="isBranchScope">
               <branch-type-selector
                 :branches-to-add="branchesToAdd"
+                :branch-types="branchTypes"
                 :selected-branch-type="selectedBranchType"
                 @input="handleBranchesToAddChange"
                 @set-branch-type="handleBranchTypeSelect"

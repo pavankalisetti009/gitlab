@@ -39,7 +39,7 @@ describe('BranchTypeSelector', () => {
       });
 
       expect(findBranchTypeListbox().props('items')).toEqual(
-        SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(namespaceType),
+        SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({ namespaceType }),
       );
     },
   );
