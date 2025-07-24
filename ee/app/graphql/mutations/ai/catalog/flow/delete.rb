@@ -3,27 +3,27 @@
 module Mutations
   module Ai
     module Catalog
-      module Agent
+      module Flow
         class Delete < BaseMutation
-          graphql_name 'AiCatalogAgentDelete'
+          graphql_name 'AiCatalogFlowDelete'
 
           field :success, GraphQL::Types::Boolean,
             null: false,
-            description: 'Returns true if catalog Agent was successfully deleted.'
+            description: 'Returns true if catalog flow was successfully deleted.'
 
           argument :id, ::Types::GlobalIDType[::Ai::Catalog::Item],
             required: true,
-            description: 'Global ID of the catalog Agent to delete.'
+            description: 'Global ID of the catalog flow to delete.'
 
           authorize :admin_ai_catalog_item
 
           def resolve(args)
-            agent = authorized_find!(id: args[:id])
+            flow = authorized_find!(id: args[:id])
 
-            result = ::Ai::Catalog::Agents::DestroyService.new(
-              project: agent.project,
+            result = ::Ai::Catalog::Flows::DestroyService.new(
+              project: flow.project,
               current_user: current_user,
-              params: { item: agent }).execute
+              params: { item: flow }).execute
 
             {
               success: result.success?,

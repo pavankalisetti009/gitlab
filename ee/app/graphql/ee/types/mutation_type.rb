@@ -11,10 +11,11 @@ module EE
         end
 
         mount_mutation ::Mutations::Ai::Catalog::Agent::Create, experiment: { milestone: '18.2' }
-        mount_mutation ::Mutations::Ai::Catalog::Agent::Update, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::Catalog::Agent::Delete, experiment: { milestone: '18.2' }
-        mount_mutation ::Mutations::Ai::Catalog::Flow::Update, experiment: { milestone: '18.3' }
+        mount_mutation ::Mutations::Ai::Catalog::Agent::Update, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::Catalog::Flow::Create, experiment: { milestone: '18.3' }
+        mount_mutation ::Mutations::Ai::Catalog::Flow::Delete, experiment: { milestone: '18.3' }
+        mount_mutation ::Mutations::Ai::Catalog::Flow::Update, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ci::Catalog::VerifiedNamespace::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Delete
