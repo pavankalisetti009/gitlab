@@ -10,23 +10,23 @@ RSpec.shared_examples 'targeted message interactions' do
     sign_in(non_owner)
     visit path
 
-    expect(page).not_to have_content("Get access to both GitLab Premium and Duo Pro")
+    expect(page).not_to have_content("Get access to Premium + GitLab Duo for")
   end
 
   it 'is shown to owner' do
     visit path
 
-    expect(page).to have_content("Get access to both GitLab Premium and Duo Pro")
+    expect(page).to have_content("Get access to Premium + GitLab Duo for")
   end
 
   it 'dismisses when closed' do
     visit path
 
-    expect(page).to have_content("Get access to both GitLab Premium and Duo Pro")
+    expect(page).to have_content("Get access to Premium + GitLab Duo for")
 
     find_by_testid('targeted_message_close_button').click
 
-    expect(page).not_to have_content("Get access to both GitLab Premium and Duo Pro")
+    expect(page).not_to have_content("Get access to Premium + GitLab Duo for")
   end
 
   context 'with disabled targeted message' do
@@ -37,7 +37,7 @@ RSpec.shared_examples 'targeted message interactions' do
     it 'is not shown' do
       visit path
 
-      expect(page).not_to have_content("Get access to both GitLab Premium and Duo Pro")
+      expect(page).not_to have_content("Get access to Premium + GitLab Duo for")
     end
   end
 end
