@@ -11,10 +11,6 @@ module TodosDestroyer
     queue_namespace :todos_destroyer
     feature_category :portfolio_management
 
-    def perform(epic_id)
-      return unless epic_id
-
-      ::Todos::Destroy::ConfidentialEpicService.new(epic_id: epic_id).execute
-    end
+    def perform(epic_id); end
   end
 end
