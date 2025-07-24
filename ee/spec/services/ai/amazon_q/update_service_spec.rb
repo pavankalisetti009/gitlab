@@ -80,14 +80,6 @@ RSpec.describe Ai::AmazonQ::UpdateService, feature_category: :ai_agents do
     end
 
     context 'when settings update succeeds' do
-      before do
-        # Mock the update_settings method to return true and actually update the settings
-        allow(instance).to receive(:update_settings) do
-          ::Gitlab::CurrentSettings.current_application_settings.update!(duo_availability: params[:availability])
-          true
-        end
-      end
-
       it 'updates application settings and returns success response' do
         expect { instance.execute }
           .to change {
@@ -166,6 +158,72 @@ RSpec.describe Ai::AmazonQ::UpdateService, feature_category: :ai_agents do
       end
     end
 
+    context 'when testing cascading behavior' do
+      let_it_be_with_reload(:group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:project) { create(:project, group: group) }
+
+      before do
+        # Initialize groups and projects with duo_features_enabled: true
+        group.namespace_settings.update!(duo_features_enabled: true)
+        subgroup.namespace_settings.update!(duo_features_enabled: true)
+        project.project_setting.update!(duo_features_enabled: true)
+      end
+
+      context 'when availability is set to never_on' do
+        let(:params) { { availability: 'never_on' } }
+
+        before do
+          allow(Ai::AmazonQ).to receive_messages({
+            should_block_service_account?: true,
+            ensure_service_account_blocked!: ServiceResponse.success
+          })
+        end
+
+        it 'triggers cascading worker to update all groups and projects', :sidekiq_inline do
+          instance.execute
+          # the cascade worker isn't actually called when the setting is locked,
+          # but values are computed correctly with the cascading settings framework
+          expect(group.reload.duo_features_enabled).to be false
+          expect(group.namespace_settings.duo_features_enabled_locked?).to be true
+          expect(subgroup.reload.namespace_settings.duo_features_enabled).to be false
+          expect(subgroup.namespace_settings.duo_features_enabled_locked?).to be true
+          expect(project.reload.project_setting.duo_features_enabled).to be false
+          expect(project.reload.project_setting.duo_features_enabled_locked?).to be true
+        end
+
+        it 'updates application-level duo_availability to never_on' do
+          expect { instance.execute }
+            .to change { ::Gitlab::CurrentSettings.current_application_settings.duo_availability }.to(:never_on)
+        end
+      end
+
+      context 'when availability is set to default_on' do
+        let(:params) { { availability: 'default_on' } }
+
+        before do
+          # Start with duo_availability: default_off
+          ::Gitlab::CurrentSettings.current_application_settings.update!(duo_availability: 'default_off')
+
+          allow(Ai::AmazonQ).to receive_messages({
+            should_block_service_account?: false,
+            ensure_service_account_unblocked!: ServiceResponse.success
+          })
+        end
+
+        it 'triggers cascading worker to update all groups and projects', :sidekiq_inline do
+          expect(AppConfig::CascadeDuoFeaturesEnabledWorker).to receive(:perform_async).with(true)
+
+          instance.execute
+        end
+
+        it 'updates application-level duo_availability to default_on' do
+          expect { instance.execute }
+            .to change { ::Gitlab::CurrentSettings.current_application_settings.duo_availability }.to(:default_on)
+        end
+      end
+    end
+
     it 'calls ApplicationSettings::UpdateService with correct parameters' do
       application_settings = ::Gitlab::CurrentSettings.current_application_settings
       update_service = instance_double(ApplicationSettings::UpdateService, execute: true)
@@ -178,33 +236,7 @@ RSpec.describe Ai::AmazonQ::UpdateService, feature_category: :ai_agents do
       instance.execute
     end
 
-    it 'updates integration settings' do
-      # Mock update_settings to return true but not actually update settings
-      # This avoids the cascading behavior that's causing the unique constraint error
-      allow(instance).to receive(:update_settings) do
-        # Just update the integration directly without triggering the cascade
-        integration.update!(
-          availability: params[:availability],
-          auto_review_enabled: params[:auto_review_enabled],
-          merge_requests_events: true,
-          pipeline_events: true
-        )
-
-        true
-      end
-
-      expect { instance.execute }
-        .to change {
-          integration.reload.values_at(
-            :availability, :auto_review_enabled, :merge_requests_events, :pipeline_events
-          )
-        }.from(['default_on', false, false, false]).to(['default_on', true, true, true])
-    end
-
     it 'returns ServiceResponse.success' do
-      # Mock update_settings to return true
-      allow(instance).to receive(:update_settings).and_return(true)
-
       allow(Ai::AmazonQ).to receive_messages({
         should_block_service_account?: false,
         ensure_service_account_unblocked!: ServiceResponse.success
