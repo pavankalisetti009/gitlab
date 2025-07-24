@@ -212,12 +212,10 @@ describe('BranchSelection', () => {
     describe('options', () => {
       it.each`
         branchTypes
-        ${SCAN_EXECUTION_BRANCH_TYPE_OPTIONS()}
+        ${SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({})}
         ${SCAN_RESULT_BRANCH_TYPE_OPTIONS()}
       `('should accept different branch type options', ({ branchTypes }) => {
-        factory({
-          branchTypes,
-        });
+        factory({ branchTypes });
 
         expect(findProtectedBranchesSelector().props('items')).toEqual(branchTypes);
       });

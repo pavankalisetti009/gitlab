@@ -7,7 +7,7 @@ import {
   ALL_PROTECTED_BRANCHES,
   BRANCHES_KEY,
   BRANCH_TYPE_KEY,
-  SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
+  SCAN_RESULT_BRANCH_TYPE_OPTIONS,
   SPECIFIC_BRANCHES,
 } from '../../constants';
 import ProtectedBranchesDropdown from '../../protected_branches_dropdown.vue';
@@ -88,7 +88,7 @@ export default {
     defaultBranchTypeItems() {
       return this.branchTypes.length > 0
         ? this.branchTypes
-        : SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(this.namespaceType);
+        : SCAN_RESULT_BRANCH_TYPE_OPTIONS(this.namespaceType);
     },
   },
   methods: {

@@ -203,7 +203,10 @@ export const SCAN_RESULT_BRANCH_TYPE_OPTIONS = (nameSpaceType = NAMESPACE_TYPES.
   SPECIFIC_BRANCHES,
 ];
 
-export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = (namespaceType = NAMESPACE_TYPES.GROUP) => {
+export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = ({
+  namespaceType = NAMESPACE_TYPES.GROUP,
+  includeTargetTypes = false,
+}) => {
   const isGroupNamespace = isGroup(namespaceType);
 
   // Base options always included
@@ -215,7 +218,7 @@ export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = (namespaceType = NAMESPACE_TYP
   ];
 
   // Feature flag dependent options
-  if (window.gon?.features?.flexibleScanExecutionPolicy) {
+  if (window.gon?.features?.flexibleScanExecutionPolicy && includeTargetTypes) {
     // Additional options when feature flag is enabled
     const additionalOptions = [
       TARGET_PROTECTED_BRANCHES,

@@ -22,7 +22,7 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('returns base options for group namespace', () => {
-      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP)).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({ namespaceType: NAMESPACE_TYPES.GROUP })).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -31,16 +31,13 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('returns base options for project namespace', () => {
-      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.PROJECT)).toEqual([
-        ALL_BRANCHES,
-        PROJECT_DEFAULT_BRANCH,
-        ALL_PROTECTED_BRANCHES,
-        SPECIFIC_BRANCHES,
-      ]);
+      expect(
+        SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({ namespaceType: NAMESPACE_TYPES.PROJECT }),
+      ).toEqual([ALL_BRANCHES, PROJECT_DEFAULT_BRANCH, ALL_PROTECTED_BRANCHES, SPECIFIC_BRANCHES]);
     });
 
     it('uses group namespace by default when namespace type is not provided', () => {
-      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(undefined)).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({})).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -55,7 +52,12 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('returns extended options for group namespace', () => {
-      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP)).toEqual([
+      expect(
+        SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({
+          namespaceType: NAMESPACE_TYPES.GROUP,
+          includeTargetTypes: true,
+        }),
+      ).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -66,7 +68,12 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('returns extended options for project namespace', () => {
-      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.PROJECT)).toEqual([
+      expect(
+        SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({
+          namespaceType: NAMESPACE_TYPES.PROJECT,
+          includeTargetTypes: true,
+        }),
+      ).toEqual([
         ALL_BRANCHES,
         PROJECT_DEFAULT_BRANCH,
         ALL_PROTECTED_BRANCHES,
@@ -77,7 +84,7 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
     });
 
     it('uses group namespace by default when namespace type is not provided', () => {
-      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(undefined)).toEqual([
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({ includeTargetTypes: true })).toEqual([
         ALL_BRANCHES,
         GROUP_DEFAULT_BRANCHES,
         ALL_PROTECTED_BRANCHES,
@@ -86,10 +93,19 @@ describe('SCAN_EXECUTION_BRANCH_TYPE_OPTIONS', () => {
         GROUP_TARGET_DEFAULT_BRANCHES,
       ]);
     });
+
+    it('does not return target types if not specified', () => {
+      expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({ namespaceType: NAMESPACE_TYPES.GROUP })).toEqual([
+        ALL_BRANCHES,
+        GROUP_DEFAULT_BRANCHES,
+        ALL_PROTECTED_BRANCHES,
+        SPECIFIC_BRANCHES,
+      ]);
+    });
   });
 
   it('uses empty feature flags object by default when not provided', () => {
-    expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(NAMESPACE_TYPES.GROUP)).toEqual([
+    expect(SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({ namespaceType: NAMESPACE_TYPES.GROUP })).toEqual([
       ALL_BRANCHES,
       GROUP_DEFAULT_BRANCHES,
       ALL_PROTECTED_BRANCHES,

@@ -38,7 +38,7 @@ export default {
     defaultBranchTypeItems() {
       return this.branchTypes.length > 0
         ? this.branchTypes
-        : SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(this.namespaceType);
+        : SCAN_EXECUTION_BRANCH_TYPE_OPTIONS({ namespaceType: this.namespaceType });
     },
     isBranchScope() {
       return this.selectedBranchType === SPECIFIC_BRANCHES.value;
