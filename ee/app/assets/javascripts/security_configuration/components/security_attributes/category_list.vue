@@ -24,12 +24,11 @@ export default {
     <div class="gl-mb-4 gl-flex gl-items-center gl-justify-between">
       <h4 class="gl-text-lg">{{ s__('SecurityAttributes|Categories') }}</h4>
       <gl-button
-        category="primary"
-        variant="confirm"
-        size="small"
+        icon="plus"
+        class="gl-w-5"
+        :aria-label="s__('SecurityAttributes|Create category')"
         @click="$emit('selectCategory', {})"
-        >{{ s__('SecurityAttributes|Create category') }}</gl-button
-      >
+      />
     </div>
     <div
       v-for="category in securityAttributeCategories"
@@ -43,7 +42,7 @@ export default {
         <div :class="{ 'gl-font-bold': selectedCategory.id === category.id }">
           {{ category.name }}
         </div>
-        <div class="gl-h-7 gl-overflow-hidden gl-text-ellipsis gl-text-sm gl-text-subtle">
+        <div class="gl-line-clamp-2 gl-text-sm gl-text-subtle">
           {{ category.description }}
         </div>
       </div>
