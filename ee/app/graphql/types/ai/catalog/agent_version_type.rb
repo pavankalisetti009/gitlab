@@ -14,7 +14,7 @@ module Types
           description: 'System prompt for the agent.'
         field :tools, ::Types::Ai::Catalog::BuiltInToolType.connection_type,
           null: false,
-          description: 'GitLab-defined tools belonging to the agent.'
+          description: 'List of GitLab tools enabled for the agent.'
         field :user_prompt, GraphQL::Types::String, null: true,
           description: 'User prompt for the agent.'
 
