@@ -46331,9 +46331,6 @@ msgstr ""
 msgid "Pipelines|By revoking a trigger token you will break any processes making use of it. Are you sure?"
 msgstr ""
 
-msgid "Pipelines|Child pipeline (%{linkStart}parent%{linkEnd})"
-msgstr ""
-
 msgid "Pipelines|Clear runner caches"
 msgstr ""
 
@@ -46719,6 +46716,9 @@ msgid "Pipelines|Your changes have been successfully committed. Now redirecting 
 msgstr ""
 
 msgid "Pipelines|branch"
+msgstr ""
+
+msgid "Pipelines|child pipeline"
 msgstr ""
 
 msgid "Pipelines|error"
