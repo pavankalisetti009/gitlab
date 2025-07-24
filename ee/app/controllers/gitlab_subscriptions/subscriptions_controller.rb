@@ -20,7 +20,7 @@ module GitlabSubscriptions
     def new
       return ensure_registered! unless current_user.present?
 
-      namespace = find_eligible_namespace(id: params[:namespace_id], any_self_service_plan: true)
+      namespace = GitlabSubscriptions.find_eligible_namespace(user: current_user, namespace_id: params[:namespace_id])
 
       redirect_to purchase_url(plan_id: sanitize(params[:plan_id]), namespace: namespace)
     end
@@ -62,24 +62,15 @@ module GitlabSubscriptions
 
       return render_404 unless plan_id.present?
 
-      namespace = find_eligible_namespace(id: params[:selected_group], plan_id: plan_id)
+      namespace = GitlabSubscriptions.find_eligible_namespace(
+        user: current_user,
+        namespace_id: params[:selected_group],
+        plan_id: plan_id
+      )
 
       return render_404 unless namespace.present?
 
       redirect_to purchase_url(plan_id: plan_id, namespace: namespace, transaction: transaction_param)
-    end
-
-    def find_eligible_namespace(id:, any_self_service_plan: nil, plan_id: nil)
-      namespace = current_user.owned_groups.top_level.with_counts(archived: false).find_by_id(id)
-
-      return unless namespace.present? && GitlabSubscriptions::FetchPurchaseEligibleNamespacesService.eligible?(
-        user: current_user,
-        namespace: namespace,
-        any_self_service_plan: any_self_service_plan,
-        plan_id: plan_id
-      )
-
-      namespace
     end
 
     def client

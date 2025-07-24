@@ -22,31 +22,22 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
     context 'when the user is authenticated' do
       before do
         sign_in(user)
-        allow_next_instance_of(
-          GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-          user: user,
-          namespaces: [owned_group],
-          any_self_service_plan: true,
-          plan_id: nil
-        ) do |instance|
-          allow(instance).to receive(:execute).and_return(
-            instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
-          )
-        end
       end
 
       let_it_be(:owned_group) { create(:group) }
-      let_it_be(:sub_group) { create(:group, parent: owned_group) }
-      let_it_be(:maintainer_group) { create(:group) }
-      let_it_be(:developer_group) { create(:group) }
 
       before_all do
         owned_group.add_owner(user)
-        maintainer_group.add_maintainer(user)
-        developer_group.add_developer(user)
       end
 
       context 'when the user has already selected a group' do
+        before do
+          allow(GitlabSubscriptions)
+            .to receive(:find_eligible_namespace)
+            .with(user: user, namespace_id: owned_group.id.to_s)
+            .and_return(owned_group)
+        end
+
         it 'redirects to customers dot' do
           get :new, params: { plan_id: 'premium-plan-id', namespace_id: owned_group.id }
 
@@ -125,17 +116,10 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
 
         context 'when the group is not eligible for CI minutes' do
           before do
-            allow_next_instance_of(
-              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-              user: user,
-              plan_id: 'ci_minutes',
-              any_self_service_plan: nil,
-              namespaces: [group]
-            ) do |instance|
-              allow(instance).to receive(:execute).and_return(
-                instance_double(ServiceResponse, success?: true, payload: [])
-              )
-            end
+            allow(GitlabSubscriptions)
+              .to receive(:find_eligible_namespace)
+              .with(user: user, namespace_id: group.id.to_s, plan_id: 'ci_minutes')
+              .and_return(nil)
           end
 
           it 'returns not found' do
@@ -147,17 +131,10 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
 
         context 'when the group is eligible for CI minutes' do
           before do
-            allow_next_instance_of(
-              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-              user: user,
-              plan_id: 'ci_minutes',
-              any_self_service_plan: nil,
-              namespaces: [group]
-            ) do |instance|
-              allow(instance).to receive(:execute).and_return(
-                instance_double(ServiceResponse, success?: true, payload: [{ namespace: group, account_id: nil }])
-              )
-            end
+            allow(GitlabSubscriptions)
+              .to receive(:find_eligible_namespace)
+              .with(user: user, namespace_id: group.id.to_s, plan_id: 'ci_minutes')
+              .and_return(group)
           end
 
           it 'redirects to the customers dot purchase flow' do
@@ -221,17 +198,10 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
 
         context 'when the group is not eligible for storage' do
           before do
-            allow_next_instance_of(
-              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-              user: user,
-              plan_id: 'storage',
-              any_self_service_plan: nil,
-              namespaces: [group]
-            ) do |instance|
-              allow(instance).to receive(:execute).and_return(
-                instance_double(ServiceResponse, success?: true, payload: [])
-              )
-            end
+            allow(GitlabSubscriptions)
+              .to receive(:find_eligible_namespace)
+              .with(user: user, namespace_id: group.id.to_s, plan_id: 'storage')
+              .and_return(nil)
           end
 
           it 'returns not found' do
@@ -243,17 +213,10 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
 
         context 'when the group is eligible for storage' do
           before do
-            allow_next_instance_of(
-              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-              user: user,
-              plan_id: 'storage',
-              any_self_service_plan: nil,
-              namespaces: [group]
-            ) do |instance|
-              allow(instance).to receive(:execute).and_return(
-                instance_double(ServiceResponse, success?: true, payload: [{ namespace: group, account_id: nil }])
-              )
-            end
+            allow(GitlabSubscriptions)
+              .to receive(:find_eligible_namespace)
+              .with(user: user, namespace_id: group.id.to_s, plan_id: 'storage')
+              .and_return(group)
           end
 
           it 'redirects to the customers dot purchase flow' do

@@ -19,7 +19,10 @@ module GitlabSubscriptions
 
       return not_found unless @plan_data
 
-      @eligible_groups = fetch_eligible_groups(plan_id: @plan_data[:id])
+      @eligible_groups = GitlabSubscriptions::PurchaseEligibleNamespacesFinder.new(
+        user: current_user,
+        plan_id: @plan_data[:id]
+      ).execute
     end
 
     def create
@@ -80,18 +83,6 @@ module GitlabSubscriptions
 
     def build_canonical_path(group)
       url_for(safe_params.merge(id: group.to_param))
-    end
-
-    def fetch_eligible_groups(plan_id:)
-      return [] unless plan_id
-
-      result = GitlabSubscriptions::FetchPurchaseEligibleNamespacesService.new(
-        user: current_user,
-        namespaces: current_user.owned_groups.top_level.with_counts(archived: false),
-        plan_id: plan_id
-      ).execute
-
-      result.success? && result.payload ? result.payload.pluck(:namespace) : [] # rubocop:disable CodeReuse/ActiveRecord -- not an active record model
     end
 
     def find_plan

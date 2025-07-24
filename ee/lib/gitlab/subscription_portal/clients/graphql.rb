@@ -165,8 +165,6 @@ module Gitlab
             query FilterEligibleNamespaces($customerUid: Int!, $namespaces: [GitlabNamespaceInput!]!, $planId: ID, $eligibleForPurchase: Boolean) {
               namespaceEligibility(customerUid: $customerUid, namespaces: $namespaces, planId: $planId, eligibleForPurchase: $eligibleForPurchase) {
                 id
-                accountId: zuoraAccountId
-                subscription { name }
               }
             }
             GQL
@@ -193,7 +191,9 @@ module Gitlab
               } }
             )[:data]
 
-            if response['errors'].blank? && (data = response.dig('data', 'namespaceEligibility'))
+            data = response.dig('data', 'namespaceEligibility')
+
+            if response['errors'].blank? && data.present?
               { success: true, data: data }
             else
               track_error(query, response)
