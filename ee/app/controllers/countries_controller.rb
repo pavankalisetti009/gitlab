@@ -13,3 +13,5 @@ class CountriesController < ActionController::Metal
     render json: countries, status: (countries ? :ok : :not_found)
   end
 end
+
+CountriesController.prepend_mod
