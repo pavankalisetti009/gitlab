@@ -70,7 +70,7 @@ export default {
         ...this.value,
         // when the token is active (dropdown is open), we set the value to null to prevent an UX issue
         // in which only the last selected item is being displayed.
-        // more information: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2381
+        // more information: https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/issues/2467
         data: this.active ? null : this.selectedProjectNames,
       };
     },

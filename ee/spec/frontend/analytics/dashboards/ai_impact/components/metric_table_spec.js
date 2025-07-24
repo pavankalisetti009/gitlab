@@ -180,7 +180,7 @@ describe('Metric table', () => {
 
   beforeEach(() => {
     // Needed due to a deprecation in the GlSparkline API:
-    // https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2119
+    // https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2119 [CLOSED]
     // eslint-disable-next-line no-console
     console.warn = jest.fn();
   });

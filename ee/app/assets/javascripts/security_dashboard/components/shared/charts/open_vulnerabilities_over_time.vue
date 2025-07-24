@@ -26,7 +26,7 @@ export default {
     chartOptions() {
       return {
         // Note: This is a workaround to remove the extra whitespace when the chart has no title
-        // Once https://gitlab.com/gitlab-org/gitlab-ui/-/issues/3191 has been fixed, this can be removed
+        // Once https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/issues/2199 has been fixed, this can be removed
         grid: {
           left: '10x',
           right: '10px',

@@ -192,7 +192,7 @@ export default {
           },
         );
         // gl-chart is merging data by default. As I workaround we can
-        // set the data to [] first, as explained in https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2577
+        // set the data to [] first, as explained in https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2577 [CLOSED]
         this.metricData = [];
         this.$nextTick(() => {
           this.metricData = metricData;

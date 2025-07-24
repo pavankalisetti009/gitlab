@@ -167,7 +167,7 @@ export default {
     closeDrawer() {
       this.drawerId = null;
       // Refs are required by BTable to manipulate the selection
-      // issue: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/1531
+      // issue: https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/issues/2831
       this.$refs.table.$children[0].clearSelected();
       this.drawerMergeRequest = {};
       this.drawerProject = {};

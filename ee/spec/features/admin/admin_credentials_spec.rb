@@ -252,7 +252,7 @@ RSpec.describe 'Admin::Credentials', :with_current_organization, feature_categor
   end
 
   # The filters must be clicked first to be able to receive events
-  # See: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/1493
+  # See: https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/issues/2799 [CLOSED]
   def focus_filtered_search
     page.find('.gl-filtered-search-term-token').click
   end
