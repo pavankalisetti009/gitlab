@@ -119,6 +119,20 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
         expect(created_user.onboarding_status_glm_content).to eq('_glm_content_')
         expect(created_user.onboarding_status_glm_source).to eq('_glm_source_')
       end
+
+      context 'when lightweight_trial_registration_redesign experiment' do
+        before do
+          stub_experiments(lightweight_trial_registration_redesign: :candidate)
+        end
+
+        it 'is candidate redirects to trial welcome path' do
+          post_create
+
+          expect(response).to redirect_to(new_users_sign_up_trial_welcome_path)
+          created_user = User.find_by_email(new_user_email)
+          expect(created_user.onboarding_status_step_url).to eq(new_users_sign_up_trial_welcome_path)
+        end
+      end
     end
 
     context 'when the saas feature onboarding is not available' do
@@ -238,15 +252,17 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
 
       before do
         allow_next_instance_of(described_class) do |controller|
+          # pre login
           allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
             actor: nil).and_return(experiment)
-          allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign)
-            .and_return(experiment)
+          # post login
+          allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+            actor: instance_of(User)).and_return(experiment)
         end
+        allow(experiment).to receive(:run)
       end
 
       it 'tracks registration completion' do
-        expect(experiment).to receive_message_chain(:assigned, :name).and_return(:candidate)
         expect(experiment).to receive(:track).with(:completed_trial_registration_form)
 
         post_create

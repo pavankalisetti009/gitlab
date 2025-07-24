@@ -52,6 +52,28 @@ RSpec.shared_examples EE::Onboarding::Redirectable do |registration_type|
         expect(created_user.onboarding_status_email_opt_in).to be_nil
       end
     end
+
+    context 'when lightweight_trial_registration_redesign experiment' do
+      let(:extra_params) { {} }
+
+      it 'is candidate' do
+        stub_experiments(lightweight_trial_registration_redesign: :candidate)
+
+        post_create
+
+        created_user = User.find_by_email(new_user_email)
+        expect(created_user.onboarding_status_step_url).to eq(new_users_sign_up_trial_welcome_path)
+      end
+
+      it 'is control' do
+        stub_experiments(lightweight_trial_registration_redesign: :control)
+
+        post_create
+
+        created_user = User.find_by_email(new_user_email)
+        expect(created_user.onboarding_status_step_url).to eq(users_sign_up_welcome_path)
+      end
+    end
   end
 
   context 'when onboarding is disabled' do

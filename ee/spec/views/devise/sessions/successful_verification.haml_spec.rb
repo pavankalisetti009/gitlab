@@ -6,7 +6,7 @@ RSpec.describe 'devise/sessions/successful_verification', feature_category: :onb
   context 'with a user during trial registration', :experiment do
     let(:user) do
       create_default(:user, onboarding_in_progress: true, onboarding_status_initial_registration_type: 'trial',
-        onboarding_status_version: 1)
+        onboarding_status_version: 2)
     end
 
     before do
