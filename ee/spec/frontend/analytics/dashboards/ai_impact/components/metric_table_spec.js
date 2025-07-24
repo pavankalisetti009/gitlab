@@ -30,7 +30,10 @@ import MergeRequestsQuery from 'ee/analytics/dashboards/graphql/merge_requests.q
 import ContributorCountQuery from 'ee/analytics/dashboards/graphql/contributor_count.query.graphql';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import MetricTable from 'ee/analytics/dashboards/ai_impact/components/metric_table.vue';
-import { SUPPORTED_AI_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
+import {
+  SUPPORTED_AI_METRICS,
+  AI_IMPACT_TABLE_METRICS,
+} from 'ee/analytics/dashboards/ai_impact/constants';
 import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
@@ -124,12 +127,15 @@ describe('Metric table', () => {
     );
   };
 
-  const createWrapper = ({
-    props = {},
-    glAbilities = {},
-    glFeatures = {},
-    apolloProvider = createMockApolloProvider(),
-  } = {}) => {
+  const createWrapper = (
+    metricIds,
+    {
+      props = {},
+      glAbilities = {},
+      glFeatures = {},
+      apolloProvider = createMockApolloProvider(),
+    } = {},
+  ) => {
     wrapper = mountExtended(MetricTable, {
       apolloProvider,
       directives: {
@@ -138,6 +144,9 @@ describe('Metric table', () => {
       propsData: {
         namespace,
         isProject,
+        excludeMetrics: Object.keys(AI_IMPACT_TABLE_METRICS).filter(
+          (id) => !metricIds.includes(id),
+        ),
         ...props,
       },
       provide: {
@@ -207,7 +216,7 @@ describe('Metric table', () => {
     ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${''}        | ${''}
   `('for the $identifier table row', ({ identifier, requestPath, trackingProperty }) => {
     beforeEach(() => {
-      createWrapper();
+      createWrapper([identifier]);
     });
 
     it('renders the metric name', () => {
@@ -240,7 +249,7 @@ describe('Metric table', () => {
   `('for the $identifier table row', ({ identifier, name }) => {
     describe('when loading data', () => {
       beforeEach(() => {
-        createWrapper();
+        createWrapper([identifier]);
       });
 
       it('renders a skeleton loader in each cell', () => {
@@ -256,7 +265,7 @@ describe('Metric table', () => {
 
     describe('when the data fails to load', () => {
       beforeEach(() => {
-        return createWrapper({
+        return createWrapper([identifier], {
           apolloProvider: createMockApolloProvider({
             flowMetricsRequest: jest.fn().mockRejectedValue({}),
             doraMetricsRequest: jest.fn().mockRejectedValue({}),
@@ -290,7 +299,7 @@ describe('Metric table', () => {
       useFakeDate('2024-01-01');
 
       beforeEach(() => {
-        return createWrapper();
+        return createWrapper([identifier]);
       });
 
       it('does not render loading skeletons', () => {
@@ -319,7 +328,7 @@ describe('Metric table', () => {
     useFakeDate(startDate);
 
     beforeEach(() => {
-      return createWrapper();
+      return createWrapper([identifier]);
     });
 
     it('renders the correct metric values and tooltips pre- and post-release', () => {
@@ -331,7 +340,7 @@ describe('Metric table', () => {
   describe('change %', () => {
     describe('when there is no data', () => {
       beforeEach(() => {
-        return createWrapper({
+        return createWrapper([DORA_METRICS.DEPLOYMENT_FREQUENCY], {
           apolloProvider: createMockApolloProvider({
             doraMetricsRequest: mockDoraMetricsResponse(mockTableBlankValues),
           }),
@@ -351,7 +360,7 @@ describe('Metric table', () => {
 
     describe('when there is blank data', () => {
       beforeEach(() => {
-        return createWrapper({
+        return createWrapper([DORA_METRICS.DEPLOYMENT_FREQUENCY], {
           apolloProvider: createMockApolloProvider({
             doraMetricsRequest: mockDoraMetricsResponse(mockTableZeroValues),
           }),
@@ -371,7 +380,7 @@ describe('Metric table', () => {
 
     describe('when there is a change', () => {
       beforeEach(() => {
-        return createWrapper();
+        return createWrapper([DORA_METRICS.DEPLOYMENT_FREQUENCY, DORA_METRICS.CHANGE_FAILURE_RATE]);
       });
 
       it('does not invert the trend indicator for ascending metrics', () => {
@@ -392,7 +401,7 @@ describe('Metric table', () => {
     const hoverClasses = ['gl-cursor-pointer', 'hover:gl-underline'];
 
     beforeEach(() => {
-      return createWrapper();
+      return createWrapper([AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE, FLOW_METRICS.LEAD_TIME]);
     });
 
     it('adds hover class and tooltip to code suggestions metric', () => {
@@ -414,7 +423,7 @@ describe('Metric table', () => {
 
   describe('restricted metrics', () => {
     beforeEach(() => {
-      return createWrapper({
+      return createWrapper(Object.values(DORA_METRICS), {
         glAbilities: { readDora4Analytics: false },
       });
     });
@@ -489,7 +498,7 @@ describe('Metric table', () => {
     ])('for $group', ({ excludeMetrics, apiRequest }) => {
       describe('when all metrics excluded', () => {
         beforeEach(() => {
-          return createWrapper({ apolloProvider, props: { excludeMetrics } });
+          return createWrapper([], { apolloProvider, props: { excludeMetrics } });
         });
 
         it.each(excludeMetrics)('does not render `%s`', (identifier) => {
@@ -503,7 +512,7 @@ describe('Metric table', () => {
 
       describe('when almost all metrics excluded', () => {
         beforeEach(() => {
-          return createWrapper({
+          return createWrapper([], {
             apolloProvider,
             props: { excludeMetrics: excludeMetrics.slice(1) },
           });
@@ -518,7 +527,7 @@ describe('Metric table', () => {
 
   describe('`duoRcaUsageRate` feature flag is disabled', () => {
     beforeEach(() => {
-      return createWrapper({
+      return createWrapper([AI_METRICS.DUO_RCA_USAGE_RATE], {
         glFeatures: { duoRcaUsageRate: false },
       });
     });
@@ -536,7 +545,9 @@ describe('Metric table', () => {
     `('When the language is $language', ({ formattedValue, language }) => {
       beforeEach(() => {
         setLanguage(language);
-        return createWrapper({ apolloProvider: createMockApolloProviderLargeValues() });
+        return createWrapper([VULNERABILITY_METRICS.CRITICAL], {
+          apolloProvider: createMockApolloProviderLargeValues(),
+        });
       });
 
       it('formats numbers correctly', () => {
