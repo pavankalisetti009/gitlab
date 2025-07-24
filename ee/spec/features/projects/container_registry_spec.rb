@@ -32,7 +32,7 @@ RSpec.describe 'Container Registry', :js, feature_category: :container_registry 
         expect(page).to have_content(content)
       end
 
-      find_by_testid('container-scanning-metadata').hover
+      find_by_testid('container-scanning-shield-icon').hover
 
       within_testid('container-scanning-metadata-popover') do
         content = s_(
