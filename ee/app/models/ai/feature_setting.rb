@@ -3,6 +3,7 @@
 module Ai
   class FeatureSetting < ApplicationRecord
     include ::Ai::FeatureConfigurable
+    include ::Ai::ModelSelection::Concerns::GitlabDefaultModelParams
 
     self.table_name = "ai_feature_settings"
 
@@ -146,6 +147,7 @@ module Ai
     end
 
     def model_metadata_params
+      return params_as_if_gitlab_default_model(feature) if vendored?
       return unless ready_for_request?
 
       {
@@ -158,6 +160,7 @@ module Ai
     end
 
     def model_request_params
+      return params_as_if_gitlab_default_model(feature) if vendored?
       return unless ready_for_request?
 
       {

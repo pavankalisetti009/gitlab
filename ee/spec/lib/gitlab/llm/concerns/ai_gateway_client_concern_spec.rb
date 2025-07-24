@@ -142,7 +142,11 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
           prompt_name: 'duo_chat',
           inputs: { input: 'test_input' },
           prompt_version: '^1.0.0',
-          model_metadata: nil
+          model_metadata: {
+            provider: 'gitlab',
+            identifier: '',
+            feature_setting: 'duo_chat'
+          }
         )
 
         execute_request
@@ -201,7 +205,11 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
           prompt_name: 'duo_chat',
           inputs: { input: 'test_input' },
           prompt_version: '2.1.0',
-          model_metadata: nil
+          model_metadata: {
+            provider: 'gitlab',
+            identifier: '',
+            feature_setting: 'duo_chat'
+          }
         )
 
         execute_request

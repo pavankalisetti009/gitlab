@@ -61,6 +61,22 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           let(:expected_params_for_request) { nil }
         end
       end
+
+      context 'when feature setting is vendored' do
+        it_behaves_like 'configurable AI features resolves model info correctly' do
+          let(:feature_setting) { create(:ai_feature_setting, provider: :vendored, feature: :duo_chat) }
+          let(:expected_params_as_if_gitlab_default_model) do
+            {
+              provider: 'gitlab',
+              identifier: '',
+              feature_setting: 'duo_chat'
+            }
+          end
+
+          let(:expected_params_for_metadata) { expected_params_as_if_gitlab_default_model }
+          let(:expected_params_for_request) { expected_params_as_if_gitlab_default_model }
+        end
+      end
     end
   end
 
