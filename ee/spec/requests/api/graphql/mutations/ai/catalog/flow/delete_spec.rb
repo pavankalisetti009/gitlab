@@ -2,18 +2,18 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Ai::Catalog::Agent::Delete, feature_category: :workflow_catalog do
+RSpec.describe Mutations::Ai::Catalog::Flow::Delete, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be_with_reload(:agent) { create(:ai_catalog_agent, :with_version, project: project) }
+  let_it_be_with_reload(:flow) { create(:ai_catalog_flow, :with_version, project: project) }
 
   let(:current_user) { maintainer }
-  let(:mutation) { graphql_mutation(:ai_catalog_agent_delete, params) }
+  let(:mutation) { graphql_mutation(:ai_catalog_flow_delete, params) }
   let(:params) do
     {
-      id: agent.to_global_id
+      id: flow.to_global_id
     }
   end
 
@@ -41,7 +41,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Delete, feature_category: :workflo
     it_behaves_like 'an authorization failure'
   end
 
-  context 'when the agent does not exist' do
+  context 'when the flow does not exist' do
     let(:params) do
       {
         id: Gitlab::GlobalId.build(model_name: 'Ai::Catalog::Item', id: non_existing_record_id)
@@ -53,25 +53,25 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Delete, feature_category: :workflo
 
   context 'when destroy service fails' do
     before do
-      allow_next_instance_of(::Ai::Catalog::Agents::DestroyService) do |service|
-        allow(service).to receive(:item).and_return(agent)
+      allow_next_instance_of(::Ai::Catalog::Flows::DestroyService) do |service|
+        allow(service).to receive(:item).and_return(flow)
       end
-      allow(agent).to receive(:destroy).and_return(false)
-      agent.errors.add(:base, 'Deletion failed')
+      allow(flow).to receive(:destroy).and_return(false)
+      flow.errors.add(:base, 'Deletion failed')
     end
 
     it 'returns the service error message' do
       execute
 
-      expect(graphql_data_at(:ai_catalog_agent_delete, :errors)).to contain_exactly('Deletion failed')
-      expect(graphql_data_at(:ai_catalog_agent_delete, :success)).to be(false)
+      expect(graphql_data_at(:ai_catalog_flow_delete, :errors)).to contain_exactly('Deletion failed')
+      expect(graphql_data_at(:ai_catalog_flow_delete, :success)).to be(false)
     end
   end
 
   context 'when destroy service succeeds' do
     it 'destroy the agent and returns a success response' do
       expect { execute }.to change { Ai::Catalog::Item.count }.by(-1)
-      expect(graphql_data_at(:ai_catalog_agent_delete, :success)).to be(true)
+      expect(graphql_data_at(:ai_catalog_flow_delete, :success)).to be(true)
     end
 
     it 'destroy the agent versions' do

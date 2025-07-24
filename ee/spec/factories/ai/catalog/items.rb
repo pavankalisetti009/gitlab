@@ -2,9 +2,20 @@
 
 FactoryBot.define do
   factory :ai_catalog_item, class: 'Ai::Catalog::Item' do
-    item_type { 1 }
+    agent
     sequence(:name) { |n| "Item #{n}" }
     sequence(:description) { |n| "Item #{n}" }
+
+    factory :ai_catalog_agent, traits: [:agent]
+    factory :ai_catalog_flow, traits: [:flow]
+
+    trait :agent do
+      item_type { 1 }
+    end
+
+    trait :flow do
+      item_type { 2 }
+    end
 
     trait :with_version do
       versions { build_list(:ai_catalog_item_version, 1) }

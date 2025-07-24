@@ -2,16 +2,16 @@
 
 module Ai
   module Catalog
-    module Agents
+    module Flows
       class DestroyService < Ai::Catalog::Items::BaseDestroyService
         private
 
         def valid?
-          super && item.agent?
+          super && item.flow?
         end
 
         def error_no_item
-          error('Agent not found')
+          error('Flow not found')
         end
       end
     end
