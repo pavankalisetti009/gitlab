@@ -44,6 +44,7 @@ import {
   STATE_OPEN,
   WIDGET_TYPE_ERROR_TRACKING,
   WIDGET_TYPE_ITERATION,
+  WIDGET_TYPE_LINKED_RESOURCES,
   WIDGET_TYPE_MILESTONE,
   WORK_ITEM_TYPE_NAME_INCIDENT,
 } from '../constants';
@@ -130,6 +131,7 @@ export default {
     WorkItemNotes,
     WorkItemRelationships,
     WorkItemErrorTracking: () => import('~/work_items/components/work_item_error_tracking.vue'),
+    WorkItemLinkedResources: () => import('~/work_items/components/work_item_linked_resources.vue'),
     WorkItemStickyHeader,
     WorkItemAncestors,
     WorkItemTitle,
@@ -415,6 +417,9 @@ export default {
     },
     workItemErrorTracking() {
       return this.findWidget(WIDGET_TYPE_ERROR_TRACKING) ?? {};
+    },
+    workItemLinkedResources() {
+      return this.findWidget(WIDGET_TYPE_LINKED_RESOURCES)?.linkedResources.nodes ?? [];
     },
     workItemHierarchy() {
       return this.findWidget(WIDGET_TYPE_HIERARCHY);
@@ -1188,6 +1193,11 @@ export default {
                 v-if="workItemErrorTracking.identifier"
                 :full-path="workItemFullPath"
                 :iid="iid"
+              />
+
+              <work-item-linked-resources
+                v-if="workItemLinkedResources.length"
+                :linked-resources="workItemLinkedResources"
               />
 
               <design-widget

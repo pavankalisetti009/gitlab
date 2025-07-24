@@ -71759,6 +71759,9 @@ msgstr ""
 msgid "WorkItem|Reset template"
 msgstr ""
 
+msgid "WorkItem|Resources"
+msgstr ""
+
 msgid "WorkItem|Rose"
 msgstr ""
 
@@ -72090,6 +72093,9 @@ msgid "WorkItem|You don't have the necessary permission to view the ancestors."
 msgstr ""
 
 msgid "WorkItem|You're only seeing %{boldStart}other activity%{boldEnd} in the feed. To add a comment, switch to one of the following options."
+msgstr ""
+
+msgid "WorkItem|Zoom link"
 msgstr ""
 
 msgid "WorkItem|at risk"

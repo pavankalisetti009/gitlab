@@ -13,6 +13,7 @@ import WorkItemDetail from '~/work_items/components/work_item_detail.vue';
 import WorkItemActions from '~/work_items/components/work_item_actions.vue';
 import WorkItemAncestors from '~/work_items/components/work_item_ancestors/work_item_ancestors.vue';
 import WorkItemDescription from '~/work_items/components/work_item_description.vue';
+import WorkItemLinkedResources from '~/work_items/components/work_item_linked_resources.vue';
 import WorkItemCreatedUpdated from '~/work_items/components/work_item_created_updated.vue';
 import WorkItemAttributesWrapper from '~/work_items/components/work_item_attributes_wrapper.vue';
 import WorkItemErrorTracking from '~/work_items/components/work_item_error_tracking.vue';
@@ -123,6 +124,7 @@ describe('WorkItemDetail component', () => {
   const findCloseButton = () => wrapper.findByTestId('work-item-close');
   const findWorkItemType = () => wrapper.findByTestId('work-item-type');
   const findErrorTrackingWidget = () => wrapper.findComponent(WorkItemErrorTracking);
+  const findLinkedResourcesWidget = () => wrapper.findComponent(WorkItemLinkedResources);
   const findHierarchyTree = () => wrapper.findComponent(WorkItemTree);
   const findWorkItemRelationships = () => wrapper.findComponent(WorkItemRelationships);
   const findNotesWidget = () => wrapper.findComponent(WorkItemNotes);
@@ -565,6 +567,13 @@ describe('WorkItemDetail component', () => {
         expect(findEmptyState().props('description')).toBe(i18n.fetchError);
       });
     });
+  });
+
+  it('renders the resources widget', async () => {
+    createComponent();
+    await waitForPromises();
+
+    expect(findLinkedResourcesWidget().exists()).toBe(true);
   });
 
   it('shows an error message when WorkItemTitle emits an `error` event', async () => {
