@@ -25,13 +25,18 @@ describe('saml_members actions', () => {
   describe('fetchPage', () => {
     it('should commit RECEIVE_SAML_MEMBERS_SUCCESS mutation on correct data', async () => {
       const members = [
-        { id: 1, name: 'user 1', group_saml_identity: null },
-        { id: 2, name: 'user 2', group_saml_identity: { extern_uid: 'a' } },
+        { id: 1, name: 'user 1', group_saml_identity: null, group_scim_identity: null },
+        {
+          id: 2,
+          name: 'user 2',
+          group_saml_identity: { extern_uid: 'a' },
+          group_scim_identity: { extern_uid: 'a' },
+        },
       ];
 
       const expectedMembers = [
-        { id: 1, name: 'user 1', identity: null },
-        { id: 2, name: 'user 2', identity: 'a' },
+        { id: 1, name: 'user 1', identity: null, scim_identity: null },
+        { id: 2, name: 'user 2', identity: 'a', scim_identity: 'a' },
       ];
 
       Api.groupMembers.mockReturnValue(

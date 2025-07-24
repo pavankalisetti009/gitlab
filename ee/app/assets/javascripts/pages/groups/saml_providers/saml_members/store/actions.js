@@ -14,10 +14,13 @@ export function fetchPage({ commit, state }, newPage) {
       const { headers, data } = response;
       const pageInfo = parseIntPagination(normalizeHeaders(headers));
       commit(types.RECEIVE_SAML_MEMBERS_SUCCESS, {
-        members: data.map(({ group_saml_identity: identity, ...item }) => ({
-          ...item,
-          identity: identity ? identity.extern_uid : null,
-        })),
+        members: data.map(
+          ({ group_saml_identity: identity, group_scim_identity: scimIdentity, ...item }) => ({
+            ...item,
+            identity: identity ? identity.extern_uid : null,
+            scim_identity: scimIdentity ? scimIdentity.extern_uid : null,
+          }),
+        ),
         pageInfo,
       });
     })
