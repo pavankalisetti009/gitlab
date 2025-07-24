@@ -321,6 +321,13 @@ module EE
         Security::Scan.where(pipeline_id: self_and_project_descendants.pluck(:id))
       end
 
+      # As the `created_at` attribute of the security scans is used in the partition dropping logic,
+      # we are using the same value for all the security scans of the same pipeline to avoid extending
+      # the lifetime of partitions when the pipeline is retried.
+      def security_scans_created_at
+        @security_scans_created_at ||= security_scans.pick(:created_at) || Time.zone.now
+      end
+
       def has_security_reports?
         security_and_license_scanning_file_types = EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types | %w[license_scanning]
 

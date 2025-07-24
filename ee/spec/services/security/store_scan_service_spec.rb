@@ -67,17 +67,17 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
       expect { store_scan }.to change { Security::Scan.succeeded.count }.by(1)
     end
 
-    describe 'setting the `created_at` attribute of security scan' do
+    describe 'setting the `created_at` attribute of security scan', :freeze_time do
       let(:pipeline) { artifact.job.pipeline }
 
       before do
-        pipeline.update_column(:created_at, 3.days.ago)
+        allow(pipeline).to receive(:security_scans_created_at).and_return(1.day.ago)
       end
 
-      it 'sets the same `created_at` for security_scans as pipeline' do
+      it 'sets the `created_at` attribute of the new scan correctly' do
         store_scan
 
-        expect(pipeline.security_scans.first.created_at).to eq(pipeline.reload.created_at)
+        expect(pipeline.security_scans.last.created_at).to eq(1.day.ago)
       end
     end
 
