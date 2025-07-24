@@ -13,6 +13,7 @@ module Groups
 
       before_action do
         push_frontend_feature_flag(:work_item_status_feature_flag, group)
+        push_frontend_feature_flag(:work_item_status_mvc2, group)
       end
 
       def show; end
