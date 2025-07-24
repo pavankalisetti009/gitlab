@@ -35,7 +35,7 @@ module Mutations
           argument :tools, [::Types::GlobalIDType[::Ai::Catalog::BuiltInTool]],
             required: false,
             loads: Types::Ai::Catalog::BuiltInToolType,
-            description: 'List of GitLab-defined tools for the agent.'
+            description: 'List of GitLab tools enabled for the agent.'
 
           argument :user_prompt, GraphQL::Types::String,
             required: false,
