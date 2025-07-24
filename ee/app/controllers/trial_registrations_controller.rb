@@ -66,7 +66,7 @@ class TrialRegistrationsController < RegistrationsController
 
   override :ensure_first_name_and_last_name_not_empty
   def ensure_first_name_and_last_name_not_empty
-    experiment(:lightweight_trial_registration_redesign, actor: current_user) do |e|
+    experiment(:lightweight_trial_registration_redesign, actor: nil) do |e|
       e.control { super }
       e.candidate { next }
     end
@@ -76,7 +76,7 @@ class TrialRegistrationsController < RegistrationsController
   def after_successful_create_hook(user)
     super
 
-    experiment(:lightweight_trial_registration_redesign, actor: current_user).track(:completed_trial_registration_form)
+    experiment(:lightweight_trial_registration_redesign, actor: user).track(:completed_trial_registration_form)
   end
 end
 

@@ -5,7 +5,8 @@ module Onboarding
     include Groups::EnterpriseUsers::Associable
     include Gitlab::Experiment::Dsl
 
-    LIGHTWEIGHT_REGISTRATION_EXPERIMENT_VERSION = 1
+    CURRENT_VERSION = 1
+    LIGHTWEIGHT_REGISTRATION_EXPERIMENT_VERSION = 2
 
     def initialize(params, user_return_to, user, step_url)
       @params = params
@@ -39,7 +40,7 @@ module Onboarding
     end
 
     def user_attributes
-      attrs = {
+      {
         onboarding_in_progress: true,
         onboarding_status_step_url: step_url,
         onboarding_status_initial_registration_type: registration_type,
@@ -47,12 +48,6 @@ module Onboarding
         onboarding_status_glm_content: glm_content,
         onboarding_status_glm_source: glm_source
       }
-
-      if experiment(:lightweight_trial_registration_redesign).assigned.name == :candidate
-        attrs[:onboarding_status_version] = LIGHTWEIGHT_REGISTRATION_EXPERIMENT_VERSION
-      end
-
-      attrs
     end
 
     def registration_type

@@ -94,16 +94,6 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
           end
         end
 
-        context 'when lightweight_trial_registration_redesign is candidate' do
-          before do
-            stub_experiments(lightweight_trial_registration_redesign: :candidate)
-          end
-
-          it "sets onboarding_status_version" do
-            expect(execute[:user].onboarding_status_version).to eq(1)
-          end
-        end
-
         context 'when there is already value in the onboarding_status' do
           before do
             user.update!(onboarding_status_email_opt_in: true)

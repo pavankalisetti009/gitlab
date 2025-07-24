@@ -29,21 +29,26 @@ RSpec.describe LightweightTrialRegistrationRedesignExperiment, :experiment, feat
     end
   end
 
-  it "excludes user who already started trial registration" do
-    expect(exp).to exclude(actor: user)
+  context "for excludes" do
+    it "non trial registrations" do
+      user.update!(onboarding_status_initial_registration_type: 'non-trial')
+      expect(exp).to exclude(actor: user)
+    end
   end
 
-  it "excludes non trial registrations" do
-    user.update!(onboarding_status_version: 1, onboarding_status_initial_registration_type: '')
-    expect(exp).to exclude(actor: user)
-  end
+  context "for includes" do
+    it "user who isn't signed in" do
+      expect(exp).not_to exclude(actor: "UNIQUE_ID")
+    end
 
-  it "includes trial user on versioned onboarding flow" do
-    user.update!(onboarding_status_version: 1, onboarding_status_initial_registration_type: 'trial')
-    expect(exp).not_to exclude(actor: user)
-  end
+    it "not yet determined trial registration types" do
+      user.update!(
+        onboarding_status_initial_registration_type: nil)
+      expect(exp).not_to exclude(actor: user)
+    end
 
-  it "includes not yet created user" do
-    expect(exp).not_to exclude(actor: nil)
+    it "not yet created user" do
+      expect(exp).not_to exclude(actor: nil)
+    end
   end
 end

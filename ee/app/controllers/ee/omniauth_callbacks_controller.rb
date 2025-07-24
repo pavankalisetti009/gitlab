@@ -49,7 +49,7 @@ module EE
             request.env.fetch('omniauth.params', {}).deep_symbolize_keys,
             session['user_return_to'],
             user,
-            onboarding_step_url
+            onboarding_first_step_path(user)
           ).execute
         clear_memoization(:onboarding_status_presenter) # clear since registration_type is now set
 
@@ -149,14 +149,6 @@ module EE
 
     def valid_gitlab_initiated_saml_request?
       ::Gitlab::Auth::Saml::OriginValidator.new(session).gitlab_initiated?(saml_response)
-    end
-
-    def onboarding_step_url
-      if experiment(:lightweight_trial_registration_redesign).assigned.name == :candidate
-        new_users_sign_up_trial_welcome_path
-      else
-        onboarding_first_step_path
-      end
     end
   end
 end
