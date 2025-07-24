@@ -29,7 +29,7 @@ describe('BreakingChangesBanner', () => {
     expect(findLocalStorageSync().exists()).toBe(true);
     expect(findAlert().exists()).toBe(true);
     expect(findAlert().props('title')).toContain(
-      'Maximum action limit for scan execution policies will be enabled in 18.0',
+      'Maximum action limit for scan execution policies exceeded',
     );
 
     expect(wrapper.emitted('dismiss')).toEqual([[false]]);
