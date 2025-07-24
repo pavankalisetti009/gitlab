@@ -5,6 +5,11 @@ module Ai
     class Connection < ApplicationRecord
       self.table_name = :ai_active_context_connections
 
+      ADAPTERS_FOR_ADVANCED_SEARCH = [
+        ::ActiveContext::Databases::Elasticsearch::Adapter,
+        ::ActiveContext::Databases::Opensearch::Adapter
+      ].freeze
+
       has_many :collections, class_name: 'Ai::ActiveContext::Collection'
 
       encrypts :options
@@ -35,7 +40,20 @@ module Ai
         end
       end
 
+      def options
+        if use_advanced_search_config?
+          ::Gitlab::CurrentSettings.elasticsearch_config
+        else
+          super
+        end
+      end
+
       private
+
+      def use_advanced_search_config?
+        ADAPTERS_FOR_ADVANCED_SEARCH.include?(adapter_class&.safe_constantize) &&
+          read_attribute(:options)['use_advanced_search_config'] == true
+      end
 
       def validate_options
         return if options.is_a?(Hash)

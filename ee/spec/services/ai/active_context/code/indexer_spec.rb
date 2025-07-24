@@ -80,9 +80,13 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
           [
             Gitlab.config.elasticsearch.indexer_path,
             '-adapter', 'elasticsearch',
-            '-connection', ::Gitlab::Json.generate(connection.options),
+            '-connection', expected_connection_command_arg,
             '-options', ::Gitlab::Json.generate(expected_options)
           ]
+        end
+
+        let(:expected_connection_command_arg) do
+          ::Gitlab::Json.generate(connection.options)
         end
 
         it 'calls the indexer with the correct command' do
@@ -91,6 +95,46 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
             .and_return(0)
 
           run
+        end
+
+        describe 'connection option' do
+          context 'when elasticsearch adapter' do
+            before do
+              connection.reload.update!(
+                adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+                options: {
+                  url: [
+                    { scheme: "http", host: "localhost", port: 9200 },
+                    { scheme: "http", host: "localhost", port: 9200, user: 'dummy', password: 'pass123' }
+                  ]
+                }
+              )
+            end
+
+            let(:adapter) do
+              ::ActiveContext::Databases::Elasticsearch::Adapter.new(
+                connection,
+                options: connection.options
+              )
+            end
+
+            let(:expected_connection_command_arg) do
+              ::Gitlab::Json.generate({
+                url: [
+                  'http://localhost:9200/',
+                  'http://dummy:pass123@localhost:9200/'
+                ]
+              })
+            end
+
+            it 'ensures that the only connection option is `url` as array of strings' do
+              expect(Gitlab::Popen).to receive(:popen_with_streaming)
+                .with(expected_command, nil, env_vars)
+                .and_return(0)
+
+              run
+            end
+          end
         end
       end
 

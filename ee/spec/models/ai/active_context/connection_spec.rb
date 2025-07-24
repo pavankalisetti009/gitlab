@@ -58,6 +58,72 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
     end
   end
 
+  describe '#options' do
+    context 'when use_advanced_search_config is true for elasticsearch adapter' do
+      let(:connection) do
+        build(:ai_active_context_connection,
+          adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+          options: { use_advanced_search_config: true })
+      end
+
+      let(:gitlab_elasticsearch_config) do
+        {
+          url: [{ scheme: 'http', host: '127.0.0.1', port: 9200, path: '' }],
+          aws: false,
+          client_request_timeout: 30,
+          retry_on_failure: 3
+        }
+      end
+
+      before do
+        allow(::Gitlab::CurrentSettings).to receive(:elasticsearch_config).and_return(gitlab_elasticsearch_config)
+      end
+
+      it 'returns GitLab elasticsearch config directly' do
+        expect(connection.options).to eq(gitlab_elasticsearch_config)
+      end
+    end
+
+    context 'when use_advanced_search_config is false' do
+      let(:custom_options) { { url: 'http://custom:9200' } }
+      let(:connection) do
+        build(:ai_active_context_connection,
+          adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+          options: custom_options.merge(use_advanced_search_config: false))
+      end
+
+      it 'returns the stored options' do
+        expect(connection.options).to eq(custom_options.stringify_keys.merge('use_advanced_search_config' => false))
+      end
+    end
+
+    context 'when adapter is not elasticsearch' do
+      let(:custom_options) { { token: 'secret', use_advanced_search_config: true } }
+      let(:connection) do
+        build(:ai_active_context_connection,
+          adapter_class: 'SomeOtherAdapter',
+          options: custom_options)
+      end
+
+      it 'returns the stored options' do
+        expect(connection.options).to eq(custom_options.stringify_keys)
+      end
+    end
+
+    context 'when use_advanced_search_config is not present' do
+      let(:custom_options) { { url: 'http://custom:9200' } }
+      let(:connection) do
+        build(:ai_active_context_connection,
+          adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+          options: custom_options)
+      end
+
+      it 'returns the stored options' do
+        expect(connection.options).to eq(custom_options.stringify_keys)
+      end
+    end
+  end
+
   describe '#activate!' do
     let!(:active_connection) { create(:ai_active_context_connection) }
     let!(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
