@@ -18,6 +18,7 @@ module EE
           **assignee_filters,
           **code_search_filters,
           **knn_filters,
+          **work_item_filters,
           **weight_filters
         )
       end
@@ -99,6 +100,12 @@ module EE
           not_weight: params[:not_weight],
           none_weight: params[:none_weight],
           any_weight: params[:any_weight]
+        }
+      end
+
+      def work_item_filters
+        {
+          work_item_type_ids: params[:work_item_type_ids]
         }
       end
     end
