@@ -61,8 +61,18 @@ describe('ComplianceViolationsReportV2 component', () => {
               auditEvent: {
                 id: 'gid://gitlab/AuditEvent/1',
                 createdAt: '2025-06-08T09:30:00Z',
-                details:
-                  '{:event_name=\u003e"request_to_compliance_external_control_failed", :author_name=\u003e"Administrator", :author_class=\u003e"Gitlab::Audit::UnauthenticatedAuthor", :target_id=\u003e30, :target_type=\u003e"ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl", :target_details=\u003e"External control", :custom_message=\u003e"Request to compliance requirement external failed.", :ip_address=\u003enil, :entity_path=\u003e"p-compliance-group-1748445340/subgroup_1748445340/project-83"}',
+                details: JSON.stringify({
+                  event_name: 'request_to_compliance_external_control_failed',
+                  author_name: 'Administrator',
+                  author_class: 'Gitlab::Audit::UnauthenticatedAuthor',
+                  target_id: 30,
+                  target_type:
+                    'ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl',
+                  target_details: 'External control',
+                  custom_message: 'Request to compliance requirement external failed.',
+                  ip_address: null,
+                  entity_path: 'p-compliance-group-1748445340/subgroup_1748445340/project-83',
+                }),
                 eventName: 'merge_request_approval_operation',
                 entityPath: 'foo/bar',
                 entityType: 'Project',
@@ -813,7 +823,10 @@ describe('ComplianceViolationsReportV2 component', () => {
         eventName: 'some_event',
         targetType: 'control',
         targetDetails: 'MergeRequest',
-        details: '{target_details=\u003e"Control", :custom_message=\u003e"Thing happened"}',
+        details: JSON.stringify({
+          target_details: 'Control',
+          custom_message: 'Thing happened',
+        }),
       };
 
       const result = wrapper.vm.getAuditEventTitle(auditEvent);
@@ -825,7 +838,10 @@ describe('ComplianceViolationsReportV2 component', () => {
         eventName: 'some_event',
         targetType: 'control',
         targetDetails: 'MergeRequest',
-        details: '{target_details=\u003e"Control", :entity_path=\u003e"/group1/project1"}',
+        details: JSON.stringify({
+          target_details: 'Control',
+          entity_path: '/group1/project1',
+        }),
       };
 
       const result = wrapper.vm.getAuditEventTitle(auditEvent);
@@ -834,7 +850,7 @@ describe('ComplianceViolationsReportV2 component', () => {
 
     it('returns generic audit event when no specific details are available', () => {
       const auditEvent = {
-        details: {},
+        details: JSON.stringify({}),
       };
 
       const result = wrapper.vm.getAuditEventTitle(auditEvent);

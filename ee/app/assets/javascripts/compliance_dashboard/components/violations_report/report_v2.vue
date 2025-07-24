@@ -139,15 +139,13 @@ export default {
       if (!details) return null;
       if (typeof details === 'string') {
         try {
-          // The ruby backend is currently just giving us details.to_s instead of details.to_json
-          // This is a temporary measure until the backend output is corrected.
-          // Until then we'll resort to matching on the custom message inside the hash's string representation.
-          const match = details.match(/:custom_message=>"([^"\\]*(\\.[^"\\]*)*)"/);
-          return match ? match[1] : null;
+          const parsed = JSON.parse(details);
+          return parsed.custom_message || null;
         } catch (error) {
           return null;
         }
       }
+
       return null;
     },
     getAuditEventTitle(auditEvent) {

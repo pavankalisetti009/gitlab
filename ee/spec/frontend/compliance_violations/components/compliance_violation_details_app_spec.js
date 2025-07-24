@@ -60,11 +60,13 @@ describe('ComplianceViolationDetailsApp', () => {
           id: 'gid://gitlab/AuditEvents::ProjectAuditEvent/467',
           eventName: 'merge_request_merged',
           targetId: '2',
+          targetType: 'MergeRequest',
           details: '{}',
           ipAddress: '123.1.1.9',
           entityPath: 'gitlab-org/gitlab-test',
           entityId: '2',
           entityType: 'Project',
+          createdAt: '2023-01-01T00:00:00Z',
           author: {
             id: 'gid://gitlab/User/1',
             name: 'John Doe',
@@ -280,6 +282,7 @@ describe('ComplianceViolationDetailsApp', () => {
     beforeEach(async () => {
       createComponent();
       await waitForPromises();
+      await nextTick();
     });
 
     it('does not show loading icon', () => {
@@ -346,6 +349,7 @@ describe('ComplianceViolationDetailsApp', () => {
           mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithoutAuditEvent),
         });
         await waitForPromises();
+        await nextTick();
 
         const auditEventComponent = findAuditEvent();
         expect(auditEventComponent.exists()).toBe(false);
@@ -455,6 +459,7 @@ describe('ComplianceViolationDetailsApp', () => {
     beforeEach(async () => {
       createComponent();
       await waitForPromises();
+      await nextTick();
     });
 
     it('calls mutation when status is changed', async () => {
@@ -491,6 +496,7 @@ describe('ComplianceViolationDetailsApp', () => {
         wrapper.vm.$toast = mockToast;
 
         await waitForPromises();
+        await nextTick();
       });
 
       it('shows error toast when mutation fails', async () => {
