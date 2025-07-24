@@ -9435,6 +9435,12 @@ msgstr ""
 msgid "Author"
 msgstr ""
 
+msgid "Author ID"
+msgstr ""
+
+msgid "Author name"
+msgstr ""
+
 msgid "Author: %{author_name}"
 msgstr ""
 
@@ -25099,6 +25105,15 @@ msgstr ""
 msgid "EnterpriseUsers|The user is already an enterprise user of the group"
 msgstr ""
 
+msgid "Entity ID"
+msgstr ""
+
+msgid "Entity path"
+msgstr ""
+
+msgid "Entity type"
+msgstr ""
+
 msgid "Environment"
 msgstr ""
 
@@ -25988,6 +26003,9 @@ msgid "Even if you reach the number of seats in your subscription, you can conti
 msgstr ""
 
 msgid "Event '%{event}' of type '%{event_type}' must not start with '%{prefix}'"
+msgstr ""
+
+msgid "Event name"
 msgstr ""
 
 msgid "Event tag (optional)"
@@ -32134,6 +32152,9 @@ msgid "IP '%{value}' is not a valid CIDR: IP should be followed by a slash follo
 msgstr ""
 
 msgid "IP Address"
+msgstr ""
+
+msgid "IP address"
 msgstr ""
 
 msgid "IP address expiration time"
@@ -62196,6 +62217,9 @@ msgid "Take a look at the documentation to discover all of GitLab’s capabiliti
 msgstr ""
 
 msgid "Target"
+msgstr ""
+
+msgid "Target ID"
 msgstr ""
 
 msgid "Target Path"

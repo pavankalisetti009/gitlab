@@ -111,7 +111,7 @@ RSpec.describe 'Getting a project compliance violation', feature_category: :comp
       'targetId' => audit_event.target_id.to_s,
       'targetDetails' => audit_event.target_details,
       'targetType' => audit_event.target_type,
-      'details' => audit_event.details.to_s,
+      'details' => audit_event.details.to_json,
       'ipAddress' => audit_event.ip_address,
       'entityPath' => audit_event.entity_path,
       'entityId' => audit_event.entity_id.to_s,

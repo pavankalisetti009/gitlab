@@ -26,8 +26,10 @@ query getComplianceViolation($id: ComplianceManagementProjectsComplianceViolatio
     }
     auditEvent {
       id
+      createdAt
       eventName
       targetId
+      targetType
       details
       ipAddress
       entityPath
