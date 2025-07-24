@@ -22,9 +22,10 @@
 #     assignee_wildcard_id:  - String with possible values of  'none', 'any'
 #     weight:                - String containing integer representing work item's weight
 #     weight_wildcard_id:    - String with possible values of  'none', 'any'
+#     issue_types:           - Array of strings (one of WorkItems::Type.base_types)
 #     not                    - Hash with keys that can be negated
 #     or                     - Hash with keys that can be combined using OR logic
-
+#
 module EE
   module WorkItems
     module Glql
@@ -36,7 +37,7 @@ module EE
         ALLOWED_ES_FILTERS = [
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
           :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or,
-          :weight, :weight_wildcard_id
+          :weight, :weight_wildcard_id, :issue_types
         ].freeze
         NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name, :weight,
           :weight_wildcard_id].freeze
@@ -121,7 +122,8 @@ module EE
             weight: params[:weight]&.to_i,
             not_weight: params.dig(:not, :weight)&.to_i,
             none_weight: none_weight?,
-            any_weight: any_weight?
+            any_weight: any_weight?,
+            work_item_type_ids: type_ids_from(params[:issue_types])
           }
         end
 
@@ -139,6 +141,12 @@ module EE
 
         def none_milestones?
           params[:milestone_wildcard_id].to_s.downcase == FILTER_NONE
+        end
+
+        def type_ids_from(type_names)
+          return unless type_names.present?
+
+          Array(type_names).filter_map { |type| ::WorkItems::Type::BASE_TYPES.dig(type.to_sym, :id) }
         end
 
         def use_elasticsearch?

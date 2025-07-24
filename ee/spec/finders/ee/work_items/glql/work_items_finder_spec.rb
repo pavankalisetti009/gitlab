@@ -12,7 +12,8 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   let_it_be(:assignee_user)   { create(:user) }
   let_it_be(:other_user)      { create(:user) }
   let_it_be(:milestone)       { create(:milestone, project: project) }
-  let_it_be(:work_item1)      { create(:work_item, project: project, author: current_user) }
+  let_it_be(:work_item1) { create(:work_item, project: project, author: current_user) }
+  let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
 
   let(:context)        { instance_double(GraphQL::Query::Context) }
   let(:request_params) { { 'operationName' => 'GLQL' } }
@@ -36,6 +37,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
       milestone_title: [milestone.title],
       assignee_usernames: [assignee_user.username],
       weight: work_item1.weight,
+      issue_types: [work_item1.work_item_type.base_type, work_item2.work_item_type.base_type],
       not: {}
     }
   end
@@ -191,7 +193,6 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   end
 
   describe '#execute' do
-    let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
     let(:search_params) do
       {
         source: described_class::GLQL_SOURCE,
@@ -219,7 +220,8 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         weight: work_item1.weight,
         not_weight: nil,
         none_weight: false,
-        any_weight: false
+        any_weight: false,
+        work_item_type_ids: [work_item1.work_item_type.id, work_item2.work_item_type.id]
       }
     end
 

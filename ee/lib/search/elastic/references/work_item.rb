@@ -54,6 +54,7 @@ module Search
           not_weight
           none_weight
           any_weight
+          work_item_type_ids
         ].freeze
 
         override :serialize
