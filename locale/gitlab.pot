@@ -40171,9 +40171,6 @@ msgstr ""
 msgid "MlExperimentTracking|No logged experiment metadata"
 msgstr ""
 
-msgid "MlExperimentTracking|No logged metadata"
-msgstr ""
-
 msgid "MlExperimentTracking|No logged metrics"
 msgstr ""
 
