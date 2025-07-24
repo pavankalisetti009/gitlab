@@ -49,7 +49,6 @@ export default {
       const iconMap = {
         Issue: 'issues',
         MergeRequest: 'merge-request',
-        Epic: 'epic',
       };
       return iconMap[itemType] || 'question';
     },
