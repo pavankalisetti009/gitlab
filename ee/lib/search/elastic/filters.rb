@@ -1078,7 +1078,7 @@ module Search
             context.name(:filters, :level, search_level) do
               case search_level
               when :global
-                nil # no-op
+                nil
               when :group
                 raise ArgumentError, 'No group_ids provided for group level search' if namespace_ids.empty?
 
@@ -1437,7 +1437,7 @@ module Search
 
           required_feature_access_levels = build_required_feature_access_levels(features)
           project_ids_by_access_level = required_feature_access_levels.index_with do |level|
-            projects.public_or_visible_to_user(user, level).pluck_primary_key
+            projects.where_exists(user.authorizations_for_projects(min_access_level: level)).pluck_primary_key
           end
 
           features.each do |feature|
