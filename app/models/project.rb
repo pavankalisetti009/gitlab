@@ -1312,10 +1312,6 @@ class Project < ApplicationRecord
     !!namespace&.certificate_based_clusters_enabled?
   end
 
-  def prometheus_integration_active?
-    !!prometheus_integration&.active?
-  end
-
   def jenkins_integration_active?
     !!jenkins_integration&.active?
   end
