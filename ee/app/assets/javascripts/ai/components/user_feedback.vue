@@ -52,9 +52,6 @@ export default {
 
       this.feedbackReceived = true;
     },
-    requestFeedbackModal() {
-      this.$refs.feedbackModal.show();
-    },
   },
   i18n,
 };
