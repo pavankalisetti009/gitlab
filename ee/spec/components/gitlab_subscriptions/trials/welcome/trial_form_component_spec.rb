@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggregate_failures, type: :component, feature_category: :acquisition do
-  let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: 'Acme Corp') }
+  let(:user) { build(:user, user_detail_organization: 'Acme Corp') }
   let(:form_params) do
     {
       glm_source: 'some-source',
@@ -21,8 +21,8 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
     let(:expected_form_data_attributes) do
       {
         userData: {
-          firstName: user.first_name,
-          lastName: user.last_name,
+          firstName: '',
+          lastName: '',
           emailDomain: user.email_domain,
           companyName: user.user_detail_organization,
           groupName: '',
@@ -50,8 +50,8 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
       view_model = parsed_view_model
       user_data = view_model['userData']
 
-      expect(user_data['firstName']).to eq(user.first_name)
-      expect(user_data['lastName']).to eq(user.last_name)
+      expect(user_data['firstName']).to eq('')
+      expect(user_data['lastName']).to eq('')
       expect(user_data['emailDomain']).to eq(user.email_domain)
       expect(user_data['companyName']).to eq(user.user_detail_organization)
       expect(user_data['groupName']).to eq('')
@@ -78,8 +78,8 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
     let(:expected_form_data_attributes) do
       {
         userData: {
-          firstName: user.first_name,
-          lastName: user.last_name,
+          firstName: '',
+          lastName: '',
           emailDomain: user.email_domain,
           companyName: user.user_detail_organization,
           groupName: '',
@@ -106,41 +106,8 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
   end
 
   describe 'user data variations' do
-    context 'when user has blank last name' do
-      let(:user) { build(:user, first_name: 'John', last_name: '', user_detail_organization: 'Acme Corp') }
-      let(:expected_form_data_attributes) do
-        {
-          userData: {
-            firstName: user.first_name,
-            lastName: user.last_name,
-            emailDomain: user.email_domain,
-            companyName: user.user_detail_organization,
-            groupName: '',
-            projectName: '',
-            country: '',
-            state: ''
-          }
-        }.with_indifferent_access
-      end
-
-      it 'renders form with correct attributes' do
-        expect_form_data_attribute(expected_form_data_attributes)
-      end
-    end
-
-    context 'when user has present last name' do
-      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: 'Acme Corp') }
-
-      it 'includes last name in user data' do
-        view_model = parsed_view_model
-        user_data = view_model['userData']
-
-        expect(user_data['lastName']).to eq('Doe')
-      end
-    end
-
     context 'when user has no organization' do
-      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: nil) }
+      let(:user) { build(:user, user_detail_organization: nil) }
 
       it 'handles nil organization gracefully' do
         view_model = parsed_view_model
@@ -149,24 +116,11 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
     end
 
     context 'when user has blank organization' do
-      let(:user) { build(:user, first_name: 'John', last_name: 'Doe', user_detail_organization: '') }
+      let(:user) { build(:user, user_detail_organization: '') }
 
       it 'handles blank organization' do
         view_model = parsed_view_model
         expect(view_model.dig('userData', 'companyName')).to eq('')
-      end
-    end
-
-    context 'when user has special characters in name' do
-      let(:user) { build(:user, first_name: "John's", last_name: 'O\'Connor', user_detail_organization: 'Acme & Co.') }
-
-      it 'handles special characters in user data' do
-        view_model = parsed_view_model
-        user_data = view_model['userData']
-
-        expect(user_data['firstName']).to eq("John's")
-        expect(user_data['lastName']).to eq('O\'Connor')
-        expect(user_data['companyName']).to eq('Acme & Co.')
       end
     end
   end
