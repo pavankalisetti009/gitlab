@@ -19,6 +19,7 @@ RSpec.describe Types::Namespaces::AvailableFeaturesType, feature_category: :shar
       :has_quality_management_feature | :quality_management
       :has_scoped_labels_feature | :scoped_labels
       :has_subepics_feature | :subepics
+      :has_statuses_feature | :work_item_status
     end
 
     with_them do
