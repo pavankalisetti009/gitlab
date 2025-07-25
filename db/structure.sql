@@ -24007,7 +24007,9 @@ CREATE TABLE ssh_signatures (
     user_id bigint,
     key_fingerprint_sha256 bytea,
     author_email text,
-    CONSTRAINT check_5ff707c7f9 CHECK ((char_length(author_email) <= 255))
+    committer_email text,
+    CONSTRAINT check_5ff707c7f9 CHECK ((char_length(author_email) <= 255)),
+    CONSTRAINT check_73776e38f9 CHECK ((char_length(committer_email) <= 255))
 );
 
 CREATE SEQUENCE ssh_signatures_id_seq
