@@ -25,6 +25,10 @@ export default {
       type: Object,
       required: true,
     },
+    hasDependencyPaths: {
+      type: Boolean,
+      required: true,
+    },
   },
   computed: {
     ancestors() {
@@ -63,9 +67,6 @@ export default {
     },
     hasPaths() {
       return this.location.path && this.location.blobPath;
-    },
-    hasDependencyPaths() {
-      return this.location.hasDependencyPaths;
     },
   },
   methods: {

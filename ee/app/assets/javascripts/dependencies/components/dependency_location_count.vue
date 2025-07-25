@@ -62,7 +62,7 @@ export default {
       return this.loading || this.locationCount > SEARCH_MIN_THRESHOLD;
     },
     hasAnyDependencyPaths() {
-      return this.locations.some((item) => item.location?.has_dependency_paths);
+      return this.locations.some((item) => item.has_dependency_paths);
     },
   },
   i18n: {

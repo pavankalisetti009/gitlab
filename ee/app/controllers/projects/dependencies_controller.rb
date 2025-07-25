@@ -62,6 +62,7 @@ module Projects
         .with_component
         .with_version
         .with_source
+        .with_dependency_paths_existence
     end
 
     def authorize_read_dependency_list!

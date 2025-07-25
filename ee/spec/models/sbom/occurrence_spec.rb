@@ -888,8 +888,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
             blob_path: "/#{occurrence.project.full_path}/-/blob/#{occurrence.commit_sha}/#{occurrence.input_file_path}",
             path: occurrence.input_file_path,
             top_level: false,
-            ancestors: [],
-            has_dependency_paths: false
+            ancestors: []
           }
         )
       end
@@ -927,8 +926,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
                          "#{occurrence.input_file_path}",
               path: occurrence.input_file_path,
               top_level: false,
-              ancestors: [],
-              has_dependency_paths: false
+              ancestors: []
             }
           )
         end
@@ -943,8 +941,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
               blob_path: nil,
               path: nil,
               top_level: false,
-              ancestors: [],
-              has_dependency_paths: false
+              ancestors: []
             }
           )
         end

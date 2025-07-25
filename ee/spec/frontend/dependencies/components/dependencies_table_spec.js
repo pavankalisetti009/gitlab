@@ -489,14 +489,14 @@ describe('DependenciesTable component', () => {
         const { name, version } = dependency;
         const emittedItem = [
           {
-            location: { has_dependency_paths: true },
             project: { name: 'emitted-project', full_path: 'group-1/emitted-project' },
             occurrence_id: 1,
+            has_dependency_paths: true,
           },
           {
-            location: { has_dependency_paths: false },
             project: { name: 'emitted-project-2', full_path: 'group-1/emitted-project-2' },
             occurrence_id: 2,
+            has_dependency_paths: false,
           },
         ];
 

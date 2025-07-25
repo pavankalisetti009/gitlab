@@ -20,7 +20,6 @@ class DependencyEntity < Grape::Entity
     expose :ancestors, using: AncestorEntity do |location|
       location[:ancestors].map(&:compact).reject(&:empty?)
     end
-    expose :has_dependency_paths
   end
 
   class VulnerabilityEntity < Grape::Entity
@@ -58,6 +57,7 @@ class DependencyEntity < Grape::Entity
 
   expose :name, :packager, :version
   expose :location, using: LocationEntity, if: ->(_) { !group? }
+  expose :has_dependency_paths?, as: :has_dependency_paths, if: ->(_) { !group? }
   expose :vulnerabilities, using: VulnerabilityEntity, if: ->(_) { render_vulnerabilities? }
   expose :licenses, using: LicenseEntity, if: ->(_) { can_read_licenses? }
   expose :occurrence_count, if: ->(_) { group? } do |object|
