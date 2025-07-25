@@ -563,7 +563,31 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
           identifier: "provider/some-model"
         }
 
-        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor, user, ai_feature) do |react_agent|
+          expect(react_agent).to receive(:step).with(params)
+            .and_yield(action_event).and_return([action_event])
+        end
+
+        agent.execute
+      end
+    end
+
+    context 'when duo chat is vendored' do
+      let_it_be(:ai_feature) { create(:ai_feature_setting, feature: :duo_chat, provider: :vendored) }
+
+      before do
+        stub_feature_flags(ai_model_switching: false)
+      end
+
+      it 'sends the vendored model metadata' do
+        params = step_params
+        params[:model_metadata] = {
+          provider: 'gitlab',
+          identifier: '',
+          feature_setting: 'duo_chat'
+        }
+
+        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor, user, ai_feature) do |react_agent|
           expect(react_agent).to receive(:step).with(params)
             .and_yield(action_event).and_return([action_event])
         end
@@ -598,7 +622,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
             feature_setting: 'duo_chat'
           }
 
-          expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor, user, ai_feature) do |react_agent|
             expect(react_agent).to receive(:step).with(params)
               .and_yield(action_event).and_return([action_event])
           end
@@ -608,9 +632,8 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       context 'when a model is explicitly selected' do
-        let(:model_ref) { 'claude-3-7-sonnet-20250219' }
-
-        before do
+        let_it_be(:model_ref) { 'claude-3-7-sonnet-20250219' }
+        let_it_be(:ai_feature) do
           create(:ai_namespace_feature_setting,
             namespace: root_namespace,
             feature: :duo_chat,
@@ -621,9 +644,8 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       context 'when the model is explicitly set to GitLab Default' do
-        let(:model_ref) { nil }
-
-        before do
+        let_it_be(:model_ref) { nil }
+        let_it_be(:ai_feature) do
           create(:ai_namespace_feature_setting,
             namespace: root_namespace,
             feature: :duo_chat,
@@ -634,7 +656,16 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       context 'when no model is explicitly set, and hence the feature should fallback to GitLab Default' do
-        let(:model_ref) { nil }
+        let_it_be(:model_ref) { nil }
+        let_it_be(:ai_feature) do
+          create(:ai_namespace_feature_setting,
+            namespace: root_namespace,
+            feature: :duo_chat,
+            offered_model_ref: nil,
+            offered_model_name: nil,
+            model_definitions: {}
+          )
+        end
 
         it_behaves_like 'sends a request with identifier and feature_setting'
       end

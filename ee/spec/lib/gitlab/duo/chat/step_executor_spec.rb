@@ -5,9 +5,11 @@ require 'spec_helper'
 # rubocop:disable Style/StringConcatenation -- To distinguish new line as the delimiter and new line as tokens
 RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
   let(:user) { create(:user) }
-  let(:agent) { described_class.new(user) }
+  let(:agent) { described_class.new(user, feature_setting) }
+  let(:self_hosted_url) { nil }
+  let(:cloud_connector_url) { 'https://staging.cloud.gitlab.com' }
 
-  describe '#step' do
+  shared_examples_for '#step' do
     let(:params) do
       {
         prompt: "Hello",
@@ -16,17 +18,26 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
     end
 
     let(:response) { instance_double(HTTParty::Response, headers: {}) }
+    let(:expected_http_options) do
+      hash_including(headers: {}, body: anything, timeout: 60, allow_local_requests: true, stream_body: true)
+    end
 
     before do
       allow(response).to receive(:success?).and_return(true)
       allow(response).to receive(:code).and_return(200)
-
-      allow(Gitlab::AiGateway).to receive(:headers).and_return({})
+      allow(Gitlab::AiGateway).to receive_messages(
+        self_hosted_url: self_hosted_url,
+        cloud_connector_url: cloud_connector_url,
+        headers: {}
+      )
     end
 
     context 'when final answer delta events' do
       before do
-        allow(Gitlab::HTTP).to receive(:post).and_yield(
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_yield(
           '{"type": "final_answer_delta", "data": {"text": "Hi"}}' + described_class::EVENT_DELIMITER
         ).and_yield(
           '{"type": "final_answer_delta", "data": {"text": "I am good"}}' + described_class::EVENT_DELIMITER
@@ -46,7 +57,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
     context 'when tool action event' do
       before do
-        allow(Gitlab::HTTP).to receive(:post).and_yield(
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_yield(
           '{"type": "action", "data": {"thought": "I think I need to use issue_reader", ' \
             '"tool": "issue_reader", "tool_input": "#123"}}' + described_class::EVENT_DELIMITER
         ).and_return(response)
@@ -92,7 +106,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
     context 'when unknown event' do
       before do
-        allow(Gitlab::HTTP).to receive(:post).and_yield(
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_yield(
           '{"type": "unknown", "data": {"text": "indeterministic response"}}' + described_class::EVENT_DELIMITER
         ).and_return(response)
       end
@@ -108,7 +125,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
     context 'when data size of unknown event exceeds buffer size of Gitlab::HTTP' do
       before do
-        allow(Gitlab::HTTP).to receive(:post).and_yield(
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_yield(
           '{"type": "unknown",'
         ).and_yield(
           '"data": {"text": "indeterministic response"}}' + described_class::EVENT_DELIMITER
@@ -126,7 +146,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
     context 'when multiple events exist in a single chunk' do
       before do
-        allow(Gitlab::HTTP).to receive(:post).and_yield(
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_yield(
           <<~CHUNK
             {"type": "final_answer_delta", "data": {"text": "Hi"}}
             {"type": "final_answer_delta", "data": {"text": "I am good"}}
@@ -148,7 +171,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
     context 'when multiple events are spread in multiple chunks' do
       before do
-        allow(Gitlab::HTTP).to receive(:post).and_yield(
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_yield(
           '{"type": "final_answer_delta", "data": {"text": "Hi"}}' + described_class::EVENT_DELIMITER +
             '{"type": "final_answer_delta"'
         ).and_yield(
@@ -169,7 +195,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
     context 'when new lines included in final answer delta data' do
       before do
-        allow(Gitlab::HTTP).to receive(:post).and_yield(
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_yield(
           '{"type": "final_answer_delta", "data": {"text": "\n\n```toml"}}' + described_class::EVENT_DELIMITER
         ).and_return(response)
       end
@@ -187,7 +216,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
       before do
         allow(response).to receive(:success?).and_return(false)
         allow(response).to receive(:forbidden?).and_return(true)
-        allow(Gitlab::HTTP).to receive(:post).and_return(response)
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_return(response)
       end
 
       it 'raises error' do
@@ -200,7 +232,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
         allow(response).to receive(:success?).and_return(false)
         allow(response).to receive(:forbidden?).and_return(false)
         allow(response).to receive(:code).and_return(400)
-        allow(Gitlab::HTTP).to receive(:post).and_return(response)
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_return(response)
       end
 
       it 'raises error' do
@@ -213,7 +248,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
         allow(response).to receive(:success?).and_return(false)
         allow(response).to receive(:forbidden?).and_return(false)
         allow(response).to receive(:code).and_return(500)
-        allow(Gitlab::HTTP).to receive(:post).and_return(response)
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_return(response)
       end
 
       it 'raises error' do
@@ -226,11 +264,49 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
         allow(response).to receive(:success?).and_return(false)
         allow(response).to receive(:forbidden?).and_return(false)
         allow(response).to receive(:code).and_return(0)
-        allow(Gitlab::HTTP).to receive(:post).and_return(response)
+        allow(Gitlab::HTTP).to receive(:post).with(
+          expected_url,
+          expected_http_options
+        ).and_return(response)
       end
 
       it 'raises error' do
         expect { agent.step(params) }.to raise_error(described_class::ConnectionError)
+      end
+    end
+  end
+
+  describe '#step' do
+    context 'when there is no feature setting' do
+      context 'when self-hosted AI Gateway url is set up' do
+        it_behaves_like '#step' do
+          let(:feature_setting) { nil }
+          let(:self_hosted_url) { 'http://local-aigw:5052' }
+          let(:expected_url) { "#{self_hosted_url}/v2/chat/agent" }
+        end
+      end
+
+      context 'when self-hosted AI Gateway url is not set up' do
+        it_behaves_like '#step' do
+          let(:feature_setting) { nil }
+          let(:expected_url) { "#{cloud_connector_url}/v2/chat/agent" }
+        end
+      end
+    end
+
+    context 'when duo is self-hosted' do
+      it_behaves_like '#step' do
+        let(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat) }
+        let(:self_hosted_url) { 'http://local-aigw:5052' }
+        let(:expected_url) { "#{self_hosted_url}/v2/chat/agent" }
+      end
+    end
+
+    context 'when duo is vendored' do
+      it_behaves_like '#step' do
+        let(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :vendored) }
+        let(:self_hosted_url) { 'http://local-aigw:5052' }
+        let(:expected_url) { "#{cloud_connector_url}/v2/chat/agent" }
       end
     end
   end
