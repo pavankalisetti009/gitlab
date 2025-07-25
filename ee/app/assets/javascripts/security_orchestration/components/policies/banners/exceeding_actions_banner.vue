@@ -13,10 +13,10 @@ export default {
   BANNER_STORAGE_KEY: 'security_policies_exceeding_actions_18',
   i18n: {
     bannerTitle: s__(
-      'SecurityOrchestration|Maximum action limit for scan execution policies will be enabled in 18.0',
+      'SecurityOrchestration|Maximum action limit for scan execution policies exceeded',
     ),
     bannerDescription: s__(
-      'SecurityOrchestration|Scan execution policies that exceed the maximum of %{maxCount} actions per policy have been detected. Those policies will not work after GitLab 18.0 (May 15, 2025). Before then you must edit these policies to reduce the number of actions.',
+      'SecurityOrchestration|A scan execution policy exceeds the limit of %{maxCount} actions per policy. Remove or separate out actions across multiple policies to reduce the number of actions in one policy.',
     ),
   },
   name: 'ExceedingActionsBanner',
@@ -50,8 +50,9 @@ export default {
   <local-storage-sync v-model="alertDismissed" :storage-key="$options.BANNER_STORAGE_KEY">
     <gl-alert
       v-if="!alertDismissed"
-      :title="$options.i18n.bannerTitle"
       :dismissible="true"
+      :title="$options.i18n.bannerTitle"
+      variant="danger"
       @dismiss="dismissAlert"
     >
       <p class="gl-mb-0">
