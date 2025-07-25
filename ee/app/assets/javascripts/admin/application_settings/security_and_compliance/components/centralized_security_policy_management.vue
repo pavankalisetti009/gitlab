@@ -1,13 +1,7 @@
 <script>
 import { debounce } from 'lodash';
 import produce from 'immer';
-import {
-  GlAvatarLabeled,
-  GlButton,
-  GlCollapsibleListbox,
-  GlDropdownDivider,
-  GlDropdownItem,
-} from '@gitlab/ui';
+import { GlAvatarLabeled, GlButton, GlCollapsibleListbox } from '@gitlab/ui';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
@@ -61,8 +55,6 @@ export default {
     GlAvatarLabeled,
     GlButton,
     GlCollapsibleListbox,
-    GlDropdownDivider,
-    GlDropdownItem,
     UnassignGroupModal,
   },
   props: {
@@ -192,14 +184,18 @@ export default {
       </template>
 
       <template #footer>
-        <gl-dropdown-divider />
-        <gl-dropdown-item
-          data-testid="create-group-button"
-          class="gl-list-none"
-          @click="handleCreateGroup"
+        <div
+          class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-dropdown-divider !gl-p-2 !gl-pt-0 gl-border-t-solid"
         >
-          {{ __('New group') }}
-        </gl-dropdown-item>
+          <gl-button
+            category="tertiary"
+            class="!gl-mt-2 !gl-justify-start"
+            data-testid="create-group-button"
+            @click="handleCreateGroup"
+          >
+            {{ __('New group') }}
+          </gl-button>
+        </div>
       </template>
     </gl-collapsible-listbox>
     <div>

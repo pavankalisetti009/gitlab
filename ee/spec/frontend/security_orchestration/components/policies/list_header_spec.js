@@ -229,14 +229,10 @@ describe('List Header Component', () => {
   });
 
   describe('CSP group', () => {
-    it('displays the csp badge', () => {
-      createWrapper({ provide: { designatedAsCsp: true } });
-      expect(findCspBadge().exists()).toBe(true);
-    });
-
-    it('displays the CSP banner', () => {
+    it('renders', () => {
       createWrapper({ provide: { designatedAsCsp: true } });
       expect(findCspBanner().exists()).toBe(true);
+      expect(findCspBadge().exists()).toBe(true);
     });
   });
 });

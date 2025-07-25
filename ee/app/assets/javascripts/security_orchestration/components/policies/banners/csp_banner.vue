@@ -11,11 +11,12 @@ export default {
 
 <template>
   <gl-alert
-    variant="warning"
-    :title="s__('SecurityOrchestration|New compliance and security policy group')"
+    :dismissible="false"
     class="gl-mb-5"
+    :title="s__('SecurityOrchestration|New compliance and security policy group')"
+    variant="warning"
   >
-    <p>
+    <p class="gl-mb-3">
       {{
         s__(
           'SecurityOrchestration|Use this compliance and security policy group to create security policies. Do not create new projects in this group.',
