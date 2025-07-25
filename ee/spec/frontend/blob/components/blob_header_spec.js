@@ -65,7 +65,7 @@ describe('EE Blob Header', () => {
 
     it('passes all props to CE component', () => {
       // Exclude props from the CE props comparison
-      const { projectPath, currentRef, ...propsToCheck } = testProps;
+      const { projectPath, currentRef, projectId, ...propsToCheck } = testProps;
       expect(findCeBlobHeader().props()).toMatchObject(propsToCheck);
     });
 
