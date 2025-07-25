@@ -6,7 +6,7 @@ import SafeHtml from '~/vue_shared/directives/safe_html';
 import { localTimeAgo } from '~/lib/utils/datetime_utility';
 import VisibilityChangeDetector from './visibility_change_detector.vue';
 
-const MAX_EVENTS = 10;
+const MAX_EVENTS = 5;
 
 export default {
   components: {

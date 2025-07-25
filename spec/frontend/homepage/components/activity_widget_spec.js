@@ -55,7 +55,7 @@ describe('ActivityWidget', () => {
 
   it('shows an error message if the request errors out', async () => {
     mockAxios
-      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=10&is_personal_homepage=1`)
+      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=5&is_personal_homepage=1`)
       .reply(500);
     createWrapper();
     await waitForPromises();
@@ -70,7 +70,7 @@ describe('ActivityWidget', () => {
 
   it('shows an empty state if the user has no activity yet', async () => {
     mockAxios
-      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=10&is_personal_homepage=1`)
+      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=5&is_personal_homepage=1`)
       .reply(200, '');
     createWrapper();
     await waitForPromises();
@@ -85,7 +85,7 @@ describe('ActivityWidget', () => {
     const EVENT_TEXT = 'Some event';
 
     mockAxios
-      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=10&is_personal_homepage=1`)
+      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=5&is_personal_homepage=1`)
       .reply(200, {
         html: `<li data-testid="${EVENT_TESTID}">${EVENT_TEXT}</li>`,
       });
@@ -105,7 +105,7 @@ describe('ActivityWidget', () => {
     const timestampHtml =
       '<time class="js-timeago" title="Jul 4, 2025 12:09pm" datetime="2025-07-04T12:09:51Z" tabindex="0" aria-label="Jul 4, 2025 12:09pm" data-toggle="tooltip" data-placement="top" data-container="body">Jul 04, 2025</time>';
     mockAxios
-      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=10&is_personal_homepage=1`)
+      .onGet(`/users/${MOCK_CURRENT_USERNAME}/activity?limit=5&is_personal_homepage=1`)
       .reply(200, {
         html: timestampHtml,
       });
