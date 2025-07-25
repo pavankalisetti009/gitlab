@@ -4,6 +4,7 @@ import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__, __, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
+import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   NAME_TO_TEXT_LOWERCASE_MAP,
@@ -162,6 +163,7 @@ export default {
     },
   },
   methods: {
+    getAdaptiveStatusColor,
     search(searchTerm) {
       this.searchTerm = searchTerm;
     },
@@ -249,7 +251,12 @@ export default {
   >
     <template #list-item="{ item }">
       <div class="gl-truncate">
-        <gl-icon :name="item.iconName" :size="12" class="gl-mr-2" :style="{ color: item.color }" />
+        <gl-icon
+          :name="item.iconName"
+          :size="12"
+          class="gl-mr-2"
+          :style="{ color: getAdaptiveStatusColor(item.color) }"
+        />
         <span>{{ item.text }}</span>
       </div>
     </template>
