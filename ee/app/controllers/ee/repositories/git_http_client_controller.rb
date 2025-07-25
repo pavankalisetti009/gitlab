@@ -150,12 +150,13 @@ module EE
         # param [Array] objects the objects to work with
         # See the git-lfs docs for a detailed explanation
         # https://github.com/git-lfs/git-lfs/blob/main/docs/api/batch.md#requests
-        def initialize(project, geo_route_helper, operation, current_version, objects = {})
+        def initialize(project, geo_route_helper, operation, current_version, objects = {}, oid = nil)
           @project = project
           @geo_route_helper = geo_route_helper
           @operation = operation
           @current_version = current_version
           @objects = objects
+          @oid = oid
         end
 
         def incorrect_version_response
@@ -169,6 +170,7 @@ module EE
         def redirect?
           return true if batch_upload?
           return true if out_of_date_redirect?
+          return true if single_download_out_of_date?
 
           false
         end
@@ -181,7 +183,7 @@ module EE
 
         private
 
-        attr_reader :project, :geo_route_helper, :operation, :current_version, :objects
+        attr_reader :project, :geo_route_helper, :operation, :current_version, :objects, :oid
 
         def incorrect_version_message
           translation = _("You need git-lfs version %{min_git_lfs_version} (or greater) to continue. Please visit https://git-lfs.github.com")
@@ -190,6 +192,10 @@ module EE
 
         def batch_request?
           geo_route_helper.match?('lfs_api', 'batch')
+        end
+
+        def single_download_request?
+          geo_route_helper.match?('lfs_storage', 'download')
         end
 
         def batch_upload?
@@ -212,6 +218,13 @@ module EE
           !::Geo::LfsObjectRegistry.oids_synced?(requested_oids)
         end
 
+        def single_download_out_of_date?
+          return false unless project
+          return false unless single_download_request?
+
+          !::Geo::LfsObjectRegistry.oids_synced?([oid])
+        end
+
         def wanted_version
           ::Gitlab::VersionInfo.parse(MINIMUM_GIT_LFS_VERSION)
         end
@@ -223,7 +236,14 @@ module EE
 
       def geo_git_lfs_helper
         # params[:operation] explained: https://github.com/git-lfs/git-lfs/blob/master/docs/api/batch.md#requests
-        @geo_git_lfs_helper ||= GeoGitLFSHelper.new(project, geo_route_helper, params[:operation], request.headers['User-Agent'], params[:objects])
+        @geo_git_lfs_helper ||= GeoGitLFSHelper.new(
+          project,
+          geo_route_helper,
+          params[:operation],
+          request.headers['User-Agent'],
+          params[:objects],
+          params[:oid]
+        )
       end
 
       def geo_request_fullpath_for_primary

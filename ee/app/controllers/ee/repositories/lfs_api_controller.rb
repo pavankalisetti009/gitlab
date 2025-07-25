@@ -3,8 +3,10 @@
 module EE
   module Repositories
     module LfsApiController
+      extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
       include GitlabRoutingHelper
+      include ::Gitlab::Utils::StrongMemoize
 
       override :batch_operation_disallowed?
       def batch_operation_disallowed?
@@ -33,6 +35,32 @@ module EE
         translation = _('You cannot write to a read-only secondary GitLab Geo instance. Please use %{link_to_primary_node} instead.')
         message = translation % { link_to_primary_node: geo_primary_default_url_to_repo(project) }
         message.html_safe
+      end
+
+      def proxy_download_actions_download_path(object)
+        # This logic guarantees the download from the primary when unified URL is enabled
+        # Without it, the download links might send a redirected request back to a secondary
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/543956
+        if request.fullpath.include?(::Gitlab::Geo::GitPushHttp::PATH_PREFIX) && geo_referrer_secondary_node_id
+          uri = URI.parse(project.http_url_to_repo)
+          return File.join(uri.origin, geo_referrer_path_prefix, uri.path, "gitlab-lfs/objects/#{object[:oid]}")
+        end
+
+        super
+      end
+
+      private
+
+      def geo_referrer_secondary_node_id
+        id = params.permit(:geo_node_id)[:geo_node_id]
+        return id if id && ::Gitlab::Geo.secondary_node?(id)
+
+        ::Gitlab::Geo::Logger.warn(message: "proxy_download_actions: Secondary Geo node not found", geo_node_id: id)
+      end
+      strong_memoize_attr :geo_referrer_secondary_node_id
+
+      def geo_referrer_path_prefix
+        File.join(::Gitlab::Geo::GitPushHttp::PATH_PREFIX, geo_referrer_secondary_node_id)
       end
     end
   end

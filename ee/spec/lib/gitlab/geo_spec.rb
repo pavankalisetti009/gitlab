@@ -60,6 +60,57 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
     end
   end
 
+  describe '.secondary_node?' do
+    let_it_be(:another_secondary_node) { create(:geo_node) }
+
+    before do
+      described_class.clear_memoization(:secondary_nodes)
+    end
+
+    context 'when node_id matches an existing secondary node' do
+      it 'returns true for integer node_id' do
+        expect(described_class.secondary_node?(secondary_node.id)).to be_truthy
+      end
+
+      it 'returns true for string node_id' do
+        expect(described_class.secondary_node?(secondary_node.id.to_s)).to be_truthy
+      end
+
+      it 'returns true for another secondary node' do
+        expect(described_class.secondary_node?(another_secondary_node.id)).to be_truthy
+      end
+    end
+
+    context 'when node_id does not match any secondary node' do
+      it 'returns false for non-existent node_id' do
+        non_existent_id = secondary_node.id + another_secondary_node.id + 999
+        expect(described_class.secondary_node?(non_existent_id)).to be_falsey
+      end
+
+      it 'returns false for primary node id' do
+        expect(described_class.secondary_node?(primary_node.id)).to be_falsey
+      end
+
+      it 'returns false for nil node_id' do
+        expect(described_class.secondary_node?(nil)).to be_falsey
+      end
+
+      it 'returns false for empty string node_id' do
+        expect(described_class.secondary_node?('')).to be_falsey
+      end
+    end
+
+    context 'when there are no secondary nodes' do
+      before do
+        allow(described_class).to receive(:secondary_nodes).and_return([])
+      end
+
+      it 'returns false' do
+        expect(described_class.secondary_node?(secondary_node.id)).to be_falsey
+      end
+    end
+  end
+
   describe '.proxy_extra_data' do
     before do
       expect(described_class).to receive(:uncached_proxy_extra_data).and_return('proxy extra data')

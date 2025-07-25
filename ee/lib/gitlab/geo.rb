@@ -69,6 +69,10 @@ module Gitlab
       strong_memoize(:secondary_nodes) { GeoNode.secondary_nodes }
     end
 
+    def self.secondary_node?(node_id)
+      secondary_nodes.any? { |node| node.id.to_s == node_id.to_s }
+    end
+
     def self.current_node
       strong_memoize(:current_node) { GeoNode.current_node }
     end
