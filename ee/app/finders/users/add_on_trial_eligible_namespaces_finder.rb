@@ -20,8 +20,10 @@ module Users
 
     def by_add_on(items)
       case add_on
-      when :duo_pro
-        items.in_specific_plans(GitlabSubscriptions::DuoPro::ELIGIBLE_PLAN).not_duo_pro_or_no_add_on
+      when :duo
+        items.in_specific_plans(GitlabSubscriptions::DuoPro::ELIGIBLE_PLAN)
+             .not_duo_pro_or_no_add_on
+             .not_duo_enterprise_or_no_add_on
       when :duo_enterprise
         items.in_specific_plans(GitlabSubscriptions::DuoEnterprise::ELIGIBLE_PLANS).not_duo_enterprise_or_no_add_on
       end
@@ -29,8 +31,8 @@ module Users
 
     def add_on_exists?
       case add_on
-      when :duo_pro
-        GitlabSubscriptions::AddOn.code_suggestions.exists?
+      when :duo
+        GitlabSubscriptions::AddOn.code_suggestions.or(GitlabSubscriptions::AddOn.duo_enterprise).exists?
       when :duo_enterprise
         GitlabSubscriptions::AddOn.duo_enterprise.exists?
       else
