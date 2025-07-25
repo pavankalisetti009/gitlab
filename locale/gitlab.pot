@@ -32033,6 +32033,12 @@ msgstr ""
 msgid "HomePageMergeRequestsWidget|The number of merge requests is not available. Please refresh the page to try again, or visit the %{linkStart}dashboard%{linkEnd}."
 msgstr ""
 
+msgid "HomePageRecentlyViewedWidget|Your recently viewed items are not available. Please refresh the page to try again."
+msgstr ""
+
+msgid "HomePageTodosWidget|Your to-do items are not available. Please refresh the page to try again."
+msgstr ""
+
 msgid "HomePageWorkItemsWidget|Assigned to you"
 msgstr ""
 
@@ -32045,7 +32051,7 @@ msgstr ""
 msgid "Homepage"
 msgstr ""
 
-msgid "HomepageActivityWidget|The activity feed is not available. Please refresh the page to try again."
+msgid "HomepageActivityWidget|Your activity feed is not available. Please refresh the page to try again."
 msgstr ""
 
 msgid "Homepage|Start creating merge requests, pushing code, commenting in issues, and doing other work to view a feed of your activity here."
@@ -60646,9 +60652,6 @@ msgid "Something went wrong, unable to get projects"
 msgstr ""
 
 msgid "Something went wrong, unable to search projects"
-msgstr ""
-
-msgid "Something went wrong."
 msgstr ""
 
 msgid "Something went wrong. Please try again later"
