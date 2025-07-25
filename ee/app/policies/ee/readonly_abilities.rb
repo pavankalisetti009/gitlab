@@ -12,6 +12,7 @@ module EE
       admin_software_license_policy
       create_test_case
       create_package
+      create_commit_status
     ].freeze
 
     READONLY_FEATURES = %i[
@@ -24,7 +25,6 @@ module EE
       trigger
       environment
       deployment
-      commit_status
       container_image
       cluster
       release
