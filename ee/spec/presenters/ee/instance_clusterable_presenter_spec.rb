@@ -2,16 +2,31 @@
 
 require 'spec_helper'
 
-RSpec.describe InstanceClusterablePresenter do
+RSpec.describe InstanceClusterablePresenter, :enable_admin_mode, feature_category: :environment_management do
   include Gitlab::Routing.url_helpers
 
   let(:presenter) { described_class.new(instance) }
   let(:cluster) { create(:cluster, :provided_by_gcp, :instance) }
   let(:instance) { cluster.instance }
 
-  describe '#metrics_cluster_path' do
-    subject { presenter.metrics_cluster_path(cluster) }
+  describe '#environments_cluster_path' do
+    subject { presenter.environments_cluster_path(cluster) }
 
-    it { is_expected.to eq(metrics_admin_cluster_path(cluster)) }
+    before do
+      stub_licensed_features(cluster_deployments: true)
+      allow(presenter).to receive(:current_user).and_return(user)
+    end
+
+    context 'with permissions' do
+      let(:user) { create(:admin) }
+
+      it { is_expected.to eq(environments_admin_cluster_path(cluster)) }
+    end
+
+    context 'without permissions' do
+      let(:user) { create(:user) }
+
+      it { is_expected.to be_nil }
+    end
   end
 end

@@ -4,11 +4,6 @@ module EE
   module GroupClusterablePresenter
     extend ::Gitlab::Utils::Override
 
-    override :metrics_cluster_path
-    def metrics_cluster_path(cluster, params = {})
-      metrics_group_cluster_path(clusterable, cluster, params)
-    end
-
     override :environments_cluster_path
     def environments_cluster_path(cluster)
       return super unless can_read_cluster_environments?
