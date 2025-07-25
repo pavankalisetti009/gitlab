@@ -415,6 +415,10 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
           context 'when the repository exists' do
             let_it_be(:project) { project_with_repo }
 
+            before do
+              create(:geo_lfs_object_registry, :synced, lfs_object: lfs_object)
+            end
+
             it_behaves_like 'a Geo 200 git-lfs request'
           end
 
@@ -422,6 +426,8 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
             let_it_be(:project) { project_with_repo }
 
             before do
+              create(:geo_lfs_object_registry, :synced, lfs_object: lfs_object)
+
               stub_feature_flags(geo_project_repository_replication: true)
 
               allow(::Geo::ProjectRepositoryRegistry)

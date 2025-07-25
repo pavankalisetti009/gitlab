@@ -53,6 +53,118 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
       enable_lfs
     end
 
+    describe 'download' do
+      let(:project) { create(:project, :repository) }
+      let(:lfs_object) { create(:lfs_object, :with_file) }
+      let(:sample_oid) { lfs_object.oid }
+      let(:sample_size) { lfs_object.size }
+
+      before do
+        project.add_maintainer(user)
+        create(:lfs_objects_project, project: project, lfs_object: lfs_object)
+      end
+
+      it 'returns a valid JSON response with download actions and proper header structure', :aggregate_failures do
+        post_lfs_json "#{project.http_url_to_repo}/info/lfs/objects/batch",
+          {
+            operation: 'download',
+            objects: [{ oid: sample_oid, size: sample_size }]
+          },
+          { 'Authorization' => authorize_user }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to match(
+          a_hash_including(
+            'objects' => [
+              a_hash_including(
+                'oid' => sample_oid,
+                'size' => sample_size,
+                'actions' => a_hash_including(
+                  'download' => a_hash_including(
+                    'href' => a_string_including("/gitlab-lfs/objects/#{sample_oid}"),
+                    'header' => a_hash_including('Authorization')
+                  )
+                )
+              )
+            ]
+          )
+        )
+      end
+
+      it 'preserves from_secondary path in download URLs', :aggregate_failures do
+        allow(::Gitlab::Geo).to receive(:secondary_node?).and_return(true)
+
+        post_lfs_json batch_redirect_url(project),
+          {
+            operation: 'download',
+            objects: [{ oid: sample_oid, size: sample_size }]
+          },
+          { 'Authorization' => authorize_user }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to match(
+          a_hash_including(
+            'objects' => [
+              a_hash_including(
+                'actions' => a_hash_including(
+                  'download' => a_hash_including(
+                    'href' => a_string_including("/-/from_secondary")
+                  )
+                )
+              )
+            ]
+          )
+        )
+      end
+
+      it 'falls back to regular download when geo_referrer_secondary_node_id returns nil', :aggregate_failures do
+        allow(::Gitlab::Geo).to receive(:secondary_node?).and_return(false)
+
+        allow(::Gitlab::Geo::Logger).to receive(:warn)
+
+        post_lfs_json batch_redirect_url(project),
+          {
+            operation: 'download',
+            objects: [{ oid: sample_oid, size: sample_size }]
+          },
+          { 'Authorization' => authorize_user }
+
+        expect(response).to have_gitlab_http_status(:ok)
+
+        expect(::Gitlab::Geo::Logger).to have_received(:warn)
+
+        download_href = json_response['objects'][0]['actions']['download']['href']
+        expect(download_href).not_to include('from_secondary')
+        expect(download_href).to include("/gitlab-lfs/objects/#{sample_oid}")
+      end
+
+      it 'validates geo_node_id against actual secondary nodes', :aggregate_failures do
+        # Create a node with the specific ID that the route expects
+        valid_secondary_node = create(:geo_node, :secondary, id: 2)
+        another_secondary_node = create(:geo_node, :secondary)
+
+        # Mock the basic Geo calls but use real secondary nodes
+        allow(::Gitlab::Geo).to receive_message_chain(:secondary_nodes, :any?).and_return(true)
+        allow(::Gitlab::Geo).to receive(:secondary_nodes).and_return([valid_secondary_node, another_secondary_node])
+        allow(::Gitlab::Geo::Logger).to receive(:warn)
+
+        # Use the existing helper that works
+        post_lfs_json batch_redirect_url(project),
+          {
+            operation: 'download',
+            objects: [{ oid: sample_oid, size: sample_size }]
+          },
+          { 'Authorization' => authorize_user }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(::Gitlab::Geo::Logger).not_to have_received(:warn)
+
+        download_href = json_response['objects'][0]['actions']['download']['href']
+        expect(download_href).to include('from_secondary')
+        expect(download_href).to include('2')
+      end
+    end
+
     describe 'upload' do
       let(:project) { create(:project, :public) }
       let(:namespace) { project.namespace }
@@ -400,6 +512,11 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
         end
       end
     end
+  end
+
+  def batch_redirect_url(project)
+    uri = URI.parse(project.http_url_to_repo)
+    File.join(uri.origin, '-/from_secondary/2', uri.path, "info/lfs/objects/batch")
   end
 
   def enable_lfs
