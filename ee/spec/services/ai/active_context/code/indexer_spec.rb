@@ -67,11 +67,10 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
             partition_name: collection.name,
             partition_number: collection.partition_for(project.id),
             gitaly_config: {
-              address: Gitlab::GitalyClient.address(project.repository_storage),
               storage: project.repository_storage,
               relative_path: project.repository.relative_path,
               project_path: project.full_path
-            },
+            }.merge(Gitlab::GitalyClient.connection_data(project.repository_storage)),
             timeout: described_class::TIMEOUT
           }
         end
@@ -95,6 +94,32 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
             .and_return(0)
 
           run
+        end
+
+        describe 'gitaly_config' do
+          it 'includes address and authentication data from connection_data' do
+            expect(Gitlab::GitalyClient).to receive(:connection_data)
+              .with(project.repository_storage)
+              .and_return(address: 'unix:/tmp/gitaly.socket', token: 'test-token')
+
+            expect(Gitlab::Popen).to receive(:popen_with_streaming) do |command, _dir, _env|
+              # Find the -options flag and get the JSON that follows it
+              options_index = command.find_index('-options')
+              options_json = command[options_index + 1]
+              options = Gitlab::Json.parse(options_json)
+              gitaly_config = options['gitaly_config']
+
+              expect(gitaly_config).to include('address' => 'unix:/tmp/gitaly.socket')
+              expect(gitaly_config).to include('token' => 'test-token')
+              expect(gitaly_config).to include('storage' => project.repository_storage)
+              expect(gitaly_config).to include('relative_path' => project.repository.relative_path)
+              expect(gitaly_config).to include('project_path' => project.full_path)
+
+              0
+            end
+
+            run
+          end
         end
 
         describe 'connection option' do

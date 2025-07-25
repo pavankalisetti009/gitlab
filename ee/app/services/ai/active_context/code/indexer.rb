@@ -109,11 +109,10 @@ module Ai
 
         def gitaly_config
           {
-            address: Gitlab::GitalyClient.address(project.repository_storage),
             storage: project.repository_storage,
             relative_path: project_repository.relative_path,
             project_path: project.full_path
-          }
+          }.merge(Gitlab::GitalyClient.connection_data(project.repository_storage))
         end
 
         def collection_class
