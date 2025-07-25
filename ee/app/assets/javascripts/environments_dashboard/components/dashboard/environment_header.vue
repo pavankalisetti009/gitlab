@@ -50,7 +50,7 @@ export default {
 
 <template>
   <div :class="headerClasses" class="card-header border-0 gl-flex gl-items-center gl-py-3">
-    <div class="flex-grow-1 block-truncated">
+    <div class="flex-grow-1 gl-truncate">
       <gl-link
         v-gl-tooltip
         class="js-environment-link gl-text-default"
