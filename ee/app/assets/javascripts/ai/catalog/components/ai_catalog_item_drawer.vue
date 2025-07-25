@@ -3,7 +3,6 @@ import { GlButton, GlDrawer, GlTooltipDirective } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
-import { AI_CATALOG_AGENTS_EDIT_ROUTE } from '../router/constants';
 
 export default {
   name: 'AiCatalogItemDrawer',
@@ -24,6 +23,11 @@ export default {
       required: false,
       default: () => ({}),
     },
+    editRoute: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   computed: {
     getDrawerHeight() {
@@ -34,7 +38,6 @@ export default {
     },
   },
   DRAWER_Z_INDEX,
-  showRoute: AI_CATALOG_AGENTS_EDIT_ROUTE,
 };
 </script>
 <template>
@@ -52,8 +55,9 @@ export default {
           {{ activeItem.name }}
         </h2>
         <gl-button
+          v-if="editRoute"
           v-gl-tooltip
-          :to="{ name: $options.showRoute, params: { id: activeItemId } }"
+          :to="{ name: editRoute, params: { id: activeItemId } }"
           :title="s__('AICatalog|Edit')"
           category="tertiary"
           icon="pencil"

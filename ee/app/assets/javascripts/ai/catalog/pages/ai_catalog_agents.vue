@@ -10,7 +10,7 @@ import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.gra
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
-import { AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
+import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_AGENTS_EDIT_ROUTE } from '../router/constants';
 
 export default {
   name: 'AiCatalogAgents',
@@ -90,6 +90,7 @@ export default {
     checkDrawerParams() {
       const urlItemId = getParameterByName(AI_CATALOG_SHOW_QUERY_PARAM);
       if (urlItemId) {
+        // TODO: Fetch agent details from the API: https://gitlab.com/gitlab-org/gitlab/-/issues/557201
         this.activeItem =
           this.aiCatalogAgents.find((item) => this.formatId(item.id).toString() === urlItemId) ||
           null;
@@ -98,6 +99,7 @@ export default {
       }
     },
   },
+  editRoute: AI_CATALOG_AGENTS_EDIT_ROUTE,
 };
 </script>
 
@@ -122,6 +124,7 @@ export default {
     <ai-catalog-item-drawer
       :is-open="isItemSelected"
       :active-item="activeItem"
+      :edit-route="$options.editRoute"
       @close="closeDrawer"
     />
   </div>

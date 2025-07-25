@@ -5,6 +5,7 @@ import { GlAlert } from '@gitlab/ui';
 import { updateHistory, removeParams } from '~/lib/utils/url_utility';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import setWindowLocation from 'helpers/set_window_location_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
@@ -21,7 +22,13 @@ import {
   mockCatalogItemDeleteErrorResponse,
 } from '../mock_data';
 
-jest.mock('~/lib/utils/url_utility');
+jest.mock('~/lib/utils/url_utility', () => {
+  return {
+    ...jest.requireActual('~/lib/utils/url_utility'),
+    removeParams: jest.fn(),
+    updateHistory: jest.fn(),
+  };
+});
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
@@ -124,11 +131,11 @@ describe('AiCatalogAgents', () => {
       return nextTick();
     });
 
-    it('opens issuable drawer', () => {
+    it('opens item drawer', () => {
       expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
     });
 
-    it('selects active issuable', () => {
+    it('selects active item', () => {
       expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockAgents[0]);
     });
 
@@ -200,6 +207,32 @@ describe('AiCatalogAgents', () => {
         await waitForPromises();
         expect(findGlAlert().text()).toBe('Failed to delete agent. Error: Request failed');
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('when linking directly to a agent via URL', () => {
+    describe('when item id is found in list', () => {
+      beforeEach(async () => {
+        setWindowLocation('?show=1');
+        await createComponent();
+      });
+
+      it('opens the drawer and passes activeItem as prop', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
+        expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockAgents[0]);
+      });
+    });
+
+    describe('when item id is not found in list', () => {
+      beforeEach(async () => {
+        setWindowLocation('?show=98');
+        await createComponent();
+      });
+
+      it('does not open the drawer', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+        expect(findAiCatalogItemDrawer().props('activeItem')).toBeNull();
       });
     });
   });
