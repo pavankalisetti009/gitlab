@@ -16,6 +16,11 @@ export const mockAccounts = [
   { id: 3, name: 'project-account-3', username: 'project-account-3-username' },
 ];
 
+export const mockGroups = [
+  { name: 'group-1', id: '1' },
+  { name: 'group-2', id: '2' },
+];
+
 export const mockServiceAccounts = [
   { id: 1, name: 'service-account-1', username: 'sa1' },
   { id: 2, name: 'service-account-2', username: 'sa2' },
