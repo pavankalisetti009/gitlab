@@ -52,6 +52,7 @@ module Sbom
       @after_graph_ids = (after_graph_ids || []).reverse
       @before_graph_ids = (before_graph_ids || []).reverse
       @limit = limit || 20
+      @cache_key_service = Sbom::LatestGraphTimestampCacheKey.new(project: @occurrence.project)
     end
 
     def execute
@@ -100,9 +101,13 @@ module Sbom
     end
 
     def latest_timestamp
-      Sbom::GraphPath.by_projects(occurrence.project_id).maximum(:created_at)
+      read_timestamp_from_cache || Sbom::GraphPath.by_projects(occurrence.project_id).maximum(:created_at)
     end
     strong_memoize_attr :latest_timestamp
+
+    def read_timestamp_from_cache
+      @cache_key_service.retrieve
+    end
 
     def find_root_nodes
       root_nodes = Set.new

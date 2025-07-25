@@ -8,8 +8,14 @@ RSpec.describe Sbom::RemoveOldDependencyGraphs, feature_category: :dependency_ma
   let_it_be(:yesterday) { now - 1.day }
   let_it_be(:old_graph) { create_list(:sbom_graph_path, 4, project: project, created_at: yesterday) }
   let_it_be(:new_graph) { create_list(:sbom_graph_path, 4, project: project, created_at: now) }
+  let(:expected_cache_key) { Sbom::LatestGraphTimestampCacheKey.new(project: project).cache_key }
 
   subject(:service) { described_class.new(project) }
+
+  it 'attempts to read the timestamp from cache' do
+    expect(Rails.cache).to receive(:read).with(expected_cache_key)
+    service.execute
+  end
 
   context 'when the runtime limit is not exceeded' do
     it 'removes old dependency graphs' do
