@@ -1143,6 +1143,24 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
+  describe '#security_scans_created_at', :freeze_time do
+    subject(:security_scans_created_at) { pipeline.security_scans_created_at }
+
+    context 'when there is a security scan for the pipeline' do
+      let!(:existing_scan) { create(:security_scan, pipeline: pipeline, created_at: 3.days.ago) }
+
+      it 'returns the `created_at` value of the existing scan' do
+        expect(security_scans_created_at).to eq(3.days.ago)
+      end
+    end
+
+    context 'when there is no security scan for the pipeline' do
+      it 'returns the current time' do
+        expect(security_scans_created_at).to eq(Time.zone.now)
+      end
+    end
+  end
+
   describe '#has_security_findings_in_self_and_descendants?' do
     subject { pipeline.has_security_findings_in_self_and_descendants? }
 
