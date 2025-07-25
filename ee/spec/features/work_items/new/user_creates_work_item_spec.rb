@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe 'User creates work items', :js, feature_category: :team_planning do
   include Spec::Support::Helpers::ModalHelpers
-  include ListboxHelpers
   include WorkItemsHelpers
 
   let_it_be(:user) { create(:user) }
