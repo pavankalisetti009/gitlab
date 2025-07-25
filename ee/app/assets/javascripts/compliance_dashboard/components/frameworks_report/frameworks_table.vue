@@ -48,7 +48,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['adherenceV2Enabled', 'policyDisplayLimit'],
+  inject: ['policyDisplayLimit'],
   props: {
     groupPath: {
       type: String,
@@ -101,10 +101,6 @@ export default {
       const omittedFields = [];
       if (this.projectPath || !this.isTopLevelGroup) {
         omittedFields.push('associatedProjects');
-      }
-
-      if (!this.adherenceV2Enabled) {
-        omittedFields.push('requirements');
       }
 
       return omittedFields.length === 0

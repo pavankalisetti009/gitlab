@@ -38,11 +38,7 @@ export default {
     HelpIcon,
     DrawerAccordion,
   },
-  inject: [
-    'groupSecurityPoliciesPath',
-    'canAccessRootAncestorComplianceCenter',
-    'adherenceV2Enabled',
-  ],
+  inject: ['groupSecurityPoliciesPath', 'canAccessRootAncestorComplianceCenter'],
   props: {
     groupPath: {
       type: String,
@@ -102,9 +98,6 @@ export default {
           'ComplianceFrameworks|Error fetching compliance requirements controls data. Please refresh the page.',
         );
         Sentry.captureException(error);
-      },
-      skip() {
-        return !this.adherenceV2Enabled;
       },
     },
   },
@@ -325,7 +318,7 @@ export default {
             {{ framework.description }}
           </span>
         </div>
-        <div v-if="adherenceV2Enabled" data-testid="requirements">
+        <div data-testid="requirements">
           <gl-alert v-if="error" variant="danger" @dismiss="error = null"> {{ error }} </gl-alert>
           <div class="gl-border-t gl-mb-5">
             <div class="gl-flex gl-items-center gl-gap-1">

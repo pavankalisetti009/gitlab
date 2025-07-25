@@ -120,8 +120,6 @@ describe('FrameworksTable component', () => {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
       provide: {
-        adherenceV2Enabled:
-          options.adherenceV2Enabled !== undefined ? options.adherenceV2Enabled : true,
         groupSecurityPoliciesPath: '/example-group-security-policies-path',
         policyDisplayLimit: 10,
       },
@@ -306,20 +304,6 @@ describe('FrameworksTable component', () => {
       expect(requirementsColumn.text()).not.toContain('and');
       expect(requirementsColumn.text()).not.toContain('more');
       expect(findRequirementItems).toHaveLength(3);
-    });
-
-    it('does not render the requirements column when adherenceV2Enabled is false', () => {
-      wrapper = createComponent(
-        {
-          frameworks: frameworksWithRequirements,
-          isLoading: false,
-        },
-        {},
-        { adherenceV2Enabled: false },
-      );
-
-      const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
-      expect(headerTexts).not.toContain('Requirements');
     });
   });
 

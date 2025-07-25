@@ -58,7 +58,6 @@ export default {
     'pipelineConfigurationFullPathEnabled',
     'groupPath',
     'featureSecurityPoliciesEnabled',
-    'adherenceV2Enabled',
     'pipelineExecutionPolicyPath',
     'migratePipelineToPolicyPath',
   ],
@@ -286,9 +285,7 @@ export default {
 
         if (this.isNewFramework) {
           const frameworkId = await this.createFramework(params);
-          if (this.adherenceV2Enabled) {
-            await this.createRequirements(frameworkId);
-          }
+          await this.createRequirements(frameworkId);
           this.handleMutationSuccess(frameworkId);
         } else {
           await this.updateFramework(params);
@@ -674,7 +671,6 @@ export default {
         />
 
         <requirements-section
-          v-if="adherenceV2Enabled"
           :requirements="requirements"
           :is-new-framework="isNewFramework"
           @[$options.requirementEvents.create]="handleCreateRequirement"
