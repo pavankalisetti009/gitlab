@@ -43,6 +43,27 @@ module Search
         end
 
         # @deprecated - use by_search_level_and_membership - this method is kept for legacy authorization
+        def project_ids_for_features(projects, user, features)
+          project_ids = projects.pluck_primary_key
+
+          allowed_ids = []
+          features.each do |feature|
+            allowed_ids.concat(filter_project_ids_by_feature(project_ids, user, feature))
+          end
+
+          abilities = features.map { |feature| ability_to_access_feature(feature) }
+
+          allowed_ids.concat(filter_project_ids_by_abilities(projects, user, abilities))
+          allowed_ids.uniq
+        end
+
+        def filter_project_ids_by_feature(project_ids, user, feature)
+          Project
+            .id_in(project_ids)
+            .filter_by_feature_visibility(feature, user)
+            .pluck_primary_key
+        end
+
         def scoped_project_ids(current_user, project_ids)
           return :any if project_ids == :any
 
@@ -53,6 +74,23 @@ module Search
           return [] if !Ability.allowed?(current_user, :read_cross_project) && project_ids.size > 1
 
           project_ids
+        end
+
+        def ability_to_access_feature(feature)
+          case feature&.to_sym
+          when :repository
+            :read_code
+          end
+        end
+
+        def filter_project_ids_by_abilities(projects, user, target_abilities)
+          return [] if target_abilities.empty? || user.blank?
+
+          actual_abilities = ::Authz::Project.new(user, scope: projects).permitted
+
+          projects.filter_map do |project|
+            project.id if (actual_abilities[project.id] || []).intersection(target_abilities).any?
+          end
         end
 
         def traversal_ids_for_user(user, options)

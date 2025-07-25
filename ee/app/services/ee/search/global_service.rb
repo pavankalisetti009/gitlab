@@ -69,6 +69,10 @@ module EE
       end
       strong_memoize_attr :elastic_projects
 
+      def zoekt_project_id; end
+
+      def zoekt_group_id; end
+
       override :allowed_scopes
       def allowed_scopes
         scopes = super

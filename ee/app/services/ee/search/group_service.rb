@@ -18,6 +18,10 @@ module EE
         group
       end
 
+      def zoekt_group_id
+        group.id
+      end
+
       override :search_level
       def search_level
         :group

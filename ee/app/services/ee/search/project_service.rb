@@ -58,6 +58,12 @@ module EE
         project
       end
 
+      def zoekt_project_id
+        project.id
+      end
+
+      def zoekt_group_id; end
+
       override :search_level
       def search_level
         :project
