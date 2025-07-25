@@ -4,9 +4,9 @@ import VueApollo from 'vue-apollo';
 import { createMockSubscription as createMockApolloSubscription } from 'mock-apollo-client';
 import { GlSprintf } from '@gitlab/ui';
 
+import readyToMergeResponse from 'test_fixtures/graphql/merge_requests/states/ready_to_merge.query.graphql.json';
 import approvedByCurrentUser from 'test_fixtures/graphql/merge_requests/approvals/approvals.query.graphql.json';
 import getStateQueryResponse from 'test_fixtures/graphql/merge_requests/get_state.query.graphql.json';
-import readyToMergeResponse from 'test_fixtures/graphql/merge_requests/states/ready_to_merge.query.graphql.json';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import MrWidgetOptions from 'ee/vue_merge_request_widget/mr_widget_options.vue';
@@ -183,8 +183,6 @@ describe('ee merge request widget options', () => {
       name: 'review/diplo',
       url: '/root/acets-review-apps/environments/15',
       stop_url: '/root/acets-review-apps/environments/15/stop',
-      metrics_url: '/root/acets-review-apps/environments/15/deployments/1/metrics',
-      metrics_monitoring_url: '/root/acets-review-apps/environments/15/metrics',
       external_url: 'http://diplo.',
       external_url_formatted: 'diplo.',
       deployed_at: '2017-03-22T22:44:42.258Z',
