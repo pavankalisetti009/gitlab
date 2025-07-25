@@ -6,11 +6,11 @@ import { joinPaths, mergeUrlParams } from '~/lib/utils/url_utility';
 import { VALUE_STREAM_METRIC_METADATA, DORA_METRICS } from '~/analytics/shared/constants';
 import { s__ } from '~/locale';
 import { EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE } from 'ee/analytics/analytics_dashboards/constants';
-import { TABLE_METRICS } from '../constants';
-import { AI_IMPACT_TABLE_METRICS } from '../ai_impact/constants';
+import { TABLE_METRICS } from '../../../../dashboards/constants';
+import { AI_IMPACT_TABLE_METRICS } from '../../../../dashboards/ai_impact/constants';
 
 export default {
-  name: 'MetricTableCell',
+  name: 'MetricLabel',
   components: {
     GlIcon,
     GlLink,
@@ -21,14 +21,17 @@ export default {
     identifier: {
       type: String,
       required: true,
+      validator: (key) => Object.keys(VALUE_STREAM_METRIC_METADATA).includes(key),
     },
     requestPath: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     isProject: {
       type: Boolean,
-      required: true,
+      required: false,
+      default: false,
     },
     filterLabels: {
       type: Array,

@@ -6,7 +6,7 @@ import { formatNumber } from '~/locale';
 import { VSD_COMPARISON_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
 import { CHART_GRADIENT, CHART_GRADIENT_INVERTED } from '../constants';
 import { generateDashboardTableFields } from '../utils';
-import MetricTableCell from './metric_table_cell.vue';
+import MetricLabel from '../../analytics_dashboards/components/visualizations/data_table/metric_label.vue';
 import TrendIndicator from './trend_indicator.vue';
 
 export default {
@@ -15,7 +15,7 @@ export default {
     GlSkeletonLoader,
     GlTableLite,
     GlSparklineChart,
-    MetricTableCell,
+    MetricLabel,
     TrendIndicator,
     GlIcon,
   },
@@ -108,7 +108,7 @@ export default {
     </template>
 
     <template #cell(metric)="{ value: { identifier } }">
-      <metric-table-cell
+      <metric-label
         :data-testid="`${identifier}-metric-cell`"
         :identifier="identifier"
         :request-path="requestPath"

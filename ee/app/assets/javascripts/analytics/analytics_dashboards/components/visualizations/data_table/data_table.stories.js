@@ -22,6 +22,13 @@ const WithGridstack = (args, { argTypes }) => ({
       </gridstack-dashboard>`,
 });
 
+const changePercentData = [
+  { value: 0 },
+  { value: -0.4 },
+  { value: 0.12 },
+  { value: 0.14, invertTrendColor: true },
+];
+
 const data = {
   nodes: [
     {
@@ -97,9 +104,10 @@ CustomFields.parameters = {
     },
   },
 };
+
 CustomFields.args = {
   data: {
-    nodes: data.nodes.map(({ title, additions, deletions }) => ({
+    nodes: data.nodes.map(({ title, additions, deletions }, idx) => ({
       title,
       assignees: {
         nodes: [
@@ -115,6 +123,7 @@ CustomFields.args = {
         additions,
         deletions,
       },
+      change: changePercentData[idx] ?? changePercentData[0],
     })),
   },
   options: {
@@ -122,6 +131,7 @@ CustomFields.args = {
       { key: 'title' },
       { key: 'assignees', label: 'Assignees', component: 'AssigneeAvatars' },
       { key: 'changes', label: 'Diff', component: 'DiffLineChanges' },
+      { key: 'change', label: '+/- %', component: 'ChangePercentageIndicator' },
     ],
   },
 };

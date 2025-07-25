@@ -34,10 +34,10 @@ import {
   SUPPORTED_AI_METRICS,
   AI_IMPACT_TABLE_METRICS,
 } from 'ee/analytics/dashboards/ai_impact/constants';
-import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
+import MetricLabel from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/metric_label.vue';
 import { useFakeDate } from 'helpers/fake_date';
 import {
   mockGraphqlMergeRequestsResponse,
@@ -167,7 +167,7 @@ describe('Metric table', () => {
   const metricIdToTestId = (identifier) => `ai-impact-metric-${identifier.replaceAll('_', '-')}`;
 
   const findTableRow = (metricId) => wrapper.findByTestId(metricIdToTestId(metricId));
-  const findMetricTableCell = (metricId) => findTableRow(metricId).findComponent(MetricTableCell);
+  const findMetricLabel = (metricId) => findTableRow(metricId).findComponent(MetricLabel);
   const findValueTableCells = (metricId) =>
     findTableRow(metricId).findAll(`[data-testid="ai-impact-table-value-cell"]`);
   const findTrendIndicator = (metricId) => findTableRow(metricId).findComponent(TrendIndicator);
@@ -220,7 +220,7 @@ describe('Metric table', () => {
     });
 
     it('renders the metric name', () => {
-      expect(findMetricTableCell(identifier).props()).toEqual(
+      expect(findMetricLabel(identifier).props()).toEqual(
         expect.objectContaining({ identifier, requestPath, isProject, trackingProperty }),
       );
     });

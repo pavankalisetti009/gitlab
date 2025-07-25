@@ -2,9 +2,9 @@ import { GlPopover, GlLink } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE } from 'ee/analytics/analytics_dashboards/constants';
-import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
+import MetricLabel from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/metric_label.vue';
 
-describe('Metric table cell', () => {
+describe('Metric label', () => {
   let wrapper;
 
   const identifier = 'issues';
@@ -17,7 +17,7 @@ describe('Metric table cell', () => {
   const labelParams = '?label_name[]=frontend&label_name[]=UX';
 
   const createWrapper = (props = {}, doraMetricsDashboard = false) => {
-    wrapper = mountExtended(MetricTableCell, {
+    wrapper = mountExtended(MetricLabel, {
       provide: {
         glFeatures: {
           doraMetricsDashboard,
@@ -164,7 +164,7 @@ describe('Metric table cell', () => {
       expect(findPopover().props('title')).toBe(metricLabel);
       expect(findPopover().text()).toContain('Number of new issues created.');
       expect(findPopoverLink().attributes('href')).toBe('/help/user/group/issues_analytics/_index');
-      expect(findPopoverLink().text()).toBe(MetricTableCell.i18n.docsLabel);
+      expect(findPopoverLink().text()).toBe(MetricLabel.i18n.docsLabel);
     });
   });
 });
