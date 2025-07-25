@@ -85,7 +85,7 @@ module QA
               needs:
                 - project: #{upstream_project.path_with_namespace}
                   job: job1
-                  ref: main
+                  ref: #{upstream_project.default_branch}
                   artifacts: true
               script: cat output.txt
           YAML
