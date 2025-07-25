@@ -42,6 +42,7 @@ jest.mock('~/lib/utils/websocket_utils', () => ({
 }));
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
+const MOCK_NAMESPACE_ID = 'gid://gitlab/Group/456';
 const MOCK_RESOURCE_ID = 'gid://gitlab/Resource/789';
 const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflow/456';
 const MOCK_USER_MESSAGE = {
@@ -244,16 +245,16 @@ describe('Duo Agentic Chat', () => {
         },
       );
 
-      it('creates a new workflow when sending a prompt for the first time', async () => {
+      it('creates a new workflow when sending a prompt for the first time with projectId', async () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
         expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
-          projectId: MOCK_PROJECT_ID,
           goal: MOCK_USER_MESSAGE.content,
           workflowDefinition: 'chat',
           agentPrivileges: [2, 3],
           preApprovedAgentPrivileges: [2],
+          projectId: MOCK_PROJECT_ID,
         });
 
         expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
@@ -270,6 +271,79 @@ describe('Duo Agentic Chat', () => {
             requestId: `456-0`,
           }),
         );
+      });
+
+      it('creates a new workflow when sending a prompt for the first time with namespaceId', async () => {
+        createComponent({
+          propsData: { namespaceId: MOCK_NAMESPACE_ID, resourceId: MOCK_RESOURCE_ID },
+        });
+        duoChatGlobalState.isAgenticChatShown = true;
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
+          goal: MOCK_USER_MESSAGE.content,
+          workflowDefinition: 'chat',
+          agentPrivileges: [2, 3],
+          preApprovedAgentPrivileges: [2],
+          namespaceId: MOCK_NAMESPACE_ID,
+        });
+
+        expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
+          onMessage: expect.any(Function),
+          onError: expect.any(Function),
+          onClose: expect.any(Function),
+        });
+
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            content: MOCK_USER_MESSAGE.content,
+            role: 'user',
+            requestId: `456-0`,
+          }),
+        );
+      });
+
+      it('creates a new workflow when sending a prompt for the first time with both projectId and namespaceId', async () => {
+        createComponent({
+          propsData: {
+            projectId: MOCK_PROJECT_ID,
+            namespaceId: MOCK_NAMESPACE_ID,
+            resourceId: MOCK_RESOURCE_ID,
+          },
+        });
+        duoChatGlobalState.isAgenticChatShown = true;
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
+          goal: MOCK_USER_MESSAGE.content,
+          workflowDefinition: 'chat',
+          agentPrivileges: [2, 3],
+          preApprovedAgentPrivileges: [2],
+          projectId: MOCK_PROJECT_ID,
+          namespaceId: MOCK_NAMESPACE_ID,
+        });
+      });
+
+      it('creates a new workflow when sending a prompt for the first time without projectId or namespaceId', async () => {
+        createComponent({
+          propsData: { resourceId: MOCK_RESOURCE_ID },
+        });
+        duoChatGlobalState.isAgenticChatShown = true;
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
+          goal: MOCK_USER_MESSAGE.content,
+          workflowDefinition: 'chat',
+          agentPrivileges: [2, 3],
+          preApprovedAgentPrivileges: [2],
+        });
       });
 
       it('sets loading to true when sending a prompt', async () => {

@@ -44,6 +44,11 @@ export default {
       required: false,
       default: null,
     },
+    namespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
     resourceId: {
       type: String,
       required: false,
@@ -325,11 +330,12 @@ export default {
             await this.$apollo.mutate({
               mutation: duoWorkflowMutation,
               variables: {
-                projectId: this.projectId,
                 goal: question,
                 workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
                 agentPrivileges: DUO_WORKFLOW_AGENT_PRIVILEGES,
                 preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
+                ...(this.projectId && { projectId: this.projectId }),
+                ...(this.namespaceId && { namespaceId: this.namespaceId }),
               },
               context: {
                 headers: {

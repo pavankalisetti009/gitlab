@@ -3941,11 +3941,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:policy) { :access_duo_agentic_chat }
 
       context 'when not on .org or .com' do
-        where(:enabled_for_user, :duo_features_enabled, :cs_matcher) do
-          true  | false | be_disallowed(policy)
-          true  | true  | be_allowed(policy)
-          false | false | be_disallowed(policy)
-          false | true  | be_disallowed(policy)
+        where(:enabled_for_user, :duo_features_enabled, :amazon_q_enabled, :cs_matcher) do
+          true  | false | false | be_disallowed(policy)
+          true  | true  | false | be_allowed(policy)
+          false | false | false | be_disallowed(policy)
+          false | true  | false | be_disallowed(policy)
+          true  | true  | true  | be_disallowed(policy)
         end
 
         with_them do
@@ -3954,6 +3955,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
             stub_ee_application_setting(duo_features_enabled: duo_features_enabled, lock_duo_features_enabled: true)
             allow(Ability).to receive(:allowed?).and_call_original
             allow(Ability).to receive(:allowed?).with(current_user, :access_duo_agentic_chat).and_return(enabled_for_user)
+            allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
           end
 
           it { is_expected.to cs_matcher }

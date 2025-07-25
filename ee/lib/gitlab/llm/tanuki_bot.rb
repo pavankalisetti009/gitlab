@@ -16,6 +16,18 @@ module Gitlab
         authorizer_response.allowed?
       end
 
+      def self.agentic_mode_available?(user:, project:, group:)
+        return false unless Feature.enabled?(:duo_workflow_workhorse, user)
+
+        if project.present? && project.persisted?
+          user.can?(:access_duo_agentic_chat, project)
+        elsif group.present? && group.persisted?
+          user.can?(:access_duo_agentic_chat, group)
+        else
+          false
+        end
+      end
+
       def self.show_breadcrumbs_entry_point?(user:, container: nil)
         return false unless chat_enabled?(user) && container
         return false if authorized_by_duo_core?(user)
