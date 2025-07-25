@@ -257,6 +257,10 @@ RSpec.describe ApplicationHelper do
   end
 
   describe '#autocomplete_data_sources', feature_category: :team_planning do
+    before do
+      stub_feature_flags(extensible_reference_filters: false)
+    end
+
     def expect_autocomplete_data_sources(object, noteable_type, source_keys)
       sources = helper.autocomplete_data_sources(object, noteable_type)
       expect(sources.keys).to match_array(source_keys)
