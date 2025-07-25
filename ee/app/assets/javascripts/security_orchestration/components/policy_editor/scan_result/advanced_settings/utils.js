@@ -5,6 +5,7 @@ import {
   GROUPS,
   ROLES,
   TOKENS,
+  USERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
 export const createSourceBranchPatternObject = ({ id = '', source = {}, target = {} } = {}) => ({
@@ -53,6 +54,7 @@ export const renderOptionsList = ({
   if (!securityPoliciesBypassOptionsGroupRoles) {
     delete allOptions[ROLES];
     delete allOptions[GROUPS];
+    delete allOptions[USERS];
   }
 
   return allOptions;

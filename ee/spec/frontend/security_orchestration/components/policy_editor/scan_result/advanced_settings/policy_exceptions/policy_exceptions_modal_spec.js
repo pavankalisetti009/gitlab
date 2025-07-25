@@ -5,6 +5,7 @@ import BranchPatternSelector from 'ee/security_orchestration/components/policy_e
 import GroupsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/groups_selector.vue';
 import TokensSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/tokens_selector.vue';
 import ServiceAccountsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/service_accounts_selector.vue';
+import UsersSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/users_selector.vue';
 import PolicyExceptionsModal from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_modal.vue';
 import PolicyExceptionsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_selector.vue';
 import {
@@ -12,12 +13,14 @@ import {
   GROUPS,
   SOURCE_BRANCH_PATTERNS,
   TOKENS,
+  USERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import {
   mockAccounts,
   mockBranchPatterns,
   mockGroups,
   mockTokens,
+  mockUsers,
 } from 'ee_jest/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/mocks';
 
 describe('PolicyExceptionsModal', () => {
@@ -38,6 +41,7 @@ describe('PolicyExceptionsModal', () => {
   const findBranchPatternSelector = () => wrapper.findComponent(BranchPatternSelector);
   const findGroupsSelector = () => wrapper.findComponent(GroupsSelector);
   const findTokensSelector = () => wrapper.findComponent(TokensSelector);
+  const findUsersSelector = () => wrapper.findComponent(UsersSelector);
   const findPolicyExceptionsSelector = () => wrapper.findComponent(PolicyExceptionsSelector);
   const findSaveButton = () => wrapper.findByTestId('save-button');
   const findModalTitle = () => wrapper.findByTestId('modal-title');
@@ -226,6 +230,49 @@ describe('PolicyExceptionsModal', () => {
         [
           {
             groups: mockGroups,
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('users', () => {
+    it('renders users selector', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            users: mockUsers,
+          },
+          selectedTab: USERS,
+        },
+      });
+
+      expect(findUsersSelector().exists()).toBe(true);
+      expect(findUsersSelector().props('selectedUsers')).toEqual(mockUsers);
+
+      expect(findModalTitle().text()).toBe('Users');
+      expect(findModalSubtitle().text()).toBe(
+        'Select users exceptions. Choose which users can bypass this policy.',
+      );
+    });
+
+    it('saves selected users', async () => {
+      createComponent({
+        propsData: {
+          selectedTab: USERS,
+        },
+      });
+
+      await findUsersSelector().vm.$emit('set-users', mockUsers);
+
+      expect(wrapper.emitted('changed')).toBeUndefined();
+
+      await findSaveButton().vm.$emit('click');
+
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            users: mockUsers,
           },
         ],
       ]);

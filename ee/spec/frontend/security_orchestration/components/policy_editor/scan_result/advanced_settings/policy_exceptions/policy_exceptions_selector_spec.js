@@ -26,7 +26,7 @@ describe('PolicyExceptionsSelector', () => {
     });
 
     it('renders policy exceptions options', () => {
-      expect(findPolicyExceptionSelectors()).toHaveLength(5);
+      expect(findPolicyExceptionSelectors()).toHaveLength(6);
     });
 
     it('selects policy exceptions option', () => {
@@ -59,10 +59,11 @@ describe('PolicyExceptionsSelector', () => {
       });
 
       const headers = findHeaders();
-      expect(findPolicyExceptionSelectors()).toHaveLength(3);
+      expect(findPolicyExceptionSelectors()).toHaveLength(4);
       expect(headers.at(0).text()).toBe('Roles');
       expect(headers.at(1).text()).toBe('Groups');
-      expect(headers.at(2).text()).toBe('Source Branch Patterns');
+      expect(headers.at(2).text()).toBe('Users');
+      expect(headers.at(3).text()).toBe('Source Branch Patterns');
     });
 
     it('renders only branch patterns option when other two flags are disabled', () => {
