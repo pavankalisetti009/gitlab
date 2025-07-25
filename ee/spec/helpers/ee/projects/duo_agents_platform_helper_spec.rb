@@ -16,7 +16,7 @@ RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_wor
     subject(:helper_data) { helper.duo_agents_platform_data(project) }
 
     before do
-      allow(helper).to receive(:project_automate_agent_sessions_path).with(project).and_return('/test-project/-/agents')
+      allow(helper).to receive(:project_automate_path).with(project).and_return('/test-project/-/automate')
       allow(helper).to receive(:image_path).with(
         'illustrations/empty-state/empty-pipeline-md.svg')
         .and_return('/assets/illustrations/empty-state/empty-pipeline-md.svg'
@@ -25,7 +25,7 @@ RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_wor
 
     it 'returns the expected data hash' do
       expected_data = {
-        agents_platform_base_route: '/test-project/-/agents',
+        agents_platform_base_route: '/test-project/-/automate',
         project_path: project.full_path,
         project_id: project.id,
         duo_agents_invoke_path: api_v4_ai_duo_workflows_workflows_path,

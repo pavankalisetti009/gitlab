@@ -2,20 +2,18 @@ import { shallowMount } from '@vue/test-utils';
 import DuoAgentsPlatformApp from 'ee/ai/duo_agents_platform/duo_agents_platform_app.vue';
 
 describe('DuoAgentsPlatformApp', () => {
-  let mockRoute;
+  const mockRoute = {
+    path: '/agent-sessions/',
+    name: 'agents_platform_index_page',
+  };
 
   let wrapper;
 
-  const createWrapper = (props = {}) => {
-    mockRoute = {
-      path: '/',
-      name: 'agents_platform_index_page',
-    };
-
+  const createWrapper = (props = {}, route = mockRoute) => {
     return shallowMount(DuoAgentsPlatformApp, {
       propsData: props,
       mocks: {
-        $route: mockRoute,
+        $route: route,
       },
       stubs: {
         RouterView: true,

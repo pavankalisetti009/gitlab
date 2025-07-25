@@ -5963,9 +5963,6 @@ msgstr ""
 msgid "Agent sessions"
 msgstr ""
 
-msgid "Agents"
-msgstr ""
-
 msgid "AiAgents|Agent Name"
 msgstr ""
 
@@ -9651,6 +9648,9 @@ msgid "Autocomplete hint"
 msgstr ""
 
 msgid "Autocomplete usage hint"
+msgstr ""
+
+msgid "Automate"
 msgstr ""
 
 msgid "Automatic certificate management using %{lets_encrypt_link_start}Let's Encrypt%{lets_encrypt_link_end}"

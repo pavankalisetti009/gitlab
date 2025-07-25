@@ -26,9 +26,11 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           end
         end
 
+        # Read doc/development/ai_features/duo_agent_platform.md before updating the automate routes
         scope :automate do
           get '/(*vueroute)' => 'duo_agents_platform#show', as: :automate, format: false
-          get '/agent-sessions/(*vueroute)' => 'duo_agents_platform#show', as: :automate_agent_sessions, format: false
+          # Additional named routes for helpers
+          get 'agent-sessions', to: 'duo_agents_platform#show', as: :automate_agent_sessions, format: false
         end
 
         namespace :quality do

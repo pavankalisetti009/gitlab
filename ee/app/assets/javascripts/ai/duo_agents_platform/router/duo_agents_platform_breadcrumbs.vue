@@ -1,11 +1,7 @@
 <script>
 import { GlBreadcrumb } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import {
-  AGENTS_PLATFORM_INDEX_ROUTE,
-  AGENTS_PLATFORM_SHOW_ROUTE,
-  AGENTS_PLATFORM_NEW_ROUTE,
-} from './constants';
+import { AGENTS_PLATFORM_INDEX_ROUTE } from './constants';
 
 export default {
   components: {
@@ -18,66 +14,31 @@ export default {
     },
   },
   computed: {
-    rootRoutes() {
+    crumbs() {
+      // Get the first matched items. Iterate over each of them and make then a breadcrumb item
+      // only if they have a meta field with text in
+      const matchedRoutes = (this.$route?.matched || [])
+        .map((route) => {
+          return {
+            text:
+              !route.meta && this.$route.params.id
+                ? String(this.$route.params.id)
+                : route.meta?.text,
+            to: { path: route.path },
+          };
+        })
+        .filter((r) => r.text);
+
+      return [...this.staticCrumbs, ...matchedRoutes];
+    },
+    staticCrumbs() {
       return [
+        ...this.staticBreadcrumbs,
         {
           text: s__('DuoAgentsPlatform|Automate'),
           to: { name: AGENTS_PLATFORM_INDEX_ROUTE },
         },
-        {
-          text: s__('DuoAgentsPlatform|Agent sessions'),
-          to: { name: AGENTS_PLATFORM_INDEX_ROUTE },
-        },
       ];
-    },
-    showRoute() {
-      return {
-        text: String(this.$route.params.id),
-        to: { name: AGENTS_PLATFORM_SHOW_ROUTE, params: { id: this.$route.params.id } },
-      };
-    },
-    isIndexRoute() {
-      return this.$route.name === AGENTS_PLATFORM_INDEX_ROUTE;
-    },
-    isShowRoute() {
-      return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE;
-    },
-    isNewRoute() {
-      return this.$route.name === AGENTS_PLATFORM_NEW_ROUTE;
-    },
-    crumbs() {
-      const crumbs = [...this.staticBreadcrumbs];
-
-      // add root route if not on index page
-      if (!this.isIndexRoute) {
-        this.rootRoutes.forEach((route) => crumbs.push(route));
-      }
-
-      // add agent details if route contains an agent id
-      if (this.$route.params.id && this.isShowRoute) {
-        crumbs.push({
-          text: this.showRoute.text,
-          to: undefined, // current page, no link
-        });
-      }
-
-      if (this.isNewRoute) {
-        crumbs.push({
-          text: s__('DuoAgentsPlatform|New'),
-          to: undefined, // current page, no link
-        });
-      }
-
-      // if on index page, add current page without link
-      if (this.isIndexRoute) {
-        crumbs.push(this.rootRoutes[0]);
-        crumbs.push({
-          text: s__('DuoAgentsPlatform|Agent sessions'),
-          to: undefined,
-        });
-      }
-
-      return crumbs;
     },
   },
 };
