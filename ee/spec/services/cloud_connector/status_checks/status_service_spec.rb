@@ -7,6 +7,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
   let(:succeeded_probe) { CloudConnector::StatusChecks::Probes::TestProbe.new(success: true) }
   let(:failed_probe) { CloudConnector::StatusChecks::Probes::TestProbe.new(success: false) }
   let(:user) { build(:user) }
+  let(:ai_gateway_url) { 'http://localhost:5002' }
 
   subject(:service) { described_class.new(user: user, probes: probes) }
 
@@ -33,9 +34,9 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
       end
     end
 
-    context 'when self-hosted AI Gateway is set up' do
+    context 'when self-hosted AI Gateway URL is set up' do
       before do
-        allow(::Ai::Setting).to receive(:self_hosted?).and_return(true)
+        allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return(ai_gateway_url)
       end
 
       it 'uses a different set of probes' do
@@ -67,7 +68,6 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
     end
 
     context 'when CLOUD_CONNECTOR_SELF_SIGN_TOKENS is set' do
-      let(:ai_gateway_url) { 'http://localhost:5002' }
       let(:local_host_probe) { instance_double(CloudConnector::StatusChecks::Probes::HostProbe) }
 
       before do

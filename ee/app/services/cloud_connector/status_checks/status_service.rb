@@ -29,10 +29,12 @@ module CloudConnector
       private
 
       def selected_probes
-        if ::Ai::Setting.self_hosted?
-          ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
-        elsif ::Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
+        if ::Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
           development_probes
+        # We consider the instance to be using self-hosted Duo
+        # if they register a self-hosted AIGW URL.
+        elsif ::Gitlab::AiGateway.self_hosted_url.present?
+          ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
         elsif ::Ai::AmazonQ.connected?
           default_probes + amazon_q_probes
         else
