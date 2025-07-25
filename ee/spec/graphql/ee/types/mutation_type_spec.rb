@@ -41,4 +41,12 @@ RSpec.describe Types::MutationType do
       expect(confirm_mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
     end
   end
+
+  describe 'vulnerabilities severity override mutation scopes' do
+    it 'includes api, read_api, ai_workflows scope for vulnerabilities bulk severity override mutation' do
+      bulk_severity_override_mutation = described_class.fields['vulnerabilitiesSeverityOverride']
+      scopes = bulk_severity_override_mutation.instance_variable_get(:@scopes)
+      expect(scopes).to include(:api, :read_api, :ai_workflows)
+    end
+  end
 end
