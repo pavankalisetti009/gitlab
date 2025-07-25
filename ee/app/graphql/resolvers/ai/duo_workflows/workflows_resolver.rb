@@ -10,24 +10,24 @@ module Resolvers
 
         argument :project_path, GraphQL::Types::ID,
           required: false,
-          description: 'Full path of the project containing the workflows.'
+          description: 'Full path of the project that contains the flows.'
 
         argument :type, GraphQL::Types::String,
           required: false,
-          description: 'Type of workflow to filter by (e.g., software_development).'
+          description: 'Type of flow to filter by (for example, software_development).'
 
         argument :sort, Types::SortEnum,
-          description: 'Sort workflows by the criteria.',
+          description: 'Sort flows by the criteria.',
           required: false,
           default_value: :created_desc
 
         argument :environment, Types::Ai::DuoWorkflows::WorkflowEnvironmentEnum,
-          description: 'Environment, e.g., ide or web.',
+          description: 'Environment, for example, IDE or web.',
           required: false
 
         argument :workflow_id, Types::GlobalIDType[::Ai::DuoWorkflows::Workflow],
           required: false,
-          description: 'Workflow ID to filter by.'
+          description: 'Flow ID to filter by.'
 
         def resolve(**args)
           return [] unless current_user
@@ -44,11 +44,21 @@ module Resolvers
             end
           end
 
-          workflows = ::Ai::DuoWorkflows::Workflow.for_user(current_user.id)
+          workflows = ::Ai::DuoWorkflows::Workflow
 
-          if args[:project_path].present?
-            project = Project.find_by_full_path(args[:project_path])
-            workflows = workflows.for_project(project)
+          if object.is_a?(::Project)
+            return [] unless current_user.can?(:duo_workflow, object)
+
+            workflows = workflows.for_project(object).from_pipeline
+          else
+            workflows = workflows.for_user(current_user.id)
+            if args[:project_path].present?
+              project = Project.find_by_full_path(args[:project_path])
+
+              return [] unless current_user.can?(:duo_workflow, project)
+
+              workflows = workflows.for_project(project)
+            end
           end
 
           workflows = workflows.with_workflow_definition(args[:type]) if args[:type].present?

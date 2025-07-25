@@ -55,6 +55,24 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
     end
   end
 
+  describe '.from_pipeline' do
+    let_it_be(:ide_workflow) do
+      create(:duo_workflows_workflow, environment: :ide, workflow_definition: :software_development)
+    end
+
+    let_it_be(:web_workflow) do
+      create(:duo_workflows_workflow, environment: :web, workflow_definition: :chat)
+    end
+
+    let_it_be(:pipeline_workflow) do
+      create(:duo_workflows_workflow, environment: :web, workflow_definition: :convert_to_gitlab_ci)
+    end
+
+    it 'finds the local workflows when environment is ide' do
+      expect(described_class.from_pipeline).to eq([pipeline_workflow])
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_length_of(:goal).is_at_most(16_384) }

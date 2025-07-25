@@ -37,7 +37,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       observability_traces_links dependencies security_exclusions security_exclusion
       compliance_standards_adherence target_branch_rules duo_workflow_status_check component_usages
       vulnerability_archives component_versions vulnerability_statistic analyzer_statuses
-      compliance_requirement_statuses duo_agentic_chat_available container_scanning_for_registry_enabled
+      compliance_requirement_statuses duo_agentic_chat_available container_scanning_for_registry_enabled duo_workflow_workflows
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -1040,5 +1040,13 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
 
       it { is_expected.to have_attributes(size: 3).and satisfy { |nodes| nodes.first['tagNamePattern'] == 'mutable' } }
     end
+  end
+
+  describe 'duo_workflow_workflows field' do
+    subject { described_class.fields['duoWorkflowWorkflows'] }
+
+    it { is_expected.to have_graphql_type(Types::Ai::DuoWorkflows::WorkflowType.connection_type) }
+    it { is_expected.to have_graphql_resolver(Resolvers::Ai::DuoWorkflows::WorkflowsResolver) }
+    it { is_expected.to have_graphql_arguments(:project_path, :sort, :type, :workflow_id, :environment) }
   end
 end

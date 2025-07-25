@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- Many cases to deal with here.
 RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workflow do
   include GraphqlHelpers
 
@@ -10,6 +11,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
   let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:project_2) { create(:project, :public, group: group) }
   let_it_be(:user) { create(:user, developer_of: group) }
+  let_it_be(:another_user) { create(:user, developer_of: group) }
   let_it_be(:workflow_without_environment) do
     create(:duo_workflows_workflow, project: project, user: user, created_at: 1.day.ago).tap do |workflow|
       workload = create(:ci_workload, project: project)
@@ -23,6 +25,11 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
 
   let_it_be(:workflow_with_web_environment) do
     create(:duo_workflows_workflow, environment: :web, project: project, user: user, created_at: 1.day.ago)
+  end
+
+  let_it_be(:remote_execution_workflow_another_user) do
+    create(:duo_workflows_workflow, project: project, user: another_user, environment: :web,
+      workflow_definition: :convert_to_gitlab_ci)
   end
 
   let_it_be(:archived_workflow) do
@@ -61,7 +68,11 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
   end
 
   let_it_be(:workflows_project_2) { create_list(:duo_workflows_workflow, 2, project: project_2, user: user) }
-  let_it_be(:workflows_for_different_user) { create_list(:duo_workflows_workflow, 4, project: project) }
+
+  let_it_be(:workflows_for_different_user) do
+    create_list(:duo_workflows_workflow, 4, project: project, user: another_user)
+  end
+
   let(:all_project_workflows) { workflows + workflows_project_2 }
   let(:all_namespace_workflows) { [namespace_level_workflow] }
 
@@ -231,6 +242,36 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
           returned_workflows.each do |returned_workflow|
             expect(returned_workflow['userId']).to eq(user.to_global_id.to_s)
           end
+        end
+      end
+
+      context 'when scoped under a project' do
+        let_it_be(:project_fields) do
+          <<~GRAPHQL
+            duoWorkflowWorkflows {
+              nodes {
+                id
+              }
+            }
+          GRAPHQL
+        end
+
+        let_it_be(:project_query) { graphql_query_for('project', { full_path: project.full_path }, project_fields) }
+
+        it 'returns .from_pipeline workflows for the project', :aggregate_failures do
+          post_graphql(project_query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          project_workflows = graphql_data.dig("project", "duoWorkflowWorkflows", "nodes")
+          expect(project_workflows.length).to eq(2)
+
+          expected_workflows = Ai::DuoWorkflows::Workflow.for_project(project).from_pipeline
+          expected_global_ids = expected_workflows.map { |workflow| workflow.to_global_id.to_s }
+          project_workflows_ids = project_workflows.pluck("id")
+
+          expect(expected_global_ids).to match_array(project_workflows_ids)
         end
       end
 
@@ -470,3 +511,4 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers

@@ -31,6 +31,14 @@ module Ai
         ::Feature.enabled?(:duo_workflow_in_ci, @user)
       end
 
+      condition(:web_environment) do
+        @subject.environment == "web"
+      end
+
+      rule { true_duo_workflow & can_use_duo_workflows_in_project & web_environment }.policy do
+        enable :read_duo_workflow
+      end
+
       rule { true_duo_workflow & can_use_duo_workflows_in_project & is_workflow_owner }.policy do
         enable :read_duo_workflow
         enable :update_duo_workflow

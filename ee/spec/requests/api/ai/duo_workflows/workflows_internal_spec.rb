@@ -76,6 +76,18 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
         expect(response).to have_gitlab_http_status(:created)
       end
+
+      it "fails when creating a checkpoint for another user's remote execution workflow" do
+        other_user = create(:user, maintainer_of: project)
+        other_workflow = create(:duo_workflows_workflow, user: other_user, project: project, environment: :web,
+          workflow_definition: :convert_to_gitlab_ci)
+        checkpoint_path = "/ai/duo_workflows/workflows/#{other_workflow.id}/checkpoints"
+
+        post api(checkpoint_path, oauth_access_token: ai_workflows_oauth_token),
+          params: params.merge(thread_ts: later_thread_ts, parent_ts: thread_ts)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
     end
 
     it 'fails if the thread_ts is an empty string' do
@@ -221,6 +233,17 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
             post api(path, oauth_access_token: ai_workflows_oauth_token), params: params
             expect(response).to have_gitlab_http_status(:created)
           end.to change { workflow.events.count }.by(1)
+        end
+
+        it "fails when creating an event for another user's remote execution workflow" do
+          other_user = create(:user, maintainer_of: project)
+          other_workflow = create(:duo_workflows_workflow, user: other_user, project: project, environment: :web,
+            workflow_definition: :convert_to_gitlab_ci)
+          event_path = "/ai/duo_workflows/workflows/#{other_workflow.id}/events"
+
+          post api(event_path, oauth_access_token: ai_workflows_oauth_token), params: params
+
+          expect(response).to have_gitlab_http_status(:not_found)
         end
       end
 
