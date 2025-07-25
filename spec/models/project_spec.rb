@@ -8475,30 +8475,6 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
     end
   end
 
-  describe '#prometheus_integration_active?' do
-    let(:project) { create(:project) }
-
-    subject { project.prometheus_integration_active? }
-
-    before do
-      create(:prometheus_integration, project: project, manual_configuration: manual_configuration)
-    end
-
-    context 'when project has an activated prometheus integration' do
-      let(:manual_configuration) { true }
-
-      it { is_expected.to be_truthy }
-    end
-
-    context 'when project has an inactive prometheus integration' do
-      let(:manual_configuration) { false }
-
-      it 'the integration is marked as inactive' do
-        expect(subject).to be_falsey
-      end
-    end
-  end
-
   describe '#add_export_job' do
     let_it_be(:user) { create(:user) }
     let_it_be_with_reload(:project) { create(:project) }
