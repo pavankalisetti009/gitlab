@@ -30,6 +30,8 @@ RSpec.describe Sbom::BuildDependencyGraph, feature_category: :dependency_managem
       {}], input_file_path: grandgrandchild.input_file_path, project: project)
   end
 
+  let(:expected_cache_key) { Sbom::LatestGraphTimestampCacheKey.new(project: project).cache_key }
+
   subject(:service) { described_class.new(project) }
 
   it "builds a dependency tree", :aggregate_failures do
@@ -40,6 +42,13 @@ RSpec.describe Sbom::BuildDependencyGraph, feature_category: :dependency_managem
     service.execute
     now = service.timestamp
     expect(Sbom::GraphPath.by_projects(project).pluck(:created_at)).to match_array([now, now, now, now, now, now])
+  end
+
+  it "writes latest graph key to cache", :freeze_time do
+    now = service.timestamp
+    expect(Rails.cache).to receive(:write).with(expected_cache_key, now,
+      expires_in: 24.hours).once
+    service.execute
   end
 
   it "invokes the remove job after building the tree" do

@@ -77,6 +77,21 @@ RSpec.describe Sbom::PathFinder, feature_category: :dependency_management do
       Sbom::BuildDependencyGraph.execute(project)
     end
 
+    context 'when there is a timestamp in cache', :freeze_time do
+      let(:timestamp) { DateTime.now }
+      let(:expected_cache_key) { Sbom::LatestGraphTimestampCacheKey.new(project: project).cache_key }
+
+      before do
+        Rails.cache.write(expected_cache_key, timestamp)
+      end
+
+      it 'attempts to reads timestamp from cache' do
+        expect(Rails.cache).to receive(:read).with(expected_cache_key).and_return(timestamp)
+
+        described_class.execute(grandgrandchild)
+      end
+    end
+
     context 'without pagination (unscoped mode)' do
       it "returns proper paths structure with pagination info" do
         result = described_class.execute(grandgrandchild)

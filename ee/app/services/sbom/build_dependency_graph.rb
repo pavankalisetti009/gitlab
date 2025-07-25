@@ -12,6 +12,7 @@ module Sbom
 
     def initialize(project)
       @project = project
+      @cache_key_service = Sbom::LatestGraphTimestampCacheKey.new(project: project)
     end
 
     def timestamp
@@ -21,14 +22,15 @@ module Sbom
 
     def execute
       new_graph = build_dependency_graph
-      Sbom::GraphPath.transaction do
-        # This can raise ActiveRecord::RecordInvalid because another Ci::Pipeline can start removing Sbom::Occurrence
-        # rows which will prevent this job from finishing successfully.
-        #
-        # This actually works in our favour since it's a clear indication we can leave the graph processing to the
-        # newest job.
-        bulk_insert_paths(new_graph)
-      end
+
+      # This can raise ActiveRecord::RecordInvalid because another Ci::Pipeline can start removing Sbom::Occurrence
+      # rows which will prevent this job from finishing successfully.
+      #
+      # This actually works in our favour since it's a clear indication we can leave the graph processing to the
+      # newest job.
+      bulk_insert_paths(new_graph)
+
+      @cache_key_service.store(new_graph.first.created_at) unless new_graph.empty?
 
       # Schedule removal, this job is idempotent and deduplicated so we can schedule it many times
       Sbom::RemoveOldDependencyGraphsWorker.perform_async(project.id)

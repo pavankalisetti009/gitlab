@@ -15,6 +15,7 @@ module Sbom
 
     def initialize(project)
       @project = project
+      @cache_key_service = Sbom::LatestGraphTimestampCacheKey.new(project: project)
     end
 
     def execute
@@ -56,7 +57,11 @@ module Sbom
     strong_memoize_attr :graph_paths
 
     def latest_timestamp
-      graph_paths.maximum(:created_at)
+      read_timestamp_from_cache || graph_paths.maximum(:created_at)
+    end
+
+    def read_timestamp_from_cache
+      @cache_key_service.retrieve
     end
   end
 end
