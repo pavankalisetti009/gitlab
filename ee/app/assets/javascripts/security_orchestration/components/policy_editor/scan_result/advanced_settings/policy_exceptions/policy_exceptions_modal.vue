@@ -71,7 +71,12 @@ export default {
       return this.selectedExceptions?.access_tokens || [];
     },
     accounts() {
-      return this.selectedExceptions?.accounts || [];
+      return this.selectedExceptions?.service_accounts || [];
+    },
+  },
+  watch: {
+    exceptions(newVal) {
+      this.selectedExceptions = newVal;
     },
   },
   methods: {
@@ -94,7 +99,7 @@ export default {
     setAccounts(accounts) {
       this.selectedExceptions = {
         ...this.selectedExceptions,
-        accounts,
+        service_accounts: accounts,
       };
     },
     setBranches(branches) {

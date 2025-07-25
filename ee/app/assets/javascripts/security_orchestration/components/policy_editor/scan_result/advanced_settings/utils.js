@@ -13,10 +13,8 @@ export const createSourceBranchPatternObject = ({ id = '', source = {}, target =
   target,
 });
 
-export const createServiceAccountObject = ({ id = '', account = {}, tokens = [] } = {}) => ({
+export const createServiceAccountObject = ({ id = '' } = {}) => ({
   id: id || uniqueId('account_'),
-  account,
-  tokens,
 });
 /**
  * Extract username from account

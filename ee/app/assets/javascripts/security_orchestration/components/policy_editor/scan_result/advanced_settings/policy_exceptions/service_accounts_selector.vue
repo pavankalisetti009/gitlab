@@ -3,11 +3,7 @@ import { GlAlert, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import Api from '~/api';
 import ServiceAccountsItem from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/service_accounts_item.vue';
-import {
-  createServiceAccountObject,
-  getUserName,
-  removeIds,
-} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
+import { createServiceAccountObject } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
 
 export default {
   FORM_ID: 'accounts-list',
@@ -37,6 +33,12 @@ export default {
       serviceAccounts: [],
       showAlert: false,
       items: this.mapSelectedAccounts(this.selectedAccounts),
+      /**
+       * This functionality will be used eventually
+       * when backend can process it
+       * https://gitlab.com/groups/gitlab-org/-/epics/18112#note_2645892137
+       */
+      showTokenSelector: false,
     };
   },
   computed: {
@@ -46,8 +48,8 @@ export default {
     allSelected() {
       return this.items.length === this.serviceAccounts.length;
     },
-    selectedAccountsUsernames() {
-      return this.selectedAccounts.map(getUserName);
+    selectedAccountsIds() {
+      return this.selectedAccounts.map(({ id }) => id);
     },
   },
   async mounted() {
@@ -79,7 +81,7 @@ export default {
       this.emitAction();
     },
     emitAction() {
-      this.$emit('set-accounts', removeIds(this.items));
+      this.$emit('set-accounts', this.items);
     },
     showErrorMessage() {
       this.showAlert = true;
@@ -97,7 +99,7 @@ export default {
       <p class="gl-mb-0 gl-flex-1 gl-font-bold">
         {{ s__('ScanResultPolicy|Select service account') }}
       </p>
-      <p class="gl-mb-0 gl-flex-1 gl-pr-8 gl-font-bold">
+      <p v-if="showTokenSelector" class="gl-mb-0 gl-flex-1 gl-pr-8 gl-font-bold">
         {{ s__('ScanResultPolicy|Personal access token') }}
       </p>
     </div>
@@ -107,7 +109,7 @@ export default {
         v-for="(item, index) of items"
         :key="item.id"
         :loading="loading"
-        :already-selected-usernames="selectedAccountsUsernames"
+        :already-selected-ids="selectedAccountsIds"
         :selected-item="item"
         :service-accounts="serviceAccounts"
         @token-loading-error="showErrorMessage"

@@ -44,7 +44,7 @@ describe('TokensSelector', () => {
 
       expect(findServiceAccountsItems()).toHaveLength(1);
       expect(findServiceAccountsItems().at(0).props('serviceAccounts')).toEqual(mockAccounts);
-      expect(findServiceAccountsItems().at(0).props('alreadySelectedUsernames')).toEqual([]);
+      expect(findServiceAccountsItems().at(0).props('alreadySelectedIds')).toEqual([]);
     });
 
     it('does not render alert initially', () => {
@@ -107,29 +107,19 @@ describe('TokensSelector', () => {
       expect(serviceAccounts).toHaveLength(2);
 
       expect(serviceAccounts.at(0).props('selectedItem')).toEqual({
-        account: { username: 'project-account-1-username' },
         id: '1',
-        tokens: [],
       });
-      expect(serviceAccounts.at(0).props('alreadySelectedUsernames')).toEqual([
-        'project-account-1-username',
-        'project-account-2-username',
-      ]);
+      expect(serviceAccounts.at(0).props('alreadySelectedIds')).toEqual(['1', '2']);
 
       expect(serviceAccounts.at(1).props('selectedItem')).toEqual({
-        account: { username: 'project-account-2-username' },
         id: '2',
-        tokens: [],
       });
-      expect(serviceAccounts.at(1).props('alreadySelectedUsernames')).toEqual([
-        'project-account-1-username',
-        'project-account-2-username',
-      ]);
+      expect(serviceAccounts.at(1).props('alreadySelectedIds')).toEqual(['1', '2']);
     });
 
     it('emits set-accounts event when accounts are selected', () => {
       createComponent();
-      const payload = { account: { username: mockAccounts[0].username } };
+      const payload = { id: mockAccounts[0].id };
       findServiceAccountsItems().at(0).vm.$emit('set-account', payload);
 
       expect(wrapper.emitted('set-accounts')).toEqual([[[payload]]]);
