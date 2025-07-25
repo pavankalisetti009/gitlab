@@ -70,7 +70,7 @@ export default {
 
 <template>
   <visibility-change-detector @visible="reload">
-    <h2 class="gl-heading-4 gl-my-4">{{ __('Activity') }}</h2>
+    <h2 class="gl-heading-4 gl-mb-0 gl-mt-4">{{ __('Activity') }}</h2>
     <gl-skeleton-loader v-if="isLoading" :width="200">
       <rect width="5" height="3" rx="1" y="2" />
       <rect width="160" height="3" rx="1" x="8" y="2" />
