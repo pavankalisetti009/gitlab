@@ -73,13 +73,13 @@ export default {
     accounts() {
       return this.selectedExceptions?.service_accounts || [];
     },
+    groups() {
+      return this.selectedExceptions?.groups || [];
+    },
   },
   watch: {
     exceptions(newVal) {
       this.selectedExceptions = newVal;
-    },
-    groups() {
-      return this.selectedExceptions?.groups || [];
     },
   },
   methods: {
