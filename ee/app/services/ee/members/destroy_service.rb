@@ -149,9 +149,13 @@ module EE
       end
 
       def destroy_user_group_member_roles(member)
-        return unless member.source.is_a?(Group)
-        return unless ::Feature.enabled?(:cache_user_group_member_roles, member.source.root_ancestor)
-        return unless member.member_role_id
+        group = member.source
+
+        return unless group.is_a?(Group)
+        return unless ::Feature.enabled?(:cache_user_group_member_roles, group.root_ancestor)
+
+        return unless member.member_role_id ||
+          Authz::UserGroupMemberRole.for_user_in_group_and_shared_groups(member.user, group).exists?
 
         ::Authz::UserGroupMemberRoles::DestroyForGroupWorker.perform_async(member.user_id, member.source_id)
       end
