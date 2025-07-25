@@ -36,9 +36,9 @@ module Authz
       def audit_event_attributes(action)
         if role.admin_related_role?
           {
-            name: "admin_role_#{action}",
+            name: "custom_admin_role_#{action}",
             scope: Gitlab::Audit::InstanceScope.new,
-            message: "Admin role was #{action}"
+            message: "Custom admin role was #{action}"
           }
         else
           {

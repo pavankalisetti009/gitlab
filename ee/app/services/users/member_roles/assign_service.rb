@@ -50,7 +50,7 @@ module Users
 
         if record.valid?
           log_audit_event(
-            action: 'admin_role_assigned_to_user',
+            action: 'custom_admin_role_assigned_to_user',
             admin_role: admin_role
           )
           success(record)
@@ -66,7 +66,7 @@ module Users
 
         if record.destroy
           log_audit_event(
-            action: 'admin_role_unassigned_from_user',
+            action: 'custom_admin_role_unassigned_from_user',
             admin_role: record.member_role
           )
           success(nil)
