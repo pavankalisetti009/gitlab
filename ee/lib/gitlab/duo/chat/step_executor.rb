@@ -17,8 +17,9 @@ module Gitlab
 
         attr_reader :agent_steps
 
-        def initialize(user)
+        def initialize(user, feature_setting = nil)
           @user = user
+          @feature_setting = feature_setting
           @agent_steps = []
           @event_parser = AgentEventParser.new
         end
@@ -64,7 +65,7 @@ module Gitlab
 
         private
 
-        attr_reader :user, :event_parser
+        attr_reader :user, :event_parser, :feature_setting
 
         def perform_agent_request(params)
           log_conditional_info(user, message: "Request to v2/chat/agent",
@@ -80,7 +81,7 @@ module Gitlab
           buffer = ""
 
           response = Gitlab::HTTP.post(
-            "#{Gitlab::AiGateway.url}#{CHAT_V2_ENDPOINT}",
+            "#{base_url}#{CHAT_V2_ENDPOINT}",
             headers: Gitlab::AiGateway.headers(user: user, service: service),
             body: params.to_json,
             timeout: DEFAULT_TIMEOUT,
@@ -126,6 +127,10 @@ module Gitlab
           raise Gitlab::AiGateway::ServerError if response.code >= 500
 
           raise ConnectionError, 'AI gateway not reachable'
+        end
+
+        def base_url
+          feature_setting&.base_url || Gitlab::AiGateway.url
         end
 
         def service

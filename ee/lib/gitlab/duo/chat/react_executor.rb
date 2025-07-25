@@ -226,7 +226,10 @@ module Gitlab
         end
 
         def step_executor
-          @step_executor ||= Gitlab::Duo::Chat::StepExecutor.new(context.current_user)
+          @step_executor ||= Gitlab::Duo::Chat::StepExecutor.new(
+            context.current_user,
+            chat_feature_setting
+          )
         end
 
         def step_forward
@@ -347,6 +350,7 @@ module Gitlab
             ::Ai::FeatureSetting.find_by_feature(:duo_chat)
           end
         end
+        strong_memoize_attr :chat_feature_setting
 
         def record_first_token_apex
           return unless context.started_at
