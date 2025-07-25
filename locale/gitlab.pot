@@ -61972,6 +61972,9 @@ msgstr ""
 msgid "Suggestion(s)"
 msgstr ""
 
+msgid "Suggestions"
+msgstr ""
+
 msgid "Suggestions are not applicable as one or more suggestions were not found."
 msgstr ""
 
