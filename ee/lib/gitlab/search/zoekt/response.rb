@@ -6,6 +6,16 @@ module Gitlab
       class Response # rubocop:disable Search/NamespacedClass -- we want to have this class in the same namespace as the client
         attr_reader :parsed_response
 
+        def self.empty
+          new({
+            Result: {
+              FileCount: 0,
+              MatchCount: 0,
+              Files: []
+            }
+          })
+        end
+
         def initialize(response)
           @parsed_response = response.with_indifferent_access
         end

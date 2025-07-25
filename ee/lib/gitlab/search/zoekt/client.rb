@@ -34,7 +34,6 @@ module Gitlab
           raise 'Node can not be found' unless target_node
 
           response = post_request(join_url(target_node.search_base_url, path), payload)
-
           log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
 
           Gitlab::Search::Zoekt::Response.new parse_response(response)
@@ -42,36 +41,59 @@ module Gitlab
           add_request_details(start_time: start, path: path, body: payload)
         end
 
-        def search_zoekt_proxy(query, num:, targets:, search_mode:, source: nil, current_user: nil)
+        def search_zoekt_proxy(query, num:, search_mode:, current_user: nil, **options)
           start = Time.current
+          targets = options[:targets]
+          if search_level(options) != :project && !Ability.allowed?(current_user, :read_cross_project)
+            log_debug('User does not have permission to search across projects, returning empty response') if debug?
+            return Gitlab::Search::Zoekt::Response.empty
+          end
+
           if use_ast_search_payload?(current_user)
             payload = ::Search::Zoekt::SearchRequest.new(
-              query: format_query(query, source: source, search_mode: search_mode),
-              targets: targets,
+              current_user: current_user,
+              query: format_query(query, source: options[:source], search_mode: search_mode),
               num_context_lines: CONTEXT_LINES_COUNT,
-              max_line_match_results: num
+              max_line_match_results: num,
+              search_mode: search_mode,
+              **options
             ).as_json
           else
-            payload = build_search_payload(query, source: source, num: num, search_mode: search_mode)
+            payload = build_search_payload(query, source: options[:source], num: num, search_mode: search_mode)
             payload[:ForwardTo] = targets.map do |node_id, project_ids|
               target_node = node(node_id)
               { Endpoint: target_node.search_base_url, RepoIds: project_ids }
             end
           end
 
-          # Unless a node is specified, prefer the node with the most projects
-          node_id ||= targets.max_by { |_zkt_node_id, project_ids| project_ids.length }.first
-          proxy_node = node(node_id)
+          proxy_node = fetch_proxy_node(**options)
           raise 'Node can not be found' unless proxy_node
 
           response = post_request(join_url(proxy_node.search_base_url, PROXY_SEARCH_PATH), payload)
           log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
+          log_debug('Zoekt AST request', payload: payload) if debug?
           Gitlab::Search::Zoekt::Response.new parse_response(response)
         ensure
           add_request_details(start_time: start, path: PROXY_SEARCH_PATH, body: payload)
         end
 
         private
+
+        def fetch_proxy_node(**options)
+          return node(options[:node_id]) if options[:node_id].present?
+
+          targets = options[:targets]
+          if targets.present?
+            # Prefer the node with the most projects in targets
+            node_id = targets.max_by do |_zkt_node_id, project_ids|
+              project_ids.length
+            end.first
+
+            node(node_id)
+          else # Otherwise pick a random online node
+            ::Search::Zoekt::Node.online.sample
+          end
+        end
 
         def post_request(url, payload = {}, **options)
           defaults = {
@@ -190,6 +212,16 @@ module Gitlab
 
         def use_ast_search_payload?(current_user)
           Feature.enabled?(:zoekt_ast_search_payload, current_user)
+        end
+
+        def search_level(options)
+          @search_level ||= if options[:group_id].present?
+                              :group
+                            elsif options[:project_id].present?
+                              :project
+                            else
+                              :global
+                            end
         end
       end
     end

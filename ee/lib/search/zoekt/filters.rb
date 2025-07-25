@@ -33,11 +33,11 @@ module Search
         end
 
         def and_filters(*filters)
-          { and: { children: filters.flatten } }
+          { and: { children: filters } }
         end
 
         def or_filters(*filters)
-          { or: { children: filters.flatten } }
+          { or: { children: filters } }
         end
 
         def not_filter(filter)
@@ -49,7 +49,15 @@ module Search
         end
 
         def by_meta(key:, value:)
-          { meta: { key: key, value: value } }
+          { meta: { key: key.to_s, value: value.to_s } }
+        end
+
+        def by_forked(value)
+          by_meta(key: 'forked', value: value ? 't' : 'f')
+        end
+
+        def by_archived(value)
+          by_meta(key: 'archived', value: value ? 't' : 'f')
         end
 
         def by_query_string(query)

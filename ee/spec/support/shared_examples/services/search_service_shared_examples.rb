@@ -25,7 +25,8 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true, proje
     set_project_visibility_and_feature_access_level if project_feature_setup && project_access
     set_group_visibility_level if group_access
 
-    ensure_elasticsearch_index!
+    ensure_elasticsearch_index! if ::Gitlab::CurrentSettings.elasticsearch_indexing?
+    projects.each { |p| zoekt_ensure_project_indexed!(p) } if ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
   end
 
   # sidekiq needed for ElasticAssociationIndexerWorker
@@ -36,9 +37,9 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true, proje
 
     expect_search_results(user, scope, expected_count: expected_count) do |user|
       if described_class.eql?(Search::GlobalService)
-        described_class.new(user, search: search).execute
+        described_class.new(user, search: search, scope: scope).execute
       else
-        described_class.new(user, search_level, search: search).execute
+        described_class.new(user, search_level, search: search, scope: scope).execute
       end
     end
   end
@@ -50,9 +51,9 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true, proje
 
     expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
       if described_class.eql?(Search::GlobalService)
-        described_class.new(user, search: search).execute
+        described_class.new(user, search: search, scope: scope).execute
       else
-        described_class.new(user, search_level, search: search).execute
+        described_class.new(user, search_level, search: search, scope: scope).execute
       end
     end
   end

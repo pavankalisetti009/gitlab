@@ -13,26 +13,27 @@ module Search
 
       attr_accessor :file_count
 
-      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes, :source,
-        :search_level, :projects, :node_id, :multi_match
+      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes,
+        :source, :projects, :node_id, :multi_match, :options
 
-      # rubocop: disable Metrics/ParameterLists -- Might consider to refactor later
       def initialize(
-        current_user, query, projects, search_level:, multi_match_enabled: false, node_id: nil, source: nil,
-        order_by: nil, sort: nil, chunk_count: nil, filters: {}, modes: {})
+        current_user, query, projects = nil, **options)
         @current_user = current_user
         @query = query
-        @search_level = search_level
-        @source = source&.to_sym
-        @filters = filters
+        @source = options[:source]&.to_sym
+        @filters = options.fetch(:filters, {})
         @projects = filtered_projects(projects)
-        @node_id = node_id
-        @order_by = order_by
-        @sort = sort
-        @modes = modes
-        @multi_match = MultiMatch.new(chunk_count) if multi_match_enabled
+        @node_id = options[:node_id]
+        @order_by = options[:order_by]
+        @sort = options[:sort]
+        @modes = options.fetch(:modes, {})
+        @multi_match = MultiMatch.new(options[:chunk_count]) if options.fetch(:multi_match_enabled, false)
+        @options = options
+
+        return unless options[:search_level].present?
+
+        raise 'Specifying search level is not supported. Pass group_id or project_id instead.'
       end
-      # rubocop: enable Metrics/ParameterLists
 
       def limit_project_ids
         @limit_project_ids ||= projects.pluck_primary_key
@@ -150,25 +151,14 @@ module Search
       # @param page_limit [Integer] maximum number of pages we parse
       # @return [Array<Hash, Integer>] the results and total count
       def zoekt_search(query, per_page:, page_limit:)
-        response = if node_id
-                     ::Gitlab::Search::Zoekt::Client.search(
-                       query,
-                       num: ZOEKT_COUNT_LIMIT,
-                       node_id: node_id,
-                       project_ids: limit_project_ids,
-                       search_mode: search_mode,
-                       source: source
-                     )
-                   else
-                     ::Gitlab::Search::Zoekt::Client.search_zoekt_proxy(
-                       query,
-                       num: ZOEKT_COUNT_LIMIT,
-                       targets: zoekt_targets,
-                       search_mode: search_mode,
-                       current_user: current_user,
-                       source: source
-                     )
-                   end
+        response = ::Gitlab::Search::Zoekt::Client.search_zoekt_proxy(
+          query,
+          num: ZOEKT_COUNT_LIMIT,
+          search_mode: search_mode,
+          current_user: current_user,
+          targets: use_traversal_id_queries? ? nil : zoekt_targets,
+          **options
+        )
 
         if response.failure?
           @blobs_count = 0
@@ -291,6 +281,7 @@ module Search
       end
 
       def filtered_projects(projects)
+        return Project.none if projects.blank?
         return Project.all if projects == :any
 
         filtered_projects = projects.without_order
@@ -319,10 +310,10 @@ module Search
       end
 
       def empty_results_preflight_check?
-        return true if query.blank? || limit_project_ids.empty?
+        return true if query.blank? || (!use_traversal_id_queries? && limit_project_ids.empty?)
 
         if node_id.nil? && search_level == :project
-          project = Project.find_by_id(limit_project_ids.first)
+          project = Project.find_by_id(options[:project_id])
 
           # Trigger async indexing if repository exists and isn't empty
           unless project&.empty_repo?
@@ -340,8 +331,26 @@ module Search
         false
       end
 
+      def use_traversal_id_queries?
+        use_ast_search_payload? && Feature.enabled?(:zoekt_traversal_id_queries, current_user)
+      end
+
+      def use_ast_search_payload?
+        Feature.enabled?(:zoekt_ast_search_payload, current_user)
+      end
+
       def logger
         @logger ||= ::Search::Zoekt::Logger.build
+      end
+
+      def search_level
+        @search_level ||= if options[:group_id].present?
+                            :group
+                          elsif options[:project_id].present?
+                            :project
+                          else
+                            :global
+                          end
       end
     end
   end

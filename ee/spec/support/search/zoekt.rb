@@ -49,7 +49,7 @@ module Search
       # Since in the test setup it is complicated to achieve indexing via pulling tasks,
       # we are sending the HTTP post request to the indexer for indexing.
       # At the end if indexed files exists(success callback), we are moving task to done and zoekt_repository to ready
-      def zoekt_ensure_project_indexed!(project)
+      def zoekt_ensure_project_indexed!(project) # rubocop:disable Metrics/AbcSize -- N/A
         zoekt_ensure_namespace_indexed!(project.namespace)
         ::Search::Zoekt::IndexingTaskService.new(project.id, :index_repo).execute
         repository_storage = project.repository_storage
@@ -72,7 +72,14 @@ module Search
           RepoId: project.id,
           FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
           Timeout: '10s',
-          Force: true
+          Force: true,
+          Metadata: {
+            traversal_ids: project.namespace_ancestry,
+            visibility_level: project.visibility_level,
+            repository_access_level: project.repository_access_level,
+            forked: project.forked? ? 't' : 'f',
+            archived: project.archived? ? 't' : 'f'
+          }.transform_values(&:to_s)
         }
         defaults = {
           headers: {
@@ -88,6 +95,8 @@ module Search
         ::Gitlab::HTTP.post(url, defaults)
         # Add delay to allow Zoekt webserver to finish the indexing
         all_files_count = project.repository.ls_files('HEAD').count
+
+        indexing_succeeded = false
         1000.times do
           results = Gitlab::Search::Zoekt::Client.new.search('.*', num: 1, project_ids: [project.id],
             node_id: node.id, search_mode: :regex)
@@ -95,11 +104,14 @@ module Search
           if results.file_count == all_files_count
             Search::Zoekt::Task.index_repo.where(project_identifier: project.id).update_all(state: :done)
             project.zoekt_repositories.update_all(state: :ready)
+            indexing_succeeded = true
             break
           end
 
           sleep 0.1
         end
+
+        raise "Zoekt indexing timed out for project #{project.id}." unless indexing_succeeded
       end
     end
   end
@@ -112,6 +124,7 @@ module Search
       stub_feature_flags(disable_zoekt_search_for_saas: false)
     end
 
+    # DEPRECATED: Do not use this tag.
     config.around(:each, :zoekt) do |example|
       zoekt_node
       Search::Zoekt::TestHelpers.zoekt_truncate_index!
@@ -121,6 +134,7 @@ module Search
       Search::Zoekt::TestHelpers.zoekt_truncate_index!
     end
 
+    # DEPRECATED: Do not use this tag.
     config.before(:each, :zoekt) do
       stub_licensed_features(zoekt_code_search: true)
     end

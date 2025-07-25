@@ -43,6 +43,8 @@ module Search
           break if current_page == page_limit
 
           results[current_page] ||= []
+          next if file[:LineMatches].blank?
+
           chunks, match_count = chunks_for_each_file_with_limited_match_count(file[:LineMatches])
 
           project_id = file[:RepositoryID].to_i

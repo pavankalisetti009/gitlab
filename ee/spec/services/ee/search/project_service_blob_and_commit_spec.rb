@@ -7,11 +7,7 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
   include ProjectHelpers
   include UserHelpers
 
-  before do
-    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-  end
-
-  describe 'visibility', :elastic_delete_by_query, :sidekiq_inline do
+  describe 'visibility', :sidekiq_inline do
     include_context 'ProjectPolicyTable context'
 
     let_it_be(:group) { create(:group) }
@@ -28,21 +24,32 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
     end
 
     with_them do
-      before do
-        project.repository.index_commits_and_blobs
-      end
+      context 'when using advanced search', :elastic_delete_by_query do
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        end
 
-      context 'for commits' do
-        it_behaves_like 'search respects visibility' do
-          let(:scope) { 'commits' }
-          let(:search) { 'initial' }
+        context 'for commits' do
+          it_behaves_like 'search respects visibility' do
+            let(:scope) { 'commits' }
+            let(:search) { 'initial' }
+          end
+        end
+
+        context 'for blobs' do
+          it_behaves_like 'search respects visibility' do
+            let(:scope) { 'blobs' }
+            let(:search) { '.gitmodules' }
+          end
         end
       end
 
-      context 'for blobs' do
-        it_behaves_like 'search respects visibility' do
-          let(:scope) { 'blobs' }
-          let(:search) { '.gitmodules' }
+      context 'when using zoekt', :zoekt_settings_enabled, :zoekt_cache_disabled do
+        context 'for blobs' do
+          it_behaves_like 'search respects visibility', group_access: false do
+            let(:scope) { 'blobs' }
+            let(:search) { '.gitmodules' }
+          end
         end
       end
     end
