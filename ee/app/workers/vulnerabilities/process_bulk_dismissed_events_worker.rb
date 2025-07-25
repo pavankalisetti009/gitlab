@@ -19,9 +19,10 @@ module Vulnerabilities
       end
 
       vulnerability_ids = event.data[:vulnerabilities].pluck(:vulnerability_id) # rubocop:disable CodeReuse/ActiveRecord -- pluck used on hash
-      vulnerabilities = Vulnerability.with_projects.id_in(vulnerability_ids)
-      vulnerabilities.each(&:trigger_webhook_event)
+      vulnerabilities_trigger_webhook_events(vulnerability_ids)
     end
+
+    private
 
     def system_note_attributes_for(event)
       event.data[:vulnerabilities].map do |attrs|
@@ -58,6 +59,14 @@ module Vulnerabilities
           updated_at: now
         }
       end
+    end
+
+    def vulnerabilities_trigger_webhook_events(vulnerability_ids)
+      vulnerabilities = Vulnerability.id_in(vulnerability_ids)
+                                     .with_projects_and_routes
+                                     .with_issue_links_and_issues
+                                     .with_findings_and_identifiers
+      vulnerabilities.each(&:trigger_webhook_event)
     end
 
     def now
