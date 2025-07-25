@@ -450,7 +450,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_code_quality_running' do
       it 'calls security_scanner_running? with scanner type code_quality' do
-        expect(described_class).to receive(:security_scanner_running?).with(:code_quality, project, {})
+        expect(described_class).to receive(:security_scanner_running?).with(:codequality, project, {})
 
         described_class.map_field(project, 'scanner_code_quality_running')
       end

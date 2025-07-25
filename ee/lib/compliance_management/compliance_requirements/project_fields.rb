@@ -18,7 +18,7 @@ module ComplianceManagement
         :dast,
         :api_fuzzing,
         :fuzz_testing,
-        :code_quality,
+        :codequality,
         :iac
       ].freeze
 
@@ -113,7 +113,7 @@ module ComplianceManagement
         end
 
         def scanner_code_quality_running?(project, context = {})
-          security_scanner_running?(:code_quality, project, context)
+          security_scanner_running?(:codequality, project, context)
         end
 
         def scanner_iac_running?(project, context = {})
