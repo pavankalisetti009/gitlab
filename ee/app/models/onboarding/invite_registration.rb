@@ -68,5 +68,9 @@ module Onboarding
     def self.ignore_oauth_in_welcome_submit_text?
       true
     end
+
+    def self.new_registration_design?
+      false
+    end
   end
 end

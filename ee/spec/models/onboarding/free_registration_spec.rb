@@ -84,4 +84,8 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
   describe '.ignore_oauth_in_welcome_submit_text?' do
     it { is_expected.not_to be_ignore_oauth_in_welcome_submit_text }
   end
+
+  describe '.new_registration_design?' do
+    it { is_expected.not_to be_new_registration_design }
+  end
 end

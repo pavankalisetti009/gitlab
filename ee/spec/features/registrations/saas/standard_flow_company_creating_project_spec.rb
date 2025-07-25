@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Standard flow for user picking company and creating a project', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
+  include_context 'with lightweight trial registration redesign turned on' # rubocop:disable Gitlab/RSpec/AvoidSetup -- temporary during the experiment
+
   where(:case_name, :sign_up_method) do
     [
       ['with regular sign up', ->(params = {}) { regular_sign_up(params) }],

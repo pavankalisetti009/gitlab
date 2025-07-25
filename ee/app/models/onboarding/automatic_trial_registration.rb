@@ -22,5 +22,10 @@ module Onboarding
     def self.show_company_form_footer?
       true
     end
+
+    override :new_registration_design?
+    def self.new_registration_design?
+      false
+    end
   end
 end

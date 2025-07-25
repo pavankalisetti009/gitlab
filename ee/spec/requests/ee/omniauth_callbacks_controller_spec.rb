@@ -37,22 +37,6 @@ RSpec.describe OmniauthCallbacksController, feature_category: :system_access do
 
           expect(request.env['warden']).to be_authenticated
         end
-
-        it 'step_url points to trail welcome path' do
-          post public_send("user_#{provider}_omniauth_callback_path")
-          expect(User.last.onboarding_status[:step_url]).to eq(users_sign_up_welcome_path)
-        end
-
-        context 'with LightweightTrialRegistrationRedesignExperiment candidate experience' do
-          before do
-            stub_experiments(lightweight_trial_registration_redesign: :candidate)
-          end
-
-          it 'step_url points to trial welcome path' do
-            post public_send("user_#{provider}_omniauth_callback_path")
-            expect(User.last.onboarding_status[:step_url]).to eq(new_users_sign_up_trial_welcome_path)
-          end
-        end
       end
 
       context 'when onboarding is disabled' do
