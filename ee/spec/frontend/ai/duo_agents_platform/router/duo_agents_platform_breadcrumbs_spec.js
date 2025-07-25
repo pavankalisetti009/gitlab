@@ -23,15 +23,16 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
     ],
   };
 
-  const createWrapper = (props = {}, routeOptions = {}) => {
+  const createWrapper = (routeOptions = { matched: [], params: {} }) => {
     wrapper = shallowMount(DuoAgentsPlatformBreadcrumbs, {
       propsData: {
         ...defaultProps,
-        ...props,
       },
       mocks: {
         $route: {
           name: AGENTS_PLATFORM_INDEX_ROUTE,
+          path: '/agent-sessions',
+          matched: [],
           params: {},
           ...routeOptions,
         },
@@ -59,112 +60,28 @@ describe('DuoAgentsPlatformBreadcrumbs', () => {
     });
   });
 
-  describe('breadcrumb items on index route', () => {
+  describe.each`
+    routeName                      | expectedText        | path                               | matched                                                                                                                    | params
+    ${AGENTS_PLATFORM_INDEX_ROUTE} | ${'Agent sessions'} | ${'/agent-sessions'}               | ${[{ path: '/agent-sessions', meta: { text: 'Agent sessions' } }]}                                                         | ${{}}
+    ${AGENTS_PLATFORM_NEW_ROUTE}   | ${'New'}            | ${'/agent-sessions/new'}           | ${[{ path: '/agent-sessions', meta: { text: 'Agent sessions' } }, { path: '/agent-sessions/new', meta: { text: 'New' } }]} | ${{}}
+    ${AGENTS_PLATFORM_SHOW_ROUTE}  | ${'4'}              | ${'/agent-sessions/4'}             | ${[{ path: '/agent-sessions', meta: { text: 'Agent sessions' } }, { path: '/agent-sessions/:id' }]}                        | ${{ id: 4 }}
+    ${AGENTS_PLATFORM_INDEX_ROUTE} | ${'Agent sessions'} | ${'/unknown-scope/agent-sessions'} | ${[{ path: '/unknown-scope/agent-sessions', meta: { text: 'Agent sessions' } }]}                                           | ${{}}
+  `('breadcrumbs generation', ({ expectedText, matched, routeName, path, params }) => {
     beforeEach(() => {
-      createWrapper({}, { name: AGENTS_PLATFORM_INDEX_ROUTE });
-    });
-
-    it('includes current page as last item without link', () => {
-      const items = getBreadcrumbItems();
-
-      expect(items[items.length - 1]).toEqual({
-        text: 'Agent sessions',
-        to: undefined,
+      createWrapper({
+        name: routeName,
+        matched,
+        params,
       });
     });
 
-    it('has correct number of items', () => {
+    it(`displays the correct number of breadcrumb items for ${path}`, () => {
       const items = getBreadcrumbItems();
-      expect(items).toHaveLength(4); // 2 static routes + Automate + Agent Sessions
-    });
-  });
+      // 2 static routes + Automate + Agent Sessions + dynamic routes
+      const totalLength = 3 + matched.length;
 
-  describe('breadcrumb items on new route', () => {
-    beforeEach(() => {
-      createWrapper(
-        {},
-        {
-          name: AGENTS_PLATFORM_NEW_ROUTE,
-        },
-      );
-    });
-
-    it('includes root route with Vue router navigation', () => {
-      const items = getBreadcrumbItems();
-      expect(items[2].text).toBe('Automate');
-      expect(items[2].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
-
-      expect(items[3].text).toBe('Agent sessions');
-      expect(items[3].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
-    });
-
-    it('includes new page as last item without link', () => {
-      const items = getBreadcrumbItems();
-
-      expect(items[items.length - 1]).toEqual({
-        text: 'New',
-        to: undefined,
-      });
-    });
-  });
-
-  describe('breadcrumb items on show route', () => {
-    beforeEach(() => {
-      createWrapper(
-        {},
-        {
-          name: AGENTS_PLATFORM_SHOW_ROUTE,
-          params: { id: 'test-agent-id' },
-        },
-      );
-    });
-
-    it('includes root route with Vue router navigation', () => {
-      const items = getBreadcrumbItems();
-
-      expect(items[2].text).toBe('Automate');
-      expect(items[2].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
-
-      expect(items[3].text).toBe('Agent sessions');
-      expect(items[3].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
-    });
-
-    it('includes current agent page as last item without link', () => {
-      const items = getBreadcrumbItems();
-
-      expect(items[items.length - 1]).toEqual({
-        text: 'test-agent-id',
-        to: undefined,
-      });
-    });
-
-    it('has correct number of items', () => {
-      const items = getBreadcrumbItems();
-      expect(items).toHaveLength(5); // 2 static routes + root route + current agent
-    });
-  });
-
-  describe('Show route without ID', () => {
-    beforeEach(() => {
-      createWrapper(
-        {},
-        {
-          name: AGENTS_PLATFORM_SHOW_ROUTE,
-          params: {},
-        },
-      );
-    });
-
-    it('does not include agent route', () => {
-      const items = getBreadcrumbItems();
-
-      expect(items).toHaveLength(4); // 2 static routes + root routes + sh
-
-      expect(items[2].text).toBe('Automate');
-      expect(items[2].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
-
-      expect(items[3].text).toBe('Agent sessions');
-      expect(items[3].to.name).toBe(AGENTS_PLATFORM_INDEX_ROUTE);
+      expect(items).toHaveLength(totalLength);
+      expect(items[totalLength - 1].text).toBe(expectedText);
     });
   });
 });

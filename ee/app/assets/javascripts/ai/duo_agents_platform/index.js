@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
 import DuoAgentsPlatformBreadcrumbs from './router/duo_agents_platform_breadcrumbs.vue';
+import { activeNavigationWatcher } from './router/utils';
 
 import DuoAgentsPlatformApp from './duo_agents_platform_app.vue';
 import { createRouter } from './router';
@@ -22,6 +23,7 @@ export const initDuoAgentsPlatformPage = (selector = '#js-duo-agents-platform-pa
     emptyStateIllustrationPath,
   } = dataset;
   const router = createRouter(agentsPlatformBaseRoute);
+  router.beforeEach(activeNavigationWatcher);
 
   Vue.use(VueApollo);
 
