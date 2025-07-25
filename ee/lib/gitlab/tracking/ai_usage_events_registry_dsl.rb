@@ -13,8 +13,15 @@ module Gitlab
         names_with_ids.each do |name, id|
           guard_internal_event_existence!(name)
           guard_duplicated_event!(name, id)
-          @registered_events[name] ||= { id: id, transformations: [] }
+          @registered_events[name] = { id: id, transformations: [] }
           transformation(name, &event_transformation)
+        end
+      end
+
+      def deprecated_events(names_with_ids)
+        names_with_ids.each do |name, id|
+          guard_duplicated_event!(name, id)
+          @registered_events[name] = { id: id, transformations: [], deprecated: true }
         end
       end
 
@@ -36,6 +43,12 @@ module Gitlab
         return [] unless @registered_events
 
         @registered_events[event_name]&.fetch(:transformations)
+      end
+
+      def deprecated_event?(event_name)
+        return false unless @registered_events && @registered_events[event_name]
+
+        @registered_events[event_name][:deprecated]
       end
 
       private

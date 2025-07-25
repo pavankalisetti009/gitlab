@@ -24,6 +24,7 @@ module Ai
     validates :timestamp, :user_id, :organization_id, presence: true
     validates :extras, json_schema: { filename: "ai_usage_event_extras", size_limit: 16.kilobytes }
     validate :validate_recent_timestamp, on: :create
+    validate :validate_event_status, on: :create
 
     before_validation :floor_timestamp
 
@@ -69,6 +70,12 @@ module Ai
       return unless timestamp && timestamp < self.class.partitioning_strategy.retain_for.ago
 
       errors.add(:timestamp, _('must be 3 months old at the most'))
+    end
+
+    def validate_event_status
+      return unless Gitlab::Tracking::AiTracking.deprecated_event?(event)
+
+      errors.add(:event, _('is read-only'))
     end
   end
 end

@@ -19,6 +19,10 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
     it 'allows 3 month old data at the most' do
       is_expected.not_to allow_value(5.months.ago).for(:timestamp).with_message(_('must be 3 months old at the most'))
     end
+
+    it 'does not allow new deprecated events' do
+      is_expected.not_to allow_value('code_suggestions_requested').for(:event).with_message(_('is read-only'))
+    end
   end
 
   describe 'scopes' do

@@ -7,27 +7,21 @@ module Types
         graphql_name 'AiUsageEventType'
         description 'Type of AI usage event'
 
-        value "CODE_SUGGESTION_REQUESTED",
-          description: "Code Suggestion was requested (old data only).",
-          value: 'code_suggestion_requested'
-        value "CODE_SUGGESTION_SHOWN_IN_IDE",
-          description: "Code Suggestion was shown in IDE.",
-          value: 'code_suggestion_shown_in_ide'
-        value "CODE_SUGGESTION_ACCEPTED_IN_IDE",
-          description: "Code Suggestion was accepted in IDE.",
-          value: 'code_suggestion_accepted_in_ide'
-        value "CODE_SUGGESTION_REJECTED_IN_IDE",
-          description: "Code Suggestion was rejected in IDE.",
-          value: 'code_suggestion_rejected_in_ide'
-        value "CODE_SUGGESTION_DIRECT_ACCESS_TOKEN_REFRESH",
-          description: "Code Suggestion token was refreshed (old data only).",
-          value: 'code_suggestion_direct_access_token_refresh'
-        value "REQUEST_DUO_CHAT_RESPONSE",
-          description: "Duo Chat response was requested.",
-          value: 'request_duo_chat_response'
-        value "TROUBLESHOOT_JOB",
-          description: "Troubleshoot job feature was used.",
-          value: 'troubleshoot_job'
+        DEPRECATION_POSTFIX = "Old data only."
+
+        def self.declare_event(event_name, description)
+          description += " #{DEPRECATION_POSTFIX}" if Gitlab::Tracking::AiTracking.deprecated_event?(event_name)
+
+          value event_name.upcase, description: description, value: event_name
+        end
+
+        declare_event('code_suggestions_requested', "Code Suggestion was requested.")
+        declare_event('code_suggestion_shown_in_ide', "Code Suggestion was shown in IDE.")
+        declare_event('code_suggestion_accepted_in_ide', "Code Suggestion was accepted in IDE.")
+        declare_event('code_suggestion_rejected_in_ide', "Code Suggestion was rejected in IDE.")
+        declare_event('code_suggestion_direct_access_token_refresh', "Code Suggestion token was refreshed.")
+        declare_event('request_duo_chat_response', "Duo Chat response was requested.")
+        declare_event('troubleshoot_job', "Troubleshoot job feature was used.")
       end
     end
   end

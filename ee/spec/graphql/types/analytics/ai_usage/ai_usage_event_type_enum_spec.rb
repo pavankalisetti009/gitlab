@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Types::Analytics::AiUsage::AiUsageEventTypeEnum, feature_category: :value_stream_management do
   it 'includes a value for each usage event type' do
     expect(described_class.values).to match(
-      'CODE_SUGGESTION_REQUESTED' => have_attributes(value: 'code_suggestion_requested'),
+      'CODE_SUGGESTIONS_REQUESTED' => have_attributes(value: 'code_suggestions_requested'),
       'CODE_SUGGESTION_ACCEPTED_IN_IDE' => have_attributes(value: 'code_suggestion_accepted_in_ide'),
       'CODE_SUGGESTION_REJECTED_IN_IDE' => have_attributes(value: 'code_suggestion_rejected_in_ide'),
       'CODE_SUGGESTION_DIRECT_ACCESS_TOKEN_REFRESH' => have_attributes(
