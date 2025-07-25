@@ -21,6 +21,8 @@ import {
 import {
   TOKEN_TITLE_WEIGHT,
   TOKEN_TYPE_WEIGHT,
+  TOKEN_TYPE_HEALTH,
+  TOKEN_TITLE_HEALTH,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
@@ -52,6 +54,7 @@ describeSkipVue3(skipReason, () => {
   const mountComponent = ({
     hasEpicsFeature = true,
     hasIssueWeightsFeature = false,
+    hasIssuableHealthStatusFeature = false,
     hasCustomFieldsFeature = true,
     showNewWorkItem = true,
     isGroup = true,
@@ -64,6 +67,7 @@ describeSkipVue3(skipReason, () => {
         hasEpicsFeature,
         hasCustomFieldsFeature,
         hasIssueWeightsFeature,
+        hasIssuableHealthStatusFeature,
         showNewWorkItem,
         isGroup,
         workItemType,
@@ -170,6 +174,11 @@ describeSkipVue3(skipReason, () => {
   });
 
   describe('filter tokens', () => {
+    const findToken = (type) => {
+      const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
+      return eeSearchTokens.find((token) => token.type === type);
+    };
+
     describe('custom fields', () => {
       const mockCustomFields = mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes;
       const allowedFields = mockCustomFields.filter(
@@ -178,15 +187,16 @@ describeSkipVue3(skipReason, () => {
             field.fieldType,
           ) && field.workItemTypes.some((type) => type.name === WORK_ITEM_TYPE_NAME_EPIC),
       );
+      const findCustomFieldTokens = () =>
+        findWorkItemsListApp()
+          .props('eeSearchTokens')
+          .filter((token) => token.type.startsWith(TOKEN_TYPE_CUSTOM_FIELD));
 
       it('excludes custom field tokens when feature is disabled', async () => {
         mountComponent({ hasCustomFieldsFeature: false });
         await waitForPromises();
 
-        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
-        const customFieldTokens = eeSearchTokens.filter((token) =>
-          token.type.startsWith(TOKEN_TYPE_CUSTOM_FIELD),
-        );
+        const customFieldTokens = findCustomFieldTokens();
 
         expect(customFieldTokens).toHaveLength(0);
         expect(customFieldsQueryHandler).not.toHaveBeenCalled(); // Verify query was skipped
@@ -196,10 +206,7 @@ describeSkipVue3(skipReason, () => {
         mountComponent();
         await waitForPromises();
 
-        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
-        const customFieldTokens = eeSearchTokens.filter((token) =>
-          token.type.startsWith(TOKEN_TYPE_CUSTOM_FIELD),
-        );
+        const customFieldTokens = findCustomFieldTokens();
 
         expect(customFieldTokens).toHaveLength(2);
       });
@@ -243,8 +250,7 @@ describeSkipVue3(skipReason, () => {
         });
         await waitForPromises();
 
-        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
-        const weightToken = eeSearchTokens.find((token) => token.type === TOKEN_TYPE_WEIGHT);
+        const weightToken = findToken(TOKEN_TYPE_WEIGHT);
 
         expect(weightToken).toBeUndefined();
       });
@@ -256,8 +262,7 @@ describeSkipVue3(skipReason, () => {
         });
         await waitForPromises();
 
-        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
-        const weightToken = eeSearchTokens.find((token) => token.type === TOKEN_TYPE_WEIGHT);
+        const weightToken = findToken(TOKEN_TYPE_WEIGHT);
 
         expect(weightToken).toBeUndefined();
       });
@@ -269,13 +274,44 @@ describeSkipVue3(skipReason, () => {
         });
         await waitForPromises();
 
-        const eeSearchTokens = findWorkItemsListApp().props('eeSearchTokens');
-        const weightToken = eeSearchTokens.find((token) => token.type === TOKEN_TYPE_WEIGHT);
+        const weightToken = findToken(TOKEN_TYPE_WEIGHT);
 
         expect(weightToken).toMatchObject({
           type: TOKEN_TYPE_WEIGHT,
           title: TOKEN_TITLE_WEIGHT,
           icon: 'weight',
+          token: expect.any(Function),
+          unique: true,
+        });
+      });
+    });
+
+    describe('health status', () => {
+      it('excludes health token when feature is disabled', async () => {
+        mountComponent({
+          hasIssuableHealthStatusFeature: false,
+          workItemType: WORK_ITEM_TYPE_NAME_EPIC,
+        });
+        await waitForPromises();
+
+        const healthToken = findToken(TOKEN_TYPE_HEALTH);
+
+        expect(healthToken).toBeUndefined();
+      });
+
+      it('includes health token for issues when feature is enabled', async () => {
+        mountComponent({
+          hasIssuableHealthStatusFeature: true,
+          workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+        });
+        await waitForPromises();
+
+        const healthToken = findToken(TOKEN_TYPE_HEALTH);
+
+        expect(healthToken).toMatchObject({
+          type: TOKEN_TYPE_HEALTH,
+          title: TOKEN_TITLE_HEALTH,
+          icon: 'status-health',
           token: expect.any(Function),
           unique: true,
         });

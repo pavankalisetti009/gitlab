@@ -37,6 +37,7 @@ query getWorkItemsSlimEE(
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
   $weight: String
   $weightWildcardId: WeightWildcardId
+  $healthStatusFilter: HealthStatusFilter
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -75,6 +76,7 @@ query getWorkItemsSlimEE(
       customField: $customField
       weight: $weight
       weightWildcardId: $weightWildcardId
+      healthStatusFilter: $healthStatusFilter
     ) {
       pageInfo {
         ...PageInfo

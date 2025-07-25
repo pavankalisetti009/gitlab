@@ -28,13 +28,19 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
   let_it_be(:weighted_issue_5) { create(:issue, project: project, weight: 5) }
   let_it_be(:unweighted_issue) { create(:issue, project: project, weight: nil) }
 
+  let_it_be(:issue_on_track) { create(:issue, project: project, health_status: 'on_track') }
+  let_it_be(:issue_needs_attention) { create(:issue, project: project, health_status: 'needs_attention') }
+  let_it_be(:issue_at_risk) { create(:issue, project: project, health_status: 'at_risk') }
+  let_it_be(:issue_no_health) { create(:issue, project: project, health_status: nil) }
+
   def expect_work_items_list_count(count)
     expect(page).to have_css('.issue', count: count)
   end
 
   context 'for signed in user' do
     before do
-      stub_licensed_features(epics: true, quality_management: true, subepics: true, issue_weights: true)
+      stub_licensed_features(epics: true, quality_management: true, subepics: true, issue_weights: true,
+        issuable_health_status: true)
       sign_in(user)
       visit group_work_items_path(group)
     end
@@ -66,7 +72,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
       it 'filters', :aggregate_failures do
         select_tokens('Type', '=', 'Issue', submit: true)
 
-        expect(page).to have_css('.issue', count: 6)
+        expect(page).to have_css('.issue', count: 10)
         expect(page).to have_link(issue.title)
         expect(page).to have_link(sub_issue.title)
 
@@ -172,6 +178,89 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
           click_filtered_search_bar
 
           expect(page).not_to have_css('[data-testid="filtered-search-token-segment"]', text: 'Weight')
+        end
+      end
+    end
+
+    describe 'health' do
+      before do
+        visit project_work_items_path(project)
+      end
+
+      describe 'behavior' do
+        it 'loads all health status options when opened' do
+          select_tokens 'Health', '='
+
+          # Expect None, Any, on_track, needs_attention, at_risk
+          expect_suggestion_count 5
+        end
+      end
+
+      describe 'only health' do
+        it 'filters work items by on_track health status' do
+          select_tokens 'Health', '=', 'On track', submit: true
+
+          expect_work_items_list_count(1)
+          expect(page).to have_link(issue_on_track.title)
+        end
+
+        it 'filters work items by needs_attention health status' do
+          select_tokens 'Health', '=', 'Needs attention', submit: true
+
+          expect_work_items_list_count(1)
+          expect(page).to have_link(issue_needs_attention.title)
+        end
+
+        it 'filters work items by at_risk health status' do
+          select_tokens 'Health', '=', 'At risk', submit: true
+
+          expect_work_items_list_count(1)
+          expect(page).to have_link(issue_at_risk.title)
+        end
+      end
+
+      describe 'health wildcards' do
+        it 'filters work items by None health status' do
+          select_tokens 'Health', '=', 'None', submit: true
+
+          expect(page).to have_link(issue_no_health.title)
+          expect(page).not_to have_link(issue_on_track.title)
+          expect(page).not_to have_link(issue_needs_attention.title)
+          expect(page).not_to have_link(issue_at_risk.title)
+        end
+
+        it 'filters work items by Any health status' do
+          select_tokens 'Health', '=', 'Any', submit: true
+
+          expect_work_items_list_count(3)
+          expect(page).to have_link(issue_on_track.title)
+          expect(page).to have_link(issue_needs_attention.title)
+          expect(page).to have_link(issue_at_risk.title)
+          expect(page).not_to have_link(issue_no_health.title)
+        end
+      end
+
+      describe 'negated health only' do
+        it 'excludes work items with specified health status' do
+          select_tokens 'Health', '!=', 'On track', submit: true
+
+          expect(page).to have_link(issue_needs_attention.title)
+          expect(page).to have_link(issue_at_risk.title)
+          expect(page).to have_link(issue_no_health.title)
+          expect(page).not_to have_link(issue_on_track.title)
+        end
+      end
+
+      context 'when issuable health status feature is not available' do
+        before do
+          stub_licensed_features(epics: true, quality_management: true, subepics: true, issuable_health_status: false)
+          visit group_work_items_path(group)
+        end
+
+        it 'does not show health filter token' do
+          click_filtered_search_bar
+
+          expect(page).not_to have_css('[data-testid="filtered-search-token-segment"]', text: 'Health')
         end
       end
     end

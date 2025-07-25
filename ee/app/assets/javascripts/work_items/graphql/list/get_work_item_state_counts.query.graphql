@@ -30,6 +30,7 @@ query EEgetWorkItemStateCounts(
   $or: UnionedWorkItemFilterInput
   $weight: String
   $weightWildcardId: WeightWildcardId
+  $healthStatusFilter: HealthStatusFilter
 ) {
   group(fullPath: $fullPath) @include(if: $isGroup) {
     id
@@ -61,6 +62,7 @@ query EEgetWorkItemStateCounts(
       in: $in
       not: $not
       or: $or
+      healthStatusFilter: $healthStatusFilter
     ) {
       all
       closed
@@ -96,6 +98,7 @@ query EEgetWorkItemStateCounts(
       or: $or
       weight: $weight
       weightWildcardId: $weightWildcardId
+      healthStatusFilter: $healthStatusFilter
     ) {
       all
       closed

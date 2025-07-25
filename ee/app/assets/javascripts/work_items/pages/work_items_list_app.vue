@@ -18,6 +18,8 @@ import {
 import {
   TOKEN_TITLE_WEIGHT,
   TOKEN_TYPE_WEIGHT,
+  TOKEN_TYPE_HEALTH,
+  TOKEN_TITLE_HEALTH,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
@@ -28,6 +30,8 @@ const CustomFieldToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
 const WeightToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/weight_token.vue');
+const HealthToken = () =>
+  import('ee/vue_shared/components/filtered_search_bar/tokens/health_token.vue');
 
 export default {
   emptyStateSvg,
@@ -45,6 +49,7 @@ export default {
     'workItemType',
     'hasCustomFieldsFeature',
     'hasIssueWeightsFeature',
+    'hasIssuableHealthStatusFeature',
   ],
   props: {
     withTabs: {
@@ -128,6 +133,16 @@ export default {
           title: TOKEN_TITLE_WEIGHT,
           icon: 'weight',
           token: WeightToken,
+          unique: true,
+        });
+      }
+
+      if (this.hasIssuableHealthStatusFeature) {
+        tokens.push({
+          type: TOKEN_TYPE_HEALTH,
+          title: TOKEN_TITLE_HEALTH,
+          icon: 'status-health',
+          token: HealthToken,
           unique: true,
         });
       }
