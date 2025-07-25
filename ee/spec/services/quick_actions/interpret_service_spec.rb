@@ -1604,6 +1604,17 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           expect(updates[:status]).to have_attributes(expected_status_attributes)
         end
 
+        context 'when name has surrounding quotes' do
+          let(:content) { '/status "in progress"' }
+
+          it 'adds status reference to updates with message' do
+            _, updates, message = execute_command
+
+            expect(message).to eq(expected_message)
+            expect(updates[:status]).to have_attributes(expected_status_attributes)
+          end
+        end
+
         context 'when status name does not reference a valid status' do
           let(:content) { '/status invalid' }
           let(:expected_message) do
@@ -1663,8 +1674,13 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
       context 'with custom statuses' do
         let_it_be(:custom_status_to_do) { create(:work_item_custom_status, :to_do, name: 'To do', namespace: group) }
-        let_it_be(:custom_status_in_progress) { create(:work_item_custom_status, :in_progress, name: 'In progress', namespace: group) }
-        let_it_be_with_reload(:work_item) { create(:work_item, :task, custom_status_id: custom_status_to_do.id, project: project) }
+        let_it_be(:custom_status_in_progress) do
+          create(:work_item_custom_status, :in_progress, name: 'In progress', namespace: group)
+        end
+
+        let_it_be_with_reload(:work_item) do
+          create(:work_item, :task, custom_status_id: custom_status_to_do.id, project: project)
+        end
 
         let(:expected_status_attributes) { { id: custom_status_in_progress.id, name: 'In progress' } }
 
