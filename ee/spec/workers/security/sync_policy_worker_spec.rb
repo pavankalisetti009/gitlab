@@ -130,7 +130,7 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
         expect(::Security::SyncProjectPolicyWorker)
           .to receive(:bulk_perform_async_with_contexts)
           .with(
-            [project1.id, project2.id],
+            match_array([project1.id, project2.id]),
             arguments_proc: kind_of(Proc),
             context_proc: kind_of(Proc)
           )
@@ -185,7 +185,7 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
         expect(::Security::SyncProjectPolicyWorker)
           .to receive(:bulk_perform_async_with_contexts)
           .with(
-            [project1.id, project2.id],
+            match_array([project1.id, project2.id]),
             arguments_proc: kind_of(Proc),
             context_proc: kind_of(Proc)
           )
