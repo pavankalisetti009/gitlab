@@ -1,8 +1,6 @@
 <script>
 import { GlIcon, GlTooltip, GlTruncate } from '@gitlab/ui';
-import { GL_DARK } from '~/constants';
-import { getSystemColorScheme } from '~/lib/utils/css_utils';
-import { STATUS_LIGHT_TO_DARK_COLOR_MAP } from '../../constants';
+import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
 
 export default {
   components: {
@@ -33,11 +31,7 @@ export default {
   },
   computed: {
     colorStyle() {
-      const color =
-        getSystemColorScheme() === GL_DARK
-          ? STATUS_LIGHT_TO_DARK_COLOR_MAP[this.item.color] ?? this.item.color
-          : this.item.color;
-      return this.item.color ? { color } : {};
+      return this.item.color ? { color: getAdaptiveStatusColor(this.item.color) } : {};
     },
   },
 };
