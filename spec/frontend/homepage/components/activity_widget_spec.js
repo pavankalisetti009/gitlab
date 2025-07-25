@@ -25,10 +25,15 @@ describe('ActivityWidget', () => {
   const findEmptyState = () => wrapper.findByTestId('empty-state');
   const findEventsList = () => wrapper.findByTestId('events-list');
   const findDetector = () => wrapper.findComponent(VisibilityChangeDetector);
+  const findAllActivityLink = () => wrapper.find('a[href="/foo/bar"]');
 
   function createWrapper() {
     gon.current_username = MOCK_CURRENT_USERNAME;
-    wrapper = shallowMountExtended(ActivityWidget);
+    wrapper = shallowMountExtended(ActivityWidget, {
+      propsData: {
+        activityPath: '/foo/bar',
+      },
+    });
   }
 
   beforeEach(() => {
@@ -110,6 +115,12 @@ describe('ActivityWidget', () => {
     const timestampEls = wrapper.vm.$el.querySelectorAll('.js-timeago');
     expect(timestampEls).toHaveLength(1);
     expect(localTimeAgo).toHaveBeenCalledWith(timestampEls);
+  });
+
+  it('shows a link to all activity', () => {
+    createWrapper();
+
+    expect(findAllActivityLink().text()).toBe('All activity');
   });
 
   describe('refresh functionality', () => {

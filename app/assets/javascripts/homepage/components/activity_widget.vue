@@ -16,6 +16,12 @@ export default {
   directives: {
     SafeHtml,
   },
+  props: {
+    activityPath: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       activityFeedHtml: null,
@@ -98,5 +104,6 @@ export default {
       data-testid="events-list"
       class="gl-list-none gl-p-0"
     ></ul>
+    <a :href="activityPath">{{ __('All activity') }}</a>
   </visibility-change-detector>
 </template>
