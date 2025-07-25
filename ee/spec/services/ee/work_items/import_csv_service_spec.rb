@@ -72,6 +72,24 @@ RSpec.describe WorkItems::ImportCsvService, feature_category: :team_planning do
           })
         end
       end
+
+      context 'when csv contains work item types with spaces in their name' do
+        let(:file) { fixture_file_upload('ee/spec/fixtures/work_items_key_result.csv') }
+
+        before do
+          stub_feature_flags(okrs_mvc: true)
+          stub_licensed_features(okrs: true)
+        end
+
+        it 'returns the correct result' do
+          result = subject
+
+          expect(result[:success]).to eq(1)
+          expect(result[:error_lines]).to be_empty
+          expect(result[:parse_error]).to eq(false)
+          expect(result[:type_errors]).to be_nil
+        end
+      end
     end
 
     context 'when user cannot create type' do
