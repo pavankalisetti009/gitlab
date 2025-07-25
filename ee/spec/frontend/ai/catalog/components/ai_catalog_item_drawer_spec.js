@@ -7,11 +7,16 @@ import { mockAgent } from '../mock_data';
 describe('CatalogItemDrawer', () => {
   let wrapper;
 
-  const createComponent = ({ isOpen = false, activeItem = mockAgent } = {}) => {
+  const createComponent = ({
+    isOpen = false,
+    activeItem = mockAgent,
+    editRoute = AI_CATALOG_AGENTS_EDIT_ROUTE,
+  } = {}) => {
     wrapper = shallowMountExtended(AiCatalogItemDrawer, {
       propsData: {
         isOpen,
         activeItem,
+        editRoute,
       },
     });
   };
@@ -46,6 +51,13 @@ describe('CatalogItemDrawer', () => {
         name: AI_CATALOG_AGENTS_EDIT_ROUTE,
         params: { id: 1 },
       });
+    });
+  });
+
+  describe('without editRoute', () => {
+    it('does not link to edit page', () => {
+      createComponent({ isOpen: true, editRoute: null });
+      expect(findEditButton().exists()).toBe(false);
     });
   });
 
