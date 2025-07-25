@@ -18,9 +18,17 @@ module Quality
           primary_identifier = create_identifier(rank)
           finding = create_finding(rank, primary_identifier)
           vulnerability = create_vulnerability(finding: finding)
-          # Create occurrence_identifier join models
-          finding.identifiers << primary_identifier
-          finding.identifiers << create_identifier(rank) if rank % 3 == 0
+
+          # The primary identifier is already associated via the finding creation
+          # Only add additional identifier if rank % 3 == 0 and it's different from primary
+          if rank % 3 == 0
+            secondary_identifier = create_identifier(rank + 1000) # Ensure it's different
+            finding.identifiers << secondary_identifier unless finding.identifiers.include?(secondary_identifier)
+          end
+
+          finding.update!(vulnerability_id: vulnerability.id)
+
+          create_vulnerability_read(vulnerability, finding)
 
           case rank % 3
           when 0
@@ -63,7 +71,10 @@ module Quality
       end
 
       def create_finding(rank, primary_identifier)
-        scanner = FactoryBot.create(:vulnerabilities_scanner, project: project)
+        scanner = find_or_create_scanner
+
+        # Generate a unique location fingerprint for each finding
+        unique_fingerprint = "#{random_fingerprint}_#{rank}_#{Time.current.to_i}"
 
         FactoryBot.create(
           :vulnerabilities_finding,
@@ -72,28 +83,54 @@ module Quality
           scanner: scanner,
           severity: random_severity_level,
           primary_identifier: primary_identifier,
-          location_fingerprint: random_fingerprint,
+          location_fingerprint: unique_fingerprint,
           raw_metadata: Gitlab::Json.dump(metadata(rank))
         )
       end
 
+      def find_or_create_scanner
+        # Reuse scanner if it exists to avoid uniqueness violations
+        # rubocop:disable CodeReuse/ActiveRecord
+        @scanner ||= ::Vulnerabilities::Scanner.find_or_create_by!(
+          project: project,
+          external_id: 'security-scanner'
+        ) do |scanner|
+          scanner.name = 'Security Scanner'
+        end
+        # rubocop:enable CodeReuse/ActiveRecord
+      end
+
       def create_identifier(rank)
+        # Try to find existing identifier first
+        external_id = "SECURITY_#{rank}"
+        # rubocop:disable CodeReuse/ActiveRecord
+        existing_identifier = ::Vulnerabilities::Identifier.find_by(
+          project: project,
+          external_type: "SECURITY_ID",
+          external_id: external_id
+        )
+        # rubocop:enable CodeReuse/ActiveRecord
+
+        return existing_identifier if existing_identifier
+
+        # If not found, create with unique ID to avoid conflicts
+        timestamp = Time.current.to_i
+        unique_id = "#{rank}_#{timestamp}_#{SecureRandom.hex(4)}"
+
         FactoryBot.create(
           :vulnerabilities_identifier,
           external_type: "SECURITY_ID",
-          external_id: "SECURITY_#{rank}",
+          external_id: "SECURITY_#{unique_id}",
           fingerprint: random_fingerprint,
           name: "SECURITY_IDENTIFIER #{rank}",
-          url: "https://security.example.com/#{rank}",
+          url: "https://security.example.com/#{unique_id}",
           project: project
         )
       end
 
       def create_feedback(finding, type, vulnerability: nil)
-        if type == 'issue'
-          issue = create_issue("Dismiss #{finding.name}")
-          create_vulnerability_issue_link(vulnerability, issue)
-        end
+        issue = create_issue("Dismiss #{finding.name}") if type == 'issue'
+        create_vulnerability_issue_link(vulnerability, issue) if vulnerability && issue
 
         FactoryBot.create(
           :vulnerability_feedback,
@@ -121,6 +158,37 @@ module Quality
           vulnerability: vulnerability,
           issue: issue
         )
+      end
+
+      def create_vulnerability_read(vulnerability, finding)
+        # Skip if vulnerability_read already exists
+        # rubocop:disable CodeReuse/ActiveRecord
+        return if ::Vulnerabilities::Read.exists?(vulnerability_id: vulnerability.id)
+
+        # rubocop:enable CodeReuse/ActiveRecord
+
+        ::Vulnerabilities::Read.create!(
+          vulnerability_id: vulnerability.id,
+          project_id: vulnerability.project_id,
+          scanner_id: finding.scanner_id,
+          report_type: vulnerability.report_type,
+          severity: vulnerability.severity,
+          state: vulnerability.state,
+          resolved_on_default_branch: vulnerability.resolved_on_default_branch,
+          uuid: finding.uuid,
+          location_image: vulnerability.location&.dig('image'),
+          cluster_agent_id: vulnerability.location&.dig('kubernetes_resource', 'agent_id'),
+          casted_cluster_agent_id: vulnerability.location&.dig('kubernetes_resource', 'agent_id')&.to_i,
+          has_issues: vulnerability.issue_links.any?,
+          has_merge_request: vulnerability.merge_request_links.any?,
+          traversal_ids: vulnerability.project.namespace.traversal_ids,
+          archived: vulnerability.project.archived,
+          identifier_names: finding.identifiers.map(&:name),
+          owasp_top_10: -1,
+          has_vulnerability_resolution: false
+        )
+      rescue ActiveRecord::RecordInvalid => e
+        print "\nFailed to create vulnerability_read for vulnerability #{vulnerability.id}: #{e.message}\n"
       end
 
       def random_severity_level
