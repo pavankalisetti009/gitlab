@@ -15,6 +15,11 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
 
   subject(:create_service) { service.execute }
 
+  before do
+    shared_with_group.add_guest(user)
+    group.add_owner(user)
+  end
+
   describe 'audit event creation' do
     let(:audit_context) do
       {
@@ -25,11 +30,6 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
         target: shared_with_group,
         message: "Invited #{shared_with_group.name} to the group #{group.name}"
       }
-    end
-
-    before do
-      shared_with_group.add_guest(user)
-      group.add_owner(user)
     end
 
     it 'sends an audit event' do
@@ -45,8 +45,6 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
 
     shared_examples 'adding members using custom permission' do
       before do
-        shared_with_group.add_guest(user)
-
         # it is more efficient to change the base_access_level than to create a new member_role
         member_role.base_access_level = current_role
         member_role.save!(validate: false)
@@ -125,9 +123,6 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
       let(:opts) { { shared_group_access: Gitlab::Access::DEVELOPER, member_role_id: member_role.id } }
 
       before do
-        group.add_owner(user)
-        shared_with_group.add_guest(user)
-
         allow(service).to receive(:custom_role_for_group_link_enabled?)
           .with(group)
           .and_return(custom_role_for_group_link_enabled)
@@ -185,6 +180,36 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
 
         it 'does not assign member role to group link' do
           expect(create_service[:link][:member_role_id]).to be_nil
+        end
+      end
+
+      describe "Authz::UserGroupMemberRole records of the shared_with_group's members" do
+        let(:custom_role_for_group_link_enabled) { true }
+
+        before do
+          stub_licensed_features(custom_roles: true)
+          stub_feature_flags(cache_user_group_member_roles: group)
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(cache_user_group_member_roles: false)
+          end
+
+          it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do
+            expect(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker).not_to receive(:perform_async)
+
+            create_service
+          end
+        end
+
+        it 'enqueues a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do
+          allow(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker).to receive(:perform_async)
+
+          link_id = create_service[:link][:id]
+
+          expect(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker)
+            .to have_received(:perform_async).with(link_id)
         end
       end
     end
@@ -261,8 +286,6 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
     let_it_be(:user_b) { create(:user) }
 
     before_all do
-      group.add_owner(user)
-      shared_with_group.add_guest(user)
       shared_with_group.add_developer(user_b)
     end
 

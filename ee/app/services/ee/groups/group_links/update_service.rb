@@ -10,6 +10,7 @@ module EE
         override :execute
         def execute(group_link_params)
           super.tap do |group_link|
+            update_user_group_member_roles(group_link)
             log_audit_event(group_link)
           end
         end
@@ -57,6 +58,16 @@ module EE
 
         def changes
           @changes ||= group_link.previous_changes.symbolize_keys.except(:updated_at)
+        end
+
+        def update_user_group_member_roles(link)
+          member_role_changed = changes[:member_role_id].present?
+          access_level_changed = changes[:group_access].present?
+
+          return unless member_role_changed || access_level_changed
+          return unless ::Feature.enabled?(:cache_user_group_member_roles, link.shared_group.root_ancestor)
+
+          ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker.perform_async(link.id)
         end
       end
     end

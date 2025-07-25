@@ -129,5 +129,56 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
         expect(update_service.member_role_id).to be_nil
       end
     end
+
+    describe "Authz::UserGroupMemberRole records of the shared_with_group's members" do
+      let(:custom_role_for_group_link_enabled) { true }
+
+      before do
+        stub_licensed_features(custom_roles: true)
+        stub_feature_flags(cache_user_group_member_roles: group)
+      end
+
+      shared_examples 'does not enqueue UpdateForSharedGroupWorker job' do
+        it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker).not_to receive(:perform_async)
+
+          update_service
+        end
+      end
+
+      shared_examples 'enqueues UpdateForSharedGroupWorker job' do
+        it 'enqueues a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do
+          allow(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker).to receive(:perform_async)
+
+          updated_link = update_service
+
+          expect(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker)
+            .to have_received(:perform_async).with(updated_link.id)
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(cache_user_group_member_roles: false)
+        end
+
+        it_behaves_like 'does not enqueue UpdateForSharedGroupWorker job'
+      end
+
+      context 'when neither member role nor access level was updated' do
+        let(:link) { link_with_member_role }
+        let(:group_link_params) { { expires_at: expiry_date } }
+
+        it_behaves_like 'does not enqueue UpdateForSharedGroupWorker job'
+      end
+
+      context 'when only access level was updated' do
+        let(:group_link_params) { { group_access: Gitlab::Access::GUEST } }
+
+        it_behaves_like 'enqueues UpdateForSharedGroupWorker job'
+      end
+
+      it_behaves_like 'enqueues UpdateForSharedGroupWorker job'
+    end
   end
 end

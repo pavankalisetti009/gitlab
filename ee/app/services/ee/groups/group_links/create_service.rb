@@ -18,6 +18,7 @@ module EE
 
           log_audit_event
           create_or_update_seat_assignments
+          update_user_group_member_roles
         end
 
         private
@@ -52,6 +53,12 @@ module EE
 
         def member_role_too_high?
           group.assigning_role_too_high?(current_user, params[:shared_group_access])
+        end
+
+        def update_user_group_member_roles
+          return unless ::Feature.enabled?(:cache_user_group_member_roles, link.shared_group.root_ancestor)
+
+          ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker.perform_async(link.id)
         end
       end
     end
