@@ -244,8 +244,7 @@ module Sbom
         blob_path: input_file_blob_path,
         path: input_file_path,
         top_level: top_level?,
-        ancestors: ancestors,
-        has_dependency_paths: has_dependency_paths?
+        ancestors: ancestors
       }
     end
 

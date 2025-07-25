@@ -68,7 +68,7 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
 
       it 'renders the proper representation' do
         expect(subject.keys).to match_array([
-          :name, :packager, :version, :licenses, :location, :occurrence_id, :vulnerability_count
+          :name, :packager, :version, :licenses, :location, :occurrence_id, :vulnerability_count, :has_dependency_paths
         ])
 
         expect(subject[:name]).to eq(sbom_occurrence.name)
@@ -80,7 +80,6 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
         expect(subject.dig(:location, :blob_path)).to eq(sbom_occurrence.location[:blob_path])
         expect(subject.dig(:location, :path)).to eq(sbom_occurrence.location[:path])
         expect(subject.dig(:location, :ancestors).as_json).to eq([ancestor])
-        expect(subject.dig(:location, :has_dependency_paths)).to be(false)
         expect(subject.dig(:location, :top_level)).to be false
       end
 

@@ -40,6 +40,9 @@
         "type": "array"
       }
     },
+    "has_dependency_paths": {
+      "type": "boolean"
+    },
     "project": {
       "type": [
         "object"

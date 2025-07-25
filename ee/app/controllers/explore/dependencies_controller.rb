@@ -72,6 +72,7 @@ module Explore
         .with_project_route
         .with_source
         .with_version
+        .with_dependency_paths_existence
     end
 
     def per_page

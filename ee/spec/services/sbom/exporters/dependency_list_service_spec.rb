@@ -42,11 +42,11 @@ RSpec.describe Sbom::Exporters::DependencyListService, feature_category: :depend
           'location' => {
             'blob_path' =>
               "/#{project.full_path}/-/blob/#{occurrence.commit_sha}/#{occurrence.input_file_path}",
-            'has_dependency_paths' => false,
             'path' => occurrence.input_file_path,
             'top_level' => false,
             'ancestors' => occurrence.ancestors
           },
+          'has_dependency_paths' => false,
           'licenses' => occurrence.licenses,
           'vulnerabilities' => vulnerabilities,
           'vulnerability_count' => 2

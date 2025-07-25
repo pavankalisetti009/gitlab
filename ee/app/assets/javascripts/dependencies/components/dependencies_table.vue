@@ -152,7 +152,7 @@ export default {
     toggleDrawerGroup(item, emittedItem) {
       const { name, version, occurrenceId: drawerId } = item;
       const dropdownItems = emittedItem
-        .filter((dropdownItem) => dropdownItem.location.has_dependency_paths)
+        .filter((dropdownItem) => dropdownItem.has_dependency_paths)
         .map(({ project, occurrence_id: occurrenceId }) => ({
           value: occurrenceId,
           text: project.name,
@@ -256,6 +256,7 @@ export default {
         <template v-else-if="item.location">
           <dependency-location
             :location="item.location"
+            :has-dependency-paths="item.hasDependencyPaths"
             @click-dependency-path="toggleDrawerProject(item)"
           />
         </template>

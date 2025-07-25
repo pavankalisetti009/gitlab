@@ -225,10 +225,9 @@ describe('Dependency Location Count component', () => {
       const dependencyPathsLocationsData = {
         locations: [
           {
-            location: {
-              has_dependency_paths: true,
-            },
+            location: {},
             project: { name: projectName },
+            has_dependency_paths: true,
           },
         ],
       };
@@ -267,8 +266,9 @@ describe('Dependency Location Count component', () => {
         const noDependencyPathsLocationsData = {
           locations: [
             {
-              location: { has_dependency_paths: false },
+              location: {},
               project: { name: projectName },
+              has_dependency_paths: false,
             },
           ],
         };

@@ -103,14 +103,15 @@ RSpec.describe Explore::DependenciesController, :with_current_organization, feat
                   'version' => occurrence.version,
                   'location' => occurrence.location.as_json,
                   'occurrence_id' => occurrence.id,
-                  'vulnerability_count' => occurrence.vulnerability_count
+                  'vulnerability_count' => occurrence.vulnerability_count,
+                  'has_dependency_paths' => false
                 }
               end
               expect(json_response["dependencies"]).to match_array(expected_occurrences)
             end
           end
 
-          xit 'avoids N+1 database queries' do # rubocop:disable RSpec/PendingWithoutReason -- TODO: Sbom::Occurrence#has_dependency_paths? has an n+1 query which is unavoidable for now
+          it 'avoids N+1 database queries' do
             get explore_dependencies_path, as: :json # warmup
 
             create(:sbom_occurrence, project: project)

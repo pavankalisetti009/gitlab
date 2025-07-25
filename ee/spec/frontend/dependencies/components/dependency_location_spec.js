@@ -11,7 +11,10 @@ describe('Dependency Location component', () => {
 
   const createComponent = ({ propsData, ...options } = {}) => {
     wrapper = shallowMount(DependencyLocation, {
-      propsData: { ...propsData },
+      propsData: {
+        hasDependencyPaths: false,
+        ...propsData,
+      },
       stubs: { GlLink, DirectDescendantViewer, GlIntersperse },
       provide: {
         glFeatures: {
@@ -49,7 +52,8 @@ describe('Dependency Location component', () => {
     beforeEach(() => {
       createComponent({
         propsData: {
-          location: { hasDependencyPaths: true },
+          location: {},
+          hasDependencyPaths: true,
         },
       });
     });
@@ -139,7 +143,8 @@ describe('Dependency Location component', () => {
       beforeEach(() => {
         createComponent({
           propsData: {
-            location: { hasDependencyPaths: true },
+            location: {},
+            hasDependencyPaths: true,
           },
           provide: {
             glFeatures: {

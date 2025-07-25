@@ -51,6 +51,7 @@ module Groups
           namespace: group,
           params: params.permit(:component_id, :search)
         ).execute
+        .with_dependency_paths_existence
       )
     end
 

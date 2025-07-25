@@ -62,14 +62,15 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
                 'packager' => occurrence.packager,
                 'version' => occurrence.version,
                 'location' => occurrence.location,
-                'licenses' => occurrence.licenses
+                'licenses' => occurrence.licenses,
+                'has_dependency_paths' => false
               }.deep_stringify_keys
             end
 
             expect(json_response['dependencies']).to match_array(expected)
           end
 
-          xit 'avoids N+1 queries' do # rubocop:disable RSpec/PendingWithoutReason -- TODO: Sbom::Occurrence#has_dependency_paths? has an n+1 query which is unavoidable for now
+          it 'avoids N+1 queries' do
             control_count = ActiveRecord::QueryRecorder
               .new { get project_dependencies_path(project, **params, format: :json) }.count
             create_list(:sbom_occurrence, 2, project: project)
