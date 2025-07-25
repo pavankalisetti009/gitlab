@@ -57,7 +57,7 @@ module QA
               needs:
                 - project: #{project.path_with_namespace}
                   job: job1
-                  ref: main
+                  ref: #{project.default_branch}
                   artifacts: true
               script:
                 - cat output.txt
