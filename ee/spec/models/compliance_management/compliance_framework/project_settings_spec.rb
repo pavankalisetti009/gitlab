@@ -219,4 +219,41 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings, type:
       end
     end
   end
+
+  describe '.delete_by_framework' do
+    let_it_be(:framework1) { create(:compliance_framework, namespace: group, name: 'Framework 1') }
+    let_it_be(:framework2) { create(:compliance_framework, namespace: group, name: 'Framework 2') }
+
+    let_it_be(:project1) { create(:project, group: group) }
+    let_it_be(:project2) { create(:project, group: group) }
+    let_it_be(:project3) { create(:project, group: group) }
+
+    subject(:delete) { described_class.delete_by_framework(framework1.id) }
+
+    before_all do
+      create(:compliance_framework_project_setting,
+        project: project1,
+        compliance_management_framework: framework1)
+      create(:compliance_framework_project_setting,
+        project: project2,
+        compliance_management_framework: framework1)
+
+      create(:compliance_framework_project_setting,
+        project: project3,
+        compliance_management_framework: framework2)
+    end
+
+    it 'deletes all settings for the specified framework_id' do
+      expect { delete }.to change { described_class.count }.by(-2)
+    end
+
+    it 'only deletes settings for the specified framework_id' do
+      delete
+
+      expect(described_class.where(framework_id: framework1.id)).to be_empty
+      expect(described_class.where(framework_id: framework2.id).count).to eq(1)
+    end
+
+    it { is_expected.to eq(2) }
+  end
 end
