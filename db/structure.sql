@@ -12312,8 +12312,7 @@ CREATE TABLE ci_runner_taggings_group_type (
     runner_id bigint NOT NULL,
     sharding_key_id bigint,
     runner_type smallint NOT NULL,
-    organization_id bigint,
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
+    organization_id bigint
 );
 
 CREATE SEQUENCE ci_runner_taggings_id_seq
@@ -12331,8 +12330,7 @@ CREATE TABLE ci_runner_taggings_instance_type (
     runner_id bigint NOT NULL,
     sharding_key_id bigint,
     runner_type smallint NOT NULL,
-    organization_id bigint,
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NULL))
+    organization_id bigint
 );
 
 CREATE TABLE ci_runner_taggings_project_type (
@@ -12341,8 +12339,7 @@ CREATE TABLE ci_runner_taggings_project_type (
     runner_id bigint NOT NULL,
     sharding_key_id bigint,
     runner_type smallint NOT NULL,
-    organization_id bigint,
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
+    organization_id bigint
 );
 
 CREATE TABLE ci_runner_versions (
@@ -15738,8 +15735,7 @@ CREATE TABLE group_type_ci_runner_machines (
     CONSTRAINT check_7dc4eee8a5 CHECK ((char_length(version) <= 2048)),
     CONSTRAINT check_b1e456641b CHECK ((char_length(ip_address) <= 1024)),
     CONSTRAINT check_c788f4b18a CHECK ((char_length(platform) <= 255)),
-    CONSTRAINT check_f3d25ab844 CHECK ((char_length(architecture) <= 255)),
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
+    CONSTRAINT check_f3d25ab844 CHECK ((char_length(architecture) <= 255))
 );
 
 CREATE TABLE group_type_ci_runners (
@@ -15772,8 +15768,7 @@ CREATE TABLE group_type_ci_runners (
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
     CONSTRAINT check_5db8ae9d30 CHECK ((char_length(description) <= 1024)),
-    CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128)),
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
+    CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128))
 );
 
 CREATE TABLE group_wiki_repositories (
@@ -16413,8 +16408,7 @@ CREATE TABLE instance_type_ci_runner_machines (
     CONSTRAINT check_7dc4eee8a5 CHECK ((char_length(version) <= 2048)),
     CONSTRAINT check_b1e456641b CHECK ((char_length(ip_address) <= 1024)),
     CONSTRAINT check_c788f4b18a CHECK ((char_length(platform) <= 255)),
-    CONSTRAINT check_f3d25ab844 CHECK ((char_length(architecture) <= 255)),
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NULL))
+    CONSTRAINT check_f3d25ab844 CHECK ((char_length(architecture) <= 255))
 );
 
 CREATE TABLE instance_type_ci_runners (
@@ -16447,8 +16441,7 @@ CREATE TABLE instance_type_ci_runners (
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
     CONSTRAINT check_5db8ae9d30 CHECK ((char_length(description) <= 1024)),
-    CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128)),
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NULL))
+    CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128))
 );
 
 CREATE TABLE integrations (
@@ -22147,8 +22140,7 @@ CREATE TABLE project_type_ci_runner_machines (
     CONSTRAINT check_7dc4eee8a5 CHECK ((char_length(version) <= 2048)),
     CONSTRAINT check_b1e456641b CHECK ((char_length(ip_address) <= 1024)),
     CONSTRAINT check_c788f4b18a CHECK ((char_length(platform) <= 255)),
-    CONSTRAINT check_f3d25ab844 CHECK ((char_length(architecture) <= 255)),
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
+    CONSTRAINT check_f3d25ab844 CHECK ((char_length(architecture) <= 255))
 );
 
 CREATE TABLE project_type_ci_runners (
@@ -22181,8 +22173,7 @@ CREATE TABLE project_type_ci_runners (
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
     CONSTRAINT check_5db8ae9d30 CHECK ((char_length(description) <= 1024)),
-    CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128)),
-    CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
+    CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128))
 );
 
 CREATE TABLE project_uploads (
