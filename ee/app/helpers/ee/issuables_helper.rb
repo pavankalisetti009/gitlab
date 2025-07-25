@@ -26,7 +26,6 @@ module EE
         data[:confidential] = issuable.confidential
         data[:epicsWebUrl] = group_epics_path(parent)
         data[:fullPath] = parent.full_path
-        data[:issueLinksEndpoint] = group_epic_issues_path(parent, issuable)
         data[:issuesWebUrl] = issues_group_path(parent)
         data[:projectsEndpoint] = expose_path(api_v4_groups_projects_path(id: parent.id))
         data[:canReadRelation] = can?(current_user, :read_epic_relation, issuable)

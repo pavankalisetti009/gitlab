@@ -7,7 +7,7 @@ class EpicIssuePresenter < Gitlab::View::Presenter::Delegated
   def group_epic_issue_path(current_user)
     return unless can_admin_issue_link?(current_user)
 
-    url_builder.group_epic_issue_path(issue.epic.group, issue.epic.iid, issue.epic_issue_id)
+    "#{group_epic_path(issue.epic.group, issue.epic.iid)}/issues/#{issue.epic_issue_id}"
   end
 
   private

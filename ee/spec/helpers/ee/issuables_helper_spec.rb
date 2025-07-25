@@ -39,7 +39,6 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
           issuableRef: "&#{epic.iid}",
           imported: epic.imported?,
           issuableTemplateNamesPath: '',
-          issueLinksEndpoint: "/groups/#{@group.full_path}/-/epics/#{epic.iid}/issues",
           issuesWebUrl: "/groups/#{@group.full_path}/-/issues",
           lockVersion: epic.lock_version,
           markdownDocsPath: '/help/user/markdown.md',
