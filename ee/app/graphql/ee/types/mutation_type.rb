@@ -7,7 +7,7 @@ module EE
 
       prepended do
         def self.authorization_scopes
-          super + [:ai_features]
+          super + [:ai_features, :ai_workflows]
         end
 
         mount_mutation ::Mutations::Ai::Catalog::Agent::Create, experiment: { milestone: '18.2' }
@@ -102,7 +102,7 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::Create
         mount_mutation ::Mutations::Vulnerabilities::BulkDismiss
         mount_mutation ::Mutations::Vulnerabilities::RemoveAllFromProject
-        mount_mutation ::Mutations::Vulnerabilities::Dismiss
+        mount_mutation ::Mutations::Vulnerabilities::Dismiss, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::Resolve
         mount_mutation ::Mutations::Vulnerabilities::Confirm
         mount_mutation ::Mutations::Vulnerabilities::RevertToDetected
