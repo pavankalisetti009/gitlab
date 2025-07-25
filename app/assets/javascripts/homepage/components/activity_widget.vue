@@ -107,3 +107,9 @@ export default {
     <a :href="activityPath">{{ __('All activity') }}</a>
   </visibility-change-detector>
 </template>
+
+<style scoped>
+::v-deep .event-item {
+  padding-bottom: 0;
+}
+</style>
