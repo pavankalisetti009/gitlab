@@ -498,6 +498,57 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
   end
 
   context 'for after create actions' do
+    describe 'duo_features_enabled inheritance' do
+      let_it_be_with_reload(:group) { create(:group) }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      context 'when project is created in a group with duo_features_enabled set to false' do
+        let(:extra_params) { { namespace_id: group.id } }
+
+        before_all do
+          group.namespace_settings.update!(duo_features_enabled: false)
+        end
+
+        it 'sets the project duo_features_enabled to false' do
+          expect(created_project.project_setting.duo_features_enabled).to be false
+        end
+      end
+
+      context 'when project is created in a group with duo_features_enabled set to true' do
+        let(:extra_params) { { namespace_id: group.id } }
+
+        before_all do
+          group.namespace_settings.update!(duo_features_enabled: true)
+        end
+
+        it 'sets the project duo_features_enabled to true' do
+          expect(created_project.project_setting.duo_features_enabled).to be true
+        end
+      end
+
+      context 'when project is created in a group with duo_features_enabled set to nil' do
+        let(:extra_params) { { namespace_id: group.id } }
+
+        before_all do
+          group.namespace_settings.update!(duo_features_enabled: nil)
+          ::Gitlab::CurrentSettings.current_application_settings.update!(duo_features_enabled: false)
+        end
+
+        it 'sets the project duo_features_enabled to the group inherited value from application settings' do
+          expect(created_project.project_setting.duo_features_enabled).to be false
+        end
+      end
+
+      context 'when project is created in a user namespace (no parent group)' do
+        it 'keeps the default value for duo_features_enabled (true)' do
+          expect(created_project.project_setting.duo_features_enabled).to be true
+        end
+      end
+    end
+
     context 'with set_default_compliance_framework' do
       let_it_be(:admin_bot) { create(:user, :admin_bot, :admin) }
       let_it_be(:group, reload: true) { create(:group) }

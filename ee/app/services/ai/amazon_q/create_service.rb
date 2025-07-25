@@ -26,7 +26,13 @@ module Ai
 
       def update_settings
         return unless ai_settings.update(amazon_q_role_arn: params[:role_arn])
-        return unless application_settings.update(duo_availability: params[:availability])
+
+        return unless ApplicationSettings::UpdateService.new(
+          application_settings,
+          user,
+          { duo_availability: params[:availability] }
+        ).execute
+
         return unless create_amazon_q_onboarding
 
         update_integration(params)

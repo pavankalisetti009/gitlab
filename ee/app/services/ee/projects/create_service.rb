@@ -74,6 +74,7 @@ module EE
 
         return unless project.group
 
+        reset_duo_features_to_inherit_from_namespace
         run_compliance_standards_checks
         sync_group_scan_result_policies
         create_security_policy_project_bot
@@ -205,6 +206,16 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def reset_duo_features_to_inherit_from_namespace
+        # The project_settings table has a database default of `true` for duo_features_enabled,
+        # but new projects should inherit the actual value from their parent group
+        inherited_value = project.group.duo_features_enabled
+
+        return if inherited_value # no need to update from default if inherited value will be `true`
+
+        project.project_setting.update!(duo_features_enabled: inherited_value)
       end
     end
   end
