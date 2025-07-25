@@ -24,7 +24,7 @@ import AiMetricsQuery from '../graphql/ai_metrics.query.graphql';
 import MergeRequestsQuery from '../../graphql/merge_requests.query.graphql';
 import ContributorCountQuery from '../../graphql/contributor_count.query.graphql';
 import { MERGE_REQUESTS_STATE_MERGED } from '../../graphql/constants';
-import MetricTableCell from '../../components/metric_table_cell.vue';
+import MetricLabel from '../../../analytics_dashboards/components/visualizations/data_table/metric_label.vue';
 import TrendIndicator from '../../components/trend_indicator.vue';
 import {
   SUPPORTED_DORA_METRICS,
@@ -78,7 +78,7 @@ export default {
     GlLink,
     GlSkeletonLoader,
     GlSparklineChart,
-    MetricTableCell,
+    MetricLabel,
     TrendIndicator,
   },
   directives: {
@@ -366,7 +366,7 @@ export default {
     </template>
 
     <template #cell(metric)="{ value: { identifier } }">
-      <metric-table-cell
+      <metric-label
         :identifier="identifier"
         :request-path="requestPath(identifier)"
         :is-project="isProject"
