@@ -73,6 +73,9 @@ export default {
     accounts() {
       return this.selectedExceptions?.accounts || [];
     },
+    groups() {
+      return this.selectedExceptions?.groups || [];
+    },
   },
   methods: {
     tabSelected(tab) {
@@ -101,6 +104,12 @@ export default {
       this.selectedExceptions = {
         ...this.selectedExceptions,
         branches,
+      };
+    },
+    setGroups(groups) {
+      this.selectedExceptions = {
+        ...this.selectedExceptions,
+        groups,
       };
     },
     setAccessTokens(accessTokens) {
@@ -142,7 +151,11 @@ export default {
       class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col md:gl-flex-row"
     >
       <roles-selector v-if="tabSelected($options.ROLES)" />
-      <groups-selector v-if="tabSelected($options.GROUPS)" />
+      <groups-selector
+        v-if="tabSelected($options.GROUPS)"
+        :selected-groups="groups"
+        @set-groups="setGroups"
+      />
       <tokens-selector
         v-if="tabSelected($options.TOKENS)"
         :selected-tokens="accessTokens"

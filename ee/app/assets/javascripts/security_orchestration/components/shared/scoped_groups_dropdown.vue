@@ -46,13 +46,15 @@ export default {
       },
       update(data) {
         const groups = get(data, this.queryDataPath, []);
+        const getUniqueItems = (moreItems = []) =>
+          uniqBy([...this.items, ...groups, ...moreItems], 'id');
 
         if (this.designatedAsCsp) {
-          this.items = uniqBy([...this.items, ...groups], 'id');
+          this.items = getUniqueItems();
         } else {
           // Descendants only matter when we want to get all groups under parent groups
           const descendants = this.flatMapDescendantGroups(groups);
-          this.items = uniqBy([...this.items, ...groups, ...descendants], 'id');
+          this.items = getUniqueItems(descendants);
         }
 
         this.pageInfo = get(data, this.queryPageInfoPath, {});

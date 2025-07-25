@@ -2,18 +2,21 @@ import { GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
 import BranchPatternSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/branch_pattern_selector.vue';
+import GroupsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/groups_selector.vue';
 import TokensSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/tokens_selector.vue';
 import ServiceAccountsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/service_accounts_selector.vue';
 import PolicyExceptionsModal from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_modal.vue';
 import PolicyExceptionsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_selector.vue';
 import {
   ACCOUNTS,
+  GROUPS,
   SOURCE_BRANCH_PATTERNS,
   TOKENS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import {
   mockAccounts,
   mockBranchPatterns,
+  mockGroups,
   mockTokens,
 } from 'ee_jest/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/mocks';
 
@@ -33,6 +36,7 @@ describe('PolicyExceptionsModal', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findBranchPatternSelector = () => wrapper.findComponent(BranchPatternSelector);
+  const findGroupsSelector = () => wrapper.findComponent(GroupsSelector);
   const findTokensSelector = () => wrapper.findComponent(TokensSelector);
   const findPolicyExceptionsSelector = () => wrapper.findComponent(PolicyExceptionsSelector);
   const findSaveButton = () => wrapper.findByTestId('save-button');
@@ -179,6 +183,49 @@ describe('PolicyExceptionsModal', () => {
         [
           {
             accounts: mockAccounts,
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('groups', () => {
+    it('renders groups selector', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            groups: mockGroups,
+          },
+          selectedTab: GROUPS,
+        },
+      });
+
+      expect(findGroupsSelector().exists()).toBe(true);
+      expect(findGroupsSelector().props('selectedGroups')).toEqual(mockGroups);
+
+      expect(findModalTitle().text()).toBe('Groups');
+      expect(findModalSubtitle().text()).toBe(
+        'Select group exceptions. Choose which groups can bypass this policy.',
+      );
+    });
+
+    it('saves selected groups', async () => {
+      createComponent({
+        propsData: {
+          selectedTab: GROUPS,
+        },
+      });
+
+      await findGroupsSelector().vm.$emit('set-groups', mockGroups);
+
+      expect(wrapper.emitted('changed')).toBeUndefined();
+
+      await findSaveButton().vm.$emit('click');
+
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            groups: mockGroups,
           },
         ],
       ]);
