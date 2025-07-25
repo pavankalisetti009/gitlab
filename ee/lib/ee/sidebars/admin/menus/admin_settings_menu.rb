@@ -47,7 +47,10 @@ module EE
           end
 
           def roles_and_permissions_available?
-            can?(current_user, :view_member_roles)
+            return false unless can?(current_user, :view_member_roles)
+
+            # In SaaS only custom admin roles are shown, so we need to check if the feature flag is enabled.
+            gitlab_com_subscription? ? ::Feature.enabled?(:custom_admin_roles, :instance) : true
           end
 
           def service_accounts_available?

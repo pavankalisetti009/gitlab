@@ -53,10 +53,20 @@ module MemberRolesHelper
 
   def new_role_path(source)
     root_group = source&.root_ancestor
+    return unless can?(current_user, :admin_member_role, *[root_group].compact)
 
-    if gitlab_com_subscription? && can?(current_user, :admin_member_role, root_group)
-      new_group_settings_roles_and_permission_path(root_group)
-    elsif !gitlab_com_subscription? && can?(current_user, :admin_member_role)
+    if gitlab_com_subscription?
+      # If there's a root group, we're on the group roles and permissions page. Check if the group's plan has custom
+      # roles enabled.
+      if root_group
+        new_group_settings_roles_and_permission_path(root_group) if root_group.custom_roles_enabled?
+      # Otherwise, this is the SaaS admin roles and permissions page. Check if the custom admin roles feature flag is
+      # enabled.
+      elsif Feature.enabled?(:custom_admin_roles, :instance)
+        new_admin_application_settings_roles_and_permission_path
+      end
+    # Otherwise, this is self-managed. Check if the license has the custom roles feature.
+    elsif License.feature_available?(:custom_roles)
       new_admin_application_settings_roles_and_permission_path
     end
   end
