@@ -4,10 +4,7 @@ import { debounce } from 'lodash';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { s__ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import {
-  getUserName,
-  isValidServiceAccount,
-} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
+import { isValidServiceAccount } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
 import ServiceAccountsTokenSelector from './service_accounts_token_selector.vue';
 
 export default {
@@ -27,7 +24,7 @@ export default {
       required: false,
       default: false,
     },
-    alreadySelectedUsernames: {
+    alreadySelectedIds: {
       type: Array,
       required: false,
       default: () => [],
@@ -46,14 +43,20 @@ export default {
   data() {
     return {
       searchTerm: '',
+      /**
+       * This functionality will be used eventually
+       * when backend can process it
+       * https://gitlab.com/groups/gitlab-org/-/epics/18112#note_2645892137
+       */
+      showTokenSelector: false,
     };
   },
   computed: {
-    selectedUserName() {
-      return getUserName(this.selectedItem);
+    selectedId() {
+      return this.selectedItem?.id || '';
     },
     selectedServiceAccount() {
-      return this.findServiceAccount(this.selectedUserName) || {};
+      return this.findServiceAccount(this.selectedId) || {};
     },
     selectedTokensIds() {
       return this.selectedItem?.tokens?.map(({ id }) => id) || [];
@@ -62,9 +65,9 @@ export default {
       return this.selectedServiceAccount.name || this.$options.i18n.serviceAccountDefaultText;
     },
     listBoxItems() {
-      const alreadySelectedItems = ({ username }) =>
-        username === this.selectedUserName || !this.alreadySelectedUsernames?.includes(username);
-      const mapToListBoxItem = ({ name, username }) => ({ text: name, value: username });
+      const alreadySelectedItems = ({ id }) =>
+        id === this.selectedId || !this.alreadySelectedIds?.includes(id);
+      const mapToListBoxItem = ({ name, id }) => ({ text: name, value: id });
 
       return this.serviceAccounts
         ?.filter(isValidServiceAccount)
@@ -86,8 +89,8 @@ export default {
     this.debouncedSearch.cancel();
   },
   methods: {
-    findServiceAccount(username = '') {
-      return this.serviceAccounts?.filter(Boolean).find((account) => account.username === username);
+    findServiceAccount(id = '') {
+      return this.serviceAccounts?.filter(Boolean).find((account) => account.id === id);
     },
     removeItem() {
       this.$emit('remove');
@@ -95,8 +98,8 @@ export default {
     setSearchTerm(term) {
       this.searchTerm = term;
     },
-    setServiceAccount(username) {
-      this.$emit('set-account', { account: { username } });
+    setServiceAccount(id) {
+      this.$emit('set-account', { id });
     },
     setTokens(tokens) {
       this.$emit('set-account', {
@@ -119,12 +122,13 @@ export default {
         :items="filteredItems"
         :header-text="$options.i18n.accountsHeader"
         :toggle-text="toggleText"
-        :selected="selectedUserName"
+        :selected="selectedId"
         @search="debouncedSearch"
         @select="setServiceAccount"
       />
 
       <service-accounts-token-selector
+        v-if="showTokenSelector"
         class="gl-flex-1"
         :account-id="selectedServiceAccount.id"
         :selected-tokens-ids="selectedTokensIds"

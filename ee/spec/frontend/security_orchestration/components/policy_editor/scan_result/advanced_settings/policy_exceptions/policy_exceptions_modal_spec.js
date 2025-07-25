@@ -147,7 +147,7 @@ describe('PolicyExceptionsModal', () => {
       createComponent({
         propsData: {
           exceptions: {
-            accounts: mockAccounts,
+            service_accounts: mockAccounts,
           },
           selectedTab: ACCOUNTS,
         },
@@ -178,7 +178,7 @@ describe('PolicyExceptionsModal', () => {
       expect(wrapper.emitted('changed')).toEqual([
         [
           {
-            accounts: mockAccounts,
+            service_accounts: mockAccounts,
           },
         ],
       ]);

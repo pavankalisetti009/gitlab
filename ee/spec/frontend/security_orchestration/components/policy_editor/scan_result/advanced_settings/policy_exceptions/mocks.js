@@ -11,9 +11,9 @@ export const mockTokens = [
 ];
 
 export const mockAccounts = [
-  { name: 'project-account-1', username: 'project-account-1-username' },
-  { name: 'project-account-2', username: 'project-account-2-username' },
-  { name: 'project-account-3', username: 'project-account-3-username' },
+  { id: 1, name: 'project-account-1', username: 'project-account-1-username' },
+  { id: 2, name: 'project-account-2', username: 'project-account-2-username' },
+  { id: 3, name: 'project-account-3', username: 'project-account-3-username' },
 ];
 
 export const mockServiceAccounts = [
