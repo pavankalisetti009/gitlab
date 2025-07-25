@@ -71,11 +71,6 @@ export default {
     isCustomValueStream() {
       return this.selectedValueStream?.isCustom || false;
     },
-    deleteConfirmationText() {
-      return sprintf(this.$options.i18n.DELETE_CONFIRMATION, {
-        name: this.selectedValueStreamName,
-      });
-    },
     editValueStreamButtonHref() {
       if (!this.selectedValueStreamId) return null;
 
@@ -86,9 +81,6 @@ export default {
     ...mapActions(['setSelectedValueStream', 'deleteValueStream']),
     onSuccess(message) {
       this.$toast.show(message);
-    },
-    isSelected(id) {
-      return Boolean(this.selectedValueStreamId && this.selectedValueStreamId === id);
     },
     onSelect(selectedId) {
       const selectedItem = this.data.find(({ id }) => id === selectedId);

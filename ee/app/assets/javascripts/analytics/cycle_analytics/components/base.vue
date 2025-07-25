@@ -88,7 +88,6 @@ export default {
       'hasNoAccessError',
       'namespaceRestApiRequestPath',
       'activeStages',
-      'selectedProjectIds',
       'cycleAnalyticsRequestParams',
       'pathNavigationData',
       'isOverviewStageSelected',
@@ -139,9 +138,6 @@ export default {
         stage_id: (!this.isOverviewStageSelected && this.selectedStage?.id) || null, // the `overview` stage is always the default, so dont persist the id if its selected
         ...paginationUrlParams,
       };
-    },
-    stageCount() {
-      return this.activeStages.length;
     },
     showDashboardsLink() {
       return this.enableVsdLink && Boolean(this.features?.groupLevelAnalyticsDashboard);
