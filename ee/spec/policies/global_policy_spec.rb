@@ -427,25 +427,27 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
   end
 
-  describe 'read_runner_upgrade_status' do
-    it { is_expected.to be_disallowed(:read_runner_upgrade_status) }
-
-    context 'when runner_upgrade_management is available' do
-      before do
-        stub_licensed_features(runner_upgrade_management: true)
-      end
-
-      it { is_expected.to be_allowed(:read_runner_upgrade_status) }
+  describe 'read runner upgrade status' do
+    where(:license_available?, :paid_namespace?, :allowed?) do
+      true  | true  | true
+      true  | false | true
+      false | true  | true
+      false | false | false
     end
 
-    context 'when user has paid namespace' do
+    with_them do
       before do
-        allow(Gitlab).to receive(:com?).and_return true
-        group = create(:group_with_plan, plan: :ultimate_plan)
-        group.add_maintainer(user)
+        stub_licensed_features(runner_upgrade_management: license_available?)
+        allow(current_user).to receive(:belongs_to_paid_namespace?).and_return(paid_namespace?)
       end
 
-      it { expect(described_class.new(user, nil)).to be_allowed(:read_runner_upgrade_status) }
+      it 'matches expected permission' do
+        if allowed?
+          is_expected.to be_allowed(:read_runner_upgrade_status)
+        else
+          is_expected.to be_disallowed(:read_runner_upgrade_status)
+        end
+      end
     end
   end
 
