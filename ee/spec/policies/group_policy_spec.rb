@@ -5182,4 +5182,36 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe 'AI catalog abilities' do
+    let(:current_user) { maintainer }
+
+    context 'with global_ai_catalog feature flag enabled' do
+      context 'when maintainer' do
+        it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
+      end
+
+      context 'when developer' do
+        let(:current_user) { developer }
+
+        it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+        it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+      end
+
+      context 'when reporter' do
+        let(:current_user) { reporter }
+
+        it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      end
+    end
+
+    context 'when global_ai_catalog feature flag is disabled' do
+      before do
+        stub_feature_flags(global_ai_catalog: false)
+      end
+
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+    end
+  end
 end

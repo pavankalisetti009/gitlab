@@ -327,6 +327,10 @@ module EE
         ).allowed?
       end
 
+      condition(:ai_catalog_enabled, scope: :user) do
+        ::Feature.enabled?(:global_ai_catalog, @user)
+      end
+
       rule { user_banned_from_namespace }.prevent_all
 
       rule { public_group | logged_in_viewable }.policy do
@@ -364,6 +368,7 @@ module EE
         enable :read_runner_usage
         enable :admin_push_rules
         enable :admin_security_testing
+        enable :admin_ai_catalog_item_consumer
       end
 
       rule { (admin | maintainer) & group_analytics_dashboards_available & ~has_parent }.policy do
@@ -606,6 +611,7 @@ module EE
         enable :read_group_audit_events
         enable :read_vulnerability_statistics
         enable :read_security_inventory
+        enable :read_ai_catalog_item_consumer
       end
 
       rule { security_orchestration_policies_enabled & can?(:developer_access) }.policy do
@@ -1064,6 +1070,11 @@ module EE
         next false unless ::Feature.enabled?(:ai_model_switching, subject)
 
         subject.namespace_settings&.duo_features_enabled?
+      end
+
+      rule { ~ai_catalog_enabled }.policy do
+        prevent :admin_ai_catalog_item_consumer
+        prevent :read_ai_catalog_item_consumer
       end
 
       rule { can?(:admin_group) & group_model_selection_enabled }.enable :admin_group_model_selection
