@@ -29,33 +29,49 @@ module Resolvers
 
       def resolve(id: nil, ids: nil, search: nil, sort: nil)
         ids = [id] if ids.nil? || id.present?
-        model_ids = ids.map { |single_id| single_id&.model_id }
-        BatchLoader::GraphQL
-          .for(object.root_ancestor.id)
-          .batch(key: [:framework_id, model_ids], default_value: []) do |namespace_ids, loader|
-          by_namespace_id = namespace_ids.index_with { |_namespace_id| model_ids }
+        model_ids = ids.filter_map { |single_id| single_id&.model_id&.to_i }
 
-          evaluate(namespace_ids, by_namespace_id, loader, search, sort)
-        end
+        cache_key = create_cache_key(fetch_namespace_ids)
+
+        BatchLoader::GraphQL
+          .for(cache_key)
+          .batch(key: [:multi_namespace_frameworks, model_ids, search, sort], default_value: []) do |cache_keys, loader|
+            cache_keys.each do |key|
+              namespace_ids = parse_cache_key(key)
+              result = frameworks(namespace_ids, search, sort)
+
+              result = result.select { |fw| model_ids.include?(fw.id) } if model_ids.any?(&:present?)
+
+              result.each do |fw|
+                loader.call(key) { |array| array << fw }
+              end
+            end
+          end
       end
 
       private
 
-      def evaluate(namespace_ids, by_namespace_id, loader, search, sort)
-        frameworks(namespace_ids, search, sort).group_by(&:namespace_id).each do |ns_id, group|
-          by_namespace_id[ns_id].each do |fw_id|
-            group.each do |fw|
-              next unless fw_id.nil? || fw_id.to_i == fw.id
-
-              loader.call(ns_id) { |array| array << fw }
-            end
-          end
-        end
+      def create_cache_key(namespace_ids)
+        namespace_ids.sort.join(',')
       end
 
-      def frameworks(namespace_ids, search, sort)
+      def fetch_namespace_ids
+        ids = [object.root_ancestor.id]
+        if Feature.enabled?(:include_csp_frameworks, object.root_ancestor)
+          csp_namespace = ::Security::PolicySetting.for_organization(object.root_ancestor.organization)&.csp_namespace
+          ids << csp_namespace.id if csp_namespace
+        end
+
+        ids
+      end
+
+      def parse_cache_key(cache_key)
+        cache_key.split(',').map(&:to_i)
+      end
+
+      def frameworks(ns_ids, search, sort)
         ::ComplianceManagement::Framework
-          .with_namespaces(namespace_ids)
+          .with_namespaces(ns_ids)
           .search(search)
           .sort_by_attribute(sort)
       end
