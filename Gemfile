@@ -617,7 +617,6 @@ gem 'html2text', feature_category: :shared
 gem 'stackprof', '~> 0.2.26', require: false, feature_category: :shared
 gem 'rbtrace', '~> 0.4', require: false, feature_category: :shared
 gem 'memory_profiler', '~> 1.0', require: false, feature_category: :shared
-gem 'activerecord-explain-analyze', '~> 0.1', require: false, feature_category: :shared
 
 # OAuth
 gem 'oauth2', '~> 2.0', feature_category: :system_access
