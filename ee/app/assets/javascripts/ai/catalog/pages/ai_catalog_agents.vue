@@ -44,12 +44,12 @@ export default {
       return !isEmpty(this.activeItem);
     },
   },
-  created() {
-    this.checkDrawerParams();
-    window.addEventListener('popstate', this.checkDrawerParams);
-  },
-  beforeDestroy() {
-    window.removeEventListener('popstate', this.checkDrawerParams);
+  watch: {
+    '$route.params.show': {
+      handler() {
+        this.checkDrawerParams();
+      },
+    },
   },
   methods: {
     formatId(id) {
