@@ -1,22 +1,23 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
-RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_replication do
+RSpec.describe Packages::PackageFile, feature_category: :geo_replication do
   include ::EE::GeoHelpers
 
   describe '.replicables_for_current_secondary' do
-    subject { described_class.replicables_for_current_secondary(1..described_class.last.id) }
+    subject(:replicables) { described_class.replicables_for_current_secondary(1..described_class.last.id) }
 
     it 'returns a package files scope' do
       secondary = create(:geo_node)
       package_file = create(:package_file)
       stub_current_geo_node(secondary)
 
-      expect(subject).to be_an(ActiveRecord::Relation)
-      expect(subject).to include(package_file)
+      expect(replicables).to be_an(ActiveRecord::Relation)
+      expect(replicables).to include(package_file)
     end
 
-    context 'object storage' do
+    context 'for object storage' do
       before do
         stub_current_geo_node(secondary)
         stub_package_file_object_storage
@@ -31,8 +32,8 @@ RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_repli
         let_it_be(:secondary) { create(:geo_node, sync_object_storage: true) }
 
         it 'includes local stored and object stored records' do
-          expect(subject).to include(local_stored)
-          expect(subject).to include(object_stored)
+          expect(replicables).to include(local_stored)
+          expect(replicables).to include(object_stored)
         end
       end
 
@@ -40,21 +41,27 @@ RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_repli
         let_it_be(:secondary) { create(:geo_node, sync_object_storage: false) }
 
         it 'includes local stored and excludes object stored records' do
-          expect(subject).to include(local_stored)
-          expect(subject).not_to include(object_stored)
+          expect(replicables).to include(local_stored)
+          expect(replicables).not_to include(object_stored)
         end
       end
     end
 
-    context 'selective sync' do
+    context 'for selective sync' do
       # Create a package file owned by a project on shard foo
       let_it_be(:project_on_shard_foo) { create_project_on_shard('foo') }
-      let_it_be(:package_on_shard_foo) { create(:conan_package, without_package_files: true, project: project_on_shard_foo) }
+      let_it_be(:package_on_shard_foo) do
+        create(:conan_package, without_package_files: true, project: project_on_shard_foo)
+      end
+
       let_it_be(:package_file_on_shard_foo) { create(:conan_package_file, package: package_on_shard_foo) }
 
       # Create a package file owned by a project on shard bar
       let_it_be(:project_on_shard_bar) { create_project_on_shard('bar') }
-      let_it_be(:package_on_shard_bar) { create(:conan_package, without_package_files: true, project: project_on_shard_bar) }
+      let_it_be(:package_on_shard_bar) do
+        create(:conan_package, without_package_files: true, project: project_on_shard_bar)
+      end
+
       let_it_be(:package_file_on_shard_bar) { create(:conan_package_file, package: package_on_shard_bar) }
 
       # Create a package file owned by a particular namespace, and create
@@ -63,8 +70,14 @@ RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_repli
       let_it_be(:subgroup) { create(:group, parent: root_group) }
       let_it_be(:project_in_root_group) { create(:project, group: root_group) }
       let_it_be(:project_in_subgroup) { create(:project, group: subgroup) }
-      let_it_be(:package_in_root_group) { create(:conan_package, without_package_files: true, project: project_in_root_group) }
-      let_it_be(:package_in_subgroup) { create(:conan_package, without_package_files: true, project: project_in_subgroup) }
+      let_it_be(:package_in_root_group) do
+        create(:conan_package, without_package_files: true, project: project_in_root_group)
+      end
+
+      let_it_be(:package_in_subgroup) do
+        create(:conan_package, without_package_files: true, project: project_in_subgroup)
+      end
+
       let_it_be(:package_file_in_root_group) { create(:conan_package_file, package: package_in_root_group) }
       let_it_be(:package_file_in_subgroup) { create(:conan_package_file, package: package_in_subgroup) }
 
@@ -76,13 +89,13 @@ RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_repli
         let_it_be(:secondary) { create(:geo_node) }
 
         it 'includes records owned by projects in all shards' do
-          expect(subject).to include(package_file_on_shard_foo)
-          expect(subject).to include(package_file_on_shard_bar)
+          expect(replicables).to include(package_file_on_shard_foo)
+          expect(replicables).to include(package_file_on_shard_bar)
         end
 
         it 'includes records owned by projects in all namespaces' do
-          expect(subject).to include(package_file_in_root_group)
-          expect(subject).to include(package_file_in_subgroup)
+          expect(replicables).to include(package_file_in_root_group)
+          expect(replicables).to include(package_file_in_subgroup)
         end
       end
 
@@ -90,11 +103,11 @@ RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_repli
         let_it_be(:secondary) { create(:geo_node, selective_sync_type: 'shards', selective_sync_shards: ['foo']) }
 
         it 'includes records owned by projects on a selected shard' do
-          expect(subject).to include(package_file_on_shard_foo)
+          expect(replicables).to include(package_file_on_shard_foo)
         end
 
         it 'excludes records owned by projects not on a selected shard' do
-          expect(subject).not_to include(package_file_on_shard_bar)
+          expect(replicables).not_to include(package_file_on_shard_bar)
         end
       end
 
@@ -103,36 +116,38 @@ RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_repli
           let_it_be(:secondary) { create(:geo_node, selective_sync_type: 'namespaces', namespaces: [root_group]) }
 
           it 'includes records owned by projects on a selected namespace' do
-            expect(subject).to include(package_file_in_root_group)
-            expect(subject).to include(package_file_in_subgroup)
+            expect(replicables).to include(package_file_in_root_group)
+            expect(replicables).to include(package_file_in_subgroup)
           end
 
           it 'excludes records owned by projects not on a selected namespace' do
-            expect(subject).not_to include(package_file_on_shard_foo)
-            expect(subject).not_to include(package_file_on_shard_bar)
+            expect(replicables).not_to include(package_file_on_shard_foo)
+            expect(replicables).not_to include(package_file_on_shard_bar)
           end
         end
 
         # The most complex permutation
         context 'with sync object storage disabled' do
-          let_it_be(:secondary) { create(:geo_node, selective_sync_type: 'namespaces', namespaces: [root_group], sync_object_storage: false) }
+          let_it_be(:secondary) do
+            create(:geo_node, selective_sync_type: 'namespaces', namespaces: [root_group], sync_object_storage: false)
+          end
 
           it 'includes locally stored records owned by projects on a selected namespace' do
-            expect(subject).to include(package_file_in_root_group)
-            expect(subject).to include(package_file_in_subgroup)
+            expect(replicables).to include(package_file_in_root_group)
+            expect(replicables).to include(package_file_in_subgroup)
           end
 
           it 'excludes locally stored records owned by projects not on a selected namespace' do
-            expect(subject).not_to include(package_file_on_shard_foo)
-            expect(subject).not_to include(package_file_on_shard_bar)
+            expect(replicables).not_to include(package_file_on_shard_foo)
+            expect(replicables).not_to include(package_file_on_shard_bar)
           end
 
           it 'excludes object stored records owned by projects on a selected namespace' do
             package_file_in_root_group.update_column(:file_store, ::Packages::PackageFileUploader::Store::REMOTE)
             package_file_in_subgroup.update_column(:file_store, ::Packages::PackageFileUploader::Store::REMOTE)
 
-            expect(subject).not_to include(package_file_in_root_group)
-            expect(subject).not_to include(package_file_in_subgroup)
+            expect(replicables).not_to include(package_file_in_root_group)
+            expect(replicables).not_to include(package_file_in_subgroup)
           end
         end
       end
