@@ -43,7 +43,7 @@ RSpec.describe Projects::ApproverGroupsController, feature_category: :source_cod
 
       context 'when the user cannot update approvers because of the project setting' do
         before do
-          project.add_developer(user)
+          project.add_maintainer(user)
           project.update!(disable_overriding_approvers_per_merge_request: true)
         end
 
@@ -61,12 +61,60 @@ RSpec.describe Projects::ApproverGroupsController, feature_category: :source_cod
 
       context 'when the user can update approvers' do
         before do
-          project.add_developer(user)
+          project.add_maintainer(user)
         end
 
         it 'destroys the provided approver group' do
           expect { destroy_merge_request_approver_group }
             .to change { merge_request.reload.approver_groups.count }.by(-1)
+        end
+      end
+
+      context 'when ensure_consistent_editing_rule is off' do
+        before do
+          stub_feature_flags(ensure_consistent_editing_rule: false)
+        end
+
+        context 'when the user cannot update approvers because they do not have access' do
+          it 'returns a 404' do
+            destroy_merge_request_approver_group
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+
+          it 'does not destroy any approver groups' do
+            expect { destroy_merge_request_approver_group }
+              .not_to change { merge_request.reload.approver_groups.count }
+          end
+        end
+
+        context 'when the user cannot update approvers because of the project setting' do
+          before do
+            project.add_maintainer(user)
+            project.update!(disable_overriding_approvers_per_merge_request: true)
+          end
+
+          it 'returns a 404' do
+            destroy_merge_request_approver_group
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+
+          it 'does not destroy any approver groups' do
+            expect { destroy_merge_request_approver_group }
+              .not_to change { merge_request.reload.approver_groups.count }
+          end
+        end
+
+        context 'when the user can update approvers' do
+          before do
+            project.add_maintainer(user)
+          end
+
+          it 'destroys the provided approver group' do
+            expect { destroy_merge_request_approver_group }
+              .to change { merge_request.reload.approver_groups.count }.by(-1)
+          end
         end
       end
     end

@@ -192,26 +192,7 @@ class ApprovalMergeRequestRule < ApplicationRecord
     }
   end
 
-  def editable_by_user?(user)
-    user.present? &&
-      user_defined? &&
-      editable?(user)
-  end
-
   private
-
-  def editable?(user)
-    user.can_admin_all_resources? ||
-      (merge_request.project.can_override_approvers? &&
-       (assigned_or_authored_by_with_access?(user) ||
-        merge_request.project.team.member?(user, Gitlab::Access::MAINTAINER)))
-  end
-
-  def assigned_or_authored_by_with_access?(user)
-    merge_request.assignee_or_author?(user) &&
-      (merge_request.project.member?(user) ||
-       merge_request.project.project_feature.merge_requests_access_level == Featurable::PUBLIC)
-  end
 
   def code_owner_role_approvers
     return User.none unless code_owner?

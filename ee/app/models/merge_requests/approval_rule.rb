@@ -99,12 +99,6 @@ module MergeRequests
       nil
     end
 
-    def editable_by_user?(user)
-      user.present? &&
-        user_defined? &&
-        editable?(user)
-    end
-
     def rule_project
       return merge_request.target_project if originates_from_merge_request?
 
@@ -132,19 +126,6 @@ module MergeRequests
       else
         User.from_union([approver_users, group_users])
       end
-    end
-
-    def editable?(user)
-      user.can_admin_all_resources? ||
-        (merge_request.project.can_override_approvers? &&
-         (assigned_or_authored_by_with_access?(user) ||
-          merge_request.project.team.member?(user, Gitlab::Access::MAINTAINER)))
-    end
-
-    def assigned_or_authored_by_with_access?(user)
-      merge_request.assignee_or_author?(user) &&
-        (merge_request.project.member?(user) ||
-         merge_request.project.project_feature.merge_requests_access_level == Featurable::PUBLIC)
     end
 
     def ensure_single_sharding_key

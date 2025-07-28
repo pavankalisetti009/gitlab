@@ -692,7 +692,22 @@ module EE
         .note_starting_with(Security::ScanResultPolicies::PolicyViolationComment::MESSAGE_HEADER).first
     end
 
+    def approval_rules_editable_by?(user)
+      return unless user
+
+      user.can_admin_all_resources? ||
+        (project.can_override_approvers? &&
+         (assigned_or_authored_by_with_access?(user) ||
+          project.team.member?(user, ::Gitlab::Access::MAINTAINER)))
+    end
+
     private
+
+    def assigned_or_authored_by_with_access?(user)
+      assignee_or_author?(user) &&
+        (project.member?(user) ||
+         project.project_feature.merge_requests_access_level == ::Featurable::PUBLIC)
+    end
 
     def security_comparison?(service_class)
       service_class == ::Ci::CompareSecurityReportsService
