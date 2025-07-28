@@ -2268,101 +2268,233 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           build(:approval_policy, rules: [], actions: actions, bypass_settings: bypass_settings)
         end
 
+        describe "branches" do
+          context 'with valid branches' do
+            let(:bypass_settings) do
+              {
+                branches: [
+                  { source: { name: 'main' }, target: { pattern: 'release-*' } },
+                  { source: { pattern: 'feature-*' }, target: { name: 'develop' } }
+                ]
+              }
+            end
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'with missing source in branches' do
+            let(:bypass_settings) { { branches: [{ target: { name: 'main' } }] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0' is missing required keys: source")
+            end
+          end
+
+          context 'with missing target in branches' do
+            let(:bypass_settings) { { branches: [{ source: { name: 'main' } }] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0' is missing required keys: target")
+            end
+          end
+
+          context 'with missing required key in source' do
+            let(:bypass_settings) { { branches: [{ source: {}, target: { name: 'main' } }] } }
+
+            specify do
+              expect(errors).to contain_exactly(
+                "property '/approval_policy/0/bypass_settings/branches/0/source' is missing required keys: name",
+                "property '/approval_policy/0/bypass_settings/branches/0/source' is missing required keys: pattern"
+              )
+            end
+          end
+
+          context 'with both name and pattern in source' do
+            let(:bypass_settings) { { branches: [{ source: { name: 'main', pattern: 'main*' }, target: { name: 'main' } }] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0/source' is invalid: error_type=oneOf")
+            end
+          end
+
+          context 'with empty branches array' do
+            let(:bypass_settings) { { branches: [] } }
+
+            specify { expect(errors).to be_empty }
+          end
+        end
+
+        describe "access_tokens" do
+          context 'with valid access_tokens' do
+            let(:bypass_settings) { { access_tokens: [{ id: 1 }, { id: 2 }] } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'with missing id in access_tokens' do
+            let(:bypass_settings) { { access_tokens: [{}] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/access_tokens/0' is missing required keys: id")
+            end
+          end
+
+          context 'with empty access_tokens array' do
+            let(:bypass_settings) { { access_tokens: [] } }
+
+            specify { expect(errors).to be_empty }
+          end
+        end
+
+        describe "service_accounts" do
+          context 'with valid service_accounts' do
+            let(:bypass_settings) { { service_accounts: [{ id: 10 }, { id: 20 }] } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'with non-integer id in service_accounts' do
+            let(:bypass_settings) { { service_accounts: [{ id: 'foo' }] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/service_accounts/0/id' is not of type: integer")
+            end
+          end
+
+          context 'with empty service_accounts array' do
+            let(:bypass_settings) { { service_accounts: [] } }
+
+            specify { expect(errors).to be_empty }
+          end
+        end
+
+        describe "users" do
+          context 'with valid users' do
+            let(:bypass_settings) { { users: [{ id: 1 }, { id: 2 }] } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'with missing id in users' do
+            let(:bypass_settings) { { users: [{}] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/users/0' is missing required keys: id")
+            end
+          end
+
+          context 'with non-integer id in users' do
+            let(:bypass_settings) { { users: [{ id: 'foo' }] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/users/0/id' is not of type: integer")
+            end
+          end
+
+          context 'with empty users array' do
+            let(:bypass_settings) { { users: [] } }
+
+            specify { expect(errors).to be_empty }
+          end
+        end
+
+        describe "groups" do
+          context 'with valid groups' do
+            let(:bypass_settings) { { groups: [{ id: 1 }, { id: 2 }] } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'with missing id in groups' do
+            let(:bypass_settings) { { groups: [{}] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/groups/0' is missing required keys: id")
+            end
+          end
+
+          context 'with non-integer id in groups' do
+            let(:bypass_settings) { { groups: [{ id: 'foo' }] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/groups/0/id' is not of type: integer")
+            end
+          end
+
+          context 'with empty groups array' do
+            let(:bypass_settings) { { groups: [] } }
+
+            specify { expect(errors).to be_empty }
+          end
+        end
+
+        describe "roles" do
+          context 'with valid roles' do
+            let(:bypass_settings) { { roles: %w[guest developer] } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'with invalid role string' do
+            let(:bypass_settings) { { roles: ["invalid_role"] } }
+
+            specify do
+              expect(errors).to contain_exactly(
+                "property '/approval_policy/0/bypass_settings/roles/0' is not one of: [\"guest\", \"reporter\", \"developer\", \"maintainer\", \"owner\"]"
+              )
+            end
+          end
+
+          context 'with non-string role' do
+            let(:bypass_settings) { { roles: [1] } }
+
+            specify do
+              expect(errors).to contain_exactly(
+                "property '/approval_policy/0/bypass_settings/roles/0' is not of type: string",
+                "property '/approval_policy/0/bypass_settings/roles/0' is not one of: [\"guest\", \"reporter\", \"developer\", \"maintainer\", \"owner\"]"
+              )
+            end
+          end
+
+          context 'with empty roles array' do
+            let(:bypass_settings) { { roles: [] } }
+
+            specify { expect(errors).to be_empty }
+          end
+        end
+
+        describe "custom_roles" do
+          context 'with valid custom_roles' do
+            let(:bypass_settings) { { custom_roles: [{ id: 1 }, { id: 2 }] } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'with missing id in custom_roles' do
+            let(:bypass_settings) { { custom_roles: [{}] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/custom_roles/0' is missing required keys: id")
+            end
+          end
+
+          context 'with non-integer id in custom_roles' do
+            let(:bypass_settings) { { custom_roles: [{ id: 'foo' }] } }
+
+            specify do
+              expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/custom_roles/0/id' is not of type: integer")
+            end
+          end
+
+          context 'with empty custom_roles array' do
+            let(:bypass_settings) { { custom_roles: [] } }
+
+            specify { expect(errors).to be_empty }
+          end
+        end
+
         context 'with empty object' do
           let(:bypass_settings) { {} }
-
-          specify { expect(errors).to be_empty }
-        end
-
-        context 'with valid access_tokens and service_accounts' do
-          let(:bypass_settings) do
-            {
-              access_tokens: [{ id: 1 }, { id: 2 }],
-              service_accounts: [{ id: 10 }, { id: 20 }]
-            }
-          end
-
-          specify { expect(errors).to be_empty }
-        end
-
-        context 'with valid branches' do
-          let(:bypass_settings) do
-            {
-              branches: [
-                { source: { name: 'main' }, target: { pattern: 'release-*' } },
-                { source: { pattern: 'feature-*' }, target: { name: 'develop' } }
-              ]
-            }
-          end
-
-          specify { expect(errors).to be_empty }
-        end
-
-        context 'with missing id in access_tokens' do
-          let(:bypass_settings) { { access_tokens: [{}] } }
-
-          specify do
-            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/access_tokens/0' is missing required keys: id")
-          end
-        end
-
-        context 'with non-integer id in service_accounts' do
-          let(:bypass_settings) { { service_accounts: [{ id: 'foo' }] } }
-
-          specify do
-            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/service_accounts/0/id' is not of type: integer")
-          end
-        end
-
-        context 'with missing source in branches' do
-          let(:bypass_settings) { { branches: [{ target: { name: 'main' } }] } }
-
-          specify do
-            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0' is missing required keys: source")
-          end
-        end
-
-        context 'with missing target in branches' do
-          let(:bypass_settings) { { branches: [{ source: { name: 'main' } }] } }
-
-          specify do
-            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0' is missing required keys: target")
-          end
-        end
-
-        context 'with missing required key in source' do
-          let(:bypass_settings) { { branches: [{ source: {}, target: { name: 'main' } }] } }
-
-          specify do
-            expect(errors).to contain_exactly(
-              "property '/approval_policy/0/bypass_settings/branches/0/source' is missing required keys: name",
-              "property '/approval_policy/0/bypass_settings/branches/0/source' is missing required keys: pattern"
-            )
-          end
-        end
-
-        context 'with both name and pattern in source' do
-          let(:bypass_settings) { { branches: [{ source: { name: 'main', pattern: 'main*' }, target: { name: 'main' } }] } }
-
-          specify do
-            expect(errors).to contain_exactly("property '/approval_policy/0/bypass_settings/branches/0/source' is invalid: error_type=oneOf")
-          end
-        end
-
-        context 'with empty branches array' do
-          let(:bypass_settings) { { branches: [] } }
-
-          specify { expect(errors).to be_empty }
-        end
-
-        context 'with empty access_tokens array' do
-          let(:bypass_settings) { { access_tokens: [] } }
-
-          specify { expect(errors).to be_empty }
-        end
-
-        context 'with empty service_accounts array' do
-          let(:bypass_settings) { { service_accounts: [] } }
 
           specify { expect(errors).to be_empty }
         end

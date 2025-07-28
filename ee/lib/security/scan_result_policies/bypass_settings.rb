@@ -24,6 +24,26 @@ module Security
       end
       strong_memoize_attr :branches
 
+      def user_ids
+        bypass_settings[:users]&.pluck(:id)
+      end
+      strong_memoize_attr :user_ids
+
+      def group_ids
+        bypass_settings[:groups]&.pluck(:id)
+      end
+      strong_memoize_attr :group_ids
+
+      def default_roles
+        Array.wrap(bypass_settings[:roles]).uniq
+      end
+      strong_memoize_attr :default_roles
+
+      def custom_role_ids
+        bypass_settings[:custom_roles]&.pluck(:id)
+      end
+      strong_memoize_attr :custom_role_ids
+
       private
 
       attr_reader :bypass_settings
