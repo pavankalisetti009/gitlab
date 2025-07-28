@@ -651,6 +651,143 @@ expires_at: duo_workflow_service_token_expires_at })
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
       end
 
+      context 'when agent_platform_model_selection feature flag is enabled' do
+        let(:duo_agent_platform_setting) do
+          instance_double('Ai::FeatureSetting').tap do |setting|
+            allow(setting).to receive(:model_metadata_params).and_return({
+              provider: 'gitlab',
+              name: 'claude-3-sonnet',
+              identifier: 'claude-3-7-sonnet-20250219'
+            })
+          end
+        end
+
+        before do
+          stub_feature_flags(agent_platform_model_selection: true)
+          allow(::Ai::FeatureSetting).to receive(:find_or_initialize_by_feature)
+            .with(:duo_agent_platform)
+            .and_return(duo_agent_platform_setting)
+        end
+
+        it 'includes model metadata headers in the response' do
+          get api(path, user), headers: workhorse_headers
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          headers = json_response['DuoWorkflow']['Headers']
+          expect(headers).to include(
+            'x-gitlab-oauth-token' => 'oauth_token',
+            'x-gitlab-unidirectional-streaming' => 'enabled',
+            'x-gitlab-self-hosted-models-metadata' => be_a(String)
+          )
+
+          # Verify the JSON content of the metadata header
+          metadata = ::Gitlab::Json.parse(headers['x-gitlab-self-hosted-models-metadata'])
+          expect(metadata).to include(
+            'provider' => 'gitlab',
+            'name' => 'claude-3-sonnet',
+            'identifier' => 'claude-3-7-sonnet-20250219'
+          )
+        end
+
+        it 'creates ModelMetadata with the correct feature setting' do
+          expect(::Ai::FeatureSetting).to receive(:find_or_initialize_by_feature)
+            .with(:duo_agent_platform)
+            .and_return(duo_agent_platform_setting)
+
+          expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).to receive(:new)
+            .with(feature_setting: duo_agent_platform_setting)
+            .and_call_original
+
+          get api(path, user), headers: workhorse_headers
+        end
+
+        context 'when ModelMetadata returns nil' do
+          let(:duo_agent_platform_setting) do
+            instance_double('Ai::FeatureSetting').tap do |setting|
+              allow(setting).to receive(:model_metadata_params).and_return(nil)
+            end
+          end
+
+          it 'does not include model metadata headers' do
+            get api(path, user), headers: workhorse_headers
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            headers = json_response['DuoWorkflow']['Headers']
+            expect(headers).to include(
+              'x-gitlab-oauth-token' => 'oauth_token',
+              'x-gitlab-unidirectional-streaming' => 'enabled'
+            )
+            expect(headers).not_to have_key('x-gitlab-self-hosted-models-metadata')
+          end
+        end
+
+        context 'when ModelMetadata returns empty hash' do
+          let(:duo_agent_platform_setting) do
+            instance_double('Ai::FeatureSetting').tap do |setting|
+              allow(setting).to receive(:model_metadata_params).and_return({})
+            end
+          end
+
+          it 'merges empty hash without adding extra headers' do
+            get api(path, user), headers: workhorse_headers
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            headers = json_response['DuoWorkflow']['Headers']
+            expect(headers).to include(
+              'x-gitlab-oauth-token' => 'oauth_token',
+              'x-gitlab-unidirectional-streaming' => 'enabled'
+            )
+            expect(headers).not_to have_key('x-gitlab-self-hosted-models-metadata')
+          end
+        end
+      end
+
+      context 'when agent_platform_model_selection feature flag is disabled' do
+        before do
+          stub_feature_flags(agent_platform_model_selection: false)
+        end
+
+        it 'does not include model metadata headers' do
+          expect(::Ai::FeatureSetting).not_to receive(:find_or_initialize_by_feature)
+          expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).not_to receive(:new)
+
+          get api(path, user), headers: workhorse_headers
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          headers = json_response['DuoWorkflow']['Headers']
+          expect(headers).to include(
+            'x-gitlab-oauth-token' => 'oauth_token',
+            'x-gitlab-unidirectional-streaming' => 'enabled'
+          )
+          expect(headers).not_to have_key('x-gitlab-self-hosted-models-metadata')
+        end
+
+        it 'returns the standard websocket configuration' do
+          get api(path, user), headers: workhorse_headers
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
+
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-base-url' => Gitlab.config.gitlab.url,
+            'x-gitlab-oauth-token' => 'oauth_token',
+            'authorization' => 'Bearer token',
+            'x-gitlab-authentication-type' => 'oidc',
+            'x-gitlab-enabled-feature-flags' => anything,
+            'x-gitlab-instance-id' => anything,
+            'x-gitlab-version' => Gitlab.version_info.to_s,
+            'x-gitlab-unidirectional-streaming' => 'enabled'
+          )
+
+          expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
+          expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+        end
+      end
+
       context 'when duo_workflow_workhorse feature flag is disabled' do
         before do
           stub_feature_flags(duo_workflow_workhorse: false)
