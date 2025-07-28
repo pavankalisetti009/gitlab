@@ -129,7 +129,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
             let_it_be(:factory_params) { [] }
             let_it_be(:search_params) { { group_id: issuable_parent.id } }
 
-            it_behaves_like 'filterable by group handle'
+            it_behaves_like 'filterable by group handle for', :author
           end
 
           context 'using OR' do
