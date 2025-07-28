@@ -57122,6 +57122,9 @@ msgstr ""
 msgid "SecurityOrchestration|Inherited from %{namespace}"
 msgstr ""
 
+msgid "SecurityOrchestration|Inherited policy"
+msgstr ""
+
 msgid "SecurityOrchestration|Invalid Compliance Framework ID(s)"
 msgstr ""
 
