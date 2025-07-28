@@ -272,9 +272,6 @@ GEM
       activemodel (= 7.1.5.1)
       activesupport (= 7.1.5.1)
       timeout (>= 0.4.0)
-    activerecord-explain-analyze (0.1.0)
-      activerecord (>= 4)
-      pg
     activestorage (7.1.5.1)
       actionpack (= 7.1.5.1)
       activejob (= 7.1.5.1)
@@ -2054,7 +2051,6 @@ DEPENDENCIES
   CFPropertyList (~> 3.0.0)
   RedCloth (~> 4.3.3)
   acme-client (~> 2.0.19)
-  activerecord-explain-analyze (~> 0.1)
   activerecord-gitlab!
   addressable (~> 2.8)
   akismet (~> 3.0)

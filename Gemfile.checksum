@@ -11,7 +11,6 @@
 {"name":"activejob","version":"7.1.5.1","platform":"ruby","checksum":"7633376c857f4c491d06b5a7f5d86d9f07afc595398354a3f1abe80eb7e35767"},
 {"name":"activemodel","version":"7.1.5.1","platform":"ruby","checksum":"74727466854a7fbdfe8f2702ca3112b23877500d4926bf7e02e921ad542191f1"},
 {"name":"activerecord","version":"7.1.5.1","platform":"ruby","checksum":"f40ad1609bf33b9ba5bdc4e16d80a77b1517153234ceb413d31d635d7b91f1e3"},
-{"name":"activerecord-explain-analyze","version":"0.1.0","platform":"ruby","checksum":"5debb11fe23f35b91953a80677d80ba9284ee737fd9d148c1d7603ce45217f7b"},
 {"name":"activestorage","version":"7.1.5.1","platform":"ruby","checksum":"ae6b8b076858c666eaad6f896d786b67654235e861e24a83f61f1cc97b43ff63"},
 {"name":"activesupport","version":"7.1.5.1","platform":"ruby","checksum":"9f0c482e473b9868cb3dfe3e9db549a3bd2302c02e4f595a5caac144a8c7cfb8"},
 {"name":"addressable","version":"2.8.7","platform":"ruby","checksum":"462986537cf3735ab5f3c0f557f14155d778f4b43ea4f485a9deb9c8f7c58232"},
