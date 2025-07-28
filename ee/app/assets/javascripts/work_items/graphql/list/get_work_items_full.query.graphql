@@ -117,6 +117,7 @@ query getWorkItemsFullEE(
             LINKED_ITEMS
             ITERATION
             DEVELOPMENT
+            STATUS
           ]
         ) {
           type
